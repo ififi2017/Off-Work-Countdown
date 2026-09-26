@@ -37,6 +37,54 @@ class RecordJsonFixtureTest {
         assertEquals("mismatches:\n" + failures.joinToString("\n"), 0, failures.size)
     }
 
+    @Test
+    fun editStampTieBreakerWinsWhenWallClockRunsBackward() {
+        fun clockChanged(document: String, time: Long): String {
+            val root = Json.parseToJsonElement(document).jsonObject.toMutableMap()
+            val rows = root.getValue("dayOverrides").jsonArray.toMutableList()
+            val first = rows.first().jsonObject.toMutableMap()
+            first["editedAtMs"] = JsonPrimitive(time)
+            rows[0] = JsonObject(first)
+            root["dayOverrides"] = JsonArray(rows)
+            return JsonObject(root).toString()
+        }
+        for ((name, clock, expectedNote) in listOf(
+            Triple("merge/tie-higher-breaker", 0L, "Tie"),
+            Triple("merge/tie-lower-breaker", 2_000_000_000_000L, "Worked a full shift"),
+        )) {
+            val fixture = cases.first { it.getValue("name").jsonPrimitive.content == name }
+            val base = RecordJson.apply(
+                RecordJson.decode(fixture.getValue("base").jsonPrimitive.content), RecordState(), RecordJson.ImportMode.SKIP_ERASED,
+            ).first
+            val incoming = RecordJson.decode(clockChanged(fixture.getValue("input").jsonPrimitive.content, clock))
+            val merged = RecordJson.apply(incoming, base, RecordJson.ImportMode.RESOLVE_BY_EDIT_STAMP).first
+            assertEquals(name, expectedNote, merged.overrides.single().note)
+        }
+    }
+
+    @Test
+    fun anEmploymentEndBeforeItsStartRejectsTheIncomingProfileAndKeepsTheLocalOne() {
+        val input = cases.first { it.getValue("name").jsonPrimitive.content == "life/detailed-periods" }
+            .getValue("input").jsonPrimitive.content
+        val local = RecordJson.apply(RecordJson.decode(input), RecordState(), RecordJson.ImportMode.SKIP_ERASED).first
+        val root = Json.parseToJsonElement(input).jsonObject.toMutableMap()
+        val profile = root.getValue("lifeProfile").jsonObject.toMutableMap()
+        val periods = profile.getValue("employmentPeriods").jsonArray.toMutableList()
+        val first = periods.first().jsonObject.toMutableMap()
+        first["endsOn"] = JsonObject(mapOf(
+            "year" to JsonPrimitive(2019), "month" to JsonPrimitive(2), "day" to JsonPrimitive(1),
+            "precision" to JsonPrimitive("day"),
+        ))
+        periods[0] = JsonObject(first)
+        profile["employmentPeriods"] = JsonArray(periods)
+        root["lifeProfile"] = JsonObject(profile)
+
+        val incoming = RecordJson.decode(JsonObject(root).toString())
+        val (next, report) = RecordJson.apply(incoming, local, RecordJson.ImportMode.FORCE_INCOMING)
+        assertEquals(1, report.rejected.count { it.entityType == RecordEntityType.LIFE_PROFILE })
+        assertEquals(local.lifeProfile, next.lifeProfile)
+    }
+
     private fun check(case: JsonObject): String? {
         val expected = case.getValue("expected").jsonObject
         if (case["kind"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content == "hours") return checkHours(case, expected)

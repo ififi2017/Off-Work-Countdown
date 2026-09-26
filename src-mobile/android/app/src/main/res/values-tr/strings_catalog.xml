@@ -519,6 +519,11 @@
     <string name="pausedUntil">%1$s saatine kadar duraklatıldı</string>
     <string name="perEffectiveHour">Etkin saat başına</string>
     <string name="perWorkday">İş günü başına</string>
+    <string name="plusAndroidComingSoon">Android\'de Plus satın alma yakında sunulacak. Şimdilik zamanlayıcıyı ve son kayıtlarını kullanabilirsin.</string>
+    <string name="plusAndroidRenewalNotice">Abonelikler iptal edene kadar otomatik yenilenir. Tek seferlik Lifetime satın alımı etkin aboneliği iptal etmez.</string>
+    <string name="plusAndroidRequestFailed">Google Play isteği tamamlayamadı. Kısa süre sonra tekrar dene.</string>
+    <string name="plusAndroidStoreOffline">Google Play şu anda kullanılamıyor. Bağlandığında satın alımları geri yüklemeyi dene.</string>
+    <string name="plusAndroidStoreUnconfigured">Plus satın alımları bu cihazda henüz kullanılamıyor. Zamanlayıcıyı ve son kayıtlarını kullanmaya devam edebilirsin.</string>
     <string name="plusAutoRenew">Abonelikler sen iptal edene kadar kendiliğinden yenilenir. Yıllık planda 7 gün ücretsiz olabilir; sonrasında yıllık fiyat üzerinden ücret alınır. Tek seferlik satın alma bir kez ödenir ve süren aboneliği kendiliğinden iptal etmez.</string>
     <string name="plusBenefitCharts">Tüm yıl ve çalışma hayatı görünümleri</string>
     <string name="plusBenefitEdit">Kayıtlar’dan herhangi bir günü düzenle</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">Geçerli sürüm</string>
     <string name="recordsConflictDetailsUnreadable">Ayrıntılar kullanılamıyor</string>
     <string name="recordsConflictFieldNote">Not</string>
+    <string name="recordsConflictIncomingZoneBlocked">Bu kopya, kayıtlar için farklı bir saat dilimi kullanıyor. Bu cihazdaki sürümü koruyun, ardından gerekirse Kayıtlar ve veriler bölümünde saat dilimini değiştirin.</string>
     <string name="recordsConflictItems">öğe</string>
     <string name="recordsConflictKeepCloud">iCloud’u tut</string>
     <string name="recordsConflictKeepCurrent">Geçerli sürümü tut</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">Gün nasıl geçti</string>
     <string name="recordsDeleteAll">Bu cihazdaki kayıtları sil</string>
     <string name="recordsDeleteAllConfirm">Bu cihazdaki yerel kayıtları siler. Eski bir yedeği içe aktararak daha sonra geri yükleyebilirsin.</string>
+    <string name="recordsDeleteFailed">Bu cihazdaki kayıtlar silinemedi. Tekrar deneyin.</string>
     <string name="recordsDiscardEdits">Bu değişiklikler atılsın mı?</string>
     <string name="recordsEditDay">Bu günü değiştir</string>
     <string name="recordsEditPlusHint">Kayıtlar’dan bir günü düzenlemek Plus özelliğidir. Zamanlayıcı bugünkü gibi çalışır.</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">Yalnızca yenileri ekle</string>
     <string name="recordsImportConflicts">%1$s çakışma</string>
     <string name="recordsImportPreviewTitle">Bu içe aktarmayı gözden geçir</string>
+    <string name="recordsImportRejected">%1$s kayıt okunamadı</string>
     <string name="recordsImportReport">İçe aktarıldı. Kalıcı olarak silinmiş %1$s kayıt atlandı.</string>
     <string name="recordsImportSame">%1$s aynı</string>
     <string name="recordsImportSkipped">%1$s atlandı</string>

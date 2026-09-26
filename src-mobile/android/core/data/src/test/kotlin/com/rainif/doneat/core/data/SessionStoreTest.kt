@@ -33,14 +33,15 @@ class SessionStoreTest {
 
     private class Opened(val records: RecordStore, val settings: SettingsRepository, val session: SessionStore)
 
-    private suspend fun TestScope.open(setUp: Boolean = true): Opened {
+    private suspend fun TestScope.open(setUp: Boolean = true, collects: MutableStateFlow<Boolean> = MutableStateFlow(true)): Opened {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val records = RecordStore(archive, { at(24, 8) }, { zone }, dispatcher)
         val device = DeviceSettingsStore(folder.root.toPath().resolve("device/settings.json"))
         val scope = CoroutineScope(backgroundScope.coroutineContext + dispatcher)
         val newId = { "00000000-0000-4000-8000-%012d".format(++ids) }
         val settings = SettingsRepository(records, device, scope, { at(24, 8) }, { zone }, newId)
-        val session = SessionStore(sessionFile, records, settings, scope, MutableStateFlow(HolidayCalendar.EMPTY), { zone }, newId, dispatcher)
+        val session = SessionStore(sessionFile, records, settings, scope, MutableStateFlow(HolidayCalendar.EMPTY), { zone }, newId,
+            dispatcher, collects)
         records.load()
         if (setUp && !settings.isSetUp.value) {
             settings.edit { it.copy(workdays = listOf(1, 2, 3, 4, 5), startMinutes = 9 * 60, endMinutes = 17 * 60, lunchEnabled = false) }
@@ -78,6 +79,22 @@ class SessionStoreTest {
         assertEquals(1, archive.overrides.size)
         assertFalse("a repeat is refused", app.session.run(at(24, 8)) { clockInEarly(it, at(24, 8)) })
         assertEquals(archive, app.records.state.value)
+    }
+
+    @Test fun qa047ObservationPolicyFollowsFreePaidAndExpiredAccess() = runTest {
+        val collects = MutableStateFlow(true) // Never purchased: free observations continue.
+        val app = open(collects = collects)
+        assertTrue(app.session.environment.value.collectsObservations)
+        assertTrue(app.session.run(at(24, 8)) { clockInEarly(it, at(24, 8)) })
+        assertEquals(1, app.records.state.value.observations.size)
+
+        collects.value = false // A previously verified purchase has lapsed.
+        assertFalse(app.session.environment.value.collectsObservations)
+        assertTrue(app.session.run(at(24, 12)) { clockOffEarly(it, at(24, 12)) })
+        assertEquals(1, app.records.state.value.observations.size)
+
+        collects.value = true // A new verified purchase restores collection.
+        assertTrue(app.session.environment.value.collectsObservations)
     }
 
     @Test fun aDamagedArchiveRefusesEveryCommandAndLeavesTheSessionAlone() = runTest {

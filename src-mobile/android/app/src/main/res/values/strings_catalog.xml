@@ -519,6 +519,11 @@
     <string name="pausedUntil">Paused until %1$s</string>
     <string name="perEffectiveHour">Per effective hour</string>
     <string name="perWorkday">Per workday</string>
+    <string name="plusAndroidComingSoon">Plus purchases are coming to Android. Your recent records and timer are ready to use now.</string>
+    <string name="plusAndroidRenewalNotice">Subscriptions renew automatically until you cancel. Lifetime is a one-time purchase and does not cancel an active subscription.</string>
+    <string name="plusAndroidRequestFailed">Google Play could not complete that request. Try again in a moment.</string>
+    <string name="plusAndroidStoreOffline">Google Play is unavailable right now. Try restoring purchases when you are connected.</string>
+    <string name="plusAndroidStoreUnconfigured">Plus purchases are not available on this device yet. Your timer and recent records are ready to use.</string>
     <string name="plusAutoRenew">Subscriptions renew automatically until you cancel. The yearly plan can include a 7-day trial. After the trial, the yearly price applies. Lifetime is a one-time purchase and does not cancel an active subscription.</string>
     <string name="plusBenefitCharts">Full-year and working-life views</string>
     <string name="plusBenefitEdit">Edit any day from Records</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">Current version</string>
     <string name="recordsConflictDetailsUnreadable">This older copy cannot show a readable difference.</string>
     <string name="recordsConflictFieldNote">Note</string>
+    <string name="recordsConflictIncomingZoneBlocked">This copy uses a different records time zone. Keep this device’s version, then change the time zone in Records &amp; data if needed.</string>
     <string name="recordsConflictItems">items</string>
     <string name="recordsConflictKeepCloud">Keep iCloud</string>
     <string name="recordsConflictKeepCurrent">Keep current version</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">How the day ran</string>
     <string name="recordsDeleteAll">Delete records on this device</string>
     <string name="recordsDeleteAllConfirm">This removes local records from this device. You can restore them later by importing an old backup.</string>
+    <string name="recordsDeleteFailed">Couldn’t delete records on this device. Try again.</string>
     <string name="recordsDiscardEdits">Discard these changes?</string>
     <string name="recordsEditDay">Change this day</string>
     <string name="recordsEditPlusHint">Editing a day from Records is a Plus feature. The timer still works as it does today.</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">Add new items</string>
     <string name="recordsImportConflicts">%1$s conflicts</string>
     <string name="recordsImportPreviewTitle">Review this import</string>
+    <string name="recordsImportRejected">%1$s entries could not be read</string>
     <string name="recordsImportReport">Imported. Skipped %1$s permanently deleted items.</string>
     <string name="recordsImportSame">%1$s unchanged</string>
     <string name="recordsImportSkipped">%1$s skipped</string>

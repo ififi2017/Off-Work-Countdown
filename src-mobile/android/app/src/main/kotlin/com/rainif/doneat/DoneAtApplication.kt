@@ -13,6 +13,7 @@ import com.rainif.doneat.core.domain.session.ScheduleFieldChange
 import com.rainif.doneat.plus.PlusAccess
 import com.rainif.doneat.focus.FocusCoordinator
 import com.rainif.doneat.timer.TimerCoordinator
+import com.rainif.doneat.review.ReviewCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -41,16 +42,23 @@ class AppGraph(app: Application) {
     val records = RecordStore(files.resolve("records/records.json"), nowMs, systemZone)
     val device = DeviceSettingsStore(files.resolve("device/settings.json"))
     val settings = SettingsRepository(records, device, scope, nowMs, systemZone, newId)
+    /** A launcher shortcut or notification waits here until setup has finished. */
+    val requestedTab = MutableStateFlow<String?>(null)
 
     private val _holidays = MutableStateFlow(HolidayCalendar.EMPTY)
     /** The bundled holiday dataset (shared with iOS); read once, off the main thread. */
     val holidays: StateFlow<HolidayCalendar> = _holidays.asStateFlow()
 
-    /** The running countdown; its state file is device-local, beside the device settings. */
-    val sessions = SessionStore(files.resolve("device/session.json"), records, settings, scope, holidays, systemZone, newId)
-
-    /** Plus, for the pages it gates: charts beyond the free week, Life, history edits and Focus. */
+    /** Plus is created first so observation writes read the current entitlement policy. */
     val plus = PlusAccess(app)
+    /** The running countdown; its state file is device-local, beside the device settings. */
+    val sessions = SessionStore(files.resolve("device/session.json"), records, settings, scope, holidays, systemZone, newId,
+        collectsObservations = plus.collectsObservations)
+
+    /** Capture a completed shift's eligibility once at process launch. */
+    val reviews = ReviewCoordinator.get(app)
+    /** The Timer screen clears this only when its transient controls are closed. */
+    val reviewBlocked = MutableStateFlow(true)
 
     /** Focus runs on the same archive; its queue of planned starts is device-local, beside the session. */
     val focus = FocusStore(records, sessions.session, plus.authorized, files.resolve("device/focus-queue.json"), newId, { app.getString(R.string.focusTaskTitle) })
@@ -62,15 +70,21 @@ class AppGraph(app: Application) {
 
     val timer = TimerCoordinator(
         app, sessions, settings, scope, nowMs,
-        planChanges = combine(records.state, plus.authorized) { state, plus -> state.focusPlanningConfiguration to plus },
+        planChanges = combine(records.state, plus.authorized) { state, plus -> state to plus },
         adjust = { prefs -> focusCoordinator.breakTakeover(records.state.value, prefs.microBreakEnabled) },
+        cycleSummary = { res, session, shift ->
+            com.rainif.doneat.core.domain.reminders.ScheduleCycleSummaryCalculator.forShift(records.state.value, session, shift, plus.authorized.value)?.let { summary ->
+                val text = com.rainif.doneat.ui.timer.TimerText(res, res.configuration.locales[0], android.text.format.DateFormat.is24HourFormat(app), hideEarnings = true)
+                com.rainif.doneat.l10n.Strings.cycleEndSummaryNotificationBody(res, text.count(summary.workdayCount), text.relativeDuration(summary.workMs.toDouble()), text.relativeDuration(summary.overtimeMs.toDouble()))
+            }
+        },
     )
 
     /** The countdown notification before clock-off and during focus phases. */
     val ongoing = com.rainif.doneat.ongoing.OngoingCoordinator(app, sessions, records, settings, focus, plus.authorized, scope, nowMs)
 
     /** The home-screen widget's snapshot: rebuilt with the session, never with money in it. */
-    val widgets = com.rainif.doneat.widget.WidgetCoordinator(app, sessions, scope, nowMs)
+    val widgets = com.rainif.doneat.widget.WidgetCoordinator(app, sessions, records, focus, plus.authorized, scope, nowMs)
 
     /**
      * The completed run already celebrated in this process. Kept in memory only:

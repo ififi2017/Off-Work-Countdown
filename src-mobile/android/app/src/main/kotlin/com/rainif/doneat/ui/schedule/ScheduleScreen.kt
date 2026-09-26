@@ -261,7 +261,7 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(Modifier.safeDrawingPadding()) {
             Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = ::back) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.settings)) }
+                IconButton(onClick = { back() }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.settings)) }
                 Text(stringResource(R.string.workSchedule), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
                 TextButton(onClick = {
                     if (session.shouldPromptApplyingToToday(draft, System.currentTimeMillis().toDouble())) askToday = true else commit(ScheduleDecision.NEXT_SHIFT_ONLY)

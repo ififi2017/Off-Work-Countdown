@@ -17,6 +17,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.IOException
+import java.nio.file.Files
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RecordsEditingTest {
@@ -61,5 +63,24 @@ class RecordsEditingTest {
         assertFalse(RecordsEditing.save(records, submission(DayRecordWrite.LEAVE), context(canEdit = false)))
         assertFalse(RecordsEditing.save(records, submission(DayRecordWrite.LEAVE).copy(dayKey = "2026-9-14"), context()))
         assertEquals(before, records.state.value)
+    }
+
+    @Test fun aFailedDayEditKeepsBothLayersAndTheDraftAfterReopen() = runTest {
+        val records = store()
+        assertTrue(RecordsEditing.save(records, submission(DayRecordWrite.CUSTOM_HOURS), context()))
+        val before = records.state.value
+        val file = folder.root.toPath().resolve("records.json")
+        val bytes = Files.readAllBytes(file)
+        val draft = submission(DayRecordWrite.REST)
+        val failing = RecordStore(file, { now }, { "Asia/Shanghai" }, UnconfinedTestDispatcher(testScheduler)) { _, _ ->
+            throw IOException("No space left on device")
+        }
+        failing.load()
+        assertFalse(RecordsEditing.save(failing, draft, context()))
+        assertEquals(before.overrides, failing.state.value.overrides)
+        assertEquals(before.exceptions, failing.state.value.exceptions)
+        assertTrue(bytes.contentEquals(Files.readAllBytes(file)))
+        val reopened = store()
+        assertEquals(before, reopened.state.value)
     }
 }

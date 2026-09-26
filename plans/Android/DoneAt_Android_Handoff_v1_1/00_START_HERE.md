@@ -81,7 +81,7 @@ proposed_android_root: src-mobile/android/
 
 当前免费记录窗口是**今天及之前六个记录时区的自然日**，不是 168 小时。当前源码对“从未购买的免费用户”和“曾有权益、现已过期/撤销的用户”区别处理：后者停止新增工作观测。Android 暂按基线实现并独立测试；产品负责人可以通过 D-07 明确改变它。权益到期不等于删除已有数据。[R05]
 
-当前备份协议**导出 schemaVersion=6，接受 1…6**。Android Room 数据库版本是另一个独立版本号，禁止把数据库 version=1 写成备份版本、或把自创 JSON 标记为兼容 schema 6。[R07]
+当前备份协议**导出 schemaVersion=6，接受 1…6**。D-13 本地 RecordLocalFile 在备份文档外保存墓碑等本机元数据；不要把本地封装版本混同备份版本，或把自创 JSON 标记为兼容 schema 6。[R07]
 
 ## 5. Definition of Done
 

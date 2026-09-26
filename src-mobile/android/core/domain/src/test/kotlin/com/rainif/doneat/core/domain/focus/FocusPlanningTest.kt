@@ -39,11 +39,17 @@ class FocusPlanningTest {
     /** Monday and Tuesday, 09:00–12:00 and 13:00–17:00. */
     private inner class Env : FocusEnvironment {
         var authorized = true
+        var shortTuesday = false
         private var ids = 0
-        private fun shiftOn(day: String) = FocusShift(
-            listOf(ShiftSegment(at(day, 9), at(day, 12)), ShiftSegment(at(day, 13), at(day, 17))),
-            at(day, 9), at(day, 17), 0.0, if (day == monday) at(tuesday, 9) else null, true,
-        )
+        private fun shiftOn(day: String): FocusShift {
+            val short = shortTuesday && day == tuesday
+            return FocusShift(
+                if (short) listOf(ShiftSegment(at(day, 9), at(day, 11)))
+                else listOf(ShiftSegment(at(day, 9), at(day, 12)), ShiftSegment(at(day, 13), at(day, 17))),
+                at(day, 9), if (short) at(day, 11) else at(day, 17), 0.0,
+                if (day == monday) at(tuesday, 9) else null, true,
+            )
+        }
         override fun shift(atMs: Double): FocusShift? {
             val day = listOf(monday, tuesday).firstOrNull { atMs >= at(it, 0) && atMs < at(it, 0) + 86_400_000 } ?: return null
             return shiftOn(day).let { it.copy(remainingMs = maxOf(0.0, it.endAtMs - atMs)) }
@@ -453,6 +459,32 @@ class FocusPlanningTest {
         val s = planning.applyTemplate(saved.state, saved.value!!.id, nine05).state
         assertEquals(1, s.focusTasks.count { it.deletedAtMs == null })
         assertEquals("A", s.focusTasks.single().title)
+    }
+
+    @Test fun twoThreeOneTemplateKeepsItsSavedSixRoundsAcrossShortAndLongShifts() {
+        val slots = listOf("A", "A", "B", "B", "B", "C").mapIndexed { index, key ->
+            FocusTemplateSlot(index, FocusPlanBlockKind.TASK, key, key, FocusTaskIcon.FOCUS)
+        }
+        val template = com.rainif.doneat.core.domain.records.FocusTemplate("template", "Daily", slots, 0.0, 0.0)
+        fun blocks(count: Int) = (0 until count).map { FocusWorkBlock(it, it * 30 * 60_000L, (it * 30 + 25) * 60_000L) }
+
+        assertEquals(listOf("A", "A", "B", "B", "B", "C"), FocusTemplates.placedSlots(template, blocks(6)).map { it.taskKey })
+        assertEquals(listOf("A", "A"), FocusTemplates.placedSlots(template, blocks(4)).map { it.taskKey })
+        assertEquals("a shorter shift must not trim the saved template", slots, template.slots)
+        assertEquals(6, FocusTemplates.placedSlots(template, blocks(6)).size)
+
+        val saved = planning.saveTemplate(RecordState(), "Six", slots, nine05)
+        val templateID = saved.value!!.id
+        val longDay = planning.applyTemplate(saved.state, templateID, nine05).state
+        assertEquals(6, planning.planning(longDay).plans[monday]!!.assignments.count { it.kind == FocusPlanBlockKind.TASK })
+        env.shortTuesday = true
+        val shortDay = planning.applyTemplate(longDay, templateID, at(tuesday, 9, 5)).state
+        assertEquals(2, planning.planning(shortDay).plans[tuesday]!!.assignments.count { it.kind == FocusPlanBlockKind.TASK })
+        assertEquals(slots, planning.planning(shortDay).templates.single { it.id == templateID }.slots)
+        env.shortTuesday = false
+        val restored = planning.applyTemplate(shortDay, templateID, at(tuesday, 9, 5)).state
+        assertEquals(6, planning.planning(restored).plans[tuesday]!!.assignments.count { it.kind == FocusPlanBlockKind.TASK })
+        assertEquals(slots, planning.planning(restored).templates.single { it.id == templateID }.slots)
     }
 
     @Test fun anAttachedPlanFollowsTemplateEditsAndAHandEditedOneDoesNot() {

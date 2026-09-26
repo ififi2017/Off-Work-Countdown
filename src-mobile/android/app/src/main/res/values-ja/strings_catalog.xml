@@ -519,6 +519,11 @@
     <string name="pausedUntil">%1$s まで停止</string>
     <string name="perEffectiveHour">実働 1 時間あたり</string>
     <string name="perWorkday">1 勤務日あたり</string>
+    <string name="plusAndroidComingSoon">Android 版 Plus の購入は近日中に利用可能になります。今はタイマーと最近の記録をお使いいただけます。</string>
+    <string name="plusAndroidRenewalNotice">サブスクリプションは解約するまで自動更新されます。買い切り版を購入しても、現在のサブスクリプションは解約されません。</string>
+    <string name="plusAndroidRequestFailed">Google Play で操作を完了できませんでした。しばらくしてからもう一度お試しください。</string>
+    <string name="plusAndroidStoreOffline">現在 Google Play に接続できません。接続後に購入を復元してください。</string>
+    <string name="plusAndroidStoreUnconfigured">この端末ではまだ Plus を購入できません。タイマーと最近の記録は引き続き利用できます。</string>
     <string name="plusAutoRenew">サブスクリプションは解約するまで自動更新されます。年額プランには7日間の無料期間が付く場合があり、終了後は年額で請求されます。買い切りは一度の支払いで、進行中のサブスクリプションは自動で解約されません。</string>
     <string name="plusBenefitCharts">年間全体と働く人生の表示</string>
     <string name="plusBenefitEdit">記録ページから任意の日を直す</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">現在のバージョン</string>
     <string name="recordsConflictDetailsUnreadable">詳細を利用できません</string>
     <string name="recordsConflictFieldNote">メモ</string>
+    <string name="recordsConflictIncomingZoneBlocked">このコピーは記録のタイムゾーンが異なります。この端末のバージョンを保持し、必要に応じて「記録とデータ」でタイムゾーンを変更してください。</string>
     <string name="recordsConflictItems">項目</string>
     <string name="recordsConflictKeepCloud">iCloud を残す</string>
     <string name="recordsConflictKeepCurrent">現在のバージョンを残す</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">その日の流れ</string>
     <string name="recordsDeleteAll">この端末の記録を削除</string>
     <string name="recordsDeleteAllConfirm">この端末の記録を削除します。あとから古いバックアップを読み込んで復元できます。</string>
+    <string name="recordsDeleteFailed">この端末の記録を削除できませんでした。もう一度お試しください。</string>
     <string name="recordsDiscardEdits">この変更を破棄しますか？</string>
     <string name="recordsEditDay">この日を直す</string>
     <string name="recordsEditPlusHint">記録ページから日を直すのは Plus の機能です。タイマーはそのまま使えます。</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">新規だけ追加</string>
     <string name="recordsImportConflicts">競合 %1$s 件</string>
     <string name="recordsImportPreviewTitle">この読み込みを確認</string>
+    <string name="recordsImportRejected">%1$s 件の記録を読み込めませんでした</string>
     <string name="recordsImportReport">読み込みました。完全に削除済みの %1$s 件はスキップしました。</string>
     <string name="recordsImportSame">変更なし %1$s 件</string>
     <string name="recordsImportSkipped">スキップ %1$s 件</string>

@@ -13,6 +13,8 @@ import com.rainif.doneat.core.domain.reminders.ReminderPlanner
 import com.rainif.doneat.core.domain.schedule.Reminder
 import com.rainif.doneat.core.domain.schedule.ReminderInputs
 import com.rainif.doneat.core.domain.session.ShiftReminderPlan
+import com.rainif.doneat.core.domain.session.ShiftSession
+import com.rainif.doneat.core.domain.schedule.ShiftSnapshot
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.reminders.Reminders
 import com.rainif.doneat.ui.AppLocale
@@ -44,6 +46,7 @@ class TimerCoordinator(
     private val planChanges: Flow<Any?> = flowOf(Unit),
     /** A plan taking over the break reminders; identity when there is none. */
     private val adjust: (SyncedPreferences) -> (List<Reminder>) -> List<Reminder> = { { it } },
+    private val cycleSummary: (Resources, ShiftSession, ShiftSnapshot) -> String? = { _, _, _ -> null },
 ) {
     @OptIn(FlowPreview::class)
     fun start() {
@@ -52,7 +55,7 @@ class TimerCoordinator(
             combine(sessions.session, planChanges) { session, _ -> session }.debounce(300).collectLatest { session ->
                 val now = nowMs()
                 val res = localizedResources(session.env.preferences.languageOverride)
-                val alarms = ShiftReminderPlan.alarms(session, now, reminderInputs(res, session.env.preferences), adjust(session.env.preferences))
+                val alarms = ShiftReminderPlan.alarms(session, now, reminderInputs(res, session.env.preferences), adjust(session.env.preferences)) { shift -> cycleSummary(res, session, shift) }
                 Reminders.schedule(context, alarms, ReminderPlanner.SHIFT_PREFIX, channelNames(res))
             }
         }

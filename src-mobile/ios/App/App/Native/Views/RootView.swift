@@ -13,6 +13,7 @@ struct OffWorkCountdownRootView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @EnvironmentObject private var quickActionScene: HomeQuickActionSceneDelegate
 
     init(runtime: AppRuntime) {
         self.runtime = runtime
@@ -171,6 +172,12 @@ struct OffWorkCountdownRootView: View {
             AppOrientationPolicy.shared.update(onboardingComplete: runtime.preferences.onboardingComplete)
             if runtime.preferences.onboardingComplete, scene.selectedTab == .timer { runtime.shifts.noteTimerSurfaceVisible() }
         }
+        .onChange(of: quickActionScene.pendingShortcut, initial: true) { _, _ in
+            consumeQuickAction()
+        }
+        .onChange(of: quickActionReady) { _, _ in
+            consumeQuickAction()
+        }
         .onChange(of: runtime.session.earlyStartAtMs) { oldValue, newValue in
             if newValue != nil, newValue != oldValue { clockInCommitFeedback += 1 }
         }
@@ -224,6 +231,23 @@ struct OffWorkCountdownRootView: View {
                 insertion: .opacity.combined(with: .move(edge: .bottom)),
                 removal: .opacity.combined(with: .scale(scale: 0.985))
             )
+    }
+
+    private var quickActionReady: Bool {
+        runtime.preferences.onboardingComplete && runtime.plus.hasSeenIntro && !scene.showsReleaseNotes
+    }
+
+    private func consumeQuickAction() {
+        guard let tab = quickActionScene.takePending(when: quickActionReady) else { return }
+        switch tab {
+        case .timer: scene.openTimer()
+        case .focus: scene.openFocusTab()
+        case .records:
+            scene.recordsPath.removeAll()
+            scene.presentedRoute = nil
+            scene.selectedTab = .records
+        case .settings: break
+        }
     }
 
     private var showsLandscapeTimer: Bool {

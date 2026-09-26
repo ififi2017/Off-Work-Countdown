@@ -519,6 +519,11 @@
     <string name="pausedUntil">%1$s तक रुका हुआ</string>
     <string name="perEffectiveHour">प्रति प्रभावी घंटा</string>
     <string name="perWorkday">प्रति कार्यदिवस</string>
+    <string name="plusAndroidComingSoon">Android पर Plus की खरीदारी जल्द उपलब्ध होगी। अभी आप टाइमर और हाल के रिकॉर्ड इस्तेमाल कर सकते हैं।</string>
+    <string name="plusAndroidRenewalNotice">सदस्यताएँ रद्द करने तक अपने आप नवीनीकृत होती हैं। लाइफ़टाइम की एक बार की खरीद से मौजूदा सदस्यता रद्द नहीं होती।</string>
+    <string name="plusAndroidRequestFailed">Google Play अनुरोध पूरा नहीं कर सका। थोड़ी देर बाद फिर कोशिश करें।</string>
+    <string name="plusAndroidStoreOffline">Google Play अभी उपलब्ध नहीं है। कनेक्ट होने पर खरीदारी बहाल करने का प्रयास करें।</string>
+    <string name="plusAndroidStoreUnconfigured">इस डिवाइस पर Plus खरीद अभी उपलब्ध नहीं है। टाइमर और हाल के रिकॉर्ड का उपयोग जारी रख सकते हैं।</string>
     <string name="plusAutoRenew">सदस्यता आपके रद्द करने तक ख़ुद रिन्यू होती रहती है। सालाना प्लान में 7 दिन मुफ़्त हो सकते हैं, उसके बाद सालाना कीमत लगती है। एक बार की ख़रीद सिर्फ़ एक भुगतान है और चल रही सदस्यता को ख़ुद रद्द नहीं करती।</string>
     <string name="plusBenefitCharts">पूरे वर्ष और कामकाजी जीवन के दृश्य</string>
     <string name="plusBenefitEdit">रिकॉर्ड से कोई भी दिन बदलें</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">वर्तमान संस्करण</string>
     <string name="recordsConflictDetailsUnreadable">विवरण उपलब्ध नहीं</string>
     <string name="recordsConflictFieldNote">नोट</string>
+    <string name="recordsConflictIncomingZoneBlocked">इस कॉपी में रिकॉर्ड का समय क्षेत्र अलग है। इस डिवाइस का संस्करण रखें, फिर ज़रूरत होने पर रिकॉर्ड और डेटा में समय क्षेत्र बदलें।</string>
     <string name="recordsConflictItems">आइटम</string>
     <string name="recordsConflictKeepCloud">iCloud रखें</string>
     <string name="recordsConflictKeepCurrent">वर्तमान संस्करण रखें</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">दिन कैसे बीता</string>
     <string name="recordsDeleteAll">इस डिवाइस के रिकॉर्ड हटाएँ</string>
     <string name="recordsDeleteAllConfirm">इस डिवाइस के स्थानीय रिकॉर्ड हटेंगे। बाद में पुराना बैकअप आयात करके उन्हें बहाल किया जा सकता है।</string>
+    <string name="recordsDeleteFailed">इस डिवाइस से रिकॉर्ड मिटाए नहीं जा सके। फिर कोशिश करें।</string>
     <string name="recordsDiscardEdits">ये बदलाव छोड़ दें?</string>
     <string name="recordsEditDay">यह दिन बदलें</string>
     <string name="recordsEditPlusHint">रिकॉर्ड से कोई दिन बदलना Plus सुविधा है। टाइमर वैसे ही चलता रहेगा।</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">केवल नए जोड़ें</string>
     <string name="recordsImportConflicts">%1$s टकराव</string>
     <string name="recordsImportPreviewTitle">इस आयात को देखें</string>
+    <string name="recordsImportRejected">%1$s रिकॉर्ड पढ़े नहीं जा सके</string>
     <string name="recordsImportReport">आयात हो गया। हमेशा के लिए मिटाई गई %1$s एंट्री छोड़ दी गईं।</string>
     <string name="recordsImportSame">%1$s वैसे ही</string>
     <string name="recordsImportSkipped">%1$s छोड़े</string>

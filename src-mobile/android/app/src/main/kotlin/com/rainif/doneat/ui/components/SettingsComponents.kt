@@ -2,11 +2,14 @@ package com.rainif.doneat.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -35,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -53,6 +57,7 @@ fun DoneAtPage(
     onBack: (() -> Unit)? = null,
     backLabel: String? = null,
     actions: @Composable () -> Unit = {},
+    inlineTitle: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
@@ -74,13 +79,28 @@ fun DoneAtPage(
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = backLabel)
                     }
                 }
-                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) { actions() }
+                if (inlineTitle) {
+                    Text(
+                        title,
+                        Modifier.weight(1f).padding(start = DoneAtSpacing.page - DoneAtSpacing.xs).semantics { heading() },
+                        style = MaterialTheme.typography.headlineMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    actions()
+                } else {
+                    Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) { actions() }
+                }
             }
-            Text(
-                title,
-                modifier = Modifier.padding(horizontal = DoneAtSpacing.page).padding(bottom = DoneAtSpacing.s).semantics { heading() },
-                style = MaterialTheme.typography.headlineMedium,
-            )
+            if (!inlineTitle) {
+                Text(
+                    title,
+                    modifier = Modifier.padding(horizontal = DoneAtSpacing.page).padding(bottom = DoneAtSpacing.s).semantics { heading() },
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+            } else {
+                Spacer(Modifier.height(DoneAtSpacing.s))
+            }
             Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l), content = content)
         }
     }
@@ -133,19 +153,35 @@ private val transparent
 /** A row that opens a page: icon, title, the current value, and a chevron. */
 @Composable
 fun NavigationRow(title: String, onClick: () -> Unit, icon: ImageVector? = null, value: String? = null, supporting: String? = null) {
-    ListItem(
-        headlineContent = { Text(title) },
-        supportingContent = supporting?.let { { Text(it) } },
-        leadingContent = icon?.let { { Icon(it, contentDescription = null, modifier = Modifier.size(24.dp)) } },
-        trailingContent = {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                if (value != null) Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val stackValue = maxWidth < 360.dp || LocalDensity.current.fontScale >= 1.3f
+        val trailingWidth = maxWidth * 0.4f
+        val detail: (@Composable () -> Unit)? = if (supporting != null || (stackValue && value != null)) {
+            {
+                Column {
+                    if (stackValue && value != null) Text(value)
+                    if (supporting != null) Text(supporting)
+                }
             }
-        },
-        colors = transparent,
-        modifier = Modifier.clickable(role = Role.Button, onClick = onClick),
-    )
+        } else null
+        ListItem(
+            headlineContent = { Text(title) },
+            supportingContent = detail,
+            leadingContent = icon?.let { { Icon(it, contentDescription = null, modifier = Modifier.size(24.dp)) } },
+            trailingContent = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+                    if (value != null && !stackValue) Text(
+                        value, Modifier.widthIn(max = trailingWidth),
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    )
+                    Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            colors = transparent,
+            modifier = Modifier.clickable(role = Role.Button, onClick = onClick),
+        )
+    }
 }
 
 /** A row that performs an action, such as opening a link; [trailing] says where it goes. */
@@ -198,9 +234,16 @@ fun SwitchRow(title: String, checked: Boolean, onCheckedChange: (Boolean) -> Uni
 /** A label and a value that is shown, not edited. */
 @Composable
 fun ValueRow(title: String, value: String, valueColor: Color = MaterialTheme.colorScheme.onSurfaceVariant) {
-    ListItem(
-        headlineContent = { Text(title) },
-        trailingContent = { Text(value, style = MaterialTheme.typography.bodyMedium, color = valueColor) },
-        colors = transparent,
-    )
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val stackValue = maxWidth < 360.dp || LocalDensity.current.fontScale >= 1.3f
+        val valueContent: @Composable () -> Unit = {
+            Text(value, Modifier.widthIn(max = if (stackValue) maxWidth else maxWidth * 0.4f), style = MaterialTheme.typography.bodyMedium, color = valueColor)
+        }
+        ListItem(
+            headlineContent = { Text(title) },
+            supportingContent = if (stackValue) valueContent else null,
+            trailingContent = if (stackValue) null else valueContent,
+            colors = transparent,
+        )
+    }
 }

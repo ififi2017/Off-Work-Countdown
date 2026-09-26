@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Reminders (T14). Each is optional: denying any of them leaves the app fully usable. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- User-granted exact alarms only; USE_EXACT_ALARM is reserved for alarm-clock apps. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- WorkManager's optional foreground worker is unused: all reminders are alarms. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
 
     <application
         android:name=".DoneAtApplication"
@@ -17,14 +20,20 @@
         android:label="@string/app_name"
         android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="false"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        <service android:name="androidx.work.impl.foreground.SystemForegroundService" tools:node="remove" />
         <activity
             android:name=".MainActivity"
+            android:enableOnBackInvokedCallback="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.DoneAt.Starting"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
 
         <!-- Not exported: only the system's alarm delivery reaches it. -->
@@ -56,6 +65,24 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/doneat_widget_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.DoneAtWidgetMediumReceiver"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_info_medium" />
+        </receiver>
+        <receiver
+            android:name=".widget.DoneAtWidgetLargeReceiver"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_info_large" />
         </receiver>
 
         <!-- Not exported: only the widget's own refresh alarm reaches it. -->

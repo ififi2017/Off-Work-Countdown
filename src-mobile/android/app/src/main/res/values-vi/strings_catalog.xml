@@ -519,6 +519,11 @@
     <string name="pausedUntil">Tạm dừng đến %1$s</string>
     <string name="perEffectiveHour">Mỗi giờ làm thực tế</string>
     <string name="perWorkday">Mỗi ngày làm việc</string>
+    <string name="plusAndroidComingSoon">Tính năng mua Plus trên Android sẽ sớm ra mắt. Hiện bạn có thể dùng bộ đếm giờ và xem các bản ghi gần đây.</string>
+    <string name="plusAndroidRenewalNotice">Gói đăng ký tự động gia hạn cho đến khi bạn hủy. Mua Lifetime một lần không hủy gói đăng ký đang hoạt động.</string>
+    <string name="plusAndroidRequestFailed">Google Play không thể hoàn tất yêu cầu này. Hãy thử lại sau ít phút.</string>
+    <string name="plusAndroidStoreOffline">Google Play hiện không khả dụng. Hãy thử khôi phục giao dịch mua khi có kết nối.</string>
+    <string name="plusAndroidStoreUnconfigured">Chưa thể mua Plus trên thiết bị này. Bạn vẫn có thể dùng bộ đếm giờ và xem các bản ghi gần đây.</string>
     <string name="plusAutoRenew">Đăng ký tự gia hạn cho tới khi bạn hủy. Gói năm có thể kèm 7 ngày miễn phí, sau đó tính theo giá năm. Bản trả một lần chỉ thanh toán một lần và không tự hủy đăng ký đang chạy.</string>
     <string name="plusBenefitCharts">Khung cả năm và đời làm việc</string>
     <string name="plusBenefitEdit">Sửa bất kỳ ngày nào từ Bản ghi</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">Phiên bản hiện tại</string>
     <string name="recordsConflictDetailsUnreadable">Không có chi tiết</string>
     <string name="recordsConflictFieldNote">Ghi chú</string>
+    <string name="recordsConflictIncomingZoneBlocked">Bản sao này dùng múi giờ khác cho bản ghi. Giữ phiên bản trên thiết bị này, rồi đổi múi giờ trong Bản ghi và dữ liệu nếu cần.</string>
     <string name="recordsConflictItems">mục</string>
     <string name="recordsConflictKeepCloud">Giữ iCloud</string>
     <string name="recordsConflictKeepCurrent">Giữ phiên bản hiện tại</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">Ngày đã trôi qua thế nào</string>
     <string name="recordsDeleteAll">Xóa nhật ký trên máy này</string>
     <string name="recordsDeleteAllConfirm">Xóa nhật ký trên máy này. Bạn có thể khôi phục bằng cách nhập bản sao lưu cũ sau đó.</string>
+    <string name="recordsDeleteFailed">Không thể xóa bản ghi trên thiết bị này. Hãy thử lại.</string>
     <string name="recordsDiscardEdits">Bỏ những thay đổi này?</string>
     <string name="recordsEditDay">Sửa ngày này</string>
     <string name="recordsEditPlusHint">Sửa một ngày từ Bản ghi là tính năng Plus. Đồng hồ đếm vẫn dùng như hiện tại.</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">Chỉ thêm mục mới</string>
     <string name="recordsImportConflicts">%1$s xung đột</string>
     <string name="recordsImportPreviewTitle">Xem lại lần nhập này</string>
+    <string name="recordsImportRejected">Không thể đọc %1$s bản ghi</string>
     <string name="recordsImportReport">Đã nhập. Bỏ qua %1$s bản ghi đã xóa vĩnh viễn.</string>
     <string name="recordsImportSame">%1$s giữ nguyên</string>
     <string name="recordsImportSkipped">%1$s đã bỏ</string>

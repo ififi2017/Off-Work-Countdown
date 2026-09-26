@@ -4,9 +4,14 @@ import com.rainif.doneat.core.domain.records.RecordEditContext
 import com.rainif.doneat.core.domain.records.RecordEntityType
 import com.rainif.doneat.core.domain.records.RecordHistory
 import com.rainif.doneat.core.domain.records.RecordState
+import com.rainif.doneat.core.domain.records.FocusSession
+import com.rainif.doneat.core.domain.records.FocusSessionKind
+import com.rainif.doneat.core.domain.records.FocusEndReason
 import com.rainif.doneat.core.domain.records.SyncedPreferences
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedule
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleContent
+import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
+import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.schedule.RosterDay
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
@@ -138,6 +143,33 @@ class ScheduleSaveTest {
         assertEquals(7.5 * 3_600_000, work, 0.0)
     }
 
+    @Test fun `a running shift follows the chosen schedule boundary`() {
+        val today = at(24, 11)
+        val applied = Harness()
+        val deferred = Harness()
+        assertTrue(applied.run { start(applied.state, today) })
+        assertTrue(deferred.run { start(deferred.state, today) })
+        val focus = FocusSession(
+            "00000000-0000-0000-0000-0000000000F1", null, "2026-08-24", today, at(24, 11, 25),
+            null, null, today, 1, "00000000-0000-0000-0000-0000000000F1", FocusSessionKind.FOCUS,
+            "Asia/Shanghai", "2026-08-24", null, FocusEndReason.COMPLETED,
+        )
+        applied.records = applied.records.copy(focusSessions = listOf(focus))
+        deferred.records = deferred.records.copy(focusSessions = listOf(focus))
+        val oldEnd = at(24, 17)
+        assertEquals(oldEnd, deferred.session.snapshot(today)!!.plannedEndAtMs, 0.0)
+
+        val change = ScheduleFieldChange(endMinutes = 18 * 60)
+        assertTrue(applied.save(change, ScheduleDecision.APPLY_TO_TODAY, today))
+        assertTrue(deferred.save(change, ScheduleDecision.NEXT_SHIFT_ONLY, today))
+        assertEquals(at(24, 18), applied.session.snapshot(today)!!.plannedEndAtMs, 0.0)
+        assertEquals(oldEnd, deferred.session.snapshot(today)!!.plannedEndAtMs, 0.0)
+        assertEquals(18 * 60, deferred.prefs.endMinutes)
+        assertEquals(at(25, 18), deferred.session.snapshot(at(25, 11))!!.plannedEndAtMs, 0.0)
+        assertEquals(focus.plannedEndAtMs, applied.records.focusSessions.single().plannedEndAtMs, 0.0)
+        assertEquals(focus.plannedEndAtMs, deferred.records.focusSessions.single().plannedEndAtMs, 0.0)
+    }
+
     @Test fun `switching it on through the draft moves the countdown onto the roster`() {
         val h = Harness()
         h.install(enabled = false)
@@ -211,6 +243,18 @@ class ScheduleSaveTest {
         val h = Harness()
         h.install(enabled = true)
         assertFalse(h.save(ScheduleFieldChange(rosterEdits = mapOf("2026-10-09" to RosterDayEdit.Shift(UUID.randomUUID()))), ScheduleDecision.NEXT_SHIFT_ONLY, at(1, 10, month = 10)))
+    }
+
+    @Test fun `an archived type leaves new choices but keeps its saved roster day`() {
+        val archived = types.first().copy(isArchived = true)
+        val content = ExtendedScheduleContent(listOf(archived) + types.drop(1), null)
+        assertFalse(ScheduleEditing.activeTypes(content).any { it.id == archived.id })
+        val key = "2026-10-05"
+        val resolved = ExtendedScheduleResolver(ExtendedSchedulePlan(content.shiftTypes, null, mapOf(key to archived.id)))
+            .day(ExtendedScheduleResolver.dayNumber(key)!!)
+        assertEquals(archived.id, resolved.shiftTypeID)
+        assertTrue(resolved.isWorkday)
+        assertEquals("08:00", resolved.hours?.startTime)
     }
 
     @Test fun `clearing expected days keeps a day already worked`() {

@@ -4,15 +4,19 @@ import com.rainif.doneat.core.domain.records.DayResolution
 import com.rainif.doneat.core.domain.records.FoundationCompat
 import com.rainif.doneat.core.domain.records.RecordHistory
 import com.rainif.doneat.core.domain.records.RecordState
+import com.rainif.doneat.core.domain.records.RecordsQueries
 import com.rainif.doneat.core.domain.records.WorkObservation
 import com.rainif.doneat.core.domain.records.WorkObservationKind
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.schedule.ShiftSegment
+import com.rainif.doneat.core.domain.schedule.ShiftSnapshot
+import com.rainif.doneat.core.domain.session.ShiftSession
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.time.LocalDate
+import java.time.Instant
 
 data class ScheduleCycleDay(val dayKey: String, val isWorkday: Boolean, val workMs: Long, val overtimeMs: Long, val isComplete: Boolean = true)
 
@@ -25,6 +29,21 @@ data class ScheduleCycleSummary(val workdayCount: Int, val workMs: Long, val ove
  * following day that did not resolve is never read as rest.
  */
 object ScheduleCycleSummaryCalculator {
+    /** iOS cycleEndSummaryNotificationBody's projection, before localization. */
+    fun forShift(state: RecordState, session: ShiftSession, shift: ShiftSnapshot, authorized: Boolean): ScheduleCycleSummary? {
+        val prefs = session.env.preferences
+        if (!authorized || !prefs.cycleEndSummaryNotificationEnabled || prefs.scheduleMode == "off" ||
+            !(shift.isWorkday || session.isForcedWorkday(shift))) return null
+        val zone = FoundationCompat.javaZone(prefs.recordsTimeZoneIdentifier)
+        val anchor = Instant.ofEpochMilli(shift.startAtMs.toLong()).atZone(zone).toLocalDate()
+        val queries = RecordsQueries(state, session.env.holidays, zone, authorized = true)
+        val days = queries.resolvedDays(anchor.minusDays(31), anchor.plusDays(1)).map { day ->
+            ScheduleCycleDay(day.dayKey, day.isScheduledWorkday, day.segments.sumOf(::roundedLength),
+                queries.overtimeSegments(day).sumOf(::roundedLength), !day.expansionFailed)
+        }
+        return summary(FoundationCompat.dayKey(anchor), days)
+    }
+
     fun summary(endingAt: String, days: List<ScheduleCycleDay>): ScheduleCycleSummary? {
         val end = days.indexOfFirst { it.dayKey == endingAt }
         if (end < 0 || end + 1 >= days.size || !days[end].isWorkday) return null

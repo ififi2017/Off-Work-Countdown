@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
@@ -58,10 +59,15 @@ import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.domain.records.RecordsDayCanvasModel
 import com.rainif.doneat.core.domain.records.RecordsDayInterval
 import com.rainif.doneat.core.domain.records.RecordsDaySource
+import com.rainif.doneat.core.domain.records.RecordsFocusHistory
+import com.rainif.doneat.core.domain.records.FocusEndReason
+import com.rainif.doneat.core.domain.records.FocusSession
+import com.rainif.doneat.core.domain.records.FocusTaskIcon
 import com.rainif.doneat.core.domain.records.TimeAllocationKind
 import com.rainif.doneat.core.domain.records.WorkObservationKind
 import com.rainif.doneat.ui.Route
 import com.rainif.doneat.ui.components.DoneAtPage
+import com.rainif.doneat.ui.focus.image
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -83,13 +89,16 @@ fun RecordsDayScreen(graph: AppGraph, dayKey: String, open: (Route) -> Unit, onB
         val current = model ?: return@DoneAtPage
         Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             if (current.isLocked) {
-                LockedPlaceholder(LockedKind.DAY, text) { openSettings(Route.Plus) }
+                LockedPlaceholder(LockedKind.DAY, text) {
+                    openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsDay(dayKey)))
+                }
                 return@Column
             }
             SourceChip(text.sourceTitle(current.source))
             RecordsCard { DayBandCard(current, text) }
             Conclusion(current, text)
             Segments(current, text)
+            FocusHistory(context, dayKey)
             Observations(context, dayKey)
             // A plan or a projection has no original input to open: it gets a sentence, not a button that cannot save.
             if (!context.queries.authorized) {
@@ -101,6 +110,53 @@ fun RecordsDayScreen(graph: AppGraph, dayKey: String, open: (Route) -> Unit, onB
                 )
             } else if (current.editableShifts.isNotEmpty()) {
                 EditEntry(current, text) { anchor -> beginDayEdit(graph, context, anchor, open) }
+            }
+        }
+    }
+}
+
+/** The iOS day canvas shows actual focus sessions after its time account. */
+@Composable
+private fun FocusHistory(context: RecordsContext, dayKey: String) {
+    val sessions = RecordsFocusHistory.visible(context.queries.state.focusSessions
+        .filter { it.anchorDayKey == dayKey }
+        .sortedWith(compareBy<FocusSession> { it.startedAtMs }.thenBy { it.id }))
+    if (sessions.isEmpty()) return
+    val text = context.text
+    val tasks = context.queries.state.focusTasks.associateBy { it.id }
+    val scheme = MaterialTheme.colorScheme
+    RecordsCard {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Icon(Icons.Outlined.Timer, null, Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
+                Text(text.string(R.string.focusHistory), style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant)
+            }
+            sessions.forEach { session ->
+                val task = session.taskID?.let(tasks::get)
+                val end = session.endedAtMs ?: minOf(context.nowMs, session.plannedEndAtMs)
+                val reason = text.string(when (session.endReason) {
+                    FocusEndReason.COMPLETED -> R.string.focusHistoryCompleted
+                    FocusEndReason.STOPPED_BY_USER -> R.string.focusHistoryStopped
+                    FocusEndReason.STOPPED_AT_BOUNDARY -> R.string.focusHistoryBoundary
+                    FocusEndReason.ABANDONED -> R.string.focusHistoryAbandoned
+                    FocusEndReason.SUPERSEDED_BY_SYNC -> R.string.focusHistorySupersededBySync
+                    null -> R.string.focusRunning
+                })
+                Row(
+                    Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Icon((task?.icon ?: FocusTaskIcon.FOCUS).image, null, Modifier.size(24.dp), tint = scheme.onSurfaceVariant)
+                    Column(Modifier.weight(1f)) {
+                        Text(task?.title ?: text.string(R.string.focusTitle), style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+                        Text(text.timeRange(session.startedAtMs, end), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(text.duration((end - session.startedAtMs).coerceAtLeast(0.0)), style = MaterialTheme.typography.labelMedium)
+                        Text(reason, style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                    }
+                }
             }
         }
     }

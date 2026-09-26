@@ -1,6 +1,6 @@
 # 功能对等表（T01）
 
-源：`9252fdf`。Android 列是目标，不是已实现。状态均为 **NOT_STARTED**，除非注明延后。
+源：`9252fdf`。Android 列定义目标；实际实现状态与验收证据统一记录在 [progress.md](progress.md)，本表不维护另一套进度。
 
 ## FR 总表
 

@@ -1,52 +1,47 @@
-# Android 环境锁（T03）
+# Android 环境锁
 
-记录：2026-09-23。均为本机真实构建所用版本。
+更新：2026-09-26。此页记录当前本机工具链与已跑命令；任务状态只在 [progress.md](progress.md)。
 
 ## 工具链
 
 | 项 | 版本 / 路径 |
 |---|---|
 | 机器 | macOS 27.0 arm64 |
-| JDK | Android Studio 2026.1 自带 JBR，OpenJDK 25.0.3 arm64：`/Applications/Android Studio.app/Contents/jbr/Contents/Home`（系统 Temurin 21 为 x86_64，不可用） |
+| JDK | Android Studio 2026.1 自带 JBR，OpenJDK 25.0.3 arm64：`/Applications/Android Studio.app/Contents/jbr/Contents/Home`（系统 Temurin 21 为 x86_64，不用于本机 Gradle） |
 | Gradle | 9.7.1（wrapper） |
-| AGP | 9.4.1 |
-| Kotlin（KGP、Compose 编译器插件） | 2.4.10，与 AGP 9.4.1 内置 Kotlin 对齐；lint 提示 2.4.20 可用，升级需与 AGP 一起验证 |
-| compileSdk / targetSdk / minSdk | 37 / 36 / 26（targetSdk 满足 Play ≥36；minSdk 仍待 D-04） |
+| AGP / Kotlin | 9.4.1 / 2.4.10（含 Compose 编译器插件） |
+| compileSdk / targetSdk / minSdk | 37 / 36 / 26 |
 | Android SDK | `~/Library/Android/sdk`：platforms android-37.0，build-tools 36.0.0，platform-tools 37.0.1；无 cmdline-tools |
 | Java 字节码目标 | 17 |
+| 应用版本候选 | `com.rainif.doneat`、3.2.0、versionCode 1；首次 Play 上传前核对并冻结 |
 
-## 依赖
+## 当前依赖与模块
 
-| 库 | 版本 |
+版本以 `src-mobile/android/gradle/libs.versions.toml` 为准。Compose BOM 2026.09.00（Material3 1.4.0、UI/Foundation 1.12.1）；activity-compose 1.13.0，core-ktx 1.19.0，Navigation 3 1.1.7，Lifecycle 2.11.0，Biometric 1.1.0，Fragment 1.9.0，Glance 1.2.0，Play Billing 9.1.0，Play In-App Review 2.0.2，WorkManager 2.10.5，Kotlinx Serialization/Coroutines 1.11.0，JUnit 4.13.2。Release Compose/Material3 只用稳定版本（D-12），无动态 `+` 版本。
+
+| 模块 | 职责 |
 |---|---|
-| Compose BOM | 2026.09.00 → material3 1.4.0、ui/foundation 1.12.1（稳定，D-12） |
-| activity-compose | 1.13.0 |
-| core-ktx | 1.19.0 |
-| junit | 4.13.2 |
+| `:app` | 原生 Android UI、系统集成、Play Billing 客户端 |
+| `:core:domain` | 纯 JVM 规则、记录编解码、会话与权益状态机 |
+| `:core:data` | D-13 原子 JSON 档案、设置、会话与队列存储 |
+| `:core:designsystem` | Compose 主题、数字、进度与组件 token |
 
-Release 运行时依赖树（`:app:dependencies --configuration releaseRuntimeClasspath`）不含任何 alpha/beta/rc；CI 用同一命令拒绝 Compose/Material3 预发布版本。无动态 `+` 版本。
+业务记录不使用 Room；本机显示偏好另存，运行会话与购买证据不进系统备份。
 
-## 模块
+## 当前本地验证
 
-`:app`（Android 应用）、`:core:domain`（纯 JVM）、`:core:designsystem`（Compose 主题；T04 补全 token）。其余模块（data/platform/billing）在对应任务创建，不先建空模块。
-
-## 已运行命令（`src-mobile/android`，`JAVA_HOME` 指向 JBR）
+从 `src-mobile/android` 运行 Gradle，`JAVA_HOME` 指向上表 JBR。完整四模块命令：
 
 ```text
-./gradlew --version
-./gradlew :core:domain:test :app:assembleDebug
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleRelease :app:bundleRelease
-zipalign -c -P 16 -v 4 app-release-unsigned.apk
-adb install / am start -W（Pixel_10_Pro AVD，API 36）
+./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease :app:bundleRelease
 ```
 
-| 结果 | 证据 |
-|---|---|
-| `:core:domain:test` | 2 个测试，0 失败（`BackupSchemaTest`） |
-| `:app:testDebugUnitTest` | 通过；app 目前无单元测试（0 条） |
-| `:app:lintDebug` | 0 error，3 warning：OldTargetApi（target 36，37 可用）、Kotlin 2.4.20 可用 ×2、MissingApplicationIcon（图标在 T04/T15 加入） |
-| Debug / R8 Release | 均成功；release APK 约 747 KB（未签名），AAB 约 1.7 MB |
-| 16 KB 对齐 | 唯一 native 库 `libandroidx.graphics.path.so`（来自 Compose）四个 ABI 均 OK |
-| 模拟器冷启动 | 成功，无崩溃，TotalTime 3181 ms（Debug，未优化，不作性能数据） |
+`/tmp/doneat-preconsole-salary-final-gradle.log`：417 项 JUnit 通过（domain 330、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功。月份、设置行、薪资输入和法律链接的视觉修复包含在该次成功运行中。当前未签名 Release APK 为 5,325,026 字节，AAB 为 9,179,702 字节；哈希见 `build/android-preconsole/artifact-hashes.txt`。ZIP/ELF 16 KiB 对齐通过。生产签名与 Play 处理结果仍须在 T24/T26 记录。
 
-构建提示 `Unable to strip libandroidx.graphics.path.so`：本机未装 NDK，库按原样打包；不影响功能，T24 做包体审计时复查。
+仓库侧：`npm run lint` 与 `npm test`（442 项）、`check:version`、`check:ios`、Web/Desktop build 与输出检查通过。iOS 本地 headless simulator build 与 `ScheduleRuleFixtureTests` 12 项通过；真实 iOS→Kotlin→iOS v6 往返保留 12 类实体全部身份与字段。完整 QA 用例状态以 [preconsole-qa-2026-09-26.md](preconsole-qa-2026-09-26.md) 为准，不能把单测总数等同于 126 项首发验收。
+
+API 36 设备上的 Auto Backup 清除/恢复以及系统文档化的设备转移/重装路径，均使业务档案与设备设置字节相同；运行会话、SharedPreferences 与 `no_backup` 未进入备份。直接 `bmgr restore` 返回 -1000，不能据此宣称该传输方式成功；D2D 的 device-local/no_backup 探针与 Debug Plus 未被恢复；重装后系统可触发小组件重建新缓存。真实云账户、物理换机和最终设备矩阵仍在 T23/T24。
+
+## 2026-09-23 初始 T03 记录（历史）
+
+当时只有 `:app`、`:core:domain`、`:core:designsystem`；domain 2 项、app 0 项测试，lint 3 warning，Debug/R8 Release/AAB 与 API 36 冷启动通过。约 747 KB 的未签名 release APK、约 1.7 MB AAB 和单个 `libandroidx.graphics.path.so` 四 ABI 16 KB 对齐，是那一版工件的测量，**不是当前包体数据**。本机未装 NDK 时出现 `Unable to strip` 提示；当前包体审计见上方独立记录。

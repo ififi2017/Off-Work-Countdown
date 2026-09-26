@@ -9,6 +9,11 @@ on:
       - 'docs/android/synthetic-archives/**'
       - 'src-mobile/ios/App/App/Localizable.xcstrings'
       - 'scripts/generate-android-strings*'
+      - 'lib/**'
+      - 'src-mobile/ios/App/App/Native/Models/**'
+      - 'scripts/generate-android-*-fixtures*'
+      - 'scripts/android-*-fixtures/**'
+      - 'scripts/check-android-record-roundtrip.mjs'
       - '.github/workflows/android.yml'
   pull_request:
     paths:
@@ -17,6 +22,11 @@ on:
       - 'docs/android/synthetic-archives/**'
       - 'src-mobile/ios/App/App/Localizable.xcstrings'
       - 'scripts/generate-android-strings*'
+      - 'lib/**'
+      - 'src-mobile/ios/App/App/Native/Models/**'
+      - 'scripts/generate-android-*-fixtures*'
+      - 'scripts/android-*-fixtures/**'
+      - 'scripts/check-android-record-roundtrip.mjs'
       - '.github/workflows/android.yml'
 
 jobs:

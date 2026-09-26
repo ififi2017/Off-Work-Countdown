@@ -5,6 +5,8 @@ import com.rainif.doneat.core.domain.records.RecordTestFixtures.segment
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
+import com.rainif.doneat.core.domain.schedule.ScheduleRuleInput
+import com.rainif.doneat.core.domain.schedule.ScheduleRules
 import com.rainif.doneat.core.domain.session.SessionCommands
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -86,6 +88,12 @@ class RecordsQueriesTest {
     }
 
     @Test fun aNightShiftPutsItsMorningOnTheNextDay() {
+        val oneAm = ms("2026-09-15", 1)
+        val shift = ScheduleRules.snapshot(ScheduleRuleInput(nights.scheduleHours()!!, oneAm, zone), SalarySettings("80", SalaryType.DAILY, 21.75, 0.0))
+        assertEquals(ms("2026-09-14", 22), shift.startAtMs, 0.0)
+        assertEquals(3 * 3_600_000.0, shift.elapsedMs, 0.0)
+        assertEquals(5 * 3_600_000.0, shift.remainingMs, 0.0)
+        assertEquals(1, shift.segments.size)
         val cells = week(queries(seeded(nights)), "2026-09-14")
         val byDay = cells.associateBy { it.dayKey }
         // Monday's shift starts 22:00, so Monday has 2 h; Tuesday gets Monday's 6 h plus its own 2 h.
@@ -147,6 +155,14 @@ class RecordsQueriesTest {
         assertTrue(q.dayCanvas("2026-09-09", now)!!.intervals.isEmpty())
         assertFalse(q.dayCanvas("2026-09-14", now)!!.isLocked)
         assertTrue("only Plus edits history", q.dayCanvas("2026-09-14", now)!!.editableShifts.isEmpty())
+
+        val september21 = ms("2026-09-21", 10)
+        val currentDays = q.displayDays(first.minusDays(1), last, september21)
+        val currentCells = q.cells(currentDays, first, september21).associateBy { it.dayKey }
+        assertEquals(RecordsDayAppearance.LOCKED, currentCells.getValue("2026-09-14").appearance)
+        assertEquals(RecordsDayAppearance.RECORDED, currentCells.getValue("2026-09-15").appearance)
+        assertEquals(RecordsDayAppearance.RECORDED, currentCells.getValue("2026-09-21").appearance)
+        assertEquals(RecordsDayAppearance.LOCKED, currentCells.getValue("2026-09-22").appearance)
     }
 
     @Test fun theHeadlineCountsElapsedDaysAndKeepsSalaryOutUnlessShown() {

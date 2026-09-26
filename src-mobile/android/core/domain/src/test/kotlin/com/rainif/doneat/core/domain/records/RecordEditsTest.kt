@@ -42,6 +42,13 @@ class RecordEditsTest {
         val (again, okAgain) = RecordEdits.applyDayWrite(state, DayRecordWrite.CUSTOM_HOURS, "2026-09-07", context(), 8 * 60, 18 * 60)
         assertTrue(okAgain)
         assertEquals("identical edits write nothing", state, again)
+
+        val (clipped, clippedOk) = RecordEdits.applyDayWrite(RecordState(), DayRecordWrite.CUSTOM_HOURS, "2026-09-07", context(), 10 * 60, 17 * 60)
+        assertTrue(clippedOk)
+        assertEquals(
+            listOf(ShiftSegment(ms("2026-09-07", 10), ms("2026-09-07", 12)), ShiftSegment(ms("2026-09-07", 13), ms("2026-09-07", 17))),
+            clipped.overrides.single().segments,
+        )
     }
 
     @Test
@@ -138,6 +145,10 @@ class RecordEditsTest {
         assertTrue(encoded.contains("\"extendedContent\""))
         assertFalse(encoded.contains("handSetDays"))
         assertEquals(content, ScheduleHoursCodec.decode(encoded.toByteArray())!!.extendedContent)
+        for (region in listOf(null, "", "CN")) {
+            val hours = weekdayLunch.copy(extendedContent = content.copy(holidayRegionIdentifier = region))
+            assertEquals(region, ScheduleHoursCodec.decode(ScheduleHoursCodec.encode(hours).data)!!.extendedContent!!.holidayRegionIdentifier)
+        }
     }
 
     @Test
@@ -173,6 +184,22 @@ class RecordEditsTest {
             .let { it.copy(rosterDays = it.rosterDays + RosterDay("2026-11-03", rest.id)) }
         assertTrue(RecordHistory.resolveDay(refixed, "2026-11-03", HolidayCalendar.EMPTY).isScheduledWorkday)
         assertFalse("still applies before the extended start", RecordHistory.resolveDay(refixed, "2026-09-08", HolidayCalendar.EMPTY).isScheduledWorkday)
+    }
+
+    @Test
+    fun editedTypeChangesFutureSnapshotWhileFrozenHistorySurvivesDisablingExtendedSchedule() {
+        val seeded = RecordEdits.ensureSeeded(RecordState(), weekdayLunch.copy(extendedContent = content), context(nowDay = "2026-10-01"))
+        val frozenNight = day.copy(startMinutes = 1_320, endMinutes = 360)
+        val withPast = seeded.copy(rosterDays = listOf(RosterDay("2026-10-06", day.id, assignedShiftType = frozenNight)))
+        val updatedContent = content.copy(shiftTypes = listOf(day.copy(name = "Later", startMinutes = 540), rest))
+        val changed = RecordEdits.commitHours(withPast, weekdayLunch.copy(extendedContent = updatedContent), "2026-10-10", context(nowDay = "2026-10-01")).first
+        val disabled = RecordEdits.commitHours(changed, weekdayLunch.copy(startTime = "10:00", extendedContent = null), "2026-10-20", context(nowDay = "2026-10-01")).first
+
+        assertEquals(ms("2026-10-06", 22), RecordHistory.resolveDay(disabled, "2026-10-06", HolidayCalendar.EMPTY).segments.first().startAtMs, 0.0)
+        assertEquals(ms("2026-10-07", 8), RecordHistory.resolveDay(disabled, "2026-10-07", HolidayCalendar.EMPTY).segments.first().startAtMs, 0.0)
+        assertEquals(ms("2026-10-12", 9), RecordHistory.resolveDay(disabled, "2026-10-12", HolidayCalendar.EMPTY).segments.first().startAtMs, 0.0)
+        assertEquals(ms("2026-10-21", 10), RecordHistory.resolveDay(disabled, "2026-10-21", HolidayCalendar.EMPTY).segments.first().startAtMs, 0.0)
+        assertEquals(3, disabled.snapshots.size)
     }
 
     @Test

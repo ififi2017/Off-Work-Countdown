@@ -45,6 +45,8 @@ object RecordJson {
         RESTORE_ERASED,
         /** Same-key conflicts pick `(editCount, editTieBreaker)`; wall clock never decides. */
         RESOLVE_BY_EDIT_STAMP,
+        /** Explicit user choice in the local conflict center. */
+        FORCE_INCOMING,
     }
 
     data class Rejection(val entityType: RecordEntityType, val logicalKey: String)
@@ -241,6 +243,25 @@ object RecordJson {
         val periodIDMap = HashMap<String, String>()
         val snapshotIDMap = HashMap<String, String>()
         val taskIDMap = HashMap<String, String>()
+        private val erasedKeys = state.erased.mapTo(HashSet()) { it.entityType to it.logicalKey }
+        private val periods = Rows(state.periods) { it.id }
+        private val snapshots = Rows(state.snapshots) { it.id }
+        private val exceptions = Rows(state.exceptions) { it.dayKey }
+        private val overrides = Rows(state.overrides) { it.dayKey }
+        private val rosterDays = Rows(state.rosterDays) { it.dayKey }
+        private val observations = Rows(state.observations) { it.eventID }
+        private val focusTasks = Rows(state.focusTasks) { it.id }
+        private val focusSessions = Rows(state.focusSessions) { it.id }
+
+        private class Rows<T>(initial: List<T>, private val key: (T) -> String) {
+            private val values = initial.toMutableList()
+            private val positions = HashMap<String, Int>(values.size)
+            init { values.forEachIndexed { index, row -> positions.putIfAbsent(key(row), index) } }
+            operator fun get(id: String): T? = positions[id]?.let(values::get)
+            fun add(row: T) { positions[key(row)] = values.size; values.add(row) }
+            fun replace(row: T) { positions[key(row)]?.let { values[it] = row } ?: error("missing row") }
+            fun all(): List<T> = values.toList()
+        }
 
         fun run(document: Document) {
             val root = document.root
@@ -257,33 +278,33 @@ object RecordJson {
                 val incoming = period(dto, periodCalendars[dto.str("id")] ?: calendar)
                     ?: run { reject(RecordEntityType.CAREER_PERIOD, dto.str("id")); null } ?: continue
                 merge(incoming, RecordEntityType.CAREER_PERIOD, incoming.id,
-                    existing = { s -> s.periods.firstOrNull { it.id == incoming.id } },
+                    existing = { periods[incoming.id] },
                     insert = { s, v ->
                         var next = v
-                        if (mode == ImportMode.RESTORE_ERASED && s.isErased(RecordEntityType.CAREER_PERIOD, incoming.id)) {
+                        if (mode == ImportMode.RESTORE_ERASED && (RecordEntityType.CAREER_PERIOD to incoming.id) in erasedKeys) {
                             next = v.copy(id = newId()).also { periodIDMap[incoming.id] = it.id }
                         }
-                        s.copy(periods = s.periods + next) to next
+                        periods.add(next); s to next
                     },
-                    replace = { s, v -> s.copy(periods = s.periods.replaceFirst({ it.id == v.id }, v)) to v },
+                    replace = { s, v -> periods.replace(v); s to v },
                 )
             }
             for (dto in root.arr("scheduleSnapshots").map { it.obj() }) {
                 val incoming = snapshot(dto)
                     ?: run { reject(RecordEntityType.SCHEDULE_SNAPSHOT, dto.str("id")); null } ?: continue
                 merge(incoming, RecordEntityType.SCHEDULE_SNAPSHOT, incoming.id,
-                    existing = { s -> s.snapshots.firstOrNull { it.id == incoming.id } },
+                    existing = { snapshots[incoming.id] },
                     insert = { s, v ->
                         var next = v
-                        if (mode == ImportMode.RESTORE_ERASED && s.isErased(RecordEntityType.SCHEDULE_SNAPSHOT, incoming.id)) {
+                        if (mode == ImportMode.RESTORE_ERASED && (RecordEntityType.SCHEDULE_SNAPSHOT to incoming.id) in erasedKeys) {
                             next = v.copy(id = newId()).also { snapshotIDMap[incoming.id] = it.id }
                         }
                         periodIDMap[next.periodID]?.let { next = next.copy(periodID = it) }
-                        s.copy(snapshots = s.snapshots + next) to next
+                        snapshots.add(next); s to next
                     },
                     replace = { s, v ->
                         val next = periodIDMap[v.periodID]?.let { v.copy(periodID = it) } ?: v
-                        s.copy(snapshots = s.snapshots.replaceFirst({ it.id == next.id }, next)) to next
+                        snapshots.replace(next); s to next
                     },
                 )
             }
@@ -291,72 +312,72 @@ object RecordJson {
                 val incoming = exception(dto, rowCalendar(dto.optStr("timeZoneIdentifier"), null, calendar))
                     ?: run { reject(RecordEntityType.CALENDAR_EXCEPTION, dto.str("dayKey")); null } ?: continue
                 merge(incoming, RecordEntityType.CALENDAR_EXCEPTION, incoming.dayKey,
-                    existing = { s -> s.exceptions.firstOrNull { it.dayKey == incoming.dayKey } },
-                    insert = { s, v -> s.copy(exceptions = s.exceptions + v) to v },
-                    replace = { s, v -> s.copy(exceptions = s.exceptions.replaceFirst({ it.dayKey == v.dayKey }, v)) to v },
+                    existing = { exceptions[incoming.dayKey] },
+                    insert = { s, v -> exceptions.add(v); s to v },
+                    replace = { s, v -> exceptions.replace(v); s to v },
                 )
             }
             for (dto in root.arr("dayOverrides").map { it.obj() }) {
                 val incoming = override(dto, rowCalendar(dto.optStr("timeZoneIdentifier"), null, calendar))
                     ?: run { reject(RecordEntityType.DAY_OVERRIDE, dto.str("dayKey")); null } ?: continue
                 merge(incoming, RecordEntityType.DAY_OVERRIDE, incoming.dayKey,
-                    existing = { s -> s.overrides.firstOrNull { it.dayKey == incoming.dayKey } },
-                    insert = { s, v -> s.copy(overrides = s.overrides + v) to v },
-                    replace = { s, v -> s.copy(overrides = s.overrides.replaceFirst({ it.dayKey == v.dayKey }, v)) to v },
+                    existing = { overrides[incoming.dayKey] },
+                    insert = { s, v -> overrides.add(v); s to v },
+                    replace = { s, v -> overrides.replace(v); s to v },
                 )
             }
             for (dto in root.optArr("rosterDays").orEmpty().map { it.obj() }) {
                 val incoming = rosterDay(dto) ?: run { reject(RecordEntityType.ROSTER_DAY, dto.str("dayKey")); null } ?: continue
                 merge(incoming, RecordEntityType.ROSTER_DAY, incoming.dayKey,
-                    existing = { s -> s.rosterDays.firstOrNull { it.dayKey == incoming.dayKey } },
-                    insert = { s, v -> s.copy(rosterDays = s.rosterDays + v) to v },
-                    replace = { s, v -> s.copy(rosterDays = s.rosterDays.replaceFirst({ it.dayKey == v.dayKey }, v)) to v },
+                    existing = { rosterDays[incoming.dayKey] },
+                    insert = { s, v -> rosterDays.add(v); s to v },
+                    replace = { s, v -> rosterDays.replace(v); s to v },
                 )
             }
             for (dto in root.arr("workObservations").map { it.obj() }) {
                 val incoming = observation(dto, rowCalendar(dto.optStr("timeZoneIdentifier"), null, calendar))
                     ?: run { reject(RecordEntityType.WORK_OBSERVATION, dto.str("eventID")); null } ?: continue
                 merge(incoming, RecordEntityType.WORK_OBSERVATION, incoming.eventID,
-                    existing = { s -> s.observations.firstOrNull { it.eventID == incoming.eventID } },
+                    existing = { observations[incoming.eventID] },
                     insert = { s, v ->
                         var next = v
-                        if (mode == ImportMode.RESTORE_ERASED && s.isErased(RecordEntityType.WORK_OBSERVATION, incoming.eventID)) next = next.copy(eventID = newId())
+                        if (mode == ImportMode.RESTORE_ERASED && (RecordEntityType.WORK_OBSERVATION to incoming.eventID) in erasedKeys) next = next.copy(eventID = newId())
                         snapshotIDMap[next.scheduleSnapshotID]?.let { next = next.copy(scheduleSnapshotID = it) }
-                        s.copy(observations = s.observations + next) to next
+                        observations.add(next); s to next
                     },
                     replace = { s, v ->
                         val next = snapshotIDMap[v.scheduleSnapshotID]?.let { v.copy(scheduleSnapshotID = it) } ?: v
-                        s.copy(observations = s.observations.replaceFirst({ it.eventID == next.eventID }, next)) to next
+                        observations.replace(next); s to next
                     },
                 )
             }
             for (dto in root.optArr("focusTasks").orEmpty().map { it.obj() }) {
                 val incoming = focusTask(dto) ?: run { reject(RecordEntityType.FOCUS_TASK, dto.str("id")); null } ?: continue
                 merge(incoming, RecordEntityType.FOCUS_TASK, incoming.id,
-                    existing = { s -> s.focusTasks.firstOrNull { it.id == incoming.id } },
+                    existing = { focusTasks[incoming.id] },
                     insert = { s, v ->
                         var next = v
-                        if (mode == ImportMode.RESTORE_ERASED && s.isErased(RecordEntityType.FOCUS_TASK, incoming.id)) {
+                        if (mode == ImportMode.RESTORE_ERASED && (RecordEntityType.FOCUS_TASK to incoming.id) in erasedKeys) {
                             next = v.copy(id = newId()).also { taskIDMap[incoming.id] = it.id }
                         }
-                        s.copy(focusTasks = s.focusTasks + next) to next
+                        focusTasks.add(next); s to next
                     },
-                    replace = { s, v -> s.copy(focusTasks = s.focusTasks.replaceFirst({ it.id == v.id }, v)) to v },
+                    replace = { s, v -> focusTasks.replace(v); s to v },
                 )
             }
             for (dto in root.optArr("focusSessions").orEmpty().map { it.obj() }) {
                 val incoming = focusSession(dto, calendar) ?: run { reject(RecordEntityType.FOCUS_SESSION, dto.str("id")); null } ?: continue
                 merge(incoming, RecordEntityType.FOCUS_SESSION, incoming.id,
-                    existing = { s -> s.focusSessions.firstOrNull { it.id == incoming.id } },
+                    existing = { focusSessions[incoming.id] },
                     insert = { s, v ->
                         var next = v
-                        if (mode == ImportMode.RESTORE_ERASED && s.isErased(RecordEntityType.FOCUS_SESSION, incoming.id)) next = next.copy(id = newId())
+                        if (mode == ImportMode.RESTORE_ERASED && (RecordEntityType.FOCUS_SESSION to incoming.id) in erasedKeys) next = next.copy(id = newId())
                         next.taskID?.let { taskIDMap[it] }?.let { next = next.copy(taskID = it) }
-                        s.copy(focusSessions = s.focusSessions + next) to next
+                        focusSessions.add(next); s to next
                     },
                     replace = { s, v ->
                         val next = v.taskID?.let { taskIDMap[it] }?.let { v.copy(taskID = it) } ?: v
-                        s.copy(focusSessions = s.focusSessions.replaceFirst({ it.id == next.id }, next)) to next
+                        focusSessions.replace(next); s to next
                     },
                 )
             }
@@ -364,6 +385,7 @@ object RecordJson {
                 val incoming = lifeProfile(dto)
                 if (incoming == null) {
                     reject(RecordEntityType.LIFE_PROFILE, dto.str("profileID"))
+                    finish(false)
                     return
                 }
                 merge(incoming, RecordEntityType.LIFE_PROFILE, LifeProfile.PROFILE_ID,
@@ -389,6 +411,7 @@ object RecordJson {
                 val incoming = focusPlanning(dto)
                 if (incoming == null) {
                     reject(RecordEntityType.FOCUS_PLANNING_CONFIGURATION, FocusPlanningConfiguration.LOGICAL_KEY)
+                    finish(false)
                     return
                 }
                 merge(incoming, RecordEntityType.FOCUS_PLANNING_CONFIGURATION, FocusPlanningConfiguration.LOGICAL_KEY,
@@ -410,16 +433,25 @@ object RecordJson {
                 }
             }
 
-            state = state.copy(
-                snapshots = state.snapshots.map { s -> periodIDMap[s.periodID]?.let { s.copy(periodID = it) } ?: s },
-                observations = state.observations.map { o -> snapshotIDMap[o.scheduleSnapshotID]?.let { o.copy(scheduleSnapshotID = it) } ?: o },
-                focusSessions = state.focusSessions.map { f -> f.taskID?.let { taskIDMap[it] }?.let { f.copy(taskID = it) } ?: f },
-                lifeProfile = state.lifeProfile?.let(::migrateLegacyFields),
-            )
+            finish(true)
             root.optStr("recordsStartedOn")?.let(::canonicalDayKey)?.let { started ->
                 val current = state.recordsStartedOn
                 if (current == null || started < current) state = state.copy(recordsStartedOn = started)
             }
+        }
+
+        private fun finish(remapReferences: Boolean) {
+            state = state.copy(
+                periods = periods.all(),
+                snapshots = snapshots.all().map { s -> if (remapReferences) periodIDMap[s.periodID]?.let { s.copy(periodID = it) } ?: s else s },
+                exceptions = exceptions.all(),
+                overrides = overrides.all(),
+                rosterDays = rosterDays.all(),
+                observations = observations.all().map { o -> if (remapReferences) snapshotIDMap[o.scheduleSnapshotID]?.let { o.copy(scheduleSnapshotID = it) } ?: o else o },
+                focusTasks = focusTasks.all(),
+                focusSessions = focusSessions.all().map { f -> if (remapReferences) f.taskID?.let { taskIDMap[it] }?.let { f.copy(taskID = it) } ?: f else f },
+                lifeProfile = if (remapReferences) state.lifeProfile?.let(::migrateLegacyFields) else state.lifeProfile,
+            )
         }
 
         fun reject(type: RecordEntityType, key: String) {
@@ -434,9 +466,9 @@ object RecordJson {
             insert: (RecordState, T) -> Pair<RecordState, T>,
             replace: (RecordState, T) -> Pair<RecordState, T>,
         ) {
-            if (state.isErased(type, key)) {
+            if ((type to key) in erasedKeys) {
                 when {
-                    mode != ImportMode.RESTORE_ERASED -> {
+                    mode != ImportMode.RESTORE_ERASED && mode != ImportMode.FORCE_INCOMING -> {
                         report.skippedErased.increment(type)
                         return
                     }
@@ -456,7 +488,7 @@ object RecordJson {
                     report.unchanged.increment(type)
                     return
                 }
-                val takeIncoming = mode == ImportMode.RESOLVE_BY_EDIT_STAMP && incomingWins(incoming, current)
+                val takeIncoming = mode == ImportMode.FORCE_INCOMING || mode == ImportMode.RESOLVE_BY_EDIT_STAMP && incomingWins(incoming, current)
                 if (takeIncoming) {
                     val (next, written) = replace(state, incoming)
                     state = next
@@ -977,7 +1009,7 @@ object RecordJson {
     private fun JsonElement.number(): Double {
         val p = this as? JsonPrimitive ?: fail("expected number")
         if (p.isString || p is JsonNull || p.content == "true" || p.content == "false") fail("expected number")
-        return p.content.toDoubleOrNull() ?: fail("expected number")
+        return p.content.toDoubleOrNull()?.takeIf { it.isFinite() } ?: fail("expected number")
     }
     private fun JsonElement.int(): Int {
         val value = number()
@@ -988,7 +1020,8 @@ object RecordJson {
         val value = number()
         if (value != Math.rint(value)) fail("expected integer")
         val p = this as JsonPrimitive
-        return p.content.toLongOrNull() ?: value.toLong()
+        return runCatching { java.math.BigDecimal(p.content).toBigIntegerExact().longValueExact() }.getOrNull()
+            ?: fail("expected integer")
     }
     private fun JsonElement.boolean(): Boolean {
         val p = this as? JsonPrimitive ?: fail("expected bool")

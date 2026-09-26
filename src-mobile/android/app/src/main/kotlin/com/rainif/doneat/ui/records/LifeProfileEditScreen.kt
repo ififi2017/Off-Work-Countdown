@@ -1,7 +1,6 @@
 package com.rainif.doneat.ui.records
 
 import android.app.DatePickerDialog
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -106,10 +105,8 @@ fun LifeProfileEditScreen(graph: AppGraph, onBack: () -> Unit) {
     val draft = stored ?: return
     fun update(change: (LifeProfileDraft) -> LifeProfileDraft) { graph.lifeEditDraft.value = graph.lifeEditDraft.value?.let(change) }
     fun leave() {
-        graph.lifeEditDraft.value = null
         onBack()
     }
-    BackHandler { leave() }
     var saving by remember { mutableStateOf(false) }
     val ownerReason = text.string(R.string.recordsOwnerAuthReason)
     val today = context.today
@@ -136,9 +133,9 @@ fun LifeProfileEditScreen(graph: AppGraph, onBack: () -> Unit) {
     }
 
     DoneAtPage(
-        text.string(R.string.lifeProfileTitle), ::leave, text.string(R.string.recordsTitle),
+        text.string(R.string.lifeProfileTitle), { leave() }, text.string(R.string.recordsTitle),
         actions = {
-            TextButton(onClick = ::save, enabled = canSave) { Text(text.string(R.string.saveAction), fontWeight = FontWeight.SemiBold) }
+            TextButton(onClick = { save() }, enabled = canSave) { Text(text.string(R.string.saveAction), fontWeight = FontWeight.SemiBold) }
         },
     ) {
         SettingsGroup {
@@ -242,7 +239,7 @@ private fun formatDate(date: LocalDate, text: RecordsText): String =
 
 /** The framework date picker in DoneAt colours, limited to the days a job may start. */
 private fun showDatePicker(context: android.content.Context, dark: Boolean, value: LocalDate, lower: LocalDate?, upper: LocalDate, onPicked: (LocalDate) -> Unit) {
-    val theme = if (dark) R.style.DoneAt_TimePickerDialog_Dark else R.style.DoneAt_TimePickerDialog_Light
+    val theme = if (dark) R.style.DoneAt_DatePickerDialog_Dark else R.style.DoneAt_DatePickerDialog_Light
     val dialog = DatePickerDialog(context, theme, { _, y, m, d -> onPicked(LocalDate.of(y, m + 1, d)) }, value.year, value.monthValue - 1, value.dayOfMonth)
     // The picker reads its limits as instants in the device zone.
     val zone = ZoneId.systemDefault()

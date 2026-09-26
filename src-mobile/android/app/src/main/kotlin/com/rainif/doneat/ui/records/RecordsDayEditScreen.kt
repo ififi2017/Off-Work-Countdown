@@ -35,7 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -52,8 +51,7 @@ import com.rainif.doneat.ui.components.DoneAtPage
 import com.rainif.doneat.ui.components.PageFooter
 import com.rainif.doneat.ui.components.RowDivider
 import com.rainif.doneat.ui.components.SettingsGroup
-import com.rainif.doneat.ui.onboarding.appIsDark
-import com.rainif.doneat.ui.onboarding.showTimePicker
+import com.rainif.doneat.ui.onboarding.rememberTimePicker
 import com.rainif.doneat.ui.timer.Haptics
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -70,11 +68,9 @@ private val KINDS = listOf(
 
 /** Opens a day's editor with a draft loaded from the archive as it stands. */
 fun beginDayEdit(graph: AppGraph, context: RecordsContext, dayKey: String, open: (com.rainif.doneat.ui.Route) -> Unit) {
-    if (graph.dayEditDraft.value?.dayKey != dayKey) {
-        val day = LocalDate.parse(dayKey)
-        val resolution = context.queries.resolvedDays(day, day).firstOrNull()
-        graph.dayEditDraft.value = DayEditDraft.load(dayKey, context.queries.state, resolution, context.queries.zone.id)
-    }
+    val day = LocalDate.parse(dayKey)
+    val resolution = context.queries.resolvedDays(day, day).firstOrNull()
+    graph.dayEditDraft.value = DayEditDraft.load(dayKey, context.queries.state, resolution, context.queries.zone.id)
     open(com.rainif.doneat.ui.Route.RecordsDayEdit(dayKey))
 }
 
@@ -89,8 +85,7 @@ fun RecordsDayEditScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit) {
     val text = context.text
     val scope = rememberCoroutineScope()
     val view = LocalView.current
-    val android = LocalContext.current
-    val dark = appIsDark()
+    val pickTime = rememberTimePicker()
     val stored by graph.dayEditDraft.collectAsStateWithLifecycle()
     LaunchedEffect(dayKey) {
         if (graph.dayEditDraft.value?.dayKey != dayKey) {
@@ -101,7 +96,6 @@ fun RecordsDayEditScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit) {
     val draft = stored?.takeIf { it.dayKey == dayKey } ?: return
     fun update(next: DayEditDraft) { graph.dayEditDraft.value = next }
     fun leave() {
-        graph.dayEditDraft.value = null
         onBack()
     }
     var confirmsDiscard by remember { mutableStateOf(false) }
@@ -110,7 +104,7 @@ fun RecordsDayEditScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit) {
     fun back() {
         if (draft.hasChanges) confirmsDiscard = true else leave()
     }
-    BackHandler { back() }
+    BackHandler(enabled = draft.hasChanges) { confirmsDiscard = true }
 
     /** Writes [write] for the draft's day; the page closes only if [submission] still describes the draft on screen. */
     fun save(submission: DayEditDraft.Submission, write: DayRecordWrite = submission.write) {
@@ -145,16 +139,16 @@ fun RecordsDayEditScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit) {
         view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
     }
 
-    DoneAtPage(text.string(R.string.recordsEditDay), ::back, text.dayTitle(dayKey)) {
+    DoneAtPage(text.string(R.string.recordsEditDay), { back() }, text.dayTitle(dayKey)) {
         PageFooter(text.dayTitle(dayKey))
         if (draft.kind == DayEditDraft.Kind.CUSTOM_HOURS) {
             SettingsGroup(title = text.string(R.string.recordsSectionHours)) {
                 TimeRow(Icons.Outlined.WbSunny, text.string(R.string.startTime), draft.startMinutes, text) {
-                    showTimePicker(android, dark, draft.startMinutes) { update(graph.dayEditDraft.value?.withStart(it) ?: draft) }
+                    pickTime(draft.startMinutes) { update(graph.dayEditDraft.value?.withStart(it) ?: draft) }
                 }
                 RowDivider()
                 TimeRow(Icons.Outlined.WbTwilight, text.string(R.string.endTime), draft.endMinutes, text) {
-                    showTimePicker(android, dark, draft.endMinutes) { update(graph.dayEditDraft.value?.withEnd(it) ?: draft) }
+                    pickTime(draft.endMinutes) { update(graph.dayEditDraft.value?.withEnd(it) ?: draft) }
                 }
             }
         }

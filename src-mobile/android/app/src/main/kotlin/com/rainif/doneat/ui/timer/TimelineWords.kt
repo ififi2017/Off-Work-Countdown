@@ -23,5 +23,14 @@ fun timelineWords(event: TimelineEvent, res: Resources, text: TimerText, session
         TimelineKind.HEALTH -> res.getString(R.string.microBreakReminder) to Strings.minutesShort(res, text.count(session.env.preferences.microBreakIntervalMinutes))
         TimelineKind.MILESTONE -> res.getString(R.string.offWorkReminder) to event.reminderTitle
         TimelineKind.SHIFT_END -> res.getString(R.string.endTime) to res.getString(if (event.overtime) R.string.overtime else R.string.todaysShift).takeIf { showsShiftDetail }
+        TimelineKind.FOCUS, TimelineKind.FOCUS_BREAK -> {
+            val title = when {
+                event.runningFocus -> res.getString(R.string.focusRunning)
+                event.kind == TimelineKind.FOCUS_BREAK -> res.getString(R.string.focusBreak)
+                else -> event.focusTitle ?: res.getString(R.string.focusTitle)
+            }
+            title to if (event.runningFocus) Strings.focusEndsAt(res, text.time(event.atMs))
+                else Strings.focusPomodoroSummary(res, text.count(event.focusPomodoros), text.count(event.focusMinutes))
+        }
     }
 }

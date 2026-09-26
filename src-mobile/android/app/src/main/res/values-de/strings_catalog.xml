@@ -519,6 +519,11 @@
     <string name="pausedUntil">Pausiert bis %1$s</string>
     <string name="perEffectiveHour">Pro effektiver Stunde</string>
     <string name="perWorkday">Pro Arbeitstag</string>
+    <string name="plusAndroidComingSoon">Plus-Käufe für Android folgen bald. Timer und aktuelle Einträge kannst du bereits nutzen.</string>
+    <string name="plusAndroidRenewalNotice">Abos verlängern sich automatisch, bis du kündigst. Der einmalige Kauf von Lifetime beendet ein laufendes Abo nicht.</string>
+    <string name="plusAndroidRequestFailed">Google Play konnte die Anfrage nicht abschließen. Versuche es gleich noch einmal.</string>
+    <string name="plusAndroidStoreOffline">Google Play ist gerade nicht erreichbar. Versuche nach dem Verbinden, Käufe wiederherzustellen.</string>
+    <string name="plusAndroidStoreUnconfigured">Plus kann auf diesem Gerät derzeit nicht gekauft werden. Timer und aktuelle Einträge sind weiterhin verfügbar.</string>
     <string name="plusAutoRenew">Abos verlängern sich automatisch, bis du kündigst. Das Jahresabo kann 7 Tage kostenlos enthalten; danach gilt der Jahrespreis. Der Einmalkauf ist eine einzelne Zahlung und kündigt kein laufendes Abo.</string>
     <string name="plusBenefitCharts">Ganzjahres- und Arbeitslebensansicht</string>
     <string name="plusBenefitEdit">Jeden Tag in Einträge bearbeiten</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">Aktuelle Version</string>
     <string name="recordsConflictDetailsUnreadable">Details nicht verfügbar</string>
     <string name="recordsConflictFieldNote">Notiz</string>
+    <string name="recordsConflictIncomingZoneBlocked">Diese Kopie verwendet eine andere Zeitzone für Aufzeichnungen. Behalte die Version dieses Geräts und ändere die Zeitzone bei Bedarf unter Aufzeichnungen &amp; Daten.</string>
     <string name="recordsConflictItems">Elemente</string>
     <string name="recordsConflictKeepCloud">iCloud behalten</string>
     <string name="recordsConflictKeepCurrent">Aktuelle Version behalten</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">Wie der Tag verlief</string>
     <string name="recordsDeleteAll">Einträge auf diesem Gerät löschen</string>
     <string name="recordsDeleteAllConfirm">Löscht die lokalen Einträge auf diesem Gerät. Du kannst sie später durch den Import eines alten Backups wiederherstellen.</string>
+    <string name="recordsDeleteFailed">Die Einträge auf diesem Gerät konnten nicht gelöscht werden. Versuche es erneut.</string>
     <string name="recordsDiscardEdits">Diese Änderungen verwerfen?</string>
     <string name="recordsEditDay">Diesen Tag ändern</string>
     <string name="recordsEditPlusHint">Einen Tag in Einträge zu ändern ist eine Plus-Funktion. Der Timer läuft weiter wie bisher.</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">Nur Neue hinzufügen</string>
     <string name="recordsImportConflicts">%1$s Konflikte</string>
     <string name="recordsImportPreviewTitle">Diesen Import prüfen</string>
+    <string name="recordsImportRejected">%1$s Einträge konnten nicht gelesen werden</string>
     <string name="recordsImportReport">Importiert. %1$s endgültig gelöschte Einträge übersprungen.</string>
     <string name="recordsImportSame">%1$s unverändert</string>
     <string name="recordsImportSkipped">%1$s übersprungen</string>

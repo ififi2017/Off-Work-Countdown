@@ -5,6 +5,9 @@ import android.content.res.Configuration
 import android.os.LocaleList
 import android.text.format.DateFormat
 import com.rainif.doneat.core.data.SessionStore
+import com.rainif.doneat.core.data.RecordStore
+import com.rainif.doneat.core.data.FocusStore
+import com.rainif.doneat.core.domain.focus.FocusTimeline
 import com.rainif.doneat.core.domain.schedule.ScheduleRules
 import com.rainif.doneat.core.domain.session.UpcomingTimeline
 import com.rainif.doneat.core.domain.widget.WidgetSnapshot
@@ -16,9 +19,12 @@ import com.rainif.doneat.ui.AppLocale
 import com.rainif.doneat.ui.timer.TimerText
 import com.rainif.doneat.ui.timer.timelineWords
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -37,6 +43,9 @@ import java.util.Locale
 class WidgetCoordinator(
     private val context: Context,
     private val sessions: SessionStore,
+    private val records: RecordStore,
+    private val focus: FocusStore,
+    private val authorized: StateFlow<Boolean>,
     private val scope: CoroutineScope,
     private val nowMs: () -> Double,
 ) {
@@ -46,7 +55,16 @@ class WidgetCoordinator(
     @OptIn(FlowPreview::class)
     fun start() {
         scope.launch {
-            sessions.session.debounce(500).collectLatest { refresh() }
+            combine(sessions.session, records.state, authorized) { _, _, _ -> Unit }.debounce(500).collectLatest { refresh() }
+        }
+        scope.launch {
+            try {
+                WidgetSignals.publishMissingPreviews(context)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Picker previews are optional; XML and image previews remain available.
+            }
         }
     }
 
@@ -79,6 +97,9 @@ class WidgetCoordinator(
         ).resources
         val text = TimerText(res, res.configuration.locales[0], DateFormat.is24HourFormat(context), hideEarnings = true)
         val inputs = TimerCoordinator.reminderInputs(res, prefs)
+        val state = records.state.value
+        val environment = focus.environment(state)
+        val focusTimeline = FocusTimeline(environment)
         val upcoming = WidgetUpcoming(
             session,
             events = { shift, at ->
@@ -89,6 +110,8 @@ class WidgetCoordinator(
                 )
             },
             words = { event -> timelineWords(event, res, text, session, now.toDouble()).let { (title, detail) -> title to detail.orEmpty() } },
+            focusEvents = focusTimeline.events(state, environment.shift(now.toDouble()), now.toDouble()),
+            futureFocus = { shift -> focusTimeline.plannedEvents(state, shift.segments, shift.startAtMs) },
         )
         val future = WidgetSnapshotComposer.futureShifts(session, now)
         return WidgetSnapshotComposer.compose(session, now, tag, future, upcoming)

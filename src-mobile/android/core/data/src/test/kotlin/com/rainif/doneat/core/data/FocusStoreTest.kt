@@ -11,6 +11,9 @@ import com.rainif.doneat.core.domain.session.SessionState
 import com.rainif.doneat.core.domain.session.ShiftSession
 import com.rainif.doneat.core.domain.settings.PreferencesRules
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -125,5 +128,18 @@ class FocusStoreTest {
         )
         assertEquals(listOf(session), FocusStore.decodeQueue(FocusStore.encodeQueue(listOf(session))))
         assertTrue(FocusStore.decodeQueue("[{\"id\":\"only\"}]").isEmpty())
+    }
+
+    @Test fun concurrentStartsAndRepeatedCallbacksRecordOneLogicalBlock() = runTest {
+        val records = records()
+        val focus = store(records)
+        val taskID = (focus.plan { state, planning -> planning.createInBlock(state, "Write", at(9, 0).toLong(), at(9, 5)) } as FocusPlacement.Placed).taskID
+        val starts = (1..20).map { async(Dispatchers.Default) { focus.start(taskID, at(9, 5)) } }.awaitAll()
+        assertEquals(1, starts.count { it })
+        assertEquals(1, records.state.value.focusSessions.count { it.endedAtMs == null })
+        val finishes = (1..20).map { async(Dispatchers.Default) { focus.finishElapsed(at(9, 30)) } }.awaitAll()
+        assertEquals(1, finishes.count { it })
+        assertEquals(1, records.state.value.focusSessions.size)
+        assertEquals(FocusEndReason.COMPLETED, records.state.value.focusSessions.single().endReason)
     }
 }

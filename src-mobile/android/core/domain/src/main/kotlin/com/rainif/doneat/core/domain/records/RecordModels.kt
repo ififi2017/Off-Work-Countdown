@@ -327,6 +327,16 @@ data class SyncedPreferences(
 /** A tombstone: a later import or sync must not resurrect this identity below [editCount]. */
 data class ErasedID(val entityType: RecordEntityType, val logicalKey: String, val erasedAtMs: Double, val editCount: Int = 0)
 
+/** One unresolved file-import candidate, kept in the local archive and never exported. */
+data class ImportConflictCopy(
+    val id: String,
+    val entityType: RecordEntityType,
+    val logicalKey: String,
+    val incomingDocument: String,
+    val localEditCount: Int,
+    val incomingEditCount: Int,
+)
+
 data class RecordState(
     val periods: List<CareerPeriod> = emptyList(),
     val snapshots: List<ScheduleSnapshot> = emptyList(),
@@ -342,6 +352,7 @@ data class RecordState(
     val rosterDays: List<RosterDay> = emptyList(),
     val recordsStartedOn: String? = null,
     val erased: List<ErasedID> = emptyList(),
+    val importConflicts: List<ImportConflictCopy> = emptyList(),
 ) {
     fun isErased(type: RecordEntityType, key: String) = erased.any { it.entityType == type && it.logicalKey == key }
 }

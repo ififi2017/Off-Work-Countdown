@@ -3,7 +3,12 @@
 2026-09-19 发布范围更新：用户确认 Duo 专属适配放到下一版本，依赖 iOS 27.1 SDK，不阻塞 3.2.0。常规 iPhone／iPad 兼容仍需验收。PR #208 已合并且 iOS／watchOS CI 通过；商店素材、真机与升级回归、最终归档和送审状态见 [发版核对](reviews/2026-09-19-3.2.0-release-readiness.md)。
 
 本文记录 Off Work Countdown 在 iPhone、iPad 和 Apple Watch 上的现状、技术边界与后续顺序。
-Android 暂时搁置，不进入当前排期。
+Android 原生移植已于 2026-09 启动；范围与进度统一见 [Android 进度](android/progress.md)。
+截至 2026-09-26，Android 的本地功能实现覆盖计时、排班、专注、记录、设置、备份、
+小组件及首发客户端 Play Billing。四模块 417 项单测、lint、Debug/R8 Release/AAB
+构建通过，iOS→Kotlin→iOS 记录往返保留 12 类实体；API 36 的系统备份与文档化设备转移路径
+已恢复业务数据。首发 126 项 QA 仍逐项验收，Play Console 商品、真实购买、签名、
+商店资料和正式隐私页待负责人处理；当前不代表已发布。
 
 生产 iOS App 已经是纯 SwiftUI 原生实现，位于 src-mobile/ios；不嵌入 WebView，也不使用
 已经归档的 Capacitor spike。排班、提醒和汇总规则以 lib/countdown.ts、
@@ -31,7 +36,7 @@ watchOS 代码不复制这些规则，只消费 iPhone 的投影。
 | P6 | Xcode Cloud、TestFlight、商店截图与审核材料 | 🟡 3.1.8 截图/Preview 已上传，官网隐私已切 doneat.app；正式送审仍待人工 |
 | W0–W3 | 免费 Apple Watch App、独立排班与表盘组件 | 🔵 V2 已实现，验收进行中 |
 | X1 | iPhone 与 iPad 的可选跨设备同步 | ⚪ 技术决策保留，当前不实施 |
-| A0 | Android 原生客户端 | ⏸ 暂时搁置 |
+| A0 | Android 原生客户端 | 🔵 移植进行中，详见 Android 进度 |
 
 2026-09-05 分支验收：专注画布已补回「专注 → 休息 → 下一轮」操作，修复晚开始越格、
 模板跨日与手动休息保留、健康提醒关闭仍被接管、立即开始丢失估算等问题。创建表单与辅助字号
@@ -73,7 +78,7 @@ P4/P5 的真机验收状态不因此改为完成。
 3. 开始 Apple Watch 的契约和 target 建设；
 4. 完成 Watch App、圆形与长方形表盘组件、双向状态联动；
 5. Watch 稳定后再评估 iPhone/iPad iCloud 同步（002 的 CloudKit 仍排在 007 之后）；
-6. Android 不设启动日期。
+6. Android 按独立交接计划推进，发布验收见 [Android 进度](android/progress.md)。
 
 ## 2. 2026-08-23 iPhone / iPad 收口记录
 
@@ -317,22 +322,17 @@ SwiftUI、触摸尺寸或移动端导航。
 
 ## 9. Android
 
-Android 原生 App 继续暂时搁置：
+Android 已建立原生 Kotlin / Compose 工程，位于 `src-mobile/android`，使用 Navigation 3、
+Glance 与系统倒计时通知。Kotlin 实现以固定 iOS 基线与共享 TypeScript 规则为规格，通过
+差分 fixture 校验；不运行 JavaScript，也不共享 Web 标记。所有常驻表面继续不含薪资。
 
-- 不建立 Kotlin/Gradle target；
-- 不承诺日期；
-- 不因为 Watch 开发顺带启动 Android；
-- Web/PWA 继续作为 Android 用户现有入口。
+任务状态仅维护在 [Android 进度](android/progress.md)，架构与检查见
+[Android Agent Guide](agent-guides/android.md)。首发不包含 Drive 同步、服务端购买验证或 Wear。
+Play Billing 和商店发布验收仍未完成，Web/PWA 继续可用。
 
-未来重新立项至少需要满足：
-
-- Apple Watch W3 已完成并稳定；
-- iPhone/iPad App Store 版本运行一段时间，没有高频数据丢失或通知可靠性问题；
-- 移动端维护工时可控；
-- 有明确 Android 用户需求足以承担通知政策、设备碎片化、Glance 和商店维护成本。
-
-届时仍以系统 ongoing notification 和 Glance 组件为候选方向，Kotlin 不复制 TypeScript
-排班规则；所有平台常驻表面继续 salary-free。具体 API 和商店政策必须在立项时重新核对。
+2026-09-26：Android / iOS 同步增加主屏幕长按快捷入口：计时、专注、记录。
+iOS 入口按窗口保存，等首次设置与介绍结束后进入对应标签页；已完成 headless build 和
+快捷入口状态测试，未进行 iOS 视觉验收。
 
 ## 10. 长期验收矩阵
 
@@ -365,7 +365,7 @@ Android 原生 App 继续暂时搁置：
 - [Apple：NSUbiquitousKeyValueStore](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore)
 
 Apple 的 watchOS、WidgetKit、WatchConnectivity、Xcode Cloud 和 App Store 规则会变化。开始
-W0、X1 或 Android 立项时必须重新阅读官方文档，不把本计划中的摘要当成永久 API 契约。
+W0、X1 或 Android 相关平台能力升级时必须重新阅读官方文档，不把本计划中的摘要当成永久 API 契约。
 
 ### 2026-09-06：首次恢复与原生 iPad 导航
 

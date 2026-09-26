@@ -27,4 +27,5 @@ tasks.test {
     val archives = rootProject.file("../../docs/android/synthetic-archives")
     inputs.dir(archives)
     systemProperty("owc.syntheticArchives", archives.absolutePath)
+    providers.gradleProperty("owcRoundtripOutput").orNull?.let { systemProperty("owc.roundtripOutput", it) }
 }

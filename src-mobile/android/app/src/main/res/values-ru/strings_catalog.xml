@@ -519,6 +519,11 @@
     <string name="pausedUntil">Пауза до %1$s</string>
     <string name="perEffectiveHour">За эффективный час</string>
     <string name="perWorkday">За рабочий день</string>
+    <string name="plusAndroidComingSoon">Покупка Plus на Android скоро появится. Пока можно пользоваться таймером и просматривать недавние записи.</string>
+    <string name="plusAndroidRenewalNotice">Подписки продлеваются автоматически, пока вы их не отмените. Разовая покупка Lifetime не отменяет действующую подписку.</string>
+    <string name="plusAndroidRequestFailed">Google Play не удалось выполнить запрос. Повторите попытку чуть позже.</string>
+    <string name="plusAndroidStoreOffline">Google Play сейчас недоступен. Попробуйте восстановить покупки после подключения к сети.</string>
+    <string name="plusAndroidStoreUnconfigured">Покупка Plus пока недоступна на этом устройстве. Таймер и недавние записи по-прежнему работают.</string>
     <string name="plusAutoRenew">Подписки продлеваются автоматически, пока вы их не отмените. Годовой тариф может включать 7 бесплатных дней, после чего списывается годовая цена. Покупка навсегда — один платёж, она не отменяет действующую подписку.</string>
     <string name="plusBenefitCharts">Весь год и рабочая жизнь</string>
     <string name="plusBenefitEdit">Править любой день в записях</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">Текущая версия</string>
     <string name="recordsConflictDetailsUnreadable">Подробности недоступны</string>
     <string name="recordsConflictFieldNote">Заметка</string>
+    <string name="recordsConflictIncomingZoneBlocked">В этой копии используется другой часовой пояс записей. Сохраните версию этого устройства, затем при необходимости измените часовой пояс в разделе записей и данных.</string>
     <string name="recordsConflictItems">элементов</string>
     <string name="recordsConflictKeepCloud">Оставить iCloud</string>
     <string name="recordsConflictKeepCurrent">Оставить текущую версию</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">Как прошёл день</string>
     <string name="recordsDeleteAll">Удалить записи на этом устройстве</string>
     <string name="recordsDeleteAllConfirm">Удалит локальные записи с этого устройства. Позже их можно восстановить, импортировав старую резервную копию.</string>
+    <string name="recordsDeleteFailed">Не удалось удалить записи с этого устройства. Попробуйте ещё раз.</string>
     <string name="recordsDiscardEdits">Отменить эти изменения?</string>
     <string name="recordsEditDay">Изменить этот день</string>
     <string name="recordsEditPlusHint">Править день на вкладке записей — это функция Plus. Таймер работает как раньше.</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">Добавить только новое</string>
     <string name="recordsImportConflicts">%1$s конфликтов</string>
     <string name="recordsImportPreviewTitle">Проверьте этот импорт</string>
+    <string name="recordsImportRejected">Не удалось прочитать записи: %1$s</string>
     <string name="recordsImportReport">Импортировано. Пропущено %1$s безвозвратно удалённых записей.</string>
     <string name="recordsImportSame">%1$s без изменений</string>
     <string name="recordsImportSkipped">%1$s пропущено</string>

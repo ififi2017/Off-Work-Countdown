@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The platform time and date pickers in DoneAt colours. The M3 Compose pickers are
-  still experimental (D-12 allows stable APIs only), so the framework dialogs are
-  themed instead, light or dark by the app's own theme rather than the system's.
+  The platform date picker stays in DoneAt colours. Time entry uses the stable
+  Compose dialog, while the framework date dialog follows the app's light or dark theme.
 -->
 <resources>
-    <style name="DoneAt.TimePickerDialog.Light" parent="android:Theme.Material.Light.Dialog">
+    <style name="DoneAt.DatePickerDialog.Light" parent="android:Theme.Material.Light.Dialog">
         <item name="android:colorAccent">#C2410C</item>
-        <item name="android:timePickerStyle">@style/DoneAt.TimePicker.Light</item>
         <item name="android:datePickerStyle">@style/DoneAt.DatePicker.Light</item>
     </style>
 
@@ -15,13 +13,8 @@
         <item name="android:headerBackground">#C2410C</item>
     </style>
 
-    <style name="DoneAt.TimePicker.Light" parent="android:Widget.Material.Light.TimePicker">
-        <item name="android:headerBackground">#C2410C</item>
-    </style>
-
-    <style name="DoneAt.TimePickerDialog.Dark" parent="android:Theme.Material.Dialog">
+    <style name="DoneAt.DatePickerDialog.Dark" parent="android:Theme.Material.Dialog">
         <item name="android:colorAccent">#FF9A5C</item>
-        <item name="android:timePickerStyle">@style/DoneAt.TimePicker.Dark</item>
         <item name="android:datePickerStyle">@style/DoneAt.DatePicker.Dark</item>
     </style>
 
@@ -29,8 +22,4 @@
         <item name="android:headerBackground">#7A3000</item>
     </style>
 
-    <!-- White numerals need a dark header: the dark primary container, not the bright accent. -->
-    <style name="DoneAt.TimePicker.Dark" parent="android:Widget.Material.TimePicker">
-        <item name="android:headerBackground">#7A3000</item>
-    </style>
 </resources>

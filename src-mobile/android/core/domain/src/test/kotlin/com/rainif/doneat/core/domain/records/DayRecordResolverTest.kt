@@ -79,6 +79,13 @@ class DayRecordResolverTest {
         val lowTie = snapshot(id(20), id(1), "2026-07-01", "c", editCount = 3, tie = id(1))
         val highTie = snapshot(id(19), id(1), "2026-07-01", "d", editCount = 3, tie = id(2))
         assertEquals(id(19), DayRecordResolver.snapshot("2026-08-24", p, listOf(lowTie, highTie))?.id)
+        assertEquals(id(19), DayRecordResolver.snapshot("2026-08-24", p, listOf(highTie, lowTie))?.id)
+        assertEquals(id(9), DayRecordResolver.snapshot("2026-08-24", p, listOf(winningCount, losing))?.id)
+
+        val lowId = snapshot(id(30), id(1), "2026-07-01", "e", editCount = 4, tie = id(3))
+        val highId = snapshot(id(31), id(1), "2026-07-01", "f", editCount = 4, tie = id(3))
+        assertEquals(id(31), DayRecordResolver.snapshot("2026-08-24", p, listOf(lowId, highId))?.id)
+        assertEquals(id(31), DayRecordResolver.snapshot("2026-08-24", p, listOf(highId, lowId))?.id)
     }
 
     @Test fun customOverrideBeatsExceptionAndSchedule() {
@@ -152,6 +159,28 @@ class DayRecordResolverTest {
         val r = resolve("2026-08-24", exceptions = listOf(cleared))
         assertEquals(DayResolutionLayer.SCHEDULE, r.layer)
         assertTrue(r.isScheduledWorkday)
+    }
+
+    @Test fun eachClearedLayerExposesTheNextDayRule() {
+        val key = "2026-08-24"
+        val override = override(key, DayOverrideKind.NOT_WORKING)
+        val user = holiday(key, CalendarEffect.WORK, CalendarExceptionOrigin.USER)
+        val bundled = holiday(key, CalendarEffect.REST, CalendarExceptionOrigin.BUNDLED, "2026.1")
+        fun day(o: DayOverride, u: CalendarException, b: CalendarException) =
+            resolve(key, exceptions = listOf(b, u), overrides = listOf(o))
+
+        val overlaid = day(override, user, bundled)
+        assertEquals(DayResolutionLayer.OVERRIDE, overlaid.layer)
+        assertFalse(overlaid.isScheduledWorkday)
+        val afterOverride = day(override.copy(kind = DayOverrideKind.CLEARED), user, bundled)
+        assertEquals(DayResolutionLayer.CALENDAR_EXCEPTION, afterOverride.layer)
+        assertTrue(afterOverride.isScheduledWorkday)
+        val afterUser = day(override.copy(kind = DayOverrideKind.CLEARED), user.copy(isCleared = true), bundled)
+        assertEquals(DayResolutionLayer.CALENDAR_EXCEPTION, afterUser.layer)
+        assertFalse(afterUser.isScheduledWorkday)
+        val afterBundled = day(override.copy(kind = DayOverrideKind.CLEARED), user.copy(isCleared = true), bundled.copy(isCleared = true))
+        assertEquals(DayResolutionLayer.SCHEDULE, afterBundled.layer)
+        assertTrue(afterBundled.isScheduledWorkday)
     }
 
     @Test fun newerBundledDatasetWins() {

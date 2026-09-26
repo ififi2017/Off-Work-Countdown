@@ -37,6 +37,7 @@ class RecordsText(
     private val weekdayNarrow = pattern("EEEEE")
     private val monthYear = pattern("LLLLy")
     private val month = pattern("LLLL")
+    private val shortMonth = pattern("LLL")
     private val time = pattern(if (use24Hour) "Hm" else "hm")
 
     fun string(id: Int) = res.getString(id)
@@ -50,6 +51,7 @@ class RecordsText(
     fun monthYear(day: LocalDate): String = monthYear.format(day)
     /** "August": a compact month control where the year is already visible. */
     fun month(day: LocalDate): String = month.format(day)
+    fun shortMonth(day: LocalDate): String = shortMonth.format(day)
 
     /** A clock time as read in the records zone. */
     fun time(atMs: Double): String = time.format(Instant.ofEpochMilli(atMs.toLong()).atZone(zone))

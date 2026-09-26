@@ -21,9 +21,14 @@ import com.rainif.doneat.core.domain.records.RecordsDayCell
 import com.rainif.doneat.core.domain.records.RecordsHeadlineSummary
 import com.rainif.doneat.core.domain.records.RecordsQueries
 import com.rainif.doneat.core.domain.records.RecordsScale
+import com.rainif.doneat.core.domain.records.RecordState
+import com.rainif.doneat.core.domain.records.SyncedPreferences
+import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.session.ShiftSession
 import com.rainif.doneat.ui.timer.TimerText
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.WeekFields
 
@@ -33,9 +38,19 @@ import java.time.temporal.WeekFields
  * a countdown, so "now" advances on the minute, and only while it is visible.
  */
 @Immutable
-class RecordsContext(val queries: RecordsQueries, val text: RecordsText, val nowMs: Double) {
+class RecordsContext(val queries: RecordsQueries, val text: RecordsText, val nowMs: Double, val lifeInputs: LifeInputs) {
     val today: LocalDate get() = queries.today(nowMs)
 }
+
+/** Inputs that can change Life's income or schedule without changing the archive. */
+data class LifeInputs(
+    val archive: RecordState,
+    val preferences: SyncedPreferences,
+    val holidays: HolidayCalendar,
+    val session: ShiftSession,
+    val hideEarnings: Boolean,
+    val today: LocalDate,
+)
 
 @Composable
 fun rememberRecordsContext(graph: AppGraph): RecordsContext {
@@ -71,7 +86,8 @@ fun rememberRecordsContext(graph: AppGraph): RecordsContext {
     val text = remember(resources, locale, zone, use24Hour, device.hideEarnings) {
         RecordsText(resources, locale, zone, use24Hour, TimerText(resources, locale, use24Hour, device.hideEarnings))
     }
-    return remember(queries, text, nowMs) { RecordsContext(queries, text, nowMs) }
+    val lifeInputs = LifeInputs(archive, prefs, holidays, session, device.hideEarnings, queries.today(nowMs))
+    return remember(queries, text, nowMs, lifeInputs) { RecordsContext(queries, text, nowMs, lifeInputs) }
 }
 
 private fun currentShift(session: ShiftSession, nowMs: Double) =
@@ -94,6 +110,12 @@ private fun rememberMinute(graph: AppGraph): Double {
 }
 
 private fun floorMinute(ms: Double) = kotlin.math.floor(ms / 60_000) * 60_000
+
+/** Show a scale before saving it; the caller passes the app scope so tab changes do not drop the write. */
+internal fun switchRecordsScale(next: RecordsScale, show: (String) -> Unit, appScope: CoroutineScope, save: suspend (String) -> Unit) {
+    show(next.raw)
+    appScope.launch { save(next.raw) }
+}
 
 /** One loaded window: its days (with one lead-in day), cells and summary. */
 @Immutable

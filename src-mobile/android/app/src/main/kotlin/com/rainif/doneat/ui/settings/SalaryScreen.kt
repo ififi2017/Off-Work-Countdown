@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalConfiguration
@@ -246,9 +248,21 @@ private fun SalaryContent(graph: AppGraph, onBack: () -> Unit) {
 
 @Composable
 private fun FieldRow(title: String, field: @Composable () -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = DoneAtSpacing.l, end = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
-        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Row(verticalAlignment = Alignment.CenterVertically) { field() }
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        if (maxWidth < 360.dp || LocalDensity.current.fontScale >= 1.3f) {
+            Column(
+                Modifier.fillMaxWidth().padding(start = DoneAtSpacing.l, end = DoneAtSpacing.xs, top = DoneAtSpacing.m, bottom = DoneAtSpacing.m),
+                verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs),
+            ) {
+                Text(title, style = MaterialTheme.typography.bodyLarge)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) { field() }
+            }
+        } else {
+            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = DoneAtSpacing.l, end = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
+                Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                Row(verticalAlignment = Alignment.CenterVertically) { field() }
+            }
+        }
     }
 }
 

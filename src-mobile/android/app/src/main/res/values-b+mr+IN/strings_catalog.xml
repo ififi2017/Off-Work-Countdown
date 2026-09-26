@@ -519,6 +519,11 @@
     <string name="pausedUntil">%1$s पर्यंत थांबवले</string>
     <string name="perEffectiveHour">प्रति प्रभावी तास</string>
     <string name="perWorkday">प्रति कामाचा दिवस</string>
+    <string name="plusAndroidComingSoon">Android वर Plus खरेदी लवकरच उपलब्ध होईल. सध्या तुम्ही टाइमर आणि अलीकडील नोंदी वापरू शकता.</string>
+    <string name="plusAndroidRenewalNotice">सदस्यता रद्द करेपर्यंत आपोआप नूतनीकरण होते. Lifetime एकदाच खरेदी केल्याने चालू सदस्यता रद्द होत नाही.</string>
+    <string name="plusAndroidRequestFailed">Google Play विनंती पूर्ण करू शकले नाही. थोड्या वेळाने पुन्हा प्रयत्न करा.</string>
+    <string name="plusAndroidStoreOffline">Google Play सध्या उपलब्ध नाही. कनेक्ट झाल्यावर खरेदी पुनर्संचयित करून पाहा.</string>
+    <string name="plusAndroidStoreUnconfigured">या डिव्हाइसवर Plus खरेदी अद्याप उपलब्ध नाही. टाइमर आणि अलीकडील नोंदी वापरता येतील.</string>
     <string name="plusAutoRenew">तुम्ही रद्द करेपर्यंत सदस्यता आपोआप सुरू राहते. वार्षिक योजनेत 7 दिवस मोफत असू शकतात, त्यानंतर वार्षिक दर लागतो. एकदाच घेण्याची खरेदी एकच पेमेंट आहे आणि सुरू असलेली सदस्यता आपोआप रद्द करत नाही.</string>
     <string name="plusBenefitCharts">पूर्ण वर्ष आणि कामाच्या आयुष्याची दृश्ये</string>
     <string name="plusBenefitEdit">नोंदीतून कोणताही दिवस बदला</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">सध्याची आवृत्ती</string>
     <string name="recordsConflictDetailsUnreadable">तपशील उपलब्ध नाहीत</string>
     <string name="recordsConflictFieldNote">नोंद</string>
+    <string name="recordsConflictIncomingZoneBlocked">या प्रतीमध्ये नोंदींचा वेळ विभाग वेगळा आहे. या डिव्हाइसची आवृत्ती ठेवा, मग गरज असल्यास नोंदी आणि डेटा मध्ये वेळ विभाग बदला.</string>
     <string name="recordsConflictItems">आयटम</string>
     <string name="recordsConflictKeepCloud">iCloud ठेवा</string>
     <string name="recordsConflictKeepCurrent">सध्याची आवृत्ती ठेवा</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">दिवस कसा गेला</string>
     <string name="recordsDeleteAll">या उपकरणावरील नोंदी हटवा</string>
     <string name="recordsDeleteAllConfirm">या उपकरणावरील स्थानिक नोंदी हटतील. नंतर जुना बॅकअप आणून त्या पुनर्संचयित करता येतील.</string>
+    <string name="recordsDeleteFailed">या डिव्हाइसवरील नोंदी हटवता आल्या नाहीत. पुन्हा प्रयत्न करा.</string>
     <string name="recordsDiscardEdits">हे बदल टाकून द्यायचे?</string>
     <string name="recordsEditDay">हा दिवस बदला</string>
     <string name="recordsEditPlusHint">नोंदीतून दिवस बदलणे ही Plus सुविधा आहे. टाइमर आजसारखाच चालतो.</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">फक्त नवीन जोडा</string>
     <string name="recordsImportConflicts">%1$s संघर्ष</string>
     <string name="recordsImportPreviewTitle">ही आयात तपासा</string>
+    <string name="recordsImportRejected">%1$s नोंदी वाचता आल्या नाहीत</string>
     <string name="recordsImportReport">आयात झाले. कायमचे हटवलेल्या %1$s नोंदी वगळल्या.</string>
     <string name="recordsImportSame">%1$s तशीच</string>
     <string name="recordsImportSkipped">%1$s वगळली</string>

@@ -29,16 +29,22 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -131,11 +137,14 @@ fun LifeCanvas(
     bounds: Pair<Double, Double>,
     referenceMs: Double,
     selectedStageID: String?,
+    showCallout: Boolean,
     text: RecordsText,
     onSelect: (LifeStageSpan) -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     val density = LocalDensity.current
+    var tappedBucket by remember(bounds) { mutableStateOf<Int?>(null) }
+    val selectStage by rememberUpdatedState(onSelect)
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         stages.firstOrNull { it.kind == LifeStageKind.RETIREMENT }?.startMs?.let { retirement ->
             val progress = LifeStageCalculator.progress(bounds.first, retirement, referenceMs)
@@ -147,7 +156,7 @@ fun LifeCanvas(
                 LinearProgressIndicator(progress = { progress.toFloat() }, Modifier.fillMaxWidth())
             }
         }
-        BoxWithConstraints(Modifier.fillMaxWidth().height(240.dp).clearAndSetSemantics {}) {
+        BoxWithConstraints(Modifier.fillMaxWidth().height(240.dp)) {
             val grid = with(density) {
                 RecordsCanvasGrid(maxWidth.toPx(), maxHeight.toPx(), 11.dp.toPx(), 3.dp.toPx(), minimumColumns = 18, minimumRows = 10)
             }
@@ -160,11 +169,14 @@ fun LifeCanvas(
             val current = scheme.primary
             val card = scheme.surfaceContainerLow
             Canvas(
-                Modifier.fillMaxSize().pointerInput(buckets, stages) {
+                Modifier.fillMaxSize().clearAndSetSemantics {}.pointerInput(buckets, stages, grid) {
                     detectTapGestures { point ->
                         val bucket = grid.index(point.x, point.y)?.let(buckets::getOrNull) ?: return@detectTapGestures
-                        val stage = LifeStageCalculator.stageAt(bucket.startMs + (bucket.endMs - bucket.startMs) / 2, stages)
-                        if (stage != null && stage.kind != LifeStageKind.RETIREMENT) onSelect(stage)
+                        val stage = stages.firstOrNull { it.id == bucket.stageID }
+                        if (stage != null && stage.kind != LifeStageKind.RETIREMENT) {
+                            tappedBucket = bucket.index
+                            selectStage(stage)
+                        }
                     }
                 },
             ) {
@@ -194,11 +206,26 @@ fun LifeCanvas(
                     }
                 }
             }
+            if (showCallout) {
+                val stage = stages.firstOrNull { it.id == selectedStageID && it.kind != LifeStageKind.RETIREMENT }
+                val bucket = tappedBucket?.let(buckets::getOrNull)?.takeIf { it.stageID == selectedStageID }
+                    ?: buckets.firstOrNull { it.stageID == selectedStageID }
+                if (stage != null && bucket != null) {
+                    val (x, y) = grid.origin(bucket.index)
+                    RecordsCallout(Rect(x, y, x + grid.cell, y + grid.cell), Modifier.matchParentSize()) {
+                        RecordsSelectionPill(
+                            icon = stage.kind.icon,
+                            title = stageTitle(stage, text),
+                            subtitle = stageRange(stage, text, referenceMs),
+                        )
+                    }
+                }
+            }
         }
         Column {
             stages.forEachIndexed { index, stage ->
                 if (index > 0) HorizontalDivider(Modifier.padding(start = 44.dp), color = scheme.outlineVariant)
-                StageRow(stage, stage.id == selectedStageID, text, referenceMs) { onSelect(stage) }
+                StageRow(stage, stage.id == selectedStageID, text, referenceMs) { tappedBucket = null; onSelect(stage) }
             }
         }
         if (stages.any { it.workPeriod != null }) {

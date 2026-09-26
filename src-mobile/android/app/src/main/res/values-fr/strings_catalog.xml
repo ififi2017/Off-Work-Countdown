@@ -519,6 +519,11 @@
     <string name="pausedUntil">En pause jusqu\'à %1$s</string>
     <string name="perEffectiveHour">Par heure effective</string>
     <string name="perWorkday">Par jour travaillé</string>
+    <string name="plusAndroidComingSoon">Les achats Plus arrivent bientôt sur Android. Vous pouvez déjà utiliser le minuteur et consulter vos données récentes.</string>
+    <string name="plusAndroidRenewalNotice">Les abonnements se renouvellent automatiquement jusqu’à leur résiliation. L’achat à vie ne résilie pas un abonnement actif.</string>
+    <string name="plusAndroidRequestFailed">Google Play n’a pas pu terminer cette action. Réessayez dans un instant.</string>
+    <string name="plusAndroidStoreOffline">Google Play est indisponible pour le moment. Réessayez de restaurer vos achats une fois connecté.</string>
+    <string name="plusAndroidStoreUnconfigured">Les achats Plus ne sont pas encore disponibles sur cet appareil. Le minuteur et vos données récentes restent accessibles.</string>
     <string name="plusAutoRenew">Les abonnements se renouvellent automatiquement jusqu’à leur annulation. L’offre annuelle peut inclure 7 jours gratuits, puis le tarif annuel s’applique. L’achat à vie est un paiement unique et n’annule pas un abonnement en cours.</string>
     <string name="plusBenefitCharts">Vues de l’année complète et de la vie professionnelle</string>
     <string name="plusBenefitEdit">Modifier n’importe quel jour depuis Relevés</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">Version actuelle</string>
     <string name="recordsConflictDetailsUnreadable">Détails indisponibles</string>
     <string name="recordsConflictFieldNote">Remarque</string>
+    <string name="recordsConflictIncomingZoneBlocked">Cette copie utilise un autre fuseau horaire pour les données. Conservez la version de cet appareil, puis modifiez le fuseau dans Historique et données si nécessaire.</string>
     <string name="recordsConflictItems">éléments</string>
     <string name="recordsConflictKeepCloud">Garder iCloud</string>
     <string name="recordsConflictKeepCurrent">Garder la version actuelle</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">Le déroulé de la journée</string>
     <string name="recordsDeleteAll">Supprimer le journal de cet appareil</string>
     <string name="recordsDeleteAllConfirm">Supprime le journal local de cet appareil. Vous pourrez le restaurer en important une ancienne sauvegarde.</string>
+    <string name="recordsDeleteFailed">Impossible de supprimer les données de cet appareil. Réessayez.</string>
     <string name="recordsDiscardEdits">Abandonner ces modifications ?</string>
     <string name="recordsEditDay">Modifier ce jour</string>
     <string name="recordsEditPlusHint">Modifier un jour depuis Relevés est une fonction Plus. Le minuteur fonctionne toujours comme aujourd’hui.</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">Ajouter les nouveaux</string>
     <string name="recordsImportConflicts">%1$s conflit(s)</string>
     <string name="recordsImportPreviewTitle">Vérifier cet import</string>
+    <string name="recordsImportRejected">%1$s entrées n’ont pas pu être lues</string>
     <string name="recordsImportReport">Import terminé. %1$s entrées définitivement supprimées ont été ignorées.</string>
     <string name="recordsImportSame">%1$s inchangé(s)</string>
     <string name="recordsImportSkipped">%1$s ignoré(s)</string>

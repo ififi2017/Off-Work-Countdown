@@ -23,6 +23,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
+import java.time.LocalDate
 import java.time.ZoneId
 import java.util.UUID
 
@@ -156,6 +157,10 @@ class ExtendedScheduleFixtureTest {
     fun dayResolution() {
         val failures = ArrayList<String>()
         var count = 0
+        val caseDays = section("days").associate { row -> row.string("plan")!! to row.getValue("days").jsonArray.map { it.jsonArray[0].jsonPrimitive.content }.toSet() }
+        assertTrue("month inheritance covers 31→30→28/29", setOf("2026-01-31", "2026-04-30", "2026-02-28", "2028-02-29").all { it in caseDays.getValue("carry-over") })
+        assertTrue("the cleared pattern covers both sides of its boundary", setOf("2026-03-14", "2026-03-15", "2026-03-16").all { it in caseDays.getValue("carry-cleared") })
+        assertTrue("the empty holiday region has separate Swift answers", "2026-03-15" in caseDays.getValue("holiday-disabled"))
         for (row in section("days")) {
             val name = row.string("plan")!!
             val resolver = ExtendedScheduleResolver(plans.getValue(name))
@@ -279,6 +284,88 @@ class ExtendedScheduleFixtureTest {
             )
             assertEquals("content ${row.string("name")}", row.bool("expected"), content.isValid)
         }
+    }
+
+    @Test
+    fun cycleLengthAndUnknownPresetBoundaries() {
+        val type = shiftType(section("plans").first().getValue("recipe").jsonObject.getValue("shiftTypes").jsonArray.first())
+        fun content(length: Int) = ExtendedScheduleContent(
+            listOf(type),
+            ShiftCycleRule(ShiftCycleRule.Preset.CUSTOM, "2026-09-21", List(length) { type.id }),
+        )
+        assertEquals(false, content(0).isValid)
+        assertEquals(true, content(1).isValid)
+        assertEquals(true, content(366).isValid)
+        assertEquals(false, content(367).isValid)
+        assertEquals(ShiftCycleRule.Preset.CUSTOM, ShiftCycleRule.Preset.fromRaw("newer-preset"))
+    }
+
+    @Test
+    fun threeDayCycleWrapsToItsLastDayBeforeTheAnchor() {
+        val types = section("plans").first().getValue("recipe").jsonObject.getValue("shiftTypes").jsonArray
+            .take(3).map(::shiftType)
+        assertEquals(3, types.size)
+        val plan = ExtendedSchedulePlan(
+            types,
+            ShiftCycleRule(ShiftCycleRule.Preset.CUSTOM, "2026-09-21", types.map { it.id }),
+            emptyMap(),
+        )
+        val resolver = ExtendedScheduleResolver(plan)
+        assertEquals(types[2].id, resolver.day(ExtendedScheduleResolver.dayNumber("2026-09-20")!!).shiftTypeID)
+        assertEquals(types[0].id, resolver.day(ExtendedScheduleResolver.dayNumber("2026-09-21")!!).shiftTypeID)
+        assertEquals(types[1].id, resolver.day(ExtendedScheduleResolver.dayNumber("2026-09-22")!!).shiftTypeID)
+    }
+
+    @Test
+    fun rosterDayRecoversWhenItsReferencedTypeArrivesLater() {
+        val type = shiftType(section("plans").first().getValue("recipe").jsonObject.getValue("shiftTypes").jsonArray.first())
+        val roster = RosterDay("2026-09-20", type.id)
+        val day = ExtendedScheduleResolver.dayNumber(roster.dayKey)!!
+        val pending = ExtendedScheduleResolver(ExtendedSchedulePlan(emptyList(), null, mapOf(roster.dayKey to roster.shiftTypeID))).day(day)
+        assertEquals(ExtendedScheduleDay.UNASSIGNED, pending)
+
+        val recovered = ExtendedScheduleResolver(ExtendedSchedulePlan(listOf(type.copy(isArchived = true)), null, mapOf(roster.dayKey to roster.shiftTypeID))).day(day)
+        assertEquals(type.id, roster.shiftTypeID)
+        assertEquals(type.id, recovered.shiftTypeID)
+        assertEquals(ExtendedScheduleDay.Source.HAND_SET, recovered.source)
+        assertEquals(type.kind == ShiftType.Kind.WORK, recovered.isWorkday)
+    }
+
+    @Test
+    fun expansionUsesUniqueCivilDaysAcrossNewYearLeapDayAndDst() {
+        val zone = ZoneId.of("America/Los_Angeles")
+        val first = LocalDate.parse("2027-12-29")
+        val last = LocalDate.parse("2028-03-20")
+        val hours = bases.getValue("classic")
+        val rows = ScheduleRules.expandScheduleRange(
+            hours,
+            first.atStartOfDay(zone).toInstant().toEpochMilli().toDouble(),
+            last.atStartOfDay(zone).toInstant().toEpochMilli().toDouble(),
+            zone,
+        )
+        val expected = (0..java.time.temporal.ChronoUnit.DAYS.between(first, last).toInt()).map { first.plusDays(it.toLong()).toString() }
+        assertEquals(expected, rows.map { it.dayKey })
+        assertEquals(expected.size, rows.map { it.dayKey }.toSet().size)
+        assertTrue(rows.any { it.dayKey == "2028-02-29" })
+        val byDay = rows.associateBy { it.dayKey }
+        assertEquals(23 * 3_600_000.0, byDay.getValue("2028-03-12").shiftAnchorStartAtMs - byDay.getValue("2028-03-11").shiftAnchorStartAtMs, 0.0)
+    }
+
+    @Test
+    fun clearBoundaryStopsHolidayAutofillButKeepsExplicitRosterDays() {
+        val type = shiftType(section("plans").first().getValue("recipe").jsonObject.getValue("shiftTypes").jsonArray.first())
+        val plan = ExtendedSchedulePlan(
+            listOf(type), null,
+            mapOf("2026-09-14" to type.id, "2026-09-17" to type.id),
+            holidayRegionIdentifier = "US", clearedFromDayKey = "2026-09-15",
+            holidayOverrides = mapOf(20260916 to true),
+        )
+        val resolver = ExtendedScheduleResolver(plan)
+        fun day(key: String) = resolver.day(ExtendedScheduleResolver.dayNumber(key)!!)
+        assertEquals(type.id, day("2026-09-14").shiftTypeID)
+        assertEquals(ExtendedScheduleDay.UNASSIGNED, day("2026-09-16"))
+        assertEquals(type.id, day("2026-09-17").shiftTypeID)
+        assertEquals(ExtendedScheduleDay.Source.HAND_SET, day("2026-09-17").source)
     }
 }
 

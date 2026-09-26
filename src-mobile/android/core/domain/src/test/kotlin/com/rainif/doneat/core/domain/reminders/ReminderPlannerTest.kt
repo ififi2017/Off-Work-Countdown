@@ -69,6 +69,19 @@ class ReminderPlannerTest {
         assertEquals(33, days.size)
         assertEquals(ScheduleCycleSummary(5, 5 * 8 * 3_600_000L, 90 * 60_000L), ScheduleCycleSummaryCalculator.summary(friday, days))
         assertNull("Thursday is followed by a workday", ScheduleCycleSummaryCalculator.summary(thursday, days))
+        val prefs = com.rainif.doneat.core.domain.settings.PreferencesRules.defaults(RecordTestFixtures.ZONE, 0.0).copy(
+            scheduleMode = "classic", startMinutes = 9 * 60, endMinutes = 18 * 60,
+            workdays = listOf(1, 2, 3, 4, 5), lunchEnabled = true, lunchStartMinutes = 12 * 60,
+            lunchDurationMinutes = 60, cycleEndSummaryNotificationEnabled = true,
+        )
+        val session = com.rainif.doneat.core.domain.session.ShiftSession(
+            com.rainif.doneat.core.domain.session.SessionState(countdownStarted = true),
+            com.rainif.doneat.core.domain.session.SessionEnvironment(prefs, true, null, emptyList(), HolidayCalendar.EMPTY, RecordTestFixtures.ZONE),
+        )
+        val lastShift = session.snapshot(ms(friday, 10, 0))!!
+        assertEquals(ScheduleCycleSummary(5, 5 * 8 * 3_600_000L, 90 * 60_000L), ScheduleCycleSummaryCalculator.forShift(state, session, lastShift, true))
+        assertNull(ScheduleCycleSummaryCalculator.forShift(state, session, lastShift, false))
+        assertNull(ScheduleCycleSummaryCalculator.forShift(state, session, session.snapshot(ms(thursday, 10, 0))!!, true))
     }
 
     @Test fun theLatestDeclarationWinsAndOvertimeNeverOverlapsRegularWork() {

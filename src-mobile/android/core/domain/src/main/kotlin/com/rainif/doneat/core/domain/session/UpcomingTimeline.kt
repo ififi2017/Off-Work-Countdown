@@ -4,7 +4,7 @@ import com.rainif.doneat.core.domain.schedule.Reminder
 import com.rainif.doneat.core.domain.schedule.ReminderKind
 import com.rainif.doneat.core.domain.schedule.ShiftSnapshot
 
-enum class TimelineKind { SHIFT_START, LUNCH_START, LUNCH_END, HEALTH, MILESTONE, SHIFT_END }
+enum class TimelineKind { SHIFT_START, LUNCH_START, LUNCH_END, HEALTH, MILESTONE, SHIFT_END, FOCUS, FOCUS_BREAK }
 
 /**
  * One row of the timer's "coming up" list. The screen supplies the words;
@@ -19,6 +19,10 @@ data class TimelineEvent(
     val overtime: Boolean = false,
     /** A lunch row that shows its whole window rather than one boundary. */
     val windowEndAtMs: Double? = null,
+    val focusTitle: String? = null,
+    val focusMinutes: Int = 0,
+    val focusPomodoros: Int = 1,
+    val runningFocus: Boolean = false,
 )
 
 /**

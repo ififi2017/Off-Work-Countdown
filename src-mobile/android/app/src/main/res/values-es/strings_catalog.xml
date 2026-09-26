@@ -519,6 +519,11 @@
     <string name="pausedUntil">En pausa hasta las %1$s</string>
     <string name="perEffectiveHour">Por hora efectiva</string>
     <string name="perWorkday">Por día trabajado</string>
+    <string name="plusAndroidComingSoon">Pronto podrás comprar Plus en Android. Ya puedes usar el temporizador y consultar tus registros recientes.</string>
+    <string name="plusAndroidRenewalNotice">Las suscripciones se renuevan automáticamente hasta que las canceles. La compra única de Lifetime no cancela una suscripción activa.</string>
+    <string name="plusAndroidRequestFailed">Google Play no pudo completar la solicitud. Inténtalo de nuevo en un momento.</string>
+    <string name="plusAndroidStoreOffline">Google Play no está disponible ahora. Cuando tengas conexión, intenta restaurar tus compras.</string>
+    <string name="plusAndroidStoreUnconfigured">Las compras de Plus aún no están disponibles en este dispositivo. Puedes seguir usando el temporizador y tus registros recientes.</string>
     <string name="plusAutoRenew">Las suscripciones se renuevan solas hasta que las canceles. El plan anual puede incluir 7 días gratis; después se cobra el precio anual. La compra para siempre es un pago único y no cancela una suscripción activa.</string>
     <string name="plusBenefitCharts">Vistas del año completo y la vida laboral</string>
     <string name="plusBenefitEdit">Editar cualquier día desde Registros</string>
@@ -598,6 +603,7 @@
     <string name="recordsConflictCurrentVersion">Versión actual</string>
     <string name="recordsConflictDetailsUnreadable">Detalles no disponibles</string>
     <string name="recordsConflictFieldNote">Nota</string>
+    <string name="recordsConflictIncomingZoneBlocked">Esta copia usa otra zona horaria para los registros. Conserva la versión de este dispositivo y cambia la zona horaria en Registros y datos si lo necesitas.</string>
     <string name="recordsConflictItems">elementos</string>
     <string name="recordsConflictKeepCloud">Conservar iCloud</string>
     <string name="recordsConflictKeepCurrent">Conservar la versión actual</string>
@@ -613,6 +619,7 @@
     <string name="recordsDaySegments">Cómo transcurrió el día</string>
     <string name="recordsDeleteAll">Borrar el registro de este dispositivo</string>
     <string name="recordsDeleteAllConfirm">Quita el registro local de este dispositivo. Puedes restaurarlo más adelante importando una copia antigua.</string>
+    <string name="recordsDeleteFailed">No se pudieron eliminar los registros de este dispositivo. Inténtalo de nuevo.</string>
     <string name="recordsDiscardEdits">¿Descartar estos cambios?</string>
     <string name="recordsEditDay">Cambiar este día</string>
     <string name="recordsEditPlusHint">Editar un día desde Registros es una función Plus. El temporizador sigue funcionando igual.</string>
@@ -635,6 +642,7 @@
     <string name="recordsImportApplyNew">Añadir solo lo nuevo</string>
     <string name="recordsImportConflicts">%1$s conflictos</string>
     <string name="recordsImportPreviewTitle">Revisar esta importación</string>
+    <string name="recordsImportRejected">No se pudieron leer %1$s registros</string>
     <string name="recordsImportReport">Importado. Se omitieron %1$s entradas borradas de forma permanente.</string>
     <string name="recordsImportSame">%1$s iguales</string>
     <string name="recordsImportSkipped">%1$s omitidos</string>

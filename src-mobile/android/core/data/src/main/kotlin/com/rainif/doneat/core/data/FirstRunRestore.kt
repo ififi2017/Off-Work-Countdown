@@ -23,6 +23,7 @@ object FirstRunRestore {
 
     fun preview(bytes: ByteArray, nowMs: Double): RestorePreview {
         if (bytes.size > MAX_BYTES) return RestorePreview.TooLarge
+        if (!RecordInputBounds.accepts(bytes)) return RestorePreview.Unreadable
         // A backup is the schema 1–6 export document itself (what "Export" writes), not the local archive file.
         val (applied, report) = try {
             RecordJson.apply(RecordJson.decode(bytes.toString(Charsets.UTF_8)), RecordState(), RecordJson.ImportMode.SKIP_ERASED)

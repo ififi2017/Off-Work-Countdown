@@ -23,7 +23,10 @@ sealed interface Route : NavKey {
     @Serializable data object Theme : Route
     @Serializable data object Language : Route
     @Serializable data object RecordsData : Route
+    @Serializable data object RecordsConflicts : Route
     @Serializable data object Plus : Route
+    /** Keeps the interrupted action in the saveable navigation stack until Plus is granted. */
+    @Serializable data class PlusFor(val action: PlusPendingAction) : Route
     @Serializable data object About : Route
     @Serializable data object Acknowledgements : Route
 
@@ -49,6 +52,16 @@ sealed interface Route : NavKey {
     /** The schedule page's shift types, edited within its draft. */
     @Serializable data object ShiftTypes : Route
     @Serializable data class ShiftTypeEdit(val id: String, val isNew: Boolean) : Route
+}
+
+@Serializable
+sealed interface PlusPendingAction {
+    @Serializable data class FocusCreate(val blockStartAtMs: Long?, val currentOrNext: Boolean) : PlusPendingAction
+    @Serializable data object FocusHome : PlusPendingAction
+    @Serializable data class RecordsDay(val dayKey: String) : PlusPendingAction
+    @Serializable data object RecordsLifeEdit : PlusPendingAction
+    @Serializable data object RecordsCharts : PlusPendingAction
+    @Serializable data object CycleSummary : PlusPendingAction
 }
 
 val AppTab.root: Route
