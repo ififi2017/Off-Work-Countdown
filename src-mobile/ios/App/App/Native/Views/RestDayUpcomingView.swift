@@ -10,6 +10,9 @@ struct RestDayUpcomingView: View {
     let now: Date
 
     var body: some View {
+        // Once per evaluation: each read builds the next shift's snapshot and
+        // reminder list, and this body used to read it once per row.
+        let entries = entries
         if !entries.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 OWCSectionHeader(title: shifts.text.t("comingUp"))

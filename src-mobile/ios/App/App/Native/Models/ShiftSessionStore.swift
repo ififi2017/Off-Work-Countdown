@@ -373,11 +373,14 @@ final class ShiftSessionStore {
         // The Live Activity lead-in stays out of the running list. It is a
         // notification about this countdown rather than an event within it, and
         // by the time it fires the user is already looking at the screen.
+        // Both uses below read the same list; the rules build it once.
+        let reminders = self.session.presentationMicroBreakEnabled
+            || self.session.presentationNotificationMode == .milestones
+            ? ScheduleRules.reminders(input: self.session.rulesInput(at: now), reminderInputs: reminderInputs())
+            : []
+
         if self.session.presentationMicroBreakEnabled,
-           let next = ScheduleRules.reminders(
-               input: self.session.rulesInput(at: now),
-               reminderInputs: reminderInputs()
-           )
+           let next = reminders
                .filter({ $0.kind == "microBreak" && isDuringShift($0.atMs) })
                .min(by: { $0.atMs < $1.atMs }) {
             events.append(.init(
@@ -401,10 +404,7 @@ final class ShiftSessionStore {
         // time only" from listing anything, since its one audible milestone is
         // the shift's end and the list already has a row for that.
         if self.session.presentationNotificationMode == .milestones {
-            events.append(contentsOf: ScheduleRules.reminders(
-                input: self.session.rulesInput(at: now),
-                reminderInputs: reminderInputs()
-            )
+            events.append(contentsOf: reminders
                 // The 100% milestone lands on the stroke of the shift's end,
                 // where the list already has a row saying exactly that. Two
                 // rows at 19:00 is not two events.

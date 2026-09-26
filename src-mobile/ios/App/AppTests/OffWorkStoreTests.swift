@@ -617,6 +617,35 @@ func upcomingTimelineIncludesShiftBoundaries() throws {
 }
 
 @MainActor
+@Test("Coming Up lists the next micro-break and the milestones from one reminder list")
+func upcomingTimelineSharesRemindersBetweenMicroBreaksAndMilestones() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let duringShift = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 10, minute: 10
+    )))
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences {
+        $0.scheduleMode = .off
+        $0.startMinutes = 9 * 60
+        $0.endMinutes = 17 * 60
+        $0.lunchEnabled = false
+        $0.microBreakEnabled = true
+        $0.microBreakIntervalMinutes = 60
+        $0.notificationMode = .milestones
+    }
+
+    let snapshot = try #require(store.session.snapshot(at: duringShift))
+    let events = store.shifts.upcomingTimelineEvents(for: snapshot, at: duringShift)
+
+    #expect(events.filter { $0.kind == .health }.count == 1)
+    #expect(!events.filter { $0.kind == .milestone }.isEmpty)
+    #expect(events.allSatisfy { $0.date >= duringShift })
+    #expect(events.last?.date == snapshot.endDate)
+}
+
+@MainActor
 @Test("A scheduled focus task keeps its exact slot and appears in Coming Up")
 func scheduledFocusTaskAppearsInTimeline() throws {
     let scene = SceneState()
