@@ -19,6 +19,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.Files
 import java.nio.file.Path
@@ -47,7 +48,17 @@ data class DeviceSettings(
     val focusNotificationsEnabled: Boolean = true,
     /** The Focus page's scale, "today" or "usual". */
     val focusScale: String = "today",
-)
+    /** The countdown notification before clock-off (iOS's Live Activity switch); off until chosen, as on iOS. */
+    val ongoingEnabled: Boolean = false,
+    /** How long before clock-off it appears: 5, 15 or 30 minutes. */
+    val ongoingLeadMinutes: Int = 15,
+    /** The running focus phase in a notification (iOS's focus Live Activity); on by default, as on iOS. */
+    val focusOngoingEnabled: Boolean = true,
+) {
+    companion object {
+        val ONGOING_LEAD_MINUTES = listOf(5, 15, 30)
+    }
+}
 
 /**
  * One small JSON file. A missing or damaged file reads as the defaults: these
@@ -82,6 +93,9 @@ class DeviceSettingsStore(private val file: Path) {
             setupPage = o["setupPage"]?.jsonPrimitive?.contentOrNull,
             focusNotificationsEnabled = bool("focusNotificationsEnabled", true),
             focusScale = o["focusScale"]?.jsonPrimitive?.contentOrNull ?: "today",
+            ongoingEnabled = bool("ongoingEnabled", false),
+            ongoingLeadMinutes = o["ongoingLeadMinutes"]?.jsonPrimitive?.intOrNull?.takeIf { it in DeviceSettings.ONGOING_LEAD_MINUTES } ?: 15,
+            focusOngoingEnabled = bool("focusOngoingEnabled", true),
         )
     }.getOrElse { DeviceSettings() }
 
@@ -98,6 +112,9 @@ class DeviceSettingsStore(private val file: Path) {
             "setupPage" to (s.setupPage?.let(::JsonPrimitive) ?: JsonNull),
             "focusNotificationsEnabled" to JsonPrimitive(s.focusNotificationsEnabled),
             "focusScale" to JsonPrimitive(s.focusScale),
+            "ongoingEnabled" to JsonPrimitive(s.ongoingEnabled),
+            "ongoingLeadMinutes" to JsonPrimitive(s.ongoingLeadMinutes),
+            "focusOngoingEnabled" to JsonPrimitive(s.focusOngoingEnabled),
         ),
     ).toString()
 }

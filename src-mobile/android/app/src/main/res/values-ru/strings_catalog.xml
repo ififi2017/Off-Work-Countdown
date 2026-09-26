@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">Открыть системные настройки</string>
     <string name="focusNotificationPermissionDenied">Уведомления отключены, поэтому вы можете пропустить конец таймера. Их можно включить в системных настройках.</string>
     <string name="focusNotificationRetry">Повторить уведомление</string>
+    <string name="focusOngoing">Показывать текущую фазу в уведомлении</string>
     <string name="focusOutsideWorkHours">Сейчас нерабочее время.</string>
     <string name="focusOverflowNote">В этой смене не осталось места для %1$s.</string>
     <string name="focusPhaseComplete">Этот блок завершён</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">Начать знакомство</string>
     <string name="onboardingSystemBody">Время, статус и прогресс — никогда зарплата.</string>
     <string name="onboardingSystemTitle">Виджет и экран блокировки</string>
+    <string name="ongoingNote">С выбранного времени беззвучное уведомление ведёт обратный отсчёт до конца смены в шторке и на экране блокировки. Настройки батареи могут немного задержать его появление.</string>
+    <string name="ongoingNotification">Уведомление с обратным отсчётом</string>
+    <string name="ongoingShowBeforeClockOff">Показывать перед концом смены</string>
     <string name="openSourceLicenses">Лицензии открытого ПО</string>
     <string name="overtime">Переработка</string>
     <string name="overtimeDescription">Выберите более позднее время окончания смены.</string>

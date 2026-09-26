@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">Systemeinstellungen öffnen</string>
     <string name="focusNotificationPermissionDenied">Benachrichtigungen sind deaktiviert; du könntest das Timerende verpassen. Du kannst sie in den Systemeinstellungen aktivieren.</string>
     <string name="focusNotificationRetry">Benachrichtigung erneut versuchen</string>
+    <string name="focusOngoing">Laufende Phase in einer Mitteilung zeigen</string>
     <string name="focusOutsideWorkHours">Du bist außerhalb deiner Arbeitszeit.</string>
     <string name="focusOverflowNote">In dieser Schicht ist kein Platz mehr für %1$s.</string>
     <string name="focusPhaseComplete">Dieser Block ist abgeschlossen</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">Jetzt entdecken</string>
     <string name="onboardingSystemBody">Zeit, Status und Fortschritt – niemals das Gehalt.</string>
     <string name="onboardingSystemTitle">Widget und Sperrbildschirm</string>
+    <string name="ongoingNote">Ab der gewählten Startzeit zählt eine lautlose Mitteilung in der Benachrichtigungsleiste und auf dem Sperrbildschirm bis zum Feierabend herunter. Akku-Einstellungen können sie etwas später erscheinen lassen.</string>
+    <string name="ongoingNotification">Countdown-Mitteilung</string>
+    <string name="ongoingShowBeforeClockOff">Vor Feierabend anzeigen</string>
     <string name="openSourceLicenses">Open-Source-Lizenzen</string>
     <string name="overtime">Überstunden</string>
     <string name="overtimeDescription">Wähle ein späteres Ende für diese Schicht.</string>

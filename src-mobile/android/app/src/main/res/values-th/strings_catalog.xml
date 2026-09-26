@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">เปิดการตั้งค่าระบบ</string>
     <string name="focusNotificationPermissionDenied">การแจ้งเตือนปิดอยู่ คุณอาจพลาดเวลาสิ้นสุดตัวจับเวลา เปิดได้ในการตั้งค่าระบบ</string>
     <string name="focusNotificationRetry">ลองแจ้งเตือนอีกครั้ง</string>
+    <string name="focusOngoing">แสดงช่วงที่กำลังดำเนินอยู่ในการแจ้งเตือน</string>
     <string name="focusOutsideWorkHours">ขณะนี้อยู่นอกเวลาทำงาน</string>
     <string name="focusOverflowNote">กะนี้ไม่เหลือช่วงสำหรับ %1$s แล้ว</string>
     <string name="focusPhaseComplete">ช่วงนี้เสร็จสมบูรณ์แล้ว</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">เริ่มสัมผัสประสบการณ์</string>
     <string name="onboardingSystemBody">แสดงเวลา สถานะ และความคืบหน้า — ไม่แสดงเงินเดือนเด็ดขาด</string>
     <string name="onboardingSystemTitle">วิดเจ็ตและหน้าจอล็อก</string>
+    <string name="ongoingNote">ตั้งแต่เวลาเริ่มที่คุณเลือก การแจ้งเตือนแบบเงียบจะนับถอยหลังจนถึงเวลาเลิกงานในแถบการแจ้งเตือนและบนหน้าจอล็อก การตั้งค่าแบตเตอรี่อาจทำให้แสดงช้าลงเล็กน้อย</string>
+    <string name="ongoingNotification">การแจ้งเตือนนับถอยหลัง</string>
+    <string name="ongoingShowBeforeClockOff">แสดงก่อนเลิกงาน</string>
     <string name="openSourceLicenses">สัญญาอนุญาตโอเพนซอร์ส</string>
     <string name="overtime">ล่วงเวลา</string>
     <string name="overtimeDescription">เลือกเวลาเลิกงานที่ช้าลงสำหรับกะนี้</string>

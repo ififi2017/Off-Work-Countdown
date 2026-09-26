@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">Buka pengaturan sistem</string>
     <string name="focusNotificationPermissionDenied">Notifikasi mati, jadi Anda mungkin melewatkan akhir timer. Anda dapat menyalakannya di pengaturan sistem.</string>
     <string name="focusNotificationRetry">Coba lagi notifikasi</string>
+    <string name="focusOngoing">Tampilkan fase yang berjalan di notifikasi</string>
     <string name="focusOutsideWorkHours">Saat ini di luar jam kerja.</string>
     <string name="focusOverflowNote">Sif ini tidak punya ruang lagi untuk %1$s.</string>
     <string name="focusPhaseComplete">Blok ini selesai</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">Mulai menjelajah</string>
     <string name="onboardingSystemBody">Waktu, status, dan progres — tidak pernah gaji.</string>
     <string name="onboardingSystemTitle">Widget dan Layar Terkunci</string>
+    <string name="ongoingNote">Mulai waktu yang Anda pilih, notifikasi senyap menghitung mundur hingga jam pulang di bilah notifikasi dan layar kunci. Pengaturan baterai dapat membuatnya muncul sedikit terlambat.</string>
+    <string name="ongoingNotification">Notifikasi hitung mundur</string>
+    <string name="ongoingShowBeforeClockOff">Tampilkan sebelum pulang</string>
     <string name="openSourceLicenses">Lisensi sumber terbuka</string>
     <string name="overtime">Lembur</string>
     <string name="overtimeDescription">Pilih waktu selesai yang lebih lambat.</string>

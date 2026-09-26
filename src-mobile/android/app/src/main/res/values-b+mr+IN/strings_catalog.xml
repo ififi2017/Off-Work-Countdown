@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">सिस्टम सेटिंग्ज उघडा</string>
     <string name="focusNotificationPermissionDenied">सूचना बंद आहेत, त्यामुळे टायमर संपल्याचे तुमच्या लक्षात येणार नाही. त्या सिस्टम सेटिंग्जमध्ये सुरू करू शकता.</string>
     <string name="focusNotificationRetry">सूचना पुन्हा प्रयत्न करा</string>
+    <string name="focusOngoing">चालू टप्पा सूचनेत दाखवा</string>
     <string name="focusOutsideWorkHours">सध्या कामाची वेळ नाही.</string>
     <string name="focusOverflowNote">या शिफ्टमध्ये %1$s साठी जागा उरली नाही.</string>
     <string name="focusPhaseComplete">हा ब्लॉक पूर्ण झाला</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">अनुभव सुरू करा</string>
     <string name="onboardingSystemBody">वेळ, स्थिती आणि प्रगती — पगार कधीच नाही.</string>
     <string name="onboardingSystemTitle">विजेट आणि लॉक स्क्रीन</string>
+    <string name="ongoingNote">तुम्ही निवडलेल्या सुरुवातीच्या वेळेपासून, एक आवाज नसलेली सूचना सूचना पॅनेलमध्ये आणि लॉक स्क्रीनवर सुटेपर्यंत उलट मोजणी दाखवते. बॅटरी सेटिंग्जमुळे ती थोडी उशिरा दिसू शकते.</string>
+    <string name="ongoingNotification">उलट मोजणी सूचना</string>
+    <string name="ongoingShowBeforeClockOff">सुटण्याआधी दाखवा</string>
     <string name="openSourceLicenses">मुक्त स्रोत परवाने</string>
     <string name="overtime">ओव्हरटाइम</string>
     <string name="overtimeDescription">या शिफ्टसाठी उशिराची समाप्ती निवडा.</string>

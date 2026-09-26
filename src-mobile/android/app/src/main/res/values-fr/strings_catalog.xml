@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">Ouvrir les réglages système</string>
     <string name="focusNotificationPermissionDenied">Les notifications sont désactivées : vous pourriez manquer la fin du minuteur. Vous pouvez les activer dans les réglages système.</string>
     <string name="focusNotificationRetry">Réessayer la notification</string>
+    <string name="focusOngoing">Afficher la phase en cours dans une notification</string>
     <string name="focusOutsideWorkHours">Vous êtes en dehors des heures de travail.</string>
     <string name="focusOverflowNote">Il ne reste plus de place pour %1$s dans ce service.</string>
     <string name="focusPhaseComplete">Ce bloc est terminé</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">Découvrir l’app</string>
     <string name="onboardingSystemBody">L\'heure, l\'état et la progression — jamais le salaire.</string>
     <string name="onboardingSystemTitle">Widget et écran verrouillé</string>
+    <string name="ongoingNote">À partir de l’heure choisie, une notification silencieuse décompte jusqu’à la fin de journée dans le volet des notifications et sur l’écran de verrouillage. Les réglages de batterie peuvent retarder son apparition.</string>
+    <string name="ongoingNotification">Notification de compte à rebours</string>
+    <string name="ongoingShowBeforeClockOff">Afficher avant la fin de journée</string>
     <string name="openSourceLicenses">Licences open source</string>
     <string name="overtime">Heures sup.</string>
     <string name="overtimeDescription">Choisissez une heure de fin plus tardive.</string>

@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">システム設定を開く</string>
     <string name="focusNotificationPermissionDenied">通知がオフのため、タイマー終了を見逃す可能性があります。システム設定でオンにできます。</string>
     <string name="focusNotificationRetry">通知を再試行</string>
+    <string name="focusOngoing">進行中のフェーズを通知に表示</string>
     <string name="focusOutsideWorkHours">現在は勤務時間外です。</string>
     <string name="focusOverflowNote">このシフトの残りには %1$s が入りません。</string>
     <string name="focusPhaseComplete">このブロックは完了しました</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">体験を始める</string>
     <string name="onboardingSystemBody">表示するのは時間・状態・進捗だけ。給与は決して表示しません。</string>
     <string name="onboardingSystemTitle">ウィジェットとロック画面</string>
+    <string name="ongoingNote">選んだ開始時刻から、サイレント通知が通知シェードとロック画面で退勤までをカウントダウンします。バッテリー設定によって表示が遅れることがあります。</string>
+    <string name="ongoingNotification">カウントダウン通知</string>
+    <string name="ongoingShowBeforeClockOff">退勤前に表示</string>
     <string name="openSourceLicenses">オープンソースライセンス</string>
     <string name="overtime">残業</string>
     <string name="overtimeDescription">この勤務の終了時刻を延長します。</string>

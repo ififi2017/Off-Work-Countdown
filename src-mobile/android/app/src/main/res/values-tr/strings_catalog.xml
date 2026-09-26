@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">Sistem ayarlarını aç</string>
     <string name="focusNotificationPermissionDenied">Bildirimler kapalı; zamanlayıcının bitişini kaçırabilirsiniz. Sistem ayarlarından açabilirsiniz.</string>
     <string name="focusNotificationRetry">Bildirimi yeniden dene</string>
+    <string name="focusOngoing">Süren aşamayı bildirimde göster</string>
     <string name="focusOutsideWorkHours">Şu anda çalışma saatleri dışındasınız.</string>
     <string name="focusOverflowNote">Bu vardiyada %1$s için yer kalmadı.</string>
     <string name="focusPhaseComplete">Bu blok tamamlandı</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">Deneyime başla</string>
     <string name="onboardingSystemBody">Saat, durum ve ilerleme — maaş asla.</string>
     <string name="onboardingSystemTitle">Widget ve kilit ekranı</string>
+    <string name="ongoingNote">Seçtiğiniz başlangıç saatinden itibaren sessiz bir bildirim, bildirim panelinde ve kilit ekranında mesai bitimine kadar geri sayar. Pil ayarları görünmesini biraz geciktirebilir.</string>
+    <string name="ongoingNotification">Geri sayım bildirimi</string>
+    <string name="ongoingShowBeforeClockOff">Mesai bitmeden göster</string>
     <string name="openSourceLicenses">Açık kaynak lisansları</string>
     <string name="overtime">Fazla mesai</string>
     <string name="overtimeDescription">Bu vardiya için daha geç bir bitiş seçin.</string>

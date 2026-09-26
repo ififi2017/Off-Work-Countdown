@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">فتح إعدادات النظام</string>
     <string name="focusNotificationPermissionDenied">الإشعارات متوقفة، وقد تفوّت نهاية المؤقت. يمكنك تشغيلها من إعدادات النظام.</string>
     <string name="focusNotificationRetry">إعادة محاولة الإشعار</string>
+    <string name="focusOngoing">إظهار المرحلة الجارية في إشعار</string>
     <string name="focusOutsideWorkHours">أنت خارج ساعات العمل حاليًا.</string>
     <string name="focusOverflowNote">لم يعد في هذه الوردية مكان لـ %1$s.</string>
     <string name="focusPhaseComplete">اكتملت هذه المرحلة</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">ابدأ التجربة</string>
     <string name="onboardingSystemBody">الوقت والحالة والتقدّم فقط — لا الراتب أبدًا.</string>
     <string name="onboardingSystemTitle">الأداة وشاشة القفل</string>
+    <string name="ongoingNote">بدءًا من الوقت الذي تختاره، يعدّ إشعار صامت تنازليًا حتى نهاية الدوام في لوحة الإشعارات وعلى شاشة القفل. قد تؤخر إعدادات البطارية ظهوره قليلًا.</string>
+    <string name="ongoingNotification">إشعار العد التنازلي</string>
+    <string name="ongoingShowBeforeClockOff">إظهاره قبل انتهاء الدوام</string>
     <string name="openSourceLicenses">تراخيص المصادر المفتوحة</string>
     <string name="overtime">وقت إضافي</string>
     <string name="overtimeDescription">اختر وقت انتهاء لاحقًا لهذه الوردية.</string>

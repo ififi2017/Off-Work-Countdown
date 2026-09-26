@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">Apri impostazioni di sistema</string>
     <string name="focusNotificationPermissionDenied">Le notifiche sono disattivate: potresti non accorgerti della fine del timer. Puoi attivarle nelle impostazioni di sistema.</string>
     <string name="focusNotificationRetry">Riprova notifica</string>
+    <string name="focusOngoing">Mostra la fase in corso in una notifica</string>
     <string name="focusOutsideWorkHours">Sei fuori dall’orario di lavoro.</string>
     <string name="focusOverflowNote">In questo turno non c\'è più spazio per %1$s.</string>
     <string name="focusPhaseComplete">Questo blocco è completato</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">Inizia a esplorare</string>
     <string name="onboardingSystemBody">Ora, stato e progresso — mai lo stipendio.</string>
     <string name="onboardingSystemTitle">Widget e schermata di blocco</string>
+    <string name="ongoingNote">Dall’orario di inizio che scegli, una notifica silenziosa conta alla rovescia fino all’uscita nell’area notifiche e nella schermata di blocco. Le impostazioni della batteria possono ritardarne la comparsa.</string>
+    <string name="ongoingNotification">Notifica del conto alla rovescia</string>
+    <string name="ongoingShowBeforeClockOff">Mostra prima dell’uscita</string>
     <string name="openSourceLicenses">Licenze open source</string>
     <string name="overtime">Straordinario</string>
     <string name="overtimeDescription">Scegli un orario di fine più tardi.</string>

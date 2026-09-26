@@ -875,6 +875,10 @@
     "focusNotificationRetry": {
       "resource": "string/focusNotificationRetry"
     },
+    "focusOngoing": {
+      "resource": "string/focusOngoing",
+      "androidOnly": true
+    },
     "focusOutsideWorkHours": {
       "resource": "string/focusOutsideWorkHours"
     },
@@ -1782,6 +1786,18 @@
     },
     "onboardingSystemTitle": {
       "resource": "string/onboardingSystemTitle"
+    },
+    "ongoingNote": {
+      "resource": "string/ongoingNote",
+      "androidOnly": true
+    },
+    "ongoingNotification": {
+      "resource": "string/ongoingNotification",
+      "androidOnly": true
+    },
+    "ongoingShowBeforeClockOff": {
+      "resource": "string/ongoingShowBeforeClockOff",
+      "androidOnly": true
     },
     "openSourceLicenses": {
       "resource": "string/openSourceLicenses"

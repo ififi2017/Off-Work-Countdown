@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">開啟系統設定</string>
     <string name="focusNotificationPermissionDenied">通知已關閉，你可能會錯過計時結束提醒。可在系統設定中開啟。</string>
     <string name="focusNotificationRetry">重試通知</string>
+    <string name="focusOngoing">在通知中顯示進行中的階段</string>
     <string name="focusOutsideWorkHours">目前不在工作時間內。</string>
     <string name="focusOverflowNote">這個班次剩下的格子放不下 %1$s。</string>
     <string name="focusPhaseComplete">這一段已完成</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">開始體驗</string>
     <string name="onboardingSystemBody">只顯示時間、狀態和進度，絕不顯示薪資。</string>
     <string name="onboardingSystemTitle">小工具與鎖定畫面</string>
+    <string name="ongoingNote">從你選的開始時間起，一則靜音通知會在通知欄和鎖定畫面上倒數到下班。電池設定可能讓它晚一點出現。</string>
+    <string name="ongoingNotification">倒數通知</string>
+    <string name="ongoingShowBeforeClockOff">下班前顯示</string>
     <string name="openSourceLicenses">開源授權條款</string>
     <string name="overtime">加班</string>
     <string name="overtimeDescription">為目前班次選擇較晚的結束時間。</string>

@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">Open system settings</string>
     <string name="focusNotificationPermissionDenied">Notifications are off, so you may miss the end of this timer. You can turn them on in system settings.</string>
     <string name="focusNotificationRetry">Retry notification</string>
+    <string name="focusOngoing">Show the running phase in a notification</string>
     <string name="focusOutsideWorkHours">You are outside working hours.</string>
     <string name="focusOverflowNote">This shift has no room left for %1$s.</string>
     <string name="focusPhaseComplete">This block is complete</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">Start exploring</string>
     <string name="onboardingSystemBody">Time, status and progress — never salary.</string>
     <string name="onboardingSystemTitle">Widget and Lock Screen</string>
+    <string name="ongoingNote">From the start time you choose, a silent notification counts down to clock-off in the notification shade and on the Lock Screen. Battery settings may delay when it appears.</string>
+    <string name="ongoingNotification">Countdown notification</string>
+    <string name="ongoingShowBeforeClockOff">Show before clock-off</string>
     <string name="openSourceLicenses">Open-source licenses</string>
     <string name="overtime">Overtime</string>
     <string name="overtimeDescription">Choose a later finish time for this shift.</string>
