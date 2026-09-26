@@ -2,6 +2,7 @@
 <!-- The countdown widget: 2×2 and up, resizable; the app decides when it redraws (no periodic update). -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialLayout="@layout/glance_default_loading_layout"
+    android:previewImage="@drawable/widget_preview_small"
     android:minWidth="110dp"
     android:minHeight="110dp"
     android:minResizeWidth="110dp"

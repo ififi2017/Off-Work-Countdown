@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">Circa %1$s anni</string>
     <string name="lifeBirthYear">Anno di nascita</string>
     <string name="lifeCurrentSalary">Retribuzione lorda attuale</string>
-    <string name="lifeDetailedIncomeHelp">Imposta la data di inizio del lavoro attuale, poi aggiungi i lavori precedenti dal più recente. Ogni lavoro precedente termina automaticamente alla data di inizio del successivo.</string>
+    <string name="lifeDetailedIncomeHelp">Imposta la data di inizio del lavoro attuale, poi aggiungi sotto i lavori precedenti. Gli intervalli esistenti tra i lavori vengono mantenuti.</string>
     <string name="lifeEditProfile">Modifica profilo</string>
     <string name="lifeEmploymentCurrent">Lavoro attuale</string>
     <string name="lifeEmploymentEnd">Data di fine</string>
     <string name="lifeEmploymentSalary">Retribuzione lorda</string>
     <string name="lifeEmploymentStart">Data di inizio</string>
+    <string name="lifeEmploymentValidation">Controlla le date e lo stipendio di ogni lavoro. I periodi di lavoro non devono sovrapporsi.</string>
     <string name="lifeEmptyBody">Bastano anno di nascita ed età della pensione per disegnare la tua vita lavorativa, settimana per settimana.</string>
     <string name="lifeEmptyTitle">Aggiungi qualche dato</string>
     <string name="lifeEstimatedPast">Le settimane passate usano il turno di allora.</string>
@@ -519,6 +520,11 @@
     <string name="pausedUntil">In pausa fino alle %1$s</string>
     <string name="perEffectiveHour">Per ora effettiva</string>
     <string name="perWorkday">Per giorno lavorativo</string>
+    <string name="plusAndroidComingSoon">Gli acquisti Plus arriveranno presto su Android. Puoi già usare il timer e consultare i dati recenti.</string>
+    <string name="plusAndroidRenewalNotice">Gli abbonamenti si rinnovano automaticamente finché non li annulli. L’acquisto una tantum Lifetime non annulla un abbonamento attivo.</string>
+    <string name="plusAndroidRequestFailed">Google Play non è riuscito a completare la richiesta. Riprova tra poco.</string>
+    <string name="plusAndroidStoreOffline">Google Play non è disponibile al momento. Riprova a ripristinare gli acquisti quando sei online.</string>
+    <string name="plusAndroidStoreUnconfigured">Gli acquisti Plus non sono ancora disponibili su questo dispositivo. Puoi continuare a usare il timer e i dati recenti.</string>
     <string name="plusAutoRenew">Gli abbonamenti si rinnovano automaticamente finché non li annulli. Il piano annuale può includere 7 giorni gratuiti; poi si applica il prezzo annuale. L’acquisto per sempre è un pagamento unico e non annulla un abbonamento in corso.</string>
     <string name="plusBenefitCharts">Viste dell’anno completo e della vita lavorativa</string>
     <string name="plusBenefitEdit">Modifica qualsiasi giorno da Registri</string>
@@ -598,6 +604,7 @@
     <string name="recordsConflictCurrentVersion">Versione attuale</string>
     <string name="recordsConflictDetailsUnreadable">Dettagli non disponibili</string>
     <string name="recordsConflictFieldNote">Nota</string>
+    <string name="recordsConflictIncomingZoneBlocked">Questa copia usa un altro fuso orario per i registri. Mantieni la versione di questo dispositivo e modifica il fuso in Registri e dati, se necessario.</string>
     <string name="recordsConflictItems">elementi</string>
     <string name="recordsConflictKeepCloud">Tieni iCloud</string>
     <string name="recordsConflictKeepCurrent">Tieni la versione attuale</string>
@@ -613,6 +620,7 @@
     <string name="recordsDaySegments">Com’è andata la giornata</string>
     <string name="recordsDeleteAll">Elimina il registro su questo dispositivo</string>
     <string name="recordsDeleteAllConfirm">Rimuove il registro locale da questo dispositivo. Puoi ripristinarlo in seguito importando un vecchio backup.</string>
+    <string name="recordsDeleteFailed">Impossibile eliminare i dati da questo dispositivo. Riprova.</string>
     <string name="recordsDiscardEdits">Scartare queste modifiche?</string>
     <string name="recordsEditDay">Modifica questo giorno</string>
     <string name="recordsEditPlusHint">Modificare un giorno da Registri è una funzione Plus. Il timer continua a funzionare come ora.</string>
@@ -635,6 +643,7 @@
     <string name="recordsImportApplyNew">Aggiungi solo i nuovi</string>
     <string name="recordsImportConflicts">%1$s conflitti</string>
     <string name="recordsImportPreviewTitle">Controlla questa importazione</string>
+    <string name="recordsImportRejected">Impossibile leggere %1$s voci</string>
     <string name="recordsImportReport">Importato. Sono state ignorate %1$s voci eliminate definitivamente.</string>
     <string name="recordsImportSame">%1$s invariati</string>
     <string name="recordsImportSkipped">%1$s ignorati</string>

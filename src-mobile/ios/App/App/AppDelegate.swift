@@ -14,8 +14,31 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        let localizer = NativeLocalizer()
+        let locale = NativeLocalizer.systemLanguage()
+        application.shortcutItems = HomeQuickAction.allCases.map { action in
+            UIApplicationShortcutItem(
+                type: action.rawValue,
+                localizedTitle: localizer.string(action.titleKey, locale: locale),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: action.systemImage),
+                userInfo: nil
+            )
+        }
         Task { _ = try? await AppRuntime.loadShared() }
         return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+        if connectingSceneSession.role == .windowApplication {
+            configuration.delegateClass = HomeQuickActionSceneDelegate.self
+        }
+        return configuration
     }
 
     func application(
@@ -30,6 +53,72 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
     /// app is killed; the next read rebuilds it.
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
         ScheduleExpansionCache.shared.purge()
+    }
+}
+
+enum HomeQuickAction: String, CaseIterable {
+    case timer = "com.rainif.doneat.shortcut.timer"
+    case focus = "com.rainif.doneat.shortcut.focus"
+    case records = "com.rainif.doneat.shortcut.records"
+
+    var tab: AppTab {
+        switch self {
+        case .timer: .timer
+        case .focus: .focus
+        case .records: .records
+        }
+    }
+
+    var titleKey: String {
+        switch self {
+        case .timer: "timerTab"
+        case .focus: "focusTitle"
+        case .records: "recordsTab"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .timer: "timer"
+        case .focus: "stopwatch"
+        case .records: "calendar"
+        }
+    }
+}
+
+/// SwiftUI installs one instance in each window's environment. A shortcut is
+/// held here until that window has passed first-run setup and its intro.
+@MainActor
+final class HomeQuickActionSceneDelegate: NSObject, UIWindowSceneDelegate, ObservableObject {
+    @Published private(set) var pendingShortcut: AppTab?
+
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
+        if let item = connectionOptions.shortcutItem { enqueue(item.type) }
+    }
+
+    func windowScene(
+        _ windowScene: UIWindowScene,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        completionHandler(enqueue(shortcutItem.type))
+    }
+
+    @discardableResult
+    func enqueue(_ type: String) -> Bool {
+        guard let action = HomeQuickAction(rawValue: type) else { return false }
+        pendingShortcut = action.tab
+        return true
+    }
+
+    func takePending(when ready: Bool) -> AppTab? {
+        guard ready else { return nil }
+        defer { pendingShortcut = nil }
+        return pendingShortcut
     }
 }
 

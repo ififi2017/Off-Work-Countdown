@@ -2,6 +2,9 @@ package com.rainif.doneat.widget
 
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProviderInfo
+import android.content.ComponentName
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -20,6 +23,7 @@ import android.os.SystemClock
 import android.text.format.DateFormat
 import android.util.TypedValue
 import android.widget.RemoteViews
+import androidx.collection.intSetOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,14 +46,15 @@ import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.AndroidRemoteViews
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.SizeMode
+import androidx.glance.appwidget.PreviewSizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
-import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -74,8 +79,8 @@ import androidx.glance.color.ColorProvider
 import com.rainif.doneat.MainActivity
 import com.rainif.doneat.R
 import com.rainif.doneat.core.domain.widget.WidgetEntry
+import com.rainif.doneat.core.domain.widget.WidgetCountdownKind
 import com.rainif.doneat.core.domain.widget.WidgetPhase
-import com.rainif.doneat.core.domain.widget.WidgetSnapshot
 import com.rainif.doneat.core.domain.widget.WidgetUpcomingItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -118,8 +123,9 @@ private object WidgetColors {
  * all schedule rules ran in the app. With no snapshot, or one past its
  * expiry, it says so and asks for the app.
  */
-class DoneAtWidget : GlanceAppWidget() {
+class DoneAtWidget(private val previewSize: DpSize = SMALL) : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(SMALL, MEDIUM, LARGE))
+    override val previewSizeMode: PreviewSizeMode = SizeMode.Responsive(setOf(previewSize))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val first = withContext(Dispatchers.IO) { WidgetCoordinator.read(context) }
@@ -132,8 +138,26 @@ class DoneAtWidget : GlanceAppWidget() {
             val entry = snapshot?.entry(now)
             LaunchedEffect(tick, snapshot) { WidgetRefresh.schedule(context, entry, now) }
             val localized = remember(snapshot?.locale) { snapshot?.locale?.let { localized(context, it) } ?: context }
-            Content(localized, snapshot, entry, now)
+            Content(localized, snapshot?.upcoming.orEmpty(), entry, now)
         }
+    }
+
+    override suspend fun providePreview(context: Context, widgetCategory: Int) {
+        val now = System.currentTimeMillis()
+        val entry = WidgetEntry(
+            dateMs = now,
+            validUntilMs = now + 4 * 60 * 60_000L,
+            phase = WidgetPhase.WORKING,
+            labelKey = "widgetWorking",
+            countdownKind = WidgetCountdownKind.WORK_REMAINING,
+            countdownValueAtDateMs = 4 * 60 * 60_000L,
+            countdownTargetAtMs = null,
+            remainingEffectiveMsAtDateMs = 4 * 60 * 60_000L,
+            progressAtDate = 48.0,
+            nextBoundaryAtMs = now + 4 * 60 * 60_000L,
+        )
+        val upcoming = listOf(WidgetUpcomingItem("lunch", "break", context.getString(R.string.lunchBreak), "", now + 60 * 60_000L))
+        provideContent { Content(context, upcoming, entry, now) }
     }
 
     private fun localized(context: Context, tag: String): Context {
@@ -146,21 +170,58 @@ class DoneAtWidget : GlanceAppWidget() {
 internal object WidgetSignals {
     val tick = MutableStateFlow(0L)
 
+    private val receivers = listOf(
+        DoneAtWidgetReceiver::class.java,
+        DoneAtWidgetMediumReceiver::class.java,
+        DoneAtWidgetLargeReceiver::class.java,
+    )
+
     suspend fun redraw(context: Context) {
         tick.update { it + 1 }
-        DoneAtWidget().updateAll(context)
+        val manager = GlanceAppWidgetManager(context)
+        val appWidgets = AppWidgetManager.getInstance(context)
+        val widget = DoneAtWidget()
+        receivers.flatMap { appWidgets.getAppWidgetIds(ComponentName(context, it)).asList() }
+            .forEach { widget.update(context, manager.getGlanceIdBy(it)) }
+    }
+
+    fun hasWidgets(context: Context): Boolean {
+        val manager = AppWidgetManager.getInstance(context)
+        return receivers.any { manager.getAppWidgetIds(ComponentName(context, it)).isNotEmpty() }
+    }
+
+    suspend fun publishMissingPreviews(context: Context) {
+        if (Build.VERSION.SDK_INT < 35) return
+        val retry = context.getSharedPreferences("widget_preview_publish", Context.MODE_PRIVATE)
+        val now = System.currentTimeMillis()
+        if (now - retry.getLong("rateLimitedAt", 0L) < 2 * 60 * 60_000L) return
+        val appWidgets = AppWidgetManager.getInstance(context)
+        val glance = GlanceAppWidgetManager(context)
+        val category = AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN
+        for (receiver in receivers) {
+            val provider = appWidgets.installedProviders.firstOrNull { it.provider == ComponentName(context, receiver) } ?: continue
+            if (provider.generatedPreviewCategories and category != 0) continue
+            if (glance.setWidgetPreviews(receiver.kotlin, intSetOf(category)) == GlanceAppWidgetManager.SET_WIDGET_PREVIEWS_RESULT_RATE_LIMITED) {
+                retry.edit().putLong("rateLimitedAt", now).apply()
+                break
+            }
+        }
     }
 }
 
-/** The system's redraw of the widget; cancels the refresh alarm once the last one is removed. */
-class DoneAtWidgetReceiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = DoneAtWidget()
+/** Three picker entries share one renderer; the original receiver stays for existing 2×2 widgets. */
+abstract class DoneAtWidgetBaseReceiver(private val previewSize: DpSize) : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = DoneAtWidget(previewSize)
 
     override fun onDisabled(context: Context) {
         super.onDisabled(context)
-        WidgetRefresh.cancel(context)
+        if (!WidgetSignals.hasWidgets(context)) WidgetRefresh.cancel(context)
     }
 }
+
+class DoneAtWidgetReceiver : DoneAtWidgetBaseReceiver(SMALL)
+class DoneAtWidgetMediumReceiver : DoneAtWidgetBaseReceiver(MEDIUM)
+class DoneAtWidgetLargeReceiver : DoneAtWidgetBaseReceiver(LARGE)
 
 /** Redraws at the next interval boundary (and every 15 minutes while progress moves). Never wakes the phone. */
 class WidgetRefreshReceiver : BroadcastReceiver() {
@@ -274,7 +335,7 @@ private fun ring(context: Context, sizeDp: Dp, progress: Double): Bitmap {
 }
 
 @Composable
-private fun Content(context: Context, snapshot: WidgetSnapshot?, entry: WidgetEntry?, nowMs: Long) {
+private fun Content(context: Context, upcoming: List<WidgetUpcomingItem>, entry: WidgetEntry?, nowMs: Long) {
     val size = LocalSize.current
     val open = Intent(LocalContext.current, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, "timer")
     Box(
@@ -283,7 +344,7 @@ private fun Content(context: Context, snapshot: WidgetSnapshot?, entry: WidgetEn
     ) {
         when {
             entry == null -> Empty(context, size)
-            size.width >= LARGE.width && size.height >= LARGE.height -> Large(context, entry, snapshot!!.upcoming.filter { it.dateMs > nowMs }, nowMs)
+            size.width >= LARGE.width && size.height >= LARGE.height -> Large(context, entry, upcoming.filter { it.dateMs > nowMs }, nowMs)
             size.width >= MEDIUM.width -> Medium(context, entry, nowMs)
             else -> Small(context, entry, nowMs)
         }
@@ -362,7 +423,7 @@ private fun Small(context: Context, entry: WidgetEntry, nowMs: Long) {
         Spacer(GlanceModifier.defaultWeight())
         Badge(context, entry)
         Spacer(GlanceModifier.height(6.dp))
-        Countdown(context, entry, nowMs, 30f)
+        Countdown(context, entry, nowMs, 24f)
         Spacer(GlanceModifier.defaultWeight())
         Progress(context, entry)
     }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="timer" android:icon="@drawable/shortcut_timer"
+        android:shortcutShortLabel="@string/timerTab">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.rainif.doneat" android:targetClass="com.rainif.doneat.MainActivity">
+            <extra android:name="com.rainif.doneat.TAB" android:value="timer" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="focus" android:icon="@drawable/shortcut_focus"
+        android:shortcutShortLabel="@string/focusTitle">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.rainif.doneat" android:targetClass="com.rainif.doneat.MainActivity">
+            <extra android:name="com.rainif.doneat.TAB" android:value="focus" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="records" android:icon="@drawable/shortcut_records"
+        android:shortcutShortLabel="@string/recordsTab">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.rainif.doneat" android:targetClass="com.rainif.doneat.MainActivity">
+            <extra android:name="com.rainif.doneat.TAB" android:value="records" />
+        </intent>
+    </shortcut>
+</shortcuts>

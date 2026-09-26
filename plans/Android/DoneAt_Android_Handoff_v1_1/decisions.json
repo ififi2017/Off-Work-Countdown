@@ -366,11 +366,6 @@
     "evidence": []
   },
   "execution_status": {
-    "android_implementation": "NOT_STARTED",
-    "repository_modified": true,
-    "production_deployment": "NOT_PERFORMED",
-    "play_console_actions": "NOT_PERFORMED",
-    "application_tests": "NOT_RUN",
     "progress_source": "docs/android/progress.md"
   },
   "revision_evidence": {

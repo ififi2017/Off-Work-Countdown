@@ -1,7 +1,9 @@
 package com.rainif.doneat.core.data
 
-import com.rainif.doneat.core.domain.records.RecordJson
-import com.rainif.doneat.core.domain.records.RecordState
+import com.rainif.doneat.core.domain.records.*
+import com.rainif.doneat.core.domain.schedule.ExtendedSchedule
+import com.rainif.doneat.core.domain.schedule.RosterDay
+import java.util.UUID
 
 /** What an import would do, worked out on a copy before anything is written. */
 sealed interface ImportPreview {
@@ -34,11 +36,12 @@ object RecordsTransfer {
 
     fun preview(bytes: ByteArray, current: RecordState): ImportPreview {
         if (bytes.size > MAX_BYTES) return ImportPreview.TooLarge
+        if (!RecordInputBounds.accepts(bytes)) return ImportPreview.Invalid
         val (_, report) = merge(bytes, current) ?: return classify(bytes)
         return ImportPreview.Ready(
             added = report.inserted.values.sum() + report.adopted.size,
             unchanged = report.unchanged.values.sum(),
-            conflicts = report.conflicts.count { !it.appliedIncoming },
+            conflicts = report.conflicts.filter { !it.appliedIncoming }.distinctBy { it.entityType to it.logicalKey }.size,
             skippedErased = report.skippedErased.values.sum(),
             rejected = report.rejected.size,
         )
@@ -50,6 +53,7 @@ object RecordsTransfer {
      */
     suspend fun commit(records: RecordStore, bytes: ByteArray): Int? {
         if (bytes.size > MAX_BYTES) return null
+        if (!RecordInputBounds.accepts(bytes)) return null
         var skipped: Int? = null
         val result = records.update { current ->
             val merged = merge(bytes, current) ?: return@update current to Unit
@@ -64,11 +68,38 @@ object RecordsTransfer {
         records.update { current -> RecordState(syncedPreferences = current.syncedPreferences) to Unit } is WriteResult.Saved
 
     private fun merge(bytes: ByteArray, current: RecordState): Pair<RecordState, RecordJson.Report>? = try {
-        RecordJson.apply(RecordJson.decode(bytes.toString(Charsets.UTF_8)), current, RecordJson.ImportMode.SKIP_ERASED)
+        val document = RecordJson.decode(bytes.toString(Charsets.UTF_8))
+        val (merged, report) = RecordJson.apply(document, current, RecordJson.ImportMode.SKIP_ERASED)
+        val conflicts = report.conflicts.filter { !it.appliedIncoming }
+            .distinctBy { it.entityType to it.logicalKey }.mapNotNull { conflict ->
+            if (current.importConflicts.any { it.entityType == conflict.entityType && it.logicalKey == conflict.logicalKey }) null
+            else ImportConflictCopy(
+                UUID.randomUUID().toString(), conflict.entityType, conflict.logicalKey,
+                RecordJson.export(singleRow(conflict.incoming), document.exportedAtMs, document.timeZoneIdentifier, document.calendarIdentifier),
+                conflict.localEditCount, conflict.incomingEditCount,
+            )
+        }
+        merged.copy(importConflicts = merged.importConflicts + conflicts) to report
     } catch (_: RecordJson.Error) {
         null
     } catch (_: RuntimeException) {
         null
+    }
+
+    internal fun singleRow(value: Any): RecordState = when (value) {
+        is CareerPeriod -> RecordState(periods = listOf(value))
+        is ScheduleSnapshot -> RecordState(snapshots = listOf(value))
+        is CalendarException -> RecordState(exceptions = listOf(value))
+        is DayOverride -> RecordState(overrides = listOf(value))
+        is WorkObservation -> RecordState(observations = listOf(value))
+        is LifeProfile -> RecordState(lifeProfile = value)
+        is FocusTask -> RecordState(focusTasks = listOf(value))
+        is FocusSession -> RecordState(focusSessions = listOf(value))
+        is FocusPlanningConfiguration -> RecordState(focusPlanningConfiguration = value)
+        is SyncedPreferences -> RecordState(syncedPreferences = value)
+        is ExtendedSchedule -> RecordState(extendedSchedule = value)
+        is RosterDay -> RecordState(rosterDays = listOf(value))
+        else -> error("unknown record import type")
     }
 
     private fun classify(bytes: ByteArray): ImportPreview = try {

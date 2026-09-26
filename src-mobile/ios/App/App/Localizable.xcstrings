@@ -36063,115 +36063,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "حدّد تاريخ بدء عملك الحالي، ثم أضف الأعمال السابقة من الأحدث إلى الأقدم. ينتهي كل عمل سابق تلقائيًا عند تاريخ بدء العمل التالي."
+            "value": "حدّد تاريخ بدء عملك الحالي، ثم أضف الأعمال السابقة أدناه. تُحفظ الفترات الفاصلة الموجودة بين الأعمال."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lege das Startdatum deiner aktuellen Stelle fest und ergänze darunter frühere Stellen. Jede frühere Stelle endet automatisch am Startdatum der nächsten."
+            "value": "Lege das Startdatum deiner aktuellen Stelle fest und ergänze darunter frühere Stellen. Bestehende Lücken zwischen den Stellen bleiben erhalten."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Set the start date of your current job, then add earlier jobs below. Each earlier job ends automatically when the next one starts."
+            "value": "Set the start date of your current job, then add earlier jobs below. Existing gaps between jobs are kept."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Indica la fecha de inicio de tu empleo actual y añade debajo los anteriores, del más reciente al más antiguo. Cada empleo anterior termina automáticamente cuando comienza el siguiente."
+            "value": "Indica cuándo empezaste tu trabajo actual y añade debajo los anteriores. Se conservan los intervalos existentes entre trabajos."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Indiquez la date de début de votre emploi actuel, puis ajoutez vos emplois précédents en remontant le temps. Chaque emploi précédent se termine automatiquement au début du suivant."
+            "value": "Indiquez la date de début de votre emploi actuel, puis ajoutez les emplois précédents. Les périodes sans emploi déjà enregistrées sont conservées."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "वर्तमान नौकरी की आरंभ तिथि तय करें, फिर नीचे पिछली नौकरियाँ नई से पुरानी के क्रम में जोड़ें। हर पिछली नौकरी की समाप्ति तिथि अगली नौकरी की आरंभ तिथि से अपने आप जुड़ जाती है।"
+            "value": "अपनी मौजूदा नौकरी की शुरुआत की तारीख तय करें, फिर नीचे पिछली नौकरियाँ जोड़ें। नौकरियों के बीच के मौजूदा अंतराल बने रहेंगे।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Atur tanggal mulai pekerjaan saat ini, lalu tambahkan pekerjaan sebelumnya dari yang terbaru. Setiap pekerjaan sebelumnya otomatis berakhir saat pekerjaan berikutnya dimulai."
+            "value": "Tentukan tanggal mulai pekerjaan saat ini, lalu tambahkan pekerjaan sebelumnya di bawah. Jeda yang sudah ada antarpekerjaan tetap disimpan."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Imposta la data di inizio del lavoro attuale, poi aggiungi i lavori precedenti dal più recente. Ogni lavoro precedente termina automaticamente alla data di inizio del successivo."
+            "value": "Imposta la data di inizio del lavoro attuale, poi aggiungi sotto i lavori precedenti. Gli intervalli esistenti tra i lavori vengono mantenuti."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "現在の仕事の開始日を設定し、その下に以前の仕事を新しい順に追加します。以前の仕事の終了日は、次の仕事の開始日に自動で設定されます。"
+            "value": "現在の仕事の開始日を設定し、その下に以前の仕事を追加します。保存済みの仕事と仕事の間の空白期間は保持されます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "현재 직장의 시작일을 설정한 후 이전 경력을 최근 순서대로 추가하세요. 이전 경력의 종료일은 다음 직장의 시작일로 자동 설정됩니다."
+            "value": "현재 직장의 시작일을 정한 다음 아래에 이전 직장을 추가하세요. 기존에 저장된 직장 사이의 공백 기간은 유지됩니다."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "सध्याच्या नोकरीची सुरुवातीची तारीख ठरवा, मग खाली आधीच्या नोकऱ्या नव्या ते जुन्या क्रमाने जोडा. प्रत्येक आधीची नोकरी पुढच्या नोकरीच्या सुरुवातीच्या तारखेला आपोआप संपते."
+            "value": "सध्याच्या नोकरीची सुरुवात तारीख ठरवा, नंतर खाली आधीच्या नोकऱ्या जोडा. नोकऱ्यांमधील आधीचे अंतर कायम राहील."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Defina a data de início do emprego atual e adicione os anteriores, do mais recente ao mais antigo. Cada emprego anterior termina automaticamente quando começa o seguinte."
+            "value": "Define a data de início do emprego atual e adiciona abaixo os empregos anteriores. Os intervalos existentes entre empregos são mantidos."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Укажите дату начала текущей работы, затем добавьте предыдущие места работы от новых к старым. Дата окончания каждого предыдущего места автоматически совпадает с началом следующего."
+            "value": "Укажите дату начала текущей работы, затем добавьте предыдущие места работы. Существующие перерывы между ними сохранятся."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "กำหนดวันเริ่มงานปัจจุบัน แล้วเพิ่มงานก่อนหน้าจากล่าสุดไปเก่าสุด งานก่อนหน้าแต่ละงานจะสิ้นสุดโดยอัตโนมัติในวันเริ่มงานถัดไป"
+            "value": "กำหนดวันเริ่มงานปัจจุบัน แล้วเพิ่มงานก่อนหน้าด้านล่าง ระบบจะเก็บช่วงว่างระหว่างงานที่มีอยู่ไว้"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mevcut işinizin başlangıç tarihini belirleyin, ardından önceki işlerinizi yeniden eskiye doğru ekleyin. Her önceki iş, sonraki işin başladığı tarihte otomatik olarak sona erer."
+            "value": "Mevcut işinizin başlangıç tarihini belirleyin, ardından önceki işlerinizi aşağıya ekleyin. İşler arasındaki mevcut boşluklar korunur."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Đặt ngày bắt đầu công việc hiện tại, rồi thêm các công việc trước đó từ mới đến cũ. Mỗi công việc trước đó tự động kết thúc vào ngày công việc tiếp theo bắt đầu."
+            "value": "Đặt ngày bắt đầu công việc hiện tại, rồi thêm các công việc trước đó bên dưới. Các khoảng nghỉ giữa những công việc đã lưu sẽ được giữ nguyên."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "先设置当前工作的开始日期，再依次添加更早的工作经历。每段往期经历的结束日期会自动衔接后一份工作的开始日期。"
+            "value": "先设置当前工作的开始日期，再添加之前的工作。已有的工作间隔会保留。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "先設定目前工作的開始日期，再依次加入更早的工作經歷。每段過往經歷的結束日期會自動銜接下一份工作的開始日期。"
+            "value": "先設定而家份工嘅開始日期，再加入之前嘅工作。原有工作之間嘅空檔會保留。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "先設定目前工作的開始日期，再依序新增更早的工作經歷。每段過往經歷的結束日期會自動銜接下一份工作的開始日期。"
+            "value": "先設定目前工作的開始日期，再新增之前的工作。已有的工作間隔會保留。"
           }
         }
       }
@@ -37124,6 +37124,125 @@
           "stringUnit": {
             "state": "translated",
             "value": "過去的格子按當時班表估算。"
+          }
+        }
+      }
+    },
+    "lifeEmploymentValidation": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تحقّق من تواريخ كل عمل وراتبه. يجب ألا تتداخل فترات العمل."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prüfe die Daten und das Gehalt jeder Stelle. Die Arbeitszeiträume dürfen sich nicht überschneiden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the dates and salary for each job. Work periods must not overlap."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisa las fechas y el salario de cada trabajo. Los periodos de trabajo no deben solaparse."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vérifiez les dates et le salaire de chaque emploi. Les périodes de travail ne doivent pas se chevaucher."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हर नौकरी की तारीखें और वेतन जाँचें। काम की अवधियाँ एक-दूसरे से नहीं टकरानी चाहिए।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Periksa tanggal dan gaji setiap pekerjaan. Periode kerja tidak boleh tumpang tindih."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlla le date e lo stipendio di ogni lavoro. I periodi di lavoro non devono sovrapporsi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "各仕事の日付と給与を確認してください。勤務期間は重複できません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "각 직장의 날짜와 급여를 확인하세요. 근무 기간은 겹칠 수 없습니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रत्येक नोकरीच्या तारखा आणि पगार तपासा. कामाचे कालावधी एकमेकांवर येता कामा नयेत."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifica as datas e o salário de cada emprego. Os períodos de trabalho não podem sobrepor-se."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверьте даты и зарплату для каждого места работы. Периоды работы не должны пересекаться."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตรวจสอบวันที่และเงินเดือนของแต่ละงาน ช่วงเวลาทำงานต้องไม่ทับซ้อนกัน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her işin tarihlerini ve maaşını kontrol edin. Çalışma dönemleri çakışmamalıdır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kiểm tra ngày và mức lương của từng công việc. Các giai đoạn làm việc không được chồng lấn."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查每份工作的日期和薪资，工作时间段不能重叠。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查每份工嘅日期同人工，工作時段唔可以重疊。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查每份工作的日期和薪資，工作期間不能重疊。"
           }
         }
       }

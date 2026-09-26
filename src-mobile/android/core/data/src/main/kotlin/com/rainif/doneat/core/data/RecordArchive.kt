@@ -2,6 +2,7 @@ package com.rainif.doneat.core.data
 
 import com.rainif.doneat.core.domain.records.ErasedID
 import com.rainif.doneat.core.domain.records.FoundationCompat
+import com.rainif.doneat.core.domain.records.ImportConflictCopy
 import com.rainif.doneat.core.domain.records.RecordEntityType
 import com.rainif.doneat.core.domain.records.RecordJson
 import com.rainif.doneat.core.domain.records.RecordState
@@ -50,6 +51,16 @@ object RecordArchive {
                         ),
                     )
                 }),
+                "importConflicts" to JsonArray(state.importConflicts.map {
+                    JsonObject(mapOf(
+                        "id" to JsonPrimitive(it.id),
+                        "entityType" to JsonPrimitive(it.entityType.raw),
+                        "logicalKey" to JsonPrimitive(it.logicalKey),
+                        "incomingDocument" to JsonPrimitive(it.incomingDocument),
+                        "localEditCount" to JsonPrimitive(it.localEditCount),
+                        "incomingEditCount" to JsonPrimitive(it.incomingEditCount),
+                    ))
+                }),
             ),
         )
         return Json.encodeToString(JsonObject.serializer(), file).toByteArray(Charsets.UTF_8)
@@ -63,6 +74,9 @@ object RecordArchive {
             throw InvalidArchive("not a local archive")
         }
         return try {
+            val version = file["schemaVersion"]?.jsonPrimitive?.intOrNull
+                ?: throw InvalidArchive("missing local archive version")
+            if (version !in 1..RecordJson.SCHEMA_VERSION) throw InvalidArchive("unsupported local archive version $version")
             val documentBytes = FoundationCompat.base64(file.getValue("document").jsonPrimitive.content)
                 ?: throw InvalidArchive("document is not base64")
             val (state, report) = RecordJson.apply(
@@ -79,7 +93,20 @@ object RecordArchive {
                     editCount = o["editCount"]?.jsonPrimitive?.intOrNull ?: 0,
                 )
             }
-            migrateLegacyAutomaticPeriod(state.copy(erased = erased), nowMs)
+            val conflicts = file["importConflicts"]?.jsonArray.orEmpty().map { element ->
+                val o = element.jsonObject
+                val document = o.getValue("incomingDocument").jsonPrimitive.content
+                RecordJson.decode(document)
+                ImportConflictCopy(
+                    id = o.getValue("id").jsonPrimitive.content,
+                    entityType = RecordEntityType.fromRaw(o.getValue("entityType").jsonPrimitive.content) ?: throw InvalidArchive("conflict type"),
+                    logicalKey = o.getValue("logicalKey").jsonPrimitive.content,
+                    incomingDocument = document,
+                    localEditCount = o.getValue("localEditCount").jsonPrimitive.intOrNull ?: throw InvalidArchive("conflict stamp"),
+                    incomingEditCount = o.getValue("incomingEditCount").jsonPrimitive.intOrNull ?: throw InvalidArchive("conflict stamp"),
+                )
+            }
+            migrateLegacyAutomaticPeriod(state.copy(erased = erased, importConflicts = conflicts), nowMs)
         } catch (e: InvalidArchive) {
             throw e
         } catch (e: Exception) {

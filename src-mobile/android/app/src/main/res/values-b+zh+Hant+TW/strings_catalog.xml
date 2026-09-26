@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">約 %1$s 年</string>
     <string name="lifeBirthYear">出生年份</string>
     <string name="lifeCurrentSalary">當前工資總額</string>
-    <string name="lifeDetailedIncomeHelp">先設定目前工作的開始日期，再依序新增更早的工作經歷。每段過往經歷的結束日期會自動銜接下一份工作的開始日期。</string>
+    <string name="lifeDetailedIncomeHelp">先設定目前工作的開始日期，再新增之前的工作。已有的工作間隔會保留。</string>
     <string name="lifeEditProfile">編輯檔案</string>
     <string name="lifeEmploymentCurrent">目前工作</string>
     <string name="lifeEmploymentEnd">結束日期</string>
     <string name="lifeEmploymentSalary">工資總額</string>
     <string name="lifeEmploymentStart">開始日期</string>
+    <string name="lifeEmploymentValidation">請檢查每份工作的日期和薪資，工作期間不能重疊。</string>
     <string name="lifeEmptyBody">有出生年份和退休年齡，就能一週一週畫出你的工作人生。</string>
     <string name="lifeEmptyTitle">先補幾項資料</string>
     <string name="lifeEstimatedPast">過去的格子按當時班表估算。</string>
@@ -519,6 +520,11 @@
     <string name="pausedUntil">暫停至 %1$s</string>
     <string name="perEffectiveHour">每有效工時</string>
     <string name="perWorkday">每個工作日</string>
+    <string name="plusAndroidComingSoon">Android 版 Plus 即將開放購買。現在可以繼續使用計時器並查看近期記錄。</string>
+    <string name="plusAndroidRenewalNotice">訂閱會自動續訂，直到你取消。終身版是一次性購買，不會取消現有訂閱。</string>
+    <string name="plusAndroidRequestFailed">Google Play 暫時無法完成操作。請稍後再試。</string>
+    <string name="plusAndroidStoreOffline">暫時無法連線 Google Play。連線後可以嘗試恢復購買。</string>
+    <string name="plusAndroidStoreUnconfigured">這台裝置暫時無法購買 Plus。計時器和近期記錄仍可使用。</string>
     <string name="plusAutoRenew">訂閱會自動續訂，直到你取消。年訂可含 7 天試用，試用結束後按年價計費。終身是一次性買斷，不會自動取消已有訂閱。</string>
     <string name="plusBenefitCharts">完整年度和工作人生檢視</string>
     <string name="plusBenefitEdit">從紀錄頁修改任何一天</string>
@@ -598,6 +604,7 @@
     <string name="recordsConflictCurrentVersion">目前版本</string>
     <string name="recordsConflictDetailsUnreadable">這個舊副本無法顯示可讀的差異。</string>
     <string name="recordsConflictFieldNote">備註</string>
+    <string name="recordsConflictIncomingZoneBlocked">此版本使用不同的記錄時區。請保留本機版本，再視需要前往「記錄與資料」更改時區。</string>
     <string name="recordsConflictItems">個項目</string>
     <string name="recordsConflictKeepCloud">保留 iCloud</string>
     <string name="recordsConflictKeepCurrent">保留目前版本</string>
@@ -613,6 +620,7 @@
     <string name="recordsDaySegments">這一天的時段</string>
     <string name="recordsDeleteAll">刪除此裝置上的紀錄</string>
     <string name="recordsDeleteAllConfirm">會從此裝置移除本機紀錄。之後可以匯入舊備份來恢復這些紀錄。</string>
+    <string name="recordsDeleteFailed">無法刪除此裝置上的記錄，請再試一次。</string>
     <string name="recordsDiscardEdits">放棄這些變更？</string>
     <string name="recordsEditDay">改這一天</string>
     <string name="recordsEditPlusHint">從紀錄頁改某一天是 Plus 功能。計時本身還是可以照常使用。</string>
@@ -635,6 +643,7 @@
     <string name="recordsImportApplyNew">只加入新增</string>
     <string name="recordsImportConflicts">%1$s 筆衝突</string>
     <string name="recordsImportPreviewTitle">先看一下這份匯入</string>
+    <string name="recordsImportRejected">有 %1$s 筆記錄無法讀取</string>
     <string name="recordsImportReport">已匯入。略過了 %1$s 筆已永久刪除的紀錄。</string>
     <string name="recordsImportSame">%1$s 筆相同</string>
     <string name="recordsImportSkipped">%1$s 筆已略過</string>

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -45,15 +46,14 @@ import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.components.DoneAtPage
 import com.rainif.doneat.ui.components.NavigationRow
 import com.rainif.doneat.ui.components.RowDivider
-import com.rainif.doneat.ui.components.SettingsFooter
 import com.rainif.doneat.ui.components.SettingsGroup
-import com.rainif.doneat.ui.components.ValueRow
 import com.rainif.doneat.ui.files.BackupFiles
 import com.rainif.doneat.ui.timer.EarningsGate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 /**
@@ -80,6 +80,8 @@ fun RecordsDataScreen(graph: AppGraph, open: (com.rainif.doneat.ui.Route) -> Uni
     var reading by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var confirmMigrateZone by remember { mutableStateOf(false) }
+    var showTimeZone by remember { mutableStateOf(false) }
     var exportWithLife by remember { mutableStateOf(true) }
 
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -131,13 +133,20 @@ fun RecordsDataScreen(graph: AppGraph, open: (com.rainif.doneat.ui.Route) -> Uni
             NavigationRow(
                 stringResource(R.string.recordsLifeProfileRow),
                 {
-                    if (plus) com.rainif.doneat.ui.records.beginLifeEdit(graph, recordsContext, open) else open(com.rainif.doneat.ui.Route.Plus)
+                    if (plus) com.rainif.doneat.ui.records.beginLifeEdit(graph, recordsContext, open)
+                    else open(com.rainif.doneat.ui.Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsLifeEdit))
                 },
                 Icons.Outlined.AccountCircle,
                 supporting = stringResource(if (records.lifeProfile == null) R.string.recordsLifeProfileUnset else R.string.recordsLifeProfileReady),
             )
             RowDivider()
-            ValueRow(stringResource(R.string.recordsTimeZone), prefs.recordsTimeZoneIdentifier)
+            if (records.importConflicts.isNotEmpty()) {
+                NavigationRow(stringResource(R.string.recordsConflictCenter), { open(com.rainif.doneat.ui.Route.RecordsConflicts) },
+                    Icons.Outlined.FileUpload, supporting = Strings.recordsConflictCount(res, records.importConflicts.size.toString()))
+                RowDivider()
+            }
+            NavigationRow(stringResource(R.string.recordsTimeZone), { showTimeZone = true }, Icons.Outlined.Schedule,
+                supporting = prefs.recordsTimeZoneIdentifier)
         }
         SettingsGroup(title = stringResource(R.string.recordsExport), footer = stringResource(R.string.recordsExportFooterLocal)) {
             DataRow(Icons.Outlined.FileDownload, stringResource(R.string.recordsImport), busy = reading) { if (!reading) pick.launch(BackupFiles.OPEN_TYPES) }
@@ -161,6 +170,7 @@ fun RecordsDataScreen(graph: AppGraph, open: (com.rainif.doneat.ui.Route) -> Uni
                     Text(Strings.recordsImportSame(res, preview.unchanged.toString()))
                     Text(Strings.recordsImportConflicts(res, preview.conflicts.toString()))
                     Text(Strings.recordsImportSkipped(res, preview.skippedErased.toString()))
+                    if (preview.rejected > 0) Text(Strings.recordsImportRejected(res, preview.rejected.toString()))
                 }
             },
             confirmButton = {
@@ -183,10 +193,53 @@ fun RecordsDataScreen(graph: AppGraph, open: (com.rainif.doneat.ui.Route) -> Uni
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
-                    asOwner { RecordsTransfer.deleteRecords(graph.records) }
+                    asOwner {
+                        if (!RecordsTransfer.deleteRecords(graph.records)) {
+                            message = res.getString(R.string.recordsDeleteFailed)
+                        }
+                    }
                 }) { Text(stringResource(R.string.recordsDeleteAll), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancelAction)) } },
+        )
+    }
+    if (showTimeZone) {
+        val deviceZone = remember { ZoneId.systemDefault().id }
+        AlertDialog(
+            onDismissRequest = { showTimeZone = false },
+            title = { Text(stringResource(R.string.recordsTimeZone)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
+                    Text(prefs.recordsTimeZoneIdentifier)
+                    if (deviceZone != prefs.recordsTimeZoneIdentifier) {
+                        Text(Strings.recordsTimeZoneDevice(res, deviceZone))
+                        Text(stringResource(R.string.recordsTimeZoneFooter))
+                    }
+                }
+            },
+            confirmButton = {
+                if (deviceZone != prefs.recordsTimeZoneIdentifier) TextButton(onClick = {
+                    showTimeZone = false
+                    confirmMigrateZone = true
+                }) { Text(stringResource(R.string.recordsTimeZoneMigrate)) }
+            },
+            dismissButton = { TextButton(onClick = { showTimeZone = false }) { Text(stringResource(R.string.close)) } },
+        )
+    }
+    if (confirmMigrateZone) {
+        AlertDialog(
+            onDismissRequest = { confirmMigrateZone = false },
+            title = { Text(stringResource(R.string.recordsTimeZoneMigrate)) },
+            text = { Text(stringResource(R.string.recordsTimeZoneMigrateConfirm)) },
+            confirmButton = { TextButton(onClick = {
+                confirmMigrateZone = false
+                scope.launch {
+                    if (!graph.sessions.migrateRecordsTimeZone(ZoneId.systemDefault().id, graph.nowMs())) {
+                        message = res.getString(R.string.recordsArchiveSaveFailedBody)
+                    }
+                }
+            }) { Text(stringResource(R.string.recordsTimeZoneMigrate)) } },
+            dismissButton = { TextButton(onClick = { confirmMigrateZone = false }) { Text(stringResource(R.string.cancelAction)) } },
         )
     }
     message?.let {

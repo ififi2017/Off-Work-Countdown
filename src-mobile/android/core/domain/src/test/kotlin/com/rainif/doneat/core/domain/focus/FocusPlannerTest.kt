@@ -77,7 +77,11 @@ class FocusPlannerTest {
     }
 
     @Test fun focusTimerSettingsClampToSupportedRanges() {
+        assertEquals(FocusTimerSettings(25, 5, 15, 4), DEFAULT_TIMER_SETTINGS)
         assertEquals(FocusTimerSettings(10, 15, 5, 6), FocusTimerSettings(2, 20, 2, 9).normalized)
+        assertEquals(FocusTimerSettings(60, 1, 30, 2), FocusTimerSettings(99, -4, 99, -1).normalized)
+        assertEquals(FocusTimerSettings(10, 1, 5, 2), FocusTimerSettings(10, 1, 5, 2).normalized)
+        assertEquals(FocusTimerSettings(60, 15, 30, 6), FocusTimerSettings(60, 15, 30, 6).normalized)
     }
 
     @Test fun configuredFocusDurationIsUsedEverywhere() {

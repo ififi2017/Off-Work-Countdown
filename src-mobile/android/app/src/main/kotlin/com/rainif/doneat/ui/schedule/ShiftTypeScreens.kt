@@ -42,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.toColorInt
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -71,8 +70,7 @@ import com.rainif.doneat.ui.components.RowDivider
 import com.rainif.doneat.ui.components.SettingsFooter
 import com.rainif.doneat.ui.components.SettingsGroup
 import com.rainif.doneat.ui.components.SwitchRow
-import com.rainif.doneat.ui.onboarding.appIsDark
-import com.rainif.doneat.ui.onboarding.showTimePicker
+import com.rainif.doneat.ui.onboarding.rememberTimePicker
 import java.util.UUID
 
 /** The draft's content, as the schedule page shows it (seeded from the fixed hours when there is none). */
@@ -136,8 +134,7 @@ fun ShiftTypesScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit)
 fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () -> Unit) {
     val content = draftContent(graph)
     val session by graph.sessions.session.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val dark = appIsDark()
+    val pickTime = rememberTimePicker()
     val uuid = UUID.fromString(id)
     val prefs = session.env.preferences
     val initial = remember(id) {
@@ -180,9 +177,9 @@ fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () 
                 }
                 if (draft.kind == ShiftType.Kind.WORK) {
                     SettingsGroup(footer = if (draft.endMinutes <= draft.startMinutes) stringResource(R.string.extendedOvernightNote) else null) {
-                        TimeRow(stringResource(R.string.startTime), draft.startMinutes) { showTimePicker(context, dark, draft.startMinutes) { m -> draft = draft.copy(startMinutes = m) } }
+                        TimeRow(stringResource(R.string.startTime), draft.startMinutes) { pickTime(draft.startMinutes) { m -> draft = draft.copy(startMinutes = m) } }
                         RowDivider()
-                        TimeRow(stringResource(R.string.endTime), draft.endMinutes) { showTimePicker(context, dark, draft.endMinutes) { m -> draft = draft.copy(endMinutes = m) } }
+                        TimeRow(stringResource(R.string.endTime), draft.endMinutes) { pickTime(draft.endMinutes) { m -> draft = draft.copy(endMinutes = m) } }
                     }
                     SettingsGroup {
                         SwitchRow(stringResource(R.string.extendedBreak), draft.breakEnabled, { on ->
@@ -190,7 +187,7 @@ fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () 
                         })
                         if (draft.breakEnabled) {
                             RowDivider()
-                            TimeRow(stringResource(R.string.extendedBreakStart), draft.breakStartMinutes) { showTimePicker(context, dark, draft.breakStartMinutes) { m -> draft = draft.copy(breakStartMinutes = m) } }
+                            TimeRow(stringResource(R.string.extendedBreakStart), draft.breakStartMinutes) { pickTime(draft.breakStartMinutes) { m -> draft = draft.copy(breakStartMinutes = m) } }
                             RowDivider()
                             Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(start = DoneAtSpacing.l, end = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
                                 Text(stringResource(R.string.extendedBreakDuration), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)

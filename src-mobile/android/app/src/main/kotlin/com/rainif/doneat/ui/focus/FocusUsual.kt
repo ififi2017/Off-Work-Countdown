@@ -1,7 +1,6 @@
 package com.rainif.doneat.ui.focus
 
 import android.view.HapticFeedbackConstants
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -140,11 +139,11 @@ private fun Caption(text: String) {
     Text(text, Modifier.padding(horizontal = 6.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
-/** Cards at least 150 dp wide, as many to a row as fit, each row as tall as its tallest. */
+/** Keep task names on one line on phones; larger windows gain columns. */
 @Composable
 private fun <T> CardGrid(items: List<T>, card: @Composable (T, Modifier) -> Unit) {
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val columns = maxOf(1, ((maxWidth + 10.dp) / 160.dp).toInt())
+        val columns = maxOf(1, ((maxWidth + 10.dp) / 250.dp).toInt())
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             items.chunked(columns).forEach { row ->
                 Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -354,10 +353,8 @@ fun FocusTemplateEditScreen(graph: AppGraph, templateID: String?, open: (Route) 
     val draft = stored ?: return
     fun update(change: (FocusTemplateDraft) -> FocusTemplateDraft) { graph.focusTemplateDraft.value = graph.focusTemplateDraft.value?.let(change) }
     fun leave() {
-        graph.focusTemplateDraft.value = null
         onBack()
     }
-    BackHandler { leave() }
     fun move(from: Int, to: Int) = update { d ->
         if (to !in d.tasks.indices || from !in d.tasks.indices) d
         else d.copy(tasks = d.tasks.toMutableList().apply { add(to, removeAt(from)) })
@@ -400,9 +397,9 @@ fun FocusTemplateEditScreen(graph: AppGraph, templateID: String?, open: (Route) 
     val heights = remember { mutableStateMapOf<String, Int>() }
 
     DoneAtPage(
-        stringResource(R.string.focusUsualDay), ::leave, stringResource(R.string.focusTitle),
+        stringResource(R.string.focusUsualDay), { leave() }, stringResource(R.string.focusTitle),
         actions = {
-            TextButton(onClick = ::save, enabled = canSave) { Text(stringResource(R.string.saveAction), fontWeight = FontWeight.SemiBold) }
+            TextButton(onClick = { save() }, enabled = canSave) { Text(stringResource(R.string.saveAction), fontWeight = FontWeight.SemiBold) }
         },
     ) {
         Column(Modifier.padding(horizontal = DoneAtSpacing.page)) {
@@ -552,7 +549,7 @@ fun FocusTemplateTaskScreen(graph: AppGraph, taskID: String?, onBack: () -> Unit
     DoneAtPage(
         stringResource(if (existing != null) R.string.focusEditTask else R.string.focusNewTask), onBack, stringResource(R.string.focusUsualDay),
         actions = {
-            TextButton(onClick = ::save, enabled = draft.canSave) { Text(stringResource(R.string.saveAction), fontWeight = FontWeight.SemiBold) }
+            TextButton(onClick = { save() }, enabled = draft.canSave) { Text(stringResource(R.string.saveAction), fontWeight = FontWeight.SemiBold) }
         },
     ) {
         TaskFields(

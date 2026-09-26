@@ -59,6 +59,7 @@ import com.rainif.doneat.core.domain.records.SyncedPreferences
 import com.rainif.doneat.core.domain.schedule.ShiftCycleRule
 import com.rainif.doneat.core.domain.settings.AppLanguages
 import com.rainif.doneat.l10n.Strings
+import com.rainif.doneat.review.ReviewCoordinator
 import com.rainif.doneat.ui.Route
 import com.rainif.doneat.ui.components.ActionRow
 import com.rainif.doneat.ui.components.ChoiceRow
@@ -142,6 +143,7 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, open: (Route)
     val context = LocalContext.current
     DoneAtPage(
         title = stringResource(R.string.settings),
+        inlineTitle = true,
         actions = {
             TextButton(onClick = { open(Route.Plus) }) {
                 Icon(Icons.Outlined.StarOutline, contentDescription = null, modifier = Modifier.padding(end = DoneAtSpacing.xs))
@@ -171,7 +173,10 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, open: (Route)
         SettingsGroup(stringResource(R.string.aboutSection)) {
             NavigationRow(stringResource(R.string.aboutProject), { open(Route.About) }, Icons.Outlined.Info)
             RowDivider()
-            ActionRow(stringResource(R.string.rateAppGooglePlay), { openPlayListing(context) }, Icons.Outlined.RateReview, Icons.AutoMirrored.Outlined.OpenInNew)
+            ActionRow(stringResource(R.string.rateAppGooglePlay), {
+                ReviewCoordinator.get(context).disableAutomatic()
+                openPlayListing(context)
+            }, Icons.Outlined.RateReview, Icons.AutoMirrored.Outlined.OpenInNew)
         }
     }
 }

@@ -2,6 +2,9 @@ package com.rainif.doneat.ui.records
 
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -25,6 +28,8 @@ import androidx.compose.material.icons.automirrored.outlined.ListAlt
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material.icons.outlined.OpenInFull
+import androidx.compose.material.icons.outlined.CloseFullscreen
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,20 +44,22 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -93,12 +100,18 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     val scope = rememberCoroutineScope()
     val view = LocalView.current
     val snackbar = remember { SnackbarHostState() }
-    val scale = RecordsScale.fromRaw(device.recordsScale)?.takeIf { it in SCALES } ?: RecordsScale.MONTH
+    // A tap changes the view immediately; the device file is only its saved preference.
+    // Persist in the app scope so switching tabs cannot cancel the write.
+    var scaleRaw by rememberSaveable { mutableStateOf(device.recordsScale) }
+    val scale = RecordsScale.fromRaw(scaleRaw) ?: RecordsScale.MONTH
     var anchorKey by rememberSaveable { mutableStateOf(context.today.toString()) }
     val anchor = LocalDate.parse(anchorKey)
     var selectedDayKey by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedMonth by rememberSaveable { mutableStateOf<Int?>(null) }
+    var calloutMonth by rememberSaveable { mutableStateOf<Int?>(null) }
     var selectedStageID by rememberSaveable { mutableStateOf<String?>(null) }
+    var showStageCallout by rememberSaveable { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
     var page by remember { mutableStateOf<RecordsPage?>(null) }
     val locked = scale.requiresPlus && !context.queries.authorized
     val profile = context.queries.state.lifeProfile
@@ -112,12 +125,12 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     }
 
     // Life's allocation walks a whole career, so it is built once per revision and only while Life is shown.
-    var lifeModel by remember { mutableStateOf<Pair<RecordsContext, LifeViewModel?>?>(null) }
+    var lifeModel by remember { mutableStateOf<Pair<LifeInputs, LifeViewModel?>?>(null) }
     LaunchedEffect(context, scale, locked) {
         if (scale != RecordsScale.LIFE || locked || context.queries.state.lifeProfile == null) return@LaunchedEffect
-        if (lifeModel?.first?.queries?.state == context.queries.state && lifeModel?.first?.today == context.today) return@LaunchedEffect
+        if (lifeModel?.first == context.lifeInputs) return@LaunchedEffect
         val monthly = configuredMonthlySalary(graph)
-        lifeModel = context to withContext(Dispatchers.Default) { context.queries.lifeModel(context.nowMs, monthly) }
+        lifeModel = context.lifeInputs to withContext(Dispatchers.Default) { context.queries.lifeModel(context.nowMs, monthly) }
     }
     val lifeStages = remember(profile, context.today, context.queries.zone) {
         profile?.let {
@@ -135,31 +148,42 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     }
 
     fun tick() = view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-    fun editLife() = if (context.queries.authorized) beginLifeEdit(graph, context, open) else openSettings(Route.Plus)
+    fun editLife() = if (context.queries.authorized) beginLifeEdit(graph, context, open)
+        else openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsLifeEdit))
     fun dismissLifeSetup() {
         scope.launch { graph.settings.updateDevice { it.copy(lifeSetupPromptDismissed = true) } }
     }
     fun setScale(next: RecordsScale) {
         if (next == scale) return
+        expanded = false
         selectedDayKey = null
         selectedMonth = if (next == RecordsScale.YEAR) context.today.monthValue else null
-        scope.launch { graph.settings.updateDevice { it.copy(recordsScale = next.raw) } }
+        calloutMonth = null
+        showStageCallout = false
+        switchRecordsScale(next, { scaleRaw = it }, graph.scope) { selected ->
+            graph.settings.updateDevice { it.copy(recordsScale = selected) }
+        }
         tick()
     }
     fun shift(by: Long) {
         anchorKey = context.queries.shiftAnchor(anchor, scale, by).toString()
         selectedDayKey = null
+        calloutMonth = null
     }
     fun openDay(cell: RecordsDayCell) {
-        if (cell.appearance == RecordsDayAppearance.LOCKED) openSettings(Route.Plus) else open(Route.RecordsDay(cell.dayKey))
+        if (cell.appearance == RecordsDayAppearance.LOCKED)
+            openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsDay(cell.dayKey)))
+        else open(Route.RecordsDay(cell.dayKey))
     }
     fun openMonth(month: Int) {
         anchorKey = LocalDate.of(anchor.year, month, 1).toString()
+        calloutMonth = null
         setScale(RecordsScale.MONTH)
     }
     fun selectMonth(month: Int) {
         if (selectedMonth != month) tick()
         selectedMonth = month
+        calloutMonth = month
     }
     fun returnToToday() {
         anchorKey = context.today.toString()
@@ -175,38 +199,47 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         }
     }
 
-    val current = page?.takeIf { it.scale == scale && !locked }
+    val current = page?.takeIf { it.scale == scale && it.first == context.queries.window(scale, anchor).first && !locked }
     val month = selectedMonth ?: context.today.monthValue
     val life: @Composable () -> Unit = {
         val stages = lifeStages
         val bounds = stages?.second
         if (stages == null || bounds == null) {
-            LifeSetupCard(text, ::editLife, ::dismissLifeSetup)
+            LifeSetupCard(text, { editLife() }, { dismissLifeSetup() })
         } else {
-            LifeCanvas(stages.first, bounds, stages.third, selectedStageID, text) { stage ->
+            LifeCanvas(stages.first, bounds, stages.third, selectedStageID, showStageCallout, text) { stage ->
                 if (selectedStageID != stage.id) tick()
                 selectedStageID = stage.id
+                showStageCallout = true
             }
             if (profile?.retirementOn == null) {
-                TextButton(onClick = ::editLife) { Text(text.string(R.string.lifeSetRetirement), fontWeight = FontWeight.SemiBold) }
+                TextButton(onClick = { editLife() }) { Text(text.string(R.string.lifeSetRetirement), fontWeight = FontWeight.SemiBold) }
             }
         }
     }
     val chart: @Composable () -> Unit = {
         ChartCard(
-            context, scale, anchor, current, selectedDayKey, month, locked, ::shift, ::returnToToday, ::select, ::openDay,
-            ::selectMonth, ::openMonth, onUnlock = { openSettings(Route.Plus) }, life = life,
+            context, scale, anchor, current, selectedDayKey, month, calloutMonth == month, locked, expanded,
+            { shift(it) }, { returnToToday() }, { select(it) }, { openDay(it) },
+            { selectMonth(it) }, { openMonth(it) },
+            onUnlock = { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsCharts)) }, life = life,
+            onExpand = { expanded = !expanded },
+            onPinch = { zoom ->
+                if (zoom > 1.22f) {
+                    if (scale == RecordsScale.YEAR) openMonth(month) else setScale(scale.zoomedIn)
+                } else if (zoom < 0.82f) setScale(scale.zoomedOut)
+            },
         )
     }
     val conclusion: @Composable () -> Unit = {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             // Life's conclusion is behind Plus too: a locked life never prints a projected number.
             if (scale == RecordsScale.LIFE && !locked && profile != null) {
-                val loaded = lifeModel?.takeIf { it.first.queries.state == context.queries.state }
+                val loaded = lifeModel?.takeIf { it.first == context.lifeInputs }
                 LifeAllocationCard(loaded?.second, loading = loaded == null, decline = profile.futureIncomeDecline, text = text)
             }
             if (context.queries.authorized && profile == null && !device.lifeSetupPromptDismissed && scale == RecordsScale.MONTH) {
-                LifeSetupCard(text, ::editLife, ::dismissLifeSetup)
+                LifeSetupCard(text, { editLife() }, { dismissLifeSetup() })
             }
             // As on iOS, a period without a summary shows none: locked, or nothing recorded yet.
             val headline = current?.headline
@@ -225,6 +258,12 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     }
 
     Box(Modifier.fillMaxSize()) {
+        if (expanded) {
+            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+                Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(DoneAtSpacing.page)) { chart() }
+            }
+            return@Box
+        }
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
             BoxWithConstraints(Modifier.safeDrawingPadding()) {
                 val twoColumns = maxWidth >= 720.dp
@@ -232,7 +271,9 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                     Header(graph, text, onAllRecords = { open(Route.RecordsAll) }) { note -> scope.launch { snackbar.showSnackbar(note) } }
                     if (twoColumns) {
                         Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                            ScalePicker(text, scale, ::setScale)
+                            // A local function reference compares equal despite its captured scale.
+                            // A lambda lets Compose replace the callback when that scale changes.
+                            ScalePicker(text, scale) { setScale(it) }
                             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl)) { chart() }
                                 Column(Modifier.width(420.dp).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl)) { conclusion() }
@@ -243,7 +284,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                             Modifier.verticalScroll(rememberScrollState()).padding(horizontal = DoneAtSpacing.page).padding(bottom = DoneAtSpacing.xl),
                             verticalArrangement = Arrangement.spacedBy(14.dp),
                         ) {
-                            ScalePicker(text, scale, ::setScale)
+                            ScalePicker(text, scale) { setScale(it) }
                             chart()
                             conclusion()
                         }
@@ -313,7 +354,9 @@ private fun ChartCard(
     page: RecordsPage?,
     selectedDayKey: String?,
     selectedMonth: Int,
+    showMonthCallout: Boolean,
     locked: Boolean,
+    expanded: Boolean,
     shift: (Long) -> Unit,
     returnToToday: () -> Unit,
     onSelect: (RecordsDayCell) -> Unit,
@@ -322,6 +365,8 @@ private fun ChartCard(
     onOpenMonth: (Int) -> Unit,
     onUnlock: () -> Unit,
     life: @Composable () -> Unit,
+    onExpand: () -> Unit,
+    onPinch: (Float) -> Unit,
 ) {
     val text = context.text
     val (first, last) = context.queries.window(scale, anchor)
@@ -330,35 +375,55 @@ private fun ChartCard(
     val showsToday = !isLife && (context.today.isBefore(first) || context.today.isAfter(last))
     val scheme = MaterialTheme.colorScheme
     RecordsCard {
-        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Column(Modifier.padding(18.dp).then(if (isLife) Modifier else Modifier.pointerInput(scale, selectedMonth, anchor) {
+            awaitEachGesture {
+                awaitFirstDown(requireUnconsumed = false)
+                var zoom = 1f
+                do {
+                    val event = awaitPointerEvent()
+                    if (event.changes.size >= 2) zoom *= event.calculateZoom()
+                } while (event.changes.any { it.pressed })
+                if (zoom > 1.22f || zoom < 0.82f) onPinch(zoom)
+            }
+        }), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             CappedFontScale {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (!isLife) {
-                        IconButton(onClick = { shift(-1) }) {
-                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, text.string(R.string.recordsPreviousPeriod), tint = scheme.onSurfaceVariant)
+                    if (expanded) {
+                        Text(title, Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleMedium)
+                    } else {
+                        if (!isLife) {
+                            IconButton(onClick = { shift(-1) }) {
+                                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, text.string(R.string.recordsPreviousPeriod), tint = scheme.onSurfaceVariant)
+                            }
+                        }
+                        Row(
+                            Modifier.weight(1f).heightIn(min = 44.dp).clip(RoundedCornerShape(12.dp))
+                                .then(
+                                    if (showsToday) {
+                                        Modifier.clickable(onClick = returnToToday).semantics {
+                                            contentDescription = text.string(R.string.recordsToday)
+                                            stateDescription = title
+                                        }
+                                    } else {
+                                        Modifier.semantics { heading() }
+                                    },
+                                ),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            if (showsToday) Icon(Icons.Outlined.MyLocation, null, Modifier.padding(start = 6.dp).size(14.dp), tint = scheme.primary)
+                        }
+                        if (!isLife) {
+                            IconButton(onClick = { shift(1) }) {
+                                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, text.string(R.string.recordsNextPeriod), tint = scheme.onSurfaceVariant)
+                            }
                         }
                     }
-                    Row(
-                        Modifier.weight(1f).heightIn(min = 44.dp).clip(RoundedCornerShape(12.dp))
-                            .then(
-                                if (showsToday) {
-                                    Modifier.clickable(onClick = returnToToday).semantics {
-                                        contentDescription = text.string(R.string.recordsToday)
-                                        stateDescription = title
-                                    }
-                                } else {
-                                    Modifier.semantics { heading() }
-                                },
-                            ),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        if (showsToday) Icon(Icons.Outlined.MyLocation, null, Modifier.padding(start = 6.dp).size(14.dp), tint = scheme.primary)
-                    }
-                    if (!isLife) {
-                        IconButton(onClick = { shift(1) }) {
-                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, text.string(R.string.recordsNextPeriod), tint = scheme.onSurfaceVariant)
+                    if (scale == RecordsScale.YEAR || isLife) {
+                        IconButton(onClick = onExpand) {
+                            Icon(if (expanded) Icons.Outlined.CloseFullscreen else Icons.Outlined.OpenInFull,
+                                text.string(if (expanded) R.string.recordsCollapseChart else R.string.recordsExpandChart))
                         }
                     }
                 }
@@ -379,18 +444,31 @@ private fun ChartCard(
                 return@Column
             } else {
                 when (scale) {
-                    RecordsScale.WEEK -> WeekStrips(cells, selectedDayKey, text, onSelect, onOpen)
                     RecordsScale.YEAR -> {
-                        YearCanvas(cells, first.year, selectedMonth, text, onSelectMonth, onOpenMonth)
+                        if (expanded && page != null) {
+                            YearMonths(page, selectedMonth, context, onSelectMonth, onOpenMonth)
+                        } else {
+                            YearCanvas(cells, first.year, selectedMonth, showMonthCallout, text, onSelectMonth, onOpenMonth)
+                        }
                         return@Column
                     }
-                    else -> MonthGrid(
-                        cells, context.queries.gridLeadingBlanks(first),
-                        weekdayLabels(text, context.queries.window(RecordsScale.WEEK, first).first),
-                        selectedDayKey, text, onSelect, onOpen,
-                    )
+                    else -> {
+                        val selected = cells.firstOrNull { it.dayKey == selectedDayKey }
+                        RecordsDaySelection(selected?.dayKey, callout = {
+                            selected?.let { SelectedDay(it, text) { onOpen(it) } }
+                        }) { selectionAnchor ->
+                            if (scale == RecordsScale.WEEK) {
+                                WeekStrips(cells, selectedDayKey, text, onSelect, onOpen, selectionAnchor)
+                            } else {
+                                MonthGrid(
+                                    cells, context.queries.gridLeadingBlanks(first),
+                                    weekdayLabels(text, context.queries.window(RecordsScale.WEEK, first).first),
+                                    selectedDayKey, text, onSelect, onOpen, selectionAnchor,
+                                )
+                            }
+                        }
+                    }
                 }
-                cells.firstOrNull { it.dayKey == selectedDayKey }?.let { SelectedDay(it, text) { onOpen(it) } }
             }
             MarkLegend(includesLock = !context.queries.authorized, text = text)
         }
@@ -401,34 +479,74 @@ private fun ChartCard(
 @Composable
 private fun SelectedDay(cell: RecordsDayCell, text: RecordsText, onOpen: () -> Unit) {
     val locked = cell.appearance == RecordsDayAppearance.LOCKED
+    RecordsSelectionPill(
+        icon = if (locked) Icons.Outlined.Lock else Icons.Outlined.CalendarToday,
+        title = if (locked) text.string(R.string.recordsLockedDay) else text.dayTitle(cell.date),
+        subtitle = if (locked) null else
+            "${text.cellSource(cell)} · ${text.recordsDuration((cell.workMs + cell.overtimeMs).toDouble())}",
+        action = text.string(if (locked) R.string.plusSeePlans else R.string.recordsSeeThisDay),
+        onClick = onOpen,
+    )
+}
+
+/** The expanded year reads the same month's headline as the month scale. */
+@Composable
+private fun YearMonths(
+    page: RecordsPage,
+    selectedMonth: Int,
+    context: RecordsContext,
+    onSelect: (Int) -> Unit,
+    onOpen: (Int) -> Unit,
+) {
+    if (!context.queries.authorized) return
+    val text = context.text
+    val year = page.first.year
+    val month = selectedMonth.coerceIn(1, 12)
+    val monthDate = LocalDate.of(year, month, 1)
+    val monthlyCells = remember(page, month) { page.cells.filter { it.date.monthValue == month } }
+    val summary = remember(page, month, context.nowMs) { context.queries.headline(monthlyCells, page.days, context.nowMs) }
     val scheme = MaterialTheme.colorScheme
-    Surface(onClick = onOpen, shape = RoundedCornerShape(16.dp), color = scheme.surfaceContainerHighest) {
-        Row(
-            Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Icon(if (locked) Icons.Outlined.Lock else Icons.Outlined.CalendarToday, null, Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
-            Column(Modifier.weight(1f)) {
-                Text(
-                    if (locked) text.string(R.string.recordsLockedDay) else text.dayTitle(cell.date),
-                    style = MaterialTheme.typography.labelLarge,
-                )
-                if (!locked) {
-                    Text(
-                        "${text.cellSource(cell)} · ${text.recordsDuration((cell.workMs + cell.overtimeMs).toDouble())}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = scheme.onSurfaceVariant,
-                    )
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val fontScale = androidx.compose.ui.platform.LocalDensity.current.fontScale
+            val columns = (maxWidth.value / (72 * fontScale)).toInt().coerceIn(1, 4)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                (1..12).chunked(columns).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        row.forEach { value ->
+                            val date = LocalDate.of(year, value, 1)
+                            val selected = value == month
+                            Surface(
+                                onClick = { onSelect(value) },
+                                modifier = Modifier.weight(1f).heightIn(min = 44.dp).semantics {
+                                    contentDescription = text.monthYear(date)
+                                    this.selected = selected
+                                },
+                                shape = MaterialTheme.shapes.small,
+                                color = if (selected) scheme.primaryContainer else scheme.surfaceContainerHighest,
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(text.shortMonth(date), Modifier.padding(8.dp),
+                                        color = if (selected) scheme.onPrimaryContainer else scheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            Text(
-                text.string(if (locked) R.string.plusSeePlans else R.string.recordsSeeThisDay),
-                style = MaterialTheme.typography.labelLarge,
-                color = scheme.primary,
-            )
-            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(18.dp), tint = scheme.primary)
         }
+        HorizontalDivider(color = scheme.outlineVariant)
+        if (summary == null) {
+            Text(text.monthYear(monthDate), style = MaterialTheme.typography.titleMedium)
+            Text(text.string(R.string.recordsUnrecorded), color = scheme.onSurfaceVariant)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text.monthYear(monthDate), Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleMedium)
+                HelpButton(text.monthYear(monthDate), text.string(R.string.recordsSummaryHelp))
+            }
+            HeadlineContent(text, summary)
+        }
+        OpenMonthButton(text, monthDate) { onOpen(month) }
     }
 }
 

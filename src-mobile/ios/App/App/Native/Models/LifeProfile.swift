@@ -95,10 +95,24 @@ nonisolated struct LifeEmploymentPeriod: Codable, Equatable, Sendable, Identifia
 }
 
 nonisolated enum LifeEmploymentTimeline {
+    /// Only adjacent stored periods remain linked; explicit gaps and invalid ends stay intact.
+    static func linkedEndIDs(in periods: [LifeEmploymentPeriod], calendar: Calendar) -> Set<UUID> {
+        let sorted = periods.sorted {
+            ($0.startsOn.calculationAnchor(in: calendar) ?? .distantPast)
+                > ($1.startsOn.calculationAnchor(in: calendar) ?? .distantPast)
+        }
+        return Set(sorted.enumerated().compactMap { index, period in
+            let nextStart = index == 0 ? nil : sorted[index - 1].startsOn
+            return period.endsOn == nextStart ? period.id : nil
+        })
+    }
+
+    /// Resolve the editor's linked ends without replacing explicit historical boundaries.
     static func linkedPeriods(
         _ periods: [LifeEmploymentPeriod],
         calendar: Calendar,
-        now: Date = .now
+        now: Date = .now,
+        linkingEndsFor: Set<UUID>
     ) -> [LifeEmploymentPeriod]? {
         let dated = periods.compactMap { period in
             period.startsOn.calculationAnchor(in: calendar).map { (period: period, start: $0) }
@@ -116,11 +130,20 @@ nonisolated enum LifeEmploymentTimeline {
               })
         else { return nil }
 
-        return sorted.enumerated().map { index, item in
+        var result: [LifeEmploymentPeriod] = []
+        for (index, item) in sorted.enumerated() {
             var linked = item.period
-            linked.endsOn = index == 0 ? nil : sorted[index - 1].period.startsOn
-            return linked
+            if linkingEndsFor.contains(linked.id) {
+                linked.endsOn = index == 0 ? nil : sorted[index - 1].period.startsOn
+            }
+            guard linked.isValid(in: calendar) else { return nil }
+            if index > 0 {
+                guard let end = linked.endsOn?.calculationAnchor(in: calendar),
+                      end <= sorted[index - 1].start else { return nil }
+            }
+            result.append(linked)
         }
+        return result
     }
 
     static func inferredCurrentStart(

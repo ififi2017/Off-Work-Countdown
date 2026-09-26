@@ -63,7 +63,7 @@ class DoneAtMotion(val reduced: Boolean) {
     /** `OWCMotion` state panels and records expansion: cubic-bezier(0.23, 1, 0.32, 1). */
     val emphasizedDecelerate = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)
 
-    /** One digit of the countdown rolling over (`OWCMotion.countdownTick`); `DoneAtCountdown` skips it under reduced motion. */
+    /** One digit rolling over; slower than iOS's 160 ms to make the blur legible on Android. */
     fun <T> countdownTick(): FiniteAnimationSpec<T> = tween(COUNTDOWN_TICK_MS, easing = LinearEasing)
     fun <T> press(): AnimationSpec<T> = if (reduced) snap() else tween(PRESS_MS, easing = FastOutSlowInEasing)
     fun <T> selection(): AnimationSpec<T> = if (reduced) snap() else tween(SELECTION_MS, easing = FastOutSlowInEasing)
@@ -77,12 +77,13 @@ class DoneAtMotion(val reduced: Boolean) {
 
     companion object {
         const val REDUCED_MS = 160
-        const val COUNTDOWN_TICK_MS = 160
+        const val COUNTDOWN_TICK_MS = 260
         const val PRESS_MS = 140
         const val SELECTION_MS = 180
         const val STATE_EXIT_MS = 100
         const val STATE_ENTER_MS = 180
         const val PHASE_MS = 280
+        const val ONBOARDING_PRIVACY_DEMO_MS = 700
         const val SPATIAL_DAMPING = 0.8f
     }
 }

@@ -10,6 +10,7 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
+import java.time.DayOfWeek
 import java.time.ZoneId
 
 /** iOS `LifeViewCalculatorTests`, restated against the Kotlin rules, plus the profile write. */
@@ -43,6 +44,29 @@ class LifeRulesTest {
             periodID, FoundationCompat.dayKey(date), LifeDates.ms(date, zone), listOf(ShiftSegment(start, end)),
             if (overtimeHours > 0) listOf(ShiftSegment(end, end + overtimeHours * hour)) else emptyList(), isOverride,
         )
+    }
+
+    @Test fun fifteenThousandDayLifeWithTenYearsOfRecordsBuildsOnTheJvm() {
+        val first = LocalDate.of(1980, 1, 1)
+        val last = first.plusDays(15_000)
+        val workStart = last.minusYears(10)
+        val profile = profile(
+            LifeDates.exact(first.year, first.monthValue, first.dayOfMonth),
+            LifeDates.exact(workStart.year, workStart.monthValue, workStart.dayOfMonth),
+            LifeDates.exact(last.year, last.monthValue, last.dayOfMonth),
+        )
+        val days = (0 until java.time.temporal.ChronoUnit.DAYS.between(workStart, last).toInt())
+            .map { workStart.plusDays(it.toLong()) }
+            .filter { it.dayOfWeek != DayOfWeek.SATURDAY && it.dayOfWeek != DayOfWeek.SUNDAY }
+            .map { day(it, 9, 8) }
+        val before = System.nanoTime()
+        val model = LifeViewCalculator.build(profile, days, emptySet(), ms(2016, 1, 1), zone)
+        val elapsedMs = (System.nanoTime() - before) / 1_000_000.0
+        println("QA-056 JVM LifeViewCalculator: 15,000 civil days, ${days.size} workdays, $elapsedMs ms")
+        assertEquals(2_143, model.cells.size)
+        assertTrue(model.workedWeeks > 0)
+        assertTrue(model.remainingWeeks > 0)
+        assertTrue(model.workShare.isFinite())
     }
 
     @Test fun weeksRunToRetirementNotAFixedYear() {

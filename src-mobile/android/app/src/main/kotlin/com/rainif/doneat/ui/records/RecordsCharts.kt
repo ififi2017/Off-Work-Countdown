@@ -32,22 +32,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
@@ -164,6 +167,7 @@ fun MonthGrid(
     text: RecordsText,
     onSelect: (RecordsDayCell) -> Unit,
     onOpen: (RecordsDayCell) -> Unit,
+    selectionAnchor: Modifier = Modifier,
 ) {
     val colors = LocalDoneAtRecordsColors.current
     val scheme = MaterialTheme.colorScheme
@@ -197,6 +201,7 @@ fun MonthGrid(
                             Modifier
                                 .weight(1f)
                                 .aspectRatio(1f)
+                                .then(if (selected) selectionAnchor else Modifier)
                                 .clip(shape)
                                 .background(fill)
                                 .estimatedHatch(RecordsDayMarks.isEstimated(cell), scheme.onSurfaceVariant, spacing = 6.dp)
@@ -249,6 +254,7 @@ fun WeekStrips(
     text: RecordsText,
     onSelect: (RecordsDayCell) -> Unit,
     onOpen: (RecordsDayCell) -> Unit,
+    selectionAnchor: Modifier = Modifier,
 ) {
     val colors = LocalDoneAtRecordsColors.current
     val scheme = MaterialTheme.colorScheme
@@ -262,6 +268,7 @@ fun WeekStrips(
                 Column(
                     Modifier
                         .weight(1f)
+                        .then(if (selected) selectionAnchor else Modifier)
                         .clip(RoundedCornerShape(10.dp))
                         .clickable { onSelect(cell) }
                         .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }),
@@ -474,6 +481,7 @@ fun YearCanvas(
     cells: List<RecordsDayCell>,
     year: Int,
     selectedMonth: Int?,
+    showCallout: Boolean,
     text: RecordsText,
     onSelectMonth: (Int) -> Unit,
     onOpenMonth: (Int) -> Unit,
@@ -481,8 +489,10 @@ fun YearCanvas(
     val colors = LocalDoneAtRecordsColors.current
     val scheme = MaterialTheme.colorScheme
     val density = LocalDensity.current
+    var tappedBucket by remember(cells) { mutableStateOf<Int?>(null) }
+    val selectMonth by rememberUpdatedState(onSelectMonth)
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        BoxWithConstraints(Modifier.fillMaxWidth().height(220.dp).clearAndSetSemantics {}) {
+        BoxWithConstraints(Modifier.fillMaxWidth().height(220.dp)) {
             val first = cells.firstOrNull()?.date ?: return@BoxWithConstraints
             val end = (cells.lastOrNull()?.date ?: first).plusDays(1)
             val grid = with(density) {
@@ -492,10 +502,14 @@ fun YearCanvas(
             val corner = with(density) { min(3.dp.toPx(), grid.cell / 3) }
             val line = with(density) { 1.dp.toPx() }
             Canvas(
-                Modifier.fillMaxSize().pointerInput(buckets, grid) {
+                Modifier.fillMaxSize().clearAndSetSemantics {}.pointerInput(buckets, grid) {
                     detectTapGestures(
-                        onTap = { point -> grid.index(point.x, point.y)?.let(buckets::getOrNull)?.let { onSelectMonth(it.month) } },
-                        onDoubleTap = { point -> grid.index(point.x, point.y)?.let(buckets::getOrNull)?.let { onOpenMonth(it.month) } },
+                        onTap = { point ->
+                            grid.index(point.x, point.y)?.let(buckets::getOrNull)?.let { bucket ->
+                                tappedBucket = bucket.index
+                                selectMonth(bucket.month)
+                            }
+                        },
                     )
                 },
             ) {
@@ -537,6 +551,22 @@ fun YearCanvas(
                     }
                 }
             }
+            if (showCallout && selectedMonth != null) {
+                val bucket = tappedBucket?.let(buckets::getOrNull)?.takeIf { it.month == selectedMonth }
+                    ?: buckets.firstOrNull { it.month == selectedMonth }
+                if (bucket != null) {
+                    val (x, y) = grid.origin(bucket.index)
+                    RecordsCallout(Rect(x, y, x + grid.cell, y + grid.cell), Modifier.matchParentSize()) {
+                        RecordsSelectionPill(
+                            icon = Icons.Outlined.CalendarToday,
+                            title = text.month(LocalDate.of(year, selectedMonth, 1)),
+                            subtitle = year.toString(),
+                            action = text.string(R.string.recordsSeeThisMonth),
+                            onClick = { onOpenMonth(selectedMonth) },
+                        )
+                    }
+                }
+            }
         }
         CappedFontScale {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -552,12 +582,12 @@ fun YearCanvas(
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(if (selected) scheme.primary.copy(alpha = 0.16f) else scheme.surfaceContainerHighest)
                                     .border(if (selected) 1.25.dp else 0.dp, if (selected) scheme.primary else Color.Transparent, RoundedCornerShape(10.dp))
-                                    .pointerInput(month) { detectTapGestures(onTap = { onSelectMonth(month) }, onDoubleTap = { onOpenMonth(month) }) }
+                                    .clickable { tappedBucket = null; onSelectMonth(month) }
                                     .semantics {
                                         contentDescription = text.monthYear(date)
                                         role = Role.Button
                                         this.selected = selected
-                                        onClick { onSelectMonth(month); true }
+                                        onClick { tappedBucket = null; onSelectMonth(month); true }
                                         customActions = listOf(CustomAccessibilityAction(text.string(R.string.recordsSeeThisMonth)) { onOpenMonth(month); true })
                                     },
                                 contentAlignment = Alignment.Center,

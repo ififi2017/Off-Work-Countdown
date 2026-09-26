@@ -576,6 +576,35 @@ export function createScheduleRuleFixtureJson() {
     });
   });
 
+  // Explicit Los Angeles spring-gap and repeated-hour probes. Append after the
+  // broad sweep so its existing profile indices and cases stay unchanged.
+  const laInstants = [
+    Date.UTC(2026, 2, 8, 9, 30),  // 01:30 PST, before the skipped hour
+    Date.UTC(2026, 2, 8, 10, 0),  // 03:00 PDT, immediately after it
+    Date.UTC(2026, 2, 8, 10, 30),
+    Date.UTC(2026, 10, 1, 8, 30), // first 01:30, PDT
+    Date.UTC(2026, 10, 1, 9, 30), // second 01:30, PST
+    Date.UTC(2026, 10, 1, 10, 0),
+  ];
+  for (const clock of [hours[2], hours[5]]) {
+    const p = profiles.length;
+    const profile = {
+      id: `${clock.id}/weekends/America/Los_Angeles`,
+      startTime: clock.startTime,
+      endTime: clock.endTime,
+      workdays: [0, 6],
+      schedule: { mode: "classic" },
+      breakStartTime: clock.breakStartTime,
+      breakDurationMinutes: clock.breakDurationMinutes,
+      timeZoneIdentifier: "America/Los_Angeles",
+    };
+    profiles.push(profile);
+    for (const nowMs of laInstants) {
+      snapshots.push({ p, s: 1, now: nowMs, ot: null, forced: null,
+        expected: snapshotRow(call("snapshot", rulesInput(profile, nowMs, { salary: 1 }))) });
+    }
+  }
+
   const recordsIncome = salaries.flatMap((_, s) => [0, 1, 2, 23, -3].map((n) => ({
     s,
     n,

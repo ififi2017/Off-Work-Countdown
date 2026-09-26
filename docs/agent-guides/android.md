@@ -7,7 +7,7 @@ locale and validation rules apply.
 ## Status and sources
 
 - Android is a native port in progress; the Gradle project is
-  `src-mobile/android` (modules `:app`, `:core:domain`, `:core:designsystem`).
+  `src-mobile/android` (modules `:app`, `:core:domain`, `:core:data`, `:core:designsystem`).
   The plan is `plans/Android/DoneAt_Android_Handoff_v1_1/` (package 1.2; the
   folder keeps its 1.1 name so links survive). Start at `00_START_HERE.md`.
 - `docs/android/progress.md` is the only task-status record. `tasks.json`
@@ -22,7 +22,7 @@ locale and validation rules apply.
 
 ## Architecture
 
-- Kotlin, Jetpack Compose, Room, java.time. No WebView, Capacitor, Flutter,
+- Kotlin, Jetpack Compose, atomic JSON archive (D-13), java.time. No WebView, Capacitor, Flutter,
   React Native or runtime JavaScript. `:core:domain` is pure JVM: no
   `android.*`, Room, Compose or Billing, and no hidden `Instant.now()`.
 - Release uses stable Compose/Material3 only (D-12). Expressive styling comes
@@ -159,7 +159,7 @@ Versions and verified commands live in `docs/android/environment-lock.md`.
 From `src-mobile/android`, with `JAVA_HOME` set as above:
 
 ```bash
-./gradlew :core:domain:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease
+./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease
 ```
 
 `.github/workflows/android.yml` runs the same set on Android path changes and

@@ -1176,6 +1176,9 @@
     "lifeEmploymentStart": {
       "resource": "string/lifeEmploymentStart"
     },
+    "lifeEmploymentValidation": {
+      "resource": "string/lifeEmploymentValidation"
+    },
     "lifeEmptyBody": {
       "resource": "string/lifeEmptyBody"
     },
@@ -1838,6 +1841,26 @@
     "perWorkday": {
       "resource": "string/perWorkday"
     },
+    "plusAndroidComingSoon": {
+      "resource": "string/plusAndroidComingSoon",
+      "androidOnly": true
+    },
+    "plusAndroidRenewalNotice": {
+      "resource": "string/plusAndroidRenewalNotice",
+      "androidOnly": true
+    },
+    "plusAndroidRequestFailed": {
+      "resource": "string/plusAndroidRequestFailed",
+      "androidOnly": true
+    },
+    "plusAndroidStoreOffline": {
+      "resource": "string/plusAndroidStoreOffline",
+      "androidOnly": true
+    },
+    "plusAndroidStoreUnconfigured": {
+      "resource": "string/plusAndroidStoreUnconfigured",
+      "androidOnly": true
+    },
     "plusAutoRenew": {
       "resource": "string/plusAutoRenew"
     },
@@ -2085,6 +2108,10 @@
     "recordsConflictFieldNote": {
       "resource": "string/recordsConflictFieldNote"
     },
+    "recordsConflictIncomingZoneBlocked": {
+      "resource": "string/recordsConflictIncomingZoneBlocked",
+      "androidOnly": true
+    },
     "recordsConflictItems": {
       "resource": "string/recordsConflictItems"
     },
@@ -2129,6 +2156,10 @@
     },
     "recordsDeleteAllConfirm": {
       "resource": "string/recordsDeleteAllConfirm"
+    },
+    "recordsDeleteFailed": {
+      "resource": "string/recordsDeleteFailed",
+      "androidOnly": true
     },
     "recordsDiscardEdits": {
       "resource": "string/recordsDiscardEdits"
@@ -2202,6 +2233,13 @@
     },
     "recordsImportPreviewTitle": {
       "resource": "string/recordsImportPreviewTitle"
+    },
+    "recordsImportRejected": {
+      "resource": "string/recordsImportRejected",
+      "params": [
+        "count"
+      ],
+      "androidOnly": true
     },
     "recordsImportReport": {
       "resource": "string/recordsImportReport",

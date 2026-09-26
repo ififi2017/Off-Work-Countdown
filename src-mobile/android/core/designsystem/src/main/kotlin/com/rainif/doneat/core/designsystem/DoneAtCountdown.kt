@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
  * - [countsDown]: the old digit leaves downward and the new one arrives from
  *   above, as a countdown reads; `false` rolls the other way (counts going up).
  * - Movement, fade and a light blur (Android 12+; older versions skip the
- *   blur) over `OWCMotion.countdownTick`. Reduced motion swaps digits in place.
+ *   blur) over `DoneAtMotion.countdownTick`. Reduced motion swaps digits in place.
  * - TalkBack hears [spokenLabel] once instead of the digits every second.
  */
 @Composable
@@ -98,6 +98,6 @@ private fun RollingDigit(digit: Char, style: TextStyle, color: Color, countsDown
     }
 }
 
-/** How far a digit travels, as a percentage of its line height. */
-private const val ROLL = 60
+/** Match the Web clock's 0.3 em travel; the longer tick leaves time to see the blur resolve. */
+private const val ROLL = 30
 private val BLUR = 3.dp

@@ -1,6 +1,7 @@
 package com.rainif.doneat.core.data
 
 import com.rainif.doneat.core.domain.records.RecordEditContext
+import com.rainif.doneat.core.domain.records.FoundationCompat
 import com.rainif.doneat.core.domain.records.ScheduleHoursCodec
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
@@ -70,14 +71,15 @@ class SessionStore(
     private val deviceZone: () -> String,
     private val newId: () -> String,
     private val io: CoroutineDispatcher = Dispatchers.IO,
+    private val collectsObservations: StateFlow<Boolean> = MutableStateFlow(true),
 ) {
     private val mutex = Mutex()
     private val _state = MutableStateFlow(SessionState())
     val state: StateFlow<SessionState> = _state.asStateFlow()
 
     /** Rebuilt whenever settings, setup or the archive's schedule changes; plans inside it are built once. */
-    val environment: StateFlow<SessionEnvironment> = combine(settings.preferences, settings.isSetUp, records.state, holidays) { prefs, setUp, archive, days ->
-        SessionEnvironment(prefs, setUp, archive.extendedSchedule, archive.rosterDays, days, deviceZone())
+    val environment: StateFlow<SessionEnvironment> = combine(settings.preferences, settings.isSetUp, records.state, holidays, collectsObservations) { prefs, setUp, archive, days, collects ->
+        SessionEnvironment(prefs, setUp, archive.extendedSchedule, archive.rosterDays, days, deviceZone(), collects)
     }.stateIn(scope, SharingStarted.Eagerly, currentEnvironment())
 
     val session: StateFlow<ShiftSession> = combine(state, environment, ::ShiftSession)
@@ -85,7 +87,7 @@ class SessionStore(
 
     private fun currentEnvironment() = SessionEnvironment(
         settings.preferences.value, settings.isSetUp.value, records.state.value.extendedSchedule, records.state.value.rosterDays,
-        holidays.value, deviceZone(),
+        holidays.value, deviceZone(), collectsObservations.value,
     )
 
     /**
@@ -153,11 +155,38 @@ class SessionStore(
         true
     }
 
-    private suspend fun write(state: SessionState) = withContext(io) {
+    /** Keeps the current countdown on its old zone while moving records and committed settings together. */
+    suspend fun migrateRecordsTimeZone(target: String, nowMs: Double): Boolean = mutex.withLock {
+        if (records.blocksWrites) return@withLock false
+        val env = currentEnvironment().with(records.state.value)
+        if (!FoundationCompat.isValidTimeZone(target) ||
+            records.state.value.syncedPreferences?.recordsTimeZoneIdentifier == null ||
+            env.preferences.recordsTimeZoneIdentifier == target) return@withLock false
+        val current = _state.value
+        val runningZone = ShiftSession(current, env).countdownZoneId
+        val endAtMs = if (current.countdownStarted) ShiftSession(current, env).snapshot(nowMs)?.endAtMs else null
+        val locked = if (current.countdownStarted) current.copy(sessionTimeZone = runningZone, sessionTimeZoneUntilMs = endAtMs) else current
+        // Persist the harmless old-zone lock first. A crash before the archive replacement
+        // leaves the old preferences and old countdown together; after it, both are ready.
+        if (locked != current) {
+            if (!write(locked)) return@withLock false
+            _state.value = locked
+        }
+        var changed = false
+        val result = records.update { archive ->
+            val migrated = RecordsTimeZoneMigration.migrate(archive, target, nowMs, newId)
+            changed = migrated != null
+            (migrated ?: archive) to Unit
+        }
+        if (result !is WriteResult.Saved || !changed) return@withLock false
+        true
+    }
+
+    private suspend fun write(state: SessionState): Boolean = withContext(io) {
         runCatching {
             Files.createDirectories(file.parent)
             RecordStore.writeAtomically(file, SessionStateJson.encode(state).toByteArray())
-        }
+        }.isSuccess
     }
 
     private fun read(): SessionState? = runCatching {

@@ -1191,9 +1191,9 @@
         "FR-17"
       ],
       "level": "DB",
-      "setup": "每个曾发布的Room schema升级到当前版本",
-      "action": "运行迁移及重开读取",
-      "expected": "实体/编辑戳/关系/墓碑保留；禁止fallbackToDestructiveMigration用于正式用户。",
+      "setup": "每个支持的本地 RecordLocalFile / v1–v6 备份版本",
+      "action": "读取旧档案并写回、重开",
+      "expected": "按 D-13 单文件归档验证实体、编辑戳、关系、墓碑；写失败不发布部分状态，损坏或更新版本不销毁数据。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -1883,9 +1883,9 @@
         "FR-21"
       ],
       "level": "DEVICE",
-      "setup": "合法旧分享链接、恶意超长/错误参数、外部App启动",
-      "action": "预览并应用",
-      "expected": "严格校验后需用户确认；不无提示覆盖；App Links只匹配批准域名/路径。",
+      "setup": "班次分享链接、应用显式通知和快捷入口",
+      "action": "分享后检查 URL；打开各应用入口",
+      "expected": "分享链接只带起止时间并在网页版打开；应用不注册外部 https / 自定义 scheme 的接收器。显式入口仅接受计时/专注/记录/设置等已知路由，不改设置。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -2107,9 +2107,9 @@
         "FR-20"
       ],
       "level": "DEVICE",
-      "setup": "旧机有完整记录/排班/专注/偏好，已设锁屏；新机登录同一Google账号",
-      "action": "通过设备转移及云端Auto Backup分别恢复",
-      "expected": "业务库完整恢复且Room版本迁移正常；首次启动重建提醒/小组件投影；恢复后首帧前完成数据一致性检查。",
+      "setup": "旧机有完整记录/排班/专注/偏好，已设锁屏；新机登录同一 Google 账号",
+      "action": "通过设备转移及云端 Auto Backup 分别恢复",
+      "expected": "D-13 原子档案和显示设置完整恢复；首次启动完成档案读取后再展示业务界面，并重建提醒/小组件；会话、购买缓存与授予权限不从备份继承。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -2136,13 +2136,14 @@
         "FR-20"
       ],
       "level": "DB",
-      "setup": "备份时数据库处于WAL写入中；或备份来自较新Room版本",
-      "action": "执行备份代理/恢复后启动",
-      "expected": "备份为一致快照（非仅复制主.db）；新版本库恢复到旧APK时进入只读/提示升级，不销毁数据。",
+      "setup": "档案原子替换写入中备份；或恢复较新版本本地档案",
+      "action": "故障注入、重开及恢复启动",
+      "expected": "D-13 备份读取到完整旧版或新版档案，不出现半份 JSON；更新版本或损坏档案阻断写入并保留原文件，不静默重建。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     }
   ],
   "package_version": "1.2",
-  "decision_registry": "decisions.json"
+  "decision_registry": "decisions.json",
+  "execution_evidence": "docs/android/preconsole-qa-2026-09-26.md"
 }

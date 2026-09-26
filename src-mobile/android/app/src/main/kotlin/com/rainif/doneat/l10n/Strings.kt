@@ -71,6 +71,7 @@ object Strings {
     fun recordsConflictCount(res: Resources, count: String): String = res.getString(R.string.recordsConflictCount, count)
     fun recordsImportAdded(res: Resources, count: String): String = res.getString(R.string.recordsImportAdded, count)
     fun recordsImportConflicts(res: Resources, count: String): String = res.getString(R.string.recordsImportConflicts, count)
+    fun recordsImportRejected(res: Resources, count: String): String = res.getString(R.string.recordsImportRejected, count)
     fun recordsImportReport(res: Resources, skipped: String): String = res.getString(R.string.recordsImportReport, skipped)
     fun recordsImportSame(res: Resources, count: String): String = res.getString(R.string.recordsImportSame, count)
     fun recordsImportSkipped(res: Resources, count: String): String = res.getString(R.string.recordsImportSkipped, count)

@@ -20,6 +20,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import java.time.Instant
 
 /**
  * Holds [ScheduleRules] to the TypeScript oracle, case for case with the Swift
@@ -44,6 +45,23 @@ class ScheduleRuleFixtureTest {
         }
         assertTrue("snapshot cases: ${cases.size}", cases.size > 2_000)
         if (failures.isNotEmpty()) fail("${failures.size} snapshot mismatches, first:\n" + failures.filter { it.isNotEmpty() }.joinToString("\n"))
+    }
+
+    @Test
+    fun losAngelesGapAndRepeatedHourMatchTheSharedOracle() {
+        val instants = listOf(
+            "2026-03-08T09:30:00Z", "2026-03-08T10:00:00Z", "2026-03-08T10:30:00Z",
+            "2026-11-01T08:30:00Z", "2026-11-01T09:30:00Z", "2026-11-01T10:00:00Z",
+        ).map { Instant.parse(it).toEpochMilli().toDouble() }.toSet()
+        val cases = f.section("snapshots").filter { row ->
+            f.profiles[row.getValue("p").jsonPrimitive.int].zone.id == "America/Los_Angeles" && row.double("now")?.let { it in instants } == true
+        }
+        assertEquals("two clock profiles at every DST boundary", 12, cases.size)
+        for (case in cases) {
+            val profile = f.profiles[case.getValue("p").jsonPrimitive.int]
+            val actual = ScheduleRules.snapshot(f.input(profile, case.double("now")!!), f.salaries[case.getValue("s").jsonPrimitive.int])
+            assertEquals("${profile.id} at ${case.double("now")}", null, compareSnapshot(actual, case.getValue("expected").jsonArray))
+        }
     }
 
     @Test

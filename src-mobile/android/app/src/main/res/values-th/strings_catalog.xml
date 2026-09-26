@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">ประมาณ %1$s ปี</string>
     <string name="lifeBirthYear">ปีเกิด</string>
     <string name="lifeCurrentSalary">เงินเดือนขั้นต้นปัจจุบัน</string>
-    <string name="lifeDetailedIncomeHelp">กำหนดวันเริ่มงานปัจจุบัน แล้วเพิ่มงานก่อนหน้าจากล่าสุดไปเก่าสุด งานก่อนหน้าแต่ละงานจะสิ้นสุดโดยอัตโนมัติในวันเริ่มงานถัดไป</string>
+    <string name="lifeDetailedIncomeHelp">กำหนดวันเริ่มงานปัจจุบัน แล้วเพิ่มงานก่อนหน้าด้านล่าง ระบบจะเก็บช่วงว่างระหว่างงานที่มีอยู่ไว้</string>
     <string name="lifeEditProfile">แก้โปรไฟล์</string>
     <string name="lifeEmploymentCurrent">งานปัจจุบัน</string>
     <string name="lifeEmploymentEnd">วันที่สิ้นสุด</string>
     <string name="lifeEmploymentSalary">เงินเดือนรวม</string>
     <string name="lifeEmploymentStart">วันที่เริ่มต้น</string>
+    <string name="lifeEmploymentValidation">ตรวจสอบวันที่และเงินเดือนของแต่ละงาน ช่วงเวลาทำงานต้องไม่ทับซ้อนกัน</string>
     <string name="lifeEmptyBody">แค่ปีเกิดกับอายุเกษียณก็พอวาดชีวิตการทำงานของคุณได้ทีละสัปดาห์</string>
     <string name="lifeEmptyTitle">เพิ่มข้อมูลอีกเล็กน้อย</string>
     <string name="lifeEstimatedPast">สัปดาห์ที่ผ่านมาประเมินจากตารางกะช่วงนั้น</string>
@@ -519,6 +520,11 @@
     <string name="pausedUntil">หยุดชั่วคราวถึง %1$s</string>
     <string name="perEffectiveHour">ต่อชั่วโมงทำงานจริง</string>
     <string name="perWorkday">ต่อวันทำงาน</string>
+    <string name="plusAndroidComingSoon">การซื้อ Plus บน Android จะเปิดให้ใช้งานเร็ว ๆ นี้ ตอนนี้คุณใช้ตัวจับเวลาและดูบันทึกล่าสุดได้แล้ว</string>
+    <string name="plusAndroidRenewalNotice">การสมัครสมาชิกจะต่ออายุอัตโนมัติจนกว่าคุณจะยกเลิก การซื้อ Lifetime ครั้งเดียวไม่ยกเลิกการสมัครสมาชิกที่ใช้อยู่</string>
+    <string name="plusAndroidRequestFailed">Google Play ไม่สามารถทำรายการนี้ได้ ลองอีกครั้งในอีกสักครู่</string>
+    <string name="plusAndroidStoreOffline">ขณะนี้ Google Play ไม่พร้อมใช้งาน ลองกู้คืนการซื้อเมื่อเชื่อมต่อแล้ว</string>
+    <string name="plusAndroidStoreUnconfigured">ยังซื้อ Plus บนอุปกรณ์นี้ไม่ได้ คุณยังใช้ตัวจับเวลาและดูบันทึกล่าสุดได้</string>
     <string name="plusAutoRenew">การสมัครจะต่ออายุเองจนกว่าคุณจะยกเลิก แผนรายปีอาจมีช่วงฟรี 7 วัน หลังจากนั้นคิดตามราคาต่อปี แบบจ่ายครั้งเดียวชำระครั้งเดียวและไม่ยกเลิกการสมัครที่กำลังใช้อยู่ให้อัตโนมัติ</string>
     <string name="plusBenefitCharts">มุมมองทั้งปีและชีวิตการทำงาน</string>
     <string name="plusBenefitEdit">แก้วันใดก็ได้จากหน้าบันทึก</string>
@@ -598,6 +604,7 @@
     <string name="recordsConflictCurrentVersion">เวอร์ชันปัจจุบัน</string>
     <string name="recordsConflictDetailsUnreadable">ไม่มีรายละเอียด</string>
     <string name="recordsConflictFieldNote">บันทึก</string>
+    <string name="recordsConflictIncomingZoneBlocked">สำเนานี้ใช้เขตเวลาของบันทึกต่างกัน โปรดเก็บเวอร์ชันของอุปกรณ์นี้ แล้วเปลี่ยนเขตเวลาในบันทึกและข้อมูลหากจำเป็น</string>
     <string name="recordsConflictItems">รายการ</string>
     <string name="recordsConflictKeepCloud">เก็บ iCloud</string>
     <string name="recordsConflictKeepCurrent">เก็บเวอร์ชันปัจจุบัน</string>
@@ -613,6 +620,7 @@
     <string name="recordsDaySegments">วันนี้ผ่านไปอย่างไร</string>
     <string name="recordsDeleteAll">ลบบันทึกบนเครื่องนี้</string>
     <string name="recordsDeleteAllConfirm">ลบบันทึกในเครื่องนี้ คุณสามารถกู้คืนได้ภายหลังด้วยการนำเข้าข้อมูลสำรองเก่า</string>
+    <string name="recordsDeleteFailed">ลบบันทึกในอุปกรณ์นี้ไม่ได้ โปรดลองอีกครั้ง</string>
     <string name="recordsDiscardEdits">ทิ้งการเปลี่ยนแปลงเหล่านี้?</string>
     <string name="recordsEditDay">แก้วันนี้</string>
     <string name="recordsEditPlusHint">การแก้วันจากหน้าบันทึกเป็นฟีเจอร์ Plus ตัวจับเวลายังใช้ได้เหมือนเดิม</string>
@@ -635,6 +643,7 @@
     <string name="recordsImportApplyNew">เพิ่มเฉพาะรายการใหม่</string>
     <string name="recordsImportConflicts">ขัดแย้ง %1$s รายการ</string>
     <string name="recordsImportPreviewTitle">ตรวจทานการนำเข้านี้</string>
+    <string name="recordsImportRejected">อ่าน %1$s รายการไม่ได้</string>
     <string name="recordsImportReport">นำเข้าแล้ว ข้ามบันทึกที่ลบถาวรแล้ว %1$s รายการ</string>
     <string name="recordsImportSame">เหมือนเดิม %1$s รายการ</string>
     <string name="recordsImportSkipped">ข้าม %1$s รายการ</string>

@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">약 %1$s년</string>
     <string name="lifeBirthYear">태어난 해</string>
     <string name="lifeCurrentSalary">현재 총 급여</string>
-    <string name="lifeDetailedIncomeHelp">현재 직장의 시작일을 설정한 후 이전 경력을 최근 순서대로 추가하세요. 이전 경력의 종료일은 다음 직장의 시작일로 자동 설정됩니다.</string>
+    <string name="lifeDetailedIncomeHelp">현재 직장의 시작일을 정한 다음 아래에 이전 직장을 추가하세요. 기존에 저장된 직장 사이의 공백 기간은 유지됩니다.</string>
     <string name="lifeEditProfile">프로필 편집</string>
     <string name="lifeEmploymentCurrent">현재 직장</string>
     <string name="lifeEmploymentEnd">종료일</string>
     <string name="lifeEmploymentSalary">총 급여</string>
     <string name="lifeEmploymentStart">시작일</string>
+    <string name="lifeEmploymentValidation">각 직장의 날짜와 급여를 확인하세요. 근무 기간은 겹칠 수 없습니다.</string>
     <string name="lifeEmptyBody">태어난 해와 은퇴 나이만 있으면 일하는 인생을 한 주씩 그릴 수 있습니다.</string>
     <string name="lifeEmptyTitle">몇 가지만 알려주세요</string>
     <string name="lifeEstimatedPast">지난 주들은 그때의 근무표로 추정했습니다.</string>
@@ -519,6 +520,11 @@
     <string name="pausedUntil">%1$s까지 일시 중지</string>
     <string name="perEffectiveHour">실근무 1시간당</string>
     <string name="perWorkday">근무일당</string>
+    <string name="plusAndroidComingSoon">Android용 Plus 구매는 곧 제공됩니다. 지금은 타이머와 최근 기록을 이용할 수 있습니다.</string>
+    <string name="plusAndroidRenewalNotice">구독은 취소할 때까지 자동 갱신됩니다. 평생 이용권을 구매해도 기존 구독은 취소되지 않습니다.</string>
+    <string name="plusAndroidRequestFailed">Google Play에서 요청을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.</string>
+    <string name="plusAndroidStoreOffline">지금 Google Play에 연결할 수 없습니다. 연결 후 구매 복원을 시도해 주세요.</string>
+    <string name="plusAndroidStoreUnconfigured">이 기기에서는 아직 Plus를 구매할 수 없습니다. 타이머와 최근 기록은 계속 사용할 수 있습니다.</string>
     <string name="plusAutoRenew">구독은 취소할 때까지 자동으로 갱신됩니다. 연간 요금제에는 7일 무료 기간이 포함될 수 있고, 끝나면 연 요금이 청구됩니다. 평생은 한 번만 결제하며, 이미 있는 구독을 자동으로 취소하지는 않습니다.</string>
     <string name="plusBenefitCharts">연간 전체와 직장 생활 보기</string>
     <string name="plusBenefitEdit">기록 페이지에서 아무 날이나 수정</string>
@@ -598,6 +604,7 @@
     <string name="recordsConflictCurrentVersion">현재 버전</string>
     <string name="recordsConflictDetailsUnreadable">세부 정보를 사용할 수 없음</string>
     <string name="recordsConflictFieldNote">메모</string>
+    <string name="recordsConflictIncomingZoneBlocked">이 사본은 기록 시간대가 다릅니다. 이 기기의 버전을 유지한 후 필요하면 기록 및 데이터에서 시간대를 변경하세요.</string>
     <string name="recordsConflictItems">개 항목</string>
     <string name="recordsConflictKeepCloud">iCloud 유지</string>
     <string name="recordsConflictKeepCurrent">현재 버전 유지</string>
@@ -613,6 +620,7 @@
     <string name="recordsDaySegments">하루의 흐름</string>
     <string name="recordsDeleteAll">이 기기의 기록 삭제</string>
     <string name="recordsDeleteAllConfirm">이 기기의 로컬 기록을 삭제합니다. 나중에 이전 백업을 가져와 복원할 수 있습니다.</string>
+    <string name="recordsDeleteFailed">이 기기의 기록을 삭제하지 못했습니다. 다시 시도해 주세요.</string>
     <string name="recordsDiscardEdits">이 변경을 버릴까요?</string>
     <string name="recordsEditDay">이 날 고치기</string>
     <string name="recordsEditPlusHint">기록 페이지에서 하루를 고치는 것은 Plus 기능이에요. 타이머는 지금처럼 쓸 수 있어요.</string>
@@ -635,6 +643,7 @@
     <string name="recordsImportApplyNew">새 항목만 추가</string>
     <string name="recordsImportConflicts">충돌 %1$s개</string>
     <string name="recordsImportPreviewTitle">이 가져오기 검토</string>
+    <string name="recordsImportRejected">기록 %1$s개를 읽을 수 없습니다</string>
     <string name="recordsImportReport">가져왔습니다. 완전히 삭제된 %1$s건은 건너뛰었습니다.</string>
     <string name="recordsImportSame">동일 %1$s개</string>
     <string name="recordsImportSkipped">건너뜀 %1$s개</string>

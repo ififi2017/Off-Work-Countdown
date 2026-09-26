@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">Sekitar %1$s tahun</string>
     <string name="lifeBirthYear">Tahun lahir</string>
     <string name="lifeCurrentSalary">Gaji kotor saat ini</string>
-    <string name="lifeDetailedIncomeHelp">Atur tanggal mulai pekerjaan saat ini, lalu tambahkan pekerjaan sebelumnya dari yang terbaru. Setiap pekerjaan sebelumnya otomatis berakhir saat pekerjaan berikutnya dimulai.</string>
+    <string name="lifeDetailedIncomeHelp">Tentukan tanggal mulai pekerjaan saat ini, lalu tambahkan pekerjaan sebelumnya di bawah. Jeda yang sudah ada antarpekerjaan tetap disimpan.</string>
     <string name="lifeEditProfile">Ubah profil</string>
     <string name="lifeEmploymentCurrent">Pekerjaan saat ini</string>
     <string name="lifeEmploymentEnd">Tanggal berakhir</string>
     <string name="lifeEmploymentSalary">Gaji kotor</string>
     <string name="lifeEmploymentStart">Tanggal mulai</string>
+    <string name="lifeEmploymentValidation">Periksa tanggal dan gaji setiap pekerjaan. Periode kerja tidak boleh tumpang tindih.</string>
     <string name="lifeEmptyBody">Tahun lahir dan usia pensiun sudah cukup untuk menggambar hidup kerjamu, minggu demi minggu.</string>
     <string name="lifeEmptyTitle">Tambahkan beberapa data</string>
     <string name="lifeEstimatedPast">Minggu yang lalu memakai jadwal saat itu.</string>
@@ -519,6 +520,11 @@
     <string name="pausedUntil">Dijeda sampai %1$s</string>
     <string name="perEffectiveHour">Per jam efektif</string>
     <string name="perWorkday">Per hari kerja</string>
+    <string name="plusAndroidComingSoon">Pembelian Plus di Android akan segera tersedia. Saat ini Anda dapat memakai pengatur waktu dan melihat catatan terbaru.</string>
+    <string name="plusAndroidRenewalNotice">Langganan diperpanjang otomatis sampai Anda membatalkannya. Pembelian Lifetime sekali bayar tidak membatalkan langganan aktif.</string>
+    <string name="plusAndroidRequestFailed">Google Play tidak dapat menyelesaikan permintaan ini. Coba lagi sebentar lagi.</string>
+    <string name="plusAndroidStoreOffline">Google Play sedang tidak tersedia. Coba pulihkan pembelian saat Anda terhubung.</string>
+    <string name="plusAndroidStoreUnconfigured">Pembelian Plus belum tersedia di perangkat ini. Pengatur waktu dan catatan terbaru tetap bisa digunakan.</string>
     <string name="plusAutoRenew">Langganan diperpanjang otomatis sampai kamu batalkan. Paket tahunan bisa mencakup 7 hari gratis, lalu ditagih harga tahunan. Sekali bayar cukup satu kali dan tidak otomatis membatalkan langganan yang sedang berjalan.</string>
     <string name="plusBenefitCharts">Tampilan setahun penuh dan kehidupan kerja</string>
     <string name="plusBenefitEdit">Ubah hari apa pun dari Catatan</string>
@@ -598,6 +604,7 @@
     <string name="recordsConflictCurrentVersion">Versi saat ini</string>
     <string name="recordsConflictDetailsUnreadable">Detail tidak tersedia</string>
     <string name="recordsConflictFieldNote">Catatan</string>
+    <string name="recordsConflictIncomingZoneBlocked">Salinan ini memakai zona waktu catatan yang berbeda. Simpan versi perangkat ini, lalu ubah zona waktu di Catatan &amp; data jika perlu.</string>
     <string name="recordsConflictItems">item</string>
     <string name="recordsConflictKeepCloud">Pertahankan iCloud</string>
     <string name="recordsConflictKeepCurrent">Pertahankan versi saat ini</string>
@@ -613,6 +620,7 @@
     <string name="recordsDaySegments">Jalannya hari ini</string>
     <string name="recordsDeleteAll">Hapus catatan di perangkat ini</string>
     <string name="recordsDeleteAllConfirm">Menghapus catatan lokal di perangkat ini. Anda dapat memulihkannya nanti dengan mengimpor cadangan lama.</string>
+    <string name="recordsDeleteFailed">Catatan di perangkat ini tidak dapat dihapus. Coba lagi.</string>
     <string name="recordsDiscardEdits">Buang perubahan ini?</string>
     <string name="recordsEditDay">Ubah hari ini</string>
     <string name="recordsEditPlusHint">Mengubah hari dari Catatan adalah fitur Plus. Penghitung waktu tetap seperti sekarang.</string>
@@ -635,6 +643,7 @@
     <string name="recordsImportApplyNew">Tambah yang baru saja</string>
     <string name="recordsImportConflicts">%1$s konflik</string>
     <string name="recordsImportPreviewTitle">Tinjau impor ini</string>
+    <string name="recordsImportRejected">%1$s catatan tidak dapat dibaca</string>
     <string name="recordsImportReport">Selesai diimpor. %1$s catatan yang sudah dihapus permanen dilewati.</string>
     <string name="recordsImportSame">%1$s sama</string>
     <string name="recordsImportSkipped">%1$s dilewati</string>

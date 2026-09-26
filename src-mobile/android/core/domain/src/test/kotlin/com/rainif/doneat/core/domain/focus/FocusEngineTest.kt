@@ -99,8 +99,15 @@ class FocusEngineTest {
         val s1 = engine.finishElapsed(state(t, sessions = listOf(cut)), FocusNextAction.NONE, at("2026-08-24", 12, 1)).state
         assertEquals(FocusEndReason.STOPPED_AT_BOUNDARY, s1.focusSessions.single().endReason)
         val s2 = engine.stop(state(t, sessions = listOf(open(t.id, at("2026-08-24", 14)))), FocusEndReason.STOPPED_BY_USER, at("2026-08-24", 14, 10)).state
+        assertEquals(FocusEndReason.STOPPED_BY_USER, s2.focusSessions.single().endReason)
         assertEquals(0, engine.completedBlocks(s1, t) + engine.completedBlocks(s2, t))
         assertNull(s2.focusTasks.single().completedAtMs)
+
+        val abandoned = engine.stop(state(t, sessions = listOf(open(t.id, at("2026-08-24", 15)))), FocusEndReason.ABANDONED, at("2026-08-24", 15, 10)).state
+        assertEquals(FocusEndReason.ABANDONED, abandoned.focusSessions.single().endReason)
+        assertEquals(0, engine.completedBlocks(abandoned, t))
+        val completed = engine.finishElapsed(state(t, sessions = listOf(open(t.id, at("2026-08-24", 16)))), FocusNextAction.NONE, at("2026-08-24", 16, 25)).state
+        assertEquals(FocusEndReason.COMPLETED, completed.focusSessions.first { it.kind == FocusSessionKind.FOCUS }.endReason)
     }
 
     @Test fun startIsRefusedWithoutRoomOutsideWorkOrWithoutAccess() {
@@ -124,6 +131,23 @@ class FocusEngineTest {
         assertFalse("a double tap does not start a second block", engine.startFocus(started.state, FocusNextAction.NONE, t.id, at("2026-08-24", 11, 50)).ok)
         assertEquals(FocusStartAvailability.Running, engine.availability(started.state, t, at("2026-08-24", 11, 51)))
         assertEquals(FocusStartAvailability.BlockedByOther, engine.availability(started.state, task(1, id = "00000000-0000-0000-0000-0000000000A2"), at("2026-08-24", 11, 51)))
+    }
+
+    @Test fun changingDurationLeavesTheRunningEndAndAppliesToTheNextSession() {
+        val t = task(2)
+        val start = at("2026-08-24", 14)
+        val running = engine.startFocus(state(t), FocusNextAction.NONE, t.id, start).state
+        val originalEnd = running.focusSessions.single().plannedEndAtMs
+        assertEquals(start + 25 * minute, originalEnd, 0.0)
+
+        env.settings0 = FocusTimerSettings(40, 5, 15, 4)
+        assertEquals(originalEnd, engine.activeSession(running)!!.plannedEndAtMs, 0.0)
+        val stopped = engine.stop(running, FocusEndReason.STOPPED_BY_USER, start + minute).state
+        val nextStart = start + 5 * minute
+        val next = engine.startFocus(stopped, FocusNextAction.NONE, t.id, nextStart).state
+        assertEquals(2, next.focusSessions.size)
+        assertEquals(nextStart + 40 * minute, engine.activeSession(next)!!.plannedEndAtMs, 0.0)
+        assertEquals(originalEnd, next.focusSessions.first().plannedEndAtMs, 0.0)
     }
 
     @Test fun aPlanDrivenStartNeverPassesItsBlockEnd() {

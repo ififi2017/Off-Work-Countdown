@@ -21,13 +21,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.domain.session.ShiftSession
-import com.rainif.doneat.ui.onboarding.showTimePicker
+import com.rainif.doneat.ui.onboarding.rememberTimePicker
 import java.time.Instant
 import java.time.ZoneId
 
@@ -38,7 +37,7 @@ import java.time.ZoneId
  */
 @Composable
 fun OvertimeDialog(session: ShiftSession, text: TimerText, dark: Boolean, onDismiss: () -> Unit, onConfirm: (Double) -> Unit) {
-    val context = LocalContext.current
+    val pickTime = rememberTimePicker()
     val minimum = remember {
         val now = System.currentTimeMillis().toDouble()
         maxOf(session.snapshot(now)?.plannedEndAtMs ?: now, now)
@@ -53,7 +52,7 @@ fun OvertimeDialog(session: ShiftSession, text: TimerText, dark: Boolean, onDism
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.overtimeEndTime), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                     FilledTonalButton(onClick = {
-                        showTimePicker(context, dark, ShiftSession.minutes(endAtMs, ZoneId.systemDefault())) { minutes ->
+                        pickTime(ShiftSession.minutes(endAtMs, ZoneId.systemDefault())) { minutes ->
                             endAtMs = OvertimeDialogs.nextOccurrence(minutes, minimum, ZoneId.systemDefault())
                         }
                     }, shape = MaterialTheme.shapes.medium) {

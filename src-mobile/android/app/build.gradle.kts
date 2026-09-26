@@ -15,6 +15,17 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "3.2.0"
+        // Public Play configuration only. Empty values keep the store unavailable.
+        val plusProduct = providers.gradleProperty("doneatPlusSubscriptionProduct").orElse("").get()
+        val lifetimeProduct = providers.gradleProperty("doneatPlusLifetimeProduct").orElse("").get()
+        val monthlyBasePlan = providers.gradleProperty("doneatPlusMonthlyBasePlan").orElse("").get()
+        val yearlyBasePlan = providers.gradleProperty("doneatPlusYearlyBasePlan").orElse("").get()
+        val playKey = providers.gradleProperty("doneatPlayBillingPublicKey").orElse("").get()
+        buildConfigField("String", "PLUS_SUBSCRIPTION_PRODUCT", "\"$plusProduct\"")
+        buildConfigField("String", "PLUS_LIFETIME_PRODUCT", "\"$lifetimeProduct\"")
+        buildConfigField("String", "PLUS_MONTHLY_BASE_PLAN", "\"$monthlyBasePlan\"")
+        buildConfigField("String", "PLUS_YEARLY_BASE_PLAN", "\"$yearlyBasePlan\"")
+        buildConfigField("String", "PLAY_BILLING_PUBLIC_KEY", "\"$playKey\"")
     }
 
     buildTypes {
@@ -32,6 +43,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     bundle {
@@ -64,6 +76,9 @@ dependencies {
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.fragment)
     implementation(libs.androidx.glance.appwidget)
+    implementation(libs.play.billing)
+    implementation(libs.play.review)
+    implementation(libs.androidx.work.runtime.ktx)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
 }

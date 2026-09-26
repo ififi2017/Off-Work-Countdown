@@ -58,7 +58,7 @@
 
 **必须交付**：feature-parity.md；source-inventory.md；conflicts.md；完整功能差异表。
 
-**验收**：三主入口、横屏/平板和深链接目标均覆盖；所有设置 key 有去向或负责人批准的差异，无“暂未找到就视为不存在”。
+**验收**：四个主入口、横屏/平板和深链接目标均覆盖；所有设置 key 有去向或负责人批准的差异，无“暂未找到就视为不存在”。
 
 
 ### T02 · M0 · 冻结字段级备份与领域模型契约
@@ -67,7 +67,7 @@
 
 **先读**：完整 RecordJSON/RecordArchive、12 类实体 DTO、SyncedPreferences、ErasedID、源导入测试；02 第6章。
 
-**执行**：提取每个版本新增字段、默认值、枚举、键、日历/毫秒语义、引用关系；准备匿名合成 v1–v6 档案与非法档案。明确 wire v6、Room v1、fixture v1、sync envelope v1 是不同版本。
+**执行**：提取每个版本新增字段、默认值、枚举、键、日历/毫秒语义、引用关系；准备匿名合成 v1–v6 档案与非法档案。明确 wire v6、本地 RecordLocalFile、fixture v1、sync envelope v1 是不同版本。
 
 **必须交付**：wire-contract.md；synthetic-archives/；字段映射清单。
 
@@ -242,7 +242,7 @@
 
 **先读**：01逐页规范、AppRouteDestination、FirstRunRecovery、源完整偏好清单。
 
-**执行**：三主入口独立导航栈；恢复/新建草稿流程；设置分组；错误/空/恢复态；窗口和后台重建保持状态；云入口先使用接口但不假装实现完成。
+**执行**：四个主入口独立导航栈；恢复/新建草稿流程；设置分组；错误/空/恢复态；窗口和后台重建保持状态；首发不展示 Drive 同步入口（T22 已延后）。
 
 **必须交付**：导航、Onboarding、Settings；UI与状态恢复测试。
 
@@ -294,7 +294,7 @@
 
 **先读**：源Widget投影、分享协议、当前品牌资产；A11/A12/A25；02第8/11章。
 
-**执行**：安全Widget DTO、多尺寸Glance、过期态；普通通知适配；独立分享图渲染；SAF/FileProvider/AppLinks；备份规则。dataExtractionRules/fullBackupContent：业务 Room 库纳入 cloud backup 与 device transfer（一致性快照，处理 WAL）；排除购买缓存、待确认购买标记、Keystore 相关数据、令牌与 debug 设置（D-02 修订）。
+**执行**：安全Widget DTO、多尺寸Glance、过期态；普通通知适配；独立分享图渲染；SAF/FileProvider；分享链接沿用源网页版，不注册外部 App Links；备份规则。dataExtractionRules/fullBackupContent：业务 records/ 原子档案与 device/settings.json 纳入 cloud backup 与 device transfer（D-13，不存在 WAL）；排除购买缓存、待确认购买标记、Keystore 相关数据、令牌与 debug 设置（D-02 修订）。
 
 **必须交付**：Widgets/Share/LinkHandler；manifest与dataExtractionRules；链接配置说明；备份/恢复验证记录（QA-138～QA-140）。
 

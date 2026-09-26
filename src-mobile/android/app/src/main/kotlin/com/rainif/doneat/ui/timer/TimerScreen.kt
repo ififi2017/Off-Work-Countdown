@@ -62,7 +62,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -117,6 +119,7 @@ import com.rainif.doneat.core.domain.settings.PreferencesRules
 import com.rainif.doneat.core.domain.summary.SummaryRules
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.timer.TimerCoordinator
+import androidx.compose.material.icons.outlined.Timer
 import com.rainif.doneat.ui.Route
 import com.rainif.doneat.ui.onboarding.appIsDark
 import kotlinx.coroutines.delay
@@ -139,6 +142,8 @@ private const val CONFIRM_WINDOW_MS = 5_000.0
 fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -> Unit) {
     val session by graph.sessions.session.collectAsStateWithLifecycle()
     val device by graph.settings.device.collectAsStateWithLifecycle()
+    val records by graph.records.state.collectAsStateWithLifecycle()
+    val authorized by graph.plus.authorized.collectAsStateWithLifecycle()
     // One tick per second, on the second, while the screen is started; resuming recomputes from the clock.
     val now by remember {
         flow {
@@ -158,6 +163,9 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
 
     val snapshot = if (session.shouldQuerySnapshot(now)) session.snapshot(now) else null
     val phase = session.visualPhase(snapshot, now)
+    val focusEnvironment = com.rainif.doneat.core.domain.session.SessionFocusEnvironment(session, records, authorized, id = graph.newId)
+    val focusEvents = com.rainif.doneat.core.domain.focus.FocusTimeline(focusEnvironment)
+        .events(records, focusEnvironment.shift(now), now)
 
     var armed by remember { mutableStateOf<Armed?>(null) }
     val contextKey = snapshot?.let { "${it.startAtMs}|${it.endAtMs}|${it.overtimeEndAtMs}|${session.state.sessionId}|${session.state.earlyOffAtMs}|${session.state.forcedWorkdayDate}" } ?: "none"
@@ -171,13 +179,23 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
     var celebration by remember { mutableIntStateOf(0) }
     var showOvertime by rememberSaveable { mutableStateOf(false) }
     var showInvalidLunch by remember { mutableStateOf(false) }
+    var pendingCommands by remember { mutableIntStateOf(0) }
+    SideEffect { graph.reviewBlocked.value = pendingCommands > 0 || armed != null || showOvertime || showInvalidLunch }
+    DisposableEffect(graph) { onDispose { graph.reviewBlocked.value = true } }
 
     fun perform(done: (() -> Unit)? = null, command: SessionCommands.(SessionState) -> SessionResult) {
+        pendingCommands++
+        graph.reviewBlocked.value = true
         scope.launch {
-            val at = System.currentTimeMillis().toDouble()
-            if (graph.sessions.run(at) { command(it) }) {
-                Haptics.confirm(view)
-                done?.invoke()
+            try {
+                val at = System.currentTimeMillis().toDouble()
+                if (graph.sessions.run(at) { command(it) }) {
+                    Haptics.confirm(view)
+                    done?.invoke()
+                }
+            } finally {
+                pendingCommands--
+                graph.reviewBlocked.value = pendingCommands > 0 || armed != null || showOvertime || showInvalidLunch
             }
         }
     }
@@ -201,6 +219,19 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
         }
     }
     LaunchedEffect(phase) { graph.timer.reconcile() }
+    LaunchedEffect(phase, snapshot?.endAtMs, session.state.countdownStarted) {
+        if (phase == TimerPhase.CLOCK_IN || phase == TimerPhase.RUNNING || phase == TimerPhase.LUNCH || phase == TimerPhase.OVERTIME) {
+            graph.reviews.trackRunningShift(session, snapshot, now.toLong())
+        }
+    }
+    val completionToken = snapshot?.let { shift ->
+        if (session.isEndedEarly(shift)) session.state.earlyOffAtMs ?: shift.plannedEndAtMs else shift.endAtMs
+    }
+    LaunchedEffect(phase, completionToken) {
+        if (phase == TimerPhase.COMPLETED && completionToken != null && snapshot != null &&
+            session.state.countdownStarted && (snapshot.isWorkday || session.isForcedWorkday(snapshot)) && snapshot.segments.isNotEmpty()
+        ) graph.reviews.noteCompletion(completionToken.toLong())
+    }
 
     val prefs = session.env.preferences
 
@@ -229,20 +260,23 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                 val phase = lastPhase.getValue(identity)
                 Box(Modifier.fillMaxSize().wrapContentWidth(Alignment.CenterHorizontally).widthIn(max = 680.dp)) {
                     when (phase) {
-                        TimerPhase.UNSCHEDULED -> UnscheduledSurface(session, now, text, isArmed(Confirmation.START)) {
+                        TimerPhase.UNSCHEDULED -> UnscheduledSurface(session, now, text, focusEvents, isArmed(Confirmation.START)) {
                             if (!session.isLunchInsideShift(now)) showInvalidLunch = true
                             else confirmThen(Confirmation.START) { perform { start(it, System.currentTimeMillis().toDouble()) } }
                         }
                         TimerPhase.CLOCK_IN, TimerPhase.RUNNING, TimerPhase.LUNCH, TimerPhase.OVERTIME -> snapshot?.let { shift ->
                             RunningSurface(
                                 session, shift, now, text,
+                                focusEvents = focusEvents,
                                 clockInArmed = isArmed(Confirmation.CLOCK_IN),
                                 clockOffArmed = isArmed(Confirmation.CLOCK_OFF),
                                 cancelArmed = isArmed(Confirmation.CANCEL_MANUAL),
                                 onClockIn = { confirmThen(Confirmation.CLOCK_IN) { perform { clockInEarly(it, System.currentTimeMillis().toDouble()) } } },
                                 onClockOff = { confirmThen(Confirmation.CLOCK_OFF) { perform { clockOffEarly(it, System.currentTimeMillis().toDouble()) } } },
                                 onUndoClockIn = { perform { undoEarlyClockIn(it, System.currentTimeMillis().toDouble()) } },
-                                onCancelManual = { confirmThen(Confirmation.CANCEL_MANUAL) { perform { cancelManualTiming(it, System.currentTimeMillis().toDouble()) } } },
+                                onCancelManual = { confirmThen(Confirmation.CANCEL_MANUAL) {
+                                    perform({ graph.reviews.clearTrackedCompletion() }) { cancelManualTiming(it, System.currentTimeMillis().toDouble()) }
+                                } },
                                 onOvertime = { showOvertime = true },
                                 onShare = { open(Route.TimerShare) },
                             )
@@ -259,13 +293,16 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                             CompletedSurface(
                                 session, shift, now, text,
                                 onReplay = { celebration++ },
-                                onUndo = { perform({ graph.lastCelebratedEndAtMs = 0.0 }) { undoEarlyClockOff(it, System.currentTimeMillis().toDouble()) } },
+                                onUndo = { perform({
+                                    graph.lastCelebratedEndAtMs = 0.0
+                                    graph.reviews.revokeCompletion(token.toLong())
+                                }) { undoEarlyClockOff(it, System.currentTimeMillis().toDouble()) } },
                                 onOvertime = { showOvertime = true },
                                 onShare = { open(Route.TimerShare) },
                             )
                         }
                         TimerPhase.REST -> snapshot?.let { shift ->
-                            RestSurface(session, shift, now, text, isArmed(Confirmation.START)) {
+                            RestSurface(session, shift, now, text, focusEvents, isArmed(Confirmation.START)) {
                                 if (!session.isLunchInsideShift(now)) showInvalidLunch = true
                                 else confirmThen(Confirmation.START) {
                                     perform { start(it, System.currentTimeMillis().toDouble(), force = session.followsSchedule(System.currentTimeMillis().toDouble())) }
@@ -288,10 +325,12 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
             dark = appIsDark(),
             onDismiss = { showOvertime = false },
             onConfirm = { endAtMs ->
+                val previousEnd = session.state.earlyOffAtMs ?: snapshot?.endAtMs
                 perform({
                     showOvertime = false
                     // A new completion boundary: the later clock-off celebrates again.
                     graph.lastCelebratedEndAtMs = 0.0
+                    previousEnd?.let { graph.reviews.revokeCompletion(it.toLong()) }
                 }) { applyOvertime(it, endAtMs, System.currentTimeMillis().toDouble()) }
             },
         )
@@ -320,6 +359,7 @@ private fun RunningSurface(
     shift: ShiftSnapshot,
     now: Double,
     text: TimerText,
+    focusEvents: List<TimelineEvent>,
     clockInArmed: Boolean,
     clockOffArmed: Boolean,
     cancelArmed: Boolean,
@@ -380,7 +420,7 @@ private fun RunningSurface(
                     microBreakEnabled = session.env.preferences.microBreakEnabled,
                     milestonesEnabled = session.env.preferences.notificationMode == "milestones",
                 )
-                ComingUp(events, now, text, session)
+                ComingUp((events + focusEvents).sortedBy { it.atMs }, now, text, session)
             }
             Spacer(Modifier.heightIn(min = DoneAtSpacing.xl))
         }
@@ -488,7 +528,7 @@ private fun CompletedSurface(
 }
 
 @Composable
-private fun RestSurface(session: ShiftSession, shift: ShiftSnapshot, now: Double, text: TimerText, armed: Boolean, onStart: () -> Unit) {
+private fun RestSurface(session: ShiftSession, shift: ShiftSnapshot, now: Double, text: TimerText, focusEvents: List<TimelineEvent>, armed: Boolean, onStart: () -> Unit) {
     val remaining = session.countdownToClockInMs(shift, now)
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -502,7 +542,7 @@ private fun RestSurface(session: ShiftSession, shift: ShiftSnapshot, now: Double
                 SectionHeader(stringResource(R.string.summaryEstimateNote))
                 Card { SummaryRows(session, now, shift, text, first = true) }
                 val next = shift.nextShiftStartAtMs?.let { session.snapshot(it) }
-                if (next != null) ComingUp(UpcomingTimeline.nextShiftPreview(next), now, text, session, collapsible = false)
+                ComingUp((next?.let { UpcomingTimeline.nextShiftPreview(it) }.orEmpty() + focusEvents).sortedBy { it.atMs }, now, text, session, collapsible = false)
             }
             Spacer(Modifier.heightIn(min = DoneAtSpacing.l))
         }
@@ -511,7 +551,7 @@ private fun RestSurface(session: ShiftSession, shift: ShiftSnapshot, now: Double
 }
 
 @Composable
-private fun UnscheduledSurface(session: ShiftSession, now: Double, text: TimerText, armed: Boolean, onStart: () -> Unit) {
+private fun UnscheduledSurface(session: ShiftSession, now: Double, text: TimerText, focusEvents: List<TimelineEvent>, armed: Boolean, onStart: () -> Unit) {
     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = DoneAtSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Spacer(Modifier.size(DoneAtSpacing.xxl))
@@ -524,6 +564,7 @@ private fun UnscheduledSurface(session: ShiftSession, now: Double, text: TimerTe
                 style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            ComingUp(focusEvents, now, text, session)
         }
         StartButton(armed, onStart)
     }
@@ -736,6 +777,8 @@ private fun eventStyle(kind: TimelineKind): Pair<ImageVector, Color> {
         TimelineKind.HEALTH -> Icons.AutoMirrored.Outlined.DirectionsWalk to scheme.secondary
         TimelineKind.MILESTONE -> Icons.Outlined.NotificationsActive to scheme.secondary
         TimelineKind.SHIFT_END -> Icons.Outlined.SportsScore to scheme.primary
+        TimelineKind.FOCUS -> Icons.Outlined.Timer to scheme.primary
+        TimelineKind.FOCUS_BREAK -> Icons.Outlined.LocalCafe to scheme.tertiary
     }
 }
 

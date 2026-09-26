@@ -146,13 +146,14 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
     }
 
     fun create(blockStartAtMs: Long?, currentOrNext: Boolean = false) {
-        if (locked) openSettings(Route.Plus) else open(Route.FocusCreate(blockStartAtMs, currentOrNext, null))
+        if (locked) openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusCreate(blockStartAtMs, currentOrNext)))
+        else open(Route.FocusCreate(blockStartAtMs, currentOrNext, null))
     }
     fun extend(taskID: String) {
         taskToExtend = taskID
     }
     fun pick(block: FocusDayCanvas.Block) {
-        if (locked) return openSettings(Route.Plus)
+        if (locked) return openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusCreate(block.startAtMs, false)))
         selectedBlock = block.startAtMs
         val task = context.task(block.taskID)
         when {
@@ -202,7 +203,7 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                         scope.launch { if (graph.focus.start(taskID, graph.nowMs(), block.startAtMs)) view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
                     },
                     onAdd = { create(null, currentOrNext = true) },
-                    onUnlock = { openSettings(Route.Plus) },
+                    onUnlock = { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) },
                 )
             }
             Column(
@@ -212,9 +213,9 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 when {
-                    scale == FocusScale.USUAL && locked -> LockedUsualScale(res) { openSettings(Route.Plus) }
+                    scale == FocusScale.USUAL && locked -> LockedUsualScale(res) { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) }
                     scale == FocusScale.USUAL -> UsualScale(graph, context, open)
-                    locked -> LockedCanvas(context) { openSettings(Route.Plus) }
+                    locked -> LockedCanvas(context) { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) }
                     model.isEmpty -> Text(stringResource(R.string.focusNoShift), Modifier.padding(vertical = 24.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     else -> {
                         if (model.isNextShift) {

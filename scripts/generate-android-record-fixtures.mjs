@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 // on any platform; regenerating needs Xcode.
 
 const models = "src-mobile/ios/App/App/Native/Models";
-const swiftInputs = [
+export const swiftInputs = [
   "RecordJSON", "CareerPeriod", "CalendarException", "DayOverride", "WorkObservation", "LifeProfile",
   "FocusModels", "FocusPlanner", "SyncedPreferences", "RecordIncomingValue+Content", "RecordsSyncAdapter",
 ].map((name) => `${models}/${name}.swift`).concat([
@@ -24,7 +24,7 @@ const swiftInputs = [
   "scripts/android-record-fixtures/main.swift",
 ]);
 // Compiled for their types only.
-const compileOnly = ["CountdownRules", "ScheduleRules", "ReminderRules"].map((name) => `${models}/${name}.swift`).concat([
+export const compileOnly = ["CountdownRules", "ScheduleRules", "ReminderRules"].map((name) => `${models}/${name}.swift`).concat([
   "src-mobile/ios/Shared/ScheduleRuleInput.swift",
   "src-mobile/ios/Shared/ShiftRuleCore.swift",
   "src-mobile/ios/Shared/WatchDisplayProjection.swift",

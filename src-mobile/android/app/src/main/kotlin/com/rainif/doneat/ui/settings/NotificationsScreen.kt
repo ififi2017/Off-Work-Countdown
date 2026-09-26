@@ -150,7 +150,8 @@ fun NotificationsScreen(
             SwitchRow(
                 stringResource(R.string.cycleEndSummaryNotificationTitle),
                 checked = isPlus && p.cycleEndSummaryNotificationEnabled,
-                onCheckedChange = { on -> if (isPlus) edit { it.copy(cycleEndSummaryNotificationEnabled = on) } else open(Route.Plus) },
+                onCheckedChange = { on -> if (isPlus) edit { it.copy(cycleEndSummaryNotificationEnabled = on) }
+                    else if (on) open(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.CycleSummary)) },
                 badge = if (isPlus) null else stringResource(R.string.plusStatusSubscribed),
             )
         }

@@ -63,6 +63,17 @@ class ShiftSessionTest {
         assertEquals(TimerPhase.CLOCK_IN, h.phase(at(24, 8)))
     }
 
+    @Test fun `natural end and five minutes later are completed without overtime`() {
+        val h = Harness()
+        assertTrue(h.run { start(h.state, at(24, 11)) })
+        for (now in listOf(at(24, 17), at(24, 17, 5))) {
+            val shift = h.snapshot(now)
+            assertEquals(TimerPhase.COMPLETED, h.phase(now))
+            assertEquals(0.0, shift.remainingMs, 0.0)
+            assertNull(shift.overtimeEndAtMs)
+        }
+    }
+
     @Test fun `clocking off early lands on completed and undo resumes`() {
         val h = Harness()
         val work = at(24, 11)
@@ -351,6 +362,20 @@ class ShiftSessionTest {
         microBreakEnabled = false, microBreakTitle = "", microBreakIntervalMinutes = 60, microBreakMessages = emptyList(),
         cycleEndSummaryBody = null,
     )
+
+    @Test fun `current and next shifts receive their own cycle summary and replace only clock-off`() {
+        val h = Harness()
+        val now = at(27, 10)
+        val reminders = ShiftReminderPlan.reminders(h.session, now, inputs().copy(mode = "off"), cycleSummary = { shift ->
+            if (shift.startAtMs == at(28, 9)) "Week done" else null
+        })
+        val audible = reminders.filter { it.isAudible }
+        assertEquals(1, audible.size)
+        assertTrue(audible.single().id.startsWith("next:"))
+        assertTrue(audible.single().id.endsWith(":milestone:100"))
+        assertEquals("Week done", audible.single().body)
+        assertEquals(at(28, 17), audible.single().atMs, 0.0)
+    }
 
     @Test fun `rest days schedule no reminders for a phantom current shift`() {
         val h = Harness()

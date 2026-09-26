@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">Cerca de %1$s anos</string>
     <string name="lifeBirthYear">Ano de nascimento</string>
     <string name="lifeCurrentSalary">Salário bruto atual</string>
-    <string name="lifeDetailedIncomeHelp">Defina a data de início do emprego atual e adicione os anteriores, do mais recente ao mais antigo. Cada emprego anterior termina automaticamente quando começa o seguinte.</string>
+    <string name="lifeDetailedIncomeHelp">Define a data de início do emprego atual e adiciona abaixo os empregos anteriores. Os intervalos existentes entre empregos são mantidos.</string>
     <string name="lifeEditProfile">Editar perfil</string>
     <string name="lifeEmploymentCurrent">Emprego atual</string>
     <string name="lifeEmploymentEnd">Data final</string>
     <string name="lifeEmploymentSalary">Salário bruto</string>
     <string name="lifeEmploymentStart">Data de início</string>
+    <string name="lifeEmploymentValidation">Verifica as datas e o salário de cada emprego. Os períodos de trabalho não podem sobrepor-se.</string>
     <string name="lifeEmptyBody">Basta o ano de nascimento e a idade da reforma para desenhar a sua vida de trabalho, semana a semana.</string>
     <string name="lifeEmptyTitle">Acrescente alguns dados</string>
     <string name="lifeEstimatedPast">As semanas passadas usam o horário da altura.</string>
@@ -519,6 +520,11 @@
     <string name="pausedUntil">Pausado até %1$s</string>
     <string name="perEffectiveHour">Por hora efetiva</string>
     <string name="perWorkday">Por dia de trabalho</string>
+    <string name="plusAndroidComingSoon">As compras do Plus chegarão em breve ao Android. Já pode usar o temporizador e consultar os registos recentes.</string>
+    <string name="plusAndroidRenewalNotice">As subscrições renovam-se automaticamente até serem canceladas. A compra única Lifetime não cancela uma subscrição ativa.</string>
+    <string name="plusAndroidRequestFailed">O Google Play não conseguiu concluir o pedido. Tente novamente dentro de momentos.</string>
+    <string name="plusAndroidStoreOffline">O Google Play está indisponível neste momento. Tente restaurar as compras quando tiver ligação.</string>
+    <string name="plusAndroidStoreUnconfigured">As compras do Plus ainda não estão disponíveis neste dispositivo. Pode continuar a usar o temporizador e os registos recentes.</string>
     <string name="plusAutoRenew">As subscrições renovam-se automaticamente até serem canceladas. O plano anual pode incluir 7 dias grátis; depois aplica-se o preço anual. O vitalício é um pagamento único e não cancela uma subscrição ativa.</string>
     <string name="plusBenefitCharts">Vistas do ano completo e da vida profissional</string>
     <string name="plusBenefitEdit">Editar qualquer dia em Registros</string>
@@ -598,6 +604,7 @@
     <string name="recordsConflictCurrentVersion">Versão atual</string>
     <string name="recordsConflictDetailsUnreadable">Detalhes indisponíveis</string>
     <string name="recordsConflictFieldNote">Nota</string>
+    <string name="recordsConflictIncomingZoneBlocked">Esta cópia usa outro fuso horário para os registos. Mantém a versão deste dispositivo e altera o fuso em Registos e dados, se necessário.</string>
     <string name="recordsConflictItems">itens</string>
     <string name="recordsConflictKeepCloud">Manter o iCloud</string>
     <string name="recordsConflictKeepCurrent">Manter a versão atual</string>
@@ -613,6 +620,7 @@
     <string name="recordsDaySegments">Como correu o dia</string>
     <string name="recordsDeleteAll">Apagar registos neste dispositivo</string>
     <string name="recordsDeleteAllConfirm">Remove os registos locais deste dispositivo. Podes restaurá-los mais tarde ao importar um backup antigo.</string>
+    <string name="recordsDeleteFailed">Não foi possível apagar os registos deste dispositivo. Tente novamente.</string>
     <string name="recordsDiscardEdits">Descartar estas alterações?</string>
     <string name="recordsEditDay">Alterar este dia</string>
     <string name="recordsEditPlusHint">Editar um dia em Registros é um recurso Plus. O cronômetro continua como hoje.</string>
@@ -635,6 +643,7 @@
     <string name="recordsImportApplyNew">Adicionar só os novos</string>
     <string name="recordsImportConflicts">%1$s conflitos</string>
     <string name="recordsImportPreviewTitle">Revisar esta importação</string>
+    <string name="recordsImportRejected">Não foi possível ler %1$s registos</string>
     <string name="recordsImportReport">Importado. Foram ignoradas %1$s entradas apagadas definitivamente.</string>
     <string name="recordsImportSame">%1$s iguais</string>
     <string name="recordsImportSkipped">%1$s ignorados</string>

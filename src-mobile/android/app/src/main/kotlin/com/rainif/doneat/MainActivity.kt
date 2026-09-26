@@ -4,17 +4,39 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.rainif.doneat.core.designsystem.DoneAtTheme
+import com.rainif.doneat.core.designsystem.DoneAtBrandMark
+import com.rainif.doneat.core.designsystem.DoneAtMotion
+import com.rainif.doneat.core.designsystem.LocalDoneAtMotion
 import com.rainif.doneat.core.designsystem.ThemeMode
 import com.rainif.doneat.reminders.Reminders
 import com.rainif.doneat.ui.AppLanguageScope
@@ -28,6 +50,11 @@ import kotlinx.coroutines.launch
 
 /** A [FragmentActivity] so `BiometricPrompt` can confirm the owner before earnings are revealed. */
 class MainActivity : FragmentActivity() {
+    override fun onResume() {
+        super.onResume()
+        (application as DoneAtApplication).graph.plus.refresh()
+    }
+
     override fun onStart() {
         super.onStart()
         // Revoking the exact-alarm grant sends no broadcast; re-check it whenever the app comes back.
@@ -70,12 +97,24 @@ class MainActivity : FragmentActivity() {
             SystemBarsFollowTheme(dark)
             AppLanguageScope(prefs.languageOverride) {
                 DoneAtTheme(themeMode = mode, dynamicColor = device.dynamicColor) {
+                    val motion = LocalDoneAtMotion.current
                     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
                         // Until the archive is read nothing can tell a first launch from a restored one.
-                        when {
-                            !loaded -> Unit
-                            setUp -> AppShell(graph)
-                            else -> SetupFlow(graph)
+                        if (!loaded) {
+                            LaunchPlaceholder()
+                        } else AnimatedContent(
+                            targetState = setUp,
+                            transitionSpec = {
+                                if (motion.reduced) {
+                                    fadeIn(tween(DoneAtMotion.REDUCED_MS)) togetherWith fadeOut(tween(DoneAtMotion.REDUCED_MS))
+                                } else {
+                                    (slideInVertically(motion.phase()) { it / 16 } + fadeIn(tween(DoneAtMotion.PHASE_MS))) togetherWith
+                                        (slideOutVertically(motion.phase()) { -it / 16 } + fadeOut(tween(DoneAtMotion.STATE_ENTER_MS)))
+                                }.using(null)
+                            },
+                            label = "setupComplete",
+                        ) { complete ->
+                            if (complete) AppShell(graph) else SetupFlow(graph)
                         }
                     }
                 }
@@ -90,12 +129,12 @@ class MainActivity : FragmentActivity() {
 
     /** A notification names the tab it belongs to: a focus alert opens Focus, as on iOS. */
     private fun openRequestedTab(intent: Intent?) {
-        val tab = intent?.getStringExtra(EXTRA_TAB) ?: return
+        val tab = intent?.getStringExtra(EXTRA_TAB)?.takeIf { it in setOf("timer", "focus", "records", "settings") } ?: return
         intent.removeExtra(EXTRA_TAB)
         val graph = (application as DoneAtApplication).graph
         lifecycleScope.launch {
             graph.loaded.first { it }
-            graph.settings.updateDevice { it.copy(selectedTab = tab) }
+            graph.requestedTab.value = tab
         }
     }
 
@@ -118,6 +157,17 @@ class MainActivity : FragmentActivity() {
             system == preferred -> Unit
             system != null -> graph.settings.edit { it.copy(languageOverride = system) }
             else -> AppLocale.applyToSystem(this, preferred)
+        }
+    }
+}
+
+/** Same quiet brand row as the iOS launch storyboard, while the archive is loading. */
+@Composable
+private fun LaunchPlaceholder() {
+    Box(Modifier.fillMaxSize().safeDrawingPadding().padding(bottom = 88.dp), contentAlignment = Alignment.BottomCenter) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            DoneAtBrandMark(Modifier.size(44.dp))
+            Text("DoneAt", fontSize = 34.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }

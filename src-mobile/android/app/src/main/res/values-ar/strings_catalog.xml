@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">حوالي %1$s سنة</string>
     <string name="lifeBirthYear">سنة الميلاد</string>
     <string name="lifeCurrentSalary">الراتب الإجمالي الحالي</string>
-    <string name="lifeDetailedIncomeHelp">حدّد تاريخ بدء عملك الحالي، ثم أضف الأعمال السابقة من الأحدث إلى الأقدم. ينتهي كل عمل سابق تلقائيًا عند تاريخ بدء العمل التالي.</string>
+    <string name="lifeDetailedIncomeHelp">حدّد تاريخ بدء عملك الحالي، ثم أضف الأعمال السابقة أدناه. تُحفظ الفترات الفاصلة الموجودة بين الأعمال.</string>
     <string name="lifeEditProfile">تعديل الملف</string>
     <string name="lifeEmploymentCurrent">العمل الحالي</string>
     <string name="lifeEmploymentEnd">تاريخ الانتهاء</string>
     <string name="lifeEmploymentSalary">الراتب الإجمالي</string>
     <string name="lifeEmploymentStart">تاريخ البدء</string>
+    <string name="lifeEmploymentValidation">تحقّق من تواريخ كل عمل وراتبه. يجب ألا تتداخل فترات العمل.</string>
     <string name="lifeEmptyBody">سنة الميلاد وسن التقاعد يكفيان لرسم حياتك في العمل، أسبوعًا بأسبوع.</string>
     <string name="lifeEmptyTitle">أضف بعض التفاصيل</string>
     <string name="lifeEstimatedPast">الأسابيع الماضية مقدَّرة وفق الجدول في ذلك الوقت.</string>
@@ -519,6 +520,11 @@
     <string name="pausedUntil">متوقف حتى %1$s</string>
     <string name="perEffectiveHour">لكل ساعة عمل فعلية</string>
     <string name="perWorkday">لكل يوم عمل</string>
+    <string name="plusAndroidComingSoon">ستتوفر مشتريات Plus على Android قريبًا. يمكنك الآن استخدام المؤقت وعرض سجلاتك الأخيرة.</string>
+    <string name="plusAndroidRenewalNotice">تتجدد الاشتراكات تلقائيًا حتى تلغيها. شراء الخطة مدى الحياة لمرة واحدة لا يلغي اشتراكًا نشطًا.</string>
+    <string name="plusAndroidRequestFailed">تعذّر على Google Play إكمال الطلب. حاول مرة أخرى بعد قليل.</string>
+    <string name="plusAndroidStoreOffline">Google Play غير متاح الآن. حاول استعادة مشترياتك بعد الاتصال بالإنترنت.</string>
+    <string name="plusAndroidStoreUnconfigured">شراء Plus غير متاح على هذا الجهاز حاليًا. لا يزال بإمكانك استخدام المؤقت والسجلات الأخيرة.</string>
     <string name="plusAutoRenew">تتجدد الاشتراكات تلقائيًا حتى تُلغيها. قد تتضمن الخطة السنوية 7 أيام مجانية، ثم يُحتسب السعر السنوي. الشراء بدفعة واحدة دفعة واحدة فقط ولا يُلغي تلقائيًا اشتراكًا ساريًا.</string>
     <string name="plusBenefitCharts">عرض السنة كاملة وحياة العمل</string>
     <string name="plusBenefitEdit">عدّل أي يوم من السجلات</string>
@@ -598,6 +604,7 @@
     <string name="recordsConflictCurrentVersion">النسخة الحالية</string>
     <string name="recordsConflictDetailsUnreadable">التفاصيل غير متاحة</string>
     <string name="recordsConflictFieldNote">ملاحظة</string>
+    <string name="recordsConflictIncomingZoneBlocked">تستخدم هذه النسخة منطقة زمنية مختلفة للسجلات. احتفظ بنسخة هذا الجهاز، ثم غيّر المنطقة الزمنية في «السجلات والبيانات» عند الحاجة.</string>
     <string name="recordsConflictItems">عناصر</string>
     <string name="recordsConflictKeepCloud">أبقِ iCloud</string>
     <string name="recordsConflictKeepCurrent">أبقِ النسخة الحالية</string>
@@ -613,6 +620,7 @@
     <string name="recordsDaySegments">كيف سار اليوم</string>
     <string name="recordsDeleteAll">حذف السجل على هذا الجهاز</string>
     <string name="recordsDeleteAllConfirm">يزيل السجل المحلي من هذا الجهاز. يمكنك استعادة السجل باستيراد نسخة قديمة لاحقًا.</string>
+    <string name="recordsDeleteFailed">تعذّر حذف السجلات من هذا الجهاز. حاول مرة أخرى.</string>
     <string name="recordsDiscardEdits">هل تتجاهل هذه التغييرات؟</string>
     <string name="recordsEditDay">تعديل هذا اليوم</string>
     <string name="recordsEditPlusHint">تعديل يوم من السجلات ميزة Plus. المؤقّت يعمل كما هو الآن.</string>
@@ -635,6 +643,7 @@
     <string name="recordsImportApplyNew">أضف الجديد فقط</string>
     <string name="recordsImportConflicts">%1$s تعارض</string>
     <string name="recordsImportPreviewTitle">راجع هذا الاستيراد</string>
+    <string name="recordsImportRejected">تعذّرت قراءة %1$s من السجلات</string>
     <string name="recordsImportReport">تم الاستيراد. وتم تجاوز %1$s سجلًا محذوفًا نهائيًا.</string>
     <string name="recordsImportSame">%1$s دون تغيير</string>
     <string name="recordsImportSkipped">%1$s متجاهَل</string>

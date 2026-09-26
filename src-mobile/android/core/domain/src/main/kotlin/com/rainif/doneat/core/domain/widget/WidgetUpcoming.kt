@@ -18,6 +18,8 @@ class WidgetUpcoming(
     private val events: (ShiftSnapshot, Double) -> List<TimelineEvent>,
     /** Title and detail for a row, worded as the timer words it. */
     private val words: (TimelineEvent) -> Pair<String, String>,
+    private val focusEvents: List<TimelineEvent> = emptyList(),
+    private val futureFocus: (WidgetShift) -> List<TimelineEvent> = { emptyList() },
 ) : WidgetSnapshotComposer.Upcoming {
     override fun items(nowMs: Long, current: ShiftSnapshot?, expiresAtMs: Long?, futureShifts: List<WidgetShift>): List<WidgetUpcomingItem> {
         val items = ArrayList<WidgetUpcomingItem>()
@@ -32,6 +34,7 @@ class WidgetUpcoming(
         if (current != null && (current.isWorkday || session.isForcedWorkday(current))) {
             events(current, nowMs.toDouble()).forEach(::add)
         }
+        focusEvents.forEach(::add)
         if (futureShifts.isEmpty()) {
             // Manual runs: preview the next shift's own rows.
             val next = current?.nextShiftStartAtMs
@@ -39,7 +42,10 @@ class WidgetUpcoming(
                 session.snapshot(next - 1)?.let { preview -> events(preview, next - 1).forEach(::add) }
             }
         } else {
-            futureShifts.forEach { shift -> boundaries(shift).forEach(::add) }
+            futureShifts.forEach { shift ->
+                boundaries(shift).forEach(::add)
+                futureFocus(shift).forEach(::add)
+            }
         }
         return items.sortedBy { it.dateMs }
     }
@@ -64,6 +70,8 @@ class WidgetUpcoming(
             TimelineKind.HEALTH -> "microBreak"
             TimelineKind.MILESTONE -> "milestone"
             TimelineKind.SHIFT_END -> "shiftEnd"
+            TimelineKind.FOCUS -> "focus"
+            TimelineKind.FOCUS_BREAK -> "focusBreak"
         }
     }
 }

@@ -1,6 +1,6 @@
 # 02 · Kotlin 原生移植与技术指引
 
-本章除明确引用的当前源码行为外，均为 Android 建议实现。代码块是接口/算法约束示例，不是声称已在当前工具链编译通过的工程。最终具体 API 签名以锁定依赖、源码和编译为准。
+本章保留已批准的技术约束和早期设计理由；截至 2026-09-26 的实际实现与工具链以 `docs/android/progress.md`、`docs/android/environment-lock.md` 和源码为准。代码块中的接口/算法仍是示意，不替代编译后的 API。
 
 ## 1. 先建立两条边界
 
@@ -14,7 +14,7 @@
 
 ### 2.1 选型
 
-Kotlin、Jetpack Compose、Material 3 Expressive；Kotlin Coroutines/Flow；ViewModel 单向数据流；Room 保存业务及事务数据；DataStore 只保存非事务性的本机小偏好；java.time 处理时间；kotlinx.serialization 或一个统一的严格 JSON 适配器；Glance/RemoteViews 做小组件；WorkManager 做可延迟任务；AlarmManager 做经授权且确实需要的时间边界；官方 Play Billing。
+Kotlin、Jetpack Compose、稳定版 Material 3 与 DoneAt 自有 Expressive 风格 token；Kotlin Coroutines/Flow；ViewModel 单向数据流；D-13 原子 JSON 档案保存业务数据；独立本机文件保存显示偏好和运行状态；java.time 处理时间；kotlinx.serialization 或一个统一的严格 JSON 适配器；Glance/RemoteViews 做小组件；WorkManager 做可延迟任务；AlarmManager 做经授权且确实需要的时间边界；官方 Play Billing。
 
 应用不需要跨平台 UI 或 KMP 才能共享规则。`:core:domain` 先做纯 Kotlin/JVM，后续 Wear OS 可复用。依赖注入先用明确构造函数与 AppContainer；除非规模或团队规范证明有需要，不为了“架构完整”引入自定义 DI 框架、通用 EventBus、反射路由或几十个空模块。
 
@@ -30,54 +30,36 @@ Kotlin、Jetpack Compose、Material 3 Expressive；Kotlin Coroutines/Flow；View
 | AGP | 当前发布页给 9.4 的 Gradle 9.6.0 / JDK 17 / 最大 API 37 兼容信息 | M1 依据可用稳定渠道选择并记录，不把该表误当整个项目已兼容 [A19] |
 | Kotlin / Compose compiler | 官方示例 Kotlin 2.4.10；编译器插件与 Kotlin 版本关联 | 与所选 AGP/内置 Kotlin、KSP 联合验证，不孤立升级 [A21], [A22] |
 
-**技术探针必须先于业务开发**：空 Compose 页面 → 需要的 Expressive 组件/主题 → Room 生成 → 序列化 → BillingClient 初始化 → Glance 最小组件 → Debug 和 R8 Release 构建。记录实际 Gradle/JDK/AGP/Kotlin/Compiler/KSP/Compose/Material3/Room/Billing/Glance 版本和依赖树到 `docs/android/environment-lock.md`。
+**技术探针必须先于业务开发**：空 Compose 页面 → 需要的 Expressive 组件/主题 → 原子档案读写 → 序列化 → BillingClient 初始化 → Glance 最小组件 → Debug 和 R8 Release 构建。记录实际 Gradle/JDK/AGP/Kotlin/Compiler/Compose/Material3/Billing/Glance 版本和依赖树到 `docs/android/environment-lock.md`。
 
 使用 AGP 9 内置 Kotlin 时，不再套用旧教程给 Android 模块重复应用 `org.jetbrains.kotlin.android`；`:core:domain` 纯 JVM 模块的插件另行配置。优先 KSP，不因旧 KAPT 示例复制出不兼容构建。[A22]
 
 不要使用 `+`、`latest.release`、未经验证的 alpha BOM 或全局强制降级。Material3 的预发布依赖可能传递带入其他预发布库，`:designsystem` 隔离的是 API 使用边界，不是能神奇隔离最终 APK 的运行时依赖。负责人已按 D-12 选择稳定依赖：Expressive 设计语言用稳定 API + DoneAt 自有 shape/motion/color token 实现，记录在 `design-tokens-adr.md`；不是把 UI 改回未经设计的默认 Material3。[A01], [A20]
 
-## 3. 推荐工程布局
+## 3. 当前工程布局与职责
 
 ```text
 src-mobile/android/
   settings.gradle.kts
-  build.gradle.kts
   gradle/libs.versions.toml
-  gradle/wrapper/...
-  app/                         # Android Application、导航、装配与 manifest
-    src/main/kotlin/.../
-      AppContainer.kt
-      MainActivity.kt
-      navigation/
-      feature/onboarding/
-      feature/timer/
-      feature/schedule/
-      feature/records/
-      feature/life/
-      feature/focus/
-      feature/settings/
-  core/domain/                 # 纯 JVM，不依赖 android.* / Room / Compose / Billing
-    time/ schedule/ summary/ records/ focus/ entitlement/
-    model/ repository/         # 接口、命令、不可变业务对象
-  core/data/                   # Room、DAO、实体映射、JSON codec、事务实现
-  core/designsystem/           # Theme、tokens、组件、Expressive 包装与 previews
-  core/platform/               # Alarm、通知、小组件投影、Biometric、Share、链接
-  core/billing/                # BillingClient、客户端签名校验、权益缓存（首发无服务端适配）
-  core/sync/                   # 后续阶段（D-02 修订）：Drive transport、同步协调器；首发不创建
-  baselineprofile/             # 到性能阶段才创建，不先生成空工程
+  app/                 # Compose、导航、系统集成、Billing/Review 客户端
+  core/domain/         # 纯 JVM；排班、收入、记录、专注、权益规则
+  core/data/           # D-13 原子 JSON、设置、会话与本机队列
+  core/designsystem/   # 稳定 Material3、DoneAt token 与组件
 ```
+
 
 审计、ADR、进度和发布资料统一放在**仓库根 `docs/android/`**，不再在 `src-mobile/android/` 内创建第二份同名目录。下文省略路径的 `progress.md`、`feature-parity.md`、`wire-contract.md` 等均相对这个根文档目录；Gradle路径相对 `src-mobile/android/`；Node脚本放根 `scripts/`。
 
-以上是拟创建路径，不是声称仓库已有 Android 模块。模块数量可在 M1 调整，但必须保持纯领域层和设计系统边界。功能页面先用 package 划分，不为每个按钮建立模块。
+以上是当前四个 Gradle 模块；`core/platform`、`core/billing` 和 `core/sync` 是早期规划中的职责名，不是首发已创建的模块。平台与 Billing 代码目前在 `:app`，同步仍延后。功能页面按 package 划分，不为每个按钮建立模块。
 
-依赖方向：app → 具体 data/platform/billing/sync/designsystem；这些模块 → domain。domain 不反向依赖任何平台模块；Room 实体不暴露给 Composable；页面不能直接拿 BillingClient 或 Drive API；同步不得直接修改 ViewModel。通过领域 repository 接口、不可变输入和命令提交串联。
+依赖方向：app → data/designsystem/domain，data → domain；domain 不依赖 Android 平台。domain 不反向依赖任何平台模块；可变存储实现不暴露给 Composable；页面不能直接拿 BillingClient 或 Drive API；同步不得直接修改 ViewModel。通过领域 repository 接口、不可变输入和命令提交串联。
 
 ### 3.1 状态与动作
 
 每页 `UiState` 明确 Loading / Ready / Empty / RecoverableError；错误状态保留最近有效内容时须明确其时效。`ViewModel` 暴露 `StateFlow`，生命周期感知收集；一次性导航/分享命令独立处理，避免配置变更后重放购买/删除动作。
 
-`SavedStateHandle` 保存选中日、页面尺度、非敏感草稿引用；持久业务状态在 Room。不要把全部 RecordState 放入 Bundle，工资和 Token 不写入导航 route/Intent URI。
+`SavedStateHandle` 保存选中日、页面尺度、非敏感草稿引用；持久业务状态在 RecordStore 的原子档案。不要把全部 RecordState 放入 Bundle，工资和 Token 不写入导航 route/Intent URI。
 
 写操作流程：UI 草稿 → 领域校验 → repository 单事务 → 新状态 → 重建受影响通知/小组件/同步 outbox。成功返回必须发生在提交后；写失败不显示已保存。并发修改有序、可取消读取，不靠 Composable 中随机起 coroutine。
 
@@ -222,17 +204,13 @@ payRatio          = elapsedMs / plannedDurationMs
 
 内部还需：ErasedID/tombstone、同步元信息与 outbox、冲突候选、已处理动作去重、导入作业/恢复信息。它们不是都应出现在用户 v6 导出里。
 
-### 6.2 Room 与 DataStore 分工
+### 6.2 本地持久化（D-13 已修订）
 
-**D-13（2026-09-23）取代本节的 Room 部分**：记录与 iOS 一样保存在内存 `RecordState` + 一个原子替换的 JSON 文件（`RecordLocalFile`：schema-6 文档 + 墓碑），由 `:core:data` 的 `RecordStore` 串行写入。下文关于 Room 表、DAO、Migration 的要求不再适用；事务、失败不部分提交、损坏不自动删库等原则仍然适用。DataStore 仍用于本机显示偏好。
+**当前实现（D-13，2026-09-23 决策）**：记录与 iOS 一样保存在内存 `RecordState`，由 `:core:data` 的 `RecordStore` 串行写入一个原子替换的 `RecordLocalFile`（v6 文档、墓碑和仅本机冲突候选）。每次写入先编码并读回验证，写失败不发布新状态；损坏文件阻断写入并保留待恢复。业务偏好 `syncedPreferences` 与记录共用一次档案提交；设备显示偏好、运行会话和购买证据各在独立的本机文件。应用没有 Room、DAO、WAL 或 DataStore schema 迁移。v1–v6 的升级发生在统一 JSON 解码器，旧本机档案的迁移也通过原子文件替换；不要用删库作为恢复手段。
 
-Room：业务行、同步业务设置、会话状态、命令结果与 outbox，在同一事务中修改。核心保存失败时不能只把 DataStore 设置改掉，留下“新设置+旧历史”混合状态。
+**决策历史**：D-13 取代了最初“Room 表 + DataStore”的草案。该草案关于事务失败不可部分提交、损坏不得自动删除和备份需保持一致性的原则继续成立；Room schema、MigrationTestHelper、WAL 快照与 `fallbackToDestructiveMigration()` 不再是本项目实施或验收要求。
 
-DataStore：本机配色显示偏好、已看引导等不需与业务行原子一致的设置。源规定参与跨设备同步的语言/主题值要通过业务偏好模型与映射同步，而不是直接把整个 DataStore 上传。
-
-权限是否授予、设备锁能力、Android 渠道设置、系统是否能发精确闹钟都来自当前设备查询，不从 iOS 备份恢复成 true。购买凭据、密钥、Google access token、系统 URI 权限和 Debug flags 不参与同步/备份。
-
-Room schema 导出并提交；升级用 Migration + MigrationTestHelper，禁止 `fallbackToDestructiveMigration()` 用在生产业务库。磁盘满/损坏时进入只读/恢复状态，不自动删库“解决闪退”。需要文件级副本时必须使用一致性的数据库快照策略并正确处理WAL，不能在数据库运行时仅复制主 `.db` 文件当完整备份。原子替换前保留安全副本，迁移失败能回退到尚未改写的数据副本，而不是安装旧 APK 读取新库。
+系统能力、锁屏、精确闹钟许可和购买权益从当前设备重新查询；购买凭据、密钥、Token、系统 URI 权限与 Debug 标记不从备份或导入恢复成已授权状态。
 
 ### 6.3 JSON v6 双向契约
 
@@ -273,7 +251,7 @@ exportedAtMs                Unix milliseconds
 
 模型先移植，页面后接入。分开 Task、PlanAssignment、Session、TimerSettings，不把可重复使用模板等同正在运行的会话。
 
-建议事件：StartRequested、BoundaryReached、StopRequested、PlanChanged、SettingsChanged、AppResumed、ExternalStateMerged。每个事件有去重键。数据库用事务保证同一逻辑会话只启动一次；通知动作与前台操作走同一命令处理器。
+建议事件：StartRequested、BoundaryReached、StopRequested、PlanChanged、SettingsChanged、AppResumed、ExternalStateMerged。每个事件有去重键。相关档案修改由 `RecordStore` 原子提交，保证同一逻辑会话只启动一次；通知动作与前台操作走同一命令处理器。
 
 必须维护源现有的 kind 和 endReason：focus/shortBreak/longBreak；completed/stoppedByUser/stoppedAtBoundary/abandoned/supersededBySync。[R06]
 
@@ -377,7 +355,7 @@ Play 的 pending 生命周期不是 Apple Ask to Buy 的 24 小时规则。不�
 
 **D-08 修订**：本节保留为首发后的设计参考（T21）。届时优先放在现有 Next.js/Vercel Route Handlers（仓库已有 `app/api/` 路由），而不是新建 Ktor 服务。以下原文中的“已确认/可以开始”均指该后续阶段。
 
-D-08 已确认生产支付采用**只处理必要购买元数据**的小型验证服务；排班、工资、职业数据不得上传到该服务，不新增 DoneAt 用户登录账号。可以按本章开始实现、接口测试和部署脚本编写。部署平台、域名、预算、最小权限凭据与生产上线操作仍待落实，不能把方案获批当成服务已部署。服务可用 Kotlin + Ktor + 持久数据库实现，独立于 Android APK；该技术组合仍是实施建议，不代表负责人已经选择了云厂商。[A07]
+**决策历史**：早期 D-08 草案曾建议首发部署单独的 Kotlin/Ktor 验证服务。2026-09-23 的 D-08 修订把该服务整体移到 T21，首发纯客户端使用 Play 签名、公钥与购买查询。后续如启用服务，应先复核现有 Next.js/Vercel Route Handlers 与数据/隐私范围，不能把旧草案写成已批准部署。
 
 建议 API 契约（新设计，需实现真实服务）：
 
@@ -412,7 +390,7 @@ APK 里只能包含公开服务地址/公钥/非秘密配置；Google service ac
 
 只维护一个应用级 BillingClient；注册更新监听早于首次查询；恢复前台时查当前购买；重连有退避。购买/恢复操作互斥，不在 recomposition 中启动支付；旋转重建页面不重复调用 launchBillingFlow。[A06]
 
-缓存已验证授权与来源、版本和时限，敏感 Token 使用 Keystore 支持的保护并排除备份；公钥验证不能被 Debug 分支覆盖。查询超时/服务断开不等于未购买。离线退款无法立即获知，应诚实接受“下一次成功验证后撤销”的边界，不能宣称永久离线与即时撤销同时保证。
+缓存已验证授权与来源、版本和时限；签名证明与必要 Token 保存在 app-private `noBackupFilesDir`，并排除系统备份；公钥验证不能被 Debug 分支覆盖。查询超时/服务断开不等于未购买。离线退款无法立即获知，应诚实接受“下一次成功验证后撤销”的边界，不能宣称永久离线与即时撤销同时保证。
 
 调试 FakeBilling 只在 debug/test source set，release 不能通过 deep link、偏好、环境变量或导入文件解锁。管理订阅按钮仅对订阅用户存在；购买终身不会自动取消其已有订阅，需明确提醒并提供平台管理入口，不能诱导重复付费。
 
@@ -460,12 +438,9 @@ v1 先保证不可变批次合并正确；不要实现没有证明的自动历�
 
 Android Auto Backup 默认可能包含应用文件，所以“数据只在本地”不能靠未设置网络代码来保证。显式制定 fullBackupContent/dataExtractionRules，分别验证 cloud backup 与 device transfer 行为。[A16], [A28]
 
-**D-02 修订（2026-09-23）：业务 Room 库纳入备份**，与 iOS 主数据随 iCloud 设备备份（仅 `LifeSummaryCache`、Watch 快照排除）的行为一致，使换机不丢记录。要求：
+**D-02 与 D-13 当前实现**：系统备份与设备转移只纳入 `records/` 中的原子 JSON 档案和 `device/settings.json`。`data_extraction_rules.xml` 与 Android 11 及以下的 `backup_rules.xml` 都使用包含清单；会话、专注队列、提醒登记、小组件投影、购买/权益缓存、待确认标记、密钥、令牌、Debug 设置与 SharedPreferences 不纳入。恢复后重新查询 Play 与系统权限，并重建提醒和小组件；不能从备份文件推断授权仍有效。
 
-- 包含：业务库（`.db` 与同组 `-wal`/`-shm`，或在 BackupAgent 中先 checkpoint，二选一并以真机恢复验证）、需随用户迁移的 DataStore 偏好。
-- 排除：购买/权益缓存、待确认购买标记、Keystore 相关数据、任何令牌、debug 设置、可重建的缓存与小组件投影。
-- 恢复后首次启动：执行一致性检查与 Room 迁移，重建提醒/小组件，重新查询 Play 权益与系统权限，不从备份信任任何授权状态。
-- 云端备份在 Android 9+ 且设备设有锁屏时由系统端到端加密；未设锁屏时不是。隐私说明如实写明这一条件，不笼统宣称“端到端加密”。每应用 25MB 上限；超限时系统跳过备份，需在帮助中说明并建议 v6 导出。
+API 36 本地 Auto Backup 清除/恢复和系统文档化的设备转移/重装路径已核对业务档案与设备设置字节相同。直接 `bmgr restore` 返回 -1000，不计作成功；缓存重建、其他系统版本与真正跨设备链路仍需 T23/T24 验证。系统云备份的可用性、额度和加密条件要按最终设备与官方文档核对；用户主动导出的 JSON 是明文文件。
 
 首发的跨设备数据传输是系统备份/设备转移与明确的文件导出；后续阶段加入用户同意的 Drive，同意前不向 Drive 传工资/经历。Keystore 保护密钥不保证导出的明文 JSON 自动加密；导出前直说这是含个人信息的文件，不能用“安全备份”暗示端到端加密。
 
@@ -506,7 +481,7 @@ key 映射使用可逆清单，处理 Android 资源名限制与碰撞。iOS `%@
 
 长历史查询放后台 dispatcher；领域计算接受取消或分块策略；缓存键包含记录 revision、时区、所选区间、配置版本。每秒 ticker 不触发整年/人生重算；索引随业务修改重建一次。确认缓存失效正确后再优化，不能为了性能用过期历史回答。
 
-可持久数据用真实 Room 的 instrumentation 测试；领域纯 JVM 测试；Compose UI 测试验证语义与动作；截图测试验证代表性布局；Macrobenchmark 使用 release-like 构建。截图和 unit test 不能证明后台提醒或真实支付可靠。
+持久数据用真实 `RecordStore` 文件系统测试和设备备份/重装恢复测试；领域用纯 JVM 测试；Compose UI 测试验证语义与动作；截图测试验证代表性布局；Macrobenchmark 使用 release-like 构建。截图和 unit test 不能证明后台提醒或真实支付可靠。
 
 Release 使用 R8，保留必需序列化映射并测试被混淆后的导入/支付/启动。扫描所有 `.so`（包括间接 SDK）；即使业务代码全 Kotlin 也不能断言没有 native 依赖。按当前 16KB 官方要求验证打包及真机/模拟器，勿只看源码语言。[A17]
 
@@ -516,29 +491,24 @@ Release 使用 R8，保留必需序列化映射并测试被混淆后的导入/�
 
 **基线漂移**：每个里程碑结束时运行 `git log --oneline <基线SHA>..origin/main -- lib src-mobile/ios/App/App/Native/Models src-mobile/ios/Shared`，把影响已移植规则的提交登记到 `docs/android/progress.md`，决定跟进或推迟后再推进基线 SHA；不静默跟随 main。新增 fixture 生成器应只输出新 Android fixtures 或明确共享产物，不更改线上规则作为“适配”。
 
-建议阶段命令（相应脚本/模块创建后才可运行）：
+当前本地门禁（版本与执行日志见 `docs/android/environment-lock.md`）：
 
 ```bash
 # repository root
-npm ci
+npm run lint
 npm test
 npm run check:version
-# 如新增以下命令，先在 package.json 实现后再报告它已运行：
-# npm run generate:android-rule-fixtures
-# npm run check:android-fixtures
-# npm run check:android-strings
+npm run check:ios
+npm run build && npm run check:build:web
+npm run build:desktop && npm run check:build:desktop
 
 cd src-mobile/android
-./gradlew --version
-./gradlew :core:domain:test
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
-./gradlew :app:connectedDebugAndroidTest    # 需要真实可用设备/模拟器
-./gradlew :app:lintRelease :app:bundleRelease
+./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease :app:bundleRelease
 ```
 
-模块任务名称以真实 `./gradlew tasks` 为准；聚合 test 命令还须覆盖 data/platform/billing/sync 各模块，不能只跑 app tests 就自称全测。最终包路径由构建输出确认，不能在失败构建后贴旧 AAB 当新版本。
+当前聚合测试须覆盖四个实际模块：`:core:domain`、`:core:data`、`:core:designsystem`、`:app`。平台/Billing 代码目前在 app，不另造不存在的模块。最终包路径由构建输出确认，不能在失败构建后贴旧 AAB 当新版本。
 
-CI 产物：JUnit/XML、coverage 与用例数、lint、截图差异、Room schemas、fixture/source hash、依赖树、APK/AAB 与 SHA256、R8 mapping、权限清单、版本和 commit。签名与上架 job 受保护，不允许普通 PR 读取生产密钥；Fork PR 不注入 secret。产品营销版本可对齐现仓库，Android versionCode 单调递增且独立管理，由 D-10 冻结。
+CI 产物：JUnit/XML、用例数、lint、fixture/source hash、依赖树、APK/AAB 与 SHA256、R8 mapping、权限清单、版本和 commit；设备截图及备份恢复证据另记。签名与上架 job 受保护，不允许普通 PR 读取生产密钥；Fork PR 不注入 secret。产品营销版本可对齐现仓库，Android versionCode 单调递增且独立管理，由 D-10 冻结。
 
 
 ---
