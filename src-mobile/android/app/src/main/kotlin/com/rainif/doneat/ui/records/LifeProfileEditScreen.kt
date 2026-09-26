@@ -49,7 +49,6 @@ import com.rainif.doneat.core.domain.records.LifeProfileDraft
 import com.rainif.doneat.core.domain.records.LifeProfiles
 import com.rainif.doneat.core.domain.records.LifeSalaryCadence
 import com.rainif.doneat.core.domain.records.LifeWorkHistoryMode
-import com.rainif.doneat.core.domain.salary.NumberInput
 import com.rainif.doneat.core.domain.summary.SummaryRules
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.components.DoneAtPage
@@ -263,7 +262,7 @@ private fun NumberRow(title: String, value: String, placeholder: String, maxDigi
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        NumberField(value, { onChange(NumberInput.sanitize(it, decimal, maxDigits)) }, placeholder = placeholder, decimal = decimal)
+        NumberField(value, onChange, placeholder = placeholder, decimal = decimal, maxDigits = maxDigits)
     }
 }
 
@@ -299,7 +298,7 @@ private fun SalaryRow(
             Text(TimerText.MASK, style = MaterialTheme.typography.bodyLarge)
             EarningsVisibilityButton(graph) {}
         } else {
-            NumberField(amount, { onAmount(NumberInput.sanitize(it, decimal = true, maxDigits = 12)) })
+            NumberField(amount, onAmount, maxDigits = 12)
         }
         Box {
             TextButton(onClick = { menu = true }, Modifier.semantics { contentDescription = text.string(R.string.lifeSalaryCadence) }) {

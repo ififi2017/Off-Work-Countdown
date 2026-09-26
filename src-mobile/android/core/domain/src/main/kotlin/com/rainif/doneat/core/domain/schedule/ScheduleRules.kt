@@ -37,7 +37,7 @@ object ScheduleRules {
             isWorkday = zone.isScheduledWorkday(shift.startAtMs, input.workdays, input.schedule),
             nextRestAtMs = zone.nextRestDayStartMs(input.nowMs, input.workdays, input.schedule),
             dailySalary = dailySalary,
-            earnedSoFar = dailySalary?.let { max(0.0, payRatio) * it },
+            earnedSoFar = dailySalary?.let { max(0.0, payRatio) * it }?.takeIf { it.isFinite() },
             nextShiftStartAtMs = nextShift?.startAtMs,
             nextShiftEndAtMs = nextShift?.endAtMs,
             countdownTargetAtMs = clockIn.targetAtMs,

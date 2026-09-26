@@ -1653,6 +1653,12 @@
     "notificationStillWorks": {
       "resource": "string/notificationStillWorks"
     },
+    "numberInputInvalid": {
+      "resource": "string/numberInputInvalid",
+      "params": [
+        "count"
+      ]
+    },
     "offWorkReminder": {
       "resource": "string/offWorkReminder"
     },

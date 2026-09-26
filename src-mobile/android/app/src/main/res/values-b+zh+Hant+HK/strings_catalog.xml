@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">通知只包含時間與進度，絕不會顯示薪資。</string>
     <string name="notificationScheduledForShift">已為本班次排程</string>
     <string name="notificationStillWorks">仍可使用</string>
+    <string name="numberInputInvalid">請檢查數值，最多可以輸入 %1$s 位數字。</string>
     <string name="offWorkReminder">放工提醒</string>
     <string name="offWorkTime">放工時間到！</string>
     <string name="offWorkToday">今日已收工</string>

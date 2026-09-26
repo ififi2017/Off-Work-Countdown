@@ -204,7 +204,8 @@ struct OnboardingRemindersPage: View {
 
     @discardableResult
     private func clampDuration() -> RecordCommand<Bool> {
-        let typed = Int(durationText) ?? preferences.lunchDurationMinutes
+        let typed = NumberInput.committedText(durationText, decimal: false, maxDigits: 3)
+            .flatMap(Int.init) ?? preferences.lunchDurationMinutes
         let clamped = min(180, max(10, typed))
         durationText = "\(clamped)"
         return preferences.applyPreferences { $0.lunchDurationMinutes = clamped }

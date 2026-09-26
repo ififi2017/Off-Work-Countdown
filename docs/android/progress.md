@@ -2,7 +2,7 @@
 
 **这是任务状态的唯一记录。** 交接包 `tasks.json` 只定义依赖、范围和验收，不记录状态。
 
-更新：2026-09-26。交接包 1.2。源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
+更新：2026-09-27。交接包 1.2。源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
 
 ## 任务状态
 
@@ -13,7 +13,7 @@
 | T00 | IMPLEMENTED | `baseline.md`。未 reset 工作区。QA-001 分支创建 NOT_RUN。 |
 | T01 | IMPLEMENTED | `source-inventory.md`、`feature-parity.md`、`conflicts.md`。源读自固定 SHA。未跑 iOS XCTest。 |
 | T02 | IMPLEMENTED | `wire-contract.md`、`synthetic-archives/`。检查：`node scripts/android-synthetic-archives.mjs --check`。Kotlin 导入 NOT_RUN。 |
-| T03 | IMPLEMENTED | `environment-lock.md`；`src-mobile/android`；`.github/workflows/android.yml`。初始 T03 探针当时只有 domain 2 项测试、Debug/R8 Release/AAB 与模拟器冷启动；当前四模块与 417 项见下方执行状态。GitHub CI 运行证据另取，不以本地命令代替。 |
+| T03 | IMPLEMENTED | `environment-lock.md`；`src-mobile/android`；`.github/workflows/android.yml`。初始 T03 探针当时只有 domain 2 项测试、Debug/R8 Release/AAB 与模拟器冷启动；当前四模块与 423 项见下方执行状态。GitHub CI 运行证据另取，不以本地命令代替。 |
 | T04 | IMPLEMENTED | `:core:designsystem`：`DoneAtColors`（浅/深两套完整 M3 配色，暖中性表面；浅色主色 `#C2410C`，品牌亮橙仅作装饰）、`DoneAtStateColors`、`DoneAtShapes`（14/22 与 iOS 一致；主操作按下时胶囊收成 12 dp）、`DoneAtMotion`（与 `OWCMotion` 同值，减少动态效果时退化）、`DoneAtType.countdown`（64 sp 等宽数字）、`DoneAtCountdown`（逐位数字翻页，对应 `.numericText(countsDown:)`）、`DoneAtProgressMeter`（浮动百分比气泡，几何与 `OWCProgressMeter` 相同）、`DoneAtTheme`（主题模式、可选动态配色）。对比度与气泡几何 8 条单测；Debug 专用 gallery。模拟器（API 36）检查浅色、深色、200% 字体、移除动画、阿拉伯语 RTL、数字翻页录屏。Release 依赖全为稳定版（Material3 1.4.0）。见 `design-tokens-adr.md`。 |
 | T05 | IMPLEMENTED | `scripts/generate-android-strings.mjs`（`npm run generate:android-strings` / `check:android-strings`）把 `Localizable.xcstrings` 的 832 个 key 与 `app/i18n/android-strings.json` 的 Android 专有文案转成 19 个语言目录的 `strings_catalog.xml`、`xml/locales_config.xml`（清单已引用）、可逆的 `app/i18n/key-map.json` 与带命名参数的 `l10n/Strings.kt`。`{{name}}` 按英文顺序转为 `%N$s`；消息池转为 string-array 并保留 `{{name}}` 供共享规则替换；复数按各语言 CLDR 类别生成；Java/Kotlin 关键字 key 加下划线。生成时检查：19 语言齐全、各语言占位符与英文一致、Android 专有 key 不与目录重名、资源名合法且不碰撞、XML 非法字符。12 条 vitest 覆盖中文三变体、印地/马拉地语、阿语复数、德语长句占位符重排、转义与各类拒绝；`npm test` 与 Android CI 在资源过期时失败。Android 专有文案已随记录、Plus、通知等页面扩充，19 语言由生成器检查。aapt2 编译与 lint 通过，无新增告警（`localeConfig` 在 API 33 以下被忽略属预期）。 |
 | T06 | IMPLEMENTED | `scripts/generate-android-rule-fixtures.mjs` → `src-mobile/android/core/domain/src/test/resources/shared-rule-fixtures.json`：5087 条 TS oracle 用例，与 iOS `ScheduleRuleFixtures` 数据逐字相同，另记 6 个输入文件哈希。`npm test` 内含 stale 检查（手改一条用例、给 `lib/countdown.ts` 加注释均使检查失败，已验证）；Kotlin `SharedRuleFixturesTest` 3 条通过。Swift 特有规则的 fixtures 属 T08。 |
@@ -44,8 +44,8 @@
 | 项 | 状态 |
 |---|---|
 | Android 工程 | `:app`、`:core:domain`、`:core:data`、`:core:designsystem`；D-13 原子 JSON，无 Room |
-| 自动化 | 最近完成的本地完整 Gradle：420 项通过（domain 333、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功；`/tmp/doneat-life-history-final-gradle.log`。包含 Life 历史区间保留与校验提示。 |
-| 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture 12 项、iOS headless build 通过。Web/Desktop build 与输出检查通过；npm lint、442 项测试、版本与 iOS 目录检查通过。字符串生成一致性检查通过。 |
+| 自动化 | 最近完成的本地完整 Gradle：423 项通过（domain 336、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功；`/tmp/doneat-number-input-save-final-gradle.log`。包含 Life 历史区间、非法薪资输入与离页保存修复。 |
+| 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture 12 项及数字输入 5 项、iOS headless build 通过。Web/Desktop build 与输出检查通过；npm lint、445 项测试、版本与 iOS 目录检查通过。字符串生成一致性检查通过。 |
 | 设备 | API 36 上 Auto Backup 清除/恢复后记录与设置字节相同；系统文档化设备转移/重装路径恢复业务数据与设置字节相同，且排除了 device-local/no_backup 测试标记和 Debug Plus。`bmgr restore` 直接传输返回 -1000，不能算恢复成功。Pixel 已安装候选 APK，最终解锁后回归仍待做。 |
 | Play Console | 用户于 2026-09-26 确认 KYC 身份验证进行中，尚未通过。代理未登录核验；商品、公钥、许可测试、签名与应用审核尚无完成证据。 |
 
@@ -53,14 +53,15 @@
 
 暂不计真机验收，KYC 等待期间按以下顺序推进：
 
-1. **继续处理跨端数据边界 QA-041。** QA-051 已同步修复 iOS/Kotlin：保留历史结束日期与空档，重叠区间显示校验且无法保存。下一项核对非法薪资输入、原文本保留与计算拒绝的边界；尤其是输入过滤器可能把负数或含非法字符的粘贴内容变成另一笔合法金额。必要的规则修正继续同步两端并更新 fixtures，不单独改变 Android 的导入协议。
-2. **补齐可自动化的验收。** 重点是显示舍入（QA-019）、暂停后按当前时间重新计算（QA-023）、专注边界与提醒重建（QA-062）、专注记录导入合并（QA-067）、导入/备份过程中断与原子写入（QA-077/140）。模拟器或测试进程能覆盖的部分先完成，仍需设备的部分继续保留。
-3. **继续代码审阅和远程 CI。** 当前进度已提交并创建 [PR #239](https://github.com/ififi2017/Off-Work-Countdown/pull/239)。`ae0ec1f0` 的 Android、Web/Desktop、Rust macOS/Windows 和 Xcode Cloud iOS/watchOS 检查全部通过；后续修复追加独立提交，每次以对应提交的 CI 为准。
-4. **完成发布资料的本地准备。** 将 Android 隐私补充落实到官网代码，定稿商店文案、素材选择和审核操作说明；正式发布页面、Console 填报和签名身份仍按发布流程处理。
+QA-041/051 已同步修复并通过本地验收：非法金额不再被改成另一笔有效工资，历史职业结束日期和空档保持原样。
+
+1. **补齐可自动化的验收。** 重点是显示舍入（QA-019）、暂停后按当前时间重新计算（QA-023）、专注边界与提醒重建（QA-062）、专注记录导入合并（QA-067）、导入/备份过程中断与原子写入（QA-077/140）。模拟器或测试进程能覆盖的部分先完成，仍需设备的部分继续保留。
+2. **继续代码审阅和远程 CI。** [PR #239](https://github.com/ififi2017/Off-Work-Countdown/pull/239) 已合并；本轮 3.2.1 与 QA-041 修复在 `codex/salary-validation-321` 提交为后续 PR。`ae0ec1f0` 和 `e2d874c` 的 Android、Web/Desktop、Rust macOS/Windows 和 Xcode Cloud iOS/watchOS 检查全部通过；后续修复追加独立提交，每次以对应提交的 CI 为准。
+3. **完成发布资料的本地准备。** 将 Android 隐私补充落实到官网代码，定稿商店文案、素材选择和审核操作说明；正式发布页面、Console 填报和签名身份仍按发布流程处理。
 
 KYC 通过且 Console 具备相应操作条件后，再核对应用 ID、Play App Signing、商品/价格/公钥，完成测试轨道接入和真实购买生命周期测试。T26 的实际上传与发布按后续授权执行。KYC 验证进度不等于应用审核或购买验收结果。
 
-126 项首发用例逐项状态以 [`preconsole-qa-2026-09-26.md`](preconsole-qa-2026-09-26.md) 为证据矩阵；本页只记录任务状态，不把 420 项单测写成 126 项全通过。
+126 项首发用例逐项状态以 [`preconsole-qa-2026-09-26.md`](preconsole-qa-2026-09-26.md) 为证据矩阵；本页只记录任务状态，不把 423 项单测写成 126 项全通过。
 
 环境与命令见 `environment-lock.md`。候选默认（发布前冻结）：`applicationId=com.rainif.doneat`，minSdk 26，versionName 3.2.0，versionCode 1。
 
@@ -77,6 +78,16 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 | 2026-09-23 | 0 | 无需跟进 |
 | 2026-09-23（M1/M2 结束） | 0 | 无需跟进 |
 | 2026-09-26（本地收口） | `47fef18e` 计时秒边界刷新；`a6a6c382` Web 工时计算器 | 与上一轮相同；本轮不修改共享规则，也不推进 `9252fdfdc66aab88b4acb7493684f11991fd773d` 基线。秒边界刷新留在跨端计时回归，Web 工具不进入原生 UI。 |
+
+## 2026-09-27 · 薪资输入与后续版本（QA-041）
+
+- iOS/Kotlin 不再从非法输入中删掉负号、重复分隔符或超长尾数。草稿保留原文并显示 19 语言校验提示；仅规范的非负数写入薪资设置，空与零保持不同。逗号小数、阿拉伯小数分隔符和 Unicode 十进制数字仍可正常输入；人生薪资沿用必须大于零的规则。
+- 打开从备份恢复的非法薪资原文本不会自动改写它；计算不把该文本当作有效金额。TS/Swift/Kotlin 同步拒绝日薪、收入比例、月薪折算与 Records 汇总的数值溢出。归档协议不变，规则 fixtures 已重新生成；原有排班样例保持不变，另加极值样例。
+- Android 实际输入回归发现并修复离页丢失保存：薪资提交使用应用作用域，退出页时读取最新草稿，合法编辑可在返回或切换标签后保存。
+- 验收：Android 423 项单测、lint（0 error / 33 warning / 1 hint）、Debug/R8 Release/AAB；npm 445 项、lint、Web/Desktop 构建与输出检查；iOS headless 构建、5 项数字输入与 12 项共享规则测试均通过。API 36 实际验证非法金额/年终奖不写入、逗号小数/零/清空正常保存、打开恢复值不改写；同页先完成、再改值并离页也保存最新输入；错误提示在 320 dp、200% 字号下完整显示。模拟器原 14 个文件逐字节恢复，应用停留关闭状态，本轮未改动 Pixel。日志为 `doneat-number-input-*`。未进行 iOS 手动视觉检查。
+- QA 矩阵现为 73 PASS / 53 NOT_RUN，仍不能替代真机、云账户与 Play 许可测试。
+- 用户确认 iOS 3.2.0 已发版，后续版本为 3.2.1；iOS/Watch 四个产物已核对为 3.2.1，Web/Desktop/Mac Widget 元数据按版本约定同步。Android 首发候选仍为 3.2.0 / versionCode 1。
+- Play Console KYC 仍在验证中；本次跨端缺陷修复不移动冻结基线 `9252fdfd`。漂移结果仍为 `47fef18e`、`a6a6c382`。
 
 ## 2026-09-26 · PR 后续：保留人生职业区间（QA-051）
 
@@ -96,7 +107,7 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - T23/T24：完整四模块 417 项 JUnit、lint 0 error、Debug/R8 Release/AAB 和最近视觉修复后的重跑均通过；Web/Desktop build+输出检查、npm lint/442 项测试、check:version/check:ios、iOS headless build 与 12 项 Swift fixture 通过。对应日志和仍缺的逐项验收见环境锁与 126 项 QA 矩阵。Pixel 已覆盖安装候选 APK，解锁后的最终回归待完成。
 - T25 的商店文案、隐私补充与 Console 准备为本地草稿；T26 未上传或发布。本地工件哈希见 `build/android-preconsole/artifact-hashes.txt`；Release APK/AAB 尚未配置正式签名，Play 处理结果待后续门禁。
 - 本轮证据索引：`build/android-preconsole/README.md`；126 项首发验收中 71 项 PASS、55 项 NOT_RUN（其中包含已有部分证据的用例），不能据此宣布全量设备验收完成。免费导出/删除/恢复与恢复后权限隔离、精确提醒拒绝和撤权重建均已设备验证。
-- 基线边界问题留在 QA-041/051：两端都会保留不可计算的薪资原文本；人生编辑器可能重连导入的重叠职业区间。本轮没有只改 Android 的归档/职业规则，后续跨端修正或明确目录预期后再验收。
+- 基线边界问题留在 QA-041/051：两端都会保留不可计算的薪资原文本；人生编辑器可能重连导入的重叠职业区间。本轮没有只改 Android 的归档/职业规则，当时保留待后续跨端处理；现已由上方 QA-041/051 补充记录完成修复与验收。
 
 ## 2026-09-26 · Android UI 反馈修正
 

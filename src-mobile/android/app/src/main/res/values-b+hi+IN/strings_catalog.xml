@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">सूचनाओं में केवल समय और प्रगति होती है, वेतन कभी नहीं।</string>
     <string name="notificationScheduledForShift">इस शिफ्ट के लिए तय</string>
     <string name="notificationStillWorks">फिर भी काम करता है</string>
+    <string name="numberInputInvalid">यह संख्या जाँचें। अधिकतम %1$s अंकों का उपयोग करें।</string>
     <string name="offWorkReminder">काम से छुट्टी का रिमाइंडर</string>
     <string name="offWorkTime">काम से छुट्टी का समय!</string>
     <string name="offWorkToday">आज का काम पूरा</string>

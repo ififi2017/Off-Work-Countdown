@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">Les notifications contiennent uniquement l’heure et la progression, jamais le salaire.</string>
     <string name="notificationScheduledForShift">Planifié pour ce service</string>
     <string name="notificationStillWorks">Fonctionne toujours</string>
+    <string name="numberInputInvalid">Vérifiez ce nombre. Utilisez au maximum %1$s chiffres.</string>
     <string name="offWorkReminder">Rappel de fin de travail</string>
     <string name="offWorkTime">C\'est l\'heure de la fin du travail!</string>
     <string name="offWorkToday">Journée terminée</string>

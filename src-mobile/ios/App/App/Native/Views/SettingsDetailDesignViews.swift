@@ -191,7 +191,7 @@ struct SalaryDesignView: View {
     private enum Field { case amount, bonus }
     @FocusState private var focusedField: Field?
     @State private var amountDraft = SettingsFieldDraft("")
-    @State private var bonusDraft = SettingsFieldDraft(0.0)
+    @State private var bonusDraft = SettingsFieldDraft("")
     /// Salary is the one thing in here worth shoulder-surfing, so the page does
     /// not render it until the device owner has confirmed it is them. Devices
     /// with no passcode pass straight through — see `BiometricGate`.
@@ -401,13 +401,14 @@ struct SalaryDesignView: View {
                             decimal: true,
                             maxDigits: 9,
                             emphasized: true,
+                            validationMessage: shifts.text.t("numberInputInvalid", values: ["count": "9"]),
                             onCommit: commitSalaryFields
                         )
                         .focused($focusedField, equals: .amount)
                     }
                 }
                 .padding(.horizontal, 16)
-                .frame(height: 56)
+                .frame(minHeight: 56)
                 .owcPlainDivider()
 
                 if shifts.preferences.salaryType == .monthly {
@@ -451,15 +452,16 @@ struct SalaryDesignView: View {
                     HStack {
                         Text(shifts.text.t("annualBonusMonths")).font(.body)
                         Spacer()
-                        TextField("0", value: $bonusDraft.value, format: .number.precision(.fractionLength(0...2)))
-                            .font(.body.weight(.semibold).monospacedDigit())
-                            .keyboardType(.decimalPad)
-                            .multilineTextAlignment(.trailing)
-                            .focused($focusedField, equals: .bonus)
-                            .frame(maxWidth: 120)
+                        OWCNumberField(
+                            placeholder: "0", text: $bonusDraft.value, decimal: true,
+                            maxDigits: 5, width: 120,
+                            validationMessage: shifts.text.t("numberInputInvalid", values: ["count": "5"]),
+                            onCommit: commitSalaryFields
+                        )
+                        .focused($focusedField, equals: .bonus)
                     }
                     .padding(.horizontal, 16)
-                    .frame(height: 56)
+                    .frame(minHeight: 56)
                     .owcPlainDivider()
                 }
 
@@ -533,10 +535,10 @@ struct SalaryDesignView: View {
         }
         .onAppear {
             amountDraft.receive(shifts.preferences.salaryAmount)
-            bonusDraft.receive(shifts.preferences.annualBonusMonths)
+            bonusDraft.receive(Self.bonusText(shifts.preferences.annualBonusMonths))
         }
         .onChange(of: shifts.preferences.salaryAmount) { _, amount in amountDraft.receive(amount) }
-        .onChange(of: shifts.preferences.annualBonusMonths) { _, months in bonusDraft.receive(months) }
+        .onChange(of: shifts.preferences.annualBonusMonths) { _, months in bonusDraft.receive(Self.bonusText(months)) }
         .onChange(of: focusedField) { old, _ in
             if old != nil { commitSalaryFields() }
         }
@@ -574,10 +576,15 @@ struct SalaryDesignView: View {
         return (dailySalary, earnedNow, hourlySalary, effectiveTimeNote)
     }
 
+    private static func bonusText(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(0...2)).grouping(.never).locale(Locale(identifier: "en_US_POSIX")))
+    }
+
     private func commitSalaryFields() {
         let amount = amountDraft.hasChanges
-            ? amountDraft.value.trimmingCharacters(in: .whitespaces) : nil
-        let months = bonusDraft.hasChanges ? max(0, bonusDraft.value) : nil
+            ? NumberInput.committedText(amountDraft.value, decimal: true, maxDigits: 9) : nil
+        let months = bonusDraft.hasChanges
+            ? NumberInput.committedText(bonusDraft.value, decimal: true, maxDigits: 5).flatMap(NumberInput.parse) : nil
         guard amount != nil || months != nil else { return }
         let amountGeneration = amount.map { _ in amountDraft.editGeneration }
         let bonusGeneration = months.map { _ in bonusDraft.editGeneration }
@@ -600,7 +607,7 @@ struct SalaryDesignView: View {
             amountDraft.accept(shifts.preferences.salaryAmount, ifUnchangedSince: amountGeneration)
         }
         if let bonusGeneration {
-            bonusDraft.accept(shifts.preferences.annualBonusMonths, ifUnchangedSince: bonusGeneration)
+            bonusDraft.accept(Self.bonusText(shifts.preferences.annualBonusMonths), ifUnchangedSince: bonusGeneration)
         }
     }
 
@@ -1052,7 +1059,8 @@ struct HealthReminderSettingsView: View {
 
     private func clampInterval() {
         guard intervalDraft.hasChanges else { return }
-        let typed = Int(intervalDraft.value) ?? shifts.preferences.microBreakIntervalMinutes
+        let typed = NumberInput.committedText(intervalDraft.value, decimal: false, maxDigits: 3)
+            .flatMap(Int.init) ?? shifts.preferences.microBreakIntervalMinutes
         let clamped = min(120, max(20, typed))
         if shifts.preferences.microBreakIntervalMinutes != clamped {
             let generation = intervalDraft.editGeneration

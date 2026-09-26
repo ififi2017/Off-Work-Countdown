@@ -124,11 +124,15 @@ nonisolated enum SummaryRules {
                 annualBonusMonths: annualBonusMonths
               )
         else { return nil }
-        return daily * monthlyWorkingDays
+        let monthly = daily * monthlyWorkingDays
+        return monthly.isFinite ? monthly : nil
     }
 
     private static func earnings(_ dailySalary: Double?, ratio: Double) -> Double? {
-        dailySalary.map { max(0, ratio) * $0 }
+        dailySalary.flatMap {
+            let earned = max(0, ratio) * $0
+            return earned.isFinite ? earned : nil
+        }
     }
 
     // MARK: - Lifetime income
@@ -312,11 +316,12 @@ nonisolated enum SummaryRules {
         // Built in steps: as one expression, older Swift compilers give up on
         // type-checking it in reasonable time.
         let msPerHour = 3_600_000.0
-        let actualEarnings: Double? = hasSalary ? actualPay : nil
-        let forecastEarnings: Double? = hasSalary ? forecastPay : nil
+        let actualEarnings: Double? = hasSalary && actualPay.isFinite ? actualPay : nil
+        let forecastEarnings: Double? = hasSalary && forecastPay.isFinite ? forecastPay : nil
         var totalEarnings: Double?
         if let actualEarnings, let forecastEarnings {
-            totalEarnings = actualEarnings + forecastEarnings
+            let total = actualEarnings + forecastEarnings
+            totalEarnings = total.isFinite ? total : nil
         }
         let actual = NativeRecordsActualForecastPart(days: actualDays, hours: actualMs / msPerHour, earnings: actualEarnings)
         let forecast = NativeRecordsActualForecastPart(days: forecastDays, hours: forecastMs / msPerHour, earnings: forecastEarnings)

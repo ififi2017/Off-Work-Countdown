@@ -70,6 +70,14 @@ const salaries = [
   { salaryAmount: "\t3000\n", salaryType: "monthly", monthlyWorkingDays: 22, annualBonusMonths: 0 },
   { salaryAmount: "5.", salaryType: "daily", monthlyWorkingDays: 22, annualBonusMonths: 0 },
 ];
+// Keep the existing schedule samples stable; add overflow cases explicitly below.
+const sampledSalaryCount = salaries.length;
+salaries.push(
+  { salaryAmount: "1e308", salaryType: "daily", monthlyWorkingDays: 22, annualBonusMonths: 36 },
+  { salaryAmount: "1e308", salaryType: "daily", monthlyWorkingDays: 22, annualBonusMonths: 0 },
+  { salaryAmount: "1e308", salaryType: "monthly", monthlyWorkingDays: 0.1, annualBonusMonths: 0 },
+  { salaryAmount: "1e309", salaryType: "monthly", monthlyWorkingDays: 22, annualBonusMonths: 0 },
+);
 
 const milestoneKeys = ["milestone50", "milestone75", "milestone90", "milestone95", "milestone100"];
 const milestoneRecord = (values) => Object.fromEntries(milestoneKeys.map((key, index) => [key, values[index]]));
@@ -373,7 +381,7 @@ export function createScheduleRuleFixtureJson() {
     const instants = [...stride, ...boundaryInstants(profile)];
 
     instants.forEach((nowMs, k) => {
-      const salary = (p * 3 + k) % salaries.length;
+      const salary = (p * 3 + k) % sampledSalaryCount;
       const base = call("snapshot", rulesInput(profile, nowMs, { salary }));
       const overtimeEndAtMs = k % 5 === 2
         ? base.plannedEndAtMs + (37 + (k % 4) * 53) * minute
@@ -458,7 +466,7 @@ export function createScheduleRuleFixtureJson() {
     // Summaries are fed from a live snapshot, exactly as ShiftSession.periodSummary
     // feeds them, including a snapshot left stale two days later.
     stride.slice(0, 8).forEach((nowMs, k) => {
-      const salary = (p + k * 5) % salaries.length;
+      const salary = (p + k * 5) % sampledSalaryCount;
       const overtimeEndAtMs = k % 4 === 2 ? call("snapshot", rulesInput(profile, nowMs)).plannedEndAtMs + 70 * minute : null;
       const snapshot = call("snapshot", rulesInput(profile, nowMs, { salary, overtimeEndAtMs }));
       const asOfMs = k % 6 === 5 ? nowMs + 2 * day + 5 * hour : nowMs;
@@ -564,7 +572,7 @@ export function createScheduleRuleFixtureJson() {
           isActiveAnchor: c !== 2 && first.startAtMs <= asOfMs && asOfMs < last.endAtMs + 2 * hour,
         };
       });
-      const salary = (p + c * 7) % salaries.length;
+      const salary = (p + c * 7) % sampledSalaryCount;
       const input = {
         days,
         periodDayKeys: [...expanded.map((entry) => entry.dayKey), ...(p % 3 === 0 ? [expanded[0].dayKey, "2026-02-30"] : [])],
@@ -603,6 +611,21 @@ export function createScheduleRuleFixtureJson() {
       snapshots.push({ p, s: 1, now: nowMs, ot: null, forced: null,
         expected: snapshotRow(call("snapshot", rulesInput(profile, nowMs, { salary: 1 }))) });
     }
+  }
+
+  for (let salary = sampledSalaryCount; salary < salaries.length; salary += 1) {
+    for (const nowMs of strideInstants(0).slice(0, 4)) {
+      snapshots.push({ p: 0, s: salary, now: nowMs, ot: null, forced: null,
+        expected: snapshotRow(call("snapshot", rulesInput(profiles[0], nowMs, { salary }))) });
+    }
+  }
+
+  // Recovered finite salaries can still overflow while summing a Records period.
+  for (const salaryType of ["daily", "monthly"]) {
+    const input = { ...actualForecast[0].input, dailySalary: 1e308,
+      salaryRules: { ...rulesInput(profiles[0], actualForecast[0].input.asOfMs),
+        salaryAmount: "1e308", salaryType, monthlyWorkingDays: 22, annualBonusMonths: 0 } };
+    actualForecast.push({ input, expected: call("recordsActualForecast", input) });
   }
 
   const recordsIncome = salaries.flatMap((_, s) => [0, 1, 2, 23, -3].map((n) => ({

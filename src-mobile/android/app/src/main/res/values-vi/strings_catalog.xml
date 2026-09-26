@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">Thông báo chỉ có thời gian và tiến độ, tuyệt đối không có lương.</string>
     <string name="notificationScheduledForShift">Đã lên lịch cho ca này</string>
     <string name="notificationStillWorks">Vẫn hoạt động</string>
+    <string name="numberInputInvalid">Kiểm tra số này. Dùng tối đa %1$s chữ số.</string>
     <string name="offWorkReminder">Nhắc nhở tan ca</string>
     <string name="offWorkTime">Giờ tan ca!</string>
     <string name="offWorkToday">Xong việc hôm nay</string>

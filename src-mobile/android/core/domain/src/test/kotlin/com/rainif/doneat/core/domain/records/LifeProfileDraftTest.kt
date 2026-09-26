@@ -95,6 +95,18 @@ class LifeProfileDraftTest {
         assertTrue(reloaded.declines)
     }
 
+    @Test fun invalidSalaryDraftCannotEraseTheStoredSalary() {
+        val profile = LifeProfiles.blank(0.0, ::newId).copy(roughCurrentSalary = monthly(12000.0))
+        val draft = LifeProfileDraft.load(profile, today, null, ::newId)
+        for (amount in listOf("-500", "1.2.3", "1234567890123", "1e3", "NaN", "Infinity", "1,5", "0")) {
+            val invalid = draft.copy(roughAmount = amount)
+            assertFalse(amount, invalid.canSave(today))
+            assertNull(amount, invalid.applied(profile, today))
+        }
+        assertNull(draft.copy(roughAmount = "").applied(profile, today)!!.roughCurrentSalary)
+        assertEquals(monthly(1.5), draft.copy(roughAmount = "1.5").applied(profile, today)!!.roughCurrentSalary)
+    }
+
     @Test fun aDetailedHistorySavesLinkedJobsAndStartsWorkAtTheEarliest() {
         var draft = LifeProfileDraft(bornYear = "1990", mode = LifeWorkHistoryMode.DETAILED, roughAmount = "15000", employment = listOf(LifeProfileDraft.Employment("now", LocalDate.of(2024, 5, 1))))
         draft = draft.addingEmployment(today, "older").let { it.copy(employment = it.employment.map { e -> if (e.id == "older") e.copy(amount = "9000") else e }) }

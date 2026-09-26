@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">تتضمن الإشعارات الوقت والتقدم فقط، ولا تعرض الراتب مطلقًا.</string>
     <string name="notificationScheduledForShift">مجدول لهذه الوردية</string>
     <string name="notificationStillWorks">يظل متاحًا</string>
+    <string name="numberInputInvalid">تحقّق من هذا الرقم. استخدم %1$s خانات كحد أقصى.</string>
     <string name="offWorkReminder">تذكير بنهاية العمل</string>
     <string name="offWorkTime">وقت نهاية العمل!</string>
     <string name="offWorkToday">انتهى دوام اليوم</string>

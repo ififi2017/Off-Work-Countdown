@@ -27,10 +27,10 @@ object SalaryRules {
         val bonus = settings.annualBonusMonths
         if (!bonus.isFinite() || bonus < 0) return null
         val multiplier = 1 + bonus / 12
-        if (settings.type == SalaryType.DAILY) return parsed * multiplier
+        if (settings.type == SalaryType.DAILY) return (parsed * multiplier).takeIf { it.isFinite() }
         val days = settings.monthlyWorkingDays
         if (!days.isFinite() || days <= 0 || days > 31) return null
-        return (parsed / days) * multiplier
+        return ((parsed / days) * multiplier).takeIf { it.isFinite() }
     }
 }
 

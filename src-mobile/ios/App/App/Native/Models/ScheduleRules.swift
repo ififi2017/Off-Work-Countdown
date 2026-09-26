@@ -62,7 +62,10 @@ nonisolated enum ScheduleRules {
             isWorkday: zone.isScheduledWorkday(shift.startAtMs, input.workdays, input.schedule),
             nextRestAtMs: zone.nextRestDayStartMs(afterMs: input.nowMs, input.workdays, input.schedule),
             dailySalary: dailySalary,
-            earnedSoFar: dailySalary.map { max(0, payRatio) * $0 },
+            earnedSoFar: dailySalary.flatMap {
+                let earned = max(0, payRatio) * $0
+                return earned.isFinite ? earned : nil
+            },
             nextShiftStartAtMs: nextShift?.startAtMs,
             nextShiftEndAtMs: nextShift?.endAtMs,
             countdownTargetAtMs: clockIn.targetAtMs,
@@ -272,9 +275,13 @@ nonisolated enum SalaryRules {
         guard parsed.isFinite, parsed >= 0 else { return nil }
         guard annualBonusMonths.isFinite, annualBonusMonths >= 0 else { return nil }
         let multiplier = 1 + annualBonusMonths / 12
-        if type == "daily" { return parsed * multiplier }
+        if type == "daily" {
+            let daily = parsed * multiplier
+            return daily.isFinite ? daily : nil
+        }
         guard monthlyWorkingDays.isFinite, monthlyWorkingDays > 0, monthlyWorkingDays <= 31 else { return nil }
-        return (parsed / monthlyWorkingDays) * multiplier
+        let daily = (parsed / monthlyWorkingDays) * multiplier
+        return daily.isFinite ? daily : nil
     }
 }
 
