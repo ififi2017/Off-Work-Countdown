@@ -52,6 +52,7 @@
     <string name="comingUp">Далее</string>
     <string name="confirmOvertime">Начать переработку</string>
     <string name="continue_">Продолжить</string>
+    <string name="countdownNotStarted">Обратный отсчёт не запущен</string>
     <string name="cycleEndSummaryNotificationBody">Этот цикл: %1$s рабочих дн., %2$s плановой или исправленной работы и %3$s записанных переработок. Хорошо отдохните.</string>
     <string name="cycleEndSummaryNotificationNote">После каждой серии запланированных рабочих дней смотрите итог плановой работы, изменений и записанных переработок — функция Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Итоги рабочего цикла</string>
@@ -848,6 +849,8 @@
     <string name="whatsNewTitle">Что нового</string>
     <string name="whatsNewWatchBody">Статус, оставшееся время, прогресс и время окончания работы одним взглядом. Круглое кольцо прогресса или прямоугольное расширение с оставшимся временем и временем окончания работы.</string>
     <string name="whatsNewWatchTitle">Ваш рабочий день на Apple Watch</string>
+    <string name="widgetDescription">Сразу видно, сколько рабочего времени осталось.</string>
+    <string name="widgetOpenToRefresh">Откройте приложение, чтобы обновить</string>
     <string name="widgetRestDay">Хорошего отдыха · до следующей смены</string>
     <string name="widgetWorking">На работе</string>
     <string name="workOnWeekday">Работать в %1$s</string>

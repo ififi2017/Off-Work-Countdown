@@ -52,6 +52,7 @@
     <string name="comingUp">接下来</string>
     <string name="confirmOvertime">开始加班</string>
     <string name="continue_">继续</string>
+    <string name="countdownNotStarted">计时未开始</string>
     <string name="cycleEndSummaryNotificationBody">本周期：%1$s 个工作日，排班与修正工时 %2$s，已记录加班 %3$s。辛苦了，休息愉快。</string>
     <string name="cycleEndSummaryNotificationNote">每段排班结束后，查看计划工时、调整记录和已记录的加班摘要（Plus 会员可用）。</string>
     <string name="cycleEndSummaryNotificationTitle">周期结束总结</string>
@@ -845,6 +846,8 @@
     <string name="whatsNewTitle">这次更新了什么</string>
     <string name="whatsNewWatchBody">一眼看到状态、剩余时间、进度和下班时间。 圆形显示进度环，长方形显示剩余时间和下班时间。</string>
     <string name="whatsNewWatchTitle">在 Apple Watch 上查看工作日</string>
+    <string name="widgetDescription">一眼查看剩余工作时间。</string>
+    <string name="widgetOpenToRefresh">打开应用以刷新</string>
     <string name="widgetRestDay">好好休息 · 距离下次上班</string>
     <string name="widgetWorking">工作中</string>
     <string name="workOnWeekday">%1$s上班</string>

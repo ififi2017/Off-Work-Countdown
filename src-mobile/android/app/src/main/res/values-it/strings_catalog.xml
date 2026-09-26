@@ -52,6 +52,7 @@
     <string name="comingUp">In arrivo</string>
     <string name="confirmOvertime">Inizia straordinario</string>
     <string name="continue_">Continua</string>
+    <string name="countdownNotStarted">Conto alla rovescia non avviato</string>
     <string name="cycleEndSummaryNotificationBody">Questo ciclo: %1$s giorni lavorativi, %2$s di lavoro pianificato o modificato e %3$s di straordinari registrati. Buon riposo.</string>
     <string name="cycleEndSummaryNotificationNote">Dopo ogni serie di giorni programmati, trovi un riepilogo del lavoro previsto, delle modifiche e degli straordinari registrati, disponibile con Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Riepilogo di fine ciclo</string>
@@ -847,6 +848,8 @@
     <string name="whatsNewTitle">Novità</string>
     <string name="whatsNewWatchBody">Stato, tempo rimanente, avanzamento e la tua uscita in un colpo d’occhio. Un anello di avanzamento circolare, oppure tempo rimanente e la tua uscita in una complicazione rettangolare.</string>
     <string name="whatsNewWatchTitle">La tua giornata lavorativa su Apple Watch</string>
+    <string name="widgetDescription">Controlla a colpo d’occhio il tempo di lavoro rimanente.</string>
+    <string name="widgetOpenToRefresh">Apri l’app per aggiornare</string>
     <string name="widgetRestDay">Buon riposo · prossimo turno</string>
     <string name="widgetWorking">Al lavoro</string>
     <string name="workOnWeekday">Lavora %1$s</string>

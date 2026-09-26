@@ -52,6 +52,7 @@
     <string name="comingUp">ถัดไป</string>
     <string name="confirmOvertime">เริ่มล่วงเวลา</string>
     <string name="continue_">ดำเนินการต่อ</string>
+    <string name="countdownNotStarted">ยังไม่ได้เริ่มนับถอยหลัง</string>
     <string name="cycleEndSummaryNotificationBody">รอบนี้: ทำงาน %1$s วัน เวลาตามตารางหรือที่แก้ไข %2$s และล่วงเวลาที่บันทึก %3$s ขอให้พักผ่อนอย่างเต็มที่</string>
     <string name="cycleEndSummaryNotificationNote">หลังจบช่วงวันทำงานตามตารางแต่ละช่วง ดูสรุปเวลางานตามตาราง การแก้ไข และเวลาล่วงเวลาที่บันทึกไว้ได้ด้วย Plus</string>
     <string name="cycleEndSummaryNotificationTitle">สรุปเมื่อจบรอบงาน</string>
@@ -845,6 +846,8 @@
     <string name="whatsNewTitle">มีอะไรใหม่</string>
     <string name="whatsNewWatchBody">สถานะ เวลาที่เหลือ ความคืบหน้า และเวลาเลิกงานของคุณในที่เดียว วงแหวนความคืบหน้าทรงกลม หรือเวลาที่เหลือและเวลาเลิกงานของคุณในกลไกทรงสี่เหลี่ยม</string>
     <string name="whatsNewWatchTitle">วันทำงานของคุณบน Apple Watch</string>
+    <string name="widgetDescription">ดูเวลาทำงานที่เหลือได้อย่างรวดเร็ว</string>
+    <string name="widgetOpenToRefresh">เปิดแอปเพื่อรีเฟรช</string>
     <string name="widgetRestDay">พักผ่อนให้เต็มที่ · กะถัดไป</string>
     <string name="widgetWorking">กำลังทำงาน</string>
     <string name="workOnWeekday">ทำงานวัน%1$s</string>

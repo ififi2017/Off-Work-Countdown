@@ -52,6 +52,7 @@
     <string name="comingUp">Sırada</string>
     <string name="confirmOvertime">Fazla mesaiyi başlat</string>
     <string name="continue_">Devam</string>
+    <string name="countdownNotStarted">Geri sayım başlatılmadı</string>
     <string name="cycleEndSummaryNotificationBody">Bu döngü: %1$s iş günü, %2$s planlı veya düzenlenmiş çalışma ve %3$s kayıtlı fazla mesai. İyi dinlenin.</string>
     <string name="cycleEndSummaryNotificationNote">Planlanan her çalışma günü dizisinin ardından planlanan çalışma, değişiklikler ve kayıtlı fazla mesai özetini görün; Plus ile kullanılabilir.</string>
     <string name="cycleEndSummaryNotificationTitle">Döngü sonu özeti</string>
@@ -846,6 +847,8 @@
     <string name="whatsNewTitle">Yenilikler</string>
     <string name="whatsNewWatchBody">Durum, kalan süre, ilerleme ve iş çıkış saatiniz tek bakışta. Dairesel bir ilerleme halkası veya dikdörtgen bir komplikasyonda kalan süre ile iş çıkış saatiniz.</string>
     <string name="whatsNewWatchTitle">Apple Watch’ta çalışma gününüz</string>
+    <string name="widgetDescription">Kalan çalışma sürenizi bir bakışta görün.</string>
+    <string name="widgetOpenToRefresh">Yenilemek için uygulamayı açın</string>
     <string name="widgetRestDay">İyi dinlenin · sonraki vardiya</string>
     <string name="widgetWorking">Çalışıyor</string>
     <string name="workOnWeekday">%1$s çalış</string>

@@ -52,6 +52,7 @@
     <string name="comingUp">Coming up</string>
     <string name="confirmOvertime">Start overtime</string>
     <string name="continue_">Continue</string>
+    <string name="countdownNotStarted">Countdown not started</string>
     <string name="cycleEndSummaryNotificationBody">This cycle: %1$s workdays, %2$s of scheduled or edited work, and %3$s of recorded overtime. Enjoy your break.</string>
     <string name="cycleEndSummaryNotificationNote">After each run of scheduled workdays, see a summary of planned work, changes, and recorded overtime—available with Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Cycle-end summary</string>
@@ -846,6 +847,8 @@
     <string name="whatsNewTitle">What’s new</string>
     <string name="whatsNewWatchBody">Status, time left, progress and your off-work time in one glance. A circular progress ring, or time left and your off-work time in a rectangle.</string>
     <string name="whatsNewWatchTitle">Your workday on Apple Watch</string>
+    <string name="widgetDescription">See your remaining work time at a glance.</string>
+    <string name="widgetOpenToRefresh">Open the app to refresh</string>
     <string name="widgetRestDay">Rest well · next shift</string>
     <string name="widgetWorking">Working</string>
     <string name="workOnWeekday">Work on %1$s</string>

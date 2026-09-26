@@ -267,6 +267,10 @@
     "continue": {
       "resource": "string/continue_"
     },
+    "countdownNotStarted": {
+      "resource": "string/countdownNotStarted",
+      "androidOnly": true
+    },
     "cycleEndSummaryNotificationBody": {
       "resource": "string/cycleEndSummaryNotificationBody",
       "params": [
@@ -2893,6 +2897,14 @@
     },
     "whatsNewWatchTitle": {
       "resource": "string/whatsNewWatchTitle"
+    },
+    "widgetDescription": {
+      "resource": "string/widgetDescription",
+      "androidOnly": true
+    },
+    "widgetOpenToRefresh": {
+      "resource": "string/widgetOpenToRefresh",
+      "androidOnly": true
     },
     "widgetRestDay": {
       "resource": "string/widgetRestDay"

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- For the widget's hosted countdown and brand mark; the rest of its palette is in DoneAtWidget.kt. -->
+<resources>
+    <color name="widget_primary">#FF1C1B1F</color>
+    <!-- iOS widget accent (1.0, 0.38, 0.08), in both looks. -->
+    <color name="widget_accent">#FFFF6114</color>
+</resources>

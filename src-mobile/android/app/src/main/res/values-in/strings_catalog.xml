@@ -52,6 +52,7 @@
     <string name="comingUp">Berikutnya</string>
     <string name="confirmOvertime">Mulai lembur</string>
     <string name="continue_">Lanjutkan</string>
+    <string name="countdownNotStarted">Hitung mundur belum dimulai</string>
     <string name="cycleEndSummaryNotificationBody">Siklus ini: %1$s hari kerja, %2$s kerja terjadwal atau yang diedit, dan %3$s lembur tercatat. Selamat beristirahat.</string>
     <string name="cycleEndSummaryNotificationNote">Setelah setiap rangkaian hari kerja terjadwal, lihat ringkasan kerja terjadwal, perubahan, dan lembur tercatat—tersedia dengan Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Ringkasan akhir siklus</string>
@@ -845,6 +846,8 @@
     <string name="whatsNewTitle">Yang baru</string>
     <string name="whatsNewWatchBody">Status, sisa waktu, kemajuan, dan waktu pulang Anda sekilas. Cincin kemajuan bundar, atau sisa waktu dan waktu pulang Anda dalam bentuk persegi panjang.</string>
     <string name="whatsNewWatchTitle">Hari kerjamu di Apple Watch</string>
+    <string name="widgetDescription">Lihat sisa waktu kerja Anda sekilas.</string>
+    <string name="widgetOpenToRefresh">Buka aplikasi untuk memperbarui</string>
     <string name="widgetRestDay">Istirahatlah · giliran berikutnya</string>
     <string name="widgetWorking">Sedang bekerja</string>
     <string name="workOnWeekday">Bekerja pada %1$s</string>

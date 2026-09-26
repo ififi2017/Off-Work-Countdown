@@ -52,6 +52,7 @@
     <string name="comingUp">Sắp tới</string>
     <string name="confirmOvertime">Bắt đầu làm thêm</string>
     <string name="continue_">Tiếp tục</string>
+    <string name="countdownNotStarted">Chưa bắt đầu đếm ngược</string>
     <string name="cycleEndSummaryNotificationBody">Chu kỳ này: %1$s ngày làm việc, %2$s theo lịch hoặc đã chỉnh sửa và %3$s tăng ca đã ghi. Chúc bạn nghỉ ngơi vui vẻ.</string>
     <string name="cycleEndSummaryNotificationNote">Sau mỗi chuỗi ngày làm việc theo lịch, hãy xem tóm tắt thời gian theo lịch, các thay đổi và tăng ca đã ghi với Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Tóm tắt cuối chu kỳ</string>
@@ -845,6 +846,8 @@
     <string name="whatsNewTitle">Có gì mới</string>
     <string name="whatsNewWatchBody">Trạng thái, thời gian còn lại, tiến độ và giờ tan ca của bạn, xem trong nháy mắt. Vòng tiến độ hình tròn, hoặc thời gian còn lại và giờ tan ca của bạn trong tổ hợp hình chữ nhật.</string>
     <string name="whatsNewWatchTitle">Ngày làm việc của bạn trên Apple Watch</string>
+    <string name="widgetDescription">Xem nhanh thời gian làm việc còn lại.</string>
+    <string name="widgetOpenToRefresh">Mở ứng dụng để làm mới</string>
     <string name="widgetRestDay">Nghỉ ngơi nhé · ca tiếp theo</string>
     <string name="widgetWorking">Đang làm việc</string>
     <string name="workOnWeekday">Làm việc vào %1$s</string>

@@ -52,6 +52,7 @@
     <string name="comingUp">आगे</string>
     <string name="confirmOvertime">ओवरटाइम शुरू करें</string>
     <string name="continue_">जारी रखें</string>
+    <string name="countdownNotStarted">काउंटडाउन शुरू नहीं हुआ</string>
     <string name="cycleEndSummaryNotificationBody">इस चक्र में: %1$s कार्यदिवस, %2$s तय या संशोधित कार्य और %3$s दर्ज ओवरटाइम। अच्छे से आराम करें।</string>
     <string name="cycleEndSummaryNotificationNote">तय कार्यदिवसों की हर अवधि के बाद, तय काम, बदलाव और दर्ज ओवरटाइम का सारांश देखें—यह Plus के साथ उपलब्ध है।</string>
     <string name="cycleEndSummaryNotificationTitle">कार्य चक्र समाप्ति सारांश</string>
@@ -846,6 +847,8 @@
     <string name="whatsNewTitle">नया क्या है</string>
     <string name="whatsNewWatchBody">एक नज़र में स्थिति, बचा हुआ समय, प्रगति और आपके छूटने का समय। एक गोल प्रगति रिंग, या एक आयताकार में बचा हुआ समय और आपके छूटने का समय।</string>
     <string name="whatsNewWatchTitle">Apple Watch पर आपका कार्यदिवस</string>
+    <string name="widgetDescription">अपने बाकी काम के समय पर एक नज़र डालें।</string>
+    <string name="widgetOpenToRefresh">रीफ़्रेश करने के लिए ऐप खोलें</string>
     <string name="widgetRestDay">अच्छी तरह आराम करें · अगली शिफ्ट</string>
     <string name="widgetWorking">काम जारी है</string>
     <string name="workOnWeekday">%1$s को काम</string>
