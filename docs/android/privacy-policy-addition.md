@@ -1,11 +1,11 @@
 # Draft Android additions to the official privacy policy
 
-This is local source copy for the existing site policy. It has **not** been applied to the site or deployed. Before a Play listing uses `https://doneat.app/privacy`, edit these two site files, review the whole page for consistency, update its date, and publish the site through its normal review path:
+The English and Chinese additions have been applied to an **unpublished local website draft**, branch `codex/android-privacy-policy`, commit `23ba61b` in `doneat-site`. On 2026-09-27 the user explicitly asked to hold publication until Android is ready for Play. No website push, PR, merge or production deployment has occurred. The source notes below remain the implementation reference. Before the Play listing uses `https://doneat.app/privacy`, recheck the actual release behavior, review these pages and their dates, and follow the normal website release review:
 
 - English: `/Users/zhengyuxuan/doneat-site/src/content/pages/en/privacy.md`
 - Simplified Chinese: `/Users/zhengyuxuan/doneat-site/src/content/pages/zh-CN/privacy.md`
 
-The root `/privacy` route chooses a supported language; it is the same URL already opened by Android Settings. The current pages name iPhone/iPad/Mac/Windows in the introduction and local-storage paragraph, and name only Apple/Microsoft in purchase/distribution sections. Update those sentences and the third-party list alongside the inserts below; do not leave two conflicting platform lists. The existing iCloud paragraphs stay specific to iPhone and iPad. Any final Data safety answers must be checked against the actual Play-installed artifact and the current Google SDK disclosures.
+The root `/privacy` route chooses a supported language; it is the same URL already opened by Android Settings. The existing published source names iPhone/iPad/Mac/Windows in the introduction and local-storage paragraph, and name only Apple/Microsoft in purchase/distribution sections. Update those sentences and the third-party list alongside the inserts below; do not leave two conflicting platform lists. The existing iCloud paragraphs stay specific to iPhone and iPad. Any final Data safety answers must be checked against the actual Play-installed artifact and the current Google SDK disclosures.
 
 ## English source copy
 

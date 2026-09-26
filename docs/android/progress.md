@@ -57,7 +57,7 @@ QA-041/051 已同步修复并通过本地验收：非法金额不再被改成另
 
 1. **继续性能与无障碍验收。** QA-019/023/062/067/077/140 本轮完成；下一批重点是大档案下 Records/Life 快速切换、取消过期计算与界面帧表现（QA-056），以及 TalkBack、最近任务和分享中的收入隐藏。真实云备份、物理换机和 Play 生命周期继续保留。
 2. **继续代码审阅和远程 CI。** [PR #239](https://github.com/ififi2017/Off-Work-Countdown/pull/239) 已合并；[PR #240](https://github.com/ififi2017/Off-Work-Countdown/pull/240) 已合并 3.2.1 与 QA-041；本轮 Android 恢复修复使用 `codex/android-archive-recovery` 独立提交后续 PR。`63a05de1` 的全部远程检查已通过；新提交单独核对 CI。`ae0ec1f0` 和 `e2d874c` 的 Android、Web/Desktop、Rust macOS/Windows 和 Xcode Cloud iOS/watchOS 检查全部通过；后续修复追加独立提交，每次以对应提交的 CI 为准。
-3. **完成发布资料的本地准备。** 将 Android 隐私补充落实到官网代码，定稿商店文案、素材选择和审核操作说明；正式发布页面、Console 填报和签名身份仍按发布流程处理。
+3. **完成发布资料的本地准备。** Android 隐私补充已落实到官网本地分支 `codex/android-privacy-policy`（`23ba61b`），英中页面 check/build/SEO 检查通过；用户 2026-09-27 要求暂不上线，未推送、提官网 PR 或发布。继续准备商店文案、素材与审核说明；正式页面发布留到 Android 准备上架时重新核对。Console 填报和签名身份仍按发布流程处理。
 
 KYC 通过且 Console 具备相应操作条件后，再核对应用 ID、Play App Signing、商品/价格/公钥，完成测试轨道接入和真实购买生命周期测试。T26 的实际上传与发布按后续授权执行。KYC 验证进度不等于应用审核或购买验收结果。
 
@@ -168,3 +168,9 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 2026-09-23：T06 完成（共享规则 fixtures 与 stale 检查）。
 - 2026-09-23：T03 完成（最小工程、CI、环境锁）。
 - 2026-09-23：交接包 1.2（D-02/D-08 修订、新增 D-12），T21/T22 延后；进度只在本文件维护；本机 SDK 就绪。
+
+## 2026-09-27 · 隐私草稿与性能检查
+
+- 官网 Android 隐私补充已保存为本地提交 `23ba61b`，按用户最新指示暂不上线；本轮未操作 Play Console，KYC 状态不变。见 `privacy-policy-addition.md`。
+- QA-056 仍未完成：`AllRecordsScreens.rememberVisible` 在 Compose 主线程首次读取 `recordDayIndex`，会遍历与排序档案；`RecordsQueries.walk` 为同步循环，目前没有协作式取消检查。已有 `withContext(Default)` 可阻止取消后的结果发布，但不证明 CPU 计算及时停止。下一轮应先补大档案与快速切换测量，再修复并验证。
+- QA-124 保持未完成：D-09 在 decisions.json 中仍为 PROPOSED，现有薪资页会禁用最近任务截图；不能据此把所有敏感页面的截图与 TalkBack 保护记为已验收。QA 总数保持 79 PASS / 47 NOT_RUN。本轮未修改 Android 源码或 Pixel 数据。
