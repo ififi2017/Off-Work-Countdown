@@ -172,5 +172,17 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 ## 2026-09-27 · 隐私草稿与性能检查
 
 - 官网 Android 隐私补充已保存为本地提交 `23ba61b`，按用户最新指示暂不上线；本轮未操作 Play Console，KYC 状态不变。见 `privacy-policy-addition.md`。
-- QA-056 仍未完成：`AllRecordsScreens.rememberVisible` 在 Compose 主线程首次读取 `recordDayIndex`，会遍历与排序档案；`RecordsQueries.walk` 为同步循环，目前没有协作式取消检查。已有 `withContext(Default)` 可阻止取消后的结果发布，但不证明 CPU 计算及时停止。下一轮应先补大档案与快速切换测量，再修复并验证。
+- QA-056 初查发现的主线程索引与同步循环取消问题已在下方 Records/Life 批次修复；最终性能验收仍需 Release 真机帧测量。
 - QA-124 保持未完成：D-09 在 decisions.json 中仍为 PROPOSED，现有薪资页会禁用最近任务截图；不能据此把所有敏感页面的截图与 TalkBack 保护记为已验收。QA 总数保持 79 PASS / 47 NOT_RUN。本轮未修改 Android 源码或 Pixel 数据。
+
+
+## 2026-09-27 · Records/Life 性能与无障碍
+
+- 全部记录的索引、年份/月分组移至 Default dispatcher，渲染时直接查询预分组结果；加载中不再误显示空档案或锁定提示。民用日期键使用 Locale.ROOT，避免阿拉伯数字系统环境下找不到月份。
+- Records/Life 查询在逐日排班、日记录解析、索引与人生周格循环中检查协程取消；离页或换尺度后停止旧工作。测试证明取消后不再运行下一个检查点、不发布旧结果，随后 Month 可以完成。
+- Life 分配图例提供类别、约合年数、精确时长、百分比、选中状态及按钮语义；文字图例最小 48 dp，色条不再重复占用读屏和键盘焦点。收入隐藏时无障碍树不含合成薪资。
+- 15,000 天人生 / 3,653 条观测档案：完整 Life + Year + 索引在本机 JVM 单次 125.64 ms；Pixel 独立 Debug 测试副本连续切换 24 次，最终正确停留 Month。538 帧，中位 5 ms、P95 53 ms、慢帧 5.39%；这是 Debug 诊断结果，不能作为 Release 流畅度通过结论。
+- API 36 检查历史年/月导航、浅色正常字号及深色 320 dp / 200% 字号、关闭系统动画。TalkBack 服务已启动并检查语义，但尚未完成实际语音朗读验收；全局底部导航在极大字号下仍会拆词换行。
+- Android 四模块 436 项测试、lint（0 error / 34 warning / 1 hint）、Debug/R8 Release，npm lint / 445 项测试 / check:version 及 iOS headless build 通过。未进行 iOS 手动视觉检查。
+- QA-056 / QA-131 维持 NOT_RUN（Partial），总计仍为 79 PASS / 47 NOT_RUN；完整语音流程、Release 性能及 QA-131 的 Focus 拖动替代操作仍待验收。详情见 [本轮报告](records-life-acceptance-2026-09-27.md)。官网草稿继续仅留本地，KYC 状态未变。
+- 用户追加的确认按钮检查：修复 Time manually 首次点击后从胶囊主按钮变成另一种圆角按钮的问题，两状态保留同一个 DoneAtPrimaryButton，仅切换文案；源码核对其余三种计时二次确认及 Records / Focus / 排班 / 恢复 / 导入等确认弹窗，没有发现同类组件替换。
