@@ -76,13 +76,23 @@ final class AppText {
     }
 
     func formatHours(_ value: Double) -> String {
-        let formatter = MeasurementFormatter()
-        formatter.locale = preferences.locale
-        formatter.unitOptions = .providedUnit
-        formatter.unitStyle = .short
-        formatter.numberFormatter.maximumFractionDigits = value.rounded() == value ? 0 : 1
+        let fractionDigits = value.rounded() == value ? 0 : 1
+        let key = "\(preferences.locale.identifier)|\(fractionDigits)"
+        let formatter = hoursFormatters[key] ?? {
+            let formatter = MeasurementFormatter()
+            formatter.locale = preferences.locale
+            formatter.unitOptions = .providedUnit
+            formatter.unitStyle = .short
+            formatter.numberFormatter.maximumFractionDigits = fractionDigits
+            hoursFormatters[key] = formatter
+            return formatter
+        }()
         return formatter.string(from: Measurement(value: value, unit: UnitDuration.hours))
     }
+
+    /// The timer's summary rows format hours every second; a formatter per
+    /// call was a fresh ICU setup each time.
+    private var hoursFormatters: [String: MeasurementFormatter] = [:]
 
     /// A plain count. Interpolating an `Int` into a string skips the locale's
     /// digits and grouping separator entirely.

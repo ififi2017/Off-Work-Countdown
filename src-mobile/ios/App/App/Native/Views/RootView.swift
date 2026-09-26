@@ -221,6 +221,9 @@ struct OffWorkCountdownRootView: View {
                 runtime.shifts.noteTimerSurfaceVisible()
             }
         }
+#if PERF_AUTOPILOT
+        .task { await PerfAutopilot.run(scene: scene) }
+#endif
         .environment(scene)
     }
 

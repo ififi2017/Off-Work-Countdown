@@ -303,9 +303,8 @@ private struct TabletTimerView: View {
 
     var body: some View {
         Group {
-            if isActive,
-               shifts.session.visualPhase(at: shifts.session.timerDate(from: .now)).usesLiveTimeline {
-                TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            if shifts.session.visualPhase(at: shifts.session.timerDate(from: .now)).usesLiveTimeline {
+                TimelineView(PausableSecondsSchedule(isPaused: !isActive)) { timeline in
                     tabletTimerContent(at: shifts.session.timerDate(from: timeline.date))
                 }
             } else {

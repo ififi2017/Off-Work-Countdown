@@ -19,7 +19,17 @@ struct OWCCountdownTextTransition: ViewModifier {
                 disablesTransition ? nil : OWCMotion.countdownTick,
                 value: Int(milliseconds / 1_000)
             )
+            // The numeric transition otherwise rasterises its blurred glyphs on
+            // the main thread, every frame of every tick. Rendering the digits
+            // as a group moves that to the GPU. The bleed keeps the blur and
+            // the rolling digits from clipping at the group's edges without
+            // changing layout.
+            .padding(Self.bleed)
+            .drawingGroup()
+            .padding(-Self.bleed)
     }
+
+    private static let bleed: CGFloat = 12
 }
 
 extension View {

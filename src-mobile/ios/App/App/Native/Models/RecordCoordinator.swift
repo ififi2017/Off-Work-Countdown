@@ -796,8 +796,16 @@ final class RecordCoordinator {
         return DayRecordResolver.period(on: noon, from: state.periods) != nil
     }
 
+    @ObservationIgnored private var frozenTypesCache: (rosterDays: [RosterDay], types: [String: ShiftType])?
+
+    /// Kept until a roster day changes: the schedule calendar reads it for
+    /// every day cell it draws.
     var frozenRosterShiftTypes: [String: ShiftType] {
-        ExtendedSchedulePlan.frozenShiftTypes(from: state.rosterDays)
+        let rosterDays = state.rosterDays
+        if let cached = frozenTypesCache, cached.rosterDays == rosterDays { return cached.types }
+        let types = ExtendedSchedulePlan.frozenShiftTypes(from: rosterDays)
+        frozenTypesCache = (rosterDays, types)
+        return types
     }
 
     /// The plan originally stored for one historical day. This never reads
@@ -808,6 +816,51 @@ final class RecordCoordinator {
         timeZoneIdentifier: String,
         fallbackTypes: [ShiftType] = [],
         ignoringRosterAssignment: Bool = false
+    ) -> PlannedRosterPreview {
+        var hoursMemo: [PreviewHoursKey: ScheduleHoursConfiguration?] = [:]
+        return plannedRosterPreview(
+            dayKey: dayKey,
+            timeZoneIdentifier: timeZoneIdentifier,
+            fallbackTypes: fallbackTypes,
+            ignoringRosterAssignment: ignoringRosterAssignment,
+            hoursMemo: &hoursMemo
+        )
+    }
+
+    /// The same previews for many days at once, as a calendar month needs.
+    /// Days under one snapshot share its decoded hours and roster plan, which
+    /// otherwise re-parse every roster row once per day cell.
+    func plannedRosterPreviews(
+        dayKeys: [String],
+        timeZoneIdentifier: String,
+        fallbackTypes: [ShiftType] = [],
+        ignoringRosterAssignment: (String) -> Bool = { _ in false }
+    ) -> [String: PlannedRosterPreview] {
+        var hoursMemo: [PreviewHoursKey: ScheduleHoursConfiguration?] = [:]
+        var previews: [String: PlannedRosterPreview] = [:]
+        for dayKey in dayKeys {
+            previews[dayKey] = plannedRosterPreview(
+                dayKey: dayKey,
+                timeZoneIdentifier: timeZoneIdentifier,
+                fallbackTypes: fallbackTypes,
+                ignoringRosterAssignment: ignoringRosterAssignment(dayKey),
+                hoursMemo: &hoursMemo
+            )
+        }
+        return previews
+    }
+
+    private struct PreviewHoursKey: Hashable {
+        let snapshotID: UUID
+        let ignoringRosterDayKey: String?
+    }
+
+    private func plannedRosterPreview(
+        dayKey: String,
+        timeZoneIdentifier: String,
+        fallbackTypes: [ShiftType],
+        ignoringRosterAssignment: Bool,
+        hoursMemo: inout [PreviewHoursKey: ScheduleHoursConfiguration?]
     ) -> PlannedRosterPreview {
         if !ignoringRosterAssignment,
            let frozen = state.rosterDays.first(where: { $0.dayKey == dayKey })?.assignedShiftType {
@@ -823,9 +876,10 @@ final class RecordCoordinator {
         )), let noon = calendar.date(byAdding: .hour, value: 12, to: start),
         let period = DayRecordResolver.period(on: noon, from: state.periods),
         let snapshot = DayRecordResolver.snapshot(on: noon, in: period, from: state.snapshots),
-        let configuration = previewHours(
+        let configuration = memoizedPreviewHours(
             for: snapshot,
-            ignoringRosterDayKey: ignoringRosterAssignment ? dayKey : nil
+            ignoringRosterDayKey: ignoringRosterAssignment ? dayKey : nil,
+            memo: &hoursMemo
         ),
         let expansion = ScheduleRules.expandScheduleRange(
             configuration: configuration, from: start, through: start, timeZone: period.timeZone
@@ -882,6 +936,18 @@ final class RecordCoordinator {
         ))
     }
 
+    private func memoizedPreviewHours(
+        for snapshot: ScheduleSnapshot,
+        ignoringRosterDayKey: String?,
+        memo: inout [PreviewHoursKey: ScheduleHoursConfiguration?]
+    ) -> ScheduleHoursConfiguration? {
+        let key = PreviewHoursKey(snapshotID: snapshot.id, ignoringRosterDayKey: ignoringRosterDayKey)
+        if let cached = memo[key] { return cached }
+        let hours = previewHours(for: snapshot, ignoringRosterDayKey: ignoringRosterDayKey)
+        memo[key] = hours
+        return hours
+    }
+
     private func previewHours(
         for snapshot: ScheduleSnapshot,
         ignoringRosterDayKey: String?
@@ -889,7 +955,7 @@ final class RecordCoordinator {
         guard var hours = Self.decodeHours(snapshot.configurationData) else {
             return nil
         }
-        let rosterDays = state.rosterDays.filter { $0.dayKey != ignoringRosterDayKey }
+        let rosterDays = ignoringRosterDayKey.map { key in state.rosterDays.filter { $0.dayKey != key } } ?? state.rosterDays
         if let content = hours.extendedContent {
             let liveTypes = state.extendedSchedule?.shiftTypes ?? []
             let saved = Set(content.shiftTypes.map(\.id))
@@ -903,11 +969,14 @@ final class RecordCoordinator {
             )
         } else {
             let includesLegacy = extendedScheduleStart.map { snapshot.effectiveFrom < $0 } ?? false
-            hours.extendedSchedule = ExtendedSchedulePlan(
-                historicalRosterDays: rosterDays,
-                legacyShiftTypes: state.extendedSchedule?.shiftTypes ?? [],
-                includesLegacyRows: includesLegacy
-            )
+            // Without a day to ignore this is exactly the cached overlay plan.
+            hours.extendedSchedule = ignoringRosterDayKey == nil
+                ? fixedOverlayPlan(includesLegacyRows: includesLegacy)
+                : ExtendedSchedulePlan(
+                    historicalRosterDays: rosterDays,
+                    legacyShiftTypes: state.extendedSchedule?.shiftTypes ?? [],
+                    includesLegacyRows: includesLegacy
+                )
         }
         return hours
     }
