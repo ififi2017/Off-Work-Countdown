@@ -79,12 +79,13 @@ object ScheduleRules {
      * still carry segments so a makeup-day exception can reuse them. An overnight
      * shift keys as the day it starts. Manual days are rest.
      */
-    fun expandScheduleRange(hours: ScheduleHours, fromMs: Double, throughMs: Double, zoneId: ZoneId): List<ScheduleDayExpansion> {
+    fun expandScheduleRange(hours: ScheduleHours, fromMs: Double, throughMs: Double, zoneId: ZoneId, checkActive: () -> Unit = {}): List<ScheduleDayExpansion> {
         val zone = CivilZone(zoneId, hours.extended?.let(::ExtendedScheduleResolver))
         val fromDay = zone.civil(fromMs).dayNumber
         val throughDay = zone.civil(throughMs).dayNumber
         if (throughDay < fromDay) return emptyList()
         return (fromDay..throughDay).map { dayNumber ->
+            checkActive()
             // Per day: an extended schedule gives each day its own shift.
             val (start, end) = zone.dayClocks(dayNumber, hours.startTime, hours.endTime)
             val (breakStartTime, breakMinutes) = zone.dayBreak(dayNumber, hours.breakStartTime, hours.breakDurationMinutes)

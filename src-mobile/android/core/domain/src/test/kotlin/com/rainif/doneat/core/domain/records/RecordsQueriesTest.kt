@@ -53,6 +53,53 @@ class RecordsQueriesTest {
         return q.cells(q.displayDays(first.minusDays(1), last, now), first, now)
     }
 
+    @Test fun fullLifeAndYearQueriesHandleTenYearsOfRecordsAndStopOnCancellation() {
+        val first = LocalDate.of(1988, 1, 1)
+        val last = first.plusDays(15_000)
+        val profile = LifeProfiles.blank(now) { RecordTestFixtures.id(90000) }.copy(
+            bornOn = LifeDates.exact(first.year, first.monthValue, first.dayOfMonth),
+            workStartedPartial = LifeDates.yearOnly(2005),
+            retirementOn = LifeDates.exact(last.year, last.monthValue, last.dayOfMonth),
+            roughCurrentSalary = LifeSalary(9876.0, LifeSalaryCadence.MONTHLY),
+        )
+        val base = seeded(from = "2010-01-01")
+        val records = (0 until 3653).map { offset ->
+            observation(LocalDate.of(2010, 1, 1).plusDays(offset.toLong()).toString(), WorkObservationKind.COUNTDOWN_STARTED, 9).copy(scheduleSnapshotID = base.snapshots.first().id)
+        }
+        val state = base.copy(lifeProfile = profile, observations = records, syncedPreferences = com.rainif.doneat.core.domain.settings.PreferencesRules.defaults(RecordTestFixtures.ZONE, now).copy(salaryEnabled = true, salaryAmount = "9876", languageOverride = "en"))
+        val q = queries(state, currentHours = weekdays)
+        // Synthetic device QA archive, never copied from a person's records.
+        val export = RecordJson.export(state, now, RecordTestFixtures.ZONE, "gregorian")
+        val (_, report) = RecordJson.apply(RecordJson.decode(export), RecordState(), RecordJson.ImportMode.SKIP_ERASED)
+        assertTrue(report.rejected.take(3).toString(), report.rejected.isEmpty())
+        java.io.File("build/qa/records-performance.json").apply { parentFile.mkdirs(); writeText(export) }
+        val before = System.nanoTime()
+        val life = q.lifeModel(now, null)!!
+        val year = q.displayDays(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31), now)
+        assertEquals(2_143, life.cells.size)
+        assertEquals(365, year.size)
+        assertEquals(3653, q.indexedRecords().size)
+        println("QA-056 full RecordsQueries: 15000 life days + 3653 observations + year, ${(System.nanoTime() - before) / 1_000_000.0} ms")
+        var checks = 0
+        try {
+            q.lifeModel(now, null) {
+                if (++checks == 100) throw java.util.concurrent.CancellationException("page left")
+            }
+            org.junit.Assert.fail("Life ignored cancellation")
+        } catch (_: java.util.concurrent.CancellationException) {
+            assertEquals(100, checks)
+        }
+        checks = 0
+        try {
+            q.indexedRecords {
+                if (++checks == 100) throw java.util.concurrent.CancellationException("page left")
+            }
+            org.junit.Assert.fail("Index ignored cancellation")
+        } catch (_: java.util.concurrent.CancellationException) {
+            assertEquals(100, checks)
+        }
+    }
+
     @Test fun windowsFollowTheLanguagesFirstWeekday() {
         val monday = RecordsQueries(RecordState(), HolidayCalendar.EMPTY, zone, true)
         val sunday = RecordsQueries(RecordState(), HolidayCalendar.EMPTY, zone, true, firstDayOfWeek = DayOfWeek.SUNDAY)

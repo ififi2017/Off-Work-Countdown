@@ -58,24 +58,29 @@ class RecordsQueries(
      * correction or a user calendar exception. Broader than workday totals on
      * purpose, so leave and rest entries can still be found.
      */
-    val recordDayIndex: List<RecordDayIndexEntry> by lazy {
+    val recordDayIndex: List<RecordDayIndexEntry> by lazy { indexedRecords() }
+
+    fun indexedRecords(checkActive: () -> Unit = {}): List<RecordDayIndexEntry> {
         val entries = linkedMapOf<String, RecordDayIndexEntry>()
         fun entry(key: String) = entries.getOrPut(key) { RecordDayIndexEntry(key) }
         for (o in state.observations) {
+            checkActive()
             if (o.kind == WorkObservationKind.TIMER_SURFACE_FIRST_SEEN) continue
             entries[o.shiftAnchorDate] = entry(o.shiftAnchorDate).let { it.copy(observations = it.observations + o) }
         }
         for (o in state.overrides) {
+            checkActive()
             if (o.kind == DayOverrideKind.CLEARED) continue
             entries[o.dayKey] = entry(o.dayKey).copy(dayOverride = o)
         }
         for (e in state.exceptions) {
+            checkActive()
             if (e.origin != CalendarExceptionOrigin.USER || e.isCleared) continue
             val key = e.dayKey.substringBefore('#')
             if (!DAY_KEY.matches(key)) continue
             entries[key] = entry(key).copy(calendarException = e)
         }
-        entries.values.map { it.copy(observations = it.observations.sortedBy { o -> o.occurredAtMs }) }.sortedByDescending { it.dayKey }
+        return entries.values.map { checkActive(); it.copy(observations = it.observations.sortedBy { o -> o.occurredAtMs }) }.sortedByDescending { it.dayKey }
     }
 
     private val recordedDayKeys: Set<String> by lazy { recordDayIndex.map { it.dayKey }.toSet() }
@@ -113,29 +118,30 @@ class RecordsQueries(
      * Every day in the range through the three-layer chain, over the archive
      * alone: no life projection. A query never seeds or repairs the archive.
      */
-    fun resolvedDays(from: LocalDate, through: LocalDate): List<DayResolution> =
-        walk(from, through, state.periods, state.snapshots)
+    fun resolvedDays(from: LocalDate, through: LocalDate, checkActive: () -> Unit = {}): List<DayResolution> =
+        walk(from, through, state.periods, state.snapshots, checkActive)
 
     /**
      * Records month, week and year days: the archive, plus the life profile's
      * in-memory history for the years before it. Estimated days never become
      * durable rows.
      */
-    fun displayDays(from: LocalDate, through: LocalDate, nowMs: Double): List<DayResolution> {
-        val bounds = lifeWorkProjectionBounds ?: return resolvedDays(from, through)
+    fun displayDays(from: LocalDate, through: LocalDate, nowMs: Double, checkActive: () -> Unit = {}): List<DayResolution> {
+        val bounds = lifeWorkProjectionBounds ?: return resolvedDays(from, through, checkActive)
         val (periods, snapshots) = lifeScheduleArchive(bounds.first, nowMs)
-        return walk(from, through, periods, snapshots)
+        return walk(from, through, periods, snapshots, checkActive)
     }
 
-    private fun walk(from: LocalDate, through: LocalDate, periods: List<CareerPeriod>, snapshots: List<ScheduleSnapshot>): List<DayResolution> {
+    private fun walk(from: LocalDate, through: LocalDate, periods: List<CareerPeriod>, snapshots: List<ScheduleSnapshot>, checkActive: () -> Unit): List<DayResolution> {
         if (through.isBefore(from)) return emptyList()
         val fromKey = FoundationCompat.dayKey(from)
         val throughKey = FoundationCompat.dayKey(through)
-        val expansions = expansions(fromKey, throughKey, periods, snapshots)
+        val expansions = expansions(fromKey, throughKey, periods, snapshots, checkActive)
         val lookup = DayRecordLookup(state.exceptions, state.overrides)
         val result = ArrayList<DayResolution>()
         var day = from
         while (!day.isAfter(through)) {
+            checkActive()
             val key = FoundationCompat.dayKey(day)
             val period = DayRecordResolver.period(key, periods)
             val snapshot = period?.let { DayRecordResolver.snapshot(key, it, snapshots) }
@@ -156,9 +162,10 @@ class RecordsQueries(
     }
 
     /** One expansion per snapshot over the range, not one per day. */
-    private fun expansions(fromKey: String, throughKey: String, periods: List<CareerPeriod>, snapshots: List<ScheduleSnapshot>): Expansions {
+    private fun expansions(fromKey: String, throughKey: String, periods: List<CareerPeriod>, snapshots: List<ScheduleSnapshot>, checkActive: () -> Unit): Expansions {
         val table = Expansions()
         for (snapshot in snapshots) {
+            checkActive()
             val period = periods.firstOrNull { it.id == snapshot.periodID } ?: continue
             if (period.startsOn > throughKey || (period.endsBefore != null && period.endsBefore <= fromKey)) continue
             if (snapshot.effectiveFrom > throughKey || snapshot.id in table.bySnapshot || snapshot.id in table.failures) continue
@@ -167,7 +174,7 @@ class RecordsQueries(
                 table.failures += snapshot.id
                 continue
             }
-            table.bySnapshot[snapshot.id] = expand(hours, fromKey, throughKey, period.timeZoneIdentifier)
+            table.bySnapshot[snapshot.id] = expand(hours, fromKey, throughKey, period.timeZoneIdentifier, checkActive)
                 // The first of two duplicate civil keys (a date-line change) wins.
                 .groupBy { it.dayKey }.mapValues { (_, days) -> ScheduleExpansion(days.first().isWorkday, days.first().segments) }
         }
@@ -175,21 +182,22 @@ class RecordsQueries(
         val plan = ExtendedSchedulePlan.historical(state.rosterDays) ?: return table
         val rosterHours = ScheduleHours("00:00", "00:01", emptyList(), WorkSchedule(ScheduleMode.OFF), null, 0, plan)
         for (key in plan.frozenShiftTypes.keys) {
+            checkActive()
             if (key < fromKey || key > throughKey) continue
             val period = DayRecordResolver.period(key, periods) ?: continue
             if (DayRecordResolver.snapshot(key, period, snapshots) != null) continue
-            val day = expand(rosterHours, key, key, period.timeZoneIdentifier).firstOrNull() ?: continue
+            val day = expand(rosterHours, key, key, period.timeZoneIdentifier, checkActive).firstOrNull() ?: continue
             table.withoutSnapshot[key] = ScheduleExpansion(day.isWorkday, day.segments, hasPlannedRoster = true)
         }
         return table
     }
 
-    private fun expand(hours: ScheduleHours, fromKey: String, throughKey: String, zoneIdentifier: String) = run {
+    private fun expand(hours: ScheduleHours, fromKey: String, throughKey: String, zoneIdentifier: String, checkActive: () -> Unit) = run {
         val zone = FoundationCompat.javaZone(zoneIdentifier)
         val civil = CivilZone(zone)
         val from = ExtendedScheduleResolver.dayNumber(fromKey) ?: return@run emptyList()
         val through = ExtendedScheduleResolver.dayNumber(throughKey) ?: return@run emptyList()
-        ScheduleRules.expandScheduleRange(hours, civil.utcMs(from, WallClock.MIDNIGHT), civil.utcMs(through, WallClock.MIDNIGHT), zone)
+        ScheduleRules.expandScheduleRange(hours, civil.utcMs(from, WallClock.MIDNIGHT), civil.utcMs(through, WallClock.MIDNIGHT), zone, checkActive)
     }
 
     // Life projection
@@ -262,7 +270,7 @@ class RecordsQueries(
      * [configuredMonthly] is today's salary as a monthly figure, when salary
      * is shown: it only projects forward; earlier salaries stay as entered.
      */
-    fun lifeModel(nowMs: Double, configuredMonthly: Double?): LifeViewModel? {
+    fun lifeModel(nowMs: Double, configuredMonthly: Double?, checkActive: () -> Unit = {}): LifeViewModel? {
         val profile = RecordJson.migrateLegacyFields(state.lifeProfile ?: return null)
         val lifeStart = profile.bornOn?.let(LifeDates::anchor) ?: return null
         val lifeEnd = profile.retirementOn?.let(LifeDates::anchor) ?: return null
@@ -276,7 +284,8 @@ class RecordsQueries(
             emptyList()
         } else {
             val (periods, snapshots) = lifeScheduleArchive(workStart, nowMs)
-            walk(workStart, lifeEnd.minusDays(1), periods, snapshots).mapNotNull { r ->
+            walk(workStart, lifeEnd.minusDays(1), periods, snapshots, checkActive).mapNotNull { r ->
+                checkActive()
                 val periodID = r.periodID ?: return@mapNotNull null
                 LifeScheduleDay(
                     periodID = periodID,
@@ -288,7 +297,7 @@ class RecordsQueries(
                 )
             }
         }
-        return LifeViewCalculator.build(profile, days, outside, nowMs, zone).copy(income = lifeIncome(profile, nowMs, configuredMonthly))
+        return LifeViewCalculator.build(profile, days, outside, nowMs, zone, checkActive).copy(income = lifeIncome(profile, nowMs, configuredMonthly))
     }
 
     /** iOS `lifeIncomeSummary`: history as entered, the future at today's salary, an optional fixed-ratio step down. */

@@ -132,10 +132,10 @@ data class RecordsPage(
  * The window around [anchor]. One lead-in day is resolved because a shift
  * ending at 06:00 on the first began the night before; it is never drawn.
  */
-fun loadPage(context: RecordsContext, scale: RecordsScale, anchor: LocalDate): RecordsPage {
+fun loadPage(context: RecordsContext, scale: RecordsScale, anchor: LocalDate, checkActive: () -> Unit = {}): RecordsPage {
     val q = context.queries
     val (first, last) = q.window(scale, anchor)
-    val days = q.displayDays(first.minusDays(1), last, context.nowMs)
+    val days = q.displayDays(first.minusDays(1), last, context.nowMs, checkActive)
     val cells = q.cells(days, first, context.nowMs)
     return RecordsPage(scale, first, last, days, cells, q.headline(cells, days, context.nowMs))
 }
