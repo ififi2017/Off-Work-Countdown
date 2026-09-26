@@ -42,6 +42,7 @@ import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SportsScore
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Tune
@@ -51,6 +52,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -134,7 +136,7 @@ private const val CONFIRM_WINDOW_MS = 5_000.0
  * owns only presentation, the pending confirmations and the celebration.
  */
 @Composable
-fun TimerScreen(graph: AppGraph, openSettings: (Route?) -> Unit) {
+fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -> Unit) {
     val session by graph.sessions.session.collectAsStateWithLifecycle()
     val device by graph.settings.device.collectAsStateWithLifecycle()
     // One tick per second, on the second, while the screen is started; resuming recomputes from the clock.
@@ -242,6 +244,7 @@ fun TimerScreen(graph: AppGraph, openSettings: (Route?) -> Unit) {
                                 onUndoClockIn = { perform { undoEarlyClockIn(it, System.currentTimeMillis().toDouble()) } },
                                 onCancelManual = { confirmThen(Confirmation.CANCEL_MANUAL) { perform { cancelManualTiming(it, System.currentTimeMillis().toDouble()) } } },
                                 onOvertime = { showOvertime = true },
+                                onShare = { open(Route.TimerShare) },
                             )
                         }
                         TimerPhase.COMPLETED -> snapshot?.let { shift ->
@@ -258,6 +261,7 @@ fun TimerScreen(graph: AppGraph, openSettings: (Route?) -> Unit) {
                                 onReplay = { celebration++ },
                                 onUndo = { perform({ graph.lastCelebratedEndAtMs = 0.0 }) { undoEarlyClockOff(it, System.currentTimeMillis().toDouble()) } },
                                 onOvertime = { showOvertime = true },
+                                onShare = { open(Route.TimerShare) },
                             )
                         }
                         TimerPhase.REST -> snapshot?.let { shift ->
@@ -324,6 +328,7 @@ private fun RunningSurface(
     onUndoClockIn: () -> Unit,
     onCancelManual: () -> Unit,
     onOvertime: () -> Unit,
+    onShare: () -> Unit,
 ) {
     val beforeStart = shift.isBeforeStart(now)
     val onBreak = shift.isOnBreak
@@ -390,6 +395,10 @@ private fun RunningSurface(
                     Text(stringResource(if (overtime) R.string.adjustOvertime else R.string.overtime), maxLines = 2, textAlign = TextAlign.Center)
                 }
             }
+            // Share stays a small square beside the decisions, as on iOS.
+            FilledTonalIconButton(onClick = onShare, modifier = Modifier.size(52.dp).fillMaxHeight(), shape = MaterialTheme.shapes.medium) {
+                Icon(Icons.Outlined.Share, stringResource(R.string.shareButton))
+            }
         }
     }
 }
@@ -403,6 +412,7 @@ private fun CompletedSurface(
     onReplay: () -> Unit,
     onUndo: () -> Unit,
     onOvertime: () -> Unit,
+    onShare: () -> Unit,
 ) {
     val res = LocalResources.current
     val endedEarly = session.isEndedEarly(shift)
@@ -464,8 +474,14 @@ private fun CompletedSurface(
                 )
             }
             Spacer(Modifier.size(DoneAtSpacing.xl))
-            FilledTonalButton(onClick = onOvertime, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = MaterialTheme.shapes.medium) {
-                Text(stringResource(R.string.overtime))
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                FilledTonalButton(onClick = onOvertime, modifier = Modifier.weight(1f).fillMaxHeight().heightIn(min = 52.dp), shape = MaterialTheme.shapes.medium) {
+                    Text(stringResource(R.string.overtime), textAlign = TextAlign.Center)
+                }
+                FilledTonalButton(onClick = onShare, modifier = Modifier.weight(1f).fillMaxHeight().heightIn(min = 52.dp), shape = MaterialTheme.shapes.medium) {
+                    Icon(Icons.Outlined.Share, null, Modifier.size(18.dp))
+                    Text(stringResource(R.string.shareButton), Modifier.padding(start = 8.dp), textAlign = TextAlign.Center)
+                }
             }
         }
     }

@@ -370,6 +370,45 @@ class ShiftSessionTest {
         assertTrue(after.all { it.atMs >= at(25, 9).toLong() })
     }
 
+    // Share (iOS OffWorkStoreTests share cases)
+
+    @Test fun `share copy before clock-in counts to the start, not the end`() {
+        val h = Harness()
+        val before = at(24, 8)
+        assertTrue(h.run { start(h.state, before) })
+        val share = ShareContent.of(h.session, before)
+        assertEquals(ShareContent.Message.UNTIL_START, share.message)
+        assertTrue(abs(share.messageRemainingMs - 3_600_000) < 1)
+        assertFalse(share.isDone)
+    }
+
+    @Test fun `share while working counts to the end and reports progress`() {
+        val h = Harness()
+        h.run { start(h.state, at(24, 9)) }
+        val share = ShareContent.of(h.session, at(24, 13))
+        assertEquals(ShareContent.Message.COUNTDOWN, share.message)
+        assertTrue(abs(share.messageRemainingMs - 4 * 3_600_000) < 1)
+        assertEquals(50.0, share.progress, 0.01)
+    }
+
+    @Test fun `share after an early clock-off is done at the progress reached`() {
+        val h = Harness()
+        h.run { start(h.state, at(24, 9)) }
+        h.run { clockOffEarly(h.state, at(24, 11)) }
+        val share = ShareContent.of(h.session, at(24, 11, 30))
+        assertEquals(ShareContent.Message.OFF_WORK, share.message)
+        assertTrue(share.isDone)
+        assertEquals(25.0, share.progress, 0.01)
+    }
+
+    @Test fun `share links stay on the web app and carry only the hours`() {
+        val url = ShareContent.url(9 * 60, 18 * 60)
+        assertTrue(url.startsWith("https://off.rainif.com/"))
+        assertTrue(url.contains("s=0900-1800"))
+        assertFalse(url.contains("doneat.app"))
+        assertEquals("0000-0830", Regex("s=([0-9-]+)").find(ShareContent.url(24 * 60, 8 * 60 + 30))!!.groupValues[1])
+    }
+
     private companion object {
         const val ZONE = "UTC"
     }
