@@ -198,6 +198,23 @@ class RecordStoreTest {
     }
 
     @Test
+    fun quarantiningTwiceAtTheSameInstantPreservesBothOriginalFiles() = runBlocking {
+        val first = "{first damaged file".toByteArray()
+        val second = "{second damaged file".toByteArray()
+        Files.write(archive(), first)
+        val records = store()
+        records.load()
+        val a = records.quarantine()!!
+        Files.write(archive(), second)
+        records.load()
+        val b = records.quarantine()!!
+        assertTrue(a != b)
+        assertTrue(a.fileName.toString().endsWith(".corrupt"))
+        assertArrayEquals(first, Files.readAllBytes(a))
+        assertArrayEquals(second, Files.readAllBytes(b))
+    }
+
+    @Test
     fun aDamagedArchiveBlocksWritesUntilQuarantined() = runBlocking {
         Files.write(archive(), "{\"document\":\"not base64!\"}".toByteArray())
         val damaged = Files.readAllBytes(archive())

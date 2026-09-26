@@ -123,7 +123,6 @@ import androidx.compose.material.icons.outlined.Timer
 import com.rainif.doneat.ui.Route
 import com.rainif.doneat.ui.onboarding.appIsDark
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 
 /** Taps that need a second press within five seconds, against the same shift. */
@@ -145,15 +144,7 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
     val records by graph.records.state.collectAsStateWithLifecycle()
     val authorized by graph.plus.authorized.collectAsStateWithLifecycle()
     // One tick per second, on the second, while the screen is started; resuming recomputes from the clock.
-    val now by remember {
-        flow {
-            while (true) {
-                val t = System.currentTimeMillis()
-                emit(t.toDouble())
-                delay(1_000 - t % 1_000)
-            }
-        }
-    }.collectAsStateWithLifecycle(System.currentTimeMillis().toDouble())
+    val now by remember { timerTicks() }.collectAsStateWithLifecycle(System.currentTimeMillis().toDouble())
 
     val context = LocalContext.current
     val view = LocalView.current
