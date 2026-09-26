@@ -5,7 +5,7 @@ import Foundation
 /// scene state a tap writes, so an Instruments recording carries no XCUITest
 /// accessibility snapshots on the main thread. Compiled only into builds that
 /// add `PERF_AUTOPILOT` to `SWIFT_ACTIVE_COMPILATION_CONDITIONS`; start with
-/// the launch argument `-owcPerfAutopilot A|B|C`.
+/// the launch argument `-ios.native.perfAutopilot A|B|C`.
 @MainActor
 enum PerfAutopilot {
     private enum Step {
@@ -16,7 +16,7 @@ enum PerfAutopilot {
     }
 
     static func run(scene: SceneState) async {
-        guard let name = UserDefaults.standard.string(forKey: "owcPerfAutopilot") else { return }
+        guard let name = UserDefaults.standard.string(forKey: "ios.native.perfAutopilot") else { return }
         let steps: [Step] = switch name {
         case "A":
             [.tab(.timer)]
