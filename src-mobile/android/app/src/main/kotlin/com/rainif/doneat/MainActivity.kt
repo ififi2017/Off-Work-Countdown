@@ -41,6 +41,8 @@ import com.rainif.doneat.core.designsystem.ThemeMode
 import com.rainif.doneat.reminders.Reminders
 import com.rainif.doneat.ui.AppLanguageScope
 import com.rainif.doneat.ui.AppLocale
+import com.rainif.doneat.ui.ArchiveRecoveryScreen
+import com.rainif.doneat.core.data.RecordPersistenceError
 import com.rainif.doneat.ui.AppShell
 import com.rainif.doneat.ui.SystemBarsFollowTheme
 import com.rainif.doneat.ui.onboarding.SetupFlow
@@ -78,6 +80,7 @@ class MainActivity : FragmentActivity() {
         if (savedInstanceState == null) openRequestedTab(intent)
         setContent {
             val loaded by graph.loaded.collectAsStateWithLifecycle()
+            val archiveError by graph.records.persistenceError.collectAsStateWithLifecycle()
             val setUp by graph.settings.isSetUp.collectAsStateWithLifecycle()
             val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
             val device by graph.settings.device.collectAsStateWithLifecycle()
@@ -102,6 +105,8 @@ class MainActivity : FragmentActivity() {
                         // Until the archive is read nothing can tell a first launch from a restored one.
                         if (!loaded) {
                             LaunchPlaceholder()
+                        } else if (archiveError == RecordPersistenceError.INVALID_ARCHIVE || archiveError == RecordPersistenceError.UNREADABLE_ARCHIVE) {
+                            ArchiveRecoveryScreen(graph)
                         } else AnimatedContent(
                             targetState = setUp,
                             transitionSpec = {

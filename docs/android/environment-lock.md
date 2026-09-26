@@ -36,7 +36,7 @@
 ./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease :app:bundleRelease
 ```
 
-`/tmp/doneat-number-input-save-final-gradle.log`：423 项 JUnit 通过（domain 336、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功。包含 UI 收口、Life 历史区间、非法薪资输入和离页保存。另有 7 项 Swift 职业区间回归测试通过，包含 3 组非法结束日期输入。当前未签名 Release APK 为 5,329,054 字节，AAB 为 9,182,095 字节；哈希见 `build/android-preconsole/artifact-hashes.txt`。ZIP/ELF 16 KiB 对齐通过。生产签名与 Play 处理结果仍须在 T24/T26 记录。
+`/tmp/doneat-boundary-final-gradle.log`：433 项 JUnit 通过（domain 336、data 74、design 8、app 15），lint 0 error / 34 warning / 1 hint，Debug、R8 Release 与 AAB 成功。包含计时恢复、专注边界/合并、进程中断和档案恢复入口。此前 7 项 Swift 职业区间、17 项数字输入/共享规则测试仍是对应修复的证据；本轮 iOS headless build 通过。当前未签名 Release APK 为 5,341,494 字节，AAB 为 9,197,491 字节；哈希见 `build/android-preconsole/artifact-hashes.txt`。ZIP/ELF 16 KiB 对齐通过。生产签名与 Play 处理结果仍须在 T24/T26 记录。
 
 仓库侧：`npm run lint` 与 `npm test`（445 项）、`check:version`、`check:ios`、Web/Desktop build 与输出检查通过。iOS 本地 headless simulator build 、`NumberInputTests` 5 项与 `ScheduleRuleFixtureTests` 12 项通过（`doneat-number-input-final-ios.log`）；iOS/Watch 四个产物版本均为 3.2.1；真实 iOS→Kotlin→iOS v6 往返保留 12 类实体全部身份与字段。完整 QA 用例状态以 [preconsole-qa-2026-09-26.md](preconsole-qa-2026-09-26.md) 为准，不能把单测总数等同于 126 项首发验收。
 
