@@ -332,6 +332,39 @@ class FocusPlanningTest {
         assertFalse(planning.updateTimerSettings(s, FocusTimerSettings(45, 5, 15, 4), nine05).value)
     }
 
+    @Test fun aManualBreakStaysOnTheDayInsteadOfBecomingATemplateTask() {
+        // iOS FocusReviewRegressionTests.manualBreakStaysOnDayInsteadOfBecomingATemplateTask
+        val target = planning.templateBlocks(RecordState(), nine05).first { it.kind == FocusPlanBlockKind.TASK }
+        var s = planning.markBlockAsBreak(RecordState(), target.startAtMs, nine05)
+        assertNull(planning.saveTemplate(s, "Only a break", planning.templateDraftFromToday(s, nine05), nine05).value)
+        s = planning.createInNextEmptyBlock(s, "Writing", nine05).state
+        val saved = planning.saveTemplate(s, "Tasks", planning.templateDraftFromToday(s, nine05), nine05)
+        assertEquals(listOf("Writing"), FocusTemplates.tasks(saved.value!!.slots).map { it.title })
+        assertTrue(canvas(saved.state).blocks.first().isUserBreak)
+    }
+
+    @Test fun theDraftFromTodayKeepsOrderAndRepeatsButNotClockTimes() {
+        var s = planning.createInNextEmptyBlock(RecordState(), "Deep work", nine05, pomodoros = 2, scheduleAllPomodoros = true).state
+        s = planning.createInNextEmptyBlock(s, "Email", nine05).state
+        val tasks = FocusTemplates.tasks(planning.templateDraftFromToday(s, nine05))
+        assertEquals(listOf("Deep work" to 2, "Email" to 1), tasks.map { it.title to it.pomodoros })
+        // Keys are fresh: the template never points back at today's task rows.
+        assertTrue(tasks.none { key -> s.focusTasks.any { it.id == key.taskKey } })
+    }
+
+    @Test fun remainingCapacityCountsAllTasksAndExcludesTheOneBeingEdited() {
+        // iOS FocusTaskEditingTests.remainingCapacity
+        val blocks = workBlocks(RecordState()).filter { it.kind == FocusPlanBlockKind.TASK }.take(3)
+        val first = FocusTemplateTask("a", 0, "First", FocusTaskIcon.WORK, 2)
+        val second = FocusTemplateTask("b", 1, "Second", FocusTaskIcon.STUDY, 1)
+        assertEquals(1, FocusTemplates.remainingPomodoros(listOf(first), blocks))
+        assertEquals(0, FocusTemplates.remainingPomodoros(listOf(first, second), blocks))
+        assertEquals(2, FocusTemplates.remainingPomodoros(listOf(first, second), blocks, excluding = first.id))
+        val oversized = first.copy(pomodoros = 10)
+        assertEquals(0, FocusTemplates.remainingPomodoros(listOf(oversized, second), blocks))
+        assertEquals(2, FocusTemplates.remainingPomodoros(listOf(oversized, second), blocks, excluding = oversized.id))
+    }
+
     @Test fun reapplyingAnUnchangedTemplateIsATrueNoOp() {
         val (s0, template, _) = capturedTemplate()
         val applied = planning.applyTemplate(s0, template.id, nine05).state

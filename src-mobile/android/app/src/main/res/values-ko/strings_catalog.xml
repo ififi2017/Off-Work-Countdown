@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">현재 근무 시간에 모든 작업을 배치할 수 없습니다</string>
     <string name="focusTemplateDelete">템플릿 삭제</string>
     <string name="focusTemplateDropped">블록 %1$s개는 이번 근무에 들어가지 않습니다</string>
+    <string name="focusTemplateMoveDown">아래로 이동</string>
+    <string name="focusTemplateMoveUp">위로 이동</string>
     <string name="focusTemplateRemainingPomodoros">현재 근무 시간에 포모도로 %1$s개를 더 배치할 수 있습니다.</string>
     <string name="focusTemplateSequenceNote">휴식 시간을 제외하고 이 순서대로 근무 시간에 작업을 배치합니다. 시간이 부족하면 남은 작업은 템플릿에 그대로 보관됩니다.</string>
     <string name="focusTemplateSlots">블록 %1$s개</string>

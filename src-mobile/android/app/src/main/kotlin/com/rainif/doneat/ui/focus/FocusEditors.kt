@@ -70,7 +70,7 @@ import java.time.Instant
 import java.time.ZoneId
 
 /** The fields every creation path shares (iOS `FocusTaskEditorDraft`). */
-private data class TaskDraft(
+internal data class TaskDraft(
     val title: String = "",
     val icon: FocusTaskIcon = FocusTaskIcon.FOCUS,
     val pomodoros: Int = 1,
@@ -87,6 +87,15 @@ private data class TaskDraft(
 }
 
 private enum class Landing { NEXT_BLOCK, START_NOW, UNSCHEDULED }
+
+/** A finish on the day the work starts is just a time; one that runs past it also names the date (iOS). */
+private fun finishTime(context: FocusContext, atMs: Double, referenceMs: Double): String {
+    val zone = ZoneId.systemDefault()
+    val day = Instant.ofEpochMilli(atMs.toLong()).atZone(zone).toLocalDate()
+    if (day == Instant.ofEpochMilli(referenceMs.toLong()).atZone(zone).toLocalDate()) return context.text.time(atMs)
+    val date = java.time.format.DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(context.text.locale, "MMMd"), context.text.locale).format(day)
+    return "$date · ${context.text.time(atMs)}"
+}
 
 /** "Today · 10:30", "Tomorrow · 09:00", or a date. */
 private fun dayAndTime(context: FocusContext, res: android.content.res.Resources, atMs: Double, referenceMs: Double): String {
@@ -131,8 +140,10 @@ fun FocusCreateScreen(graph: AppGraph, blockStartAtMs: Long?, currentOrNext: Boo
         (landing != Landing.UNSCHEDULED || draft.isFavorite) &&
         (draft.existingTaskID == null || landing != Landing.NEXT_BLOCK || target != null)
 
-    fun finishWith(result: FocusPlacement?) {
+    suspend fun finishWith(result: FocusPlacement?) {
         placementNotice(result, res)?.let { graph.focusNotice.value = it; Haptics.warn(view) } ?: Haptics.confirm(view)
+        // A favourite placed from the Usual scale is shown where it landed.
+        if (favoriteID != null && result is FocusPlacement.Placed) graph.settings.updateDevice { it.copy(focusScale = FocusScale.TODAY.key) }
         onBack()
     }
     fun save() {
@@ -290,7 +301,7 @@ fun FocusTaskEditScreen(graph: AppGraph, taskID: String, onBack: () -> Unit) {
 
 /** Title, estimate and the finish it implies. */
 @Composable
-private fun TaskFields(
+internal fun TaskFields(
     context: FocusContext,
     draft: TaskDraft,
     onChange: (TaskDraft) -> Unit,
@@ -298,6 +309,8 @@ private fun TaskFields(
     showsFinish: Boolean,
     referenceMs: Double,
     minimum: Int = 1,
+    maximum: Int = 12,
+    capacityNote: String? = null,
 ) {
     val res = LocalResources.current
     val scheme = MaterialTheme.colorScheme
@@ -328,23 +341,26 @@ private fun TaskFields(
                 Modifier.semantics { stateDescription = draft.pomodoros.toString() },
                 style = MaterialTheme.typography.titleMedium,
             )
-            IconButton(onClick = { onChange(draft.copy(pomodoros = draft.pomodoros + 1)) }, enabled = draft.pomodoros < maxOf(12, minimum)) {
+            IconButton(onClick = { onChange(draft.copy(pomodoros = draft.pomodoros + 1)) }, enabled = draft.pomodoros < maxOf(maximum, minimum)) {
                 Icon(Icons.Outlined.Add, stringResource(R.string.focusEstimate))
             }
         }
         if (showsFinish) {
             Text(
-                finish?.let { Strings.focusEstimatedFinish(res, dayAndTime(context, res, it, referenceMs)) } ?: stringResource(R.string.focusNoRoomThisShift),
+                finish?.let { Strings.focusEstimatedFinish(res, finishTime(context, it, referenceMs)) } ?: stringResource(R.string.focusNoRoomThisShift),
                 Modifier.padding(start = DoneAtSpacing.l, end = DoneAtSpacing.l, bottom = 12.dp),
                 style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant,
             )
+        }
+        capacityNote?.let {
+            Text(it, Modifier.padding(start = DoneAtSpacing.l, end = DoneAtSpacing.l, bottom = 12.dp), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
         }
     }
 }
 
 /** Icon, favourite, and the favourites to start from. */
 @Composable
-private fun TaskOptions(context: FocusContext, draft: TaskDraft, favorites: List<FocusTask>, onChange: (TaskDraft) -> Unit) {
+internal fun TaskOptions(context: FocusContext, draft: TaskDraft, favorites: List<FocusTask>, onChange: (TaskDraft) -> Unit) {
     val res = LocalResources.current
     val scheme = MaterialTheme.colorScheme
     Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(8.dp)) {

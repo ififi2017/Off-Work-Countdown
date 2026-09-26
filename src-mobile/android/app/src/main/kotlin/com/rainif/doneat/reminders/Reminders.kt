@@ -191,10 +191,14 @@ internal object ReminderNotifier {
     fun post(context: Context, reminder: PlannedReminder) {
         // Denied notifications leave the app fully usable; the reminder is simply not shown.
         if (!canPost(context)) return
+        // Focus alerts open the Focus tab; their own request code keeps the two intents apart.
+        val focus = reminder.channel == ReminderChannel.FOCUS
         val open = PendingIntent.getActivity(
-            context, 0,
-            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
-            PendingIntent.FLAG_IMMUTABLE,
+            context, if (focus) 1 else 0,
+            Intent(context, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .apply { if (focus) putExtra(MainActivity.EXTRA_TAB, "focus") },
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val notification = NotificationCompat.Builder(context, channelID(reminder.channel))
             .setSmallIcon(R.drawable.ic_stat_reminder)

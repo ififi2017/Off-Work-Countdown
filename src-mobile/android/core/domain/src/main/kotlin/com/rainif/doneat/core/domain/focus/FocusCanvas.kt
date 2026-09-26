@@ -113,6 +113,10 @@ object FocusTemplates {
         return result
     }
 
+    /** Focus blocks still free for more rounds, leaving out the task being edited. */
+    fun remainingPomodoros(tasks: List<FocusTemplateTask>, blocks: List<FocusWorkBlock>, excluding: String? = null): Int =
+        maxOf(0, blocks.count { it.kind == FocusPlanBlockKind.TASK } - tasks.filter { it.id != excluding }.sumOf { it.pomodoros })
+
     /** How many whole tasks fit the work blocks, in order; a task that does not fit ends the run. */
     fun fittingTaskCount(tasks: List<FocusTemplateTask>, blocks: List<FocusWorkBlock>): Int {
         var remaining = blocks.count { it.kind == FocusPlanBlockKind.TASK }

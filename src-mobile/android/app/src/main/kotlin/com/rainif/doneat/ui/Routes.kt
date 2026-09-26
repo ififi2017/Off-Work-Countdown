@@ -39,6 +39,9 @@ sealed interface Route : NavKey {
     @Serializable data class FocusCreate(val blockStartAtMs: Long?, val currentOrNext: Boolean, val favoriteID: String?) : Route
     @Serializable data class FocusTaskEdit(val taskID: String) : Route
     @Serializable data object FocusTimerSettings : Route
+    /** A usual day (focus template), new when [templateID] is null, and one task inside it. */
+    @Serializable data class FocusTemplateEdit(val templateID: String?) : Route
+    @Serializable data class FocusTemplateTask(val taskID: String?) : Route
 
     /** The schedule page's shift types, edited within its draft. */
     @Serializable data object ShiftTypes : Route

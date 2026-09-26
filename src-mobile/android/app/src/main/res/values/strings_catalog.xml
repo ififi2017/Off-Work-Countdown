@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">Some tasks do not fit this shift</string>
     <string name="focusTemplateDelete">Delete template</string>
     <string name="focusTemplateDropped">%1$s blocks don\'t fit this shift</string>
+    <string name="focusTemplateMoveDown">Move down</string>
+    <string name="focusTemplateMoveUp">Move up</string>
     <string name="focusTemplateRemainingPomodoros">This shift has room for %1$s more Pomodoros.</string>
     <string name="focusTemplateSequenceNote">Tasks fill the shift in this order, skipping breaks. If time runs out, the remaining tasks stay in the template for another day.</string>
     <string name="focusTemplateSlots">%1$s blocks</string>

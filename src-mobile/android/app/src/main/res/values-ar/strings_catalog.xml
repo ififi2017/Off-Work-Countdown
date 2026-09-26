@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">لا تتسع هذه الوردية لجميع المهام</string>
     <string name="focusTemplateDelete">حذف القالب</string>
     <string name="focusTemplateDropped">%1$s فترات لا تتسع في هذه الوردية</string>
+    <string name="focusTemplateMoveDown">نقل لأسفل</string>
+    <string name="focusTemplateMoveUp">نقل لأعلى</string>
     <string name="focusTemplateRemainingPomodoros">تتسع هذه الوردية لـ %1$s جلسات بومودورو إضافية.</string>
     <string name="focusTemplateSequenceNote">تُوزَّع المهام على الوردية بهذا الترتيب مع تجاوز الاستراحات. إذا لم يكفِ الوقت، تبقى المهام المتبقية محفوظة في القالب.</string>
     <string name="focusTemplateSlots">%1$s فترات</string>

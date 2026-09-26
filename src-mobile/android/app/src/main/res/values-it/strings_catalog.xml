@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">Non tutte le attività rientrano nel turno</string>
     <string name="focusTemplateDelete">Elimina modello</string>
     <string name="focusTemplateDropped">%1$s blocchi non entrano in questo turno</string>
+    <string name="focusTemplateMoveDown">Sposta giù</string>
+    <string name="focusTemplateMoveUp">Sposta su</string>
     <string name="focusTemplateRemainingPomodoros">In questo turno c’è spazio per altri %1$s pomodori.</string>
     <string name="focusTemplateSequenceNote">Le attività vengono inserite nel turno in questo ordine, saltando le pause. Se il tempo non basta, le attività rimanenti restano nel modello.</string>
     <string name="focusTemplateSlots">%1$s blocchi</string>

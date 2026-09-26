@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">Не все задачи помещаются в эту смену</string>
     <string name="focusTemplateDelete">Удалить шаблон</string>
     <string name="focusTemplateDropped">%1$s блоков не помещаются в эту смену</string>
+    <string name="focusTemplateMoveDown">Переместить вниз</string>
+    <string name="focusTemplateMoveUp">Переместить вверх</string>
     <string name="focusTemplateRemainingPomodoros">В эту смену можно добавить ещё %1$s помодоро.</string>
     <string name="focusTemplateSequenceNote">Задачи заполняют смену в этом порядке, пропуская перерывы. Если времени не хватит, оставшиеся задачи сохранятся в шаблоне.</string>
     <string name="focusTemplateSlots">Блоков: %1$s</string>

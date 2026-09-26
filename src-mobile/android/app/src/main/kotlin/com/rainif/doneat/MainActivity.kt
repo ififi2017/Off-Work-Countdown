@@ -1,5 +1,6 @@
 package com.rainif.doneat
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -22,6 +23,7 @@ import com.rainif.doneat.ui.AppShell
 import com.rainif.doneat.ui.SystemBarsFollowTheme
 import com.rainif.doneat.ui.onboarding.SetupFlow
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /** A [FragmentActivity] so `BiometricPrompt` can confirm the owner before earnings are revealed. */
@@ -44,6 +46,7 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val graph = (application as DoneAtApplication).graph
+        if (savedInstanceState == null) openRequestedTab(intent)
         setContent {
             val loaded by graph.loaded.collectAsStateWithLifecycle()
             val setUp by graph.settings.isSetUp.collectAsStateWithLifecycle()
@@ -76,6 +79,27 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        openRequestedTab(intent)
+    }
+
+    /** A notification names the tab it belongs to: a focus alert opens Focus, as on iOS. */
+    private fun openRequestedTab(intent: Intent?) {
+        val tab = intent?.getStringExtra(EXTRA_TAB) ?: return
+        intent.removeExtra(EXTRA_TAB)
+        val graph = (application as DoneAtApplication).graph
+        lifecycleScope.launch {
+            graph.loaded.first { it }
+            graph.settings.updateDevice { it.copy(selectedTab = tab) }
+        }
+    }
+
+    companion object {
+        /** The tab to show, by its stored name ("focus"). */
+        const val EXTRA_TAB = "com.rainif.doneat.TAB"
     }
 
     /**

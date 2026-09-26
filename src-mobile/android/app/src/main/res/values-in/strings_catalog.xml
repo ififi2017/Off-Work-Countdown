@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">Tidak semua tugas muat dalam sif ini</string>
     <string name="focusTemplateDelete">Hapus templat</string>
     <string name="focusTemplateDropped">%1$s blok tidak muat di sif ini</string>
+    <string name="focusTemplateMoveDown">Pindahkan ke bawah</string>
+    <string name="focusTemplateMoveUp">Pindahkan ke atas</string>
     <string name="focusTemplateRemainingPomodoros">Sif ini masih dapat menampung %1$s pomodoro lagi.</string>
     <string name="focusTemplateSequenceNote">Tugas mengisi sif sesuai urutan ini dengan melewati waktu istirahat. Jika waktunya tidak cukup, tugas yang tersisa tetap tersimpan di templat.</string>
     <string name="focusTemplateSlots">%1$s blok</string>

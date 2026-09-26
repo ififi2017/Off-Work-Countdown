@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">Nem todas as tarefas cabem neste turno</string>
     <string name="focusTemplateDelete">Eliminar modelo</string>
     <string name="focusTemplateDropped">%1$s blocos não cabem neste turno</string>
+    <string name="focusTemplateMoveDown">Mover para baixo</string>
+    <string name="focusTemplateMoveUp">Mover para cima</string>
     <string name="focusTemplateRemainingPomodoros">Este turno tem espaço para mais %1$s pomodoros.</string>
     <string name="focusTemplateSequenceNote">As tarefas são distribuídas pelo turno nesta ordem, respeitando as pausas. Se não houver tempo suficiente, as tarefas restantes ficam guardadas no modelo.</string>
     <string name="focusTemplateSlots">%1$s blocos</string>

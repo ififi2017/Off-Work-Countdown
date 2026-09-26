@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">इस शिफ़्ट में सभी कार्यों के लिए समय नहीं है</string>
     <string name="focusTemplateDelete">टेम्पलेट हटाएँ</string>
     <string name="focusTemplateDropped">%1$s ब्लॉक इस शिफ़्ट में नहीं आते</string>
+    <string name="focusTemplateMoveDown">नीचे ले जाएँ</string>
+    <string name="focusTemplateMoveUp">ऊपर ले जाएँ</string>
     <string name="focusTemplateRemainingPomodoros">इस शिफ़्ट में %1$s और पोमोडोरो रखे जा सकते हैं।</string>
     <string name="focusTemplateSequenceNote">कार्य इसी क्रम में शिफ़्ट में लगाए जाते हैं और ब्रेक छोड़ दिए जाते हैं। समय कम पड़ने पर बाकी कार्य टेम्पलेट में सुरक्षित रहते हैं।</string>
     <string name="focusTemplateSlots">%1$s ब्लॉक</string>

@@ -37,10 +37,14 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -51,6 +55,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -59,6 +66,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rainif.doneat.AppGraph
 import com.rainif.doneat.R
@@ -81,9 +89,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * The Focus tab (iOS `FocusCanvasView`), "today" scale: what am I in, how
- * long is left, what happens after; then the shift drawn to scale, where
- * creating a task and placing it are one action.
+ * The Focus tab (iOS `FocusCanvasView`): one page, two scales under the
+ * same status card. Today: does this shift hold what I want to do, drawn to
+ * scale, where creating a task and placing it are one action. Usual: what an
+ * ordinary day of mine looks like.
  */
 @Composable
 fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -> Unit) {
@@ -100,6 +109,33 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
     var breakBlock by remember { mutableStateOf<FocusDayCanvas.Block?>(null) }
     val model = context.canvas
     val locked = model.isLocked
+    val device by graph.settings.device.collectAsStateWithLifecycle()
+    val scale = FocusScale.of(device.focusScale)
+    val scroll = rememberScrollState()
+    val density = LocalDensity.current
+    // Entry puts the current block at the top; clock ticks never move the page.
+    val positions = remember { object { var viewport: LayoutCoordinates? = null; var band: LayoutCoordinates? = null } }
+    var bandPlaced by remember { mutableStateOf(false) }
+    var needsPosition by remember { mutableStateOf(true) }
+    LifecycleStartEffect(Unit) {
+        needsPosition = true
+        onStopOrDispose {}
+    }
+    LaunchedEffect(needsPosition, bandPlaced, scale, model.nowAtMs == null) {
+        val viewport = positions.viewport ?: return@LaunchedEffect
+        val band = positions.band?.takeIf { it.isAttached } ?: return@LaunchedEffect
+        if (!needsPosition || scale != FocusScale.TODAY || locked || density.fontScale >= 1.5f) return@LaunchedEffect
+        val now = model.nowAtMs ?: return@LaunchedEffect
+        val start = model.blocks.firstOrNull { it.startAtMs <= now && now < it.endAtMs }?.startAtMs ?: now
+        val top = viewport.localPositionOf(band, androidx.compose.ui.geometry.Offset.Zero).y + scroll.value
+        scroll.scrollTo((top + with(density) { (model.offset(start).dp - 8.dp).toPx() }).toInt().coerceAtLeast(0))
+        needsPosition = false
+    }
+    fun choose(next: FocusScale) {
+        if (next == scale) return
+        if (next == FocusScale.TODAY) needsPosition = true
+        scope.launch { graph.settings.updateDevice { it.copy(focusScale = next.key) } }
+    }
     // A sentence an editor left behind: shown here once, then cleared.
     val left by graph.focusNotice.collectAsStateWithLifecycle()
     LaunchedEffect(left) {
@@ -126,9 +162,12 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
         }
     }
 
+    // As on iOS, the title, scale and status card stay put and only the canvas scrolls,
+    // except at very large text, where a pinned card would leave little room for anything else.
+    val pinned = density.fontScale < 1.5f
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(
-            Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl),
+            Modifier.fillMaxSize().safeDrawingPadding().then(if (pinned) Modifier else Modifier.verticalScroll(scroll)),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
@@ -145,6 +184,15 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                 }
             }
             Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    FocusScale.entries.forEachIndexed { index, option ->
+                        SegmentedButton(
+                            selected = scale == option,
+                            onClick = { choose(option) },
+                            shape = SegmentedButtonDefaults.itemShape(index, FocusScale.entries.size),
+                        ) { Text(stringResource(if (option == FocusScale.TODAY) R.string.focusScaleToday else R.string.focusScaleUsual)) }
+                    }
+                }
                 NowBand(
                     graph, context,
                     onStop = { confirmsStop = true },
@@ -156,7 +204,16 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                     onAdd = { create(null, currentOrNext = true) },
                     onUnlock = { openSettings(Route.Plus) },
                 )
+            }
+            Column(
+                Modifier
+                    .then(if (pinned) Modifier.weight(1f).onGloballyPositioned { positions.viewport = it }.verticalScroll(scroll) else Modifier)
+                    .padding(start = DoneAtSpacing.page, end = DoneAtSpacing.page, bottom = DoneAtSpacing.xl),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
                 when {
+                    scale == FocusScale.USUAL && locked -> LockedUsualScale(res) { openSettings(Route.Plus) }
+                    scale == FocusScale.USUAL -> UsualScale(graph, context, open)
                     locked -> LockedCanvas(context) { openSettings(Route.Plus) }
                     model.isEmpty -> Text(stringResource(R.string.focusNoShift), Modifier.padding(vertical = 24.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     else -> {
@@ -165,7 +222,15 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                             val title = java.time.format.DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(context.text.locale, "EEEMMMd"), context.text.locale).format(day)
                             Text(Strings.focusBandNextShift(res, title), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        FocusBand(context, model, selectedBlock, onPick = ::pick)
+                        DisposableEffect(Unit) {
+                            onDispose {
+                                positions.band = null
+                                bandPlaced = false
+                            }
+                        }
+                        Box(Modifier.onGloballyPositioned { positions.band = it; bandPlaced = true }) {
+                            FocusBand(context, model, selectedBlock, onPick = ::pick)
+                        }
                         TaskLedger(graph, context, onEdit = { open(Route.FocusTaskEdit(it)) }, onExtend = ::extend)
                         if (model.tasks.isNotEmpty() || model.blocks.any { it.hasAssignment }) {
                             Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(top = 8.dp)) {
@@ -222,7 +287,10 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
             confirmButton = {
                 TextButton(enabled = name.isNotBlank(), onClick = {
                     namesTemplate = null
-                    scope.launch { graph.focus.plan { state, planning -> planning.saveTemplateFromToday(state, name.trim(), graph.nowMs()) } }
+                    scope.launch {
+                        val now = graph.nowMs()
+                        graph.focus.plan { state, planning -> planning.saveTemplate(state, name.trim(), planning.templateDraftFromToday(state, now), now) }
+                    }
                 }) { Text(stringResource(R.string.saveAction)) }
             },
             dismissButton = { TextButton(onClick = { namesTemplate = null }) { Text(stringResource(R.string.cancelAction)) } },
