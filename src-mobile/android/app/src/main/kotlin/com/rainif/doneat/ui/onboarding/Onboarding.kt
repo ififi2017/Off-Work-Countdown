@@ -537,8 +537,8 @@ private fun DoneAtTimePicker(minutes: Int, onDismiss: () -> Unit, onPicked: (Int
     }
     var minute by remember(minutes) { mutableStateOf(TextFieldValue((minutes % 60).toString().padStart(2, '0'))) }
     var pm by remember(minutes) { mutableStateOf(minutes / 60 >= 12) }
-    val hourNumber = hour.text.toIntOrNull()
-    val minuteNumber = minute.text.toIntOrNull()
+    val hourNumber = NumberInput.committedText(hour.text, decimal = false, maxDigits = 2)?.toIntOrNull()
+    val minuteNumber = NumberInput.committedText(minute.text, decimal = false, maxDigits = 2)?.toIntOrNull()
     val valid = hourNumber != null && hourNumber in (if (is24Hour) 0..23 else 1..12) && minuteNumber != null && minuteNumber in 0..59
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -547,7 +547,7 @@ private fun DoneAtTimePicker(minutes: Int, onDismiss: () -> Unit, onPicked: (Int
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
                     OutlinedTextField(
                         hour, { value ->
-                            val digits = NumberInput.sanitize(value.text, decimal = false, maxDigits = 2)
+                            val digits = NumberInput.draft(value.text, decimal = false, maxDigits = 2)
                             hour = TextFieldValue(digits, selection = TextRange(digits.length))
                         }, Modifier.weight(1f).onFocusChanged { if (it.isFocused) hour = hour.copy(selection = TextRange(0, hour.text.length)) }
                             .semantics { contentDescription = hoursLabel },
@@ -558,7 +558,7 @@ private fun DoneAtTimePicker(minutes: Int, onDismiss: () -> Unit, onPicked: (Int
                     Text(":", style = MaterialTheme.typography.headlineMedium)
                     OutlinedTextField(
                         minute, { value ->
-                            val digits = NumberInput.sanitize(value.text, decimal = false, maxDigits = 2)
+                            val digits = NumberInput.draft(value.text, decimal = false, maxDigits = 2)
                             minute = TextFieldValue(digits, selection = TextRange(digits.length))
                         }, Modifier.weight(1f).onFocusChanged { if (it.isFocused) minute = minute.copy(selection = TextRange(0, minute.text.length)) }
                             .semantics { contentDescription = minutesLabel },

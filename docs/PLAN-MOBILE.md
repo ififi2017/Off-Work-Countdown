@@ -1,11 +1,15 @@
 # Apple 移动端与 Watch 开发计划
 
+2026-09-26 版本更新：用户确认 iOS 3.2.0 已发版，后续修复进入 **3.2.1**。
+主应用、Widget、Watch App 与 Watch Widget 均使用 3.2.1；按仓库版本约定，
+Web/Desktop/Mac Widget 的产品元数据同步。构建号在下次上传前另行递增。
+
 2026-09-19 发布范围更新：用户确认 Duo 专属适配放到下一版本，依赖 iOS 27.1 SDK，不阻塞 3.2.0。常规 iPhone／iPad 兼容仍需验收。PR #208 已合并且 iOS／watchOS CI 通过；商店素材、真机与升级回归、最终归档和送审状态见 [发版核对](reviews/2026-09-19-3.2.0-release-readiness.md)。
 
 本文记录 Off Work Countdown 在 iPhone、iPad 和 Apple Watch 上的现状、技术边界与后续顺序。
 Android 原生移植已于 2026-09 启动；范围与进度统一见 [Android 进度](android/progress.md)。
-截至 2026-09-26，Android 的本地功能实现覆盖计时、排班、专注、记录、设置、备份、
-小组件及首发客户端 Play Billing。四模块 420 项单测、lint、Debug/R8 Release/AAB
+截至 2026-09-27，Android 的本地功能实现覆盖计时、排班、专注、记录、设置、备份、
+小组件及首发客户端 Play Billing。四模块 423 项单测、lint、Debug/R8 Release/AAB
 构建通过，iOS→Kotlin→iOS 记录往返保留 12 类实体；API 36 的系统备份与文档化设备转移路径
 已恢复业务数据。首发 126 项 QA 仍逐项验收，Play Console 商品、真实购买、签名、
 商店资料和正式隐私页待负责人处理；当前不代表已发布。

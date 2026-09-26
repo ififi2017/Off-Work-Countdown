@@ -574,7 +574,10 @@ export function getDailySalary(
     return null;
   }
   const annualizedMultiplier = 1 + annualBonusMonths / 12;
-  if (type === "daily") return parsed * annualizedMultiplier;
+  if (type === "daily") {
+    const daily = parsed * annualizedMultiplier;
+    return Number.isFinite(daily) ? daily : null;
+  }
   if (
     !Number.isFinite(monthlyWorkingDays) ||
     monthlyWorkingDays <= 0 ||
@@ -582,7 +585,8 @@ export function getDailySalary(
   ) {
     return null;
   }
-  return (parsed / monthlyWorkingDays) * annualizedMultiplier;
+  const daily = (parsed / monthlyWorkingDays) * annualizedMultiplier;
+  return Number.isFinite(daily) ? daily : null;
 }
 
 /** Monthly gross equivalent used when a daily setting seeds the life profile. */
@@ -598,7 +602,9 @@ export function getMonthlySalaryEquivalent(
     monthlyWorkingDays > 31
   ) return null;
   const daily = getDailySalary(amount, type, monthlyWorkingDays, annualBonusMonths);
-  return daily === null ? null : daily * monthlyWorkingDays;
+  if (daily === null) return null;
+  const monthly = daily * monthlyWorkingDays;
+  return Number.isFinite(monthly) ? monthly : null;
 }
 
 export interface ScheduleDayExpansion {

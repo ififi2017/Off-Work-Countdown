@@ -348,6 +348,13 @@ describe("getDailySalary", () => {
     expect(getDailySalary("0", "daily")).toBe(0);
   });
 
+  it("rejects overflow from recovered salary settings without truncating the amount", () => {
+    expect(getDailySalary("1e308", "daily")).toBe(1e308);
+    expect(getDailySalary("1e308", "daily", 22, 36)).toBeNull();
+    expect(getDailySalary("1e308", "monthly", 0.1)).toBeNull();
+    expect(getDailySalary("1e309", "monthly")).toBeNull();
+  });
+
   it("annualizes bonus months for both monthly and daily salaries", () => {
     expect(getDailySalary("10000", "monthly", 20, 2)).toBeCloseTo(
       (10000 / 20) * (14 / 12)
@@ -366,6 +373,10 @@ describe("getDailySalary", () => {
 });
 
 describe("getMonthlySalaryEquivalent", () => {
+  it("rejects an overflowing monthly equivalent", () => {
+    expect(getMonthlySalaryEquivalent("1e308", "daily", 22)).toBeNull();
+  });
+
   it("converts daily pay with the same working-day and bonus settings", () => {
     expect(getMonthlySalaryEquivalent("500", "daily", 20, 2)).toBeCloseTo(
       500 * 20 * (1 + 2 / 12)

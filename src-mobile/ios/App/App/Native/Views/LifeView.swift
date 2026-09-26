@@ -533,6 +533,7 @@ struct LifeProfileEditView: View {
                 decimal: decimal,
                 maxDigits: maxDigits,
                 width: 84,
+                validationMessage: self.text.t("numberInputInvalid", values: ["count": String(maxDigits)]),
                 onCommit: {}
             )
         }
@@ -556,6 +557,7 @@ struct LifeProfileEditView: View {
                         decimal: true,
                         maxDigits: 12,
                         width: 104,
+                        validationMessage: text.t("numberInputInvalid", values: ["count": "12"]),
                         onCommit: {}
                     )
                 }
@@ -776,11 +778,12 @@ struct LifeProfileEditView: View {
     }
 
     private var canSave: Bool {
-        guard Double(sleepHours) != nil,
+        guard NumberInput.committedText(sleepHours, decimal: true, maxDigits: 4).flatMap(NumberInput.parse) != nil,
               validOptionalYear(bornYear),
               validOptionalYear(schoolYear),
               validOptionalYear(workYear),
-              Int(retirementAge).map({ (1...120).contains($0) }) == true
+              NumberInput.committedText(retirementAge, decimal: false, maxDigits: 3)
+                .flatMap(Int.init).map({ (1...120).contains($0) }) == true
         else { return false }
         if !roughSalaryAmount.isEmpty,
            salary(amount: roughSalaryAmount, cadence: roughSalaryCadence) == nil {
@@ -796,17 +799,19 @@ struct LifeProfileEditView: View {
     }
 
     private func validOptionalYear(_ value: String) -> Bool {
-        value.isEmpty || Int(value).map { (1_000...9_999).contains($0) } == true
+        value.isEmpty || NumberInput.committedText(value, decimal: false, maxDigits: 4)
+            .flatMap(Int.init).map { (1_000...9_999).contains($0) } == true
     }
 
     private func salary(amount: String, cadence: LifeSalaryCadence) -> LifeSalary? {
-        guard let value = Double(amount), value.isFinite, value > 0 else { return nil }
+        guard let canonical = NumberInput.committedText(amount, decimal: true, maxDigits: 12),
+              let value = NumberInput.parse(canonical), value > 0 else { return nil }
         return LifeSalary(amount: value, cadence: cadence)
     }
 
     private var incomeDecline: LifeIncomeDecline? {
-        guard let age = Int(declineStartAge),
-              let percent = Double(retirementIncomePercent)
+        guard let age = NumberInput.committedText(declineStartAge, decimal: false, maxDigits: 3).flatMap(Int.init),
+              let percent = NumberInput.committedText(retirementIncomePercent, decimal: false, maxDigits: 3).flatMap(NumberInput.parse)
         else { return nil }
         let value = LifeIncomeDecline(startsAtAge: age, retirementRatio: percent / 100)
         return value.isValid ? value : nil
@@ -837,10 +842,8 @@ struct LifeProfileEditView: View {
         )
     }
 
-    /// `OWCNumberField` holds ASCII digits with "." as the separator, whatever
-    /// the keyboard produced — that is what makes `Int(_:)` and `Double(_:)`
-    /// safe above. Loading through the user's locale broke the contract from the
-    /// other side: German rendered 7.5 as "7,5", and saving parsed it as nil.
+    /// Load canonical text without locale grouping; validation above rejects
+    /// malformed drafts without changing them into another value.
     private static func plain(_ value: Int) -> String {
         value.formatted(.number.grouping(.never).locale(Locale(identifier: "en_US_POSIX")))
     }
@@ -890,7 +893,8 @@ struct LifeProfileEditView: View {
             if let salary {
                 resolvedSalary = salary
             } else {
-                guard let amount = Double(salaryAmount), amount.isFinite, amount > 0 else { return nil }
+                guard let canonical = NumberInput.committedText(salaryAmount, decimal: true, maxDigits: 12),
+                      let amount = NumberInput.parse(canonical), amount > 0 else { return nil }
                 resolvedSalary = LifeSalary(amount: amount, cadence: salaryCadence)
             }
             return LifeEmploymentPeriod(

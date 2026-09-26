@@ -58667,6 +58667,125 @@
         }
       }
     },
+    "numberInputInvalid": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تحقّق من هذا الرقم. استخدم {{count}} خانات كحد أقصى."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prüfe diese Zahl. Verwende höchstens {{count}} Ziffern."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check this number. Use up to {{count}} digits."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisa este número. Usa un máximo de {{count}} dígitos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vérifiez ce nombre. Utilisez au maximum {{count}} chiffres."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यह संख्या जाँचें। अधिकतम {{count}} अंकों का उपयोग करें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Periksa angka ini. Gunakan maksimal {{count}} digit."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlla questo numero. Usa al massimo {{count}} cifre."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "数値を確認してください。入力できる数字は最大{{count}}桁です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "숫자를 확인하세요. 최대 {{count}}자리까지 입력할 수 있습니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ही संख्या तपासा. जास्तीत जास्त {{count}} अंक वापरा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifica este número. Usa no máximo {{count}} algarismos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверьте число. Используйте не более {{count}} цифр."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตรวจสอบตัวเลขนี้ ใช้ได้ไม่เกิน {{count}} หลัก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sayıyı kontrol edin. En fazla {{count}} basamak kullanın."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kiểm tra số này. Dùng tối đa {{count}} chữ số."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查数值，最多可输入 {{count}} 位数字。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查數值，最多可以輸入 {{count}} 位數字。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查數值，最多可輸入 {{count}} 位數字。"
+          }
+        }
+      }
+    },
     "overtime": {
       "extractionState": "manual",
       "localizations": {

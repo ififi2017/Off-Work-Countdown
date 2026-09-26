@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">การแจ้งเตือนมีเฉพาะเวลาและความคืบหน้า โดยไม่แสดงเงินเดือนเด็ดขาด</string>
     <string name="notificationScheduledForShift">ตั้งเวลาสำหรับกะนี้</string>
     <string name="notificationStillWorks">ยังใช้งานได้</string>
+    <string name="numberInputInvalid">ตรวจสอบตัวเลขนี้ ใช้ได้ไม่เกิน %1$s หลัก</string>
     <string name="offWorkReminder">การแจ้งเตือนการออกจากงาน</string>
     <string name="offWorkTime">ถึงเวลาออกจากงาน!</string>
     <string name="offWorkToday">เลิกงานแล้ววันนี้</string>

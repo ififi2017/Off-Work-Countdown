@@ -1,6 +1,7 @@
 package com.rainif.doneat.core.domain.records
 
 import com.rainif.doneat.core.domain.records.LifeDates.isValid
+import com.rainif.doneat.core.domain.salary.NumberInput
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
@@ -52,8 +53,7 @@ object LifeEmploymentTimeline {
 /**
  * The Life profile editor's fields (iOS `LifeProfileEditView` state, `load`,
  * `canSave` and `save`), kept as the text the user typed. Number fields hold
- * ASCII digits and "." whatever the keyboard produced, so parsing never
- * depends on the locale.
+ * normalized digits and "." for valid edits, or the rejected text for correction.
  */
 data class LifeProfileDraft(
     val bornYear: String = "",
@@ -88,8 +88,8 @@ data class LifeProfileDraft(
 
     val incomeDecline: LifeIncomeDecline?
         get() {
-            val age = declineAge.toIntOrNull() ?: return null
-            val percent = ratioPercent.toDoubleOrNull() ?: return null
+            val age = NumberInput.committedText(declineAge, decimal = false, maxDigits = 3)?.toIntOrNull() ?: return null
+            val percent = NumberInput.committedText(ratioPercent, decimal = false, maxDigits = 3)?.let(NumberInput::parse) ?: return null
             return LifeIncomeDecline(age, percent / 100).takeIf { it.isValid() }
         }
 
@@ -102,9 +102,9 @@ data class LifeProfileDraft(
     }
 
     fun canSave(today: LocalDate): Boolean {
-        if (sleepHours.toDoubleOrNull() == null) return false
+        if (NumberInput.committedText(sleepHours, decimal = true, maxDigits = 4)?.let(NumberInput::parse) == null) return false
         if (!validOptionalYear(bornYear) || !validOptionalYear(schoolYear) || !validOptionalYear(workYear)) return false
-        val age = retirementAge.toIntOrNull()
+        val age = NumberInput.committedText(retirementAge, decimal = false, maxDigits = 3)?.toIntOrNull()
         if (age == null || age !in 1..120) return false
         if (roughAmount.isNotEmpty() && salaryOf(roughAmount, roughCadence) == null) return false
         if (declines) {
@@ -120,6 +120,7 @@ data class LifeProfileDraft(
 
     /** The profile with this draft's fields written in, or null when it cannot save. */
     fun applied(profile: LifeProfile, today: LocalDate): LifeProfile? {
+        if (!canSave(today)) return null
         val bornOn = bornYear.toIntOrNull()?.let(LifeDates::yearOnly)
         val retirementOn = bornOn?.let { born -> retirementAge.toIntOrNull()?.let { LifeDates.yearOnly(born.year + it) } }
         val detailed = linkedPeriods(today)
@@ -167,9 +168,10 @@ data class LifeProfileDraft(
 
     companion object {
         fun salaryOf(amount: String, cadence: LifeSalaryCadence): LifeSalary? =
-            amount.toDoubleOrNull()?.takeIf { it.isFinite() && it > 0 }?.let { LifeSalary(it, cadence) }
+            NumberInput.committedText(amount, decimal = true, maxDigits = 12)?.let(NumberInput::parse)?.takeIf { it > 0 }?.let { LifeSalary(it, cadence) }
 
-        private fun validOptionalYear(value: String) = value.isEmpty() || value.toIntOrNull()?.let { it in 1_000..9_999 } == true
+        private fun validOptionalYear(value: String) = value.isEmpty() ||
+            NumberInput.committedText(value, decimal = false, maxDigits = 4)?.toIntOrNull()?.let { it in 1_000..9_999 } == true
 
         fun plain(value: Int) = value.toString()
 

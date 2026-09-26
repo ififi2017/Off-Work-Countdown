@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">Mitteilungen enthalten nur Zeit und Fortschritt – niemals Gehalt.</string>
     <string name="notificationScheduledForShift">Für diese Schicht geplant</string>
     <string name="notificationStillWorks">Funktioniert weiterhin</string>
+    <string name="numberInputInvalid">Prüfe diese Zahl. Verwende höchstens %1$s Ziffern.</string>
     <string name="offWorkReminder">Feierabend-Erinnerung</string>
     <string name="offWorkTime">Feierabend!</string>
     <string name="offWorkToday">Feierabend für heute</string>

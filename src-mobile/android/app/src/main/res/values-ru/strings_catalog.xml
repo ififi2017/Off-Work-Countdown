@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">Уведомления содержат только время и прогресс — никаких данных о зарплате.</string>
     <string name="notificationScheduledForShift">Запланировано для этой смены</string>
     <string name="notificationStillWorks">Продолжает работать</string>
+    <string name="numberInputInvalid">Проверьте число. Используйте не более %1$s цифр.</string>
     <string name="offWorkReminder">Напоминание о конце работы</string>
     <string name="offWorkTime">Время окончания работы!</string>
     <string name="offWorkToday">На сегодня всё</string>

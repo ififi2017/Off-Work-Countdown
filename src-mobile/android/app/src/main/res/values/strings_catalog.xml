@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">Notifications contain schedule and progress only—never salary.</string>
     <string name="notificationScheduledForShift">Scheduled for this shift</string>
     <string name="notificationStillWorks">Still works</string>
+    <string name="numberInputInvalid">Check this number. Use up to %1$s digits.</string>
     <string name="offWorkReminder">Off work reminder</string>
     <string name="offWorkTime">Off work time!</string>
     <string name="offWorkToday">Done for today</string>

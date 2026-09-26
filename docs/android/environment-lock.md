@@ -36,9 +36,9 @@
 ./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease :app:bundleRelease
 ```
 
-`/tmp/doneat-life-history-final-gradle.log`：420 项 JUnit 通过（domain 333、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功。包含 UI 收口与 Life 历史区间保留、重叠校验。另有 7 项 Swift 职业区间回归测试通过，包含 3 组非法结束日期输入。当前未签名 Release APK 为 5,326,934 字节，AAB 为 9,181,612 字节；哈希见 `build/android-preconsole/artifact-hashes.txt`。ZIP/ELF 16 KiB 对齐通过。生产签名与 Play 处理结果仍须在 T24/T26 记录。
+`/tmp/doneat-number-input-save-final-gradle.log`：423 项 JUnit 通过（domain 336、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功。包含 UI 收口、Life 历史区间、非法薪资输入和离页保存。另有 7 项 Swift 职业区间回归测试通过，包含 3 组非法结束日期输入。当前未签名 Release APK 为 5,329,054 字节，AAB 为 9,182,095 字节；哈希见 `build/android-preconsole/artifact-hashes.txt`。ZIP/ELF 16 KiB 对齐通过。生产签名与 Play 处理结果仍须在 T24/T26 记录。
 
-仓库侧：`npm run lint` 与 `npm test`（442 项）、`check:version`、`check:ios`、Web/Desktop build 与输出检查通过。iOS 本地 headless simulator build 与 `ScheduleRuleFixtureTests` 12 项通过；真实 iOS→Kotlin→iOS v6 往返保留 12 类实体全部身份与字段。完整 QA 用例状态以 [preconsole-qa-2026-09-26.md](preconsole-qa-2026-09-26.md) 为准，不能把单测总数等同于 126 项首发验收。
+仓库侧：`npm run lint` 与 `npm test`（445 项）、`check:version`、`check:ios`、Web/Desktop build 与输出检查通过。iOS 本地 headless simulator build 、`NumberInputTests` 5 项与 `ScheduleRuleFixtureTests` 12 项通过（`doneat-number-input-final-ios.log`）；iOS/Watch 四个产物版本均为 3.2.1；真实 iOS→Kotlin→iOS v6 往返保留 12 类实体全部身份与字段。完整 QA 用例状态以 [preconsole-qa-2026-09-26.md](preconsole-qa-2026-09-26.md) 为准，不能把单测总数等同于 126 项首发验收。
 
 API 36 设备上的 Auto Backup 清除/恢复以及系统文档化的设备转移/重装路径，均使业务档案与设备设置字节相同；运行会话、SharedPreferences 与 `no_backup` 未进入备份。直接 `bmgr restore` 返回 -1000，不能据此宣称该传输方式成功；D2D 的 device-local/no_backup 探针与 Debug Plus 未被恢复；重装后系统可触发小组件重建新缓存。真实云账户、物理换机和最终设备矩阵仍在 T23/T24。
 

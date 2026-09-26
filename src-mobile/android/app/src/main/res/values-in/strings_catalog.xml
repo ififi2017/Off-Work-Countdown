@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">Notifikasi hanya berisi waktu dan progres, tidak pernah gaji.</string>
     <string name="notificationScheduledForShift">Dijadwalkan untuk sif ini</string>
     <string name="notificationStillWorks">Tetap berfungsi</string>
+    <string name="numberInputInvalid">Periksa angka ini. Gunakan maksimal %1$s digit.</string>
     <string name="offWorkReminder">Pengingat pulang kerja</string>
     <string name="offWorkTime">Waktu pulang kerja!</string>
     <string name="offWorkToday">Selesai untuk hari ini</string>

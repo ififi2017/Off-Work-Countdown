@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">Bildirimler yalnızca zaman ve ilerlemeyi içerir; maaş asla gösterilmez.</string>
     <string name="notificationScheduledForShift">Bu vardiya için planlandı</string>
     <string name="notificationStillWorks">Çalışmaya devam eder</string>
+    <string name="numberInputInvalid">Bu sayıyı kontrol edin. En fazla %1$s basamak kullanın.</string>
     <string name="offWorkReminder">İş çıkışı hatırlatıcısı</string>
     <string name="offWorkTime">İş çıkışı zamanı!</string>
     <string name="offWorkToday">Bugünlük bitti</string>

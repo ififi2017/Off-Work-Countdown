@@ -79,6 +79,12 @@ describe("countWorkdays", () => {
 });
 
 describe("earnings", () => {
+  it("rejects overflow when applying elapsed time to a recovered salary", () => {
+    expect(earningsForRatio(1e308, 0.5)).toBe(5e307);
+    expect(earningsForRatio(1e308, 2)).toBeNull();
+    expect(completedWorkdayIncome(22, 1e308)).toBeNull();
+  });
+
   it("keeps live pay-ratio derivation in the shared rules", () => {
     expect(earningsForRatio(1_000, 0.5)).toBe(500);
     expect(earningsForRatio(1_000, 1.25)).toBe(1_250);

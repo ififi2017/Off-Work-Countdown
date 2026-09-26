@@ -101,7 +101,8 @@ export function earningsForRatio(
   payRatio: number
 ): number | null {
   if (dailySalary === null) return null;
-  return Math.max(0, payRatio) * dailySalary;
+  const earnings = Math.max(0, payRatio) * dailySalary;
+  return Number.isFinite(earnings) ? earnings : null;
 }
 
 /**
@@ -366,8 +367,10 @@ export function summarizeRecordsActualAndForecast(params: {
     forecastPay = fixedMonthlyPay.forecast;
   }
 
-  const actualEarnings = hasSalary ? actualPay : null;
-  const forecastEarnings = hasSalary ? forecastPay : null;
+  const actualEarnings = hasSalary && Number.isFinite(actualPay) ? actualPay : null;
+  const forecastEarnings = hasSalary && Number.isFinite(forecastPay) ? forecastPay : null;
+  const totalEarnings = actualEarnings === null || forecastEarnings === null
+    ? null : actualEarnings + forecastEarnings;
   return {
     actualOvertimeHours: actualOvertimeMs / 3_600_000,
     actual: {
@@ -383,9 +386,7 @@ export function summarizeRecordsActualAndForecast(params: {
     total: {
       days: actualDays + forecastDays,
       hours: (actualMs + forecastMs) / 3_600_000,
-      earnings: actualEarnings === null || forecastEarnings === null
-        ? null
-        : actualEarnings + forecastEarnings,
+      earnings: totalEarnings !== null && Number.isFinite(totalEarnings) ? totalEarnings : null,
     },
   };
 }

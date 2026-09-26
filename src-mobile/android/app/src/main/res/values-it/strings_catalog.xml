@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">Le notifiche includono solo orario e avanzamento, mai lo stipendio.</string>
     <string name="notificationScheduledForShift">Programmato per questo turno</string>
     <string name="notificationStillWorks">Continua a funzionare</string>
+    <string name="numberInputInvalid">Controlla questo numero. Usa al massimo %1$s cifre.</string>
     <string name="offWorkReminder">Promemoria per uscire dal lavoro</string>
     <string name="offWorkTime">È ora di uscire dal lavoro!</string>
     <string name="offWorkToday">Giornata finita</string>

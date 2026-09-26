@@ -463,6 +463,7 @@
     <string name="notificationPrivacyNote">通知に含まれるのは時刻と進捗だけで、給与は表示されません。</string>
     <string name="notificationScheduledForShift">このシフトに予約済み</string>
     <string name="notificationStillWorks">引き続き使える機能</string>
+    <string name="numberInputInvalid">数値を確認してください。入力できる数字は最大%1$s桁です。</string>
     <string name="offWorkReminder">退勤リマインダー</string>
     <string name="offWorkTime">退勤時間！</string>
     <string name="offWorkToday">本日は終業</string>

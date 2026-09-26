@@ -108,10 +108,10 @@ object SummaryRules {
     fun salaryMonthlyEquivalent(salary: SalarySettings): Double? {
         val days = salary.monthlyWorkingDays
         if (!days.isFinite() || days <= 0 || days > 31) return null
-        return SalaryRules.dailySalary(salary)?.let { it * days }
+        return SalaryRules.dailySalary(salary)?.let { it * days }?.takeIf { it.isFinite() }
     }
 
-    private fun earnings(dailySalary: Double?, ratio: Double) = dailySalary?.let { max(0.0, ratio) * it }
+    private fun earnings(dailySalary: Double?, ratio: Double) = dailySalary?.let { max(0.0, ratio) * it }?.takeIf { it.isFinite() }
 
     // Lifetime income
 
@@ -323,9 +323,9 @@ object SummaryRules {
             forecastPay = fixedMonthlyPay.second
         }
         val msPerHour = 3_600_000.0
-        val actualEarnings = if (hasSalary) actualPay else null
-        val forecastEarnings = if (hasSalary) forecastPay else null
-        val totalEarnings = if (actualEarnings != null && forecastEarnings != null) actualEarnings + forecastEarnings else null
+        val actualEarnings = actualPay.takeIf { hasSalary && it.isFinite() }
+        val forecastEarnings = forecastPay.takeIf { hasSalary && it.isFinite() }
+        val totalEarnings = if (actualEarnings != null && forecastEarnings != null) (actualEarnings + forecastEarnings).takeIf { it.isFinite() } else null
         return ActualForecast(
             actualOvertimeHours = actualOvertimeMs / msPerHour,
             actual = Part(actualDays, actualMs / msPerHour, actualEarnings),

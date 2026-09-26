@@ -62,6 +62,7 @@ object Strings {
     fun minutesShort(res: Resources, count: String): String = res.getString(R.string.minutesShort, count)
     fun nextShiftIn(res: Resources, time: String): String = res.getString(R.string.nextShiftIn, time)
     fun notificationMilestoneTitle(res: Resources, percent: String): String = res.getString(R.string.notificationMilestoneTitle, percent)
+    fun numberInputInvalid(res: Resources, count: String): String = res.getString(R.string.numberInputInvalid, count)
     fun onboardingEnableBiometrics(res: Resources, biometry: String): String = res.getString(R.string.onboardingEnableBiometrics, biometry)
     fun onboardingSalaryLockBody(res: Resources, biometry: String): String = res.getString(R.string.onboardingSalaryLockBody, biometry)
     fun overtimeUntil(res: Resources, time: String): String = res.getString(R.string.overtimeUntil, time)

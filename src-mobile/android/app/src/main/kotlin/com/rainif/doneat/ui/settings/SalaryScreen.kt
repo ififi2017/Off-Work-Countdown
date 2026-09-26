@@ -40,6 +40,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,6 +53,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
+import com.rainif.doneat.l10n.Strings
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -149,7 +153,8 @@ private fun SalaryContent(graph: AppGraph, onBack: () -> Unit) {
     val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val session by graph.sessions.session.collectAsStateWithLifecycle()
-    val scope = rememberCoroutineScope()
+    // A committed edit must survive this page being removed from its back stack.
+    val scope = graph.scope
     val focus = LocalFocusManager.current
     val context = LocalContext.current
     val text = TimerText(LocalResources.current, LocalConfiguration.current.locales[0], android.text.format.DateFormat.is24HourFormat(context), device.hideEarnings)
@@ -158,14 +163,15 @@ private fun SalaryContent(graph: AppGraph, onBack: () -> Unit) {
     var amount by remember(prefs.salaryAmount) { mutableStateOf(prefs.salaryAmount) }
     var bonus by remember(prefs.annualBonusMonths) { mutableStateOf(formatMonths(prefs.annualBonusMonths)) }
     fun commit() {
-        val newAmount = amount.trim().takeIf { it != prefs.salaryAmount }
-        val newBonus = NumberInput.parse(bonus)?.takeIf { it != prefs.annualBonusMonths }
+        val newAmount = NumberInput.committedText(amount, decimal = true, maxDigits = 9)?.takeIf { it != prefs.salaryAmount }
+        val newBonus = NumberInput.committedText(bonus, decimal = true, maxDigits = 5)?.let(NumberInput::parse)?.takeIf { it != prefs.annualBonusMonths }
         if (newAmount == null && newBonus == null) return
         scope.launch {
             graph.settings.edit { p -> p.copy(salaryAmount = newAmount ?: p.salaryAmount, annualBonusMonths = newBonus ?: p.annualBonusMonths) }
         }
     }
-    DisposableEffect(Unit) { onDispose { commit() } }
+    val commitOnLeave by rememberUpdatedState({ commit() })
+    DisposableEffect(Unit) { onDispose { commitOnLeave() } }
     fun edit(change: (com.rainif.doneat.core.domain.records.SyncedPreferences) -> com.rainif.doneat.core.domain.records.SyncedPreferences) =
         scope.launch { graph.settings.edit(change) }
 
@@ -192,7 +198,7 @@ private fun SalaryContent(graph: AppGraph, onBack: () -> Unit) {
                             Icon(Icons.Outlined.Visibility, stringResource(R.string.unlockSalary))
                         }
                     } else {
-                        NumberField(amount, { amount = NumberInput.sanitize(it, decimal = true, maxDigits = 9) }, emphasized = true, onCommit = { commit(); focus.clearFocus() })
+                        NumberField(amount, { amount = it }, emphasized = true, onCommit = { commit(); focus.clearFocus() })
                     }
                 }
                 if (prefs.salaryType == "monthly") {
@@ -217,7 +223,7 @@ private fun SalaryContent(graph: AppGraph, onBack: () -> Unit) {
                 if (prefs.annualBonusEnabled) {
                     RowDivider()
                     FieldRow(stringResource(R.string.annualBonusMonths)) {
-                        NumberField(bonus, { bonus = NumberInput.sanitize(it, decimal = true, maxDigits = 5) }, onCommit = { commit(); focus.clearFocus() })
+                        NumberField(bonus, { bonus = it }, maxDigits = 5, onCommit = { commit(); focus.clearFocus() })
                     }
                 }
                 RowDivider()
@@ -279,38 +285,48 @@ internal fun NumberField(
     emphasized: Boolean = false,
     placeholder: String = "0",
     decimal: Boolean = true,
+    maxDigits: Int = 9,
 ) {
     var field by remember { mutableStateOf(TextFieldValue(value)) }
     if (field.text != value) field = field.copy(text = value, selection = TextRange(value.length))
     var focused by remember { mutableStateOf(false) }
     val style = (if (emphasized) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyLarge)
         .copy(fontFeatureSettings = "tnum", fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End, color = MaterialTheme.colorScheme.onSurface)
-    BasicTextField(
-        value = field,
-        onValueChange = { next ->
-            field = next
-            onValueChange(next.text)
-        },
-        modifier = Modifier
-            .widthIn(min = 80.dp, max = 180.dp)
-            .padding(end = DoneAtSpacing.m)
-            .onFocusChanged {
-                if (it.isFocused && !focused) field = field.copy(selection = TextRange(0, field.text.length))
-                if (focused && !it.isFocused) onCommit()
-                focused = it.isFocused
+    val invalid = NumberInput.committedText(value, decimal, maxDigits) == null && (value != "." || !focused)
+    val validation = Strings.numberInputInvalid(LocalResources.current, maxDigits.toString())
+    Column(Modifier.widthIn(min = 80.dp, max = 180.dp).padding(end = DoneAtSpacing.m), horizontalAlignment = Alignment.End) {
+        BasicTextField(
+            value = field,
+            onValueChange = { next ->
+                val draft = NumberInput.draft(next.text, decimal, maxDigits)
+                field = next.copy(text = draft)
+                onValueChange(draft)
             },
-        textStyle = style,
-        singleLine = true,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        keyboardOptions = KeyboardOptions(keyboardType = if (decimal) KeyboardType.Decimal else KeyboardType.Number, imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { onCommit() }),
-        decorationBox = { inner ->
-            Box(contentAlignment = Alignment.CenterEnd) {
-                if (value.isEmpty()) Text(placeholder, style = style.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
-                inner()
-            }
-        },
-    )
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { if (invalid) error(validation) }
+                .onFocusChanged {
+                    if (it.isFocused && !focused) field = field.copy(selection = TextRange(0, field.text.length))
+                    if (focused && !it.isFocused) onCommit()
+                    focused = it.isFocused
+                },
+            textStyle = style,
+            singleLine = true,
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            keyboardOptions = KeyboardOptions(keyboardType = if (decimal) KeyboardType.Decimal else KeyboardType.Number, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { onCommit() }),
+            decorationBox = { inner ->
+                Box(contentAlignment = Alignment.CenterEnd) {
+                    if (value.isEmpty()) Text(placeholder, style = style.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                    inner()
+                }
+            },
+        )
+        if (invalid) {
+            Text(validation, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = DoneAtSpacing.xs), textAlign = TextAlign.End)
+        }
+    }
 }
 
 private fun formatMonths(value: Double): String =
