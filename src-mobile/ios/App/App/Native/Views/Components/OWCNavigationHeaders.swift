@@ -85,6 +85,10 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
     /// every page that has nothing to put there.
     @ViewBuilder let trailing: Trailing
     let hasUnsavedChanges: Bool
+    /// Only a page with a draft to protect replaces the system back item.
+    /// Everywhere else the native item keeps iOS's own back-button and title
+    /// transition, which a custom item cannot take part in.
+    let guardsUnsavedChanges: Bool
     let unsavedChangesTitle: String
     let keepEditingTitle: String
     let discardChangesTitle: String
@@ -98,6 +102,7 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
         backTitle: String,
         pageTitle: String,
         titleDisplayMode: NavigationBarItem.TitleDisplayMode = .large,
+        guardsUnsavedChanges: Bool = false,
         hasUnsavedChanges: Bool = false,
         unsavedChangesTitle: String = "",
         keepEditingTitle: String = "",
@@ -110,6 +115,7 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
         self.titleDisplayMode = titleDisplayMode
         self.trailing = trailing()
         self.hasUnsavedChanges = hasUnsavedChanges
+        self.guardsUnsavedChanges = guardsUnsavedChanges
         self.unsavedChangesTitle = unsavedChangesTitle
         self.keepEditingTitle = keepEditingTitle
         self.discardChangesTitle = discardChangesTitle
@@ -118,6 +124,25 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
+        if guardsUnsavedChanges {
+            guardedBody(content: content)
+        } else {
+            content
+                .navigationTitle(pageTitle)
+                .navigationBarTitleDisplayMode(titleDisplayMode)
+                .toolbar(.visible, for: .navigationBar)
+                .toolbar {
+                    if Trailing.self != EmptyView.self {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            trailing
+                        }
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder
+    private func guardedBody(content: Content) -> some View {
         content
             // Detail lists use a collapsing large title. Pages with
             // their own content headline can keep it compact.
@@ -239,6 +264,7 @@ extension View {
             OWCDetailBackModifier(
                 backTitle: title,
                 pageTitle: pageTitle,
+                guardsUnsavedChanges: true,
                 hasUnsavedChanges: hasUnsavedChanges,
                 unsavedChangesTitle: unsavedChangesTitle,
                 keepEditingTitle: keepEditingTitle,
