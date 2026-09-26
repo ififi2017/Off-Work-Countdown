@@ -694,16 +694,7 @@ private fun ComingUp(events: List<TimelineEvent>, now: Double, text: TimerText, 
         visible.forEachIndexed { index, event ->
             if (index > 0) Divider()
             val (icon, tint) = eventStyle(event.kind)
-            val extended = session.usesExtendedSchedule(now)
-            val (title, detail) = when (event.kind) {
-                TimelineKind.SHIFT_START -> stringResource(R.string.startTime) to stringResource(R.string.todaysShift).takeIf { collapsible }
-                TimelineKind.LUNCH_START -> stringResource(if (extended) R.string.extendedBreak else R.string.lunchBreak) to
-                    (event.windowEndAtMs?.let { text.timeRange(event.atMs, it) } ?: stringResource(if (extended) R.string.extendedBreakStart else R.string.lunchStartTime))
-                TimelineKind.LUNCH_END -> stringResource(if (extended) R.string.extendedBreak else R.string.lunchBreak) to stringResource(R.string.lunchBackAt)
-                TimelineKind.HEALTH -> stringResource(R.string.microBreakReminder) to Strings.minutesShort(res, text.count(session.env.preferences.microBreakIntervalMinutes))
-                TimelineKind.MILESTONE -> stringResource(R.string.offWorkReminder) to event.reminderTitle
-                TimelineKind.SHIFT_END -> stringResource(R.string.endTime) to stringResource(if (event.overtime) R.string.overtime else R.string.todaysShift).takeIf { collapsible }
-            }
+            val (title, detail) = timelineWords(event, res, text, session, now, showsShiftDetail = collapsible)
             Row(Modifier.fillMaxWidth().heightIn(min = 58.dp).padding(horizontal = DoneAtSpacing.l, vertical = DoneAtSpacing.s), verticalAlignment = Alignment.CenterVertically) {
                 Surface(shape = CircleShape, color = tint.copy(alpha = 0.14f), modifier = Modifier.size(32.dp)) {
                     Box(contentAlignment = Alignment.Center) { Icon(icon, null, Modifier.size(18.dp), tint = tint) }

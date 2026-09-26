@@ -52,6 +52,7 @@
     <string name="comingUp">Als Nächstes</string>
     <string name="confirmOvertime">Überstunden starten</string>
     <string name="continue_">Weiter</string>
+    <string name="countdownNotStarted">Countdown nicht gestartet</string>
     <string name="cycleEndSummaryNotificationBody">Dieser Zyklus: %1$s Arbeitstage, %2$s geplante oder geänderte Arbeitszeit und %3$s erfasste Überstunden. Erhol dich gut.</string>
     <string name="cycleEndSummaryNotificationNote">Nach jeder Folge geplanter Arbeitstage siehst du eine Zusammenfassung von geplanter Arbeitszeit, Änderungen und erfassten Überstunden – mit Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Zusammenfassung zum Zyklusende</string>
@@ -846,6 +847,8 @@
     <string name="whatsNewTitle">Neuigkeiten</string>
     <string name="whatsNewWatchBody">Status, verbleibende Zeit, Fortschritt und dein Feierabend auf einen Blick. Ein runder Fortschrittsring oder verbleibende Zeit und dein Feierabend in einer rechteckigen Komplikation.</string>
     <string name="whatsNewWatchTitle">Dein Arbeitstag auf der Apple Watch</string>
+    <string name="widgetDescription">Verbleibende Arbeitszeit auf einen Blick.</string>
+    <string name="widgetOpenToRefresh">App zum Aktualisieren öffnen</string>
     <string name="widgetRestDay">Erhol dich gut · nächste Schicht</string>
     <string name="widgetWorking">Bei der Arbeit</string>
     <string name="workOnWeekday">Am %1$s arbeiten</string>

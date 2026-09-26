@@ -122,6 +122,12 @@ locale and validation rules apply.
   markers, Keystore material, tokens and debug settings are never backed up.
   After a restore, re-query Play and system permissions; never trust
   restored entitlements or grants.
+- The home-screen widget reads only `WidgetSnapshot` (`:core:domain` `widget/`, the
+  shared widget contract): intervals the app precomputed from the schedule rules,
+  picked by time. Never compute a shift in the widget or put money in the
+  snapshot. Glance recomposes a live session without calling `provideGlance`,
+  so anything it shows is read inside `provideContent`, keyed on
+  `WidgetSignals.tick`; a Glance container holds at most ten children.
 - Shares carry hours only: `ShareContent` words the card, and the link is the
   web app with `s=HHMM-HHMM` (as iOS). The card is lent through the `.share`
   FileProvider (cache `share/` only).

@@ -143,7 +143,12 @@ class ReminderReceiver : BroadcastReceiver() {
 class ReminderSystemEventReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action !in HANDLED) return
-        runAsync { Reminders.sync(context).restore(System.currentTimeMillis()) }
+        runAsync {
+            Reminders.sync(context).restore(System.currentTimeMillis())
+            // A new clock or zone moves every widget boundary; a cold process rebuilds the snapshot on launch anyway.
+            val graph = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph
+            if (graph.loaded.value) graph.widgets.refresh()
+        }
     }
 
     private companion object {

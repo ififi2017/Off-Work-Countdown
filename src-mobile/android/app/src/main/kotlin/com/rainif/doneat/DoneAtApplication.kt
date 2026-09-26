@@ -66,6 +66,9 @@ class AppGraph(app: Application) {
         adjust = { prefs -> focusCoordinator.breakTakeover(records.state.value, prefs.microBreakEnabled) },
     )
 
+    /** The home-screen widget's snapshot: rebuilt with the session, never with money in it. */
+    val widgets = com.rainif.doneat.widget.WidgetCoordinator(app, sessions, scope, nowMs)
+
     /**
      * The completed run already celebrated in this process. Kept in memory only:
      * switching tabs never replays it, a cold launch may celebrate once more.
@@ -97,6 +100,7 @@ class AppGraph(app: Application) {
             _loaded.value = true
             timer.start()
             focusCoordinator.start()
+            widgets.start()
         }
         scope.launch(Dispatchers.IO) {
             // A damaged or missing dataset only turns holiday assignments off; the schedule still runs.

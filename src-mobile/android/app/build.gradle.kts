@@ -63,6 +63,7 @@ dependencies {
     // Owner confirmation before earnings are revealed; hosts BiometricPrompt, so MainActivity is a FragmentActivity.
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.fragment)
+    implementation(libs.androidx.glance.appwidget)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
 }

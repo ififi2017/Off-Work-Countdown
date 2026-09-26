@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The widget's countdown. The system ticks a Chronometer by itself, so the
+  widget shows seconds without the app waking every second (iOS's
+  `Text(style: .timer)`). The widget sets base, size and running state.
+-->
+<Chronometer xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_countdown"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:fontFeatureSettings="tnum"
+    android:includeFontPadding="false"
+    android:maxLines="1"
+    android:textColor="@color/widget_primary"
+    android:textSize="33sp"
+    android:textStyle="bold" />

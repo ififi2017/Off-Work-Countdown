@@ -52,6 +52,7 @@
     <string name="comingUp">التالي</string>
     <string name="confirmOvertime">بدء الوقت الإضافي</string>
     <string name="continue_">متابعة</string>
+    <string name="countdownNotStarted">لم يبدأ العد التنازلي</string>
     <string name="cycleEndSummaryNotificationBody">هذه الدورة: %1$s أيام عمل، و%2$s من العمل المجدول أو المعدّل، و%3$s من العمل الإضافي المسجل. نتمنى لك راحة سعيدة.</string>
     <string name="cycleEndSummaryNotificationNote">بعد كل سلسلة من أيام العمل المجدولة، اطلع على ملخص وقت العمل المخطط والتعديلات والعمل الإضافي المسجل — متاح مع Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">ملخص نهاية دورة العمل</string>
@@ -850,6 +851,8 @@
     <string name="whatsNewTitle">ما الجديد</string>
     <string name="whatsNewWatchBody">الحالة والوقت المتبقي والتقدم ووقت الانصراف في نظرة واحدة. حلقة تقدم دائرية، أو الوقت المتبقي ووقت الانصراف في إضافة مستطيلة.</string>
     <string name="whatsNewWatchTitle">يوم عملك على Apple Watch</string>
+    <string name="widgetDescription">اعرض وقت العمل المتبقي بنظرة سريعة.</string>
+    <string name="widgetOpenToRefresh">افتح التطبيق للتحديث</string>
     <string name="widgetRestDay">استرح جيدًا · الوردية التالية</string>
     <string name="widgetWorking">أثناء العمل</string>
     <string name="workOnWeekday">العمل يوم %1$s</string>

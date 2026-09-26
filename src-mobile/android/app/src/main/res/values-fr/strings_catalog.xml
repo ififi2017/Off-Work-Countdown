@@ -52,6 +52,7 @@
     <string name="comingUp">À venir</string>
     <string name="confirmOvertime">Commencer les heures sup.</string>
     <string name="continue_">Continuer</string>
+    <string name="countdownNotStarted">Compte à rebours non démarré</string>
     <string name="cycleEndSummaryNotificationBody">Ce cycle : %1$s jours travaillés, %2$s de travail planifié ou corrigé et %3$s d’heures supplémentaires enregistrées. Reposez-vous bien.</string>
     <string name="cycleEndSummaryNotificationNote">Après chaque série de jours planifiés, retrouvez un résumé du temps prévu, des changements et des heures supplémentaires enregistrées, avec Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Bilan de fin de cycle</string>
@@ -847,6 +848,8 @@
     <string name="whatsNewTitle">Nouveautés</string>
     <string name="whatsNewWatchBody">Statut, temps restant, progression et votre heure de départ en un coup d’œil. Un anneau de progression circulaire, ou le temps restant et votre heure de départ dans une complication rectangulaire.</string>
     <string name="whatsNewWatchTitle">Votre journée de travail sur l’Apple Watch</string>
+    <string name="widgetDescription">Consultez votre temps de travail restant en un coup d’œil.</string>
+    <string name="widgetOpenToRefresh">Ouvrez l’application pour actualiser</string>
     <string name="widgetRestDay">Bon repos · prochain service</string>
     <string name="widgetWorking">Au travail</string>
     <string name="workOnWeekday">Travailler le %1$s</string>

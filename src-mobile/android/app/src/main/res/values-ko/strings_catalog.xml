@@ -52,6 +52,7 @@
     <string name="comingUp">다음 일정</string>
     <string name="confirmOvertime">초과 근무 시작</string>
     <string name="continue_">계속</string>
+    <string name="countdownNotStarted">카운트다운이 시작되지 않음</string>
     <string name="cycleEndSummaryNotificationBody">이번 주기: 근무일 %1$s일, 예정·수정 근무 %2$s, 기록된 초과 근무 %3$s. 편히 쉬세요.</string>
     <string name="cycleEndSummaryNotificationNote">예정된 연속 근무가 끝날 때마다 예정 근무, 변경 사항, 기록된 초과 근무를 요약해 보여 줍니다(Plus에서 이용 가능).</string>
     <string name="cycleEndSummaryNotificationTitle">근무 주기 종료 요약</string>
@@ -845,6 +846,8 @@
     <string name="whatsNewTitle">새로운 소식</string>
     <string name="whatsNewWatchBody">상태, 남은 시간, 진행률, 퇴근 시간을 한눈에. 원형 진행률 링, 또는 사각형에 남은 시간과 퇴근 시간을 표시합니다.</string>
     <string name="whatsNewWatchTitle">Apple Watch에서 확인하는 근무 현황</string>
+    <string name="widgetDescription">남은 근무 시간을 한눈에 확인하세요.</string>
+    <string name="widgetOpenToRefresh">앱을 열어 새로고침</string>
     <string name="widgetRestDay">푹 쉬세요 · 다음 근무까지</string>
     <string name="widgetWorking">근무 중</string>
     <string name="workOnWeekday">%1$s 근무</string>

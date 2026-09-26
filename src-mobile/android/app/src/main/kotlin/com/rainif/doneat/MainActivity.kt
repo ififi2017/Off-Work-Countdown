@@ -38,6 +38,7 @@ class MainActivity : FragmentActivity() {
             if (graph.loaded.value) {
                 graph.timer.reconcile()
                 graph.focusCoordinator.reconcile()
+                graph.widgets.refresh()
             }
         }
     }

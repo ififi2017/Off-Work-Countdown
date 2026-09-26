@@ -52,6 +52,7 @@
     <string name="comingUp">この後の予定</string>
     <string name="confirmOvertime">残業を開始</string>
     <string name="continue_">続ける</string>
+    <string name="countdownNotStarted">カウントダウン未開始</string>
     <string name="cycleEndSummaryNotificationBody">今回のサイクル：勤務日%1$s日、予定・修正した勤務%2$s、記録済み残業%3$s。ゆっくり休んでください。</string>
     <string name="cycleEndSummaryNotificationNote">予定勤務日の連続が終わるたびに、予定時間、変更内容、記録済み残業のまとめを確認できます（Plus限定）。</string>
     <string name="cycleEndSummaryNotificationTitle">勤務サイクル終了時のまとめ</string>
@@ -845,6 +846,8 @@
     <string name="whatsNewTitle">新着情報</string>
     <string name="whatsNewWatchBody">ステータス、残り時間、進捗、退勤時刻をひと目で。 丸型の進捗リング、または長方形で残り時間と退勤時刻を表示します。</string>
     <string name="whatsNewWatchTitle">Apple Watchでもわかる勤務状況</string>
+    <string name="widgetDescription">残りの勤務時間をひと目で確認できます。</string>
+    <string name="widgetOpenToRefresh">アプリを開いて更新</string>
     <string name="widgetRestDay">ゆっくり休んで · 次の勤務まで</string>
     <string name="widgetWorking">勤務中</string>
     <string name="workOnWeekday">%1$sに勤務</string>
