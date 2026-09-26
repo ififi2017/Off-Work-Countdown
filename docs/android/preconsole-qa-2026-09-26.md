@@ -69,7 +69,7 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-053 | ORACLE | PASS | Complete | `LifeRulesTest.aPassedAdjustmentAgeAppliesTheRatioAndLeavesHistory` | — |
 | QA-054 | JVM | PASS | Complete | `SummaryFixtureTest.partialLeapMonthUsesItsOwnDayCountAndAnExclusiveEnd`; `lifetimeIncome` | — |
 | QA-055 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
-| QA-056 | PERF | NOT_RUN | Partial | `LifeRulesTest.fifteenThousandDayLifeWithTenYearsOfRecordsBuildsOnTheJvm` | 15,000-day/2,609-workday JVM model built in 4.848166 ms; rapid-switch cancellation and device main-thread/frame evidence remain. |
+| QA-056 | PERF | NOT_RUN | Partial | [Records/Life report](records-life-acceptance-2026-09-27.md); `RecordsComputationTest`, `RecordsQueriesTest` | Cooperative cancellation and background indexing verified; Pixel Debug 24 switches finish on Month, 538 frames / 5.39% janky / P95 53 ms. Release frame acceptance remains. |
 | QA-057 | JVM | PASS | Complete | `FocusPlannerTest.focusTimerSettingsClampToSupportedRanges` | — |
 | QA-058 | JVM | PASS | Complete | `FocusEngineTest.changingDurationLeavesTheRunningEndAndAppliesToTheNextSession` | — |
 | QA-059 | JVM | PASS | Complete | `FocusPlannerTest.identityVectorsMatchTheSpecification` | — |
@@ -131,7 +131,7 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-128 | UI | PASS | Complete | 19-locale generation/placeholder checks and `PreferencesRulesTest.systemLanguagesMapLikeIos`; English/Chinese phone and tablet, German Settings and Arabic RTL visual inspection; HK/TW resources remain separate | — |
 | QA-129 | UI | PASS | Complete | API 36 at 320 dp and 200% font: Settings/Plus inspected, shift-type name saved with keyboard, salary keypad Done persisted amount, Focus Add persisted task; `doneat-preconsole-large-font-editors.log` and final screenshots | — |
 | QA-130 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
-| QA-131 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
+| QA-131 | UI | NOT_RUN | Partial | [Records/Life report](records-life-acceptance-2026-09-27.md) | Life labelled 48 dp controls, masked income semantics, 320 dp / 200% dark layout and disabled animations checked. Spoken TalkBack flow and full Focus alternatives remain. |
 | QA-132 | DEVICE | NOT_RUN | Partial | `ReviewPolicyTest.completionArmsNextLaunchAndIsConsumedOnce` | Policy unit tests; actual Play review flow needs device. |
 | QA-133 | PLAY | NOT_RUN | None | — | Play Console configuration and license-test evidence. |
 | QA-134 | PLAY | NOT_RUN | None | — | Play Console configuration and license-test evidence. |

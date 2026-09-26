@@ -80,9 +80,7 @@ import com.rainif.doneat.core.domain.records.RecordsScale
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.Route
 import com.rainif.doneat.ui.timer.EarningsVisibilityButton
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 private val SCALES = RecordsScale.entries
@@ -112,14 +110,14 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     var selectedStageID by rememberSaveable { mutableStateOf<String?>(null) }
     var showStageCallout by rememberSaveable { mutableStateOf(false) }
     var expanded by rememberSaveable { mutableStateOf(false) }
-    var page by remember { mutableStateOf<RecordsPage?>(null) }
+    var page by remember(context) { mutableStateOf<RecordsPage?>(null) }
     val locked = scale.requiresPlus && !context.queries.authorized
     val profile = context.queries.state.lifeProfile
 
     LaunchedEffect(context, scale, anchor, locked) {
         // A locked scale is never computed: there is nothing it may show. Life draws from the profile instead.
         if (locked || scale == RecordsScale.LIFE) return@LaunchedEffect
-        val loaded = withContext(Dispatchers.Default) { loadPage(context, scale, anchor) }
+        val loaded = computeRecords { check -> loadPage(context, scale, anchor, check) }
         page = loaded
         if (selectedDayKey != null && loaded.cells.none { it.dayKey == selectedDayKey }) selectedDayKey = null
     }
@@ -130,7 +128,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         if (scale != RecordsScale.LIFE || locked || context.queries.state.lifeProfile == null) return@LaunchedEffect
         if (lifeModel?.first == context.lifeInputs) return@LaunchedEffect
         val monthly = configuredMonthlySalary(graph)
-        lifeModel = context.lifeInputs to withContext(Dispatchers.Default) { context.queries.lifeModel(context.nowMs, monthly) }
+        lifeModel = context.lifeInputs to computeRecords { check -> context.queries.lifeModel(context.nowMs, monthly, check) }
     }
     val lifeStages = remember(profile, context.today, context.queries.zone) {
         profile?.let {

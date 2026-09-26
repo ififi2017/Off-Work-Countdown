@@ -209,7 +209,7 @@ data class LifeViewModel(
 object LifeViewCalculator {
     private data class Interval(val startMs: Double, val endMs: Double)
 
-    fun build(profile: LifeProfile, scheduleDays: List<LifeScheduleDay>, outsideZoneDays: Set<String>, nowMs: Double, zone: ZoneId): LifeViewModel {
+    fun build(profile: LifeProfile, scheduleDays: List<LifeScheduleDay>, outsideZoneDays: Set<String>, nowMs: Double, zone: ZoneId, checkActive: () -> Unit = {}): LifeViewModel {
         val p = RecordJson.migrateLegacyFields(profile)
         val lifeStartDay = p.bornOn?.let(LifeDates::anchor)
         val lifeEndDay = p.retirementOn?.let(LifeDates::anchor)
@@ -232,6 +232,7 @@ object LifeViewCalculator {
         var overrideIndex = 0
         var outsideIndex = 0
         while (cursorDay.isBefore(lifeEndDay)) {
+            checkActive()
             val cursor = LifeDates.ms(cursorDay, zone)
             val cellEndDay = minOf(cursorDay.plusDays(7), lifeEndDay)
             val cellEnd = LifeDates.ms(cellEndDay, zone)
