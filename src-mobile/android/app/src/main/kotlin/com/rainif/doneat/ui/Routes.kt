@@ -35,6 +35,9 @@ sealed interface Route : NavKey {
     @Serializable data class RecordsDayEdit(val dayKey: String) : Route
     @Serializable data object RecordsLifeEdit : Route
 
+    /** The share composer, from the timer. */
+    @Serializable data object TimerShare : Route
+
     /** Focus: creating a task (in a block, the next free one, or a favourite), editing one, the timer. */
     @Serializable data class FocusCreate(val blockStartAtMs: Long?, val currentOrNext: Boolean, val favoriteID: String?) : Route
     @Serializable data class FocusTaskEdit(val taskID: String) : Route

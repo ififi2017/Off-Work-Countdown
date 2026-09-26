@@ -114,10 +114,17 @@ locale and validation rules apply.
   `RecordJSON` and records its answers for 88 documents; `npm test` fails when
   that Swift or the case list changes.
 - Android Auto Backup and device transfer include the business database (as
-  iOS includes its main store in iCloud device backup). Exclude purchase
-  caches, pending-acknowledge markers, Keystore material, tokens and debug
-  settings. After a restore, re-query Play and system permissions; never trust
+  iOS includes its main store in iCloud device backup). The rules
+  (`res/xml/data_extraction_rules.xml`, and `backup_rules.xml` for Android 11
+  and earlier) are an include list: `records/` and `device/settings.json`.
+  Anything else, including new files, stays out until named there. The
+  session, focus queue, reminder registry, purchase caches, pending-acknowledge
+  markers, Keystore material, tokens and debug settings are never backed up.
+  After a restore, re-query Play and system permissions; never trust
   restored entitlements or grants.
+- Shares carry hours only: `ShareContent` words the card, and the link is the
+  web app with `s=HHMM-HHMM` (as iOS). The card is lent through the `.share`
+  FileProvider (cache `share/` only).
 - First release uses client-only Play Billing (D-08), mirroring iOS StoreKit:
   entitlements come only from `queryPurchasesAsync` plus Play public-key
   signature checks, never from backups, imports or local booleans. Acknowledge

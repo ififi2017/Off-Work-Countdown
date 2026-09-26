@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ backup and device transfer (D-02): only what a new phone needs.
+  An include list, so anything added later (caches, widget snapshots) stays
+  out unless it is named here.
+
+  In: the records archive (hours, preferences, salary settings, focus plans)
+  and this device's display settings.
+  Out: the running session and focus queue in device/ (live state of this
+  phone, rebuilt from the archive; the session also freezes salary), the
+  reminder registry (no_backup, rebuilt on launch), debug switches and all
+  shared preferences. Entitlements are never read from a backup.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="file" path="records/" />
+        <include domain="file" path="device/settings.json" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="file" path="records/" />
+        <include domain="file" path="device/settings.json" />
+    </device-transfer>
+</data-extraction-rules>
