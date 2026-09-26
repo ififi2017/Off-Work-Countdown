@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">حوالي %1$s سنة</string>
     <string name="lifeBirthYear">سنة الميلاد</string>
     <string name="lifeCurrentSalary">الراتب الإجمالي الحالي</string>
-    <string name="lifeDetailedIncomeHelp">حدّد تاريخ بدء عملك الحالي، ثم أضف الأعمال السابقة من الأحدث إلى الأقدم. ينتهي كل عمل سابق تلقائيًا عند تاريخ بدء العمل التالي.</string>
+    <string name="lifeDetailedIncomeHelp">حدّد تاريخ بدء عملك الحالي، ثم أضف الأعمال السابقة أدناه. تُحفظ الفترات الفاصلة الموجودة بين الأعمال.</string>
     <string name="lifeEditProfile">تعديل الملف</string>
     <string name="lifeEmploymentCurrent">العمل الحالي</string>
     <string name="lifeEmploymentEnd">تاريخ الانتهاء</string>
     <string name="lifeEmploymentSalary">الراتب الإجمالي</string>
     <string name="lifeEmploymentStart">تاريخ البدء</string>
+    <string name="lifeEmploymentValidation">تحقّق من تواريخ كل عمل وراتبه. يجب ألا تتداخل فترات العمل.</string>
     <string name="lifeEmptyBody">سنة الميلاد وسن التقاعد يكفيان لرسم حياتك في العمل، أسبوعًا بأسبوع.</string>
     <string name="lifeEmptyTitle">أضف بعض التفاصيل</string>
     <string name="lifeEstimatedPast">الأسابيع الماضية مقدَّرة وفق الجدول في ذلك الوقت.</string>

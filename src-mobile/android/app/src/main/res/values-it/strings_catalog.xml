@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">Circa %1$s anni</string>
     <string name="lifeBirthYear">Anno di nascita</string>
     <string name="lifeCurrentSalary">Retribuzione lorda attuale</string>
-    <string name="lifeDetailedIncomeHelp">Imposta la data di inizio del lavoro attuale, poi aggiungi i lavori precedenti dal più recente. Ogni lavoro precedente termina automaticamente alla data di inizio del successivo.</string>
+    <string name="lifeDetailedIncomeHelp">Imposta la data di inizio del lavoro attuale, poi aggiungi sotto i lavori precedenti. Gli intervalli esistenti tra i lavori vengono mantenuti.</string>
     <string name="lifeEditProfile">Modifica profilo</string>
     <string name="lifeEmploymentCurrent">Lavoro attuale</string>
     <string name="lifeEmploymentEnd">Data di fine</string>
     <string name="lifeEmploymentSalary">Retribuzione lorda</string>
     <string name="lifeEmploymentStart">Data di inizio</string>
+    <string name="lifeEmploymentValidation">Controlla le date e lo stipendio di ogni lavoro. I periodi di lavoro non devono sovrapporsi.</string>
     <string name="lifeEmptyBody">Bastano anno di nascita ed età della pensione per disegnare la tua vita lavorativa, settimana per settimana.</string>
     <string name="lifeEmptyTitle">Aggiungi qualche dato</string>
     <string name="lifeEstimatedPast">Le settimane passate usano il turno di allora.</string>

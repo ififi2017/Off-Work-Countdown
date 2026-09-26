@@ -36,7 +36,7 @@
 ./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease :app:bundleRelease
 ```
 
-`/tmp/doneat-preconsole-salary-final-gradle.log`：417 项 JUnit 通过（domain 330、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功。月份、设置行、薪资输入和法律链接的视觉修复包含在该次成功运行中。当前未签名 Release APK 为 5,325,026 字节，AAB 为 9,179,702 字节；哈希见 `build/android-preconsole/artifact-hashes.txt`。ZIP/ELF 16 KiB 对齐通过。生产签名与 Play 处理结果仍须在 T24/T26 记录。
+`/tmp/doneat-life-history-final-gradle.log`：420 项 JUnit 通过（domain 333、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功。包含 UI 收口与 Life 历史区间保留、重叠校验。另有 7 项 Swift 职业区间回归测试通过，包含 3 组非法结束日期输入。当前未签名 Release APK 为 5,326,934 字节，AAB 为 9,181,612 字节；哈希见 `build/android-preconsole/artifact-hashes.txt`。ZIP/ELF 16 KiB 对齐通过。生产签名与 Play 处理结果仍须在 T24/T26 记录。
 
 仓库侧：`npm run lint` 与 `npm test`（442 项）、`check:version`、`check:ios`、Web/Desktop build 与输出检查通过。iOS 本地 headless simulator build 与 `ScheduleRuleFixtureTests` 12 项通过；真实 iOS→Kotlin→iOS v6 往返保留 12 类实体全部身份与字段。完整 QA 用例状态以 [preconsole-qa-2026-09-26.md](preconsole-qa-2026-09-26.md) 为准，不能把单测总数等同于 126 项首发验收。
 

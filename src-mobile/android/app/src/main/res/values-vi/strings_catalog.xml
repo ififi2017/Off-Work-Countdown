@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">Khoảng %1$s năm</string>
     <string name="lifeBirthYear">Năm sinh</string>
     <string name="lifeCurrentSalary">Tổng lương hiện tại</string>
-    <string name="lifeDetailedIncomeHelp">Đặt ngày bắt đầu công việc hiện tại, rồi thêm các công việc trước đó từ mới đến cũ. Mỗi công việc trước đó tự động kết thúc vào ngày công việc tiếp theo bắt đầu.</string>
+    <string name="lifeDetailedIncomeHelp">Đặt ngày bắt đầu công việc hiện tại, rồi thêm các công việc trước đó bên dưới. Các khoảng nghỉ giữa những công việc đã lưu sẽ được giữ nguyên.</string>
     <string name="lifeEditProfile">Sửa hồ sơ</string>
     <string name="lifeEmploymentCurrent">Công việc hiện tại</string>
     <string name="lifeEmploymentEnd">Ngày kết thúc</string>
     <string name="lifeEmploymentSalary">Tổng lương</string>
     <string name="lifeEmploymentStart">Ngày bắt đầu</string>
+    <string name="lifeEmploymentValidation">Kiểm tra ngày và mức lương của từng công việc. Các giai đoạn làm việc không được chồng lấn.</string>
     <string name="lifeEmptyBody">Chỉ cần năm sinh và tuổi nghỉ hưu là đã vẽ được cuộc đời đi làm của bạn, từng tuần một.</string>
     <string name="lifeEmptyTitle">Thêm vài thông tin</string>
     <string name="lifeEstimatedPast">Các tuần đã qua tính theo lịch làm thời điểm đó.</string>

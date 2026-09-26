@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">約 %1$s 年</string>
     <string name="lifeBirthYear">出生年份</string>
     <string name="lifeCurrentSalary">當前工資總額</string>
-    <string name="lifeDetailedIncomeHelp">先設定目前工作的開始日期，再依序新增更早的工作經歷。每段過往經歷的結束日期會自動銜接下一份工作的開始日期。</string>
+    <string name="lifeDetailedIncomeHelp">先設定目前工作的開始日期，再新增之前的工作。已有的工作間隔會保留。</string>
     <string name="lifeEditProfile">編輯檔案</string>
     <string name="lifeEmploymentCurrent">目前工作</string>
     <string name="lifeEmploymentEnd">結束日期</string>
     <string name="lifeEmploymentSalary">工資總額</string>
     <string name="lifeEmploymentStart">開始日期</string>
+    <string name="lifeEmploymentValidation">請檢查每份工作的日期和薪資，工作期間不能重疊。</string>
     <string name="lifeEmptyBody">有出生年份和退休年齡，就能一週一週畫出你的工作人生。</string>
     <string name="lifeEmptyTitle">先補幾項資料</string>
     <string name="lifeEstimatedPast">過去的格子按當時班表估算。</string>

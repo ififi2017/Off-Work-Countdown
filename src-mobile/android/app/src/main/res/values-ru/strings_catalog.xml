@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">Около %1$s лет</string>
     <string name="lifeBirthYear">Год рождения</string>
     <string name="lifeCurrentSalary">Текущая брутто-зарплата</string>
-    <string name="lifeDetailedIncomeHelp">Укажите дату начала текущей работы, затем добавьте предыдущие места работы от новых к старым. Дата окончания каждого предыдущего места автоматически совпадает с началом следующего.</string>
+    <string name="lifeDetailedIncomeHelp">Укажите дату начала текущей работы, затем добавьте предыдущие места работы. Существующие перерывы между ними сохранятся.</string>
     <string name="lifeEditProfile">Изменить профиль</string>
     <string name="lifeEmploymentCurrent">Текущая работа</string>
     <string name="lifeEmploymentEnd">Дата окончания</string>
     <string name="lifeEmploymentSalary">Валовая зарплата</string>
     <string name="lifeEmploymentStart">Дата начала</string>
+    <string name="lifeEmploymentValidation">Проверьте даты и зарплату для каждого места работы. Периоды работы не должны пересекаться.</string>
     <string name="lifeEmptyBody">Года рождения и возраста выхода на пенсию достаточно, чтобы нарисовать вашу рабочую жизнь неделя за неделей.</string>
     <string name="lifeEmptyTitle">Добавьте немного данных</string>
     <string name="lifeEstimatedPast">Прошедшие недели считаются по графику того времени.</string>

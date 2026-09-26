@@ -164,6 +164,14 @@ fun LifeProfileEditScreen(graph: AppGraph, onBack: () -> Unit) {
             }
         } else {
             PageFooter(text.string(R.string.lifeDetailedIncomeHelp))
+            if (draft.linkedPeriods(today) == null) {
+                Text(
+                    text.string(R.string.lifeEmploymentValidation),
+                    modifier = Modifier.padding(horizontal = DoneAtSpacing.page + DoneAtSpacing.l),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
             draft.employment.forEachIndexed { index, job ->
                 val current = index == 0
                 SettingsGroup(title = if (current) text.string(R.string.lifeEmploymentCurrent) else null) {
@@ -176,7 +184,7 @@ fun LifeProfileEditScreen(graph: AppGraph, onBack: () -> Unit) {
                     RowDivider(inset = false)
                     ValueRow(
                         text.string(R.string.lifeEmploymentEnd),
-                        if (current) text.string(R.string.lifeStagePresent) else formatDate(draft.employment[index - 1].startDate, text),
+                        draft.endDate(index)?.let { formatDate(it, text) } ?: text.string(R.string.lifeStagePresent),
                         onClick = null,
                     )
                     RowDivider(inset = false)

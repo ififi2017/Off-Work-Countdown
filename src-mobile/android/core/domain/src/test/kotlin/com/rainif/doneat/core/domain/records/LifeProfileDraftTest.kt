@@ -22,7 +22,7 @@ class LifeProfileDraftTest {
             LifeEmploymentPeriod("current", exact(2024, 5, 1), exact(2025, 1, 1), current),
             LifeEmploymentPeriod("older", exact(2019, 3, 1), exact(2020, 1, 1), monthly(6_000.0)),
         )
-        val linked = LifeEmploymentTimeline.linkedPeriods(periods, today)!!
+        val linked = LifeEmploymentTimeline.linkedPeriods(periods, today, periods.map { it.id }.toSet())!!
         assertEquals(listOf("current", "middle", "older"), linked.map { it.id })
         assertEquals(listOf(current, periods[0].salary, periods[2].salary), linked.map { it.salary })
         assertNull(linked[0].endsOn)
@@ -42,11 +42,11 @@ class LifeProfileDraftTest {
     }
 
     @Test fun theTimelineRejectsAFutureStartAndDuplicateStarts() {
-        assertNull(LifeEmploymentTimeline.linkedPeriods(listOf(LifeEmploymentPeriod("a", exact(2027, 1, 1), null, monthly(10_000.0))), today))
+        assertNull(LifeEmploymentTimeline.linkedPeriods(listOf(LifeEmploymentPeriod("a", exact(2027, 1, 1), null, monthly(10_000.0))), today, setOf("a")))
         val start = exact(2025, 1, 1)
         assertNull(
             LifeEmploymentTimeline.linkedPeriods(
-                listOf(LifeEmploymentPeriod("a", start, null, monthly(10_000.0)), LifeEmploymentPeriod("b", start, null, monthly(10_000.0))), today,
+                listOf(LifeEmploymentPeriod("a", start, null, monthly(10_000.0)), LifeEmploymentPeriod("b", start, null, monthly(10_000.0))), today, setOf("a", "b"),
             ),
         )
     }
@@ -105,4 +105,48 @@ class LifeProfileDraftTest {
         assertEquals(exact(2024, 5, 1), saved.employmentPeriods[1].endsOn)
         assertEquals(exact(2023, 5, 1), saved.workStartedPartial)
     }
+
+    @Test fun editingSalaryPreservesHistoricalGapsAndEndDates() {
+        val periods = listOf(
+            LifeEmploymentPeriod("current", exact(2024, 5, 1), null, monthly(12_000.0)),
+            LifeEmploymentPeriod("older", exact(2020, 1, 1), exact(2022, 1, 1), monthly(8_000.0)),
+        )
+        val profile = LifeProfiles.blank(0.0, ::newId).copy(workHistoryMode = LifeWorkHistoryMode.DETAILED, employmentPeriods = periods)
+        val draft = LifeProfileDraft.load(profile, today, null, ::newId).copy(roughAmount = "15000")
+        assertEquals(LocalDate.of(2022, 1, 1), draft.endDate(1))
+        assertTrue(draft.canSave(today))
+        val saved = draft.applied(profile, today)!!
+        assertEquals(periods[1], saved.employmentPeriods[1])
+        assertEquals(periods[0].copy(salary = monthly(15_000.0)), saved.employmentPeriods[0])
+        assertEquals(saved.employmentPeriods, LifeProfileDraft.load(saved, today, null, ::newId).applied(saved, today)!!.employmentPeriods)
+    }
+
+    @Test fun invalidImportedEndsCannotBeSilentlyRelinkedOnSave() {
+        for (end in listOf(exact(2025, 1, 1), exact(2019, 1, 1), null)) {
+            val periods = listOf(
+                LifeEmploymentPeriod("current", exact(2024, 5, 1), null, monthly(12_000.0)),
+                LifeEmploymentPeriod("older", exact(2020, 1, 1), end, monthly(8_000.0)),
+            )
+            val profile = LifeProfiles.blank(0.0, ::newId).copy(workHistoryMode = LifeWorkHistoryMode.DETAILED, employmentPeriods = periods)
+            val draft = LifeProfileDraft.load(profile, today, null, ::newId)
+            assertFalse("Reject the stored end $end", draft.canSave(today))
+            assertNull(draft.applied(profile, today))
+            assertEquals(periods, profile.employmentPeriods)
+            // Explicit removal remains a way to correct an invalid imported row.
+            assertTrue(draft.copy(employment = draft.employment.take(1)).canSave(today))
+        }
+    }
+
+    @Test fun editingAnAdjacentStartStillUpdatesItsLinkedEnd() {
+        val periods = listOf(
+            LifeEmploymentPeriod("current", exact(2024, 5, 1), null, monthly(12_000.0)),
+            LifeEmploymentPeriod("older", exact(2020, 1, 1), exact(2024, 5, 1), monthly(8_000.0)),
+        )
+        val profile = LifeProfiles.blank(0.0, ::newId).copy(workHistoryMode = LifeWorkHistoryMode.DETAILED, employmentPeriods = periods)
+        val loaded = LifeProfileDraft.load(profile, today, null, ::newId)
+        val moved = loaded.copy(employment = loaded.employment.mapIndexed { index, job -> if (index == 0) job.copy(startDate = LocalDate.of(2024, 6, 1)) else job })
+        assertEquals(LocalDate.of(2024, 6, 1), moved.endDate(1))
+        assertEquals(exact(2024, 6, 1), moved.applied(profile, today)!!.employmentPeriods[1].endsOn)
+    }
+
 }

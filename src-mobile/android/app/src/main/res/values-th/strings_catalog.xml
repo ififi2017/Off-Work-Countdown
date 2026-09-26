@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">ประมาณ %1$s ปี</string>
     <string name="lifeBirthYear">ปีเกิด</string>
     <string name="lifeCurrentSalary">เงินเดือนขั้นต้นปัจจุบัน</string>
-    <string name="lifeDetailedIncomeHelp">กำหนดวันเริ่มงานปัจจุบัน แล้วเพิ่มงานก่อนหน้าจากล่าสุดไปเก่าสุด งานก่อนหน้าแต่ละงานจะสิ้นสุดโดยอัตโนมัติในวันเริ่มงานถัดไป</string>
+    <string name="lifeDetailedIncomeHelp">กำหนดวันเริ่มงานปัจจุบัน แล้วเพิ่มงานก่อนหน้าด้านล่าง ระบบจะเก็บช่วงว่างระหว่างงานที่มีอยู่ไว้</string>
     <string name="lifeEditProfile">แก้โปรไฟล์</string>
     <string name="lifeEmploymentCurrent">งานปัจจุบัน</string>
     <string name="lifeEmploymentEnd">วันที่สิ้นสุด</string>
     <string name="lifeEmploymentSalary">เงินเดือนรวม</string>
     <string name="lifeEmploymentStart">วันที่เริ่มต้น</string>
+    <string name="lifeEmploymentValidation">ตรวจสอบวันที่และเงินเดือนของแต่ละงาน ช่วงเวลาทำงานต้องไม่ทับซ้อนกัน</string>
     <string name="lifeEmptyBody">แค่ปีเกิดกับอายุเกษียณก็พอวาดชีวิตการทำงานของคุณได้ทีละสัปดาห์</string>
     <string name="lifeEmptyTitle">เพิ่มข้อมูลอีกเล็กน้อย</string>
     <string name="lifeEstimatedPast">สัปดาห์ที่ผ่านมาประเมินจากตารางกะช่วงนั้น</string>

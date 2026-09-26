@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">लगभग %1$s वर्ष</string>
     <string name="lifeBirthYear">जन्म का वर्ष</string>
     <string name="lifeCurrentSalary">वर्तमान सकल वेतन</string>
-    <string name="lifeDetailedIncomeHelp">वर्तमान नौकरी की आरंभ तिथि तय करें, फिर नीचे पिछली नौकरियाँ नई से पुरानी के क्रम में जोड़ें। हर पिछली नौकरी की समाप्ति तिथि अगली नौकरी की आरंभ तिथि से अपने आप जुड़ जाती है।</string>
+    <string name="lifeDetailedIncomeHelp">अपनी मौजूदा नौकरी की शुरुआत की तारीख तय करें, फिर नीचे पिछली नौकरियाँ जोड़ें। नौकरियों के बीच के मौजूदा अंतराल बने रहेंगे।</string>
     <string name="lifeEditProfile">प्रोफ़ाइल बदलें</string>
     <string name="lifeEmploymentCurrent">वर्तमान नौकरी</string>
     <string name="lifeEmploymentEnd">समाप्ति तिथि</string>
     <string name="lifeEmploymentSalary">सकल वेतन</string>
     <string name="lifeEmploymentStart">आरंभ तिथि</string>
+    <string name="lifeEmploymentValidation">हर नौकरी की तारीखें और वेतन जाँचें। काम की अवधियाँ एक-दूसरे से नहीं टकरानी चाहिए।</string>
     <string name="lifeEmptyBody">जन्म का वर्ष और सेवानिवृत्ति की उम्र भर दें, तो आपका काम का जीवन हफ़्ता-दर-हफ़्ता बन जाएगा।</string>
     <string name="lifeEmptyTitle">कुछ जानकारी जोड़ें</string>
     <string name="lifeEstimatedPast">बीते हफ़्ते उस समय के शेड्यूल से आँके गए हैं।</string>

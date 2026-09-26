@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">About %1$s years</string>
     <string name="lifeBirthYear">Birth year</string>
     <string name="lifeCurrentSalary">Current gross salary</string>
-    <string name="lifeDetailedIncomeHelp">Set the start date of your current job, then add earlier jobs below. Each earlier job ends automatically when the next one starts.</string>
+    <string name="lifeDetailedIncomeHelp">Set the start date of your current job, then add earlier jobs below. Existing gaps between jobs are kept.</string>
     <string name="lifeEditProfile">Edit profile</string>
     <string name="lifeEmploymentCurrent">Current employment</string>
     <string name="lifeEmploymentEnd">End date</string>
     <string name="lifeEmploymentSalary">Gross salary</string>
     <string name="lifeEmploymentStart">Start date</string>
+    <string name="lifeEmploymentValidation">Check the dates and salary for each job. Work periods must not overlap.</string>
     <string name="lifeEmptyBody">A birth year and a retirement age are enough to draw your working life, week by week.</string>
     <string name="lifeEmptyTitle">Add a few details</string>
     <string name="lifeEstimatedPast">Past weeks use the schedule from that time.</string>

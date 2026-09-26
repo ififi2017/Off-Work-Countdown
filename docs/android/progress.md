@@ -44,7 +44,7 @@
 | 项 | 状态 |
 |---|---|
 | Android 工程 | `:app`、`:core:domain`、`:core:data`、`:core:designsystem`；D-13 原子 JSON，无 Room |
-| 自动化 | 最近完成的本地完整 Gradle：417 项通过（domain 330、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功；`/tmp/doneat-preconsole-salary-final-gradle.log`。最终月份、大字体设置行与 Plus 条款换行均已编译、lint 和打包通过。 |
+| 自动化 | 最近完成的本地完整 Gradle：420 项通过（domain 333、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功；`/tmp/doneat-life-history-final-gradle.log`。包含 Life 历史区间保留与校验提示。 |
 | 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture 12 项、iOS headless build 通过。Web/Desktop build 与输出检查通过；npm lint、442 项测试、版本与 iOS 目录检查通过。字符串生成一致性检查通过。 |
 | 设备 | API 36 上 Auto Backup 清除/恢复后记录与设置字节相同；系统文档化设备转移/重装路径恢复业务数据与设置字节相同，且排除了 device-local/no_backup 测试标记和 Debug Plus。`bmgr restore` 直接传输返回 -1000，不能算恢复成功。Pixel 已安装候选 APK，最终解锁后回归仍待做。 |
 | Play Console | 用户于 2026-09-26 确认 KYC 身份验证进行中，尚未通过。代理未登录核验；商品、公钥、许可测试、签名与应用审核尚无完成证据。 |
@@ -53,14 +53,14 @@
 
 暂不计真机验收，KYC 等待期间按以下顺序推进：
 
-1. **先处理跨端数据边界。** 优先 QA-051：人生编辑器保存导入的重叠职业区间时，不应静默改写原区间。再处理 QA-041：明确非法薪资输入、原文本保留与计算拒绝的边界，补齐输入验证；先核对源行为与验收要求，必要的规则修正在 iOS/Kotlin 同步完成并更新对应 fixtures，不单独改变 Android 的导入协议。
+1. **继续处理跨端数据边界 QA-041。** QA-051 已同步修复 iOS/Kotlin：保留历史结束日期与空档，重叠区间显示校验且无法保存。下一项核对非法薪资输入、原文本保留与计算拒绝的边界；尤其是输入过滤器可能把负数或含非法字符的粘贴内容变成另一笔合法金额。必要的规则修正继续同步两端并更新 fixtures，不单独改变 Android 的导入协议。
 2. **补齐可自动化的验收。** 重点是显示舍入（QA-019）、暂停后按当前时间重新计算（QA-023）、专注边界与提醒重建（QA-062）、专注记录导入合并（QA-067）、导入/备份过程中断与原子写入（QA-077/140）。模拟器或测试进程能覆盖的部分先完成，仍需设备的部分继续保留。
-3. **完成代码审阅和远程 CI。** 将当前未提交改动整理为可审阅的提交与 PR，跑 Android CI 和仓库适用检查，记录实际 CI 结果。
+3. **继续代码审阅和远程 CI。** 当前进度已提交并创建 [PR #239](https://github.com/ififi2017/Off-Work-Countdown/pull/239)。`ae0ec1f0` 的 Android、Web/Desktop、Rust macOS/Windows 和 Xcode Cloud iOS/watchOS 检查全部通过；后续修复追加独立提交，每次以对应提交的 CI 为准。
 4. **完成发布资料的本地准备。** 将 Android 隐私补充落实到官网代码，定稿商店文案、素材选择和审核操作说明；正式发布页面、Console 填报和签名身份仍按发布流程处理。
 
 KYC 通过且 Console 具备相应操作条件后，再核对应用 ID、Play App Signing、商品/价格/公钥，完成测试轨道接入和真实购买生命周期测试。T26 的实际上传与发布按后续授权执行。KYC 验证进度不等于应用审核或购买验收结果。
 
-126 项首发用例逐项状态以 [`preconsole-qa-2026-09-26.md`](preconsole-qa-2026-09-26.md) 为证据矩阵；本页只记录任务状态，不把 417 项单测写成 126 项全通过。
+126 项首发用例逐项状态以 [`preconsole-qa-2026-09-26.md`](preconsole-qa-2026-09-26.md) 为证据矩阵；本页只记录任务状态，不把 420 项单测写成 126 项全通过。
 
 环境与命令见 `environment-lock.md`。候选默认（发布前冻结）：`applicationId=com.rainif.doneat`，minSdk 26，versionName 3.2.0，versionCode 1。
 
@@ -77,6 +77,14 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 | 2026-09-23 | 0 | 无需跟进 |
 | 2026-09-23（M1/M2 结束） | 0 | 无需跟进 |
 | 2026-09-26（本地收口） | `47fef18e` 计时秒边界刷新；`a6a6c382` Web 工时计算器 | 与上一轮相同；本轮不修改共享规则，也不推进 `9252fdfdc66aab88b4acb7493684f11991fd773d` 基线。秒边界刷新留在跨端计时回归，Web 工具不进入原生 UI。 |
+
+## 2026-09-26 · PR 后续：保留人生职业区间（QA-051）
+
+- 同步修复 iOS/Kotlin 编辑器：载入时保留明确的结束日期；已有空档不会在保存时被自动填满。原本相邻的经历继续随起始日期联动，新添经历沿用原先的自动衔接方式。
+- 保存拒绝重叠、结束早于开始和多段未结束经历；显示 19 种语言的校验提示。明确删除一条无效经历后可继续编辑，未保存的旧档案不变。
+- 回归：Android 420 项测试、lint 0 error / 33 warning / 1 hint、Debug/R8 Release/AAB 通过；Swift 7 项职业区间测试（其中一项含 3 组输入）、headless 编译通过；npm 442 项、lint、Web/Desktop 构建和输出检查、版本及 iOS/字符串检查通过。RecordJSON oracle 已按真实 Swift 重新生成；仅 LifeProfile 源码哈希改变，归档格式与 oracle 结果未改变。
+- API 36 模拟器实际保存确认 `2020-01-01 → 2022-01-01` 的结束日期保持不变，下一份工作仍于 `2024-05-01` 开始；重叠样例显示提示并禁用保存。截图与日志在 `build/android-preconsole/life-*-edit-final.png`。未进行 iOS 手动视觉检查。
+- QA 矩阵更新为 72 PASS / 54 NOT_RUN。Play Console KYC 仍按用户反馈处于验证中。本次是有记录的跨端缺陷修复，冻结基线仍为 `9252fdfd`；漂移命令结果仍为 `47fef18e`、`a6a6c382`。
 
 ## 2026-09-26 · Play Console 前的本地收口
 

@@ -7,19 +7,37 @@ import java.time.LocalDate
 
 /** A detailed work history as the editor lays it out (iOS `LifeEmploymentTimeline`). */
 object LifeEmploymentTimeline {
-    /**
-     * Newest first, each earlier job ending where the next began; the newest
-     * has no end. Null when a start is missing, repeated, not a real day, in
-     * the future, or a salary is invalid.
-     */
-    fun linkedPeriods(periods: List<LifeEmploymentPeriod>, today: LocalDate): List<LifeEmploymentPeriod>? {
+    /** Only adjacent stored periods remain linked; explicit gaps and invalid ends stay intact. */
+    fun linkedEndIds(periods: List<LifeEmploymentPeriod>): Set<String> {
+        val sorted = periods.sortedByDescending { LifeDates.anchor(it.startsOn) }
+        return sorted.mapIndexedNotNull { index, period ->
+            period.id.takeIf { period.endsOn == sorted.getOrNull(index - 1)?.startsOn }
+        }.toSet()
+    }
+
+    /** Resolve the editor's linked ends, preserving all other boundaries and rejecting overlaps. */
+    fun linkedPeriods(
+        periods: List<LifeEmploymentPeriod>,
+        today: LocalDate,
+        linkingEndsFor: Set<String>,
+    ): List<LifeEmploymentPeriod>? {
         val dated = periods.mapNotNull { period -> LifeDates.anchor(period.startsOn)?.let { period to it } }
         if (dated.isEmpty() || dated.size != periods.size || periods.map { it.id }.toSet().size != periods.size) return null
         if (!periods.all { it.startsOn.precision == CivilDatePrecision.DAY && it.salary.isValid() }) return null
         val sorted = dated.sortedByDescending { it.second }
         if (sorted[0].second.isAfter(today)) return null
         if (sorted.zipWithNext().any { (newer, older) -> !newer.second.isAfter(older.second) }) return null
-        return sorted.mapIndexed { index, (period, _) -> period.copy(endsOn = if (index == 0) null else sorted[index - 1].first.startsOn) }
+        return sorted.mapIndexed { index, (period, start) ->
+            val end = if (period.id in linkingEndsFor) sorted.getOrNull(index - 1)?.first?.startsOn else period.endsOn
+            if (end == null) {
+                if (index != 0) return null
+            } else {
+                val endDate = LifeDates.anchor(end) ?: return null
+                if (end.precision != CivilDatePrecision.DAY || !endDate.isAfter(start)) return null
+                if (index > 0 && endDate.isAfter(sorted[index - 1].second)) return null
+            }
+            period.copy(endsOn = end)
+        }
     }
 
     /** Where an older history without a current job resumes: the latest past end, else the work start, else today. */
@@ -58,11 +76,13 @@ data class LifeProfileDraft(
         val amount: String = "",
         val cadence: LifeSalaryCadence = LifeSalaryCadence.MONTHLY,
         val wasCurrent: Boolean = false,
+        val endsOn: PartialCivilDate? = null,
+        val linksEndToNext: Boolean = true,
     ) {
         fun period(salary: LifeSalary?): LifeEmploymentPeriod? {
             val startsOn = LifeDates.exact(startDate.year, startDate.monthValue, startDate.dayOfMonth) ?: return null
             val resolved = salary ?: salaryOf(amount, cadence) ?: return null
-            return LifeEmploymentPeriod(id, startsOn, null, resolved)
+            return LifeEmploymentPeriod(id, startsOn, endsOn, resolved)
         }
     }
 
@@ -78,7 +98,7 @@ data class LifeProfileDraft(
         if (employment.isEmpty()) return null
         val periods = employment.mapIndexedNotNull { index, draft -> draft.period(if (index == 0) current else null) }
         if (periods.size != employment.size) return null
-        return LifeEmploymentTimeline.linkedPeriods(periods, today)
+        return LifeEmploymentTimeline.linkedPeriods(periods, today, employment.filter { it.linksEndToNext }.map { it.id }.toSet())
     }
 
     fun canSave(today: LocalDate): Boolean {
@@ -130,6 +150,10 @@ data class LifeProfileDraft(
         )
     }
 
+    fun endDate(index: Int): LocalDate? = employment[index].let { job ->
+        if (job.linksEndToNext) employment.getOrNull(index - 1)?.startDate else job.endsOn?.let(LifeDates::anchor)
+    }
+
     /** The range a job's start may take: after the older job's start, before the newer one's. */
     fun startRange(index: Int, today: LocalDate): Pair<LocalDate?, LocalDate> {
         val upper = if (index == 0) today else employment[index - 1].startDate.minusDays(1)
@@ -171,9 +195,11 @@ data class LifeProfileDraft(
                 configuredMonthly != null && configuredMonthly > 0 -> plain(configuredMonthly) to LifeSalaryCadence.MONTHLY
                 else -> "" to LifeSalaryCadence.MONTHLY
             }
+            val linkedEndIds = LifeEmploymentTimeline.linkedEndIds(profile?.employmentPeriods.orEmpty())
             var employment = profile?.employmentPeriods.orEmpty().mapNotNull { period ->
                 val start = LifeDates.anchor(period.startsOn) ?: return@mapNotNull null
-                Employment(period.id, start, plain(period.salary.amount), period.salary.cadence, wasCurrent = period.endsOn == null)
+                Employment(period.id, start, plain(period.salary.amount), period.salary.cadence,
+                    wasCurrent = period.endsOn == null, endsOn = period.endsOn, linksEndToNext = period.id in linkedEndIds)
             }
             if (employment.none { it.wasCurrent }) {
                 val current = profile?.roughCurrentSalary

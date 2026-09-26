@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">Yaklaşık %1$s yıl</string>
     <string name="lifeBirthYear">Doğum yılı</string>
     <string name="lifeCurrentSalary">Güncel brüt maaş</string>
-    <string name="lifeDetailedIncomeHelp">Mevcut işinizin başlangıç tarihini belirleyin, ardından önceki işlerinizi yeniden eskiye doğru ekleyin. Her önceki iş, sonraki işin başladığı tarihte otomatik olarak sona erer.</string>
+    <string name="lifeDetailedIncomeHelp">Mevcut işinizin başlangıç tarihini belirleyin, ardından önceki işlerinizi aşağıya ekleyin. İşler arasındaki mevcut boşluklar korunur.</string>
     <string name="lifeEditProfile">Profili düzenle</string>
     <string name="lifeEmploymentCurrent">Mevcut iş</string>
     <string name="lifeEmploymentEnd">Bitiş tarihi</string>
     <string name="lifeEmploymentSalary">Brüt maaş</string>
     <string name="lifeEmploymentStart">Başlangıç tarihi</string>
+    <string name="lifeEmploymentValidation">Her işin tarihlerini ve maaşını kontrol edin. Çalışma dönemleri çakışmamalıdır.</string>
     <string name="lifeEmptyBody">Doğum yılı ve emeklilik yaşı, çalışma yaşamını hafta hafta çizmek için yeter.</string>
     <string name="lifeEmptyTitle">Birkaç bilgi ekle</string>
     <string name="lifeEstimatedPast">Geçmiş haftalar o dönemin programına göre hesaplanır.</string>

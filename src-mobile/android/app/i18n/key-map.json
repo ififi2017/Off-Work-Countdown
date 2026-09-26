@@ -1176,6 +1176,9 @@
     "lifeEmploymentStart": {
       "resource": "string/lifeEmploymentStart"
     },
+    "lifeEmploymentValidation": {
+      "resource": "string/lifeEmploymentValidation"
+    },
     "lifeEmptyBody": {
       "resource": "string/lifeEmptyBody"
     },

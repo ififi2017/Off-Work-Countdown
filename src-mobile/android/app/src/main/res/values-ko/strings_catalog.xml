@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">약 %1$s년</string>
     <string name="lifeBirthYear">태어난 해</string>
     <string name="lifeCurrentSalary">현재 총 급여</string>
-    <string name="lifeDetailedIncomeHelp">현재 직장의 시작일을 설정한 후 이전 경력을 최근 순서대로 추가하세요. 이전 경력의 종료일은 다음 직장의 시작일로 자동 설정됩니다.</string>
+    <string name="lifeDetailedIncomeHelp">현재 직장의 시작일을 정한 다음 아래에 이전 직장을 추가하세요. 기존에 저장된 직장 사이의 공백 기간은 유지됩니다.</string>
     <string name="lifeEditProfile">프로필 편집</string>
     <string name="lifeEmploymentCurrent">현재 직장</string>
     <string name="lifeEmploymentEnd">종료일</string>
     <string name="lifeEmploymentSalary">총 급여</string>
     <string name="lifeEmploymentStart">시작일</string>
+    <string name="lifeEmploymentValidation">각 직장의 날짜와 급여를 확인하세요. 근무 기간은 겹칠 수 없습니다.</string>
     <string name="lifeEmptyBody">태어난 해와 은퇴 나이만 있으면 일하는 인생을 한 주씩 그릴 수 있습니다.</string>
     <string name="lifeEmptyTitle">몇 가지만 알려주세요</string>
     <string name="lifeEstimatedPast">지난 주들은 그때의 근무표로 추정했습니다.</string>

@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">Cerca de %1$s anos</string>
     <string name="lifeBirthYear">Ano de nascimento</string>
     <string name="lifeCurrentSalary">Salário bruto atual</string>
-    <string name="lifeDetailedIncomeHelp">Defina a data de início do emprego atual e adicione os anteriores, do mais recente ao mais antigo. Cada emprego anterior termina automaticamente quando começa o seguinte.</string>
+    <string name="lifeDetailedIncomeHelp">Define a data de início do emprego atual e adiciona abaixo os empregos anteriores. Os intervalos existentes entre empregos são mantidos.</string>
     <string name="lifeEditProfile">Editar perfil</string>
     <string name="lifeEmploymentCurrent">Emprego atual</string>
     <string name="lifeEmploymentEnd">Data final</string>
     <string name="lifeEmploymentSalary">Salário bruto</string>
     <string name="lifeEmploymentStart">Data de início</string>
+    <string name="lifeEmploymentValidation">Verifica as datas e o salário de cada emprego. Os períodos de trabalho não podem sobrepor-se.</string>
     <string name="lifeEmptyBody">Basta o ano de nascimento e a idade da reforma para desenhar a sua vida de trabalho, semana a semana.</string>
     <string name="lifeEmptyTitle">Acrescente alguns dados</string>
     <string name="lifeEstimatedPast">As semanas passadas usam o horário da altura.</string>

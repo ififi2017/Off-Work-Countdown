@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">約%1$s年</string>
     <string name="lifeBirthYear">生まれた年</string>
     <string name="lifeCurrentSalary">現在の総給与</string>
-    <string name="lifeDetailedIncomeHelp">現在の仕事の開始日を設定し、その下に以前の仕事を新しい順に追加します。以前の仕事の終了日は、次の仕事の開始日に自動で設定されます。</string>
+    <string name="lifeDetailedIncomeHelp">現在の仕事の開始日を設定し、その下に以前の仕事を追加します。保存済みの仕事と仕事の間の空白期間は保持されます。</string>
     <string name="lifeEditProfile">プロフィールを編集</string>
     <string name="lifeEmploymentCurrent">現在の仕事</string>
     <string name="lifeEmploymentEnd">終了日</string>
     <string name="lifeEmploymentSalary">総給与</string>
     <string name="lifeEmploymentStart">開始日</string>
+    <string name="lifeEmploymentValidation">各仕事の日付と給与を確認してください。勤務期間は重複できません。</string>
     <string name="lifeEmptyBody">生まれた年と退職の年齢があれば、働く人生を一週ずつ描けます。</string>
     <string name="lifeEmptyTitle">いくつか入力してください</string>
     <string name="lifeEstimatedPast">過去の週は当時のシフトから見積もっています。</string>

@@ -310,12 +310,13 @@
     <string name="lifeApproxYears">Etwa %1$s Jahre</string>
     <string name="lifeBirthYear">Geburtsjahr</string>
     <string name="lifeCurrentSalary">Aktuelles Bruttogehalt</string>
-    <string name="lifeDetailedIncomeHelp">Lege das Startdatum deiner aktuellen Stelle fest und ergänze darunter frühere Stellen. Jede frühere Stelle endet automatisch am Startdatum der nächsten.</string>
+    <string name="lifeDetailedIncomeHelp">Lege das Startdatum deiner aktuellen Stelle fest und ergänze darunter frühere Stellen. Bestehende Lücken zwischen den Stellen bleiben erhalten.</string>
     <string name="lifeEditProfile">Profil bearbeiten</string>
     <string name="lifeEmploymentCurrent">Aktuelle Stelle</string>
     <string name="lifeEmploymentEnd">Enddatum</string>
     <string name="lifeEmploymentSalary">Bruttogehalt</string>
     <string name="lifeEmploymentStart">Startdatum</string>
+    <string name="lifeEmploymentValidation">Prüfe die Daten und das Gehalt jeder Stelle. Die Arbeitszeiträume dürfen sich nicht überschneiden.</string>
     <string name="lifeEmptyBody">Geburtsjahr und Rentenalter genügen, um dein Arbeitsleben Woche für Woche zu zeichnen.</string>
     <string name="lifeEmptyTitle">Ein paar Angaben fehlen noch</string>
     <string name="lifeEstimatedPast">Vergangene Wochen nutzen den Plan von damals.</string>

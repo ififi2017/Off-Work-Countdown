@@ -487,6 +487,13 @@ struct LifeProfileEditView: View {
                     .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 20)
+                if linkedEmploymentPeriods == nil {
+                    Text(text.t("lifeEmploymentValidation"))
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 20)
+                }
                 ForEach($employmentDrafts) { $draft in
                     employmentCard(
                         $draft,
@@ -588,7 +595,7 @@ struct LifeProfileEditView: View {
                             .accessibilityLabel(text.t("lifeEmploymentStart"))
                     }
                     OWCRow(title: text.t("lifeEmploymentEnd")) {
-                        if isCurrent {
+                        if endDate == nil {
                             Text(text.t("lifeStagePresent"))
                                 .foregroundStyle(OWCDesign.secondary)
                         } else if let endDate {
@@ -622,8 +629,10 @@ struct LifeProfileEditView: View {
     }
 
     private func employmentEndDate(for id: UUID) -> Date? {
-        guard let index = employmentDrafts.firstIndex(where: { $0.id == id }), index > 0 else { return nil }
-        return employmentDrafts[index - 1].startDate
+        guard let index = employmentDrafts.firstIndex(where: { $0.id == id }) else { return nil }
+        let draft = employmentDrafts[index]
+        if !draft.linksEndToNext { return draft.endsOn?.calculationAnchor(in: preferences.recordsCalendar) }
+        return index == 0 ? nil : employmentDrafts[index - 1].startDate
     }
 
     private func employmentStartRange(for id: UUID) -> ClosedRange<Date> {
@@ -678,8 +687,13 @@ struct LifeProfileEditView: View {
             roughSalaryAmount = Self.plain(amount)
             roughSalaryCadence = .monthly
         }
-        employmentDrafts = (profile?.employmentPeriods ?? []).compactMap {
-            EmploymentDraft($0, calendar: preferences.recordsCalendar)
+        let linkedEndIDs = LifeEmploymentTimeline.linkedEndIDs(
+            in: profile?.employmentPeriods ?? [], calendar: preferences.recordsCalendar
+        )
+        employmentDrafts = (profile?.employmentPeriods ?? []).compactMap { period in
+            guard var draft = EmploymentDraft(period, calendar: preferences.recordsCalendar) else { return nil }
+            draft.linksEndToNext = linkedEndIDs.contains(period.id)
+            return draft
         }
         if !employmentDrafts.contains(where: { $0.wasCurrent }) {
             employmentDrafts.append(EmploymentDraft(
@@ -817,7 +831,10 @@ struct LifeProfileEditView: View {
             )
         }
         guard periods.count == employmentDrafts.count else { return nil }
-        return LifeEmploymentTimeline.linkedPeriods(periods, calendar: preferences.recordsCalendar)
+        return LifeEmploymentTimeline.linkedPeriods(
+            periods, calendar: preferences.recordsCalendar,
+            linkingEndsFor: Set(employmentDrafts.filter(\.linksEndToNext).map(\.id))
+        )
     }
 
     /// `OWCNumberField` holds ASCII digits with "." as the separator, whatever
@@ -843,6 +860,8 @@ struct LifeProfileEditView: View {
         var salaryAmount = ""
         var salaryCadence: LifeSalaryCadence = .monthly
         var wasCurrent = false
+        var endsOn: PartialCivilDate?
+        var linksEndToNext = true
 
         init(startDate: Date, salary: LifeSalary? = nil) {
             self.startDate = startDate
@@ -859,6 +878,7 @@ struct LifeProfileEditView: View {
             salaryAmount = LifeProfileEditView.plain(period.salary.amount)
             salaryCadence = period.salary.cadence
             wasCurrent = period.endsOn == nil
+            endsOn = period.endsOn
         }
 
         func period(calendar: Calendar, salary: LifeSalary? = nil) -> LifeEmploymentPeriod? {
@@ -876,7 +896,7 @@ struct LifeProfileEditView: View {
             return LifeEmploymentPeriod(
                 id: id,
                 startsOn: startsOn,
-                endsOn: nil,
+                endsOn: endsOn,
                 salary: resolvedSalary
             )
         }

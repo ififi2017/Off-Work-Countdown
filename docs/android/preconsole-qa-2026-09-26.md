@@ -4,6 +4,8 @@ This matrix tracks all **126 first-release cases** in [`07_TEST_CATALOG.md`](../
 
 The first combined Gradle run (`/tmp/doneat-preconsole-full-gradle.log`) completed the Android build, lint and release bundle successfully. The final acceptance run (`/tmp/doneat-preconsole-salary-final-gradle.log`) has completed **330 domain, 68 data, 8 design-system, and 11 app unit tests** with no failures or skips per current JUnit XML under `src-mobile/android/core/*/build/test-results/` and `src-mobile/android/app/build/test-results/`. Final lint, Debug, R8 Release and AAB builds passed, including the salary field's adaptive layout. Lint reports 0 errors, 33 warnings and 1 hint. The new exact pre-start, overtime, full-day, night, cycle, clipping, free-window, wall-clock reversal and future-archive assertions passed. The iOS `ScheduleRuleFixtureTests` run passed all 12 tests (`/tmp/doneat-preconsole-ios-fixture-tests.log`), including its shared snapshot suite; the final headless build passed again (`doneat-preconsole-ios-final-build.log`).
 
+The later QA-051 run (`/tmp/doneat-life-history-final-gradle.log`) passes **333 domain + 68 data + 8 design-system + 11 app = 420 tests**, lint (0 errors / 33 warnings / 1 hint), Debug/R8 Release/AAB. Seven Swift employment-history tests pass, including three invalid-end cases in one parameterized test (`/tmp/doneat-life-history-swift-tests.log`). The same run builds the iOS simulator target headlessly. API 36 screenshots `life-gap-edit-final.png` and `life-overlap-edit-final.png` show the preserved end and visible validation; actual Save preserves the 2022–2024 gap. No manual iOS visual inspection was performed. PR #239's original `ae0ec1f0` checks all passed; later commits require their own CI result.
+
 The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-preconsole-roundtrip-final.log`). Swift imported both original and Kotlin output, compared the whole `RecordState`, and verified all 12 entity families. This is QA-070 evidence. The 15,000-day/2,609-workday Life JVM test printed **4.848166 ms** in its JUnit XML for one model build on this Mac. It is calculation evidence only and does not establish QA-056 device scroll, frame, or cancellation behavior. No Play Console evidence is available.
 
 | Case | Tier | Status | Coverage | Automated evidence | Remaining acceptance |
@@ -58,7 +60,7 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-048 | SEC | NOT_RUN | Partial | `RecordsDayCanvasModelTest.aLockedDayCarriesNothingReal` | Release artifact inspection and targeted security/device exercise. |
 | QA-049 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
 | QA-050 | JVM | PASS | Complete | `LifeRulesTest.endedPeriodsLeaveARealGap`; `SummaryFixtureTest.lifetimeIncomeLeavesEmploymentGapsEmptyAndRejectsOverlap` | — |
-| QA-051 | JVM | NOT_RUN | Partial | `LifeProfileDraftTest.theTimelineRejectsAFutureStartAndDuplicateStarts`; `SummaryFixtureTest.lifetimeIncomeLeavesEmploymentGapsEmptyAndRejectsOverlap`; `RecordJsonFixtureTest.anEmploymentEndBeforeItsStartRejectsTheIncomingProfileAndKeepsTheLocalOne` | Invalid ends are rejected and old profile preserved. Source review found that overlapping imported profiles can still be relinked when saved by the draft editor; this also exists in the frozen iOS source and needs a coordinated behavior decision/fix. |
+| QA-051 | JVM | PASS | Complete | `LifeProfileDraftTest.invalidImportedEndsCannotBeSilentlyRelinkedOnSave`; `editingSalaryPreservesHistoricalGapsAndEndDates`; `editingAnAdjacentStartStillUpdatesItsLinkedEnd`; matching 7 Swift tests; invalid import preserves old profile; API 36 Save keeps the gap and overlap disables Save with visible validation | — |
 | QA-052 | ORACLE | PASS | Complete | `SummaryFixtureTest.futureAgeThresholdAppliesOneFixedRatioUntilRetirement`; `lifetimeIncome` | — |
 | QA-053 | ORACLE | PASS | Complete | `LifeRulesTest.aPassedAdjustmentAgeAppliesTheRatioAndLeavesHistory` | — |
 | QA-054 | JVM | PASS | Complete | `SummaryFixtureTest.partialLeapMonthUsesItsOwnDayCountAndAnExclusiveEnd`; `lifetimeIncome` | — |
@@ -137,12 +139,12 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 
 ## Counts and limits
 
-- PASS: 71
+- PASS: 72
 - FAIL: 0
 - BLOCKED: 0
-- NOT_RUN: 55
+- NOT_RUN: 54
 
-The matrix has 126 first-release rows. These counts track exact catalog acceptance, not test-method count. Partial evidence stays NOT_RUN until the remaining conditions listed on that row are checked. The 417 passing JUnit tests, cross-platform builds and local backup simulations do not replace real Play purchases, cloud-account restore or the specified device matrix.
+The matrix has 126 first-release rows. These counts track exact catalog acceptance, not test-method count. Partial evidence stays NOT_RUN until the remaining conditions listed on that row are checked. The 420 passing JUnit tests, cross-platform builds and local backup simulations do not replace real Play purchases, cloud-account restore or the specified device matrix.
 
 ## Device evidence collected in this pass
 
@@ -162,4 +164,4 @@ The matrix has 126 first-release rows. These counts track exact catalog acceptan
 
 Real Play product/purchase/review behavior, Google-account cloud restore, physical device transfer, OEM background behavior, long Doze runs and the complete accessibility/device matrix remain unverified. No Console upload, release signing, live website publication or iOS visual inspection was performed.
 
-The audit also found two source-baseline questions, recorded on QA-041 and QA-051: invalid salary text is preserved as text but produces no calculated amount; imported overlapping employment periods can be relinked by the editor. They are not silently marked as passed or changed only on Android.
+QA-051 was fixed together in iOS/Kotlin: stored employment gaps and ends survive editing; overlapping periods fail validation. QA-041 remains open: invalid salary backup text is preserved but produces no amount; editor filtering still needs coordinated review so invalid input cannot become a different valid amount.
