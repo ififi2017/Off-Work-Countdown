@@ -15,10 +15,13 @@ in the same change that alters any of them.
 **Category:** Productivity → Workflow & Planning. **Language:** English is the
 default listing; add Chinese (Simplified) as a localized listing.
 
-The store summary under the name comes from the manifest `description`
-(`__MSG_description__`, currently the localized app name). The summaries below
-are ready for when that key is moved to a real one-line pitch in all 19 locales;
-the store allows up to 132 characters.
+The store title and the summary under it come from the package, not from the
+dashboard: the manifest's `name` and `description` read `extensionName` and
+`extensionSummary` from `src-extension/copy.json` in every locale. Titles follow
+the iOS App Store names (`DoneAt - 下班倒计时`); `short_name` and the toolbar
+tooltip stay `DoneAt`. The build rejects titles over 75 characters and summaries
+over 132. The English and Chinese summaries are repeated below for review; edit
+them in `copy.json`.
 
 ### English
 

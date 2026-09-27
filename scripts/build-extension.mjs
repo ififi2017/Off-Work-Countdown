@@ -146,7 +146,10 @@ writeFileSync(
   JSON.stringify(
     {
       manifest_version: 3,
-      name: "DoneAt",
+      // Store title follows the iOS/Microsoft Store pattern ("DoneAt - 下班倒计时");
+      // short_name and the toolbar tooltip stay the plain brand, like the iOS icon label.
+      name: "__MSG_appName__",
+      short_name: "DoneAt",
       version,
       minimum_chrome_version: "120",
       description: "__MSG_description__",
@@ -185,17 +188,12 @@ const extensionCopy = JSON.parse(
 for (const locale of locales.filter((locale) => locale !== "zh-HK")) {
   const dir = resolve(out, "_locales", chromeLocales[locale] ?? locale);
   mkdirSync(dir, { recursive: true });
-  const translation = JSON.parse(
-    readFileSync(
-      resolve(root, `public/locales/${locale}/translation.json`),
-      "utf8",
-    ),
-  );
   writeFileSync(
     resolve(dir, "messages.json"),
     JSON.stringify(
       {
-        description: { message: translation.offWorkCountdown },
+        appName: { message: extensionCopy[locale].extensionName },
+        description: { message: extensionCopy[locale].extensionSummary },
         loadError: { message: extensionCopy[locale].extensionLoadError },
         reload: { message: extensionCopy[locale].extensionReload },
       },

@@ -47,6 +47,8 @@ ZIP 需先解压再加载。本次交付为本地安装包，尚未发布到 Chr
   每种语言是 `chunks/` 下的独立本地模块，打开弹窗只加载当前语言，切换语言时再按需加载。
   扩展专用文案在 `src-extension/copy.json`，
   必须覆盖全部 19 种语言。Chrome 安装描述采用 Chrome 支持的语言目录名。
+  商店标题与简介也在这里（`extensionName` / `extensionSummary`），标题跟 iOS 商店名一致，
+  如「DoneAt - 下班倒计时」；工具栏提示和 `short_name` 仍只写 DoneAt。
 - Chrome 要等主文档的 `load` 完成才显示工具栏弹窗（见
   [Chromium 的显示逻辑](https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/ui/views/extensions/extension_popup.cc)）。
   `popup.html` 只加载 `bootstrap.js` 与 `bootstrap.css`；引导在 `load` 回调结束后的

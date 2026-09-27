@@ -12,6 +12,8 @@ assert.equal(
   JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")).version,
 );
 assert.equal(manifest.action.default_popup, "popup.html");
+assert.equal(manifest.name, "__MSG_appName__");
+assert.ok(manifest.short_name.length <= 12, "short_name exceeds Chrome's 12 characters");
 assert.deepEqual(Object.keys(manifest.icons), ["16", "32", "48", "128"]);
 for (const key of [
   "permissions",
@@ -59,13 +61,16 @@ assert.doesNotMatch(
 );
 for (const locale of readdirSync(resolve(out, "_locales"))) {
   const messages = JSON.parse(read(`_locales/${locale}/messages.json`));
-  for (const key of ["description", "loadError", "reload"]) {
+  for (const key of ["appName", "description", "loadError", "reload"]) {
     assert.ok(
       typeof messages[key]?.message === "string" &&
         messages[key].message.trim(),
       `Missing Chrome message: ${locale}/${key}`,
     );
   }
+  // Chrome Web Store limits: name 75 characters, summary 132.
+  assert.ok(messages.appName.message.length <= 75, `${locale}/appName is too long`);
+  assert.ok(messages.description.message.length <= 132, `${locale}/description is too long`);
 }
 const js = read("popup.js");
 assert.ok(
