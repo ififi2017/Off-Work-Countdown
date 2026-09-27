@@ -9,6 +9,7 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { extname, join, normalize } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
+import { LISTINGS } from "./listing-copy.mjs";
 
 const CHROME =
   process.env.CHROME_BIN ||
@@ -143,7 +144,9 @@ if (!wsUrl) throw new Error("Chrome DevTools did not start");
 const ws = new WebSocket(wsUrl);
 await new Promise((resolve) => ws.addEventListener("open", resolve, { once: true }));
 
-for (const lang of ["en", "zh-CN"]) {
+// CWS_SHOTS_LANGUAGE=ja,ko 只重截其中几种语言。
+const only = process.env.CWS_SHOTS_LANGUAGE?.split(",").map((value) => value.trim());
+for (const lang of Object.keys(LISTINGS).filter((lang) => !only || only.includes(lang))) {
   const t = JSON.parse(readFileSync(join(ROOT, `public/locales/${lang}/translation.json`), "utf8"));
   await shot(ws, { name: `${lang}-countdown`, height: 500, prelude: seed({ lang, running: true, theme: "light" }) });
   await shot(ws, { name: `${lang}-setup`, height: 500, prelude: seed({ lang, running: false, theme: "light" }) });

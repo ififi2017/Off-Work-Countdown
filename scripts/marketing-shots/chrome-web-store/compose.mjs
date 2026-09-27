@@ -1,17 +1,19 @@
 // Chrome 应用商店素材，按官方尺寸出图：
-// - 截图 1280×800，整幅铺满、直角、不留边；英文和简体中文各四张（商店可按语言上传截图）。
+// - 截图 1280×800，整幅铺满、直角、不留边；商店可按语言上传截图，所以
+//   listing-copy.mjs 里的 18 种商店语言各四张，连同该语言的详细说明写进
+//   out/<商店语言>/，按文件夹逐个语言上传、粘贴即可。
 // - 小宣传图 440×280、大宣传图 1400×560：商店不分语言，官方建议少放文字，
 //   所以只放标志、品牌名和不依赖语言的倒计时界面。
 // - 图标 128×128：图案 96×96，四周各留 16px 透明边，深浅背景上都看得清。
 //
-// 版式与 Windows / macOS 那套同源：晚间梅子渐变，左文右图。
-
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+// 版式与 Windows / macOS 那套同源：晚间梅子渐变，左文右图；阿拉伯语整页从右往左。
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
 import { BRAND, brandMark, escapeHTML, fontStack } from "../brand.mjs";
 import { captureHtml, flattenPng } from "../chrome.mjs";
+import { LISTINGS, SHOTS } from "./listing-copy.mjs";
 
 const DIR = new URL(".", import.meta.url).pathname;
 const RAW = join(DIR, "raw");
@@ -21,52 +23,6 @@ const ICON = new URL("../../../assets/brand/off-work-countdown-icon-rounded.svg"
 mkdirSync(OUT, { recursive: true });
 mkdirSync(HTML_DIR, { recursive: true });
 
-const COPY = {
-  en: [
-    {
-      shots: ["countdown"],
-      title: "Know when your time is yours",
-      sub: "One click on the toolbar shows the time left, how far through the day you are and what you have earned so far.",
-    },
-    {
-      shots: ["setup"],
-      title: "Set your hours once",
-      sub: "Pick your hours and workdays. Lunch pauses the clock, and night shifts that run past midnight count correctly.",
-    },
-    {
-      shots: ["settings"],
-      title: "Your numbers stay with you",
-      sub: "No account to create. Hours, pay and preferences are saved in this browser, and nothing is sent anywhere.",
-    },
-    {
-      shots: ["countdown-dark", "countdown-sunset"],
-      title: "Make it feel like yours",
-      sub: "Light, Dark, Sunset and Cyberpunk themes in 19 languages. Works offline.",
-    },
-  ],
-  "zh-CN": [
-    {
-      shots: ["countdown"],
-      title: "几点下班，\n心里有数",
-      sub: "点一下工具栏，就能看到剩余时间、\n今天的进度和已经挣到的钱。",
-    },
-    {
-      shots: ["setup"],
-      title: "上下班时间\n只需设置一次",
-      sub: "选好上下班时间和工作日。\n午休自动暂停，跨过午夜的夜班也算得对。",
-    },
-    {
-      shots: ["settings"],
-      title: "数据只留在\n你的浏览器里",
-      sub: "不用注册账号。\n作息、薪资和偏好都存在这台浏览器里，\n不会发送到任何地方。",
-    },
-    {
-      shots: ["countdown-dark", "countdown-sunset"],
-      title: "换成你喜欢的样子",
-      sub: "浅色、深色、日落和赛博朋克四种主题，\n支持 19 种语言，离线也能用。",
-    },
-  ],
-};
 
 function dataUri(path) {
   if (!existsSync(path)) {
@@ -85,9 +41,12 @@ const popupStyle = `
   .popup { display: block; border-radius: 12px; overflow: hidden;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, .22), 0 36px 72px rgba(0, 0, 0, .42), 0 10px 24px rgba(0, 0, 0, .28); }`;
 
-function screenshotPage(card, language) {
-  const tracking = language === "en" ? "-0.03em" : "0";
-  const [first, second] = card.shots;
+function screenshotPage(card, shots, language) {
+  const rtl = language === "ar";
+  // 负字距只给拉丁字母：会把阿拉伯文的连写拆开，天城文和泰文的上下标也会挤在一起。
+  const latin = ["en", "de", "fr", "es", "it", "pt", "tr", "id", "vi"].includes(language);
+  const tracking = latin ? "-0.03em" : "0";
+  const [first, second] = shots;
   // 单张弹窗放大到 1.12 倍（448 宽）；两种主题并排时各缩到 0.88 倍、错开叠放。
   const stage = second
     ? `<div class="pair">
@@ -95,15 +54,17 @@ function screenshotPage(card, language) {
          <img class="popup front" src="${dataUri(join(RAW, `${language}-${second}.png`))}" alt="">
        </div>`
     : `<img class="popup single" src="${dataUri(join(RAW, `${language}-${first}.png`))}" alt="">`;
-  return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><style>
+  return `<!doctype html><html lang="${language}" dir="${rtl ? "rtl" : "ltr"}"><head><meta charset="utf-8"><style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 1280px; height: 800px; overflow: hidden; }
     body {
       font-family: ${fontStack(language)};
-      background: ${background("76%")};
+      background: ${background(rtl ? "24%" : "76%")};
       display: flex; align-items: stretch; padding: 0 88px;
     }
-    .copy { flex: 0 0 440px; display: flex; flex-direction: column; justify-content: center; padding-inline-end: 32px; }
+    .copy { flex: 0 0 440px; display: flex; flex-direction: column; justify-content: center; padding-inline-end: 32px;
+      /* 韩文默认按音节断行，会把词从中间折开；只在空格处换行。 */
+      word-break: ${language === "ko" ? "keep-all" : "normal"}; }
     .brand { display: inline-flex; align-items: center; gap: 10px;
       color: ${BRAND.orangeBright}; font-size: 17px; font-weight: 700; letter-spacing: .04em; }
     .mark { width: 26px; height: 26px; }
@@ -114,7 +75,7 @@ function screenshotPage(card, language) {
     .stage { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; }
     ${popupStyle}
     .single { width: 448px; }
-    .pair { position: relative; width: 572px; height: 580px; }
+    .pair { position: relative; width: 572px; height: 580px; direction: ltr; }
     .pair .popup { position: absolute; width: 352px; }
     /* 深色弹窗压在梅子底上会看不清边，补一圈极淡的亮边。 */
     .back { left: 0; top: 0;
@@ -122,7 +83,7 @@ function screenshotPage(card, language) {
     .front { right: 0; bottom: 0; }
   </style></head><body>
     <div class="copy">
-      <div class="brand">${brandMark(BRAND.cream)}<span>${BRAND.name}</span></div>
+      <div class="brand">${brandMark(BRAND.cream)}<span dir="ltr">${BRAND.name}</span></div>
       <div class="title">${escapeHTML(card.title).replaceAll("\n", "<br>")}</div>
       <div class="sub">${escapeHTML(card.sub).replaceAll("\n", "<br>")}</div>
     </div>
@@ -157,17 +118,25 @@ const marquee = `<!doctype html><html><head><meta charset="utf-8"><style>
 
 async function compose(name, html, width, height) {
   const outFile = join(OUT, `${name}.png`);
-  await captureHtml({ html, htmlPath: join(HTML_DIR, `p-cws-${name}.html`), width, height, scale: 1, outFile });
+  mkdirSync(join(outFile, ".."), { recursive: true });
+  await captureHtml({ html, htmlPath: join(HTML_DIR, `p-cws-${name.replace("/", "-")}.html`), width, height, scale: 1, outFile });
   // 商店图一律压成不透明像素，和其它商店那几套一样。
   flattenPng(outFile);
   console.log(`composed ${name}.png`);
 }
 
-for (const [language, cards] of Object.entries(COPY)) {
-  for (const [index, card] of cards.entries()) {
-    const name = `${language}-${String(index + 1).padStart(2, "0")}-${card.shots[0]}`;
-    await compose(name, screenshotPage(card, language), 1280, 800);
+// CWS_SHOTS_LANGUAGE=ja,ko 只重排其中几种语言。
+const only = process.env.CWS_SHOTS_LANGUAGE?.split(",").map((value) => value.trim());
+for (const [language, listing] of Object.entries(LISTINGS)) {
+  if (only && !only.includes(language)) continue;
+  // 每个商店语言一个文件夹：四张截图加一份可直接粘贴的详细说明。
+  rmSync(join(OUT, listing.store), { recursive: true, force: true });
+  for (const [index, shots] of SHOTS.entries()) {
+    const name = `${listing.store}/${String(index + 1).padStart(2, "0")}-${shots[0]}`;
+    await compose(name, screenshotPage(listing.captions[index], shots, language), 1280, 800);
   }
+  writeFileSync(join(OUT, listing.store, "description.txt"), `${listing.description.trim()}\n`);
+  console.log(`wrote ${listing.store}/description.txt`);
 }
 await compose("promo-small-440x280", smallTile, 440, 280);
 await compose("promo-marquee-1400x560", marquee, 1400, 560);

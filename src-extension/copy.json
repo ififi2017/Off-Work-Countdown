@@ -162,7 +162,7 @@
     "extensionLoadError": "DoneAt açılamadı. Lütfen yeniden yükleyin.",
     "extensionReload": "Yeniden yükle",
     "extensionName": "DoneAt - İş Çıkışı Sayacı",
-    "extensionSummary": "Tek tıkla paydosa ne kadar kaldığını ve bugün ne kadar kazandığını gör. Veriler tarayıcında kalır. Çevrimdışı, hesapsız."
+    "extensionSummary": "Tek tıkla paydosa ne kadar kaldığını ve bugün ne kadar kazandığınızı görün. Veriler tarayıcınızda kalır. Çevrimdışı, hesapsız."
   },
   "ar": {
     "extensionSave": "حفظ",
