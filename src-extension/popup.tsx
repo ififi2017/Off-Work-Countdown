@@ -529,12 +529,14 @@ function Popup({
           <section className="popup-section" aria-labelledby="get-app-title">
             <div className="popup-get-app">
               <div className="flex items-center gap-3">
+                {/* The 128 icon keeps Chrome's 16 px transparent padding; the
+                    negative margin shows its 96 px artwork at 32 px. */}
                 <img
                   src="icons/128.png"
                   alt=""
-                  width={32}
-                  height={32}
-                  className="shrink-0 rounded-[8px]"
+                  width={43}
+                  height={43}
+                  className="-m-[5.5px] shrink-0"
                 />
                 <div className="min-w-0 flex-1">
                   <strong

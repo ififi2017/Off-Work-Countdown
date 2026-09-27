@@ -57,8 +57,10 @@ ZIP 需先解压再加载。本次交付为本地安装包，尚未发布到 Chr
   完整 JS 小于 700 kB、完整 CSS 小于 55 kB。
 - 独立 esbuild 入口避免 Next 的内联引导脚本和路由运行时。
 - 共享动画组件用 framer-motion 的 `LazyMotion` + `m`，只打包淡入淡出和位移，不带拖拽与布局投影。
-- 图标提供 16 / 32 / 48 / 128：32 与 128 取自 `src-tauri/icons`，
-  16（工具栏 1x）与 48（扩展管理页）在 `src-extension/icons`。
+- 图标提供 16 / 32 / 48 / 128：32 取自 `src-tauri/icons`，
+  16（工具栏 1x）、48（扩展管理页）与 128 在 `src-extension/icons`。128 按 Chrome 要求
+  图案 96×96、四周 16px 透明边，由 `npm run shots:chrome-web-store:compose` 生成后复制过来。
+- 商店截图、宣传图和商店图标见 `scripts/marketing-shots/README.md` 的 Chrome 应用商店一节。
   [Manifest V3 CSP](https://developer.chrome.com/docs/extensions/reference/manifest/content-security-policy)
   限制脚本为本地文件；`connect-src 'none'` 禁止发出网络请求。
 - 版本读取 `package.json`，构建前自动运行 `check:version`。不改变现有 Web/Desktop 构建目标。
