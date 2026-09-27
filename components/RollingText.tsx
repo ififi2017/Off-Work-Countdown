@@ -1,6 +1,12 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  LazyMotion,
+  domAnimation,
+  m,
+  useReducedMotion,
+} from "framer-motion";
 
 // Web 与桌面（主窗、Windows 迷你计时）的 SwiftUI `.contentTransition(.numericText(countsDown: true))`；
 // macOS 原生迷你计时在 NativeMiniTimer.m 的 OWCRollingLabel 里用同一套参数实现。
@@ -21,8 +27,9 @@ export function RollingText({ text }: { text: string }) {
   if (reduceMotion) return <>{text}</>;
 
   const words = text.split(" ");
+  // LazyMotion + m 只带入这里用到的动画特性，不把拖拽、布局投影打进包里。
   return (
-    <>
+    <LazyMotion features={domAnimation}>
       <span className="sr-only">{text}</span>
       <span aria-hidden="true">
         {words.map((word, wordIndex) => (
@@ -33,7 +40,7 @@ export function RollingText({ text }: { text: string }) {
                 // 按位置固定槽位：同一位换字时，新旧两个字叠在同一格里交接。
                 <span key={charIndex} className="inline-grid">
                   <AnimatePresence initial={false}>
-                    <motion.span
+                    <m.span
                       key={char}
                       className="[grid-area:1/1]"
                       initial={{ y: "-0.3em", opacity: 0, filter: "blur(3px)" }}
@@ -42,7 +49,7 @@ export function RollingText({ text }: { text: string }) {
                       transition={COUNTDOWN_TICK}
                     >
                       {char}
-                    </motion.span>
+                    </m.span>
                   </AnimatePresence>
                 </span>
               ))}
@@ -50,6 +57,6 @@ export function RollingText({ text }: { text: string }) {
           </span>
         ))}
       </span>
-    </>
+    </LazyMotion>
   );
 }

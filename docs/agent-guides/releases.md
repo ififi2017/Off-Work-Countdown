@@ -104,6 +104,17 @@ or fastlane; export is deliberately manual. Agree on signing setup before
 introducing an automated export path. Keep `docs/XCODE-CLOUD.md` aligned with
 App Store Connect's workflow triggers, Release archive and distribution.
 
+## Chrome extension
+
+- `npm run package:extension` writes the upload ZIP; its version is the product
+  version, and the store rejects a package that is not higher than the
+  published or in-review one.
+- `npm run cws:upload` uploads without submitting; `npm run cws:publish` is the
+  separate step that submits for review. Credentials live outside the
+  repository (`~/.config/doneat/chrome-web-store.env`).
+- The API cannot edit the listing: listing text and privacy answers are in
+  `docs/CHROME-WEB-STORE-LISTING.md`, images from `npm run shots:chrome-web-store`.
+
 ## Store media and metadata
 
 - Generate via `scripts/marketing-shots/`, sync with `npm run asc:sync`;

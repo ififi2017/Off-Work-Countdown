@@ -1,0 +1,211 @@
+{
+  "en": {
+    "extensionSave": "Save",
+    "extensionSaveError": "Could not save your settings. Please try again.",
+    "extensionHour": "Select hour",
+    "extensionMinute": "Select minute",
+    "extensionEditSchedule": "Edit schedule",
+    "extensionLoadError": "DoneAt couldn’t open. Please reload.",
+    "extensionReload": "Reload",
+    "extensionName": "DoneAt: Work Shift Countdown",
+    "extensionSummary": "See how long until you clock off and what you've earned today, one click from your toolbar. Private, offline, no account."
+  },
+  "zh-CN": {
+    "extensionSave": "保存",
+    "extensionSaveError": "未能保存设置，请重试。",
+    "extensionHour": "选择小时",
+    "extensionMinute": "选择分钟",
+    "extensionEditSchedule": "修改班次",
+    "extensionLoadError": "DoneAt 暂时无法打开，请重新加载。",
+    "extensionReload": "重新加载",
+    "extensionName": "DoneAt - 下班倒计时",
+    "extensionSummary": "点一下工具栏，就知道还有多久下班、今天挣了多少。数据只存在你的浏览器里，离线可用，无需注册。"
+  },
+  "zh-TW": {
+    "extensionSave": "儲存",
+    "extensionSaveError": "無法儲存設定，請再試一次。",
+    "extensionHour": "選擇小時",
+    "extensionMinute": "選擇分鐘",
+    "extensionEditSchedule": "修改班次",
+    "extensionLoadError": "DoneAt 暫時無法開啟，請重新載入。",
+    "extensionReload": "重新載入",
+    "extensionName": "DoneAt - 下班倒數計時",
+    "extensionSummary": "點一下工具列，就知道還有多久下班、今天賺了多少。資料只存在你的瀏覽器裡，離線可用，不用註冊。"
+  },
+  "zh-HK": {
+    "extensionSave": "儲存",
+    "extensionSaveError": "未能儲存設定，請再試一次。",
+    "extensionHour": "選擇小時",
+    "extensionMinute": "選擇分鐘",
+    "extensionEditSchedule": "修改班次",
+    "extensionLoadError": "DoneAt 暫時無法開啟，請重新載入。",
+    "extensionReload": "重新載入",
+    "extensionName": "DoneAt - 放工倒數",
+    "extensionSummary": "撳一下工具列，就知仲有幾耐放工、今日賺咗幾多。資料只留喺你嘅瀏覽器，離線都用得，唔使註冊。"
+  },
+  "ja": {
+    "extensionSave": "保存",
+    "extensionSaveError": "設定を保存できませんでした。もう一度お試しください。",
+    "extensionHour": "時を選択",
+    "extensionMinute": "分を選択",
+    "extensionEditSchedule": "勤務時間を変更",
+    "extensionLoadError": "DoneAt を開けませんでした。再読み込みしてください。",
+    "extensionReload": "再読み込み",
+    "extensionName": "DoneAt - 退勤カウントダウン",
+    "extensionSummary": "ツールバーからワンクリックで、退勤まであとどれくらいか、今日いくら稼いだかがわかります。データはこのブラウザだけに保存。オフライン対応、登録不要。"
+  },
+  "ko": {
+    "extensionSave": "저장",
+    "extensionSaveError": "설정을 저장하지 못했어요. 다시 시도해 주세요.",
+    "extensionHour": "시간 선택",
+    "extensionMinute": "분 선택",
+    "extensionEditSchedule": "근무 시간 수정",
+    "extensionLoadError": "DoneAt을 열 수 없습니다. 다시 불러와 주세요.",
+    "extensionReload": "다시 불러오기",
+    "extensionName": "DoneAt - 퇴근 카운트다운",
+    "extensionSummary": "툴바에서 한 번만 누르면 퇴근까지 남은 시간과 오늘 번 돈을 바로 볼 수 있어요. 데이터는 이 브라우저에만 남고, 오프라인에서도 되며 가입이 필요 없어요."
+  },
+  "fr": {
+    "extensionSave": "Enregistrer",
+    "extensionSaveError": "Impossible d’enregistrer vos réglages. Veuillez réessayer.",
+    "extensionHour": "Choisir l’heure",
+    "extensionMinute": "Choisir les minutes",
+    "extensionEditSchedule": "Modifier les horaires",
+    "extensionLoadError": "Impossible d’ouvrir DoneAt. Veuillez recharger.",
+    "extensionReload": "Recharger",
+    "extensionName": "DoneAt - Compte à rebours",
+    "extensionSummary": "En un clic : le temps qui reste avant la fin de la journée et ce que vous avez gagné aujourd’hui. Privé, hors ligne, sans compte."
+  },
+  "de": {
+    "extensionSave": "Speichern",
+    "extensionSaveError": "Deine Einstellungen konnten nicht gespeichert werden. Bitte versuche es erneut.",
+    "extensionHour": "Stunde wählen",
+    "extensionMinute": "Minute wählen",
+    "extensionEditSchedule": "Arbeitszeiten ändern",
+    "extensionLoadError": "DoneAt konnte nicht geöffnet werden. Bitte neu laden.",
+    "extensionReload": "Neu laden",
+    "extensionName": "DoneAt - Feierabend Countdown",
+    "extensionSummary": "Mit einem Klick sehen, wie lange es noch bis zum Feierabend dauert und was Sie heute verdient haben. Privat, offline, ohne Konto."
+  },
+  "es": {
+    "extensionSave": "Guardar",
+    "extensionSaveError": "No se pudo guardar la configuración. Inténtalo de nuevo.",
+    "extensionHour": "Elegir hora",
+    "extensionMinute": "Elegir minutos",
+    "extensionEditSchedule": "Editar horario",
+    "extensionLoadError": "No se pudo abrir DoneAt. Vuelve a cargarlo.",
+    "extensionReload": "Volver a cargar",
+    "extensionName": "DoneAt - Cuenta atrás laboral",
+    "extensionSummary": "Con un clic, mira cuánto falta para salir y cuánto has ganado hoy. Tus datos se quedan en el navegador. Sin conexión y sin cuenta."
+  },
+  "it": {
+    "extensionSave": "Salva",
+    "extensionSaveError": "Impossibile salvare le impostazioni. Riprova.",
+    "extensionHour": "Seleziona ora",
+    "extensionMinute": "Seleziona minuti",
+    "extensionEditSchedule": "Modifica orario",
+    "extensionLoadError": "Impossibile aprire DoneAt. Riprova a caricare.",
+    "extensionReload": "Ricarica",
+    "extensionName": "DoneAt - Conto alla rovescia",
+    "extensionSummary": "Con un clic, scopri quanto manca alla fine del lavoro e quanto hai guadagnato oggi. Privato, offline, senza account."
+  },
+  "pt": {
+    "extensionSave": "Salvar",
+    "extensionSaveError": "Não foi possível salvar as configurações. Tente novamente.",
+    "extensionHour": "Selecionar hora",
+    "extensionMinute": "Selecionar minutos",
+    "extensionEditSchedule": "Editar horário",
+    "extensionLoadError": "Não foi possível abrir o DoneAt. Recarregue.",
+    "extensionReload": "Recarregar",
+    "extensionName": "DoneAt - Fim do Expediente",
+    "extensionSummary": "Com um clique, veja quanto falta para o fim do expediente e quanto você ganhou hoje. Privado, offline e sem cadastro."
+  },
+  "ru": {
+    "extensionSave": "Сохранить",
+    "extensionSaveError": "Не удалось сохранить настройки. Попробуйте ещё раз.",
+    "extensionHour": "Выбрать часы",
+    "extensionMinute": "Выбрать минуты",
+    "extensionEditSchedule": "Изменить график",
+    "extensionLoadError": "Не удалось открыть DoneAt. Попробуйте перезагрузить.",
+    "extensionReload": "Перезагрузить",
+    "extensionName": "DoneAt - До конца смены",
+    "extensionSummary": "В один клик: сколько осталось до конца смены и сколько вы заработали сегодня. Данные остаются в браузере. Офлайн, без аккаунта."
+  },
+  "hi-IN": {
+    "extensionSave": "सेव करें",
+    "extensionSaveError": "सेटिंग सेव नहीं हो सकीं। कृपया फिर से कोशिश करें।",
+    "extensionHour": "घंटा चुनें",
+    "extensionMinute": "मिनट चुनें",
+    "extensionEditSchedule": "समय बदलें",
+    "extensionLoadError": "DoneAt नहीं खुल सका। कृपया फिर से लोड करें।",
+    "extensionReload": "फिर से लोड करें",
+    "extensionName": "DoneAt - शिफ़्ट काउंटडाउन",
+    "extensionSummary": "एक क्लिक में देखें कि छुट्टी में कितना समय बचा है और आज आपने कितना कमाया। डेटा इसी ब्राउज़र में रहता है। ऑफ़लाइन, बिना खाते।"
+  },
+  "mr-IN": {
+    "extensionSave": "जतन करा",
+    "extensionSaveError": "सेटिंग्ज जतन करता आल्या नाहीत. कृपया पुन्हा प्रयत्न करा.",
+    "extensionHour": "तास निवडा",
+    "extensionMinute": "मिनिट निवडा",
+    "extensionEditSchedule": "कामाची वेळ बदला",
+    "extensionLoadError": "DoneAt उघडता आले नाही. कृपया पुन्हा लोड करा.",
+    "extensionReload": "पुन्हा लोड करा",
+    "extensionName": "DoneAt - ऑफिस काउंटडाउन",
+    "extensionSummary": "एका क्लिकवर पाहा, काम संपायला किती वेळ उरला आणि आज तुम्ही किती कमावले. डेटा याच ब्राउझरमध्ये राहतो, ऑफलाइन चालते, खाते नको."
+  },
+  "tr": {
+    "extensionSave": "Kaydet",
+    "extensionSaveError": "Ayarlar kaydedilemedi. Lütfen tekrar deneyin.",
+    "extensionHour": "Saat seç",
+    "extensionMinute": "Dakika seç",
+    "extensionEditSchedule": "Çalışma saatlerini düzenle",
+    "extensionLoadError": "DoneAt açılamadı. Lütfen yeniden yükleyin.",
+    "extensionReload": "Yeniden yükle",
+    "extensionName": "DoneAt - İş Çıkışı Sayacı",
+    "extensionSummary": "Tek tıkla paydosa ne kadar kaldığını ve bugün ne kadar kazandığınızı görün. Veriler tarayıcınızda kalır. Çevrimdışı, hesapsız."
+  },
+  "ar": {
+    "extensionSave": "حفظ",
+    "extensionSaveError": "تعذّر حفظ إعداداتك. يُرجى المحاولة مرة أخرى.",
+    "extensionHour": "اختر الساعة",
+    "extensionMinute": "اختر الدقائق",
+    "extensionEditSchedule": "تعديل أوقات العمل",
+    "extensionLoadError": "تعذّر فتح DoneAt. يُرجى إعادة التحميل.",
+    "extensionReload": "إعادة التحميل",
+    "extensionName": "DoneAt - عداد نهاية الدوام",
+    "extensionSummary": "بنقرة واحدة، اعرف كم تبقّى على نهاية الدوام وكم كسبت اليوم. بياناتك تبقى في متصفحك، ويعمل دون اتصال ودون حساب."
+  },
+  "th": {
+    "extensionSave": "บันทึก",
+    "extensionSaveError": "บันทึกการตั้งค่าไม่ได้ โปรดลองอีกครั้ง",
+    "extensionHour": "เลือกชั่วโมง",
+    "extensionMinute": "เลือกนาที",
+    "extensionEditSchedule": "แก้ไขเวลาทำงาน",
+    "extensionLoadError": "เปิด DoneAt ไม่สำเร็จ โปรดลองโหลดใหม่",
+    "extensionReload": "โหลดใหม่",
+    "extensionName": "DoneAt - นับถอยหลังเลิกงาน",
+    "extensionSummary": "คลิกเดียวก็รู้ว่าอีกนานแค่ไหนจะเลิกงาน และวันนี้ได้เงินไปเท่าไร ข้อมูลอยู่ในเบราว์เซอร์นี้ ใช้ออฟไลน์ได้ ไม่ต้องสมัคร"
+  },
+  "id": {
+    "extensionSave": "Simpan",
+    "extensionSaveError": "Pengaturan tidak dapat disimpan. Silakan coba lagi.",
+    "extensionHour": "Pilih jam",
+    "extensionMinute": "Pilih menit",
+    "extensionEditSchedule": "Ubah jadwal",
+    "extensionLoadError": "DoneAt tidak dapat dibuka. Silakan muat ulang.",
+    "extensionReload": "Muat ulang",
+    "extensionName": "DoneAt - Hitung Mundur Kerja",
+    "extensionSummary": "Sekali klik, lihat berapa lama lagi jam pulang dan berapa yang sudah Anda hasilkan hari ini. Privat, bisa offline, tanpa akun."
+  },
+  "vi": {
+    "extensionSave": "Lưu",
+    "extensionSaveError": "Không thể lưu cài đặt. Vui lòng thử lại.",
+    "extensionHour": "Chọn giờ",
+    "extensionMinute": "Chọn phút",
+    "extensionEditSchedule": "Sửa giờ làm",
+    "extensionLoadError": "Không thể mở DoneAt. Vui lòng tải lại.",
+    "extensionReload": "Tải lại",
+    "extensionName": "DoneAt - Đếm ngược tan ca",
+    "extensionSummary": "Một cú nhấp để biết còn bao lâu nữa tan ca và hôm nay bạn đã kiếm được bao nhiêu. Riêng tư, ngoại tuyến, không cần tài khoản."
+  }
+}

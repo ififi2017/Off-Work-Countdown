@@ -194,7 +194,10 @@ npm run lint           # ESLint
 npm test               # Vitest unit tests
 npm run build          # Production build (web)
 npm run build:desktop  # Static export for the desktop app, output in out/
+npm run build:extension # Chrome popup, output in build/chrome-extension/
 ```
+
+Chrome extension setup and behavior: [Chrome extension guide](docs/CHROME-EXTENSION.md).
 
 Release automation for maintainers:
 

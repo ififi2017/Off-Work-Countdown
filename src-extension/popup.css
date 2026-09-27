@@ -1,0 +1,322 @@
+@font-face {
+  font-family: Geist;
+  src: url("fonts/GeistVF.woff") format("woff");
+  font-weight: 100 900;
+  font-display: swap;
+}
+:root {
+  --font-geist-sans: Geist;
+}
+html:root.extension-shell {
+  font-size: 16px;
+  --radius: 8px;
+}
+html,
+body,
+#root {
+  width: 400px;
+  margin: 0;
+  overflow-x: hidden;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+}
+.extension-shell {
+  --ring: 24 95% 53%;
+  --popup-accent: #ea580c;
+  --popup-surface: #f7f7f8;
+}
+.extension-shell.dark {
+  --popup-accent: #fb923c;
+  --popup-surface: #202023;
+  --background: 240 6% 11%;
+}
+.extension-shell.theme-cyberpunk {
+  --background: 260 40% 12%;
+  --popup-surface: #2a203c;
+}
+.extension-shell.theme-sunset {
+  --background: 24 60% 97%;
+  --popup-surface: #fff1e9;
+}
+.popup-shell {
+  height: var(--popup-height);
+  display: flex;
+  flex-direction: column;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+.popup-settings {
+  height: 560px;
+}
+.popup-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 20px 22px;
+}
+.popup-settings .popup-header {
+  padding-bottom: 16px;
+}
+.popup-icon,
+.popup-theme button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+  color: hsl(var(--muted-foreground));
+}
+.popup-icon:hover,
+.popup-theme button:hover {
+  background: var(--popup-surface);
+  color: hsl(var(--foreground));
+}
+.popup-icon svg,
+.popup-theme button svg {
+  width: 17px;
+  height: 17px;
+}
+.popup-scroll {
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+.popup-section {
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 16px;
+  scroll-margin-top: 12px;
+}
+.popup-lunch-fields > div > label {
+  display: block;
+  line-height: 16px;
+}
+.popup-lunch-fields > label {
+  line-height: 16px;
+}
+.popup-field {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  border-radius: 7px;
+  border: 1px solid hsl(var(--input));
+  background: hsl(var(--background));
+  padding: 6px 10px;
+  font-size: 13px;
+  color: hsl(var(--foreground));
+}
+.popup-field > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.popup-field > svg {
+  flex-shrink: 0;
+}
+.popup-field:focus-visible,
+.popup-quick:focus-visible,
+.popup-get-app-link:focus-visible,
+.popup-about:focus-visible {
+  outline: 2px solid var(--popup-accent);
+  outline-offset: 2px;
+}
+.popup-field.masked {
+  -webkit-text-security: disc;
+}
+.popup-field[type="number"] {
+  appearance: textfield;
+}
+.popup-field::-webkit-inner-spin-button {
+  appearance: none;
+}
+.popup-shell input {
+  user-select: text;
+}
+.popup-shell input[inputmode="numeric"] {
+  font-variant-numeric: tabular-nums;
+  background: hsl(var(--background));
+  border-color: hsl(var(--input));
+}
+.popup-workdays button {
+  height: 30px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+.popup-workdays button[aria-pressed="true"] {
+  background: color-mix(
+    in srgb,
+    var(--popup-accent) 10%,
+    hsl(var(--background))
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--popup-accent) 22%,
+    hsl(var(--background))
+  );
+  color: var(--popup-accent);
+  font-weight: 600;
+}
+.popup-workdays button[aria-pressed="false"] {
+  background: transparent;
+  border-color: hsl(var(--input));
+}
+.popup-quick {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  text-align: start;
+  border-radius: 7px;
+  background: var(--popup-surface);
+  font-size: 12px;
+}
+.popup-quick:hover {
+  background: hsl(var(--accent));
+}
+.popup-summary > div {
+  background: var(--popup-surface);
+  border-radius: 9px;
+  backdrop-filter: none;
+  padding: 12px;
+}
+.popup-summary dt,
+.popup-summary dd {
+  font-size: 12px;
+}
+.popup-summary dd {
+  text-align: end;
+}
+.popup-summary strong {
+  background: none;
+  color: var(--popup-accent);
+}
+.popup-countdown {
+  padding: 5px 0 0;
+}
+.popup-digits {
+  margin: 9px 0 17px;
+  font-size: 48px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -2px;
+  line-height: 1.15;
+}
+.popup-progress {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--popup-surface);
+}
+.popup-progress > div {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--popup-accent);
+}
+.popup-footer {
+  flex-shrink: 0;
+  padding: 0 20px 16px;
+}
+.popup-settings .popup-footer {
+  padding-top: 12px;
+  border-top: 1px solid hsl(var(--border));
+}
+.popup-primary {
+  background: #ea580c;
+  color: #fff;
+  box-shadow: none;
+}
+.popup-primary:hover {
+  background: #c2410c;
+}
+.popup-edit {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  background: transparent;
+}
+.popup-get-app {
+  padding: 14px;
+  border-radius: 9px;
+  background: var(--popup-surface);
+}
+.popup-get-app-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  margin-top: 12px;
+  border-radius: 7px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  font-size: 12px;
+  font-weight: 500;
+}
+.popup-get-app-link:hover {
+  border-color: color-mix(in srgb, var(--popup-accent) 35%, hsl(var(--border)));
+  color: var(--popup-accent);
+}
+.popup-about {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 2px 0;
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+}
+.popup-about:hover {
+  color: hsl(var(--foreground));
+}
+.popup-select {
+  max-height: var(--radix-select-content-available-height);
+  max-width: 368px;
+}
+.popup-select [data-radix-select-viewport] {
+  max-height: min(240px, var(--radix-select-content-available-height));
+}
+html[dir="rtl"] .popup-shell [role="switch"] > span[data-state="checked"] {
+  --tw-translate-x: -18px;
+}
+html[dir="rtl"] .popup-shell [role="switch"] > span[data-state="unchecked"] {
+  --tw-translate-x: -2px;
+}
+/* Quiet state feedback: short colour fades, a slight press, and a progress
+   bar that glides between the once-per-second updates. */
+.popup-icon,
+.popup-theme button,
+.popup-quick,
+.popup-get-app-link,
+.popup-about,
+.popup-primary,
+.popup-edit {
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    color 120ms ease-out,
+    transform 120ms ease-out;
+}
+.popup-quick:active,
+.popup-get-app-link:active,
+.popup-primary:active,
+.popup-edit:active {
+  transform: scale(0.98);
+}
+.popup-progress > div {
+  transition: width 1s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .popup-shell *,
+  .popup-shell *::before,
+  .popup-shell *::after {
+    transition: none !important;
+  }
+  .popup-quick:active,
+  .popup-get-app-link:active,
+  .popup-primary:active,
+  .popup-edit:active {
+    transform: none;
+  }
+}

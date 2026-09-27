@@ -2,12 +2,19 @@
 
 ## Scope and task-specific instructions
 
-One product, three targets: Web (Next.js 15 App Router, React 19, TypeScript,
+One product: Web (Next.js 15 App Router, React 19, TypeScript,
 Tailwind, Serwist); Desktop (the exported React frontend in Tauri v2 with
 Rust/AppKit); iOS (native SwiftUI + WidgetKit in `src-mobile/ios`). iOS has no
 WebView, Next.js pages or Capacitor; `cap`, `CapApp-SPM` and
 `capacitor.config` references are stale. Web/Desktop share a React tree;
 iOS shares business behaviour and translations, never markup.
+
+Chrome extension (`src-extension`) is a Manifest V3 toolbar popup. Its React
+entry reuses PC components and `lib/` rules, bundled by esbuild rather than
+Next export. Fonts and all 19 UI locales are local. Keep the popup offline,
+with no host permissions, content scripts, analytics or background polling.
+`npm run build:extension` writes `build/chrome-extension` and checks its CSP,
+capabilities and assets. See [Chrome extension](docs/CHROME-EXTENSION.md).
 
 The following tracked documents continue this guide. Read the relevant one
 when its trigger applies; unrelated tasks do not require them. Skills remain

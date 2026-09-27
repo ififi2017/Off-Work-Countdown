@@ -54,6 +54,9 @@
     "shots:ios:capture": "node scripts/marketing-shots/ios/capture.mjs",
     "shots:ios:compose": "node scripts/marketing-shots/ios/compose.mjs",
     "shots:ios:validate": "node scripts/marketing-shots/ios/validate.mjs",
+    "shots:chrome-web-store": "npm run build:extension && npm run shots:chrome-web-store:capture && npm run shots:chrome-web-store:compose",
+    "shots:chrome-web-store:capture": "node scripts/marketing-shots/chrome-web-store/capture.mjs",
+    "shots:chrome-web-store:compose": "node scripts/marketing-shots/chrome-web-store/compose.mjs",
     "shots:xiaohongshu": "npm run shots:xiaohongshu:compose && npm run shots:xiaohongshu:validate",
     "shots:xiaohongshu:compose": "node scripts/marketing-shots/xiaohongshu/compose.mjs",
     "shots:xiaohongshu:validate": "node scripts/marketing-shots/xiaohongshu/validate.mjs",
@@ -66,7 +69,13 @@
     "asc:export": "node scripts/app-store-connect-export.mjs",
     "asc:iap:check": "node scripts/app-store-connect-iap-sync.mjs --check",
     "asc:iap:plan": "node scripts/app-store-connect-iap-sync.mjs --plan",
-    "asc:iap:sync": "node scripts/app-store-connect-iap-sync.mjs --apply"
+    "asc:iap:sync": "node scripts/app-store-connect-iap-sync.mjs --apply",
+    "build:extension": "node scripts/build-extension.mjs",
+    "check:build:extension": "node scripts/check-extension.mjs",
+    "package:extension": "npm run build:extension && node scripts/package-extension.mjs",
+    "cws:status": "node scripts/chrome-web-store-publish.mjs --status",
+    "cws:upload": "node scripts/chrome-web-store-publish.mjs --upload",
+    "cws:publish": "node scripts/chrome-web-store-publish.mjs --publish"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^11.2.0",
@@ -122,7 +131,8 @@
     "serwist": "^9.5.11",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
-    "vitest": "^3.2.6"
+    "vitest": "^3.2.6",
+    "esbuild": "0.28.1"
   },
   "engines": {
     "node": "24.x"
