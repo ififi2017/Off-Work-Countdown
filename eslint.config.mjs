@@ -15,6 +15,7 @@ const config = [
     ignores: [
       '.next/**',
       'out/**',
+      'build/**',
       '.claude/**',
       'public/sw.js',
       'public/swe-worker-*.js',
@@ -29,6 +30,14 @@ const config = [
       '@typescript-eslint/no-unused-vars': 'off',
       'react/no-unescaped-entities': 'off',
       '@next/next/no-page-custom-font': 'off',
+    },
+  },
+  {
+    // The Chrome extension is bundled by esbuild, not Next, so next/image
+    // has no loader there; its images are packaged local files.
+    files: ['src-extension/**'],
+    rules: {
+      '@next/next/no-img-element': 'off',
     },
   },
 ]

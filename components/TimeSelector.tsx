@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,9 @@ interface TimeSelectorProps {
   onChange: (hour: string, minute: string) => void;
   compact?: boolean;
   mobile?: boolean;
+  hourLabel?: string;
+  minuteLabel?: string;
+  menuSide?: "top" | "bottom" | "auto";
 }
 
 export function TimeSelector({
@@ -23,11 +26,45 @@ export function TimeSelector({
   onChange,
   compact = false,
   mobile = false,
+  hourLabel = "Select hour",
+  minuteLabel = "Select minute",
+  menuSide = "bottom",
 }: TimeSelectorProps) {
   const [hourInput, setHourInput] = useState(() => value.split(":")[0]);
   const [minuteInput, setMinuteInput] = useState(() => value.split(":")[1]);
   const [openMenu, setOpenMenu] = useState<"hour" | "minute" | null>(null);
+  const [opensAbove, setOpensAbove] = useState(menuSide === "top");
   const containerRef = useRef<HTMLDivElement>(null);
+
+  function openOptions(type: "hour" | "minute", toggle = false) {
+    if (toggle && openMenu === type) {
+      setOpenMenu(null);
+      return;
+    }
+    let above = menuSide === "top";
+    if (menuSide === "auto" && containerRef.current) {
+      const field =
+        containerRef.current.querySelectorAll("input")[type === "hour" ? 0 : 1];
+      const rect = field.getBoundingClientRect();
+      let top = 0;
+      let bottom = window.innerHeight;
+      // A popup's settings scroll area can be smaller than its viewport.
+      for (
+        let parent = field.parentElement;
+        parent;
+        parent = parent.parentElement
+      ) {
+        if (/(auto|scroll|hidden)/.test(getComputedStyle(parent).overflowY)) {
+          const bounds = parent.getBoundingClientRect();
+          top = Math.max(top, bounds.top);
+          bottom = Math.min(bottom, bounds.bottom);
+        }
+      }
+      above = rect.top - top > bottom - rect.bottom;
+    }
+    setOpensAbove(above);
+    setOpenMenu(type);
+  }
 
   // keep local input in sync with external value (e.g. reset button)
   useEffect(() => {
@@ -38,7 +75,10 @@ export function TimeSelector({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setOpenMenu(null);
       }
     };
@@ -98,47 +138,62 @@ export function TimeSelector({
   };
 
   const optionList = (items: string[], type: "hour" | "minute") => (
-    <AnimatePresence>
-      {openMenu === type && (
-        <motion.div
-          key={`${type}-menu`}
-          initial={{ opacity: 0, scale: 0.98, y: -4 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.98, y: -4 }}
-          transition={{ duration: 0.12 }}
-          // 主题给卡片加了玻璃效果，bg-popover 在这里会透出底下的工作日按钮，
-          // 滚轮读数会糊成一片，所以这层必须自己是不透明的。
-          className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-input bg-white p-1 text-popover-foreground shadow-lg dark:bg-gray-800"
-        >
-          <WheelPicker
-            items={items}
-            value={type === "hour" ? hourInput : minuteInput}
-            ariaLabel={type === "hour" ? "Select hour" : "Select minute"}
-            visibleRows={compact || mobile ? 5 : 7}
-            onChange={(item) =>
-              commitTime(
-                type === "hour" ? item : hourInput,
-                type === "minute" ? item : minuteInput
-              )
-            }
-            onSelect={(item) => {
-              commitTime(
-                type === "hour" ? item : hourInput,
-                type === "minute" ? item : minuteInput
-              );
-              setOpenMenu(null);
-            }}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <LazyMotion features={domAnimation}>
+      <AnimatePresence>
+        {openMenu === type && (
+          <m.div
+            key={`${type}-menu`}
+            initial={{ opacity: 0, scale: 0.98, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.98, y: -4 }}
+            transition={{ duration: 0.12 }}
+            // 主题给卡片加了玻璃效果，bg-popover 在这里会透出底下的工作日按钮，
+            // 滚轮读数会糊成一片，所以这层必须自己是不透明的。
+            className={`absolute z-30 w-full overflow-hidden rounded-lg border border-input bg-white p-1 text-popover-foreground shadow-lg dark:bg-gray-800 ${opensAbove ? "bottom-full mb-1" : "mt-1"}`}
+          >
+            <WheelPicker
+              items={items}
+              value={type === "hour" ? hourInput : minuteInput}
+              ariaLabel={type === "hour" ? hourLabel : minuteLabel}
+              visibleRows={compact || mobile ? 5 : 7}
+              onChange={(item) =>
+                commitTime(
+                  type === "hour" ? item : hourInput,
+                  type === "minute" ? item : minuteInput,
+                )
+              }
+              onSelect={(item) => {
+                commitTime(
+                  type === "hour" ? item : hourInput,
+                  type === "minute" ? item : minuteInput,
+                );
+                setOpenMenu(null);
+              }}
+            />
+          </m.div>
+        )}
+      </AnimatePresence>
+    </LazyMotion>
   );
 
   return (
-    <div className={compact ? "space-y-1.5" : mobile ? "space-y-2.5" : "space-y-2"} ref={containerRef}>
+    <div
+      className={compact ? "space-y-1.5" : mobile ? "space-y-2.5" : "space-y-2"}
+      ref={containerRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && openMenu) {
+          event.stopPropagation();
+          setOpenMenu(null);
+        }
+      }}
+    >
       <Label
         htmlFor={`${id}Hour`}
-        className={compact || mobile ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}
+        className={
+          compact || mobile
+            ? "text-xs font-medium text-muted-foreground"
+            : "dark:text-gray-200"
+        }
       >
         {label}
       </Label>
@@ -148,6 +203,7 @@ export function TimeSelector({
           <div className="relative">
             <input
               id={`${id}Hour`}
+              aria-label={`${label} · ${hourLabel}`}
               type="text"
               inputMode="numeric"
               autoComplete="off"
@@ -164,15 +220,16 @@ export function TimeSelector({
               }`}
               value={hourInput}
               onChange={(e) => handleHourInput(e.target.value)}
-              onFocus={() => setOpenMenu("hour")}
+              onFocus={() => openOptions("hour")}
               onBlur={() => commitTime(hourInput, minuteInput)}
               placeholder="HH"
             />
             <button
               type="button"
               className={`absolute end-0 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground ${mobile ? "h-12 w-10" : "h-8 w-8"}`}
-              onClick={() => setOpenMenu((prev) => (prev === "hour" ? null : "hour"))}
-              aria-label="Select hour"
+              onClick={() => openOptions("hour", true)}
+              aria-label={`${label} · ${hourLabel}`}
+              aria-expanded={openMenu === "hour"}
             >
               <ChevronDown className="h-4 w-4" />
             </button>
@@ -183,6 +240,7 @@ export function TimeSelector({
           <div className="relative">
             <input
               id={`${id}Minute`}
+              aria-label={`${label} · ${minuteLabel}`}
               type="text"
               inputMode="numeric"
               autoComplete="off"
@@ -199,15 +257,16 @@ export function TimeSelector({
               }`}
               value={minuteInput}
               onChange={(e) => handleMinuteInput(e.target.value)}
-              onFocus={() => setOpenMenu("minute")}
+              onFocus={() => openOptions("minute")}
               onBlur={() => commitTime(hourInput, minuteInput)}
               placeholder="MM"
             />
             <button
               type="button"
               className={`absolute end-0 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground ${mobile ? "h-12 w-10" : "h-8 w-8"}`}
-              onClick={() => setOpenMenu((prev) => (prev === "minute" ? null : "minute"))}
-              aria-label="Select minute"
+              onClick={() => openOptions("minute", true)}
+              aria-label={`${label} · ${minuteLabel}`}
+              aria-expanded={openMenu === "minute"}
             >
               <ChevronDown className="h-4 w-4" />
             </button>

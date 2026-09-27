@@ -1,0 +1,173 @@
+{
+  "en": {
+    "extensionSave": "Save",
+    "extensionSaveError": "Could not save your settings. Please try again.",
+    "extensionHour": "Select hour",
+    "extensionMinute": "Select minute",
+    "extensionEditSchedule": "Edit schedule",
+    "extensionLoadError": "DoneAt couldn’t open. Please reload.",
+    "extensionReload": "Reload"
+  },
+  "zh-CN": {
+    "extensionSave": "保存",
+    "extensionSaveError": "未能保存设置，请重试。",
+    "extensionHour": "选择小时",
+    "extensionMinute": "选择分钟",
+    "extensionEditSchedule": "修改班次",
+    "extensionLoadError": "DoneAt 暂时无法打开，请重新加载。",
+    "extensionReload": "重新加载"
+  },
+  "zh-TW": {
+    "extensionSave": "儲存",
+    "extensionSaveError": "無法儲存設定，請再試一次。",
+    "extensionHour": "選擇小時",
+    "extensionMinute": "選擇分鐘",
+    "extensionEditSchedule": "修改班次",
+    "extensionLoadError": "DoneAt 暫時無法開啟，請重新載入。",
+    "extensionReload": "重新載入"
+  },
+  "zh-HK": {
+    "extensionSave": "儲存",
+    "extensionSaveError": "未能儲存設定，請再試一次。",
+    "extensionHour": "選擇小時",
+    "extensionMinute": "選擇分鐘",
+    "extensionEditSchedule": "修改班次",
+    "extensionLoadError": "DoneAt 暫時無法開啟，請重新載入。",
+    "extensionReload": "重新載入"
+  },
+  "ja": {
+    "extensionSave": "保存",
+    "extensionSaveError": "設定を保存できませんでした。もう一度お試しください。",
+    "extensionHour": "時を選択",
+    "extensionMinute": "分を選択",
+    "extensionEditSchedule": "勤務時間を変更",
+    "extensionLoadError": "DoneAt を開けませんでした。再読み込みしてください。",
+    "extensionReload": "再読み込み"
+  },
+  "ko": {
+    "extensionSave": "저장",
+    "extensionSaveError": "설정을 저장하지 못했어요. 다시 시도해 주세요.",
+    "extensionHour": "시간 선택",
+    "extensionMinute": "분 선택",
+    "extensionEditSchedule": "근무 시간 수정",
+    "extensionLoadError": "DoneAt을 열 수 없습니다. 다시 불러와 주세요.",
+    "extensionReload": "다시 불러오기"
+  },
+  "fr": {
+    "extensionSave": "Enregistrer",
+    "extensionSaveError": "Impossible d’enregistrer vos réglages. Veuillez réessayer.",
+    "extensionHour": "Choisir l’heure",
+    "extensionMinute": "Choisir les minutes",
+    "extensionEditSchedule": "Modifier les horaires",
+    "extensionLoadError": "Impossible d’ouvrir DoneAt. Veuillez recharger.",
+    "extensionReload": "Recharger"
+  },
+  "de": {
+    "extensionSave": "Speichern",
+    "extensionSaveError": "Deine Einstellungen konnten nicht gespeichert werden. Bitte versuche es erneut.",
+    "extensionHour": "Stunde wählen",
+    "extensionMinute": "Minute wählen",
+    "extensionEditSchedule": "Arbeitszeiten ändern",
+    "extensionLoadError": "DoneAt konnte nicht geöffnet werden. Bitte neu laden.",
+    "extensionReload": "Neu laden"
+  },
+  "es": {
+    "extensionSave": "Guardar",
+    "extensionSaveError": "No se pudo guardar la configuración. Inténtalo de nuevo.",
+    "extensionHour": "Elegir hora",
+    "extensionMinute": "Elegir minutos",
+    "extensionEditSchedule": "Editar horario",
+    "extensionLoadError": "No se pudo abrir DoneAt. Vuelve a cargarlo.",
+    "extensionReload": "Volver a cargar"
+  },
+  "it": {
+    "extensionSave": "Salva",
+    "extensionSaveError": "Impossibile salvare le impostazioni. Riprova.",
+    "extensionHour": "Seleziona ora",
+    "extensionMinute": "Seleziona minuti",
+    "extensionEditSchedule": "Modifica orario",
+    "extensionLoadError": "Impossibile aprire DoneAt. Riprova a caricare.",
+    "extensionReload": "Ricarica"
+  },
+  "pt": {
+    "extensionSave": "Salvar",
+    "extensionSaveError": "Não foi possível salvar as configurações. Tente novamente.",
+    "extensionHour": "Selecionar hora",
+    "extensionMinute": "Selecionar minutos",
+    "extensionEditSchedule": "Editar horário",
+    "extensionLoadError": "Não foi possível abrir o DoneAt. Recarregue.",
+    "extensionReload": "Recarregar"
+  },
+  "ru": {
+    "extensionSave": "Сохранить",
+    "extensionSaveError": "Не удалось сохранить настройки. Попробуйте ещё раз.",
+    "extensionHour": "Выбрать часы",
+    "extensionMinute": "Выбрать минуты",
+    "extensionEditSchedule": "Изменить график",
+    "extensionLoadError": "Не удалось открыть DoneAt. Попробуйте перезагрузить.",
+    "extensionReload": "Перезагрузить"
+  },
+  "hi-IN": {
+    "extensionSave": "सेव करें",
+    "extensionSaveError": "सेटिंग सेव नहीं हो सकीं। कृपया फिर से कोशिश करें।",
+    "extensionHour": "घंटा चुनें",
+    "extensionMinute": "मिनट चुनें",
+    "extensionEditSchedule": "समय बदलें",
+    "extensionLoadError": "DoneAt नहीं खुल सका। कृपया फिर से लोड करें।",
+    "extensionReload": "फिर से लोड करें"
+  },
+  "mr-IN": {
+    "extensionSave": "जतन करा",
+    "extensionSaveError": "सेटिंग्ज जतन करता आल्या नाहीत. कृपया पुन्हा प्रयत्न करा.",
+    "extensionHour": "तास निवडा",
+    "extensionMinute": "मिनिट निवडा",
+    "extensionEditSchedule": "कामाची वेळ बदला",
+    "extensionLoadError": "DoneAt उघडता आले नाही. कृपया पुन्हा लोड करा.",
+    "extensionReload": "पुन्हा लोड करा"
+  },
+  "tr": {
+    "extensionSave": "Kaydet",
+    "extensionSaveError": "Ayarlar kaydedilemedi. Lütfen tekrar deneyin.",
+    "extensionHour": "Saat seç",
+    "extensionMinute": "Dakika seç",
+    "extensionEditSchedule": "Çalışma saatlerini düzenle",
+    "extensionLoadError": "DoneAt açılamadı. Lütfen yeniden yükleyin.",
+    "extensionReload": "Yeniden yükle"
+  },
+  "ar": {
+    "extensionSave": "حفظ",
+    "extensionSaveError": "تعذّر حفظ إعداداتك. يُرجى المحاولة مرة أخرى.",
+    "extensionHour": "اختر الساعة",
+    "extensionMinute": "اختر الدقائق",
+    "extensionEditSchedule": "تعديل أوقات العمل",
+    "extensionLoadError": "تعذّر فتح DoneAt. يُرجى إعادة التحميل.",
+    "extensionReload": "إعادة التحميل"
+  },
+  "th": {
+    "extensionSave": "บันทึก",
+    "extensionSaveError": "บันทึกการตั้งค่าไม่ได้ โปรดลองอีกครั้ง",
+    "extensionHour": "เลือกชั่วโมง",
+    "extensionMinute": "เลือกนาที",
+    "extensionEditSchedule": "แก้ไขเวลาทำงาน",
+    "extensionLoadError": "เปิด DoneAt ไม่สำเร็จ โปรดลองโหลดใหม่",
+    "extensionReload": "โหลดใหม่"
+  },
+  "id": {
+    "extensionSave": "Simpan",
+    "extensionSaveError": "Pengaturan tidak dapat disimpan. Silakan coba lagi.",
+    "extensionHour": "Pilih jam",
+    "extensionMinute": "Pilih menit",
+    "extensionEditSchedule": "Ubah jadwal",
+    "extensionLoadError": "DoneAt tidak dapat dibuka. Silakan muat ulang.",
+    "extensionReload": "Muat ulang"
+  },
+  "vi": {
+    "extensionSave": "Lưu",
+    "extensionSaveError": "Không thể lưu cài đặt. Vui lòng thử lại.",
+    "extensionHour": "Chọn giờ",
+    "extensionMinute": "Chọn phút",
+    "extensionEditSchedule": "Sửa giờ làm",
+    "extensionLoadError": "Không thể mở DoneAt. Vui lòng tải lại.",
+    "extensionReload": "Tải lại"
+  }
+}

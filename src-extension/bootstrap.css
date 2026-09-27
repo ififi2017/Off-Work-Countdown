@@ -1,0 +1,129 @@
+/* Shared with the app so loading never resizes the popup. No fonts or images. */
+:root {
+  --popup-height: 500px;
+}
+html,
+body {
+  width: 400px;
+  margin: 0;
+}
+body {
+  background: #fff;
+  color: #18181b;
+  font:
+    14px system-ui,
+    sans-serif;
+}
+.dark body {
+  background: #1a1a1d;
+  color: #fafafa;
+}
+.theme-cyberpunk body {
+  background: hsl(260 40% 12%);
+  color: #fff;
+}
+.theme-sunset body {
+  background: hsl(24 60% 97%);
+  color: #4d3326;
+}
+#boot {
+  display: flex;
+  flex-direction: column;
+  height: var(--popup-height);
+  box-sizing: border-box;
+  padding: 20px 20px 16px;
+}
+.boot-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  margin-bottom: 22px;
+}
+.boot-brand {
+  flex: 1;
+}
+.boot-bone {
+  border-radius: 6px;
+  background: currentColor;
+  opacity: 0.07;
+  animation: boot-pulse 1.4s ease-in-out 0.2s infinite alternate;
+}
+.boot-title {
+  width: 104px;
+  height: 20px;
+  margin-bottom: 10px;
+}
+.boot-caption {
+  width: 84px;
+  height: 10px;
+}
+.boot-icon {
+  width: 32px;
+  height: 32px;
+}
+.boot-content {
+  display: grid;
+  gap: 16px;
+}
+.boot-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.boot-field {
+  height: 60px;
+}
+.boot-days {
+  height: 30px;
+  margin-top: 16px;
+}
+.boot-tool {
+  height: 34px;
+}
+.boot-summary {
+  display: grid;
+  gap: 20px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, currentColor 5%, transparent);
+  border-radius: 9px;
+}
+.boot-row {
+  height: 12px;
+}
+.boot-footer {
+  height: 36px;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+#boot[aria-busy="false"] .boot-bone {
+  display: none;
+}
+#boot-retry {
+  align-self: flex-start;
+  margin-top: 16px;
+  border: 0;
+  background: #ea580c;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 7px;
+  font: inherit;
+  cursor: pointer;
+}
+#boot-retry[hidden] {
+  display: none;
+}
+#boot-retry:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+@keyframes boot-pulse {
+  to {
+    opacity: 0.12;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .boot-bone {
+    animation: none;
+  }
+}

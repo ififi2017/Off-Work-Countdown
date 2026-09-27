@@ -1,0 +1,206 @@
+import { build } from "esbuild";
+import { spawnSync } from "node:child_process";
+import {
+  copyFileSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { resolve } from "node:path";
+
+const root = resolve(import.meta.dirname, "..");
+const out = resolve(root, "build/chrome-extension");
+const version = JSON.parse(
+  readFileSync(resolve(root, "package.json"), "utf8"),
+).version;
+const run = (args) => {
+  const result = spawnSync(process.execPath, args, {
+    cwd: root,
+    stdio: "inherit",
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
+};
+run(["scripts/check-version.mjs"]);
+run([
+  "node_modules/typescript/bin/tsc",
+  "--project",
+  "src-extension/tsconfig.json",
+  "--noEmit",
+]);
+rmSync(out, { recursive: true, force: true });
+mkdirSync(resolve(out, "fonts"), { recursive: true });
+mkdirSync(resolve(out, "icons"), { recursive: true });
+const translationKeys = JSON.parse(
+  readFileSync(resolve(root, "src-extension/translation-keys.json"), "utf8"),
+);
+const result = await build({
+  absWorkingDir: root,
+  entryPoints: ["src-extension/popup.tsx"],
+  outdir: out,
+  // Per-language chunks: the popup loads only the active translation.
+  splitting: true,
+  chunkNames: "chunks/[name]-[hash]",
+  bundle: true,
+  minify: true,
+  format: "esm",
+  platform: "browser",
+  target: "chrome120",
+  jsx: "automatic",
+  define: {
+    "process.env.NODE_ENV": '"production"',
+    ...Object.fromEntries(
+      [
+        "NEXT_PUBLIC_WEB_APP_URL",
+        "NEXT_PUBLIC_BASE_URL",
+        "NEXT_PUBLIC_OFFICIAL_SITE_URL",
+      ].map((key) => [
+        `process.env.${key}`,
+        JSON.stringify(process.env[key]) ?? "undefined",
+      ]),
+    ),
+  },
+  metafile: true,
+  plugins: [
+    {
+      name: "popup-translations",
+      setup(build) {
+        // Keep all 19 languages offline, without shipping unrelated app/page copy.
+        build.onLoad(
+          { filter: /public\/locales\/[^/]+\/translation\.json$/ },
+          ({ path }) => {
+            const source = JSON.parse(readFileSync(path, "utf8"));
+            const filtered = Object.fromEntries(
+              translationKeys.map((key) => {
+                if (typeof source[key] !== "string")
+                  throw new Error(`Missing ${key} in ${path}`);
+                return [key, source[key]];
+              }),
+            );
+            return { contents: JSON.stringify(filtered), loader: "json" };
+          },
+        );
+      },
+    },
+  ],
+  legalComments: "external",
+});
+await build({
+  absWorkingDir: root,
+  entryPoints: ["src-extension/bootstrap.ts", "src-extension/bootstrap.css"],
+  outdir: out,
+  bundle: true,
+  minify: true,
+  format: "iife",
+  platform: "browser",
+  target: "chrome120",
+});
+run([
+  "node_modules/tailwindcss/lib/cli.js",
+  "--input",
+  "app/globals.css",
+  "--output",
+  resolve(out, "popup.css"),
+  "--minify",
+  "--content",
+  Object.keys(result.metafile.inputs)
+    .filter((path) => /\.tsx$/.test(path))
+    .join(","),
+]);
+writeFileSync(
+  resolve(out, "popup.css"),
+  readFileSync(resolve(out, "popup.css"), "utf8") +
+    "\n" +
+    readFileSync(resolve(root, "src-extension/popup.css"), "utf8"),
+);
+copyFileSync(
+  resolve(root, "src-extension/popup.html"),
+  resolve(out, "popup.html"),
+);
+copyFileSync(
+  resolve(root, "app/fonts/GeistVF.woff"),
+  resolve(out, "fonts/GeistVF.woff"),
+);
+copyFileSync(
+  resolve(root, "app/fonts/LICENSE.txt"),
+  resolve(out, "fonts/LICENSE.txt"),
+);
+// Chrome uses 16 in the toolbar at 1x and 48 on the extensions page; the
+// desktop icon set has no such sizes, so they are kept beside the popup.
+const iconSources = {
+  16: "src-extension/icons/16.png",
+  32: "src-tauri/icons/32x32.png",
+  48: "src-extension/icons/48.png",
+  128: "src-tauri/icons/128x128.png",
+};
+const icons = {};
+for (const [size, source] of Object.entries(iconSources)) {
+  copyFileSync(resolve(root, source), resolve(out, `icons/${size}.png`));
+  icons[size] = `icons/${size}.png`;
+}
+writeFileSync(
+  resolve(out, "manifest.json"),
+  JSON.stringify(
+    {
+      manifest_version: 3,
+      name: "DoneAt",
+      version,
+      minimum_chrome_version: "120",
+      description: "__MSG_description__",
+      default_locale: "en",
+      action: {
+        default_title: "DoneAt",
+        default_popup: "popup.html",
+        default_icon: { 16: icons[16], 32: icons[32] },
+      },
+      icons,
+      content_security_policy: {
+        extension_pages:
+          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      },
+    },
+    null,
+    2,
+  ) + "\n",
+);
+
+// Chrome's locale names differ from the UI's BCP 47 tags. Cantonese inherits
+// Traditional Chinese; Marathi and Hindi use Chrome's base language tags.
+const chromeLocales = {
+  "zh-CN": "zh_CN",
+  "zh-TW": "zh_TW",
+  "hi-IN": "hi",
+  "mr-IN": "mr",
+  pt: "pt_BR",
+};
+const locales = Object.keys(
+  JSON.parse(readFileSync(resolve(root, "src-extension/copy.json"), "utf8")),
+);
+const extensionCopy = JSON.parse(
+  readFileSync(resolve(root, "src-extension/copy.json"), "utf8"),
+);
+for (const locale of locales.filter((locale) => locale !== "zh-HK")) {
+  const dir = resolve(out, "_locales", chromeLocales[locale] ?? locale);
+  mkdirSync(dir, { recursive: true });
+  const translation = JSON.parse(
+    readFileSync(
+      resolve(root, `public/locales/${locale}/translation.json`),
+      "utf8",
+    ),
+  );
+  writeFileSync(
+    resolve(dir, "messages.json"),
+    JSON.stringify(
+      {
+        description: { message: translation.offWorkCountdown },
+        loadError: { message: extensionCopy[locale].extensionLoadError },
+        reload: { message: extensionCopy[locale].extensionReload },
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+}
+run(["scripts/check-extension.mjs"]);
+console.log(`Chrome extension ready: ${out}`);
