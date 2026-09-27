@@ -9,6 +9,7 @@
   详细说明按文件夹放好）、440×280 小宣传图、1400×560 大宣传图和 128×128 商店图标。
 - `xiaohongshu/` 产出小红书笔记图 1080×1440（3:4 竖版），中文三张。
   这是信息流展示面积最大的比例；1:1 和 4:3 都会被压小或裁切。
+- `promo-video/` 产出竖屏宣传视频 1080×1920、60fps，中文，约一分钟。两个版本：只有音效，和音效加合成配乐。
 
 色板跟 DoneAt 走：奶油底 `#FFF1D8`、梅子墨 `#2B1935`、橙 `#F45A1E`。macOS 用晚间梅子渐变，iOS 用奶油底。套框跟官网 DeviceHero 一样：官方机框撑开盒子，截图铺在屏洞里，框叠在上面。不要挖空边框、裁金属圈或重画灵动岛。整机要完整露出；设备尽量铺满舞台，但不能裁掉底框。
 
@@ -308,3 +309,21 @@ XHS_SHOTS_RAW_DIR='/path/to/ios/raw' npm run shots:xiaohongshu
 成品在 `xiaohongshu/out/`：`zh-CN-01-timer.jpg` 起，按序号当封面和后两张轮播。
 发笔记用 JPEG（质量 90，远小于 5MB）；PNG 是同尺寸的不透明底稿。三张必须同尺寸，
 滑动时才不会跳。
+
+## 竖屏宣传视频
+
+```bash
+node scripts/marketing-shots/promo-video/render.mjs
+```
+
+约一分钟出片，成品在 `promo-video/out/`：`doneat-promo-60fps.mp4` 只有音效，发布时可以在平台上另配音乐；
+`doneat-promo-60fps-music.mp4` 叠了合成配乐。`--stills 3,20` 只截那几秒的 PNG，调画面时用。
+
+画面全部在 `scene.html` 里用 HTML/SVG 重画，不用录屏：页面按时间戳 `render(t)` 画出任意一帧，
+`render.mjs` 逐帧截图，拆给几个无头 Chrome 并行，再用 ffmpeg 拼接。所以成片与机器快慢无关，
+每次渲染完全一致。时间轴改动只动 `scene.html` 里的 `O`（开头办公室）和 `T`（产品段）。
+
+声音由 `audio.mjs` 现场合成，不带任何音频素材，也就没有授权问题；时间点从页面导出，
+改时间轴后声音会自己对齐。木鱼声照搬 `components/MiniCountdown.tsx` 的合成方式，
+下班礼花复刻 `components/Confetti.tsx` 用的 canvas-confetti 参数与物理，只是改成按帧确定地计算。
+最后用 `loudnorm` 统一到约 -16 LUFS、真峰值 -1.5 dBTP。
