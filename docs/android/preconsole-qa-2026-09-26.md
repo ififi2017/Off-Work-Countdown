@@ -8,6 +8,8 @@ The later QA-051 run (`/tmp/doneat-life-history-final-gradle.log`) passes **333 
 
 The QA-041 follow-up (completed 2026-09-27) passes **336 domain + 68 data + 8 design-system + 11 app = 423 tests**, lint (0 errors / 33 warnings / 1 hint), Debug/R8 Release/AAB (`doneat-number-input-save-final-gradle.log`). All **17 Swift tests** (5 numeric-input + 12 shared-rule methods; parameterized inputs included) pass on the final iOS sources (`doneat-number-input-final-ios.log`). npm has 445 passing tests; lint, Web/Desktop builds and output checks pass. iOS app, Widget, Watch app and Watch Widget build as 3.2.1; Android remains 3.2.0 (1). API 36 exercises negative, repeated-separator, overlength, NaN/Infinity and exponent drafts without changing the saved salary; comma decimal, zero and empty edits persist on leaving. Invalid bonus and recovered raw text remain unchanged. A Done commit followed by another edit and leaving the same page persists the latest value. All 14 original emulator files were restored byte-for-byte; the app was stopped and the Pixel was untouched. Normal and 320 dp / 200% font screenshots show the validation. The initial cold-boot run hit an input-dispatch ANR under system/input-method load; after reopening, the complete exercise passed. The first exercise also exposed cancellation of valid salary saves on page disposal; the final app-scoped commit fixes it. No iOS visual inspection was performed.
 
+The 2026-09-27 boundary/recovery follow-up passes **336 domain + 74 data + 8 design-system + 15 app = 433 tests**, with no failures, errors or skips. Final lint has 0 errors / 34 warnings / 1 hint (the additional warning is a newly reported Gradle version, not a source warning); Debug, R8 Release, AAB and ZIP/ELF 16 KiB checks pass (`doneat-boundary-final-gradle.log`, `doneat-boundary-zipalign.log`, `doneat-boundary-elf.log`). The iOS simulator target builds headlessly; npm lint and 445 tests pass. No iOS visual inspection was performed. API 36 shows recovery before setup/main navigation, preserves unreadable bytes on retry/cancel, keeps a unique `.corrupt` copy on confirmation and reopens a valid replacement on retry. Light/default and dark 320 dp / 200% font inspection covers both the page and confirmation; original emulator files are restored byte-for-byte. The first UI scripts needed corrected ADB file enumeration and a retry for a transient null accessibility root; these are not counted as passes. Final targeted evidence is in the two recovery logs above. Pixel Records navigation and 90-second background/resume checks pass; its current Timer phase has no parsable minute countdown, so exact elapsed-state assertions come from `TimerTicksTest`. The Pixel business archive remained byte-identical. Six cases above are now complete: **79 PASS / 47 NOT_RUN**. Real Play purchase/restore and cloud/device-transfer gates remain separate.
+
 The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-preconsole-roundtrip-final.log`). Swift imported both original and Kotlin output, compared the whole `RecordState`, and verified all 12 entity families. This is QA-070 evidence. The 15,000-day/2,609-workday Life JVM test printed **4.848166 ms** in its JUnit XML for one model build on this Mac. It is calculation evidence only and does not establish QA-056 device scroll, frame, or cancellation behavior. No Play Console evidence is available.
 
 | Case | Tier | Status | Coverage | Automated evidence | Remaining acceptance |
@@ -30,11 +32,11 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-016 | JVM | PASS | Complete | `RecordsQueriesTest.aNightShiftPutsItsMorningOnTheNextDay` | — |
 | QA-017 | JVM | PASS | Complete | `ShiftExamplesTest.degenerateClocksAndCyclesTerminate` | — |
 | QA-018 | JVM | PASS | Complete | `ShiftExamplesTest.malformedSegmentsAreRejectedWithoutNegativeOrNanFigures`; `RecordStoreTest.anEditThatWouldNotReadBackNeverReachesDisk`; `aPersistedMalformedRowBlocksWritesAndKeepsItsBytes` covers illegal date and empty/zero/reversed/overlapping segments on disk | — |
-| QA-019 | JVM | NOT_RUN | None | `ShiftExamplesTest.eachSegmentBoundaryUsesHalfOpenTime` | Half-open segment boundaries passed; displayed rounding against the source oracle remains unverified. |
+| QA-019 | JVM | PASS | Complete | `ShiftExamplesTest.eachSegmentBoundaryUsesHalfOpenTime`; `TimerTicksTest.countdownRoundingMatchesAppTextAtSecondMinuteAndHourBoundaries`; actual pinned Swift `AppText.formatDuration` executed for the same 13 values (`doneat-duration-oracle.log`) | — |
 | QA-020 | JVM | PASS | Complete | `ExtendedScheduleFixtureTest.dayResolution`; `expansionUsesUniqueCivilDaysAcrossNewYearLeapDayAndDst` | — |
 | QA-021 | ORACLE | PASS | Complete | `ScheduleRuleFixtureTest.losAngelesGapAndRepeatedHourMatchTheSharedOracle`; iOS `ScheduleRuleFixtureTests` | — |
 | QA-022 | JVM | PASS | Complete | `RecordStoreTest.changingDeviceZoneAndReopeningKeepsHistoricalCivilDays`; explicit migration test and API 36 UTC migration UI | — |
-| QA-023 | JVM | NOT_RUN | None | — | Pause foreground ticker for 90 seconds, resume and assert a fresh absolute-time evaluation without backfilled ticks. |
+| QA-023 | JVM | PASS | Complete | `TimerTicksTest.resumingAfterNinetySecondsReadsTheClockWithoutReplayingTicks`; `delayedCollectionAndClockCorrectionsAlwaysUseAbsoluteTime`; `aStalledTickerCrossingClockOffImmediatelyShowsCompleted` | — |
 | QA-024 | DEVICE | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
 | QA-025 | ORACLE | PASS | Complete | `ShiftExamplesTest.noWorkdaysMeansNoNextShift`; `manualModeHasNoRestDayAndNoPlannedShift`; `unresolvedFutureTypeNeverBecomesAnInventedTomorrow`; manual SessionCommands start test | — |
 | QA-026 | JVM | PASS | Complete | `ExtendedScheduleFixtureTest.validation`; Swift oracle includes blank, whitespace, 40/41 characters and Unicode grapheme boundaries | — |
@@ -73,12 +75,12 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-059 | JVM | PASS | Complete | `FocusPlannerTest.identityVectorsMatchTheSpecification` | — |
 | QA-060 | DB | PASS | Complete | `FocusStoreTest.concurrentStartsAndRepeatedCallbacksRecordOneLogicalBlock`; `FocusEngineTest.twoDevicesFinishingTheSameBlockStartOneSharedBreak` | — |
 | QA-061 | DEVICE | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
-| QA-062 | JVM | NOT_RUN | Partial | `FocusEngineTest.aFocusEndingAtABoundaryLeavesNoUnusableBreakAction` | Focus boundary prevents unusable break action; notification rebuild across lunch/clock-off remains. |
+| QA-062 | JVM | PASS | Complete | `FocusStoreTest.lunchAndClockOffRebuildAlarmsWithoutCreditingAnIncompleteBlock`: persisted session → real planner → ReminderSync with fake AlarmPort; cancels old alarms, credits no truncated block, resumes after lunch and refuses post-shift starts | — |
 | QA-063 | JVM | PASS | Complete | `FocusPlanningTest.twoThreeOneTemplateKeepsItsSavedSixRoundsAcrossShortAndLongShifts`; `shortShiftsTakeAWholeTaskPrefix` | — |
 | QA-064 | JVM | PASS | Complete | `FocusPlanningTest.twoThreeOneTemplateKeepsItsSavedSixRoundsAcrossShortAndLongShifts` | — |
 | QA-065 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
 | QA-066 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
-| QA-067 | SYNC | NOT_RUN | Partial | `FocusEngineTest.twoDevicesFinishingTheSameBlockStartOneSharedBreak` | Same-ID engine convergence test; add export/import integration and superseded history assertion. |
+| QA-067 | SYNC | PASS | Complete | `FocusStoreTest.twoDevicesImportingTheSameAutomaticBlockKeepOneCompletionAndBreak`; `importedCompetingSessionsKeepSupersededHistoryWithoutCountingIt`: separate stores/queues, real v6 export/import/reload, repeated import and superseded history | First-release file merge passed; automatic Drive reconnection remains deferred with T22. |
 | QA-068 | JVM | PASS | Complete | `FocusEngineTest.aBoundaryCutAndAUserStopDoNotCount` | — |
 | QA-069 | DB | PASS | Complete | `RecordsTransferTest.everyKnownVersionPreviewsAndImports` | — |
 | QA-070 | DB | PASS | Complete | `RecordsTransferTest.exportAllEntitiesForSwiftRoundTrip`; Swift whole-state round trip, 12 families | — |
@@ -88,7 +90,7 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-074 | DB | PASS | Complete | `RecordStoreTest.tombstonesPersistAndStillBlockImports` | — |
 | QA-075 | DB | PASS | Complete | `RestoreErasedRemapTest.restoredIdentitiesCarryTheirReferences` | — |
 | QA-076 | DB | PASS | Complete | `RecordJsonFixtureTest.everyCaseMatchesSwift`; `editStampTieBreakerWinsWhenWallClockRunsBackward` | — |
-| QA-077 | DB | NOT_RUN | Partial | `RecordStoreTest.aFailedWriteCommitsNothing`; `atomicWriterRemovesPendingFileWhenReplacementFails` | Low-space writer and replacement failure preserve old bytes; process termination around a large import commit remains. |
+| QA-077 | DB | PASS | Complete | `ArchiveInterruptionTest.killingALargeImportBeforeAndAfterReplacementLeavesOneCompleteArchive` kills a separate JVM during a 10,000-task import before/after the actual atomic write; `RecordStoreTest.aFailedWriteCommitsNothing`; `atomicWriterRemovesPendingFileWhenReplacementFails` | Fault injection uses disposable JVM processes and real files, not a physical-phone power failure. |
 | QA-078 | SEC | PASS | Complete | `RecordsTransferTest.exportsOnlySchemaSixRecordsEvenAfterImportingUnknownPrivateFields` checks both export modes and private-field exclusion; actual free SAF export; release has no broad storage permission and uses CreateDocument | — |
 | QA-079 | DEVICE | NOT_RUN | None | — | SAF cloud URI, readonly URI and cancellation require device. |
 | QA-080 | DB | PASS | Complete | `RecordStoreTest.everyOlderLocalEnvelopeWritesBackAsSchemaSix`; synthetic v1–v6 restart, tombstone, failed-write, damaged and future archive tests | — |
@@ -137,14 +139,14 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-136 | PLAY | NOT_RUN | None | — | Play Console configuration and license-test evidence. |
 | QA-138 | DEVICE | NOT_RUN | Partial | API 36 system Auto Backup and D2D reinstall restore records/settings byte-for-byte; first launch reads restored setup | Two physical devices with the same Google account, device locks and rebuilt reminders/widgets remain. |
 | QA-139 | SEC | NOT_RUN | Partial | D2D test excludes no_backup/device-local probes and debug_plus preference; Auto Backup excludes runtime session/SharedPreferences | Real signed purchase/acknowledgement cache, new-device permissions and Play re-query remain. |
-| QA-140 | DB | NOT_RUN | Partial | `RecordStoreTest.aNewerLocalArchiveIsPreservedAndBlocksWrites`; `aDamagedArchiveBlocksWritesUntilQuarantined` | Future-version and damaged local archives preserve their bytes and block writes; backup during replacement and restored-archive UI remain. |
+| QA-140 | DB | PASS | Complete | `ArchiveInterruptionTest.backupsDuringReplacementAlwaysReadACompleteOldOrNewArchive`; future/damaged local-file guards and repeated-quarantine test; API 36 cold-launch recovery UI for damaged/future files, retry/cancel byte preservation, confirmed quarantine, valid-file retry (`doneat-recovery-device-verified.log`, `doneat-recovery-extra.log`) | Concurrent snapshot reads exercise the atomic-file contract; actual Google cloud transport is tracked separately in QA-138/139. |
 
 ## Counts and limits
 
-- PASS: 73
+- PASS: 79
 - FAIL: 0
 - BLOCKED: 0
-- NOT_RUN: 53
+- NOT_RUN: 47
 
 The matrix has 126 first-release rows. These counts track exact catalog acceptance, not test-method count. Partial evidence stays NOT_RUN until the remaining conditions listed on that row are checked. The 423 passing JUnit tests, cross-platform builds and local backup simulations do not replace real Play purchases, cloud-account restore or the specified device matrix.
 

@@ -110,7 +110,7 @@ class RecordStore(
     suspend fun quarantine(): Path? = mutex.withLock {
         withContext(io) {
             val moved = if (Files.exists(file)) {
-                val target = file.resolveSibling("${file.fileName}.damaged-${nowMs().toLong()}")
+                val target = file.resolveSibling("${file.fileName}.${nowMs().toLong()}.${UUID.randomUUID()}.corrupt")
                 Files.move(file, target)
                 target
             } else {

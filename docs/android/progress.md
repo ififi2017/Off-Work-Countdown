@@ -44,24 +44,24 @@
 | 项 | 状态 |
 |---|---|
 | Android 工程 | `:app`、`:core:domain`、`:core:data`、`:core:designsystem`；D-13 原子 JSON，无 Room |
-| 自动化 | 最近完成的本地完整 Gradle：423 项通过（domain 336、data 68、design 8、app 11），lint 0 error / 33 warning / 1 hint，Debug、R8 Release 与 AAB 成功；`/tmp/doneat-number-input-save-final-gradle.log`。包含 Life 历史区间、非法薪资输入与离页保存修复。 |
+| 自动化 | 最近完成的本地完整 Gradle：433 项通过（domain 336、data 74、design 8、app 15），lint 0 error / 34 warning / 1 hint，Debug、R8 Release 与 AAB 成功；`/tmp/doneat-boundary-final-gradle.log`。新增计时、专注合并与故障恢复回归；本轮无新增源码 lint 告警。 |
 | 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture 12 项及数字输入 5 项、iOS headless build 通过。Web/Desktop build 与输出检查通过；npm lint、445 项测试、版本与 iOS 目录检查通过。字符串生成一致性检查通过。 |
-| 设备 | API 36 上 Auto Backup 清除/恢复后记录与设置字节相同；系统文档化设备转移/重装路径恢复业务数据与设置字节相同，且排除了 device-local/no_backup 测试标记和 Debug Plus。`bmgr restore` 直接传输返回 -1000，不能算恢复成功。Pixel 已安装候选 APK，最终解锁后回归仍待做。 |
+| 设备 | API 36 上 Auto Backup 清除/恢复后记录与设置字节相同；系统文档化设备转移/重装路径恢复业务数据与设置字节相同，且排除了 device-local/no_backup 测试标记和 Debug Plus。`bmgr restore` 直接传输返回 -1000，不能算恢复成功。Pixel 已覆盖安装最新候选 APK，Records 各尺度往返与后台 90 秒后回前台已检查，业务档案字节未变；完整真机矩阵仍待完成。 |
 | Play Console | 用户于 2026-09-26 确认 KYC 身份验证进行中，尚未通过。代理未登录核验；商品、公钥、许可测试、签名与应用审核尚无完成证据。 |
 
 ## 下一任务
 
-暂不计真机验收，KYC 等待期间按以下顺序推进：
+KYC 等待期间继续推进以下工作；Pixel 已完成本轮导航/前后台回归，仍不等于完整真机验收：
 
 QA-041/051 已同步修复并通过本地验收：非法金额不再被改成另一笔有效工资，历史职业结束日期和空档保持原样。
 
-1. **补齐可自动化的验收。** 重点是显示舍入（QA-019）、暂停后按当前时间重新计算（QA-023）、专注边界与提醒重建（QA-062）、专注记录导入合并（QA-067）、导入/备份过程中断与原子写入（QA-077/140）。模拟器或测试进程能覆盖的部分先完成，仍需设备的部分继续保留。
-2. **继续代码审阅和远程 CI。** [PR #239](https://github.com/ififi2017/Off-Work-Countdown/pull/239) 已合并；本轮 3.2.1 与 QA-041 修复在 `codex/salary-validation-321` 提交为后续 PR。`ae0ec1f0` 和 `e2d874c` 的 Android、Web/Desktop、Rust macOS/Windows 和 Xcode Cloud iOS/watchOS 检查全部通过；后续修复追加独立提交，每次以对应提交的 CI 为准。
+1. **继续性能与无障碍验收。** QA-019/023/062/067/077/140 本轮完成；下一批重点是大档案下 Records/Life 快速切换、取消过期计算与界面帧表现（QA-056），以及 TalkBack、最近任务和分享中的收入隐藏。真实云备份、物理换机和 Play 生命周期继续保留。
+2. **继续代码审阅和远程 CI。** [PR #239](https://github.com/ififi2017/Off-Work-Countdown/pull/239) 已合并；[PR #240](https://github.com/ififi2017/Off-Work-Countdown/pull/240) 已合并 3.2.1 与 QA-041；本轮 Android 恢复修复使用 `codex/android-archive-recovery` 独立提交后续 PR。`63a05de1` 的全部远程检查已通过；新提交单独核对 CI。`ae0ec1f0` 和 `e2d874c` 的 Android、Web/Desktop、Rust macOS/Windows 和 Xcode Cloud iOS/watchOS 检查全部通过；后续修复追加独立提交，每次以对应提交的 CI 为准。
 3. **完成发布资料的本地准备。** 将 Android 隐私补充落实到官网代码，定稿商店文案、素材选择和审核操作说明；正式发布页面、Console 填报和签名身份仍按发布流程处理。
 
 KYC 通过且 Console 具备相应操作条件后，再核对应用 ID、Play App Signing、商品/价格/公钥，完成测试轨道接入和真实购买生命周期测试。T26 的实际上传与发布按后续授权执行。KYC 验证进度不等于应用审核或购买验收结果。
 
-126 项首发用例逐项状态以 [`preconsole-qa-2026-09-26.md`](preconsole-qa-2026-09-26.md) 为证据矩阵；本页只记录任务状态，不把 423 项单测写成 126 项全通过。
+126 项首发用例逐项状态以 [`preconsole-qa-2026-09-26.md`](preconsole-qa-2026-09-26.md) 为证据矩阵；本页只记录任务状态，不把 433 项单测写成 126 项全通过。
 
 环境与命令见 `environment-lock.md`。候选默认（发布前冻结）：`applicationId=com.rainif.doneat`，minSdk 26，versionName 3.2.0，versionCode 1。
 
@@ -78,6 +78,15 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 | 2026-09-23 | 0 | 无需跟进 |
 | 2026-09-23（M1/M2 结束） | 0 | 无需跟进 |
 | 2026-09-26（本地收口） | `47fef18e` 计时秒边界刷新；`a6a6c382` Web 工时计算器 | 与上一轮相同；本轮不修改共享规则，也不推进 `9252fdfdc66aab88b4acb7493684f11991fd773d` 基线。秒边界刷新留在跨端计时回归，Web 工具不进入原生 UI。 |
+| 2026-09-27（边界/恢复） | `63a05de1` 薪资校验；`e2d874cf` 职业区间；`9f09fb43` 性能标记、`56817311` 排班预览缓存、`76d248e0` 计时行缓存；另有 `47fef18e`、`a6a6c382` | QA-041/051 已包含；#241 的变化为 iOS 缓存、重复计算消除和性能测量，本轮不移植其实现、不移动固定基线。 |
+
+## 2026-09-27 · 计时、专注合并与档案恢复
+
+- 完成 QA-019/023/062/067/077/140：实际固定基线 Swift 方法核对显示取整；前台停顿/重新收集 90 秒后按当前绝对时间更新；午休和下班边界取消旧提醒且不虚构成果；两个独立档案经 v6 合并保留唯一会话及被替代历史；10,000 任务导入提交前/后杀掉独立 JVM 进程，重开只得到完整旧版或新版；并发备份读取完整提交版本。
+- 修复此前只在数据层阻止写入、UI 仍显示空白记录的问题：损坏或较新版本本地档案在启动时显示恢复页，可重试；明确确认后将原件移为唯一 `.corrupt` 副本。复用现有 19 语言文案，不改归档协议。
+- Android 四模块 433 项、lint、Debug/R8 Release/AAB、ZIP/ELF 16 KiB 检查通过；npm lint/445 项、版本与 iOS 检查、iOS headless build 通过。未做 iOS 视觉检查。日志 `doneat-boundary-*`、`doneat-recovery-*`，证据索引 `build/android-preconsole/README.md`。
+- API 36 验证损坏/未来版本文件启动、重试/取消不覆盖、确认保留原字节、换回有效原件后重试恢复主界面；浅色正常字号、深色 320 dp / 200% 字号的页面与确认框已检查。测试后模拟器原文件逐字节还原。Pixel 最新 APK 的 Month/Week/Year/Life 往返及后台 90 秒后恢复通过，业务档案逐字节不变；精确倒计时跨下班状态由 JVM 测试证明，不把当前无分钟倒计时的真机页面当成该断言。
+- QA 矩阵为 **79 PASS / 47 NOT_RUN**；KYC 仍按用户反馈处于验证中，真实 Play 与云端换机验收尚未完成。固定基线不移动。基于 #240/#241/#242 合并后的 main 单独提 PR；Android 源码与设备验收版本无差异。QA-041/051 已包含，新合入的 iOS 性能缓存与测量记录在上方漂移表，新 main 上仓库检查、445 项测试和 iOS headless build 已重新通过（`doneat-boundary-main-*`）。
 
 ## 2026-09-27 · 薪资输入与后续版本（QA-041）
 

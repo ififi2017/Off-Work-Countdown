@@ -23,6 +23,7 @@ dependencies {
 }
 
 tasks.test {
+    systemProperty("owc.testClasspath", sourceSets["test"].runtimeClasspath.asPath)
     // The synthetic v1–v6 archives double as seed data.
     val archives = rootProject.file("../../docs/android/synthetic-archives")
     inputs.dir(archives)

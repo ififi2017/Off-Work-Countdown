@@ -37,10 +37,7 @@ class TimerText(
     fun string(id: Int) = res.getString(id)
 
     /** The countdown's `HH:MM:SS`, never negative. */
-    fun duration(ms: Double): String {
-        val total = maxOf(0L, (ms / 1_000).toLong())
-        return "%02d:%02d:%02d".format(Locale.ROOT, total / 3_600, (total % 3_600) / 60, total % 60)
-    }
+    fun duration(ms: Double): String = countdownDuration(ms)
 
     /**
      * Hours and minutes, dropping a zero part ("8 h", "45 m", "8 h 5 m"). English
@@ -116,6 +113,11 @@ class TimerText(
 
     companion object {
         const val MASK = "••••"
+
+        internal fun countdownDuration(ms: Double): String {
+            val total = maxOf(0L, (ms / 1_000).toLong())
+            return "%02d:%02d:%02d".format(Locale.ROOT, total / 3_600, (total % 3_600) / 60, total % 60)
+        }
 
         /** A first-strong isolate: the text keeps its own direction inside the surrounding line. */
         fun isolate(text: String) = "\u2068$text\u2069"
