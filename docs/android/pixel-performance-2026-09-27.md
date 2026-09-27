@@ -63,3 +63,30 @@ Do not claim a frame-rate win from this single A/B sample: with component tracin
 Final functional regression on Pixel: dynamic wallpaper color toggles the whole theme and restores the original palette; Settings → Records restores Life; three force-stop/cold-launch cycles reach Records with the optimized package. The final ordinary build's initial subscription values are captured once inside `remember` to satisfy Compose lint; the ongoing flow filtering is unchanged from the measured build. Final app tests/lint/build log: `/tmp/doneat-narrowed-final.log`.
 
 Cleanup: both isolated QA packages removed; emulator display size/font/night mode restored. Pixel's original app/data and stay-awake settings retained. Production manifest, release Plus override and dependencies contain no profiling hooks. Website and Play Console were not changed.
+
+## Repeated comparison: period reuse
+
+The next candidate narrows Records' own device-setting subscriptions and retains at most Week/Month/Year models for the current anchor and input revision. Repeated scale changes can use a completed model instead of removing the chart and loading it again. Privacy, authorization, archive, preferences, locale/format and civil-day changes invalidate those models. The subsequent TalkBack check also found that minute-only refreshes must keep the current chart mounted while replacing its model; otherwise a menu opened before the minute boundary can reference a removed accessibility node. That follow-up passes the actual minute-boundary TalkBack regression described below.
+
+Three complete runs per build used the same optimized/profileable/R8 configuration, synthetic archive and 24-switch/three-scroll-pair journey. Runs started near the start of a device minute. One candidate attempt lost wireless ADB during taps and another stopped before capture because the scale picker had scrolled off-screen; both were excluded and rerun. No partial run is included below.
+
+| Build / run | Switch frames | Janky | P95 | P99 | Life scroll frames / janky | Scroll P95 |
+|---|---:|---:|---:|---:|---:|---:|
+| Baseline 1 | 1,023 | 19 (1.86%) | 15 ms | 30 ms | 470 / 2 | 6 ms |
+| Baseline 2 | 960 | 8 (0.83%) | 11 ms | 26 ms | 448 / 0 | 7 ms |
+| Baseline 3 | 855 | 12 (1.40%) | 13 ms | 29 ms | 444 / 0 | 7 ms |
+| Period reuse 1 | 854 | 11 (1.29%) | 8 ms | 34 ms | 449 / 0 | 8 ms |
+| Period reuse 2 | 1,020 | 12 (1.18%) | 9 ms | 30 ms | 444 / 0 | 8 ms |
+| Period reuse 3 | 908 | 14 (1.54%) | 8 ms | 28 ms | 388 / 0 | 7 ms |
+
+The median of run P95 values falls from 13 to 8 ms; pooled janky frames are 39/2,838 (1.37%) versus 37/2,782 (1.33%). This supports a reduction in typical switch work, not elimination of slow frames or a substantial jank-rate improvement. The first and third candidate traces report kernel ftrace loss on CPU 2, so their raw atrace call counts and scheduler CPU attribution are not treated as complete measurements. `gfxinfo` counters above are independently collected. These rows describe the first period-reuse candidate; a separate final-build confirmation appears below.
+
+Local evidence: `records-baseline-{1,2,3}` and `records-candidate-{1,2,3}` traces and frame files under `build/android-preconsole/`. Full Android checks passed: 436 tests, zero failures/errors; lint 0 errors / 34 warnings / 1 hint; ordinary Debug and R8 Release builds. Headless iOS build passed using the installed iPhone 18 Pro simulator destination (the guide's example iPhone 17 Pro is no longer installed). Logs: `/tmp/doneat-goal-android.log`, `/tmp/doneat-goal-ios-final.log`.
+
+## Final minute-refresh candidate
+
+Keep completed Week/Month/Year models for the current anchor and inputs. A new minute refreshes the selected model in the background while leaving its chart mounted; changing archive, preferences, privacy, authorization, formatting, civil day or anchor discards the cache. This preserves TalkBack's pending chart action across an ordinary minute update. The cache holds at most three scales.
+
+The final optimized candidate repeats the same 24-switch/three-scroll-pair journey: **818 switch frames, 10 janky (1.22%), P95 9 ms, P99 36 ms; 422 scroll frames, 2 janky (0.47%), P95 8 ms, P99 9 ms**. This is a final confirmation run, not a replacement for the three-run comparison above. The trace used a 16 MiB per-CPU ftrace buffer and 100 ms drain interval; Perfetto reports no positive data-loss stats. The captured `Records.compute` span is on `DefaultDispatch` (9.01 ms); 24 RecordsScreen compositions and no AppShell compositions were recorded. These counts describe the capture window, not cold-start work.
+
+Evidence: `records-final-minute-cache.perfetto-trace` and matching frame files under the ignored local evidence directory; `/tmp/doneat-final-trace-health.txt`. Android final checks: 436 tests, no failures/errors, lint and Debug/R8 Release builds passed (`/tmp/doneat-goal-final-gates.log`). iOS headless build passed (`/tmp/doneat-goal-final-ios.log`); no iOS manual visual testing.
