@@ -57,6 +57,8 @@ import com.rainif.doneat.ui.settings.PendingScreen
 import com.rainif.doneat.ui.settings.SettingsHomeScreen
 import com.rainif.doneat.ui.settings.ThemeScreen
 import com.rainif.doneat.ui.timer.TimerScreen
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import java.time.Instant
@@ -71,10 +73,12 @@ import java.time.Instant
  */
 @Composable
 fun AppShell(graph: AppGraph) {
-    val device by graph.settings.device.collectAsStateWithLifecycle()
-    val selectedState = rememberSaveable { mutableStateOf(tabFromStoredName(device.selectedTab)) }
+    val storedTab by remember(graph) {
+        graph.settings.device.map { it.selectedTab }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = remember(graph) { graph.settings.device.value.selectedTab })
+    val selectedState = rememberSaveable { mutableStateOf(tabFromStoredName(storedTab)) }
     var selected by selectedState
-    LaunchedEffect(device.selectedTab) { selected = tabFromStoredName(device.selectedTab) }
+    LaunchedEffect(storedTab) { selected = tabFromStoredName(storedTab) }
     val tabState = rememberSaveableStateHolder()
     val motion = LocalDoneAtMotion.current
     val direction = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
@@ -163,7 +167,7 @@ fun AppShell(graph: AppGraph) {
                         if (tab == selected) stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) } else select(tab)
                     },
                     icon = { Icon(tab.icon, contentDescription = null) },
-                    label = { Text(stringResource(tab.title)) },
+                    label = { Text(stringResource(tab.title), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                 )
             }
         },

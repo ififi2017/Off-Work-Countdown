@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -399,12 +401,9 @@ fun AllocationBar(share: TimeAllocationShare, text: RecordsText, showsApproximat
                     Modifier
                         .weight(max(0.001f, (share.duration(kind) / total).toFloat()))
                         .fillMaxHeight()
+                        .focusProperties { canFocus = false }
                         .clickable { selectedKind = kind }
-                        .semantics {
-                            contentDescription = listOfNotNull(text.kindTitle(kind), years(kind), exact(kind)).joinToString(", ")
-                            selected = kind == active
-                            role = Role.Button
-                        },
+                        .clearAndSetSemantics {},
                     contentAlignment = Alignment.Center,
                 ) {
                     Box(
@@ -420,13 +419,17 @@ fun AllocationBar(share: TimeAllocationShare, text: RecordsText, showsApproximat
         ) {
             visible.forEach { kind ->
                 Row(
-                    Modifier.heightIn(min = 32.dp).clip(RoundedCornerShape(8.dp)).clickable { selectedKind = kind }.padding(horizontal = 2.dp)
-                        .clearAndSetSemantics {},
+                    Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).clip(RoundedCornerShape(8.dp))
+                        .clickable(role = Role.Button) { selectedKind = kind }
+                        .semantics(mergeDescendants = true) {
+                            contentDescription = listOfNotNull(text.kindTitle(kind), years(kind), exact(kind)).joinToString(", ")
+                            selected = kind == active
+                        }.padding(horizontal = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Box(Modifier.size(6.dp).clip(CircleShape).background(kindColor(kind)))
-                    Text(text.kindTitle(kind), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
+                    Text(text.kindTitle(kind), Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
                 }
             }
         }

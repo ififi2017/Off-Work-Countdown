@@ -69,7 +69,7 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-053 | ORACLE | PASS | Complete | `LifeRulesTest.aPassedAdjustmentAgeAppliesTheRatioAndLeavesHistory` | — |
 | QA-054 | JVM | PASS | Complete | `SummaryFixtureTest.partialLeapMonthUsesItsOwnDayCountAndAnExclusiveEnd`; `lifetimeIncome` | — |
 | QA-055 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
-| QA-056 | PERF | NOT_RUN | Partial | `LifeRulesTest.fifteenThousandDayLifeWithTenYearsOfRecordsBuildsOnTheJvm` | 15,000-day/2,609-workday JVM model built in 4.848166 ms; rapid-switch cancellation and device main-thread/frame evidence remain. |
+| QA-056 | PERF | PASS | Complete | [Final optimized Pixel traces](pixel-performance-2026-09-27.md), `RecordsComputationTest`, `RecordsQueriesTest`: 15,000-day/ten-year synthetic archive, cancellable Default-dispatcher work, rapid switches finish on Month; no stale publication | Some render/scheduling spikes remain (final switch P95 9 ms, 1.22% janky); this case has no zero-jank requirement. |
 | QA-057 | JVM | PASS | Complete | `FocusPlannerTest.focusTimerSettingsClampToSupportedRanges` | — |
 | QA-058 | JVM | PASS | Complete | `FocusEngineTest.changingDurationLeavesTheRunningEndAndAppliesToTheNextSession` | — |
 | QA-059 | JVM | PASS | Complete | `FocusPlannerTest.identityVectorsMatchTheSpecification` | — |
@@ -131,7 +131,7 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-128 | UI | PASS | Complete | 19-locale generation/placeholder checks and `PreferencesRulesTest.systemLanguagesMapLikeIos`; English/Chinese phone and tablet, German Settings and Arabic RTL visual inspection; HK/TW resources remain separate | — |
 | QA-129 | UI | PASS | Complete | API 36 at 320 dp and 200% font: Settings/Plus inspected, shift-type name saved with keyboard, salary keypad Done persisted amount, Focus Add persisted task; `doneat-preconsole-large-font-editors.log` and final screenshots | — |
 | QA-130 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
-| QA-131 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
+| QA-131 | UI | PASS | Complete | [Actual TalkBack and keyboard report](records-life-acceptance-2026-09-27.md): Month dates/details, Year custom action across minute refresh, Life legends/income masks, Focus up/down/save/reopen; keyboard calendar/legends/reorder, reduced motion; Timer speaks minutes without per-second repetition | Speech-output overlay verifies utterances; voice audio quality was not evaluated. |
 | QA-132 | DEVICE | NOT_RUN | Partial | `ReviewPolicyTest.completionArmsNextLaunchAndIsConsumedOnce` | Policy unit tests; actual Play review flow needs device. |
 | QA-133 | PLAY | NOT_RUN | None | — | Play Console configuration and license-test evidence. |
 | QA-134 | PLAY | NOT_RUN | None | — | Play Console configuration and license-test evidence. |
@@ -169,3 +169,5 @@ The matrix has 126 first-release rows. These counts track exact catalog acceptan
 Real Play product/purchase/review behavior, Google-account cloud restore, physical device transfer, OEM background behavior, long Doze runs and the complete accessibility/device matrix remain unverified. No Console upload, release signing, live website publication or iOS visual inspection was performed.
 
 QA-051 was fixed together in iOS/Kotlin: stored employment gaps and ends survive editing; overlapping periods fail validation. QA-041 is also fixed across iOS/Kotlin: invalid drafts are preserved for correction and cannot replace saved salary; shared calculation overflow returns no amount. Recovered raw salary text is retained without silently normalizing it.
+
+Final Records/Life follow-up (2026-09-27): QA-056 and QA-131 now pass their catalog acceptance, bringing the matrix to **81 PASS / 45 NOT_RUN**. This does not complete the remaining device, privacy-policy, cloud-transport or Play cases. Final Android 436 tests, lint and Debug/R8 Release builds and headless iOS build pass. Pixel original app upgraded with identical business archive; isolated test packages removed.

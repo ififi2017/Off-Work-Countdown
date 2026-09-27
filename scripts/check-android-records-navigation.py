@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check Records scale changes on an explicitly selected Android device (English UI).
+"""Check Records scale changes on an explicitly selected Android device.
 
 Usage: python3 scripts/check-android-records-navigation.py --serial DEVICE --adb /path/to/adb
 Exercises the installed app's actual controls, with either free or Plus access.
@@ -17,8 +17,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--serial", required=True)
     parser.add_argument("--adb", default="adb")
+    parser.add_argument("--labels", nargs=4, default=("Week", "Month", "Year", "Life"),
+                        metavar=("WEEK", "MONTH", "YEAR", "LIFE"), help="Scale labels in the device's current app language")
     args = parser.parse_args()
-    names = ("Week", "Month", "Year", "Life")
+    names = tuple(args.labels)
 
     def adb(*parts):
         return subprocess.check_output([args.adb, "-s", args.serial, *parts], text=True, timeout=30)
@@ -42,7 +44,7 @@ def main():
                 selected = [i for i, button in enumerate(buttons) if button.get("checked") == "true"]
                 if len(selected) == 1:
                     return buttons, selected[0]
-        raise RuntimeError("Records scale picker is not visible; finish setup and use the English app UI")
+        raise RuntimeError("Records scale picker is not visible; finish setup and pass --labels for the current app language")
 
     def select(index):
         buttons, _ = picker()

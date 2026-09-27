@@ -44,7 +44,7 @@
 | 项 | 状态 |
 |---|---|
 | Android 工程 | `:app`、`:core:domain`、`:core:data`、`:core:designsystem`；D-13 原子 JSON，无 Room |
-| 自动化 | 最近完成的本地完整 Gradle：433 项通过（domain 336、data 74、design 8、app 15），lint 0 error / 34 warning / 1 hint，Debug、R8 Release 与 AAB 成功；`/tmp/doneat-boundary-final-gradle.log`。新增计时、专注合并与故障恢复回归；本轮无新增源码 lint 告警。 |
+| Automated checks | Final Android 436 tests (domain 337, data 74, design 8, app 17), zero failures/errors; lint 0 errors / 34 warnings / 1 hint; Debug/R8 Release pass (`/tmp/doneat-goal-final-gates.log`). Headless iOS build passes. Prior AAB/16 KiB evidence remains recorded separately. |
 | 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture 12 项及数字输入 5 项、iOS headless build 通过。Web/Desktop build 与输出检查通过；npm lint、445 项测试、版本与 iOS 目录检查通过。字符串生成一致性检查通过。 |
 | 设备 | API 36 上 Auto Backup 清除/恢复后记录与设置字节相同；系统文档化设备转移/重装路径恢复业务数据与设置字节相同，且排除了 device-local/no_backup 测试标记和 Debug Plus。`bmgr restore` 直接传输返回 -1000，不能算恢复成功。Pixel 已覆盖安装最新候选 APK，Records 各尺度往返与后台 90 秒后回前台已检查，业务档案字节未变；完整真机矩阵仍待完成。 |
 | Play Console | 用户于 2026-09-26 确认 KYC 身份验证进行中，尚未通过。代理未登录核验；商品、公钥、许可测试、签名与应用审核尚无完成证据。 |
@@ -55,9 +55,9 @@ KYC 等待期间继续推进以下工作；Pixel 已完成本轮导航/前后台
 
 QA-041/051 已同步修复并通过本地验收：非法金额不再被改成另一笔有效工资，历史职业结束日期和空档保持原样。
 
-1. **继续性能与无障碍验收。** QA-019/023/062/067/077/140 本轮完成；下一批重点是大档案下 Records/Life 快速切换、取消过期计算与界面帧表现（QA-056），以及 TalkBack、最近任务和分享中的收入隐藏。真实云备份、物理换机和 Play 生命周期继续保留。
-2. **继续代码审阅和远程 CI。** [PR #239](https://github.com/ififi2017/Off-Work-Countdown/pull/239) 已合并；[PR #240](https://github.com/ififi2017/Off-Work-Countdown/pull/240) 已合并 3.2.1 与 QA-041；本轮 Android 恢复修复使用 `codex/android-archive-recovery` 独立提交后续 PR。`63a05de1` 的全部远程检查已通过；新提交单独核对 CI。`ae0ec1f0` 和 `e2d874c` 的 Android、Web/Desktop、Rust macOS/Windows 和 Xcode Cloud iOS/watchOS 检查全部通过；后续修复追加独立提交，每次以对应提交的 CI 为准。
-3. **完成发布资料的本地准备。** 将 Android 隐私补充落实到官网代码，定稿商店文案、素材选择和审核操作说明；正式发布页面、Console 填报和签名身份仍按发布流程处理。
+1. **Records/Life acceptance is complete for this batch.** QA-056 and QA-131 pass; matrix: **81 PASS / 45 NOT_RUN**. Remaining QA-124/125 privacy/recent-task/share surfaces, real cloud restore, physical device transfer and Play lifecycle require their own acceptance. Rendering spikes remain documented, without a zero-jank claim.
+2. **Continue review and CI.** [PR #244](https://github.com/ififi2017/Off-Work-Countdown/pull/244) contains Records performance/accessibility and release-startup fixes, stacked on #243. Final source commit `fe8d9db` is installed on Pixel; each pushed head needs its own remote CI result.
+3. **完成发布资料的本地准备。** Android 隐私补充已落实到官网本地分支 `codex/android-privacy-policy`（`23ba61b`），英中页面 check/build/SEO 检查通过；用户 2026-09-27 要求暂不上线，未推送、提官网 PR 或发布。继续准备商店文案、素材与审核说明；正式页面发布留到 Android 准备上架时重新核对。Console 填报和签名身份仍按发布流程处理。
 
 KYC 通过且 Console 具备相应操作条件后，再核对应用 ID、Play App Signing、商品/价格/公钥，完成测试轨道接入和真实购买生命周期测试。T26 的实际上传与发布按后续授权执行。KYC 验证进度不等于应用审核或购买验收结果。
 
@@ -168,3 +168,44 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 2026-09-23：T06 完成（共享规则 fixtures 与 stale 检查）。
 - 2026-09-23：T03 完成（最小工程、CI、环境锁）。
 - 2026-09-23：交接包 1.2（D-02/D-08 修订、新增 D-12），T21/T22 延后；进度只在本文件维护；本机 SDK 就绪。
+
+## 2026-09-27 · 隐私草稿与性能检查
+
+- 官网 Android 隐私补充已保存为本地提交 `23ba61b`，按用户最新指示暂不上线；本轮未操作 Play Console，KYC 状态不变。见 `privacy-policy-addition.md`。
+- QA-056 初查发现的主线程索引与同步循环取消问题已在下方 Records/Life 批次修复；最终性能验收仍需 Release 真机帧测量。
+- QA-124 保持未完成：D-09 在 decisions.json 中仍为 PROPOSED，现有薪资页会禁用最近任务截图；不能据此把所有敏感页面的截图与 TalkBack 保护记为已验收。QA 总数保持 79 PASS / 47 NOT_RUN。本轮未修改 Android 源码或 Pixel 数据。
+
+
+## 2026-09-27 · Records/Life 性能与无障碍
+
+- 全部记录的索引、年份/月分组移至 Default dispatcher，渲染时直接查询预分组结果；加载中不再误显示空档案或锁定提示。民用日期键使用 Locale.ROOT，避免阿拉伯数字系统环境下找不到月份。
+- Records/Life 查询在逐日排班、日记录解析、索引与人生周格循环中检查协程取消；离页或换尺度后停止旧工作。测试证明取消后不再运行下一个检查点、不发布旧结果，随后 Month 可以完成。
+- Life 分配图例提供类别、约合年数、精确时长、百分比、选中状态及按钮语义；文字图例最小 48 dp，色条不再重复占用读屏和键盘焦点。收入隐藏时无障碍树不含合成薪资。
+- 15,000 天人生 / 3,653 条观测档案：完整 Life + Year + 索引在本机 JVM 单次 125.64 ms；Pixel 独立 Debug 测试副本连续切换 24 次，最终正确停留 Month。538 帧，中位 5 ms、P95 53 ms、慢帧 5.39%；这是 Debug 诊断结果，不能作为 Release 流畅度通过结论。
+- API 36 检查历史年/月导航、浅色正常字号及深色 320 dp / 200% 字号、关闭系统动画。TalkBack 服务已启动并检查语义，但尚未完成实际语音朗读验收；全局底部导航在极大字号下仍会拆词换行。
+- Android 四模块 436 项测试、lint（0 error / 34 warning / 1 hint）、Debug/R8 Release，npm lint / 445 项测试 / check:version 及 iOS headless build 通过。未进行 iOS 手动视觉检查。
+- QA-056 / QA-131 维持 NOT_RUN（Partial），总计仍为 79 PASS / 47 NOT_RUN；完整语音流程、Release 性能及 QA-131 的 Focus 拖动替代操作仍待验收。详情见 [本轮报告](records-life-acceptance-2026-09-27.md)。官网草稿继续仅留本地，KYC 状态未变。
+- 用户追加的确认按钮检查：修复 Time manually 首次点击后从胶囊主按钮变成另一种圆角按钮的问题，两状态保留同一个 DoneAtPrimaryButton，仅切换文案；源码核对其余三种计时二次确认及 Records / Focus / 排班 / 恢复 / 导入等确认弹窗，没有发现同类组件替换。
+
+## 2026-09-27 · Pixel 优化包性能轨迹
+
+- Pixel 10 Pro（API 37）使用独立 `.qa` 包和合成档案，R8 / 资源压缩开启、Debug 关闭；原用户包与档案未动。修复优化包启动崩溃：Room 2.6.1 经 WorkManager 引入的保留规则遗漏无参构造方法，导致 `WorkDatabase_Impl.<init>` 被裁剪。补充仅保留数据库构造方法的 R8 规则，优化保持开启；修复后 Pixel 与 API 36 模拟器可启动。
+- 24 次 Records 尺度切换：首轮 853 帧 / 1.76% 慢帧、P95 13 ms；预热重跑 886 帧 / 1.24%、P95 13 ms。Life 滚动分别为 401 帧 / 0.50% / P95 7 ms 和 434 帧 / 0% / P95 7 ms。不能把跨 Debug/优化构建的数据当成单个源码改动的收益。
+- Perfetto 确认 Records 查询在 Default worker；剩余切换尖峰涉及 Compose 重组、布局及部分调度/渲染等待。完整方法、限制与本地证据见 [Pixel 性能报告](pixel-performance-2026-09-27.md)。QA-056 已取得优化包帧与滚动证据，但剩余切换尖峰仍需优化，维持 Partial；QA-131 完整语音流程仍未验收。
+- 同时修复大字号底部导航拆词：单行省略，保留完整无障碍名称；深色 320 dp / 200% 字号视觉及语义检查通过。Android 436 项测试、lint、Debug/R8 Release、check:version、iOS headless 构建通过；未进行 iOS 手动视觉验收。官网草稿继续不上线，KYC 状态未变。
+- 组件级跟踪进一步确认并修复：Records 保存尺度时，MainActivity 主题和 AppShell 订阅整份设备设置，额外触发 25 次无关外壳重组；改为只观察 dynamicColor / selectedTab。相同操作复测中外壳重组降为 0。带组件跟踪的单次 A/B 慢帧为 0.87% → 1.25%、P95 14 → 16 ms，不能宣称帧率提升；保留此结果，不用不同构建的较好样本替换它。Life 滚动复测 385 帧无慢帧。剩余图表布局成本仍在 QA-056 Partial 内。
+
+## 2026-09-27 · 三项收尾进行中
+
+- Records 缩小自身的设备设置订阅，并复用当前日期窗口的 Week/Month/Year 已完成模型。相同优化构建配置下三轮对比：P95 中位数 13 → 8 ms，合计慢帧 1.37% → 1.33%；不能宣称消除慢帧。完整逐轮结果与轨迹缺帧限制见 [Pixel 报告](pixel-performance-2026-09-27.md)。
+- TalkBack 已通过模拟器官方硬件触摸接口实际验证 Month 选中、日期说明及日详情；Year 月份的实际播报包含月份/年份、选中状态和按钮角色。隐藏月收入的实际播报覆盖层保留掩码。发现跨分钟刷新会移除图表，使已打开的 TalkBack 自定义动作失效；保留刷新中图表的修复正在验证，完整 QA-131 尚未完成。
+- Pixel 原应用已覆盖安装第一版周期缓存候选，安装前后业务档案逐字节一致；简体中文尺度往返和设置页左侧返回通过。欢迎页使用独立 QA 包验证，自定义时分、午休步进、拒绝通知后继续、锁定演示、系统指纹/PIN 提示、跳过后完成设置均已实际走通。新发现的分钟刷新修复完成后仍需再次更新原应用。
+- Play KYC 仍按用户反馈等待；官网 Android 隐私草稿未发布。本批仍在收尾，未把完整读屏与小组件验收标记完成。
+
+### Final candidate verification
+
+- The minute-refresh fix passes actual TalkBack: open January's Year action at 11:24, invoke after 11:25, and reach January Month. Cached charts stay mounted during minute updates; data/privacy/access/date-window changes invalidate them.
+- Final optimized Pixel run: switching 818 frames / 1.22% janky / P95 9 ms; Life scrolling 422 frames / 0.47% / P95 8 ms. The complete trace reports no data loss; Records computation is on a Default worker. Some spikes remain.
+- Actual TalkBack covers Month selection/details, Year custom actions, Life stages/allocation, masked Month/Life income, Focus up/down boundary actions and save/reopen. Speech-output overlay verifies generated utterances; voice quality was not evaluated. Focused Timer speaks hours/minutes without per-second repetition.
+- Final ordinary Debug package is installed over the Pixel original app; business archive remains byte-identical. Chinese scale navigation and Settings left-edge return pass. Widget 2x2/4x2/4x4 previews, large-widget addition/resizing and opening the original Timer pass. Test widget and Pixel QA package removed; stay-awake retained.
+- Final Android 436 tests, lint and Debug/R8 Release builds pass; iOS headless build passes, without manual iOS visual inspection. TalkBack service/output-overlay restored. Keyboard calendar selection/details and Focus reorder now pass. QA-056/QA-131 are complete; matrix is 81 PASS / 45 NOT_RUN. Source commit: `fe8d9db`; final evidence is recorded in the two linked acceptance/performance reports.

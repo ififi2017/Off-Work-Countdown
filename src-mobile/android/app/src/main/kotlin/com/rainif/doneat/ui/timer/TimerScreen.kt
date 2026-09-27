@@ -40,7 +40,6 @@ import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.LocalCafe
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Payments
-import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SportsScore
@@ -775,8 +774,7 @@ private fun eventStyle(kind: TimelineKind): Pair<ImageVector, Color> {
 
 /**
  * A button that asks twice. Armed, it takes the deeper overtime orange and a
- * warning glyph, the same vocabulary as the start button, so "press again" is
- * taught once.
+ * warning glyph while retaining its layout.
  */
 @Composable
 private fun ArmableButton(label: String, icon: ImageVector, armed: Boolean, primary: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -796,10 +794,10 @@ private fun ArmableButton(label: String, icon: ImageVector, armed: Boolean, prim
 @Composable
 private fun StartButton(armed: Boolean, onClick: () -> Unit) {
     Box(Modifier.fillMaxWidth().padding(DoneAtSpacing.page)) {
-        if (armed) {
-            ArmableButton(stringResource(R.string.nonWorkdayTapAgain), Icons.Outlined.PlayArrow, armed = true, primary = true, onClick = onClick, modifier = Modifier.fillMaxWidth())
-        } else {
-            DoneAtPrimaryButton(stringResource(R.string.manualTiming), onClick, Modifier.fillMaxWidth())
-        }
+        DoneAtPrimaryButton(
+            stringResource(if (armed) R.string.nonWorkdayTapAgain else R.string.manualTiming),
+            onClick,
+            Modifier.fillMaxWidth(),
+        )
     }
 }

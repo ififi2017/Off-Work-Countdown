@@ -80,9 +80,9 @@ import com.rainif.doneat.core.domain.records.RecordsScale
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.Route
 import com.rainif.doneat.ui.timer.EarningsVisibilityButton
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import java.time.LocalDate
 
 private val SCALES = RecordsScale.entries
@@ -96,13 +96,15 @@ private val SCALES = RecordsScale.entries
 fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -> Unit) {
     val context = rememberRecordsContext(graph)
     val text = context.text
-    val device by graph.settings.device.collectAsStateWithLifecycle()
+    val lifeSetupDismissed by remember(graph) {
+        graph.settings.device.map { it.lifeSetupPromptDismissed }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = remember(graph) { graph.settings.device.value.lifeSetupPromptDismissed })
     val scope = rememberCoroutineScope()
     val view = LocalView.current
     val snackbar = remember { SnackbarHostState() }
     // A tap changes the view immediately; the device file is only its saved preference.
     // Persist in the app scope so switching tabs cannot cancel the write.
-    var scaleRaw by rememberSaveable { mutableStateOf(device.recordsScale) }
+    var scaleRaw by rememberSaveable { mutableStateOf(graph.settings.device.value.recordsScale) }
     val scale = RecordsScale.fromRaw(scaleRaw) ?: RecordsScale.MONTH
     var anchorKey by rememberSaveable { mutableStateOf(context.today.toString()) }
     val anchor = LocalDate.parse(anchorKey)
@@ -112,15 +114,20 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     var selectedStageID by rememberSaveable { mutableStateOf<String?>(null) }
     var showStageCallout by rememberSaveable { mutableStateOf(false) }
     var expanded by rememberSaveable { mutableStateOf(false) }
-    var page by remember { mutableStateOf<RecordsPage?>(null) }
+    // A minute refresh keeps the chart mounted so TalkBack focus/actions remain valid.
+    // Data, privacy, access, formatting, civil-day and anchor changes discard the three cached scales.
+    var pages by remember(context.lifeInputs, context.text, context.queries.authorized, anchor) {
+        mutableStateOf(emptyMap<RecordsScale, Pair<Double, RecordsPage>>())
+    }
+    val page = pages[scale]?.second
     val locked = scale.requiresPlus && !context.queries.authorized
     val profile = context.queries.state.lifeProfile
 
     LaunchedEffect(context, scale, anchor, locked) {
         // A locked scale is never computed: there is nothing it may show. Life draws from the profile instead.
-        if (locked || scale == RecordsScale.LIFE) return@LaunchedEffect
-        val loaded = withContext(Dispatchers.Default) { loadPage(context, scale, anchor) }
-        page = loaded
+        if (locked || scale == RecordsScale.LIFE || pages[scale]?.first == context.nowMs) return@LaunchedEffect
+        val loaded = computeRecords { check -> loadPage(context, scale, anchor, check) }
+        pages = pages + (scale to (context.nowMs to loaded))
         if (selectedDayKey != null && loaded.cells.none { it.dayKey == selectedDayKey }) selectedDayKey = null
     }
 
@@ -130,7 +137,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         if (scale != RecordsScale.LIFE || locked || context.queries.state.lifeProfile == null) return@LaunchedEffect
         if (lifeModel?.first == context.lifeInputs) return@LaunchedEffect
         val monthly = configuredMonthlySalary(graph)
-        lifeModel = context.lifeInputs to withContext(Dispatchers.Default) { context.queries.lifeModel(context.nowMs, monthly) }
+        lifeModel = context.lifeInputs to computeRecords { check -> context.queries.lifeModel(context.nowMs, monthly, check) }
     }
     val lifeStages = remember(profile, context.today, context.queries.zone) {
         profile?.let {
@@ -238,7 +245,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                 val loaded = lifeModel?.takeIf { it.first == context.lifeInputs }
                 LifeAllocationCard(loaded?.second, loading = loaded == null, decline = profile.futureIncomeDecline, text = text)
             }
-            if (context.queries.authorized && profile == null && !device.lifeSetupPromptDismissed && scale == RecordsScale.MONTH) {
+            if (context.queries.authorized && profile == null && !lifeSetupDismissed && scale == RecordsScale.MONTH) {
                 LifeSetupCard(text, { editLife() }, { dismissLifeSetup() })
             }
             // As on iOS, a period without a summary shows none: locked, or nothing recorded yet.

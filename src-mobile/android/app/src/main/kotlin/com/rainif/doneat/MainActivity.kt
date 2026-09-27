@@ -48,6 +48,9 @@ import com.rainif.doneat.ui.SystemBarsFollowTheme
 import com.rainif.doneat.ui.onboarding.SetupFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
+import androidx.compose.runtime.remember
 import kotlinx.coroutines.launch
 
 /** A [FragmentActivity] so `BiometricPrompt` can confirm the owner before earnings are revealed. */
@@ -83,7 +86,9 @@ class MainActivity : FragmentActivity() {
             val archiveError by graph.records.persistenceError.collectAsStateWithLifecycle()
             val setUp by graph.settings.isSetUp.collectAsStateWithLifecycle()
             val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
-            val device by graph.settings.device.collectAsStateWithLifecycle()
+            val dynamicColor by remember(graph) {
+                graph.settings.device.map { it.dynamicColor }.distinctUntilChanged()
+            }.collectAsStateWithLifecycle(initialValue = remember(graph) { graph.settings.device.value.dynamicColor })
 
             LaunchedEffect(loaded) { if (loaded) reconcileLanguage(graph) }
 
@@ -99,7 +104,7 @@ class MainActivity : FragmentActivity() {
             }
             SystemBarsFollowTheme(dark)
             AppLanguageScope(prefs.languageOverride) {
-                DoneAtTheme(themeMode = mode, dynamicColor = device.dynamicColor) {
+                DoneAtTheme(themeMode = mode, dynamicColor = dynamicColor) {
                     val motion = LocalDoneAtMotion.current
                     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
                         // Until the archive is read nothing can tell a first launch from a restored one.
