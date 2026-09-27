@@ -60,7 +60,22 @@ ZIP 需先解压再加载。本次交付为本地安装包，尚未发布到 Chr
 - 图标提供 16 / 32 / 48 / 128：32 取自 `src-tauri/icons`，
   16（工具栏 1x）、48（扩展管理页）与 128 在 `src-extension/icons`。128 按 Chrome 要求
   图案 96×96、四周 16px 透明边，由 `npm run shots:chrome-web-store:compose` 生成后复制过来。
-- 商店截图、宣传图和商店图标见 `scripts/marketing-shots/README.md` 的 Chrome 应用商店一节。
+- 商店截图、宣传图和商店图标见 `scripts/marketing-shots/README.md` 的 Chrome 应用商店一节；
+  商店页中英文案与隐私问卷答案见 [Chrome Web Store listing](CHROME-WEB-STORE-LISTING.md)。
+
+## 上架与发版
+
+`npm run package:extension` 构建并生成 `build/doneat-chrome-extension-<version>.zip`，
+可直接在开发者后台上传。首次上架、商店页、截图和隐私问卷只能在后台手动完成。
+
+上架后用 Chrome Web Store API（V2）发新版本，凭据放在 `~/.config/doneat/chrome-web-store.env`
+（字段见 `scripts/chrome-web-store-publish.mjs` 顶部），不进仓库：
+
+```bash
+npm run cws:status    # 只读：商店里已发布 / 审核中的版本
+npm run cws:upload    # 构建、打包、上传；版本号必须高于商店里的
+npm run cws:publish   # 提交审核，通过后自动发布（加 -- --staged 则等手动发布）
+```
   [Manifest V3 CSP](https://developer.chrome.com/docs/extensions/reference/manifest/content-security-policy)
   限制脚本为本地文件；`connect-src 'none'` 禁止发出网络请求。
 - 版本读取 `package.json`，构建前自动运行 `check:version`。不改变现有 Web/Desktop 构建目标。

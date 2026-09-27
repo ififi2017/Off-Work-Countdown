@@ -71,7 +71,11 @@
     "asc:iap:plan": "node scripts/app-store-connect-iap-sync.mjs --plan",
     "asc:iap:sync": "node scripts/app-store-connect-iap-sync.mjs --apply",
     "build:extension": "node scripts/build-extension.mjs",
-    "check:build:extension": "node scripts/check-extension.mjs"
+    "check:build:extension": "node scripts/check-extension.mjs",
+    "package:extension": "npm run build:extension && node scripts/package-extension.mjs",
+    "cws:status": "node scripts/chrome-web-store-publish.mjs --status",
+    "cws:upload": "node scripts/chrome-web-store-publish.mjs --upload",
+    "cws:publish": "node scripts/chrome-web-store-publish.mjs --publish"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^11.2.0",
