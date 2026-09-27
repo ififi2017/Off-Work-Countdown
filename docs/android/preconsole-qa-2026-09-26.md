@@ -69,7 +69,7 @@ The independent iOS → Kotlin → iOS v6 round trip passed (`/tmp/doneat-precon
 | QA-053 | ORACLE | PASS | Complete | `LifeRulesTest.aPassedAdjustmentAgeAppliesTheRatioAndLeavesHistory` | — |
 | QA-054 | JVM | PASS | Complete | `SummaryFixtureTest.partialLeapMonthUsesItsOwnDayCountAndAnExclusiveEnd`; `lifetimeIncome` | — |
 | QA-055 | UI | NOT_RUN | None | — | Device/UI exercise with stated setup and expected result. |
-| QA-056 | PERF | NOT_RUN | Partial | [Records/Life report](records-life-acceptance-2026-09-27.md); `RecordsComputationTest`, `RecordsQueriesTest` | Cooperative cancellation and background indexing verified; Pixel Debug 24 switches finish on Month, 538 frames / 5.39% janky / P95 53 ms. Release frame acceptance remains. |
+| QA-056 | PERF | NOT_RUN | Partial | [Records/Life report](records-life-acceptance-2026-09-27.md); `RecordsComputationTest`, `RecordsQueriesTest` | Cooperative cancellation/background indexing verified. [Optimized Pixel traces](pixel-performance-2026-09-27.md): switches 1.76% / 1.24% janky (P95 13 ms), Life scroll 0.50% / 0% (P95 7 ms); remaining composition/layout spikes keep acceptance partial. |
 | QA-057 | JVM | PASS | Complete | `FocusPlannerTest.focusTimerSettingsClampToSupportedRanges` | — |
 | QA-058 | JVM | PASS | Complete | `FocusEngineTest.changingDurationLeavesTheRunningEndAndAppliesToTheNextSession` | — |
 | QA-059 | JVM | PASS | Complete | `FocusPlannerTest.identityVectorsMatchTheSpecification` | — |

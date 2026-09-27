@@ -186,3 +186,11 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - Android 四模块 436 项测试、lint（0 error / 34 warning / 1 hint）、Debug/R8 Release，npm lint / 445 项测试 / check:version 及 iOS headless build 通过。未进行 iOS 手动视觉检查。
 - QA-056 / QA-131 维持 NOT_RUN（Partial），总计仍为 79 PASS / 47 NOT_RUN；完整语音流程、Release 性能及 QA-131 的 Focus 拖动替代操作仍待验收。详情见 [本轮报告](records-life-acceptance-2026-09-27.md)。官网草稿继续仅留本地，KYC 状态未变。
 - 用户追加的确认按钮检查：修复 Time manually 首次点击后从胶囊主按钮变成另一种圆角按钮的问题，两状态保留同一个 DoneAtPrimaryButton，仅切换文案；源码核对其余三种计时二次确认及 Records / Focus / 排班 / 恢复 / 导入等确认弹窗，没有发现同类组件替换。
+
+## 2026-09-27 · Pixel 优化包性能轨迹
+
+- Pixel 10 Pro（API 37）使用独立 `.qa` 包和合成档案，R8 / 资源压缩开启、Debug 关闭；原用户包与档案未动。修复优化包启动崩溃：Room 2.6.1 经 WorkManager 引入的保留规则遗漏无参构造方法，导致 `WorkDatabase_Impl.<init>` 被裁剪。补充仅保留数据库构造方法的 R8 规则，优化保持开启；修复后 Pixel 与 API 36 模拟器可启动。
+- 24 次 Records 尺度切换：首轮 853 帧 / 1.76% 慢帧、P95 13 ms；预热重跑 886 帧 / 1.24%、P95 13 ms。Life 滚动分别为 401 帧 / 0.50% / P95 7 ms 和 434 帧 / 0% / P95 7 ms。不能把跨 Debug/优化构建的数据当成单个源码改动的收益。
+- Perfetto 确认 Records 查询在 Default worker；剩余切换尖峰涉及 Compose 重组、布局及部分调度/渲染等待。完整方法、限制与本地证据见 [Pixel 性能报告](pixel-performance-2026-09-27.md)。QA-056 已取得优化包帧与滚动证据，但剩余切换尖峰仍需优化，维持 Partial；QA-131 完整语音流程仍未验收。
+- 同时修复大字号底部导航拆词：单行省略，保留完整无障碍名称；深色 320 dp / 200% 字号视觉及语义检查通过。Android 436 项测试、lint、Debug/R8 Release、check:version、iOS headless 构建通过；未进行 iOS 手动视觉验收。官网草稿继续不上线，KYC 状态未变。
+- 组件级跟踪进一步确认并修复：Records 保存尺度时，MainActivity 主题和 AppShell 订阅整份设备设置，额外触发 25 次无关外壳重组；改为只观察 dynamicColor / selectedTab。相同操作复测中外壳重组降为 0。带组件跟踪的单次 A/B 慢帧为 0.87% → 1.25%、P95 14 → 16 ms，不能宣称帧率提升；保留此结果，不用不同构建的较好样本替换它。Life 滚动复测 385 帧无慢帧。剩余图表布局成本仍在 QA-056 Partial 内。
