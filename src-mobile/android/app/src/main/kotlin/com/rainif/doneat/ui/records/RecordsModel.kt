@@ -29,6 +29,8 @@ import com.rainif.doneat.ui.timer.TimerText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import java.time.LocalDate
 import java.time.temporal.WeekFields
 
@@ -59,7 +61,9 @@ fun rememberRecordsContext(graph: AppGraph): RecordsContext {
     val locale = LocalConfiguration.current.locales[0]
     val archive by graph.records.state.collectAsStateWithLifecycle()
     val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
-    val device by graph.settings.device.collectAsStateWithLifecycle()
+    val hideEarnings by remember(graph) {
+        graph.settings.device.map { it.hideEarnings }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = remember(graph) { graph.settings.device.value.hideEarnings })
     val plus by graph.plus.authorized.collectAsStateWithLifecycle()
     val holidays by graph.holidays.collectAsStateWithLifecycle()
     val session by graph.sessions.session.collectAsStateWithLifecycle()
@@ -83,10 +87,10 @@ fun rememberRecordsContext(graph: AppGraph): RecordsContext {
             firstDayOfWeek = WeekFields.of(locale).firstDayOfWeek,
         )
     }
-    val text = remember(resources, locale, zone, use24Hour, device.hideEarnings) {
-        RecordsText(resources, locale, zone, use24Hour, TimerText(resources, locale, use24Hour, device.hideEarnings))
+    val text = remember(resources, locale, zone, use24Hour, hideEarnings) {
+        RecordsText(resources, locale, zone, use24Hour, TimerText(resources, locale, use24Hour, hideEarnings))
     }
-    val lifeInputs = LifeInputs(archive, prefs, holidays, session, device.hideEarnings, queries.today(nowMs))
+    val lifeInputs = LifeInputs(archive, prefs, holidays, session, hideEarnings, queries.today(nowMs))
     return remember(queries, text, nowMs, lifeInputs) { RecordsContext(queries, text, nowMs, lifeInputs) }
 }
 
