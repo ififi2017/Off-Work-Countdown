@@ -4177,6 +4177,16 @@ export function OffWorkCountdown({
                 <span className="block">{t("getAppNoteDesktop")}</span>
                 <span className="mt-1.5 block sm:mt-0">{t("getAppNoteMobile")}</span>
               </p>
+              {/* Chrome 扩展只做次要文字链接，主入口仍是官网下载页。 */}
+              <a
+                href={siteConfig.chromeWebStore}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1 text-sm text-gray-500 underline decoration-gray-300 underline-offset-4 transition-colors hover:text-gray-900 hover:decoration-gray-500 dark:text-gray-400 dark:decoration-gray-600 dark:hover:text-gray-100 dark:hover:decoration-gray-400"
+              >
+                {t("getChromeExtension")}
+                <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              </a>
             </div>
             <a
               href={officialPageUrl(lang, "download")}

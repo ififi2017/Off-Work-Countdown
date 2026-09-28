@@ -128,6 +128,7 @@
   "getAppPlatforms": "Windows · Mac · iPhone · iPad",
   "getAppNoteDesktop": "On a computer, the time left lives in your menu bar or tray—no tab to keep open.",
   "getAppNoteMobile": "On iPhone and iPad, a Home Screen widget keeps it a glance away, and rotating shifts are handled too.",
+  "getChromeExtension": "Also available as a Chrome extension",
   "webShowcaseTitle": "Wherever you are, a glance is enough",
   "webShowcaseBody": "The DoneAt apps bring your countdown to your Home Screen, your wrist and your desktop, and help you plan the month ahead.",
   "webShowcaseCountdownCaption": "On iPhone, the countdown sits with today's shift, your weekly hours and upcoming reminders.",

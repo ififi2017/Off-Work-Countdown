@@ -128,6 +128,7 @@
   "getAppPlatforms": "Windows · Mac · iPhone · iPad",
   "getAppNoteDesktop": "パソコンなら残り時間がメニューバーやトレイに常駐し、タブを開いておく必要はありません",
   "getAppNoteMobile": "iPhone と iPad ではホーム画面のウィジェットでひと目で確認でき、交代制のシフトも組めます。",
+  "getChromeExtension": "Chrome 拡張機能版もあります",
   "webShowcaseTitle": "スマホでも、手首でも、パソコンでも、ひと目で",
   "webShowcaseBody": "DoneAt アプリなら、カウントダウンをホーム画面や手首、デスクトップに置けて、1か月分のシフトも組めます。",
   "webShowcaseCountdownCaption": "iPhone では、カウントダウンと一緒に今日のシフト、今週の勤務時間、次のリマインダーが並びます。",

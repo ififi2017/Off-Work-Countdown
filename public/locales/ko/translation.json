@@ -128,6 +128,7 @@
   "getAppPlatforms": "Windows · Mac · iPhone · iPad",
   "getAppNoteDesktop": "컴퓨터에서는 남은 시간이 메뉴 막대나 트레이에 늘 떠 있어 탭을 열어 둘 필요가 없어요",
   "getAppNoteMobile": "iPhone과 iPad에서는 홈 화면 위젯으로 한눈에 보고, 교대 근무표도 짤 수 있어요.",
+  "getChromeExtension": "Chrome 확장 프로그램으로도 쓸 수 있어요",
   "webShowcaseTitle": "휴대폰에서도, 손목에서도, 컴퓨터에서도 한눈에",
   "webShowcaseBody": "DoneAt 앱은 카운트다운을 홈 화면과 손목, 데스크톱에 띄워 주고, 한 달 근무표도 짜 줘요.",
   "webShowcaseCountdownCaption": "iPhone에서는 카운트다운과 함께 오늘 근무, 이번 주 근무 시간, 다가오는 알림을 볼 수 있어요.",

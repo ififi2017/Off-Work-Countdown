@@ -56,6 +56,10 @@ remaining time, progress and estimated earnings at a glance.
   click, updates through the App Store, and adds a countdown widget the GitHub
   DMGs do not have. Those DMGs are built from this same repository, stay free,
   and are not going away.
+- **Chrome extension:**
+  [add it from the Chrome Web Store](https://chromewebstore.google.com/detail/bepmkflijihfjodllcjogafffdcjabcf)
+  — a toolbar popup that shows the time left in one click, with settings kept
+  in the browser.
 - **Release files:** [latest GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest).
 
 The iOS app is native SwiftUI and shares the same schedule rules as Web and

@@ -46,6 +46,9 @@ export const siteConfig = {
   // macOS 上由系统 App Store 注册的 URL scheme 直接打开商品页；浏览器链接仍为
   // 其他平台和未完成 hydration 时的安全回退。
   macAppStoreApp: "macappstore://itunes.apple.com/app/id6802803318",
+  // Chrome 工具栏扩展（src-extension）。只在 Web 首页下载区做一条次要文字链接。
+  chromeWebStore:
+    "https://chromewebstore.google.com/detail/bepmkflijihfjodllcjogafffdcjabcf",
   // 支持与隐私问询邮箱。也是 Partner Center 的商店 listing 必填项，
   // 两处必须是同一个地址（见 docs/PLAN-MSSTORE.md §3）。
   supportEmail: "hello@doneat.app",
