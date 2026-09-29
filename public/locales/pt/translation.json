@@ -128,6 +128,7 @@
   "getAppPlatforms": "Windows · Mac · iPhone · iPad",
   "getAppNoteDesktop": "No computador, o tempo restante fica na barra de menus ou na bandeja, sem aba para deixar aberta.",
   "getAppNoteMobile": "No iPhone e no iPad, um widget mostra tudo num relance e ainda organiza turnos de revezamento.",
+  "getChromeExtension": "Também disponível como extensão do Chrome",
   "webShowcaseTitle": "Onde você estiver, basta uma olhada",
   "webShowcaseBody": "Os apps DoneAt levam sua contagem regressiva para a tela de início, o pulso e o computador, e ajudam a planejar o mês.",
   "webShowcaseCountdownCaption": "No iPhone, a contagem regressiva vem com o turno de hoje, as horas da semana e os próximos lembretes.",

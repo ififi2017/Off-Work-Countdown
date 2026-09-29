@@ -40,6 +40,7 @@
 - **桌面客户端：**[打开下载页](https://doneat.app/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。macOS 版需要 macOS 11.3（Big Sur）或更高版本。
 - **Windows 用户：**[从 Microsoft Store 获取](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ)，会自动更新，安装时也不会出现 SmartScreen 提示。
 - **macOS 用户：**[从 Mac App Store 获取](https://apps.apple.com/cn/app/id6802803318)，同样**免费**，与 iPhone、iPad 共用同一条商品页。它一键安装、由 App Store 负责更新，并且多一个 GitHub DMG 没有的倒计时小组件。那些 DMG 由同一份源码构建，一直免费，也不会下架。
+- **Chrome 扩展：**[从 Chrome 应用商店添加](https://chromewebstore.google.com/detail/bepmkflijihfjodllcjogafffdcjabcf)，点工具栏图标就能看剩余时间，数据只存在浏览器本地。
 - **安装包列表：**[最新 GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)。
 
 iOS 版是原生 SwiftUI，班次规则与网页版、桌面版共用。iPhone、iPad 和 Mac 共用同一条 App Store 商品页。

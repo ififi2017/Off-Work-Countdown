@@ -19,7 +19,9 @@ npm run build:extension
 
 最低 Chrome 版本为 120。修改源码后重新构建，再在扩展管理页点击 DoneAt 的
 刷新按钮。构建目录已被 Git 忽略；使用同一目录重载可保留扩展内的设置。
-ZIP 需先解压再加载。本次交付为本地安装包，尚未发布到 Chrome Web Store。
+ZIP 需先解压再加载。已上架
+[Chrome Web Store](https://chromewebstore.google.com/detail/bepmkflijihfjodllcjogafffdcjabcf)；
+Web 首页下载区和官网下载页各有一条低调的文字链接，不做商店徽章。
 
 ## 使用行为
 

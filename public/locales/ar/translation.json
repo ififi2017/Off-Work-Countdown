@@ -128,6 +128,7 @@
   "getAppPlatforms": "Windows · Mac · iPhone · iPad",
   "getAppNoteDesktop": "على الكمبيوتر يبقى الوقت المتبقي في شريط القوائم أو علبة النظام، فلا حاجة لإبقاء التبويب مفتوحًا.",
   "getAppNoteMobile": "وعلى iPhone وiPad تعرضه أداة الشاشة الرئيسية بنظرة واحدة، وتنظّم الورديات المتناوبة أيضًا.",
+  "getChromeExtension": "متوفر أيضًا كإضافة لـ Chrome",
   "webShowcaseTitle": "أينما كنت، تكفيك نظرة واحدة",
   "webShowcaseBody": "تضع تطبيقات DoneAt العدّ التنازلي على الشاشة الرئيسية وعلى معصمك وحاسوبك، وتساعدك على تخطيط الشهر كله.",
   "webShowcaseCountdownCaption": "على iPhone، يظهر مع العدّ التنازلي وردية اليوم وساعات الأسبوع والتذكيرات القادمة.",
