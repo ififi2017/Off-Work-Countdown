@@ -50,12 +50,12 @@ struct OffWorkCountdownRootView: View {
         }
         .background {
             PhoneLandscapePresentation(isLandscapePhone: $isLandscapePhone)
+            ThemeAppearance(theme: runtime.preferences.theme, reduceMotion: reduceMotion)
         }
         .statusBarHidden(showsLandscapeTimer)
         .persistentSystemOverlays(showsLandscapeTimer ? .hidden : .automatic)
         .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.paywallPresentation, value: runtime.preferences.onboardingComplete)
         .animation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.28), value: runtime.plus.hasSeenIntro)
-        .preferredColorScheme(runtime.preferences.preferredColorScheme)
         .environment(\.layoutDirection, runtime.preferences.layoutDirection)
         .environment(\.locale, runtime.preferences.locale)
         .environment(runtime.notifications)
