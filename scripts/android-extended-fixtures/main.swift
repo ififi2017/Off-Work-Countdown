@@ -123,6 +123,10 @@ func typeJSON(_ t: ShiftType) -> J {
         ("startMinutes", n(t.startMinutes)), ("endMinutes", n(t.endMinutes)), ("breakEnabled", .bool(t.breakEnabled)),
         ("breakStartMinutes", n(t.breakStartMinutes)), ("breakDurationMinutes", n(t.breakDurationMinutes)),
         ("colorHex", .string(t.colorHex)), ("isArchived", .bool(t.isArchived)),
+        ("annualDateRange", t.annualDateRange.map { .object([
+            ("startMonth", n($0.startMonth)), ("startDay", n($0.startDay)),
+            ("endMonth", n($0.endMonth)), ("endDay", n($0.endDay)),
+        ]) } ?? .null),
     ])
 }
 
@@ -223,11 +227,37 @@ let pinned = Recipe(name: "pinned", json: .object([
     ("hours", .object([("startTime", .string("07:30")), ("endTime", .string("16:00")), ("breakStartTime", .string("11:30")), ("breakDurationMinutes", n(30))])),
 ]), plan: weekly.plan.pinning(dayKey: "2026-03-05", to: pinHours))
 
+var seasonalType = type(10, "Seasonal", .work, 600, 960, breakAt: 750, breakMinutes: 30)
+seasonalType.annualDateRange = AnnualShiftDateRange(startMonth: 3, startDay: 1, endMonth: 4, endDay: 30)
+var winterType = type(11, "Winter", .work, 660, 900)
+winterType.annualDateRange = AnnualShiftDateRange(startMonth: 12, startDay: 20, endMonth: 2, endDay: 28)
+var leapType = type(12, "Leap day", .work, 420, 780)
+leapType.annualDateRange = AnnualShiftDateRange(startMonth: 2, startDay: 29, endMonth: 2, endDay: 29)
+var archivedSeason = seasonalType
+archivedSeason.id = id(13)
+archivedSeason.isArchived = true
+let seasonalTypes = [dayType, earlyType, restType, seasonalType, winterType, leapType, archivedSeason]
+let seasonal = direct("annual-holidays", types: seasonalTypes, rule: workweek,
+    handSet: ["2026-03-02": dayType.id, "2026-03-03": earlyType.id, "2026-03-04": restType.id],
+    region: "US", overrides: [20260305: false, 20260307: true, 20261226: true, 20260101: false])
+let annualOnly = direct("annual-pattern", types: seasonalTypes, rule: workweek)
+let annualCarry = direct("annual-carry", types: seasonalTypes, handSet: ["2026-02-01": dayType.id, "2026-02-02": restType.id])
+let annualFrozen: Recipe = {
+    let rows = [roster("2026-03-10", dayType.id, frozen: dayFrozen), roster("2026-03-11", dayType.id), roster("2026-03-12", restType.id, frozen: restType)]
+    let schedule = ExtendedSchedule(isEnabled: true, shiftTypes: seasonalTypes, rule: workweek,
+        timeZoneIdentifier: "Asia/Shanghai", editedAt: Date(timeIntervalSince1970: 0), editCount: 1, editTieBreaker: id(0))
+    return Recipe(name: "annual-frozen", json: .object([
+        ("kind", .string("schedule")), ("shiftTypes", .array(seasonalTypes.map(typeJSON))),
+        ("rule", ruleJSON(workweek)), ("holidayRegionIdentifier", .null), ("clearedFromDayKey", .null),
+        ("rosterDays", .array(rows.map(rosterJSON))),
+    ]), plan: ExtendedSchedulePlan(schedule: schedule, rosterDays: rows)!)
+}()
+
 let recipes: [Recipe] = [
     weekly, rotation, carry, carryCleared, holidayCN, holidayNoDefaults, holidayOverrides, holidayOff, archivedDefaults, garbage,
     historical("historical-legacy", legacy: [lateArchived, dayType], includesLegacy: true)!,
     historical("historical-frozen", legacy: [], includesLegacy: false)!,
-    fromSchedule, pinned,
+    fromSchedule, pinned, seasonal, annualOnly, annualFrozen, annualCarry,
 ]
 
 // MARK: - Day resolution
@@ -278,7 +308,7 @@ let bases: [(String, ScheduleHoursConfiguration)] = [
         schedule: NativeWorkSchedule(mode: "off", referenceWeekStartMs: nil, referenceWeekType: nil, singleWeekendWorkday: nil, rotationAnchorMs: nil, rotationWorkDays: nil, rotationRestDays: nil),
         breakStartTime: nil, breakDurationMinutes: 0)),
 ]
-let ruleRecipes = ["weekly-rule", "rotation-14", "carry-over", "carry-cleared", "holiday-cn", "historical-legacy", "pinned", "from-schedule"]
+let ruleRecipes = ["weekly-rule", "rotation-14", "carry-over", "carry-cleared", "holiday-cn", "historical-legacy", "pinned", "from-schedule", "annual-holidays", "annual-pattern", "annual-frozen"]
 
 func input(_ base: ScheduleHoursConfiguration, _ plan: ExtendedSchedulePlan, _ zone: String, now: Double, ot: Double? = nil, forced: Double? = nil) -> NativeRulesInput {
     NativeRulesInput(
@@ -415,12 +445,27 @@ for mutate in [
     typeCases.append(line(.object([("type", typeJSON(t)), ("expected", .bool(t.isValid))])))
 }
 
+for mutate in [
+    { (t: inout ShiftType) in t.annualDateRange = AnnualShiftDateRange(startMonth: 2, startDay: 29, endMonth: 2, endDay: 29) },
+    { t in t.annualDateRange = AnnualShiftDateRange(startMonth: 2, startDay: 30, endMonth: 3, endDay: 1) },
+    { t in t.annualDateRange = AnnualShiftDateRange(startMonth: 12, startDay: 20, endMonth: 1, endDay: 10) },
+    { t in t.kind = .rest; t.annualDateRange = seasonalType.annualDateRange },
+    { t in t.annualDateRange = AnnualShiftDateRange(startMonth: 0, startDay: 1, endMonth: 13, endDay: 1) },
+] as [(inout ShiftType) -> Void] {
+    var t = dayType
+    mutate(&t)
+    typeCases.append(line(.object([("type", typeJSON(t)), ("expected", .bool(t.isValid))])))
+}
+
 let dayKeyCases = ["2026-02-28", "2026-02-29", "2028-02-29", "2100-02-29", "2000-02-29", "2026-13-01", "2026-00-10", "0000-01-01", "0001-01-01",
                    "9999-12-31", "2026-1-01", "2026-01-1", " 2026-01-01", "20260101", "abcd-ef-gh", "٢٠٢٦-٠١-٠١", "+026-01-01", "2026-04-31", "2026-12-31"]
 let dayKeys = dayKeyCases.map { key in line(.object([("dayKey", .string(key)), ("expected", n(ExtendedScheduleResolver.dayNumber(dayKey: key)))])) }
 
 var contentCases: [String] = []
 let contents: [(String, ExtendedScheduleContent)] = [
+    ("annual-disjoint", ExtendedScheduleContent(shiftTypes: seasonalTypes, rule: workweek)),
+    ("annual-active-overlap", ExtendedScheduleContent(shiftTypes: [seasonalType, ShiftType(id: id(14), name: "Overlap", kind: .work, startMinutes: 480, endMinutes: 900, breakEnabled: false, breakStartMinutes: 0, breakDurationMinutes: 0, colorHex: "#FF8800", isArchived: false, annualDateRange: AnnualShiftDateRange(startMonth: 4, startDay: 30, endMonth: 5, endDay: 1))], rule: nil)),
+    ("annual-wrap-overlap", ExtendedScheduleContent(shiftTypes: [winterType, ShiftType(id: id(15), name: "Overlap", kind: .work, startMinutes: 480, endMinutes: 900, breakEnabled: false, breakStartMinutes: 0, breakDurationMinutes: 0, colorHex: "#FF8800", isArchived: false, annualDateRange: AnnualShiftDateRange(startMonth: 1, startDay: 1, endMonth: 1, endDay: 15))], rule: nil)),
     ("valid", ExtendedScheduleContent(shiftTypes: allTypes.filter { $0.isValid }, rule: weeklyRule)),
     ("invalid-type", ExtendedScheduleContent(shiftTypes: allTypes, rule: nil)),
     ("duplicate-ids", ExtendedScheduleContent(shiftTypes: [dayType, dayType], rule: nil)),

@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">Désactivé par défaut. Le salaire reste sur cet appareil, et dans la sauvegarde d’Android si vous l’avez activée.</string>
     <string name="endTime">Heure de départ</string>
     <string name="extendedAddShiftType">Ajouter un type de service</string>
+    <string name="extendedAnnualDateRange">Répéter chaque année</string>
+    <string name="extendedAnnualRangeDescription">Appliquer ces heures chaque année aux jours de travail prévus dans cette période. Les jours de repos et les horaires attribués manuellement restent tels que prévus.</string>
+    <string name="extendedAnnualRangeEnd">Fin</string>
+    <string name="extendedAnnualRangeLabel">Chaque année : {start} – {end}</string>
+    <string name="extendedAnnualRangeOverlap">Cette période chevauche {shift}. Ajustez les dates pour éviter le chevauchement.</string>
+    <string name="extendedAnnualRangeStart">Début</string>
+    <string name="extendedAnnualRangeWrap">La date de fin est dans l’année suivante.</string>
     <string name="extendedApplyTemplateMessage">Chaque jour du cycle sera rempli à nouveau selon « %1$s ». Rien ne change avant l’enregistrement.</string>
     <string name="extendedApplyTemplateTitle">Remplir à nouveau le cycle ?</string>
+    <string name="extendedAssignedDateBounds">{start} – {end} · {count} jours</string>
     <string name="extendedBreak">Pause pendant le service</string>
     <string name="extendedBreakDuration">Durée de la pause</string>
     <string name="extendedBreakOutside">Placez la pause dans le service pour enregistrer.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">Travail</string>
     <string name="extendedNewShiftType">Nouveau type de service</string>
     <string name="extendedNextMonth">Mois suivant</string>
+    <string name="extendedNoAssignedDates">Aucun jour de travail prévu dans les 12 prochains mois</string>
     <string name="extendedOvernightNote">Ce service se termine le lendemain.</string>
     <string name="extendedPattern">Cycle</string>
     <string name="extendedPreviousMonth">Mois précédent</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">Nom, par ex. Matin ou Nuit</string>
     <string name="extendedShiftTypeInUse">Certains jours utilisent encore ce service. Attribuez-leur d’abord un autre service.</string>
     <string name="extendedShiftTypes">Types de service</string>
+    <string name="extendedSourceAnnualRange">Période annuelle</string>
     <string name="extendedToday">Aujourd’hui</string>
     <string name="extendedTodayIs">Aujourd’hui est le</string>
     <string name="extendedUnassigned">Non défini</string>
+    <string name="extendedUpcomingYear">12 prochains mois</string>
     <string name="extendedWeekNumber">Semaine %1$s</string>
     <string name="firstRunBackToWelcome">Retour à l’accueil</string>
     <string name="firstRunCheckingCloud">Vérification d’iCloud pour retrouver vos réglages et enregistrements avant de configurer cet appareil.</string>
@@ -769,6 +780,8 @@
     <string name="scheduleOff">Pas de planning</string>
     <string name="scheduleOffDescription">Décidez chaque jour. Pas de week-end fixé.</string>
     <string name="scheduleOffManualStart">Démarrage manuel du compte à rebours</string>
+    <string name="schedulePaintHint">Touchez les dates ou faites glisser votre doigt dessus pour les sélectionner. Répétez le geste pour annuler la sélection.</string>
+    <string name="schedulePaintStartHint">Choisissez un horaire, puis touchez les dates ou faites glisser votre doigt dessus.</string>
     <string name="scheduleRotation">Rotation travail/repos</string>
     <string name="scheduleRotationDescription">Un cycle de jours travaillés et de repos.</string>
     <string name="settings">Paramètres</string>

@@ -194,6 +194,20 @@ export function recordCases() {
   // Extended schedule and roster.
   add("extended/invalid-zone", variant((d) => { d.extendedSchedule.timeZoneIdentifier = "Nope/Nope"; }));
   add("extended/invalid-type-name", variant((d) => { d.extendedSchedule.shiftTypes[0].name = "   "; }));
+  const annualRange = { startMonth: 12, startDay: 20, endMonth: 2, endDay: 29 };
+  add("extended/annual-range", variant((d) => { d.extendedSchedule.shiftTypes[0].annualDateRange = annualRange; }));
+  add("extended/annual-invalid", variant((d) => { d.extendedSchedule.shiftTypes[0].annualDateRange = { ...annualRange, endDay: 30 }; }));
+  add("extended/annual-rest", variant((d) => { const t = d.extendedSchedule.shiftTypes.find(t => t.kind === "rest"); t.annualDateRange = annualRange; }));
+  add("extended/annual-overlap", variant((d) => {
+    const t = d.extendedSchedule.shiftTypes.find(t => t.kind === "work");
+    t.annualDateRange = annualRange;
+    d.extendedSchedule.shiftTypes.push({ ...t, id: "00000000-0000-4000-8000-000000000099", name: "Winter overlap" });
+  }));
+  add("doc/annual-missing-bound", variant((d) => { d.extendedSchedule.shiftTypes[0].annualDateRange = { startMonth: 1, startDay: 1, endMonth: 2 }; }));
+  add("roster/annual-frozen", variant((d) => {
+    d.rosterDays[0].shiftTypeID = d.extendedSchedule.shiftTypes[0].id;
+    d.rosterDays[0].assignedShiftType = { ...d.extendedSchedule.shiftTypes[0], annualDateRange: annualRange };
+  }));
   add("roster/mismatched-frozen", variant((d) => { d.rosterDays[0].assignedShiftType = d.extendedSchedule.shiftTypes[0]; }));
   add("roster/frozen", variant((d) => { d.rosterDays[0].assignedShiftType = d.extendedSchedule.shiftTypes[1]; d.rosterDays[0].generatedFromPattern = true; }));
   add("roster/bad-zone", variant((d) => { d.rosterDays[0].timeZoneIdentifier = "Nope/Nope"; }));
@@ -231,6 +245,7 @@ export function recordCases() {
   hours("manual-unicode-slash", { ...classic, startTime: "22:00", endTime: "06:00", schedule: { mode: "off" } });
   const ext = v6().extendedSchedule;
   hours("extended", { ...classic, extendedContent: { shiftTypes: ext.shiftTypes, rule: ext.rule, holidayRegionIdentifier: "CN", clearedFromDayKey: null } });
+  hours("extended-annual", { ...classic, extendedContent: { shiftTypes: [{ ...ext.shiftTypes[0], annualDateRange: annualRange }], rule: null } });
   hours("extended-names", { ...classic, extendedContent: { shiftTypes: [{ ...ext.shiftTypes[0], name: "夜班/Night \"A\" é\n" }], rule: null } });
   hours("extended-no-region", { ...classic, extendedContent: { shiftTypes: ext.shiftTypes, rule: null, clearedFromDayKey: "2026-09-01" } });
   hours("unknown-mode", { ...classic, schedule: { mode: "biweekly" } });

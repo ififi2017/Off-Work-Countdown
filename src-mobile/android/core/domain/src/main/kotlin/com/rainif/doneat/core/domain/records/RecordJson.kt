@@ -2,6 +2,7 @@ package com.rainif.doneat.core.domain.records
 
 import com.rainif.doneat.core.domain.records.FoundationCompat.canonicalDayKey
 import com.rainif.doneat.core.domain.records.FoundationCompat.uuid
+import com.rainif.doneat.core.domain.schedule.AnnualShiftDateRange
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedule
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleContent
 import com.rainif.doneat.core.domain.schedule.RosterDay
@@ -174,6 +175,9 @@ object RecordJson {
         breakDurationMinutes = o.int("breakDurationMinutes"),
         colorHex = o.str("colorHex"),
         isArchived = o.bool("isArchived"),
+        annualDateRange = o.optObj("annualDateRange")?.let {
+            AnnualShiftDateRange(it.int("startMonth"), it.int("startDay"), it.int("endMonth"), it.int("endDay"))
+        },
     )
 
     private fun rule(o: JsonObject) = ShiftCycleRule(
@@ -930,6 +934,9 @@ object RecordJson {
         "id" to upper(t.id), "name" to t.name, "kind" to t.kind.raw, "startMinutes" to t.startMinutes, "endMinutes" to t.endMinutes,
         "breakEnabled" to t.breakEnabled, "breakStartMinutes" to t.breakStartMinutes, "breakDurationMinutes" to t.breakDurationMinutes,
         "colorHex" to t.colorHex, "isArchived" to t.isArchived,
+        "annualDateRange" to t.annualDateRange?.let {
+            obj("startMonth" to it.startMonth, "startDay" to it.startDay, "endMonth" to it.endMonth, "endDay" to it.endDay)
+        },
     )
 
     private fun partialJson(d: PartialCivilDate?) = d?.let { obj("year" to it.year, "month" to it.month, "day" to it.day, "precision" to it.precision.raw) }

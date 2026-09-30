@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">Desativado por padrão. O salário fica neste dispositivo e no backup do próprio Android, se ele estiver ativado.</string>
     <string name="endTime">Hora de saída</string>
     <string name="extendedAddShiftType">Adicionar tipo de turno</string>
+    <string name="extendedAnnualDateRange">Repetir a cada ano</string>
+    <string name="extendedAnnualRangeDescription">Use estes horários a cada ano nos dias de trabalho agendados dentro deste intervalo. Os dias de descanso e os turnos atribuídos manualmente mantêm a programação atual.</string>
+    <string name="extendedAnnualRangeEnd">Fim</string>
+    <string name="extendedAnnualRangeLabel">Todos os anos: {start} – {end}</string>
+    <string name="extendedAnnualRangeOverlap">Este intervalo se sobrepõe a {shift}. Ajuste as datas para evitar sobreposições.</string>
+    <string name="extendedAnnualRangeStart">Início</string>
+    <string name="extendedAnnualRangeWrap">A data de fim está no ano seguinte.</string>
     <string name="extendedApplyTemplateMessage">Cada dia do ciclo será preenchido de novo segundo “%1$s”. Nada muda até guardar.</string>
     <string name="extendedApplyTemplateTitle">Preencher o ciclo de novo?</string>
+    <string name="extendedAssignedDateBounds">{start} – {end} · {count} dias</string>
     <string name="extendedBreak">Pausa durante o turno</string>
     <string name="extendedBreakDuration">Duração da pausa</string>
     <string name="extendedBreakOutside">Coloque a pausa dentro do turno para guardar.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">Trabalho</string>
     <string name="extendedNewShiftType">Novo tipo de turno</string>
     <string name="extendedNextMonth">Próximo mês</string>
+    <string name="extendedNoAssignedDates">Nenhum turno agendado nos próximos 12 meses</string>
     <string name="extendedOvernightNote">Este turno termina no dia seguinte.</string>
     <string name="extendedPattern">Ciclo</string>
     <string name="extendedPreviousMonth">Mês anterior</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">Nome, como Manhã ou Noite</string>
     <string name="extendedShiftTypeInUse">Alguns dias ainda usam este turno. Atribua-lhes primeiro outro turno.</string>
     <string name="extendedShiftTypes">Tipos de turno</string>
+    <string name="extendedSourceAnnualRange">Intervalo anual</string>
     <string name="extendedToday">Hoje</string>
     <string name="extendedTodayIs">Hoje é o</string>
     <string name="extendedUnassigned">Não definido</string>
+    <string name="extendedUpcomingYear">Próximos 12 meses</string>
     <string name="extendedWeekNumber">Semana %1$s</string>
     <string name="firstRunBackToWelcome">Voltar às boas-vindas</string>
     <string name="firstRunCheckingCloud">Verificando o iCloud em busca dos seus ajustes e registros antes de configurar este dispositivo.</string>
@@ -769,6 +780,8 @@
     <string name="scheduleOff">Sem horário ainda</string>
     <string name="scheduleOffDescription">Decida cada dia. Sem fim de semana fixo.</string>
     <string name="scheduleOffManualStart">Início manual da contagem</string>
+    <string name="schedulePaintHint">Toque nas datas ou deslize sobre elas para selecioná-las. Repita o gesto para desfazer a seleção.</string>
+    <string name="schedulePaintStartHint">Escolha um turno e toque nas datas ou deslize sobre elas.</string>
     <string name="scheduleRotation">Rotação trabalho/folga</string>
     <string name="scheduleRotationDescription">Repita os dias de trabalho e de folga.</string>
     <string name="settings">Definições</string>

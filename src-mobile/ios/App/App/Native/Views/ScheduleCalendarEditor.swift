@@ -43,6 +43,10 @@ struct ScheduleCalendarEditor: View {
     @State private var monthOffset = 0
     @State private var selectedKey: String?
     @State private var selectedWeek = 0
+    @State private var paint = ScheduleCalendarPaintSelection()
+    @State private var dayFrames: [String: CGRect] = [:]
+    @State private var strokePoint: CGPoint?
+    @GestureState private var strokeIsActive = false
     @State private var showsTypes = false
     @State private var confirmsClearExpected = false
     @State private var showsHolidayRegions = false
@@ -55,16 +59,18 @@ struct ScheduleCalendarEditor: View {
     private var text: AppText { shifts.text }
     private var today: String { session.extendedTodayKey(at: .now) }
     private var selected: String { selectedKey ?? today }
+    private var isPainting: Bool { mode == .free && paint.brushID != nil }
     private var types: [ShiftType] { ExtendedScheduleEditing.activeTypes(in: content) }
+    private var schedulePlan: ExtendedSchedulePlan {
+        ExtendedSchedulePlan(
+            shiftTypes: content.shiftTypes, rule: content.rule, handSetDays: handSetDays,
+            holidayRegionIdentifier: content.holidayRegionIdentifier,
+            clearedFromDayKey: content.clearedFromDayKey,
+            frozenShiftTypes: shifts.records.frozenRosterShiftTypes.filter { rosterEdits?[$0.key] == nil }
+        )
+    }
     private var resolver: ExtendedScheduleResolver {
-        LaunchTrace.interval("scheduleEditorResolver") {
-            ExtendedScheduleResolver(plan: ExtendedSchedulePlan(
-                shiftTypes: content.shiftTypes, rule: content.rule, handSetDays: handSetDays,
-                holidayRegionIdentifier: content.holidayRegionIdentifier,
-                clearedFromDayKey: content.clearedFromDayKey,
-                frozenShiftTypes: shifts.records.frozenRosterShiftTypes.filter { rosterEdits?[$0.key] == nil }
-            ))
-        }
+        LaunchTrace.interval("scheduleEditorResolver") { ExtendedScheduleResolver(plan: schedulePlan) }
     }
     private var mode: ScheduleEditorMode {
         if isManual { return .manual }
@@ -105,6 +111,19 @@ struct ScheduleCalendarEditor: View {
         } message: {
             Text(text.t("scheduleClearExpectedMessage"))
         }
+        .onChange(of: mode) { paint.choose(nil); strokePoint = nil }
+        .onChange(of: strokeIsActive) {
+            if !strokeIsActive {
+                paint.endStroke()
+                strokePoint = nil
+            }
+        }
+        .onChange(of: types.map(\.id)) {
+            if let brushID = paint.brushID, !types.contains(where: { $0.id == brushID }) {
+                paint.choose(nil)
+                strokePoint = nil
+            }
+        }
         .onAppear {
 #if DEBUG
             // Navigate screenshot demos without changing the clock or saved roster.
@@ -123,11 +142,14 @@ struct ScheduleCalendarEditor: View {
         }
         .sheet(isPresented: $showsTypes) {
             NavigationStack {
-                ExtendedShiftTypesSection(
-                    session: session, types: types,
-                    onEdit: { editType($0) }, onAdd: addType
-                )
-                .frame(maxHeight: .infinity, alignment: .top)
+                ScrollView {
+                    ExtendedShiftTypesSection(
+                        session: session, types: types,
+                        dateCoverage: ShiftTypeScheduleOverview.coverage(plan: schedulePlan, fromDayKey: today),
+                        onEdit: { editType($0) }, onAdd: addType
+                    )
+                    .padding(.bottom, OWCDesign.pageInset)
+                }
                 .background(OWCDesign.page)
                 .navigationTitle(text.t("extendedShiftTypes"))
                 .navigationBarTitleDisplayMode(.inline)
@@ -179,6 +201,9 @@ struct ScheduleCalendarEditor: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(OWCRowButtonStyle())
+        // Clipping only affects drawing; the styled row also needs an explicit
+        // interaction boundary before the next section's ellipsis button.
+        .contentShape(.interaction, Rectangle())
         .clipShape(.rect(cornerRadius: OWCDesign.cardRadius))
         .accessibilityLabel(text.t("holidayCalendar") + ", " + holidayRegionLabel)
     }
@@ -278,19 +303,26 @@ struct ScheduleCalendarEditor: View {
             }
             .padding(.horizontal, 8)
             .buttonStyle(ScheduleCalendarPressStyle())
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 7), spacing: 5) {
-                ForEach(Array(shifts.queries.recordsWeekdayGridSymbols().enumerated()), id: \.offset) { _, label in
-                    Text(label).font(.caption.weight(.medium)).foregroundStyle(OWCDesign.secondary)
-                        .lineLimit(1).accessibilityHidden(true)
-                }
-                ForEach(0..<slots, id: \.self) { slot in
-                    if slot < leading || slot >= leading + count {
-                        Color.clear.frame(height: cellHeight).accessibilityHidden(true)
-                    } else {
-                        dayCell(number: first + slot - leading, day: slot - leading + 1, resolver: resolved,
-                                today: today, previews: previews)
+            VStack(spacing: 5) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 7), spacing: 5) {
+                    ForEach(Array(shifts.queries.recordsWeekdayGridSymbols().enumerated()), id: \.offset) { _, label in
+                        Text(label).font(.caption.weight(.medium)).foregroundStyle(OWCDesign.secondary)
+                            .lineLimit(1).accessibilityHidden(true)
                     }
                 }
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 7), spacing: 5) {
+                    ForEach(0..<slots, id: \.self) { slot in
+                        if slot < leading || slot >= leading + count {
+                            Color.clear.frame(height: cellHeight).accessibilityHidden(true)
+                        } else {
+                            dayCell(number: first + slot - leading, day: slot - leading + 1, resolver: resolved,
+                                    today: today, previews: previews)
+                        }
+                    }
+                }
+                .coordinateSpace(.named("schedule-paint"))
+                .onPreferenceChange(SchedulePaintDayFramesKey.self) { dayFrames = $0 }
+                .highPriorityGesture(paintGesture, including: isPainting ? .all : .subviews)
             }
             if let warning = holidayCoverageWarning(for: month) {
                 Label(warning, systemImage: "exclamationmark.triangle")
@@ -312,10 +344,16 @@ struct ScheduleCalendarEditor: View {
         let key = ExtendedScheduleEditing.dayKey(dayNumber: number)
         let result = resolver.day(dayNumber: number)
         let type = typeForDay(key, id: result.shiftTypeID, today: today, preview: previews[key])
-        let chosen = key == (selectedKey ?? today)
+        let chosen = isPainting ? handSetDays[key] == paint.brushID : key == (selectedKey ?? today)
         let isToday = key == today
         let holiday = holidayDay(key)
-        return Button { selectDay(key) } label: {
+        return Button {
+            if isPainting {
+                paint.endStroke()
+                paintDay(key)
+                paint.endStroke()
+            } else { selectDay(key) }
+        } label: {
             VStack(spacing: 2) {
                 Text(text.formatCount(day))
                     .font(.callout.monospacedDigit().weight(chosen || isToday ? .semibold : .regular))
@@ -336,7 +374,7 @@ struct ScheduleCalendarEditor: View {
             .background(dayFill(type), in: .rect(cornerRadius: 8))
             .overlay {
                 if chosen {
-                    if reduceMotion {
+                    if reduceMotion || isPainting {
                         RoundedRectangle(cornerRadius: 8).strokeBorder(OWCDesign.accent, lineWidth: 2)
                     } else {
                         RoundedRectangle(cornerRadius: 8).strokeBorder(OWCDesign.accent, lineWidth: 2)
@@ -351,6 +389,11 @@ struct ScheduleCalendarEditor: View {
         // outlines the day without covering its work/rest colour.
         .padding(-3)
         .buttonStyle(ScheduleCalendarPressStyle())
+        .background {
+            GeometryReader { proxy in
+                Color.clear.preference(key: SchedulePaintDayFramesKey.self, value: [key: proxy.frame(in: .named("schedule-paint"))])
+            }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(dayLabel(key: key, type: type, isToday: isToday, holiday: holiday))
         .accessibilityAddTraits(chosen ? [.isSelected] : [])
@@ -458,7 +501,7 @@ struct ScheduleCalendarEditor: View {
     private func selectedDay(resolver: ExtendedScheduleResolver) -> some View {
         let result = ExtendedScheduleResolver.dayNumber(dayKey: selected).map { resolver.day(dayNumber: $0) }
         let type = typeForDay(selected, id: result?.shiftTypeID, today: today)
-        let canEdit = selected >= today || shifts.records.canEditRosterDay(selected, timeZoneIdentifier: session.rulesTimeZoneIdentifier ?? shifts.preferences.recordsTimeZone.identifier)
+        let canEdit = canEditDay(selected)
         return VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -482,6 +525,11 @@ struct ScheduleCalendarEditor: View {
                 .accessibilityLabel(text.t("extendedShiftTypes"))
             }
             .padding(.leading, 4)
+            if mode == .free {
+                Text(text.t(paint.brushID == nil ? "schedulePaintStartHint" : "schedulePaintHint"))
+                    .font(.footnote).foregroundStyle(OWCDesign.secondary)
+                    .padding(.horizontal, 4)
+            }
             if !canEdit {
                 Text(text.t("extendedHistoryNeedsCareer"))
                     .font(.footnote).foregroundStyle(OWCDesign.secondary)
@@ -489,7 +537,14 @@ struct ScheduleCalendarEditor: View {
             VStack(spacing: 0) {
                 ForEach(Array(types.enumerated()), id: \.element.id) { index, option in
                     if index > 0 { Divider().padding(.leading, 38) }
-                    Button { assign(option.id) } label: {
+                    let chosen = mode == .free ? paint.brushID == option.id : type?.id == option.id
+                    Button {
+                        if mode == .free {
+                            paint.choose(option.id)
+                            strokePoint = nil
+                            selectionFeedback += 1
+                        } else { assign(option.id) }
+                    } label: {
                         HStack(spacing: 10) {
                             Circle().fill(option.displayColor).frame(width: 8, height: 8)
                             Text(option.name).foregroundStyle(OWCDesign.primary)
@@ -501,19 +556,19 @@ struct ScheduleCalendarEditor: View {
                             }
                             Image(systemName: "checkmark")
                                 .font(.subheadline.weight(.semibold)).foregroundStyle(OWCDesign.accent)
-                                .opacity(type?.id == option.id ? 1 : 0)
+                                .opacity(chosen ? 1 : 0)
                         }
                         .font(.subheadline)
                         .padding(.horizontal, 16).padding(.vertical, 12).frame(minHeight: 48)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(OWCRowButtonStyle())
-                    .accessibilityAddTraits(type?.id == option.id ? [.isSelected] : [])
+                    .accessibilityAddTraits(chosen ? [.isSelected] : [])
                 }
             }
             .background(OWCDesign.card, in: .rect(cornerRadius: OWCDesign.cardRadius))
             .clipShape(.rect(cornerRadius: OWCDesign.cardRadius))
-            .disabled(!canEdit)
+            .disabled(mode != .free && !canEdit)
             if handSetDays[selected] != nil {
                 Button { followPattern() } label: {
                     Label(text.t(content.rule == nil ? "extendedClearDay" : "extendedFollowPattern"), systemImage: "arrow.uturn.backward")
@@ -523,6 +578,37 @@ struct ScheduleCalendarEditor: View {
                 .padding(.horizontal, 4)
             }
         }
+    }
+
+    private var paintGesture: some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .named("schedule-paint"))
+            .updating($strokeIsActive) { _, active, _ in active = true }
+            .onChanged { value in
+                guard isPainting else { return }
+                // Only begin a stroke on a date, never on a weekday heading.
+                guard strokePoint != nil || dayFrames.values.contains(where: { $0.contains(value.startLocation) }) else { return }
+                let start = strokePoint ?? value.startLocation
+                for key in ScheduleCalendarPaintSelection.crossedDays(from: start, to: value.location, frames: dayFrames) {
+                    paintDay(key)
+                }
+                strokePoint = value.location
+            }
+            .onEnded { _ in
+                paint.endStroke()
+                strokePoint = nil
+            }
+    }
+
+    private func canEditDay(_ key: String) -> Bool {
+        key >= today || shifts.records.canEditRosterDay(key, timeZoneIdentifier: previewTimeZoneIdentifier)
+    }
+
+    private func paintDay(_ key: String) {
+        guard canEditDay(key) else { selectDay(key); return }
+        guard let edit = paint.edit(dayKey: key, currentShiftID: handSetDays[key]) else { return }
+        onSetDay(key, edit)
+        selectedKey = key
+        assignmentFeedback += 1
     }
 
     private func selectDay(_ key: String) {
@@ -588,6 +674,7 @@ struct ScheduleCalendarEditor: View {
         case .handSet: "extendedSetByHand"
         case .holiday: "holidaySource"
         case .rule: "extendedPattern"
+        case .annualRange: "extendedSourceAnnualRange"
         case .carriedOver: "extendedCarriedOver"
         case .unassigned, nil: "extendedUnassigned"
         }
@@ -623,6 +710,8 @@ struct ScheduleCalendarEditor: View {
     }
     private func changeMonth(_ delta: Int) {
         // Keep the month grid stable; only the heading fades between months.
+        paint.endStroke()
+        strokePoint = nil
         monthOffset += delta
         if let month = ExtendedScheduleEditing.month(of: today, plus: monthOffset) {
             selectedKey = ExtendedScheduleEditing.dayKey(dayNumber: CivilZone.dayNumber(year: month.year, month: month.month, day: 1))
@@ -631,6 +720,8 @@ struct ScheduleCalendarEditor: View {
     }
     private func returnToToday() {
         guard monthOffset != 0 || selected != today else { return }
+        paint.endStroke()
+        strokePoint = nil
         monthOffset = 0
         selectedKey = today
         selectionFeedback += 1
@@ -656,7 +747,9 @@ struct ScheduleCalendarEditor: View {
     private func editType(_ type: ShiftType) {
         editingType = ShiftTypeEditing(type: type, isNew: false, isInUse: ExtendedScheduleEditing.ruleUses(type.id, in: content)
             || (shifts.preferences.extendedScheduleContent?.shiftTypes.contains { $0.id == type.id } != true
-                && handSetDays.values.contains(type.id)))
+                && handSetDays.values.contains(type.id)),
+            dateCoverage: ShiftTypeScheduleOverview.coverage(plan: schedulePlan, fromDayKey: today)[type.id],
+            otherTypes: types)
     }
     private func addType() {
         editingType = ShiftTypeEditing(type: ShiftType(
@@ -664,13 +757,21 @@ struct ScheduleCalendarEditor: View {
             startMinutes: shifts.preferences.startMinutes, endMinutes: shifts.preferences.endMinutes,
             breakEnabled: false, breakStartMinutes: 720, breakDurationMinutes: 30,
             colorHex: ExtendedScheduleEditing.nextColor(after: content.shiftTypes), isArchived: false
-        ), isNew: true, isInUse: false)
+        ), isNew: true, isInUse: false, otherTypes: types)
     }
     private func typeEditor(_ editing: ShiftTypeEditing) -> some View {
         ShiftTypeEditorSheet(session: session, editing: editing,
             onSave: { onContentChange(ExtendedScheduleEditing.upserting($0, in: content)) },
             onDelete: { onContentChange(ExtendedScheduleEditing.removing(editing.type.id, from: content, saved: shifts.preferences.extendedScheduleContent)) }
         )
+    }
+}
+
+private struct SchedulePaintDayFramesKey: PreferenceKey {
+    static var defaultValue: [String: CGRect] { [:] }
+
+    static func reduce(value: inout [String: CGRect], nextValue: () -> [String: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
     }
 }
 

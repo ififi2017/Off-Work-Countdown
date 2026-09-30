@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">기본값은 꺼짐입니다. 급여는 이 기기에만 저장되며, Android 자체 백업을 켜 두었다면 백업에도 포함됩니다.</string>
     <string name="endTime">퇴근 시간</string>
     <string name="extendedAddShiftType">근무 유형 추가</string>
+    <string name="extendedAnnualDateRange">매년 반복</string>
+    <string name="extendedAnnualRangeDescription">매년 이 기간에 예정된 근무일에 이 시간을 적용해요. 휴무일과 직접 배정한 근무는 기존 일정을 유지해요.</string>
+    <string name="extendedAnnualRangeEnd">종료일</string>
+    <string name="extendedAnnualRangeLabel">매년: {start} – {end}</string>
+    <string name="extendedAnnualRangeOverlap">이 기간이 {shift}와 겹쳐요. 기간이 겹치지 않도록 날짜를 조정하세요.</string>
+    <string name="extendedAnnualRangeStart">시작일</string>
+    <string name="extendedAnnualRangeWrap">종료일은 다음 해에 있어요.</string>
     <string name="extendedApplyTemplateMessage">주기의 모든 날을 「%1$s」 기준으로 다시 채웁니다. 저장해야 적용됩니다.</string>
     <string name="extendedApplyTemplateTitle">패턴을 다시 채울까요?</string>
+    <string name="extendedAssignedDateBounds">{start} – {end} · {count}일</string>
     <string name="extendedBreak">중간 휴식</string>
     <string name="extendedBreakDuration">휴식 시간</string>
     <string name="extendedBreakOutside">휴식을 근무 시간 안으로 옮기면 저장할 수 있습니다.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">근무</string>
     <string name="extendedNewShiftType">새 근무 유형</string>
     <string name="extendedNextMonth">다음 달</string>
+    <string name="extendedNoAssignedDates">앞으로 12개월 동안 예정된 근무가 없어요</string>
     <string name="extendedOvernightNote">이 근무는 다음 날 끝납니다.</string>
     <string name="extendedPattern">근무 패턴</string>
     <string name="extendedPreviousMonth">이전 달</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">이름(예: 주간, 야간)</string>
     <string name="extendedShiftTypeInUse">아직 이 근무를 쓰는 날이 있습니다. 먼저 그날들을 다른 근무로 바꿔 주세요.</string>
     <string name="extendedShiftTypes">근무 유형</string>
+    <string name="extendedSourceAnnualRange">매년 적용 기간</string>
     <string name="extendedToday">오늘</string>
     <string name="extendedTodayIs">오늘은</string>
     <string name="extendedUnassigned">미정</string>
+    <string name="extendedUpcomingYear">앞으로 12개월</string>
     <string name="extendedWeekNumber">%1$s주차</string>
     <string name="firstRunBackToWelcome">환영 화면으로 돌아가기</string>
     <string name="firstRunCheckingCloud">이 기기를 설정하기 전에 iCloud에서 기존 설정과 기록을 확인하고 있습니다.</string>
@@ -767,6 +778,8 @@
     <string name="scheduleOff">일단 일정 없음</string>
     <string name="scheduleOffDescription">매일 정합니다. 미리 짠 주말은 없습니다.</string>
     <string name="scheduleOffManualStart">수동 카운트다운 시작</string>
+    <string name="schedulePaintHint">날짜를 탭하거나 쓸어 선택하세요. 같은 동작으로 선택을 취소할 수 있어요.</string>
+    <string name="schedulePaintStartHint">근무를 선택한 뒤 날짜를 탭하거나 쓸어주세요.</string>
     <string name="scheduleRotation">근무/휴무 순환</string>
     <string name="scheduleRotationDescription">근무일과 휴무일 수를 반복합니다.</string>
     <string name="settings">설정</string>

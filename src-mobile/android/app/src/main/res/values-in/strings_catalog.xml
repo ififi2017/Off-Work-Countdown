@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">Nonaktif secara default. Gaji tetap di perangkat ini, dan di cadangan bawaan Android jika Anda mengaktifkannya.</string>
     <string name="endTime">Jam pulang</string>
     <string name="extendedAddShiftType">Tambah jenis sif</string>
+    <string name="extendedAnnualDateRange">Ulangi setiap tahun</string>
+    <string name="extendedAnnualRangeDescription">Gunakan jam ini setiap tahun pada hari kerja terjadwal dalam rentang ini. Hari istirahat dan giliran yang ditetapkan secara manual tetap mengikuti jadwalnya.</string>
+    <string name="extendedAnnualRangeEnd">Tanggal selesai</string>
+    <string name="extendedAnnualRangeLabel">Setiap tahun: {start} – {end}</string>
+    <string name="extendedAnnualRangeOverlap">Rentang ini tumpang tindih dengan {shift}. Sesuaikan tanggal agar rentang tidak tumpang tindih.</string>
+    <string name="extendedAnnualRangeStart">Tanggal mulai</string>
+    <string name="extendedAnnualRangeWrap">Tanggal selesai berada di tahun berikutnya.</string>
     <string name="extendedApplyTemplateMessage">Setiap hari dalam siklus akan diisi ulang berdasarkan “%1$s”. Tidak ada yang berubah sebelum disimpan.</string>
     <string name="extendedApplyTemplateTitle">Isi ulang pola?</string>
+    <string name="extendedAssignedDateBounds">{start} – {end} · {count} hari</string>
     <string name="extendedBreak">Istirahat saat sif</string>
     <string name="extendedBreakDuration">Lama istirahat</string>
     <string name="extendedBreakOutside">Pindahkan istirahat ke dalam sif untuk menyimpan.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">Kerja</string>
     <string name="extendedNewShiftType">Jenis sif baru</string>
     <string name="extendedNextMonth">Bulan berikutnya</string>
+    <string name="extendedNoAssignedDates">Tidak ada giliran terjadwal dalam 12 bulan mendatang</string>
     <string name="extendedOvernightNote">Sif ini berakhir keesokan harinya.</string>
     <string name="extendedPattern">Pola</string>
     <string name="extendedPreviousMonth">Bulan sebelumnya</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">Nama, misalnya Pagi atau Malam</string>
     <string name="extendedShiftTypeInUse">Beberapa hari masih memakai sif ini. Berikan sif lain untuk hari-hari itu terlebih dahulu.</string>
     <string name="extendedShiftTypes">Jenis sif</string>
+    <string name="extendedSourceAnnualRange">Rentang tahunan</string>
     <string name="extendedToday">Hari ini</string>
     <string name="extendedTodayIs">Hari ini adalah</string>
     <string name="extendedUnassigned">Belum diatur</string>
+    <string name="extendedUpcomingYear">12 bulan mendatang</string>
     <string name="extendedWeekNumber">Minggu %1$s</string>
     <string name="firstRunBackToWelcome">Kembali ke halaman sambutan</string>
     <string name="firstRunCheckingCloud">Memeriksa iCloud untuk pengaturan dan catatan Anda yang sudah ada sebelum menyiapkan perangkat ini.</string>
@@ -767,6 +778,8 @@
     <string name="scheduleOff">Tanpa jadwal dulu</string>
     <string name="scheduleOffDescription">Putuskan setiap hari. Tanpa akhir pekan tetap.</string>
     <string name="scheduleOffManualStart">Mulai hitung mundur manual</string>
+    <string name="schedulePaintHint">Ketuk atau usap tanggal untuk memilihnya. Ulangi gerakan untuk membatalkan pilihan.</string>
+    <string name="schedulePaintStartHint">Pilih giliran, lalu ketuk atau usap tanggal.</string>
     <string name="scheduleRotation">Rotasi kerja/libur</string>
     <string name="scheduleRotationDescription">Ulangi hari kerja dan hari libur.</string>
     <string name="settings">Pengaturan</string>

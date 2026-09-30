@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">Mặc định tắt. Lương chỉ lưu trên thiết bị này, và trong bản sao lưu của Android nếu bạn đã bật.</string>
     <string name="endTime">Giờ tan ca</string>
     <string name="extendedAddShiftType">Thêm loại ca</string>
+    <string name="extendedAnnualDateRange">Lặp lại mỗi năm</string>
+    <string name="extendedAnnualRangeDescription">Áp dụng giờ này mỗi năm cho các ngày làm việc đã lên lịch trong khoảng này. Ngày nghỉ và các ca được chỉ định thủ công vẫn giữ nguyên lịch.</string>
+    <string name="extendedAnnualRangeEnd">Ngày kết thúc</string>
+    <string name="extendedAnnualRangeLabel">Mỗi năm: {start} – {end}</string>
+    <string name="extendedAnnualRangeOverlap">Khoảng này trùng với {shift}. Điều chỉnh ngày để các khoảng không trùng nhau.</string>
+    <string name="extendedAnnualRangeStart">Ngày bắt đầu</string>
+    <string name="extendedAnnualRangeWrap">Ngày kết thúc nằm trong năm tiếp theo.</string>
     <string name="extendedApplyTemplateMessage">Mọi ngày trong chu kỳ sẽ được điền lại theo “%1$s”. Chưa có gì thay đổi cho đến khi bạn lưu.</string>
     <string name="extendedApplyTemplateTitle">Điền lại chu kỳ?</string>
+    <string name="extendedAssignedDateBounds">{start} – {end} · {count} ngày</string>
     <string name="extendedBreak">Nghỉ giữa ca</string>
     <string name="extendedBreakDuration">Thời lượng nghỉ</string>
     <string name="extendedBreakOutside">Đặt giờ nghỉ nằm trong ca để lưu.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">Làm việc</string>
     <string name="extendedNewShiftType">Loại ca mới</string>
     <string name="extendedNextMonth">Tháng sau</string>
+    <string name="extendedNoAssignedDates">Chưa có ca được lên lịch trong 12 tháng tới</string>
     <string name="extendedOvernightNote">Ca này kết thúc vào hôm sau.</string>
     <string name="extendedPattern">Chu kỳ</string>
     <string name="extendedPreviousMonth">Tháng trước</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">Tên, ví dụ Ca sáng hoặc Ca đêm</string>
     <string name="extendedShiftTypeInUse">Vẫn còn ngày dùng ca này. Hãy đổi những ngày đó sang ca khác trước.</string>
     <string name="extendedShiftTypes">Loại ca</string>
+    <string name="extendedSourceAnnualRange">Khoảng ngày hằng năm</string>
     <string name="extendedToday">Hôm nay</string>
     <string name="extendedTodayIs">Hôm nay là</string>
     <string name="extendedUnassigned">Chưa đặt</string>
+    <string name="extendedUpcomingYear">12 tháng tới</string>
     <string name="extendedWeekNumber">Tuần %1$s</string>
     <string name="firstRunBackToWelcome">Quay lại trang chào mừng</string>
     <string name="firstRunCheckingCloud">Đang kiểm tra iCloud để tìm cài đặt và bản ghi hiện có trước khi thiết lập thiết bị này.</string>
@@ -767,6 +778,8 @@
     <string name="scheduleOff">Chưa đặt lịch</string>
     <string name="scheduleOffDescription">Mỗi ngày tự quyết. Không có cuối tuần cố định.</string>
     <string name="scheduleOffManualStart">Bắt đầu đếm ngược thủ công</string>
+    <string name="schedulePaintHint">Chạm hoặc vuốt qua các ngày để chọn. Lặp lại thao tác để bỏ chọn.</string>
+    <string name="schedulePaintStartHint">Chọn một ca, rồi chạm hoặc vuốt qua các ngày.</string>
     <string name="scheduleRotation">Chu kỳ làm/nghỉ</string>
     <string name="scheduleRotationDescription">Lặp lại ngày làm và ngày nghỉ.</string>
     <string name="settings">Cài đặt</string>

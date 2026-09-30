@@ -5,6 +5,8 @@ import com.rainif.doneat.core.domain.asDouble
 import com.rainif.doneat.core.domain.bool
 import com.rainif.doneat.core.domain.compareSnapshot
 import com.rainif.doneat.core.domain.double
+import com.rainif.doneat.core.domain.session.ScheduleEditing
+import com.rainif.doneat.core.domain.session.RosterDayEdit
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.string
@@ -76,6 +78,10 @@ class ExtendedScheduleFixtureTest {
                 breakDurationMinutes = o.getValue("breakDurationMinutes").jsonPrimitive.int,
                 colorHex = o.string("colorHex")!!,
                 isArchived = o.bool("isArchived"),
+                annualDateRange = o["annualDateRange"]?.takeUnless { it is JsonNull }?.jsonObject?.let {
+                    AnnualShiftDateRange(it.getValue("startMonth").jsonPrimitive.int, it.getValue("startDay").jsonPrimitive.int,
+                        it.getValue("endMonth").jsonPrimitive.int, it.getValue("endDay").jsonPrimitive.int)
+                },
             )
         }
 
@@ -349,6 +355,21 @@ class ExtendedScheduleFixtureTest {
         assertTrue(rows.any { it.dayKey == "2028-02-29" })
         val byDay = rows.associateBy { it.dayKey }
         assertEquals(23 * 3_600_000.0, byDay.getValue("2028-03-12").shiftAnchorStartAtMs - byDay.getValue("2028-03-11").shiftAnchorStartAtMs, 0.0)
+    }
+
+    @Test
+    fun keepingPatternPreservesSeasonalHoursAndRestDaysWhenRemovingTheRule() {
+        val plan = plans.getValue("annual-pattern")
+        val edits = ScheduleEditing.keepingPattern(plan, listOf(2026 to 3), "2026-03-01", null)!!
+        val resolver = ExtendedScheduleResolver(plan)
+        for (day in 1..31) {
+            val key = "2026-03-%02d".format(java.util.Locale.ROOT, day)
+            val resolved = resolver.day(ExtendedScheduleResolver.dayNumber(key)!!)
+            assertEquals(RosterDayEdit.Shift(resolved.shiftTypeID!!), edits[key])
+        }
+        assertEquals(31, edits.size)
+        assertEquals(ExtendedScheduleDay.Source.ANNUAL_RANGE,
+            resolver.day(ExtendedScheduleResolver.dayNumber("2026-03-02")!!).source)
     }
 
     @Test

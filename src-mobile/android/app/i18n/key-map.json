@@ -389,6 +389,27 @@
     "extendedAddShiftType": {
       "resource": "string/extendedAddShiftType"
     },
+    "extendedAnnualDateRange": {
+      "resource": "string/extendedAnnualDateRange"
+    },
+    "extendedAnnualRangeDescription": {
+      "resource": "string/extendedAnnualRangeDescription"
+    },
+    "extendedAnnualRangeEnd": {
+      "resource": "string/extendedAnnualRangeEnd"
+    },
+    "extendedAnnualRangeLabel": {
+      "resource": "string/extendedAnnualRangeLabel"
+    },
+    "extendedAnnualRangeOverlap": {
+      "resource": "string/extendedAnnualRangeOverlap"
+    },
+    "extendedAnnualRangeStart": {
+      "resource": "string/extendedAnnualRangeStart"
+    },
+    "extendedAnnualRangeWrap": {
+      "resource": "string/extendedAnnualRangeWrap"
+    },
     "extendedApplyTemplateMessage": {
       "resource": "string/extendedApplyTemplateMessage",
       "params": [
@@ -397,6 +418,9 @@
     },
     "extendedApplyTemplateTitle": {
       "resource": "string/extendedApplyTemplateTitle"
+    },
+    "extendedAssignedDateBounds": {
+      "resource": "string/extendedAssignedDateBounds"
     },
     "extendedBreak": {
       "resource": "string/extendedBreak"
@@ -465,6 +489,9 @@
     "extendedNextMonth": {
       "resource": "string/extendedNextMonth"
     },
+    "extendedNoAssignedDates": {
+      "resource": "string/extendedNoAssignedDates"
+    },
     "extendedOvernightNote": {
       "resource": "string/extendedOvernightNote"
     },
@@ -495,6 +522,9 @@
     "extendedShiftTypes": {
       "resource": "string/extendedShiftTypes"
     },
+    "extendedSourceAnnualRange": {
+      "resource": "string/extendedSourceAnnualRange"
+    },
     "extendedToday": {
       "resource": "string/extendedToday"
     },
@@ -503,6 +533,9 @@
     },
     "extendedUnassigned": {
       "resource": "string/extendedUnassigned"
+    },
+    "extendedUpcomingYear": {
+      "resource": "string/extendedUpcomingYear"
     },
     "extendedWeekNumber": {
       "resource": "string/extendedWeekNumber",
@@ -2640,6 +2673,12 @@
     },
     "scheduleOffManualStart": {
       "resource": "string/scheduleOffManualStart"
+    },
+    "schedulePaintHint": {
+      "resource": "string/schedulePaintHint"
+    },
+    "schedulePaintStartHint": {
+      "resource": "string/schedulePaintStartHint"
     },
     "scheduleRotation": {
       "resource": "string/scheduleRotation"

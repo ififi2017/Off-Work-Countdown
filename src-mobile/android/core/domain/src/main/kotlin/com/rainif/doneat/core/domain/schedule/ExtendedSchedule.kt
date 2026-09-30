@@ -4,6 +4,27 @@ import java.text.BreakIterator
 import java.util.Locale
 import java.util.UUID
 
+/** Inclusive month/day bounds, recurring yearly and wrapping across New Year when needed. */
+data class AnnualShiftDateRange(val startMonth: Int, val startDay: Int, val endMonth: Int, val endDay: Int) {
+    val isValid: Boolean get() = valid(startMonth, startDay) && valid(endMonth, endDay)
+
+    fun contains(month: Int, day: Int): Boolean {
+        if (!isValid || !valid(month, day)) return false
+        val start = startMonth * 100 + startDay
+        val end = endMonth * 100 + endDay
+        val date = month * 100 + day
+        return if (start <= end) date in start..end else date >= start || date <= end
+    }
+
+    fun overlaps(other: AnnualShiftDateRange): Boolean = isValid && other.isValid && (
+        contains(other.startMonth, other.startDay) || contains(other.endMonth, other.endDay) ||
+            other.contains(startMonth, startDay) || other.contains(endMonth, endDay)
+        )
+
+    private fun valid(month: Int, day: Int): Boolean = month in 1..12 && day in 1..31 &&
+        CivilZone.civilDate(CivilZone.dayNumber(2000, month, day)) == Triple(2000, month, day)
+}
+
 /**
  * Plan 018 P8's extended scheduling, ported from `src-mobile/ios/Shared`
  * (ExtendedSchedule.swift, ExtendedScheduleRules.swift). iOS-only behaviour:
@@ -26,6 +47,7 @@ data class ShiftType(
     val colorHex: String,
     /** Archived types stay so past days that used them still resolve. */
     val isArchived: Boolean,
+    val annualDateRange: AnnualShiftDateRange? = null,
 ) {
     enum class Kind(val raw: String) {
         WORK("work"),
@@ -46,7 +68,8 @@ data class ShiftType(
                 breakStartMinutes in 0 until 1_440 &&
                 breakDurationMinutes in 0 until 1_440 &&
                 (!breakEnabled || breakDurationMinutes > 0) &&
-                COLOR.matches(colorHex)
+                COLOR.matches(colorHex) &&
+                (annualDateRange?.let { kind == Kind.WORK && it.isValid } ?: true)
         }
 
     companion object {
@@ -82,8 +105,15 @@ data class ExtendedScheduleContent(
     /** Free schedules stop automatic carry-over and holiday assignments from this civil day. */
     val clearedFromDayKey: String? = null,
 ) {
+    val hasOverlappingAnnualDateRanges: Boolean
+        get() {
+            val ranges = shiftTypes.filter { it.kind == ShiftType.Kind.WORK && !it.isArchived }.mapNotNull { it.annualDateRange }
+            return ranges.indices.any { i -> ranges.drop(i + 1).any(ranges[i]::overlaps) }
+        }
+
     val isValid: Boolean
         get() {
+            if (hasOverlappingAnnualDateRanges) return false
             if (clearedFromDayKey != null && ExtendedScheduleResolver.parse(clearedFromDayKey) == null) return false
             if (!HolidayCalendar.isValidRegionIdentifier(holidayRegionIdentifier)) return false
             if (!shiftTypes.all { it.isValid }) return false
@@ -147,6 +177,7 @@ data class ExtendedScheduleDay(
         RULE("rule"),
         HOLIDAY("holiday"),
         CARRIED_OVER("carriedOver"),
+        ANNUAL_RANGE("annualRange"),
         UNASSIGNED("unassigned"),
     }
 
@@ -276,6 +307,8 @@ internal class ExtendedScheduleIndex(plan: ExtendedSchedulePlan) {
     val clearedFromDayNumber = plan.clearedFromDayKey?.let(ExtendedScheduleResolver::dayNumber)
     val defaultWorkTypeID = plan.shiftTypes.firstOrNull { it.kind == ShiftType.Kind.WORK && !it.isArchived }?.id
     val defaultRestTypeID = plan.shiftTypes.firstOrNull { it.kind == ShiftType.Kind.REST && !it.isArchived }?.id
+    val annualWorkTypes = plan.shiftTypes.filter { it.kind == ShiftType.Kind.WORK && !it.isArchived && it.isValid }
+        .mapNotNull { type -> type.annualDateRange?.let { type.id to it } }
     val ruleAnchorDayNumber = plan.rule?.let { ExtendedScheduleResolver.dayNumber(it.anchorDayKey) }
 
     /** What each defined type resolves to. First valid definition of an id wins; invalid ones resolve to nothing. */
@@ -344,7 +377,7 @@ class ExtendedScheduleResolver(plan: ExtendedSchedulePlan) {
         if (index.fallsBackToBaseSchedule) return ExtendedScheduleDay.UNASSIGNED
         val cleared = index.clearedFromDayNumber
         if (index.rule == null && cleared != null && dayNumber >= cleared) return ExtendedScheduleDay.UNASSIGNED
-        val base = patternDay(dayNumber)
+        val base = annualDay(patternDay(dayNumber), dayNumber)
         val region = index.holidayRegionIdentifier
         if (region.isNullOrEmpty()) return base
         val (year, month, day) = CivilZone.civilDate(dayNumber)
@@ -359,7 +392,14 @@ class ExtendedScheduleResolver(plan: ExtendedSchedulePlan) {
         }
         if (base.isWorkday) return base.copy(source = ExtendedScheduleDay.Source.HOLIDAY)
         val workID = index.defaultWorkTypeID ?: return base
-        return day(workID, ExtendedScheduleDay.Source.HOLIDAY)
+        return annualDay(day(workID, ExtendedScheduleDay.Source.HOLIDAY), dayNumber)
+    }
+
+    private fun annualDay(base: ExtendedScheduleDay, dayNumber: Int): ExtendedScheduleDay {
+        if (!base.isWorkday || index.annualWorkTypes.isEmpty()) return base
+        val (_, month, date) = CivilZone.civilDate(dayNumber)
+        val type = index.annualWorkTypes.firstOrNull { it.second.contains(month, date) } ?: return base
+        return day(type.first, if (base.source == ExtendedScheduleDay.Source.HOLIDAY) base.source else ExtendedScheduleDay.Source.ANNUAL_RANGE)
     }
 
     private fun patternDay(dayNumber: Int): ExtendedScheduleDay {

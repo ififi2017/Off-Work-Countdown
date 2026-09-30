@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">預設關閉。薪資只儲存在這台裝置上；如果你開啟了 Android 內建的備份，也會包含在備份中。</string>
     <string name="endTime">下班時間</string>
     <string name="extendedAddShiftType">新增班次類型</string>
+    <string name="extendedAnnualDateRange">每年重複</string>
+    <string name="extendedAnnualRangeDescription">每年在此範圍內的排班工作日使用這些時間。休息日及手動指定的班次保留原有安排。</string>
+    <string name="extendedAnnualRangeEnd">結束日期</string>
+    <string name="extendedAnnualRangeLabel">每年：{start} – {end}</string>
+    <string name="extendedAnnualRangeOverlap">此範圍與「{shift}」重疊，請調整日期。</string>
+    <string name="extendedAnnualRangeStart">開始日期</string>
+    <string name="extendedAnnualRangeWrap">結束日期在隔年。</string>
     <string name="extendedApplyTemplateMessage">週期裡的每一天會依「%1$s」重新填寫，儲存後才會生效。</string>
     <string name="extendedApplyTemplateTitle">重新填寫排班規律？</string>
+    <string name="extendedAssignedDateBounds">{start} – {end} · {count} 天</string>
     <string name="extendedBreak">中途休息</string>
     <string name="extendedBreakDuration">休息時長</string>
     <string name="extendedBreakOutside">把休息時間移到班次內才能儲存。</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">上班</string>
     <string name="extendedNewShiftType">新的班次類型</string>
     <string name="extendedNextMonth">下個月</string>
+    <string name="extendedNoAssignedDates">未來 12 個月尚無排班</string>
     <string name="extendedOvernightNote">這個班次在隔天結束。</string>
     <string name="extendedPattern">排班規律</string>
     <string name="extendedPreviousMonth">上個月</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">名稱，例如早班、夜班</string>
     <string name="extendedShiftTypeInUse">還有日子在用這個班次，請先把這些日子換成其他班次。</string>
     <string name="extendedShiftTypes">班次類型</string>
+    <string name="extendedSourceAnnualRange">每年日期範圍</string>
     <string name="extendedToday">今天</string>
     <string name="extendedTodayIs">今天是</string>
     <string name="extendedUnassigned">未排班</string>
+    <string name="extendedUpcomingYear">未來 12 個月</string>
     <string name="extendedWeekNumber">第 %1$s 週</string>
     <string name="firstRunBackToWelcome">返回歡迎頁</string>
     <string name="firstRunCheckingCloud">正在檢查 iCloud 是否已有設定和記錄，稍後再設定這台裝置。</string>
@@ -767,6 +778,8 @@
     <string name="scheduleOff">先不排班</string>
     <string name="scheduleOffDescription">每天再決定。沒有固定週末。</string>
     <string name="scheduleOffManualStart">每天手動開始</string>
+    <string name="schedulePaintHint">點一下或滑過日期即可選取，再次操作即可取消。</string>
+    <string name="schedulePaintStartHint">選擇班次，再點一下或滑過日期。</string>
     <string name="scheduleRotation">輪班輪休</string>
     <string name="scheduleRotationDescription">依工作天數與休息天數循環。</string>
     <string name="settings">設定</string>

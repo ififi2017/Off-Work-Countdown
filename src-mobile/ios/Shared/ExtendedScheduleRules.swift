@@ -31,6 +31,8 @@ nonisolated struct ExtendedScheduleDay: Equatable, Sendable {
         case handSet
         /// The cycle rule, counted from its anchor.
         case rule
+        /// Annual month/day bounds replace the saved pattern's work hours.
+        case annualRange
         /// An enabled bundled national holiday or makeup workday.
         case holiday
         /// Copied by day number from an earlier month the user filled in.
@@ -274,6 +276,7 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
     let holidayOverrides: [Int: Bool]?
     let defaultWorkTypeID: UUID?
     let defaultRestTypeID: UUID?
+    let annualWorkTypes: [(id: UUID, range: AnnualShiftDateRange)]
     let ruleAnchorDayNumber: Int?
     let handSetByDayNumber: [Int: UUID]
     let frozenByDayNumber: [Int: ShiftType]
@@ -315,6 +318,11 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
             }
         }
         self.dayByType = dayByType
+        annualWorkTypes = shiftTypes.compactMap { type in
+            guard type.kind == .work, !type.isArchived, type.isValid,
+                  let range = type.annualDateRange else { return nil }
+            return (type.id, range)
+        }
         self.rule = rule
         self.fallsBackToBaseSchedule = fallsBackToBaseSchedule
         ruleAnchorDayNumber = rule.flatMap { ExtendedScheduleResolver.dayNumber(dayKey: $0.anchorDayKey) }
@@ -384,7 +392,7 @@ nonisolated final class ExtendedScheduleResolver {
         }
         if index.fallsBackToBaseSchedule { return .unassigned }
         if index.rule == nil, let cleared = index.clearedFromDayNumber, dayNumber >= cleared { return .unassigned }
-        let base = patternDay(dayNumber: dayNumber)
+        let base = annualDay(patternDay(dayNumber: dayNumber), dayNumber: dayNumber)
         guard let region = index.holidayRegionIdentifier, !region.isEmpty else { return base }
         let isWorkday: Bool?
         if let overrides = index.holidayOverrides {
@@ -404,7 +412,15 @@ nonisolated final class ExtendedScheduleResolver {
             return result
         }
         guard let id = index.defaultWorkTypeID else { return base }
-        return day(typeID: id, source: .holiday)
+        return annualDay(day(typeID: id, source: .holiday), dayNumber: dayNumber)
+    }
+
+    private func annualDay(_ base: ExtendedScheduleDay, dayNumber: Int) -> ExtendedScheduleDay {
+        guard base.isWorkday, !index.annualWorkTypes.isEmpty else { return base }
+        let civil = CivilZone.civilDate(dayNumber: dayNumber)
+        guard let type = index.annualWorkTypes.first(where: { $0.range.contains(month: civil.month, day: civil.day) })
+        else { return base }
+        return day(typeID: type.id, source: base.source == .holiday ? .holiday : .annualRange)
     }
 
     private func patternDay(dayNumber: Int) -> ExtendedScheduleDay {

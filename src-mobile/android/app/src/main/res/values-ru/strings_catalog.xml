@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">По умолчанию выключено. Зарплата хранится на этом устройстве и в резервной копии Android, если она включена.</string>
     <string name="endTime">Конец работы</string>
     <string name="extendedAddShiftType">Добавить тип смены</string>
+    <string name="extendedAnnualDateRange">Повторять каждый год</string>
+    <string name="extendedAnnualRangeDescription">Каждый год применяйте эти часы к запланированным рабочим дням в этом периоде. Выходные и смены, назначенные вручную, сохраняют своё расписание.</string>
+    <string name="extendedAnnualRangeEnd">Конец</string>
+    <string name="extendedAnnualRangeLabel">Каждый год: {start} – {end}</string>
+    <string name="extendedAnnualRangeOverlap">Этот период пересекается с {shift}. Измените даты, чтобы периоды не пересекались.</string>
+    <string name="extendedAnnualRangeStart">Начало</string>
+    <string name="extendedAnnualRangeWrap">Дата окончания приходится на следующий год.</string>
     <string name="extendedApplyTemplateMessage">Каждый день цикла будет заполнен заново по шаблону «%1$s». Изменения вступят в силу после сохранения.</string>
     <string name="extendedApplyTemplateTitle">Заполнить цикл заново?</string>
+    <string name="extendedAssignedDateBounds">{start} – {end} · {count} дн.</string>
     <string name="extendedBreak">Перерыв в смене</string>
     <string name="extendedBreakDuration">Длительность перерыва</string>
     <string name="extendedBreakOutside">Перенесите перерыв внутрь смены, чтобы сохранить.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">Работа</string>
     <string name="extendedNewShiftType">Новый тип смены</string>
     <string name="extendedNextMonth">Следующий месяц</string>
+    <string name="extendedNoAssignedDates">В следующие 12 месяцев нет запланированных смен</string>
     <string name="extendedOvernightNote">Эта смена заканчивается на следующий день.</string>
     <string name="extendedPattern">Цикл</string>
     <string name="extendedPreviousMonth">Предыдущий месяц</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">Название, например «Утро» или «Ночь»</string>
     <string name="extendedShiftTypeInUse">Эта смена ещё используется в некоторых днях. Сначала назначьте им другую смену.</string>
     <string name="extendedShiftTypes">Типы смен</string>
+    <string name="extendedSourceAnnualRange">Ежегодный период</string>
     <string name="extendedToday">Сегодня</string>
     <string name="extendedTodayIs">Сегодня</string>
     <string name="extendedUnassigned">Не задано</string>
+    <string name="extendedUpcomingYear">Следующие 12 месяцев</string>
     <string name="extendedWeekNumber">Неделя %1$s</string>
     <string name="firstRunBackToWelcome">Вернуться к экрану приветствия</string>
     <string name="firstRunCheckingCloud">Перед настройкой этого устройства проверяем iCloud на наличие ваших настроек и записей.</string>
@@ -770,6 +781,8 @@
     <string name="scheduleOff">Пока без графика</string>
     <string name="scheduleOffDescription">Решайте каждый день. Без заданных выходных.</string>
     <string name="scheduleOffManualStart">Ручной запуск отсчёта</string>
+    <string name="schedulePaintHint">Нажмите на даты или проведите по ним, чтобы выбрать. Повторите жест, чтобы снять выбор.</string>
+    <string name="schedulePaintStartHint">Выберите смену, затем нажмите на даты или проведите по ним.</string>
     <string name="scheduleRotation">Цикл работы и отдыха</string>
     <string name="scheduleRotationDescription">Повторяйте рабочие и выходные дни.</string>
     <string name="settings">Настройки</string>
