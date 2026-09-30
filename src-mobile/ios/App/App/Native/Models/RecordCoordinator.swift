@@ -50,7 +50,7 @@ private struct RecordChangeDomains: OptionSet {
     init(_ type: RecordEntityType) {
         switch type {
         case .careerPeriod, .scheduleSnapshot, .calendarException, .dayOverride, .workObservation,
-             .extendedSchedule, .rosterDay:
+             .extendedSchedule, .rosterDay, .leaveBalance, .leaveDay:
             self = .history
         case .focusTask, .focusSession, .focusPlanningConfiguration:
             self = .focus
@@ -1112,6 +1112,67 @@ final class RecordCoordinator {
         persist(changes: .history)
     }
 
+    /// A leave balance the user added or edited (plan 020). An invalid draft
+    /// never reaches the archive or iCloud; removing one is
+    /// `erase(.leaveBalance, key:)`.
+    func upsertLeaveBalance(_ draft: LeaveBalance, at date: Date = .now) {
+        preconditionRawWriteAdmission()
+        guard !blocksWrites, draft.isValid else { return }
+        let key = draft.id.uuidString
+        if !state.isErased(.leaveBalance, key: key),
+           let current = state.leaveBalances.first(where: { $0.id == draft.id }),
+           RecordIncomingValue.leaveBalance(current).hasSameBusinessContent(as: .leaveBalance(draft)) { return }
+        let revokedErase = state.clearErased(.leaveBalance, key: key)
+        var next = draft
+        next.editTieBreaker = UUID()
+        next.editedAt = date
+        let index: Int
+        if let existing = state.leaveBalances.firstIndex(where: { $0.id == draft.id }) {
+            next.editCount = state.leaveBalances[existing].editCount + 1
+            state.leaveBalances[existing] = next
+            index = existing
+        } else {
+            next.editCount = max(next.editCount, 0) + 1
+            state.leaveBalances.append(next)
+            index = state.leaveBalances.count - 1
+        }
+        reviveAboveTombstone(&state.leaveBalances[index].editCount, over: revokedErase)
+        let row = state.leaveBalances[index]
+        markDirty(.leaveBalance, key: key, editCount: row.editCount, tie: row.editTieBreaker,
+                  revokeErase: revokedErase != nil)
+        persist(changes: .history)
+    }
+
+    /// Leave taken on one day (plan 020). Handing the day back is
+    /// `erase(.leaveDay, key:)`, which leaves a tombstone other devices honour
+    /// and returns the half days to their balances everywhere.
+    func upsertLeaveDay(_ draft: LeaveDay, at date: Date = .now) {
+        preconditionRawWriteAdmission()
+        guard !blocksWrites, draft.isValid else { return }
+        if !state.isErased(.leaveDay, key: draft.dayKey),
+           let current = state.leaveDays.first(where: { $0.dayKey == draft.dayKey }),
+           RecordIncomingValue.leaveDay(current).hasSameBusinessContent(as: .leaveDay(draft)) { return }
+        let revokedErase = state.clearErased(.leaveDay, key: draft.dayKey)
+        var next = draft
+        next.editTieBreaker = UUID()
+        next.editedAt = date
+        let index: Int
+        if let existing = state.leaveDays.firstIndex(where: { $0.dayKey == draft.dayKey }) {
+            next.editCount = state.leaveDays[existing].editCount + 1
+            state.leaveDays[existing] = next
+            index = existing
+        } else {
+            next.editCount = max(next.editCount, 0) + 1
+            state.leaveDays.append(next)
+            index = state.leaveDays.count - 1
+        }
+        reviveAboveTombstone(&state.leaveDays[index].editCount, over: revokedErase)
+        let row = state.leaveDays[index]
+        markDirty(.leaveDay, key: row.dayKey, editCount: row.editCount, tie: row.editTieBreaker,
+                  revokeErase: revokedErase != nil)
+        persist(changes: .history)
+    }
+
     @discardableResult
     func commitSyncState(
         _ update: @escaping @MainActor (inout SyncLocalState, RecordState) -> Void
@@ -1471,6 +1532,20 @@ final class RecordCoordinator {
             target.rosterDays[index].editTieBreaker = UUID()
             target.rosterDays[index].editedAt = date
             return (target.rosterDays[index].editCount, target.rosterDays[index].editTieBreaker)
+        case .leaveBalance:
+            guard let index = target.leaveBalances.firstIndex(where: {
+                $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame
+            }) else { return nil }
+            target.leaveBalances[index].editCount = max(target.leaveBalances[index].editCount + 1, atLeastEditCount)
+            target.leaveBalances[index].editTieBreaker = UUID()
+            target.leaveBalances[index].editedAt = date
+            return (target.leaveBalances[index].editCount, target.leaveBalances[index].editTieBreaker)
+        case .leaveDay:
+            guard let index = target.leaveDays.firstIndex(where: { $0.dayKey == key }) else { return nil }
+            target.leaveDays[index].editCount = max(target.leaveDays[index].editCount + 1, atLeastEditCount)
+            target.leaveDays[index].editTieBreaker = UUID()
+            target.leaveDays[index].editedAt = date
+            return (target.leaveDays[index].editCount, target.leaveDays[index].editTieBreaker)
         }
     }
 
@@ -1493,6 +1568,10 @@ final class RecordCoordinator {
             return (.extendedSchedule, ExtendedSchedule.logicalKey, schedule.editCount)
         case .rosterDay(let day):
             return (.rosterDay, day.dayKey, day.editCount)
+        case .leaveBalance(let balance):
+            return (.leaveBalance, balance.id.uuidString, balance.editCount)
+        case .leaveDay(let day):
+            return (.leaveDay, day.dayKey, day.editCount)
         }
     }
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * Construct anonymous RecordJSON v1–v6 (+ illegal) archives for Android T02.
+ * Construct anonymous RecordJSON v1–v7 (+ illegal) archives for Android T02.
  *
  * Shapes follow src-mobile/ios/App/AppTests/RecordSchemaCompatibilityTests.swift
  * at 9252fdfdc66aab88b4acb7493684f11991fd773d (`fullState` + `downgraded`).
  * Extra snapshot/exception rows sample the two families that fixture omitted.
+ * v7 (plan 020) adds one leave balance and one leave day on top of v6.
  *
  * These are constructed from source encoding/tests, not live user exports.
  * Usage:
@@ -311,6 +312,38 @@ function v6Document() {
   };
 }
 
+function v7Document() {
+  return {
+    ...v6Document(),
+    schemaVersion: 7,
+    leaveBalances: [
+      {
+        id: id(21),
+        kind: "annual",
+        entitledHalfDays: 20,
+        usedHalfDays: 3,
+        validFromDayKey: "2026-01-01",
+        validThroughDayKey: "2027-03-31",
+        editedAtMs: DAY_MS,
+        editCount: 1,
+        editTieBreaker: id(22),
+      },
+    ],
+    leaveDays: [
+      {
+        dayKey: "2026-08-26",
+        portion: "secondHalf",
+        uses: [{ balanceID: id(21), halfDays: 1 }],
+        planID: id(23),
+        timeZoneIdentifier: "UTC",
+        editedAtMs: DAY_MS,
+        editCount: 1,
+        editTieBreaker: id(24),
+      },
+    ],
+  };
+}
+
 function downgraded(object, version) {
   const result = structuredClone(object);
   result.schemaVersion = version;
@@ -376,6 +409,10 @@ function downgraded(object, version) {
     delete result.extendedSchedule;
     delete result.rosterDays;
   }
+  if (version < 7) {
+    delete result.leaveBalances;
+    delete result.leaveDays;
+  }
   return result;
 }
 
@@ -404,7 +441,9 @@ function assertNoPurchaseKeys(value, path = "$") {
 
 function expectedFiles() {
   const v6 = v6Document();
+  const v7 = v7Document();
   const files = {
+    "v7.json": v7,
     "v6.json": v6,
     "v5.json": downgraded(v6, 5),
     "v4.json": downgraded(v6, 4),
@@ -412,7 +451,7 @@ function expectedFiles() {
     "v2.json": downgraded(v6, 2),
     "v1.json": downgraded(v6, 1),
     "illegal-v0.json": { ...structuredClone(v6), schemaVersion: 0 },
-    "illegal-v7.json": { ...structuredClone(v6), schemaVersion: 7 },
+    "illegal-v8.json": { ...structuredClone(v7), schemaVersion: 8 },
     "illegal-invalid-date-v6.json": (() => {
       const doc = structuredClone(v6);
       doc.dayOverrides[0].dayKey = "2026-02-30";
@@ -440,22 +479,28 @@ const ENTITY_KEYS = [
   "syncedPreferences",
   "extendedSchedule",
   "rosterDays",
+  "leaveBalances",
+  "leaveDays",
 ];
 
 function validateExpected(files) {
   let checks = 0;
-  const v6 = files["v6.json"];
-  if (v6.schemaVersion !== 6) throw new Error("v6 schemaVersion");
+  const v7 = files["v7.json"];
+  if (v7.schemaVersion !== 7) throw new Error("v7 schemaVersion");
   checks += 1;
   for (const key of ENTITY_KEYS) {
-    const value = v6[key];
+    const value = v7[key];
     const empty = value == null || (Array.isArray(value) && value.length === 0);
-    if (empty) throw new Error(`v6 missing sample for ${key}`);
+    if (empty) throw new Error(`v7 missing sample for ${key}`);
     checks += 1;
   }
-  assertNoPurchaseKeys(v6);
+  assertNoPurchaseKeys(v7);
   checks += 1;
-  for (const version of [1, 2, 3, 4, 5, 6]) {
+  if (JSON.stringify(downgraded(v7, 6)) !== JSON.stringify(files["v6.json"])) {
+    throw new Error("v7 downgraded to 6 must equal v6");
+  }
+  checks += 1;
+  for (const version of [1, 2, 3, 4, 5, 6, 7]) {
     const doc = files[`v${version}.json`];
     if (doc.schemaVersion !== version) {
       throw new Error(`v${version} stamped ${doc.schemaVersion}`);
@@ -472,8 +517,11 @@ function validateExpected(files) {
     throw new Error("v5 must not carry extendedSchedule");
   }
   if (files["illegal-v0.json"].schemaVersion !== 0) throw new Error("v0 stamp");
-  if (files["illegal-v7.json"].schemaVersion !== 7) throw new Error("v7 stamp");
-  checks += 5;
+  if (files["v6.json"].leaveDays != null) {
+    throw new Error("v6 must not carry leaveDays");
+  }
+  if (files["illegal-v8.json"].schemaVersion !== 8) throw new Error("v8 stamp");
+  checks += 6;
   return checks;
 }
 
@@ -513,9 +561,9 @@ function main() {
   writeJson(join(OUT, "manifest.json"), {
     sourceCommit: SOURCE_COMMIT,
     provenance:
-      "Constructed from RecordSchemaCompatibilityTests.fullState/downgraded plus one snapshot and one calendar exception so all 12 entity families are sampled. Not a live user export.",
+      "Constructed from RecordSchemaCompatibilityTests.fullState/downgraded plus one snapshot and one calendar exception so all 14 entity families are sampled; v7 adds plan 020's leave balance and leave day. Not a live user export.",
     versions: {
-      wire: 6,
+      wire: 7,
       room: "not created",
       fixture: "not created",
       syncEnvelope: "not created",

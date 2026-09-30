@@ -104,10 +104,10 @@ locale and validation rules apply.
 
 ## Data, purchases and privacy
 
-- User backups are `RecordJSON` schemaVersion 6, accepting 1–6. Records live
+- User backups are `RecordJSON` schemaVersion 7, accepting 1–7. Records live
   as iOS keeps them (D-13): an in-memory `RecordState` saved by
   `:core:data`'s `RecordStore` as one atomically replaced `RecordLocalFile`
-  (the v6 document plus tombstones). Every write is encoded, read back and
+  (the v7 document plus tombstones). Every write is encoded, read back and
   only then published; a damaged file blocks writes and is quarantined, never
   overwritten. No Room tables.
 - `npm run generate:android-record-fixtures` (macOS) compiles the real iOS

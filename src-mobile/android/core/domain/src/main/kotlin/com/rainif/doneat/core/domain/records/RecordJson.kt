@@ -21,7 +21,7 @@ import java.util.Locale
 import java.util.UUID
 
 /**
- * The records backup document (schema 6, reading 1–6): the Kotlin port of iOS
+ * The records backup document (schema 7, reading 1–7): the Kotlin port of iOS
  * `RecordJSON`, held to its answers by `record-json-fixtures.json`.
  *
  * Two layers, as in Swift: [decode] is strict like `Codable` — a missing key,
@@ -31,8 +31,8 @@ import java.util.UUID
  * the archive, and entitlements never come from a backup.
  */
 object RecordJson {
-    const val SCHEMA_VERSION = 6
-    val ACCEPTED_SCHEMA_VERSIONS = 1..6
+    const val SCHEMA_VERSION = 7
+    val ACCEPTED_SCHEMA_VERSIONS = 1..7
 
     sealed class Error(message: String) : Exception(message) {
         class UnknownSchemaVersion(val version: Int) : Error("unknown schema version $version")
@@ -148,6 +148,16 @@ object RecordJson {
             str("dayKey"); str("shiftTypeID"); optObj("assignedShiftType")?.let(::shiftType); optBool("generatedFromPattern")
             str("timeZoneIdentifier"); num("editedAtMs"); int("editCount"); str("editTieBreaker")
         } }
+        // `kind` decodes any string (an unknown one reads as custom) and
+        // `portion` is a plain string, so neither can fail the document.
+        o.optArr("leaveBalances")?.forEach { it.obj().apply {
+            str("id"); str("kind"); optStr("name"); int("entitledHalfDays"); int("usedHalfDays"); optStr("validFromDayKey"); optStr("validThroughDayKey")
+            num("editedAtMs"); int("editCount"); str("editTieBreaker")
+        } }
+        o.optArr("leaveDays")?.forEach { it.obj().apply {
+            str("dayKey"); str("portion"); arr("uses").forEach { u -> u.obj().apply { str("balanceID"); int("halfDays") } }; optStr("planID")
+            str("timeZoneIdentifier"); num("editedAtMs"); int("editCount"); str("editTieBreaker")
+        } }
     }
 
     // Typed values that `Codable` decodes itself (a bad UUID or enum fails the document).
@@ -247,12 +257,15 @@ object RecordJson {
         val periodIDMap = HashMap<String, String>()
         val snapshotIDMap = HashMap<String, String>()
         val taskIDMap = HashMap<String, String>()
+        val leaveBalanceIDMap = HashMap<String, String>()
         private val erasedKeys = state.erased.mapTo(HashSet()) { it.entityType to it.logicalKey }
         private val periods = Rows(state.periods) { it.id }
         private val snapshots = Rows(state.snapshots) { it.id }
         private val exceptions = Rows(state.exceptions) { it.dayKey }
         private val overrides = Rows(state.overrides) { it.dayKey }
         private val rosterDays = Rows(state.rosterDays) { it.dayKey }
+        private val leaveBalances = Rows(state.leaveBalances) { it.id }
+        private val leaveDays = Rows(state.leaveDays) { it.dayKey }
         private val observations = Rows(state.observations) { it.eventID }
         private val focusTasks = Rows(state.focusTasks) { it.id }
         private val focusSessions = Rows(state.focusSessions) { it.id }
@@ -336,6 +349,29 @@ object RecordJson {
                     existing = { rosterDays[incoming.dayKey] },
                     insert = { s, v -> rosterDays.add(v); s to v },
                     replace = { s, v -> rosterDays.replace(v); s to v },
+                )
+            }
+            // Balances before days, so a restored balance's new id reaches the days that spend it.
+            for (dto in root.optArr("leaveBalances").orEmpty().map { it.obj() }) {
+                val incoming = leaveBalance(dto) ?: run { reject(RecordEntityType.LEAVE_BALANCE, dto.str("id")); null } ?: continue
+                merge(incoming, RecordEntityType.LEAVE_BALANCE, incoming.id,
+                    existing = { leaveBalances[incoming.id] },
+                    insert = { s, v ->
+                        var next = v
+                        if (mode == ImportMode.RESTORE_ERASED && (RecordEntityType.LEAVE_BALANCE to incoming.id) in erasedKeys) {
+                            next = v.copy(id = newId()).also { leaveBalanceIDMap[incoming.id] = it.id }
+                        }
+                        leaveBalances.add(next); s to next
+                    },
+                    replace = { s, v -> leaveBalances.replace(v); s to v },
+                )
+            }
+            for (dto in root.optArr("leaveDays").orEmpty().map { it.obj() }) {
+                val incoming = leaveDay(dto) ?: run { reject(RecordEntityType.LEAVE_DAY, dto.str("dayKey")); null } ?: continue
+                merge(incoming, RecordEntityType.LEAVE_DAY, incoming.dayKey,
+                    existing = { leaveDays[incoming.dayKey] },
+                    insert = { s, v -> val next = remapLeave(v); leaveDays.add(next); s to next },
+                    replace = { s, v -> val next = remapLeave(v); leaveDays.replace(next); s to next },
                 )
             }
             for (dto in root.arr("workObservations").map { it.obj() }) {
@@ -451,12 +487,18 @@ object RecordJson {
                 exceptions = exceptions.all(),
                 overrides = overrides.all(),
                 rosterDays = rosterDays.all(),
+                leaveBalances = leaveBalances.all(),
+                leaveDays = leaveDays.all().map { d -> if (remapReferences) remapLeave(d) else d },
                 observations = observations.all().map { o -> if (remapReferences) snapshotIDMap[o.scheduleSnapshotID]?.let { o.copy(scheduleSnapshotID = it) } ?: o else o },
                 focusTasks = focusTasks.all(),
                 focusSessions = focusSessions.all().map { f -> if (remapReferences) f.taskID?.let { taskIDMap[it] }?.let { f.copy(taskID = it) } ?: f else f },
                 lifeProfile = if (remapReferences) state.lifeProfile?.let(::migrateLegacyFields) else state.lifeProfile,
             )
         }
+
+        private fun remapLeave(day: LeaveDay): LeaveDay =
+            if (leaveBalanceIDMap.isEmpty()) day
+            else day.copy(uses = day.uses.map { u -> leaveBalanceIDMap[u.balanceID]?.let { u.copy(balanceID = it) } ?: u })
 
         fun reject(type: RecordEntityType, key: String) {
             report.rejected += Rejection(type, key)
@@ -768,6 +810,32 @@ object RecordJson {
         return RosterDay(o.str("dayKey"), UUID.fromString(shiftTypeID), frozen, o.optBool("generatedFromPattern"), zone, editedAtMs, editCount, tie)
     }
 
+    private fun leaveBalance(o: JsonObject): LeaveBalance? {
+        val id = uuid(o.str("id")) ?: return null
+        val tie = uuid(o.str("editTieBreaker")) ?: return null
+        val editedAtMs = o.num("editedAtMs")
+        if (!editedAtMs.isFinite()) return null
+        val balance = LeaveBalance(
+            id, LeaveBalance.normalizedKind(o.str("kind")), o.optStr("name"), o.int("entitledHalfDays"), o.int("usedHalfDays"),
+            o.optStr("validFromDayKey"), o.optStr("validThroughDayKey"), editedAtMs, o.int("editCount"), tie,
+        )
+        return balance.takeIf { it.isValid }
+    }
+
+    private fun leaveDay(o: JsonObject): LeaveDay? {
+        val tie = uuid(o.str("editTieBreaker")) ?: return null
+        val portion = o.str("portion").takeIf { it in LeaveDay.PORTION_HALF_DAYS } ?: return null
+        val editedAtMs = o.num("editedAtMs")
+        if (!editedAtMs.isFinite()) return null
+        val uses = o.arr("uses").map { element ->
+            val use = element.obj()
+            LeaveBalanceUse(uuid(use.str("balanceID")) ?: return null, use.int("halfDays"))
+        }
+        val planID = o.optStr("planID")?.let { uuid(it) ?: return null }
+        val day = LeaveDay(o.str("dayKey"), portion, uses, planID, o.str("timeZoneIdentifier"), editedAtMs, o.int("editCount"), tie)
+        return day.takeIf { it.isValid }
+    }
+
     // Merge ranking
 
     private fun editCount(value: Any): Int = when (value) {
@@ -783,6 +851,8 @@ object RecordJson {
         is SyncedPreferences -> value.editCount
         is ExtendedSchedule -> value.editCount
         is RosterDay -> value.editCount
+        is LeaveBalance -> value.editCount
+        is LeaveDay -> value.editCount
         else -> error("not a record: $value")
     }
 
@@ -799,6 +869,8 @@ object RecordJson {
         is SyncedPreferences -> value.editTieBreaker
         is ExtendedSchedule -> value.editTieBreaker
         is RosterDay -> value.editTieBreaker
+        is LeaveBalance -> value.editTieBreaker
+        is LeaveDay -> value.editTieBreaker
         else -> error("not a record: $value")
     }
 
@@ -815,6 +887,8 @@ object RecordJson {
         is SyncedPreferences -> SyncedPreferences.LOGICAL_KEY
         is ExtendedSchedule -> ExtendedSchedule.LOGICAL_KEY
         is RosterDay -> value.dayKey
+        is LeaveBalance -> value.id
+        is LeaveDay -> value.dayKey
         else -> error("not a record: $value")
     }
 
@@ -852,6 +926,8 @@ object RecordJson {
             RecordEntityType.SYNCED_PREFERENCES -> { state.syncedPreferences?.let { buried = editCount(it) }; state.copy(syncedPreferences = null) }
             RecordEntityType.EXTENDED_SCHEDULE -> { state.extendedSchedule?.let { buried = editCount(it) }; state.copy(extendedSchedule = null) }
             RecordEntityType.ROSTER_DAY -> state.copy(rosterDays = drop(state.rosterDays) { it.dayKey == key })
+            RecordEntityType.LEAVE_BALANCE -> state.copy(leaveBalances = drop(state.leaveBalances) { same(it.id) })
+            RecordEntityType.LEAVE_DAY -> state.copy(leaveDays = drop(state.leaveDays) { it.dayKey == key })
         }
         val existing = next.erased.indexOfFirst { it.entityType == type && it.logicalKey == key }
         next = if (existing >= 0) {
@@ -866,7 +942,7 @@ object RecordJson {
 
     private val encoder = Json { prettyPrint = false }
 
-    /** A schema-6 document of [state]. Absent optionals are omitted, as Swift's encoder does. */
+    /** A schema-7 document of [state]. Absent optionals are omitted, as Swift's encoder does. */
     fun export(state: RecordState, exportedAtMs: Double, timeZoneIdentifier: String, calendarIdentifier: String): String {
         val root = buildJsonObject {
             put("schemaVersion", SCHEMA_VERSION)
@@ -921,6 +997,16 @@ object RecordJson {
                 obj("dayKey" to r.dayKey, "shiftTypeID" to upper(r.shiftTypeID), "assignedShiftType" to r.assignedShiftType?.let(::shiftTypeJson),
                     "generatedFromPattern" to r.generatedFromPattern, "timeZoneIdentifier" to r.timeZoneIdentifier, "editedAtMs" to r.editedAtMs,
                     "editCount" to r.editCount, "editTieBreaker" to r.editTieBreaker)
+            }))
+            put("leaveBalances", JsonArray(state.leaveBalances.map { b ->
+                obj("id" to b.id, "kind" to b.kind, "name" to b.name, "entitledHalfDays" to b.entitledHalfDays, "usedHalfDays" to b.usedHalfDays,
+                    "validFromDayKey" to b.validFromDayKey, "validThroughDayKey" to b.validThroughDayKey, "editedAtMs" to b.editedAtMs,
+                    "editCount" to b.editCount, "editTieBreaker" to b.editTieBreaker)
+            }))
+            put("leaveDays", JsonArray(state.leaveDays.map { d ->
+                obj("dayKey" to d.dayKey, "portion" to d.portion, "uses" to JsonArray(d.uses.map { obj("balanceID" to it.balanceID, "halfDays" to it.halfDays) }),
+                    "planID" to d.planID, "timeZoneIdentifier" to d.timeZoneIdentifier, "editedAtMs" to d.editedAtMs,
+                    "editCount" to d.editCount, "editTieBreaker" to d.editTieBreaker)
             }))
         }
         return encoder.encodeToString(JsonObject.serializer(), root)

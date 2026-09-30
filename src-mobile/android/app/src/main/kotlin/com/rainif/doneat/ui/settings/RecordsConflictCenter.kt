@@ -149,7 +149,8 @@ private fun conflictTitle(type: RecordEntityType, detail: String?): String {
     val label = when (type) {
         RecordEntityType.CAREER_PERIOD, RecordEntityType.SCHEDULE_SNAPSHOT, RecordEntityType.EXTENDED_SCHEDULE,
         RecordEntityType.ROSTER_DAY -> stringResource(R.string.workSchedule)
-        RecordEntityType.CALENDAR_EXCEPTION, RecordEntityType.DAY_OVERRIDE, RecordEntityType.WORK_OBSERVATION -> stringResource(R.string.recordsTitle)
+        RecordEntityType.CALENDAR_EXCEPTION, RecordEntityType.DAY_OVERRIDE, RecordEntityType.WORK_OBSERVATION,
+        RecordEntityType.LEAVE_BALANCE, RecordEntityType.LEAVE_DAY -> stringResource(R.string.recordsTitle)
         RecordEntityType.LIFE_PROFILE -> stringResource(R.string.recordsLifeProfileRow)
         RecordEntityType.FOCUS_TASK -> stringResource(R.string.focusTaskTitle)
         RecordEntityType.FOCUS_SESSION -> stringResource(R.string.focusHistory)

@@ -5,7 +5,7 @@ import com.rainif.doneat.core.domain.schedule.RosterDay
 import com.rainif.doneat.core.domain.schedule.ShiftSegment
 
 /**
- * The records archive (iOS `RecordState`) and its twelve entity families,
+ * The records archive (iOS `RecordState`) and its fourteen entity families,
  * mirroring `docs/android/wire-contract.md`.
  *
  * Unlike iOS, civil dates stay `YYYY-MM-DD` labels rather than `Date`s: iOS
@@ -27,7 +27,9 @@ enum class RecordEntityType(val raw: String) {
     FOCUS_PLANNING_CONFIGURATION("focusPlanningConfiguration"),
     SYNCED_PREFERENCES("syncedPreferences"),
     EXTENDED_SCHEDULE("extendedSchedule"),
-    ROSTER_DAY("rosterDay");
+    ROSTER_DAY("rosterDay"),
+    LEAVE_BALANCE("leaveBalance"),
+    LEAVE_DAY("leaveDay");
 
     companion object {
         fun fromRaw(raw: String) = entries.firstOrNull { it.raw == raw }
@@ -350,6 +352,8 @@ data class RecordState(
     val syncedPreferences: SyncedPreferences? = null,
     val extendedSchedule: ExtendedSchedule? = null,
     val rosterDays: List<RosterDay> = emptyList(),
+    val leaveBalances: List<LeaveBalance> = emptyList(),
+    val leaveDays: List<LeaveDay> = emptyList(),
     val recordsStartedOn: String? = null,
     val erased: List<ErasedID> = emptyList(),
     val importConflicts: List<ImportConflictCopy> = emptyList(),

@@ -16,6 +16,7 @@ const models = "src-mobile/ios/App/App/Native/Models";
 export const swiftInputs = [
   "RecordJSON", "CareerPeriod", "CalendarException", "DayOverride", "WorkObservation", "LifeProfile",
   "FocusModels", "FocusPlanner", "SyncedPreferences", "RecordIncomingValue+Content", "RecordsSyncAdapter",
+  "LeaveBalance", "LeaveDay", "LeavePlanner",
 ].map((name) => `${models}/${name}.swift`).concat([
   "src-mobile/ios/App/App/Native/Services/NativeLocalizer.swift",
   "src-mobile/ios/Shared/ExtendedSchedule.swift",
@@ -50,11 +51,19 @@ export function recordSourceHashes() {
 
 const read = (name) => readFileSync(resolve(archives, name), "utf8");
 const v6 = () => JSON.parse(read("v6.json"));
+const v7 = () => JSON.parse(read("v7.json"));
 const text = (value) => JSON.stringify(value);
 
 /** A mutated copy of the synthetic v6 archive. */
 function variant(edit) {
   const doc = v6();
+  edit(doc);
+  return text(doc);
+}
+
+/** A mutated copy of the synthetic v7 archive, for plan 020's leave rows. */
+function variant7(edit) {
+  const doc = v7();
   edit(doc);
   return text(doc);
 }
@@ -65,7 +74,7 @@ export function recordCases() {
   const cases = [];
   const add = (name, input, extra = {}) => cases.push({ name, input, ...extra });
 
-  for (const file of ["v1.json", "v2.json", "v3.json", "v4.json", "v5.json", "v6.json", "illegal-v0.json", "illegal-v7.json",
+  for (const file of ["v1.json", "v2.json", "v3.json", "v4.json", "v5.json", "v6.json", "v7.json", "illegal-v0.json", "illegal-v8.json",
     "illegal-invalid-date-v6.json", "illegal-purchase-injected-v6.json", "illegal-not-json.txt"]) {
     add(`archive/${file}`, read(file));
   }
@@ -214,6 +223,38 @@ export function recordCases() {
   add("roster/negative-count", variant((d) => { d.rosterDays[0].editCount = -1; }));
   add("started/invalid", variant((d) => { d.recordsStartedOn = "yesterday"; }));
 
+  // Leave balances and leave days (schema 7, plan 020).
+  add("leave/kind-unknown-named", variant7((d) => { d.leaveBalances[0].kind = "sabbatical"; d.leaveBalances[0].name = "Sabbatical"; }));
+  add("leave/kind-unknown-unnamed", variant7((d) => { d.leaveBalances[0].kind = "sabbatical"; }));
+  add("leave/custom-blank-name", variant7((d) => { d.leaveBalances[0].kind = "custom"; d.leaveBalances[0].name = " \u3000 "; }));
+  add("leave/name-graphemes", variant7((d) => { d.leaveBalances[0].name = "👨‍👩‍👧".repeat(40); }));
+  add("leave/name-too-long", variant7((d) => { d.leaveBalances[0].name = "假".repeat(41); }));
+  add("leave/inverted-window", variant7((d) => { d.leaveBalances[0].validFromDayKey = "2027-04-01"; }));
+  add("leave/bad-window-day", variant7((d) => { d.leaveBalances[0].validThroughDayKey = "2027-02-30"; }));
+  add("leave/open-window", variant7((d) => { delete d.leaveBalances[0].validFromDayKey; d.leaveBalances[0].validThroughDayKey = null; }));
+  add("leave/over-maximum", variant7((d) => { d.leaveBalances[0].entitledHalfDays = 7321; }));
+  add("leave/negative-used", variant7((d) => { d.leaveBalances[0].usedHalfDays = -1; }));
+  add("leave/lowercase-ids", variant7((d) => {
+    d.leaveBalances[0].id = "0000000a-0000-0000-0000-0000000000bc";
+    d.leaveDays[0].uses[0].balanceID = "0000000a-0000-0000-0000-0000000000bc";
+    d.leaveDays[0].planID = "0000000a-0000-0000-0000-0000000000cd";
+  }));
+  add("leave/day-unknown-portion", variant7((d) => { d.leaveDays[0].portion = "quarter"; }));
+  add("leave/day-uses-mismatch", variant7((d) => { d.leaveDays[0].portion = "whole"; }));
+  add("leave/day-duplicate-balance", variant7((d) => {
+    d.leaveDays[0].portion = "whole";
+    d.leaveDays[0].uses = [d.leaveDays[0].uses[0], { ...d.leaveDays[0].uses[0] }];
+  }));
+  add("leave/day-zero-use", variant7((d) => { d.leaveDays[0].uses = [{ ...d.leaveDays[0].uses[0], halfDays: 0 }]; }));
+  add("leave/day-uncharged", variant7((d) => { d.leaveDays[0].uses = []; delete d.leaveDays[0].planID; }));
+  add("leave/day-bad-plan-id", variant7((d) => { d.leaveDays[0].planID = "plan"; }));
+  add("leave/day-bad-balance-id", variant7((d) => { d.leaveDays[0].uses[0].balanceID = "annual"; }));
+  add("leave/day-bad-zone", variant7((d) => { d.leaveDays[0].timeZoneIdentifier = "Nope/Nope"; }));
+  add("leave/day-bad-key", variant7((d) => { d.leaveDays[0].dayKey = "2026-8-26"; }));
+  add("doc/leave-portion-number", variant7((d) => { d.leaveDays[0].portion = 1; }));
+  add("doc/leave-use-wrong-type", variant7((d) => { d.leaveDays[0].uses[0].halfDays = "1"; }));
+  add("doc/leave-kind-missing", variant7((d) => { delete d.leaveBalances[0].kind; }));
+
   // Merging into an existing archive.
   const base = read("v6.json");
   const newer = variant((d) => { d.dayOverrides[0].note = "Edited elsewhere"; d.dayOverrides[0].editCount = 5; });
@@ -235,6 +276,15 @@ export function recordCases() {
     d.dayOverrides.push({ ...d.dayOverrides[0], dayKey: "2026-08-27", editTieBreaker: "00000000-0000-0000-0000-000000000033" });
     d.focusTasks.push({ ...d.focusTasks[0], id: "00000000-0000-0000-0000-000000000077", title: "Second" });
   }), { base, mode: "skipErased" });
+  const base7 = read("v7.json");
+  add("merge/leave-identical", base7, { base: base7, mode: "skipErased" });
+  add("merge/leave-newer-by-stamp", variant7((d) => {
+    d.leaveDays[0].portion = "whole"; d.leaveDays[0].uses[0].halfDays = 2; d.leaveDays[0].editCount = 4;
+    d.leaveBalances[0].usedHalfDays = 5; d.leaveBalances[0].editCount = 3;
+  }), { base: base7, mode: "resolveByEditStamp" });
+  add("merge/leave-erased-skipped", base7, { base: base7, erase: [["leaveDay", "2026-08-26"], ["leaveBalance", "00000000-0000-0000-0000-000000000021"]], mode: "skipErased" });
+  add("merge/leave-day-erased-restored", base7, { base: base7, erase: [["leaveDay", "2026-08-26"]], mode: "restoreErased" });
+  add("merge/leave-into-v6", base7, { base, mode: "skipErased" });
   // Snapshot hours as Records stores them (ScheduleHoursCodec): decoded, re-encoded with sorted keys, fingerprinted.
   const hours = (name, value) => cases.push({ name: `hours/${name}`, kind: "hours", input: typeof value === "string" ? value : text(value) });
   const classic = { startTime: "09:00", endTime: "17:00", workdays: [1, 2, 3, 4, 5], schedule: { mode: "classic" }, breakStartTime: "12:00", breakDurationMinutes: 60 };

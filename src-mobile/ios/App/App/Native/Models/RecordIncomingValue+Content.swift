@@ -69,6 +69,16 @@ extension RecordIncomingValue {
             value.editCount = 0
             value.editTieBreaker = WorkObservation.unsetTieBreaker
             return .rosterDay(value)
+        case .leaveBalance(var value):
+            value.editedAt = .distantPast
+            value.editCount = 0
+            value.editTieBreaker = WorkObservation.unsetTieBreaker
+            return .leaveBalance(value)
+        case .leaveDay(var value):
+            value.editedAt = .distantPast
+            value.editCount = 0
+            value.editTieBreaker = WorkObservation.unsetTieBreaker
+            return .leaveDay(value)
         }
     }
 }
