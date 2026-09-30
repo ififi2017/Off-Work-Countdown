@@ -11,6 +11,8 @@ enum OWCMotion {
     static let stateEnter = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.18)
     static let navigation = Animation.snappy(duration: 0.28)
     static let phase = Animation.smooth(duration: 0.28)
+    /// Matches Android's phase transition; UIKit fades the scene's native surfaces together.
+    static let themeDuration: TimeInterval = 0.28
     static let recordsExpansion = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.26)
     /// One chart replacing another under the scale picker. Shorter than the
     /// expansion above it: the segmented control has already snapped by the
