@@ -5,6 +5,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,11 +56,17 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.core.graphics.toColorInt
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalResources
@@ -103,6 +111,7 @@ import com.rainif.doneat.core.domain.session.seededExtendedContent
 import com.rainif.doneat.core.domain.session.shouldPromptApplyingToToday
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.Route
+import com.rainif.doneat.ui.components.SettingsFooter
 import com.rainif.doneat.ui.timer.Haptics
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -204,6 +213,8 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
         content.rule!!.preset == ShiftCycleRule.Preset.ALTERNATING_WEEKS -> EditorMode.ALTERNATING
         else -> EditorMode.ROTATION
     }
+    var paintSelection by remember(mode) { mutableStateOf<CalendarPaintSelection?>(null) }
+    val brushID = paintSelection?.brushID
     // Switching away and back restores the pattern the user had built, not a fresh template.
     val patternDrafts = remember { mutableStateMapOf<EditorMode, ShiftCycleRule>() }
     fun applyMode(next: EditorMode) {
@@ -227,6 +238,15 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
     var monthOffset by rememberSaveable { mutableIntStateOf(0) }
     var selectedKey by rememberSaveable { mutableStateOf<String?>(null) }
     val selected = selectedKey ?: today
+    fun paintDay(key: String) {
+        selectedKey = key
+        if (key < today && DayRecordResolver.period(key, records.periods) == null) return
+        val current = ScheduleEditing.handSetDays(env.handSetDays, graph.scheduleDraft.value.rosterEdits)[key]
+        paintSelection?.edit(key, current)?.let {
+            setDay(key, it)
+            view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
+        }
+    }
 
     fun commit(decision: ScheduleDecision) {
         scope.launch {
@@ -274,8 +294,16 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
             ) {
                 ScheduleEditing.month(today, monthOffset)?.let { month ->
                     MonthCalendar(
-                        month, locale, today, selected, resolver, env.holidays, content, ::typeForDay,
-                        onSelect = { selectedKey = it; view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) },
+                        month, locale, today, selected, resolver, env.holidays, content, { key, id -> typeForDay(key, id) },
+                        brushID = brushID,
+                        handSet = handSet,
+                        onPaint = { key -> paintDay(key) },
+                        onStrokeEnd = { paintSelection?.endStroke() },
+                        onSelect = {
+                            val selection = paintSelection
+                            if (selection != null) { paintDay(it); selection.endStroke() }
+                            else { selectedKey = it; view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) }
+                        },
                         onMonth = { delta ->
                             monthOffset += delta
                             ScheduleEditing.month(today, monthOffset)?.let { (y, m) -> selectedKey = ExtendedScheduleResolver.dayKey(CivilZone.dayNumber(y, m, 1)) }
@@ -294,12 +322,15 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
                     }
                 }
                 SelectedDay(
-                    selected, today, locale, content, handSet, resolver, env.holidays, ::typeForDay,
+                    selected, today, locale, content, handSet, resolver, env.holidays, { key, id -> typeForDay(key, id) },
                     canEdit = selected >= today || DayRecordResolver.period(selected, records.periods) != null,
                     hoursLabel = { hoursLabel(res, it) },
                     onTypes = { open(Route.ShiftTypes) },
                     onAssign = { id -> if (handSet[selected] != id) { setDay(selected, RosterDayEdit.Shift(id)); Haptics.confirm(view) } },
                     onFollowPattern = { setDay(selected, RosterDayEdit.FollowPattern) },
+                    isFree = mode == EditorMode.FREE,
+                    brushID = brushID,
+                    onChooseBrush = { id -> paintSelection = if (brushID == id) null else CalendarPaintSelection(id) },
                 )
             }
         }
@@ -370,6 +401,10 @@ private fun MonthCalendar(
     holidays: HolidayCalendar,
     content: ExtendedScheduleContent,
     typeForDay: (String, java.util.UUID?) -> ShiftType?,
+    brushID: java.util.UUID?,
+    handSet: Map<String, java.util.UUID>,
+    onPaint: (String) -> Unit,
+    onStrokeEnd: () -> Unit,
     onSelect: (String) -> Unit,
     onMonth: (Int) -> Unit,
     onToday: () -> Unit,
@@ -382,6 +417,10 @@ private fun MonthCalendar(
     val slots = ((leading + count + 6) / 7) * 7
     val firstNumber = CivilZone.dayNumber(year, monthValue, 1)
     val region = content.holidayRegionIdentifier?.takeIf { it.isNotEmpty() }
+    val frames = remember(month) { mutableMapOf<String, Rect>() }
+    val coordinates = remember(month) { arrayOfNulls<LayoutCoordinates>(1) }
+    val paint by rememberUpdatedState(onPaint)
+    val endStroke by rememberUpdatedState(onStrokeEnd)
     Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {
         Column(Modifier.padding(DoneAtSpacing.s)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -401,17 +440,46 @@ private fun MonthCalendar(
                     )
                 }
             }
-            (0 until slots / 7).forEach { row ->
-                Row(Modifier.padding(top = DoneAtSpacing.xs)) {
-                    (0 until 7).forEach { col ->
-                        val slot = row * 7 + col
-                        Box(Modifier.weight(1f).padding(2.dp)) {
-                            if (slot in leading until leading + count) {
-                                val number = firstNumber + slot - leading
-                                val key = ExtendedScheduleResolver.dayKey(number)
-                                val type = typeForDay(key, resolver.day(number).shiftTypeID)
-                                val holiday = region?.let { holidays.day(dateCode(key), it) }
-                                DayCell(slot - leading + 1, key, type, key == selected, key == today, holiday, locale, onSelect)
+            Column(Modifier.onGloballyPositioned { coordinates[0] = it }
+                .then(if (brushID == null) Modifier else Modifier.pointerInput(brushID, month) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        val layout = coordinates[0] ?: return@awaitEachGesture
+                        var previous = layout.localToRoot(down.position)
+                        if (crossedCalendarDays(previous, previous, frames).isEmpty()) return@awaitEachGesture
+                        endStroke()
+                        try {
+                            down.consume()
+                            crossedCalendarDays(previous, previous, frames).forEach(paint)
+                            do {
+                                val event = awaitPointerEvent()
+                                val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                                val current = layout.localToRoot(change.position)
+                                crossedCalendarDays(previous, current, frames).forEach(paint)
+                                previous = current
+                                change.consume()
+                            } while (change.pressed)
+                        } finally {
+                            endStroke()
+                        }
+                    }
+                })) {
+                (0 until slots / 7).forEach { row ->
+                    Row(Modifier.padding(top = DoneAtSpacing.xs)) {
+                        (0 until 7).forEach { col ->
+                            val slot = row * 7 + col
+                            Box(Modifier.weight(1f).padding(2.dp)) {
+                                if (slot in leading until leading + count) {
+                                    val number = firstNumber + slot - leading
+                                    val key = ExtendedScheduleResolver.dayKey(number)
+                                    val type = typeForDay(key, resolver.day(number).shiftTypeID)
+                                    val holiday = region?.let { holidays.day(dateCode(key), it) }
+                                    DayCell(slot - leading + 1, key, type,
+                                        if (brushID != null) handSet[key] == brushID else key == selected,
+                                        key == today, holiday, locale, onSelect,
+                                        Modifier.onGloballyPositioned { frames[key] = it.boundsInRoot() },
+                                        touchEnabled = brushID == null)
+                                }
                             }
                         }
                     }
@@ -437,7 +505,7 @@ private fun MonthCalendar(
 private fun dateCode(key: String): Int = ExtendedScheduleResolver.parse(key)!!.let { (y, m, d) -> y * 10_000 + m * 100 + d }
 
 @Composable
-private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, isToday: Boolean, holiday: HolidayCalendar.Day?, locale: Locale, onSelect: (String) -> Unit) {
+private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, isToday: Boolean, holiday: HolidayCalendar.Day?, locale: Locale, onSelect: (String) -> Unit, modifier: Modifier = Modifier, touchEnabled: Boolean = true) {
     val scheme = MaterialTheme.colorScheme
     // This page edits plans: one uniform work colour, never an intensity that implies recorded hours.
     val fill = when (type?.kind) {
@@ -451,12 +519,13 @@ private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, is
         if (isToday) stringResource(R.string.extendedToday) else null,
     ).joinToString(", ")
     Column(
-        Modifier.fillMaxWidth().heightIn(min = 46.dp)
+        modifier.fillMaxWidth().heightIn(min = 46.dp)
             .background(fill, RoundedCornerShape(8.dp))
             .then(if (chosen) Modifier.border(2.dp, scheme.primary, RoundedCornerShape(8.dp)) else Modifier)
             // One node for TalkBack: the day's full label, its selection and the tap.
             .clearAndSetSemantics { contentDescription = label; this.selected = chosen; onClick { onSelect(key); true } }
-            .clickable { onSelect(key) }
+            // The grid owns touch while painting; the semantic action still serves TalkBack.
+            .then(if (touchEnabled) Modifier.clickable { onSelect(key) } else Modifier)
             .padding(vertical = DoneAtSpacing.xs),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -676,6 +745,9 @@ private fun SelectedDay(
     onTypes: () -> Unit,
     onAssign: (java.util.UUID) -> Unit,
     onFollowPattern: () -> Unit,
+    isFree: Boolean,
+    brushID: java.util.UUID?,
+    onChooseBrush: (java.util.UUID) -> Unit,
 ) {
     val result = ExtendedScheduleResolver.dayNumber(selected)?.let { resolver.day(it) }
     val type = typeForDay(selected, result?.shiftTypeID)
@@ -705,20 +777,23 @@ private fun SelectedDay(
             IconButton(onClick = onTypes) { Icon(Icons.Outlined.MoreHoriz, stringResource(R.string.extendedShiftTypes), tint = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
         if (!canEdit) Text(stringResource(R.string.extendedHistoryNeedsCareer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (isFree) SettingsFooter(stringResource(if (brushID == null) R.string.schedulePaintStartHint else R.string.schedulePaintHint))
         Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {
             Column {
                 ScheduleEditing.activeTypes(content).forEachIndexed { index, option ->
                     if (index > 0) com.rainif.doneat.ui.components.RowDivider()
                     Row(
-                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(enabled = canEdit) { onAssign(option.id) }
-                            .semantics { this.selected = type?.id == option.id }
+                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(enabled = canEdit || isFree) {
+                            if (isFree) onChooseBrush(option.id) else onAssign(option.id)
+                        }
+                            .semantics { this.selected = if (isFree) brushID == option.id else type?.id == option.id }
                             .padding(horizontal = DoneAtSpacing.l, vertical = DoneAtSpacing.m),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Box(Modifier.size(8.dp).background(typeColor(option), CircleShape))
                         Text(option.name, Modifier.weight(1f).padding(horizontal = DoneAtSpacing.m), style = MaterialTheme.typography.bodyMedium, color = if (canEdit) Color.Unspecified else MaterialTheme.colorScheme.onSurfaceVariant)
                         if (option.kind == ShiftType.Kind.WORK) Text(hoursLabel(option), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Icon(Icons.Outlined.Check, null, Modifier.padding(start = DoneAtSpacing.s).size(18.dp), tint = if (type?.id == option.id) MaterialTheme.colorScheme.primary else Color.Transparent)
+                        Icon(Icons.Outlined.Check, null, Modifier.padding(start = DoneAtSpacing.s).size(18.dp), tint = if (if (isFree) brushID == option.id else type?.id == option.id) MaterialTheme.colorScheme.primary else Color.Transparent)
                     }
                 }
             }
