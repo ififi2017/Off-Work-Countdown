@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">متوقف افتراضيًا. يبقى الراتب على هذا الجهاز، وفي النسخ الاحتياطي الخاص بـ Android إن كان مفعّلًا.</string>
     <string name="endTime">وقت الانصراف</string>
     <string name="extendedAddShiftType">إضافة نوع مناوبة</string>
+    <string name="extendedAnnualDateRange">التكرار كل عام</string>
+    <string name="extendedAnnualRangeDescription">استخدم هذه الساعات كل عام في أيام العمل المجدولة ضمن هذه الفترة. تبقى أيام الراحة والورديات المحددة يدويًا وفق جدولها الحالي.</string>
+    <string name="extendedAnnualRangeEnd">تاريخ الانتهاء</string>
+    <string name="extendedAnnualRangeLabel">كل عام: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">تتداخل هذه الفترة مع %1$s. عدّل التواريخ لتجنب تداخل الفترات.</string>
+    <string name="extendedAnnualRangeStart">تاريخ البدء</string>
+    <string name="extendedAnnualRangeWrap">تاريخ الانتهاء في العام التالي.</string>
     <string name="extendedApplyTemplateMessage">ستُعاد تعبئة كل أيام الدورة وفق «%1$s». لن يتغير شيء قبل الحفظ.</string>
     <string name="extendedApplyTemplateTitle">إعادة تعبئة النمط؟</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s يوم</string>
     <string name="extendedBreak">استراحة أثناء المناوبة</string>
     <string name="extendedBreakDuration">مدة الاستراحة</string>
     <string name="extendedBreakOutside">انقل الاستراحة إلى داخل المناوبة لتتمكن من الحفظ.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">عمل</string>
     <string name="extendedNewShiftType">نوع مناوبة جديد</string>
     <string name="extendedNextMonth">الشهر التالي</string>
+    <string name="extendedNoAssignedDates">لا توجد ورديات مجدولة خلال الأشهر الـ 12 القادمة</string>
     <string name="extendedOvernightNote">تنتهي هذه المناوبة في اليوم التالي.</string>
     <string name="extendedPattern">النمط</string>
     <string name="extendedPreviousMonth">الشهر السابق</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">الاسم، مثل صباحية أو ليلية</string>
     <string name="extendedShiftTypeInUse">ما زالت بعض الأيام تستخدم هذه المناوبة. عيّن لها مناوبة أخرى أولًا.</string>
     <string name="extendedShiftTypes">أنواع المناوبات</string>
+    <string name="extendedSourceAnnualRange">فترة سنوية</string>
     <string name="extendedToday">اليوم</string>
     <string name="extendedTodayIs">اليوم هو</string>
     <string name="extendedUnassigned">غير محدد</string>
+    <string name="extendedUpcomingYear">الأشهر الـ 12 القادمة</string>
     <string name="extendedWeekNumber">الأسبوع %1$s</string>
     <string name="firstRunBackToWelcome">العودة إلى صفحة الترحيب</string>
     <string name="firstRunCheckingCloud">جارٍ التحقق من iCloud بحثًا عن إعداداتك وسجلاتك الحالية قبل إعداد هذا الجهاز.</string>
@@ -772,6 +783,8 @@
     <string name="scheduleOff">بلا جدول الآن</string>
     <string name="scheduleOffDescription">قرّر كل يوم. بلا عطلة مجدولة.</string>
     <string name="scheduleOffManualStart">بدء العد يدويًا</string>
+    <string name="schedulePaintHint">اضغط على التواريخ أو مرّر إصبعك عليها لتحديدها. كرّر الحركة لإلغاء التحديد.</string>
+    <string name="schedulePaintStartHint">اختر وردية، ثم اضغط على التواريخ أو مرّر إصبعك عليها.</string>
     <string name="scheduleRotation">دورة العمل والراحة</string>
     <string name="scheduleRotationDescription">كرّر عددًا مخصصًا من أيام العمل والراحة.</string>
     <string name="settings">الإعدادات</string>

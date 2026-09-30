@@ -170,7 +170,8 @@ nonisolated enum ExtendedScheduleEditing {
                 let number = CivilZone.dayNumber(year: year, month: month, day: day)
                 guard number >= first else { continue }
                 let resolved = resolver.day(dayNumber: number)
-                guard resolved.source == .rule, let id = resolved.shiftTypeID else { continue }
+                guard resolved.source == .rule || resolved.source == .annualRange,
+                      let id = resolved.shiftTypeID else { continue }
                 next[dayKey(dayNumber: number)] = .shift(id)
             }
         }

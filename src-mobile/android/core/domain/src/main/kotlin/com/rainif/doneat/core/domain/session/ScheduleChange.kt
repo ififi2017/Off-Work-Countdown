@@ -208,7 +208,7 @@ object ScheduleEditing {
                 if (number < first) continue
                 val resolved = resolver.day(number)
                 val id = resolved.shiftTypeID ?: continue
-                if (resolved.source != ExtendedScheduleDay.Source.RULE) continue
+                if (resolved.source != ExtendedScheduleDay.Source.RULE && resolved.source != ExtendedScheduleDay.Source.ANNUAL_RANGE) continue
                 next[ExtendedScheduleResolver.dayKey(number)] = RosterDayEdit.Shift(id)
             }
         }

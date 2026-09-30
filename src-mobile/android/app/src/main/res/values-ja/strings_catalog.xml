@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">初期設定はオフです。給与はこの端末に保存され、Android のバックアップをオンにしている場合はそこにも含まれます。</string>
     <string name="endTime">退勤時間</string>
     <string name="extendedAddShiftType">シフトの種類を追加</string>
+    <string name="extendedAnnualDateRange">毎年繰り返す</string>
+    <string name="extendedAnnualRangeDescription">毎年、この期間内の予定された勤務日にこの時間を適用します。休日と手動で指定したシフトは元の予定を維持します。</string>
+    <string name="extendedAnnualRangeEnd">終了日</string>
+    <string name="extendedAnnualRangeLabel">毎年：%1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">この期間は「%1$s」と重複しています。期間が重ならないように日付を調整してください。</string>
+    <string name="extendedAnnualRangeStart">開始日</string>
+    <string name="extendedAnnualRangeWrap">終了日は翌年になります。</string>
     <string name="extendedApplyTemplateMessage">周期のすべての日を「%1$s」で入れ直します。保存するまでは反映されません。</string>
     <string name="extendedApplyTemplateTitle">パターンを入れ直しますか？</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s日</string>
     <string name="extendedBreak">途中休憩</string>
     <string name="extendedBreakDuration">休憩時間</string>
     <string name="extendedBreakOutside">休憩をシフト内に収めると保存できます。</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">勤務</string>
     <string name="extendedNewShiftType">新しいシフトの種類</string>
     <string name="extendedNextMonth">次の月</string>
+    <string name="extendedNoAssignedDates">今後12か月に予定された勤務はありません</string>
     <string name="extendedOvernightNote">このシフトは翌日に終わります。</string>
     <string name="extendedPattern">シフトのパターン</string>
     <string name="extendedPreviousMonth">前の月</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">名前（例：早番、夜勤）</string>
     <string name="extendedShiftTypeInUse">まだこのシフトを使っている日があります。先にその日を別のシフトに変更してください。</string>
     <string name="extendedShiftTypes">シフトの種類</string>
+    <string name="extendedSourceAnnualRange">毎年の期間</string>
     <string name="extendedToday">今日</string>
     <string name="extendedTodayIs">今日は</string>
     <string name="extendedUnassigned">未設定</string>
+    <string name="extendedUpcomingYear">今後12か月</string>
     <string name="extendedWeekNumber">%1$s週目</string>
     <string name="firstRunBackToWelcome">ようこそ画面に戻る</string>
     <string name="firstRunCheckingCloud">このデバイスを設定する前に、iCloudに既存の設定と記録があるか確認しています。</string>
@@ -767,6 +778,8 @@
     <string name="scheduleOff">今はスケジュールなし</string>
     <string name="scheduleOffDescription">毎日決める。決まった週末はない。</string>
     <string name="scheduleOffManualStart">手動でカウントダウンを開始</string>
+    <string name="schedulePaintHint">日付をタップまたはなぞって選択します。同じ操作で選択を解除できます。</string>
+    <string name="schedulePaintStartHint">シフトを選び、日付をタップまたはなぞってください。</string>
     <string name="scheduleRotation">勤務と休日の循環</string>
     <string name="scheduleRotationDescription">勤務日数と休日数を繰り返します。</string>
     <string name="settings">設定</string>

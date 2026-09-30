@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">ปิดไว้เป็นค่าเริ่มต้น เงินเดือนจะอยู่ในอุปกรณ์นี้ และในการสำรองข้อมูลของ Android หากคุณเปิดไว้</string>
     <string name="endTime">เวลาเลิกงาน</string>
     <string name="extendedAddShiftType">เพิ่มประเภทกะ</string>
+    <string name="extendedAnnualDateRange">ทำซ้ำทุกปี</string>
+    <string name="extendedAnnualRangeDescription">ใช้เวลานี้ทุกปีในวันทำงานที่กำหนดไว้ภายในช่วงนี้ วันหยุดและกะที่กำหนดด้วยตนเองจะคงตามตารางเดิม</string>
+    <string name="extendedAnnualRangeEnd">วันที่สิ้นสุด</string>
+    <string name="extendedAnnualRangeLabel">ทุกปี: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">ช่วงนี้ทับซ้อนกับ %1$s โปรดปรับวันที่เพื่อไม่ให้ช่วงทับซ้อนกัน</string>
+    <string name="extendedAnnualRangeStart">วันที่เริ่มต้น</string>
+    <string name="extendedAnnualRangeWrap">วันที่สิ้นสุดอยู่ในปีถัดไป</string>
     <string name="extendedApplyTemplateMessage">ทุกวันในรอบจะถูกเติมใหม่ตาม “%1$s” และจะยังไม่เปลี่ยนจนกว่าจะบันทึก</string>
     <string name="extendedApplyTemplateTitle">เติมรูปแบบใหม่ไหม</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s วัน</string>
     <string name="extendedBreak">พักระหว่างกะ</string>
     <string name="extendedBreakDuration">ระยะเวลาพัก</string>
     <string name="extendedBreakOutside">ย้ายเวลาพักให้อยู่ภายในกะเพื่อบันทึก</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">ทำงาน</string>
     <string name="extendedNewShiftType">ประเภทกะใหม่</string>
     <string name="extendedNextMonth">เดือนถัดไป</string>
+    <string name="extendedNoAssignedDates">ยังไม่มีกะที่กำหนดไว้ใน 12 เดือนข้างหน้า</string>
     <string name="extendedOvernightNote">กะนี้สิ้นสุดในวันถัดไป</string>
     <string name="extendedPattern">รูปแบบ</string>
     <string name="extendedPreviousMonth">เดือนก่อน</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">ชื่อ เช่น กะเช้า หรือ กะดึก</string>
     <string name="extendedShiftTypeInUse">ยังมีบางวันใช้กะนี้อยู่ โปรดเปลี่ยนวันเหล่านั้นเป็นกะอื่นก่อน</string>
     <string name="extendedShiftTypes">ประเภทกะ</string>
+    <string name="extendedSourceAnnualRange">ช่วงวันที่ประจำปี</string>
     <string name="extendedToday">วันนี้</string>
     <string name="extendedTodayIs">วันนี้คือ</string>
     <string name="extendedUnassigned">ยังไม่ได้ตั้ง</string>
+    <string name="extendedUpcomingYear">12 เดือนข้างหน้า</string>
     <string name="extendedWeekNumber">สัปดาห์ที่ %1$s</string>
     <string name="firstRunBackToWelcome">กลับไปหน้าต้อนรับ</string>
     <string name="firstRunCheckingCloud">กำลังตรวจสอบ iCloud เพื่อค้นหาการตั้งค่าและบันทึกเดิมของคุณก่อนตั้งค่าอุปกรณ์นี้</string>
@@ -767,6 +778,8 @@
     <string name="scheduleOff">ยังไม่ตั้งตาราง</string>
     <string name="scheduleOffDescription">ตัดสินใจเองทุกวัน ไม่มีเสาร์อาทิตย์ตายตัว</string>
     <string name="scheduleOffManualStart">เริ่มนับถอยหลังด้วยตนเอง</string>
+    <string name="schedulePaintHint">แตะหรือลากผ่านวันที่เพื่อเลือก ทำซ้ำเพื่อยกเลิกการเลือก</string>
+    <string name="schedulePaintStartHint">เลือกกะ แล้วแตะหรือลากผ่านวันที่</string>
     <string name="scheduleRotation">รอบทำงาน/พัก</string>
     <string name="scheduleRotationDescription">ทำซ้ำจำนวนวันทำงานและวันพักที่กำหนดเอง</string>
     <string name="settings">การตั้งค่า</string>

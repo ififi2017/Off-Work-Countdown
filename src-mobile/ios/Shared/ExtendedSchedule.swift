@@ -1,5 +1,41 @@
 import Foundation
 
+/// Inclusive month/day bounds that repeat every year. An end before the start
+/// crosses New Year; February 29 is valid and applies only when that day exists.
+nonisolated struct AnnualShiftDateRange: Codable, Hashable, Sendable {
+    var startMonth: Int
+    var startDay: Int
+    var endMonth: Int
+    var endDay: Int
+
+    var isValid: Bool {
+        Self.isValid(month: startMonth, day: startDay)
+            && Self.isValid(month: endMonth, day: endDay)
+    }
+
+    func contains(month: Int, day: Int) -> Bool {
+        guard isValid, Self.isValid(month: month, day: day) else { return false }
+        let start = startMonth * 100 + startDay
+        let end = endMonth * 100 + endDay
+        let date = month * 100 + day
+        return start <= end ? (start...end).contains(date) : date >= start || date <= end
+    }
+
+    func overlaps(_ other: Self) -> Bool {
+        guard isValid, other.isValid else { return false }
+        return contains(month: other.startMonth, day: other.startDay)
+            || contains(month: other.endMonth, day: other.endDay)
+            || other.contains(month: startMonth, day: startDay)
+            || other.contains(month: endMonth, day: endDay)
+    }
+
+    private static func isValid(month: Int, day: Int) -> Bool {
+        guard (1...12).contains(month), (1...31).contains(day) else { return false }
+        let civil = CivilZone.civilDate(dayNumber: CivilZone.dayNumber(year: 2000, month: month, day: day))
+        return civil.year == 2000 && civil.month == month && civil.day == day
+    }
+}
+
 /// A named kind of shift the extended schedule assigns to days (plan 018 P8).
 /// `rest` is a type as well: the day is assigned, but nothing counts down to it.
 nonisolated struct ShiftType: Codable, Hashable, Sendable, Identifiable {
@@ -25,6 +61,9 @@ nonisolated struct ShiftType: Codable, Hashable, Sendable, Identifiable {
     var colorHex: String
     /// Archived types stay so past days that used them still resolve.
     var isArchived: Bool
+    /// Replaces the pattern's work hours during these dates each year, while
+    /// retaining its work/rest days and explicit calendar assignments.
+    var annualDateRange: AnnualShiftDateRange? = nil
 
     var isValid: Bool {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -36,6 +75,7 @@ nonisolated struct ShiftType: Codable, Hashable, Sendable, Identifiable {
             && (0..<1_440).contains(breakDurationMinutes)
             && (!breakEnabled || breakDurationMinutes > 0)
             && colorHex.wholeMatch(of: /#[0-9A-Fa-f]{6}/) != nil
+            && (annualDateRange.map { kind == .work && $0.isValid } ?? true)
     }
 }
 
@@ -116,10 +156,18 @@ nonisolated struct ExtendedScheduleContent: Codable, Hashable, Sendable {
     /// Free schedules stop automatic carry-over and holiday assignments from this civil day.
     var clearedFromDayKey: String? = nil
 
+    var hasOverlappingAnnualDateRanges: Bool {
+        let ranges = shiftTypes.filter { $0.kind == .work && !$0.isArchived }.compactMap(\.annualDateRange)
+        return ranges.enumerated().contains { index, range in
+            ranges.dropFirst(index + 1).contains { range.overlaps($0) }
+        }
+    }
+
     func isValid(in zone: TimeZone) -> Bool {
         guard clearedFromDayKey.map({ ExtendedScheduleResolver.parse(dayKey: $0) != nil }) ?? true,
               HolidayCalendar.isValidRegionIdentifier(holidayRegionIdentifier),
               shiftTypes.allSatisfy(\.isValid),
+              !hasOverlappingAnnualDateRanges,
               Set(shiftTypes.map(\.id)).count == shiftTypes.count
         else { return false }
         guard let rule else { return true }

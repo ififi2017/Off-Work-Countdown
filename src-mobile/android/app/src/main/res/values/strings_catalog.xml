@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">Off by default. Salary stays on this device, and in Android’s own backup if you have it turned on.</string>
     <string name="endTime">Clock-off</string>
     <string name="extendedAddShiftType">Add shift type</string>
+    <string name="extendedAnnualDateRange">Repeat each year</string>
+    <string name="extendedAnnualRangeDescription">Use these hours on scheduled workdays within this range each year. Rest days and manually assigned shifts stay as scheduled.</string>
+    <string name="extendedAnnualRangeEnd">Ends</string>
+    <string name="extendedAnnualRangeLabel">Every year: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">This range overlaps %1$s. Adjust the dates to keep the ranges separate.</string>
+    <string name="extendedAnnualRangeStart">Starts</string>
+    <string name="extendedAnnualRangeWrap">Ends in the following year.</string>
     <string name="extendedApplyTemplateMessage">Every day of the cycle is refilled from %1$s. Nothing changes until you save.</string>
     <string name="extendedApplyTemplateTitle">Refill the pattern?</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s days</string>
     <string name="extendedBreak">Break during the shift</string>
     <string name="extendedBreakDuration">Break length</string>
     <string name="extendedBreakOutside">Move the break inside the shift to save.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">Work</string>
     <string name="extendedNewShiftType">New shift type</string>
     <string name="extendedNextMonth">Next month</string>
+    <string name="extendedNoAssignedDates">No dates scheduled in the next 12 months</string>
     <string name="extendedOvernightNote">This shift ends the next day.</string>
     <string name="extendedPattern">Pattern</string>
     <string name="extendedPreviousMonth">Previous month</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">Name, such as Early or Night</string>
     <string name="extendedShiftTypeInUse">Some days still use this shift. Give them another shift first.</string>
     <string name="extendedShiftTypes">Shift types</string>
+    <string name="extendedSourceAnnualRange">Annual range</string>
     <string name="extendedToday">Today</string>
     <string name="extendedTodayIs">Today is</string>
     <string name="extendedUnassigned">Not set</string>
+    <string name="extendedUpcomingYear">Next 12 months</string>
     <string name="extendedWeekNumber">Week %1$s</string>
     <string name="firstRunBackToWelcome">Back to welcome</string>
     <string name="firstRunCheckingCloud">Checking iCloud for your existing settings and records before setting up this device.</string>
@@ -768,6 +779,8 @@
     <string name="scheduleOff">No schedule yet</string>
     <string name="scheduleOffDescription">Decide each day. No set weekend.</string>
     <string name="scheduleOffManualStart">Start each day by hand</string>
+    <string name="schedulePaintHint">Tap or swipe dates to select them. Repeat to undo.</string>
+    <string name="schedulePaintStartHint">Choose a shift, then tap or swipe dates.</string>
     <string name="scheduleRotation">Work/rest rotation</string>
     <string name="scheduleRotationDescription">A repeating run of work and rest days.</string>
     <string name="settings">Settings</string>

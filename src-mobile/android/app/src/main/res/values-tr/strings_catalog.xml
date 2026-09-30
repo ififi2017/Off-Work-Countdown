@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">Varsayılan olarak kapalı. Maaş bu cihazda ve açıksa Android’in kendi yedeğinde kalır.</string>
     <string name="endTime">İş çıkışı</string>
     <string name="extendedAddShiftType">Vardiya türü ekle</string>
+    <string name="extendedAnnualDateRange">Her yıl tekrarla</string>
+    <string name="extendedAnnualRangeDescription">Bu saatleri her yıl bu aralıktaki planlanmış iş günlerinde kullanın. Dinlenme günleri ve elle atanan vardiyalar mevcut planını korur.</string>
+    <string name="extendedAnnualRangeEnd">Bitiş tarihi</string>
+    <string name="extendedAnnualRangeLabel">Her yıl: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">Bu aralık %1$s ile çakışıyor. Aralıkların çakışmaması için tarihleri düzenleyin.</string>
+    <string name="extendedAnnualRangeStart">Başlangıç tarihi</string>
+    <string name="extendedAnnualRangeWrap">Bitiş tarihi sonraki yıldadır.</string>
     <string name="extendedApplyTemplateMessage">Döngünün her günü “%1$s” düzenine göre yeniden doldurulur. Kaydedene kadar hiçbir şey değişmez.</string>
     <string name="extendedApplyTemplateTitle">Düzen yeniden doldurulsun mu?</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s gün</string>
     <string name="extendedBreak">Vardiya içi mola</string>
     <string name="extendedBreakDuration">Mola süresi</string>
     <string name="extendedBreakOutside">Kaydetmek için molayı vardiyanın içine alın.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">Çalışma</string>
     <string name="extendedNewShiftType">Yeni vardiya türü</string>
     <string name="extendedNextMonth">Sonraki ay</string>
+    <string name="extendedNoAssignedDates">Önümüzdeki 12 ayda planlanmış vardiya yok</string>
     <string name="extendedOvernightNote">Bu vardiya ertesi gün biter.</string>
     <string name="extendedPattern">Düzen</string>
     <string name="extendedPreviousMonth">Önceki ay</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">Ad, ör. Sabah veya Gece</string>
     <string name="extendedShiftTypeInUse">Bazı günler hâlâ bu vardiyayı kullanıyor. Önce o günlere başka bir vardiya verin.</string>
     <string name="extendedShiftTypes">Vardiya türleri</string>
+    <string name="extendedSourceAnnualRange">Yıllık tarih aralığı</string>
     <string name="extendedToday">Bugün</string>
     <string name="extendedTodayIs">Bugün</string>
     <string name="extendedUnassigned">Ayarlanmadı</string>
+    <string name="extendedUpcomingYear">Önümüzdeki 12 ay</string>
     <string name="extendedWeekNumber">%1$s. hafta</string>
     <string name="firstRunBackToWelcome">Karşılama ekranına dön</string>
     <string name="firstRunCheckingCloud">Bu cihazı ayarlamadan önce mevcut ayarlarınızı ve kayıtlarınızı iCloud’da kontrol ediyoruz.</string>
@@ -768,6 +779,8 @@
     <string name="scheduleOff">Şimdilik programsız</string>
     <string name="scheduleOffDescription">Her gün siz karar verin. Planlı hafta sonu yok.</string>
     <string name="scheduleOffManualStart">Geri sayımı elle başlat</string>
+    <string name="schedulePaintHint">Tarihleri seçmek için dokunun veya üzerlerinde parmağınızı kaydırın. Seçimi kaldırmak için hareketi tekrarlayın.</string>
+    <string name="schedulePaintStartHint">Bir vardiya seçin, ardından tarihlere dokunun veya üzerlerinde parmağınızı kaydırın.</string>
     <string name="scheduleRotation">Çalışma/izin döngüsü</string>
     <string name="scheduleRotationDescription">Çalışma ve izin günü sayılarını tekrarlayın.</string>
     <string name="settings">Ayarlar</string>

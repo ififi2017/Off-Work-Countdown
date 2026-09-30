@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">Standardmäßig aus. Das Gehalt bleibt auf diesem Gerät und in der Android-eigenen Sicherung, falls du sie aktiviert hast.</string>
     <string name="endTime">Feierabend</string>
     <string name="extendedAddShiftType">Schichtart hinzufügen</string>
+    <string name="extendedAnnualDateRange">Jährlich wiederholen</string>
+    <string name="extendedAnnualRangeDescription">Verwende diese Zeiten jedes Jahr an geplanten Arbeitstagen in diesem Zeitraum. Ruhetage und manuell zugewiesene Schichten bleiben wie geplant.</string>
+    <string name="extendedAnnualRangeEnd">Ende</string>
+    <string name="extendedAnnualRangeLabel">Jedes Jahr: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">Dieser Zeitraum überschneidet sich mit %1$s. Passe die Daten so an, dass sich die Zeiträume nicht überschneiden.</string>
+    <string name="extendedAnnualRangeStart">Beginn</string>
+    <string name="extendedAnnualRangeWrap">Das Enddatum liegt im folgenden Jahr.</string>
     <string name="extendedApplyTemplateMessage">Jeder Tag des Zyklus wird nach „%1$s“ neu gefüllt. Übernommen wird erst beim Sichern.</string>
     <string name="extendedApplyTemplateTitle">Muster neu füllen?</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s Tage</string>
     <string name="extendedBreak">Pause in der Schicht</string>
     <string name="extendedBreakDuration">Pausenlänge</string>
     <string name="extendedBreakOutside">Zum Sichern die Pause in die Schicht legen.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">Arbeit</string>
     <string name="extendedNewShiftType">Neue Schichtart</string>
     <string name="extendedNextMonth">Nächster Monat</string>
+    <string name="extendedNoAssignedDates">Keine Schichten in den nächsten 12 Monaten geplant</string>
     <string name="extendedOvernightNote">Diese Schicht endet am Folgetag.</string>
     <string name="extendedPattern">Muster</string>
     <string name="extendedPreviousMonth">Vorheriger Monat</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">Name, z. B. Früh oder Nacht</string>
     <string name="extendedShiftTypeInUse">Einige Tage nutzen diese Schicht noch. Diesen Tagen zuerst eine andere Schicht geben.</string>
     <string name="extendedShiftTypes">Schichtarten</string>
+    <string name="extendedSourceAnnualRange">Jährlicher Zeitraum</string>
     <string name="extendedToday">Heute</string>
     <string name="extendedTodayIs">Heute ist</string>
     <string name="extendedUnassigned">Nicht festgelegt</string>
+    <string name="extendedUpcomingYear">Nächste 12 Monate</string>
     <string name="extendedWeekNumber">Woche %1$s</string>
     <string name="firstRunBackToWelcome">Zurück zur Begrüßung</string>
     <string name="firstRunCheckingCloud">Wir prüfen iCloud auf vorhandene Einstellungen und Aufzeichnungen, bevor du dieses Gerät einrichtest.</string>
@@ -768,6 +779,8 @@
     <string name="scheduleOff">Vorerst ohne Plan</string>
     <string name="scheduleOffDescription">Täglich entscheiden. Kein festes Wochenende.</string>
     <string name="scheduleOffManualStart">Countdown manuell starten</string>
+    <string name="schedulePaintHint">Tippe auf Daten oder streiche darüber, um sie auszuwählen. Wiederhole die Geste, um die Auswahl aufzuheben.</string>
+    <string name="schedulePaintStartHint">Wähle eine Schicht und tippe dann auf Daten oder streiche darüber.</string>
     <string name="scheduleRotation">Arbeit/Freizeit-Rhythmus</string>
     <string name="scheduleRotationDescription">Eigene Zahl von Arbeits- und freien Tagen.</string>
     <string name="settings">Einstellungen</string>

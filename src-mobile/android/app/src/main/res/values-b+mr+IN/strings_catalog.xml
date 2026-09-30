@@ -89,8 +89,16 @@
     <string name="enableSalaryDescriptionLocal">डीफॉल्टनुसार बंद. पगार याच डिव्हाइसवर राहतो, आणि तुम्ही Android चा स्वतःचा बॅकअप सुरू ठेवला असल्यास त्यातही.</string>
     <string name="endTime">सुट्टीची वेळ</string>
     <string name="extendedAddShiftType">शिफ्टचा प्रकार जोडा</string>
+    <string name="extendedAnnualDateRange">दरवर्षी पुनरावृत्ती</string>
+    <string name="extendedAnnualRangeDescription">दरवर्षी या कालावधीतील ठरवलेल्या कामाच्या दिवसांना या वेळा लागू करा. विश्रांतीचे दिवस आणि स्वतः ठरवलेल्या शिफ्टचे वेळापत्रक कायम राहील.</string>
+    <string name="extendedAnnualRangeEnd">शेवटची तारीख</string>
+    <string name="extendedAnnualRangeLabel">दरवर्षी: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">हा कालावधी %1$s च्या कालावधीशी जुळतो. कालावधी एकमेकांवर येऊ नयेत म्हणून तारखा बदला.</string>
+    <string name="extendedAnnualRangeStart">सुरुवातीची तारीख</string>
+    <string name="extendedAnnualRangeWrap">शेवटची तारीख पुढील वर्षात आहे.</string>
     <string name="extendedApplyTemplateMessage">चक्रातील प्रत्येक दिवस “%1$s” नुसार पुन्हा भरला जाईल. जतन करेपर्यंत काहीही बदलणार नाही.</string>
     <string name="extendedApplyTemplateTitle">क्रम पुन्हा भरायचा?</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s दिवस</string>
     <string name="extendedBreak">शिफ्टमधील विश्रांती</string>
     <string name="extendedBreakDuration">विश्रांतीचा कालावधी</string>
     <string name="extendedBreakOutside">जतन करण्यासाठी विश्रांती शिफ्टच्या आत ठेवा.</string>
@@ -111,6 +119,7 @@
     <string name="extendedKindWork">काम</string>
     <string name="extendedNewShiftType">नवीन शिफ्ट प्रकार</string>
     <string name="extendedNextMonth">पुढील महिना</string>
+    <string name="extendedNoAssignedDates">पुढील 12 महिन्यांत कोणतीही शिफ्ट ठरवलेली नाही</string>
     <string name="extendedOvernightNote">ही शिफ्ट दुसऱ्या दिवशी संपते.</string>
     <string name="extendedPattern">क्रम</string>
     <string name="extendedPreviousMonth">मागील महिना</string>
@@ -121,9 +130,11 @@
     <string name="extendedShiftNamePlaceholder">नाव, उदा. सकाळ किंवा रात्र</string>
     <string name="extendedShiftTypeInUse">काही दिवस अजूनही ही शिफ्ट वापरत आहेत. आधी त्यांना दुसरी शिफ्ट द्या.</string>
     <string name="extendedShiftTypes">शिफ्टचे प्रकार</string>
+    <string name="extendedSourceAnnualRange">वार्षिक कालावधी</string>
     <string name="extendedToday">आज</string>
     <string name="extendedTodayIs">आज आहे</string>
     <string name="extendedUnassigned">ठरलेले नाही</string>
+    <string name="extendedUpcomingYear">पुढील 12 महिने</string>
     <string name="extendedWeekNumber">आठवडा %1$s</string>
     <string name="firstRunBackToWelcome">स्वागत पृष्ठावर परत जा</string>
     <string name="firstRunCheckingCloud">हे उपकरण सेट करण्यापूर्वी iCloud मध्ये तुमच्या विद्यमान सेटिंग्ज आणि नोंदी तपासत आहोत.</string>
@@ -768,6 +779,8 @@
     <string name="scheduleOff">आता शेड्यूल नाही</string>
     <string name="scheduleOffDescription">दररोज ठरवा. ठरवलेला शनि-रविवार नाही.</string>
     <string name="scheduleOffManualStart">उलटी गणना स्वतः सुरू करा</string>
+    <string name="schedulePaintHint">तारखा निवडण्यासाठी त्यांवर टॅप करा किंवा बोट फिरवा. निवड रद्द करण्यासाठी तीच कृती पुन्हा करा.</string>
+    <string name="schedulePaintStartHint">शिफ्ट निवडा, मग तारखांवर टॅप करा किंवा बोट फिरवा.</string>
     <string name="scheduleRotation">काम/विश्रांती चक्र</string>
     <string name="scheduleRotationDescription">कामाचे आणि सुट्टीचे दिवस पुन्हा वापरा.</string>
     <string name="settings">सेटिंग्ज</string>

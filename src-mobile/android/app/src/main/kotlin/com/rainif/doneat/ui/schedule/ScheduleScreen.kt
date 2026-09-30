@@ -694,6 +694,7 @@ private fun SelectedDay(
                             ExtendedScheduleDay.Source.HAND_SET -> R.string.extendedSetByHand
                             ExtendedScheduleDay.Source.HOLIDAY -> R.string.holidaySource
                             ExtendedScheduleDay.Source.RULE -> R.string.extendedPattern
+                            ExtendedScheduleDay.Source.ANNUAL_RANGE -> R.string.extendedSourceAnnualRange
                             ExtendedScheduleDay.Source.CARRIED_OVER -> R.string.extendedCarriedOver
                             else -> R.string.extendedUnassigned
                         },

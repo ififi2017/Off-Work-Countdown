@@ -11,6 +11,12 @@ nonisolated struct WatchScheduleV2: Codable, Equatable, Sendable {
     var resumeAtMs: Int64? = nil
     let presentation: WatchPresentationV1
 
+    var usesAnnualDateRanges: Bool {
+        configuration.extendedSchedule?.shiftTypes.contains {
+            $0.kind == .work && !$0.isArchived && $0.annualDateRange != nil
+        } ?? false
+    }
+
     init(configuration: ScheduleRuleInput, automaticallyRuns: Bool, isConfigured: Bool,
          currentShift: WatchShiftProjectionV1?, currentUntilMs: Int64,
          resumeAtMs: Int64? = nil, presentation: WatchPresentationV1) {
