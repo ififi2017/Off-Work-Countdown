@@ -63,7 +63,7 @@ KYC 通过且 Console 具备相应操作条件后，再核对应用 ID、Play Ap
 
 126 项首发用例逐项状态以 [`preconsole-qa-2026-09-26.md`](preconsole-qa-2026-09-26.md) 为证据矩阵；本页只记录任务状态，不把 433 项单测写成 126 项全通过。
 
-环境与命令见 `environment-lock.md`。候选默认（发布前冻结）：`applicationId=com.rainif.doneat`，minSdk 26，versionName 3.2.0，versionCode 1。
+环境与命令见 `environment-lock.md`。当前候选：`applicationId=com.rainif.doneat`，minSdk 26，versionName 3.2.1，versionCode 5。
 
 ## 基线漂移记录
 
