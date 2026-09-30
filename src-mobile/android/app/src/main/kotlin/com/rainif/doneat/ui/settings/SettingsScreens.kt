@@ -199,9 +199,9 @@ fun openUrl(context: Context, url: String) {
     }
 }
 
-/** Automatic, light or dark (iOS `ThemeSettingsView`), plus wallpaper colours where Android offers them. */
+/** Automatic, light or dark (iOS `ThemeSettingsView`), wallpaper colours and a custom accent palette. */
 @Composable
-fun ThemeScreen(p: SyncedPreferences, device: DeviceSettings, edit: EditPreferences, setDynamic: (Boolean) -> Unit, onBack: () -> Unit) {
+fun ThemeScreen(p: SyncedPreferences, device: DeviceSettings, edit: EditPreferences, setDynamic: (Boolean) -> Unit, setAccent: (Int?) -> Unit, onBack: () -> Unit) {
     DoneAtPage(stringResource(R.string.theme), onBack, stringResource(R.string.settings)) {
         SettingsGroup {
             ChoiceRow(stringResource(R.string.auto), p.theme == "auto", { edit { it.copy(theme = "auto") } }, Icons.Outlined.Contrast)
@@ -210,6 +210,7 @@ fun ThemeScreen(p: SyncedPreferences, device: DeviceSettings, edit: EditPreferen
             RowDivider()
             ChoiceRow(stringResource(R.string.dark), p.theme == "dark", { edit { it.copy(theme = "dark") } }, Icons.Outlined.DarkMode)
         }
+        AccentColorSettings(device.accentColor, device.dynamicColor, setAccent)
         if (supportsDynamicColor) {
             SettingsGroup {
                 SwitchRow(stringResource(R.string.wallpaperColors), device.dynamicColor, setDynamic)

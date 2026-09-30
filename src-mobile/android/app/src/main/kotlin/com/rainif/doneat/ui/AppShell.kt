@@ -310,7 +310,10 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
             editDevice = { change -> scope.launch { graph.settings.updateDevice(change) } },
         )
         Route.Health -> HealthScreen(prefs, edit, back)
-        Route.Theme -> ThemeScreen(prefs, device, edit, { on -> scope.launch { graph.settings.updateDevice { it.copy(dynamicColor = on) } } }, back)
+        Route.Theme -> ThemeScreen(prefs, device, edit,
+            setDynamic = { on -> scope.launch { graph.settings.updateDevice { it.copy(dynamicColor = on) } } },
+            setAccent = { rgb -> scope.launch { graph.settings.updateDevice { it.copy(accentColor = rgb, dynamicColor = false) } } },
+            onBack = back)
         Route.Language -> {
             val context = androidx.compose.ui.platform.LocalContext.current
             LanguageScreen(prefs, { code ->

@@ -89,6 +89,35 @@ class SettingsRepositoryTest {
         assertEquals("dark", repo.preferences.value.theme)
     }
 
+    @Test fun customAccentSurvivesRestartAndStaysOutsideTheRecordArchive() = runTest {
+        val (records, _, repo) = open()
+        records.load()
+        repo.completeSetup()
+        val before = Files.readString(archive)
+        repo.updateDevice { it.copy(accentColor = 0x2563EB, dynamicColor = false) }
+        assertEquals(0x2563EB, DeviceSettingsStore(deviceFile).settings.value.accentColor)
+        repo.updateDevice { it.copy(dynamicColor = true) }
+        val restored = DeviceSettingsStore(deviceFile).settings.value
+        assertTrue(restored.dynamicColor)
+        assertEquals(0x2563EB, restored.accentColor)
+        assertEquals("device-only choice does not edit records", before, Files.readString(archive))
+        repo.updateDevice { it.copy(accentColor = null, dynamicColor = false) }
+        assertNull(DeviceSettingsStore(deviceFile).settings.value.accentColor)
+    }
+
+    @Test fun missingOrInvalidAccentDoesNotDiscardOtherLocalSettings() {
+        Files.createDirectories(deviceFile.parent)
+        for (value in listOf("null", "-1", "16777216", "\"blue\"", "{}")) {
+            Files.writeString(deviceFile, "{\"hideEarnings\":true,\"accentColor\":$value}")
+            val settings = DeviceSettingsStore(deviceFile).settings.value
+            assertNull(settings.accentColor)
+            assertTrue(settings.hideEarnings)
+        }
+        Files.writeString(deviceFile, "{\"hideEarnings\":true}")
+        assertNull(DeviceSettingsStore(deviceFile).settings.value.accentColor)
+        assertTrue(DeviceSettingsStore(deviceFile).settings.value.hideEarnings)
+    }
+
     @Test fun invalidEditsAndDamagedLocalFilesAreHarmless() = runTest {
         Files.createDirectories(deviceFile.parent)
         Files.writeString(deviceFile, "{broken")

@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">Informazioni sul progetto</string>
     <string name="aboutSection">Informazioni</string>
+    <string name="accentBlue">Blu</string>
+    <string name="accentBrightness">Luminosità</string>
+    <string name="accentColor">Colore di accento</string>
+    <string name="accentColorFooter">I colori si adattano al tema chiaro e scuro per mantenere il testo leggibile.</string>
+    <string name="accentCustom">Colore personalizzato</string>
+    <string name="accentDoneAt">Arancione DoneAt</string>
+    <string name="accentGreen">Verde</string>
+    <string name="accentHex">Colore HEX</string>
+    <string name="accentHexError">Inserisci sei cifre esadecimali, ad esempio #2563EB.</string>
+    <string name="accentHue">Tonalità</string>
+    <string name="accentIndigo">Indaco</string>
+    <string name="accentPink">Rosa</string>
+    <string name="accentPurple">Viola</string>
+    <string name="accentRed">Rosso</string>
+    <string name="accentSaturation">Saturazione</string>
+    <string name="accentTeal">Verde acqua</string>
+    <string name="accentYellow">Giallo</string>
     <string name="acknowledgements">Riconoscimenti</string>
     <string name="adjustOvertime">Modifica straordinario</string>
     <string name="allowExactReminders">Consenti promemoria esatti</string>

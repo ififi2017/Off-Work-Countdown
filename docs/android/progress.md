@@ -13,8 +13,8 @@
 | T00 | IMPLEMENTED | `baseline.md`。未 reset 工作区。QA-001 分支创建 NOT_RUN。 |
 | T01 | IMPLEMENTED | `source-inventory.md`、`feature-parity.md`、`conflicts.md`。源读自固定 SHA。未跑 iOS XCTest。 |
 | T02 | IMPLEMENTED | `wire-contract.md`、`synthetic-archives/`。检查：`node scripts/android-synthetic-archives.mjs --check`。Kotlin 导入 NOT_RUN。 |
-| T03 | IMPLEMENTED | `environment-lock.md`；`src-mobile/android`；`.github/workflows/android.yml`。初始 T03 探针当时只有 domain 2 项测试、Debug/R8 Release/AAB 与模拟器冷启动；当前四模块与 443 项见下方执行状态。GitHub CI 运行证据另取，不以本地命令代替。 |
-| T04 | IMPLEMENTED | `:core:designsystem`：`DoneAtColors`（浅/深两套完整 M3 配色，暖中性表面；浅色主色 `#C2410C`，品牌亮橙仅作装饰）、`DoneAtStateColors`、`DoneAtShapes`（14/22 与 iOS 一致；主操作按下时胶囊收成 12 dp）、`DoneAtMotion`（与 `OWCMotion` 同值，减少动态效果时退化）、`DoneAtType.countdown`（64 sp 等宽数字）、`DoneAtCountdown`（逐位数字翻页，对应 `.numericText(countsDown:)`）、`DoneAtProgressMeter`（浮动百分比气泡，几何与 `OWCProgressMeter` 相同）、`DoneAtTheme`（主题模式、可选动态配色）。对比度与气泡几何 8 条单测；Debug 专用 gallery。模拟器（API 36）检查浅色、深色、200% 字体、移除动画、阿拉伯语 RTL、数字翻页录屏。Release 依赖全为稳定版（Material3 1.4.0）。见 `design-tokens-adr.md`。 |
+| T03 | IMPLEMENTED | `environment-lock.md`；`src-mobile/android`；`.github/workflows/android.yml`。初始 T03 探针当时只有 domain 2 项测试、Debug/R8 Release/AAB 与模拟器冷启动；当前四模块与 448 项见下方执行状态。GitHub CI 运行证据另取，不以本地命令代替。 |
+| T04 | IMPLEMENTED | `:core:designsystem`：`DoneAtColors`（浅/深两套完整 M3 配色，页面及卡片对齐 iOS 中性分组背景；浅色主色 `#C2410C`，品牌亮橙仅作装饰）、`DoneAtStateColors`、`DoneAtShapes`（14/22 与 iOS 一致；主操作按下时胶囊收成 12 dp）、`DoneAtMotion`（与 `OWCMotion` 同值，减少动态效果时退化）、`DoneAtType.countdown`（64 sp 等宽数字）、`DoneAtCountdown`（逐位数字翻页，对应 `.numericText(countsDown:)`）、`DoneAtProgressMeter`（浮动百分比气泡，几何与 `OWCProgressMeter` 相同）、`DoneAtTheme`（主题模式、可选壁纸配色与自定义强调色）。对比度、气泡几何与强调色等 12 条单测；Debug 专用 gallery。模拟器（API 36）检查浅色、深色、200% 字体、移除动画、阿拉伯语 RTL、数字翻页录屏。Release 依赖全为稳定版（Material3 1.4.0）。见 `design-tokens-adr.md`。 |
 | T05 | IMPLEMENTED | `scripts/generate-android-strings.mjs`（`npm run generate:android-strings` / `check:android-strings`）把 `Localizable.xcstrings` 的 832 个 key 与 `app/i18n/android-strings.json` 的 Android 专有文案转成 19 个语言目录的 `strings_catalog.xml`、`xml/locales_config.xml`（清单已引用）、可逆的 `app/i18n/key-map.json` 与带命名参数的 `l10n/Strings.kt`。`{{name}}` 按英文顺序转为 `%N$s`；消息池转为 string-array 并保留 `{{name}}` 供共享规则替换；复数按各语言 CLDR 类别生成；Java/Kotlin 关键字 key 加下划线。生成时检查：19 语言齐全、各语言占位符与英文一致、Android 专有 key 不与目录重名、资源名合法且不碰撞、XML 非法字符。12 条 vitest 覆盖中文三变体、印地/马拉地语、阿语复数、德语长句占位符重排、转义与各类拒绝；`npm test` 与 Android CI 在资源过期时失败。Android 专有文案已随记录、Plus、通知等页面扩充，19 语言由生成器检查。aapt2 编译与 lint 通过，无新增告警（`localeConfig` 在 API 33 以下被忽略属预期）。 |
 | T06 | IMPLEMENTED | `scripts/generate-android-rule-fixtures.mjs` → `src-mobile/android/core/domain/src/test/resources/shared-rule-fixtures.json`：5087 条 TS oracle 用例，与 iOS `ScheduleRuleFixtures` 数据逐字相同，另记 6 个输入文件哈希。`npm test` 内含 stale 检查（手改一条用例、给 `lib/countdown.ts` 加注释均使检查失败，已验证）；Kotlin `SharedRuleFixturesTest` 3 条通过。Swift 特有规则的 fixtures 属 T08。 |
 | T07 | IMPLEMENTED | `core/domain/.../schedule`（`CivilZone`、`ScheduleRules`、模型）与 `salary/SalaryRules`。fixture 的 snapshots/widget/expansion/validateBreak/applyToday 共 2927 条全部精确通过；植入错误测试有效；算例测试 5 条。见 `rule-parity.md`。 |
@@ -44,9 +44,9 @@
 | 项 | 状态 |
 |---|---|
 | Android 工程 | `:app`、`:core:domain`、`:core:data`、`:core:designsystem`；D-13 原子 JSON，无 Room |
-| 自动化 | 整合最新主分支后的四模块 443 项测试通过（domain 337、data 74、design 9、app 23），0 failure / error / skip；lint 0 error / 34 warning / 1 hint，Debug / R8 Release / AAB 通过。历史测试与构建证据均保留在各自记录中。 |
+| 自动化 | 自定义强调色整合后的四模块 448 项测试通过（domain 337、data 76、design 12、app 23），0 failure / error / skip；lint 0 error / 34 warning / 1 hint，Debug / R8 Release 通过。历史 AAB、测试与构建证据均保留在各自记录中。 |
 | 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture、数字输入、Web/Desktop 构建及 iOS headless build 已有通过证据。本轮基于最新 main 再验证仓库与 Android 门禁。 |
-| 设备 | 保留已有 Auto Backup、业务档案原子恢复及 Pixel 前后台验证；玻璃底栏已在独立 Pixel Preview 包验收。真实云端换机、购买生命周期与完整无障碍矩阵仍待完成。 |
+| 设备 | 保留已有 Auto Backup、业务档案原子恢复及 Pixel 前后台验证；玻璃底栏及自定义强调色已在独立 Pixel Preview 包验收。真实云端换机、购买生命周期与完整无障碍矩阵仍待完成。 |
 | Play Console | 用户于 2026-09-28 确认可上传，商家账号与商品配置完成，并提供许可公钥。许可测试购买和应用审核仍待完成；代理未操作 Console。 |
 
 ## 下一任务
@@ -250,3 +250,14 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 重新验证：四模块 443 项测试（domain 337、data 74、design 9、app 23，0 failure / error / skip）；lint 0 error / 34 warning / 1 hint；Debug / R8 Release / AAB 与稳定 Compose/Material3 依赖检查通过。npm lint、44 文件 / 453 项测试、版本检查、两份营销脚本的 Node 语法与启动检查脚本的 Python 语法通过。iOS 无界面模拟器编译通过，未进行 iOS 视觉检查。日志保存在本机 `build/android-pr-sync/`。
 - 本轮无线真机未连接，没有对整合后的构建追加设备视觉或 Release 冷启动验收；上一节 Pixel Preview 验收属于当时的构建。真实 Play 交易、HyperOS 和旧系统仍待对应设备验收。
 - 漂移命令新增 `94fefaa9`（iOS 日历涂色与年度班次范围），其余仍为 `f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`。本轮不改排班业务规则、不推进冻结基线；新增排班移植由独立 PR #249 处理。
+
+
+## 2026-09-30 · Android 自定义强调色与 iOS 背景对齐
+
+- 在“设置 → 主题”增加八种常用色、恢复 DoneAt 橙色和自定义颜色。自定义对话框使用稳定 Material3 HSV 滑块与六位 HEX 输入；保存才应用，取消保留当前设置。选择颜色关闭壁纸配色，壁纸开关保留之前的颜色；沿用现有 280 ms 主题过渡与减少动态效果行为。
+- 强调色仅保存到 Android 本机 `DeviceSettings.accentColor`，不修改 RecordJSON、同步协议或业务规则。旧设置及非法色值安全回退；按浅/深色调整用于文字的明度，通过 RGB 采样立方体的对比度检查。新增文案完整覆盖 19 语言并重新生成资源，无新依赖。
+- 页面和卡片背景按 `OWCDesign.page/card` 对齐：浅色 `#F2F2F7` / `#FFFFFF`，深色 `#000000` / `#1C1C1E`。依据已有 iOS 27 浅色参考截图核对像素；本轮没有启动 iOS 模拟器进行视觉检查。自定义色和壁纸配色都保留中性背景。
+- 自动检查：四模块 448 项测试（domain 337、data 76、design 12、app 23，0 failure / error / skip）；lint 0 error / 34 warning / 1 hint；Debug 与 R8 Release 构建通过。npm lint、44 文件 / 453 项测试、生成资源与版本检查通过；iOS 无界面模拟器编译通过。日志为本机 `build/android-pr-sync/accent-*`。
+- 物理 Pixel 10 Pro / Android 17（API 37）通过无线 ADB 5037 使用独立 `com.rainif.doneat.preview` 验收：浅/深色背景、预设色、HSV 调节、HEX 输入与无效输入、取消、真实主界面保存与进程重启恢复、恢复默认色、壁纸开关保留颜色，以及玻璃底栏跟随强调色。微信输入法实测 A–F 直接输入成功；HEX 保持可见。德文实际系统 200% 字号下对话框可完整访问并可滚动，阿拉伯语布局镜像且 HEX 输入/格式提示保持正确顺序，减少动态效果探针通过。未启动 Android 模拟器。
+- QA 截图和 UI 层级位于本机 `build/android-pr-sync/accent-qa/`。完成后 Preview 语言恢复为 `zh-CN`，系统字号恢复原值 1.0；正式 Play 应用及其数据保持原样。该设备验收针对 Debug Preview，不表述为 Play 处理后的包体验收；旧系统、HyperOS 与真实交易仍待对应环境验证。
+- 基线漂移命令复核为 `94fefaa9`、`f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`，冻结基线不推进。变更继续同步到 [PR #250](https://github.com/ififi2017/Off-Work-Countdown/pull/250)。当前源码仍为 3.2.1 / versionCode 5；此前交付的 3.2.0 (5) AAB 未覆盖，本轮未生成新的签名 AAB 或操作 Play Console。

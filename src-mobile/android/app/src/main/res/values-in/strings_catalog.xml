@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">Tentang proyek ini</string>
     <string name="aboutSection">Tentang</string>
+    <string name="accentBlue">Biru</string>
+    <string name="accentBrightness">Kecerahan</string>
+    <string name="accentColor">Warna aksen</string>
+    <string name="accentColorFooter">Warna menyesuaikan tema terang dan gelap agar teks tetap jelas.</string>
+    <string name="accentCustom">Warna khusus</string>
+    <string name="accentDoneAt">Oranye DoneAt</string>
+    <string name="accentGreen">Hijau</string>
+    <string name="accentHex">Warna HEX</string>
+    <string name="accentHexError">Masukkan enam digit heksadesimal, misalnya #2563EB.</string>
+    <string name="accentHue">Rona</string>
+    <string name="accentIndigo">Nila</string>
+    <string name="accentPink">Merah muda</string>
+    <string name="accentPurple">Ungu</string>
+    <string name="accentRed">Merah</string>
+    <string name="accentSaturation">Saturasi</string>
+    <string name="accentTeal">Hijau kebiruan</string>
+    <string name="accentYellow">Kuning</string>
     <string name="acknowledgements">Ucapan terima kasih</string>
     <string name="adjustOvertime">Atur lembur</string>
     <string name="allowExactReminders">Izinkan pengingat tepat waktu</string>

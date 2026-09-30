@@ -25,7 +25,8 @@ val supportsDynamicColor get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
 /**
  * The app theme. Brand colour by default; dynamic colour only when the user
- * turns it on and the platform supports it. Motion follows the system's
+ * turns it on and the platform supports it. Custom accents and wallpaper colours
+ * keep the same iOS-aligned neutral page and card surfaces. Motion follows the system's
  * "remove animations" setting unless [reducedMotion] overrides it (the
  * design gallery's probe).
  */
@@ -33,6 +34,7 @@ val supportsDynamicColor get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 fun DoneAtTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = false,
+    accentColor: Int? = null,
     reducedMotion: Boolean? = null,
     content: @Composable () -> Unit,
 ) {
@@ -43,7 +45,9 @@ fun DoneAtTheme(
         ThemeMode.DARK -> true
     }
     val scheme = when {
-        dynamicColor && supportsDynamicColor -> if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        dynamicColor && supportsDynamicColor -> DoneAtColors.withNeutralSurfaces(
+            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context), dark)
+        accentColor != null -> remember(accentColor, dark) { DoneAtAccent.scheme(accentColor, dark) }
         dark -> DoneAtColors.dark
         else -> DoneAtColors.light
     }

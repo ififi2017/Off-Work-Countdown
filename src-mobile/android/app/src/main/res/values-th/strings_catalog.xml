@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">เกี่ยวกับโครงการนี้</string>
     <string name="aboutSection">เกี่ยวกับ</string>
+    <string name="accentBlue">สีน้ำเงิน</string>
+    <string name="accentBrightness">ความสว่าง</string>
+    <string name="accentColor">สีเน้น</string>
+    <string name="accentColorFooter">สีจะปรับตามธีมสว่างและมืดเพื่อให้ข้อความอ่านง่าย</string>
+    <string name="accentCustom">สีที่กำหนดเอง</string>
+    <string name="accentDoneAt">สีส้ม DoneAt</string>
+    <string name="accentGreen">สีเขียว</string>
+    <string name="accentHex">สี HEX</string>
+    <string name="accentHexError">ป้อนเลขฐานสิบหกหกหลัก เช่น #2563EB</string>
+    <string name="accentHue">เฉดสี</string>
+    <string name="accentIndigo">สีคราม</string>
+    <string name="accentPink">สีชมพู</string>
+    <string name="accentPurple">สีม่วง</string>
+    <string name="accentRed">สีแดง</string>
+    <string name="accentSaturation">ความอิ่มตัว</string>
+    <string name="accentTeal">สีเขียวอมฟ้า</string>
+    <string name="accentYellow">สีเหลือง</string>
     <string name="acknowledgements">กิตติกรรมประกาศ</string>
     <string name="adjustOvertime">ปรับล่วงเวลา</string>
     <string name="allowExactReminders">อนุญาตการแจ้งเตือนแบบตรงเวลา</string>

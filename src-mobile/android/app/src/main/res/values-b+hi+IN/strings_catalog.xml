@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">इस प्रोजेक्ट के बारे में</string>
     <string name="aboutSection">परिचय</string>
+    <string name="accentBlue">नीला</string>
+    <string name="accentBrightness">चमक</string>
+    <string name="accentColor">प्रमुख रंग</string>
+    <string name="accentColorFooter">पाठ स्पष्ट रखने के लिए रंग हल्की और गहरी थीम के अनुसार बदलते हैं।</string>
+    <string name="accentCustom">अपना रंग</string>
+    <string name="accentDoneAt">DoneAt नारंगी</string>
+    <string name="accentGreen">हरा</string>
+    <string name="accentHex">HEX रंग</string>
+    <string name="accentHexError">छह हेक्साडेसिमल अंक दर्ज करें, जैसे #2563EB।</string>
+    <string name="accentHue">रंगत</string>
+    <string name="accentIndigo">इंडिगो</string>
+    <string name="accentPink">गुलाबी</string>
+    <string name="accentPurple">बैंगनी</string>
+    <string name="accentRed">लाल</string>
+    <string name="accentSaturation">संतृप्ति</string>
+    <string name="accentTeal">नीलहरित</string>
+    <string name="accentYellow">पीला</string>
     <string name="acknowledgements">आभार</string>
     <string name="adjustOvertime">ओवरटाइम बदलें</string>
     <string name="allowExactReminders">सटीक रिमाइंडर की अनुमति दें</string>

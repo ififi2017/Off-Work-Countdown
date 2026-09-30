@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">关于此项目</string>
     <string name="aboutSection">关于</string>
+    <string name="accentBlue">蓝色</string>
+    <string name="accentBrightness">亮度</string>
+    <string name="accentColor">强调色</string>
+    <string name="accentColorFooter">颜色会适配浅色和深色主题，让文字保持清晰。</string>
+    <string name="accentCustom">自定义颜色</string>
+    <string name="accentDoneAt">DoneAt 橙色</string>
+    <string name="accentGreen">绿色</string>
+    <string name="accentHex">HEX 色值</string>
+    <string name="accentHexError">请输入六位十六进制色值，例如 #2563EB。</string>
+    <string name="accentHue">色相</string>
+    <string name="accentIndigo">靛蓝色</string>
+    <string name="accentPink">粉色</string>
+    <string name="accentPurple">紫色</string>
+    <string name="accentRed">红色</string>
+    <string name="accentSaturation">饱和度</string>
+    <string name="accentTeal">青色</string>
+    <string name="accentYellow">黄色</string>
     <string name="acknowledgements">致谢</string>
     <string name="adjustOvertime">调整加班</string>
     <string name="allowExactReminders">允许精确提醒</string>

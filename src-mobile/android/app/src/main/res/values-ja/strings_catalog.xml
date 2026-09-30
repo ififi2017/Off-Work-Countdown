@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">このプロジェクトについて</string>
     <string name="aboutSection">情報</string>
+    <string name="accentBlue">青</string>
+    <string name="accentBrightness">明度</string>
+    <string name="accentColor">アクセントカラー</string>
+    <string name="accentColorFooter">文字が読みやすくなるよう、色はライト・ダークテーマに合わせて調整されます。</string>
+    <string name="accentCustom">カスタムカラー</string>
+    <string name="accentDoneAt">DoneAt オレンジ</string>
+    <string name="accentGreen">緑</string>
+    <string name="accentHex">HEX カラー</string>
+    <string name="accentHexError">6 桁の16進数を入力してください（例：#2563EB）。</string>
+    <string name="accentHue">色相</string>
+    <string name="accentIndigo">藍</string>
+    <string name="accentPink">ピンク</string>
+    <string name="accentPurple">紫</string>
+    <string name="accentRed">赤</string>
+    <string name="accentSaturation">彩度</string>
+    <string name="accentTeal">青緑</string>
+    <string name="accentYellow">黄</string>
     <string name="acknowledgements">謝辞</string>
     <string name="adjustOvertime">残業を調整</string>
     <string name="allowExactReminders">正確なリマインダーを許可</string>

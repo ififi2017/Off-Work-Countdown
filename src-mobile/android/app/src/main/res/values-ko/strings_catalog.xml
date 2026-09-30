@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">프로젝트 정보</string>
     <string name="aboutSection">정보</string>
+    <string name="accentBlue">파랑</string>
+    <string name="accentBrightness">밝기</string>
+    <string name="accentColor">강조 색상</string>
+    <string name="accentColorFooter">밝은 테마와 어두운 테마에 맞춰 색상을 조정해 글자를 선명하게 표시합니다.</string>
+    <string name="accentCustom">사용자 지정 색상</string>
+    <string name="accentDoneAt">DoneAt 주황색</string>
+    <string name="accentGreen">초록</string>
+    <string name="accentHex">HEX 색상</string>
+    <string name="accentHexError">6자리 16진수 색상 코드를 입력하세요. 예: #2563EB.</string>
+    <string name="accentHue">색조</string>
+    <string name="accentIndigo">남색</string>
+    <string name="accentPink">분홍</string>
+    <string name="accentPurple">보라</string>
+    <string name="accentRed">빨강</string>
+    <string name="accentSaturation">채도</string>
+    <string name="accentTeal">청록</string>
+    <string name="accentYellow">노랑</string>
     <string name="acknowledgements">감사의 말</string>
     <string name="adjustOvertime">초과 근무 조정</string>
     <string name="allowExactReminders">정확한 알림 허용</string>

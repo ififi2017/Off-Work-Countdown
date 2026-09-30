@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">Proje hakkında</string>
     <string name="aboutSection">Hakkında</string>
+    <string name="accentBlue">Mavi</string>
+    <string name="accentBrightness">Parlaklık</string>
+    <string name="accentColor">Vurgu rengi</string>
+    <string name="accentColorFooter">Metnin okunaklı kalması için renkler açık ve koyu temaya uyarlanır.</string>
+    <string name="accentCustom">Özel renk</string>
+    <string name="accentDoneAt">DoneAt turuncusu</string>
+    <string name="accentGreen">Yeşil</string>
+    <string name="accentHex">HEX rengi</string>
+    <string name="accentHexError">Altı onaltılık basamak gir, örneğin #2563EB.</string>
+    <string name="accentHue">Ton</string>
+    <string name="accentIndigo">Çivit</string>
+    <string name="accentPink">Pembe</string>
+    <string name="accentPurple">Mor</string>
+    <string name="accentRed">Kırmızı</string>
+    <string name="accentSaturation">Doygunluk</string>
+    <string name="accentTeal">Turkuaz</string>
+    <string name="accentYellow">Sarı</string>
     <string name="acknowledgements">Teşekkürler</string>
     <string name="adjustOvertime">Fazla mesaiyi ayarla</string>
     <string name="allowExactReminders">Tam zamanlı hatırlatıcılara izin ver</string>

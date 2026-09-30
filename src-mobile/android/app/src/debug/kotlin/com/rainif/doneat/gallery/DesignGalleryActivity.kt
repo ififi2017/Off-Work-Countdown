@@ -101,6 +101,7 @@ class DesignGalleryActivity : ComponentActivity() {
         }
         setContent {
             var mode by rememberSaveable { mutableStateOf(initialMode) }
+            var accent by rememberSaveable { mutableStateOf<Int?>(null) }
             var dynamic by rememberSaveable { mutableStateOf(intent.getBooleanExtra("dynamic", false)) }
             val systemReduced = systemRemovesAnimations(LocalContext.current)
             var reduced by rememberSaveable { mutableStateOf(intent.getBooleanExtra("reduced", systemReduced)) }
@@ -110,7 +111,21 @@ class DesignGalleryActivity : ComponentActivity() {
                 ThemeMode.DARK -> true
             }
             SystemBarsFollowTheme(dark)
-            DoneAtTheme(themeMode = mode, dynamicColor = dynamic, reducedMotion = reduced) {
+            DoneAtTheme(themeMode = mode, dynamicColor = dynamic, accentColor = accent, reducedMotion = reduced) {
+                if (intent.getStringExtra("screen") == "theme") {
+                    val prefs = com.rainif.doneat.core.domain.settings.PreferencesRules.defaults("UTC", 0.0).copy(
+                        theme = when (mode) { ThemeMode.LIGHT -> "light"; ThemeMode.DARK -> "dark"; else -> "auto" })
+                    val density = LocalDensity.current
+                    CompositionLocalProvider(LocalDensity provides Density(density.density,
+                        intent.getFloatExtra("fontScale", density.fontScale))) {
+                        com.rainif.doneat.ui.settings.ThemeScreen(prefs,
+                            com.rainif.doneat.core.data.DeviceSettings(accentColor = accent, dynamicColor = dynamic),
+                            edit = { change -> mode = when (change(prefs).theme) {
+                                "light" -> ThemeMode.LIGHT; "dark" -> ThemeMode.DARK; else -> ThemeMode.SYSTEM } },
+                            setDynamic = { dynamic = it }, setAccent = { accent = it; dynamic = false }, onBack = { finish() })
+                    }
+                    return@DoneAtTheme
+                }
                 if (intent.getStringExtra("screen") == "navigation") {
                     var selected by rememberSaveable { mutableIntStateOf(0) }
                     val tabs = listOf(

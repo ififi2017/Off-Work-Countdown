@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.Color
 
 /**
  * DoneAt's colour tokens. The brand is the shared orange (iOS `OWCDesign.orange`);
- * surfaces are warm neutrals, so the orange marks the current state and the
+ * surfaces match iOS grouped backgrounds, so the accent marks the current state and the
  * main action rather than tinting the whole screen.
  *
  * Text and icon pairs meet WCAG AA (4.5:1) in both schemes; `DoneAtColorsTest`
@@ -35,24 +35,24 @@ object DoneAtColors {
         onTertiary = Color(0xFFFFFFFF),
         tertiaryContainer = Color(0xFFBFE9F7),
         onTertiaryContainer = Color(0xFF001F26),
-        background = Color(0xFFFFF8F6),
-        onBackground = Color(0xFF231A16),
-        surface = Color(0xFFFFF8F6),
-        onSurface = Color(0xFF231A16),
-        surfaceVariant = Color(0xFFF4DED5),
-        onSurfaceVariant = Color(0xFF53433C),
+        background = Color(0xFFF2F2F7),
+        onBackground = Color(0xFF000000),
+        surface = Color(0xFFF2F2F7),
+        onSurface = Color(0xFF000000),
+        surfaceVariant = Color(0xFFE5E5EA),
+        onSurfaceVariant = Color(0xFF5F5F66),
         surfaceTint = Color(0xFFC2410C),
-        inverseSurface = Color(0xFF392E2A),
-        inverseOnSurface = Color(0xFFFFEDE6),
-        outline = Color(0xFF85736B),
-        outlineVariant = Color(0xFFD8C2B9),
-        surfaceBright = Color(0xFFFFF8F6),
-        surfaceDim = Color(0xFFE8D6CF),
+        inverseSurface = Color(0xFF2C2C2E),
+        inverseOnSurface = Color(0xFFF2F2F7),
+        outline = Color(0xFF767680),
+        outlineVariant = Color(0xFFC6C6C8),
+        surfaceBright = Color(0xFFFFFFFF),
+        surfaceDim = Color(0xFFE5E5EA),
         surfaceContainerLowest = Color(0xFFFFFFFF),
-        surfaceContainerLow = Color(0xFFFFF1EC),
-        surfaceContainer = Color(0xFFFCEAE3),
-        surfaceContainerHigh = Color(0xFFF6E5DE),
-        surfaceContainerHighest = Color(0xFFF1DFD8),
+        surfaceContainerLow = Color(0xFFFFFFFF),
+        surfaceContainer = Color(0xFFFFFFFF),
+        surfaceContainerHigh = Color(0xFFFFFFFF),
+        surfaceContainerHighest = Color(0xFFE5E5EA),
     )
 
     val dark: ColorScheme = darkColorScheme(
@@ -70,25 +70,42 @@ object DoneAtColors {
         onTertiary = Color(0xFF033540),
         tertiaryContainer = Color(0xFF214C57),
         onTertiaryContainer = Color(0xFFBFE9F7),
-        background = Color(0xFF1A110E),
-        onBackground = Color(0xFFF1DFD8),
-        surface = Color(0xFF1A110E),
-        onSurface = Color(0xFFF1DFD8),
-        surfaceVariant = Color(0xFF53433C),
-        onSurfaceVariant = Color(0xFFD8C2B9),
+        background = Color(0xFF000000),
+        onBackground = Color(0xFFF2F2F7),
+        surface = Color(0xFF000000),
+        onSurface = Color(0xFFF2F2F7),
+        surfaceVariant = Color(0xFF2C2C2E),
+        onSurfaceVariant = Color(0xFFAEAEB2),
         surfaceTint = Color(0xFFFF9A5C),
-        inverseSurface = Color(0xFFF1DFD8),
-        inverseOnSurface = Color(0xFF392E2A),
-        outline = Color(0xFFA08D85),
-        outlineVariant = Color(0xFF53433C),
-        surfaceBright = Color(0xFF42372F),
-        surfaceDim = Color(0xFF1A110E),
-        surfaceContainerLowest = Color(0xFF140C09),
-        surfaceContainerLow = Color(0xFF231A16),
-        surfaceContainer = Color(0xFF271E1A),
-        surfaceContainerHigh = Color(0xFF322824),
-        surfaceContainerHighest = Color(0xFF3D3230),
+        inverseSurface = Color(0xFFF2F2F7),
+        inverseOnSurface = Color(0xFF2C2C2E),
+        outline = Color(0xFF8E8E93),
+        outlineVariant = Color(0xFF38383A),
+        surfaceBright = Color(0xFF3A3A3C),
+        surfaceDim = Color(0xFF000000),
+        surfaceContainerLowest = Color(0xFF000000),
+        surfaceContainerLow = Color(0xFF1C1C1E),
+        surfaceContainer = Color(0xFF1C1C1E),
+        surfaceContainerHigh = Color(0xFF2C2C2E),
+        surfaceContainerHighest = Color(0xFF3A3A3C),
     )
+
+    /** Wallpaper colours supply accents, while page/card surfaces retain iOS's neutral hierarchy. */
+    fun withNeutralSurfaces(scheme: ColorScheme, dark: Boolean): ColorScheme {
+        val base = if (dark) this.dark else light
+        return scheme.copy(
+            background = base.background, onBackground = base.onBackground,
+            surface = base.surface, onSurface = base.onSurface,
+            surfaceVariant = base.surfaceVariant, onSurfaceVariant = base.onSurfaceVariant,
+            inverseSurface = base.inverseSurface, inverseOnSurface = base.inverseOnSurface,
+            outline = base.outline, outlineVariant = base.outlineVariant,
+            surfaceBright = base.surfaceBright, surfaceDim = base.surfaceDim,
+            surfaceContainerLowest = base.surfaceContainerLowest,
+            surfaceContainerLow = base.surfaceContainerLow, surfaceContainer = base.surfaceContainer,
+            surfaceContainerHigh = base.surfaceContainerHigh, surfaceContainerHighest = base.surfaceContainerHighest,
+        )
+    }
+
 }
 
 /**

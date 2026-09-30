@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">Giới thiệu dự án</string>
     <string name="aboutSection">Giới thiệu</string>
+    <string name="accentBlue">Xanh dương</string>
+    <string name="accentBrightness">Độ sáng</string>
+    <string name="accentColor">Màu nhấn</string>
+    <string name="accentColorFooter">Màu sắc thích ứng với giao diện sáng và tối để giữ văn bản rõ ràng.</string>
+    <string name="accentCustom">Màu tùy chỉnh</string>
+    <string name="accentDoneAt">Màu cam DoneAt</string>
+    <string name="accentGreen">Xanh lá</string>
+    <string name="accentHex">Màu HEX</string>
+    <string name="accentHexError">Nhập sáu chữ số thập lục phân, ví dụ #2563EB.</string>
+    <string name="accentHue">Sắc độ</string>
+    <string name="accentIndigo">Chàm</string>
+    <string name="accentPink">Hồng</string>
+    <string name="accentPurple">Tím</string>
+    <string name="accentRed">Đỏ</string>
+    <string name="accentSaturation">Độ bão hòa</string>
+    <string name="accentTeal">Xanh mòng két</string>
+    <string name="accentYellow">Vàng</string>
     <string name="acknowledgements">Lời cảm ơn</string>
     <string name="adjustOvertime">Điều chỉnh làm thêm</string>
     <string name="allowExactReminders">Cho phép lời nhắc chính xác</string>

@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">حول المشروع</string>
     <string name="aboutSection">حول</string>
+    <string name="accentBlue">أزرق</string>
+    <string name="accentBrightness">السطوع</string>
+    <string name="accentColor">لون التمييز</string>
+    <string name="accentColorFooter">تتكيف الألوان مع المظهر الفاتح والداكن لإبقاء النص واضحًا.</string>
+    <string name="accentCustom">لون مخصص</string>
+    <string name="accentDoneAt">برتقالي DoneAt</string>
+    <string name="accentGreen">أخضر</string>
+    <string name="accentHex">لون HEX</string>
+    <string name="accentHexError">أدخل ستة أرقام بالنظام الست عشري، مثل #2563EB.</string>
+    <string name="accentHue">درجة اللون</string>
+    <string name="accentIndigo">نيلي</string>
+    <string name="accentPink">وردي</string>
+    <string name="accentPurple">بنفسجي</string>
+    <string name="accentRed">أحمر</string>
+    <string name="accentSaturation">التشبع</string>
+    <string name="accentTeal">أخضر مزرق</string>
+    <string name="accentYellow">أصفر</string>
     <string name="acknowledgements">إقرارات</string>
     <string name="adjustOvertime">تعديل الوقت الإضافي</string>
     <string name="allowExactReminders">السماح بالتذكيرات الدقيقة</string>

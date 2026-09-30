@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">О проекте</string>
     <string name="aboutSection">О программе</string>
+    <string name="accentBlue">Синий</string>
+    <string name="accentBrightness">Яркость</string>
+    <string name="accentColor">Цвет акцента</string>
+    <string name="accentColorFooter">Цвета адаптируются к светлой и тёмной теме, сохраняя читаемость текста.</string>
+    <string name="accentCustom">Свой цвет</string>
+    <string name="accentDoneAt">Оранжевый DoneAt</string>
+    <string name="accentGreen">Зелёный</string>
+    <string name="accentHex">Цвет HEX</string>
+    <string name="accentHexError">Введите шесть шестнадцатеричных цифр, например #2563EB.</string>
+    <string name="accentHue">Тон</string>
+    <string name="accentIndigo">Индиго</string>
+    <string name="accentPink">Розовый</string>
+    <string name="accentPurple">Фиолетовый</string>
+    <string name="accentRed">Красный</string>
+    <string name="accentSaturation">Насыщенность</string>
+    <string name="accentTeal">Бирюзовый</string>
+    <string name="accentYellow">Жёлтый</string>
     <string name="acknowledgements">Благодарности</string>
     <string name="adjustOvertime">Изменить переработку</string>
     <string name="allowExactReminders">Разрешить точные напоминания</string>

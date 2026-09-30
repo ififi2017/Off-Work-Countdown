@@ -12,8 +12,8 @@ D-12 规定 Release 只用稳定版 Compose/Material3；Material 3 Expressive �
 
 | token | 内容 | 与 iOS 的对应 |
 |---|---|---|
-| `DoneAtColors.light/dark` | 完整 M3 颜色角色；暖中性表面，橙色只标当前状态与主操作 | 品牌橙 `OWCDesign.orange`；深色主色取 iOS 深色强调色 `#FF872E` 的色相 |
-| `DoneAtColors.brand` | `#F97316`，仅用于装饰 | 浅色表面上对比度 2.67，不能作文字或数据 |
+| `DoneAtColors.light/dark` | 完整 M3 颜色角色；页面/卡片对齐 iOS 的中性分组背景，强调色标当前状态与主操作 | 品牌橙 `OWCDesign.orange`；深色主色取 iOS 深色强调色 `#FF872E` 的色相 |
+| `DoneAtColors.brand` | `#F97316`，仅用于装饰 | 浅色表面上低于 4.5:1，不能作文字或数据 |
 | `DoneAtStateColors` | 工作 / 休息 / 下班 / 加班四种状态色 | 总与文字标签同时出现，不单靠颜色区分 |
 | `DoneAtShapes` | 4 / 8 / 14 / 22 / 28 dp；主操作高 56 dp，按下时圆角降到 12 dp | 14、22 即 `OWCDesign.controlRadius`、`cardRadius` |
 | `DoneAtMotion` | press 140、selection 180、stateExit 100、stateEnter 180、phase 280 ms；强调减速曲线 cubic-bezier(0.23, 1, 0.32, 1)；空间变化用带少许回弹的 spring | 数值与 `OWCMotion` 一致 |
@@ -95,3 +95,20 @@ Compose BOM 2026.09.00：`androidx.compose.material3:material3:1.4.0`，`compose
 - API 31 起使用模糊，库在支持 RuntimeShader 的系统上增加折射；更早系统使用实色胶囊，不创建背景采样层。横屏/平板保留导航侧栏。
 - 底栏按实际文字高度测量。滚动页面在内容末尾留足空白，固定按钮在底栏上方；键盘弹出时收起底栏。Tab 使用 `selectableGroup` / `Role.Tab` 并暴露选中状态，支持 RTL、文字缩放及现有 19 语言。
 - 主题颜色采用既有 `phase` 280 ms 过渡，快速反复切换从当前颜色继续；页面本身保持挂载。系统移除动画时颜色直接切换。按住 Tab 时透镜放大至 1.32 倍，内部图标/文字放大至 1.2 倍。按压使用 `press` 140 ms，跟手使用 `tracking` 无回弹弹簧，松手用 `spatial` 回到最近的 Tab；期间不切换页面。滑到远离底栏处取消、切后台或窗口失焦均收回。系统移除动画时取消放大和跟手移动，保留点击及松手选择。
+
+
+## 自定义强调色
+
+用户于 2026-09-30 要求 Android 调色板。在主题页保留浅色/深色/自动选项，增加八种常用色、DoneAt 橙色恢复入口，以及 HSV 滑块与六位 HEX 输入的自定义色对话框。对话框编辑草稿，取消不写入设置；保存或选常用色才应用，并沿用现有主题颜色过渡。
+
+- `DeviceSettings.accentColor` 保存不透明 RGB 整数，可为空；与壁纸配色一样属于 Android 本机设置，不加入跨端 RecordJSON 或同步协议。旧文件缺省或非法色值恢复品牌色，不丢弃其他本机设置。
+- 选择自定义颜色会关闭壁纸配色；开启壁纸配色时保留之前的自定义颜色，关闭后恢复。默认橙色清除自定义选择并关闭壁纸配色。
+- `DoneAtAccent` 保留中性页面表面和语义状态色，只调整 primary、primaryContainer、相应前景及 inversePrimary/surfaceTint。选定 RGB 原值保留；强调色用于文字时，必要时向白/黑调整明度，使其对六种表面至少达到 4.6:1。按钮及容器前景选择可读的黑/白。品牌图标保持品牌色。
+- 沿用现有稳定 Material3 Slider、AlertDialog 和输入框，无新依赖。常用色有本地化名称、RadioButton 选中状态和 48 dp 触摸范围；滑块暴露标签，HEX 校验错误及保存动作可供辅助功能使用。HEX 输入、预览和格式提示保持从左到右；其余布局按 RTL 镜像。真机微信输入法会把 Ascii 键盘的 A–F 组合成拼音，因此请求直接拉丁输入，但不启用密码遮罩，色值始终可见。
+
+
+### 背景与 iOS 对齐
+
+用户明确要求背景色与 iOS 一致。`OWCDesign.page/card` 使用 UIKit 的 systemGroupedBackground / secondarySystemGroupedBackground；已有 iOS 27 参考截图中浅色页面为 `#F2F2F7`、卡片为 `#FFFFFF`。Android 对应 `surface/background` 与 `surfaceContainerLow` 使用这两个值；深色采用页面 `#000000`、卡片 `#1C1C1E`，更高层级为 `#2C2C2E` / `#3A3A3C`。移除旧暖棕/淡粉底色，次级文字及描边随中性底色重新配对并通过对比度回归。
+
+自定义强调色和壁纸配色都保留同一套页面/卡片背景。壁纸仍提供强调、次级和语义颜色角色，通过 `withNeutralSurfaces` 统一中性表面；不再让壁纸染色页面及卡片。
