@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">Jährlich wiederholen</string>
     <string name="extendedAnnualRangeDescription">Verwende diese Zeiten jedes Jahr an geplanten Arbeitstagen in diesem Zeitraum. Ruhetage und manuell zugewiesene Schichten bleiben wie geplant.</string>
     <string name="extendedAnnualRangeEnd">Ende</string>
-    <string name="extendedAnnualRangeLabel">Jedes Jahr: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">Dieser Zeitraum überschneidet sich mit {shift}. Passe die Daten so an, dass sich die Zeiträume nicht überschneiden.</string>
+    <string name="extendedAnnualRangeLabel">Jedes Jahr: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">Dieser Zeitraum überschneidet sich mit %1$s. Passe die Daten so an, dass sich die Zeiträume nicht überschneiden.</string>
     <string name="extendedAnnualRangeStart">Beginn</string>
     <string name="extendedAnnualRangeWrap">Das Enddatum liegt im folgenden Jahr.</string>
     <string name="extendedApplyTemplateMessage">Jeder Tag des Zyklus wird nach „%1$s“ neu gefüllt. Übernommen wird erst beim Sichern.</string>
     <string name="extendedApplyTemplateTitle">Muster neu füllen?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} Tage</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s Tage</string>
     <string name="extendedBreak">Pause in der Schicht</string>
     <string name="extendedBreakDuration">Pausenlänge</string>
     <string name="extendedBreakOutside">Zum Sichern die Pause in die Schicht legen.</string>

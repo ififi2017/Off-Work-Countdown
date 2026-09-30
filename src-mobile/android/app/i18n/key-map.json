@@ -399,10 +399,17 @@
       "resource": "string/extendedAnnualRangeEnd"
     },
     "extendedAnnualRangeLabel": {
-      "resource": "string/extendedAnnualRangeLabel"
+      "resource": "string/extendedAnnualRangeLabel",
+      "params": [
+        "start",
+        "end"
+      ]
     },
     "extendedAnnualRangeOverlap": {
-      "resource": "string/extendedAnnualRangeOverlap"
+      "resource": "string/extendedAnnualRangeOverlap",
+      "params": [
+        "shift"
+      ]
     },
     "extendedAnnualRangeStart": {
       "resource": "string/extendedAnnualRangeStart"
@@ -420,7 +427,12 @@
       "resource": "string/extendedApplyTemplateTitle"
     },
     "extendedAssignedDateBounds": {
-      "resource": "string/extendedAssignedDateBounds"
+      "resource": "string/extendedAssignedDateBounds",
+      "params": [
+        "start",
+        "end",
+        "count"
+      ]
     },
     "extendedBreak": {
       "resource": "string/extendedBreak"

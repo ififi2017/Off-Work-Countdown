@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">Lặp lại mỗi năm</string>
     <string name="extendedAnnualRangeDescription">Áp dụng giờ này mỗi năm cho các ngày làm việc đã lên lịch trong khoảng này. Ngày nghỉ và các ca được chỉ định thủ công vẫn giữ nguyên lịch.</string>
     <string name="extendedAnnualRangeEnd">Ngày kết thúc</string>
-    <string name="extendedAnnualRangeLabel">Mỗi năm: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">Khoảng này trùng với {shift}. Điều chỉnh ngày để các khoảng không trùng nhau.</string>
+    <string name="extendedAnnualRangeLabel">Mỗi năm: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">Khoảng này trùng với %1$s. Điều chỉnh ngày để các khoảng không trùng nhau.</string>
     <string name="extendedAnnualRangeStart">Ngày bắt đầu</string>
     <string name="extendedAnnualRangeWrap">Ngày kết thúc nằm trong năm tiếp theo.</string>
     <string name="extendedApplyTemplateMessage">Mọi ngày trong chu kỳ sẽ được điền lại theo “%1$s”. Chưa có gì thay đổi cho đến khi bạn lưu.</string>
     <string name="extendedApplyTemplateTitle">Điền lại chu kỳ?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} ngày</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s ngày</string>
     <string name="extendedBreak">Nghỉ giữa ca</string>
     <string name="extendedBreakDuration">Thời lượng nghỉ</string>
     <string name="extendedBreakOutside">Đặt giờ nghỉ nằm trong ca để lưu.</string>

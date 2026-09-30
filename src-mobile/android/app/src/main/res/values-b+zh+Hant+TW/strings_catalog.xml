@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">每年重複</string>
     <string name="extendedAnnualRangeDescription">每年在此範圍內的排班工作日使用這些時間。休息日及手動指定的班次保留原有安排。</string>
     <string name="extendedAnnualRangeEnd">結束日期</string>
-    <string name="extendedAnnualRangeLabel">每年：{start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">此範圍與「{shift}」重疊，請調整日期。</string>
+    <string name="extendedAnnualRangeLabel">每年：%1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">此範圍與「%1$s」重疊，請調整日期。</string>
     <string name="extendedAnnualRangeStart">開始日期</string>
     <string name="extendedAnnualRangeWrap">結束日期在隔年。</string>
     <string name="extendedApplyTemplateMessage">週期裡的每一天會依「%1$s」重新填寫，儲存後才會生效。</string>
     <string name="extendedApplyTemplateTitle">重新填寫排班規律？</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} 天</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s 天</string>
     <string name="extendedBreak">中途休息</string>
     <string name="extendedBreakDuration">休息時長</string>
     <string name="extendedBreakOutside">把休息時間移到班次內才能儲存。</string>

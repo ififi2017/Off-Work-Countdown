@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">Ulangi setiap tahun</string>
     <string name="extendedAnnualRangeDescription">Gunakan jam ini setiap tahun pada hari kerja terjadwal dalam rentang ini. Hari istirahat dan giliran yang ditetapkan secara manual tetap mengikuti jadwalnya.</string>
     <string name="extendedAnnualRangeEnd">Tanggal selesai</string>
-    <string name="extendedAnnualRangeLabel">Setiap tahun: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">Rentang ini tumpang tindih dengan {shift}. Sesuaikan tanggal agar rentang tidak tumpang tindih.</string>
+    <string name="extendedAnnualRangeLabel">Setiap tahun: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">Rentang ini tumpang tindih dengan %1$s. Sesuaikan tanggal agar rentang tidak tumpang tindih.</string>
     <string name="extendedAnnualRangeStart">Tanggal mulai</string>
     <string name="extendedAnnualRangeWrap">Tanggal selesai berada di tahun berikutnya.</string>
     <string name="extendedApplyTemplateMessage">Setiap hari dalam siklus akan diisi ulang berdasarkan “%1$s”. Tidak ada yang berubah sebelum disimpan.</string>
     <string name="extendedApplyTemplateTitle">Isi ulang pola?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} hari</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s hari</string>
     <string name="extendedBreak">Istirahat saat sif</string>
     <string name="extendedBreakDuration">Lama istirahat</string>
     <string name="extendedBreakOutside">Pindahkan istirahat ke dalam sif untuk menyimpan.</string>

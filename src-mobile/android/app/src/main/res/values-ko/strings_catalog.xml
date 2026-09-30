@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">매년 반복</string>
     <string name="extendedAnnualRangeDescription">매년 이 기간에 예정된 근무일에 이 시간을 적용해요. 휴무일과 직접 배정한 근무는 기존 일정을 유지해요.</string>
     <string name="extendedAnnualRangeEnd">종료일</string>
-    <string name="extendedAnnualRangeLabel">매년: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">이 기간이 {shift}와 겹쳐요. 기간이 겹치지 않도록 날짜를 조정하세요.</string>
+    <string name="extendedAnnualRangeLabel">매년: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">이 기간이 %1$s와 겹쳐요. 기간이 겹치지 않도록 날짜를 조정하세요.</string>
     <string name="extendedAnnualRangeStart">시작일</string>
     <string name="extendedAnnualRangeWrap">종료일은 다음 해에 있어요.</string>
     <string name="extendedApplyTemplateMessage">주기의 모든 날을 「%1$s」 기준으로 다시 채웁니다. 저장해야 적용됩니다.</string>
     <string name="extendedApplyTemplateTitle">패턴을 다시 채울까요?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count}일</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s일</string>
     <string name="extendedBreak">중간 휴식</string>
     <string name="extendedBreakDuration">휴식 시간</string>
     <string name="extendedBreakOutside">휴식을 근무 시간 안으로 옮기면 저장할 수 있습니다.</string>

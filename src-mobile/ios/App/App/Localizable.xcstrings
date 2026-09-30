@@ -99948,115 +99948,115 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} days"
+            "value": "{{start}} – {{end}} · {{count}} days"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} 天"
+            "value": "{{start}} – {{end}} · {{count}} 天"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} 天"
+            "value": "{{start}} – {{end}} · {{count}} 天"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} 天"
+            "value": "{{start}} – {{end}} · {{count}} 天"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count}日"
+            "value": "{{start}} – {{end}} · {{count}}日"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count}일"
+            "value": "{{start}} – {{end}} · {{count}}일"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} Tage"
+            "value": "{{start}} – {{end}} · {{count}} Tage"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} días"
+            "value": "{{start}} – {{end}} · {{count}} días"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} jours"
+            "value": "{{start}} – {{end}} · {{count}} jours"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} giorni"
+            "value": "{{start}} – {{end}} · {{count}} giorni"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} dias"
+            "value": "{{start}} – {{end}} · {{count}} dias"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} дн."
+            "value": "{{start}} – {{end}} · {{count}} дн."
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} يوم"
+            "value": "{{start}} – {{end}} · {{count}} يوم"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} दिन"
+            "value": "{{start}} – {{end}} · {{count}} दिन"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} दिवस"
+            "value": "{{start}} – {{end}} · {{count}} दिवस"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} hari"
+            "value": "{{start}} – {{end}} · {{count}} hari"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} ngày"
+            "value": "{{start}} – {{end}} · {{count}} ngày"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} วัน"
+            "value": "{{start}} – {{end}} · {{count}} วัน"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "{start} – {end} · {count} gün"
+            "value": "{{start}} – {{end}} · {{count}} gün"
           }
         }
       }
@@ -100662,115 +100662,115 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This range overlaps {shift}. Adjust the dates to keep the ranges separate."
+            "value": "This range overlaps {{shift}}. Adjust the dates to keep the ranges separate."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "此范围与「{shift}」重叠，请调整日期。"
+            "value": "此范围与「{{shift}}」重叠，请调整日期。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "此範圍與「{shift}」重疊，請調整日期。"
+            "value": "此範圍與「{{shift}}」重疊，請調整日期。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "此範圍與「{shift}」重疊，請調整日期。"
+            "value": "此範圍與「{{shift}}」重疊，請調整日期。"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "この期間は「{shift}」と重複しています。期間が重ならないように日付を調整してください。"
+            "value": "この期間は「{{shift}}」と重複しています。期間が重ならないように日付を調整してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 기간이 {shift}와 겹쳐요. 기간이 겹치지 않도록 날짜를 조정하세요."
+            "value": "이 기간이 {{shift}}와 겹쳐요. 기간이 겹치지 않도록 날짜를 조정하세요."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dieser Zeitraum überschneidet sich mit {shift}. Passe die Daten so an, dass sich die Zeiträume nicht überschneiden."
+            "value": "Dieser Zeitraum überschneidet sich mit {{shift}}. Passe die Daten so an, dass sich die Zeiträume nicht überschneiden."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Este intervalo se solapa con {shift}. Ajusta las fechas para que los intervalos no se solapen."
+            "value": "Este intervalo se solapa con {{shift}}. Ajusta las fechas para que los intervalos no se solapen."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cette période chevauche {shift}. Ajustez les dates pour éviter le chevauchement."
+            "value": "Cette période chevauche {{shift}}. Ajustez les dates pour éviter le chevauchement."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Questo intervallo si sovrappone a {shift}. Modifica le date per evitare sovrapposizioni."
+            "value": "Questo intervallo si sovrappone a {{shift}}. Modifica le date per evitare sovrapposizioni."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Este intervalo se sobrepõe a {shift}. Ajuste as datas para evitar sobreposições."
+            "value": "Este intervalo se sobrepõe a {{shift}}. Ajuste as datas para evitar sobreposições."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Этот период пересекается с {shift}. Измените даты, чтобы периоды не пересекались."
+            "value": "Этот период пересекается с {{shift}}. Измените даты, чтобы периоды не пересекались."
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تتداخل هذه الفترة مع {shift}. عدّل التواريخ لتجنب تداخل الفترات."
+            "value": "تتداخل هذه الفترة مع {{shift}}. عدّل التواريخ لتجنب تداخل الفترات."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "यह अवधि {shift} से ओवरलैप करती है। दोनों अवधियों को अलग रखने के लिए तारीखें बदलें।"
+            "value": "यह अवधि {{shift}} से ओवरलैप करती है। दोनों अवधियों को अलग रखने के लिए तारीखें बदलें।"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "हा कालावधी {shift} च्या कालावधीशी जुळतो. कालावधी एकमेकांवर येऊ नयेत म्हणून तारखा बदला."
+            "value": "हा कालावधी {{shift}} च्या कालावधीशी जुळतो. कालावधी एकमेकांवर येऊ नयेत म्हणून तारखा बदला."
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rentang ini tumpang tindih dengan {shift}. Sesuaikan tanggal agar rentang tidak tumpang tindih."
+            "value": "Rentang ini tumpang tindih dengan {{shift}}. Sesuaikan tanggal agar rentang tidak tumpang tindih."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Khoảng này trùng với {shift}. Điều chỉnh ngày để các khoảng không trùng nhau."
+            "value": "Khoảng này trùng với {{shift}}. Điều chỉnh ngày để các khoảng không trùng nhau."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ช่วงนี้ทับซ้อนกับ {shift} โปรดปรับวันที่เพื่อไม่ให้ช่วงทับซ้อนกัน"
+            "value": "ช่วงนี้ทับซ้อนกับ {{shift}} โปรดปรับวันที่เพื่อไม่ให้ช่วงทับซ้อนกัน"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bu aralık {shift} ile çakışıyor. Aralıkların çakışmaması için tarihleri düzenleyin."
+            "value": "Bu aralık {{shift}} ile çakışıyor. Aralıkların çakışmaması için tarihleri düzenleyin."
           }
         }
       }
@@ -100781,115 +100781,115 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Every year: {start} – {end}"
+            "value": "Every year: {{start}} – {{end}}"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "每年：{start} – {end}"
+            "value": "每年：{{start}} – {{end}}"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "每年：{start} – {end}"
+            "value": "每年：{{start}} – {{end}}"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "每年：{start} – {end}"
+            "value": "每年：{{start}} – {{end}}"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "毎年：{start} – {end}"
+            "value": "毎年：{{start}} – {{end}}"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "매년: {start} – {end}"
+            "value": "매년: {{start}} – {{end}}"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jedes Jahr: {start} – {end}"
+            "value": "Jedes Jahr: {{start}} – {{end}}"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cada año: {start} – {end}"
+            "value": "Cada año: {{start}} – {{end}}"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chaque année : {start} – {end}"
+            "value": "Chaque année : {{start}} – {{end}}"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ogni anno: {start} – {end}"
+            "value": "Ogni anno: {{start}} – {{end}}"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Todos os anos: {start} – {end}"
+            "value": "Todos os anos: {{start}} – {{end}}"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Каждый год: {start} – {end}"
+            "value": "Каждый год: {{start}} – {{end}}"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "كل عام: {start} – {end}"
+            "value": "كل عام: {{start}} – {{end}}"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "हर साल: {start} – {end}"
+            "value": "हर साल: {{start}} – {{end}}"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "दरवर्षी: {start} – {end}"
+            "value": "दरवर्षी: {{start}} – {{end}}"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Setiap tahun: {start} – {end}"
+            "value": "Setiap tahun: {{start}} – {{end}}"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mỗi năm: {start} – {end}"
+            "value": "Mỗi năm: {{start}} – {{end}}"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ทุกปี: {start} – {end}"
+            "value": "ทุกปี: {{start}} – {{end}}"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Her yıl: {start} – {end}"
+            "value": "Her yıl: {{start}} – {{end}}"
           }
         }
       }

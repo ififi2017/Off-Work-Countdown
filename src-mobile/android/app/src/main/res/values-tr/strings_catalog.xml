@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">Her yıl tekrarla</string>
     <string name="extendedAnnualRangeDescription">Bu saatleri her yıl bu aralıktaki planlanmış iş günlerinde kullanın. Dinlenme günleri ve elle atanan vardiyalar mevcut planını korur.</string>
     <string name="extendedAnnualRangeEnd">Bitiş tarihi</string>
-    <string name="extendedAnnualRangeLabel">Her yıl: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">Bu aralık {shift} ile çakışıyor. Aralıkların çakışmaması için tarihleri düzenleyin.</string>
+    <string name="extendedAnnualRangeLabel">Her yıl: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">Bu aralık %1$s ile çakışıyor. Aralıkların çakışmaması için tarihleri düzenleyin.</string>
     <string name="extendedAnnualRangeStart">Başlangıç tarihi</string>
     <string name="extendedAnnualRangeWrap">Bitiş tarihi sonraki yıldadır.</string>
     <string name="extendedApplyTemplateMessage">Döngünün her günü “%1$s” düzenine göre yeniden doldurulur. Kaydedene kadar hiçbir şey değişmez.</string>
     <string name="extendedApplyTemplateTitle">Düzen yeniden doldurulsun mu?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} gün</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s gün</string>
     <string name="extendedBreak">Vardiya içi mola</string>
     <string name="extendedBreakDuration">Mola süresi</string>
     <string name="extendedBreakOutside">Kaydetmek için molayı vardiyanın içine alın.</string>

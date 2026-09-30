@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">毎年繰り返す</string>
     <string name="extendedAnnualRangeDescription">毎年、この期間内の予定された勤務日にこの時間を適用します。休日と手動で指定したシフトは元の予定を維持します。</string>
     <string name="extendedAnnualRangeEnd">終了日</string>
-    <string name="extendedAnnualRangeLabel">毎年：{start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">この期間は「{shift}」と重複しています。期間が重ならないように日付を調整してください。</string>
+    <string name="extendedAnnualRangeLabel">毎年：%1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">この期間は「%1$s」と重複しています。期間が重ならないように日付を調整してください。</string>
     <string name="extendedAnnualRangeStart">開始日</string>
     <string name="extendedAnnualRangeWrap">終了日は翌年になります。</string>
     <string name="extendedApplyTemplateMessage">周期のすべての日を「%1$s」で入れ直します。保存するまでは反映されません。</string>
     <string name="extendedApplyTemplateTitle">パターンを入れ直しますか？</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count}日</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s日</string>
     <string name="extendedBreak">途中休憩</string>
     <string name="extendedBreakDuration">休憩時間</string>
     <string name="extendedBreakOutside">休憩をシフト内に収めると保存できます。</string>

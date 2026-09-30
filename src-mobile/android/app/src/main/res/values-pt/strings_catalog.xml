@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">Repetir a cada ano</string>
     <string name="extendedAnnualRangeDescription">Use estes horários a cada ano nos dias de trabalho agendados dentro deste intervalo. Os dias de descanso e os turnos atribuídos manualmente mantêm a programação atual.</string>
     <string name="extendedAnnualRangeEnd">Fim</string>
-    <string name="extendedAnnualRangeLabel">Todos os anos: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">Este intervalo se sobrepõe a {shift}. Ajuste as datas para evitar sobreposições.</string>
+    <string name="extendedAnnualRangeLabel">Todos os anos: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">Este intervalo se sobrepõe a %1$s. Ajuste as datas para evitar sobreposições.</string>
     <string name="extendedAnnualRangeStart">Início</string>
     <string name="extendedAnnualRangeWrap">A data de fim está no ano seguinte.</string>
     <string name="extendedApplyTemplateMessage">Cada dia do ciclo será preenchido de novo segundo “%1$s”. Nada muda até guardar.</string>
     <string name="extendedApplyTemplateTitle">Preencher o ciclo de novo?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} dias</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s dias</string>
     <string name="extendedBreak">Pausa durante o turno</string>
     <string name="extendedBreakDuration">Duração da pausa</string>
     <string name="extendedBreakOutside">Coloque a pausa dentro do turno para guardar.</string>

@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">ทำซ้ำทุกปี</string>
     <string name="extendedAnnualRangeDescription">ใช้เวลานี้ทุกปีในวันทำงานที่กำหนดไว้ภายในช่วงนี้ วันหยุดและกะที่กำหนดด้วยตนเองจะคงตามตารางเดิม</string>
     <string name="extendedAnnualRangeEnd">วันที่สิ้นสุด</string>
-    <string name="extendedAnnualRangeLabel">ทุกปี: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">ช่วงนี้ทับซ้อนกับ {shift} โปรดปรับวันที่เพื่อไม่ให้ช่วงทับซ้อนกัน</string>
+    <string name="extendedAnnualRangeLabel">ทุกปี: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">ช่วงนี้ทับซ้อนกับ %1$s โปรดปรับวันที่เพื่อไม่ให้ช่วงทับซ้อนกัน</string>
     <string name="extendedAnnualRangeStart">วันที่เริ่มต้น</string>
     <string name="extendedAnnualRangeWrap">วันที่สิ้นสุดอยู่ในปีถัดไป</string>
     <string name="extendedApplyTemplateMessage">ทุกวันในรอบจะถูกเติมใหม่ตาม “%1$s” และจะยังไม่เปลี่ยนจนกว่าจะบันทึก</string>
     <string name="extendedApplyTemplateTitle">เติมรูปแบบใหม่ไหม</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} วัน</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s วัน</string>
     <string name="extendedBreak">พักระหว่างกะ</string>
     <string name="extendedBreakDuration">ระยะเวลาพัก</string>
     <string name="extendedBreakOutside">ย้ายเวลาพักให้อยู่ภายในกะเพื่อบันทึก</string>

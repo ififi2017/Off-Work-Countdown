@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">हर साल दोहराएँ</string>
     <string name="extendedAnnualRangeDescription">हर साल इस अवधि में तय किए गए काम के दिनों पर ये समय लागू करें। आराम के दिन और खुद तय की गई शिफ़्ट अपने मौजूदा शेड्यूल पर रहेंगी।</string>
     <string name="extendedAnnualRangeEnd">समाप्ति की तारीख</string>
-    <string name="extendedAnnualRangeLabel">हर साल: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">यह अवधि {shift} से ओवरलैप करती है। दोनों अवधियों को अलग रखने के लिए तारीखें बदलें।</string>
+    <string name="extendedAnnualRangeLabel">हर साल: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">यह अवधि %1$s से ओवरलैप करती है। दोनों अवधियों को अलग रखने के लिए तारीखें बदलें।</string>
     <string name="extendedAnnualRangeStart">शुरुआत की तारीख</string>
     <string name="extendedAnnualRangeWrap">समाप्ति की तारीख अगले साल में है।</string>
     <string name="extendedApplyTemplateMessage">चक्र का हर दिन “%1$s” के अनुसार फिर से भरा जाएगा। सहेजने तक कुछ नहीं बदलेगा।</string>
     <string name="extendedApplyTemplateTitle">क्रम फिर से भरें?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} दिन</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s दिन</string>
     <string name="extendedBreak">शिफ़्ट के बीच ब्रेक</string>
     <string name="extendedBreakDuration">ब्रेक की अवधि</string>
     <string name="extendedBreakOutside">सहेजने के लिए ब्रेक को शिफ़्ट के भीतर रखें।</string>

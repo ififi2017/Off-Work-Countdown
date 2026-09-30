@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">Повторять каждый год</string>
     <string name="extendedAnnualRangeDescription">Каждый год применяйте эти часы к запланированным рабочим дням в этом периоде. Выходные и смены, назначенные вручную, сохраняют своё расписание.</string>
     <string name="extendedAnnualRangeEnd">Конец</string>
-    <string name="extendedAnnualRangeLabel">Каждый год: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">Этот период пересекается с {shift}. Измените даты, чтобы периоды не пересекались.</string>
+    <string name="extendedAnnualRangeLabel">Каждый год: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">Этот период пересекается с %1$s. Измените даты, чтобы периоды не пересекались.</string>
     <string name="extendedAnnualRangeStart">Начало</string>
     <string name="extendedAnnualRangeWrap">Дата окончания приходится на следующий год.</string>
     <string name="extendedApplyTemplateMessage">Каждый день цикла будет заполнен заново по шаблону «%1$s». Изменения вступят в силу после сохранения.</string>
     <string name="extendedApplyTemplateTitle">Заполнить цикл заново?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} дн.</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s дн.</string>
     <string name="extendedBreak">Перерыв в смене</string>
     <string name="extendedBreakDuration">Длительность перерыва</string>
     <string name="extendedBreakOutside">Перенесите перерыв внутрь смены, чтобы сохранить.</string>

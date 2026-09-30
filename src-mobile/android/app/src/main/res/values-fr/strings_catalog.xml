@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">Répéter chaque année</string>
     <string name="extendedAnnualRangeDescription">Appliquer ces heures chaque année aux jours de travail prévus dans cette période. Les jours de repos et les horaires attribués manuellement restent tels que prévus.</string>
     <string name="extendedAnnualRangeEnd">Fin</string>
-    <string name="extendedAnnualRangeLabel">Chaque année : {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">Cette période chevauche {shift}. Ajustez les dates pour éviter le chevauchement.</string>
+    <string name="extendedAnnualRangeLabel">Chaque année : %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">Cette période chevauche %1$s. Ajustez les dates pour éviter le chevauchement.</string>
     <string name="extendedAnnualRangeStart">Début</string>
     <string name="extendedAnnualRangeWrap">La date de fin est dans l’année suivante.</string>
     <string name="extendedApplyTemplateMessage">Chaque jour du cycle sera rempli à nouveau selon « %1$s ». Rien ne change avant l’enregistrement.</string>
     <string name="extendedApplyTemplateTitle">Remplir à nouveau le cycle ?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} jours</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s jours</string>
     <string name="extendedBreak">Pause pendant le service</string>
     <string name="extendedBreakDuration">Durée de la pause</string>
     <string name="extendedBreakOutside">Placez la pause dans le service pour enregistrer.</string>

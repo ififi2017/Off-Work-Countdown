@@ -92,13 +92,13 @@
     <string name="extendedAnnualDateRange">दरवर्षी पुनरावृत्ती</string>
     <string name="extendedAnnualRangeDescription">दरवर्षी या कालावधीतील ठरवलेल्या कामाच्या दिवसांना या वेळा लागू करा. विश्रांतीचे दिवस आणि स्वतः ठरवलेल्या शिफ्टचे वेळापत्रक कायम राहील.</string>
     <string name="extendedAnnualRangeEnd">शेवटची तारीख</string>
-    <string name="extendedAnnualRangeLabel">दरवर्षी: {start} – {end}</string>
-    <string name="extendedAnnualRangeOverlap">हा कालावधी {shift} च्या कालावधीशी जुळतो. कालावधी एकमेकांवर येऊ नयेत म्हणून तारखा बदला.</string>
+    <string name="extendedAnnualRangeLabel">दरवर्षी: %1$s – %2$s</string>
+    <string name="extendedAnnualRangeOverlap">हा कालावधी %1$s च्या कालावधीशी जुळतो. कालावधी एकमेकांवर येऊ नयेत म्हणून तारखा बदला.</string>
     <string name="extendedAnnualRangeStart">सुरुवातीची तारीख</string>
     <string name="extendedAnnualRangeWrap">शेवटची तारीख पुढील वर्षात आहे.</string>
     <string name="extendedApplyTemplateMessage">चक्रातील प्रत्येक दिवस “%1$s” नुसार पुन्हा भरला जाईल. जतन करेपर्यंत काहीही बदलणार नाही.</string>
     <string name="extendedApplyTemplateTitle">क्रम पुन्हा भरायचा?</string>
-    <string name="extendedAssignedDateBounds">{start} – {end} · {count} दिवस</string>
+    <string name="extendedAssignedDateBounds">%1$s – %2$s · %3$s दिवस</string>
     <string name="extendedBreak">शिफ्टमधील विश्रांती</string>
     <string name="extendedBreakDuration">विश्रांतीचा कालावधी</string>
     <string name="extendedBreakOutside">जतन करण्यासाठी विश्रांती शिफ्टच्या आत ठेवा.</string>
