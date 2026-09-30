@@ -1,5 +1,6 @@
 package com.rainif.doneat.ui.records
 
+import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -260,7 +261,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     Box(Modifier.fillMaxSize()) {
         if (expanded) {
             Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-                Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(DoneAtSpacing.page)) { chart() }
+                Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(DoneAtSpacing.page).padding(bottom = LocalDoneAtBottomBarPadding.current)) { chart() }
             }
             return@Box
         }
@@ -275,13 +276,13 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                             // A lambda lets Compose replace the callback when that scale changes.
                             ScalePicker(text, scale) { setScale(it) }
                             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl)) { chart() }
-                                Column(Modifier.width(420.dp).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl)) { conclusion() }
+                                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current)) { chart() }
+                                Column(Modifier.width(420.dp).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current)) { conclusion() }
                             }
                         }
                     } else {
                         Column(
-                            Modifier.verticalScroll(rememberScrollState()).padding(horizontal = DoneAtSpacing.page).padding(bottom = DoneAtSpacing.xl),
+                            Modifier.verticalScroll(rememberScrollState()).padding(horizontal = DoneAtSpacing.page).padding(bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current),
                             verticalArrangement = Arrangement.spacedBy(14.dp),
                         ) {
                             ScalePicker(text, scale) { setScale(it) }
@@ -292,7 +293,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                 }
             }
         }
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding())
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current))
     }
 }
 

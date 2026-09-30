@@ -1,5 +1,6 @@
 package com.rainif.doneat.share
 
+import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -164,7 +165,7 @@ fun ShareScreen(graph: AppGraph, onBack: () -> Unit) {
     }
 
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-        Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+        Column(Modifier.fillMaxSize().safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
             Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.timerTab)) }
                 Text(stringResource(R.string.shareButton), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge)

@@ -70,6 +70,7 @@ object Strings {
     fun onboardingSalaryLockBody(res: Resources, biometry: String): String = res.getString(R.string.onboardingSalaryLockBody, biometry)
     fun overtimeUntil(res: Resources, time: String): String = res.getString(R.string.overtimeUntil, time)
     fun pausedUntil(res: Resources, time: String): String = res.getString(R.string.pausedUntil, time)
+    fun plusAndroidYearlyTrialPrice(res: Resources, price: String): String = res.getString(R.string.plusAndroidYearlyTrialPrice, price)
     fun recordsAllocationBasis(res: Resources, count: String): String = res.getString(R.string.recordsAllocationBasis, count)
     fun recordsAnnualSummary(res: Resources, year: String): String = res.getString(R.string.recordsAnnualSummary, year)
     fun recordsConflictCount(res: Resources, count: String): String = res.getString(R.string.recordsConflictCount, count)

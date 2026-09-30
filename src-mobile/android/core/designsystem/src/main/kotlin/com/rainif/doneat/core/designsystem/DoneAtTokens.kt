@@ -75,6 +75,10 @@ class DoneAtMotion(val reduced: Boolean) {
     fun <T> spatial(): AnimationSpec<T> =
         if (reduced) snap() else spring(dampingRatio = SPATIAL_DAMPING, stiffness = Spring.StiffnessMediumLow)
 
+    /** Firm, non-bouncing tracking while a finger moves the navigation glass lens. */
+    fun <T> tracking(): AnimationSpec<T> =
+        if (reduced) snap() else spring(dampingRatio = 1f, stiffness = 1000f)
+
     companion object {
         const val REDUCED_MS = 160
         const val COUNTDOWN_TICK_MS = 260

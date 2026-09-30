@@ -9,22 +9,26 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        // Candidate identity (D-10); frozen before the first Play upload.
+        // Registered in Play Console for the first internal test release.
         applicationId = "com.rainif.doneat"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "3.2.0"
+        versionCode = 5
+        versionName = "3.2.1"
         // Public Play configuration only. Empty values keep the store unavailable.
         val plusProduct = providers.gradleProperty("doneatPlusSubscriptionProduct").orElse("").get()
         val lifetimeProduct = providers.gradleProperty("doneatPlusLifetimeProduct").orElse("").get()
         val monthlyBasePlan = providers.gradleProperty("doneatPlusMonthlyBasePlan").orElse("").get()
         val yearlyBasePlan = providers.gradleProperty("doneatPlusYearlyBasePlan").orElse("").get()
+        val yearlyTrial = providers.gradleProperty("doneatPlusYearlyTrialOffer").orElse("").get()
+        val lifetimeOption = providers.gradleProperty("doneatPlusLifetimePurchaseOption").orElse("").get()
         val playKey = providers.gradleProperty("doneatPlayBillingPublicKey").orElse("").get()
         buildConfigField("String", "PLUS_SUBSCRIPTION_PRODUCT", "\"$plusProduct\"")
         buildConfigField("String", "PLUS_LIFETIME_PRODUCT", "\"$lifetimeProduct\"")
         buildConfigField("String", "PLUS_MONTHLY_BASE_PLAN", "\"$monthlyBasePlan\"")
         buildConfigField("String", "PLUS_YEARLY_BASE_PLAN", "\"$yearlyBasePlan\"")
+        buildConfigField("String", "PLUS_YEARLY_TRIAL_OFFER", "\"$yearlyTrial\"")
+        buildConfigField("String", "PLUS_LIFETIME_PURCHASE_OPTION", "\"$lifetimeOption\"")
         buildConfigField("String", "PLAY_BILLING_PUBLIC_KEY", "\"$playKey\"")
     }
 
@@ -32,7 +36,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 

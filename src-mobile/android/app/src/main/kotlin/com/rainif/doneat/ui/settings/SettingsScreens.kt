@@ -310,7 +310,7 @@ fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Compos
     }
 }
 
-/** The holiday data's sources and licences, from the same bundled file iOS shows. */
+/** Bundled library licences and the holiday attributions shared with iOS. */
 @Composable
 fun AcknowledgementsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
@@ -320,8 +320,12 @@ fun AcknowledgementsScreen(onBack: () -> Unit) {
             (0 until array.length()).map { i -> array.getJSONObject(i).let { Triple(it.getString("name"), it.getString("sourceURL"), it.getString("license")) } }
         }.getOrDefault(emptyList())
     }
+    val libraryLicenses = remember {
+        listOf("Backdrop" to "https://github.com/Kyant0/AndroidLiquidGlass", "Shapes" to "https://github.com/Kyant0/Shapes")
+            .map { (name, url) -> Triple(name, url, context.assets.open("licenses/$name.txt").bufferedReader().use { it.readText() }) }
+    }
     DoneAtPage(stringResource(R.string.acknowledgements), onBack, stringResource(R.string.aboutProject)) {
-        attributions.forEach { (name, url, license) ->
+        (libraryLicenses + attributions).forEach { (name, url, license) ->
             SettingsGroup {
                 ActionRow(name, { openUrl(context, url) }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
                 RowDivider(inset = false)

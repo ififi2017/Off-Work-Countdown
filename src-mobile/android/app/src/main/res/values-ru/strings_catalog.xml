@@ -533,10 +533,12 @@
     <string name="perEffectiveHour">За эффективный час</string>
     <string name="perWorkday">За рабочий день</string>
     <string name="plusAndroidComingSoon">Покупка Plus на Android скоро появится. Пока можно пользоваться таймером и просматривать недавние записи.</string>
+    <string name="plusAndroidIntroBody">Таймер и последняя неделя остаются бесплатными. Plus открывает весь год, трудовую жизнь, редактирование и фокус.</string>
     <string name="plusAndroidRenewalNotice">Подписки продлеваются автоматически, пока вы их не отмените. Разовая покупка Lifetime не отменяет действующую подписку.</string>
     <string name="plusAndroidRequestFailed">Google Play не удалось выполнить запрос. Повторите попытку чуть позже.</string>
     <string name="plusAndroidStoreOffline">Google Play сейчас недоступен. Попробуйте восстановить покупки после подключения к сети.</string>
     <string name="plusAndroidStoreUnconfigured">Покупка Plus пока недоступна на этом устройстве. Таймер и недавние записи по-прежнему работают.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 дней бесплатно, затем %1$s в год. Отмените подписку до окончания пробного периода, чтобы избежать списания.</string>
     <string name="plusAutoRenew">Подписки продлеваются автоматически, пока вы их не отмените. Годовой тариф может включать 7 бесплатных дней, после чего списывается годовая цена. Покупка навсегда — один платёж, она не отменяет действующую подписку.</string>
     <string name="plusBenefitCharts">Весь год и рабочая жизнь</string>
     <string name="plusBenefitEdit">Править любой день в записях</string>
@@ -878,6 +880,9 @@
     <string name="whatsNewWatchTitle">Ваш рабочий день на Apple Watch</string>
     <string name="widgetDescription">Сразу видно, сколько рабочего времени осталось.</string>
     <string name="widgetOpenToRefresh">Откройте приложение, чтобы обновить</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">Хорошего отдыха · до следующей смены</string>
     <string name="widgetWorking">На работе</string>
     <string name="workOnWeekday">Работать в %1$s</string>

@@ -15,8 +15,10 @@ glance = "1.2.0"
 billing = "9.1.0"
 playReview = "2.0.2"
 work = "2.10.5"
+backdrop = "2.0.1"
 
 [libraries]
+kyant-backdrop = { module = "io.github.kyant0:backdrop", version.ref = "backdrop" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }

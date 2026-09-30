@@ -36,4 +36,20 @@ class EntitlementEngineTest {
         assertTrue(EntitlementEngine.shouldAcknowledge(purchase(firstSeen = now - EntitlementEngine.ACK_WINDOW_MS + 1), now))
         assertFalse(EntitlementEngine.shouldAcknowledge(purchase(firstSeen = now - EntitlementEngine.ACK_WINDOW_MS), now))
     }
+
+    @Test fun lifetimeDoesNotHideASeparateSubscription() {
+        val purchases = listOf(purchase(subscription = false), purchase())
+        assertEquals(PlusStatus.LIFETIME, EntitlementEngine.status(purchases, now, now, false))
+        assertTrue(EntitlementEngine.hasActiveSubscription(purchases, now, now, false))
+        assertFalse(EntitlementEngine.hasActiveSubscription(listOf(purchase(subscription = false)), now, now, false))
+    }
+
+    @Test fun subscriptionNoticeRequiresCurrentVerifiedEntitlement() {
+        assertFalse(EntitlementEngine.hasActiveSubscription(listOf(purchase(pending = true)), now, now, false))
+        assertFalse(EntitlementEngine.hasActiveSubscription(listOf(purchase(suspended = true)), now, now, false))
+        assertTrue(EntitlementEngine.hasActiveSubscription(listOf(purchase()), now,
+            now - EntitlementEngine.OFFLINE_SUBSCRIPTION_MS, true))
+        assertFalse(EntitlementEngine.hasActiveSubscription(listOf(purchase()), now,
+            now - EntitlementEngine.OFFLINE_SUBSCRIPTION_MS - 1, true))
+    }
 }

@@ -533,10 +533,12 @@
     <string name="perEffectiveHour">ต่อชั่วโมงทำงานจริง</string>
     <string name="perWorkday">ต่อวันทำงาน</string>
     <string name="plusAndroidComingSoon">การซื้อ Plus บน Android จะเปิดให้ใช้งานเร็ว ๆ นี้ ตอนนี้คุณใช้ตัวจับเวลาและดูบันทึกล่าสุดได้แล้ว</string>
+    <string name="plusAndroidIntroBody">ตัวจับเวลาและสัปดาห์ล่าสุดยังคงฟรี Plus ปลดล็อกมุมมองทั้งปี ชีวิตการทำงาน การแก้ไข และโหมดโฟกัส</string>
     <string name="plusAndroidRenewalNotice">การสมัครสมาชิกจะต่ออายุอัตโนมัติจนกว่าคุณจะยกเลิก การซื้อ Lifetime ครั้งเดียวไม่ยกเลิกการสมัครสมาชิกที่ใช้อยู่</string>
     <string name="plusAndroidRequestFailed">Google Play ไม่สามารถทำรายการนี้ได้ ลองอีกครั้งในอีกสักครู่</string>
     <string name="plusAndroidStoreOffline">ขณะนี้ Google Play ไม่พร้อมใช้งาน ลองกู้คืนการซื้อเมื่อเชื่อมต่อแล้ว</string>
     <string name="plusAndroidStoreUnconfigured">ยังซื้อ Plus บนอุปกรณ์นี้ไม่ได้ คุณยังใช้ตัวจับเวลาและดูบันทึกล่าสุดได้</string>
+    <string name="plusAndroidYearlyTrialPrice">ทดลองใช้ฟรี 7 วัน จากนั้น %1$s ต่อปี ยกเลิกก่อนสิ้นสุดช่วงทดลองใช้เพื่อหลีกเลี่ยงการเรียกเก็บเงิน</string>
     <string name="plusAutoRenew">การสมัครจะต่ออายุเองจนกว่าคุณจะยกเลิก แผนรายปีอาจมีช่วงฟรี 7 วัน หลังจากนั้นคิดตามราคาต่อปี แบบจ่ายครั้งเดียวชำระครั้งเดียวและไม่ยกเลิกการสมัครที่กำลังใช้อยู่ให้อัตโนมัติ</string>
     <string name="plusBenefitCharts">มุมมองทั้งปีและชีวิตการทำงาน</string>
     <string name="plusBenefitEdit">แก้วันใดก็ได้จากหน้าบันทึก</string>
@@ -875,6 +877,9 @@
     <string name="whatsNewWatchTitle">วันทำงานของคุณบน Apple Watch</string>
     <string name="widgetDescription">ดูเวลาทำงานที่เหลือได้อย่างรวดเร็ว</string>
     <string name="widgetOpenToRefresh">เปิดแอปเพื่อรีเฟรช</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">พักผ่อนให้เต็มที่ · กะถัดไป</string>
     <string name="widgetWorking">กำลังทำงาน</string>
     <string name="workOnWeekday">ทำงานวัน%1$s</string>

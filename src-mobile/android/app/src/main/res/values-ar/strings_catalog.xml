@@ -533,10 +533,12 @@
     <string name="perEffectiveHour">لكل ساعة عمل فعلية</string>
     <string name="perWorkday">لكل يوم عمل</string>
     <string name="plusAndroidComingSoon">ستتوفر مشتريات Plus على Android قريبًا. يمكنك الآن استخدام المؤقت وعرض سجلاتك الأخيرة.</string>
+    <string name="plusAndroidIntroBody">يبقى المؤقت والأسبوع الأخير مجانيين. يتيح Plus عرض السنة كاملة وحياتك المهنية والتعديل والتركيز.</string>
     <string name="plusAndroidRenewalNotice">تتجدد الاشتراكات تلقائيًا حتى تلغيها. شراء الخطة مدى الحياة لمرة واحدة لا يلغي اشتراكًا نشطًا.</string>
     <string name="plusAndroidRequestFailed">تعذّر على Google Play إكمال الطلب. حاول مرة أخرى بعد قليل.</string>
     <string name="plusAndroidStoreOffline">Google Play غير متاح الآن. حاول استعادة مشترياتك بعد الاتصال بالإنترنت.</string>
     <string name="plusAndroidStoreUnconfigured">شراء Plus غير متاح على هذا الجهاز حاليًا. لا يزال بإمكانك استخدام المؤقت والسجلات الأخيرة.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 أيام مجانًا، ثم %1$s سنويًا. ألغِ الاشتراك قبل انتهاء الفترة التجريبية لتجنّب تحصيل الرسوم.</string>
     <string name="plusAutoRenew">تتجدد الاشتراكات تلقائيًا حتى تُلغيها. قد تتضمن الخطة السنوية 7 أيام مجانية، ثم يُحتسب السعر السنوي. الشراء بدفعة واحدة دفعة واحدة فقط ولا يُلغي تلقائيًا اشتراكًا ساريًا.</string>
     <string name="plusBenefitCharts">عرض السنة كاملة وحياة العمل</string>
     <string name="plusBenefitEdit">عدّل أي يوم من السجلات</string>
@@ -880,6 +882,9 @@
     <string name="whatsNewWatchTitle">يوم عملك على Apple Watch</string>
     <string name="widgetDescription">اعرض وقت العمل المتبقي بنظرة سريعة.</string>
     <string name="widgetOpenToRefresh">افتح التطبيق للتحديث</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">استرح جيدًا · الوردية التالية</string>
     <string name="widgetWorking">أثناء العمل</string>
     <string name="workOnWeekday">العمل يوم %1$s</string>

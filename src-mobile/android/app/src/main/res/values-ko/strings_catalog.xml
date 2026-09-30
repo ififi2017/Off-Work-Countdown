@@ -533,10 +533,12 @@
     <string name="perEffectiveHour">실근무 1시간당</string>
     <string name="perWorkday">근무일당</string>
     <string name="plusAndroidComingSoon">Android용 Plus 구매는 곧 제공됩니다. 지금은 타이머와 최근 기록을 이용할 수 있습니다.</string>
+    <string name="plusAndroidIntroBody">타이머와 최근 일주일 기록은 계속 무료입니다. Plus로 전체 연도, 직장 생활, 편집, 집중 기능을 이용하세요.</string>
     <string name="plusAndroidRenewalNotice">구독은 취소할 때까지 자동 갱신됩니다. 평생 이용권을 구매해도 기존 구독은 취소되지 않습니다.</string>
     <string name="plusAndroidRequestFailed">Google Play에서 요청을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.</string>
     <string name="plusAndroidStoreOffline">지금 Google Play에 연결할 수 없습니다. 연결 후 구매 복원을 시도해 주세요.</string>
     <string name="plusAndroidStoreUnconfigured">이 기기에서는 아직 Plus를 구매할 수 없습니다. 타이머와 최근 기록은 계속 사용할 수 있습니다.</string>
+    <string name="plusAndroidYearlyTrialPrice">7일 무료 체험 후 연간 %1$s가 청구됩니다. 요금이 청구되지 않도록 체험 종료 전에 취소하세요.</string>
     <string name="plusAutoRenew">구독은 취소할 때까지 자동으로 갱신됩니다. 연간 요금제에는 7일 무료 기간이 포함될 수 있고, 끝나면 연 요금이 청구됩니다. 평생은 한 번만 결제하며, 이미 있는 구독을 자동으로 취소하지는 않습니다.</string>
     <string name="plusBenefitCharts">연간 전체와 직장 생활 보기</string>
     <string name="plusBenefitEdit">기록 페이지에서 아무 날이나 수정</string>
@@ -875,6 +877,9 @@
     <string name="whatsNewWatchTitle">Apple Watch에서 확인하는 근무 현황</string>
     <string name="widgetDescription">남은 근무 시간을 한눈에 확인하세요.</string>
     <string name="widgetOpenToRefresh">앱을 열어 새로고침</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">푹 쉬세요 · 다음 근무까지</string>
     <string name="widgetWorking">근무 중</string>
     <string name="workOnWeekday">%1$s 근무</string>

@@ -1,5 +1,6 @@
 package com.rainif.doneat.ui.focus
 
+import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -209,7 +210,7 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
             Column(
                 Modifier
                     .then(if (pinned) Modifier.weight(1f).onGloballyPositioned { positions.viewport = it }.verticalScroll(scroll) else Modifier)
-                    .padding(start = DoneAtSpacing.page, end = DoneAtSpacing.page, bottom = DoneAtSpacing.xl),
+                    .padding(start = DoneAtSpacing.page, end = DoneAtSpacing.page, bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 when {

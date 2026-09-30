@@ -533,10 +533,12 @@
     <string name="perEffectiveHour">Por hora efectiva</string>
     <string name="perWorkday">Por día trabajado</string>
     <string name="plusAndroidComingSoon">Pronto podrás comprar Plus en Android. Ya puedes usar el temporizador y consultar tus registros recientes.</string>
+    <string name="plusAndroidIntroBody">El temporizador y la última semana siguen siendo gratis. Plus desbloquea el año completo, tu vida laboral, la edición y la concentración.</string>
     <string name="plusAndroidRenewalNotice">Las suscripciones se renuevan automáticamente hasta que las canceles. La compra única de Lifetime no cancela una suscripción activa.</string>
     <string name="plusAndroidRequestFailed">Google Play no pudo completar la solicitud. Inténtalo de nuevo en un momento.</string>
     <string name="plusAndroidStoreOffline">Google Play no está disponible ahora. Cuando tengas conexión, intenta restaurar tus compras.</string>
     <string name="plusAndroidStoreUnconfigured">Las compras de Plus aún no están disponibles en este dispositivo. Puedes seguir usando el temporizador y tus registros recientes.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 días gratis, después %1$s al año. Cancela antes de que termine la prueba para evitar el cobro.</string>
     <string name="plusAutoRenew">Las suscripciones se renuevan solas hasta que las canceles. El plan anual puede incluir 7 días gratis; después se cobra el precio anual. La compra para siempre es un pago único y no cancela una suscripción activa.</string>
     <string name="plusBenefitCharts">Vistas del año completo y la vida laboral</string>
     <string name="plusBenefitEdit">Editar cualquier día desde Registros</string>
@@ -877,6 +879,9 @@
     <string name="whatsNewWatchTitle">Tu jornada en el Apple Watch</string>
     <string name="widgetDescription">Consulta de un vistazo el tiempo de trabajo restante.</string>
     <string name="widgetOpenToRefresh">Abre la app para actualizar</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">Descansa bien · próximo turno</string>
     <string name="widgetWorking">Trabajando</string>
     <string name="workOnWeekday">Trabajar el %1$s</string>

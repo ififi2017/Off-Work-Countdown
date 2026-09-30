@@ -47,6 +47,8 @@ import com.rainif.doneat.R
 import com.rainif.doneat.core.domain.records.LifeProfileDraft
 import com.rainif.doneat.core.domain.records.FoundationCompat
 import com.rainif.doneat.ui.records.configuredMonthlySalary
+import com.rainif.doneat.core.designsystem.DoneAtGlassNavigation
+import com.rainif.doneat.core.designsystem.DoneAtNavigationItem
 import com.rainif.doneat.core.designsystem.LocalDoneAtMotion
 import com.rainif.doneat.ui.settings.AboutScreen
 import com.rainif.doneat.ui.settings.AcknowledgementsScreen
@@ -152,22 +154,7 @@ fun AppShell(graph: AppGraph) {
     } else {
         NavigationSuiteType.NavigationBar
     }
-    NavigationSuiteScaffold(
-        layoutType = layout,
-        navigationSuiteItems = {
-            AppTab.entries.forEach { tab ->
-                item(
-                    selected = tab == selected,
-                    onClick = {
-                        // Reselecting a tab returns it to its root, as a tab bar does.
-                        if (tab == selected) stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) } else select(tab)
-                    },
-                    icon = { Icon(tab.icon, contentDescription = null) },
-                    label = { Text(stringResource(tab.title)) },
-                )
-            }
-        },
-    ) {
+    val content: @Composable () -> Unit = {
         // A tab changes immediately and keeps its own saved screen state. Only
         // navigation inside that tab slides; it never crossfades two root pages.
         tabState.SaveableStateProvider(selected) {
@@ -206,6 +193,30 @@ fun AppShell(graph: AppGraph) {
             },
         )
         }
+    }
+    fun selectOrReturnToRoot(tab: AppTab) {
+        if (tab == selected) stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) }
+        else select(tab)
+    }
+    if (layout == NavigationSuiteType.NavigationBar) {
+        DoneAtGlassNavigation(
+            items = AppTab.entries.map { DoneAtNavigationItem(stringResource(it.title), it.icon) },
+            selectedIndex = selected.ordinal,
+            onSelect = { selectOrReturnToRoot(AppTab.entries[it]) },
+            content = content,
+        )
+    } else {
+        NavigationSuiteScaffold(
+            layoutType = layout,
+            navigationSuiteItems = {
+                AppTab.entries.forEach { tab ->
+                    item(selected = tab == selected, onClick = { selectOrReturnToRoot(tab) },
+                        icon = { Icon(tab.icon, contentDescription = null) },
+                        label = { Text(stringResource(tab.title)) })
+                }
+            },
+            content = content,
+        )
     }
 }
 

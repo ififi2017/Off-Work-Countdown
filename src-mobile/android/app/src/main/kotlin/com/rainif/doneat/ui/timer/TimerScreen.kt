@@ -1,5 +1,6 @@
 package com.rainif.doneat.ui.timer
 
+import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
@@ -227,7 +228,7 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
     val prefs = session.env.preferences
 
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+        Column(Modifier.fillMaxSize().safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
             // Settings-level controls stay small and out of the instrument's way.
             Row(Modifier.fillMaxWidth().padding(horizontal = DoneAtSpacing.xs), horizontalArrangement = Arrangement.End) {
                 EarningsVisibilityButton(graph) { note -> scope.launch { snackbar.showSnackbar(note) } }
@@ -306,7 +307,7 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
             }
         }
         ConfettiBurst(celebration, Modifier.fillMaxSize())
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding())
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current))
     }
 
     if (showOvertime) {

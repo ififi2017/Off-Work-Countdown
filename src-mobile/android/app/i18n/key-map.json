@@ -1896,6 +1896,10 @@
       "resource": "string/plusAndroidComingSoon",
       "androidOnly": true
     },
+    "plusAndroidIntroBody": {
+      "resource": "string/plusAndroidIntroBody",
+      "androidOnly": true
+    },
     "plusAndroidRenewalNotice": {
       "resource": "string/plusAndroidRenewalNotice",
       "androidOnly": true
@@ -1910,6 +1914,13 @@
     },
     "plusAndroidStoreUnconfigured": {
       "resource": "string/plusAndroidStoreUnconfigured",
+      "androidOnly": true
+    },
+    "plusAndroidYearlyTrialPrice": {
+      "resource": "string/plusAndroidYearlyTrialPrice",
+      "params": [
+        "price"
+      ],
       "androidOnly": true
     },
     "plusAutoRenew": {
@@ -3015,6 +3026,18 @@
     },
     "widgetOpenToRefresh": {
       "resource": "string/widgetOpenToRefresh",
+      "androidOnly": true
+    },
+    "widgetPickerLarge": {
+      "resource": "string/widgetPickerLarge",
+      "androidOnly": true
+    },
+    "widgetPickerMedium": {
+      "resource": "string/widgetPickerMedium",
+      "androidOnly": true
+    },
+    "widgetPickerSmall": {
+      "resource": "string/widgetPickerSmall",
       "androidOnly": true
     },
     "widgetRestDay": {

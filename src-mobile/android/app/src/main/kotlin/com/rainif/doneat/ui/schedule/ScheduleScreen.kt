@@ -1,5 +1,6 @@
 package com.rainif.doneat.ui.schedule
 
+import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -259,7 +260,7 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
     }
 
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-        Column(Modifier.safeDrawingPadding()) {
+        Column(Modifier.safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
             Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = { back() }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.settings)) }
                 Text(stringResource(R.string.workSchedule), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)

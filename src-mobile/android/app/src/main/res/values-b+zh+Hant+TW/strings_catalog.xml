@@ -533,10 +533,12 @@
     <string name="perEffectiveHour">每有效工時</string>
     <string name="perWorkday">每個工作日</string>
     <string name="plusAndroidComingSoon">Android 版 Plus 即將開放購買。現在可以繼續使用計時器並查看近期記錄。</string>
+    <string name="plusAndroidIntroBody">倒數計時和最近一週維持免費。Plus 解鎖完整年度、工作人生、編輯和專注。</string>
     <string name="plusAndroidRenewalNotice">訂閱會自動續訂，直到你取消。終身版是一次性購買，不會取消現有訂閱。</string>
     <string name="plusAndroidRequestFailed">Google Play 暫時無法完成操作。請稍後再試。</string>
     <string name="plusAndroidStoreOffline">暫時無法連線 Google Play。連線後可以嘗試恢復購買。</string>
     <string name="plusAndroidStoreUnconfigured">這台裝置暫時無法購買 Plus。計時器和近期記錄仍可使用。</string>
+    <string name="plusAndroidYearlyTrialPrice">免費試用 7 天，之後每年 %1$s。在試用結束前取消即可避免扣款。</string>
     <string name="plusAutoRenew">訂閱會自動續訂，直到你取消。年訂可含 7 天試用，試用結束後按年價計費。終身是一次性買斷，不會自動取消已有訂閱。</string>
     <string name="plusBenefitCharts">完整年度和工作人生檢視</string>
     <string name="plusBenefitEdit">從紀錄頁修改任何一天</string>
@@ -875,6 +877,9 @@
     <string name="whatsNewWatchTitle">在 Apple Watch 上查看工作日</string>
     <string name="widgetDescription">一眼查看剩餘工作時間。</string>
     <string name="widgetOpenToRefresh">開啟應用程式以重新整理</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">好好休息 · 距離下次上班</string>
     <string name="widgetWorking">工作中</string>
     <string name="workOnWeekday">%1$s上班</string>
