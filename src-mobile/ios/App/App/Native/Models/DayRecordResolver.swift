@@ -53,8 +53,14 @@ nonisolated struct DayResolution: Equatable, Sendable {
 nonisolated struct DayRecordLookup: Sendable {
     private let exceptions: [String: CalendarException]
     private let overrides: [String: DayOverride]
+    private let leaveDays: [String: LeaveDay]
 
-    init(exceptions allExceptions: [CalendarException], overrides allOverrides: [DayOverride]) {
+    init(
+        exceptions allExceptions: [CalendarException],
+        overrides allOverrides: [DayOverride],
+        leaveDays allLeaveDays: [LeaveDay] = []
+    ) {
+        leaveDays = Dictionary(allLeaveDays.map { ($0.dayKey, $0) }, uniquingKeysWith: { first, _ in first })
         var byDate: [String: [CalendarException]] = [:]
         for exception in allExceptions {
             // `matches(dateKey:)` is a `"<date>#<origin>"` prefix test, so the
@@ -88,6 +94,8 @@ nonisolated struct DayRecordLookup: Sendable {
 
     func exception(on dayKey: String) -> CalendarException? { exceptions[dayKey] }
 
+    func leaveDay(on dayKey: String) -> LeaveDay? { leaveDays[dayKey] }
+
     /// `nil` when missing or `.cleared`, so the chain falls through.
     func dayOverride(on dayKey: String) -> DayOverride? {
         guard let override = overrides[dayKey], override.kind != .cleared else { return nil }
@@ -98,8 +106,9 @@ nonisolated struct DayRecordLookup: Sendable {
 /// Read-time resolution for 002 §1–§2 and §5.
 ///
 /// Order is fixed: an active day override, else a calendar exception, else
-/// the winning schedule snapshot. `.cleared` on either override or exception
-/// is a fall-through, not a leftover "cleared" layer. Observations are not
+/// the winning schedule snapshot, with adopted leave laid over the latter
+/// two. `.cleared` on either override or exception is a fall-through, not a
+/// leftover "cleared" layer. Observations are not
 /// consulted.
 nonisolated enum DayRecordResolver {
     static func period(on day: Date, from periods: [CareerPeriod]) -> CareerPeriod? {
@@ -173,6 +182,7 @@ nonisolated enum DayRecordResolver {
         snapshots: [ScheduleSnapshot],
         exceptions: [CalendarException],
         overrides: [DayOverride],
+        leaveDays: [LeaveDay] = [],
         expand: (ScheduleSnapshot) -> ScheduleExpansion
     ) -> DayResolution {
         // Qualified and renamed: a local `period`/`snapshot` shadows the static
@@ -186,7 +196,7 @@ nonisolated enum DayRecordResolver {
             shiftAnchorDate: shiftAnchorDate,
             period: coveringPeriod,
             snapshot: winningSnapshot,
-            lookup: DayRecordLookup(exceptions: exceptions, overrides: overrides),
+            lookup: DayRecordLookup(exceptions: exceptions, overrides: overrides, leaveDays: leaveDays),
             expansion: winningSnapshot.map(expand) ?? ScheduleExpansion(isWorkday: false, segments: [])
         )
     }
@@ -287,8 +297,9 @@ nonisolated enum DayRecordResolver {
             }
         }
 
+        let planned: DayResolution
         if exception != nil {
-            return applyExceptionOrSchedule(
+            planned = applyExceptionOrSchedule(
                 dayKey: dayKey,
                 shiftAnchorDate: shiftAnchorDate,
                 layer: .calendarException,
@@ -297,21 +308,41 @@ nonisolated enum DayRecordResolver {
                 exception: exception,
                 expansion: expansion
             )
+        } else {
+            guard snapshot != nil || expansion.hasPlannedRoster else { return empty }
+            planned = DayResolution(
+                dayKey: dayKey,
+                shiftAnchorDate: shiftAnchorDate,
+                layer: .schedule,
+                periodID: period.id,
+                snapshotID: snapshot?.id,
+                isScheduledWorkday: expansion.isWorkday,
+                segments: expansion.isWorkday ? expansion.segments : [],
+                baseScheduleIsWorkday: baseScheduleIsWorkday,
+                baseScheduleSegments: baseScheduleSegments,
+                expansionFailed: expansion.failed
+            )
         }
+        return applyingLeave(lookup.leaveDay(on: dayKey), to: planned)
+    }
 
-        guard snapshot != nil || expansion.hasPlannedRoster else { return empty }
-        return DayResolution(
-            dayKey: dayKey,
-            shiftAnchorDate: shiftAnchorDate,
-            layer: .schedule,
-            periodID: period.id,
-            snapshotID: snapshot?.id,
-            isScheduledWorkday: expansion.isWorkday,
-            segments: expansion.isWorkday ? expansion.segments : [],
-            baseScheduleIsWorkday: baseScheduleIsWorkday,
-            baseScheduleSegments: baseScheduleSegments,
-            expansionFailed: expansion.failed
-        )
+    /// Adopted leave (plan 020) frees whatever the day was planned to work,
+    /// holiday makeup days included; on a rest day it changes nothing. It
+    /// reads as a correction, like leave marked by hand, while the base
+    /// schedule underneath stays for income.
+    ///
+    /// Halves split the planned segments by elapsed working time. The live
+    /// rules split by wall-clock minutes, which differs only when a DST change
+    /// falls inside the shift.
+    private static func applyingLeave(_ leave: LeaveDay?, to planned: DayResolution) -> DayResolution {
+        guard let leave, planned.isScheduledWorkday, !planned.segments.isEmpty else { return planned }
+        var result = planned
+        result.layer = .override
+        result.segments = leave.portion == .whole
+            ? []
+            : LeaveShiftHalves(segments: planned.segments).remaining(after: leave.portion)
+        result.isScheduledWorkday = !result.segments.isEmpty
+        return result
     }
 
     private static func applyExceptionOrSchedule(

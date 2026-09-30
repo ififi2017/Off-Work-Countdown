@@ -728,6 +728,33 @@ final class RecordCoordinator {
     }
 
     @ObservationIgnored private var keptDayPlanCache: (base: Int, day: KeptRosterDay, plan: ExtendedSchedulePlan)?
+    @ObservationIgnored private var leavePlanCache: (
+        base: Int?, leaveDays: [LeaveDay], hours: ExtendedScheduleDayHours, plan: ExtendedSchedulePlan?
+    )?
+
+    /// `plan` with the adopted leave laid over it (plan 020), for the live
+    /// rules: countdown, reminders, widgets and the Watch. Records resolves
+    /// leave as a layer of its own and schedule snapshots never carry it.
+    ///
+    /// Without leave rows this is `plan` itself, so nothing changes for
+    /// anyone who never adopted leave. Kept until the plan, the leave or the
+    /// fixed hours change: the countdown asks every second.
+    func extendedSchedulePlan(
+        _ plan: ExtendedSchedulePlan?,
+        applyingLeaveOver baseHours: ExtendedScheduleDayHours
+    ) -> ExtendedSchedulePlan? {
+        let leaveDays = state.leaveDays
+        guard !leaveDays.isEmpty else { return plan }
+        if let cached = leavePlanCache, cached.base == plan?.revision, cached.leaveDays == leaveDays,
+           cached.hours == baseHours {
+            return cached.plan
+        }
+        planRevision += 1
+        let leave = Dictionary(leaveDays.map { ($0.dayKey, $0.portion) }, uniquingKeysWith: { first, _ in first })
+        let applied = ExtendedSchedulePlan.applying(leave: leave, to: plan, baseHours: baseHours, revision: planRevision)
+        leavePlanCache = (plan?.revision, leaveDays, baseHours, applied)
+        return applied
+    }
 
     /// `plan` with one day as the calendar had it before a save "from the next
     /// shift only". Kept until the plan or the day changes: the countdown asks

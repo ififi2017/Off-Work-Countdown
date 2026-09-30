@@ -676,6 +676,8 @@ struct ScheduleCalendarEditor: View {
         case .rule: "extendedPattern"
         case .annualRange: "extendedSourceAnnualRange"
         case .carriedOver: "extendedCarriedOver"
+        // The editor's plans never carry leave; it edits the plan beneath it.
+        case .leave, .leaveOverBase: "extendedSetByHand"
         case .unassigned, nil: "extendedUnassigned"
         }
     }

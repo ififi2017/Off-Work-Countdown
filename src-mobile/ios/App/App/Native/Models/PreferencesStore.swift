@@ -188,6 +188,14 @@ final class PreferencesStore {
         records.extendedSchedulePlan(for: content, applying: edits)
     }
 
+    /// `plan` with adopted leave laid over it, for the live rules.
+    func extendedSchedulePlan(
+        _ plan: ExtendedSchedulePlan?,
+        applyingLeaveOver baseHours: ExtendedScheduleDayHours
+    ) -> ExtendedSchedulePlan? {
+        records.extendedSchedulePlan(plan, applyingLeaveOver: baseHours)
+    }
+
     /// `plan` with one day as it was before a save.
     func extendedSchedulePlan(_ plan: ExtendedSchedulePlan, keeping day: KeptRosterDay) -> ExtendedSchedulePlan {
         records.extendedSchedulePlan(plan, keeping: day)

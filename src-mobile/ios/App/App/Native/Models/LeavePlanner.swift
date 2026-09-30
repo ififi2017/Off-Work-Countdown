@@ -16,15 +16,6 @@ import Foundation
 /// split by effective working time with breaks left out, never at noon or by
 /// an assumed eight-hour day.
 
-/// Which part of one shift a leave request frees.
-nonisolated enum LeavePortion: String, Codable, Sendable, CaseIterable {
-    case whole
-    case firstHalf
-    case secondHalf
-
-    var halfDays: Int { self == .whole ? 2 : 1 }
-}
-
 /// Why part of a proposal is less than certain.
 nonisolated enum LeavePlannerCaveat: Hashable, Sendable {
     /// The holiday region is on, but this build carries no data for `year`,

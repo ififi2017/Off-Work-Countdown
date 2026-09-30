@@ -404,15 +404,23 @@ nonisolated final class CivilZone {
     /// It runs the same `timeline` the countdown runs on rather than measuring
     /// the day a second way: a summary that computed its own durations is how
     /// the "This week" row once shipped a number Records disagreed with.
+    ///
+    /// A fallback plan carrying only leave answers with its fixed hours for
+    /// the days it leaves alone, so a summary over it counts them in full.
     func plannedHours(dayNumber: Int) -> Double? {
-        guard let hours = extended?.day(dayNumber: dayNumber).hours else { return nil }
+        guard let extended else { return nil }
+        let day = extended.day(dayNumber: dayNumber)
+        guard let hours = day.hours
+                ?? (extended.fallsBackToBaseSchedule && day.followsBaseSchedule ? extended.baseHours : nil)
+        else { return nil }
         let noonMs = utcMs(dayNumber: dayNumber, Clock(hour: 12, minute: 0))
         let bounds = shiftBounds(hours.startTime, hours.endTime, nowMs: noonMs)
         guard bounds.end > bounds.start else { return 0 }
-        let options = dayOptions(
-            startingAtMs: bounds.start,
-            ShiftOptions(breakStartTime: nil, breakDurationMinutes: 0)
-        )
+        // The fixed hours bring their own break; an assigned day's comes
+        // through `dayOptions`.
+        let options = day.hours == nil
+            ? ShiftOptions(breakStartTime: hours.breakStartTime, breakDurationMinutes: hours.breakDurationMinutes)
+            : dayOptions(startingAtMs: bounds.start, ShiftOptions(breakStartTime: nil, breakDurationMinutes: 0))
         return timeline(start: bounds.start, end: bounds.end, options: options).plannedDurationMs / 3_600_000
     }
 
@@ -434,7 +442,7 @@ nonisolated final class CivilZone {
     func isScheduledWorkday(_ shiftStartMs: Double, _ workdays: [Int], _ schedule: NativeWorkSchedule) -> Bool {
         if let extended {
             let day = extended.day(dayNumber: civil(shiftStartMs).dayNumber)
-            if day.source != .unassigned || !extended.fallsBackToBaseSchedule { return day.isWorkday }
+            if !day.followsBaseSchedule || !extended.fallsBackToBaseSchedule { return day.isWorkday }
         }
         return schedule.mode == "off" || isScheduledWorkdayInZone(shiftStartMs, workdays, schedule)
     }
@@ -444,7 +452,7 @@ nonisolated final class CivilZone {
     func isScheduledWorkdayInZone(_ shiftStartMs: Double, _ workdays: [Int], _ schedule: NativeWorkSchedule) -> Bool {
         if let extended {
             let day = extended.day(dayNumber: civil(shiftStartMs).dayNumber)
-            if day.source != .unassigned || !extended.fallsBackToBaseSchedule { return day.isWorkday }
+            if !day.followsBaseSchedule || !extended.fallsBackToBaseSchedule { return day.isWorkday }
         }
         if schedule.mode == "off" { return false }
         let weekday = civil(shiftStartMs).weekday
