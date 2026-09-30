@@ -20,5 +20,5 @@
 
 - iOS／Watch 无界面构建通过；iOS 完整自动回归实际执行 840 项、56 个 suite 全部通过，包含年度范围、涂抹撤销与范围概览。最后手势改动再次构建并实际运行 3 项画笔测试通过，不与完整回归相加。
 - `npm test` 453 项全部通过；lint、iOS 工程和 19 语言检查、Watch／Android 文案生成检查通过。
-- Android 四个模块自动回归 337／68／8／11 项通过；lintDebug、assembleDebug、assembleRelease 通过，扩展排班与记录 fixture 完整重算比对通过。
+- 对齐最新 main 后，Android 四个模块自动回归 337／74／8／15 项通过；lintDebug、assembleDebug、assembleRelease 通过，扩展排班与记录 fixture 完整重算比对通过。
 - 未进行模拟器视觉检查；手势与节假日按钮的实际触摸表现仍需真机确认。
