@@ -551,6 +551,7 @@
     <string name="perWorkday">每個工作日</string>
     <string name="plusAndroidComingSoon">Android 版 Plus 即將開放購買。而家可以繼續用計時器同睇近期記錄。</string>
     <string name="plusAndroidIntroBody">倒數同最近一星期保持免費。Plus 解鎖完整年度、工作人生、編輯同專注。</string>
+    <string name="plusAndroidPlansUnavailable">暫時未能從 Google Play 載入購買方案，請再試一次。</string>
     <string name="plusAndroidRenewalNotice">訂閱會自動續費，直到你取消。終身版係一次性購買，唔會取消現有訂閱。</string>
     <string name="plusAndroidRequestFailed">Google Play 暫時完成唔到呢個操作。請稍後再試。</string>
     <string name="plusAndroidStoreOffline">暫時連唔到 Google Play。連線後可以試下恢復購買。</string>

@@ -551,6 +551,7 @@
     <string name="perWorkday">Mỗi ngày làm việc</string>
     <string name="plusAndroidComingSoon">Tính năng mua Plus trên Android sẽ sớm ra mắt. Hiện bạn có thể dùng bộ đếm giờ và xem các bản ghi gần đây.</string>
     <string name="plusAndroidIntroBody">Bộ đếm giờ và tuần gần nhất vẫn miễn phí. Plus mở khóa cả năm, cuộc đời làm việc, chỉnh sửa và tập trung.</string>
+    <string name="plusAndroidPlansUnavailable">Không thể tải các gói từ Google Play. Vui lòng thử lại.</string>
     <string name="plusAndroidRenewalNotice">Gói đăng ký tự động gia hạn cho đến khi bạn hủy. Mua Lifetime một lần không hủy gói đăng ký đang hoạt động.</string>
     <string name="plusAndroidRequestFailed">Google Play không thể hoàn tất yêu cầu này. Hãy thử lại sau ít phút.</string>
     <string name="plusAndroidStoreOffline">Google Play hiện không khả dụng. Hãy thử khôi phục giao dịch mua khi có kết nối.</string>

@@ -26,6 +26,9 @@ object DoneAtAccent {
             onPrimary = foreground(primary),
             primaryContainer = container,
             onPrimaryContainer = foreground(container),
+            // Native tonal buttons, segmented controls and slider tracks use secondary roles.
+            secondary = primary, onSecondary = foreground(primary),
+            secondaryContainer = container, onSecondaryContainer = foreground(container),
             inversePrimary = readable(seed, if (dark) DoneAtColors.light else DoneAtColors.dark, !dark),
             surfaceTint = primary,
         )

@@ -89,7 +89,12 @@ fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
         onRestore = graph.plus::restore, onRefresh = graph.plus::refresh,
         onOpenUrl = { url -> activity?.let { openUrl(it, url) } },
         playsCelebrationOnAppear = !authorizedAtPresentation,
-        onContinue = pendingAction?.let { action -> { onAuthorized(action) } })
+        onContinue = pendingAction?.let { action -> { onAuthorized(action) } },
+        backLabel = when (pendingAction) {
+            is PlusPendingAction.FocusCreate, PlusPendingAction.FocusHome -> R.string.focusTitle
+            is PlusPendingAction.RecordsDay, PlusPendingAction.RecordsLifeEdit, PlusPendingAction.RecordsCharts -> R.string.recordsTab
+            PlusPendingAction.CycleSummary, null -> R.string.settings
+        })
 }
 
 /** Shared with the Debug gallery so visual checks exercise the complete purchase page. */
@@ -99,6 +104,7 @@ internal fun PlusPage(
     onBack: () -> Unit, onPurchase: (PlusOffer) -> Unit,
     onRestore: () -> Unit, onRefresh: () -> Unit, onOpenUrl: (String) -> Unit,
     playsCelebrationOnAppear: Boolean = false, onContinue: (() -> Unit)? = null,
+    backLabel: Int = R.string.settings,
 ) {
     var selectedPlan by rememberSaveable { mutableStateOf(PlusPlan.YEARLY) }
     val scroll = rememberScrollState()
@@ -110,7 +116,7 @@ internal fun PlusPage(
         Column(Modifier.safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
             Box(Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                 IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.settings))
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(backLabel))
                 }
                 Text(stringResource(R.string.plusSettings), Modifier.align(Alignment.Center).padding(horizontal = 48.dp),
                     style = MaterialTheme.typography.titleMedium)
@@ -178,7 +184,7 @@ internal fun PlusPage(
                         store.status == PlusStatus.UNCONFIGURED -> R.string.plusAndroidStoreUnconfigured
                         store.status in listOf(PlusStatus.OFFLINE, PlusStatus.ERROR) -> R.string.plusAndroidStoreOffline
                         store.status == PlusStatus.PENDING -> R.string.plusStatusPending
-                        !authorized && store.status == PlusStatus.FREE && offers.isEmpty() -> R.string.plusUnavailable
+                        !authorized && store.status == PlusStatus.FREE && offers.isEmpty() -> R.string.plusAndroidPlansUnavailable
                         else -> null
                     }
                     if (message != null) Text(stringResource(message), style = MaterialTheme.typography.bodyMedium,

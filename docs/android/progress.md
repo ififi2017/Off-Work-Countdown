@@ -261,3 +261,15 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 物理 Pixel 10 Pro / Android 17（API 37）通过无线 ADB 5037 使用独立 `com.rainif.doneat.preview` 验收：浅/深色背景、预设色、HSV 调节、HEX 输入与无效输入、取消、真实主界面保存与进程重启恢复、恢复默认色、壁纸开关保留颜色，以及玻璃底栏跟随强调色。微信输入法实测 A–F 直接输入成功；HEX 保持可见。德文实际系统 200% 字号下对话框可完整访问并可滚动，阿拉伯语布局镜像且 HEX 输入/格式提示保持正确顺序，减少动态效果探针通过。未启动 Android 模拟器。
 - QA 截图和 UI 层级位于本机 `build/android-pr-sync/accent-qa/`。完成后 Preview 语言恢复为 `zh-CN`，系统字号恢复原值 1.0；正式 Play 应用及其数据保持原样。该设备验收针对 Debug Preview，不表述为 Play 处理后的包体验收；旧系统、HyperOS 与真实交易仍待对应环境验证。
 - 基线漂移命令复核为 `94fefaa9`、`f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`，冻结基线不推进。变更继续同步到 [PR #250](https://github.com/ififi2017/Off-Work-Countdown/pull/250)。当前源码仍为 3.2.1 / versionCode 5；此前交付的 3.2.0 (5) AAB 未覆盖，本轮未生成新的签名 AAB 或操作 Play Console。
+
+
+## 2026-09-30 · Android 真机巡检与交互修复
+
+- 按用户授权使用已连接的 Pixel 10 Pro / Android 17（API 37）巡检四个主页面、排班设置、专注编辑与 Plus 页面。继续使用独立 `com.rainif.doneat.preview` 和合成数据，正式 Play 应用保持原样。
+- 用户报告订阅页出现 App Store；真机确认为 FREE 且未返回可购方案时误用 iOS `plusUnavailable`。改用 Android 专用 Google Play 提示，补齐 19 语言并重新生成资源；新增回归扫描实际 Android Kotlin 引用的字符串，阻止各语言混入 App Store 文案。没有改动 iOS 文案。
+- 修复从记录或专注进入 Plus 后返回到设置的上下文丢失。受限功能触发的 Plus 页面现在留在来源 Tab 的返回栈，返回按钮读屏名称也指向来源；继续操作先弹出来源 Plus 页面，再恢复原功能。真机分别检查系统返回、页面返回和 Debug 权益变化后的“继续使用 Plus”，不发起真实交易。
+- 专注任务草稿与番茄钟设置此前使用普通 remember，切换 Tab 后未保存编辑丢失。三个任务编辑入口使用同一原生 saveable saver，六个设置草稿值使用 rememberSaveable；不提前写入业务档案。真机确认任务标题/番茄数量跨 Tab 及系统字体变化引起的 Activity 重建保留，取消返回丢弃；番茄钟设置跨 Tab 保留未保存数值。新增一项单元回归覆盖全部任务草稿字段及可空标识。
+- 自定义强调色补齐 Material3 secondary/container 前景角色，分段选择、tonal 按钮和滑块轨道跟随所选颜色，保留中性背景和语义状态色。专注休息标签/图标使用可读的中性前景，保留青色轨道和填充。无排班的专注页面移除重复提示，提供工作时间与排班入口；任务加减按钮读屏名称区分方向，图标触摸区域采用已有 48 dp token。
+- 自动检查：四模块 449 项测试（domain 337、data 76、design 12、app 24，0 failure/error/skip），lint 0 error / 34 warning / 1 hint，Debug / R8 Release 构建通过。npm lint、44 文件 / 454 项测试、资源与版本检查通过；可用 iPhone 18 Pro 目的地的 iOS headless build 通过，没有启动模拟器进行视觉检查。日志及真机截图在本机 `build/android-pr-sync/phone-audit-2026-09-30/`。
+- 真机追加确认专注示例的深浅色休息标签、英文 Google Play 提示、德文实际 200% 字号下滚动可访问提示/重试/恢复，以及阿拉伯语 RTL。测试后 Preview 恢复为中文、浅色、非会员，系统字号恢复原值 1.0。发现德文 200% 字号时底栏长标签换行较碎，记录为后续导航布局改进；本轮没有改变该布局。该检查针对 Debug Preview，真实 Play 交易、旧 Android 与 HyperOS 仍需对应环境验收。
+- 冻结基线未推进，漂移仍为 `94fefaa9`、`f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`。源码仍为 3.2.1 / versionCode 5，修复继续同步到 PR #250；此前签名的 3.2.0 (5) AAB 未覆盖，本轮未生成新的签名 AAB 或操作 Play Console。

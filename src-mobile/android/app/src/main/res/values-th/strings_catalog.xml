@@ -551,6 +551,7 @@
     <string name="perWorkday">ต่อวันทำงาน</string>
     <string name="plusAndroidComingSoon">การซื้อ Plus บน Android จะเปิดให้ใช้งานเร็ว ๆ นี้ ตอนนี้คุณใช้ตัวจับเวลาและดูบันทึกล่าสุดได้แล้ว</string>
     <string name="plusAndroidIntroBody">ตัวจับเวลาและสัปดาห์ล่าสุดยังคงฟรี Plus ปลดล็อกมุมมองทั้งปี ชีวิตการทำงาน การแก้ไข และโหมดโฟกัส</string>
+    <string name="plusAndroidPlansUnavailable">โหลดแผนจาก Google Play ไม่สำเร็จ โปรดลองอีกครั้ง</string>
     <string name="plusAndroidRenewalNotice">การสมัครสมาชิกจะต่ออายุอัตโนมัติจนกว่าคุณจะยกเลิก การซื้อ Lifetime ครั้งเดียวไม่ยกเลิกการสมัครสมาชิกที่ใช้อยู่</string>
     <string name="plusAndroidRequestFailed">Google Play ไม่สามารถทำรายการนี้ได้ ลองอีกครั้งในอีกสักครู่</string>
     <string name="plusAndroidStoreOffline">ขณะนี้ Google Play ไม่พร้อมใช้งาน ลองกู้คืนการซื้อเมื่อเชื่อมต่อแล้ว</string>

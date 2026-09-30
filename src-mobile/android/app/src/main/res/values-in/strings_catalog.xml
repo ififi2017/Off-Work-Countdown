@@ -551,6 +551,7 @@
     <string name="perWorkday">Per hari kerja</string>
     <string name="plusAndroidComingSoon">Pembelian Plus di Android akan segera tersedia. Saat ini Anda dapat memakai pengatur waktu dan melihat catatan terbaru.</string>
     <string name="plusAndroidIntroBody">Pengatur waktu dan minggu terakhir tetap gratis. Plus membuka setahun penuh, masa kerja, penyuntingan, dan fokus.</string>
+    <string name="plusAndroidPlansUnavailable">Paket dari Google Play tidak dapat dimuat. Silakan coba lagi.</string>
     <string name="plusAndroidRenewalNotice">Langganan diperpanjang otomatis sampai Anda membatalkannya. Pembelian Lifetime sekali bayar tidak membatalkan langganan aktif.</string>
     <string name="plusAndroidRequestFailed">Google Play tidak dapat menyelesaikan permintaan ini. Coba lagi sebentar lagi.</string>
     <string name="plusAndroidStoreOffline">Google Play sedang tidak tersedia. Coba pulihkan pembelian saat Anda terhubung.</string>

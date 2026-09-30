@@ -551,6 +551,7 @@
     <string name="perWorkday">Par jour travaillé</string>
     <string name="plusAndroidComingSoon">Les achats Plus arrivent bientôt sur Android. Vous pouvez déjà utiliser le minuteur et consulter vos données récentes.</string>
     <string name="plusAndroidIntroBody">Le minuteur et la dernière semaine restent gratuits. Plus débloque l’année complète, votre vie professionnelle, la modification et la concentration.</string>
+    <string name="plusAndroidPlansUnavailable">Impossible de charger les offres depuis Google Play. Veuillez réessayer.</string>
     <string name="plusAndroidRenewalNotice">Les abonnements se renouvellent automatiquement jusqu’à leur résiliation. L’achat à vie ne résilie pas un abonnement actif.</string>
     <string name="plusAndroidRequestFailed">Google Play n’a pas pu terminer cette action. Réessayez dans un instant.</string>
     <string name="plusAndroidStoreOffline">Google Play est indisponible pour le moment. Réessayez de restaurer vos achats une fois connecté.</string>

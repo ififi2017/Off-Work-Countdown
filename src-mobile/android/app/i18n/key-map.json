@@ -1968,6 +1968,10 @@
       "resource": "string/plusAndroidIntroBody",
       "androidOnly": true
     },
+    "plusAndroidPlansUnavailable": {
+      "resource": "string/plusAndroidPlansUnavailable",
+      "androidOnly": true
+    },
     "plusAndroidRenewalNotice": {
       "resource": "string/plusAndroidRenewalNotice",
       "androidOnly": true

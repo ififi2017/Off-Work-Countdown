@@ -91,8 +91,8 @@ fun AppShell(graph: AppGraph) {
         graph.scope.launch { graph.settings.updateDevice { it.copy(selectedTab = tab.name.lowercase()) } }
     }
     fun continueAfterPlus(action: PlusPendingAction) {
-        val settings = stacks.getValue(AppTab.SETTINGS)
-        if (settings.lastOrNull() is Route.PlusFor) settings.removeAt(settings.lastIndex)
+        val source = stacks.getValue(selected)
+        if (source.lastOrNull() is Route.PlusFor) source.removeAt(source.lastIndex)
         when (action) {
             is PlusPendingAction.FocusCreate -> {
                 stacks.getValue(AppTab.FOCUS).add(Route.FocusCreate(action.blockStartAtMs, action.currentOrNext, null))
@@ -184,11 +184,16 @@ fun AppShell(graph: AppGraph) {
             onBack = { if (stack.size > 1) stack.removeAt(stack.lastIndex) },
             entryProvider = { key ->
                 entry(key, stack, graph, { action -> continueAfterPlus(action) }) { route ->
-                    // The timer's shortcuts land in Settings, with the page already open.
-                    val settings = stacks.getValue(AppTab.SETTINGS)
-                    while (settings.size > 1) settings.removeAt(settings.lastIndex)
-                    route?.let(settings::add)
-                    select(AppTab.SETTINGS)
+                    if (route is Route.PlusFor) {
+                        // A purchase prompted by a feature returns to that feature on Back.
+                        stack.add(route)
+                    } else {
+                        // The timer's shortcuts land in Settings, with the page already open.
+                        val settings = stacks.getValue(AppTab.SETTINGS)
+                        while (settings.size > 1) settings.removeAt(settings.lastIndex)
+                        route?.let(settings::add)
+                        select(AppTab.SETTINGS)
+                    }
                 }
             },
         )

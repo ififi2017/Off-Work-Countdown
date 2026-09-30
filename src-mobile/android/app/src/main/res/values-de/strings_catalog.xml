@@ -551,6 +551,7 @@
     <string name="perWorkday">Pro Arbeitstag</string>
     <string name="plusAndroidComingSoon">Plus-Käufe für Android folgen bald. Timer und aktuelle Einträge kannst du bereits nutzen.</string>
     <string name="plusAndroidIntroBody">Der Timer und die letzte Woche bleiben kostenlos. Plus schaltet das ganze Jahr, dein Arbeitsleben, Bearbeitung und Fokus frei.</string>
+    <string name="plusAndroidPlansUnavailable">Die Angebote konnten nicht von Google Play geladen werden. Bitte versuche es erneut.</string>
     <string name="plusAndroidRenewalNotice">Abos verlängern sich automatisch, bis du kündigst. Der einmalige Kauf von Lifetime beendet ein laufendes Abo nicht.</string>
     <string name="plusAndroidRequestFailed">Google Play konnte die Anfrage nicht abschließen. Versuche es gleich noch einmal.</string>
     <string name="plusAndroidStoreOffline">Google Play ist gerade nicht erreichbar. Versuche nach dem Verbinden, Käufe wiederherzustellen.</string>

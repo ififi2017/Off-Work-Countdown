@@ -551,6 +551,7 @@
     <string name="perWorkday">Por día trabajado</string>
     <string name="plusAndroidComingSoon">Pronto podrás comprar Plus en Android. Ya puedes usar el temporizador y consultar tus registros recientes.</string>
     <string name="plusAndroidIntroBody">El temporizador y la última semana siguen siendo gratis. Plus desbloquea el año completo, tu vida laboral, la edición y la concentración.</string>
+    <string name="plusAndroidPlansUnavailable">No se han podido cargar los planes de Google Play. Inténtalo de nuevo.</string>
     <string name="plusAndroidRenewalNotice">Las suscripciones se renuevan automáticamente hasta que las canceles. La compra única de Lifetime no cancela una suscripción activa.</string>
     <string name="plusAndroidRequestFailed">Google Play no pudo completar la solicitud. Inténtalo de nuevo en un momento.</string>
     <string name="plusAndroidStoreOffline">Google Play no está disponible ahora. Cuando tengas conexión, intenta restaurar tus compras.</string>

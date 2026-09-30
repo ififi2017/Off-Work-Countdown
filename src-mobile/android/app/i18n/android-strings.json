@@ -1122,6 +1122,28 @@
       "th": "สีชมพู",
       "tr": "Pembe",
       "vi": "Hồng"
+    },
+    "plusAndroidPlansUnavailable": {
+      "comment": "Plus page: Google Play returned no purchasable plans. Keep separate from the iOS App Store message.",
+      "en": "Google Play couldn't load the plans. Please try again.",
+      "zh-CN": "暂时无法从 Google Play 获取购买方案，请重试。",
+      "zh-HK": "暫時未能從 Google Play 載入購買方案，請再試一次。",
+      "zh-TW": "暫時無法從 Google Play 載入購買方案，請再試一次。",
+      "ja": "Google Play からプランを読み込めませんでした。もう一度お試しください。",
+      "ko": "Google Play에서 요금제를 불러오지 못했습니다. 다시 시도해 주세요.",
+      "de": "Die Angebote konnten nicht von Google Play geladen werden. Bitte versuche es erneut.",
+      "es": "No se han podido cargar los planes de Google Play. Inténtalo de nuevo.",
+      "fr": "Impossible de charger les offres depuis Google Play. Veuillez réessayer.",
+      "it": "Impossibile caricare i piani da Google Play. Riprova.",
+      "pt": "Não foi possível carregar os planos do Google Play. Tente novamente.",
+      "ru": "Не удалось загрузить планы из Google Play. Попробуйте ещё раз.",
+      "ar": "تعذّر تحميل الخطط من Google Play. يُرجى المحاولة مرة أخرى.",
+      "hi-IN": "Google Play से प्लान लोड नहीं हो सके। कृपया फिर से कोशिश करें।",
+      "mr-IN": "Google Play वरून योजना लोड करता आल्या नाहीत. कृपया पुन्हा प्रयत्न करा.",
+      "id": "Paket dari Google Play tidak dapat dimuat. Silakan coba lagi.",
+      "th": "โหลดแผนจาก Google Play ไม่สำเร็จ โปรดลองอีกครั้ง",
+      "tr": "Planlar Google Play üzerinden yüklenemedi. Lütfen tekrar dene.",
+      "vi": "Không thể tải các gói từ Google Play. Vui lòng thử lại."
     }
   }
 }

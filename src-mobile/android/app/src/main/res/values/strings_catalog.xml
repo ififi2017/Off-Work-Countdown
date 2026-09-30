@@ -551,6 +551,7 @@
     <string name="perWorkday">Per workday</string>
     <string name="plusAndroidComingSoon">Plus purchases are coming to Android. Your recent records and timer are ready to use now.</string>
     <string name="plusAndroidIntroBody">The timer and your recent week stay free. Plus opens the full year, your working life, editing, and focus.</string>
+    <string name="plusAndroidPlansUnavailable">Google Play couldn\'t load the plans. Please try again.</string>
     <string name="plusAndroidRenewalNotice">Subscriptions renew automatically until you cancel. Lifetime is a one-time purchase and does not cancel an active subscription.</string>
     <string name="plusAndroidRequestFailed">Google Play could not complete that request. Try again in a moment.</string>
     <string name="plusAndroidStoreOffline">Google Play is unavailable right now. Try restoring purchases when you are connected.</string>

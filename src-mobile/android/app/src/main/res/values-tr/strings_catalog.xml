@@ -551,6 +551,7 @@
     <string name="perWorkday">İş günü başına</string>
     <string name="plusAndroidComingSoon">Android\'de Plus satın alma yakında sunulacak. Şimdilik zamanlayıcıyı ve son kayıtlarını kullanabilirsin.</string>
     <string name="plusAndroidIntroBody">Zamanlayıcı ve son hafta ücretsiz kalır. Plus, tüm yılı, çalışma hayatını, düzenlemeyi ve odaklanmayı açar.</string>
+    <string name="plusAndroidPlansUnavailable">Planlar Google Play üzerinden yüklenemedi. Lütfen tekrar dene.</string>
     <string name="plusAndroidRenewalNotice">Abonelikler iptal edene kadar otomatik yenilenir. Tek seferlik Lifetime satın alımı etkin aboneliği iptal etmez.</string>
     <string name="plusAndroidRequestFailed">Google Play isteği tamamlayamadı. Kısa süre sonra tekrar dene.</string>
     <string name="plusAndroidStoreOffline">Google Play şu anda kullanılamıyor. Bağlandığında satın alımları geri yüklemeyi dene.</string>

@@ -551,6 +551,7 @@
     <string name="perWorkday">1 勤務日あたり</string>
     <string name="plusAndroidComingSoon">Android 版 Plus の購入は近日中に利用可能になります。今はタイマーと最近の記録をお使いいただけます。</string>
     <string name="plusAndroidIntroBody">タイマーと直近1週間は無料のまま。Plus で年間全体、仕事人生、編集、集中機能が使えます。</string>
+    <string name="plusAndroidPlansUnavailable">Google Play からプランを読み込めませんでした。もう一度お試しください。</string>
     <string name="plusAndroidRenewalNotice">サブスクリプションは解約するまで自動更新されます。買い切り版を購入しても、現在のサブスクリプションは解約されません。</string>
     <string name="plusAndroidRequestFailed">Google Play で操作を完了できませんでした。しばらくしてからもう一度お試しください。</string>
     <string name="plusAndroidStoreOffline">現在 Google Play に接続できません。接続後に購入を復元してください。</string>

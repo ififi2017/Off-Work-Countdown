@@ -551,6 +551,7 @@
     <string name="perWorkday">За рабочий день</string>
     <string name="plusAndroidComingSoon">Покупка Plus на Android скоро появится. Пока можно пользоваться таймером и просматривать недавние записи.</string>
     <string name="plusAndroidIntroBody">Таймер и последняя неделя остаются бесплатными. Plus открывает весь год, трудовую жизнь, редактирование и фокус.</string>
+    <string name="plusAndroidPlansUnavailable">Не удалось загрузить планы из Google Play. Попробуйте ещё раз.</string>
     <string name="plusAndroidRenewalNotice">Подписки продлеваются автоматически, пока вы их не отмените. Разовая покупка Lifetime не отменяет действующую подписку.</string>
     <string name="plusAndroidRequestFailed">Google Play не удалось выполнить запрос. Повторите попытку чуть позже.</string>
     <string name="plusAndroidStoreOffline">Google Play сейчас недоступен. Попробуйте восстановить покупки после подключения к сети.</string>

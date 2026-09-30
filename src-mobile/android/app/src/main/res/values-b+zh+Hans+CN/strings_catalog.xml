@@ -551,6 +551,7 @@
     <string name="perWorkday">每个工作日</string>
     <string name="plusAndroidComingSoon">Android 版 Plus 即将开放购买。现在可以继续使用计时器和查看近期记录。</string>
     <string name="plusAndroidIntroBody">倒计时和最近一周保持免费。Plus 解锁完整年度、工作人生、编辑和专注。</string>
+    <string name="plusAndroidPlansUnavailable">暂时无法从 Google Play 获取购买方案，请重试。</string>
     <string name="plusAndroidRenewalNotice">订阅会自动续费，直到你取消。终身版是一次性购买，不会取消现有订阅。</string>
     <string name="plusAndroidRequestFailed">Google Play 暂时无法完成操作。请稍后重试。</string>
     <string name="plusAndroidStoreOffline">暂时无法连接 Google Play。联网后可尝试恢复购买。</string>

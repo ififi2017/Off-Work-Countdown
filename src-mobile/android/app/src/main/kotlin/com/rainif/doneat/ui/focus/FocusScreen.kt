@@ -204,6 +204,7 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                         scope.launch { if (graph.focus.start(taskID, graph.nowMs(), block.startAtMs)) view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
                     },
                     onAdd = { create(null, currentOrNext = true) },
+                    onSchedule = { openSettings(Route.Schedule) },
                     onUnlock = { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) },
                 )
             }
@@ -217,7 +218,7 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                     scale == FocusScale.USUAL && locked -> LockedUsualScale(res) { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) }
                     scale == FocusScale.USUAL -> UsualScale(graph, context, open)
                     locked -> LockedCanvas(context) { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) }
-                    model.isEmpty -> Text(stringResource(R.string.focusNoShift), Modifier.padding(vertical = 24.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    model.isEmpty -> Unit // The status card already explains this and links to the schedule.
                     else -> {
                         if (model.isNextShift) {
                             val day = java.time.Instant.ofEpochMilli(model.shiftStartAtMs).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
@@ -367,6 +368,7 @@ private fun NowBand(
     onExtend: (String) -> Unit,
     onStart: (FocusDayCanvas.Block) -> Unit,
     onAdd: () -> Unit,
+    onSchedule: () -> Unit,
     onUnlock: () -> Unit,
 ) {
     val model = context.canvas
@@ -386,6 +388,11 @@ private fun NowBand(
                         Button(onClick = onUnlock) { Text(stringResource(R.string.plusSeePlans)) }
                     }
                     session != null -> Running(graph, context, session, onStop, onExtend)
+                    model.isEmpty -> {
+                        Text(stringResource(R.string.focusTitle), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.focusNoShift), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                        TextButton(onClick = onSchedule) { Text(stringResource(R.string.workSchedule)) }
+                    }
                     graph.focus.dayComplete(context.nowMs, context.state) -> {
                         Text(stringResource(R.string.focusCompletedTasksTitle), style = MaterialTheme.typography.titleMedium)
                         Button(onClick = onAdd) { Text(stringResource(R.string.focusQuickCreate)) }
@@ -476,7 +483,7 @@ private fun Running(graph: AppGraph, context: FocusContext, session: FocusSessio
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 title, style = MaterialTheme.typography.labelLarge, maxLines = 2, overflow = TextOverflow.Ellipsis,
-                color = if (session.kind == FocusSessionKind.FOCUS) scheme.primary else LocalDoneAtRecordsColors.current.workBreak,
+                color = if (session.kind == FocusSessionKind.FOCUS) scheme.primary else scheme.onSurfaceVariant,
             )
             Countdown(context, session.plannedEndAtMs, graph)
             Text(Strings.focusEndsAt(res, context.text.time(session.plannedEndAtMs)), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)

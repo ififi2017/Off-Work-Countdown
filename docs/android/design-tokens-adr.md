@@ -103,7 +103,7 @@ Compose BOM 2026.09.00：`androidx.compose.material3:material3:1.4.0`，`compose
 
 - `DeviceSettings.accentColor` 保存不透明 RGB 整数，可为空；与壁纸配色一样属于 Android 本机设置，不加入跨端 RecordJSON 或同步协议。旧文件缺省或非法色值恢复品牌色，不丢弃其他本机设置。
 - 选择自定义颜色会关闭壁纸配色；开启壁纸配色时保留之前的自定义颜色，关闭后恢复。默认橙色清除自定义选择并关闭壁纸配色。
-- `DoneAtAccent` 保留中性页面表面和语义状态色，只调整 primary、primaryContainer、相应前景及 inversePrimary/surfaceTint。选定 RGB 原值保留；强调色用于文字时，必要时向白/黑调整明度，使其对六种表面至少达到 4.6:1。按钮及容器前景选择可读的黑/白。品牌图标保持品牌色。
+- `DoneAtAccent` 保留中性页面表面和语义状态色，调整 primary/secondary、对应 container/前景及 inversePrimary/surfaceTint；原生分段选择、tonal 按钮和滑块轨道与主操作使用同一强调色。选定 RGB 原值保留；强调色用于文字时，必要时向白/黑调整明度，使其对六种表面至少达到 4.6:1。按钮及容器前景选择可读的黑/白。品牌图标保持品牌色。
 - 沿用现有稳定 Material3 Slider、AlertDialog 和输入框，无新依赖。常用色有本地化名称、RadioButton 选中状态和 48 dp 触摸范围；滑块暴露标签，HEX 校验错误及保存动作可供辅助功能使用。HEX 输入、预览和格式提示保持从左到右；其余布局按 RTL 镜像。真机微信输入法会把 Ascii 键盘的 A–F 组合成拼音，因此请求直接拉丁输入，但不启用密码遮罩，色值始终可见。
 
 

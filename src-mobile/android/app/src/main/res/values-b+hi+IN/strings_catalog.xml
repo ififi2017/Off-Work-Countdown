@@ -551,6 +551,7 @@
     <string name="perWorkday">प्रति कार्यदिवस</string>
     <string name="plusAndroidComingSoon">Android पर Plus की खरीदारी जल्द उपलब्ध होगी। अभी आप टाइमर और हाल के रिकॉर्ड इस्तेमाल कर सकते हैं।</string>
     <string name="plusAndroidIntroBody">टाइमर और पिछले सप्ताह के रिकॉर्ड मुफ़्त रहेंगे। Plus से पूरे साल, कामकाजी जीवन, संपादन और फ़ोकस की सुविधाएँ मिलती हैं।</string>
+    <string name="plusAndroidPlansUnavailable">Google Play से प्लान लोड नहीं हो सके। कृपया फिर से कोशिश करें।</string>
     <string name="plusAndroidRenewalNotice">सदस्यताएँ रद्द करने तक अपने आप नवीनीकृत होती हैं। लाइफ़टाइम की एक बार की खरीद से मौजूदा सदस्यता रद्द नहीं होती।</string>
     <string name="plusAndroidRequestFailed">Google Play अनुरोध पूरा नहीं कर सका। थोड़ी देर बाद फिर कोशिश करें।</string>
     <string name="plusAndroidStoreOffline">Google Play अभी उपलब्ध नहीं है। कनेक्ट होने पर खरीदारी बहाल करने का प्रयास करें।</string>

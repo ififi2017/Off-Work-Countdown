@@ -551,6 +551,7 @@
     <string name="perWorkday">لكل يوم عمل</string>
     <string name="plusAndroidComingSoon">ستتوفر مشتريات Plus على Android قريبًا. يمكنك الآن استخدام المؤقت وعرض سجلاتك الأخيرة.</string>
     <string name="plusAndroidIntroBody">يبقى المؤقت والأسبوع الأخير مجانيين. يتيح Plus عرض السنة كاملة وحياتك المهنية والتعديل والتركيز.</string>
+    <string name="plusAndroidPlansUnavailable">تعذّر تحميل الخطط من Google Play. يُرجى المحاولة مرة أخرى.</string>
     <string name="plusAndroidRenewalNotice">تتجدد الاشتراكات تلقائيًا حتى تلغيها. شراء الخطة مدى الحياة لمرة واحدة لا يلغي اشتراكًا نشطًا.</string>
     <string name="plusAndroidRequestFailed">تعذّر على Google Play إكمال الطلب. حاول مرة أخرى بعد قليل.</string>
     <string name="plusAndroidStoreOffline">Google Play غير متاح الآن. حاول استعادة مشترياتك بعد الاتصال بالإنترنت.</string>
