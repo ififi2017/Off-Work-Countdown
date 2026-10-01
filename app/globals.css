@@ -199,9 +199,40 @@ html:not(.mobile-shell) body {
   transition: filter 60ms ease-out;
 }
 
+/* 浅色卡片上暖色辉光几乎看不见，换成更深的琥珀色描边光。 */
+html:not(.dark) .woodfish-struck {
+  filter: drop-shadow(0 0 3px rgba(217, 119, 6, 0.55))
+    drop-shadow(0 1px 6px rgba(180, 83, 9, 0.3));
+}
+
+/* 敲击回弹：先被敲扁一点再弹回。键盘敲击没有 :active，靠它也能看出敲中了。 */
+@keyframes woodfishBonk {
+  0% {
+    transform: scale(1, 1);
+  }
+  30% {
+    transform: scale(1.06, 0.88);
+  }
+  65% {
+    transform: scale(0.98, 1.03);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+.woodfish-bonk {
+  display: block;
+  transform-origin: 50% 85%;
+  animation: woodfishBonk 220ms cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .woodfish-floater {
     animation-duration: 1ms;
+  }
+  .woodfish-bonk {
+    animation: none;
   }
   .woodfish-idle,
   .woodfish-struck {
