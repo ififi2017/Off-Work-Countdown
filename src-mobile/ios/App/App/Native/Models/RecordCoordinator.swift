@@ -1732,10 +1732,24 @@ final class RecordCoordinator {
                 requiresManualReview = true
             }
         }
-        // The server row out-ranked the tombstone, so this identity is alive
-        // again. Drop the local tombstone or `.skipErased` imports would keep
-        // skipping the day and the next fetch would erase it a second time.
-        state.clearErased(type, key: key)
+        // A schedule row from an older build never replaces this device's copy
+        // (2026-10-01): it can be missing fields this build relies on, and its
+        // edit count says nothing about which copy is newer data. This copy is
+        // sent back above it instead, so every device converges on it. A row
+        // this device does not have yet is still taken as it is.
+        let olderScheduleWriter = local != nil && !hasSameBusinessContent
+            && RecordsSyncPayload.isFromOlderScheduleWriter(payload, type: type)
+        if olderScheduleWriter {
+            reassertScheduleRow(type: type, key: key, above: editCount)
+            removeCloudConflict(type: type, key: key)
+            action = .ignore
+        } else {
+            // The server row out-ranked the tombstone, so this identity is
+            // alive again. Drop the local tombstone or `.skipErased` imports
+            // would keep skipping the day and the next fetch would erase it a
+            // second time.
+            state.clearErased(type, key: key)
+        }
         switch action {
         case .ignore:
             break
@@ -2467,6 +2481,27 @@ final class RecordCoordinator {
     private func reviveAboveTombstone(_ editCount: inout Int, over erasedEditCount: Int?) {
         guard let erasedEditCount, editCount <= erasedEditCount else { return }
         editCount = erasedEditCount + 1
+    }
+
+    /// Re-sends this device's schedule row above an older build's edit count.
+    /// The edit time stays: no one edited it here.
+    private func reassertScheduleRow(type: RecordEntityType, key: String, above serverCount: Int) {
+        switch type {
+        case .extendedSchedule:
+            guard var schedule = state.extendedSchedule else { return }
+            schedule.editCount = max(schedule.editCount, serverCount) + 1
+            schedule.editTieBreaker = UUID()
+            state.extendedSchedule = schedule
+            markDirty(.extendedSchedule, key: key, editCount: schedule.editCount, tie: schedule.editTieBreaker)
+        case .rosterDay:
+            guard let index = state.rosterDays.firstIndex(where: { $0.dayKey == key }) else { return }
+            state.rosterDays[index].editCount = max(state.rosterDays[index].editCount, serverCount) + 1
+            state.rosterDays[index].editTieBreaker = UUID()
+            let row = state.rosterDays[index]
+            markDirty(.rosterDay, key: key, editCount: row.editCount, tie: row.editTieBreaker)
+        default:
+            break
+        }
     }
 
     private func markDirty(

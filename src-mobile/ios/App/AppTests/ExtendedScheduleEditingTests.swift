@@ -810,4 +810,29 @@ struct ExtendedScheduleEditingTests {
         #expect(try JSONDecoder().decode(RosterDayDTO.self, from: JSONEncoder().encode(RosterDayDTO(row))).value() == row)
     }
 
+    @Test("Back on a pattern after a saved free calendar, only the future copies of the old pattern are dropped")
+    func droppingCopiedDays() {
+        let work = UUID()
+        func row(_ key: String, generated: Bool?) -> RosterDay {
+            RosterDay(dayKey: key, shiftTypeID: work, generatedFromPattern: generated,
+                      timeZoneIdentifier: "Asia/Shanghai", editedAt: .distantPast, editCount: 1, editTieBreaker: UUID())
+        }
+        let stored = [
+            row("2026-09-30", generated: true),   // past copy: history stays
+            row("2026-10-08", generated: true),   // future copy: dropped
+            row("2026-10-09", generated: true),   // future copy, but timed: stays
+            row("2026-10-12", generated: nil),    // set by hand: stays
+            row("2026-10-13", generated: true),   // future copy the user edited in this draft: their edit wins
+        ]
+        let rest = UUID()
+        let result = ExtendedScheduleEditing.droppingCopiedDays(
+            edits: ["2026-10-13": .shift(rest)],
+            stored: stored,
+            from: "2026-10-01",
+            protectedDays: ["2026-10-09"]
+        )
+        #expect(result == ["2026-10-08": .followPattern, "2026-10-13": .shift(rest)])
+        #expect(ExtendedScheduleEditing.droppingCopiedDays(edits: nil, stored: [], from: "2026-10-01", protectedDays: []) == nil)
+    }
 }
+

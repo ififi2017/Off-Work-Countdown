@@ -178,6 +178,28 @@ nonisolated enum ExtendedScheduleEditing {
         return next.isEmpty ? nil : next
     }
 
+    /// Going back to a pattern after a saved free calendar. The free calendar
+    /// had copied the old pattern into future days; left in place, those
+    /// copies would keep overriding the pattern the user just chose — and
+    /// turn into days with no shift once the copied types are gone. Only
+    /// copies are dropped: a day the user set by hand (no provenance, or set
+    /// after the copy), a day with time records and past days all stay.
+    static func droppingCopiedDays(
+        edits: [String: RosterDayEdit]?,
+        stored: [RosterDay],
+        from today: String,
+        protectedDays: Set<String>
+    ) -> [String: RosterDayEdit]? {
+        var next = edits ?? [:]
+        for day in stored where day.generatedFromPattern == true
+            && day.dayKey >= today
+            && !protectedDays.contains(day.dayKey)
+            && next[day.dayKey] == nil {
+            next[day.dayKey] = .followPattern
+        }
+        return next.isEmpty ? nil : next
+    }
+
     /// Only generated assignments can be removed. Legacy rows without provenance
     /// remain manual; neither time records nor user corrections are mutated.
     static func clearingExpectedDays(

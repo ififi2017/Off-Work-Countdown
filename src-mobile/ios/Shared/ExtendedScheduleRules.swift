@@ -476,7 +476,13 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
         byDayNumber.reserveCapacity(handSetDays.count)
         var months: [Int: [Int: UUID]] = [:]
         var frozen: [Int: ShiftType] = [:]
-        for (key, typeID) in handSetDays {
+        // A day set to a type this schedule does not have — written under an
+        // earlier set of types, such as one rebuilt from a fresh seed — says
+        // nothing about the day. Letting it win would turn a workday into a day
+        // with no shift; the pattern and holidays decide it instead. Archived
+        // types are still present, so days worked under them keep their shift.
+        let knownTypeIDs = Set(shiftTypes.map(\.id))
+        for (key, typeID) in handSetDays where knownTypeIDs.contains(typeID) {
             guard let parts = ExtendedScheduleResolver.parse(dayKey: key) else { continue }
             byDayNumber[CivilZone.dayNumber(year: parts.year, month: parts.month, day: parts.day)] = typeID
             months[ExtendedScheduleResolver.monthKey(year: parts.year, month: parts.month), default: [:]][parts.day] = typeID
