@@ -157,3 +157,42 @@ struct LeaveAdoptionTests {
         #expect(!records.state.isErased(.leaveDay, key: "2026-10-20"))
     }
 }
+
+/// Plan 020 P3: the free-plan count stays on the device and counts each
+/// distinct request once.
+@MainActor
+@Suite("Leave planner free plans")
+struct LeavePlannerTrialTests {
+    @Test("Three free plans, each request counted once and kept on this device only")
+    func trialCount() throws {
+        let suite = "LeavePlannerTrial.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let preferences = PreferencesStore(defaults: defaults, records: RecordCoordinator.inMemory())
+        #expect(preferences.leavePlannerTrialsLeft == 3)
+        preferences.countLeavePlannerTrial(request: "a")
+        preferences.countLeavePlannerTrial(request: "a")
+        #expect(preferences.leavePlannerTrialsLeft == 2)
+        preferences.countLeavePlannerTrial(request: "b")
+        preferences.countLeavePlannerTrial(request: "c")
+        preferences.countLeavePlannerTrial(request: "d")
+        #expect(preferences.leavePlannerTrialsLeft == 0)
+
+        // A relaunch reads the same count back; nothing reaches synced settings.
+        let reopened = PreferencesStore(defaults: defaults, records: RecordCoordinator.inMemory())
+        #expect(reopened.leavePlannerTrialsLeft == 0)
+        #expect(reopened.leavePlannerTrialsUsed == 4)
+    }
+
+    @Test("A request's fingerprint ignores the order balances were picked in")
+    func fingerprint() {
+        let first = UUID(), second = UUID()
+        let one = ShiftSessionStore.LeavePlanRequest(goal: .restAtLeast(days: 7), fromDayNumber: 1, throughDayNumber: 9,
+                                                     budgetIDs: [first, second])
+        var other = one
+        other.budgetIDs = [second, first]
+        #expect(one.fingerprint == other.fingerprint)
+        other.goal = .leaveAtMost(halfDays: 7)
+        #expect(one.fingerprint != other.fingerprint)
+    }
+}

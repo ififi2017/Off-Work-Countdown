@@ -700,6 +700,7 @@ extension PlusPaywallReason {
         case .sync: "plusSyncLocked"
         case .focus: "plusFocusLocked"
         case .cycleEndSummaryNotifications: "cycleEndSummaryNotificationTitle"
+        case .leavePlanning: "plusLeaveLocked"
         }
     }
 }

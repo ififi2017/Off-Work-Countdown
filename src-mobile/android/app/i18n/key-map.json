@@ -1253,6 +1253,218 @@
     "languageFooter": {
       "resource": "string/languageFooter"
     },
+    "leaveAddBalance": {
+      "resource": "string/leaveAddBalance"
+    },
+    "leaveAdopt": {
+      "resource": "string/leaveAdopt"
+    },
+    "leaveAdoptFailed": {
+      "resource": "string/leaveAdoptFailed"
+    },
+    "leaveAdoptedPlans": {
+      "resource": "string/leaveAdoptedPlans"
+    },
+    "leaveAtLeast": {
+      "resource": "string/leaveAtLeast",
+      "params": [
+        "days"
+      ]
+    },
+    "leaveAvailable": {
+      "resource": "string/leaveAvailable",
+      "params": [
+        "count"
+      ]
+    },
+    "leaveBalanceAfter": {
+      "resource": "string/leaveBalanceAfter",
+      "params": [
+        "used",
+        "left"
+      ]
+    },
+    "leaveBalanceInUse": {
+      "resource": "string/leaveBalanceInUse"
+    },
+    "leaveBalanceNamePlaceholder": {
+      "resource": "string/leaveBalanceNamePlaceholder"
+    },
+    "leaveBalancesSection": {
+      "resource": "string/leaveBalancesSection"
+    },
+    "leaveCarriedOverCaveat": {
+      "resource": "string/leaveCarriedOverCaveat"
+    },
+    "leaveDayHalf": {
+      "resource": "string/leaveDayHalf"
+    },
+    "leaveDayHoliday": {
+      "resource": "string/leaveDayHoliday"
+    },
+    "leaveDayLeave": {
+      "resource": "string/leaveDayLeave"
+    },
+    "leaveDayRest": {
+      "resource": "string/leaveDayRest"
+    },
+    "leaveDaysOff": {
+      "resource": "plurals/leaveDaysOff"
+    },
+    "leaveDaysUnit": {
+      "resource": "string/leaveDaysUnit"
+    },
+    "leaveDeleteBalance": {
+      "resource": "string/leaveDeleteBalance"
+    },
+    "leaveEditBalance": {
+      "resource": "string/leaveEditBalance"
+    },
+    "leaveEntitled": {
+      "resource": "string/leaveEntitled"
+    },
+    "leaveEstimated": {
+      "resource": "string/leaveEstimated"
+    },
+    "leaveEstimatedYear": {
+      "resource": "string/leaveEstimatedYear",
+      "params": [
+        "year"
+      ]
+    },
+    "leaveFind": {
+      "resource": "string/leaveFind"
+    },
+    "leaveFirstHalf": {
+      "resource": "string/leaveFirstHalf"
+    },
+    "leaveGoalBudget": {
+      "resource": "string/leaveGoalBudget"
+    },
+    "leaveGoalRest": {
+      "resource": "string/leaveGoalRest"
+    },
+    "leaveHalfDayInvalid": {
+      "resource": "string/leaveHalfDayInvalid"
+    },
+    "leaveKindAnnual": {
+      "resource": "string/leaveKindAnnual"
+    },
+    "leaveKindCompensatory": {
+      "resource": "string/leaveKindCompensatory"
+    },
+    "leaveKindCustom": {
+      "resource": "string/leaveKindCustom"
+    },
+    "leaveLastShiftEnds": {
+      "resource": "string/leaveLastShiftEnds"
+    },
+    "leaveMainlandHolidaysMissing": {
+      "resource": "string/leaveMainlandHolidaysMissing",
+      "params": [
+        "year"
+      ]
+    },
+    "leaveNewBalance": {
+      "resource": "string/leaveNewBalance"
+    },
+    "leaveNextShiftStarts": {
+      "resource": "string/leaveNextShiftStarts"
+    },
+    "leaveNoBalancesHint": {
+      "resource": "string/leaveNoBalancesHint"
+    },
+    "leaveNoLeaveNeeded": {
+      "resource": "string/leaveNoLeaveNeeded"
+    },
+    "leaveNoResults": {
+      "resource": "string/leaveNoResults"
+    },
+    "leavePlanAction": {
+      "resource": "string/leavePlanAction"
+    },
+    "leaveRangeEnd": {
+      "resource": "string/leaveRangeEnd"
+    },
+    "leaveRangeFooter": {
+      "resource": "string/leaveRangeFooter",
+      "params": [
+        "start",
+        "end"
+      ]
+    },
+    "leaveRangeStart": {
+      "resource": "string/leaveRangeStart"
+    },
+    "leaveRequests": {
+      "resource": "string/leaveRequests"
+    },
+    "leaveResultsTitle": {
+      "resource": "string/leaveResultsTitle"
+    },
+    "leaveRoleEarly": {
+      "resource": "string/leaveRoleEarly"
+    },
+    "leaveRoleLate": {
+      "resource": "string/leaveRoleLate"
+    },
+    "leaveSecondHalf": {
+      "resource": "string/leaveSecondHalf"
+    },
+    "leaveTitle": {
+      "resource": "string/leaveTitle"
+    },
+    "leaveTrialsLeft": {
+      "resource": "plurals/leaveTrialsLeft"
+    },
+    "leaveTrialsUsedUp": {
+      "resource": "string/leaveTrialsUsedUp"
+    },
+    "leaveUnassignedCaveat": {
+      "resource": "string/leaveUnassignedCaveat"
+    },
+    "leaveUndoConfirm": {
+      "resource": "string/leaveUndoConfirm"
+    },
+    "leaveUndoPlan": {
+      "resource": "string/leaveUndoPlan"
+    },
+    "leaveUpTo": {
+      "resource": "string/leaveUpTo",
+      "params": [
+        "days"
+      ]
+    },
+    "leaveUseBalances": {
+      "resource": "string/leaveUseBalances"
+    },
+    "leaveUsedBefore": {
+      "resource": "string/leaveUsedBefore"
+    },
+    "leaveUsedBeforeNote": {
+      "resource": "string/leaveUsedBeforeNote"
+    },
+    "leaveUses": {
+      "resource": "string/leaveUses",
+      "params": [
+        "days"
+      ]
+    },
+    "leaveValidFrom": {
+      "resource": "string/leaveValidFrom"
+    },
+    "leaveValidUntil": {
+      "resource": "string/leaveValidUntil"
+    },
+    "leaveValidUntilDate": {
+      "resource": "string/leaveValidUntilDate",
+      "params": [
+        "date"
+      ]
+    },
+    "leaveWhole": {
+      "resource": "string/leaveWhole"
+    },
     "lifeAddEmployment": {
       "resource": "string/lifeAddEmployment"
     },
@@ -2039,6 +2251,9 @@
     },
     "plusIntroTitle": {
       "resource": "string/plusIntroTitle"
+    },
+    "plusLeaveLocked": {
+      "resource": "string/plusLeaveLocked"
     },
     "plusLifeLocked": {
       "resource": "string/plusLifeLocked"
