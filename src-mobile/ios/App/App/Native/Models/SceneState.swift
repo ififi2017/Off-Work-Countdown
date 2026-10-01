@@ -13,6 +13,7 @@ enum AppTab: String, CaseIterable, Hashable, Identifiable {
 enum AppRoute: String, Hashable, Identifiable {
     case schedule
     case leave
+    case shiftAlarms
     case salary
     case notifications
     case lunch
@@ -576,7 +577,15 @@ final class SceneState {
             actions.preferences.applyPreferences { $0.cycleEndSummaryNotificationEnabled = true }
         case .enableSync:
             Task { await enableCloudSync(using: recovery) }
+        case .enableShiftAlarms:
+            actions.preferences.shiftAlarmSettings.isEnabled = true
         }
+    }
+
+    /// Shift alarms are Plus (plan 020 §5); a purchase from here turns them on.
+    func requestShiftAlarms() {
+        pendingPlusAction = .enableShiftAlarms
+        paywallSheet = .shiftAlarms
     }
 
     func setCycleEndSummaryNotifications(

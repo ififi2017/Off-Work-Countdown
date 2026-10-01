@@ -1,3 +1,4 @@
 "CFBundleDisplayName" = "DoneAt";
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID は、この端末に保存された給与情報を他人に見られないよう保護します。";
+"NSAlarmKitUsageDescription" = "DoneAt は各シフトの前、選んだ時刻に鳴ってあなたを起こします。";

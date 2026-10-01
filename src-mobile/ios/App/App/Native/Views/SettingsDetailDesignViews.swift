@@ -84,8 +84,20 @@ struct ScheduleSettingsView: View {
     private func updateContent(_ updated: ExtendedScheduleContent) {
         var next = updated
         if next.rule != nil { next.clearedFromDayKey = nil }
+        let leavingSavedFreeCalendar = next.rule != nil
+            && shifts.preferences.isExtendedScheduleEnabled
+            && shifts.preferences.extendedScheduleContent?.rule == nil
         edit {
             if next.rule != nil { $0.restorePatternAfterFreePreview() }
+            if leavingSavedFreeCalendar {
+                let now = Date.now
+                $0.rosterEdits = ExtendedScheduleEditing.droppingCopiedDays(
+                    edits: $0.rosterEdits,
+                    stored: shifts.records.state.rosterDays,
+                    from: shifts.session.extendedTodayKey(at: now),
+                    protectedDays: shifts.protectedRosterDays(at: now)
+                )
+            }
             $0.extendedContent = next
             $0.extendedScheduleEnabled = !isManual
             if isManual, let work = next.shiftTypes.first(where: { $0.kind == .work && !$0.isArchived }) {

@@ -248,19 +248,33 @@ struct ExtendedScheduleRulesTests {
         #expect(try Self.resolved(resolver, "2026-11-01").source == .unassigned)
     }
 
-    @Test("An archived type still resolves and an unknown one does not")
+    @Test("An archived type still resolves; a day set to a type the schedule lacks follows the pattern")
     func archivedAndUnknownTypes() throws {
         let unknown = UUID()
-        let resolver = try Self.resolver(handSet: [
+        // Early on weekdays, rest at weekends, from Monday 2026-09-28.
+        let week = ShiftCycleRule(
+            preset: .weekly, anchorDayKey: "2026-09-28",
+            days: [Self.early, Self.early, Self.early, Self.early, Self.early, Self.rest, Self.rest]
+        )
+        let resolver = try Self.resolver(rule: week, handSet: [
             "2026-10-01": Self.rest,
             "2026-10-02": unknown,
+            "2026-10-03": unknown,
         ])
         // Archived: a past day keeps the shift it was actually worked as.
         let archived = try Self.resolved(resolver, "2026-10-01")
         #expect(archived.shiftTypeID == Self.rest)
         #expect(archived.isWorkday == false)
-        // Unknown: sync can deliver a day before the type that names it.
-        #expect(try Self.resolved(resolver, "2026-10-02").source == .unassigned)
+        // Unknown: written under an earlier set of types (a schedule rebuilt
+        // from a fresh seed), or delivered by sync before its type. It no
+        // longer turns Friday into a day with no shift.
+        let friday = try Self.resolved(resolver, "2026-10-02")
+        #expect(friday.source == .rule)
+        #expect(friday.shiftTypeID == Self.early)
+        #expect(friday.isWorkday)
+        let saturday = try Self.resolved(resolver, "2026-10-03")
+        #expect(saturday.source == .rule)
+        #expect(saturday.isWorkday == false)
     }
 
     // MARK: What the rules do with it

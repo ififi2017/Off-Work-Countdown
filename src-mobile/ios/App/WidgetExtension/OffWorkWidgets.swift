@@ -1,4 +1,5 @@
 import ActivityKit
+import AlarmKit
 import AppIntents
 import SwiftUI
 import UIKit
@@ -9,6 +10,76 @@ struct OffWorkWidgets: WidgetBundle {
     var body: some Widget {
         OffWorkCountdownWidget()
         OffWorkLiveActivityWidget()
+        ShiftAlarmLiveActivityWidget()
+    }
+}
+
+/// A shift alarm while it snoozes (plan 020 §3). AlarmKit draws the ringing
+/// alert itself; between snooze and the next ring it shows this, counting
+/// down to when the alarm sounds again.
+struct ShiftAlarmLiveActivityWidget: Widget {
+    var body: some WidgetConfiguration {
+        ActivityConfiguration(for: AlarmAttributes<ShiftAlarmMetadata>.self) { context in
+            HStack(spacing: 12) {
+                Image(systemName: "alarm.fill")
+                    .font(.title2)
+                    .foregroundStyle(context.attributes.tintColor)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(context.attributes.metadata?.snoozeLabel ?? "")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Text(context.attributes.metadata?.title ?? "")
+                        .font(.headline)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                ShiftAlarmCountdown(state: context.state)
+                    .font(.title.monospacedDigit().weight(.semibold))
+            }
+            .padding(16)
+            .environment(\.colorScheme, .dark)
+            .activityBackgroundTint(.black.opacity(0.38))
+            .activitySystemActionForegroundColor(.white)
+        } dynamicIsland: { context in
+            DynamicIsland {
+                DynamicIslandExpandedRegion(.leading) {
+                    Label(context.attributes.metadata?.snoozeLabel ?? "", systemImage: "alarm.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(context.attributes.tintColor)
+                        .lineLimit(1)
+                }
+                DynamicIslandExpandedRegion(.trailing) {
+                    ShiftAlarmCountdown(state: context.state)
+                        .font(.title3.monospacedDigit().weight(.semibold))
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    Text(context.attributes.metadata?.title ?? "")
+                        .font(.headline)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } compactLeading: {
+                Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
+            } compactTrailing: {
+                ShiftAlarmCountdown(state: context.state)
+                    .monospacedDigit()
+                    .frame(maxWidth: 44)
+            } minimal: {
+                Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
+            }
+            .keylineTint(context.attributes.tintColor)
+        }
+    }
+}
+
+private struct ShiftAlarmCountdown: View {
+    let state: AlarmPresentationState
+
+    var body: some View {
+        if case .countdown(let countdown) = state.mode {
+            Text(timerInterval: Date.now...max(Date.now, countdown.fireDate), countsDown: true)
+                .multilineTextAlignment(.trailing)
+        }
     }
 }
 

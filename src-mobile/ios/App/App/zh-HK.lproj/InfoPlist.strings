@@ -1,3 +1,4 @@
 "CFBundleDisplayName" = "DoneAt";
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID 用於保護本機上的薪資資料不被他人看到。";
+"NSAlarmKitUsageDescription" = "DoneAt 會喺每更開工前、你設定嘅時間響鬧鐘叫醒你。";

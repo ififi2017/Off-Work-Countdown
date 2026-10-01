@@ -2071,12 +2071,6 @@
     "onboardingPlusFocusTitle": {
       "resource": "string/onboardingPlusFocusTitle"
     },
-    "onboardingPlusLeaveBody": {
-      "resource": "string/onboardingPlusLeaveBody"
-    },
-    "onboardingPlusLeaveTitle": {
-      "resource": "string/onboardingPlusLeaveTitle"
-    },
     "onboardingPlusLifeBody": {
       "resource": "string/onboardingPlusLifeBody"
     },
@@ -2088,6 +2082,12 @@
     },
     "onboardingPlusRecordsTitle": {
       "resource": "string/onboardingPlusRecordsTitle"
+    },
+    "onboardingPlusRestBody": {
+      "resource": "string/onboardingPlusRestBody"
+    },
+    "onboardingPlusRestTitle": {
+      "resource": "string/onboardingPlusRestTitle"
     },
     "onboardingPrivacyBody": {
       "resource": "string/onboardingPrivacyBody"
@@ -2249,6 +2249,9 @@
     "plusBenefitLife": {
       "resource": "string/plusBenefitLife"
     },
+    "plusBenefitShiftAlarms": {
+      "resource": "string/plusBenefitShiftAlarms"
+    },
     "plusBenefitSync": {
       "resource": "string/plusBenefitSync"
     },
@@ -2323,6 +2326,9 @@
     },
     "plusSettings": {
       "resource": "string/plusSettings"
+    },
+    "plusShiftAlarmsLocked": {
+      "resource": "string/plusShiftAlarmsLocked"
     },
     "plusSkip": {
       "resource": "string/plusSkip"
@@ -3067,6 +3073,106 @@
       "params": [
         "time"
       ]
+    },
+    "shiftAlarmRefreshBody": {
+      "resource": "string/shiftAlarmRefreshBody"
+    },
+    "shiftAlarmRefreshTitle": {
+      "resource": "string/shiftAlarmRefreshTitle"
+    },
+    "shiftAlarmRenewBody": {
+      "resource": "string/shiftAlarmRenewBody"
+    },
+    "shiftAlarmSnooze": {
+      "resource": "string/shiftAlarmSnooze"
+    },
+    "shiftAlarmSnoozing": {
+      "resource": "string/shiftAlarmSnoozing"
+    },
+    "shiftAlarmStop": {
+      "resource": "string/shiftAlarmStop"
+    },
+    "shiftAlarmTitle": {
+      "resource": "string/shiftAlarmTitle",
+      "params": [
+        "shift",
+        "time"
+      ]
+    },
+    "shiftAlarmTitleFixed": {
+      "resource": "string/shiftAlarmTitleFixed",
+      "params": [
+        "time"
+      ]
+    },
+    "shiftAlarmsAllow": {
+      "resource": "string/shiftAlarmsAllow"
+    },
+    "shiftAlarmsAllowNote": {
+      "resource": "string/shiftAlarmsAllowNote"
+    },
+    "shiftAlarmsBeforeWork": {
+      "resource": "string/shiftAlarmsBeforeWork"
+    },
+    "shiftAlarmsCoveredThrough": {
+      "resource": "string/shiftAlarmsCoveredThrough",
+      "params": [
+        "date"
+      ]
+    },
+    "shiftAlarmsDenied": {
+      "resource": "string/shiftAlarmsDenied"
+    },
+    "shiftAlarmsDeniedNote": {
+      "resource": "string/shiftAlarmsDeniedNote"
+    },
+    "shiftAlarmsIntro": {
+      "resource": "string/shiftAlarmsIntro"
+    },
+    "shiftAlarmsLeadOff": {
+      "resource": "string/shiftAlarmsLeadOff"
+    },
+    "shiftAlarmsLeadSection": {
+      "resource": "string/shiftAlarmsLeadSection"
+    },
+    "shiftAlarmsLifetimeWindow": {
+      "resource": "string/shiftAlarmsLifetimeWindow"
+    },
+    "shiftAlarmsLimitReached": {
+      "resource": "string/shiftAlarmsLimitReached"
+    },
+    "shiftAlarmsNoneUpcoming": {
+      "resource": "string/shiftAlarmsNoneUpcoming"
+    },
+    "shiftAlarmsOnShort": {
+      "resource": "string/shiftAlarmsOnShort"
+    },
+    "shiftAlarmsOpenSettings": {
+      "resource": "string/shiftAlarmsOpenSettings"
+    },
+    "shiftAlarmsRefresh": {
+      "resource": "string/shiftAlarmsRefresh"
+    },
+    "shiftAlarmsReminderOff": {
+      "resource": "string/shiftAlarmsReminderOff"
+    },
+    "shiftAlarmsStartsAt": {
+      "resource": "string/shiftAlarmsStartsAt",
+      "params": [
+        "time"
+      ]
+    },
+    "shiftAlarmsTitle": {
+      "resource": "string/shiftAlarmsTitle"
+    },
+    "shiftAlarmsUntilExpiry": {
+      "resource": "string/shiftAlarmsUntilExpiry",
+      "params": [
+        "date"
+      ]
+    },
+    "shiftAlarmsUpcoming": {
+      "resource": "string/shiftAlarmsUpcoming"
     },
     "shiftEnded": {
       "resource": "string/shiftEnded"

@@ -101,10 +101,11 @@ final class AppRuntime {
 
     let notifications = NotificationService()
     let liveActivities = LiveActivityService()
+    let shiftAlarms = ShiftAlarmService()
     let watchSnapshots = WatchSnapshotPublisher()
     private(set) lazy var services = ServiceCoordinator(operations: .app(
         shifts: shifts, recovery: recovery, notifications: notifications, liveActivities: liveActivities,
-        watchSnapshots: watchSnapshots,
+        shiftAlarms: shiftAlarms, watchSnapshots: watchSnapshots,
         debugDidResetOnLaunch: debugDidResetOnLaunch
     ))
 

@@ -1,3 +1,4 @@
 "CFBundleDisplayName" = "DoneAt";
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID menjaga data gaji Anda tetap privat di perangkat ini.";
+"NSAlarmKitUsageDescription" = "DoneAt berbunyi sebelum setiap sif, pada waktu pilihanmu, untuk membangunkanmu.";

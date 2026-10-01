@@ -63,6 +63,7 @@ final class PreferencesStore {
         static let recordsTimeZone = "ios.native.recordsTimeZone"
         static let lifeSetupPromptDismissed = "ios.native.lifeSetupPromptDismissed"
         static let leavePlannerTrialsUsed = "ios.native.leavePlannerTrialsUsed"
+        static let shiftAlarms = "ios.native.shiftAlarms"
     }
     private(set) var startMinutes: Int
     private(set) var endMinutes: Int
@@ -128,6 +129,11 @@ final class PreferencesStore {
     }
     var liveActivityEnabled: Bool { didSet { defaults.set(liveActivityEnabled, forKey: Key.liveActivityEnabled) } }
     var liveActivityLeadMinutes: Int { didSet { defaults.set(liveActivityLeadMinutes, forKey: Key.liveActivityLead) } }
+    /// Shift alarms ring on this device only (plan 020 §3), so their settings
+    /// stay out of synced preferences and backups.
+    var shiftAlarmSettings: ShiftAlarmSettings {
+        didSet { defaults.set(try? JSONEncoder().encode(shiftAlarmSettings), forKey: Key.shiftAlarms) }
+    }
     /// The language iOS would give us, kept as stored state so a change while
     /// the app is backgrounded invalidates the views that read it.
     private(set) var systemLanguageCode: String
@@ -298,6 +304,8 @@ final class PreferencesStore {
         liveActivityEnabled = defaults.bool(forKey: Key.liveActivityEnabled)
         let storedLead = defaults.object(forKey: Key.liveActivityLead) == nil ? 15 : defaults.integer(forKey: Key.liveActivityLead)
         liveActivityLeadMinutes = Self.allowedLiveActivityLeadMinutes.contains(storedLead) ? storedLead : 15
+        shiftAlarmSettings = defaults.data(forKey: Key.shiftAlarms)
+            .flatMap { try? JSONDecoder().decode(ShiftAlarmSettings.self, from: $0) } ?? ShiftAlarmSettings()
         let legacyLunchEdgesEnabled = defaults.bool(forKey: Key.legacyLunchEdgesEnabled)
         lunchStartReminderEnabled = defaults.object(forKey: Key.lunchStartReminderEnabled) == nil
             ? legacyLunchEdgesEnabled

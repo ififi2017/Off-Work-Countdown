@@ -28,6 +28,7 @@ struct SettingsSectionCard: View {
 
         case .reminders:
             link(.notifications, icon: "bell.badge", title: shifts.text.t("shiftReminders"), value: shifts.text.notificationModeLabel)
+            link(.shiftAlarms, icon: "alarm", title: shifts.text.t("shiftAlarmsTitle"), value: shifts.shiftAlarmsLabel)
             link(.health, icon: "figure.walk", title: shifts.text.t("microBreakReminder"), value: shifts.healthLabel, isLast: true)
 
         case .appearance:
