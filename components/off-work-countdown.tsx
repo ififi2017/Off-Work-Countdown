@@ -24,6 +24,7 @@ import {
   ArrowRight,
   Calculator,
   CalendarDays,
+  CalendarRange,
   ChevronRight,
   Clock3,
   Github,
@@ -94,10 +95,16 @@ import {
   type ShiftTimeline,
   DEFAULT_MONTHLY_WORKING_DAYS,
   DEFAULT_WORKDAYS,
+  civilDateKey,
   parseWorkdays,
   serializeWorkdays,
-  isWorkday,
+  isScheduledWorkday,
+  findEndedShiftOnEndCalendarDay,
 } from "@/lib/countdown";
+import { resolveScheduleDay } from "@/lib/extended-schedule";
+import { defaultScheduleSettings, parseScheduleSettings, scheduleMode, scheduleModeKeys, seedPlan, workScheduleConfig, SCHEDULE_STORAGE_KEY, type FixedHours, type ScheduleSettings } from "@/lib/schedule-settings";
+import { holidayDay, holidayOverrides, loadHolidayRegion, type HolidayRegion } from "@/lib/holidays";
+import { ScheduleEditor, hoursLabel } from "./ScheduleEditor";
 import { WorkdaySelector } from "./WorkdaySelector";
 import { PeriodSummary } from "./PeriodSummary";
 import { DesktopStatsPage } from "./DesktopStatsPage";
@@ -384,9 +391,12 @@ export function OffWorkCountdown({
   const [desktopNotificationMode, setDesktopNotificationMode] =
     useState<DesktopNotificationMode>("off");
   const [workdays, setWorkdays] = useState<number[]>(DEFAULT_WORKDAYS);
+  const [scheduleSettings, setScheduleSettings] = useState<ScheduleSettings>(defaultScheduleSettings);
   const [showCountdown, setShowCountdown] = useState(false);
   const [showDesktopSettings, setShowDesktopSettings] = useState(false);
-  const [showDesktopStats, setShowDesktopStats] = useState(false);
+  const [desktopSubpage, setDesktopSubpage] = useState<"stats" | "schedule" | null>(null);
+  // 从计时页直接打开排班时，返回键回到计时页而不是设置列表。
+  const subpageFromTimerRef = useRef(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
   // 计时尚未正式开始时，移动端首页仍给出实时班次预览。首帧保持 0，避免
@@ -651,6 +661,7 @@ export function OffWorkCountdown({
   // 加载本地存储的设置
   useEffect(() => {
     if (isMounted) {
+      setScheduleSettings(parseScheduleSettings(getOptionalLocalStorageItem(SCHEDULE_STORAGE_KEY)));
       setStartTime(getLocalStorageItem("startTime", "09:00"));
       setEndTime(getLocalStorageItem("endTime", "18:00"));
       const legacyReminder =
@@ -737,7 +748,7 @@ export function OffWorkCountdown({
   // 再下一工作日，而不是让自动排班永久停止。手动停止写的是空 segments，
   // 因而不会被这里误恢复。
   useEffect(() => {
-    if (!IS_DESKTOP_BUILD || !settingsLoaded) return;
+    if (!IS_DESKTOP_BUILD || !settingsLoaded || desktopStateRestored) return;
 
     let cancelled = false;
     void Promise.all([
@@ -771,7 +782,7 @@ export function OffWorkCountdown({
           return;
         }
         const needsScheduleRecovery =
-          !state.running && getShiftEndAtMs(state) <= Date.now();
+          !scheduleSettings.manual && !state.running && getShiftEndAtMs(state) <= Date.now();
         if (
           !needsScheduleRecovery &&
           (!state.running ||
@@ -797,7 +808,7 @@ export function OffWorkCountdown({
     return () => {
       cancelled = true;
     };
-  }, [settingsLoaded]);
+  }, [settingsLoaded, scheduleSettings.manual, desktopStateRestored]);
 
   useEffect(() => {
     if (!IS_DESKTOP_BUILD || !settingsLoaded) return;
@@ -807,7 +818,13 @@ export function OffWorkCountdown({
   }, [settingsLoaded]);
 
   useEffect(() => {
-    if (!showDesktopSettings) setShowDesktopStats(false);
+    if (showDesktopSettings) return;
+    // 等横移动画结束再收起子页，滑出途中不闪回设置列表。
+    const timer = window.setTimeout(() => {
+      setDesktopSubpage(null);
+      subpageFromTimerRef.current = false;
+    }, 340);
+    return () => window.clearTimeout(timer);
   }, [showDesktopSettings]);
 
   useEffect(() => {
@@ -996,6 +1013,7 @@ export function OffWorkCountdown({
     settingsLoaded
   );
   usePersistedSetting("workdays", serializeWorkdays(workdays), settingsLoaded);
+  usePersistedSetting(SCHEDULE_STORAGE_KEY, JSON.stringify(scheduleSettings), persistOwnSchedule);
   usePersistedSetting("salaryType", salaryType, settingsLoaded);
   usePersistedSetting("salaryAmount", salaryAmount, settingsLoaded);
   usePersistedSetting("monthlyWorkingDays", monthlyWorkingDays, settingsLoaded);
@@ -1058,6 +1076,12 @@ export function OffWorkCountdown({
               ? newValue
               : "off"
           );
+          break;
+        case SCHEDULE_STORAGE_KEY:
+          if (!isSharedView) {
+            setScheduleSettings(parseScheduleSettings(newValue));
+            setFormError("");
+          }
           break;
         case "workdays":
           setWorkdays(parseWorkdays(newValue));
@@ -1126,19 +1150,75 @@ export function OffWorkCountdown({
   // 午休整段落在班次之外时 buildTimelineFromBounds 会直接丢弃它，界面上却
   // 看不出任何异常——开关还亮着、时间还显示着。这里显式算一次好给出提示。
 
-  const shiftBuildOptions = useMemo(
+  // 只有用户在排班页存下的计划才算「排班」；固定星期加节假日仍走原来的表单。
+  const storedRoster =
+    IS_DESKTOP_BUILD && !isSharedView && !scheduleSettings.manual ? scheduleSettings.plan : null;
+
+  // 节假日数据按地区单独加载（public/holidays），加载完成前按普通排班计算。
+  const holidayRegionId =
+    IS_DESKTOP_BUILD && !isSharedView && !scheduleSettings.manual ? scheduleSettings.holidayRegion || null : null;
+  const [loadedHolidays, setLoadedHolidays] = useState<{ region: string; data: HolidayRegion } | null>(null);
+  useEffect(() => {
+    if (!holidayRegionId) return;
+    let cancelled = false;
+    void loadHolidayRegion(holidayRegionId).then((data) => {
+      if (!cancelled && data) setLoadedHolidays({ region: holidayRegionId, data });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [holidayRegionId]);
+  const holidays = loadedHolidays?.region === holidayRegionId ? loadedHolidays.data : null;
+  const holidayOverrideMap = useMemo(() => (holidays ? holidayOverrides(holidays) : null), [holidays]);
+  // 固定星期没有存下的计划：按表单现有的时间、工作日和午休临时生成等价的
+  // 每周计划，交给共享规则叠加节假日。
+  const fixedHolidayPlan = useMemo(
     () =>
-      IS_DESKTOP_BUILD && lunchEnabled
-        ? {
-            breakStartTime: lunchStartTime,
-            breakDurationMinutes: lunchDurationMinutes,
-          }
-        : {},
-    [lunchEnabled, lunchStartTime, lunchDurationMinutes]
+      holidayOverrideMap && !scheduleSettings.plan
+        ? seedPlan(
+            {
+              startTime,
+              endTime,
+              workdays,
+              breakStartTime: lunchEnabled ? lunchStartTime : null,
+              breakDurationMinutes: lunchEnabled ? lunchDurationMinutes : 0,
+            },
+            civilDateKey(Date.now()),
+            { work: t("extendedDefaultWorkShift"), rest: t("extendedDefaultRest") },
+            scheduleSettings.fixedTypes
+          )
+        : null,
+    [holidayOverrideMap, scheduleSettings.plan, scheduleSettings.fixedTypes, startTime, endTime, workdays, lunchEnabled, lunchStartTime, lunchDurationMinutes, t]
+  );
+
+  const schedule = useMemo(
+    // Schedule patterns are a desktop setting; Web keeps fixed weekdays.
+    () =>
+      IS_DESKTOP_BUILD && !isSharedView
+        ? workScheduleConfig(
+            scheduleSettings,
+            holidayOverrideMap
+              ? { fixedPlan: fixedHolidayPlan ?? scheduleSettings.plan!, overrides: holidayOverrideMap }
+              : undefined
+          )
+        : undefined,
+    [isSharedView, scheduleSettings, holidayOverrideMap, fixedHolidayPlan]
+  );
+
+  const shiftBuildOptions = useMemo(
+    () => ({
+      extendedSchedule: schedule?.extendedSchedule,
+      ...(IS_DESKTOP_BUILD && lunchEnabled ? {
+        breakStartTime: lunchStartTime,
+        breakDurationMinutes: lunchDurationMinutes,
+      } : {}),
+    }),
+    [lunchEnabled, lunchStartTime, lunchDurationMinutes, schedule]
   );
 
   const lunchWithinShift = useMemo(() => {
-    if (!lunchEnabled) return true;
+    // 排班的班次各自带休息时段，这里的午休设置对它们不生效。
+    if (!lunchEnabled || storedRoster) return true;
     // 直接问「真正用来计时的那个 timeline 收下这段午休了吗」，而不是另写一遍
     // 判断条件：buildTimelineFromBounds 落在班次外时会静默丢弃午休，只留一个
     // segment。这个警告存在的意义就是揭示那次静默丢弃，自己抄一份规则等于给
@@ -1150,7 +1230,7 @@ export function OffWorkCountdown({
       shiftBuildOptions
     );
     return shift.segments.length > 1;
-  }, [lunchEnabled, startTime, endTime, shiftBuildOptions]);
+  }, [lunchEnabled, startTime, endTime, shiftBuildOptions, storedRoster]);
 
   const getDailySalary = useCallback(() => {
     // 空输入是用户删掉旧值、准备重输时的正常中间态，placeholder 也约定此时
@@ -1205,6 +1285,7 @@ export function OffWorkCountdown({
         periodStart: startOfYear(now),
         asOf: now,
         workdays,
+        schedule,
         currentShiftStart: new Date(getShiftStartAtMs(shift)),
         currentShiftEnd: new Date(getShiftEndAtMs(shift)),
         plannedDailyHours:
@@ -1253,6 +1334,7 @@ export function OffWorkCountdown({
               startTime,
               endTime,
               workdays,
+              schedule,
               afterMs: Math.max(getShiftEndAtMs(activeShift), Date.now()),
               options: shiftBuildOptions,
             }),
@@ -1280,7 +1362,7 @@ export function OffWorkCountdown({
             nextShiftLabel: `${t("nextShiftLabelShort")} __TIME__`,
             lunchStartNotification: t("lunchStartNotification"),
             lunchEndNotification: t("lunchEndNotification"),
-            lunchNotificationEnabled: lunchEnabled && lunchStartNotificationEnabled,
+            lunchNotificationEnabled: (lunchEnabled || Boolean(storedRoster)) && lunchStartNotificationEnabled,
             lunchEndNotificationEnabled,
             microBreakEnabled,
             microBreakIntervalMinutes,
@@ -1337,6 +1419,8 @@ export function OffWorkCountdown({
     hideEarnings,
     configuredDailySalary,
     workdays,
+    schedule,
+    storedRoster,
     startTime,
     endTime,
     lang,
@@ -1632,6 +1716,7 @@ export function OffWorkCountdown({
                 startTime,
                 endTime,
                 workdays,
+                schedule,
                 afterMs: Math.max(endAtMs, now.getTime()),
                 options: shiftBuildOptions,
               })
@@ -1685,7 +1770,7 @@ export function OffWorkCountdown({
               celebrationPendingRef.current = endAtMs;
             }
           }
-          if (!IS_STATIC_SHELL_BUILD) stopTick?.();
+          if (!IS_STATIC_SHELL_BUILD || schedule?.mode === "off") stopTick?.();
         } else {
           setShowNextShiftStatus(false);
           const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -1739,7 +1824,7 @@ export function OffWorkCountdown({
       stopTick = startSecondTick(updateCountdown);
     }
     return () => stopTick?.();
-  }, [showCountdown, startTime, endTime, activeShift, reminder, calculateProgress, t, shiftBuildOptions, workdays, triggerCelebration]);
+  }, [showCountdown, startTime, endTime, activeShift, reminder, calculateProgress, t, shiftBuildOptions, workdays, schedule, triggerCelebration]);
 
   useEffect(() => {
     if (!IS_MOBILE_BUILD || showCountdown) return;
@@ -1749,13 +1834,25 @@ export function OffWorkCountdown({
   }, [showCountdown]);
 
   const handleStart = () => {
-    if (startTime === endTime) {
+    const roster = schedule?.extendedSchedule;
+    if (!storedRoster && startTime === endTime) {
       setFormError(t("sameTimeError"));
       return;
     }
 
     const now = new Date();
-    const shift = buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
+    let shift = buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
+    // 排班的休息日没有当天班次可计时：刚结束的夜班仍算今天，否则从下一班开始。
+    if (roster) {
+      const ended = findEndedShiftOnEndCalendarDay({ startTime, endTime, nowMs: now.getTime(), workdays, schedule, options: shiftBuildOptions });
+      const liveIsOpen = now.getTime() >= getShiftStartAtMs(shift) && now.getTime() < getShiftEndAtMs(shift);
+      if (ended && !liveIsOpen) shift = ended;
+      if (!isScheduledWorkday(new Date(getShiftStartAtMs(shift)), workdays, schedule)) {
+        const next = findNextShiftTimeline({ startTime, endTime, workdays, schedule, afterMs: now.getTime(), options: shiftBuildOptions });
+        if (!next) { setFormError(t("scheduleNoUpcomingShift")); return; }
+        shift = next;
+      }
+    }
     const startAtMs = getShiftStartAtMs(shift);
     const endAtMs = getShiftEndAtMs(shift);
     if (IS_WEB_BUILD && startAtMs > now.getTime()) {
@@ -2327,6 +2424,7 @@ export function OffWorkCountdown({
     const common = {
       asOf: now,
       workdays,
+      schedule,
       currentShiftStart: new Date(getShiftStartAtMs(summaryShift)),
       currentShiftEnd: new Date(getShiftEndAtMs(summaryShift)),
       plannedDailyHours:
@@ -2351,6 +2449,7 @@ export function OffWorkCountdown({
     isMounted,
     showCountdown,
     workdays,
+    schedule,
     startTime,
     endTime,
     shiftBuildOptions,
@@ -2364,15 +2463,71 @@ export function OffWorkCountdown({
   // 今天这一班是否落在工作日。挂载前一律按 true 处理：这个判断依赖当前时间，
   // 服务端与客户端的结果可能不同，直接算会造成 hydration 不匹配。
   // 判断用班次的开始时刻而非「现在」，这样跨夜班归属正确（见 isWorkday 注释）。
+  // 排班（非固定星期）由排班页决定每天的班次，表单只展示今天这一班。
+  const editorMode = IS_DESKTOP_BUILD && !isSharedView ? scheduleMode(scheduleSettings) : "weekly";
+  const rosterPlan = storedRoster;
+  // 解析今天时带上节假日：放假那天显示休息。
+  const resolvedRoster = storedRoster ? schedule?.extendedSchedule ?? storedRoster : null;
+  const rosterToday = resolvedRoster && isMounted ? (() => {
+    const key = civilDateKey(Date.now());
+    const day = resolveScheduleDay(resolvedRoster, key);
+    return { day, type: resolvedRoster.frozenShiftTypes?.[key] ?? resolvedRoster.shiftTypes.find((type) => type.id === day.shiftTypeID) };
+  })() : null;
+  const todayHoliday = isMounted && holidays ? holidayDay(holidays, civilDateKey(Date.now()), lang) : null;
+  // 今天的节假日只作标签旁的一句注释，与标签同字号，不单独占一行。
+  const holidayNote = todayHoliday ? (
+    <span
+      className={`min-w-0 truncate text-xs ${
+        todayHoliday.isWorkday ? "text-orange-600 dark:text-orange-400" : "text-muted-foreground/80"
+      }`}
+    >
+      {todayHoliday.name} · {t(todayHoliday.isWorkday ? "holidayMakeupWorkday" : "holidayRestDay")}
+    </span>
+  ) : null;
+  const openSchedule = (fromTimer: boolean) => {
+    subpageFromTimerRef.current = fromTimer;
+    setDesktopSubpage("schedule");
+    setShowDesktopSettings(true);
+  };
+  const scheduleLink = IS_DESKTOP_BUILD && !isSharedView ? (
+    <button
+      type="button"
+      onClick={() => openSchedule(true)}
+      className="inline-flex min-w-0 shrink items-center gap-0.5 text-xs text-muted-foreground transition-colors hover:text-orange-600 dark:hover:text-orange-400"
+    >
+      <span className="truncate">{t(scheduleModeKeys[editorMode])}</span>
+      <ChevronRight className="h-3 w-3 shrink-0 rtl:rotate-180" />
+    </button>
+  ) : null;
+  const scheduleFixedHours: FixedHours = {
+    startTime,
+    endTime,
+    workdays,
+    breakStartTime: lunchEnabled ? lunchStartTime : null,
+    breakDurationMinutes: lunchEnabled ? lunchDurationMinutes : 0,
+  };
+  const handleScheduleChange = (next: ScheduleSettings, fixed?: FixedHours) => {
+    setScheduleSettings(next);
+    if (!fixed) return;
+    setStartTime(fixed.startTime);
+    setEndTime(fixed.endTime);
+    setWorkdays(fixed.workdays);
+    setLunchEnabled(fixed.breakStartTime !== null);
+    if (fixed.breakStartTime !== null) {
+      setLunchStartTime(fixed.breakStartTime);
+      setLunchDurationMinutes(fixed.breakDurationMinutes);
+      setLunchDurationInput(String(fixed.breakDurationMinutes));
+    }
+  };
   const todayIsWorkday =
     !isMounted ||
-    isWorkday(
+    isScheduledWorkday(
       new Date(
         activeShift
           ? getShiftStartAtMs(activeShift)
-          : getShiftBounds(startTime, endTime, new Date()).start.getTime()
+          : getShiftBounds(startTime, endTime, new Date(), undefined, schedule?.extendedSchedule).start.getTime()
       ),
-      workdays
+      workdays, schedule
     );
 
   const mobilePreview = useMemo(() => {
@@ -2388,13 +2543,14 @@ export function OffWorkCountdown({
     let shift = buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
     let startAtMs = getShiftStartAtMs(shift);
     const endAtMs = getShiftEndAtMs(shift);
-    const currentShiftIsWorkday = isWorkday(new Date(startAtMs), workdays);
+    const currentShiftIsWorkday = isScheduledWorkday(new Date(startAtMs), workdays, schedule);
 
     if (!currentShiftIsWorkday || mobilePreviewNowMs >= endAtMs) {
       const nextShift = findNextShiftTimeline({
         startTime,
         endTime,
         workdays,
+        schedule,
         afterMs: mobilePreviewNowMs,
         options: shiftBuildOptions,
       });
@@ -2431,6 +2587,7 @@ export function OffWorkCountdown({
     startTime,
     t,
     workdays,
+    schedule,
   ]);
 
   const mobileNotificationValue = t(
@@ -2440,6 +2597,10 @@ export function OffWorkCountdown({
         ? "notificationModeSimple"
         : "notificationModeOff"
   );
+  const sharingShift = schedule?.extendedSchedule && activeShift ? {
+    start: new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(getShiftStartAtMs(activeShift))),
+    end: new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(activeShift.plannedEndAtMs)),
+  } : { start: startTime, end: endTime };
   const mobileSalaryValue =
     configuredDailySalary !== null
       ? hideEarnings
@@ -2994,7 +3155,26 @@ export function OffWorkCountdown({
                     </h2>
                   </div>
                 )}
-                <div className="grid grid-cols-2 gap-3">
+                {rosterToday ? <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <Label className="shrink-0 text-xs font-medium text-muted-foreground">{t("extendedToday")}</Label>
+                      {holidayNote}
+                    </span>
+                    {scheduleLink}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openSchedule(true)}
+                    className="flex h-9 w-full min-w-0 items-center gap-2.5 rounded-xl border border-input bg-background px-3 text-start text-sm transition-colors hover:border-gray-300 dark:text-white dark:hover:border-gray-600"
+                  >
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: rosterToday.type?.colorHex ?? "transparent" }} />
+                    <span className="min-w-0 flex-1 truncate">{rosterToday.type?.name ?? t("extendedUnassigned")}</span>
+                    <span className="shrink-0 tabular-nums text-gray-500 dark:text-gray-400" dir="ltr">
+                      {rosterToday.type?.kind === "work" ? hoursLabel(rosterToday.type, t) : t("extendedKindRest")}
+                    </span>
+                  </button>
+                </div> : <div className="grid grid-cols-2 gap-3">
                   <TimeSelector
                     id="startTime"
                     label={t("startTime")}
@@ -3015,16 +3195,22 @@ export function OffWorkCountdown({
                       handleTimeChange("end", hour, minute)
                     }
                   />
-                </div>
-                <WorkdaySelector
+                </div>}
+                {editorMode === "weekly" && <div className={IS_DESKTOP_BUILD ? "pt-1.5" : undefined}><WorkdaySelector
                   lang={lang}
                   label={t("workdaysLabel")}
                   value={workdays}
                   onChange={setWorkdays}
                   compact={IS_DESKTOP_BUILD}
                   mobile={IS_MOBILE_BUILD}
-                />
-                {!todayIsWorkday && (
+                  accessory={scheduleLink}
+                  labelNote={holidayNote}
+                /></div>}
+                {editorMode === "manual" && <div className="flex min-w-0 items-center justify-between gap-3 pt-1.5">
+                  <p className="min-w-0 truncate text-xs text-muted-foreground">{t("scheduleOffManualStart")}</p>
+                  {scheduleLink}
+                </div>}
+                {!todayHoliday && !todayIsWorkday && !rosterToday && (
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {t("restDay")}
                   </p>
@@ -3380,7 +3566,7 @@ export function OffWorkCountdown({
                   timeLeft={timeLeft}
                   progress={progress}
                   isOff={progress >= 100}
-                  shift={{ start: startTime, end: endTime }}
+                  shift={sharingShift}
                   desktop={IS_DESKTOP_BUILD}
                   mobile={IS_MOBILE_BUILD}
                 />
@@ -3427,8 +3613,8 @@ export function OffWorkCountdown({
                   type="button"
                   data-tauri-drag-region="false"
                   onClick={() =>
-                    showDesktopStats
-                      ? setShowDesktopStats(false)
+                    desktopSubpage && !subpageFromTimerRef.current
+                      ? setDesktopSubpage(null)
                       : setShowDesktopSettings(false)
                   }
                   className="-ms-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-black/5 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
@@ -3445,7 +3631,11 @@ export function OffWorkCountdown({
                       : "min-w-0 truncate whitespace-nowrap text-xl font-bold leading-none tracking-tight dark:text-white"
                   }
                 >
-                  {showDesktopStats ? t("desktopStats") : t("settings")}
+                  {desktopSubpage === "stats"
+                    ? t("desktopStats")
+                    : desktopSubpage === "schedule"
+                      ? t("workSchedule")
+                      : t("settings")}
                 </h2>
               </div>
             </div>
@@ -3465,7 +3655,7 @@ export function OffWorkCountdown({
                 style={
                   IS_DESKTOP_BUILD
                     ? {
-                        transform: showDesktopStats
+                        transform: desktopSubpage
                           ? `translateX(${isRtl ? "50%" : "-50%"})`
                           : "translateX(0)",
                       }
@@ -3512,7 +3702,26 @@ export function OffWorkCountdown({
                   <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white/35 shadow-sm dark:border-gray-700 dark:bg-black/10">
                     <button
                       type="button"
-                      onClick={() => setShowDesktopStats(true)}
+                      onClick={() => openSchedule(false)}
+                      className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <CalendarRange className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{t("workSchedule")}</span>
+                      </span>
+                      <span className="flex min-w-0 items-center gap-1 text-xs font-normal text-gray-500 dark:text-gray-400">
+                        <span className="truncate">{t(scheduleModeKeys[editorMode])}</span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-gray-400 rtl:rotate-180" />
+                      </span>
+                    </button>
+                  </section>
+                  <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white/35 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        subpageFromTimerRef.current = false;
+                        setDesktopSubpage("stats");
+                      }}
                       className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
                     >
                       <span className="flex items-center gap-2">
@@ -3730,14 +3939,16 @@ export function OffWorkCountdown({
                         <Coffee size={16} />
                         {t("lunchBreak")}
                       </Label>
-                      <Switch
+                      {/* 排班的每种班次自带休息时段，这里只保留提醒开关。 */}
+                      {!rosterPlan && <Switch
                         id="lunch-enabled"
                         checked={lunchEnabled}
                         onCheckedChange={handleLunchEnabledChange}
-                      />
+                      />}
                     </div>
-                    {lunchEnabled && (
+                    {(lunchEnabled || rosterPlan) && (
                       <div className="space-y-3 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
+                        {!rosterPlan && (
                         <div className="grid grid-cols-[minmax(0,1fr)_120px] items-end gap-3">
                           <TimeSelector
                             id="lunchStartTime"
@@ -3790,6 +4001,7 @@ export function OffWorkCountdown({
                             </div>
                           </div>
                         </div>
+                        )}
                         <div className="flex items-center justify-between gap-3">
                           <Label
                             htmlFor="lunch-start-notification"
@@ -4055,7 +4267,19 @@ export function OffWorkCountdown({
             </div>
             {IS_DESKTOP_BUILD && (
               <div className="desktop-scrollbar h-full w-1/2 min-h-0 overflow-y-auto px-6 pb-4 pt-2">
-                <DesktopStatsPage lang={lang} />
+                {desktopSubpage === "schedule" && (
+                  <ScheduleEditor
+                    lang={lang}
+                    settings={scheduleSettings}
+                    fixed={scheduleFixedHours}
+                    holidays={holidays}
+                    onChange={handleScheduleChange}
+                  />
+                )}
+                {/* 活动页始终挂载：它订阅了 Tauri Store，反复订阅/退订会撞上插件的监听器清理问题。 */}
+                <div className={desktopSubpage === "schedule" ? "hidden" : undefined}>
+                  <DesktopStatsPage lang={lang} />
+                </div>
               </div>
             )}
               </div>
