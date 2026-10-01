@@ -53,6 +53,10 @@ struct ServiceScheduleSignal: Equatable, Sendable {
             "\(shifts.preferences.salaryEnabled)-\(shifts.preferences.salaryAmount)-\(shifts.preferences.salaryType.rawValue)-\(shifts.preferences.monthlyWorkingDays)",
             "\(shifts.preferences.liveActivityEnabled)-\(shifts.preferences.liveActivityLeadMinutes)",
             "\(shifts.preferences.focusLiveActivityEnabled)-\(shifts.focus.focusNotificationsEnabled)",
+            // Alarms follow the lead times and the exact entitlement window,
+            // which a renewal moves without changing `isAuthorized`.
+            shifts.preferences.shiftAlarmSettings.signature,
+            "\(shifts.plus.authorization)-\(shifts.plus.renewsAutomatically)",
         ].joined(separator: "|")
     }
 

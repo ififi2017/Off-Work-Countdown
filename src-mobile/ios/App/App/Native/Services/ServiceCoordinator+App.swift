@@ -7,6 +7,7 @@ extension ServiceCoordinator.Operations {
         recovery: RecoveryStore,
         notifications: NotificationService,
         liveActivities: LiveActivityService,
+        shiftAlarms: ShiftAlarmService,
         watchSnapshots: WatchSnapshotPublisher,
         debugDidResetOnLaunch: Bool = false
     ) -> Self {
@@ -39,6 +40,7 @@ extension ServiceCoordinator.Operations {
             },
             begin: {
                 shifts.plus.start()
+                shiftAlarms.observeAuthorization { shifts.shiftAlarmPlan() }
                 watchSnapshots.start()
                 recovery.cloudSync.startIfEnabled()
             },
@@ -80,6 +82,8 @@ extension ServiceCoordinator.Operations {
                 await LaunchTrace.interval("focusNotifications") { await shifts.focus.refreshFocusNotifications() }
                 guard !Task.isCancelled else { return }
                 await LaunchTrace.interval("liveActivities") { await liveActivities.reschedule(shifts: shifts) }
+                guard !Task.isCancelled else { return }
+                await LaunchTrace.interval("shiftAlarms") { await shiftAlarms.reconcile(shifts.shiftAlarmPlan()) }
             },
             publishWatch: { await watchSnapshots.publish(shifts: shifts) }
         )

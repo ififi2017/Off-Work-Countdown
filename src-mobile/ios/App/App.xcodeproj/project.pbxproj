@@ -226,6 +226,7 @@
 			membershipExceptions = (
 				Models/FocusActivityIntents.swift,
 				Models/LiveActivityAttributes.swift,
+				Models/ShiftAlarmAttributes.swift,
 			);
 			target = 740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */;
 		};

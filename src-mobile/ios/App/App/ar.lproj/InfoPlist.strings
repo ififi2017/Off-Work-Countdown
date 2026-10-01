@@ -1,3 +1,4 @@
 "CFBundleDisplayName" = "DoneAt";
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "يحافظ Face ID على خصوصية بيانات راتبك على هذا الجهاز.";
+"NSAlarmKitUsageDescription" = "يرنّ DoneAt قبل كل مناوبة في الوقت الذي تختاره ليوقظك.";

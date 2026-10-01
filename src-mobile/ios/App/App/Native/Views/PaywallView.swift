@@ -686,6 +686,7 @@ struct PlusBenefit: Identifiable {
         PlusBenefit(id: "edit", icon: "pencil", titleKey: "plusBenefitEdit"),
         PlusBenefit(id: "focus", icon: FocusTaskIcon.focus.systemName, titleKey: "plusBenefitFocus"),
         PlusBenefit(id: "leave", icon: "suitcase", titleKey: "plusBenefitLeave"),
+        PlusBenefit(id: "alarms", icon: "alarm", titleKey: "plusBenefitShiftAlarms"),
         PlusBenefit(id: "sync", icon: "icloud", titleKey: "plusBenefitSync"),
     ]
 }
@@ -702,6 +703,7 @@ extension PlusPaywallReason {
         case .focus: "plusFocusLocked"
         case .cycleEndSummaryNotifications: "cycleEndSummaryNotificationTitle"
         case .leavePlanning: "plusLeaveLocked"
+        case .shiftAlarms: "plusShiftAlarmsLocked"
         }
     }
 }

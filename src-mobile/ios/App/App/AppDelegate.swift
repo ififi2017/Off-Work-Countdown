@@ -2,6 +2,7 @@ import os
 import ObjectiveC
 import SwiftUI
 import UIKit
+import UserNotifications
 
 private let orientationLog = Logger(
     subsystem: "com.rainif.offworkcountdown.macappstore",
@@ -25,6 +26,8 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
                 userInfo: nil
             )
         }
+        // Before launch returns, so a tap that cold-starts the app is seen.
+        UNUserNotificationCenter.current().delegate = self
         Task { _ = try? await AppRuntime.loadShared() }
         return true
     }
@@ -82,6 +85,24 @@ enum HomeQuickAction: String, CaseIterable {
         case .timer: "timer"
         case .focus: "stopwatch"
         case .records: "calendar"
+        }
+    }
+}
+
+/// Taps only. Without `willPresent`, a notification arriving while the app is
+/// open still stays out of sight, as it did before there was a delegate.
+extension OffWorkCountdownApplicationDelegate: UNUserNotificationCenterDelegate {
+    /// A notification that names a route (the shift alarm refresh reminder)
+    /// opens it through the app's own link, the same way a widget does.
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse
+    ) async {
+        guard let route = response.notification.request.content.userInfo["route"] as? String else { return }
+        await MainActor.run {
+            guard AppRoute(rawValue: route) != nil,
+                  let url = URL(string: "offworkcountdown://\(route)") else { return }
+            UIApplication.shared.open(url)
         }
     }
 }
