@@ -12,9 +12,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 enum class PlusPlan { MONTHLY, YEARLY, LIFETIME }
-data class PlusOffer(val plan: PlusPlan, val price: String, val description: String)
+data class PlusOffer(val plan: PlusPlan, val price: String, val offerToken: String, val sevenDayTrial: Boolean = false)
 data class PlusStoreState(val status: PlusStatus = PlusStatus.LOADING, val offers: List<PlusOffer> = emptyList(),
-    val busy: Boolean = false, val hasPurchasedBefore: Boolean = false, val operationFailed: Boolean = false) {
+    val busy: Boolean = false, val hasPurchasedBefore: Boolean = false, val operationFailed: Boolean = false,
+    val hasActiveSubscription: Boolean = status == PlusStatus.SUBSCRIBED) {
     val authorized: Boolean get() = status == PlusStatus.SUBSCRIBED || status == PlusStatus.LIFETIME
 }
 
@@ -40,7 +41,7 @@ class PlusAccess(private val context: Context) {
 
     fun refresh() { scope.launch { repository.refresh() } }
     fun restore() { scope.launch { repository.refresh() } }
-    fun purchase(activity: Activity, plan: PlusPlan) { scope.launch { repository.purchase(activity, plan) } }
+    fun purchase(activity: Activity, offer: PlusOffer) { scope.launch { repository.purchase(activity, offer) } }
     fun setDebugAuthorized(value: Boolean) {
         if (!PlusDebugOverride.AVAILABLE) return
         PlusDebugOverride.write(context, value)

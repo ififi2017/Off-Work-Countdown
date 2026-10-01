@@ -1,5 +1,6 @@
 package com.rainif.doneat.ui.components
 
+import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -66,7 +67,7 @@ fun DoneAtPage(
             Modifier
                 .safeDrawingPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = DoneAtSpacing.xl)
+                .padding(bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current)
                 .wrapContentWidth(Alignment.CenterHorizontally)
                 .widthIn(max = 720.dp),
         ) {

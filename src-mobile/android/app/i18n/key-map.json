@@ -104,6 +104,74 @@
     "aboutSection": {
       "resource": "string/aboutSection"
     },
+    "accentBlue": {
+      "resource": "string/accentBlue",
+      "androidOnly": true
+    },
+    "accentBrightness": {
+      "resource": "string/accentBrightness",
+      "androidOnly": true
+    },
+    "accentColor": {
+      "resource": "string/accentColor",
+      "androidOnly": true
+    },
+    "accentColorFooter": {
+      "resource": "string/accentColorFooter",
+      "androidOnly": true
+    },
+    "accentCustom": {
+      "resource": "string/accentCustom",
+      "androidOnly": true
+    },
+    "accentDoneAt": {
+      "resource": "string/accentDoneAt",
+      "androidOnly": true
+    },
+    "accentGreen": {
+      "resource": "string/accentGreen",
+      "androidOnly": true
+    },
+    "accentHex": {
+      "resource": "string/accentHex",
+      "androidOnly": true
+    },
+    "accentHexError": {
+      "resource": "string/accentHexError",
+      "androidOnly": true
+    },
+    "accentHue": {
+      "resource": "string/accentHue",
+      "androidOnly": true
+    },
+    "accentIndigo": {
+      "resource": "string/accentIndigo",
+      "androidOnly": true
+    },
+    "accentPink": {
+      "resource": "string/accentPink",
+      "androidOnly": true
+    },
+    "accentPurple": {
+      "resource": "string/accentPurple",
+      "androidOnly": true
+    },
+    "accentRed": {
+      "resource": "string/accentRed",
+      "androidOnly": true
+    },
+    "accentSaturation": {
+      "resource": "string/accentSaturation",
+      "androidOnly": true
+    },
+    "accentTeal": {
+      "resource": "string/accentTeal",
+      "androidOnly": true
+    },
+    "accentYellow": {
+      "resource": "string/accentYellow",
+      "androidOnly": true
+    },
     "acknowledgements": {
       "resource": "string/acknowledgements"
     },
@@ -1896,6 +1964,14 @@
       "resource": "string/plusAndroidComingSoon",
       "androidOnly": true
     },
+    "plusAndroidIntroBody": {
+      "resource": "string/plusAndroidIntroBody",
+      "androidOnly": true
+    },
+    "plusAndroidPlansUnavailable": {
+      "resource": "string/plusAndroidPlansUnavailable",
+      "androidOnly": true
+    },
     "plusAndroidRenewalNotice": {
       "resource": "string/plusAndroidRenewalNotice",
       "androidOnly": true
@@ -1910,6 +1986,13 @@
     },
     "plusAndroidStoreUnconfigured": {
       "resource": "string/plusAndroidStoreUnconfigured",
+      "androidOnly": true
+    },
+    "plusAndroidYearlyTrialPrice": {
+      "resource": "string/plusAndroidYearlyTrialPrice",
+      "params": [
+        "price"
+      ],
       "androidOnly": true
     },
     "plusAutoRenew": {
@@ -3015,6 +3098,18 @@
     },
     "widgetOpenToRefresh": {
       "resource": "string/widgetOpenToRefresh",
+      "androidOnly": true
+    },
+    "widgetPickerLarge": {
+      "resource": "string/widgetPickerLarge",
+      "androidOnly": true
+    },
+    "widgetPickerMedium": {
+      "resource": "string/widgetPickerMedium",
+      "androidOnly": true
+    },
+    "widgetPickerSmall": {
+      "resource": "string/widgetPickerSmall",
       "androidOnly": true
     },
     "widgetRestDay": {

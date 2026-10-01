@@ -37,4 +37,8 @@ internal object EntitlementEngine {
     fun shouldAcknowledge(purchase: VerifiedPurchase, nowMs: Long): Boolean =
         purchase.purchased && !purchase.acknowledged &&
             nowMs - purchase.firstPurchasedSeenAtMs in 0 until ACK_WINDOW_MS
+
+    /** Lifetime wins the entitlement, but does not cancel a separate subscription. */
+    fun hasActiveSubscription(purchases: List<VerifiedPurchase>, nowMs: Long, verifiedAtMs: Long, offline: Boolean): Boolean =
+        status(purchases.filter { it.isSubscription }, nowMs, verifiedAtMs, offline) == PlusStatus.SUBSCRIBED
 }

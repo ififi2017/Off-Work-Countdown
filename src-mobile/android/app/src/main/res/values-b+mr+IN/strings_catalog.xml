@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">या प्रकल्पाबद्दल</string>
     <string name="aboutSection">माहिती</string>
+    <string name="accentBlue">निळा</string>
+    <string name="accentBrightness">तेजस्विता</string>
+    <string name="accentColor">ठळक रंग</string>
+    <string name="accentColorFooter">मजकूर स्पष्ट ठेवण्यासाठी रंग हलक्या आणि गडद थीमनुसार बदलतात.</string>
+    <string name="accentCustom">स्वतःचा रंग</string>
+    <string name="accentDoneAt">DoneAt नारिंगी</string>
+    <string name="accentGreen">हिरवा</string>
+    <string name="accentHex">HEX रंग</string>
+    <string name="accentHexError">सहा हेक्साडेसिमल अंक टाका, उदा. #2563EB.</string>
+    <string name="accentHue">रंगछटा</string>
+    <string name="accentIndigo">इंडिगो</string>
+    <string name="accentPink">गुलाबी</string>
+    <string name="accentPurple">जांभळा</string>
+    <string name="accentRed">लाल</string>
+    <string name="accentSaturation">संपृक्तता</string>
+    <string name="accentTeal">निळसर हिरवा</string>
+    <string name="accentYellow">पिवळा</string>
     <string name="acknowledgements">आभार</string>
     <string name="adjustOvertime">ओव्हरटाइम बदला</string>
     <string name="allowExactReminders">अचूक स्मरणपत्रांना परवानगी द्या</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">प्रति प्रभावी तास</string>
     <string name="perWorkday">प्रति कामाचा दिवस</string>
     <string name="plusAndroidComingSoon">Android वर Plus खरेदी लवकरच उपलब्ध होईल. सध्या तुम्ही टाइमर आणि अलीकडील नोंदी वापरू शकता.</string>
+    <string name="plusAndroidIntroBody">टायमर आणि मागील आठवड्याच्या नोंदी मोफत राहतील. Plus मुळे संपूर्ण वर्ष, कामकाजाचे आयुष्य, संपादन आणि फोकस या सुविधा मिळतात.</string>
+    <string name="plusAndroidPlansUnavailable">Google Play वरून योजना लोड करता आल्या नाहीत. कृपया पुन्हा प्रयत्न करा.</string>
     <string name="plusAndroidRenewalNotice">सदस्यता रद्द करेपर्यंत आपोआप नूतनीकरण होते. Lifetime एकदाच खरेदी केल्याने चालू सदस्यता रद्द होत नाही.</string>
     <string name="plusAndroidRequestFailed">Google Play विनंती पूर्ण करू शकले नाही. थोड्या वेळाने पुन्हा प्रयत्न करा.</string>
     <string name="plusAndroidStoreOffline">Google Play सध्या उपलब्ध नाही. कनेक्ट झाल्यावर खरेदी पुनर्संचयित करून पाहा.</string>
     <string name="plusAndroidStoreUnconfigured">या डिव्हाइसवर Plus खरेदी अद्याप उपलब्ध नाही. टाइमर आणि अलीकडील नोंदी वापरता येतील.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 दिवस मोफत, त्यानंतर दरवर्षी %1$s. शुल्क टाळण्यासाठी चाचणी संपण्यापूर्वी रद्द करा.</string>
     <string name="plusAutoRenew">तुम्ही रद्द करेपर्यंत सदस्यता आपोआप सुरू राहते. वार्षिक योजनेत 7 दिवस मोफत असू शकतात, त्यानंतर वार्षिक दर लागतो. एकदाच घेण्याची खरेदी एकच पेमेंट आहे आणि सुरू असलेली सदस्यता आपोआप रद्द करत नाही.</string>
     <string name="plusBenefitCharts">पूर्ण वर्ष आणि कामाच्या आयुष्याची दृश्ये</string>
     <string name="plusBenefitEdit">नोंदीतून कोणताही दिवस बदला</string>
@@ -876,6 +896,9 @@
     <string name="whatsNewWatchTitle">Apple Watch वर तुमचा कामाचा दिवस</string>
     <string name="widgetDescription">उरलेला कामाचा वेळ एका नजरेत पहा.</string>
     <string name="widgetOpenToRefresh">रिफ्रेश करण्यासाठी ॲप उघडा</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">छान विश्रांती घ्या · पुढची पाळी</string>
     <string name="widgetWorking">काम सुरू आहे</string>
     <string name="workOnWeekday">%1$s काम</string>

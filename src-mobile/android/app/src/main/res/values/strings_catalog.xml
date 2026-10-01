@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">About this project</string>
     <string name="aboutSection">About</string>
+    <string name="accentBlue">Blue</string>
+    <string name="accentBrightness">Brightness</string>
+    <string name="accentColor">Accent color</string>
+    <string name="accentColorFooter">Colors adapt to light and dark themes to keep text clear.</string>
+    <string name="accentCustom">Custom color</string>
+    <string name="accentDoneAt">DoneAt orange</string>
+    <string name="accentGreen">Green</string>
+    <string name="accentHex">HEX color</string>
+    <string name="accentHexError">Enter six hexadecimal digits, for example #2563EB.</string>
+    <string name="accentHue">Hue</string>
+    <string name="accentIndigo">Indigo</string>
+    <string name="accentPink">Pink</string>
+    <string name="accentPurple">Purple</string>
+    <string name="accentRed">Red</string>
+    <string name="accentSaturation">Saturation</string>
+    <string name="accentTeal">Teal</string>
+    <string name="accentYellow">Yellow</string>
     <string name="acknowledgements">Acknowledgements</string>
     <string name="adjustOvertime">Adjust overtime</string>
     <string name="allowExactReminders">Allow exact reminders</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">Per effective hour</string>
     <string name="perWorkday">Per workday</string>
     <string name="plusAndroidComingSoon">Plus purchases are coming to Android. Your recent records and timer are ready to use now.</string>
+    <string name="plusAndroidIntroBody">The timer and your recent week stay free. Plus opens the full year, your working life, editing, and focus.</string>
+    <string name="plusAndroidPlansUnavailable">Google Play couldn\'t load the plans. Please try again.</string>
     <string name="plusAndroidRenewalNotice">Subscriptions renew automatically until you cancel. Lifetime is a one-time purchase and does not cancel an active subscription.</string>
     <string name="plusAndroidRequestFailed">Google Play could not complete that request. Try again in a moment.</string>
     <string name="plusAndroidStoreOffline">Google Play is unavailable right now. Try restoring purchases when you are connected.</string>
     <string name="plusAndroidStoreUnconfigured">Plus purchases are not available on this device yet. Your timer and recent records are ready to use.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 days free, then %1$s per year. Cancel before the trial ends to avoid being charged.</string>
     <string name="plusAutoRenew">Subscriptions renew automatically until you cancel. The yearly plan can include a 7-day trial. After the trial, the yearly price applies. Lifetime is a one-time purchase and does not cancel an active subscription.</string>
     <string name="plusBenefitCharts">Full-year and working-life views</string>
     <string name="plusBenefitEdit">Edit any day from Records</string>
@@ -876,6 +896,9 @@
     <string name="whatsNewWatchTitle">Your workday on Apple Watch</string>
     <string name="widgetDescription">See your remaining work time at a glance.</string>
     <string name="widgetOpenToRefresh">Open the app to refresh</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">Rest well · next shift</string>
     <string name="widgetWorking">Working</string>
     <string name="workOnWeekday">Work on %1$s</string>

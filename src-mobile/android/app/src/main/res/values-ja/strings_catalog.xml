@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">このプロジェクトについて</string>
     <string name="aboutSection">情報</string>
+    <string name="accentBlue">青</string>
+    <string name="accentBrightness">明度</string>
+    <string name="accentColor">アクセントカラー</string>
+    <string name="accentColorFooter">文字が読みやすくなるよう、色はライト・ダークテーマに合わせて調整されます。</string>
+    <string name="accentCustom">カスタムカラー</string>
+    <string name="accentDoneAt">DoneAt オレンジ</string>
+    <string name="accentGreen">緑</string>
+    <string name="accentHex">HEX カラー</string>
+    <string name="accentHexError">6 桁の16進数を入力してください（例：#2563EB）。</string>
+    <string name="accentHue">色相</string>
+    <string name="accentIndigo">藍</string>
+    <string name="accentPink">ピンク</string>
+    <string name="accentPurple">紫</string>
+    <string name="accentRed">赤</string>
+    <string name="accentSaturation">彩度</string>
+    <string name="accentTeal">青緑</string>
+    <string name="accentYellow">黄</string>
     <string name="acknowledgements">謝辞</string>
     <string name="adjustOvertime">残業を調整</string>
     <string name="allowExactReminders">正確なリマインダーを許可</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">実働 1 時間あたり</string>
     <string name="perWorkday">1 勤務日あたり</string>
     <string name="plusAndroidComingSoon">Android 版 Plus の購入は近日中に利用可能になります。今はタイマーと最近の記録をお使いいただけます。</string>
+    <string name="plusAndroidIntroBody">タイマーと直近1週間は無料のまま。Plus で年間全体、仕事人生、編集、集中機能が使えます。</string>
+    <string name="plusAndroidPlansUnavailable">Google Play からプランを読み込めませんでした。もう一度お試しください。</string>
     <string name="plusAndroidRenewalNotice">サブスクリプションは解約するまで自動更新されます。買い切り版を購入しても、現在のサブスクリプションは解約されません。</string>
     <string name="plusAndroidRequestFailed">Google Play で操作を完了できませんでした。しばらくしてからもう一度お試しください。</string>
     <string name="plusAndroidStoreOffline">現在 Google Play に接続できません。接続後に購入を復元してください。</string>
     <string name="plusAndroidStoreUnconfigured">この端末ではまだ Plus を購入できません。タイマーと最近の記録は引き続き利用できます。</string>
+    <string name="plusAndroidYearlyTrialPrice">7日間無料、その後は年額%1$s。請求を避けるには、無料期間が終了する前に解約してください。</string>
     <string name="plusAutoRenew">サブスクリプションは解約するまで自動更新されます。年額プランには7日間の無料期間が付く場合があり、終了後は年額で請求されます。買い切りは一度の支払いで、進行中のサブスクリプションは自動で解約されません。</string>
     <string name="plusBenefitCharts">年間全体と働く人生の表示</string>
     <string name="plusBenefitEdit">記録ページから任意の日を直す</string>
@@ -875,6 +895,9 @@
     <string name="whatsNewWatchTitle">Apple Watchでもわかる勤務状況</string>
     <string name="widgetDescription">残りの勤務時間をひと目で確認できます。</string>
     <string name="widgetOpenToRefresh">アプリを開いて更新</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">ゆっくり休んで · 次の勤務まで</string>
     <string name="widgetWorking">勤務中</string>
     <string name="workOnWeekday">%1$sに勤務</string>

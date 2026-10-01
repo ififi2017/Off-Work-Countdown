@@ -99,7 +99,7 @@ class MainActivity : FragmentActivity() {
             }
             SystemBarsFollowTheme(dark)
             AppLanguageScope(prefs.languageOverride) {
-                DoneAtTheme(themeMode = mode, dynamicColor = device.dynamicColor) {
+                DoneAtTheme(themeMode = mode, dynamicColor = device.dynamicColor, accentColor = device.accentColor) {
                     val motion = LocalDoneAtMotion.current
                     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
                         // Until the archive is read nothing can tell a first launch from a restored one.

@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">Giới thiệu dự án</string>
     <string name="aboutSection">Giới thiệu</string>
+    <string name="accentBlue">Xanh dương</string>
+    <string name="accentBrightness">Độ sáng</string>
+    <string name="accentColor">Màu nhấn</string>
+    <string name="accentColorFooter">Màu sắc thích ứng với giao diện sáng và tối để giữ văn bản rõ ràng.</string>
+    <string name="accentCustom">Màu tùy chỉnh</string>
+    <string name="accentDoneAt">Màu cam DoneAt</string>
+    <string name="accentGreen">Xanh lá</string>
+    <string name="accentHex">Màu HEX</string>
+    <string name="accentHexError">Nhập sáu chữ số thập lục phân, ví dụ #2563EB.</string>
+    <string name="accentHue">Sắc độ</string>
+    <string name="accentIndigo">Chàm</string>
+    <string name="accentPink">Hồng</string>
+    <string name="accentPurple">Tím</string>
+    <string name="accentRed">Đỏ</string>
+    <string name="accentSaturation">Độ bão hòa</string>
+    <string name="accentTeal">Xanh mòng két</string>
+    <string name="accentYellow">Vàng</string>
     <string name="acknowledgements">Lời cảm ơn</string>
     <string name="adjustOvertime">Điều chỉnh làm thêm</string>
     <string name="allowExactReminders">Cho phép lời nhắc chính xác</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">Mỗi giờ làm thực tế</string>
     <string name="perWorkday">Mỗi ngày làm việc</string>
     <string name="plusAndroidComingSoon">Tính năng mua Plus trên Android sẽ sớm ra mắt. Hiện bạn có thể dùng bộ đếm giờ và xem các bản ghi gần đây.</string>
+    <string name="plusAndroidIntroBody">Bộ đếm giờ và tuần gần nhất vẫn miễn phí. Plus mở khóa cả năm, cuộc đời làm việc, chỉnh sửa và tập trung.</string>
+    <string name="plusAndroidPlansUnavailable">Không thể tải các gói từ Google Play. Vui lòng thử lại.</string>
     <string name="plusAndroidRenewalNotice">Gói đăng ký tự động gia hạn cho đến khi bạn hủy. Mua Lifetime một lần không hủy gói đăng ký đang hoạt động.</string>
     <string name="plusAndroidRequestFailed">Google Play không thể hoàn tất yêu cầu này. Hãy thử lại sau ít phút.</string>
     <string name="plusAndroidStoreOffline">Google Play hiện không khả dụng. Hãy thử khôi phục giao dịch mua khi có kết nối.</string>
     <string name="plusAndroidStoreUnconfigured">Chưa thể mua Plus trên thiết bị này. Bạn vẫn có thể dùng bộ đếm giờ và xem các bản ghi gần đây.</string>
+    <string name="plusAndroidYearlyTrialPrice">Miễn phí 7 ngày, sau đó %1$s mỗi năm. Hủy trước khi hết thời gian dùng thử để tránh bị tính phí.</string>
     <string name="plusAutoRenew">Đăng ký tự gia hạn cho tới khi bạn hủy. Gói năm có thể kèm 7 ngày miễn phí, sau đó tính theo giá năm. Bản trả một lần chỉ thanh toán một lần và không tự hủy đăng ký đang chạy.</string>
     <string name="plusBenefitCharts">Khung cả năm và đời làm việc</string>
     <string name="plusBenefitEdit">Sửa bất kỳ ngày nào từ Bản ghi</string>
@@ -875,6 +895,9 @@
     <string name="whatsNewWatchTitle">Ngày làm việc của bạn trên Apple Watch</string>
     <string name="widgetDescription">Xem nhanh thời gian làm việc còn lại.</string>
     <string name="widgetOpenToRefresh">Mở ứng dụng để làm mới</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">Nghỉ ngơi nhé · ca tiếp theo</string>
     <string name="widgetWorking">Đang làm việc</string>
     <string name="workOnWeekday">Làm việc vào %1$s</string>

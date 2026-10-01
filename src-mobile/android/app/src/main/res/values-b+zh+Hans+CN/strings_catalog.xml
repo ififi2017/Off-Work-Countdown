@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">关于此项目</string>
     <string name="aboutSection">关于</string>
+    <string name="accentBlue">蓝色</string>
+    <string name="accentBrightness">亮度</string>
+    <string name="accentColor">强调色</string>
+    <string name="accentColorFooter">颜色会适配浅色和深色主题，让文字保持清晰。</string>
+    <string name="accentCustom">自定义颜色</string>
+    <string name="accentDoneAt">DoneAt 橙色</string>
+    <string name="accentGreen">绿色</string>
+    <string name="accentHex">HEX 色值</string>
+    <string name="accentHexError">请输入六位十六进制色值，例如 #2563EB。</string>
+    <string name="accentHue">色相</string>
+    <string name="accentIndigo">靛蓝色</string>
+    <string name="accentPink">粉色</string>
+    <string name="accentPurple">紫色</string>
+    <string name="accentRed">红色</string>
+    <string name="accentSaturation">饱和度</string>
+    <string name="accentTeal">青色</string>
+    <string name="accentYellow">黄色</string>
     <string name="acknowledgements">致谢</string>
     <string name="adjustOvertime">调整加班</string>
     <string name="allowExactReminders">允许精确提醒</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">每有效工时</string>
     <string name="perWorkday">每个工作日</string>
     <string name="plusAndroidComingSoon">Android 版 Plus 即将开放购买。现在可以继续使用计时器和查看近期记录。</string>
+    <string name="plusAndroidIntroBody">倒计时和最近一周保持免费。Plus 解锁完整年度、工作人生、编辑和专注。</string>
+    <string name="plusAndroidPlansUnavailable">暂时无法从 Google Play 获取购买方案，请重试。</string>
     <string name="plusAndroidRenewalNotice">订阅会自动续费，直到你取消。终身版是一次性购买，不会取消现有订阅。</string>
     <string name="plusAndroidRequestFailed">Google Play 暂时无法完成操作。请稍后重试。</string>
     <string name="plusAndroidStoreOffline">暂时无法连接 Google Play。联网后可尝试恢复购买。</string>
     <string name="plusAndroidStoreUnconfigured">这台设备暂时无法购买 Plus。计时器和近期记录仍可使用。</string>
+    <string name="plusAndroidYearlyTrialPrice">免费试用 7 天，之后每年 %1$s。在试用结束前取消即可避免扣费。</string>
     <string name="plusAutoRenew">订阅会自动续期，直到你取消。年订可含 7 天试用，试用结束后按年价计费。终身是一次性买断，不会自动取消已有订阅。</string>
     <string name="plusBenefitCharts">完整年度和工作人生视图</string>
     <string name="plusBenefitEdit">从记录页修改任何一天</string>
@@ -875,6 +895,9 @@
     <string name="whatsNewWatchTitle">在 Apple Watch 上查看工作日</string>
     <string name="widgetDescription">一眼查看剩余工作时间。</string>
     <string name="widgetOpenToRefresh">打开应用以刷新</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">好好休息 · 距离下次上班</string>
     <string name="widgetWorking">工作中</string>
     <string name="workOnWeekday">%1$s上班</string>

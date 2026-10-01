@@ -2,7 +2,7 @@
 
 **这是任务状态的唯一记录。** 交接包 `tasks.json` 只定义依赖、范围和验收，不记录状态。
 
-更新：2026-09-27。交接包 1.2。源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
+更新：2026-09-30。交接包 1.2。源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
 
 ## 任务状态
 
@@ -13,8 +13,8 @@
 | T00 | IMPLEMENTED | `baseline.md`。未 reset 工作区。QA-001 分支创建 NOT_RUN。 |
 | T01 | IMPLEMENTED | `source-inventory.md`、`feature-parity.md`、`conflicts.md`。源读自固定 SHA。未跑 iOS XCTest。 |
 | T02 | IMPLEMENTED | `wire-contract.md`、`synthetic-archives/`。检查：`node scripts/android-synthetic-archives.mjs --check`。Kotlin 导入 NOT_RUN。 |
-| T03 | IMPLEMENTED | `environment-lock.md`；`src-mobile/android`；`.github/workflows/android.yml`。初始 T03 探针当时只有 domain 2 项测试、Debug/R8 Release/AAB 与模拟器冷启动；当前四模块与 423 项见下方执行状态。GitHub CI 运行证据另取，不以本地命令代替。 |
-| T04 | IMPLEMENTED | `:core:designsystem`：`DoneAtColors`（浅/深两套完整 M3 配色，暖中性表面；浅色主色 `#C2410C`，品牌亮橙仅作装饰）、`DoneAtStateColors`、`DoneAtShapes`（14/22 与 iOS 一致；主操作按下时胶囊收成 12 dp）、`DoneAtMotion`（与 `OWCMotion` 同值，减少动态效果时退化）、`DoneAtType.countdown`（64 sp 等宽数字）、`DoneAtCountdown`（逐位数字翻页，对应 `.numericText(countsDown:)`）、`DoneAtProgressMeter`（浮动百分比气泡，几何与 `OWCProgressMeter` 相同）、`DoneAtTheme`（主题模式、可选动态配色）。对比度与气泡几何 8 条单测；Debug 专用 gallery。模拟器（API 36）检查浅色、深色、200% 字体、移除动画、阿拉伯语 RTL、数字翻页录屏。Release 依赖全为稳定版（Material3 1.4.0）。见 `design-tokens-adr.md`。 |
+| T03 | IMPLEMENTED | `environment-lock.md`；`src-mobile/android`；`.github/workflows/android.yml`。初始 T03 探针当时只有 domain 2 项测试、Debug/R8 Release/AAB 与模拟器冷启动；当前四模块与 448 项见下方执行状态。GitHub CI 运行证据另取，不以本地命令代替。 |
+| T04 | IMPLEMENTED | `:core:designsystem`：`DoneAtColors`（浅/深两套完整 M3 配色，页面及卡片对齐 iOS 中性分组背景；浅色主色 `#C2410C`，品牌亮橙仅作装饰）、`DoneAtStateColors`、`DoneAtShapes`（14/22 与 iOS 一致；主操作按下时胶囊收成 12 dp）、`DoneAtMotion`（与 `OWCMotion` 同值，减少动态效果时退化）、`DoneAtType.countdown`（64 sp 等宽数字）、`DoneAtCountdown`（逐位数字翻页，对应 `.numericText(countsDown:)`）、`DoneAtProgressMeter`（浮动百分比气泡，几何与 `OWCProgressMeter` 相同）、`DoneAtTheme`（主题模式、可选壁纸配色与自定义强调色）。对比度、气泡几何与强调色等 12 条单测；Debug 专用 gallery。模拟器（API 36）检查浅色、深色、200% 字体、移除动画、阿拉伯语 RTL、数字翻页录屏。Release 依赖全为稳定版（Material3 1.4.0）。见 `design-tokens-adr.md`。 |
 | T05 | IMPLEMENTED | `scripts/generate-android-strings.mjs`（`npm run generate:android-strings` / `check:android-strings`）把 `Localizable.xcstrings` 的 832 个 key 与 `app/i18n/android-strings.json` 的 Android 专有文案转成 19 个语言目录的 `strings_catalog.xml`、`xml/locales_config.xml`（清单已引用）、可逆的 `app/i18n/key-map.json` 与带命名参数的 `l10n/Strings.kt`。`{{name}}` 按英文顺序转为 `%N$s`；消息池转为 string-array 并保留 `{{name}}` 供共享规则替换；复数按各语言 CLDR 类别生成；Java/Kotlin 关键字 key 加下划线。生成时检查：19 语言齐全、各语言占位符与英文一致、Android 专有 key 不与目录重名、资源名合法且不碰撞、XML 非法字符。12 条 vitest 覆盖中文三变体、印地/马拉地语、阿语复数、德语长句占位符重排、转义与各类拒绝；`npm test` 与 Android CI 在资源过期时失败。Android 专有文案已随记录、Plus、通知等页面扩充，19 语言由生成器检查。aapt2 编译与 lint 通过，无新增告警（`localeConfig` 在 API 33 以下被忽略属预期）。 |
 | T06 | IMPLEMENTED | `scripts/generate-android-rule-fixtures.mjs` → `src-mobile/android/core/domain/src/test/resources/shared-rule-fixtures.json`：5087 条 TS oracle 用例，与 iOS `ScheduleRuleFixtures` 数据逐字相同，另记 6 个输入文件哈希。`npm test` 内含 stale 检查（手改一条用例、给 `lib/countdown.ts` 加注释均使检查失败，已验证）；Kotlin `SharedRuleFixturesTest` 3 条通过。Swift 特有规则的 fixtures 属 T08。 |
 | T07 | IMPLEMENTED | `core/domain/.../schedule`（`CivilZone`、`ScheduleRules`、模型）与 `salary/SalaryRules`。fixture 的 snapshots/widget/expansion/validateBreak/applyToday 共 2927 条全部精确通过；植入错误测试有效；算例测试 5 条。见 `rule-parity.md`。 |
@@ -30,13 +30,13 @@
 | T17 | IMPLEMENTED | **T17a 周、月与单日**：`:core:domain` 的 `records/RecordsQueries`（iOS `RecordsQueries` 的读取投影：按快照一次展开整个区间再逐日走三层链，冻结名册在无快照时补位；日格外观与来源、夜班早段计入次日、已保存排班过去的日子视为已工作、今天之后为计划；人生档案对 Records 之前年份的内存估算，从不写入档案；期间汇总与实际/预计拆分沿用 `SummaryRules`，薪资只在开启时计入；免费窗口为今天及前六天，窗口外日格与单日只剩“已锁定”，无 Plus 不构造汇总）与 `RecordsPresentation`（`RecordsDayCanvasModel` 切出一天：工作、加班、班内休息、睡眠预算、自主时间、规则失败时为未分类，今天在整分钟处分出“之后为估算”）。测试：单日画布 15 条（移植 iOS `RecordsDayCanvasModelTests` 与加班强度用例）、查询 12 条；两项植入错误均被捕获。应用：记录页（周/月切换并记住、上一段/下一段/回到今天、月历与周柱、选中后再点或点说明进入当天、图例、汇总卡含已工作/加班/预计薪资/时间分配与说明、宽屏两栏）、单日页（24 小时色带与时间轴、属于你的清醒时间、时间段列表、应用注意到的事件）、全部记录（年、月、日三级，免费用户窗口外只显示一行“已锁定”）；设计系统新增 Records 六色（与 iOS 系统色一致，含深色）；眼睛按钮抽成共享组件。`PlusAccess` 当时先接免费判定，真实购买已在 T20 接入；仅调试版在“关于”页有“Plus unlocked”开关，发布包中不含该开关与字符串。模拟器（API 36）检查：免费与 Plus、周/月、选中与进入单日、深色、阿拉伯语 RTL + 200% 字体、全部记录。**T17b 年视图与单日编辑**：`RecordsYearSampler`（按网格格数切分一年，修正/已记录/估算/锁定的归并与 iOS 相同，深浅按已记录日的最大加班，估算工作画斜纹）与 `RecordsCanvasGrid`（格子尺寸、点按命中、选中月份按行合并为一块）；`:core:data` 的 `RecordsEditing`（一次写入，未获准或键不规范时档案不变）。界面：年视图（热力格、月份按钮、单击选月、双击或“打开所选月份”进入月视图、年度汇总；无 Plus 只显示锁且不计算）；单日页“改这一天”（两个班次触及同一天时先选班次，按各自时间命名）；编辑页（时间、五种类型、一次保存；离开前确认放弃；自己填的时间改成其他类型先确认；“清空我的修改”回到排班与节假日）。与 iOS 一致：没有汇总时不显示汇总卡（含无 Plus 时），T17a 的锁定汇总卡已去掉；iOS 在“清空我的修改”上方的“删除同步数据”标题因 Android 无同步而不显示。测试：年采样 4 条、保存 3 条。模拟器检查：年视图（Plus 与免费）、请假保存后单日即时更新、清空恢复、离开确认与替换工时确认。**T17c 人生**：`records/LifeRules`（`LifeDates` 只有年份时取 7 月 1 日；`LifeStageCalculator` 阶段、按“现在”拆分工作期且保持选中身份、时间轴不虚构寿命、格子采样；`LifeViewCalculator` 周格与出生到退休的六类时间分配，并集去重、详细经历只计在职区间、记录的加班单列；`LifeProfiles.edit` 盖戳写入、同内容不写、睡眠来源时间只随睡眠变化、墓碑之上复活）、`LifeProfileDraft` 与 `LifeEmploymentTimeline`（编辑器的读取、校验与保存，与 iOS 同规则）、`RecordsQueries.lifeModel`（整段职业生涯按同一三层链逐日解析，Records 之前的年份用人生档案的内存估算；一生收入走 `SummaryRules.lifetimeIncome`，未来收入可按固定比例下调）。界面：记录页“人生”尺度（距退休进度、阶段格子、阶段列表可选、未设退休时提示设置；一生时间分配卡含约合年数与一生税前收入；无 Plus 只显示锁）、月视图的“完善人生视图”邀请（可稍后）、人生档案编辑页（出生/入学/退休/睡眠，快速估算或详细经历，详细经历的起始日期用系统日期选择器并按相邻经历限制范围，未来收入保持或下调；收入隐藏时保存前确认本人）、“记录与数据”页的“人生档案”入口。设计系统加入 iOS 人生阶段五色。编辑页底部说明改为 Android 版（去掉 iCloud），新增文案 1 条（19 语言）。测试：人生规则 14 条（移植 iOS `LifeViewCalculatorTests` 的计算、阶段与收入用例）、档案草稿 7 条（含 `LifeEmploymentTimelineTests`）、职业生涯走查 1 条（约 1.3 万天 0.23 秒）。模拟器检查：设置档案、人生画布与分配卡（浅色与深色）、记录与数据入口。iOS 独立的 `LifeView`（周格页）没有任何入口，不移植。年视图展开（按月读汇总）与双指缩放切换尺度已补齐；单日页专注记录随 T18 完成。 |
 | T18 | IMPLEMENTED | **T18a 今天与编辑**：`:core:domain` 的 `SessionFocusEnvironment`（计时会话即专注的班次来源：提前下班后无班次，强制工作日与手动计时视为工作日，设置取自档案的专注规划，缺省为 25/5/15/4）；`ShiftReminderPlan` 接受专注对健康提醒的接管。`:core:data` 的 `FocusStore`（iOS `FocusStore` 的命令面：开始、新建并开始、延长后开始、创建完成时间、停止、休息、跳过、到时收尾；启动与回前台时结转未完成、恢复已排计划、收尾离开期间结束的计时；已排计划队列存为本机文件；无 Plus 不开始任何计时）；`DeviceSettings` 加入专注通知开关与画布尺度。应用：`FocusCoordinator`（当前阶段开始时注册两条专注提醒；应用运行时在阶段结束或下一个已排计划开始时唤醒，不在后台轮询）；`TimerCoordinator` 随档案与 Plus 变化重排，并用计划中的休息替代固定健康提醒。界面：专注页“今天”尺度（当前格：锁定、进行中带倒计时与进度、当日完成、上班前、休息邀请、空闲；按比例绘制的班次色带，含标尺、现在指示、午休与装不下一格的尾段；200% 字体以上改为列表；今天的任务及其菜单；存为模板与清空当天）、新建任务（放进这一格或下一个空闲时段、立即开始、仅存为常用；选今天已有的任务；把这一格设为休息）、编辑任务、番茄钟设置（有模板时锁定时长）。测试：`FocusStoreTest` 5 条（离开期间结束后进入休息、手动停止不算完成、队列跨实例保留、无 Plus 不开始、队列编解码）。模拟器（API 36）检查：上班前与班内、放进一格、立即开始与停止、放入已有任务、编辑、改时长、无 Plus 锁定页、深色、200% 字体。与 iOS 一致：立即开始的计时不画在色带上；改时长后旧的计划格不再对应。**T18b 常用与模板**：`FocusPlanning.templateBlocks`/`templateDraftFromToday`（iOS `focusTemplateBlocks`/`focusTemplateDraftFromToday`：只取任务格的顺序与轮数，不带当天时刻，也不把手动设为休息的格子变成模板任务）、`FocusTemplates.remainingPomodoros`；“存为模板”改走与 iOS 相同的草稿路径。界面：专注页“今天/常用”切换（记在本机）；与 iOS 一样标题、切换与状态卡固定、只滚动画布（150% 以上字体时整页滚动），进入“今天”时滚到当前格；“常用”尺度（常用任务卡片，点按放进下一个空闲时段并回到“今天”，长按移除；常用的一天：从今天新建、编辑、用在今天、设为/取消每天自动使用、删除，装不下时提示；无 Plus 时为示例）；模板编辑页（名称、任务顺序可拖动把手，也可从菜单或无障碍操作上移/下移，三者走同一移动；装不下的任务标出；新增任务受剩余番茄数限制）与模板任务页（可设为常用，保存模板时一并写入）。专注提醒点开后进入专注标签页（冷启动与已在运行时均验证）。修正创建页预计结束时间：与开始同日只显示时刻，跨日才加日期（与 iOS 一致）。新增 Android 专有文案 2 条（上移/下移，19 语言）。测试：模板 3 条（移植 iOS `manualBreakStaysOnDayInsteadOfBecomingATemplateTask`、`remainingCapacity`，以及草稿保留顺序与轮数）。模拟器检查：新建模板、拖动与菜单排序、模板任务设为常用、设为每天自动使用、放置常用任务、当前格定位、有模板时时长锁定、无 Plus 示例、深色、200% 字体、通知入口。与 iOS 一致而未改：从常用任务放置会新建一个同名常用任务，常用列表出现两张同名卡片（两端共有，需一起改规则）。 |
 | T19 | IMPLEMENTED | **T19a 备份与分享**：备份规则（`data_extraction_rules.xml` 与 Android 11 及以下的 `backup_rules.xml`）改为只包含 `records/` 与 `device/settings.json`：会话与专注队列（本机运行状态，会话还冻结了薪资）、提醒登记、调试开关与所有 SharedPreferences 都不进入云备份与设备转移，之后新增的文件默认也不进入。`session/ShareContent`（iOS `shareCopy`/`shareHeroText`/`shareProgress`/`shareURL`：只有时间与进度；链接为网页版 `off.rainif.com`，只带 `s=HHMM-HHMM`）。分享页（八种心情、按 iOS 固定尺寸 360×450 点 3 倍绘制的分享图，预览即同一张图；横屏与平板左右两栏，高度不够时只留文案；系统分享面板附图片与“文案 + 链接”，图片经仅限缓存 `share/` 的 FileProvider 临时授权）；计时页上班前/工作/午休/加班的操作栏与下班后页面加入分享（休息日与未排班无，与 iOS 一致）。测试：分享 4 条（移植 iOS `shareCopyBeforeClockInCountsToStart`、`shareURLStaysOnWebApp`，以及工作中进度与提前下班的完成态）。模拟器检查：工作中与提前下班后的分享图、换心情、系统分享面板的预览与文字、横屏两栏、深色。与 iOS 一致：分享链接打开网页版，应用不处理 https 链接，故不做 App Links。**T19b 桌面小组件**：`:core:domain` 的 `widget/`——`WidgetSnapshot`（共享 `WidgetSnapshotContract` schema 1 的 Kotlin 版：预先算好的区间，小组件只按时间挑选，区间内线性推进进度；过期或读不懂即为空）、`WidgetSnapshotComposer`（iOS `WidgetSnapshotComposer` 的移植：所有班次都来自 `ShiftSession.snapshot` 与 `ScheduleRules.widgetShifts`，排班下一次铺满一年：休息日倒计时、上班前、工作/午休/加班、今日已下班至零点；提前下班后当天剩余为已下班；手动计时只到结束日次日）与 `WidgetUpcoming`（“接下来”：当前班次沿用计时页的行，之后每个班次的上班、休息与下班，全程不含薪资）。应用：`WidgetCoordinator`（会话变化后重算，写入 `no_backup/widget/`，内容未变不重写不重绘；启动、回前台、改时间/时区时刷新；文案按应用语言生成，Android 12 及以下也一样）；Glance 1.2 小组件小/中/大三种尺寸（品牌标志、状态、系统自走秒的倒计时、进度条或进度环、下一时间点；大尺寸加“接下来”四行；无快照或已过期时提示打开应用），深浅色跟随系统，点按打开计时页；刷新用不唤醒设备的 RTC 闹钟，在区间结束时（进度变化中每 15 分钟）触发，已授予精确闹钟时准点，否则由系统放宽窗口。计时页“接下来”的文案抽成 `timelineWords` 与小组件共用。新增 Android 专有文案 3 条（取自 `public/locales` 的同名小组件文案，19 语言）。测试：小组件 13 条（移植 iOS `OffWorkStoreTests` 的小组件用例：午休、加班标签、休息日、接下来不含已过与 36 小时以后、休息日无虚构班次、以计划下班为目标、无需打开应用进入之后的班次、连续夜班、提前下班、进度推进、过期与编解码、不含金额）。模拟器检查：选择器、添加、小/中/大尺寸与改变尺寸、工作中与休息日、深色、点按打开计时页、刷新闹钟时间。与 iOS 一致：不对外开放 `offworkcountdown://`（只有小组件自己用显式 Intent 打开计时页）。**T19c 倒计时通知**（iOS 实时活动的 Android 对应，guide §8.3）：`session/OngoingPlan`（iOS `LiveActivityDecision` 与 `performReschedule` 的班次资格：进行中的专注或休息优先，其次仅在下班前 5/15/30 分钟窗口内显示班次；未设置/未计时、休息日、上班前、已提前下班或已下班不显示；下一次变化为窗口开启、阶段结束或下班）。应用：`OngoingCoordinator` 一条低重要度、静音、锁屏可见的常驻通知，系统计时器倒数到结束并由 `setTimeoutAfter` 自行消失；班次标题为“下班时间 17:00”（倒数的是钟面时间，不称为有效剩余），专注为任务名/短休息/长休息；点按打开计时或专注标签页；窗口开启与阶段结束用不唤醒的 RTC 闹钟（已授予精确闹钟时准点）；与 iOS 一样当天有已排专注时不单独显示下班倒计时。设置：班次提醒页“倒计时通知”（下班前显示，默认关，开始时间提前 5/15/30 分钟，默认 15；首次打开在 Android 13+ 请求通知权限，拒绝则关闭）；番茄钟设置“在通知中显示进行中的阶段”（默认开）；三项为本机设置。新增 Android 专有文案 4 条（19 语言，不使用“实时活动”说法）。测试：5 条（专注优先、窗口内外、窗口起止含加班、上班前/休息日/提前下班不显示、下一次变化）。模拟器检查：设置页、窗口内即显示、专注开始时切换为任务名、停止后回到下班倒计时、点按打开专注页、窗口前不显示且闹钟准点显示、下班时自动消失。首次设置流程中的倒计时通知开关、计时页与小组件“接下来”的专注计划行已补齐。锁屏 Chronometer、后台刷新与备份后重建仍需不同设备验证。 |
-| T20 | IMPLEMENTED | 首发纯客户端 Play Billing：`PlusAccess`、`PlayBillingRepository`、`PlaySignature`、`EntitlementEngine` 与 Plus 页接入价格查询、购买/恢复、签名核验、pending、确认与重试；本机证据和待确认标记放 `noBackupFilesDir`，Debug 解锁不进 Release。Play Console 商品、公钥、许可测试购买、退款/续费与最终签名包验证尚未完成；见 `play-console-preparation.md`，不能据本地单测宣称实际购买通过。 |
+| T20 | IMPLEMENTED | 首发纯客户端 Play Billing：`PlusAccess`、`PlayBillingRepository`、`PlaySignature`、`EntitlementEngine` 与 Plus 页接入价格查询、购买/恢复、签名核验、pending、确认与重试；本机证据和待确认标记放 `noBackupFilesDir`，Debug 解锁不进 Release。Play Console 商品与公钥已由用户提供，客户端接入年付 7 天试用；许可测试购买、退款/续费与最终 Play 验证尚未完成；见 `play-console-preparation.md`，不能据本地单测宣称实际购买通过。 |
 | T21 | DEFERRED | 服务端验证，首发后（D-08 修订） |
 | T22 | DEFERRED | Drive 同步，首发后（D-02 修订） |
 | T23 | IN_PROGRESS | 首发 126 项 QA 的证据矩阵见 `preconsole-qa-2026-09-26.md`；自动化和部分 Pixel/模拟器检查已有证据，仍有设备、服务与 Console 阻塞项。 |
-| T24 | IN_PROGRESS | 本地 lint、Debug/R8 Release/AAB、依赖和备份排除检查已有证据；本地版本/哈希及 16 KiB 对齐已核验；最终签名包、Play 预发布报告及完整设备回归待完成。 |
-| T25 | WAITING_OWNER | 用户于 2026-09-26 同步：Play Console 的 KYC 身份验证仍在审核中。`store-listing.md`、`privacy-policy-addition.md`、`play-console-preparation.md` 已备本地草稿；1024×500 横幅、512×512 图标和真实页面截图已备草稿；正式隐私页与 Console 声明、素材审核、商品配置尚待完成。 |
-| T26 | WAITING_OWNER | 实际 Play 测试轨道上传、签名、审核与发布需未来明确批准及 Console 条件；本轮未操作。 |
+| T24 | IN_PROGRESS | 本地 lint、Debug/R8 Release/AAB、依赖和备份排除检查已有证据；本地版本/哈希及 16 KiB 对齐已核验；3.2.0 (2) 上传签名与 bundletool 校验通过，Play 预发布报告及完整设备回归待完成。 |
+| T25 | IN_PROGRESS | 用户于 2026-09-28 确认 Console 已可上传、商家账号与商品配置完成；应用许可公钥已提供。`store-listing.md`、`privacy-policy-addition.md`、`play-console-preparation.md` 已备本地草稿；1024×500 横幅、512×512 图标和真实页面截图已备草稿；正式隐私页与 Console 声明、素材审核和真实商品查询验收尚待完成。 |
+| T26 | IN_PROGRESS | 用户已进入内部测试上传流程；3.2.0 (1) 和商品接入版 (2) 签名 AAB 已交付。版本 (2) 的本地验证已通过，代理未上传或发布；真实购买与 Play 验收待完成。 |
 | T27 | DEFERRED | Wear，首发后（D-05） |
 
 ## 执行状态
@@ -44,14 +44,14 @@
 | 项 | 状态 |
 |---|---|
 | Android 工程 | `:app`、`:core:domain`、`:core:data`、`:core:designsystem`；D-13 原子 JSON，无 Room |
-| 自动化 | 最近完成的本地完整 Gradle：433 项通过（domain 336、data 74、design 8、app 15），lint 0 error / 34 warning / 1 hint，Debug、R8 Release 与 AAB 成功；`/tmp/doneat-boundary-final-gradle.log`。新增计时、专注合并与故障恢复回归；本轮无新增源码 lint 告警。 |
-| 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture 12 项及数字输入 5 项、iOS headless build 通过。Web/Desktop build 与输出检查通过；npm lint、445 项测试、版本与 iOS 目录检查通过。字符串生成一致性检查通过。 |
-| 设备 | API 36 上 Auto Backup 清除/恢复后记录与设置字节相同；系统文档化设备转移/重装路径恢复业务数据与设置字节相同，且排除了 device-local/no_backup 测试标记和 Debug Plus。`bmgr restore` 直接传输返回 -1000，不能算恢复成功。Pixel 已覆盖安装最新候选 APK，Records 各尺度往返与后台 90 秒后回前台已检查，业务档案字节未变；完整真机矩阵仍待完成。 |
-| Play Console | 用户于 2026-09-26 确认 KYC 身份验证进行中，尚未通过。代理未登录核验；商品、公钥、许可测试、签名与应用审核尚无完成证据。 |
+| 自动化 | 自定义强调色整合后的四模块 448 项测试通过（domain 337、data 76、design 12、app 23），0 failure / error / skip；lint 0 error / 34 warning / 1 hint，Debug / R8 Release 通过。历史 AAB、测试与构建证据均保留在各自记录中。 |
+| 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture、数字输入、Web/Desktop 构建及 iOS headless build 已有通过证据。本轮基于最新 main 再验证仓库与 Android 门禁。 |
+| 设备 | 保留已有 Auto Backup、业务档案原子恢复及 Pixel 前后台验证；玻璃底栏及自定义强调色已在独立 Pixel Preview 包验收。真实云端换机、购买生命周期与完整无障碍矩阵仍待完成。 |
+| Play Console | 用户于 2026-09-28 确认可上传，商家账号与商品配置完成，并提供许可公钥。许可测试购买和应用审核仍待完成；代理未操作 Console。 |
 
 ## 下一任务
 
-KYC 等待期间继续推进以下工作；Pixel 已完成本轮导航/前后台回归，仍不等于完整真机验收：
+Console 已具备上传条件，后续按以下事项推进：
 
 QA-041/051 已同步修复并通过本地验收：非法金额不再被改成另一笔有效工资，历史职业结束日期和空档保持原样。
 
@@ -59,11 +59,11 @@ QA-041/051 已同步修复并通过本地验收：非法金额不再被改成另
 2. **继续代码审阅和远程 CI。** [PR #239](https://github.com/ififi2017/Off-Work-Countdown/pull/239) 已合并；[PR #240](https://github.com/ififi2017/Off-Work-Countdown/pull/240) 已合并 3.2.1 与 QA-041；本轮 Android 恢复修复使用 `codex/android-archive-recovery` 独立提交后续 PR。`63a05de1` 的全部远程检查已通过；新提交单独核对 CI。`ae0ec1f0` 和 `e2d874c` 的 Android、Web/Desktop、Rust macOS/Windows 和 Xcode Cloud iOS/watchOS 检查全部通过；后续修复追加独立提交，每次以对应提交的 CI 为准。
 3. **完成发布资料的本地准备。** 将 Android 隐私补充落实到官网代码，定稿商店文案、素材选择和审核操作说明；正式发布页面、Console 填报和签名身份仍按发布流程处理。
 
-KYC 通过且 Console 具备相应操作条件后，再核对应用 ID、Play App Signing、商品/价格/公钥，完成测试轨道接入和真实购买生命周期测试。T26 的实际上传与发布按后续授权执行。KYC 验证进度不等于应用审核或购买验收结果。
+应用 ID、商品标识与公钥已确认；下一步在 Play 测试轨道验证本地价格、试用资格和完整购买生命周期。用户自行进行 Console 上传和发布，代理尚未操作。账户具备上传条件不等于应用审核或购买验收通过。
 
-126 项首发用例逐项状态以 [`preconsole-qa-2026-09-26.md`](preconsole-qa-2026-09-26.md) 为证据矩阵；本页只记录任务状态，不把 433 项单测写成 126 项全通过。
+126 项首发用例逐项状态以 [`preconsole-qa-2026-09-26.md`](preconsole-qa-2026-09-26.md) 为证据矩阵；本页只记录任务状态，不把单测通过数量写成 126 项全通过。
 
-环境与命令见 `environment-lock.md`。当前候选：`applicationId=com.rainif.doneat`，minSdk 26，versionName 3.2.1，versionCode 5。
+环境与命令见 `environment-lock.md`。当前源码配置：`applicationId=com.rainif.doneat`（用户已确认 Console 标识），minSdk 26，versionName 3.2.1，versionCode 5；此前已交付的 3.2.0 包体保留原身份，详见各次构建记录。
 
 ## 基线漂移记录
 
@@ -169,10 +169,107 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 2026-09-23：T03 完成（最小工程、CI、环境锁）。
 - 2026-09-23：交接包 1.2（D-02/D-08 修订、新增 D-12），T21/T22 延后；进度只在本文件维护；本机 SDK 就绪。
 
-## 2026-09-30 · 3.2.1 班次编辑同步
+## 2026-09-28 · Play 商品配置与年付试用
 
-- Android 产品版本对齐为 3.2.1，versionCode 5 与当前本地候选一致；仓库版本检查纳入 Android。
-- 按用户要求选择性同步 iOS #247（`9fdaae18`）：自由排班画笔、点选与涂抹撤销、班次未来一年日期概览、每年重复的月日范围编辑及重叠校验。复用已同步的 Kotlin 规则与备份字段。
-- 核对漂移到 `be4bce56`（#247 与 #248 已合并）；总体基线继续记录 `9252fdfdc66aab88b4acb7493684f11991fd773d`，本节登记这次授权同步的范围。
-- 最新 main 上完整 Gradle 440 项通过（domain 337、data 74、design 8、app 21）；lint 0 error / 34 warning / 1 hint，Debug 与 R8 Release 构建通过。npm 453 项、lint、版本和 iOS 检查通过；headless iOS/Watch 构建与 3 项 ThemeAppearance 测试通过。
-- API 36 临时只读模拟器：两日连续涂成白班、反向再次涂抹恢复原休息安排、月历位置稳定；日期概览、年度月日控件、跨年提示与四月 31→30 自动调整已检查。浅色、深色及深色 200% 字号的编辑页已检查。临时诊断已移除，模拟器已关闭；未进行 iOS 视觉检查。
+- 用户确认订阅 `doneat_plus`、基础方案 `monthly` / `yearly`、年付优惠 `yearly-trial-7d`、终身商品 `doneat_plus_lifetime` / 购买选项 `lifetime` 均已配置并激活。年付优惠为 7 天免费，Play 资格为“从未订阅过此内容”。价格以 Play 返回为准。
+- 已校验用户提供的许可公钥为 2048 位 RSA；七项公开构建配置保存在仓库外的本机 Gradle 配置。上传密钥保持使用首次 AAB 的 `doneat-upload`，密钥和密码均不入库。
+- 客户端补齐年付试用选择、19 语言的试用后年费披露、指定终身购买选项，以及付款前重新查询和条款变化时重新确认。版本号保持 3.2.0，versionCode 升为 2。模拟价格只用于 Debug 设计图库，不提供购买或授权。
+- 基线漂移检查：`f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`。本轮仅处理 Android Play 购买接入，不推进冻结 iOS 基线。
+- 自动检查：四模块 429 项测试、lint（0 error / 33 warning / 1 hint，无新增警告）、Debug / R8 Release / AAB、npm lint / 453 项测试、版本检查与 iOS headless build 通过。未做 iOS 视觉检查。
+- Android 模拟器使用实际购买按钮组件和明确标记的示例价格检查英文浅色、中文深色、德文 200% 字体，试用后年费与取消说明未截断。最终构建再次检查中文深色；截图见 `build/android-play-internal/billing-v2/ui/`。未操作连接的真机，未发起交易。
+- 交付 `build/android-play-internal/billing-v2/DoneAt-3.2.0-2-internal.aab`（9,425,548 字节），上传签名严格校验、bundletool 结构、包名与版本、Release 清单及 Release APK 16 KiB ZIP 对齐检查通过。SHA-256 为 `5a51801df2055e5de7ad18c4dd43cc7973ec3ddfc5c7bc027ae76432a9cafab8`；日志、清单与校验记录在同目录。
+- 真实 Play 返回、购买／试用续费／恢复／撤销仍需要许可测试账户验收；本地测试不代表这些项目通过。
+
+## 2026-09-28 · Google Play 英文商品详情与截图
+
+- 英文文案改用仓库 ASC 3.2.0 元数据为底稿，按 Android 的小组件、常驻通知、系统备份和 Play 订阅／7 天年付试用调整；移除 Apple Watch、iCloud、Dynamic Island 和 Apple EULA。标题 28、简短说明 74、完整说明 2,358 字符。
+- 复用 ASC 3.2.0 的字体、背景、标题与前两张连幅模板，重新拍摄 Android 工作中计时、排班月历、年度记录、有任务且运行中的 Focus、休息中计时。输出 6 张英文 1080 × 1920 不透明 RGB PNG，按编号上传；总览仅供检查。
+- 截图来源为 API 36.1 只读临时模拟器，Android 3.2.0 / versionCode 2 Debug APK；全部为虚构数据。Plus 演示使用现有 Debug 开关，未修改应用源码或购买逻辑，未操作真机。原始截图、UI 树、素材哈希与来源说明在 `build/android-play-internal/store-listing/asc-style/`。
+- 渲染脚本 ESLint、Node 语法、输出尺寸／透明度／文件大小检查通过，并实际查看原图、总览和成品。仓库版本检查通过（并行工作已将 Web／Desktop／iOS 对齐到 3.2.1；本次截图 APK 仍为上述 3.2.0 / 2）。本轮仅修改营销脚本和文档，未运行应用构建或 iOS 视觉测试。
+- 本轮未调用 ASC 或 Play Console 写入接口，也未验证真实购买；素材可用于当前默认英文商品详情。
+
+### 置顶大图重新排版
+
+- 根据用户对旧紫色版本的反馈，改用 ASC 同款米白背景、衬线主标题、小品牌标识和真实 Android 倒计时裁切画面。主标题为 “After work, time for you.”。
+- 输出 `build/android-play-internal/store-listing/feature-graphic-en-1024x500.png`，同步替换旧 PNG 路径并加入英文素材 ZIP。1024 × 500、不透明 RGB、文件大小检查、ESLint 和实际图片检查通过；未上传到 Play。
+
+## 2026-09-29 · Play 边到边警告排查与 Release 启动修复
+
+- 用已上传的 3.2.0 (2) AAB 内置 mapping 和实际 DEX 还原 Console 报告：`pg0.b` / `rg0.b` / `tg0.b` 分别为 AndroidX Activity 1.13.0 的 `EdgeToEdgeApi26/29/35.setUp`；`o1.l` 是 Api28 分支设置 `SHORT_EDGES` 的 R8 合成方法。Api30 及以上使用 `ALWAYS`，Api35 仍有被弃用的透明系统栏颜色调用。Activity 1.13.0 已是当前稳定版，没有为消除静态警告改写 Google 的兼容实现。
+- 应用已经在 `MainActivity` 调用 `enableEdgeToEdge()`，主题切换同步系统栏图标，页面使用 `safeDrawingPadding` / Material3 导航组件。API 36.1 临时模拟器上的窗口实际为 `layoutInDisplayCutoutMode=always`；首启、计时/设置深浅色、手势/三键导航、横屏模拟刘海未发现系统栏遮挡；薪资输入框在数字键盘弹出后仍可见且可输入。Android 15 及更早版本、厂商真机尚未在本轮验证。
+- 此轮安装与 AAB DEX 相同的非调试 Release APK 时，另行复现了启动崩溃：`WorkDatabase_Impl.<init>()` 被 R8 严格模式移除，WorkManager 在 Activity 之前初始化失败；清除临时应用数据后仍复现。Room 2.6.1 的 consumer rule 只保留类，新增精确规则仅保留数据库的无参构造方法，保持压缩和混淆开启。
+- 新增 `scripts/check-android-release-startup.py`，要求显式设备序列号和非调试包，并检查冷启动后真实 UI 和存活进程；旧包失败，修复包干净首启和保留设置后的冷启动均通过，最终 crash buffer 为空。Release 启动检查补入发布 runbook，Debug 截图和编译通过不能替代它。
+- 四模块 429 项测试通过（0 failure/error/skip），lint 0 error / 33 warning / 1 hint，Debug / Release / AAB、版本一致性和 iPhone 18 Pro 的 iOS headless build 通过。未做 iOS 视觉检查。验证只使用隔离 Android 模拟器，未操作真机。
+- 新候选 `build/android-play-internal/release-v3/DoneAt-3.2.0-3-internal.aab`，沿用原上传密钥、3.2.0 / versionCode 3。9,634,314 字节；SHA-256 `57b414119ef2d73d4f45804d518ec1f061d23da68193607a9a6b47bdccc5ad45`。严格签名、bundletool 结构/清单、Release APK 16 KiB ZIP 对齐通过，受测 APK 与 AAB 的 DEX 一致。
+- 证据：`build/android-play-internal/edge-to-edge-audit/`（旧包崩溃、mapping、构建日志、UI 截图/树/窗口信息）；包体与说明在 `release-v3/`。边到边静态警告可能继续存在；未上传新候选、未验证 Play 处理后的 split APK 或真实购买。
+
+## 2026-09-29 · Android Plus 排版与 HyperOS 小组件排查
+
+- 用户明确要求参照 iOS 订阅页，本轮打开 iPhone 18 Pro / iOS 27 模拟器确认实际页面。Android 改为标题与介绍、紧凑权益列表、年付/月付/终身选项卡、一个购买按钮；默认年付，价格与试用资格仍来自 Play。试用后年费在购买按钮前披露；无资格时不显示试用入口。小屏及大字号改为纵向卡片，不省略价格。Android 专用介绍覆盖 19 语言，不宣传尚未接入的 iCloud。
+- Debug 图库复用完整 Plus 页面，用明确标记的示例价格检查选择和购买回调，不创建真实交易或赋予权益。Release 保持原 Billing 查询、签名校验和购买前重新确认逻辑。
+- 设备反馈为 22041216C / HyperOS 2、Play 封测 3.2.0 (3)，用户确认选择器只显示 2×2。核对该版本 AAB 的最终清单，三个 provider 均存在；源码也已声明双向缩放与 2×2/4×2/4×4 默认尺寸。不能归因于旧包缺少入口，尚无这台手机的系统 provider 列表或桌面运行证据。
+- 三个 receiver 的原 label 均为 DoneAt。现分别显示 DoneAt · 2×2 / 4×2 / 4×4，保留组件身份和尺寸/刷新逻辑，便于辨认和复测。小米规范确实说明同名 label 会聚合，但描述的是小米 Widget；尚未证明这就是本次标准 Android 小组件只显示一个的原因，不标记为 HyperOS 修复完成。
+- 接入小米小部件中心所需的独立进程、刷新、尺寸、审核及 DoneAt 的 Glance/WorkManager 边界记录在 `docs/android/widget-compatibility.md`。本轮没有加入未验证的小米 metadata 或修改 widget 进程。
+- 本轮基线漂移仍为 `f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`；用户授权参照 iOS 视觉，不推进冻结行为基线。
+- 自动检查：四模块 429 项测试（0 failure/error/skip）、lint（0 error / 33 warning / 1 hint）、Debug / R8 Release / AAB、npm lint / 453 项测试、版本检查、iOS headless build 通过。修改后的图库也已重新编译。
+- API 36.1 隔离模拟器：实际 Plus 页面组件的英/中文深浅色、德文 200% 字体及 320 dp 宽度、三档选择与各自购买回调、无试用资格、离线和已有权益状态通过；示例价格均明确标记。切换语言时曾在应用尚未重启完成前读取到桌面，等待真实应用出现后重跑通过。Pixel 桌面选择器确认三个尺寸入口分别显示，不能替代 HyperOS 真机验收。
+- 最终非调试 Release 冷启动检查通过，真实 Settings → Plus 页面及底部导航实际查看无重叠；该隔离环境不能连接已登录的 Play 商店，正确显示暂不可用、重试和恢复购买。AAB 与受测 Release APK 的 DEX 一致；严格上传签名、bundletool、清单版本及 16 KiB APK ZIP 对齐通过。
+- 新候选 `build/android-play-internal/release-v4/DoneAt-3.2.0-4-internal.aab`：3.2.0 / versionCode 4，9,654,274 字节，SHA-256 `759c5cb405f0cb06c630de0dc4cb663009cb2a25dac0cd164df804833a7b65b5`。沿用原上传密钥，旧包保留。证据在 `build/android-play-internal/plus-redesign/`；本轮未上传 Play、未发起交易、未操作连接的真机。
+
+## 2026-09-29 · Plus 已订阅彩蛋补齐
+
+- 上一版只对齐了购买前页面，遗漏 iOS `PlusSubscriberThankYouView`。本轮按用户要求继续对照实际 iOS 已授权页，补品牌时钟、感谢文案、当前方案/终身卡片和订阅管理入口。复用既有 `CelebratingBrandMark` 与 19 语言文案，不新增图像资产或动效库。
+- 刚获得权益时自动播放一次；已是会员时进入页面保持静止，点时钟直接重播。延续既有 1.8 秒、720° 品牌动效与系统触感，开启减少动态效果时保留轻淡反馈；后台、离页和动效设置变化取消播放及后续触感，繁忙时跳过错过的刻度。
+- 修复 `PlusFor` 刚获得权益就自动离开页面的遗漏：初次获得权益后停留感谢页，点“继续使用 Plus”才恢复原功能；原本已有权益的入口继续直接通过。返回行为和权益校验仍由原路径处理。
+- 方案展示额外保留“已有终身且仍有订阅”的事实，复用同一已验证订阅判断及离线有效期，避免误显示“没有需要管理的订阅”。新增 2 项回归，覆盖终身与订阅并存、待批准/暂停和离线过期。
+- Debug 图库增加订阅/终身/二者并存及模拟购买成功预览，只改变图库界面，不授予真实权益、不调用 Play 交易。
+- 冻结基线未推进；漂移命令仍得到 `f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`。本轮是用户明确要求的 Plus 视觉/交互补齐。
+- 验证：四模块 431 项测试（0 failure/error/skip）、lint（0 error / 33 warning / 1 hint）、Debug / R8 Release / AAB、版本检查及 iOS headless build 通过。API 36.1 隔离模拟器实际检查订阅/终身深浅色、二者并存、点按重播、后台中断、模拟购买后自动播放与继续、系统动画倍率 0、320 dp 德文 200% 字体。模拟交易仅用于图库，不替代真实 Play 交易；真机触感尚未验证。
+- 非调试 Release 冷启动检查通过；crash buffer 仅含此前 UI 自动化 dump 的连接超时记录，未出现 DoneAt 崩溃。受测 APK 与 AAB 的 DEX 一致。上传签名、bundletool、清单版本和 16 KiB APK ZIP 对齐通过。新候选 `build/android-play-internal/release-v5/DoneAt-3.2.0-5-internal.aab`：3.2.0 / versionCode 5，9,675,876 字节，SHA-256 `f88784f16719eefc07c9cee9c0a5b41669299badbc97e6bfb765b7af9de8cec3`。证据及视频在 `build/android-play-internal/plus-celebration/`，双语版本说明在 `release-v5/`；未上传 Play。
+
+## 2026-09-29 · 玻璃 Tab 栏与主题渐变（替换未上传 Build 5）
+
+- 用户确认旧 Build 5 尚未上传，要求保留构建号 5；旧候选及校验资料已备份至 `build/android-play-internal/release-v5-before-glass/`。
+- 用户授权接入 AndroidLiquidGlass，底栏参照 iOS 胶囊形状及选中态；固定 Backdrop 2.0.1 / Shapes 1.2.1，许可证随包附带并接入致谢页。主体卡片和 Android 导航行为保留。
+- 滚动页面末尾及固定底部操作使用统一实测底栏间距，键盘显示时隐藏底栏；宽屏/矮屏仍使用导航侧栏。新增 Debug 玻璃底栏预览，复用生产组件。
+- 主题切换增加既有 phase 280 ms 颜色过渡，保留页面状态并支持中断重定向；系统移除动画时直接切换。
+- 冻结基线不推进；本轮漂移仍为 `f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`。
+
+- 用户进一步明确要按住 Tab 后出现可拖动的放大玻璃透镜。本轮参考上游 `LiquidBottomTabs` 的三层绘制实现按压放大、跟手移动、松手选择；拖动期间页面不切换，离开底栏取消或切后台收回。修复真机反馈的选中区域透明、放大透镜被底栏圆角裁切，以及 RTL 位置反向。隐藏采样层不提供触摸或读屏节点。
+- 2026-09-30 真机验收：无线 ADB 连接 Pixel 10 Pro / Android 17，使用独立 `com.rainif.doneat.preview`，保留已安装的 Play 版及其数据。通过浅/深色、按住放大与松手选择、德文 200% 字体、阿拉伯语 RTL、减少动态效果、壁纸配色、真实四个主页面、设置子页返回栈、系统返回、远离底栏取消和后台恢复。减少动态效果时，静止与按住截图一致。只通过 Preview 自身首启流程建立测试设置，没有导入正式数据。
+- 按用户要求停止使用模拟器做后续视觉检查；本轮已启动的 Android / iOS 模拟器均关闭。后续优先真机，现有无线连接用任务独立的 ADB 服务端口 5049。
+- 自动检查：四模块 432 项测试（0 failure/error/skip）、lint（0 error / 33 warning / 1 hint）、Debug / R8 Release / AAB、稳定依赖、版本检查、diff whitespace 通过；本轮所需 iOS headless build 已通过。签名严格校验、bundletool、清单版本、内置许可证、16 KiB APK 对齐和生产 APK/AAB DEX 一致性通过。
+- 独立包名的非调试 R8 Release Preview 在真机上通过保留设置的冷启动、Tab 拖动和按住时后台中断检查。它与生产 AAB 的 applicationId 不同，不把这项验收表述为已验证 Play 处理后的包体。旧系统、HyperOS 和真实交易仍需对应环境验收。
+- 已替换 `build/android-play-internal/release-v5/DoneAt-3.2.0-5-internal.aab`，保留 3.2.0 / versionCode 5。9,751,050 字节，SHA-256 `601380489f60db01dfead659a4f44ccd2df56c27816e781c1b83c1eb729c2137`。旧包备份哈希复核通过。双语版本说明及 README 同步更新；真机截图、测试日志与 `phone-release-glass-drag.mp4` 位于 `build/android-play-internal/glass-tabs/`。未上传 Play。
+
+
+## 2026-09-30 · Android 变更同步 PR
+
+- 从 `origin/main` 的 `be4bce56` 创建独立分支 `codex/android-play-glass`，同步本轮 Play 优惠、Plus 页面及彩蛋、玻璃 Tab/主题过渡、Release 启动修复、小组件标签和商店素材脚本。原 `feat/promo-video` 工作区的 iOS、营销视频与本机 IDE 修改保持原样。
+- 保留主分支已有档案恢复与计时性能修复；按最新 `Localizable.xcstrings` 重新生成 Android 19 语言资源。当前源码为 3.2.1 / versionCode 5，此前交付的 3.2.0 (5) AAB 未覆盖、未上传。
+- 重新验证：四模块 443 项测试（domain 337、data 74、design 9、app 23，0 failure / error / skip）；lint 0 error / 34 warning / 1 hint；Debug / R8 Release / AAB 与稳定 Compose/Material3 依赖检查通过。npm lint、44 文件 / 453 项测试、版本检查、两份营销脚本的 Node 语法与启动检查脚本的 Python 语法通过。iOS 无界面模拟器编译通过，未进行 iOS 视觉检查。日志保存在本机 `build/android-pr-sync/`。
+- 本轮无线真机未连接，没有对整合后的构建追加设备视觉或 Release 冷启动验收；上一节 Pixel Preview 验收属于当时的构建。真实 Play 交易、HyperOS 和旧系统仍待对应设备验收。
+- 漂移命令新增 `94fefaa9`（iOS 日历涂色与年度班次范围），其余仍为 `f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`。本轮不改排班业务规则、不推进冻结基线；新增排班移植由独立 PR #249 处理。
+
+
+## 2026-09-30 · Android 自定义强调色与 iOS 背景对齐
+
+- 在“设置 → 主题”增加八种常用色、恢复 DoneAt 橙色和自定义颜色。自定义对话框使用稳定 Material3 HSV 滑块与六位 HEX 输入；保存才应用，取消保留当前设置。选择颜色关闭壁纸配色，壁纸开关保留之前的颜色；沿用现有 280 ms 主题过渡与减少动态效果行为。
+- 强调色仅保存到 Android 本机 `DeviceSettings.accentColor`，不修改 RecordJSON、同步协议或业务规则。旧设置及非法色值安全回退；按浅/深色调整用于文字的明度，通过 RGB 采样立方体的对比度检查。新增文案完整覆盖 19 语言并重新生成资源，无新依赖。
+- 页面和卡片背景按 `OWCDesign.page/card` 对齐：浅色 `#F2F2F7` / `#FFFFFF`，深色 `#000000` / `#1C1C1E`。依据已有 iOS 27 浅色参考截图核对像素；本轮没有启动 iOS 模拟器进行视觉检查。自定义色和壁纸配色都保留中性背景。
+- 自动检查：四模块 448 项测试（domain 337、data 76、design 12、app 23，0 failure / error / skip）；lint 0 error / 34 warning / 1 hint；Debug 与 R8 Release 构建通过。npm lint、44 文件 / 453 项测试、生成资源与版本检查通过；iOS 无界面模拟器编译通过。日志为本机 `build/android-pr-sync/accent-*`。
+- 物理 Pixel 10 Pro / Android 17（API 37）通过无线 ADB 5037 使用独立 `com.rainif.doneat.preview` 验收：浅/深色背景、预设色、HSV 调节、HEX 输入与无效输入、取消、真实主界面保存与进程重启恢复、恢复默认色、壁纸开关保留颜色，以及玻璃底栏跟随强调色。微信输入法实测 A–F 直接输入成功；HEX 保持可见。德文实际系统 200% 字号下对话框可完整访问并可滚动，阿拉伯语布局镜像且 HEX 输入/格式提示保持正确顺序，减少动态效果探针通过。未启动 Android 模拟器。
+- QA 截图和 UI 层级位于本机 `build/android-pr-sync/accent-qa/`。完成后 Preview 语言恢复为 `zh-CN`，系统字号恢复原值 1.0；正式 Play 应用及其数据保持原样。该设备验收针对 Debug Preview，不表述为 Play 处理后的包体验收；旧系统、HyperOS 与真实交易仍待对应环境验证。
+- 基线漂移命令复核为 `94fefaa9`、`f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`，冻结基线不推进。变更继续同步到 [PR #250](https://github.com/ififi2017/Off-Work-Countdown/pull/250)。当前源码仍为 3.2.1 / versionCode 5；此前交付的 3.2.0 (5) AAB 未覆盖，本轮未生成新的签名 AAB 或操作 Play Console。
+
+
+## 2026-09-30 · Android 真机巡检与交互修复
+
+- 按用户授权使用已连接的 Pixel 10 Pro / Android 17（API 37）巡检四个主页面、排班设置、专注编辑与 Plus 页面。继续使用独立 `com.rainif.doneat.preview` 和合成数据，正式 Play 应用保持原样。
+- 用户报告订阅页出现 App Store；真机确认为 FREE 且未返回可购方案时误用 iOS `plusUnavailable`。改用 Android 专用 Google Play 提示，补齐 19 语言并重新生成资源；新增回归扫描实际 Android Kotlin 引用的字符串，阻止各语言混入 App Store 文案。没有改动 iOS 文案。
+- 修复从记录或专注进入 Plus 后返回到设置的上下文丢失。受限功能触发的 Plus 页面现在留在来源 Tab 的返回栈，返回按钮读屏名称也指向来源；继续操作先弹出来源 Plus 页面，再恢复原功能。真机分别检查系统返回、页面返回和 Debug 权益变化后的“继续使用 Plus”，不发起真实交易。
+- 专注任务草稿与番茄钟设置此前使用普通 remember，切换 Tab 后未保存编辑丢失。三个任务编辑入口使用同一原生 saveable saver，六个设置草稿值使用 rememberSaveable；不提前写入业务档案。真机确认任务标题/番茄数量跨 Tab 及系统字体变化引起的 Activity 重建保留，取消返回丢弃；番茄钟设置跨 Tab 保留未保存数值。新增一项单元回归覆盖全部任务草稿字段及可空标识。
+- 自定义强调色补齐 Material3 secondary/container 前景角色，分段选择、tonal 按钮和滑块轨道跟随所选颜色，保留中性背景和语义状态色。专注休息标签/图标使用可读的中性前景，保留青色轨道和填充。无排班的专注页面移除重复提示，提供工作时间与排班入口；任务加减按钮读屏名称区分方向，图标触摸区域采用已有 48 dp token。
+- 自动检查：四模块 449 项测试（domain 337、data 76、design 12、app 24，0 failure/error/skip），lint 0 error / 34 warning / 1 hint，Debug / R8 Release 构建通过。npm lint、44 文件 / 454 项测试、资源与版本检查通过；可用 iPhone 18 Pro 目的地的 iOS headless build 通过，没有启动模拟器进行视觉检查。日志及真机截图在本机 `build/android-pr-sync/phone-audit-2026-09-30/`。
+- 真机追加确认专注示例的深浅色休息标签、英文 Google Play 提示、德文实际 200% 字号下滚动可访问提示/重试/恢复，以及阿拉伯语 RTL。测试后 Preview 恢复为中文、浅色、非会员，系统字号恢复原值 1.0。发现德文 200% 字号时底栏长标签换行较碎，记录为后续导航布局改进；本轮没有改变该布局。该检查针对 Debug Preview，真实 Play 交易、旧 Android 与 HyperOS 仍需对应环境验收。
+- 冻结基线未推进，漂移仍为 `94fefaa9`、`f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`。源码仍为 3.2.1 / versionCode 5，修复继续同步到 PR #250；此前签名的 3.2.0 (5) AAB 未覆盖，本轮未生成新的签名 AAB 或操作 Play Console。

@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">इस प्रोजेक्ट के बारे में</string>
     <string name="aboutSection">परिचय</string>
+    <string name="accentBlue">नीला</string>
+    <string name="accentBrightness">चमक</string>
+    <string name="accentColor">प्रमुख रंग</string>
+    <string name="accentColorFooter">पाठ स्पष्ट रखने के लिए रंग हल्की और गहरी थीम के अनुसार बदलते हैं।</string>
+    <string name="accentCustom">अपना रंग</string>
+    <string name="accentDoneAt">DoneAt नारंगी</string>
+    <string name="accentGreen">हरा</string>
+    <string name="accentHex">HEX रंग</string>
+    <string name="accentHexError">छह हेक्साडेसिमल अंक दर्ज करें, जैसे #2563EB।</string>
+    <string name="accentHue">रंगत</string>
+    <string name="accentIndigo">इंडिगो</string>
+    <string name="accentPink">गुलाबी</string>
+    <string name="accentPurple">बैंगनी</string>
+    <string name="accentRed">लाल</string>
+    <string name="accentSaturation">संतृप्ति</string>
+    <string name="accentTeal">नीलहरित</string>
+    <string name="accentYellow">पीला</string>
     <string name="acknowledgements">आभार</string>
     <string name="adjustOvertime">ओवरटाइम बदलें</string>
     <string name="allowExactReminders">सटीक रिमाइंडर की अनुमति दें</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">प्रति प्रभावी घंटा</string>
     <string name="perWorkday">प्रति कार्यदिवस</string>
     <string name="plusAndroidComingSoon">Android पर Plus की खरीदारी जल्द उपलब्ध होगी। अभी आप टाइमर और हाल के रिकॉर्ड इस्तेमाल कर सकते हैं।</string>
+    <string name="plusAndroidIntroBody">टाइमर और पिछले सप्ताह के रिकॉर्ड मुफ़्त रहेंगे। Plus से पूरे साल, कामकाजी जीवन, संपादन और फ़ोकस की सुविधाएँ मिलती हैं।</string>
+    <string name="plusAndroidPlansUnavailable">Google Play से प्लान लोड नहीं हो सके। कृपया फिर से कोशिश करें।</string>
     <string name="plusAndroidRenewalNotice">सदस्यताएँ रद्द करने तक अपने आप नवीनीकृत होती हैं। लाइफ़टाइम की एक बार की खरीद से मौजूदा सदस्यता रद्द नहीं होती।</string>
     <string name="plusAndroidRequestFailed">Google Play अनुरोध पूरा नहीं कर सका। थोड़ी देर बाद फिर कोशिश करें।</string>
     <string name="plusAndroidStoreOffline">Google Play अभी उपलब्ध नहीं है। कनेक्ट होने पर खरीदारी बहाल करने का प्रयास करें।</string>
     <string name="plusAndroidStoreUnconfigured">इस डिवाइस पर Plus खरीद अभी उपलब्ध नहीं है। टाइमर और हाल के रिकॉर्ड का उपयोग जारी रख सकते हैं।</string>
+    <string name="plusAndroidYearlyTrialPrice">7 दिन मुफ़्त, फिर हर साल %1$s। शुल्क से बचने के लिए ट्रायल समाप्त होने से पहले रद्द करें।</string>
     <string name="plusAutoRenew">सदस्यता आपके रद्द करने तक ख़ुद रिन्यू होती रहती है। सालाना प्लान में 7 दिन मुफ़्त हो सकते हैं, उसके बाद सालाना कीमत लगती है। एक बार की ख़रीद सिर्फ़ एक भुगतान है और चल रही सदस्यता को ख़ुद रद्द नहीं करती।</string>
     <string name="plusBenefitCharts">पूरे वर्ष और कामकाजी जीवन के दृश्य</string>
     <string name="plusBenefitEdit">रिकॉर्ड से कोई भी दिन बदलें</string>
@@ -876,6 +896,9 @@
     <string name="whatsNewWatchTitle">Apple Watch पर आपका कार्यदिवस</string>
     <string name="widgetDescription">अपने बाकी काम के समय पर एक नज़र डालें।</string>
     <string name="widgetOpenToRefresh">रीफ़्रेश करने के लिए ऐप खोलें</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">अच्छी तरह आराम करें · अगली शिफ्ट</string>
     <string name="widgetWorking">काम जारी है</string>
     <string name="workOnWeekday">%1$s को काम</string>

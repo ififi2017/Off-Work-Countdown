@@ -1,5 +1,6 @@
 package com.rainif.doneat.ui.schedule
 
+import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -187,7 +188,7 @@ fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () 
         (session.env.extendedSchedule?.content?.shiftTypes?.none { it.id == uuid } != false && uuid in handSet.values)
 
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-        Column(Modifier.safeDrawingPadding()) {
+        Column(Modifier.safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
             Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onBack) { Icon(Icons.Outlined.Close, stringResource(R.string.cancelAction)) }
                 Text(stringResource(if (isNew) R.string.extendedNewShiftType else R.string.extendedEditShiftType), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)

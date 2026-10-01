@@ -1,5 +1,20 @@
 package com.rainif.doneat.gallery
 
+import com.rainif.doneat.R
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.ui.res.stringResource
+import com.rainif.doneat.core.designsystem.DoneAtGlassNavigation
+import com.rainif.doneat.core.designsystem.DoneAtNavigationItem
+import com.rainif.doneat.ui.components.DoneAtPage
+import com.rainif.doneat.ui.components.SettingsGroup
+import com.rainif.doneat.ui.components.ValueRow
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -61,6 +76,11 @@ import com.rainif.doneat.core.designsystem.ThemeMode
 import com.rainif.doneat.core.designsystem.supportsDynamicColor
 import com.rainif.doneat.core.designsystem.systemRemovesAnimations
 import com.rainif.doneat.ui.SystemBarsFollowTheme
+import com.rainif.doneat.plus.PlusOffer
+import com.rainif.doneat.plus.PlusPlan
+import com.rainif.doneat.plus.PlusPage
+import com.rainif.doneat.plus.PlusStatus
+import com.rainif.doneat.plus.PlusStoreState
 import kotlinx.coroutines.delay
 
 /**
@@ -81,16 +101,92 @@ class DesignGalleryActivity : ComponentActivity() {
         }
         setContent {
             var mode by rememberSaveable { mutableStateOf(initialMode) }
-            var dynamic by rememberSaveable { mutableStateOf(false) }
+            var accent by rememberSaveable { mutableStateOf<Int?>(null) }
+            var dynamic by rememberSaveable { mutableStateOf(intent.getBooleanExtra("dynamic", false)) }
             val systemReduced = systemRemovesAnimations(LocalContext.current)
-            var reduced by rememberSaveable { mutableStateOf(systemReduced) }
+            var reduced by rememberSaveable { mutableStateOf(intent.getBooleanExtra("reduced", systemReduced)) }
             val dark = when (mode) {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
             }
             SystemBarsFollowTheme(dark)
-            DoneAtTheme(themeMode = mode, dynamicColor = dynamic, reducedMotion = reduced) {
+            DoneAtTheme(themeMode = mode, dynamicColor = dynamic, accentColor = accent, reducedMotion = reduced) {
+                if (intent.getStringExtra("screen") == "theme") {
+                    val prefs = com.rainif.doneat.core.domain.settings.PreferencesRules.defaults("UTC", 0.0).copy(
+                        theme = when (mode) { ThemeMode.LIGHT -> "light"; ThemeMode.DARK -> "dark"; else -> "auto" })
+                    val density = LocalDensity.current
+                    CompositionLocalProvider(LocalDensity provides Density(density.density,
+                        intent.getFloatExtra("fontScale", density.fontScale))) {
+                        com.rainif.doneat.ui.settings.ThemeScreen(prefs,
+                            com.rainif.doneat.core.data.DeviceSettings(accentColor = accent, dynamicColor = dynamic),
+                            edit = { change -> mode = when (change(prefs).theme) {
+                                "light" -> ThemeMode.LIGHT; "dark" -> ThemeMode.DARK; else -> ThemeMode.SYSTEM } },
+                            setDynamic = { dynamic = it }, setAccent = { accent = it; dynamic = false }, onBack = { finish() })
+                    }
+                    return@DoneAtTheme
+                }
+                if (intent.getStringExtra("screen") == "navigation") {
+                    var selected by rememberSaveable { mutableIntStateOf(0) }
+                    val tabs = listOf(
+                        DoneAtNavigationItem(stringResource(R.string.timerTab), Icons.Outlined.Schedule),
+                        DoneAtNavigationItem(stringResource(R.string.focusTitle), Icons.Outlined.Timer),
+                        DoneAtNavigationItem(stringResource(R.string.recordsTab), Icons.Outlined.CalendarMonth),
+                        DoneAtNavigationItem(stringResource(R.string.settings), Icons.Outlined.Tune),
+                    )
+                    val density = LocalDensity.current
+                    CompositionLocalProvider(LocalDensity provides Density(density.density,
+                        intent.getFloatExtra("fontScale", density.fontScale))) {
+                    DoneAtGlassNavigation(tabs, selected, { selected = it }) {
+                        DoneAtPage("Preview · Glass navigation", actions = {
+                            TextButton(onClick = { mode = if (dark) ThemeMode.LIGHT else ThemeMode.DARK }) { Text("Theme") }
+                        }) {
+                            Text("Preview only · ${tabs[selected].title}", Modifier.padding(horizontal = DoneAtSpacing.page))
+                            repeat(12) { index ->
+                                SettingsGroup {
+                                    ValueRow("Sample ${index + 1}", "09:00 – 17:00")
+                                    ValueRow("DoneAt", "8 hr")
+                                }
+                            }
+                        }
+                    }
+                    }
+                    return@DoneAtTheme
+                }
+                if (intent.getStringExtra("screen") == "plus") {
+                    val offers = listOf(
+                        PlusOffer(PlusPlan.MONTHLY, "€4.99", "preview"),
+                        PlusOffer(PlusPlan.YEARLY, "€29.99", "preview", intent.getBooleanExtra("trial", true)),
+                        PlusOffer(PlusPlan.LIFETIME, "€79.99", "preview"),
+                    )
+                    val status = when (intent.getStringExtra("store")) {
+                        "offline" -> PlusStatus.OFFLINE
+                        "loading" -> PlusStatus.LOADING
+                        "owned", "both" -> PlusStatus.LIFETIME
+                        "subscribed" -> PlusStatus.SUBSCRIBED
+                        else -> PlusStatus.FREE
+                    }
+                    var previewStatus by rememberSaveable { mutableStateOf(status) }
+                    val state = PlusStoreState(previewStatus, if (previewStatus == PlusStatus.FREE) offers else emptyList(),
+                        hasActiveSubscription = previewStatus == PlusStatus.SUBSCRIBED || intent.getStringExtra("store") == "both")
+                    val simulatePurchase = intent.getBooleanExtra("completePurchase", false)
+                    var checkout by rememberSaveable { mutableStateOf("") }
+                    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+                        Column(Modifier.safeDrawingPadding()) {
+                            Text("Preview · sample prices · no purchases" + checkout,
+                                Modifier.padding(horizontal = DoneAtSpacing.page), style = MaterialTheme.typography.bodySmall)
+                            PlusPage(state, state.authorized, true, onBack = { finish() },
+                                onPurchase = {
+                                    checkout = " · Checkout: ${it.plan}"
+                                    if (simulatePurchase) previewStatus = if (it.plan == PlusPlan.LIFETIME) PlusStatus.LIFETIME else PlusStatus.SUBSCRIBED
+                                },
+                                onRestore = {}, onRefresh = {}, onOpenUrl = { checkout = " · Manage plan opened" },
+                                playsCelebrationOnAppear = simulatePurchase,
+                                onContinue = if (simulatePurchase) ({ checkout = " · Continued with Plus" }) else null)
+                        }
+                    }
+                    return@DoneAtTheme
+                }
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
                     Column(
                         Modifier

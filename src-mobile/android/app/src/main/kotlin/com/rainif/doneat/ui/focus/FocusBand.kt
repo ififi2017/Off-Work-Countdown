@@ -145,7 +145,7 @@ private fun GapTile(context: FocusContext, gap: FocusDayCanvas.Gap, modifier: Mo
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 if (height >= 44) {
-                    Icon(Icons.Outlined.Restaurant, null, Modifier.size(16.dp), tint = breakColor)
+                    Icon(Icons.Outlined.Restaurant, null, Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                     Column {
                         Text(title, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                         Text(detail, style = MaterialTheme.typography.labelSmall, color = scheme.outline)
@@ -224,8 +224,8 @@ private fun BlockTile(
             Box(Modifier.width(3.5.dp).fillMaxHeight().background(breakColor))
             if (height >= 20) {
                 Row(Modifier.align(Alignment.CenterStart).padding(start = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Icon(Icons.Outlined.Coffee, null, Modifier.size(12.dp), tint = breakColor)
-                    Text(Strings.focusBandBreakMinutes(res, ((block.endAtMs - block.startAtMs) / 60_000).toString()), style = MaterialTheme.typography.labelSmall, color = breakColor)
+                    Icon(Icons.Outlined.Coffee, null, Modifier.size(12.dp), tint = scheme.onSurfaceVariant)
+                    Text(Strings.focusBandBreakMinutes(res, ((block.endAtMs - block.startAtMs) / 60_000).toString()), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
                 }
             }
         } else {

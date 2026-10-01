@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">Über dieses Projekt</string>
     <string name="aboutSection">Über</string>
+    <string name="accentBlue">Blau</string>
+    <string name="accentBrightness">Helligkeit</string>
+    <string name="accentColor">Akzentfarbe</string>
+    <string name="accentColorFooter">Die Farben passen sich dem hellen und dunklen Design an, damit Text gut lesbar bleibt.</string>
+    <string name="accentCustom">Eigene Farbe</string>
+    <string name="accentDoneAt">DoneAt-Orange</string>
+    <string name="accentGreen">Grün</string>
+    <string name="accentHex">HEX-Farbe</string>
+    <string name="accentHexError">Gib sechs hexadezimale Zeichen ein, z. B. #2563EB.</string>
+    <string name="accentHue">Farbton</string>
+    <string name="accentIndigo">Indigo</string>
+    <string name="accentPink">Rosa</string>
+    <string name="accentPurple">Violett</string>
+    <string name="accentRed">Rot</string>
+    <string name="accentSaturation">Sättigung</string>
+    <string name="accentTeal">Türkis</string>
+    <string name="accentYellow">Gelb</string>
     <string name="acknowledgements">Danksagungen</string>
     <string name="adjustOvertime">Überstunden anpassen</string>
     <string name="allowExactReminders">Exakte Erinnerungen erlauben</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">Pro effektiver Stunde</string>
     <string name="perWorkday">Pro Arbeitstag</string>
     <string name="plusAndroidComingSoon">Plus-Käufe für Android folgen bald. Timer und aktuelle Einträge kannst du bereits nutzen.</string>
+    <string name="plusAndroidIntroBody">Der Timer und die letzte Woche bleiben kostenlos. Plus schaltet das ganze Jahr, dein Arbeitsleben, Bearbeitung und Fokus frei.</string>
+    <string name="plusAndroidPlansUnavailable">Die Angebote konnten nicht von Google Play geladen werden. Bitte versuche es erneut.</string>
     <string name="plusAndroidRenewalNotice">Abos verlängern sich automatisch, bis du kündigst. Der einmalige Kauf von Lifetime beendet ein laufendes Abo nicht.</string>
     <string name="plusAndroidRequestFailed">Google Play konnte die Anfrage nicht abschließen. Versuche es gleich noch einmal.</string>
     <string name="plusAndroidStoreOffline">Google Play ist gerade nicht erreichbar. Versuche nach dem Verbinden, Käufe wiederherzustellen.</string>
     <string name="plusAndroidStoreUnconfigured">Plus kann auf diesem Gerät derzeit nicht gekauft werden. Timer und aktuelle Einträge sind weiterhin verfügbar.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 Tage kostenlos, danach %1$s pro Jahr. Kündige vor Ende des Testzeitraums, um eine Abbuchung zu vermeiden.</string>
     <string name="plusAutoRenew">Abos verlängern sich automatisch, bis du kündigst. Das Jahresabo kann 7 Tage kostenlos enthalten; danach gilt der Jahrespreis. Der Einmalkauf ist eine einzelne Zahlung und kündigt kein laufendes Abo.</string>
     <string name="plusBenefitCharts">Ganzjahres- und Arbeitslebensansicht</string>
     <string name="plusBenefitEdit">Jeden Tag in Einträge bearbeiten</string>
@@ -876,6 +896,9 @@
     <string name="whatsNewWatchTitle">Dein Arbeitstag auf der Apple Watch</string>
     <string name="widgetDescription">Verbleibende Arbeitszeit auf einen Blick.</string>
     <string name="widgetOpenToRefresh">App zum Aktualisieren öffnen</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">Erhol dich gut · nächste Schicht</string>
     <string name="widgetWorking">Bei der Arbeit</string>
     <string name="workOnWeekday">Am %1$s arbeiten</string>

@@ -52,6 +52,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -518,7 +519,7 @@ fun FocusTemplateTaskScreen(graph: AppGraph, taskID: String?, onBack: () -> Unit
     }
     val planning = graph.focus.planning(context.state)
     val existing = parent.tasks.firstOrNull { it.id == taskID }
-    var draft by remember {
+    var draft by rememberSaveable(taskID, stateSaver = TaskDraft.Saver) {
         mutableStateOf(
             TaskDraft(
                 title = existing?.title.orEmpty(),

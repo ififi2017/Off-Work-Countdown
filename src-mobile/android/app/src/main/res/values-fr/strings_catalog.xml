@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">À propos du projet</string>
     <string name="aboutSection">À propos</string>
+    <string name="accentBlue">Bleu</string>
+    <string name="accentBrightness">Luminosité</string>
+    <string name="accentColor">Couleur d’accent</string>
+    <string name="accentColorFooter">Les couleurs s’adaptent aux thèmes clair et sombre pour garder le texte lisible.</string>
+    <string name="accentCustom">Couleur personnalisée</string>
+    <string name="accentDoneAt">Orange DoneAt</string>
+    <string name="accentGreen">Vert</string>
+    <string name="accentHex">Couleur HEX</string>
+    <string name="accentHexError">Saisissez six chiffres hexadécimaux, par exemple #2563EB.</string>
+    <string name="accentHue">Teinte</string>
+    <string name="accentIndigo">Indigo</string>
+    <string name="accentPink">Rose</string>
+    <string name="accentPurple">Violet</string>
+    <string name="accentRed">Rouge</string>
+    <string name="accentSaturation">Saturation</string>
+    <string name="accentTeal">Bleu sarcelle</string>
+    <string name="accentYellow">Jaune</string>
     <string name="acknowledgements">Remerciements</string>
     <string name="adjustOvertime">Ajuster les heures sup.</string>
     <string name="allowExactReminders">Autoriser les rappels exacts</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">Par heure effective</string>
     <string name="perWorkday">Par jour travaillé</string>
     <string name="plusAndroidComingSoon">Les achats Plus arrivent bientôt sur Android. Vous pouvez déjà utiliser le minuteur et consulter vos données récentes.</string>
+    <string name="plusAndroidIntroBody">Le minuteur et la dernière semaine restent gratuits. Plus débloque l’année complète, votre vie professionnelle, la modification et la concentration.</string>
+    <string name="plusAndroidPlansUnavailable">Impossible de charger les offres depuis Google Play. Veuillez réessayer.</string>
     <string name="plusAndroidRenewalNotice">Les abonnements se renouvellent automatiquement jusqu’à leur résiliation. L’achat à vie ne résilie pas un abonnement actif.</string>
     <string name="plusAndroidRequestFailed">Google Play n’a pas pu terminer cette action. Réessayez dans un instant.</string>
     <string name="plusAndroidStoreOffline">Google Play est indisponible pour le moment. Réessayez de restaurer vos achats une fois connecté.</string>
     <string name="plusAndroidStoreUnconfigured">Les achats Plus ne sont pas encore disponibles sur cet appareil. Le minuteur et vos données récentes restent accessibles.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 jours gratuits, puis %1$s par an. Annulez avant la fin de l’essai pour éviter la facturation.</string>
     <string name="plusAutoRenew">Les abonnements se renouvellent automatiquement jusqu’à leur annulation. L’offre annuelle peut inclure 7 jours gratuits, puis le tarif annuel s’applique. L’achat à vie est un paiement unique et n’annule pas un abonnement en cours.</string>
     <string name="plusBenefitCharts">Vues de l’année complète et de la vie professionnelle</string>
     <string name="plusBenefitEdit">Modifier n’importe quel jour depuis Relevés</string>
@@ -877,6 +897,9 @@
     <string name="whatsNewWatchTitle">Votre journée de travail sur l’Apple Watch</string>
     <string name="widgetDescription">Consultez votre temps de travail restant en un coup d’œil.</string>
     <string name="widgetOpenToRefresh">Ouvrez l’application pour actualiser</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">Bon repos · prochain service</string>
     <string name="widgetWorking">Au travail</string>
     <string name="workOnWeekday">Travailler le %1$s</string>

@@ -1,6 +1,7 @@
 package com.rainif.doneat.core.designsystem
 
 import android.os.Build
+import android.os.SystemClock
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -16,14 +17,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
@@ -47,9 +50,14 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** The brand's own colours (`assets/brand`, iOS `OWCDesign`); the mark only, never general UI. */
 object DoneAtBrand {
@@ -123,54 +131,76 @@ fun CelebratingBrandMark(
     modifier: Modifier = Modifier,
     showsDepth: Boolean = false,
     replaysOnTap: Boolean = false,
+    playsOnAppear: Boolean = false,
 ) {
     val view = LocalView.current
     val reduced = LocalDoneAtMotion.current.reduced
     val scope = rememberCoroutineScope()
     val rotation = remember { Animatable(0f) }
-    var pulse by remember { mutableFloatStateOf(1f) }
+    val pulse = remember { Animatable(1f) }
     var taps by remember { mutableIntStateOf(0) }
     var lastTapMs by remember { mutableLongStateOf(0L) }
     var playing by remember { mutableStateOf<Job?>(null) }
+    var handledInitialPlayback by rememberSaveable { mutableStateOf(false) }
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val pressScale by animateFloatAsState(if (pressed && !reduced) 0.97f else 1f, LocalDoneAtMotion.current.press(), label = "brandPress")
 
     fun play() {
-        if (playing?.isActive == true) return
+        if (playing != null) return
         playing = scope.launch {
-            if (reduced) {
-                pulse = 0.8f
-                delay(DoneAtMotion.REDUCED_MS.toLong())
-                pulse = 1f
-            } else {
-                val ticks = launch {
-                    var elapsed = 0L
-                    for (at in BrandCelebration.tickTimesMs) {
-                        delay(at - elapsed)
-                        elapsed = at
-                        view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+            try {
+                if (reduced) {
+                    pulse.animateTo(0.8f, tween(DoneAtMotion.REDUCED_MS))
+                    pulse.animateTo(1f, tween(DoneAtMotion.REDUCED_MS))
+                } else {
+                    val ticks = launch {
+                        val start = SystemClock.uptimeMillis()
+                        for (at in BrandCelebration.tickTimesMs) {
+                            val deadline = start + at
+                            delay((deadline - SystemClock.uptimeMillis()).coerceAtLeast(0))
+                            if (SystemClock.uptimeMillis() - deadline < BrandCelebration.MAX_TICK_DELAY_MS) {
+                                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                            }
+                        }
                     }
+                    rotation.animateTo(BrandCelebration.DEGREES, tween(BrandCelebration.DURATION_MS, easing = BrandCelebration.easing))
+                    ticks.cancel()
                 }
-                rotation.animateTo(rotation.value + BrandCelebration.DEGREES, tween(BrandCelebration.DURATION_MS, easing = BrandCelebration.easing))
-                ticks.cancel()
-                rotation.snapTo(rotation.value % 360f)
+                view.performHapticFeedback(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.VIRTUAL_KEY,
+                )
+            } finally {
+                withContext(NonCancellable) {
+                    rotation.snapTo(0f)
+                    pulse.snapTo(1f)
+                }
+                if (playing == coroutineContext[Job]) playing = null
             }
-            view.performHapticFeedback(
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.VIRTUAL_KEY,
-            )
+        }
+    }
+
+    LaunchedEffect(lifecycleState, reduced, playsOnAppear) {
+        // Leaving the page/backgrounding or changing motion preferences must
+        // cancel both rotation and pending ticks, without a late completion haptic.
+        playing?.cancelAndJoin()
+        taps = 0
+        if (lifecycleState == Lifecycle.State.RESUMED && playsOnAppear && !handledInitialPlayback) {
+            handledInitialPlayback = true
+            play()
         }
     }
 
     DoneAtBrandMark(
         modifier
             .scale(pressScale)
-            .alpha(pulse)
+            .alpha(pulse.value)
             .clip(CircleShape)
             .clickable(interaction, indication = null) {
-                if (playing?.isActive == true) return@clickable
+                if (playing != null || lifecycleState != Lifecycle.State.RESUMED) return@clickable
                 view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                val now = System.currentTimeMillis()
+                val now = SystemClock.uptimeMillis()
                 taps = if (now - lastTapMs > BrandCelebration.TAP_GAP_MS) 1 else taps + 1
                 lastTapMs = now
                 if (replaysOnTap || taps >= BrandCelebration.TAPS) {
@@ -180,11 +210,11 @@ fun CelebratingBrandMark(
             }
             .semantics(mergeDescendants = true) {
                 contentDescription = label
-                role = Role.Image
+                role = Role.Button
             },
         handRotation = rotation.value,
         showsDepth = showsDepth,
-        pressed = playing?.isActive == true,
+        pressed = playing != null,
     )
 }
 
@@ -194,6 +224,7 @@ internal object BrandCelebration {
     const val DEGREES = 720f
     const val TAPS = 5
     const val TAP_GAP_MS = 1_200L
+    const val MAX_TICK_DELAY_MS = 80
 
     /** SwiftUI `UnitCurve.easeOut`. */
     val easing = CubicBezierEasing(0f, 0f, 0.58f, 1f)

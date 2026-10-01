@@ -47,6 +47,8 @@ import com.rainif.doneat.R
 import com.rainif.doneat.core.domain.records.LifeProfileDraft
 import com.rainif.doneat.core.domain.records.FoundationCompat
 import com.rainif.doneat.ui.records.configuredMonthlySalary
+import com.rainif.doneat.core.designsystem.DoneAtGlassNavigation
+import com.rainif.doneat.core.designsystem.DoneAtNavigationItem
 import com.rainif.doneat.core.designsystem.LocalDoneAtMotion
 import com.rainif.doneat.ui.settings.AboutScreen
 import com.rainif.doneat.ui.settings.AcknowledgementsScreen
@@ -89,8 +91,8 @@ fun AppShell(graph: AppGraph) {
         graph.scope.launch { graph.settings.updateDevice { it.copy(selectedTab = tab.name.lowercase()) } }
     }
     fun continueAfterPlus(action: PlusPendingAction) {
-        val settings = stacks.getValue(AppTab.SETTINGS)
-        if (settings.lastOrNull() is Route.PlusFor) settings.removeAt(settings.lastIndex)
+        val source = stacks.getValue(selected)
+        if (source.lastOrNull() is Route.PlusFor) source.removeAt(source.lastIndex)
         when (action) {
             is PlusPendingAction.FocusCreate -> {
                 stacks.getValue(AppTab.FOCUS).add(Route.FocusCreate(action.blockStartAtMs, action.currentOrNext, null))
@@ -152,22 +154,7 @@ fun AppShell(graph: AppGraph) {
     } else {
         NavigationSuiteType.NavigationBar
     }
-    NavigationSuiteScaffold(
-        layoutType = layout,
-        navigationSuiteItems = {
-            AppTab.entries.forEach { tab ->
-                item(
-                    selected = tab == selected,
-                    onClick = {
-                        // Reselecting a tab returns it to its root, as a tab bar does.
-                        if (tab == selected) stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) } else select(tab)
-                    },
-                    icon = { Icon(tab.icon, contentDescription = null) },
-                    label = { Text(stringResource(tab.title)) },
-                )
-            }
-        },
-    ) {
+    val content: @Composable () -> Unit = {
         // A tab changes immediately and keeps its own saved screen state. Only
         // navigation inside that tab slides; it never crossfades two root pages.
         tabState.SaveableStateProvider(selected) {
@@ -197,15 +184,44 @@ fun AppShell(graph: AppGraph) {
             onBack = { if (stack.size > 1) stack.removeAt(stack.lastIndex) },
             entryProvider = { key ->
                 entry(key, stack, graph, { action -> continueAfterPlus(action) }) { route ->
-                    // The timer's shortcuts land in Settings, with the page already open.
-                    val settings = stacks.getValue(AppTab.SETTINGS)
-                    while (settings.size > 1) settings.removeAt(settings.lastIndex)
-                    route?.let(settings::add)
-                    select(AppTab.SETTINGS)
+                    if (route is Route.PlusFor) {
+                        // A purchase prompted by a feature returns to that feature on Back.
+                        stack.add(route)
+                    } else {
+                        // The timer's shortcuts land in Settings, with the page already open.
+                        val settings = stacks.getValue(AppTab.SETTINGS)
+                        while (settings.size > 1) settings.removeAt(settings.lastIndex)
+                        route?.let(settings::add)
+                        select(AppTab.SETTINGS)
+                    }
                 }
             },
         )
         }
+    }
+    fun selectOrReturnToRoot(tab: AppTab) {
+        if (tab == selected) stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) }
+        else select(tab)
+    }
+    if (layout == NavigationSuiteType.NavigationBar) {
+        DoneAtGlassNavigation(
+            items = AppTab.entries.map { DoneAtNavigationItem(stringResource(it.title), it.icon) },
+            selectedIndex = selected.ordinal,
+            onSelect = { selectOrReturnToRoot(AppTab.entries[it]) },
+            content = content,
+        )
+    } else {
+        NavigationSuiteScaffold(
+            layoutType = layout,
+            navigationSuiteItems = {
+                AppTab.entries.forEach { tab ->
+                    item(selected = tab == selected, onClick = { selectOrReturnToRoot(tab) },
+                        icon = { Icon(tab.icon, contentDescription = null) },
+                        label = { Text(stringResource(tab.title)) })
+                }
+            },
+            content = content,
+        )
     }
 }
 
@@ -299,7 +315,10 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
             editDevice = { change -> scope.launch { graph.settings.updateDevice(change) } },
         )
         Route.Health -> HealthScreen(prefs, edit, back)
-        Route.Theme -> ThemeScreen(prefs, device, edit, { on -> scope.launch { graph.settings.updateDevice { it.copy(dynamicColor = on) } } }, back)
+        Route.Theme -> ThemeScreen(prefs, device, edit,
+            setDynamic = { on -> scope.launch { graph.settings.updateDevice { it.copy(dynamicColor = on) } } },
+            setAccent = { rgb -> scope.launch { graph.settings.updateDevice { it.copy(accentColor = rgb, dynamicColor = false) } } },
+            onBack = back)
         Route.Language -> {
             val context = androidx.compose.ui.platform.LocalContext.current
             LanguageScreen(prefs, { code ->

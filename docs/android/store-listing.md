@@ -6,23 +6,43 @@ Google Play currently limits app names to 30 characters, short descriptions to 8
 
 ## English
 
-**Title (6):** DoneAt
+Adapted from the English ASC 3.2.0 metadata in `app-store-connect/ios/3.2.0.json`. Android-specific surfaces, backup and billing replace the Apple-only features.
 
-**Short description (66):** See time left in your shift, track work, and plan what comes next.
+**Title (28):** DoneAt: Work Shift Countdown
 
-**Full description**
+**Short description (74):** Your shift countdown, schedule, widgets and estimated earnings at a glance
 
-Know how much working time is left in this shift. DoneAt counts the time you actually plan to work, including breaks, and shows your progress and estimated earnings in one place.
+**Full description (2,358)**
 
-Set up your usual hours or a changing schedule, then check the current shift, upcoming work and reminders. Keep a record of your days and use the home-screen widget for a quick, salary-free view. You can start without an account, a purchase or notification permission.
+How long until you clock out? How much have you earned today?
+DoneAt puts your shift countdown, schedule and estimated earnings in one place. Spend less time doing the math and see where you are in your workday. The core countdown is free.
 
-The free app includes the timer, schedules, earnings estimates, the most recent seven calendar days of records, and basic widget information. You can import, export or delete your own records without Plus.
+YOUR SCHEDULE, ON ANDROID
+• Count down to work before your shift, see effective work time remaining during it, and keep the next shift in sight on days off.
+• Set fixed weekdays, alternating weeks or work/rest rotations, including night shifts that cross midnight.
+• Exclude your custom lunch break from working time.
+• Start early, leave early, add overtime or time an unscheduled day without rebuilding your schedule.
+• Optionally see estimated earnings for today, with weekly and yearly earnings summaries.
+• Get shift, lunch and movement reminders.
 
-DoneAt Plus unlocks longer-range records and charts, the Life view, record editing, Focus planning and optional cycle-end summaries. Choose a monthly or yearly subscription, or a one-time lifetime purchase. Google Play shows your local price and renewal terms before you pay, and handles subscription cancellation. A lifetime purchase does not cancel an active subscription.
+YOUR DAY AT A GLANCE
+Check your countdown with an Android home-screen widget or ongoing notification. Use layouts designed for phones and tablets. Share your countdown as an image or link. DoneAt supports 19 languages and follows your system language.
 
-Your schedule, salary and records stay on your device by default. If Android system backup or device transfer is enabled, the records archive and device settings, including an unfinished setup draft, can be copied and restored by that system. These files may contain salary. You can move a RecordJSON file yourself; automatic Google Drive sync and automatic iPhone-to-Android sync are not part of this release. Purchases are restored separately through Google Play.
+FREE FEATURES AND DONEAT PLUS
+The core countdown is free. View records from the latest seven days in Week and Month views; older days remain locked in those views. Import, export and delete are also free.
 
-Earnings and long-range figures are estimates for planning, not payroll calculations. Reminder timing depends on Android permissions and device settings.
+DoneAt Plus unlocks:
+• Older records, the Year view and editing past days.
+• Life view: add life milestones and career salary periods to explore past estimates, your current work stage and projected gross lifetime income.
+• Focus: plan tasks in focus and break blocks that respect lunch and shift-end boundaries.
+• Optional cycle-end summaries to look back on your work.
+
+Monthly and yearly subscriptions renew automatically until canceled. Eligible new subscribers can start the yearly plan with a 7-day free trial. Unless canceled before the trial ends, the yearly subscription begins at the price shown by Google Play. Lifetime access is a one-time purchase. Manage subscriptions in Google Play.
+
+YOUR DATA, YOUR CHOICE
+No DoneAt account is required. Data stays on your device by default. If Android backup or device transfer is enabled, your records and settings, including salary data, may be backed up or transferred by Android. You can also export and import your own backup files. Salary stays out of widgets, notifications, shared images and links.
+
+Privacy Policy: https://doneat.app/en/privacy
 
 ## 简体中文
 
@@ -68,11 +88,11 @@ Play's current artwork requirements call for a 512 × 512 PNG app icon (32-bit, 
 
 ### Local asset candidates for owner review
 
-- Editable English feature graphic: [feature-graphic-en.svg](store-assets/feature-graphic-en.svg), 1024 × 500. It reuses the open-clock paths in `assets/brand/off-work-countdown-icon.svg` and the existing `landingTagline` (“Know when your time is yours”). The locally rendered 24-bit, opaque PNG is `build/android-preconsole/store-assets/feature-graphic-en-1024x500.png`. Review the artwork at small Play display sizes and approve any localized variant before upload.
+- English feature graphic: `build/android-play-internal/store-listing/feature-graphic-en-1024x500.png`, generated by `scripts/marketing-shots/android/feature-graphic.mjs`. It uses the ASC cream background, Charter/Manrope typography, the “After work, time for you.” headline and a crop of the verified Android timer screenshot. The old purple SVG in `store-assets/feature-graphic-en.svg` is superseded. The PNG at the earlier `build/android-preconsole/store-assets/feature-graphic-en-1024x500.png` path is also replaced with this version.
 - Preferred icon candidate: `build/android-preconsole/store-assets/icon-play-full-square-512.png`, rendered from the existing full-square brand SVG. It is 512 × 512, sRGB, 32-bit RGBA, opaque across the canvas, and about 26 KB. Google Play applies its own rounded mask and shadow, so this source leaves the edges square ([official icon specifications](https://developer.android.com/distribute/google-play/resources/icon-design-specifications)).
 - Comparison only: `build/android-preconsole/store-assets/icon-existing-rounded-candidate.png` is an exact copy of `public/icon-512x512.png`. It has transparent rounded corners. Play recommends a full-square icon and warns against baking in rounded corners, so prefer the full-square candidate after visual review.
 
-Both rendered PNGs use the repository's already-installed `sharp` package; no asset, font or image-generation service was downloaded. The owner still needs to review the artwork beside the Android screenshots and confirm the final Console preview.
+The icon uses the existing `sharp` package; the feature graphic uses the existing Chrome renderer and locally licensed ASC fonts. No asset or font was downloaded. The owner still needs to review the artwork beside the Android screenshots and confirm the final Console preview.
 
 ### Captured Android screenshot drafts
 
@@ -85,3 +105,18 @@ The following PNGs are under `build/android-preconsole/store-assets/`. They show
 | `tablet-en-records.png`, `tablet-zh-records.png` | English / Simplified Chinese, 1920 × 1080 at 240 dpi; actual two-column tablet UI |
 
 Choose the final screenshot order and captions after the signed Play candidate is available. The current Focus capture is an empty Today view, and the Timer capture shows the next shift on a rest day; a working-shift and populated-Focus capture would illustrate those features better for the final listing.
+
+### English screenshots adapted from ASC 3.2.0
+
+The current English set is `build/android-play-internal/store-listing/asc-style/screenshots/`, generated by `scripts/marketing-shots/android/compose.mjs`. It reuses ASC's cream background, Charter/Manrope typography, orange emphasis and opening two-image composition, with a neutral phone outline and new Android captures. Upload these six files in order:
+
+1. `en-US-01-countdown.png`
+2. `en-US-02-countdown-detail.png`
+3. `en-US-03-calendar.png`
+4. `en-US-04-records.png`
+5. `en-US-05-focus.png`
+6. `en-US-06-breaks.png`
+
+All are 1080 × 1920, opaque RGB PNGs. The contact sheet (`overview.png`) is for review only. The originals are 1080 × 2400 captures of the current Android Debug build on an API 36.1 emulator, with synthetic schedules, records and tasks. Year and Focus scenes use the existing Debug-only Plus switch and are labeled as Plus features. No purchase screen or Apple-only feature is shown. The emulator was launched with `-read-only -no-snapshot-save`; its capture data is not saved to the original AVD.
+
+The English copy files are `build/android-play-internal/store-listing/en-US-{title,short-description,full-description}.txt`. ASC source here means the repository's 3.2.0 metadata and uploaded screenshot templates, not a fresh remote metadata export. No ASC or Play Console writes are part of this preparation.

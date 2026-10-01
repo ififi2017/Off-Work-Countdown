@@ -199,9 +199,9 @@ fun openUrl(context: Context, url: String) {
     }
 }
 
-/** Automatic, light or dark (iOS `ThemeSettingsView`), plus wallpaper colours where Android offers them. */
+/** Automatic, light or dark (iOS `ThemeSettingsView`), wallpaper colours and a custom accent palette. */
 @Composable
-fun ThemeScreen(p: SyncedPreferences, device: DeviceSettings, edit: EditPreferences, setDynamic: (Boolean) -> Unit, onBack: () -> Unit) {
+fun ThemeScreen(p: SyncedPreferences, device: DeviceSettings, edit: EditPreferences, setDynamic: (Boolean) -> Unit, setAccent: (Int?) -> Unit, onBack: () -> Unit) {
     DoneAtPage(stringResource(R.string.theme), onBack, stringResource(R.string.settings)) {
         SettingsGroup {
             ChoiceRow(stringResource(R.string.auto), p.theme == "auto", { edit { it.copy(theme = "auto") } }, Icons.Outlined.Contrast)
@@ -210,6 +210,7 @@ fun ThemeScreen(p: SyncedPreferences, device: DeviceSettings, edit: EditPreferen
             RowDivider()
             ChoiceRow(stringResource(R.string.dark), p.theme == "dark", { edit { it.copy(theme = "dark") } }, Icons.Outlined.DarkMode)
         }
+        AccentColorSettings(device.accentColor, device.dynamicColor, setAccent)
         if (supportsDynamicColor) {
             SettingsGroup {
                 SwitchRow(stringResource(R.string.wallpaperColors), device.dynamicColor, setDynamic)
@@ -310,7 +311,7 @@ fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Compos
     }
 }
 
-/** The holiday data's sources and licences, from the same bundled file iOS shows. */
+/** Bundled library licences and the holiday attributions shared with iOS. */
 @Composable
 fun AcknowledgementsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
@@ -320,8 +321,12 @@ fun AcknowledgementsScreen(onBack: () -> Unit) {
             (0 until array.length()).map { i -> array.getJSONObject(i).let { Triple(it.getString("name"), it.getString("sourceURL"), it.getString("license")) } }
         }.getOrDefault(emptyList())
     }
+    val libraryLicenses = remember {
+        listOf("Backdrop" to "https://github.com/Kyant0/AndroidLiquidGlass", "Shapes" to "https://github.com/Kyant0/Shapes")
+            .map { (name, url) -> Triple(name, url, context.assets.open("licenses/$name.txt").bufferedReader().use { it.readText() }) }
+    }
     DoneAtPage(stringResource(R.string.acknowledgements), onBack, stringResource(R.string.aboutProject)) {
-        attributions.forEach { (name, url, license) ->
+        (libraryLicenses + attributions).forEach { (name, url, license) ->
             SettingsGroup {
                 ActionRow(name, { openUrl(context, url) }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
                 RowDivider(inset = false)

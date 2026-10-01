@@ -40,6 +40,8 @@ data class DeviceSettings(
     val setupDraft: SyncedPreferences? = null,
     /** Wallpaper colours instead of the brand scheme (Android 12+); a device choice, not synced. */
     val dynamicColor: Boolean = false,
+    /** Optional opaque RGB accent, local to Android and separate from shared records. */
+    val accentColor: Int? = null,
     /** The main tab the app reopens on (iOS remembers it too). */
     val selectedTab: String = "timer",
     /** The first-run page to resume on, with [setupDraft], after any interruption. */
@@ -89,6 +91,7 @@ class DeviceSettingsStore(private val file: Path) {
             notificationPermissionRequested = bool("notificationPermissionRequested", false),
             setupDraft = (o["setupDraft"] as? JsonObject)?.let(PreferencesJson::decode)?.takeIf { it.isValid },
             dynamicColor = bool("dynamicColor", false),
+            accentColor = (o["accentColor"] as? JsonPrimitive)?.intOrNull?.takeIf { it in 0..0xFFFFFF },
             selectedTab = o["selectedTab"]?.jsonPrimitive?.contentOrNull ?: "timer",
             setupPage = o["setupPage"]?.jsonPrimitive?.contentOrNull,
             focusNotificationsEnabled = bool("focusNotificationsEnabled", true),
@@ -108,6 +111,7 @@ class DeviceSettingsStore(private val file: Path) {
             "notificationPermissionRequested" to JsonPrimitive(s.notificationPermissionRequested),
             "setupDraft" to (s.setupDraft?.let(PreferencesJson::encode) ?: JsonNull),
             "dynamicColor" to JsonPrimitive(s.dynamicColor),
+            "accentColor" to (s.accentColor?.let(::JsonPrimitive) ?: JsonNull),
             "selectedTab" to JsonPrimitive(s.selectedTab),
             "setupPage" to (s.setupPage?.let(::JsonPrimitive) ?: JsonNull),
             "focusNotificationsEnabled" to JsonPrimitive(s.focusNotificationsEnabled),

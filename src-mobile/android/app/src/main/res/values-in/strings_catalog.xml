@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">Tentang proyek ini</string>
     <string name="aboutSection">Tentang</string>
+    <string name="accentBlue">Biru</string>
+    <string name="accentBrightness">Kecerahan</string>
+    <string name="accentColor">Warna aksen</string>
+    <string name="accentColorFooter">Warna menyesuaikan tema terang dan gelap agar teks tetap jelas.</string>
+    <string name="accentCustom">Warna khusus</string>
+    <string name="accentDoneAt">Oranye DoneAt</string>
+    <string name="accentGreen">Hijau</string>
+    <string name="accentHex">Warna HEX</string>
+    <string name="accentHexError">Masukkan enam digit heksadesimal, misalnya #2563EB.</string>
+    <string name="accentHue">Rona</string>
+    <string name="accentIndigo">Nila</string>
+    <string name="accentPink">Merah muda</string>
+    <string name="accentPurple">Ungu</string>
+    <string name="accentRed">Merah</string>
+    <string name="accentSaturation">Saturasi</string>
+    <string name="accentTeal">Hijau kebiruan</string>
+    <string name="accentYellow">Kuning</string>
     <string name="acknowledgements">Ucapan terima kasih</string>
     <string name="adjustOvertime">Atur lembur</string>
     <string name="allowExactReminders">Izinkan pengingat tepat waktu</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">Per jam efektif</string>
     <string name="perWorkday">Per hari kerja</string>
     <string name="plusAndroidComingSoon">Pembelian Plus di Android akan segera tersedia. Saat ini Anda dapat memakai pengatur waktu dan melihat catatan terbaru.</string>
+    <string name="plusAndroidIntroBody">Pengatur waktu dan minggu terakhir tetap gratis. Plus membuka setahun penuh, masa kerja, penyuntingan, dan fokus.</string>
+    <string name="plusAndroidPlansUnavailable">Paket dari Google Play tidak dapat dimuat. Silakan coba lagi.</string>
     <string name="plusAndroidRenewalNotice">Langganan diperpanjang otomatis sampai Anda membatalkannya. Pembelian Lifetime sekali bayar tidak membatalkan langganan aktif.</string>
     <string name="plusAndroidRequestFailed">Google Play tidak dapat menyelesaikan permintaan ini. Coba lagi sebentar lagi.</string>
     <string name="plusAndroidStoreOffline">Google Play sedang tidak tersedia. Coba pulihkan pembelian saat Anda terhubung.</string>
     <string name="plusAndroidStoreUnconfigured">Pembelian Plus belum tersedia di perangkat ini. Pengatur waktu dan catatan terbaru tetap bisa digunakan.</string>
+    <string name="plusAndroidYearlyTrialPrice">Gratis 7 hari, lalu %1$s per tahun. Batalkan sebelum masa uji coba berakhir agar tidak dikenai biaya.</string>
     <string name="plusAutoRenew">Langganan diperpanjang otomatis sampai kamu batalkan. Paket tahunan bisa mencakup 7 hari gratis, lalu ditagih harga tahunan. Sekali bayar cukup satu kali dan tidak otomatis membatalkan langganan yang sedang berjalan.</string>
     <string name="plusBenefitCharts">Tampilan setahun penuh dan kehidupan kerja</string>
     <string name="plusBenefitEdit">Ubah hari apa pun dari Catatan</string>
@@ -875,6 +895,9 @@
     <string name="whatsNewWatchTitle">Hari kerjamu di Apple Watch</string>
     <string name="widgetDescription">Lihat sisa waktu kerja Anda sekilas.</string>
     <string name="widgetOpenToRefresh">Buka aplikasi untuk memperbarui</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">Istirahatlah · giliran berikutnya</string>
     <string name="widgetWorking">Sedang bekerja</string>
     <string name="workOnWeekday">Bekerja pada %1$s</string>

@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">Proje hakkında</string>
     <string name="aboutSection">Hakkında</string>
+    <string name="accentBlue">Mavi</string>
+    <string name="accentBrightness">Parlaklık</string>
+    <string name="accentColor">Vurgu rengi</string>
+    <string name="accentColorFooter">Metnin okunaklı kalması için renkler açık ve koyu temaya uyarlanır.</string>
+    <string name="accentCustom">Özel renk</string>
+    <string name="accentDoneAt">DoneAt turuncusu</string>
+    <string name="accentGreen">Yeşil</string>
+    <string name="accentHex">HEX rengi</string>
+    <string name="accentHexError">Altı onaltılık basamak gir, örneğin #2563EB.</string>
+    <string name="accentHue">Ton</string>
+    <string name="accentIndigo">Çivit</string>
+    <string name="accentPink">Pembe</string>
+    <string name="accentPurple">Mor</string>
+    <string name="accentRed">Kırmızı</string>
+    <string name="accentSaturation">Doygunluk</string>
+    <string name="accentTeal">Turkuaz</string>
+    <string name="accentYellow">Sarı</string>
     <string name="acknowledgements">Teşekkürler</string>
     <string name="adjustOvertime">Fazla mesaiyi ayarla</string>
     <string name="allowExactReminders">Tam zamanlı hatırlatıcılara izin ver</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">Etkin saat başına</string>
     <string name="perWorkday">İş günü başına</string>
     <string name="plusAndroidComingSoon">Android\'de Plus satın alma yakında sunulacak. Şimdilik zamanlayıcıyı ve son kayıtlarını kullanabilirsin.</string>
+    <string name="plusAndroidIntroBody">Zamanlayıcı ve son hafta ücretsiz kalır. Plus, tüm yılı, çalışma hayatını, düzenlemeyi ve odaklanmayı açar.</string>
+    <string name="plusAndroidPlansUnavailable">Planlar Google Play üzerinden yüklenemedi. Lütfen tekrar dene.</string>
     <string name="plusAndroidRenewalNotice">Abonelikler iptal edene kadar otomatik yenilenir. Tek seferlik Lifetime satın alımı etkin aboneliği iptal etmez.</string>
     <string name="plusAndroidRequestFailed">Google Play isteği tamamlayamadı. Kısa süre sonra tekrar dene.</string>
     <string name="plusAndroidStoreOffline">Google Play şu anda kullanılamıyor. Bağlandığında satın alımları geri yüklemeyi dene.</string>
     <string name="plusAndroidStoreUnconfigured">Plus satın alımları bu cihazda henüz kullanılamıyor. Zamanlayıcıyı ve son kayıtlarını kullanmaya devam edebilirsin.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 gün ücretsiz, ardından yıllık %1$s. Ücret alınmaması için deneme süresi bitmeden iptal et.</string>
     <string name="plusAutoRenew">Abonelikler sen iptal edene kadar kendiliğinden yenilenir. Yıllık planda 7 gün ücretsiz olabilir; sonrasında yıllık fiyat üzerinden ücret alınır. Tek seferlik satın alma bir kez ödenir ve süren aboneliği kendiliğinden iptal etmez.</string>
     <string name="plusBenefitCharts">Tüm yıl ve çalışma hayatı görünümleri</string>
     <string name="plusBenefitEdit">Kayıtlar’dan herhangi bir günü düzenle</string>
@@ -876,6 +896,9 @@
     <string name="whatsNewWatchTitle">Apple Watch’ta çalışma gününüz</string>
     <string name="widgetDescription">Kalan çalışma sürenizi bir bakışta görün.</string>
     <string name="widgetOpenToRefresh">Yenilemek için uygulamayı açın</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">İyi dinlenin · sonraki vardiya</string>
     <string name="widgetWorking">Çalışıyor</string>
     <string name="workOnWeekday">%1$s çalış</string>

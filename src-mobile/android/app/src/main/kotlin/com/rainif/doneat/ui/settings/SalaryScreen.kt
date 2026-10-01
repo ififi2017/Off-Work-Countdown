@@ -1,5 +1,6 @@
 package com.rainif.doneat.ui.settings
 
+import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
@@ -127,7 +128,7 @@ fun SalaryScreen(graph: AppGraph, onBack: () -> Unit) {
 @Composable
 private fun SalaryLocked(onBack: () -> Unit, onUnlock: () -> Unit) {
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-        Column(Modifier.safeDrawingPadding().fillMaxSize()) {
+        Column(Modifier.safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current).fillMaxSize()) {
             IconButton(onClick = onBack, modifier = Modifier.padding(DoneAtSpacing.xs)) {
                 Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.settings))
             }

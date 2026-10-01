@@ -48,9 +48,12 @@ internal class PlayBillingRepository(private val context: Context, private val s
     private val lifetime = BuildConfig.PLUS_LIFETIME_PRODUCT
     private val monthly = BuildConfig.PLUS_MONTHLY_BASE_PLAN
     private val yearly = BuildConfig.PLUS_YEARLY_BASE_PLAN
+    private val yearlyTrial = BuildConfig.PLUS_YEARLY_TRIAL_OFFER
+    private val lifetimeOption = BuildConfig.PLUS_LIFETIME_PURCHASE_OPTION
     private val key = BuildConfig.PLAY_BILLING_PUBLIC_KEY
     private val configured = subscription.isNotBlank() && lifetime.isNotBlank() && key.isNotBlank() &&
-        monthly.isNotBlank() && yearly.isNotBlank() && subscription != lifetime && monthly != yearly
+        monthly.isNotBlank() && yearly.isNotBlank() && lifetimeOption.isNotBlank() &&
+        subscription != lifetime && monthly != yearly
     private val allowed = setOf(subscription, lifetime)
     private val store = AtomicFile(File(context.noBackupFilesDir, "plus-purchases.json"))
     private val purchasing = AtomicBoolean(false)
@@ -127,9 +130,9 @@ internal class PlayBillingRepository(private val context: Context, private val s
         false
     }
 
-    suspend fun purchase(activity: Activity, plan: PlusPlan) {
+    suspend fun purchase(activity: Activity, offer: PlusOffer) {
         if (!purchasing.compareAndSet(false, true)) return
-        try { billingMutex.withLock { performPurchase(activity, plan) } }
+        try { billingMutex.withLock { performPurchase(activity, offer) } }
         catch (error: CancellationException) { purchasing.set(false); throw error }
         catch (error: Exception) {
             purchasing.set(false)
@@ -137,7 +140,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
         }
     }
 
-    private suspend fun performPurchase(activity: Activity, plan: PlusPlan) {
+    private suspend fun performPurchase(activity: Activity, offer: PlusOffer) {
         _state.value = _state.value.copy(busy = true)
         var launched = false
         try {
@@ -145,14 +148,12 @@ internal class PlayBillingRepository(private val context: Context, private val s
             if (!connect(billing)) { publish(offline = true); return }
             // ProductDetails are short-lived: always refresh before launching Play.
             queryDetails(billing)
+            // A trial or price change requires another tap on the newly displayed terms.
+            if (_state.value.offers.none { it == offer }) return
+            val plan = offer.plan
             val product = details.firstOrNull { it.productId == if (plan == PlusPlan.LIFETIME) lifetime else subscription } ?: return
-            val offerToken = if (plan == PlusPlan.LIFETIME) product.oneTimePurchaseOfferDetailsList?.firstOrNull()?.offerToken
-                else product.subscriptionOfferDetails?.firstOrNull { offer ->
-                    offer.basePlanId == (if (plan == PlusPlan.MONTHLY) monthly else yearly) && offer.offerId == null
-                }?.offerToken
-            if (offerToken.isNullOrBlank()) return
             val params = BillingFlowParams.ProductDetailsParams.newBuilder()
-                .setProductDetails(product).setOfferToken(offerToken).build()
+                .setProductDetails(product).setOfferToken(offer.offerToken).build()
             val result = billing.launchBillingFlow(activity, BillingFlowParams.newBuilder()
                 .setProductDetailsParamsList(listOf(params)).build())
             launched = result.responseCode == BillingClient.BillingResponseCode.OK
@@ -178,7 +179,8 @@ internal class PlayBillingRepository(private val context: Context, private val s
                 purchase.isAcknowledged, proof.firstSeenAtMs)
         }
         _state.value = _state.value.copy(status = EntitlementEngine.status(verified, now, verifiedAtMs, offline),
-            busy = false, hasPurchasedBefore = hasPurchasedBefore)
+            busy = false, hasPurchasedBefore = hasPurchasedBefore,
+            hasActiveSubscription = EntitlementEngine.hasActiveSubscription(verified, now, verifiedAtMs, offline))
     }
 
     private suspend fun connect(billing: BillingClient): Boolean {
@@ -214,12 +216,24 @@ internal class PlayBillingRepository(private val context: Context, private val s
             }
         }
         val offers = details.flatMap { product ->
-            if (product.productId == lifetime) product.oneTimePurchaseOfferDetailsList.orEmpty().take(1).map {
-                PlusOffer(PlusPlan.LIFETIME, it.formattedPrice, product.description)
-            } else product.subscriptionOfferDetails.orEmpty().filter { it.offerId == null }.mapNotNull { offer ->
-                val plan = when (offer.basePlanId) { monthly -> PlusPlan.MONTHLY; yearly -> PlusPlan.YEARLY; else -> null }
-                val price = offer.pricingPhases.pricingPhaseList.lastOrNull()?.formattedPrice
-                if (plan == null || price == null) null else PlusOffer(plan, price, product.description)
+            if (product.productId == lifetime) {
+                listOfNotNull(product.oneTimePurchaseOfferDetailsList.orEmpty().firstOrNull {
+                    it.purchaseOptionId == lifetimeOption && it.offerId == null &&
+                        it.rentalDetails == null && it.preorderDetails == null &&
+                        !it.offerToken.isNullOrBlank() && it.formattedPrice.isNotBlank()
+                }?.let { PlusOffer(PlusPlan.LIFETIME, it.formattedPrice, it.offerToken!!) })
+            } else {
+                val options = product.subscriptionOfferDetails.orEmpty().map { option ->
+                    PlaySubscriptionOption(option.basePlanId, option.offerId, option.offerToken,
+                        option.pricingPhases.pricingPhaseList.map { phase ->
+                            PlayPricePhase(phase.billingPeriod, phase.formattedPrice, phase.priceAmountMicros,
+                                phase.priceCurrencyCode, phase.recurrenceMode, phase.billingCycleCount)
+                        })
+                }
+                listOfNotNull(
+                    selectSubscriptionOffer(PlusPlan.MONTHLY, monthly, yearlyTrial, options),
+                    selectSubscriptionOffer(PlusPlan.YEARLY, yearly, yearlyTrial, options),
+                )
             }
         }
         _state.value = _state.value.copy(offers = offers.distinctBy { it.plan })

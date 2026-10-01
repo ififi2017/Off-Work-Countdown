@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">Sobre este projeto</string>
     <string name="aboutSection">Sobre</string>
+    <string name="accentBlue">Azul</string>
+    <string name="accentBrightness">Brilho</string>
+    <string name="accentColor">Cor de destaque</string>
+    <string name="accentColorFooter">As cores adaptam-se ao tema claro e escuro para manter o texto legível.</string>
+    <string name="accentCustom">Cor personalizada</string>
+    <string name="accentDoneAt">Laranja DoneAt</string>
+    <string name="accentGreen">Verde</string>
+    <string name="accentHex">Cor HEX</string>
+    <string name="accentHexError">Introduza seis dígitos hexadecimais, por exemplo #2563EB.</string>
+    <string name="accentHue">Matiz</string>
+    <string name="accentIndigo">Índigo</string>
+    <string name="accentPink">Rosa</string>
+    <string name="accentPurple">Roxo</string>
+    <string name="accentRed">Vermelho</string>
+    <string name="accentSaturation">Saturação</string>
+    <string name="accentTeal">Verde-azulado</string>
+    <string name="accentYellow">Amarelo</string>
     <string name="acknowledgements">Agradecimentos</string>
     <string name="adjustOvertime">Ajustar hora extra</string>
     <string name="allowExactReminders">Permitir lembretes exatos</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">Por hora efetiva</string>
     <string name="perWorkday">Por dia de trabalho</string>
     <string name="plusAndroidComingSoon">As compras do Plus chegarão em breve ao Android. Já pode usar o temporizador e consultar os registos recentes.</string>
+    <string name="plusAndroidIntroBody">O temporizador e a última semana continuam gratuitos. O Plus desbloqueia o ano completo, a vida profissional, a edição e o foco.</string>
+    <string name="plusAndroidPlansUnavailable">Não foi possível carregar os planos do Google Play. Tente novamente.</string>
     <string name="plusAndroidRenewalNotice">As subscrições renovam-se automaticamente até serem canceladas. A compra única Lifetime não cancela uma subscrição ativa.</string>
     <string name="plusAndroidRequestFailed">O Google Play não conseguiu concluir o pedido. Tente novamente dentro de momentos.</string>
     <string name="plusAndroidStoreOffline">O Google Play está indisponível neste momento. Tente restaurar as compras quando tiver ligação.</string>
     <string name="plusAndroidStoreUnconfigured">As compras do Plus ainda não estão disponíveis neste dispositivo. Pode continuar a usar o temporizador e os registos recentes.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 dias grátis, depois %1$s por ano. Cancela antes do fim do período experimental para evitar a cobrança.</string>
     <string name="plusAutoRenew">As subscrições renovam-se automaticamente até serem canceladas. O plano anual pode incluir 7 dias grátis; depois aplica-se o preço anual. O vitalício é um pagamento único e não cancela uma subscrição ativa.</string>
     <string name="plusBenefitCharts">Vistas do ano completo e da vida profissional</string>
     <string name="plusBenefitEdit">Editar qualquer dia em Registros</string>
@@ -877,6 +897,9 @@
     <string name="whatsNewWatchTitle">Seu dia de trabalho no Apple Watch</string>
     <string name="widgetDescription">Veja rapidamente o tempo de trabalho restante.</string>
     <string name="widgetOpenToRefresh">Abra o app para atualizar</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">Bom descanso · próximo turno</string>
     <string name="widgetWorking">Trabalhando</string>
     <string name="workOnWeekday">Trabalhar em %1$s</string>

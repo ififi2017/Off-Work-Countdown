@@ -3,6 +3,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,Typos">
     <string name="aboutProject">حول المشروع</string>
     <string name="aboutSection">حول</string>
+    <string name="accentBlue">أزرق</string>
+    <string name="accentBrightness">السطوع</string>
+    <string name="accentColor">لون التمييز</string>
+    <string name="accentColorFooter">تتكيف الألوان مع المظهر الفاتح والداكن لإبقاء النص واضحًا.</string>
+    <string name="accentCustom">لون مخصص</string>
+    <string name="accentDoneAt">برتقالي DoneAt</string>
+    <string name="accentGreen">أخضر</string>
+    <string name="accentHex">لون HEX</string>
+    <string name="accentHexError">أدخل ستة أرقام بالنظام الست عشري، مثل #2563EB.</string>
+    <string name="accentHue">درجة اللون</string>
+    <string name="accentIndigo">نيلي</string>
+    <string name="accentPink">وردي</string>
+    <string name="accentPurple">بنفسجي</string>
+    <string name="accentRed">أحمر</string>
+    <string name="accentSaturation">التشبع</string>
+    <string name="accentTeal">أخضر مزرق</string>
+    <string name="accentYellow">أصفر</string>
     <string name="acknowledgements">إقرارات</string>
     <string name="adjustOvertime">تعديل الوقت الإضافي</string>
     <string name="allowExactReminders">السماح بالتذكيرات الدقيقة</string>
@@ -533,10 +550,13 @@
     <string name="perEffectiveHour">لكل ساعة عمل فعلية</string>
     <string name="perWorkday">لكل يوم عمل</string>
     <string name="plusAndroidComingSoon">ستتوفر مشتريات Plus على Android قريبًا. يمكنك الآن استخدام المؤقت وعرض سجلاتك الأخيرة.</string>
+    <string name="plusAndroidIntroBody">يبقى المؤقت والأسبوع الأخير مجانيين. يتيح Plus عرض السنة كاملة وحياتك المهنية والتعديل والتركيز.</string>
+    <string name="plusAndroidPlansUnavailable">تعذّر تحميل الخطط من Google Play. يُرجى المحاولة مرة أخرى.</string>
     <string name="plusAndroidRenewalNotice">تتجدد الاشتراكات تلقائيًا حتى تلغيها. شراء الخطة مدى الحياة لمرة واحدة لا يلغي اشتراكًا نشطًا.</string>
     <string name="plusAndroidRequestFailed">تعذّر على Google Play إكمال الطلب. حاول مرة أخرى بعد قليل.</string>
     <string name="plusAndroidStoreOffline">Google Play غير متاح الآن. حاول استعادة مشترياتك بعد الاتصال بالإنترنت.</string>
     <string name="plusAndroidStoreUnconfigured">شراء Plus غير متاح على هذا الجهاز حاليًا. لا يزال بإمكانك استخدام المؤقت والسجلات الأخيرة.</string>
+    <string name="plusAndroidYearlyTrialPrice">7 أيام مجانًا، ثم %1$s سنويًا. ألغِ الاشتراك قبل انتهاء الفترة التجريبية لتجنّب تحصيل الرسوم.</string>
     <string name="plusAutoRenew">تتجدد الاشتراكات تلقائيًا حتى تُلغيها. قد تتضمن الخطة السنوية 7 أيام مجانية، ثم يُحتسب السعر السنوي. الشراء بدفعة واحدة دفعة واحدة فقط ولا يُلغي تلقائيًا اشتراكًا ساريًا.</string>
     <string name="plusBenefitCharts">عرض السنة كاملة وحياة العمل</string>
     <string name="plusBenefitEdit">عدّل أي يوم من السجلات</string>
@@ -880,6 +900,9 @@
     <string name="whatsNewWatchTitle">يوم عملك على Apple Watch</string>
     <string name="widgetDescription">اعرض وقت العمل المتبقي بنظرة سريعة.</string>
     <string name="widgetOpenToRefresh">افتح التطبيق للتحديث</string>
+    <string name="widgetPickerLarge">DoneAt · 4×4</string>
+    <string name="widgetPickerMedium">DoneAt · 4×2</string>
+    <string name="widgetPickerSmall">DoneAt · 2×2</string>
     <string name="widgetRestDay">استرح جيدًا · الوردية التالية</string>
     <string name="widgetWorking">أثناء العمل</string>
     <string name="workOnWeekday">العمل يوم %1$s</string>

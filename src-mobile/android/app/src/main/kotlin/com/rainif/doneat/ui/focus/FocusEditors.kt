@@ -35,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,6 +81,15 @@ internal data class TaskDraft(
 ) {
     val canSave get() = title.isNotBlank()
 
+    companion object {
+        /** The tab's saved UI state holds the draft until Save or Back, including activity recreation. */
+        val Saver = listSaver<TaskDraft, Any>(
+            save = { listOf(it.title, it.icon.raw, it.pomodoros, it.isFavorite, it.favoriteID.orEmpty(), it.existingTaskID.orEmpty()) },
+            restore = { TaskDraft(it[0] as String, FocusTaskIcon.entries.firstOrNull { icon -> icon.raw == it[1] } ?: FocusTaskIcon.FOCUS,
+                it[2] as Int, it[3] as Boolean, (it[4] as String).ifEmpty { null }, (it[5] as String).ifEmpty { null }) },
+        )
+    }
+
     fun selecting(task: FocusTask, favorite: Boolean, remaining: Int? = null) = copy(
         title = task.title, icon = task.icon, pomodoros = maxOf(1, remaining ?: task.estimatedPomodoros), isFavorite = favorite,
         favoriteID = if (favorite) task.id else null, existingTaskID = if (favorite) null else task.id,
@@ -124,7 +134,7 @@ fun FocusCreateScreen(graph: AppGraph, blockStartAtMs: Long?, currentOrNext: Boo
     val planning = graph.focus.planning(context.state)
     val engine = graph.focus.engine(context.state)
     val favorites = planning.favorites(context.state)
-    var draft by remember {
+    var draft by rememberSaveable(favoriteID, stateSaver = TaskDraft.Saver) {
         mutableStateOf(favorites.firstOrNull { it.id == favoriteID }?.let { TaskDraft().selecting(it, favorite = true) } ?: TaskDraft())
     }
     var landing by rememberSaveable { mutableStateOf(Landing.NEXT_BLOCK) }
@@ -256,7 +266,7 @@ fun FocusTaskEditScreen(graph: AppGraph, taskID: String, onBack: () -> Unit) {
     val planning = graph.focus.planning(context.state)
     val task = context.task(taskID) ?: return
     val protectedCount = planning.protectedPomodoros(context.state, task, context.nowMs)
-    var draft by remember(taskID) {
+    var draft by rememberSaveable(taskID, stateSaver = TaskDraft.Saver) {
         mutableStateOf(
             TaskDraft().selecting(task, favorite = false).copy(
                 isFavorite = planning.savedFavorite(context.state, task.title, task.icon) != null,
@@ -334,7 +344,7 @@ internal fun TaskFields(
                 Text(Strings.focusEstimateDetail(res, draft.pomodoros.toString(), focusMinutes.toString()), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
             IconButton(onClick = { onChange(draft.copy(pomodoros = draft.pomodoros - 1)) }, enabled = draft.pomodoros > minimum) {
-                Icon(Icons.Outlined.Remove, stringResource(R.string.focusEstimate))
+                Icon(Icons.Outlined.Remove, "${stringResource(R.string.focusEstimate)} −")
             }
             Text(
                 draft.pomodoros.toString(),
@@ -342,7 +352,7 @@ internal fun TaskFields(
                 style = MaterialTheme.typography.titleMedium,
             )
             IconButton(onClick = { onChange(draft.copy(pomodoros = draft.pomodoros + 1)) }, enabled = draft.pomodoros < maxOf(maximum, minimum)) {
-                Icon(Icons.Outlined.Add, stringResource(R.string.focusEstimate))
+                Icon(Icons.Outlined.Add, "${stringResource(R.string.focusEstimate)} +")
             }
         }
         if (showsFinish) {
@@ -369,7 +379,7 @@ internal fun TaskOptions(context: FocusContext, draft: TaskDraft, favorites: Lis
             FocusTaskIcon.entries.forEach { option ->
                 val selected = option == draft.icon
                 Box(
-                    Modifier.size(44.dp).clip(CircleShape).background(if (selected) scheme.primary else scheme.surfaceContainerHighest)
+                    Modifier.size(DoneAtSpacing.minTouch).clip(CircleShape).background(if (selected) scheme.primary else scheme.surfaceContainerHighest)
                         .clickable(role = Role.RadioButton) { onChange(if (option == draft.icon) draft else draft.copy(icon = option, existingTaskID = null, favoriteID = null)) }
                         .semantics { contentDescription = res.getString(option.title); this.selected = selected },
                     contentAlignment = Alignment.Center,
@@ -443,12 +453,12 @@ fun FocusTimerSettingsScreen(graph: AppGraph, onBack: () -> Unit) {
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val planning = graph.focus.planning(context.state)
     val current = planning.settings(context.state)
-    var focus by remember { mutableIntStateOf(current.focusMinutes) }
-    var short by remember { mutableIntStateOf(current.shortBreakMinutes) }
-    var long by remember { mutableIntStateOf(current.longBreakMinutes) }
-    var every by remember { mutableIntStateOf(current.longBreakEvery) }
-    var notifications by remember { mutableStateOf(device.focusNotificationsEnabled) }
-    var ongoing by remember { mutableStateOf(device.focusOngoingEnabled) }
+    var focus by rememberSaveable { mutableIntStateOf(current.focusMinutes) }
+    var short by rememberSaveable { mutableIntStateOf(current.shortBreakMinutes) }
+    var long by rememberSaveable { mutableIntStateOf(current.longBreakMinutes) }
+    var every by rememberSaveable { mutableIntStateOf(current.longBreakEvery) }
+    var notifications by rememberSaveable { mutableStateOf(device.focusNotificationsEnabled) }
+    var ongoing by rememberSaveable { mutableStateOf(device.focusOngoingEnabled) }
     val lockMessage = when {
         context.session != null -> stringResource(R.string.focusTimerSettingsLockedRunning)
         planning.planning(context.state).templates.isNotEmpty() -> stringResource(R.string.focusTimerSettingsLockedTemplate)

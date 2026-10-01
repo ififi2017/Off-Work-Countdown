@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   LOCALES,
@@ -124,6 +124,29 @@ describe("Android strings", () => {
     delete incomplete.vi;
     expect(() => buildAndroidStrings(synthetic({}), { strings: { newKey: incomplete } })).toThrow(/newKey \(vi\): missing translation/);
     expect(() => buildAndroidStrings(synthetic({ "bad-key": "x" }), { strings: {} })).toThrow(/cannot become an Android resource name/);
+  });
+
+  it("keep App Store copy out of strings used by Android screens in every locale", () => {
+    const used = new Set();
+    function scan(dir) {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) scan(path);
+        else if (entry.name.endsWith(".kt")) {
+          const source = readFileSync(path, "utf8");
+          for (const match of source.matchAll(/(?:R\.string\.|Strings\.)(\w+)/g)) used.add(match[1]);
+        }
+      }
+    }
+    scan("src-mobile/android/app/src/main/kotlin");
+    const files = buildAndroidStrings(catalog, JSON.parse(readFileSync("src-mobile/android/app/i18n/android-strings.json", "utf8")));
+    const leaks = [];
+    for (const { id, dir } of LOCALES) {
+      for (const [, name, copy] of files.get(file(dir)).matchAll(/<string name="([^"]+)"[^>]*>(.*?)<\/string>/g)) {
+        if (used.has(name) && /App\s*Store/i.test(copy)) leaks.push(`${name} (${id}): ${copy}`);
+      }
+    }
+    expect(leaks).toEqual([]);
   });
 
   it("write the Android-only copy for every locale", () => {
