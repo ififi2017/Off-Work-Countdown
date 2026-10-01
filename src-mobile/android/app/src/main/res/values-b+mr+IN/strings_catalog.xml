@@ -383,11 +383,12 @@
     <string name="leaveRoleLate">उशिरा सुरू करा</string>
     <string name="leaveSecondHalf">दुसरा अर्धा भाग</string>
     <string name="leaveTitle">सुट्ट्या</string>
+    <string name="leaveTrialNotice">प्रत्येक वेळी नियोजन उघडल्यावर एक संधी वापरली जाते, तेच नियोजन पुन्हा उघडले तरी.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">%d मोफत नियोजन बाकी</item>
-        <item quantity="other">%d मोफत नियोजने बाकी</item>
+        <item quantity="one">आणखी %d नियोजन मोफत पाहता येईल</item>
+        <item quantity="other">आणखी %d नियोजने मोफत पाहता येतील</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Plus सह कधीही पुन्हा नियोजन करा</string>
+    <string name="leaveTrialsUsedUp">मोफत पाहण्याच्या संधी संपल्या. Plus सह सर्व नियोजने पाहा.</string>
     <string name="leaveUnassignedCaveat">काही दिवसांना शिफ्ट नाही, ते सुट्टी म्हणून धरले आहेत.</string>
     <string name="leaveUndoConfirm">याची रजा तुमच्या वेळापत्रकातून काढली जाईल आणि शिल्लकेत परत जाईल.</string>
     <string name="leaveUndoPlan">नियोजन रद्द करा</string>

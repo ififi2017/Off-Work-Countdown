@@ -63,7 +63,6 @@ final class PreferencesStore {
         static let recordsTimeZone = "ios.native.recordsTimeZone"
         static let lifeSetupPromptDismissed = "ios.native.lifeSetupPromptDismissed"
         static let leavePlannerTrialsUsed = "ios.native.leavePlannerTrialsUsed"
-        static let leavePlannerLastTrial = "ios.native.leavePlannerLastTrial"
     }
     private(set) var startMinutes: Int
     private(set) var endMinutes: Int
@@ -102,24 +101,23 @@ final class PreferencesStore {
     }
 #endif
     var hideEarnings: Bool { didSet { defaults.set(hideEarnings, forKey: Key.hideEarnings) } }
-    /// Plan 020's free leave plans. Device-local by design: never synced and
-    /// never in a backup, so reinstalling starts over and devices count on
-    /// their own; no identifier tracks it further.
+    /// Plan 020's free leave plans: searching is free, and each time a free
+    /// user opens a plan's details one of three is used, the same plan again
+    /// included. Device-local by design: never synced and never in a backup,
+    /// so reinstalling starts over and devices count on their own; no
+    /// identifier tracks it further.
     private(set) var leavePlannerTrialsUsed: Int {
         didSet { defaults.set(leavePlannerTrialsUsed, forKey: Key.leavePlannerTrialsUsed) }
-    }
-    private var leavePlannerLastTrial: String? {
-        didSet { defaults.set(leavePlannerLastTrial, forKey: Key.leavePlannerLastTrial) }
     }
     static let leavePlannerFreeTrials = 3
     var leavePlannerTrialsLeft: Int { max(0, Self.leavePlannerFreeTrials - leavePlannerTrialsUsed) }
 
-    /// Counts one free plan for a request that produced options. Repeating
-    /// the request just counted — a retry, a double tap — is not a new plan.
-    func countLeavePlannerTrial(request: String) {
-        guard request != leavePlannerLastTrial else { return }
-        leavePlannerLastTrial = request
+    /// Uses one free view, when one is left; `false` when none is.
+    @discardableResult
+    func consumeLeavePlannerTrial() -> Bool {
+        guard leavePlannerTrialsLeft > 0 else { return false }
         leavePlannerTrialsUsed += 1
+        return true
     }
 
     var lifeSetupPromptDismissed: Bool {
@@ -286,7 +284,6 @@ final class PreferencesStore {
         hideEarnings = defaults.bool(forKey: Key.hideEarnings)
         lifeSetupPromptDismissed = defaults.bool(forKey: Key.lifeSetupPromptDismissed)
         leavePlannerTrialsUsed = max(0, defaults.integer(forKey: Key.leavePlannerTrialsUsed))
-        leavePlannerLastTrial = defaults.string(forKey: Key.leavePlannerLastTrial)
         theme = AppTheme(rawValue: defaults.string(forKey: Key.theme) ?? "auto") ?? .auto
         systemLanguageCode = NativeLocalizer.systemLanguage()
         systemTimeZoneIdentifier = TimeZone.current.identifier

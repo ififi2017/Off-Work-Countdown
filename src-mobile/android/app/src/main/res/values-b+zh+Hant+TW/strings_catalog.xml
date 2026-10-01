@@ -382,10 +382,11 @@
     <string name="leaveRoleLate">晚點上班</string>
     <string name="leaveSecondHalf">後半班</string>
     <string name="leaveTitle">休假</string>
+    <string name="leaveTrialNotice">每打開一個方案會用掉 1 次，重複打開同一方案也會計算。</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">還可免費規劃 %d 次</item>
+        <item quantity="other">還可免費查看 %d 次方案</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">升級 Plus 即可隨時再規劃</string>
+    <string name="leaveTrialsUsedUp">免費查看次數已用完，升級 Plus 即可查看所有方案</string>
     <string name="leaveUnassignedCaveat">部分日子未排班，按休息計算。</string>
     <string name="leaveUndoConfirm">該方案的請假會從排班中移除，並退回假期餘額。</string>
     <string name="leaveUndoPlan">撤銷方案</string>

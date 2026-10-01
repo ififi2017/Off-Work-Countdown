@@ -1414,6 +1414,9 @@
     "leaveTitle": {
       "resource": "string/leaveTitle"
     },
+    "leaveTrialNotice": {
+      "resource": "string/leaveTrialNotice"
+    },
     "leaveTrialsLeft": {
       "resource": "plurals/leaveTrialsLeft"
     },

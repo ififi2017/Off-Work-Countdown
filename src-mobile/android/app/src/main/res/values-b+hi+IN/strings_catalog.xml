@@ -383,11 +383,12 @@
     <string name="leaveRoleLate">देर से शुरू करें</string>
     <string name="leaveSecondHalf">दूसरा आधा</string>
     <string name="leaveTitle">छुट्टियाँ</string>
+    <string name="leaveTrialNotice">हर बार योजना खोलने पर एक मौका लगता है, वही योजना दोबारा खोलने पर भी।</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">%d मुफ़्त योजना बाकी</item>
-        <item quantity="other">%d मुफ़्त योजनाएँ बाकी</item>
+        <item quantity="one">%d मुफ़्त योजना देखना बाकी</item>
+        <item quantity="other">%d मुफ़्त योजनाएँ देखना बाकी</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Plus के साथ कभी भी फिर से योजना बनाएँ</string>
+    <string name="leaveTrialsUsedUp">मुफ़्त देखने के मौके खत्म हो गए। Plus के साथ सभी योजनाएँ देखें।</string>
     <string name="leaveUnassignedCaveat">कुछ दिनों में कोई शिफ़्ट तय नहीं है, उन्हें छुट्टी माना गया है।</string>
     <string name="leaveUndoConfirm">इसकी छुट्टी आपके शेड्यूल से हटकर आपके शेष में लौट जाएगी।</string>
     <string name="leaveUndoPlan">योजना रद्द करें</string>

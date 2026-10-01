@@ -384,12 +384,13 @@
     <string name="leaveRoleLate">Iniziare più tardi</string>
     <string name="leaveSecondHalf">Seconda metà</string>
     <string name="leaveTitle">Ferie</string>
+    <string name="leaveTrialNotice">Ogni apertura di un piano conta una volta, anche se è lo stesso.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">Ti resta %d piano gratuito</item>
-        <item quantity="many">Ti restano %d piani gratuiti</item>
-        <item quantity="other">Ti restano %d piani gratuiti</item>
+        <item quantity="one">Puoi aprire ancora %d piano gratis</item>
+        <item quantity="many">Puoi aprire ancora %d piani gratis</item>
+        <item quantity="other">Puoi aprire ancora %d piani gratis</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Con Plus pianifichi quando vuoi</string>
+    <string name="leaveTrialsUsedUp">Hai usato le visualizzazioni gratuite. Con Plus vedi tutti i piani.</string>
     <string name="leaveUnassignedCaveat">Alcuni giorni non hanno turni e contano come riposo.</string>
     <string name="leaveUndoConfirm">Le sue ferie escono dai turni e tornano ai tuoi saldi.</string>
     <string name="leaveUndoPlan">Annulla piano</string>

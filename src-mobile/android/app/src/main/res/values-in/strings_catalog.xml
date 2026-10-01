@@ -382,10 +382,11 @@
     <string name="leaveRoleLate">Mulai lebih siang</string>
     <string name="leaveSecondHalf">Paruh kedua</string>
     <string name="leaveTitle">Cuti</string>
+    <string name="leaveTrialNotice">Setiap membuka rencana terhitung satu kali, termasuk rencana yang sama.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">Sisa %d rencana gratis</item>
+        <item quantity="other">Sisa %d kali lihat rencana gratis</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Rencanakan lagi kapan saja dengan Plus</string>
+    <string name="leaveTrialsUsedUp">Kesempatan lihat gratis sudah habis. Lihat semua rencana dengan Plus.</string>
     <string name="leaveUnassignedCaveat">Beberapa hari tanpa sif dihitung sebagai libur.</string>
     <string name="leaveUndoConfirm">Cutinya dihapus dari jadwal dan kembali ke saldomu.</string>
     <string name="leaveUndoPlan">Batalkan rencana</string>

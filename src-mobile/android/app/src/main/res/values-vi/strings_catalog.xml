@@ -382,10 +382,11 @@
     <string name="leaveRoleLate">Vào làm muộn hơn</string>
     <string name="leaveSecondHalf">Nửa sau ca</string>
     <string name="leaveTitle">Nghỉ phép</string>
+    <string name="leaveTrialNotice">Mỗi lần mở một kế hoạch tính một lượt, kể cả mở lại cùng kế hoạch.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">Còn %d lần lập kế hoạch miễn phí</item>
+        <item quantity="other">Còn %d lần xem kế hoạch miễn phí</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Lên kế hoạch lại bất cứ lúc nào với Plus</string>
+    <string name="leaveTrialsUsedUp">Đã dùng hết lượt xem miễn phí. Xem mọi kế hoạch với Plus.</string>
     <string name="leaveUnassignedCaveat">Một số ngày chưa có ca và được tính là nghỉ.</string>
     <string name="leaveUndoConfirm">Ngày phép của kế hoạch sẽ được gỡ khỏi lịch và trả lại số ngày phép.</string>
     <string name="leaveUndoPlan">Huỷ kế hoạch</string>

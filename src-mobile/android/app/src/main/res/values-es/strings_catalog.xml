@@ -384,12 +384,13 @@
     <string name="leaveRoleLate">Empezar más tarde</string>
     <string name="leaveSecondHalf">Segunda mitad</string>
     <string name="leaveTitle">Vacaciones</string>
+    <string name="leaveTrialNotice">Cada vez que abres un plan cuenta una vez, aunque sea el mismo.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">Te queda %d plan gratis</item>
-        <item quantity="many">Te quedan %d planes gratis</item>
-        <item quantity="other">Te quedan %d planes gratis</item>
+        <item quantity="one">Puedes abrir %d plan más gratis</item>
+        <item quantity="many">Puedes abrir %d planes más gratis</item>
+        <item quantity="other">Puedes abrir %d planes más gratis</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Con Plus, planifica cuando quieras</string>
+    <string name="leaveTrialsUsedUp">Ya usaste las vistas gratuitas. Con Plus ves todos los planes.</string>
     <string name="leaveUnassignedCaveat">Algunos días no tienen turno y cuentan como descanso.</string>
     <string name="leaveUndoConfirm">Sus días salen de tu horario y vuelven a tus días disponibles.</string>
     <string name="leaveUndoPlan">Deshacer plan</string>

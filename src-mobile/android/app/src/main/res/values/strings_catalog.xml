@@ -383,11 +383,12 @@
     <string name="leaveRoleLate">Start later</string>
     <string name="leaveSecondHalf">Second half</string>
     <string name="leaveTitle">Time off</string>
+    <string name="leaveTrialNotice">Opening a plan uses one free view, even the same plan again.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">%d free plan left</item>
-        <item quantity="other">%d free plans left</item>
+        <item quantity="one">You can open %d more plan for free</item>
+        <item quantity="other">You can open %d more plans for free</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Plan again any time with Plus</string>
+    <string name="leaveTrialsUsedUp">Free plan views are used up. Plus opens every plan.</string>
     <string name="leaveUnassignedCaveat">Some days have no shift set and count as rest.</string>
     <string name="leaveUndoConfirm">Its leave comes off your schedule and goes back to your balances.</string>
     <string name="leaveUndoPlan">Undo plan</string>

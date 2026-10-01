@@ -101260,13 +101260,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "الخطط المجانية المتبقية: %lld"
+                  "value": "مرات عرض الخطط المجانية المتبقية: %lld"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "الخطط المجانية المتبقية: %lld"
+                  "value": "مرات عرض الخطط المجانية المتبقية: %lld"
                 }
               }
             }
@@ -101278,13 +101278,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Noch %lld kostenlose Planung"
+                  "value": "Noch %lld kostenlose Planansicht"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Noch %lld kostenlose Planungen"
+                  "value": "Noch %lld kostenlose Planansichten"
                 }
               }
             }
@@ -101296,13 +101296,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld free plan left"
+                  "value": "You can open %lld more plan for free"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld free plans left"
+                  "value": "You can open %lld more plans for free"
                 }
               }
             }
@@ -101314,13 +101314,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Te queda %lld plan gratis"
+                  "value": "Puedes abrir %lld plan más gratis"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Te quedan %lld planes gratis"
+                  "value": "Puedes abrir %lld planes más gratis"
                 }
               }
             }
@@ -101332,13 +101332,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Encore %lld planification gratuite"
+                  "value": "Encore %lld consultation gratuite"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Encore %lld planifications gratuites"
+                  "value": "Encore %lld consultations gratuites"
                 }
               }
             }
@@ -101350,13 +101350,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld मुफ़्त योजना बाकी"
+                  "value": "%lld मुफ़्त योजना देखना बाकी"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld मुफ़्त योजनाएँ बाकी"
+                  "value": "%lld मुफ़्त योजनाएँ देखना बाकी"
                 }
               }
             }
@@ -101368,13 +101368,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Sisa %lld rencana gratis"
+                  "value": "Sisa %lld kali lihat rencana gratis"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Sisa %lld rencana gratis"
+                  "value": "Sisa %lld kali lihat rencana gratis"
                 }
               }
             }
@@ -101386,13 +101386,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Ti resta %lld piano gratuito"
+                  "value": "Puoi aprire ancora %lld piano gratis"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Ti restano %lld piani gratuiti"
+                  "value": "Puoi aprire ancora %lld piani gratis"
                 }
               }
             }
@@ -101404,13 +101404,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "あと %lld 回無料で計画できます"
+                  "value": "あと %lld 回、無料でプランを見られます"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "あと %lld 回無料で計画できます"
+                  "value": "あと %lld 回、無料でプランを見られます"
                 }
               }
             }
@@ -101422,13 +101422,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "무료 계획 %lld회 남음"
+                  "value": "무료로 계획을 %lld번 더 볼 수 있어요"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "무료 계획 %lld회 남음"
+                  "value": "무료로 계획을 %lld번 더 볼 수 있어요"
                 }
               }
             }
@@ -101440,13 +101440,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld मोफत नियोजन बाकी"
+                  "value": "आणखी %lld नियोजन मोफत पाहता येईल"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld मोफत नियोजने बाकी"
+                  "value": "आणखी %lld नियोजने मोफत पाहता येतील"
                 }
               }
             }
@@ -101458,13 +101458,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Resta %lld plano gratuito"
+                  "value": "Pode abrir mais %lld plano grátis"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Restam %lld planos gratuitos"
+                  "value": "Pode abrir mais %lld planos grátis"
                 }
               }
             }
@@ -101476,13 +101476,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Остался %lld бесплатный план"
+                  "value": "Можно бесплатно открыть ещё %lld план"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Осталось бесплатных планов: %lld"
+                  "value": "Бесплатных просмотров планов: %lld"
                 }
               }
             }
@@ -101494,13 +101494,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "วางแผนฟรีได้อีก %lld ครั้ง"
+                  "value": "ดูแผนฟรีได้อีก %lld ครั้ง"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "วางแผนฟรีได้อีก %lld ครั้ง"
+                  "value": "ดูแผนฟรีได้อีก %lld ครั้ง"
                 }
               }
             }
@@ -101512,13 +101512,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld ücretsiz plan kaldı"
+                  "value": "%lld ücretsiz plan görüntüleme kaldı"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld ücretsiz plan kaldı"
+                  "value": "%lld ücretsiz plan görüntüleme kaldı"
                 }
               }
             }
@@ -101530,13 +101530,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Còn %lld lần lập kế hoạch miễn phí"
+                  "value": "Còn %lld lần xem kế hoạch miễn phí"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Còn %lld lần lập kế hoạch miễn phí"
+                  "value": "Còn %lld lần xem kế hoạch miễn phí"
                 }
               }
             }
@@ -101548,13 +101548,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "还可免费规划 %lld 次"
+                  "value": "还可免费查看 %lld 次方案"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "还可免费规划 %lld 次"
+                  "value": "还可免费查看 %lld 次方案"
                 }
               }
             }
@@ -101566,13 +101566,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "仲可以免費計劃 %lld 次"
+                  "value": "仲可以免費睇 %lld 次方案"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "仲可以免費計劃 %lld 次"
+                  "value": "仲可以免費睇 %lld 次方案"
                 }
               }
             }
@@ -101584,13 +101584,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "還可免費規劃 %lld 次"
+                  "value": "還可免費查看 %lld 次方案"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "還可免費規劃 %lld 次"
+                  "value": "還可免費查看 %lld 次方案"
                 }
               }
             }
@@ -101604,115 +101604,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "خطّط مجددًا متى شئت مع Plus"
+            "value": "استخدمت مرات العرض المجانية. اعرض كل الخطط مع Plus."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mit Plus jederzeit neu planen"
+            "value": "Kostenlose Ansichten aufgebraucht. Mit Plus siehst du jeden Plan."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plan again any time with Plus"
+            "value": "Free plan views are used up. Plus opens every plan."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Con Plus, planifica cuando quieras"
+            "value": "Ya usaste las vistas gratuitas. Con Plus ves todos los planes."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Replanifiez quand vous voulez avec Plus"
+            "value": "Consultations gratuites épuisées. Plus ouvre tous les plans."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plus के साथ कभी भी फिर से योजना बनाएँ"
+            "value": "मुफ़्त देखने के मौके खत्म हो गए। Plus के साथ सभी योजनाएँ देखें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rencanakan lagi kapan saja dengan Plus"
+            "value": "Kesempatan lihat gratis sudah habis. Lihat semua rencana dengan Plus."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Con Plus pianifichi quando vuoi"
+            "value": "Hai usato le visualizzazioni gratuite. Con Plus vedi tutti i piani."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plus ならいつでも計画できます"
+            "value": "無料の閲覧回数を使い切りました。Plus ならすべてのプランを見られます"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plus로 언제든 다시 계획할 수 있어요"
+            "value": "무료 보기를 모두 사용했어요. Plus로 모든 계획을 볼 수 있어요"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plus सह कधीही पुन्हा नियोजन करा"
+            "value": "मोफत पाहण्याच्या संधी संपल्या. Plus सह सर्व नियोजने पाहा."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Com o Plus, planeie sempre que quiser"
+            "value": "Usou as consultas gratuitas. Com o Plus vê todos os planos."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "С Plus планируйте когда угодно"
+            "value": "Бесплатные просмотры закончились. С Plus доступны все планы."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "วางแผนใหม่ได้ทุกเมื่อด้วย Plus"
+            "value": "ใช้สิทธิ์ดูฟรีครบแล้ว ดูแผนทั้งหมดได้ด้วย Plus"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plus ile istediğin zaman yeniden planla"
+            "value": "Ücretsiz görüntülemeler bitti. Plus ile tüm planları gör."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lên kế hoạch lại bất cứ lúc nào với Plus"
+            "value": "Đã dùng hết lượt xem miễn phí. Xem mọi kế hoạch với Plus."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "开通 Plus 即可随时再规划"
+            "value": "免费查看次数已用完，开通 Plus 即可查看全部方案"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "開通 Plus 就可以隨時再計劃"
+            "value": "免費睇方案嘅次數用晒，開通 Plus 就可以睇晒所有方案"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "升級 Plus 即可隨時再規劃"
+            "value": "免費查看次數已用完，升級 Plus 即可查看所有方案"
           }
         }
       }
@@ -108843,6 +108843,125 @@
           "stringUnit": {
             "state": "translated",
             "value": "隨時規劃休假"
+          }
+        }
+      }
+    },
+    "leaveTrialNotice": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كل فتح لخطة يُحتسب مرة، حتى لو كانت الخطة نفسها."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jedes Öffnen eines Plans zählt einmal, auch beim selben Plan."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening a plan uses one free view, even the same plan again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada vez que abres un plan cuenta una vez, aunque sea el mismo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chaque ouverture d’un plan compte une fois, même pour le même plan."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हर बार योजना खोलने पर एक मौका लगता है, वही योजना दोबारा खोलने पर भी।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setiap membuka rencana terhitung satu kali, termasuk rencana yang sama."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni apertura di un piano conta una volta, anche se è lo stesso."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プランを開くたびに1回使います。同じプランを開き直した場合も含みます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "계획을 열 때마다 1번씩 차감돼요. 같은 계획을 다시 열어도 차감돼요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रत्येक वेळी नियोजन उघडल्यावर एक संधी वापरली जाते, तेच नियोजन पुन्हा उघडले तरी."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada vez que abre um plano conta uma vez, mesmo que seja o mesmo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каждое открытие плана расходует один просмотр, даже повторное."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดแผนแต่ละครั้งนับ 1 ครั้ง แม้เปิดแผนเดิมซ้ำ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her plan açılışı bir hak kullanır; aynı planı yeniden açmak da sayılır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mỗi lần mở một kế hoạch tính một lượt, kể cả mở lại cùng kế hoạch."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每打开一个方案会用掉 1 次，重复打开同一方案也会计算。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每打開一個方案會用一次，再打開同一個方案都會計。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每打開一個方案會用掉 1 次，重複打開同一方案也會計算。"
           }
         }
       }

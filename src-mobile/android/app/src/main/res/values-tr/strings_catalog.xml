@@ -383,11 +383,12 @@
     <string name="leaveRoleLate">Daha geç başla</string>
     <string name="leaveSecondHalf">İkinci yarı</string>
     <string name="leaveTitle">İzin</string>
+    <string name="leaveTrialNotice">Her plan açılışı bir hak kullanır; aynı planı yeniden açmak da sayılır.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">%d ücretsiz plan kaldı</item>
-        <item quantity="other">%d ücretsiz plan kaldı</item>
+        <item quantity="one">%d ücretsiz plan görüntüleme kaldı</item>
+        <item quantity="other">%d ücretsiz plan görüntüleme kaldı</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Plus ile istediğin zaman yeniden planla</string>
+    <string name="leaveTrialsUsedUp">Ücretsiz görüntülemeler bitti. Plus ile tüm planları gör.</string>
     <string name="leaveUnassignedCaveat">Bazı günlerde vardiya yok; dinlenme sayılıyor.</string>
     <string name="leaveUndoConfirm">İzni vardiyandan çıkar ve bakiyelerine geri döner.</string>
     <string name="leaveUndoPlan">Planı geri al</string>

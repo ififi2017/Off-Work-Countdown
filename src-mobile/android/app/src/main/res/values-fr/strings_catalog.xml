@@ -384,12 +384,13 @@
     <string name="leaveRoleLate">Commencer plus tard</string>
     <string name="leaveSecondHalf">Seconde moitié</string>
     <string name="leaveTitle">Congés</string>
+    <string name="leaveTrialNotice">Chaque ouverture d’un plan compte une fois, même pour le même plan.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">Encore %d planification gratuite</item>
-        <item quantity="many">Encore %d planifications gratuites</item>
-        <item quantity="other">Encore %d planifications gratuites</item>
+        <item quantity="one">Encore %d consultation gratuite</item>
+        <item quantity="many">Encore %d consultations gratuites</item>
+        <item quantity="other">Encore %d consultations gratuites</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Replanifiez quand vous voulez avec Plus</string>
+    <string name="leaveTrialsUsedUp">Consultations gratuites épuisées. Plus ouvre tous les plans.</string>
     <string name="leaveUnassignedCaveat">Certains jours n’ont pas de service et comptent comme repos.</string>
     <string name="leaveUndoConfirm">Ses congés sont retirés du planning et rendus à vos soldes.</string>
     <string name="leaveUndoPlan">Annuler le plan</string>

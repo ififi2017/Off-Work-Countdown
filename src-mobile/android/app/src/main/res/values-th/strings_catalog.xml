@@ -382,10 +382,11 @@
     <string name="leaveRoleLate">เริ่มงานช้าลง</string>
     <string name="leaveSecondHalf">ครึ่งหลัง</string>
     <string name="leaveTitle">วันหยุดพักผ่อน</string>
+    <string name="leaveTrialNotice">เปิดแผนแต่ละครั้งนับ 1 ครั้ง แม้เปิดแผนเดิมซ้ำ</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">วางแผนฟรีได้อีก %d ครั้ง</item>
+        <item quantity="other">ดูแผนฟรีได้อีก %d ครั้ง</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">วางแผนใหม่ได้ทุกเมื่อด้วย Plus</string>
+    <string name="leaveTrialsUsedUp">ใช้สิทธิ์ดูฟรีครบแล้ว ดูแผนทั้งหมดได้ด้วย Plus</string>
     <string name="leaveUnassignedCaveat">บางวันไม่มีกะ จึงนับเป็นวันหยุด</string>
     <string name="leaveUndoConfirm">วันลาของแผนนี้จะถูกเอาออกจากตารางงานและคืนกลับวันลาคงเหลือ</string>
     <string name="leaveUndoPlan">ยกเลิกแผน</string>

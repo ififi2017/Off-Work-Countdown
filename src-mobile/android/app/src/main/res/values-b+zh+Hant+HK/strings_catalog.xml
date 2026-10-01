@@ -382,10 +382,11 @@
     <string name="leaveRoleLate">遲啲返工</string>
     <string name="leaveSecondHalf">後半更</string>
     <string name="leaveTitle">放假</string>
+    <string name="leaveTrialNotice">每打開一個方案會用一次，再打開同一個方案都會計。</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">仲可以免費計劃 %d 次</item>
+        <item quantity="other">仲可以免費睇 %d 次方案</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">開通 Plus 就可以隨時再計劃</string>
+    <string name="leaveTrialsUsedUp">免費睇方案嘅次數用晒，開通 Plus 就可以睇晒所有方案</string>
     <string name="leaveUnassignedCaveat">有啲日子未排班，當休息計。</string>
     <string name="leaveUndoConfirm">呢個計劃嘅假會喺排班度移走，再退返去假期餘額。</string>
     <string name="leaveUndoPlan">撤銷計劃</string>

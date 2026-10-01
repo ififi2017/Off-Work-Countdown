@@ -387,15 +387,16 @@
     <string name="leaveRoleLate">البدء لاحقًا</string>
     <string name="leaveSecondHalf">النصف الثاني</string>
     <string name="leaveTitle">الإجازات</string>
+    <string name="leaveTrialNotice">كل فتح لخطة يُحتسب مرة، حتى لو كانت الخطة نفسها.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="zero">الخطط المجانية المتبقية: %d</item>
-        <item quantity="one">الخطط المجانية المتبقية: %d</item>
-        <item quantity="two">الخطط المجانية المتبقية: %d</item>
-        <item quantity="few">الخطط المجانية المتبقية: %d</item>
-        <item quantity="many">الخطط المجانية المتبقية: %d</item>
-        <item quantity="other">الخطط المجانية المتبقية: %d</item>
+        <item quantity="zero">مرات عرض الخطط المجانية المتبقية: %d</item>
+        <item quantity="one">مرات عرض الخطط المجانية المتبقية: %d</item>
+        <item quantity="two">مرات عرض الخطط المجانية المتبقية: %d</item>
+        <item quantity="few">مرات عرض الخطط المجانية المتبقية: %d</item>
+        <item quantity="many">مرات عرض الخطط المجانية المتبقية: %d</item>
+        <item quantity="other">مرات عرض الخطط المجانية المتبقية: %d</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">خطّط مجددًا متى شئت مع Plus</string>
+    <string name="leaveTrialsUsedUp">استخدمت مرات العرض المجانية. اعرض كل الخطط مع Plus.</string>
     <string name="leaveUnassignedCaveat">بعض الأيام بلا مناوبة وتُحسب راحة.</string>
     <string name="leaveUndoConfirm">تُزال إجازته من جدولك وتعود إلى أرصدتك.</string>
     <string name="leaveUndoPlan">إلغاء الخطة</string>

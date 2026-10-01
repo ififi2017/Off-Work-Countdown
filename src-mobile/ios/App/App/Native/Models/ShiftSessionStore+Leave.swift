@@ -3,22 +3,12 @@ import Foundation
 /// What the leave pages read (plan 020 §2): the rolling planning year, the
 /// schedule the planner searches and what each balance has left.
 extension ShiftSessionStore {
-    /// One leave plan request, as the planner and the free-trial count see it.
+    /// One leave plan request.
     struct LeavePlanRequest: Equatable, Sendable {
         var goal: LeavePlanner.Goal
         var fromDayNumber: Int
         var throughDayNumber: Int
         var budgetIDs: [UUID]
-
-        /// Identical requests count as one free plan however often they run.
-        var fingerprint: String {
-            let goalText = switch goal {
-            case .restAtLeast(let days): "rest\(days)"
-            case .leaveAtMost(let halfDays): "leave\(halfDays)"
-            }
-            return ([goalText, String(fromDayNumber), String(throughDayNumber)] + budgetIDs.map(\.uuidString).sorted())
-                .joined(separator: "|")
-        }
     }
 
     /// Today through the day before the same date next year, in the records

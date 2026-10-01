@@ -59,7 +59,6 @@ extension LeavePortion {
 // MARK: - Page
 
 struct LeaveView: View {
-    @Environment(SceneState.self) private var scene
     let shifts: ShiftSessionStore
     let actions: RecordsActions
     @State private var editing: LeaveBalanceEditing?
@@ -73,7 +72,7 @@ struct LeaveView: View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
-                    Button(action: plan) {
+                    Button { isPlanning = true } label: {
                         OWCRow(icon: "calendar.badge.plus", title: text.t("leavePlanAction"),
                                subtitle: planSubtitle, isLast: true, centersVertically: true) {
                             OWCDetailAccessory(text: nil)
@@ -153,14 +152,6 @@ struct LeaveView: View {
     private var planSubtitle: String? {
         guard !shifts.plus.isAuthorized else { return nil }
         return trialsLeft > 0 ? text.t("leaveTrialsLeft", count: trialsLeft) : text.t("leaveTrialsUsedUp")
-    }
-
-    private func plan() {
-        if shifts.plus.isAuthorized || trialsLeft > 0 {
-            isPlanning = true
-        } else {
-            scene.paywallSheet = .leavePlanning
-        }
     }
 
     private func validityLabel(_ balance: LeaveBalance) -> String? {
@@ -365,6 +356,7 @@ private struct LeavePlannerSheet: View {
     @State private var isSearching = false
     @State private var proposals: [LeavePlanProposal] = []
     @State private var didLoad = false
+    @State private var showsPaywall = false
 
     private var text: AppText { shifts.text }
     private var calendar: Calendar { shifts.preferences.recordsCalendar }
@@ -391,6 +383,9 @@ private struct LeavePlannerSheet: View {
     var body: some View {
         NavigationStack(path: $path) {
             Form {
+                if !shifts.plus.isAuthorized {
+                    Section { LeaveTrialBanner(shifts: shifts) }
+                }
                 Section {
                     Picker(text.t("leavePlanAction"), selection: $goalIsRest) {
                         Text(text.t("leaveGoalRest")).tag(true)
@@ -458,12 +453,6 @@ private struct LeavePlannerSheet: View {
                     }
                 } header: {
                     Text(text.t("leaveUseBalances"))
-                } footer: {
-                    if !shifts.plus.isAuthorized {
-                        Text(shifts.preferences.leavePlannerTrialsLeft > 0
-                             ? text.t("leaveTrialsLeft", count: shifts.preferences.leavePlannerTrialsLeft)
-                             : text.t("leaveTrialsUsedUp"))
-                    }
                 }
             }
             .navigationTitle(text.t("leavePlanAction"))
@@ -477,14 +466,14 @@ private struct LeavePlannerSheet: View {
                         ProgressView()
                     } else {
                         Button(text.t("leaveFind"), action: search)
-                            .disabled(request == nil || !canSearch)
+                            .disabled(request == nil)
                     }
                 }
             }
             .navigationDestination(for: LeavePlannerStep.self) { step in
                 switch step {
                 case .results:
-                    LeavePlanResults(shifts: shifts, proposals: proposals) { path.append(.detail($0)) }
+                    LeavePlanResults(shifts: shifts, proposals: proposals, open: openPlan)
                 case .detail(let index):
                     LeavePlanDetail(shifts: shifts, actions: actions, proposal: proposals[index]) { dismiss() }
                 }
@@ -492,10 +481,29 @@ private struct LeavePlannerSheet: View {
         }
         .presentationDragIndicator(.visible)
         .onAppear(perform: load)
+        .sheet(isPresented: $showsPaywall) {
+            NavigationStack {
+                PaywallView(plus: shifts.plus, text: text, reason: .leavePlanning, showsDismissButton: false) {
+                    showsPaywall = false
+                }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(text.t("close")) { showsPaywall = false }
+                    }
+                }
+            }
+            .presentationDetents([.large])
+        }
     }
 
-    private var canSearch: Bool {
-        shifts.plus.isAuthorized || shifts.preferences.leavePlannerTrialsLeft > 0
+    /// Searching is free; each time a free user opens a plan, one free view
+    /// is used, the same plan again included.
+    private func openPlan(_ index: Int) {
+        if shifts.plus.isAuthorized || shifts.preferences.consumeLeavePlannerTrial() {
+            path.append(.detail(index))
+        } else {
+            showsPaywall = true
+        }
     }
 
     private var windowDates: ClosedRange<Date> {
@@ -525,16 +533,11 @@ private struct LeavePlannerSheet: View {
     }
 
     private func search() {
-        guard let request, canSearch else { return }
+        guard let request else { return }
         isSearching = true
         Task {
-            let found = await shifts.findLeavePlans(request)
-            proposals = found
+            proposals = await shifts.findLeavePlans(request)
             isSearching = false
-            // A plan counts once it shows options; nothing found costs nothing.
-            if !found.isEmpty, !shifts.plus.isAuthorized {
-                shifts.preferences.countLeavePlannerTrial(request: request.fingerprint)
-            }
             path = [.results]
         }
     }
@@ -554,6 +557,9 @@ private struct LeavePlanResults: View {
 
     var body: some View {
         List {
+            if !shifts.plus.isAuthorized, !proposals.isEmpty {
+                Section { LeaveTrialBanner(shifts: shifts, explainsCost: true) }
+            }
             if proposals.isEmpty {
                 Text(text.t("leaveNoResults"))
                     .foregroundStyle(OWCDesign.secondary)
@@ -613,6 +619,9 @@ private struct LeavePlanDetail: View {
 
     var body: some View {
         Form {
+            if !shifts.plus.isAuthorized {
+                Section { LeaveTrialBanner(shifts: shifts) }
+            }
             Section {
                 LeavePlanCalendar(shifts: shifts, proposal: proposal)
                     .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
@@ -741,6 +750,38 @@ private struct LeavePlanDetail: View {
                 isAdopting = false
             }
         }
+    }
+}
+
+/// How many free plan views are left, kept in plain sight wherever a free
+/// user plans: the form, the options and each plan they open.
+private struct LeaveTrialBanner: View {
+    let shifts: ShiftSessionStore
+    var explainsCost = false
+
+    private var left: Int { shifts.preferences.leavePlannerTrialsLeft }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: left > 0 ? "ticket" : "lock")
+                .font(.title3)
+                .foregroundStyle(OWCDesign.accent)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(left > 0 ? shifts.text.t("leaveTrialsLeft", count: left) : shifts.text.t("leaveTrialsUsedUp"))
+                    .font(.headline)
+                    .foregroundStyle(OWCDesign.primary)
+                if explainsCost, left > 0 {
+                    Text(shifts.text.t("leaveTrialNotice"))
+                        .font(.subheadline)
+                        .foregroundStyle(OWCDesign.secondary)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 4)
+        .listRowBackground(OWCDesign.accent.opacity(0.12))
+        .accessibilityElement(children: .combine)
     }
 }
 

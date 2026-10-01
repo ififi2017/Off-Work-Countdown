@@ -383,11 +383,12 @@
     <string name="leaveRoleLate">Später anfangen</string>
     <string name="leaveSecondHalf">Zweite Hälfte</string>
     <string name="leaveTitle">Urlaub</string>
+    <string name="leaveTrialNotice">Jedes Öffnen eines Plans zählt einmal, auch beim selben Plan.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">Noch %d kostenlose Planung</item>
-        <item quantity="other">Noch %d kostenlose Planungen</item>
+        <item quantity="one">Noch %d kostenlose Planansicht</item>
+        <item quantity="other">Noch %d kostenlose Planansichten</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Mit Plus jederzeit neu planen</string>
+    <string name="leaveTrialsUsedUp">Kostenlose Ansichten aufgebraucht. Mit Plus siehst du jeden Plan.</string>
     <string name="leaveUnassignedCaveat">Einige Tage haben keine Schicht und zählen als frei.</string>
     <string name="leaveUndoConfirm">Der Urlaub wird aus dem Dienstplan entfernt und deinen Konten gutgeschrieben.</string>
     <string name="leaveUndoPlan">Plan rückgängig machen</string>

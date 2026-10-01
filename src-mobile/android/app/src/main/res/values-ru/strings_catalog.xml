@@ -385,13 +385,14 @@
     <string name="leaveRoleLate">Начать позже</string>
     <string name="leaveSecondHalf">Вторая половина</string>
     <string name="leaveTitle">Отпуск</string>
+    <string name="leaveTrialNotice">Каждое открытие плана расходует один просмотр, даже повторное.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">Остался %d бесплатный план</item>
-        <item quantity="few">Осталось бесплатных планов: %d</item>
-        <item quantity="many">Осталось бесплатных планов: %d</item>
-        <item quantity="other">Осталось бесплатных планов: %d</item>
+        <item quantity="one">Можно бесплатно открыть ещё %d план</item>
+        <item quantity="few">Бесплатных просмотров планов: %d</item>
+        <item quantity="many">Бесплатных просмотров планов: %d</item>
+        <item quantity="other">Бесплатных просмотров планов: %d</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">С Plus планируйте когда угодно</string>
+    <string name="leaveTrialsUsedUp">Бесплатные просмотры закончились. С Plus доступны все планы.</string>
     <string name="leaveUnassignedCaveat">В некоторые дни смен нет — они считаются выходными.</string>
     <string name="leaveUndoConfirm">Отпуск по этому плану уберётся из графика и вернётся в остатки.</string>
     <string name="leaveUndoPlan">Отменить план</string>

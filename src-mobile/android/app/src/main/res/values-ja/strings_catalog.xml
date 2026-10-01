@@ -382,10 +382,11 @@
     <string name="leaveRoleLate">遅めに出勤</string>
     <string name="leaveSecondHalf">後半休</string>
     <string name="leaveTitle">休暇</string>
+    <string name="leaveTrialNotice">プランを開くたびに1回使います。同じプランを開き直した場合も含みます。</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">あと %d 回無料で計画できます</item>
+        <item quantity="other">あと %d 回、無料でプランを見られます</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Plus ならいつでも計画できます</string>
+    <string name="leaveTrialsUsedUp">無料の閲覧回数を使い切りました。Plus ならすべてのプランを見られます</string>
     <string name="leaveUnassignedCaveat">一部の日はシフト未設定のため休みとして扱います。</string>
     <string name="leaveUndoConfirm">このプランの休暇はシフトから外れ、残りに戻ります。</string>
     <string name="leaveUndoPlan">プランを取り消す</string>
