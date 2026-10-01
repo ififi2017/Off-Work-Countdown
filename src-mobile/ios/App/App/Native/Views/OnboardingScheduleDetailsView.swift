@@ -46,10 +46,13 @@ struct OnboardingScheduleDetailsView: View {
                     .foregroundStyle(OWCDesign.secondary)
                 weekdayGrid
                     .padding(.top, 8)
-                Text(text.t("keepAtLeastOneWorkday"))
-                    .font(.footnote)
-                    .foregroundStyle(OWCDesign.secondary)
-                    .padding(.top, 8)
+                // Only when it applies: the last remaining day cannot be cleared.
+                if preferences.workdays.count == 1 {
+                    Text(text.t("keepAtLeastOneWorkday"))
+                        .font(.footnote)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .padding(.top, 8)
+                }
             }
         case .alternating:
             OWCGroupCard {

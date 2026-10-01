@@ -45,6 +45,7 @@ extension RecordState {
             || !focusTasks.isEmpty || !focusSessions.isEmpty
             || focusPlanningConfiguration != nil || recordsStartedOn != nil
             || extendedSchedule != nil || !rosterDays.isEmpty
+            || !leaveBalances.isEmpty || !leaveDays.isEmpty
             || !erased.isEmpty
             || sync.rows.values.contains { $0.entityType != .syncedPreferences && ($0.dirty || $0.pendingErase) }
     }

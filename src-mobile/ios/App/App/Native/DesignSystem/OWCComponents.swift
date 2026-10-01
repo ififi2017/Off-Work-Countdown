@@ -101,19 +101,21 @@ struct OWCWeekdayButton: View {
         } label: {
             ZStack(alignment: .topTrailing) {
                 Text(label)
-                    .font(.footnote.weight(selected ? .semibold : .medium))
+                    .font(.footnote.weight(selected ? .semibold : .regular))
                     .lineLimit(1)
                     .minimumScaleFactor(0.62)
-                    .foregroundStyle(selected ? Color(uiColor: .systemBackground) : OWCDesign.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 46)
+                    .foregroundStyle(selected ? OWCDesign.accent : OWCDesign.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 44)
                 if differentiateWithoutColor, selected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.caption2)
-                        .foregroundStyle(Color(uiColor: .systemBackground))
+                        .foregroundStyle(OWCDesign.accent)
                         .padding(4)
                 }
             }
-            .background(selected ? OWCDesign.accent : OWCDesign.control)
+            // A tint rather than a solid fill: five selected days in a row
+            // read as one heavy orange bar.
+            .background(selected ? OWCDesign.accent.opacity(0.14) : OWCDesign.control)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .opacity(locked ? 0.55 : 1)
         }

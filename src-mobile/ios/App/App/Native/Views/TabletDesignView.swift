@@ -93,6 +93,7 @@ struct AdaptiveAppShellView: View {
             records: runtime.records,
             queries: runtime.queries,
             actions: runtime.recordActions,
+            shifts: runtime.shifts,
             life: runtime.life,
             preferences: runtime.preferences,
             focus: runtime.focus,

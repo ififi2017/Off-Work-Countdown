@@ -19,7 +19,7 @@ sealed interface ImportPreview {
  * Backups in and out of the records archive (iOS `RecordsActions` export and
  * import, `RecordCoordinator.import`/`exportJSON`, `deleteAllLocalData`).
  *
- * - Export is the schema 6 document, optionally without the Life profile.
+ * - Export is the schema 7 document, optionally without the Life profile.
  * - Import merges into the archive (same-key conflicts keep the local row,
  *   erased identities are skipped) and is recomputed against the archive as it
  *   stands at commit, inside the store's lock, so a write between preview and

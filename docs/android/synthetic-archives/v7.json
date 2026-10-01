@@ -320,5 +320,35 @@
       "editCount": 1,
       "editTieBreaker": "00000000-0000-0000-0000-000000000020"
     }
+  ],
+  "leaveBalances": [
+    {
+      "id": "00000000-0000-0000-0000-000000000021",
+      "kind": "annual",
+      "entitledHalfDays": 20,
+      "usedHalfDays": 3,
+      "validFromDayKey": "2026-01-01",
+      "validThroughDayKey": "2027-03-31",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000022"
+    }
+  ],
+  "leaveDays": [
+    {
+      "dayKey": "2026-08-26",
+      "portion": "secondHalf",
+      "uses": [
+        {
+          "balanceID": "00000000-0000-0000-0000-000000000021",
+          "halfDays": 1
+        }
+      ],
+      "planID": "00000000-0000-0000-0000-000000000023",
+      "timeZoneIdentifier": "UTC",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000024"
+    }
   ]
 }

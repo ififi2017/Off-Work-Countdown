@@ -109,6 +109,7 @@ final class RecordsQueries {
             snapshots: snapshots,
             exceptions: records.state.exceptions,
             overrides: records.state.overrides,
+            leaveDays: records.state.leaveDays,
             expansions: gatherScheduleExpansions(
                 from: from,
                 through: through,
@@ -149,6 +150,7 @@ final class RecordsQueries {
             snapshots: snapshots,
             exceptions: records.state.exceptions,
             overrides: records.state.overrides,
+            leaveDays: records.state.leaveDays,
             expansions: gatherScheduleExpansions(
                 from: from,
                 through: through,
@@ -286,12 +288,13 @@ final class RecordsQueries {
         snapshots: [ScheduleSnapshot],
         exceptions: [CalendarException],
         overrides: [DayOverride],
+        leaveDays: [LeaveDay] = [],
         expansions: ScheduleExpansionTable
     ) -> [DayResolution] {
         // Exceptions and overrides are keyed by day, so their winners do not
         // depend on which day is being resolved. Deciding them once is what
         // keeps a career-length walk from re-filtering the archive per day.
-        let lookup = DayRecordLookup(exceptions: exceptions, overrides: overrides)
+        let lookup = DayRecordLookup(exceptions: exceptions, overrides: overrides, leaveDays: leaveDays)
         var periodCalendars: [UUID: Calendar] = [:]
         var cursor = start
         var result: [DayResolution] = []
@@ -370,6 +373,7 @@ final class RecordsQueries {
         snapshots: [ScheduleSnapshot],
         exceptions: [CalendarException],
         overrides: [DayOverride],
+        leaveDays: [LeaveDay],
         expansions: ScheduleExpansionTable
     ) async -> [DayResolution] {
         walkResolutions(
@@ -380,6 +384,7 @@ final class RecordsQueries {
             snapshots: snapshots,
             exceptions: exceptions,
             overrides: overrides,
+            leaveDays: leaveDays,
             expansions: expansions
         )
     }

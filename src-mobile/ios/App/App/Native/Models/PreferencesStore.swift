@@ -62,6 +62,7 @@ final class PreferencesStore {
         static let microBreakInterval = "ios.native.microBreakInterval"
         static let recordsTimeZone = "ios.native.recordsTimeZone"
         static let lifeSetupPromptDismissed = "ios.native.lifeSetupPromptDismissed"
+        static let leavePlannerTrialsUsed = "ios.native.leavePlannerTrialsUsed"
     }
     private(set) var startMinutes: Int
     private(set) var endMinutes: Int
@@ -100,6 +101,25 @@ final class PreferencesStore {
     }
 #endif
     var hideEarnings: Bool { didSet { defaults.set(hideEarnings, forKey: Key.hideEarnings) } }
+    /// Plan 020's free leave plans: searching is free, and each time a free
+    /// user opens a plan's details one of three is used, the same plan again
+    /// included. Device-local by design: never synced and never in a backup,
+    /// so reinstalling starts over and devices count on their own; no
+    /// identifier tracks it further.
+    private(set) var leavePlannerTrialsUsed: Int {
+        didSet { defaults.set(leavePlannerTrialsUsed, forKey: Key.leavePlannerTrialsUsed) }
+    }
+    static let leavePlannerFreeTrials = 3
+    var leavePlannerTrialsLeft: Int { max(0, Self.leavePlannerFreeTrials - leavePlannerTrialsUsed) }
+
+    /// Uses one free view, when one is left; `false` when none is.
+    @discardableResult
+    func consumeLeavePlannerTrial() -> Bool {
+        guard leavePlannerTrialsLeft > 0 else { return false }
+        leavePlannerTrialsUsed += 1
+        return true
+    }
+
     var lifeSetupPromptDismissed: Bool {
         didSet { defaults.set(lifeSetupPromptDismissed, forKey: Key.lifeSetupPromptDismissed) }
     }
@@ -188,6 +208,14 @@ final class PreferencesStore {
         records.extendedSchedulePlan(for: content, applying: edits)
     }
 
+    /// `plan` with adopted leave laid over it, for the live rules.
+    func extendedSchedulePlan(
+        _ plan: ExtendedSchedulePlan?,
+        applyingLeaveOver baseHours: ExtendedScheduleDayHours
+    ) -> ExtendedSchedulePlan? {
+        records.extendedSchedulePlan(plan, applyingLeaveOver: baseHours)
+    }
+
     /// `plan` with one day as it was before a save.
     func extendedSchedulePlan(_ plan: ExtendedSchedulePlan, keeping day: KeptRosterDay) -> ExtendedSchedulePlan {
         records.extendedSchedulePlan(plan, keeping: day)
@@ -255,6 +283,7 @@ final class PreferencesStore {
         annualBonusMonths = max(0, storedBonusMonths)
         hideEarnings = defaults.bool(forKey: Key.hideEarnings)
         lifeSetupPromptDismissed = defaults.bool(forKey: Key.lifeSetupPromptDismissed)
+        leavePlannerTrialsUsed = max(0, defaults.integer(forKey: Key.leavePlannerTrialsUsed))
         theme = AppTheme(rawValue: defaults.string(forKey: Key.theme) ?? "auto") ?? .auto
         systemLanguageCode = NativeLocalizer.systemLanguage()
         systemTimeZoneIdentifier = TimeZone.current.identifier

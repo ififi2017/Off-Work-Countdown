@@ -7,6 +7,7 @@ struct RecordsDesignView: View {
     let records: RecordCoordinator
     let queries: RecordsQueries
     let actions: RecordsActions
+    let shifts: ShiftSessionStore
     let life: LifeSummaryModel
     let preferences: PreferencesStore
     let focus: FocusStore
@@ -31,6 +32,8 @@ struct RecordsDesignView: View {
     @State private var loadedSignature: RecordsLoadSignature?
     @State private var showsCompactRootBar = false
     @State private var canvasWidth: CGFloat = 0
+    @State private var guidesLeaveSetup = false
+    @State private var leaveSetupSaved = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -45,6 +48,7 @@ struct RecordsDesignView: View {
         records: RecordCoordinator,
         queries: RecordsQueries,
         actions: RecordsActions,
+        shifts: ShiftSessionStore,
         life: LifeSummaryModel,
         preferences: PreferencesStore,
         focus: FocusStore,
@@ -59,6 +63,7 @@ struct RecordsDesignView: View {
         self.records = records
         self.queries = queries
         self.actions = actions
+        self.shifts = shifts
         self.life = life
         self.preferences = preferences
         self.focus = focus
@@ -103,6 +108,18 @@ struct RecordsDesignView: View {
         }
         .sheet(isPresented: $browsing.showsLifeEditor) {
             LifeProfileEditView(life: life, actions: actions, preferences: preferences, text: text)
+        }
+        .sheet(isPresented: $guidesLeaveSetup, onDismiss: {
+            // Only a saved first balance continues on to the time off page.
+            guard leaveSetupSaved else { return }
+            leaveSetupSaved = false
+            scene.recordsPath.append(.leave)
+        }) {
+            LeaveBalanceEditor(
+                shifts: shifts,
+                editing: .init(balance: LeaveView.newBalance(), isNew: true),
+                isGuided: true
+            ) { leaveSetupSaved = true }
         }
         .toolbar { recordsToolbar }
         .overlay(alignment: .top) {
@@ -538,6 +555,7 @@ struct RecordsDesignView: View {
                         onOpen: openDay
                     )
                     markLegend
+                    leavePlanningEntry
                 case .week:
                     RecordsWeekStrips(
                         queries: queries,
@@ -617,6 +635,34 @@ struct RecordsDesignView: View {
                     pinch = 1
                 }
         )
+    }
+
+    /// Plan 020: time off from the month a user is looking at. The first
+    /// visit without any leave balance sets one up before the page opens.
+    private var leavePlanningEntry: some View {
+        Button(action: openLeavePlanning) {
+            HStack(spacing: 6) {
+                Image(systemName: "suitcase")
+                Text(text.t("leavePlanAction"))
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(OWCDesign.tertiary)
+            }
+            .font(.subheadline)
+            .foregroundStyle(OWCDesign.accent)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func openLeavePlanning() {
+        if records.state.leaveBalances.isEmpty {
+            guidesLeaveSetup = true
+        } else {
+            scene.recordsPath.append(.leave)
+        }
     }
 
     private var markLegend: some View {
@@ -894,6 +940,8 @@ struct RecordsDesignView: View {
                     preferences: preferences,
                     text: text
                 )
+            case .leave:
+                LeaveView(shifts: shifts, actions: actions, backTitleKey: "recordsTitle")
             }
         }
         .onAppear { writeQASurfaceMarker(qaSurfaceName(for: route)) }
@@ -927,6 +975,7 @@ struct RecordsDesignView: View {
         case .monthList: "records.monthList"
         case .day: "records.day"
         case .conflictCenter: "records.conflicts"
+        case .leave: "records.leave"
         }
     }
 

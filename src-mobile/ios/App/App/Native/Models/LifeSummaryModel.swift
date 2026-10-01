@@ -206,6 +206,7 @@ final class LifeSummaryModel {
         var snapshots: [ScheduleSnapshot]
         var exceptions: [CalendarException]
         var overrides: [DayOverride]
+        var leaveDays: [LeaveDay]
         var expansions: ScheduleExpansionTable
         var observationsByDay: [String: [WorkObservation]]
     }
@@ -256,6 +257,7 @@ final class LifeSummaryModel {
                 snapshots: archive.snapshots,
                 exceptions: records.state.exceptions,
                 overrides: records.state.overrides,
+                leaveDays: records.state.leaveDays,
                 expansions: queries.gatherScheduleExpansions(
                     from: workStart,
                     through: finalDay,
@@ -321,6 +323,7 @@ final class LifeSummaryModel {
             snapshots: inputs.snapshots,
             exceptions: inputs.exceptions,
             overrides: inputs.overrides,
+            leaveDays: inputs.leaveDays,
             expansions: inputs.expansions
         ).compactMap { resolution in
             LifeScheduleDay(

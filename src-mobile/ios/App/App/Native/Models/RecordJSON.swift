@@ -14,6 +14,8 @@ nonisolated enum RecordEntityType: String, Codable, Sendable, CaseIterable {
     case syncedPreferences
     case extendedSchedule
     case rosterDay
+    case leaveBalance
+    case leaveDay
 }
 
 /// Local tombstone so a later import cannot resurrect a permanently deleted
@@ -63,6 +65,8 @@ nonisolated enum RecordIncomingValue: Equatable, Sendable {
     case syncedPreferences(SyncedPreferences)
     case extendedSchedule(ExtendedSchedule)
     case rosterDay(RosterDay)
+    case leaveBalance(LeaveBalance)
+    case leaveDay(LeaveDay)
 }
 
 nonisolated struct RecordImportConflict: Equatable, Sendable {
@@ -118,6 +122,8 @@ struct RecordState: Equatable, Sendable {
     var syncedPreferences: SyncedPreferences? = nil
     var extendedSchedule: ExtendedSchedule? = nil
     var rosterDays: [RosterDay] = []
+    var leaveBalances: [LeaveBalance] = []
+    var leaveDays: [LeaveDay] = []
     var recordsStartedOn: Date?
     var erased: [ErasedID] = []
     var sync = SyncLocalState.empty
@@ -188,6 +194,10 @@ struct RecordState: Equatable, Sendable {
             extendedSchedule = nil
         case .rosterDay:
             rosterDays.removeAll { $0.dayKey == key }
+        case .leaveBalance:
+            leaveBalances.removeAll { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame }
+        case .leaveDay:
+            leaveDays.removeAll { $0.dayKey == key }
         }
         if let index = erased.firstIndex(where: {
             $0.entityType == type && $0.logicalKey == key
@@ -214,8 +224,8 @@ struct RecordState: Equatable, Sendable {
 /// calendar; instants are Unix milliseconds so a timezone shift cannot move a
 /// day. Exports are user-triggered backups and include their synced settings.
 nonisolated enum RecordJSON {
-    nonisolated static let schemaVersion = 6
-    nonisolated static let acceptedSchemaVersions = 1...6
+    nonisolated static let schemaVersion = 7
+    nonisolated static let acceptedSchemaVersions = 1...7
 
     nonisolated static func export(
         _ state: RecordState,
@@ -257,7 +267,9 @@ nonisolated enum RecordJSON {
             syncedPreferences: state.syncedPreferences,
             recordsStartedOn: state.recordsStartedOn.map { RecordJSON.dayKey($0, calendar: fileCalendar) },
             extendedSchedule: state.extendedSchedule.map(ExtendedScheduleDTO.init),
-            rosterDays: state.rosterDays.map(RosterDayDTO.init)
+            rosterDays: state.rosterDays.map(RosterDayDTO.init),
+            leaveBalances: state.leaveBalances.map(LeaveBalanceDTO.init),
+            leaveDays: state.leaveDays.map(LeaveDayDTO.init)
         )
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
@@ -295,6 +307,9 @@ nonisolated enum RecordJSON {
         var exceptionsByKey = index(state.exceptions, \.dayKey)
         var overridesByKey = index(state.overrides, \.dayKey)
         var rosterDaysByKey = index(state.rosterDays, \.dayKey)
+        var leaveBalancesByID = index(state.leaveBalances, \.id)
+        var leaveDaysByKey = index(state.leaveDays, \.dayKey)
+        var leaveBalanceIDMap: [UUID: UUID] = [:]
         var observationsByID = index(state.observations, \.eventID)
         var tasksByID = index(state.focusTasks, \.id)
         var sessionsByID = index(state.focusSessions, \.id)
@@ -472,6 +487,74 @@ nonisolated enum RecordJSON {
                         archive.rosterDays[index] = value
                     }
                     return value
+                }
+            )
+        }
+
+        // Balances before days, so a restored balance's new id reaches the days
+        // that spend it.
+        for dto in document.leaveBalances ?? [] {
+            guard let incoming = dto.value() else {
+                report.rejected.append(RecordImportRejection(entityType: .leaveBalance, logicalKey: dto.id))
+                continue
+            }
+            merge(
+                incoming,
+                type: .leaveBalance,
+                key: incoming.id.uuidString,
+                mode: mode,
+                state: &state,
+                report: &report,
+                existing: { archive in leaveBalancesByID[incoming.id].map { archive.leaveBalances[$0] } },
+                incomingValue: { .leaveBalance($0) },
+                insert: { archive, value in
+                    var next = value
+                    if mode == .restoreErased, archive.isErased(.leaveBalance, key: incoming.id.uuidString) {
+                        let newID = UUID()
+                        leaveBalanceIDMap[incoming.id] = newID
+                        next.id = newID
+                    }
+                    leaveBalancesByID[next.id] = archive.leaveBalances.count
+                    archive.leaveBalances.append(next)
+                    return next
+                },
+                replace: { archive, value in
+                    if let index = leaveBalancesByID[value.id] {
+                        archive.leaveBalances[index] = value
+                    }
+                    return value
+                }
+            )
+        }
+
+        for dto in document.leaveDays ?? [] {
+            guard let incoming = dto.value() else {
+                report.rejected.append(RecordImportRejection(entityType: .leaveDay, logicalKey: dto.dayKey))
+                continue
+            }
+            merge(
+                incoming,
+                type: .leaveDay,
+                key: incoming.dayKey,
+                mode: mode,
+                state: &state,
+                report: &report,
+                existing: { archive in leaveDaysByKey[incoming.dayKey].map { archive.leaveDays[$0] } },
+                incomingValue: { .leaveDay($0) },
+                insert: { archive, value in
+                    var next = value
+                    next.uses = next.uses.map { $0.remapped(leaveBalanceIDMap) }
+                    leaveDaysByKey[next.dayKey] = archive.leaveDays.count
+                    archive.leaveDays.append(next)
+                    return next
+                },
+                replace: { archive, value in
+                    var next = value
+                    next.uses = next.uses.map { $0.remapped(leaveBalanceIDMap) }
+                    if let index = leaveDaysByKey[next.dayKey] {
+                        archive.leaveDays[index] = next
+                    }
+                    return next
                 }
             )
         }
@@ -725,6 +808,11 @@ nonisolated enum RecordJSON {
                 state.focusSessions[index].taskID = mapped
             }
         }
+        if !leaveBalanceIDMap.isEmpty {
+            for index in state.leaveDays.indices {
+                state.leaveDays[index].uses = state.leaveDays[index].uses.map { $0.remapped(leaveBalanceIDMap) }
+            }
+        }
         if var profile = state.lifeProfile {
             profile.migrateLegacyFields(calendar: calendar)
             state.lifeProfile = profile
@@ -796,6 +884,18 @@ nonisolated enum RecordJSON {
                 state.rosterDays[index] = day
             } else {
                 state.rosterDays.append(day)
+            }
+        case .leaveBalance(let balance):
+            if let index = state.leaveBalances.firstIndex(where: { $0.id == balance.id }) {
+                state.leaveBalances[index] = balance
+            } else {
+                state.leaveBalances.append(balance)
+            }
+        case .leaveDay(let day):
+            if let index = state.leaveDays.firstIndex(where: { $0.dayKey == day.dayKey }) {
+                state.leaveDays[index] = day
+            } else {
+                state.leaveDays.append(day)
             }
         }
     }
@@ -897,6 +997,8 @@ nonisolated enum RecordJSON {
         case .syncedPreferences: SyncedPreferences.logicalKey
         case .extendedSchedule: ExtendedSchedule.logicalKey
         case .rosterDay(let day): day.dayKey
+        case .leaveBalance(let balance): balance.id.uuidString
+        case .leaveDay(let day): day.dayKey
         }
     }
 
@@ -915,6 +1017,8 @@ nonisolated enum RecordJSON {
         case .syncedPreferences(let preferences): preferences.editCount
         case .extendedSchedule(let schedule): schedule.editCount
         case .rosterDay(let day): day.editCount
+        case .leaveBalance(let balance): balance.editCount
+        case .leaveDay(let day): day.editCount
         }
     }
 
@@ -935,6 +1039,8 @@ nonisolated enum RecordJSON {
         case .syncedPreferences(let preferences): preferences.editTieBreaker
         case .extendedSchedule(let schedule): schedule.editTieBreaker
         case .rosterDay(let day): day.editTieBreaker
+        case .leaveBalance(let balance): balance.editTieBreaker
+        case .leaveDay(let day): day.editTieBreaker
         }
     }
 
@@ -1073,6 +1179,9 @@ nonisolated struct RecordJSONDocument: Codable, Equatable, Sendable {
     /// Schema 6 (plan 018 P8). Absent from older documents.
     var extendedSchedule: ExtendedScheduleDTO? = nil
     var rosterDays: [RosterDayDTO]? = nil
+    /// Schema 7 (plan 020). Absent from older documents.
+    var leaveBalances: [LeaveBalanceDTO]? = nil
+    var leaveDays: [LeaveDayDTO]? = nil
 }
 
 nonisolated struct CareerPeriodDTO: Codable, Equatable, Sendable {
@@ -1765,5 +1874,113 @@ nonisolated struct FocusSessionDTO: Codable, Equatable, Sendable {
                 plannedEndAt: Date(timeIntervalSince1970: plannedEndAtMs / 1_000)
             )
         )
+    }
+}
+
+nonisolated struct LeaveBalanceDTO: Codable, Equatable, Sendable {
+    var id: String
+    var kind: LeaveBalance.Kind
+    var name: String?
+    var entitledHalfDays: Int
+    var usedHalfDays: Int
+    var validFromDayKey: String?
+    var validThroughDayKey: String?
+    var editedAtMs: Double
+    var editCount: Int
+    var editTieBreaker: String
+
+    init(_ value: LeaveBalance) {
+        id = value.id.uuidString
+        kind = value.kind
+        name = value.name
+        entitledHalfDays = value.entitledHalfDays
+        usedHalfDays = value.usedHalfDays
+        validFromDayKey = value.validFromDayKey
+        validThroughDayKey = value.validThroughDayKey
+        editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
+        editCount = value.editCount
+        editTieBreaker = value.editTieBreaker.uuidString
+    }
+
+    func value() -> LeaveBalance? {
+        guard let id = UUID(uuidString: id),
+              let editTieBreaker = UUID(uuidString: editTieBreaker),
+              editedAtMs.isFinite
+        else { return nil }
+        let balance = LeaveBalance(
+            id: id,
+            kind: kind,
+            name: name,
+            entitledHalfDays: entitledHalfDays,
+            usedHalfDays: usedHalfDays,
+            validFromDayKey: validFromDayKey,
+            validThroughDayKey: validThroughDayKey,
+            editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
+            editCount: editCount,
+            editTieBreaker: editTieBreaker
+        )
+        return balance.isValid ? balance : nil
+    }
+}
+
+nonisolated struct LeaveDayDTO: Codable, Equatable, Sendable {
+    struct Use: Codable, Equatable, Sendable {
+        var balanceID: String
+        var halfDays: Int
+    }
+
+    var dayKey: String
+    /// A string, so a portion a newer build adds rejects only its row.
+    var portion: String
+    var uses: [Use]
+    var planID: String?
+    var timeZoneIdentifier: String
+    var editedAtMs: Double
+    var editCount: Int
+    var editTieBreaker: String
+
+    init(_ value: LeaveDay) {
+        dayKey = value.dayKey
+        portion = value.portion.rawValue
+        uses = value.uses.map { Use(balanceID: $0.budgetID.uuidString, halfDays: $0.halfDays) }
+        planID = value.planID?.uuidString
+        timeZoneIdentifier = value.timeZoneIdentifier
+        editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
+        editCount = value.editCount
+        editTieBreaker = value.editTieBreaker.uuidString
+    }
+
+    func value() -> LeaveDay? {
+        guard let editTieBreaker = UUID(uuidString: editTieBreaker),
+              let portion = LeavePortion(rawValue: portion),
+              editedAtMs.isFinite
+        else { return nil }
+        var parsedUses: [LeaveBudgetUse] = []
+        for use in uses {
+            guard let id = UUID(uuidString: use.balanceID) else { return nil }
+            parsedUses.append(LeaveBudgetUse(budgetID: id, halfDays: use.halfDays))
+        }
+        var planUUID: UUID?
+        if let planID {
+            guard let parsed = UUID(uuidString: planID) else { return nil }
+            planUUID = parsed
+        }
+        let day = LeaveDay(
+            dayKey: dayKey,
+            portion: portion,
+            uses: parsedUses,
+            planID: planUUID,
+            timeZoneIdentifier: timeZoneIdentifier,
+            editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
+            editCount: editCount,
+            editTieBreaker: editTieBreaker
+        )
+        return day.isValid ? day : nil
+    }
+}
+
+private extension LeaveBudgetUse {
+    nonisolated func remapped(_ map: [UUID: UUID]) -> LeaveBudgetUse {
+        map[budgetID].map { LeaveBudgetUse(budgetID: $0, halfDays: halfDays) } ?? self
     }
 }

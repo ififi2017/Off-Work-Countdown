@@ -65,7 +65,7 @@ class RecordStoreTest {
 
     @Test
     fun everySyntheticArchiveSurvivesARestart() = runBlocking {
-        for (name in listOf("v1.json", "v2.json", "v3.json", "v4.json", "v5.json", "v6.json")) {
+        for (name in listOf("v1.json", "v2.json", "v3.json", "v4.json", "v5.json", "v6.json", "v7.json")) {
             Files.deleteIfExists(archive())
             val seeded = synthetic(name)
             val first = store()
@@ -79,8 +79,8 @@ class RecordStoreTest {
     }
 
     @Test
-    fun everyOlderLocalEnvelopeWritesBackAsSchemaSix() = runBlocking {
-        for (version in 1..6) {
+    fun everyOlderLocalEnvelopeWritesBackAsSchemaSeven() = runBlocking {
+        for (version in 1..7) {
             val document = File(System.getProperty("owc.syntheticArchives"), "v$version.json").readBytes()
             val local = """{"schemaVersion":$version,"document":"${Base64.getEncoder().encodeToString(document)}","erased":[]}"""
             Files.writeString(archive(), local)
@@ -93,7 +93,7 @@ class RecordStoreTest {
             reopened.load()
             assertNull("v$version reopened", reopened.persistenceError.value)
             assertEquals("v$version entities", before.copy(recordsStartedOn = "2026-09-01"), reopened.state.value)
-            assertTrue("v$version now local schema 6", Files.readString(archive()).contains("\"schemaVersion\":6"))
+            assertTrue("v$version now local schema 7", Files.readString(archive()).contains("\"schemaVersion\":7"))
         }
     }
 
@@ -234,8 +234,8 @@ class RecordStoreTest {
     fun aNewerLocalArchiveIsPreservedAndBlocksWrites() = runBlocking {
         val seeded = synthetic("v6.json")
         val current = RecordArchive.encode(seeded, now, "Asia/Shanghai").decodeToString()
-        assertTrue(current.contains("\"schemaVersion\":6"))
-        val newer = current.replaceFirst("\"schemaVersion\":6", "\"schemaVersion\":7").toByteArray()
+        assertTrue(current.contains("\"schemaVersion\":7"))
+        val newer = current.replaceFirst("\"schemaVersion\":7", "\"schemaVersion\":8").toByteArray()
         Files.write(archive(), newer)
         val reopened = store()
         reopened.load()
