@@ -8,8 +8,9 @@ release CI, store listings/media or release download counts.
 - Run `npm run check:version` before any packaging. Product versions match in
   `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`,
   `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json`, the macOS widget project
-  and `src-mobile/ios/App/App.xcodeproj` (`MARKETING_VERSION`, all four build
-  configurations of both targets).
+  `src-mobile/ios/App/App.xcodeproj` (`MARKETING_VERSION`, all shipping targets),
+  and Android `app/build.gradle.kts` (`versionName`). Android `versionCode`
+  increases for Play uploads independently of the product version.
 - iOS `CURRENT_PROJECT_VERSION` is independent of product version; increment
   it for every TestFlight/App Store upload. Reuse under the same
   `MARKETING_VERSION` is rejected.
