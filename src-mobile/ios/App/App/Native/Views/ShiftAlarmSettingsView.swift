@@ -56,6 +56,12 @@ struct ShiftAlarmSettingsView: View {
                     if status.authorization == .authorized, !upcoming.isEmpty {
                         upcomingSection
                     }
+#if DEBUG
+                    if status.authorization == .authorized {
+                        debugTestRow
+                            .padding(.top, OWCDesign.sectionGap)
+                    }
+#endif
                 }
             }
             .padding(.horizontal, OWCDesign.pageInset)
@@ -203,6 +209,24 @@ struct ShiftAlarmSettingsView: View {
             }
         }
     }
+
+#if DEBUG
+    /// Device check for ringing and snooze; Debug builds only, so verbatim.
+    private var debugTestRow: some View {
+        OWCGroupCard {
+            Button {
+                Task {
+                    let plan = shifts.shiftAlarmPlan()
+                    let title = upcoming.first?.title ?? plan.items.first?.title ?? "DoneAt"
+                    if await alarms.scheduleDebugTestAlarm(plan, title: title) { refreshFeedback += 1 }
+                }
+            } label: {
+                OWCRow(icon: "hammer", title: "Debug: test alarm in 1 minute", isLast: true) { EmptyView() }
+            }
+            .buttonStyle(OWCRowButtonStyle())
+        }
+    }
+#endif
 
     // MARK: - Actions
 

@@ -241,6 +241,9 @@ final class ShiftAlarmService {
         // One that is ringing or snoozing has already left the plan (its time
         // has passed) but must be left to finish.
         for alarm in existing where alarm.isWaiting && !wantedIDs.contains(alarm.id) {
+#if DEBUG
+            if debugTestAlarmIDs.contains(alarm.id) { continue }
+#endif
             system.cancel(alarm.id)
         }
         var held: [UUID: Date] = [:]
@@ -296,6 +299,22 @@ final class ShiftAlarmService {
             refreshReminderUnavailable: reminderAt != nil && !delivered
         )
     }
+
+#if DEBUG
+    /// Device check only: a one-off alarm a minute out, with the real copy and
+    /// snooze, that reconciliation leaves alone. Absent from Release builds.
+    private(set) var debugTestAlarmIDs: Set<UUID> = []
+
+    func scheduleDebugTestAlarm(_ plan: ShiftAlarmPlan, title: String, in seconds: TimeInterval = 60) async -> Bool {
+        let id = UUID()
+        debugTestAlarmIDs.insert(id)
+        let outcome = await system.schedule(id, ShiftAlarmSystem.Request(
+            fireAt: Date.now.addingTimeInterval(seconds), title: title, stopLabel: plan.stopLabel,
+            snoozeLabel: plan.snoozeLabel, snoozingLabel: plan.snoozingLabel
+        ))
+        return outcome == .scheduled
+    }
+#endif
 
     /// Replaces the single refresh reminder, and clears one already shown,
     /// since this run has just refreshed. Returns whether a reminder is now
