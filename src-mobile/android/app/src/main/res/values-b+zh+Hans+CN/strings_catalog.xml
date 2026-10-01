@@ -798,6 +798,7 @@
     <string name="recordsOperationReadFailed">无法读取该文件，数据没有改变。</string>
     <string name="recordsOperationUnsupportedVersion">此备份由更新版本创建，请先更新应用再导入。</string>
     <string name="recordsOvertime">加班</string>
+    <string name="recordsOvertimeRecorded">已记录加班</string>
     <string name="recordsOwnerAuthReason">请确认是你本人，然后继续</string>
     <string name="recordsPlanned">计划</string>
     <string name="recordsPreviousPeriod">上一周期</string>

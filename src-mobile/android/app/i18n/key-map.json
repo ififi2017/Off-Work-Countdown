@@ -2769,6 +2769,9 @@
     "recordsOvertime": {
       "resource": "string/recordsOvertime"
     },
+    "recordsOvertimeRecorded": {
+      "resource": "string/recordsOvertimeRecorded"
+    },
     "recordsOwnerAuthReason": {
       "resource": "string/recordsOwnerAuthReason"
     },

@@ -804,6 +804,7 @@
     <string name="recordsOperationReadFailed">Não foi possível ler o ficheiro. Nada foi alterado.</string>
     <string name="recordsOperationUnsupportedVersion">Esta cópia foi criada numa versão mais recente. Atualize a app antes de a importar.</string>
     <string name="recordsOvertime">Hora extra</string>
+    <string name="recordsOvertimeRecorded">Horas extra registadas</string>
     <string name="recordsOwnerAuthReason">Confirme que é você para continuar</string>
     <string name="recordsPlanned">Planejado</string>
     <string name="recordsPreviousPeriod">Período anterior</string>

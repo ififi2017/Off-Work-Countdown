@@ -804,6 +804,7 @@
     <string name="recordsOperationReadFailed">Non è stato possibile leggere il file. Non è cambiato nulla.</string>
     <string name="recordsOperationUnsupportedVersion">Questo backup è stato creato da una versione più recente. Aggiorna l’app prima di importarlo.</string>
     <string name="recordsOvertime">Straordinari</string>
+    <string name="recordsOvertimeRecorded">Straordinari registrati</string>
     <string name="recordsOwnerAuthReason">Conferma che sei tu per continuare</string>
     <string name="recordsPlanned">Pianificato</string>
     <string name="recordsPreviousPeriod">Periodo precedente</string>

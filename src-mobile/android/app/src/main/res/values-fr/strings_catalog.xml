@@ -804,6 +804,7 @@
     <string name="recordsOperationReadFailed">Impossible de lire ce fichier. Rien n’a changé.</string>
     <string name="recordsOperationUnsupportedVersion">Cette sauvegarde vient d’une version plus récente. Mettez l’app à jour avant de l’importer.</string>
     <string name="recordsOvertime">Heures supp.</string>
+    <string name="recordsOvertimeRecorded">Heures sup. enregistrées</string>
     <string name="recordsOwnerAuthReason">Confirmez que c’est bien vous pour continuer</string>
     <string name="recordsPlanned">Prévu</string>
     <string name="recordsPreviousPeriod">Période précédente</string>

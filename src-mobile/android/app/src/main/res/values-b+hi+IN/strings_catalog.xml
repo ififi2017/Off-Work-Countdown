@@ -801,6 +801,7 @@
     <string name="recordsOperationReadFailed">फ़ाइल पढ़ी नहीं जा सकी। कुछ नहीं बदला।</string>
     <string name="recordsOperationUnsupportedVersion">यह बैकअप नए संस्करण में बनाया गया था। आयात करने से पहले ऐप अपडेट करें।</string>
     <string name="recordsOvertime">अधिक समय</string>
+    <string name="recordsOvertimeRecorded">दर्ज ओवरटाइम</string>
     <string name="recordsOwnerAuthReason">आगे बढ़ने के लिए पुष्टि करें कि आप हैं</string>
     <string name="recordsPlanned">योजना</string>
     <string name="recordsPreviousPeriod">पिछला दौर</string>

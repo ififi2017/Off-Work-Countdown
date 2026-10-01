@@ -798,6 +798,7 @@
     <string name="recordsOperationReadFailed">Không thể đọc tệp. Không có gì thay đổi.</string>
     <string name="recordsOperationUnsupportedVersion">Bản sao lưu được tạo bằng phiên bản mới hơn. Hãy cập nhật ứng dụng trước khi nhập.</string>
     <string name="recordsOvertime">Tăng ca</string>
+    <string name="recordsOvertimeRecorded">Tăng ca đã ghi</string>
     <string name="recordsOwnerAuthReason">Xác nhận đó là bạn để tiếp tục</string>
     <string name="recordsPlanned">Dự kiến</string>
     <string name="recordsPreviousPeriod">Kỳ trước</string>

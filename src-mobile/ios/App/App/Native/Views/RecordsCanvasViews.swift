@@ -476,6 +476,31 @@ struct RecordsTimeSegmentPopover: View {
     }
 }
 
+/// Recorded overtime for the period as one line (plan 020 §5). Open to free
+/// users, so it is given the total alone and nothing it was made from.
+struct RecordsOvertimeLine: View {
+    let text: AppText
+    let milliseconds: Double
+
+    var body: some View {
+        OWCGroupCard {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(text.t("recordsOvertimeRecorded"))
+                    .font(.subheadline)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(text.formatRelativeDuration(milliseconds))
+                    .font(.body.weight(.medium).monospacedDigit())
+                    .foregroundStyle(OWCDesign.primary)
+                    .multilineTextAlignment(.trailing)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .accessibilityElement(children: .combine)
+        }
+    }
+}
+
 struct RecordsHeadlineView: View {
     let text: AppText
     let preferences: PreferencesStore

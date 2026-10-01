@@ -798,6 +798,7 @@
     <string name="recordsOperationReadFailed">ファイルを読み取れませんでした。変更はありません。</string>
     <string name="recordsOperationUnsupportedVersion">このバックアップは新しいバージョンで作成されています。読み込む前にアプリを更新してください。</string>
     <string name="recordsOvertime">残業</string>
+    <string name="recordsOvertimeRecorded">記録した残業</string>
     <string name="recordsOwnerAuthReason">続けるには本人確認が必要です</string>
     <string name="recordsPlanned">予定</string>
     <string name="recordsPreviousPeriod">前の期間</string>

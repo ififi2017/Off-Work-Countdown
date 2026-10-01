@@ -21,6 +21,9 @@ struct RecordsDesignView: View {
     @State private var days: [DayResolution] = []
     @State private var cells: [RecordsDayCell] = []
     @State private var summary: RecordsHeadlineSummary?
+    /// Plan 020 §5: recorded overtime is open to free users, as one number.
+    @State private var freeOvertimeMs: Double?
+    @State private var lifetimeOvertimeMs: Double?
     @State private var pinch: CGFloat = 1
     @State private var scaleFeedback = 0
     @State private var selectionFeedback = 0
@@ -252,8 +255,18 @@ struct RecordsDesignView: View {
                     isLoading: life.cachedLifeViewModel == nil
                 )
             }
+            // Life only totals overtime actually recorded, for everyone; the
+            // projected career never adds to it.
+            if browsing.scale == .life, let lifetimeOvertimeMs {
+                RecordsOvertimeLine(text: text, milliseconds: lifetimeOvertimeMs)
+            }
             if shouldOfferLifeSetup {
                 lifeSetupCard
+            }
+            // Plus reads the same number inside its summary; a free user gets
+            // just this line, under the canvas or its locked placeholder.
+            if browsing.scale != .life, !queries.plus.isAuthorized, let freeOvertimeMs {
+                RecordsOvertimeLine(text: text, milliseconds: freeOvertimeMs)
             }
             if browsing.scale != .life, summary != nil {
                 RecordsHeadlineView(
@@ -803,6 +816,7 @@ struct RecordsDesignView: View {
             days = []
             cells = []
             summary = nil
+            freeOvertimeMs = nil
             browsing.selectedDayKey = nil
             browsing.selectedYearMonth = nextScale == .year
                 ? preferences.recordsCalendar.component(.month, from: .now)
@@ -1018,6 +1032,9 @@ struct RecordsDesignView: View {
             // The stage grid is immediate. The expensive allocation is requested
             // once its card becomes visible; later refreshes retain the result.
             loadedSignature = signature
+            let lifetime = await queries.lifetimeRecordedOvertimeMs()
+            guard generation == loadGeneration else { return }
+            lifetimeOvertimeMs = lifetime
             return
         }
         if requestedScale == .year, browsing.selectedYearMonth == nil {
@@ -1047,6 +1064,9 @@ struct RecordsDesignView: View {
         }
         cells = built
         summary = queries.recordsHeadline(cells: cells, days: resolved)
+        freeOvertimeMs = queries.plus.isAuthorized
+            ? nil
+            : queries.recordedOvertimeMs(days: resolved, dayKeys: Set(cells.map(\.dayKey)))
         if let selected = browsing.selectedDayKey, !cells.contains(where: { $0.dayKey == selected }) {
             browsing.selectedDayKey = nil
         }

@@ -798,6 +798,7 @@
     <string name="recordsOperationReadFailed">파일을 읽을 수 없습니다. 변경된 내용은 없습니다.</string>
     <string name="recordsOperationUnsupportedVersion">이 백업은 더 새로운 버전에서 만들어졌습니다. 가져오기 전에 앱을 업데이트하세요.</string>
     <string name="recordsOvertime">초과 근무</string>
+    <string name="recordsOvertimeRecorded">기록된 초과근무</string>
     <string name="recordsOwnerAuthReason">계속하려면 본인인지 확인해 주세요</string>
     <string name="recordsPlanned">예정</string>
     <string name="recordsPreviousPeriod">이전 기간</string>

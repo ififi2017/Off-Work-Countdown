@@ -798,6 +798,7 @@
     <string name="recordsOperationReadFailed">無法讀取檔案，資料沒有變更。</string>
     <string name="recordsOperationUnsupportedVersion">這份備份由較新版本建立，請先更新 App 再匯入。</string>
     <string name="recordsOvertime">加班</string>
+    <string name="recordsOvertimeRecorded">已記錄加班</string>
     <string name="recordsOwnerAuthReason">請確認是你本人，然後繼續</string>
     <string name="recordsPlanned">計劃</string>
     <string name="recordsPreviousPeriod">上一週期</string>

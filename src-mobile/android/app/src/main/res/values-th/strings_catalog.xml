@@ -798,6 +798,7 @@
     <string name="recordsOperationReadFailed">อ่านไฟล์ไม่ได้ ไม่มีอะไรเปลี่ยนแปลง</string>
     <string name="recordsOperationUnsupportedVersion">ข้อมูลสำรองนี้สร้างจากเวอร์ชันใหม่กว่า ให้อัปเดตแอปก่อนนำเข้า</string>
     <string name="recordsOvertime">ล่วงเวลา</string>
+    <string name="recordsOvertimeRecorded">ล่วงเวลาที่บันทึกไว้</string>
     <string name="recordsOwnerAuthReason">ยืนยันว่าเป็นคุณเพื่อไปต่อ</string>
     <string name="recordsPlanned">ตามแผน</string>
     <string name="recordsPreviousPeriod">ช่วงก่อนหน้า</string>

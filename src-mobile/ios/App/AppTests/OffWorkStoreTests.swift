@@ -3602,6 +3602,72 @@ func recordsActualForecastNormalizesObservedIntervals() throws {
 }
 
 @MainActor
+@Test("Recorded overtime is the same number for free and Plus, absent without overtime, and life counts each day once")
+func recordedOvertimeLine() async throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.onboardingComplete = true
+    store.plus.debugSetAuthorized(true)
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 18 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = false }
+    // Tuesday and Wednesday, both worked 09:00–18:00 with overtime declared.
+    let first = utcDay(2026, 9, 1)
+    let second = utcDay(2026, 9, 2)
+    // Well past the free week, so a free user's line still has to count them.
+    let now = utcDay(2026, 9, 20)
+    let snapshotID = UUID()
+    func observe(_ kind: WorkObservationKind, day: Date, hour: Double, valueData: Data? = nil) {
+        records.recordObservation(
+            kind: kind, eventID: UUID(), shiftAnchorDate: day,
+            occurredAt: day.addingTimeInterval(hour * 3_600),
+            snapshotID: snapshotID, valueData: valueData, timeZoneIdentifier: "UTC"
+        )
+    }
+    let calendar = store.preferences.recordsCalendar
+    let before = try #require(calendar.date(byAdding: .day, value: -1, to: first))
+    func window() async -> (cells: [RecordsDayCell], days: [DayResolution]) {
+        let days = await store.queries.prepareResolvedDays(from: before, through: second, now: now)
+        let cells = days.enumerated().filter { $0.element.dayKey >= RecordJSON.dayKey(first, calendar: calendar) }.map {
+            store.queries.recordsDayCell(for: $0.element, previous: $0.offset > 0 ? days[$0.offset - 1] : nil, now: now)
+        }
+        return (cells, days)
+    }
+
+    for day in [first, second] {
+        observe(.countdownStarted, day: day, hour: 9)
+        observe(.countdownStopped, day: day, hour: 18)
+    }
+    let quiet = await window()
+    #expect(store.queries.recordedOvertimeMs(days: quiet.days, dayKeys: Set(quiet.cells.map(\.dayKey)), now: now) == nil)
+    #expect(await store.queries.lifetimeRecordedOvertimeMs(now: now) == nil)
+
+    for (day, endHour) in [(first, 19.0), (second, 20.0)] {
+        let payload = try JSONEncoder().encode(OvertimeDeclarationPayload(
+            overtimeEndAtMs: day.addingTimeInterval(endHour * 3_600).timeIntervalSince1970 * 1_000,
+            plannedEndAtMs: day.addingTimeInterval(18 * 3_600).timeIntervalSince1970 * 1_000
+        ))
+        observe(.overtimeDeclared, day: day, hour: 18.1, valueData: payload)
+    }
+    let period = await window()
+    let plus = try #require(store.queries.recordsHeadline(cells: period.cells, days: period.days, now: now))
+    let plusShown = try #require(plus.actualForecast).actualOvertimeHours * 3_600_000
+    #expect(plusShown == 3 * 3_600_000)
+    #expect(store.queries.recordedOvertimeMs(days: period.days, dayKeys: Set(period.cells.map(\.dayKey)), now: now) == plusShown)
+
+    store.plus.debugSetAuthorized(false)
+    #expect(store.queries.recordsHeadline(cells: period.cells, days: period.days, now: now) == nil)
+    #expect(store.queries.recordedOvertimeMs(days: period.days, dayKeys: Set(period.cells.map(\.dayKey)), now: now) == plusShown)
+    // Two overtime days in a row: the first is also the second's lead-in day.
+    #expect(await store.queries.lifetimeRecordedOvertimeMs(now: now) == plusShown)
+}
+
+@MainActor
 @Test("Saved schedules count after a week without opening the app; life backfill and future dates remain projections")
 func recordsScheduleContinuesWithoutAppVisits() async throws {
     let (defaults, suite) = try isolatedDefaults()
