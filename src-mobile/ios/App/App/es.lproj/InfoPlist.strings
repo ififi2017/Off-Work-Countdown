@@ -1,3 +1,4 @@
 "CFBundleDisplayName" = "DoneAt";
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID mantiene privados los datos de tu salario en este dispositivo.";
+"NSAlarmKitUsageDescription" = "DoneAt suena antes de cada turno, a la hora que elijas, para despertarte.";

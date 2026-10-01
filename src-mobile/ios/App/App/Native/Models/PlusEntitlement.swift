@@ -209,6 +209,7 @@ enum PlusPendingAction: Equatable, Sendable {
     case openFocus
     case enableCycleEndSummaryNotifications
     case enableSync
+    case enableShiftAlarms
 }
 
 enum RecordsPaidCapability: Equatable, Sendable {
@@ -250,6 +251,7 @@ enum PlusPaywallReason: String, Hashable, Sendable, Identifiable {
     case focus
     case cycleEndSummaryNotifications
     case leavePlanning
+    case shiftAlarms
 
     var id: String { rawValue }
 }

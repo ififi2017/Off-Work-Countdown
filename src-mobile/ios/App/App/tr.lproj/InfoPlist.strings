@@ -1,3 +1,4 @@
 "CFBundleDisplayName" = "DoneAt";
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID, bu cihazdaki maaş bilgilerinizi başkalarından korur.";
+"NSAlarmKitUsageDescription" = "DoneAt seni uyandırmak için her vardiyadan önce seçtiğin saatte çalar.";

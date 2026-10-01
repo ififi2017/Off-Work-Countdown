@@ -63,6 +63,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAlarmKitUsageDescription</key>
+	<string>DoneAt rings before each shift, at the time you choose, to wake you up.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Face ID keeps your salary figures private on this device.</string>
 	<key>NSSupportsLiveActivities</key>

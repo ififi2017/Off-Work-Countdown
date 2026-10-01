@@ -109917,6 +109917,3457 @@
           }
         }
       }
+    },
+    "shiftAlarmsTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "منبهات المناوبة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schichtwecker"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shift alarms"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarmas de turno"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réveils de service"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ़्ट अलार्म"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarm sif"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sveglie dei turni"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シフトアラーム"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무 알람"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ्ट अलार्म"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarmes de turno"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Будильники смен"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "นาฬิกาปลุกตามกะ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vardiya alarmları"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Báo thức theo ca"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "班次闹钟"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更表鬧鐘"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "班次鬧鐘"
+          }
+        }
+      }
+    },
+    "shiftAlarmsIntro": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يرنّ قبل كل مناوبة بالمدة التي تختارها. المنبهات ترنّ على هذا الجهاز فقط."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klingelt vor jeder Schicht so früh, wie du möchtest. Die Wecker klingeln nur auf diesem Gerät."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rings before each shift, as early as you choose. Alarms ring on this device only."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suena antes de cada turno con la antelación que elijas. Las alarmas suenan solo en este dispositivo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonne avant chaque service, aussi tôt que vous le souhaitez. Les réveils sonnent uniquement sur cet appareil."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हर शिफ़्ट से पहले, आपके चुने समय पर बजता है। अलार्म सिर्फ़ इसी डिवाइस पर बजेंगे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berbunyi sebelum setiap sif, seawal yang kamu pilih. Alarm hanya berbunyi di perangkat ini."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suona prima di ogni turno, con l’anticipo che scegli. Le sveglie suonano solo su questo dispositivo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "各シフトの前に、選んだ時間だけ早く鳴ります。アラームはこのデバイスでのみ鳴ります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무마다 원하는 시간만큼 미리 울려요. 알람은 이 기기에서만 울려요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रत्येक शिफ्टआधी तुम्ही निवडलेल्या वेळी वाजतो. अलार्म फक्त याच डिव्हाइसवर वाजतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca antes de cada turno, com a antecedência que escolher. Os alarmes tocam apenas neste dispositivo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Звонит перед каждой сменой — так заранее, как вы выберете. Будильники звонят только на этом устройстве."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ดังก่อนเริ่มแต่ละกะตามเวลาที่คุณเลือก นาฬิกาปลุกจะดังบนอุปกรณ์นี้เท่านั้น"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her vardiyadan önce, seçtiğin kadar erken çalar. Alarmlar yalnızca bu cihazda çalar."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reo trước mỗi ca, sớm bao nhiêu tùy bạn chọn. Báo thức chỉ reo trên thiết bị này."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每个班次开始前，按你设定的时间提前响铃。闹钟只在这台设备上响。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每更開工前，按你設定嘅時間提早響。鬧鐘只會喺呢部裝置響。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每個班次開始前，依你設定的時間提前響鈴。鬧鐘只在這台裝置上響。"
+          }
+        }
+      }
+    },
+    "shiftAlarmsAllow": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السماح بالمنبهات"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wecker erlauben"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow alarms"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir alarmas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autoriser les réveils"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अलार्म की अनुमति दें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Izinkan alarm"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti sveglie"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アラームを許可"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알람 허용"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अलार्मना परवानगी द्या"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir alarmes"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить будильники"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อนุญาตนาฬิกาปลุก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarmlara izin ver"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép báo thức"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许使用闹钟"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允許使用鬧鐘"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允許使用鬧鐘"
+          }
+        }
+      }
+    },
+    "shiftAlarmsAllowNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يحتاج DoneAt إلى إذن المنبهات ليوقظك حتى في الوضع الصامت."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt braucht Zugriff auf Wecker, um dich auch im Stumm-Modus zu wecken."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt needs alarm access to wake you, even on silent."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt necesita acceso a las alarmas para despertarte, incluso en silencio."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt a besoin d’accéder aux réveils pour vous réveiller, même en mode silencieux."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "साइलेंट मोड में भी जगाने के लिए DoneAt को अलार्म की अनुमति चाहिए।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt perlu akses alarm untuk membangunkanmu, bahkan saat senyap."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt ha bisogno dell’accesso alle sveglie per svegliarti, anche in silenzioso."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "マナーモードでも起こせるよう、DoneAt にアラームの許可が必要です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "무음 모드에서도 깨워 드리려면 DoneAt에 알람 권한이 필요해요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सायलेंटवरही उठवण्यासाठी DoneAt ला अलार्मची परवानगी हवी आहे."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O DoneAt precisa de acesso aos alarmes para o acordar, mesmo em silêncio."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt нужен доступ к будильникам, чтобы разбудить вас даже в беззвучном режиме."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt ต้องได้รับสิทธิ์นาฬิกาปลุกเพื่อปลุกคุณ แม้อยู่ในโหมดเงียบ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt’in seni sessiz modda da uyandırabilmesi için alarm erişimine ihtiyacı var."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt cần quyền báo thức để đánh thức bạn, kể cả khi ở chế độ im lặng."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 需要闹钟权限，才能在静音时也叫醒你。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 需要鬧鐘權限，先可以喺靜音時都叫醒你。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 需要鬧鐘權限，才能在靜音時也叫醒你。"
+          }
+        }
+      }
+    },
+    "shiftAlarmsDenied": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إذن المنبهات متوقف"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weckerzugriff ist aus"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarm access is off"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El acceso a alarmas está desactivado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’accès aux réveils est désactivé"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अलार्म की अनुमति बंद है"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Akses alarm nonaktif"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’accesso alle sveglie è disattivato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アラームの許可がオフです"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알람 권한이 꺼져 있어요"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अलार्मची परवानगी बंद आहे"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O acesso aos alarmes está desativado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к будильникам выключен"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สิทธิ์นาฬิกาปลุกปิดอยู่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarm erişimi kapalı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quyền báo thức đang tắt"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "闹钟权限已关闭"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鬧鐘權限已關閉"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鬧鐘權限已關閉"
+          }
+        }
+      }
+    },
+    "shiftAlarmsDeniedNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اسمح لـ DoneAt باستخدام المنبهات في الإعدادات لبدء جدولتها."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erlaube DoneAt in den Einstellungen Wecker, dann werden sie eingeplant."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow alarms for DoneAt in Settings to start setting them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permite las alarmas para DoneAt en Ajustes y empezarán a programarse."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autorisez les réveils pour DoneAt dans Réglages pour commencer à les programmer."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सेटिंग्स में DoneAt को अलार्म की अनुमति दें, फिर अलार्म लगने लगेंगे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Izinkan alarm untuk DoneAt di Pengaturan agar alarm mulai dijadwalkan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti le sveglie per DoneAt in Impostazioni per iniziare a programmarle."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「設定」で DoneAt のアラームを許可すると、設定を始められます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정에서 DoneAt의 알람을 허용하면 알람을 맞추기 시작해요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सेटिंग्जमध्ये DoneAt ला अलार्मची परवानगी द्या, मग अलार्म लागू होतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permita os alarmes para o DoneAt nas Definições para começar a programá-los."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешите будильники для DoneAt в Настройках, и они начнут ставиться."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อนุญาตนาฬิกาปลุกให้ DoneAt ในการตั้งค่าเพื่อเริ่มตั้งปลุก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlar’da DoneAt için alarmlara izin ver, kurulmaya başlasınlar."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép báo thức cho DoneAt trong Cài đặt để bắt đầu đặt báo thức."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在“设置”中允许 DoneAt 使用闹钟，就能开始安排。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "喺「設定」允許 DoneAt 使用鬧鐘，就可以開始安排。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在「設定」中允許 DoneAt 使用鬧鐘，就能開始安排。"
+          }
+        }
+      }
+    },
+    "shiftAlarmsOpenSettings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح الإعدادات"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einstellungen öffnen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Ajustes"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir Réglages"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सेटिंग्स खोलें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buka Pengaturan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Impostazioni"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定を開く"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정 열기"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सेटिंग्ज उघडा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Definições"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть Настройки"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดการตั้งค่า"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarları aç"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở Cài đặt"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开设置"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開設定"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開設定"
+          }
+        }
+      }
+    },
+    "shiftAlarmsCoveredThrough": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مضبوطة حتى {{date}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestellt bis {{date}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set through {{date}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Programadas hasta el {{date}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Programmés jusqu’au {{date}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{date}} तक लगे हैं"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terjadwal hingga {{date}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impostate fino al {{date}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{date}} まで設定済み"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{date}}까지 설정됨"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{date}} पर्यंत लावले"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Programados até {{date}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поставлены до {{date}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งไว้ถึง {{date}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{date}} tarihine kadar kurulu"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã đặt đến {{date}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已安排到 {{date}}"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已安排到 {{date}}"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已安排到 {{date}}"
+          }
+        }
+      }
+    },
+    "shiftAlarmsNoneUpcoming": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد مناوبات قادمة للإيقاظ"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine anstehenden Schichten zum Wecken"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No shifts coming up to wake you for"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay turnos próximos para despertarte"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun service à venir pour vous réveiller"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जगाने के लिए आगे कोई शिफ़्ट नहीं"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belum ada sif mendatang untuk dibangunkan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun turno in arrivo per cui svegliarti"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "起こすシフトの予定はありません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "깨워 드릴 다가오는 근무가 없어요"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "उठवण्यासाठी पुढे कोणतीही शिफ्ट नाही"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem turnos próximos para o acordar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ближайших смен для будильника нет"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่มีกะที่ต้องปลุก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uyandırılacak yaklaşan vardiya yok"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa có ca sắp tới cần báo thức"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂时没有需要响铃的班次"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暫時冇需要響鬧鐘嘅更"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暫時沒有需要響鈴的班次"
+          }
+        }
+      }
+    },
+    "shiftAlarmsUntilExpiry": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المنبهات مضبوطة حتى نهاية فترة الاشتراك هذه ({{date}}). افتح DoneAt بعد التجديد للمتابعة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Wecker sind bis zum Ende dieses Abozeitraums ({{date}}) gestellt. Öffne DoneAt nach der Verlängerung, um weiterzumachen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarms are set until this subscription period ends ({{date}}). Open DoneAt after it renews to keep them going."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las alarmas están programadas hasta que termine este periodo de suscripción ({{date}}). Abre DoneAt tras la renovación para continuar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les réveils sont programmés jusqu’à la fin de cette période d’abonnement ({{date}}). Ouvrez DoneAt après le renouvellement pour continuer."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अलार्म इस सदस्यता अवधि के अंत ({{date}}) तक लगे हैं। नवीनीकरण के बाद DoneAt खोलें, ताकि अलार्म जारी रहें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarm dijadwalkan hingga periode langganan ini berakhir ({{date}}). Buka DoneAt setelah perpanjangan untuk melanjutkan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le sveglie sono impostate fino alla fine di questo periodo di abbonamento ({{date}}). Apri DoneAt dopo il rinnovo per continuare."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アラームは今回のサブスクリプション期間の終了（{{date}}）まで設定されています。更新後に DoneAt を開くと続きを設定できます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알람은 이번 구독 기간이 끝나는 {{date}}까지 맞춰져 있어요. 갱신 후 DoneAt을 열면 이어서 맞춰요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अलार्म या सदस्यता कालावधीच्या शेवटपर्यंत ({{date}}) लावले आहेत. नूतनीकरणानंतर DoneAt उघडा म्हणजे अलार्म सुरू राहतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os alarmes estão programados até ao fim deste período de subscrição ({{date}}). Abra o DoneAt após a renovação para continuar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Будильники поставлены до конца этого периода подписки ({{date}}). Откройте DoneAt после продления, чтобы продолжить."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งปลุกไว้ถึงสิ้นสุดรอบสมาชิกนี้ ({{date}}) เปิด DoneAt หลังต่ออายุเพื่อตั้งต่อ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarmlar bu abonelik döneminin sonuna ({{date}}) kadar kurulu. Devam etmek için yenilemeden sonra DoneAt’i aç."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Báo thức được đặt đến khi kỳ đăng ký này kết thúc ({{date}}). Mở DoneAt sau khi gia hạn để tiếp tục."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "闹钟安排到本期订阅结束（{{date}}）。续订后打开 DoneAt 即可继续安排。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鬧鐘安排到今期訂閱完結（{{date}}）。續訂之後打開 DoneAt 就可以繼續安排。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鬧鐘安排到本期訂閱結束（{{date}}）。續訂後打開 DoneAt 即可繼續安排。"
+          }
+        }
+      }
+    },
+    "shiftAlarmsLifetimeWindow": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "في كل مرة تفتح فيها DoneAt، تمتد المنبهات إلى سنة قادمة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jedes Mal, wenn du DoneAt öffnest, reichen die Wecker ein Jahr voraus."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each time you open DoneAt, alarms extend to a year ahead."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada vez que abres DoneAt, las alarmas se amplían hasta un año por delante."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chaque fois que vous ouvrez DoneAt, les réveils sont prolongés jusqu’à un an."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हर बार DoneAt खोलने पर अलार्म एक साल आगे तक लग जाते हैं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setiap kali kamu membuka DoneAt, alarm diperpanjang hingga setahun ke depan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni volta che apri DoneAt, le sveglie si estendono fino a un anno."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt を開くたびに、1年先までアラームを延長します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt을 열 때마다 1년 뒤까지 알람을 이어서 맞춰요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रत्येक वेळी DoneAt उघडल्यावर अलार्म एक वर्ष पुढेपर्यंत लागतात."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sempre que abre o DoneAt, os alarmes estendem-se até um ano."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каждый раз, когда вы открываете DoneAt, будильники продлеваются на год вперёд."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทุกครั้งที่เปิด DoneAt นาฬิกาปลุกจะขยายไปถึงหนึ่งปีข้างหน้า"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt’i her açtığında alarmlar bir yıl ilerisine uzar."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mỗi lần bạn mở DoneAt, báo thức được kéo dài đến một năm tới."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每次打开 DoneAt，闹钟都会续排到一年后。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每次打開 DoneAt，鬧鐘都會續排到一年後。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每次打開 DoneAt，鬧鐘都會續排到一年後。"
+          }
+        }
+      }
+    },
+    "shiftAlarmsLimitReached": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يحدّ جهازك من عدد المنبهات المنتظرة في وقت واحد، لذا ضُبطت أقرب المناوبات أولًا. فتح DoneAt يضبط المزيد."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Gerät begrenzt, wie viele Wecker gleichzeitig warten können, daher kommen die nächsten Schichten zuerst. Wenn du DoneAt öffnest, werden weitere gestellt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your device limits how many alarms can wait at once, so the nearest shifts come first. Opening DoneAt sets more."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu dispositivo limita cuántas alarmas pueden esperar a la vez, así que primero van los turnos más cercanos. Al abrir DoneAt se programan más."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre appareil limite le nombre de réveils en attente, les services les plus proches passent donc en premier. Ouvrir DoneAt en programme d’autres."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपका डिवाइस एक साथ सीमित अलार्म रख सकता है, इसलिए सबसे नज़दीकी शिफ़्ट पहले लगी हैं। DoneAt खोलने पर और लग जाएँगे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perangkatmu membatasi jumlah alarm yang menunggu sekaligus, jadi sif terdekat didahulukan. Membuka DoneAt akan menjadwalkan lebih banyak."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il dispositivo limita quante sveglie possono restare in attesa, quindi i turni più vicini hanno la precedenza. Aprendo DoneAt se ne impostano altre."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デバイスで待機できるアラーム数には上限があるため、近いシフトから設定しています。DoneAt を開くと続きを設定します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기기에서 한 번에 대기할 수 있는 알람 수가 제한돼 가까운 근무부터 맞췄어요. DoneAt을 열면 더 맞춰요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमचे डिव्हाइस एकाच वेळी मर्यादित अलार्म ठेवते, म्हणून जवळच्या शिफ्ट आधी लावल्या. DoneAt उघडल्यावर आणखी लागतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O seu dispositivo limita quantos alarmes podem aguardar ao mesmo tempo, por isso os turnos mais próximos vêm primeiro. Abrir o DoneAt programa mais."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устройство ограничивает число ожидающих будильников, поэтому сначала поставлены ближайшие смены. Откройте DoneAt, чтобы поставить ещё."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อุปกรณ์จำกัดจำนวนนาฬิกาปลุกที่รอพร้อมกัน จึงตั้งกะที่ใกล้ที่สุดก่อน เปิด DoneAt เพื่อตั้งเพิ่ม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cihazın aynı anda bekleyebilecek alarm sayısını sınırlıyor, bu yüzden önce en yakın vardiyalar kuruldu. DoneAt’i açınca daha fazlası kurulur."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thiết bị giới hạn số báo thức chờ cùng lúc, nên các ca gần nhất được ưu tiên. Mở DoneAt để đặt thêm."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设备一次能等待的闹钟数量有限，已优先安排最近的班次。打开 DoneAt 会继续安排。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "裝置一次可以等候嘅鬧鐘數量有限，已經優先安排最近嘅更。打開 DoneAt 會繼續安排。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "裝置一次能等待的鬧鐘數量有限，已優先安排最近的班次。打開 DoneAt 會繼續安排。"
+          }
+        }
+      }
+    },
+    "shiftAlarmsReminderOff": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإشعارات متوقفة، لذا لا يمكن تذكيرك عندما تنفد المنبهات."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mitteilungen sind aus, daher kann DoneAt dich nicht erinnern, wenn die Wecker ausgehen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are off, so DoneAt can’t remind you when the alarms run out."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las notificaciones están desactivadas, así que DoneAt no puede avisarte cuando se acaben las alarmas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les notifications sont désactivées : DoneAt ne pourra pas vous prévenir quand les réveils seront épuisés."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सूचनाएँ बंद हैं, इसलिए अलार्म खत्म होने पर DoneAt आपको याद नहीं दिला पाएगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifikasi nonaktif, jadi DoneAt tidak bisa mengingatkan saat alarm habis."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le notifiche sono disattivate, quindi DoneAt non può avvisarti quando le sveglie finiscono."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知がオフのため、アラームがなくなったときにお知らせできません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림이 꺼져 있어 알람이 다 되었을 때 알려 드릴 수 없어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सूचना बंद आहेत, त्यामुळे अलार्म संपल्यावर DoneAt आठवण करून देऊ शकणार नाही."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As notificações estão desativadas, por isso o DoneAt não o pode avisar quando os alarmes acabarem."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уведомления выключены, поэтому DoneAt не сможет напомнить, когда будильники закончатся."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การแจ้งเตือนปิดอยู่ DoneAt จึงเตือนไม่ได้เมื่อนาฬิกาปลุกหมด"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildirimler kapalı, bu yüzden alarmlar bittiğinde DoneAt sana hatırlatamaz."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thông báo đang tắt nên DoneAt không thể nhắc khi báo thức hết."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知已关闭，闹钟用完时无法提醒你刷新。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知已關閉，鬧鐘用完時冇辦法提你更新。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知已關閉，鬧鐘用完時無法提醒你更新。"
+          }
+        }
+      }
+    },
+    "shiftAlarmsRefresh": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعادة ضبط المنبهات"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wecker aktualisieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh alarms"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizar alarmas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualiser les réveils"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अलार्म रीफ़्रेश करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segarkan alarm"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiorna sveglie"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アラームを更新"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알람 새로 고침"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अलार्म रिफ्रेश करा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizar alarmes"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновить будильники"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รีเฟรชนาฬิกาปลุก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarmları yenile"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Làm mới báo thức"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新安排"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新安排"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新安排"
+          }
+        }
+      }
+    },
+    "shiftAlarmsLeadSection": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "موعد الرنين"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klingeln vorher"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ring before"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonar antes"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonner avant"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पहले बजे"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bunyikan sebelum"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suona prima"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鳴らすタイミング"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "미리 울리기"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आधी वाजवा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocar antes"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Звонить заранее"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ดังล่วงหน้า"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Önceden çal"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reo trước"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提前多久响"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提早幾耐響"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提前多久響"
+          }
+        }
+      }
+    },
+    "shiftAlarmsBeforeWork": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "قبل العمل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vor der Arbeit"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before work"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antes del trabajo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avant le travail"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम से पहले"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sebelum kerja"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prima del lavoro"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "始業前"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출근 전"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कामाआधी"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antes do trabalho"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перед работой"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ก่อนเริ่มงาน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İşten önce"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trước giờ làm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上班前"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開工前"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上班前"
+          }
+        }
+      }
+    },
+    "shiftAlarmsLeadOff": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إيقاف"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Désactivé"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बंद"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mati"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オフ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "끔"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बंद"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desligado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выкл."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปิด"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapalı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tắt"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不响"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "唔響"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不響"
+          }
+        }
+      }
+    },
+    "shiftAlarmsStartsAt": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تبدأ {{time}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginnt {{time}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts {{time}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empieza a las {{time}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Commence à {{time}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} पर शुरू"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mulai {{time}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inizia alle {{time}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 開始"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 시작"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} ला सुरू"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Começa às {{time}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начало в {{time}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เริ่ม {{time}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} başlar"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bắt đầu {{time}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 上班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 開工"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 上班"
+          }
+        }
+      }
+    },
+    "shiftAlarmsUpcoming": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "القادمة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Als Nächstes"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coming up"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À venir"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आगे"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berikutnya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In arrivo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この先のアラーム"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다가오는 알람"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पुढील"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A seguir"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ближайшие"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ถัดไป"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıradakiler"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sắp tới"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接下来的闹钟"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "之後嘅鬧鐘"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接下來的鬧鐘"
+          }
+        }
+      }
+    },
+    "shiftAlarmsOnShort": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تشغيل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activé"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "चालू"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktif"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sì"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オン"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "켬"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सुरू"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ligado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вкл."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิด"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açık"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bật"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开启"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟"
+          }
+        }
+      }
+    },
+    "shiftAlarmTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} الساعة {{time}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} um {{time}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} at {{time}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} a las {{time}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} à {{time}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} {{time}} बजे"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} pukul {{time}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} alle {{time}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} {{time}} 開始"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} {{time}} 시작"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} {{time}} वाजता"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} às {{time}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} в {{time}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} เวลา {{time}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} saat {{time}}"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} lúc {{time}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} {{time}} 上班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} {{time}} 開工"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} {{time}} 上班"
+          }
+        }
+      }
+    },
+    "shiftAlarmTitleFixed": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "العمل {{time}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arbeit {{time}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work at {{time}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trabajo a las {{time}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travail à {{time}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम {{time}}"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kerja {{time}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lavoro alle {{time}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 始業"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 출근"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम {{time}}"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trabalho às {{time}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Работа в {{time}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เข้างาน {{time}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İş {{time}}"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vào làm {{time}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 上班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 開工"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 上班"
+          }
+        }
+      }
+    },
+    "shiftAlarmStop": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إيقاف"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopp"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detener"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrêter"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "रोकें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hentikan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interrompi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "停止"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "중단"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "थांबवा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Стоп"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หยุด"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durdur"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dừng"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "停止"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "停止"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "停止"
+          }
+        }
+      }
+    },
+    "shiftAlarmSnooze": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غفوة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schlummern"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posponer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Répéter"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्नूज़"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tunda"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posticipa"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スヌーズ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 알림"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्नूझ"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adiar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отложить"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลื่อนปลุก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ertele"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Báo lại"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍后提醒"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍後提醒"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍後提醒"
+          }
+        }
+      }
+    },
+    "shiftAlarmSnoozing": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غفوة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schlummert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snoozing"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pospuesta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Répétition"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्नूज़ पर"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ditunda"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posticipata"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スヌーズ中"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 알림 대기 중"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्नूझवर"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adiado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отложено"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลื่อนปลุกอยู่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ertelendi"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang báo lại"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍后再响"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍後再響"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍後再響"
+          }
+        }
+      }
+    },
+    "shiftAlarmRefreshTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تحديث منبهات المناوبة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schichtwecker aktualisieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh shift alarms"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualiza las alarmas de turno"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualisez les réveils de service"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ़्ट अलार्म रीफ़्रेश करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segarkan alarm sif"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiorna le sveglie dei turni"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シフトアラームを更新"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무 알람 새로 고침"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ्ट अलार्म रिफ्रेश करा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualize os alarmes de turno"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновите будильники смен"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รีเฟรชนาฬิกาปลุกตามกะ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vardiya alarmlarını yenile"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Làm mới báo thức theo ca"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刷新班次闹钟"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新更表鬧鐘"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新班次鬧鐘"
+          }
+        }
+      }
+    },
+    "shiftAlarmRefreshBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "افتح DoneAt لضبط منبهات مناوباتك القادمة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne DoneAt, um Wecker für deine nächsten Schichten zu stellen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open DoneAt to set alarms for your next shifts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre DoneAt para programar las alarmas de tus próximos turnos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrez DoneAt pour programmer les réveils de vos prochains services."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अपनी अगली शिफ़्ट के अलार्म लगाने के लिए DoneAt खोलें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buka DoneAt untuk menjadwalkan alarm sif berikutnya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri DoneAt per impostare le sveglie dei prossimi turni."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt を開いて、次のシフトのアラームを設定しましょう。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt을 열어 다음 근무 알람을 맞추세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पुढील शिफ्टचे अलार्म लावण्यासाठी DoneAt उघडा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abra o DoneAt para programar os alarmes dos próximos turnos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте DoneAt, чтобы поставить будильники на следующие смены."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิด DoneAt เพื่อตั้งนาฬิกาปลุกสำหรับกะถัดไป"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonraki vardiyaların alarmlarını kurmak için DoneAt’i aç."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở DoneAt để đặt báo thức cho các ca tiếp theo."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开 DoneAt，继续安排后续班次的闹钟。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開 DoneAt，繼續安排之後嘅更表鬧鐘。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開 DoneAt，繼續安排後續班次的鬧鐘。"
+          }
+        }
+      }
+    },
+    "plusShiftAlarmsLocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استيقظ في الوقت لكل مناوبة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pünktlich wach für jede Schicht"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wake up on time for every shift"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Despierta a tiempo para cada turno"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réveillez-vous à l’heure pour chaque service"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हर शिफ़्ट के लिए समय पर उठें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bangun tepat waktu untuk setiap sif"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Svegliati in tempo per ogni turno"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "どのシフトにも遅れず起きる"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무마다 제때 일어나기"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रत्येक शिफ्टसाठी वेळेवर उठा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acorde a tempo para cada turno"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Просыпайтесь вовремя к каждой смене"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตื่นทันทุกกะ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her vardiyaya zamanında uyan"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dậy đúng giờ cho mọi ca"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每个班次前准时叫醒你"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每更開工前準時叫醒你"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每個班次前準時叫醒你"
+          }
+        }
+      }
+    },
+    "plusBenefitShiftAlarms": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "منبهات استيقاظ مضبوطة حسب مناوباتك"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weckzeiten passend zu deinen Schichten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wake-up alarms set from your shifts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarmas para despertarte según tus turnos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réveils programmés selon vos services"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपकी शिफ़्ट के अनुसार जगाने वाले अलार्म"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarm bangun sesuai sifmu"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sveglie impostate dai tuoi turni"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シフトに合わせた起床アラーム"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무에 맞춘 기상 알람"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ्टनुसार उठवणारे अलार्म"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarmes para acordar a partir dos seus turnos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Будильники по вашим сменам"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "นาฬิกาปลุกตามกะของคุณ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vardiyana göre uyandırma alarmları"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Báo thức dậy theo ca làm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按班次自动安排起床闹钟"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按更表自動安排起身鬧鐘"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "依班次自動安排起床鬧鐘"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
