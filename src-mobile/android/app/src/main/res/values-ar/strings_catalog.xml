@@ -726,6 +726,7 @@
     <string name="recordsOperationReadFailed">تعذر قراءة الملف. لم يتغير شيء.</string>
     <string name="recordsOperationUnsupportedVersion">أُنشئت هذه النسخة الاحتياطية بإصدار أحدث. حدّث التطبيق قبل استيرادها.</string>
     <string name="recordsOvertime">وقت إضافي</string>
+    <string name="recordsOvertimeRecorded">العمل الإضافي المسجّل</string>
     <string name="recordsOwnerAuthReason">أكّد أنك أنت للمتابعة</string>
     <string name="recordsPlanned">مخطط</string>
     <string name="recordsPreviousPeriod">الفترة السابقة</string>

@@ -722,6 +722,7 @@
     <string name="recordsOperationReadFailed">We couldn\'t read that file. Nothing changed.</string>
     <string name="recordsOperationUnsupportedVersion">This backup was made by a newer version. Update the app before importing it.</string>
     <string name="recordsOvertime">Overtime</string>
+    <string name="recordsOvertimeRecorded">Overtime recorded</string>
     <string name="recordsOwnerAuthReason">Confirm it is you to continue</string>
     <string name="recordsPlanned">Planned</string>
     <string name="recordsPreviousPeriod">Previous period</string>

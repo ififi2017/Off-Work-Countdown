@@ -802,12 +802,15 @@ final class RecordsQueries {
         for resolution: DayResolution,
         previous: DayResolution? = nil,
         now: Date = .now,
-        includesLifeProjection: Bool = false
+        includesLifeProjection: Bool = false,
+        revealingAll: Bool = false
     ) -> RecordsDayCell {
         let today = recordsCalendar.startOfDay(for: now)
         let date = recordsCalendar.startOfDay(for: resolution.shiftAnchorDate)
         let authorized = plus.isAuthorized
-        let revealed = RecordsAccess.canRevealDay(
+        // `revealingAll` is for totals open to everyone (the overtime line):
+        // their cells stay inside the query and never reach a view.
+        let revealed = revealingAll || RecordsAccess.canRevealDay(
             dayKey: resolution.dayKey,
             today: now,
             calendar: recordsCalendar,
@@ -869,18 +872,11 @@ final class RecordsQueries {
         )
     }
 
-    func recordsHeadline(
-        cells: [RecordsDayCell],
-        days: [DayResolution],
-        now: Date = .now
-    ) -> RecordsHeadlineSummary? {
-        guard plus.isAuthorized else { return nil }
+    /// Each day of `cells` that actually holds recorded time, split at
+    /// midnight. The headline and the free overtime line both total these,
+    /// so a free user and a Plus user read the same overtime.
+    func recordedShares(cells: [RecordsDayCell], days: [DayResolution], now: Date = .now) -> [TimeAllocationShare] {
         let recordedKeys = Set(cells.filter { $0.appearance == .recorded || $0.appearance == .corrected }.map(\.dayKey))
-        let actualForecast = recordsActualForecast(cells: cells, days: days, now: now)
-        guard !recordedKeys.isEmpty
-            || actualForecast.map({ $0.forecast.days > 0 || $0.forecast.hours > 0 }) == true
-            || (salaryType == .monthly && actualForecast?.total.earnings != nil)
-        else { return nil }
         // Observed, corrected and elapsed saved-schedule days count. Life's
         // synthetic history remains an estimate. A day that merely *receives* those
         // hours after midnight is counted for its time, never as a workday.
@@ -892,7 +888,7 @@ final class RecordsQueries {
                 .filter { contributesHours($0, now: now, includesLifeProjection: false) }
                 .map(\.dayKey)
         )
-        let shares = cells.compactMap { cell -> TimeAllocationShare? in
+        return cells.compactMap { cell -> TimeAllocationShare? in
             guard let day = byKey[cell.dayKey] else { return nil }
             let contributors = [previousDay(before: day, in: byKey), day]
                 .compactMap { $0 }
@@ -906,6 +902,75 @@ final class RecordsQueries {
             else { return nil }
             return allocation
         }
+    }
+
+    /// Recorded overtime in the visible period (plan 020 §5). Free users see
+    /// it too, so it hands out this one number and nothing else. It is the
+    /// figure the Plus summary prints: the shared summary rules' actual
+    /// overtime, or the midnight-split total when they have nothing to say.
+    /// `nil` when the period recorded none, so the line never prints a zero
+    /// that only means "no data".
+    ///
+    /// `dayKeys` are the period's days; `days` may reach one day earlier for
+    /// an overnight shift. Days past a free user's window count too — the
+    /// cells that read them are built here and never leave.
+    func recordedOvertimeMs(days: [DayResolution], dayKeys: Set<String>, now: Date = .now) -> Double? {
+        var cells: [RecordsDayCell] = []
+        for (index, day) in days.enumerated() where dayKeys.contains(day.dayKey) {
+            cells.append(recordsDayCell(
+                for: day, previous: index > 0 ? days[index - 1] : nil, now: now, revealingAll: true
+            ))
+        }
+        return recordedOvertimeMs(cells: cells, days: days, now: now)
+    }
+
+    private func recordedOvertimeMs(cells: [RecordsDayCell], days: [DayResolution], now: Date) -> Double? {
+        let ms = recordsActualForecast(cells: cells, days: days, now: now)
+            .map { $0.actualOvertimeHours * 3_600_000 }
+            ?? Double(recordedShares(cells: cells, days: days, now: now).reduce(0) { $0 + $1.overtimeMs })
+        return ms > 0 ? ms : nil
+    }
+
+    /// All overtime ever recorded, for the life scale. Only days that declared
+    /// overtime can hold any, so only they are resolved — never the projected
+    /// career. Same rules as a period's line.
+    func lifetimeRecordedOvertimeMs(now: Date = .now) async -> Double? {
+        let calendar = recordsCalendar
+        let keys = Set(records.state.observations.filter { $0.kind == .overtimeDeclared }.map {
+            RecordJSON.dayKey($0.shiftAnchorDate, calendar: calendar)
+        })
+        guard let first = keys.min().flatMap({ RecordJSON.date(fromDayKey: $0, calendar: calendar) }),
+              let last = keys.max().flatMap({ RecordJSON.date(fromDayKey: $0, calendar: calendar) }),
+              let leadIn = calendar.date(byAdding: .day, value: -1, to: first)
+        else { return nil }
+        let resolved = await prepareResolvedDays(from: leadIn, through: last, now: now)
+        // The day before rides along for an overnight shift; each day goes
+        // in once, or two overtime days in a row would count twice.
+        var days: [DayResolution] = []
+        var included = Set<String>()
+        for (index, day) in resolved.enumerated() where keys.contains(day.dayKey) {
+            let previous = index > 0 ? resolved[index - 1] : nil
+            for candidate in [previous, day].compactMap({ $0 }) where included.insert(candidate.dayKey).inserted {
+                days.append(candidate)
+            }
+        }
+        return recordedOvertimeMs(days: days, dayKeys: keys, now: now)
+    }
+
+    func recordsHeadline(
+        cells: [RecordsDayCell],
+        days: [DayResolution],
+        now: Date = .now
+    ) -> RecordsHeadlineSummary? {
+        guard plus.isAuthorized else { return nil }
+        let recordedKeys = Set(cells.filter { $0.appearance == .recorded || $0.appearance == .corrected }.map(\.dayKey))
+        let actualForecast = recordsActualForecast(cells: cells, days: days, now: now)
+        guard !recordedKeys.isEmpty
+            || actualForecast.map({ $0.forecast.days > 0 || $0.forecast.hours > 0 }) == true
+            || (salaryType == .monthly && actualForecast?.total.earnings != nil)
+        else { return nil }
+        let byKey = Dictionary(days.map { ($0.dayKey, $0) }, uniquingKeysWith: { first, _ in first })
+        let shares = recordedShares(cells: cells, days: days, now: now)
         let combined = TimeAllocationCalculator.combining(shares)
         // Allocation describes the whole visible period, including scheduled
         // forecasts and rest days. Actual metrics above keep their own basis.

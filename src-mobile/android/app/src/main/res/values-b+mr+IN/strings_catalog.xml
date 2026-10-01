@@ -722,6 +722,7 @@
     <string name="recordsOperationReadFailed">फाइल वाचता आली नाही. काहीही बदलले नाही.</string>
     <string name="recordsOperationUnsupportedVersion">हा बॅकअप नवीन आवृत्तीत तयार केला आहे. आयात करण्यापूर्वी अॅप अपडेट करा.</string>
     <string name="recordsOvertime">अधिक वेळ</string>
+    <string name="recordsOvertimeRecorded">नोंदवलेला ओव्हरटाइम</string>
     <string name="recordsOwnerAuthReason">पुढे जाण्यासाठी तुम्हीच आहात हे सिद्ध करा</string>
     <string name="recordsPlanned">नियोजित</string>
     <string name="recordsPreviousPeriod">मागील काळ</string>

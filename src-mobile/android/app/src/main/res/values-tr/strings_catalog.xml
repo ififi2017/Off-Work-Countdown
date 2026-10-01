@@ -722,6 +722,7 @@
     <string name="recordsOperationReadFailed">Dosya okunamadı. Hiçbir şey değişmedi.</string>
     <string name="recordsOperationUnsupportedVersion">Bu yedek daha yeni bir sürümde oluşturuldu. İçe aktarmadan önce uygulamayı güncelleyin.</string>
     <string name="recordsOvertime">Mesai</string>
+    <string name="recordsOvertimeRecorded">Kaydedilen fazla mesai</string>
     <string name="recordsOwnerAuthReason">Devam etmek için sen olduğunu doğrula</string>
     <string name="recordsPlanned">Planlı</string>
     <string name="recordsPreviousPeriod">Önceki dönem</string>

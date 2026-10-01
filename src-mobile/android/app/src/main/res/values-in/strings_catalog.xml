@@ -721,6 +721,7 @@
     <string name="recordsOperationReadFailed">File tidak dapat dibaca. Tidak ada yang berubah.</string>
     <string name="recordsOperationUnsupportedVersion">Cadangan ini dibuat dengan versi yang lebih baru. Perbarui app sebelum mengimpor.</string>
     <string name="recordsOvertime">Lembur</string>
+    <string name="recordsOvertimeRecorded">Lembur tercatat</string>
     <string name="recordsOwnerAuthReason">Konfirmasi ini memang kamu untuk lanjut</string>
     <string name="recordsPlanned">Terencana</string>
     <string name="recordsPreviousPeriod">Periode sebelumnya</string>

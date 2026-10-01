@@ -724,6 +724,7 @@
     <string name="recordsOperationReadFailed">Не удалось прочитать файл. Ничего не изменилось.</string>
     <string name="recordsOperationUnsupportedVersion">Резервная копия создана более новой версией. Обновите приложение перед импортом.</string>
     <string name="recordsOvertime">Переработка</string>
+    <string name="recordsOvertimeRecorded">Записанные переработки</string>
     <string name="recordsOwnerAuthReason">Подтвердите, что это вы, чтобы продолжить</string>
     <string name="recordsPlanned">План</string>
     <string name="recordsPreviousPeriod">Предыдущий период</string>

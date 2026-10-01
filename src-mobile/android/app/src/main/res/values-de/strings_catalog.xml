@@ -722,6 +722,7 @@
     <string name="recordsOperationReadFailed">Die Datei konnte nicht gelesen werden. Nichts wurde geändert.</string>
     <string name="recordsOperationUnsupportedVersion">Diese Sicherung stammt aus einer neueren Version. Aktualisiere die App vor dem Import.</string>
     <string name="recordsOvertime">Überstunden</string>
+    <string name="recordsOvertimeRecorded">Erfasste Überstunden</string>
     <string name="recordsOwnerAuthReason">Bestätige, dass du es bist, um fortzufahren</string>
     <string name="recordsPlanned">Geplant</string>
     <string name="recordsPreviousPeriod">Vorheriger Zeitraum</string>
