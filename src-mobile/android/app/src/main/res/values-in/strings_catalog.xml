@@ -585,12 +585,12 @@
     <string name="onboardingPlusFocusBreakBody">Tugas selanjutnya menunggu sampai Anda siap. Tidak ada yang dimulai dengan sendirinya.</string>
     <string name="onboardingPlusFocusTask">Selesaikan review mingguan</string>
     <string name="onboardingPlusFocusTitle">Berikan satu tugas jangka waktu yang jelas</string>
-    <string name="onboardingPlusLeaveBody">Tambahkan saldo cuti, DoneAt mencocokkan hari libur dan jadwalmu setahun ke depan lalu menampilkan tanggal dan cuti yang dibutuhkan.</string>
-    <string name="onboardingPlusLeaveTitle">Ubah beberapa hari cuti jadi libur panjang</string>
     <string name="onboardingPlusLifeBody">Tambahkan tanggal yang anda ketahui. DoneAt memisahkan waktu hidup dan waktu yang diproyeksikan tanpa mengubah perkiraan menjadi sejarah.</string>
     <string name="onboardingPlusRecordsActual">Aktual</string>
     <string name="onboardingPlusRecordsBody">Plus membuka catatan lengkap Anda, lalu menggunakan profil kehidupan untuk menempatkan pekerjaan dalam perspektif dari pekerjaan pertama Anda hingga pensiun.</string>
     <string name="onboardingPlusRecordsTitle">Lihat hari yang Anda rencanakan - dan hari yang Anda jalani</string>
+    <string name="onboardingPlusRestBody">Tambahkan cutimu, DoneAt mencari libur panjang di sekitar hari libur dan sifmu. Sebelum tiap sif, alarm membangunkanmu pada waktu pilihanmu.</string>
+    <string name="onboardingPlusRestTitle">Rencanakan libur panjang, bangun tepat waktu tiap sif</string>
     <string name="onboardingPrivacyBody">Tanpa akun. Hitungan pulang dan catatan tetap di perangkat ini, kecuali kamu membuka paket atau menyalakan sinkronisasi iCloud. Data kerja dan gaji tidak pernah sampai ke pengembang.</string>
     <string name="onboardingPrivacyBodyLocal">Tanpa akun. Hitung mundur dan catatanmu tetap di perangkat ini, juga di cadangan Android jika kamu mengaktifkannya. Data kerja dan gaji tidak pernah dikirim ke pengembang.</string>
     <string name="onboardingPrivacyTitle">Tetap di perangkat ini</string>
@@ -645,7 +645,7 @@
     <string name="plusEditLocked">Ubah hari yang sudah lewat</string>
     <string name="plusFocusLocked">Fokus pada satu hal</string>
     <string name="plusGracePeriod">Ada masalah dengan pembayaran. Akses masih berjalan untuk sekarang, dan memperbarui metode pembayaran di App Store akan mempertahankannya.</string>
-    <string name="plusIntroBody">Timer dan minggu terakhirmu tetap gratis. Plus membuka setahun penuh, kehidupan kerja, pengeditan, fokus, perencanaan cuti, dan sinkronisasi iCloud.</string>
+    <string name="plusIntroBody">Timer dan minggu terakhirmu tetap gratis. Plus membuka setahun penuh, kehidupan kerja, pengeditan, fokus, perencanaan cuti, alarm sif, dan sinkronisasi iCloud.</string>
     <string name="plusIntroTitle">Lihat bentuk waktumu</string>
     <string name="plusLeaveLocked">Rencanakan cuti kapan saja</string>
     <string name="plusLifeLocked">Lihat kerja dalam skala yang lebih panjang</string>

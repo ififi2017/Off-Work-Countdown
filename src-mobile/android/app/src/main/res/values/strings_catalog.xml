@@ -587,12 +587,12 @@
     <string name="onboardingPlusFocusBreakBody">The next task waits until you are ready. Nothing starts on its own.</string>
     <string name="onboardingPlusFocusTask">Finish the weekly review</string>
     <string name="onboardingPlusFocusTitle">Give one task a clear stretch of time</string>
-    <string name="onboardingPlusLeaveBody">Add your leave balances and DoneAt checks holidays and your own shifts across the year ahead, then shows the dates and how much leave each break takes.</string>
-    <string name="onboardingPlusLeaveTitle">Turn a few days of leave into a long break</string>
     <string name="onboardingPlusLifeBody">Add the dates you know. DoneAt separates lived and projected time without turning estimates into history.</string>
     <string name="onboardingPlusRecordsActual">Actual</string>
     <string name="onboardingPlusRecordsBody">Plus opens your full record, then uses a life profile to put work in perspective from your first job to retirement.</string>
     <string name="onboardingPlusRecordsTitle">See the day you planned — and the one you lived</string>
+    <string name="onboardingPlusRestBody">Add your leave and DoneAt finds longer breaks around holidays and your shifts. Before each shift, an alarm wakes you at the time you choose.</string>
+    <string name="onboardingPlusRestTitle">Plan longer breaks, wake up on time for every shift</string>
     <string name="onboardingPrivacyBody">No account. The countdown and your records stay on this device unless you choose to load purchases or turn on iCloud sync. Work and salary data are never sent to the developer.</string>
     <string name="onboardingPrivacyBodyLocal">No account. The countdown and your records stay on this device, and in Android’s own backup if you have it turned on. Work and salary data are never sent to the developer.</string>
     <string name="onboardingPrivacyTitle">Stays on this device</string>
@@ -647,7 +647,7 @@
     <string name="plusEditLocked">Change a day that already passed</string>
     <string name="plusFocusLocked">Focus on one thing</string>
     <string name="plusGracePeriod">There is a problem with the payment. Access continues for now, and updating the payment method in the App Store keeps it.</string>
-    <string name="plusIntroBody">The timer and your recent week stay free. Plus opens the full year, your working life, editing, focus, time off planning, and iCloud sync.</string>
+    <string name="plusIntroBody">The timer and your recent week stay free. Plus opens the full year, your working life, editing, focus, time off planning, shift alarms, and iCloud sync.</string>
     <string name="plusIntroTitle">See the shape of your time</string>
     <string name="plusLeaveLocked">Plan time off whenever you like</string>
     <string name="plusLifeLocked">See work on a longer scale</string>

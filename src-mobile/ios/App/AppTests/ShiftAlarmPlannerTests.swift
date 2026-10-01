@@ -153,6 +153,31 @@ struct ShiftAlarmPlannerTests {
         #expect(!swappedKeys.contains("2026-10-05"))
     }
 
+    @Test("Adopted leave silences a day off and moves a morning off to the afternoon half")
+    func adoptedLeave() throws {
+        // Fixed hours 09:00–18:00 with a 12:00–13:00 break; leave on Fri 2 Oct
+        // (whole) and Mon 5 Oct (first half).
+        var configuration = Self.configuration()
+        configuration.breakStartTime = "12:00"
+        configuration.breakDurationMinutes = 60
+        configuration.extendedSchedule = ExtendedSchedulePlan.applying(
+            leave: ["2026-10-02": .whole, "2026-10-05": .firstHalf],
+            to: nil,
+            baseHours: ExtendedScheduleDayHours(startTime: "09:00", endTime: "18:00",
+                                                breakStartTime: "12:00", breakDurationMinutes: 60),
+            revision: 1
+        )
+        let result = try Self.alarms(configuration, now: Self.ms("2026-10-01", hour: 12),
+                                     until: Self.ms("2026-10-06", hour: 23))
+        #expect(!result.map(\.dayKey).contains("2026-10-02"))
+        let monday = try #require(result.first { $0.dayKey == "2026-10-05" })
+        // Half of eight effective hours is done by 13:00 plus the break: the
+        // afternoon half starts at 14:00, so its alarm rings at 13:00.
+        #expect(monday.shiftStartAtMs > (try Self.ms("2026-10-05", hour: 9)))
+        #expect(monday.shiftStartAtMs - monday.fireAtMs == 60 * 60_000)
+        #expect(result.first { $0.dayKey == "2026-10-06" }?.fireAtMs == (try Self.ms("2026-10-06", hour: 8)))
+    }
+
     @Test("Ids are stable for the same alarm and change with anything it says or when it rings")
     func stableIDs() throws {
         let now = try Self.ms("2026-10-01", hour: 12)

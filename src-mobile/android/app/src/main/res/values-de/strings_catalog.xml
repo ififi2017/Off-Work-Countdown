@@ -587,12 +587,12 @@
     <string name="onboardingPlusFocusBreakBody">Die nächste Aufgabe wartet, bis Sie bereit sind. Nichts beginnt von alleine.</string>
     <string name="onboardingPlusFocusTask">Beenden Sie den wöchentlichen Rückblick</string>
     <string name="onboardingPlusFocusTitle">Geben Sie einer Aufgabe eine klare Zeitspanne</string>
-    <string name="onboardingPlusLeaveBody">Trag deine Urlaubskonten ein: DoneAt prüft Feiertage und deinen Dienstplan im kommenden Jahr und zeigt Daten und den nötigen Urlaub.</string>
-    <string name="onboardingPlusLeaveTitle">Aus wenigen Urlaubstagen eine lange Pause machen</string>
     <string name="onboardingPlusLifeBody">Fügen Sie die Ihnen bekannten Daten hinzu. DoneAt trennt erlebte und prognostizierte Zeit, ohne Schätzungen in Geschichte umzuwandeln.</string>
     <string name="onboardingPlusRecordsActual">Tatsächlich</string>
     <string name="onboardingPlusRecordsBody">Plus öffnet Ihre vollständige Akte und verwendet dann ein Lebensprofil, um die Arbeit von Ihrem ersten Job bis zur Pensionierung ins rechte Licht zu rücken.</string>
     <string name="onboardingPlusRecordsTitle">Sehen Sie sich den Tag an, den Sie geplant haben – und den Tag, an dem Sie gelebt haben</string>
+    <string name="onboardingPlusRestBody">Trag deinen Urlaub ein: DoneAt findet längere Pausen rund um Feiertage und deine Schichten. Vor jeder Schicht weckt dich ein Wecker zur gewählten Zeit.</string>
+    <string name="onboardingPlusRestTitle">Längere Pausen planen, zu jeder Schicht pünktlich wach</string>
     <string name="onboardingPrivacyBody">Kein Konto. Countdown und Aufzeichnungen bleiben auf diesem Gerät, sofern du nicht selbst Tarife lädst oder den iCloud-Sync einschaltest. Arbeits- und Gehaltsdaten gehen nie an den Entwickler.</string>
     <string name="onboardingPrivacyBodyLocal">Kein Konto. Countdown und Aufzeichnungen bleiben auf diesem Gerät – und in der Android-Sicherung, falls du sie eingeschaltet hast. Arbeits- und Gehaltsdaten gehen nie an den Entwickler.</string>
     <string name="onboardingPrivacyTitle">Bleibt auf diesem Gerät</string>
@@ -647,7 +647,7 @@
     <string name="plusEditLocked">Einen vergangenen Tag ändern</string>
     <string name="plusFocusLocked">Auf eine Sache fokussieren</string>
     <string name="plusGracePeriod">Mit der Zahlung stimmt etwas nicht. Der Zugang läuft vorerst weiter; wenn du die Zahlungsmethode im App Store aktualisierst, bleibt er.</string>
-    <string name="plusIntroBody">Der Timer und deine letzte Woche bleiben kostenlos. Plus öffnet das ganze Jahr, dein Arbeitsleben, Bearbeitung, Fokus, Urlaubsplanung und iCloud-Sync.</string>
+    <string name="plusIntroBody">Der Timer und deine letzte Woche bleiben kostenlos. Plus öffnet das ganze Jahr, dein Arbeitsleben, Bearbeitung, Fokus, Urlaubsplanung, Schichtwecker und iCloud-Sync.</string>
     <string name="plusIntroTitle">Die Form deiner Zeit sehen</string>
     <string name="plusLeaveLocked">Urlaub planen, wann du willst</string>
     <string name="plusLifeLocked">Arbeit im größeren Maßstab sehen</string>

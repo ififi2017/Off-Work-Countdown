@@ -585,12 +585,12 @@
     <string name="onboardingPlusFocusBreakBody">งานต่อไปรอจนกว่าคุณจะพร้อม ไม่มีอะไรเริ่มต้นได้ด้วยตัวเอง</string>
     <string name="onboardingPlusFocusTask">จบการทบทวนประจำสัปดาห์</string>
     <string name="onboardingPlusFocusTitle">ให้เวลางานหนึ่งที่ชัดเจน</string>
-    <string name="onboardingPlusLeaveBody">ใส่วันลาคงเหลือ แล้ว DoneAt จะดูวันหยุดและตารางงานในปีข้างหน้า แสดงวันที่และวันลาที่ต้องใช้</string>
-    <string name="onboardingPlusLeaveTitle">ลาไม่กี่วัน ได้หยุดยาว</string>
     <string name="onboardingPlusLifeBody">เพิ่มวันที่ที่คุณทราบ DoneAt แยกเวลาจริงและเวลาที่คาดการณ์ไว้โดยไม่ต้องเปลี่ยนการประมาณการให้เป็นประวัติศาสตร์</string>
     <string name="onboardingPlusRecordsActual">ตามความเป็นจริง</string>
     <string name="onboardingPlusRecordsBody">Plus เปิดบันทึกทั้งหมดของคุณ จากนั้นใช้โปรไฟล์ชีวิตเพื่อนำเสนองานในมุมมองตั้งแต่งานแรกจนถึงวัยเกษียณ</string>
     <string name="onboardingPlusRecordsTitle">ดูวันที่คุณวางแผนไว้ และวันที่คุณมีชีวิตอยู่</string>
+    <string name="onboardingPlusRestBody">ใส่วันลา แล้ว DoneAt จะหาวันหยุดยาวจากวันหยุดและกะของคุณ ก่อนแต่ละกะ นาฬิกาปลุกจะปลุกคุณตามเวลาที่เลือก</string>
+    <string name="onboardingPlusRestTitle">วางแผนวันหยุดยาว ตื่นทันทุกกะ</string>
     <string name="onboardingPrivacyBody">ไม่ต้องมีบัญชี การนับถอยหลังและบันทึกอยู่ในเครื่องนี้ เว้นแต่คุณจะเปิดดูแผนหรือเปิดการซิงก์ iCloud เอง ข้อมูลงานและเงินเดือนไม่เคยไปถึงผู้พัฒนา</string>
     <string name="onboardingPrivacyBodyLocal">ไม่ต้องมีบัญชี การนับถอยหลังและบันทึกของคุณอยู่ในอุปกรณ์นี้ และอยู่ในข้อมูลสำรองของ Android หากคุณเปิดไว้ ข้อมูลงานและเงินเดือนจะไม่ถูกส่งถึงผู้พัฒนา</string>
     <string name="onboardingPrivacyTitle">ข้อมูลอยู่บนเครื่องนี้</string>
@@ -645,7 +645,7 @@
     <string name="plusEditLocked">แก้วันที่ผ่านไปแล้ว</string>
     <string name="plusFocusLocked">โฟกัสกับเรื่องเดียว</string>
     <string name="plusGracePeriod">การชำระเงินมีปัญหา ตอนนี้ยังใช้งานได้ และถ้าอัปเดตวิธีชำระเงินใน App Store ก็จะใช้งานต่อได้</string>
-    <string name="plusIntroBody">ตัวจับเวลาและสัปดาห์ล่าสุดยังใช้ฟรี Plus ปลดล็อกทั้งปี ชีวิตการทำงาน การแก้ไข โฟกัส การวางแผนวันหยุด และการซิงค์ iCloud</string>
+    <string name="plusIntroBody">ตัวจับเวลาและสัปดาห์ล่าสุดยังใช้ฟรี Plus ปลดล็อกทั้งปี ชีวิตการทำงาน การแก้ไข โฟกัส การวางแผนวันหยุด นาฬิกาปลุกตามกะ และการซิงค์ iCloud</string>
     <string name="plusIntroTitle">เห็นรูปร่างของเวลาคุณ</string>
     <string name="plusLeaveLocked">วางแผนวันหยุดได้ทุกเมื่อ</string>
     <string name="plusLifeLocked">มองงานในสเกลที่ยาวกว่า</string>

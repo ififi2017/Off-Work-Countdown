@@ -585,12 +585,12 @@
     <string name="onboardingPlusFocusBreakBody">下一個任務會等到你準備好。冇嘢係自己開始嘅。</string>
     <string name="onboardingPlusFocusTask">完成每週嘅評論</string>
     <string name="onboardingPlusFocusTitle">畀一個任務一段明確嘅時間</string>
-    <string name="onboardingPlusLeaveBody">填好假期餘額，DoneAt 會按假期同你嘅排班，喺未來一年搵出連假方案，列出日子同要請幾多日假。</string>
-    <string name="onboardingPlusLeaveTitle">請幾日假，換一個長假</string>
     <string name="onboardingPlusLifeBody">加埋你識嘅日期。 DoneAt 將生活同投射嘅時間分開，而唔會將估計轉化為歷史。</string>
     <string name="onboardingPlusRecordsActual">實際</string>
     <string name="onboardingPlusRecordsBody">Plus 會打開你嘅全部記錄，然後用人生簡介去將你由第一份工到退休嘅工作放入透視角度。</string>
     <string name="onboardingPlusRecordsTitle">睇下你計劃嘅日子 — 同埋你過嘅日子</string>
+    <string name="onboardingPlusRestBody">填好假期餘額，DoneAt 會按假期同排班搵出連假方案；每更開工前，亦會按你設定嘅時間響鬧鐘叫醒你。</string>
+    <string name="onboardingPlusRestTitle">連假預早排好，每更準時叫醒</string>
     <string name="onboardingPrivacyBody">唔使帳戶。倒數計時同紀錄都喺呢部裝置，除非你自己去睇方案或者開 iCloud 同步。工作同薪金資料唔會傳去開發者。</string>
     <string name="onboardingPrivacyBodyLocal">唔使帳戶。倒數計時同紀錄都喺呢部裝置；如果你開咗 Android 系統備份，都會包埋喺入面。工作同薪金資料唔會傳去開發者。</string>
     <string name="onboardingPrivacyTitle">資料留喺呢部裝置</string>
@@ -645,7 +645,7 @@
     <string name="plusEditLocked">改已經過去嘅一日</string>
     <string name="plusFocusLocked">先專注一件事</string>
     <string name="plusGracePeriod">付款出咗啲問題。而家仲用得，去 App Store 更新付款方式就可以保留。</string>
-    <string name="plusIntroBody">倒數同最近一星期保持免費。Plus 解鎖完整年度、工作人生、編輯、專注、放假計劃同 iCloud 同步。</string>
+    <string name="plusIntroBody">倒數同最近一星期保持免費。Plus 解鎖完整年度、工作人生、編輯、專注、放假計劃、更表鬧鐘同 iCloud 同步。</string>
     <string name="plusIntroTitle">睇見時間嘅形狀</string>
     <string name="plusLeaveLocked">隨時計劃放假</string>
     <string name="plusLifeLocked">用更長嘅尺度睇工作</string>

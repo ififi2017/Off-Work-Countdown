@@ -2071,12 +2071,6 @@
     "onboardingPlusFocusTitle": {
       "resource": "string/onboardingPlusFocusTitle"
     },
-    "onboardingPlusLeaveBody": {
-      "resource": "string/onboardingPlusLeaveBody"
-    },
-    "onboardingPlusLeaveTitle": {
-      "resource": "string/onboardingPlusLeaveTitle"
-    },
     "onboardingPlusLifeBody": {
       "resource": "string/onboardingPlusLifeBody"
     },
@@ -2088,6 +2082,12 @@
     },
     "onboardingPlusRecordsTitle": {
       "resource": "string/onboardingPlusRecordsTitle"
+    },
+    "onboardingPlusRestBody": {
+      "resource": "string/onboardingPlusRestBody"
+    },
+    "onboardingPlusRestTitle": {
+      "resource": "string/onboardingPlusRestTitle"
     },
     "onboardingPrivacyBody": {
       "resource": "string/onboardingPrivacyBody"

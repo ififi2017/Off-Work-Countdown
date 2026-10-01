@@ -589,12 +589,12 @@
     <string name="onboardingPlusFocusBreakBody">La tâche suivante attend que vous soyez prêt. Rien ne démarre tout seul.</string>
     <string name="onboardingPlusFocusTask">Terminez la revue hebdomadaire</string>
     <string name="onboardingPlusFocusTitle">Donnez à une tâche une période de temps claire</string>
-    <string name="onboardingPlusLeaveBody">Ajoutez vos soldes : DoneAt croise jours fériés et planning sur l’année à venir, puis montre les dates et les congés nécessaires.</string>
-    <string name="onboardingPlusLeaveTitle">Transformer quelques jours de congé en longue pause</string>
     <string name="onboardingPlusLifeBody">Ajoutez les dates que vous connaissez. DoneAt sépare le temps vécu et projeté sans transformer les estimations en historique.</string>
     <string name="onboardingPlusRecordsActual">Réel</string>
     <string name="onboardingPlusRecordsBody">Plus ouvre votre dossier complet, puis utilise un profil de vie pour mettre le travail en perspective depuis votre premier emploi jusqu\'à la retraite.</string>
     <string name="onboardingPlusRecordsTitle">Voyez le jour que vous avez prévu – et celui que vous avez vécu</string>
+    <string name="onboardingPlusRestBody">Ajoutez vos congés : DoneAt trouve de longues pauses autour des jours fériés et de vos services. Avant chaque service, un réveil sonne à l’heure choisie.</string>
+    <string name="onboardingPlusRestTitle">Planifiez de longues pauses, réveillez-vous à l’heure pour chaque service</string>
     <string name="onboardingPrivacyBody">Aucun compte. Le compte à rebours et les relevés restent sur cet appareil, sauf si vous consultez les offres ou activez la synchronisation iCloud. Vos horaires et votre salaire ne partent jamais chez le développeur.</string>
     <string name="onboardingPrivacyBodyLocal">Aucun compte. Le compte à rebours et vos données restent sur cet appareil, ainsi que dans la sauvegarde Android si elle est activée. Les données de travail et de salaire ne sont jamais envoyées au développeur.</string>
     <string name="onboardingPrivacyTitle">Reste sur cet appareil</string>
@@ -649,7 +649,7 @@
     <string name="plusEditLocked">Modifier un jour passé</string>
     <string name="plusFocusLocked">Se concentrer sur une seule chose</string>
     <string name="plusGracePeriod">Il y a un problème avec le paiement. L’accès continue pour l’instant, et mettre à jour le moyen de paiement dans l’App Store le conserve.</string>
-    <string name="plusIntroBody">Le minuteur et votre semaine récente restent gratuits. Plus ouvre l’année complète, votre vie professionnelle, la modification, la concentration, la planification des congés et la synchro iCloud.</string>
+    <string name="plusIntroBody">Le minuteur et votre semaine récente restent gratuits. Plus ouvre l’année complète, votre vie professionnelle, la modification, la concentration, la planification des congés, les réveils de service et la synchro iCloud.</string>
     <string name="plusIntroTitle">Voir la forme de votre temps</string>
     <string name="plusLeaveLocked">Planifiez vos congés quand vous voulez</string>
     <string name="plusLifeLocked">Voir le travail à plus grande échelle</string>

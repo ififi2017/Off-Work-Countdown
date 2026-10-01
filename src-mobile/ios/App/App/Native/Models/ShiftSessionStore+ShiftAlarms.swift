@@ -1,7 +1,8 @@
 import Foundation
 
 /// The shift alarm plan (plan 020 §3): the schedule the countdown follows,
-/// this device's lead times and the window the entitlement allows.
+/// adopted leave included, this device's lead times and the window the
+/// entitlement allows.
 extension ShiftSessionStore {
     func shiftAlarmPlan(at date: Date = .now) -> ShiftAlarmPlan {
         let settings = preferences.shiftAlarmSettings
@@ -10,7 +11,9 @@ extension ShiftSessionStore {
         )
         let alarms = windowEnd.map { end in
             ShiftAlarmPlanner.alarms(
-                configuration: session.hoursConfiguration(at: date),
+                // With adopted leave laid over it: a day off rings nothing,
+                // and a morning off rings before the afternoon half.
+                configuration: leavePlannerConfiguration(at: date),
                 timeZone: session.countdownTimeZone,
                 settings: settings,
                 nowMs: date.timeIntervalSince1970 * 1_000,

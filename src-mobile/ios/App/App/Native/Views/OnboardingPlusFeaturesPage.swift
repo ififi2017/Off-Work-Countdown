@@ -240,6 +240,8 @@ struct OnboardingPlusFocusPage: View {
 
 /// Leave planning, shown with an illustrative break: three days of leave
 /// bridging two holidays into nine days off. Nothing here reads the archive.
+/// Plus: time off and shift alarms share one page (plan 020), because the
+/// welcome flow is long enough already. Both are about the days around work.
 struct OnboardingPlusLeavePage: View {
     let preferences: PreferencesStore
     let text: AppText
@@ -252,40 +254,77 @@ struct OnboardingPlusLeavePage: View {
         OnboardingPlusPage(
             preferences: preferences,
             text: text,
-            title: text.t("onboardingPlusLeaveTitle"),
-            body: text.t("onboardingPlusLeaveBody"),
+            title: text.t("onboardingPlusRestTitle"),
+            body: text.t("onboardingPlusRestBody"),
             onContinue: onContinue
         ) {
-            OWCGroupCard {
-                VStack(alignment: .leading, spacing: 14) {
-                    Label(text.t("leaveTitle"), systemImage: "suitcase")
-                        .font(.headline)
-                    HStack(spacing: 4) {
-                        ForEach(Array(days.enumerated()), id: \.offset) { _, mark in
-                            Image(systemName: mark == .leave ? "suitcase.fill" : "flag")
-                                .font(.caption)
-                                .foregroundStyle(mark == .leave ? OWCDesign.accent : OWCDesign.secondary)
-                                .frame(maxWidth: .infinity, minHeight: 36)
-                                .background(
-                                    mark == .leave ? OWCDesign.accent.opacity(0.16) : OWCDesign.control,
-                                    in: RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                )
-                        }
-                    }
-                    .accessibilityHidden(true)
-                    HStack {
-                        Text(text.t("leaveDaysOff", count: 9))
-                            .font(.subheadline.weight(.semibold))
-                        Spacer(minLength: 8)
-                        Text(text.t("leaveUses", values: ["days": text.formatDays(3)]))
-                            .font(.subheadline)
-                            .foregroundStyle(OWCDesign.secondary)
-                    }
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: 14) {
+                leaveCard
+                alarmCard
             }
         }
+    }
+
+    private var leaveCard: some View {
+        OWCGroupCard {
+            VStack(alignment: .leading, spacing: 14) {
+                Label(text.t("leaveTitle"), systemImage: "suitcase")
+                    .font(.headline)
+                HStack(spacing: 4) {
+                    ForEach(Array(days.enumerated()), id: \.offset) { _, mark in
+                        Image(systemName: mark == .leave ? "suitcase.fill" : "flag")
+                            .font(.caption)
+                            .foregroundStyle(mark == .leave ? OWCDesign.accent : OWCDesign.secondary)
+                            .frame(maxWidth: .infinity, minHeight: 36)
+                            .background(
+                                mark == .leave ? OWCDesign.accent.opacity(0.16) : OWCDesign.control,
+                                in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            )
+                    }
+                }
+                .accessibilityHidden(true)
+                HStack {
+                    Text(text.t("leaveDaysOff", count: 9))
+                        .font(.subheadline.weight(.semibold))
+                    Spacer(minLength: 8)
+                    Text(text.t("leaveUses", values: ["days": text.formatDays(3)]))
+                        .font(.subheadline)
+                        .foregroundStyle(OWCDesign.secondary)
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .owcShowcaseLift()
+    }
+
+    /// An alarm an hour before a day shift, as the alarm itself words it.
+    private var alarmCard: some View {
+        OWCGroupCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Label(text.t("shiftAlarmsTitle"), systemImage: "alarm")
+                    .font(.headline)
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Text(clock(hour: 7))
+                        .font(.system(.title, design: .rounded).weight(.semibold).monospacedDigit())
+                    Spacer(minLength: 8)
+                    Text(text.t("shiftAlarmTitle", values: [
+                        "shift": text.t("extendedDefaultWorkShift"), "time": clock(hour: 8),
+                    ]))
+                    .font(.subheadline)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineLimit(1)
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .owcShowcaseLift()
+    }
+
+    private func clock(hour: Int) -> String {
+        let date = Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: .now) ?? .now
+        return text.formatTime(date)
     }
 }
 

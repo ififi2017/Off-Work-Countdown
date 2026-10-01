@@ -585,12 +585,12 @@
     <string name="onboardingPlusFocusBreakBody">Nhiệm vụ tiếp theo đợi cho đến khi bạn sẵn sàng. Không có gì tự nó bắt đầu.</string>
     <string name="onboardingPlusFocusTask">Kết thúc buổi đánh giá hàng tuần</string>
     <string name="onboardingPlusFocusTitle">Giao cho một nhiệm vụ một khoảng thời gian rõ ràng</string>
-    <string name="onboardingPlusLeaveBody">Thêm số ngày phép, DoneAt sẽ đối chiếu ngày lễ và lịch làm việc trong năm tới, rồi cho biết ngày và số phép cần dùng.</string>
-    <string name="onboardingPlusLeaveTitle">Biến vài ngày phép thành kỳ nghỉ dài</string>
     <string name="onboardingPlusLifeBody">Thêm ngày tháng mà bạn biết. DoneAt tách biệt thời gian sống và thời gian dự kiến ​​mà không biến ước tính thành lịch sử.</string>
     <string name="onboardingPlusRecordsActual">Thực tế</string>
     <string name="onboardingPlusRecordsBody">Plus mở hồ sơ đầy đủ của bạn, sau đó sử dụng hồ sơ cuộc sống để xem xét công việc từ công việc đầu tiên của bạn cho đến khi nghỉ hưu.</string>
     <string name="onboardingPlusRecordsTitle">Xem ngày bạn đã lên kế hoạch - và ngày bạn đã sống</string>
+    <string name="onboardingPlusRestBody">Thêm ngày phép, DoneAt tìm kỳ nghỉ dài quanh ngày lễ và ca làm. Trước mỗi ca, báo thức đánh thức bạn vào giờ bạn chọn.</string>
+    <string name="onboardingPlusRestTitle">Lên kế hoạch nghỉ dài, dậy đúng giờ mỗi ca</string>
     <string name="onboardingPrivacyBody">Không cần tài khoản. Đếm ngược và bản ghi nằm trên thiết bị này, trừ khi bạn tự xem các gói hoặc bật đồng bộ iCloud. Dữ liệu công việc và lương không bao giờ đến nhà phát triển.</string>
     <string name="onboardingPrivacyBodyLocal">Không cần tài khoản. Đồng hồ đếm ngược và dữ liệu của bạn ở trên thiết bị này, và trong bản sao lưu của Android nếu bạn bật. Dữ liệu công việc và lương không bao giờ được gửi cho nhà phát triển.</string>
     <string name="onboardingPrivacyTitle">Ở lại trên thiết bị này</string>
@@ -645,7 +645,7 @@
     <string name="plusEditLocked">Sửa một ngày đã qua</string>
     <string name="plusFocusLocked">Tập trung vào một việc</string>
     <string name="plusGracePeriod">Thanh toán đang có vấn đề. Bạn vẫn dùng được lúc này, và cập nhật phương thức thanh toán trong App Store sẽ giữ được quyền dùng.</string>
-    <string name="plusIntroBody">Đồng hồ và tuần gần nhất vẫn miễn phí. Plus mở cả năm, đời làm việc, chỉnh sửa, tập trung, lên kế hoạch nghỉ và đồng bộ iCloud.</string>
+    <string name="plusIntroBody">Đồng hồ và tuần gần nhất vẫn miễn phí. Plus mở cả năm, đời làm việc, chỉnh sửa, tập trung, lên kế hoạch nghỉ, báo thức theo ca và đồng bộ iCloud.</string>
     <string name="plusIntroTitle">Thấy hình dáng thời gian của bạn</string>
     <string name="plusLeaveLocked">Lên kế hoạch nghỉ bất cứ lúc nào</string>
     <string name="plusLifeLocked">Nhìn công việc ở thang dài hơn</string>

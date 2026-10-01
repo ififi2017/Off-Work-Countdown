@@ -595,12 +595,12 @@
     <string name="onboardingPlusFocusBreakBody">المهمة التالية تنتظرك حتى تصبح جاهزًا. لا شيء يبدأ من تلقاء نفسه.</string>
     <string name="onboardingPlusFocusTask">إنهاء المراجعة الأسبوعية</string>
     <string name="onboardingPlusFocusTitle">أعط مهمة واحدة فترة زمنية واضحة</string>
-    <string name="onboardingPlusLeaveBody">أضف أرصدة إجازاتك، فيطابق DoneAt العطلات وجدولك للعام المقبل ويعرض التواريخ والإجازة المطلوبة.</string>
-    <string name="onboardingPlusLeaveTitle">حوّل أيامًا قليلة من الإجازة إلى راحة طويلة</string>
     <string name="onboardingPlusLifeBody">أضف التواريخ التي تعرفها. DoneAt يفصل بين الوقت المعيش والمتوقع دون تحويل التقديرات إلى تاريخ.</string>
     <string name="onboardingPlusRecordsActual">الفعلي</string>
     <string name="onboardingPlusRecordsBody">يفتح Plus سجلك الكامل، ثم يستخدم ملف تعريف الحياة لوضع العمل في منظوره الصحيح منذ وظيفتك الأولى حتى التقاعد.</string>
     <string name="onboardingPlusRecordsTitle">شاهد اليوم الذي خططت له، والذي عشته</string>
+    <string name="onboardingPlusRestBody">أضف إجازاتك فيجد DoneAt عطلات أطول حول العطلات الرسمية ومناوباتك. وقبل كل مناوبة، يوقظك منبه في الوقت الذي تختاره.</string>
+    <string name="onboardingPlusRestTitle">خطّط لعطلات أطول واستيقظ في الوقت لكل مناوبة</string>
     <string name="onboardingPrivacyBody">لا حساب. العد التنازلي والسجلات تبقى على هذا الجهاز، إلا إذا فتحت الخطط أو شغّلت مزامنة iCloud. ولا تصل بيانات العمل والراتب إلى المطوّر.</string>
     <string name="onboardingPrivacyBodyLocal">لا حاجة إلى حساب. يبقى العد التنازلي وسجلاتك على هذا الجهاز، وفي النسخ الاحتياطي لنظام Android إن كان مفعّلًا. لا تُرسل بيانات العمل والراتب إلى المطوّر أبدًا.</string>
     <string name="onboardingPrivacyTitle">تبقى على هذا الجهاز</string>
@@ -655,7 +655,7 @@
     <string name="plusEditLocked">تعديل يوم مضى</string>
     <string name="plusFocusLocked">التركيز على شيء واحد</string>
     <string name="plusGracePeriod">هناك مشكلة في الدفع. الوصول مستمر حاليًا، وتحديث طريقة الدفع في App Store يحفظه.</string>
-    <string name="plusIntroBody">يبقى العدّاد وأسبوعك الأخير مجانيين. يفتح Plus السنة كاملة وحياة العمل والتحرير والتركيز وتخطيط الإجازات ومزامنة iCloud.</string>
+    <string name="plusIntroBody">يبقى العدّاد وأسبوعك الأخير مجانيين. يفتح Plus السنة كاملة وحياة العمل والتحرير والتركيز وتخطيط الإجازات ومنبهات المناوبة ومزامنة iCloud.</string>
     <string name="plusIntroTitle">شاهد شكل وقتك</string>
     <string name="plusLeaveLocked">خطّط لإجازاتك متى شئت</string>
     <string name="plusLifeLocked">رؤية العمل على مقياس أطول</string>

@@ -585,12 +585,12 @@
     <string name="onboardingPlusFocusBreakBody">次のタスクは、準備が完了するまで待機します。何もそれ自体では始まりません。</string>
     <string name="onboardingPlusFocusTask">週次レビューを終了する</string>
     <string name="onboardingPlusFocusTitle">1つのタスクに明確な時間を与える</string>
-    <string name="onboardingPlusLeaveBody">休暇の残りを入れると、DoneAt が祝日とあなたのシフトをもとに今後1年の連休候補を探し、日付と必要な休暇を示します。</string>
-    <string name="onboardingPlusLeaveTitle">数日の休暇で長い連休に</string>
     <string name="onboardingPlusLifeBody">わかっている日付を追加します。 DoneAt は、推定値を履歴に変えることなく、実際の時間と予測時間を分離します。</string>
     <string name="onboardingPlusRecordsActual">実際</string>
     <string name="onboardingPlusRecordsBody">Plus は完全な記録を開き、人生プロフィールを使用して、最初の仕事から退職までの仕事を大局的に捉えます。</string>
     <string name="onboardingPlusRecordsTitle">あなたが計画した日、そしてあなたが生きた日を見てください</string>
+    <string name="onboardingPlusRestBody">休暇の残りを入れると、DoneAt が祝日とシフトから連休の候補を探します。各シフトの前には、選んだ時刻にアラームで起こします。</string>
+    <string name="onboardingPlusRestTitle">連休を前もって計画し、毎シフト時間どおりに起きる</string>
     <string name="onboardingPrivacyBody">アカウントは不要です。自分でプランを見るか iCloud 同期を入れないかぎり、カウントダウンと記録はこの端末に残ります。勤務や給与のデータが開発者に届くことはありません。</string>
     <string name="onboardingPrivacyBodyLocal">アカウントは不要です。カウントダウンと記録はこの端末に残り、Android のバックアップを有効にしている場合はそこにも含まれます。勤務や給与のデータが開発者に届くことはありません。</string>
     <string name="onboardingPrivacyTitle">データはこのデバイス内に</string>
@@ -645,7 +645,7 @@
     <string name="plusEditLocked">過ぎた日を直す</string>
     <string name="plusFocusLocked">ひとつのことに集中する</string>
     <string name="plusGracePeriod">お支払いに問題があります。いまのところ利用は続けられます。App Store でお支払い方法を更新すれば、そのまま使えます。</string>
-    <string name="plusIntroBody">タイマーと直近1週間は無料のまま。Plusで年間全体、働く人生、編集、集中、休暇の計画、iCloud同期を利用できます。</string>
+    <string name="plusIntroBody">タイマーと直近1週間は無料のまま。Plusで年間全体、働く人生、編集、集中、休暇の計画、シフトアラーム、iCloud同期を利用できます。</string>
     <string name="plusIntroTitle">時間のかたちを見る</string>
     <string name="plusLeaveLocked">いつでも休暇を計画</string>
     <string name="plusLifeLocked">仕事をもっと長い尺度で見る</string>

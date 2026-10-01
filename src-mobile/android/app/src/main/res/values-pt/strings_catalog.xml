@@ -589,12 +589,12 @@
     <string name="onboardingPlusFocusBreakBody">A próxima tarefa espera até que você esteja pronto. Nada começa sozinho.</string>
     <string name="onboardingPlusFocusTask">Termine a revisão semanal</string>
     <string name="onboardingPlusFocusTitle">Dê a uma tarefa um período de tempo claro</string>
-    <string name="onboardingPlusLeaveBody">Adicione os saldos de férias: o DoneAt cruza feriados e a sua escala no próximo ano e mostra as datas e as férias necessárias.</string>
-    <string name="onboardingPlusLeaveTitle">Transforme poucos dias de férias numa pausa longa</string>
     <string name="onboardingPlusLifeBody">Adicione as datas que você conhece. DoneAt separa o tempo vivido do projetado sem transformar estimativas em histórico.</string>
     <string name="onboardingPlusRecordsActual">Real</string>
     <string name="onboardingPlusRecordsBody">Plus abre seu registro completo e, em seguida, usa um perfil de vida para colocar o trabalho em perspectiva, desde seu primeiro emprego até a aposentadoria.</string>
     <string name="onboardingPlusRecordsTitle">Veja o dia que você planejou — e aquele que você viveu</string>
+    <string name="onboardingPlusRestBody">Adicione as férias e o DoneAt encontra pausas longas entre feriados e turnos. Antes de cada turno, um alarme acorda-o à hora que escolher.</string>
+    <string name="onboardingPlusRestTitle">Planeie pausas longas e acorde a tempo para cada turno</string>
     <string name="onboardingPrivacyBody">Sem contas. A contagem decrescente e os registos ficam neste dispositivo, a não ser que veja os planos ou ative a sincronização com o iCloud. As horas e o salário nunca chegam ao desenvolvedor.</string>
     <string name="onboardingPrivacyBodyLocal">Sem conta. A contagem regressiva e os seus registros ficam neste dispositivo, e no backup do Android se ele estiver ativado. Dados de trabalho e salário nunca são enviados ao desenvolvedor.</string>
     <string name="onboardingPrivacyTitle">Fica neste dispositivo</string>
@@ -649,7 +649,7 @@
     <string name="plusEditLocked">Alterar um dia já passado</string>
     <string name="plusFocusLocked">Focar numa só coisa</string>
     <string name="plusGracePeriod">Há um problema com o pagamento. O acesso continua por agora, e atualizar o método de pagamento na App Store mantém-no.</string>
-    <string name="plusIntroBody">O temporizador e a última semana continuam grátis. O Plus abre o ano completo, a vida profissional, edição, foco, planeamento de férias e sincronização com iCloud.</string>
+    <string name="plusIntroBody">O temporizador e a última semana continuam grátis. O Plus abre o ano completo, a vida profissional, edição, foco, planeamento de férias, alarmes de turno e sincronização com iCloud.</string>
     <string name="plusIntroTitle">Ver a forma do seu tempo</string>
     <string name="plusLeaveLocked">Planeie férias sempre que quiser</string>
     <string name="plusLifeLocked">Ver o trabalho numa escala maior</string>

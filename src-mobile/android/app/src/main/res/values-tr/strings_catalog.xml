@@ -587,12 +587,12 @@
     <string name="onboardingPlusFocusBreakBody">Bir sonraki görev siz hazır olana kadar bekler. Hiçbir şey kendi kendine başlamaz.</string>
     <string name="onboardingPlusFocusTask">Haftalık incelemeyi bitirin</string>
     <string name="onboardingPlusFocusTitle">Bir göreve net bir süre verin</string>
-    <string name="onboardingPlusLeaveBody">İzin bakiyeni ekle; DoneAt önümüzdeki yılın tatillerini ve vardiyanı karşılaştırıp tarihleri ve gereken izni gösterir.</string>
-    <string name="onboardingPlusLeaveTitle">Birkaç günlük izni uzun bir tatile çevir</string>
     <string name="onboardingPlusLifeBody">Bildiğiniz tarihleri ekleyin. DoneAt, tahminleri tarihe dönüştürmeden yaşanan ve öngörülen zamanı ayırır.</string>
     <string name="onboardingPlusRecordsActual">Gerçek</string>
     <string name="onboardingPlusRecordsBody">Plus tüm kayıtlarınızı açar, ardından ilk işinizden emekliliğinize kadar olan süreci bir perspektife oturtmak için bir yaşam profili kullanır.</string>
     <string name="onboardingPlusRecordsTitle">Planladığınız ve yaşadığınız günü görün</string>
+    <string name="onboardingPlusRestBody">İzinlerini ekle, DoneAt tatiller ve vardiyalarına göre uzun aralar bulsun. Her vardiyadan önce, seçtiğin saatte bir alarm seni uyandırır.</string>
+    <string name="onboardingPlusRestTitle">Uzun tatiller planla, her vardiyaya zamanında uyan</string>
     <string name="onboardingPrivacyBody">Hesap gerekmez. Sen planlara bakmadıkça ya da iCloud eşitlemeyi açmadıkça geri sayım ve kayıtlar bu cihazda kalır. Çalışma ve maaş verileri geliştiriciye gitmez.</string>
     <string name="onboardingPrivacyBodyLocal">Hesap gerekmez. Geri sayım ve kayıtların bu cihazda kalır; Android yedeklemesi açıksa orada da bulunur. İş ve maaş verileri asla geliştiriciye gönderilmez.</string>
     <string name="onboardingPrivacyTitle">Veriler bu cihazda kalır</string>
@@ -647,7 +647,7 @@
     <string name="plusEditLocked">Geçmiş bir günü değiştir</string>
     <string name="plusFocusLocked">Tek bir işe odaklan</string>
     <string name="plusGracePeriod">Ödemede bir sorun var. Erişim şimdilik sürüyor; App Store’da ödeme yöntemini güncellersen devam eder.</string>
-    <string name="plusIntroBody">Zamanlayıcı ve son haftan ücretsiz kalır. Plus; tüm yılı, çalışma hayatını, düzenlemeyi, odağı, izin planlamayı ve iCloud eşzamanlamayı açar.</string>
+    <string name="plusIntroBody">Zamanlayıcı ve son haftan ücretsiz kalır. Plus; tüm yılı, çalışma hayatını, düzenlemeyi, odağı, izin planlamayı, vardiya alarmlarını ve iCloud eşzamanlamayı açar.</string>
     <string name="plusIntroTitle">Zamanının biçimini gör</string>
     <string name="plusLeaveLocked">İznini dilediğin zaman planla</string>
     <string name="plusLifeLocked">Çalışmayı daha geniş ölçekte gör</string>
