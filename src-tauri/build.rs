@@ -4,9 +4,11 @@ fn build_native_mini_timer() {
 
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let source = manifest_dir.join("native-mini/NativeMiniTimer.m");
+    let frame_rate_source = manifest_dir.join("native-mini/WebViewFrameRate.m");
     let widget_bridge_source = manifest_dir.join("macappstore/WidgetHostBridge.swift");
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let object = out_dir.join("NativeMiniTimer.o");
+    let frame_rate_object = out_dir.join("WebViewFrameRate.o");
     let widget_bridge_object = out_dir.join("WidgetHostBridge.o");
     let library = out_dir.join("libNativeMiniTimer.a");
     let module_cache = out_dir.join("clang-module-cache");
@@ -54,27 +56,40 @@ fn build_native_mini_timer() {
         .to_string()
     });
 
-    let mut clang = Command::new("clang");
-    clang
-        .arg("-c")
-        .arg(&source)
-        .args(["-o", object.to_str().unwrap()])
-        .args(["-arch", architecture])
-        .arg(format!("-mmacosx-version-min={deployment_target}"))
-        .args(["-isysroot", &sdk])
-        .arg("-fobjc-arc")
-        .arg("-fmodules")
-        .arg(format!("-fmodules-cache-path={}", module_cache.display()));
-    if env::var("PROFILE").as_deref() == Ok("release") {
-        clang.arg("-O2");
-    } else {
-        clang.arg("-O0");
-    }
-    let output = clang.output().expect("failed to run clang");
-    if !output.status.success() {
-        panic!(
-            "failed to compile native Mini Timer:\n{}",
-            String::from_utf8_lossy(&output.stderr)
+    let compile_objc = |source: &PathBuf, object: &PathBuf, what: &str| {
+        let mut clang = Command::new("clang");
+        clang
+            .arg("-c")
+            .arg(source)
+            .args(["-o", object.to_str().unwrap()])
+            .args(["-arch", architecture])
+            .arg(format!("-mmacosx-version-min={deployment_target}"))
+            .args(["-isysroot", &sdk])
+            .arg("-fobjc-arc")
+            .arg("-fmodules")
+            .arg(format!("-fmodules-cache-path={}", module_cache.display()));
+        if env::var("PROFILE").as_deref() == Ok("release") {
+            clang.arg("-O2");
+        } else {
+            clang.arg("-O0");
+        }
+        let output = clang.output().expect("failed to run clang");
+        if !output.status.success() {
+            panic!(
+                "failed to compile {what}:\n{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    };
+    compile_objc(&source, &object, "native Mini Timer");
+    // WebKit SPI: only channels that allow private APIs link it, so the Mac App
+    // Store binary never contains these selectors. See WebViewFrameRate.m.
+    let include_frame_rate = env::var_os("CARGO_FEATURE_MACOS_PRIVATE_API").is_some();
+    if include_frame_rate {
+        compile_objc(
+            &frame_rate_source,
+            &frame_rate_object,
+            "WebView frame rate bridge",
         );
     }
 
@@ -159,6 +174,9 @@ fn build_native_mini_timer() {
 
     let mut ar = Command::new("ar");
     ar.args(["crus", library.to_str().unwrap(), object.to_str().unwrap()]);
+    if include_frame_rate {
+        ar.arg(&frame_rate_object);
+    }
     if include_widget_bridge {
         ar.arg(&widget_bridge_object);
     }
@@ -171,6 +189,7 @@ fn build_native_mini_timer() {
     }
 
     println!("cargo:rerun-if-changed={}", source.display());
+    println!("cargo:rerun-if-changed={}", frame_rate_source.display());
     println!("cargo:rerun-if-changed={}", widget_bridge_source.display());
     println!("cargo:rerun-if-env-changed=OWC_APP_GROUP_IDENTIFIER");
     println!("cargo:rerun-if-env-changed=OWC_APPLE_TEAM_ID");
@@ -183,6 +202,9 @@ fn build_native_mini_timer() {
     // 迷你计时的倒计时换字用 CIGaussianBlur 做模糊。
     println!("cargo:rustc-link-lib=framework=CoreImage");
     println!("cargo:rustc-link-lib=framework=ServiceManagement");
+    if include_frame_rate {
+        println!("cargo:rustc-link-lib=framework=WebKit");
+    }
     if include_widget_bridge {
         println!("cargo:rustc-link-search=native={sdk}/usr/lib/swift");
         println!("cargo:rustc-link-lib=dylib=swiftCore");
