@@ -1264,6 +1264,23 @@ fn set_macos_application_menu(app: &AppHandle, labels: &DesktopMenuLabels) -> ta
 }
 
 #[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
+/// WKWebView 默认把 requestAnimationFrame 压在 60fps 左右，120Hz ProMotion 屏上
+/// 数字滚动、framer-motion 过渡和撒花都只有一半帧率。只在允许私有 API 的渠道
+/// 里调整，商店版保持 WebKit 默认值；原因与实测见 native-mini/WebViewFrameRate.m。
+#[cfg(all(target_os = "macos", feature = "macos-private-api"))]
+fn allow_full_frame_rate(window: &tauri::WebviewWindow) {
+    extern "C" {
+        fn owc_allow_full_frame_rate(webview: *mut std::ffi::c_void);
+    }
+    // SAFETY: wry 在 WKWebView 创建完成后才调用这个闭包，并且在主线程上；
+    // 指针只在调用期间使用。
+    if let Err(error) =
+        window.with_webview(|webview| unsafe { owc_allow_full_frame_rate(webview.inner()) })
+    {
+        log::warn!("failed to raise WebView frame rate: {error}");
+    }
+}
+
 fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
     let store = desktop_store(app).map_err(|error| std::io::Error::other(error.to_string()))?;
     let always_on_top = store
@@ -1328,6 +1345,9 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
 
     #[cfg(target_os = "windows")]
     pin_webview_to_monitor_dpi(&window);
+
+    #[cfg(all(target_os = "macos", feature = "macos-private-api"))]
+    allow_full_frame_rate(&window);
 
     #[cfg(all(target_os = "macos", not(feature = "self-update")))]
     if let Ok(ns_window) = window.ns_window() {
@@ -2192,6 +2212,10 @@ pub fn run() {
                 if cfg!(debug_assertions) && std::env::var_os("OWC_SHOW_NATIVE_MINI").is_some() {
                     native_mini::toggle();
                 }
+            }
+            #[cfg(all(target_os = "macos", feature = "macos-private-api"))]
+            if let Some(window) = app.get_webview_window("main") {
+                allow_full_frame_rate(&window);
             }
             #[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
             if mini_window_enabled() {
