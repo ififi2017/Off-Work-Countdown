@@ -3902,13 +3902,13 @@ export function OffWorkCountdown({
                     <button
                       type="button"
                       onClick={() =>
-                        void openDesktopUrl(officialPageUrl(lang, "about"))
+                        void openDesktopUrl(officialHomeUrl(lang))
                       }
                       className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
                     >
                       <span className="flex items-center gap-2">
-                        <Info className="h-4 w-4" />
-                        {t("aboutProject")}
+                        <Globe className="h-4 w-4" />
+                        {t("visitOfficialWebsite")}
                       </span>
                       <span className="flex items-center gap-2">
                         {IS_MAC_APP_STORE_BUILD && desktopCurrentVersion && (
@@ -3932,17 +3932,6 @@ export function OffWorkCountdown({
                       <span className="flex items-center gap-2">
                         <Smartphone className="h-4 w-4" />
                         {t("downloadMobileApp")}
-                      </span>
-                      <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void openDesktopUrl(officialHomeUrl(lang))}
-                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Globe className="h-4 w-4" />
-                        {t("visitOfficialWebsite")}
                       </span>
                       <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
                     </button>
