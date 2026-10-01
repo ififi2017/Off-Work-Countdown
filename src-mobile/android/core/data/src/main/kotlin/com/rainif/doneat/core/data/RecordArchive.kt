@@ -18,7 +18,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.time.Instant
 
 /**
- * The local archive file, in iOS's `RecordLocalFile` shape: the schema-6
+ * The local archive file, in iOS's `RecordLocalFile` shape: the schema-7
  * backup document (base64, exactly what an export would write), plus the
  * tombstones a backup never carries. One codec serves the local file, export
  * and import, which is why Android keeps records in a file rather than tables.

@@ -29,7 +29,7 @@ class FirstRunRestoreTest {
     }
 
     @Test fun notABackupIsReportedNotThrown() {
-        for (name in listOf("illegal-not-json.txt", "illegal-v0.json", "illegal-v7.json")) {
+        for (name in listOf("illegal-not-json.txt", "illegal-v0.json", "illegal-v8.json")) {
             assertSame(name, RestorePreview.Unreadable, FirstRunRestore.preview(archive(name), now))
         }
         assertSame(RestorePreview.TooLarge, FirstRunRestore.preview(ByteArray((FirstRunRestore.MAX_BYTES + 1).toInt()), now))

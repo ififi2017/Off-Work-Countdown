@@ -2,15 +2,15 @@
 
 源：`9252fdf` 的 `RecordJSON.swift`、`RecordArchive.swift`、12 类实体、`RecordSchemaCompatibilityTests.swift`。
 
-版本独立：**wire = 6**（接受 1…6）；本地档案文件（`RecordLocalFile`）的 `schemaVersion` 跟随 wire；fixture 协议 v1；sync envelope 尚未创建。D-13：Android 不使用 Room 业务表。
+版本独立：**wire = 7**（接受 1…7；v7 由计划 020 加入请假记录）；本地档案文件（`RecordLocalFile`）的 `schemaVersion` 跟随 wire；fixture 协议 v1；sync envelope 尚未创建。D-13：Android 不使用 Room 业务表。
 
 ## 1. 用户导出信封 `RecordJSONDocument`
 
-当前导出恒为 `schemaVersion: 6`。`exportedAtMs` 为 Unix **毫秒**。民用日为 `YYYY-MM-DD`（实现用 `uuuu-MM-dd` / `ISO_LOCAL_DATE`，禁止 Java `YYYY`/`DD`）。
+当前导出恒为 `schemaVersion: 7`。`exportedAtMs` 为 Unix **毫秒**。民用日为 `YYYY-MM-DD`（实现用 `uuuu-MM-dd` / `ISO_LOCAL_DATE`，禁止 Java `YYYY`/`DD`）。
 
-| JSON key | 类型 | 可空 | 缺省 | 首次 | v6 导出 |
+| JSON key | 类型 | 可空 | 缺省 | 首次 | v7 导出 |
 |---|---|---|---|---|---|
-| schemaVersion | Int | 否 | — | 1 | 6 |
+| schemaVersion | Int | 否 | — | 1 | 7 |
 | exportedAtMs | Double | 否 | — | 1 | 是 |
 | timeZoneIdentifier | String | 否 | IANA | 1 | 是 |
 | calendarIdentifier | String | 否 | gregorian / iso8601 | 1 | 是 |
@@ -27,8 +27,10 @@
 | recordsStartedOn | String? | 是 | null | **3** | 有则写 |
 | extendedSchedule | object? | 是 | null；`!isValid` 拒绝 | **6** | 有则写 |
 | rosterDays | []? | 是 | [] | **6** | 有则写 |
+| leaveBalances | []? | 是 | [] | **7** | 有则写 |
+| leaveDays | []? | 是 | [] | **7** | 有则写 |
 
-拒绝：`schemaVersion ∉ 1...6` → `unknownSchemaVersion`；坏 JSON → `invalidDocument`。v2 可解码，历史从未写出，形状按最后 v1。
+拒绝：`schemaVersion ∉ 1...7` → `unknownSchemaVersion`；坏 JSON → `invalidDocument`。v2 可解码，历史从未写出，形状按最后 v1。
 
 ## 2. 版本增量（来自源测试头注释）
 
@@ -40,10 +42,11 @@
 | 4 | focusPlanningConfiguration | — |
 | 5 | syncedPreferences | 人生 workHistoryMode / 薪资经历 / futureIncomeDecline |
 | 6 | extendedSchedule, rosterDays | — |
+| 7 | leaveBalances, leaveDays | — |
 
 降级剥离规则与 `downgraded(_:to:)` 一致，生成器 `scripts/android-synthetic-archives.mjs` 复制该逻辑。
 
-## 3. 十二类实体
+## 3. 十四类实体
 
 合并通例：身份键冲突时更高 `editCount` 胜；平手比较 `editTieBreaker` **UUID 字符串**（统一大小写后的字典序，不用 JVM `UUID.compareTo`）。墙上时钟不决胜。
 
@@ -106,11 +109,19 @@ isEnabled, shiftTypes[{id,name(trim 1–40),kind=`work|rest`,startMinutes,endMin
 
 dayKey, shiftTypeID, assignedShiftType?（冻结班型拷贝）, generatedFromPattern?, timeZoneIdentifier, editedAtMs, editCount, editTieBreaker。
 
-## 4. 不进用户 v6 的本地/同步层
+### 3.13 LeaveBalance `leaveBalances[]` 身份 `id`
+
+id, kind（`annual|compensatory|custom`，其他字符串读作 custom，不使整份文档失败）, name?（trim 后 ≤40 个字符；custom 必填）, entitledHalfDays, usedHalfDays（均为 0–7320 的半天整数）, validFromDayKey?, validThroughDayKey?（含首尾，起不晚于止）, editedAtMs, editCount, editTieBreaker。`restoreErased` 重映射 id 时同步改写请假日 `uses[].balanceID`。
+
+### 3.14 LeaveDay `leaveDays[]` 身份 `dayKey`（班次起始日）
+
+dayKey, portion（`whole|firstHalf|secondHalf`，字符串；未知值只拒该行）, uses[{balanceID, halfDays>0}]（为空，或各余额不重复且合计等于 portion 的半天数）, planID?, timeZoneIdentifier, editedAtMs, editCount, editTieBreaker。余额从不递减：已采用方案占用的半天数是各请假日 uses 之和。
+
+## 4. 不进用户 v7 的本地/同步层
 
 `RecordLocalFile`：schemaVersion, document(嵌入备份字节), erased[], sync?。  
 `ErasedDTO`：entityType, logicalKey, erasedAtMs, editCount?。  
-`RecordEntityType` raw：careerPeriod, scheduleSnapshot, calendarException, dayOverride, workObservation, lifeProfile, focusTask, focusSession, focusPlanningConfiguration, syncedPreferences, extendedSchedule, rosterDay。  
+`RecordEntityType` raw：careerPeriod, scheduleSnapshot, calendarException, dayOverride, workObservation, lifeProfile, focusTask, focusSession, focusPlanningConfiguration, syncedPreferences, extendedSchedule, rosterDay, leaveBalance, leaveDay。  
 `SyncLocalState`：accountID, generation, syncEnabled, engineState, rows, conflicts, deletingCloud, entityTypeRevision。  
 **购买凭据、StoreKit/Play token、JWS、isPlus 授权一律不在备份。** 薪资数字是用户数据，不是购凭证。
 
@@ -118,25 +129,26 @@ dayKey, shiftTypeID, assignedShiftType?（冻结班型拷贝）, generatedFromPa
 
 模式：`skipErased`（默认）、`restoreErased`（UUID 重映射并改写引用）、`resolveByEditStamp`。  
 `recordsStartedOn` 取本地与导入的较早者。  
-建议上限 25 MiB（产品保护，可按真实档案调整）。v7 不得当 v6 忽略字段导入。
+建议上限 25 MiB（产品保护，可按真实档案调整）。v8 不得当 v7 忽略字段导入。
 
 ## 6. 字段抽样勾选
 
 | 家族 | 合成样本 | 含购凭证？ | 备注 |
 |---|---|---|---|
-| CareerPeriod | v1–v6 | 否 | label Current |
+| CareerPeriod | v1–v7 | 否 | label Current |
 | ScheduleSnapshot | 全版本（测试 fullState 无，合成补了一条） | 否 | configurationData 为示意 JSON 的 base64 |
 | CalendarException | 同上补一条 `2026-08-26#user` | 否 | |
-| DayOverride | v1–v6 | 否 | customSegments 8h |
-| WorkObservation | v1–v6 | 否 | v1 无 edit 戳 |
-| LifeProfile | v1–v6 | 否 | 有薪资经历，非 IAP |
-| FocusTask/Session | v1–v6 | 否 | |
-| FocusPlanningConfiguration | v4–v6 | 否 | |
-| SyncedPreferences | v5–v6 | 否 | salaryAmount 字符串 |
-| ExtendedSchedule / RosterDay | 仅 v6 | 否 | |
+| DayOverride | v1–v7 | 否 | customSegments 8h |
+| WorkObservation | v1–v7 | 否 | v1 无 edit 戳 |
+| LifeProfile | v1–v7 | 否 | 有薪资经历，非 IAP |
+| FocusTask/Session | v1–v7 | 否 | |
+| FocusPlanningConfiguration | v4–v7 | 否 | |
+| SyncedPreferences | v5–v7 | 否 | salaryAmount 字符串 |
+| ExtendedSchedule / RosterDay | v6–v7 | 否 | |
+| LeaveBalance / LeaveDay | 仅 v7 | 否 | 半天整数；请假日下半班 |
 
 ## 7. 合成档案
 
-`docs/android/synthetic-archives/`。非法：v0、v7、非 JSON、`2026-02-30`、注入 `purchaseToken`/`isPlus`（用于证明**不得授 Plus**）。  
+`docs/android/synthetic-archives/`。非法：v0、v8、非 JSON、`2026-02-30`、注入 `purchaseToken`/`isPlus`（用于证明**不得授 Plus**）。  
 检查：`node scripts/android-synthetic-archives.mjs --check`。  
 Kotlin/Room 往返 **NOT_RUN**。

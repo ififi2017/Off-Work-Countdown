@@ -38,7 +38,7 @@ class RecordsTransferTest {
         RecordStore(folder.root.toPath().resolve("records.json"), { now }, { "Asia/Shanghai" }, UnconfinedTestDispatcher(testScheduler)).also { it.load() }
 
     @Test fun everyKnownVersionPreviewsAndImports() = runTest {
-        for (version in 1..6) {
+        for (version in 1..7) {
             val bytes = archive("v$version.json")
             val preview = RecordsTransfer.preview(bytes, RecordState())
             assertTrue("v$version: $preview", preview is ImportPreview.Ready)
@@ -50,7 +50,7 @@ class RecordsTransferTest {
     }
 
     @Test fun aNewerOrBrokenFileIsRefusedWithItsReason() {
-        assertSame(ImportPreview.UnsupportedVersion, RecordsTransfer.preview(archive("illegal-v7.json"), RecordState()))
+        assertSame(ImportPreview.UnsupportedVersion, RecordsTransfer.preview(archive("illegal-v8.json"), RecordState()))
         for (name in listOf("illegal-not-json.txt", "illegal-v0.json")) {
             assertSame(name, ImportPreview.Invalid, RecordsTransfer.preview(archive(name), RecordState()))
         }
@@ -68,7 +68,7 @@ class RecordsTransferTest {
         assertTrue(preview.added > 0)
         val records = store()
         val original = records.state.value
-        for (bytes in listOf("[]".toByteArray(), "{broken".toByteArray(), archive("illegal-v7.json"))) {
+        for (bytes in listOf("[]".toByteArray(), "{broken".toByteArray(), archive("illegal-v8.json"))) {
             assertTrue(RecordsTransfer.preview(bytes, original) !is ImportPreview.Ready)
             assertNull(RecordsTransfer.commit(records, bytes))
             assertEquals(original, records.state.value)
@@ -104,7 +104,7 @@ class RecordsTransferTest {
         val records = store()
         RecordsTransfer.commit(records, archive("v6.json"))
         val before = records.state.value
-        assertNull(RecordsTransfer.commit(records, archive("illegal-v7.json")))
+        assertNull(RecordsTransfer.commit(records, archive("illegal-v8.json")))
         assertEquals(before, records.state.value)
     }
 
@@ -148,11 +148,11 @@ class RecordsTransferTest {
                 "schemaVersion", "exportedAtMs", "timeZoneIdentifier", "calendarIdentifier", "careerPeriods",
                 "scheduleSnapshots", "calendarExceptions", "dayOverrides", "workObservations", "lifeProfile",
                 "focusTasks", "focusSessions", "focusPlanningConfiguration", "syncedPreferences", "recordsStartedOn",
-                "extendedSchedule", "rosterDays",
+                "extendedSchedule", "rosterDays", "leaveBalances", "leaveDays",
             ) })
             assertTrue("no imported private metadata", listOf("secret-token", "secret-oauth", "secret-sync").none { it in exported })
             assertEquals(includeLife, "lifeProfile" in keys)
-            assertEquals(6, Json.parseToJsonElement(exported).jsonObject.getValue("schemaVersion").toString().toInt())
+            assertEquals(7, Json.parseToJsonElement(exported).jsonObject.getValue("schemaVersion").toString().toInt())
         }
     }
 

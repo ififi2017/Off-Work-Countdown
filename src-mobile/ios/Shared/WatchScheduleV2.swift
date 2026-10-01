@@ -11,6 +11,12 @@ nonisolated struct WatchScheduleV2: Codable, Equatable, Sendable {
     var resumeAtMs: Int64? = nil
     let presentation: WatchPresentationV1
 
+    /// Adopted leave (plan 020). Older Watch builds would ignore it and count
+    /// down to a shift the user has taken off, so it needs schedule schema 6.
+    var usesLeave: Bool {
+        configuration.extendedSchedule.map { !$0.leaveDays.isEmpty || $0.baseHours != nil } ?? false
+    }
+
     var usesAnnualDateRanges: Bool {
         configuration.extendedSchedule?.shiftTypes.contains {
             $0.kind == .work && !$0.isArchived && $0.annualDateRange != nil
@@ -61,7 +67,14 @@ nonisolated struct WatchScheduleV2: Codable, Equatable, Sendable {
                   plan.handSetDays.allSatisfy({ key, id in
                       ExtendedScheduleResolver.parse(dayKey: key) != nil
                           && (plan.shiftTypes.contains { $0.id == id } || plan.frozenShiftTypes[key]?.id == id)
-                  }) else { return false }
+                  }),
+                  plan.leaveDays.count <= 2_000,
+                  plan.leaveDays.keys.allSatisfy({ ExtendedScheduleResolver.parse(dayKey: $0) != nil }),
+                  plan.baseHours.map({ hours in
+                      validClock(hours.startTime) && validClock(hours.endTime)
+                          && (hours.breakStartTime.map(validClock) ?? true)
+                          && (0..<1_440).contains(hours.breakDurationMinutes)
+                  }) ?? true else { return false }
         }
         if let currentShift {
             guard WatchShiftEvaluator.evaluate(currentShift, nowMs: 0) != nil,

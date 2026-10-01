@@ -345,8 +345,12 @@ final class ShiftSession {
 #endif
     }
     /// Salary-free hours for a schedule snapshot. Overtime and "now" stay off.
+    ///
+    /// Never carries leave: a snapshot records the schedule, and Records lays
+    /// leave over it as a layer of its own.
     func hoursConfiguration(at date: Date = .now) -> ScheduleHoursConfiguration {
-        let input = rulesInput(at: date, using: .base)
+        var input = rulesInput(at: date, using: .base)
+        input.extendedSchedule = extendedSchedulePlan(at: date, using: .base)
         return ScheduleHoursConfiguration(
             startTime: input.startTime,
             endTime: input.endTime,
@@ -560,7 +564,7 @@ final class ShiftSession {
             extendedSchedule: extendedSchedulePlan(at: date, using: source)
         )
         return pinningCurrentShift(
-            input,
+            applyingLeave(to: input),
             fixesStart: startMinutes != nil || earlyStart,
             fixesEnd: endMinutes != nil
         )
@@ -597,6 +601,21 @@ final class ShiftSession {
             finishedAtMs: finishedAtMs
         )
     }
+    /// The adopted leave laid over `input`'s plan (plan 020), taken from its
+    /// own fixed hours where no extended schedule assigns the day.
+    private func applyingLeave(to input: NativeRulesInput) -> NativeRulesInput {
+        var input = input
+        input.extendedSchedule = preferences.extendedSchedulePlan(
+            input.extendedSchedule,
+            applyingLeaveOver: ExtendedScheduleDayHours(
+                startTime: input.startTime,
+                endTime: input.endTime,
+                breakStartTime: input.breakStartTime,
+                breakDurationMinutes: input.breakDurationMinutes
+            )
+        )
+        return input
+    }
     func rulesInput(
         applying change: ScheduleFieldChange,
         at date: Date
@@ -606,7 +625,7 @@ final class ShiftSession {
         let lunchOn = change.lunchEnabled ?? preferences.lunchEnabled
         let lunchStart = change.lunchStartMinutes ?? preferences.lunchStartMinutes
         let lunchDuration = change.lunchDurationMinutes ?? preferences.lunchDurationMinutes
-        return .init(
+        return applyingLeave(to: .init(
             startTime: timeString(start),
             endTime: timeString(end),
             nowMs: date.timeIntervalSince1970 * 1_000,
@@ -628,7 +647,7 @@ final class ShiftSession {
                     applying: change.rosterEdits
                 )
                 : nil
-        )
+        ))
     }
     /// Whether the explicit Save action needs the second choice about today.
     /// Swift assembles the current and proposed inputs; `ScheduleRules`
@@ -1151,6 +1170,9 @@ extension ShiftSession {
                                         },
                                         frozenShiftTypes: plan.frozenShiftTypes.filter { days[$0.key] == $0.value.id },
                                         fallsBackToBaseSchedule: plan.fallsBackToBaseSchedule,
+                                        // Past leave changes nothing the Watch shows.
+                                        leaveDays: plan.leaveDays.filter { key, _ in key >= today },
+                                        baseHours: plan.baseHours,
                                         revision: plan.revision)
         }
         let input = ScheduleRuleInput(startTime: source.startTime, endTime: source.endTime, nowMs: 0,

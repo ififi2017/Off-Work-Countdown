@@ -8,7 +8,9 @@ import Foundation
 /// states the entitlement, what they had already used before DoneAt, and an
 /// optional validity window, and the planner only spends what is left inside
 /// that window. It never grants next year's allowance or extends an expired one.
-nonisolated struct LeaveBalance: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct LeaveBalance: Equatable, Sendable, Identifiable {
+    static let schemaVersion = 1
+
     nonisolated enum Kind: String, Codable, Sendable {
         case annual
         /// Time off in lieu. The user states it; overtime is never converted.
@@ -36,6 +38,9 @@ nonisolated struct LeaveBalance: Codable, Equatable, Sendable, Identifiable {
     /// Civil dates, `YYYY-MM-DD`, inclusive. `nil` is open-ended.
     var validFromDayKey: String?
     var validThroughDayKey: String?
+    var editedAt: Date = .distantPast
+    var editCount: Int = 0
+    var editTieBreaker: UUID = WorkObservation.unsetTieBreaker
 
     /// What the planner may still spend, before any adopted plan is deducted.
     var remainingHalfDays: Int { max(0, entitledHalfDays - usedHalfDays) }
@@ -51,6 +56,7 @@ nonisolated struct LeaveBalance: Codable, Equatable, Sendable, Identifiable {
         return (0...Self.maximumHalfDays).contains(entitledHalfDays)
             && (0...Self.maximumHalfDays).contains(usedHalfDays)
             && trimmed.count <= Self.maximumNameLength
+            && editCount >= 0
             && (kind != .custom || !trimmed.isEmpty)
     }
 

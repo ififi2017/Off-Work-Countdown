@@ -87,6 +87,10 @@ Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 
 
 本次 Swift oracle 扩展至 18 个计划、2,376 个 snapshots、66 组 widgetShifts／expansions，覆盖季节边界、沿用月份、节假日、冻结历史和归档类型。`RecordJson` 与快照配置保留年度字段，记录 oracle 共 102 份文档，新增合法范围、无效日期、休息类型、重叠、缺少边界及冻结历史的导入／导出案例。两个 fixture 完整比对及 domain／data 回归通过；iOS 年度编辑入口不在本次 Android UI 范围内。
 
+### 2026-09-30 请假叠加层（计划 020，Kotlin 尚未移植）
+
+iOS 在 `ExtendedSchedulePlan` 上新增 `leaveDays`（民用日 → 整班／前半班／后半班）与 `baseHours`（回退计划下的固定时间），解析器在其余层之后叠加：整班改为休息，半班按有效工作分钟（去掉班内休息）换算为剩余一半的起止与休息，只作用于原本上班的日子；固定排班用户用只含请假的回退计划表达，`.leaveOverBase` 的上班与否仍由固定排班判断。记录层把请假作为 `DayRecordLookup` 的一层，排在人工修正之后、节假日与排班之前。计划编码在没有请假时与此前逐字节相同，因此两份 Swift fixture 只更新了源哈希，现有答案不变。用户确认 Android 休假功能在 iOS 完成后再做，届时移植并补充请假用例。
+
 ### 不在 T08 范围
 
 - `ExtendedScheduleEditing.swift`（排班编辑器的建类型、改周期、填充月份等）依附 `ShiftSessionStore`，属于编辑 UI，随 T15/T16 移植。

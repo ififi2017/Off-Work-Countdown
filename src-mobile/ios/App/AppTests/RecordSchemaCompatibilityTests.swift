@@ -33,6 +33,8 @@ import Testing
 //    (85580f1), still under schemaVersion 5.
 //  - Plan 018 P8-a bumped schemaVersion 5 -> 6: added `extendedSchedule` and
 //    `rosterDays`.
+//  - Plan 020 P2a bumped schemaVersion 6 -> 7: added `leaveBalances` and
+//    `leaveDays`.
 //
 // IMPORTANT — schema version 2 does not exist in this history. No commit
 // ever set `RecordJSON.schemaVersion` (or the export path) to 2; the number
@@ -323,6 +325,32 @@ private func fullState() -> RecordState {
             editTieBreaker: id(20)
         )
     ]
+    state.leaveBalances = [
+        LeaveBalance(
+            id: id(21),
+            kind: .annual,
+            name: nil,
+            entitledHalfDays: 20,
+            usedHalfDays: 3,
+            validFromDayKey: "2026-01-01",
+            validThroughDayKey: "2027-03-31",
+            editedAt: day,
+            editCount: 1,
+            editTieBreaker: id(22)
+        )
+    ]
+    state.leaveDays = [
+        LeaveDay(
+            dayKey: "2026-08-26",
+            portion: .secondHalf,
+            uses: [LeaveBudgetUse(budgetID: id(21), halfDays: 1)],
+            planID: id(23),
+            timeZoneIdentifier: "UTC",
+            editedAt: day,
+            editCount: 1,
+            editTieBreaker: id(24)
+        )
+    ]
 
     return state
 }
@@ -412,6 +440,11 @@ private func downgraded(_ object: [String: Any], to version: Int) -> [String: An
     if version < 6 {
         result["extendedSchedule"] = nil
         result["rosterDays"] = nil
+    }
+
+    if version < 7 {
+        result["leaveBalances"] = nil
+        result["leaveDays"] = nil
     }
 
     return result
@@ -656,13 +689,25 @@ func schemaVersion6DocumentPreservesExtendedSchedule() throws {
     #expect(state.extendedSchedule == fullState().extendedSchedule)
     #expect(state.rosterDays == fullState().rosterDays)
     #expect(state.syncedPreferences == fullState().syncedPreferences)
+    #expect(state.leaveBalances.isEmpty)
+    #expect(state.leaveDays.isEmpty)
+}
+
+@MainActor
+@Test("Schema v7 documents preserve leave balances and leave days exactly")
+func schemaVersion7DocumentPreservesLeave() throws {
+    let (state, report) = try importDowngraded(try baseDocumentObject(), version: 7)
+    #expect(report.rejected.isEmpty)
+    #expect(state.leaveBalances == fullState().leaveBalances)
+    #expect(state.leaveDays == fullState().leaveDays)
+    #expect(state.rosterDays == fullState().rosterDays)
 }
 
 // MARK: - Cross-version guarantees
 
 @MainActor
 @Test(
-    "Every accepted schema version (1-6) imports without dropping a row, and re-exports at the current schemaVersion idempotently"
+    "Every accepted schema version (1-7) imports without dropping a row, and re-exports at the current schemaVersion idempotently"
 )
 func everyAcceptedSchemaVersionReexportsIdempotentlyWithoutDroppingRows() throws {
     let baseObject = try baseDocumentObject()
@@ -690,6 +735,8 @@ func everyAcceptedSchemaVersionReexportsIdempotentlyWithoutDroppingRows() throws
             "v\(version): extendedSchedule presence"
         )
         #expect(imported.rosterDays.count == (version >= 6 ? 1 : 0), "v\(version): rosterDay count")
+        #expect(imported.leaveBalances.count == (version >= 7 ? 1 : 0), "v\(version): leaveBalance count")
+        #expect(imported.leaveDays.count == (version >= 7 ? 1 : 0), "v\(version): leaveDay count")
 
         // Re-export always writes the current schema version...
         var state = imported
@@ -739,7 +786,7 @@ func coldArchiveWithOlderSchemaReopens() throws {
 }
 
 @MainActor
-@Test("Schema versions outside 1...6 are rejected without mutating existing state")
+@Test("Schema versions outside 1...7 are rejected without mutating existing state")
 func outOfRangeSchemaVersionsAreRejectedWithoutMutatingState() throws {
     var state = fullState()
     let before = state
@@ -756,14 +803,14 @@ func outOfRangeSchemaVersionsAreRejectedWithoutMutatingState() throws {
     }
     #expect(state == before)
 
-    document.schemaVersion = 7
+    document.schemaVersion = 8
     do {
         _ = try RecordJSON.apply(document, to: &state, mode: .skipErased)
-        Issue.record("Expected schemaVersion 7 to be rejected")
+        Issue.record("Expected schemaVersion 8 to be rejected")
     } catch RecordJSONError.unknownSchemaVersion(let version) {
-        #expect(version == 7)
+        #expect(version == 8)
     } catch {
-        Issue.record("Unexpected error for schemaVersion 7: \(error)")
+        Issue.record("Unexpected error for schemaVersion 8: \(error)")
     }
     #expect(state == before)
 

@@ -238,6 +238,57 @@ struct OnboardingPlusFocusPage: View {
     }
 }
 
+/// Leave planning, shown with an illustrative break: three days of leave
+/// bridging two holidays into nine days off. Nothing here reads the archive.
+struct OnboardingPlusLeavePage: View {
+    let preferences: PreferencesStore
+    let text: AppText
+    let onContinue: () -> Void
+
+    private enum Mark { case holiday, leave }
+    private let days: [Mark] = [.holiday, .holiday, .holiday, .leave, .leave, .leave, .holiday, .holiday, .holiday]
+
+    var body: some View {
+        OnboardingPlusPage(
+            preferences: preferences,
+            text: text,
+            title: text.t("onboardingPlusLeaveTitle"),
+            body: text.t("onboardingPlusLeaveBody"),
+            onContinue: onContinue
+        ) {
+            OWCGroupCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    Label(text.t("leaveTitle"), systemImage: "suitcase")
+                        .font(.headline)
+                    HStack(spacing: 4) {
+                        ForEach(Array(days.enumerated()), id: \.offset) { _, mark in
+                            Image(systemName: mark == .leave ? "suitcase.fill" : "flag")
+                                .font(.caption)
+                                .foregroundStyle(mark == .leave ? OWCDesign.accent : OWCDesign.secondary)
+                                .frame(maxWidth: .infinity, minHeight: 36)
+                                .background(
+                                    mark == .leave ? OWCDesign.accent.opacity(0.16) : OWCDesign.control,
+                                    in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                )
+                        }
+                    }
+                    .accessibilityHidden(true)
+                    HStack {
+                        Text(text.t("leaveDaysOff", count: 9))
+                            .font(.subheadline.weight(.semibold))
+                        Spacer(minLength: 8)
+                        Text(text.t("leaveUses", values: ["days": text.formatDays(3)]))
+                            .font(.subheadline)
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+}
+
 private struct OnboardingPlusPage<Demo: View>: View {
     @Environment(SceneState.self) private var scene
     let preferences: PreferencesStore
