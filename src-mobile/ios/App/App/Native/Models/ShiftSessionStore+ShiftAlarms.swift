@@ -21,6 +21,7 @@ extension ShiftSessionStore {
             isEnabled: settings.isEnabled,
             windowEnd: windowEnd,
             windowIsLifetime: plus.isLifetime,
+            windowRenews: plus.renewsAutomatically,
             items: alarms.map { alarm in
                 let title = shiftAlarmTitle(alarm)
                 return ShiftAlarmPlan.Item(
@@ -36,7 +37,8 @@ extension ShiftSessionStore {
             snoozeLabel: text.t("shiftAlarmSnooze"),
             snoozingLabel: text.t("shiftAlarmSnoozing"),
             refreshTitle: text.t("shiftAlarmRefreshTitle"),
-            refreshBody: text.t("shiftAlarmRefreshBody")
+            refreshBody: text.t("shiftAlarmRefreshBody"),
+            renewBody: text.t("shiftAlarmRenewBody")
         )
     }
 

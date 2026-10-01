@@ -892,6 +892,7 @@
     <string name="shareUntilStartText">Bắt đầu làm sau %1$s</string>
     <string name="shiftAlarmRefreshBody">Mở DoneAt để đặt báo thức cho các ca tiếp theo.</string>
     <string name="shiftAlarmRefreshTitle">Làm mới báo thức theo ca</string>
+    <string name="shiftAlarmRenewBody">Mở DoneAt để đặt báo thức cho kỳ tiếp theo.</string>
     <string name="shiftAlarmSnooze">Báo lại</string>
     <string name="shiftAlarmSnoozing">Đang báo lại</string>
     <string name="shiftAlarmStop">Dừng</string>

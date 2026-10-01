@@ -56,7 +56,7 @@ struct ServiceScheduleSignal: Equatable, Sendable {
             // Alarms follow the lead times and the exact entitlement window,
             // which a renewal moves without changing `isAuthorized`.
             shifts.preferences.shiftAlarmSettings.signature,
-            "\(shifts.plus.authorization)",
+            "\(shifts.plus.authorization)-\(shifts.plus.renewsAutomatically)",
         ].joined(separator: "|")
     }
 

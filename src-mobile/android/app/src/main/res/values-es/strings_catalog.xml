@@ -898,6 +898,7 @@
     <string name="shareUntilStartText">El trabajo empieza en %1$s</string>
     <string name="shiftAlarmRefreshBody">Abre DoneAt para programar las alarmas de tus próximos turnos.</string>
     <string name="shiftAlarmRefreshTitle">Actualiza las alarmas de turno</string>
+    <string name="shiftAlarmRenewBody">Abre DoneAt para programar las alarmas del próximo periodo.</string>
     <string name="shiftAlarmSnooze">Posponer</string>
     <string name="shiftAlarmSnoozing">Pospuesta</string>
     <string name="shiftAlarmStop">Detener</string>

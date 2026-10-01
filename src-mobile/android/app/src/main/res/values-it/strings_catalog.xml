@@ -898,6 +898,7 @@
     <string name="shareUntilStartText">Il lavoro inizia tra %1$s</string>
     <string name="shiftAlarmRefreshBody">Apri DoneAt per impostare le sveglie dei prossimi turni.</string>
     <string name="shiftAlarmRefreshTitle">Aggiorna le sveglie dei turni</string>
+    <string name="shiftAlarmRenewBody">Apri DoneAt per impostare le sveglie del prossimo periodo.</string>
     <string name="shiftAlarmSnooze">Posticipa</string>
     <string name="shiftAlarmSnoozing">Posticipata</string>
     <string name="shiftAlarmStop">Interrompi</string>

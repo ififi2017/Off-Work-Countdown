@@ -895,6 +895,7 @@
     <string name="shareUntilStartText">İş %1$s içinde başlıyor</string>
     <string name="shiftAlarmRefreshBody">Sonraki vardiyaların alarmlarını kurmak için DoneAt’i aç.</string>
     <string name="shiftAlarmRefreshTitle">Vardiya alarmlarını yenile</string>
+    <string name="shiftAlarmRenewBody">Sonraki dönemin alarmlarını kurmak için DoneAt’i aç.</string>
     <string name="shiftAlarmSnooze">Ertele</string>
     <string name="shiftAlarmSnoozing">Ertelendi</string>
     <string name="shiftAlarmStop">Durdur</string>

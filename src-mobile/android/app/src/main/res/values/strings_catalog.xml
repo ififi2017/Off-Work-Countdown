@@ -895,6 +895,7 @@
     <string name="shareUntilStartText">Work starts in %1$s</string>
     <string name="shiftAlarmRefreshBody">Open DoneAt to set alarms for your next shifts.</string>
     <string name="shiftAlarmRefreshTitle">Refresh shift alarms</string>
+    <string name="shiftAlarmRenewBody">Open DoneAt to set alarms for the next period.</string>
     <string name="shiftAlarmSnooze">Snooze</string>
     <string name="shiftAlarmSnoozing">Snoozing</string>
     <string name="shiftAlarmStop">Stop</string>

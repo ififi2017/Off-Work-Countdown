@@ -895,6 +895,7 @@
     <string name="shareUntilStartText">काम %1$s में शुरू</string>
     <string name="shiftAlarmRefreshBody">अपनी अगली शिफ़्ट के अलार्म लगाने के लिए DoneAt खोलें।</string>
     <string name="shiftAlarmRefreshTitle">शिफ़्ट अलार्म रीफ़्रेश करें</string>
+    <string name="shiftAlarmRenewBody">अगली अवधि के अलार्म लगाने के लिए DoneAt खोलें।</string>
     <string name="shiftAlarmSnooze">स्नूज़</string>
     <string name="shiftAlarmSnoozing">स्नूज़ पर</string>
     <string name="shiftAlarmStop">रोकें</string>

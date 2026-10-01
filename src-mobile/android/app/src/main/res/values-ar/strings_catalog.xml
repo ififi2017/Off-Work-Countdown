@@ -907,6 +907,7 @@
     <string name="shareUntilStartText">يبدأ العمل خلال %1$s</string>
     <string name="shiftAlarmRefreshBody">افتح DoneAt لضبط منبهات مناوباتك القادمة.</string>
     <string name="shiftAlarmRefreshTitle">تحديث منبهات المناوبة</string>
+    <string name="shiftAlarmRenewBody">افتح DoneAt لضبط منبهات الفترة القادمة.</string>
     <string name="shiftAlarmSnooze">غفوة</string>
     <string name="shiftAlarmSnoozing">غفوة</string>
     <string name="shiftAlarmStop">إيقاف</string>

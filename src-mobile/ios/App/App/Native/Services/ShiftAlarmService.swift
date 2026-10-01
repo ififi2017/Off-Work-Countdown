@@ -20,12 +20,17 @@ struct ShiftAlarmPlan: Equatable, Sendable {
     /// subscription's ends at its expiry, which a reminder must not suggest
     /// refreshing past.
     var windowIsLifetime: Bool
+    /// A subscription set to renew: its window still ends at the paid
+    /// expiry, but the next period's alarms only need the app opened once.
+    var windowRenews: Bool = false
     var items: [Item]
     var stopLabel: String
     var snoozeLabel: String
     var snoozingLabel: String
     var refreshTitle: String
     var refreshBody: String
+    /// The reminder's text when the alarms run out at a renewal.
+    var renewBody: String = ""
 
     static let disabled = ShiftAlarmPlan(
         isEnabled: false, windowEnd: nil, windowIsLifetime: false, items: [],
@@ -274,11 +279,12 @@ final class ShiftAlarmService {
             coveredThrough = Date(timeIntervalSince1970: item.alarm.fireAtMs / 1_000)
         }
         let incomplete = reachedLimit || failed > 0
-        let moreAfterRefresh = incomplete || (plan.windowIsLifetime && !wanted.isEmpty)
+        let renewalNext = !incomplete && plan.windowRenews && !wanted.isEmpty
+        let moreAfterRefresh = incomplete || ((plan.windowIsLifetime || plan.windowRenews) && !wanted.isEmpty)
         let reminderAt = moreAfterRefresh
             ? coveredThrough.map { $0.addingTimeInterval(Self.refreshDelay) } ?? now.addingTimeInterval(Self.refreshDelay)
             : nil
-        let delivered = await setRefreshReminder(reminderAt, plan: plan)
+        let delivered = await setRefreshReminder(reminderAt, plan: plan, body: renewalNext ? plan.renewBody : plan.refreshBody)
         status = Status(
             authorization: authorization,
             scheduledCount: held.count,
@@ -295,13 +301,13 @@ final class ShiftAlarmService {
     /// since this run has just refreshed. Returns whether a reminder is now
     /// waiting.
     @discardableResult
-    private func setRefreshReminder(_ date: Date?, plan: ShiftAlarmPlan) async -> Bool {
+    private func setRefreshReminder(_ date: Date?, plan: ShiftAlarmPlan, body: String = "") async -> Bool {
         notifications.removePending([Self.refreshIdentifier])
         notifications.removeDelivered([Self.refreshIdentifier])
         guard let date, await notifications.authorization() == .allowed else { return false }
         let content = UNMutableNotificationContent()
         content.title = plan.refreshTitle
-        content.body = plan.refreshBody
+        content.body = body
         content.sound = .default
         content.userInfo = ["route": AppRoute.shiftAlarms.rawValue]
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)

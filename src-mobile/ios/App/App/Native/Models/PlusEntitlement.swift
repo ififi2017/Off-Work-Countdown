@@ -60,6 +60,9 @@ nonisolated struct PlusSubscriptionEvidence: Equatable, Sendable {
     var expirationDate: Date?
     var gracePeriodExpirationDate: Date?
     var isTrial: Bool
+    /// StoreKit's renewal intent for the current period. Shift alarms use it
+    /// to say when the next period's alarms need the app opened once.
+    var willAutoRenew = false
 
     /// StoreKit can return several products and historical states from the
     /// same subscription group. Pick the strongest current entitlement
@@ -322,6 +325,16 @@ final class PlusEntitlement {
     var isLifetime: Bool {
         if case .authorized(.lifetime) = authorization { return true }
         return false
+    }
+
+    /// A current subscription set to renew. The next period is not yet paid,
+    /// so this only tells shift alarms to ask for the app to be opened once
+    /// it has renewed; it never extends anything by itself.
+    var renewsAutomatically: Bool {
+        switch authorization {
+        case .authorized(.subscribed), .authorized(.inGracePeriod): cachedSnapshot.subscription?.willAutoRenew == true
+        default: false
+        }
     }
 
     /// Inside the introductory offer right now, not merely eligible for it.
@@ -761,7 +774,8 @@ nonisolated private func applyStatuses(
                 state: .subscribed,
                 expirationDate: transaction.expirationDate,
                 gracePeriodExpirationDate: renewal.gracePeriodExpirationDate,
-                isTrial: renewal.offer?.type == .introductory
+                isTrial: renewal.offer?.type == .introductory,
+                willAutoRenew: renewal.willAutoRenew
             )
             fetched.subscription = PlusSubscriptionEvidence.preferred(fetched.subscription, evidence)
         case .inGracePeriod:
@@ -770,7 +784,8 @@ nonisolated private func applyStatuses(
                 state: .inGracePeriod,
                 expirationDate: transaction.expirationDate,
                 gracePeriodExpirationDate: renewal.gracePeriodExpirationDate,
-                isTrial: renewal.offer?.type == .introductory
+                isTrial: renewal.offer?.type == .introductory,
+                willAutoRenew: renewal.willAutoRenew
             )
             fetched.subscription = PlusSubscriptionEvidence.preferred(fetched.subscription, evidence)
         case .inBillingRetryPeriod:
@@ -823,6 +838,8 @@ private struct CodableSnapshot: Codable {
     var expirationMs: Double?
     var graceMs: Double?
     var isTrial: Bool
+    /// Absent in caches written before shift alarms needed it.
+    var willAutoRenew: Bool?
     /// Legacy flag from the build that stored Ask to Buy as a plain `Bool`.
     /// Decoded only so an upgrade does not lose a request that is genuinely
     /// still open; it is re-encoded as a date.
@@ -852,7 +869,8 @@ private struct CodableSnapshot: Codable {
                 state: state,
                 expirationDate: expirationMs.map { Date(timeIntervalSince1970: $0 / 1_000) },
                 gracePeriodExpirationDate: graceMs.map { Date(timeIntervalSince1970: $0 / 1_000) },
-                isTrial: isTrial
+                isTrial: isTrial,
+                willAutoRenew: willAutoRenew ?? false
             )
         }
         var since = askToBuyPendingSinceMs.map { Date(timeIntervalSince1970: $0 / 1_000) }
@@ -875,6 +893,7 @@ private struct CodableSnapshot: Codable {
             .map { $0.timeIntervalSince1970 * 1_000 }
         verifiedAtMs = verifiedAt.map { $0.timeIntervalSince1970 * 1_000 }
         isTrial = snapshot.subscription?.isTrial ?? false
+        willAutoRenew = snapshot.subscription?.willAutoRenew
         expirationMs = snapshot.subscription?.expirationDate.map { $0.timeIntervalSince1970 * 1_000 }
         graceMs = snapshot.subscription?.gracePeriodExpirationDate.map { $0.timeIntervalSince1970 * 1_000 }
         switch snapshot.subscription?.state {

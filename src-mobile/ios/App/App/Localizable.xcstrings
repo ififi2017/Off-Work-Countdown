@@ -113368,6 +113368,125 @@
           }
         }
       }
+    },
+    "shiftAlarmRenewBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "افتح DoneAt لضبط منبهات الفترة القادمة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne DoneAt, um die Wecker für den nächsten Zeitraum zu stellen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open DoneAt to set alarms for the next period."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre DoneAt para programar las alarmas del próximo periodo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrez DoneAt pour programmer les réveils de la prochaine période."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अगली अवधि के अलार्म लगाने के लिए DoneAt खोलें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buka DoneAt untuk menjadwalkan alarm periode berikutnya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri DoneAt per impostare le sveglie del prossimo periodo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt を開いて、次の期間のアラームを設定しましょう。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt을 열어 다음 기간의 알람을 맞추세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पुढील कालावधीचे अलार्म लावण्यासाठी DoneAt उघडा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abra o DoneAt para programar os alarmes do próximo período."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте DoneAt, чтобы поставить будильники на следующий период."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิด DoneAt เพื่อตั้งนาฬิกาปลุกของรอบถัดไป"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonraki dönemin alarmlarını kurmak için DoneAt’i aç."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở DoneAt để đặt báo thức cho kỳ tiếp theo."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开 DoneAt，安排下个周期的闹钟。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開 DoneAt，安排下個週期嘅鬧鐘。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開 DoneAt，安排下個週期的鬧鐘。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

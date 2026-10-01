@@ -901,6 +901,7 @@
     <string name="shareUntilStartText">До начала работы %1$s</string>
     <string name="shiftAlarmRefreshBody">Откройте DoneAt, чтобы поставить будильники на следующие смены.</string>
     <string name="shiftAlarmRefreshTitle">Обновите будильники смен</string>
+    <string name="shiftAlarmRenewBody">Откройте DoneAt, чтобы поставить будильники на следующий период.</string>
     <string name="shiftAlarmSnooze">Отложить</string>
     <string name="shiftAlarmSnoozing">Отложено</string>
     <string name="shiftAlarmStop">Стоп</string>

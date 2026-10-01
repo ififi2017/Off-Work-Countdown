@@ -892,6 +892,7 @@
     <string name="shareUntilStartText">출근까지 %1$s</string>
     <string name="shiftAlarmRefreshBody">DoneAt을 열어 다음 근무 알람을 맞추세요.</string>
     <string name="shiftAlarmRefreshTitle">근무 알람 새로 고침</string>
+    <string name="shiftAlarmRenewBody">DoneAt을 열어 다음 기간의 알람을 맞추세요.</string>
     <string name="shiftAlarmSnooze">다시 알림</string>
     <string name="shiftAlarmSnoozing">다시 알림 대기 중</string>
     <string name="shiftAlarmStop">중단</string>

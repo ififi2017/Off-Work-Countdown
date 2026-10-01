@@ -3077,6 +3077,9 @@
     "shiftAlarmRefreshTitle": {
       "resource": "string/shiftAlarmRefreshTitle"
     },
+    "shiftAlarmRenewBody": {
+      "resource": "string/shiftAlarmRenewBody"
+    },
     "shiftAlarmSnooze": {
       "resource": "string/shiftAlarmSnooze"
     },

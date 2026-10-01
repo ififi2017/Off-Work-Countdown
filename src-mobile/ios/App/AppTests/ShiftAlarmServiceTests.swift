@@ -35,6 +35,7 @@ struct ShiftAlarmServiceTests {
     final class FakeNotifications {
         var allowed = true
         var pending: [String: Date] = [:]
+        var bodies: [String: String] = [:]
 
         var center: NotificationService.ShiftCenter {
             NotificationService.ShiftCenter(
@@ -44,6 +45,7 @@ struct ShiftAlarmServiceTests {
                 add: { request in
                     let trigger = request.trigger as? UNCalendarNotificationTrigger
                     self.pending[request.identifier] = trigger?.nextTriggerDate() ?? .distantFuture
+                    self.bodies[request.identifier] = request.content.body
                 },
                 removePending: { ids in for id in ids { self.pending[id] = nil } },
                 removeDelivered: { _ in }
@@ -54,11 +56,14 @@ struct ShiftAlarmServiceTests {
     private static let now = Date(timeIntervalSince1970: 1_790_000_000)
 
     /// One alarm a day at `now` plus `days` days.
-    private static func plan(days: [Int], lifetime: Bool = false, enabled: Bool = true, windowDays: Int? = 30) -> ShiftAlarmPlan {
+    private static func plan(
+        days: [Int], lifetime: Bool = false, renews: Bool = false, enabled: Bool = true, windowDays: Int? = 30
+    ) -> ShiftAlarmPlan {
         ShiftAlarmPlan(
             isEnabled: enabled,
             windowEnd: windowDays.map { now.addingTimeInterval(Double($0) * 86_400) },
             windowIsLifetime: lifetime,
+            windowRenews: renews,
             items: days.map { day in
                 let fire = (now.timeIntervalSince1970 + Double(day) * 86_400) * 1_000
                 let alarm = PlannedShiftAlarm(
@@ -68,7 +73,7 @@ struct ShiftAlarmServiceTests {
                 return .init(alarm: alarm, systemID: alarm.id, title: "Work \(day)")
             },
             stopLabel: "Stop", snoozeLabel: "Snooze", snoozingLabel: "Snoozing",
-            refreshTitle: "Refresh", refreshBody: "Open DoneAt"
+            refreshTitle: "Refresh", refreshBody: "Open DoneAt", renewBody: "Next period"
         )
     }
 
@@ -164,5 +169,26 @@ struct ShiftAlarmServiceTests {
         #expect(service.status.scheduledCount == 2)
         #expect(service.status.refreshReminderAt == nil)
         #expect(service.status.refreshReminderUnavailable)
+    }
+
+    @Test("A subscription set to renew gets a next-period reminder after its last alarm; one that is not gets none")
+    func renewalReminder() async {
+        let alarms = FakeAlarms()
+        let notifications = FakeNotifications()
+        let service = ShiftAlarmService(system: alarms.system, notifications: notifications.center)
+
+        await service.reconcile(Self.plan(days: [1, 2], renews: true), now: Self.now)
+        #expect(service.status.refreshReminderAt == Self.date(day: 2).addingTimeInterval(ShiftAlarmService.refreshDelay))
+        #expect(notifications.bodies[ShiftAlarmService.refreshIdentifier] == "Next period")
+
+        // Auto-renew switched off: the period ends and nothing suggests otherwise.
+        await service.reconcile(Self.plan(days: [1, 2]), now: Self.now)
+        #expect(service.status.refreshReminderAt == nil)
+        #expect(notifications.pending[ShiftAlarmService.refreshIdentifier] == nil)
+
+        // Short of the limit, refreshing adds more this period: the ordinary text.
+        alarms.capacity = 3
+        await service.reconcile(Self.plan(days: [1, 2, 3, 4], renews: true), now: Self.now)
+        #expect(notifications.bodies[ShiftAlarmService.refreshIdentifier] == "Open DoneAt")
     }
 }

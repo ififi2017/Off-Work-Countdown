@@ -892,6 +892,7 @@
     <string name="shareUntilStartText">出勤まで %1$s</string>
     <string name="shiftAlarmRefreshBody">DoneAt を開いて、次のシフトのアラームを設定しましょう。</string>
     <string name="shiftAlarmRefreshTitle">シフトアラームを更新</string>
+    <string name="shiftAlarmRenewBody">DoneAt を開いて、次の期間のアラームを設定しましょう。</string>
     <string name="shiftAlarmSnooze">スヌーズ</string>
     <string name="shiftAlarmSnoozing">スヌーズ中</string>
     <string name="shiftAlarmStop">停止</string>

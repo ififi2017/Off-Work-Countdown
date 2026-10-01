@@ -892,6 +892,7 @@
     <string name="shareUntilStartText">还有 %1$s 就上班</string>
     <string name="shiftAlarmRefreshBody">打开 DoneAt，继续安排后续班次的闹钟。</string>
     <string name="shiftAlarmRefreshTitle">刷新班次闹钟</string>
+    <string name="shiftAlarmRenewBody">打开 DoneAt，安排下个周期的闹钟。</string>
     <string name="shiftAlarmSnooze">稍后提醒</string>
     <string name="shiftAlarmSnoozing">稍后再响</string>
     <string name="shiftAlarmStop">停止</string>

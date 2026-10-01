@@ -898,6 +898,7 @@
     <string name="shareUntilStartText">Le travail commence dans %1$s</string>
     <string name="shiftAlarmRefreshBody">Ouvrez DoneAt pour programmer les réveils de vos prochains services.</string>
     <string name="shiftAlarmRefreshTitle">Actualisez les réveils de service</string>
+    <string name="shiftAlarmRenewBody">Ouvrez DoneAt pour programmer les réveils de la prochaine période.</string>
     <string name="shiftAlarmSnooze">Répéter</string>
     <string name="shiftAlarmSnoozing">Répétition</string>
     <string name="shiftAlarmStop">Arrêter</string>

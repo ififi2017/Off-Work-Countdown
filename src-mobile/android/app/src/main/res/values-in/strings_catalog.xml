@@ -892,6 +892,7 @@
     <string name="shareUntilStartText">Kerja mulai dalam %1$s</string>
     <string name="shiftAlarmRefreshBody">Buka DoneAt untuk menjadwalkan alarm sif berikutnya.</string>
     <string name="shiftAlarmRefreshTitle">Segarkan alarm sif</string>
+    <string name="shiftAlarmRenewBody">Buka DoneAt untuk menjadwalkan alarm periode berikutnya.</string>
     <string name="shiftAlarmSnooze">Tunda</string>
     <string name="shiftAlarmSnoozing">Ditunda</string>
     <string name="shiftAlarmStop">Hentikan</string>

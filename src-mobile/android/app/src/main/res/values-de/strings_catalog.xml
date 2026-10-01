@@ -895,6 +895,7 @@
     <string name="shareUntilStartText">Arbeitsbeginn in %1$s</string>
     <string name="shiftAlarmRefreshBody">Öffne DoneAt, um Wecker für deine nächsten Schichten zu stellen.</string>
     <string name="shiftAlarmRefreshTitle">Schichtwecker aktualisieren</string>
+    <string name="shiftAlarmRenewBody">Öffne DoneAt, um die Wecker für den nächsten Zeitraum zu stellen.</string>
     <string name="shiftAlarmSnooze">Schlummern</string>
     <string name="shiftAlarmSnoozing">Schlummert</string>
     <string name="shiftAlarmStop">Stopp</string>

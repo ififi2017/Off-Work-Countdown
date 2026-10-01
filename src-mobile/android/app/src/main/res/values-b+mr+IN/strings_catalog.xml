@@ -895,6 +895,7 @@
     <string name="shareUntilStartText">आणखी %1$s नंतर काम सुरू</string>
     <string name="shiftAlarmRefreshBody">पुढील शिफ्टचे अलार्म लावण्यासाठी DoneAt उघडा.</string>
     <string name="shiftAlarmRefreshTitle">शिफ्ट अलार्म रिफ्रेश करा</string>
+    <string name="shiftAlarmRenewBody">पुढील कालावधीचे अलार्म लावण्यासाठी DoneAt उघडा.</string>
     <string name="shiftAlarmSnooze">स्नूझ</string>
     <string name="shiftAlarmSnoozing">स्नूझवर</string>
     <string name="shiftAlarmStop">थांबवा</string>

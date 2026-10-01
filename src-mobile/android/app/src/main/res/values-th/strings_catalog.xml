@@ -892,6 +892,7 @@
     <string name="shareUntilStartText">เริ่มงานใน %1$s</string>
     <string name="shiftAlarmRefreshBody">เปิด DoneAt เพื่อตั้งนาฬิกาปลุกสำหรับกะถัดไป</string>
     <string name="shiftAlarmRefreshTitle">รีเฟรชนาฬิกาปลุกตามกะ</string>
+    <string name="shiftAlarmRenewBody">เปิด DoneAt เพื่อตั้งนาฬิกาปลุกของรอบถัดไป</string>
     <string name="shiftAlarmSnooze">เลื่อนปลุก</string>
     <string name="shiftAlarmSnoozing">เลื่อนปลุกอยู่</string>
     <string name="shiftAlarmStop">หยุด</string>
