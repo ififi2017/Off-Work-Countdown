@@ -333,7 +333,12 @@ internal class ExtendedScheduleIndex(plan: ExtendedSchedulePlan) {
 
         val byDay = HashMap<Int, UUID>()
         val months = HashMap<Int, HashMap<Int, UUID>>()
+        // A day set to a type this schedule does not have (written under an
+        // earlier set of types) says nothing about the day; the pattern and
+        // holidays decide it. Archived types are still present. Matches iOS.
+        val knownTypeIDs = plan.shiftTypes.mapTo(HashSet()) { it.id }
         for ((key, typeID) in plan.handSetDays) {
+            if (typeID !in knownTypeIDs) continue
             val (year, month, day) = ExtendedScheduleResolver.parse(key) ?: continue
             byDay[CivilZone.dayNumber(year, month, day)] = typeID
             months.getOrPut(ExtendedScheduleResolver.monthKey(year, month)) { HashMap() }[day] = typeID

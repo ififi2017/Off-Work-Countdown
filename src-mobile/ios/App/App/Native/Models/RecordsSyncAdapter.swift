@@ -503,7 +503,9 @@ enum RecordsSyncConflict {
         )
     }
 
-    nonisolated private static let syncMetadataKeys = Set(["editCount", "editTieBreaker", "editedAt", "editedAtMs"])
+    nonisolated private static let syncMetadataKeys = Set([
+        "editCount", "editTieBreaker", "editedAt", "editedAtMs", RecordsSyncPayload.writerRevisionKey,
+    ])
 
     /// JSON encoders may emit different byte order for equivalent objects.
     /// Compare the decoded business dictionary and deliberately ignore only
@@ -797,10 +799,33 @@ enum RecordsSyncPayload {
         case .syncedPreferences(let preferences):
             return try? JSONEncoder().encode(preferences)
         case .extendedSchedule(let schedule):
-            return try? JSONEncoder().encode(ExtendedScheduleDTO(schedule))
+            return stampingWriter(try? JSONEncoder().encode(ExtendedScheduleDTO(schedule)))
         case .rosterDay(let day):
-            return try? JSONEncoder().encode(RosterDayDTO(day))
+            return stampingWriter(try? JSONEncoder().encode(RosterDayDTO(day)))
         }
+    }
+
+    /// Stamped on the schedule rows this build uploads. A build without it
+    /// decodes a newer row, drops the fields it does not know (pattern
+    /// provenance, newer shift fields) and, when it saves again, out-ranks
+    /// the newer copy on edit count alone. A schedule row without the stamp
+    /// therefore never replaces this device's copy; see
+    /// `RecordCoordinator.applyRemotePayload`. Only the CloudKit payload
+    /// carries it — the archive file and backups are unchanged.
+    nonisolated static let scheduleWriterRevision = 1
+    nonisolated static let writerRevisionKey = "writerRevision"
+
+    nonisolated static func stampingWriter(_ data: Data?) -> Data? {
+        guard let data, var object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return data }
+        object[writerRevisionKey] = scheduleWriterRevision
+        return try? JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
+    }
+
+    /// Whether a schedule row came from a build older than this one.
+    nonisolated static func isFromOlderScheduleWriter(_ data: Data, type: RecordEntityType) -> Bool {
+        guard type == .extendedSchedule || type == .rosterDay else { return false }
+        let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+        return (object?[writerRevisionKey] as? Int ?? 0) < scheduleWriterRevision
     }
 
     static func encode(type: RecordEntityType, key: String, from state: RecordState) -> Data? {
@@ -839,10 +864,10 @@ enum RecordsSyncPayload {
         case .syncedPreferences:
             return state.syncedPreferences.flatMap { try? JSONEncoder().encode($0) }
         case .extendedSchedule:
-            return state.extendedSchedule.flatMap { try? JSONEncoder().encode(ExtendedScheduleDTO($0)) }
+            return stampingWriter(state.extendedSchedule.flatMap { try? JSONEncoder().encode(ExtendedScheduleDTO($0)) })
         case .rosterDay:
-            return state.rosterDays.first(where: { $0.dayKey == key })
-                .flatMap { try? JSONEncoder().encode(RosterDayDTO($0)) }
+            return stampingWriter(state.rosterDays.first(where: { $0.dayKey == key })
+                .flatMap { try? JSONEncoder().encode(RosterDayDTO($0)) })
         }
     }
 
