@@ -24,6 +24,8 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.Icon
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.toColorInt
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -54,6 +57,8 @@ import com.rainif.doneat.AppGraph
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleContent
+import com.rainif.doneat.core.domain.schedule.AnnualShiftDateRange
+import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.ScheduleHours
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
 import com.rainif.doneat.core.domain.schedule.ScheduleRuleInput
@@ -63,6 +68,7 @@ import com.rainif.doneat.core.domain.schedule.WorkSchedule
 import com.rainif.doneat.core.domain.session.ScheduleEditing
 import com.rainif.doneat.core.domain.session.ShiftSession
 import com.rainif.doneat.core.domain.session.seededExtendedContent
+import com.rainif.doneat.core.domain.session.extendedTodayKey
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.Route
 import com.rainif.doneat.ui.components.DoneAtPage
@@ -72,6 +78,10 @@ import com.rainif.doneat.ui.components.SettingsGroup
 import com.rainif.doneat.ui.components.SwitchRow
 import com.rainif.doneat.ui.onboarding.rememberTimePicker
 import java.util.UUID
+import java.util.Locale
+import java.time.LocalDate
+import java.time.Month
+import java.time.format.TextStyle
 
 /** The draft's content, as the schedule page shows it (seeded from the fixed hours when there is none). */
 @Composable
@@ -82,6 +92,19 @@ private fun draftContent(graph: AppGraph): ExtendedScheduleContent {
     val restName = stringResource(R.string.extendedDefaultRest)
     val seed = remember(session.env.extendedSchedule == null) { session.seededExtendedContent(draft, System.currentTimeMillis().toDouble(), workName, restName, seedIds()) }
     return draft.extendedContent ?: session.env.extendedSchedule?.content?.takeIf { session.env.isExtendedScheduleEnabled } ?: seed
+}
+
+@Composable
+private fun draftCoverage(graph: AppGraph, content: ExtendedScheduleContent): Map<UUID, ShiftDateCoverage> {
+    val draft by graph.scheduleDraft.collectAsStateWithLifecycle()
+    val session by graph.sessions.session.collectAsStateWithLifecycle()
+    val now = remember { System.currentTimeMillis().toDouble() }
+    val today = session.extendedTodayKey(now)
+    val handSet = ScheduleEditing.handSetDays(session.env.handSetDays, draft.rosterEdits)
+    return remember(content, handSet, today, session.env.holidays) {
+        shiftDateCoverage(ExtendedSchedulePlan(content.shiftTypes, content.rule, handSet,
+            content.holidayRegionIdentifier, content.clearedFromDayKey, holidays = session.env.holidays), today)
+    }
 }
 
 /** Puts [content] into the page's draft, as the calendar does. */
@@ -98,6 +121,8 @@ private fun AppGraph.updateDraftContent(content: ExtendedScheduleContent) {
 fun ShiftTypesScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
     val content = draftContent(graph)
     val res = LocalResources.current
+    val locale = LocalConfiguration.current.locales[0]
+    val coverage = draftCoverage(graph, content)
     DoneAtPage(stringResource(R.string.extendedShiftTypes), onBack, stringResource(R.string.workSchedule)) {
         SettingsGroup {
             ScheduleEditing.activeTypes(content).forEach { type ->
@@ -106,7 +131,13 @@ fun ShiftTypesScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit)
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(Modifier.size(10.dp).background(typeColor(type), CircleShape))
-                    Text(type.name, Modifier.weight(1f).padding(horizontal = DoneAtSpacing.m), style = MaterialTheme.typography.bodyLarge)
+                    Column(Modifier.weight(1f).padding(horizontal = DoneAtSpacing.m, vertical = DoneAtSpacing.m)) {
+                        Text(type.name, style = MaterialTheme.typography.bodyLarge)
+                        type.annualDateRange?.let {
+                            Text(annualRangeLabel(res, locale, it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text(coverageLabel(res, locale, coverage[type.id]), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                     // A rest type called "Rest" does not need saying twice.
                     hoursLabel(res, type).takeIf { it != type.name }?.let {
                         Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -136,6 +167,9 @@ fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () 
     val session by graph.sessions.session.collectAsStateWithLifecycle()
     val pickTime = rememberTimePicker()
     val uuid = UUID.fromString(id)
+    val res = LocalResources.current
+    val locale = LocalConfiguration.current.locales[0]
+    val coverage = draftCoverage(graph, content)[uuid]
     val prefs = session.env.preferences
     val initial = remember(id) {
         content.shiftTypes.firstOrNull { it.id == uuid } ?: ShiftType(
@@ -145,6 +179,9 @@ fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () 
     var draft by remember(id) { mutableStateOf(initial) }
     val trimmed = draft.copy(name = draft.name.trim())
     val breakFits = breakFits(draft, session)
+    val overlap = draft.annualDateRange?.let { range ->
+        content.shiftTypes.firstOrNull { it.id != uuid && !it.isArchived && it.annualDateRange?.overlaps(range) == true }
+    }
     val handSet = session.env.handSetDays
     val inUse = ScheduleEditing.ruleUses(uuid, content) ||
         (session.env.extendedSchedule?.content?.shiftTypes?.none { it.id == uuid } != false && uuid in handSet.values)
@@ -157,7 +194,7 @@ fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () 
                 TextButton(onClick = {
                     graph.updateDraftContent(ScheduleEditing.upserting(trimmed, content))
                     onBack()
-                }, enabled = trimmed.isValid && breakFits) { Text(stringResource(R.string.saveAction), fontWeight = FontWeight.SemiBold) }
+                }, enabled = trimmed.isValid && breakFits && overlap == null) { Text(stringResource(R.string.saveAction), fontWeight = FontWeight.SemiBold) }
             }
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).wrapContentWidth(Alignment.CenterHorizontally).widthIn(max = 600.dp),
@@ -170,12 +207,38 @@ fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () 
                     )
                     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                         listOf(ShiftType.Kind.WORK to R.string.extendedKindWork, ShiftType.Kind.REST to R.string.extendedKindRest).forEachIndexed { i, (kind, label) ->
-                            SegmentedButton(draft.kind == kind, { draft = draft.copy(kind = kind) }, SegmentedButtonDefaults.itemShape(i, 2)) { Text(stringResource(label)) }
+                            SegmentedButton(draft.kind == kind, { draft = draft.copy(kind = kind, annualDateRange = draft.annualDateRange.takeIf { kind == ShiftType.Kind.WORK }) }, SegmentedButtonDefaults.itemShape(i, 2)) { Text(stringResource(label)) }
                         }
                     }
                     if (draft.kind == ShiftType.Kind.REST) SettingsFooter(stringResource(R.string.extendedRestKindNote))
                 }
+                if (!isNew) SettingsGroup(title = stringResource(R.string.extendedUpcomingYear)) {
+                    Text(coverageLabel(res, locale, coverage), Modifier.fillMaxWidth().padding(DoneAtSpacing.l),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 if (draft.kind == ShiftType.Kind.WORK) {
+                    SettingsGroup(footer = stringResource(R.string.extendedAnnualRangeDescription)) {
+                        SwitchRow(stringResource(R.string.extendedAnnualDateRange), draft.annualDateRange != null, { enabled ->
+                            draft = draft.copy(annualDateRange = if (enabled) AnnualShiftDateRange(1, 1, 12, 31) else null)
+                        })
+                        draft.annualDateRange?.let { range ->
+                            RowDivider()
+                            MonthDayRow(stringResource(R.string.extendedAnnualRangeStart), range.startMonth, range.startDay, locale) { month, day ->
+                                draft = draft.copy(annualDateRange = range.copy(startMonth = month, startDay = day))
+                            }
+                            RowDivider()
+                            MonthDayRow(stringResource(R.string.extendedAnnualRangeEnd), range.endMonth, range.endDay, locale) { month, day ->
+                                draft = draft.copy(annualDateRange = range.copy(endMonth = month, endDay = day))
+                            }
+                            if (range.endMonth * 100 + range.endDay < range.startMonth * 100 + range.startDay)
+                                Text(stringResource(R.string.extendedAnnualRangeWrap), Modifier.fillMaxWidth().padding(DoneAtSpacing.l),
+                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        overlap?.let {
+                            Text(Strings.extendedAnnualRangeOverlap(res, it.name), Modifier.padding(DoneAtSpacing.l),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
                     SettingsGroup(footer = if (draft.endMinutes <= draft.startMinutes) stringResource(R.string.extendedOvernightNote) else null) {
                         TimeRow(stringResource(R.string.startTime), draft.startMinutes) { pickTime(draft.startMinutes) { m -> draft = draft.copy(startMinutes = m) } }
                         RowDivider()
@@ -227,6 +290,35 @@ fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () 
                             enabled = !inUse, modifier = Modifier.fillMaxWidth().padding(horizontal = DoneAtSpacing.s),
                         ) { Text(stringResource(R.string.extendedDeleteShiftType), color = if (inUse) Color.Unspecified else MaterialTheme.colorScheme.error) }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthDayRow(title: String, month: Int, day: Int, locale: Locale, onChange: (Int, Int) -> Unit) {
+    var showMonths by remember { mutableStateOf(false) }
+    var showDays by remember { mutableStateOf(false) }
+    val number = remember(locale) { java.text.NumberFormat.getIntegerInstance(locale) }
+    Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(start = DoneAtSpacing.l, end = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
+        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+        Box {
+            TextButton(onClick = { showMonths = true }) { Text(Month.of(month).getDisplayName(TextStyle.SHORT, locale)) }
+            DropdownMenu(showMonths, { showMonths = false }) {
+                (1..12).forEach { value ->
+                    DropdownMenuItem(text = { Text(Month.of(value).getDisplayName(TextStyle.FULL, locale)) }, onClick = {
+                        showMonths = false
+                        onChange(value, minOf(day, LocalDate.of(2000, value, 1).lengthOfMonth()))
+                    })
+                }
+            }
+        }
+        Box {
+            TextButton(onClick = { showDays = true }) { Text(number.format(day)) }
+            DropdownMenu(showDays, { showDays = false }) {
+                (1..LocalDate.of(2000, month, 1).lengthOfMonth()).forEach { value ->
+                    DropdownMenuItem(text = { Text(number.format(value)) }, onClick = { showDays = false; onChange(month, value) })
                 }
             }
         }

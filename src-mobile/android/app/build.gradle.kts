@@ -13,8 +13,8 @@ android {
         applicationId = "com.rainif.doneat"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "3.2.0"
+        versionCode = 5
+        versionName = "3.2.1"
         // Public Play configuration only. Empty values keep the store unavailable.
         val plusProduct = providers.gradleProperty("doneatPlusSubscriptionProduct").orElse("").get()
         val lifetimeProduct = providers.gradleProperty("doneatPlusLifetimeProduct").orElse("").get()

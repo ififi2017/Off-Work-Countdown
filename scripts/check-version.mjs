@@ -19,6 +19,8 @@ const versions = {
   cargo: cargoVersion,
 };
 const expected = versions.package;
+const androidBuild = readFileSync("src-mobile/android/app/build.gradle.kts", "utf8");
+versions.android = androidBuild.match(/versionName\s*=\s*"([^"]+)"/)?.[1];
 const mismatches = Object.entries(versions).filter(
   ([, version]) => version !== expected
 );
@@ -106,5 +108,5 @@ if (tag?.startsWith("desktop-v") && tag.slice("desktop-v".length) !== expected) 
 }
 
 console.log(
-  `Web, desktop, Widget, and iOS versions are aligned at ${expected} (MSIX ${expectedAppxVersion}).`
+  `Web, desktop, Widget, iOS and Android versions are aligned at ${expected} (MSIX ${expectedAppxVersion}).`
 );
