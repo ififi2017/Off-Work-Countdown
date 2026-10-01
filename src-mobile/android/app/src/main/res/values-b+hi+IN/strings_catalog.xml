@@ -382,6 +382,8 @@
     <string name="leaveRoleEarly">जल्दी निकलें</string>
     <string name="leaveRoleLate">देर से शुरू करें</string>
     <string name="leaveSecondHalf">दूसरा आधा</string>
+    <string name="leaveSetupIntro">आपके पास कितनी छुट्टी है, जोड़ें। फिर हर योजना बताएगी कि उसमें कितनी लगेगी।</string>
+    <string name="leaveSetupTitle">पहले छुट्टी सेट करें</string>
     <string name="leaveTitle">छुट्टियाँ</string>
     <string name="leaveTrialNotice">हर बार योजना खोलने पर एक मौका लगता है, वही योजना दोबारा खोलने पर भी।</string>
     <plurals name="leaveTrialsLeft">
@@ -582,6 +584,8 @@
     <string name="onboardingPlusFocusBreakBody">अगला कार्य आपके तैयार होने तक प्रतीक्षा करता है। कोई भी चीज़ अपने आप शुरू नहीं होती.</string>
     <string name="onboardingPlusFocusTask">साप्ताहिक समीक्षा समाप्त करें</string>
     <string name="onboardingPlusFocusTitle">एक कार्य को स्पष्ट रूप से समय दें</string>
+    <string name="onboardingPlusLeaveBody">छुट्टी शेष जोड़ें, DoneAt आने वाले साल की छुट्टियों और आपके शेड्यूल को देखकर तारीखें और ज़रूरी छुट्टी बताएगा।</string>
+    <string name="onboardingPlusLeaveTitle">कुछ दिनों की छुट्टी से लंबा ब्रेक पाएँ</string>
     <string name="onboardingPlusLifeBody">वे तारीखें जोड़ें जिन्हें आप जानते हैं। DoneAt अनुमानों को इतिहास में बदले बिना जीवित और अनुमानित समय को अलग करता है।</string>
     <string name="onboardingPlusRecordsActual">वास्तविक</string>
     <string name="onboardingPlusRecordsBody">प्लस आपका पूरा रिकॉर्ड खोलता है, फिर आपकी पहली नौकरी से सेवानिवृत्ति तक के परिप्रेक्ष्य में काम को रखने के लिए एक जीवन प्रोफ़ाइल का उपयोग करता है।</string>
@@ -629,6 +633,7 @@
     <string name="plusBenefitCharts">पूरे वर्ष और कामकाजी जीवन के दृश्य</string>
     <string name="plusBenefitEdit">रिकॉर्ड से कोई भी दिन बदलें</string>
     <string name="plusBenefitFocus">शिफ़्ट के भीतर फ़ोकस ब्लॉक</string>
+    <string name="plusBenefitLeave">छुट्टियों और शेड्यूल के हिसाब से छुट्टी की योजना</string>
     <string name="plusBenefitLife">जन्म से सेवानिवृत्ति तक जीवन कैनवस</string>
     <string name="plusBenefitSync">रिकॉर्ड्स और सेटिंग्स आपके अपने iCloud के माध्यम से समन्वयित</string>
     <string name="plusBestValue">सबसे किफ़ायती</string>
@@ -638,7 +643,7 @@
     <string name="plusEditLocked">बीता हुआ दिन बदलें</string>
     <string name="plusFocusLocked">एक काम पर ध्यान दें</string>
     <string name="plusGracePeriod">भुगतान में कुछ दिक्कत है। अभी सुविधा चालू है, और App Store में भुगतान का तरीका अपडेट करने पर यह बनी रहेगी।</string>
-    <string name="plusIntroBody">टाइमर और आपका पिछला सप्ताह मुफ़्त रहेगा। Plus पूरे साल, कामकाजी जीवन, संपादन, फ़ोकस और iCloud सिंक को खोलता है।</string>
+    <string name="plusIntroBody">टाइमर और आपका पिछला सप्ताह मुफ़्त रहेगा। Plus पूरे साल, कामकाजी जीवन, संपादन, फ़ोकस, छुट्टी की योजना और iCloud सिंक को खोलता है।</string>
     <string name="plusIntroTitle">अपने समय का आकार देखें</string>
     <string name="plusLeaveLocked">जब चाहें छुट्टी की योजना बनाएँ</string>
     <string name="plusLifeLocked">काम को बड़े पैमाने पर देखें</string>

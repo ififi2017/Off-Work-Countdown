@@ -383,6 +383,8 @@
     <string name="leaveRoleEarly">Salir antes</string>
     <string name="leaveRoleLate">Empezar más tarde</string>
     <string name="leaveSecondHalf">Segunda mitad</string>
+    <string name="leaveSetupIntro">Indica cuántos días tienes y cada plan mostrará cuántos usa.</string>
+    <string name="leaveSetupTitle">Configura tus días</string>
     <string name="leaveTitle">Vacaciones</string>
     <string name="leaveTrialNotice">Cada vez que abres un plan cuenta una vez, aunque sea el mismo.</string>
     <plurals name="leaveTrialsLeft">
@@ -584,6 +586,8 @@
     <string name="onboardingPlusFocusBreakBody">La siguiente tarea espera hasta que estés listo. Nada empieza por sí solo.</string>
     <string name="onboardingPlusFocusTask">Termina la revisión semanal</string>
     <string name="onboardingPlusFocusTitle">Dale a una tarea un período de tiempo claro</string>
+    <string name="onboardingPlusLeaveBody">Añade tus días disponibles: DoneAt cruza festivos y tus turnos del próximo año y muestra fechas y días necesarios.</string>
+    <string name="onboardingPlusLeaveTitle">Convierte unos pocos días en un descanso largo</string>
     <string name="onboardingPlusLifeBody">Añade las fechas que conoces. DoneAt separa el tiempo vivido y proyectado sin convertir las estimaciones en historia.</string>
     <string name="onboardingPlusRecordsActual">real</string>
     <string name="onboardingPlusRecordsBody">Plus abre su registro completo y luego utiliza un perfil de vida para poner el trabajo en perspectiva desde su primer empleo hasta su jubilación.</string>
@@ -631,6 +635,7 @@
     <string name="plusBenefitCharts">Vistas del año completo y la vida laboral</string>
     <string name="plusBenefitEdit">Editar cualquier día desde Registros</string>
     <string name="plusBenefitFocus">Bloques de Enfoque dentro de tu turno</string>
+    <string name="plusBenefitLeave">Planificar vacaciones según festivos y turnos</string>
     <string name="plusBenefitLife">Un lienzo de vida del nacimiento a la jubilación</string>
     <string name="plusBenefitSync">Registros y configuraciones sincronizados a través de tu propio iCloud</string>
     <string name="plusBestValue">Mejor precio</string>
@@ -640,7 +645,7 @@
     <string name="plusEditLocked">Cambiar un día ya pasado</string>
     <string name="plusFocusLocked">Centrarte en una sola cosa</string>
     <string name="plusGracePeriod">Hay un problema con el pago. El acceso continúa por ahora, y actualizar el método de pago en el App Store lo mantiene.</string>
-    <string name="plusIntroBody">El temporizador y tu última semana siguen siendo gratis. Plus abre el año completo, tu vida laboral, la edición, el enfoque y la sincronización con iCloud.</string>
+    <string name="plusIntroBody">El temporizador y tu última semana siguen siendo gratis. Plus abre el año completo, tu vida laboral, la edición, el enfoque, la planificación de vacaciones y la sincronización con iCloud.</string>
     <string name="plusIntroTitle">Ver la forma de tu tiempo</string>
     <string name="plusLeaveLocked">Planifica tus vacaciones cuando quieras</string>
     <string name="plusLifeLocked">Ver el trabajo a mayor escala</string>

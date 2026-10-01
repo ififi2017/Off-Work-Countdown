@@ -386,6 +386,8 @@
     <string name="leaveRoleEarly">المغادرة مبكرًا</string>
     <string name="leaveRoleLate">البدء لاحقًا</string>
     <string name="leaveSecondHalf">النصف الثاني</string>
+    <string name="leaveSetupIntro">أضف رصيد إجازتك، فتُظهر كل خطة ما تستهلكه منه.</string>
+    <string name="leaveSetupTitle">إعداد إجازاتك</string>
     <string name="leaveTitle">الإجازات</string>
     <string name="leaveTrialNotice">كل فتح لخطة يُحتسب مرة، حتى لو كانت الخطة نفسها.</string>
     <plurals name="leaveTrialsLeft">
@@ -590,6 +592,8 @@
     <string name="onboardingPlusFocusBreakBody">المهمة التالية تنتظرك حتى تصبح جاهزًا. لا شيء يبدأ من تلقاء نفسه.</string>
     <string name="onboardingPlusFocusTask">إنهاء المراجعة الأسبوعية</string>
     <string name="onboardingPlusFocusTitle">أعط مهمة واحدة فترة زمنية واضحة</string>
+    <string name="onboardingPlusLeaveBody">أضف أرصدة إجازاتك، فيطابق DoneAt العطلات وجدولك للعام المقبل ويعرض التواريخ والإجازة المطلوبة.</string>
+    <string name="onboardingPlusLeaveTitle">حوّل أيامًا قليلة من الإجازة إلى راحة طويلة</string>
     <string name="onboardingPlusLifeBody">أضف التواريخ التي تعرفها. DoneAt يفصل بين الوقت المعيش والمتوقع دون تحويل التقديرات إلى تاريخ.</string>
     <string name="onboardingPlusRecordsActual">الفعلي</string>
     <string name="onboardingPlusRecordsBody">يفتح Plus سجلك الكامل، ثم يستخدم ملف تعريف الحياة لوضع العمل في منظوره الصحيح منذ وظيفتك الأولى حتى التقاعد.</string>
@@ -637,6 +641,7 @@
     <string name="plusBenefitCharts">عرض السنة كاملة وحياة العمل</string>
     <string name="plusBenefitEdit">عدّل أي يوم من السجلات</string>
     <string name="plusBenefitFocus">فترات تركيز داخل ورديتك</string>
+    <string name="plusBenefitLeave">خطّط لإجازتك وفق العطلات وجدولك</string>
     <string name="plusBenefitLife">لوحة عمر من الميلاد إلى التقاعد</string>
     <string name="plusBenefitSync">تتم مزامنة السجلات والإعدادات من خلال iCloud الخاص بك</string>
     <string name="plusBestValue">الأفضل قيمة</string>
@@ -646,7 +651,7 @@
     <string name="plusEditLocked">تعديل يوم مضى</string>
     <string name="plusFocusLocked">التركيز على شيء واحد</string>
     <string name="plusGracePeriod">هناك مشكلة في الدفع. الوصول مستمر حاليًا، وتحديث طريقة الدفع في App Store يحفظه.</string>
-    <string name="plusIntroBody">يبقى العدّاد وأسبوعك الأخير مجانيين. يفتح Plus السنة كاملة وحياة العمل والتحرير والتركيز ومزامنة iCloud.</string>
+    <string name="plusIntroBody">يبقى العدّاد وأسبوعك الأخير مجانيين. يفتح Plus السنة كاملة وحياة العمل والتحرير والتركيز وتخطيط الإجازات ومزامنة iCloud.</string>
     <string name="plusIntroTitle">شاهد شكل وقتك</string>
     <string name="plusLeaveLocked">خطّط لإجازاتك متى شئت</string>
     <string name="plusLifeLocked">رؤية العمل على مقياس أطول</string>

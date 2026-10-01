@@ -382,6 +382,8 @@
     <string name="leaveRoleEarly">लवकर निघा</string>
     <string name="leaveRoleLate">उशिरा सुरू करा</string>
     <string name="leaveSecondHalf">दुसरा अर्धा भाग</string>
+    <string name="leaveSetupIntro">तुमच्याकडे किती रजा आहे ते लिहा. मग प्रत्येक नियोजनात किती लागेल ते दिसेल.</string>
+    <string name="leaveSetupTitle">आधी रजा सेट करा</string>
     <string name="leaveTitle">सुट्ट्या</string>
     <string name="leaveTrialNotice">प्रत्येक वेळी नियोजन उघडल्यावर एक संधी वापरली जाते, तेच नियोजन पुन्हा उघडले तरी.</string>
     <plurals name="leaveTrialsLeft">
@@ -582,6 +584,8 @@
     <string name="onboardingPlusFocusBreakBody">आपण तयार होईपर्यंत पुढील कार्य प्रतीक्षा करते. काहीही स्वतःपासून सुरू होत नाही.</string>
     <string name="onboardingPlusFocusTask">साप्ताहिक पुनरावलोकन पूर्ण करा</string>
     <string name="onboardingPlusFocusTitle">एका कार्याला स्पष्ट वेळ द्या</string>
+    <string name="onboardingPlusLeaveBody">सुट्टी शिल्लक जोडा; DoneAt पुढील वर्षातील सुट्ट्या आणि तुमचे वेळापत्रक पाहून तारखा आणि लागणारी रजा दाखवेल.</string>
+    <string name="onboardingPlusLeaveTitle">काही दिवसांच्या रजेतून मोठी सुट्टी मिळवा</string>
     <string name="onboardingPlusLifeBody">तुम्हाला माहीत असलेल्या तारखा जोडा. DoneAt अंदाजांना इतिहासात न बदलता जिवंत आणि प्रक्षेपित वेळ वेगळे करते.</string>
     <string name="onboardingPlusRecordsActual">वास्तविक</string>
     <string name="onboardingPlusRecordsBody">प्लस तुमचे संपूर्ण रेकॉर्ड उघडते, नंतर तुमच्या पहिल्या नोकरीपासून ते सेवानिवृत्तीपर्यंत कामाचा दृष्टीकोन ठेवण्यासाठी जीवन प्रोफाइल वापरते.</string>
@@ -629,6 +633,7 @@
     <string name="plusBenefitCharts">पूर्ण वर्ष आणि कामाच्या आयुष्याची दृश्ये</string>
     <string name="plusBenefitEdit">नोंदीतून कोणताही दिवस बदला</string>
     <string name="plusBenefitFocus">शिफ्टमधील फोकस टप्पे</string>
+    <string name="plusBenefitLeave">सुट्ट्या आणि वेळापत्रकानुसार रजेचे नियोजन</string>
     <string name="plusBenefitLife">जन्मापासून निवृत्तीपर्यंत आयुष्याचे कॅनव्हास</string>
     <string name="plusBenefitSync">तुमच्या स्वतःच्या iCloud द्वारे रेकॉर्ड आणि सेटिंग्ज समक्रमित</string>
     <string name="plusBestValue">सर्वात फायदेशीर</string>
@@ -638,7 +643,7 @@
     <string name="plusEditLocked">गेलेला दिवस बदला</string>
     <string name="plusFocusLocked">एकाच कामावर लक्ष द्या</string>
     <string name="plusGracePeriod">पेमेंटमध्ये काही अडचण आहे. सध्या वापर सुरू आहे, आणि App Store मध्ये पेमेंटची पद्धत अपडेट केल्यास तो सुरू राहील.</string>
-    <string name="plusIntroBody">टायमर आणि मागचा आठवडा मोफत राहील. Plus पूर्ण वर्ष, कामाचं आयुष्य, संपादन, लक्ष आणि iCloud सिंक उघडतो.</string>
+    <string name="plusIntroBody">टायमर आणि मागचा आठवडा मोफत राहील. Plus पूर्ण वर्ष, कामाचं आयुष्य, संपादन, लक्ष, सुट्टीचे नियोजन आणि iCloud सिंक उघडतो.</string>
     <string name="plusIntroTitle">तुमच्या वेळेचा आकार पाहा</string>
     <string name="plusLeaveLocked">हवे तेव्हा सुट्टीचे नियोजन करा</string>
     <string name="plusLifeLocked">कामाकडे मोठ्या मापावर पाहा</string>

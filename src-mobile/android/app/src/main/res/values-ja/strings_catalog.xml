@@ -381,6 +381,8 @@
     <string name="leaveRoleEarly">早めに退勤</string>
     <string name="leaveRoleLate">遅めに出勤</string>
     <string name="leaveSecondHalf">後半休</string>
+    <string name="leaveSetupIntro">持っている休暇を入力すると、各プランで使う日数がわかります。</string>
+    <string name="leaveSetupTitle">まず休暇を設定</string>
     <string name="leaveTitle">休暇</string>
     <string name="leaveTrialNotice">プランを開くたびに1回使います。同じプランを開き直した場合も含みます。</string>
     <plurals name="leaveTrialsLeft">
@@ -580,6 +582,8 @@
     <string name="onboardingPlusFocusBreakBody">次のタスクは、準備が完了するまで待機します。何もそれ自体では始まりません。</string>
     <string name="onboardingPlusFocusTask">週次レビューを終了する</string>
     <string name="onboardingPlusFocusTitle">1つのタスクに明確な時間を与える</string>
+    <string name="onboardingPlusLeaveBody">休暇の残りを入れると、DoneAt が祝日とあなたのシフトをもとに今後1年の連休候補を探し、日付と必要な休暇を示します。</string>
+    <string name="onboardingPlusLeaveTitle">数日の休暇で長い連休に</string>
     <string name="onboardingPlusLifeBody">わかっている日付を追加します。 DoneAt は、推定値を履歴に変えることなく、実際の時間と予測時間を分離します。</string>
     <string name="onboardingPlusRecordsActual">実際</string>
     <string name="onboardingPlusRecordsBody">Plus は完全な記録を開き、人生プロフィールを使用して、最初の仕事から退職までの仕事を大局的に捉えます。</string>
@@ -627,6 +631,7 @@
     <string name="plusBenefitCharts">年間全体と働く人生の表示</string>
     <string name="plusBenefitEdit">記録ページから任意の日を直す</string>
     <string name="plusBenefitFocus">シフトの中のフォーカス</string>
+    <string name="plusBenefitLeave">祝日とシフトに合わせて休暇を計画</string>
     <string name="plusBenefitLife">出生から退職までの人生キャンバス</string>
     <string name="plusBenefitSync">自分の iCloud を通じて同期される記録と設定</string>
     <string name="plusBestValue">いちばんお得</string>
@@ -636,7 +641,7 @@
     <string name="plusEditLocked">過ぎた日を直す</string>
     <string name="plusFocusLocked">ひとつのことに集中する</string>
     <string name="plusGracePeriod">お支払いに問題があります。いまのところ利用は続けられます。App Store でお支払い方法を更新すれば、そのまま使えます。</string>
-    <string name="plusIntroBody">タイマーと直近1週間は無料のまま。Plusで年間全体、働く人生、編集、集中、iCloud同期を利用できます。</string>
+    <string name="plusIntroBody">タイマーと直近1週間は無料のまま。Plusで年間全体、働く人生、編集、集中、休暇の計画、iCloud同期を利用できます。</string>
     <string name="plusIntroTitle">時間のかたちを見る</string>
     <string name="plusLeaveLocked">いつでも休暇を計画</string>
     <string name="plusLifeLocked">仕事をもっと長い尺度で見る</string>

@@ -61,6 +61,8 @@ extension LeavePortion {
 struct LeaveView: View {
     let shifts: ShiftSessionStore
     let actions: RecordsActions
+    /// Settings and Records both open this page; the back button names where.
+    var backTitleKey = "settings"
     @State private var editing: LeaveBalanceEditing?
     @State private var isPlanning = false
     @State private var undoing: UUID?
@@ -128,7 +130,7 @@ struct LeaveView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(OWCDesign.page)
-        .owcDetailBack(title: text.t("settings"), pageTitle: text.t("leaveTitle"))
+        .owcDetailBack(title: text.t(backTitleKey), pageTitle: text.t("leaveTitle"))
         .sheet(item: $editing) { editing in
             LeaveBalanceEditor(shifts: shifts, editing: editing)
         }
@@ -172,7 +174,7 @@ struct LeaveView: View {
         text.formatDays(Double(days.reduce(0) { $0 + $1.portion.halfDays }) / 2)
     }
 
-    private static func newBalance() -> LeaveBalance {
+    static func newBalance() -> LeaveBalance {
         LeaveBalance(id: UUID(), kind: .annual, name: nil, entitledHalfDays: 10, usedHalfDays: 0,
                      validFromDayKey: nil, validThroughDayKey: nil)
     }
@@ -186,10 +188,13 @@ struct LeaveBalanceEditing: Identifiable {
 
 // MARK: - Balance editor
 
-private struct LeaveBalanceEditor: View {
+struct LeaveBalanceEditor: View {
     @Environment(\.dismiss) private var dismiss
     let shifts: ShiftSessionStore
     let editing: LeaveBalanceEditing
+    /// The first balance, asked for before the time off page opens.
+    var isGuided = false
+    var onSaved: () -> Void = {}
     @State private var draft: LeaveBalance
     @State private var entitledText: String
     @State private var usedText: String
@@ -198,9 +203,11 @@ private struct LeaveBalanceEditor: View {
     @State private var start: Date
     @State private var end: Date
 
-    init(shifts: ShiftSessionStore, editing: LeaveBalanceEditing) {
+    init(shifts: ShiftSessionStore, editing: LeaveBalanceEditing, isGuided: Bool = false, onSaved: @escaping () -> Void = {}) {
         self.shifts = shifts
         self.editing = editing
+        self.isGuided = isGuided
+        self.onSaved = onSaved
         let balance = editing.balance
         let calendar = shifts.preferences.recordsCalendar
         let today = calendar.startOfDay(for: .now)
@@ -245,6 +252,12 @@ private struct LeaveBalanceEditor: View {
     var body: some View {
         NavigationStack {
             Form {
+                if isGuided {
+                    Section {
+                        Label(text.t("leaveSetupIntro"), systemImage: "suitcase")
+                            .foregroundStyle(OWCDesign.primary)
+                    }
+                }
                 Section {
                     Picker(text.t("leaveBalancesSection"), selection: $draft.kind) {
                         Text(text.t("leaveKindAnnual")).tag(LeaveBalance.Kind.annual)
@@ -306,7 +319,7 @@ private struct LeaveBalanceEditor: View {
                     }
                 }
             }
-            .navigationTitle(text.t(editing.isNew ? "leaveNewBalance" : "leaveEditBalance"))
+            .navigationTitle(text.t(isGuided ? "leaveSetupTitle" : editing.isNew ? "leaveNewBalance" : "leaveEditBalance"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -316,6 +329,7 @@ private struct LeaveBalanceEditor: View {
                     Button(text.t("saveAction")) {
                         guard let result else { return }
                         shifts.records.submitCommand { [shifts] in shifts.records.upsertLeaveBalance(result) }
+                        onSaved()
                         dismiss()
                     }
                     .disabled(result == nil)

@@ -381,6 +381,8 @@
     <string name="leaveRoleEarly">Về sớm</string>
     <string name="leaveRoleLate">Vào làm muộn hơn</string>
     <string name="leaveSecondHalf">Nửa sau ca</string>
+    <string name="leaveSetupIntro">Nhập số ngày phép bạn có, mỗi kế hoạch sẽ cho biết dùng bao nhiêu.</string>
+    <string name="leaveSetupTitle">Thiết lập ngày phép</string>
     <string name="leaveTitle">Nghỉ phép</string>
     <string name="leaveTrialNotice">Mỗi lần mở một kế hoạch tính một lượt, kể cả mở lại cùng kế hoạch.</string>
     <plurals name="leaveTrialsLeft">
@@ -580,6 +582,8 @@
     <string name="onboardingPlusFocusBreakBody">Nhiệm vụ tiếp theo đợi cho đến khi bạn sẵn sàng. Không có gì tự nó bắt đầu.</string>
     <string name="onboardingPlusFocusTask">Kết thúc buổi đánh giá hàng tuần</string>
     <string name="onboardingPlusFocusTitle">Giao cho một nhiệm vụ một khoảng thời gian rõ ràng</string>
+    <string name="onboardingPlusLeaveBody">Thêm số ngày phép, DoneAt sẽ đối chiếu ngày lễ và lịch làm việc trong năm tới, rồi cho biết ngày và số phép cần dùng.</string>
+    <string name="onboardingPlusLeaveTitle">Biến vài ngày phép thành kỳ nghỉ dài</string>
     <string name="onboardingPlusLifeBody">Thêm ngày tháng mà bạn biết. DoneAt tách biệt thời gian sống và thời gian dự kiến ​​mà không biến ước tính thành lịch sử.</string>
     <string name="onboardingPlusRecordsActual">Thực tế</string>
     <string name="onboardingPlusRecordsBody">Plus mở hồ sơ đầy đủ của bạn, sau đó sử dụng hồ sơ cuộc sống để xem xét công việc từ công việc đầu tiên của bạn cho đến khi nghỉ hưu.</string>
@@ -627,6 +631,7 @@
     <string name="plusBenefitCharts">Khung cả năm và đời làm việc</string>
     <string name="plusBenefitEdit">Sửa bất kỳ ngày nào từ Bản ghi</string>
     <string name="plusBenefitFocus">Phiên Tập trung trong ca làm</string>
+    <string name="plusBenefitLeave">Lên kế hoạch nghỉ theo ngày lễ và lịch làm việc</string>
     <string name="plusBenefitLife">Tấm canvas đời từ sinh đến nghỉ hưu</string>
     <string name="plusBenefitSync">Hồ sơ và cài đặt được đồng bộ hóa thông qua iCloud của riêng bạn</string>
     <string name="plusBestValue">Đáng giá nhất</string>
@@ -636,7 +641,7 @@
     <string name="plusEditLocked">Sửa một ngày đã qua</string>
     <string name="plusFocusLocked">Tập trung vào một việc</string>
     <string name="plusGracePeriod">Thanh toán đang có vấn đề. Bạn vẫn dùng được lúc này, và cập nhật phương thức thanh toán trong App Store sẽ giữ được quyền dùng.</string>
-    <string name="plusIntroBody">Đồng hồ và tuần gần nhất vẫn miễn phí. Plus mở cả năm, đời làm việc, chỉnh sửa, tập trung và đồng bộ iCloud.</string>
+    <string name="plusIntroBody">Đồng hồ và tuần gần nhất vẫn miễn phí. Plus mở cả năm, đời làm việc, chỉnh sửa, tập trung, lên kế hoạch nghỉ và đồng bộ iCloud.</string>
     <string name="plusIntroTitle">Thấy hình dáng thời gian của bạn</string>
     <string name="plusLeaveLocked">Lên kế hoạch nghỉ bất cứ lúc nào</string>
     <string name="plusLifeLocked">Nhìn công việc ở thang dài hơn</string>

@@ -384,6 +384,8 @@
     <string name="leaveRoleEarly">Уйти пораньше</string>
     <string name="leaveRoleLate">Начать позже</string>
     <string name="leaveSecondHalf">Вторая половина</string>
+    <string name="leaveSetupIntro">Укажите, сколько у вас отпуска, — каждый план покажет, сколько из него уйдёт.</string>
+    <string name="leaveSetupTitle">Укажите отпуск</string>
     <string name="leaveTitle">Отпуск</string>
     <string name="leaveTrialNotice">Каждое открытие плана расходует один просмотр, даже повторное.</string>
     <plurals name="leaveTrialsLeft">
@@ -586,6 +588,8 @@
     <string name="onboardingPlusFocusBreakBody">Следующее задание ждет, пока вы не будете готовы. Ничто не начинается само по себе.</string>
     <string name="onboardingPlusFocusTask">Завершите еженедельный обзор.</string>
     <string name="onboardingPlusFocusTitle">Дайте одной задаче четкий отрезок времени.</string>
+    <string name="onboardingPlusLeaveBody">Укажите остатки отпуска — DoneAt сверит праздники и ваш график на год вперёд и покажет даты и сколько отпуска нужно.</string>
+    <string name="onboardingPlusLeaveTitle">Превратите пару дней отпуска в долгий отдых</string>
     <string name="onboardingPlusLifeBody">Добавьте даты, которые вы знаете. DoneAt разделяет прожитое и прогнозируемое время, не превращая оценки в историю.</string>
     <string name="onboardingPlusRecordsActual">Фактический</string>
     <string name="onboardingPlusRecordsBody">Плюс открывает вашу полную запись, а затем использует жизненный профиль, чтобы оценить работу от вашей первой работы до выхода на пенсию.</string>
@@ -633,6 +637,7 @@
     <string name="plusBenefitCharts">Весь год и рабочая жизнь</string>
     <string name="plusBenefitEdit">Править любой день в записях</string>
     <string name="plusBenefitFocus">Блоки Фокуса внутри смены</string>
+    <string name="plusBenefitLeave">Планировать отпуск с учётом праздников и графика</string>
     <string name="plusBenefitLife">Полотно жизни от рождения до пенсии</string>
     <string name="plusBenefitSync">Записи и настройки синхронизируются через ваш собственный iCloud.</string>
     <string name="plusBestValue">Выгоднее</string>
@@ -642,7 +647,7 @@
     <string name="plusEditLocked">Изменить прошедший день</string>
     <string name="plusFocusLocked">Сосредоточиться на одном</string>
     <string name="plusGracePeriod">С оплатой что-то не так. Доступ пока сохраняется, и если обновить способ оплаты в App Store, он останется.</string>
-    <string name="plusIntroBody">Таймер и последняя неделя остаются бесплатными. Plus открывает весь год, рабочую жизнь, редактирование, фокус и синхронизацию iCloud.</string>
+    <string name="plusIntroBody">Таймер и последняя неделя остаются бесплатными. Plus открывает весь год, рабочую жизнь, редактирование, фокус, планирование отпуска и синхронизацию iCloud.</string>
     <string name="plusIntroTitle">Увидеть форму своего времени</string>
     <string name="plusLeaveLocked">Планируйте отпуск когда угодно</string>
     <string name="plusLifeLocked">Посмотреть на работу в большем масштабе</string>

@@ -381,6 +381,8 @@
     <string name="leaveRoleEarly">早啲收工</string>
     <string name="leaveRoleLate">遲啲返工</string>
     <string name="leaveSecondHalf">後半更</string>
+    <string name="leaveSetupIntro">先填你有幾多假，計劃時就計到每個方案要用幾多。</string>
+    <string name="leaveSetupTitle">先設定假期</string>
     <string name="leaveTitle">放假</string>
     <string name="leaveTrialNotice">每打開一個方案會用一次，再打開同一個方案都會計。</string>
     <plurals name="leaveTrialsLeft">
@@ -580,6 +582,8 @@
     <string name="onboardingPlusFocusBreakBody">下一個任務會等到你準備好。冇嘢係自己開始嘅。</string>
     <string name="onboardingPlusFocusTask">完成每週嘅評論</string>
     <string name="onboardingPlusFocusTitle">畀一個任務一段明確嘅時間</string>
+    <string name="onboardingPlusLeaveBody">填好假期餘額，DoneAt 會按假期同你嘅排班，喺未來一年搵出連假方案，列出日子同要請幾多日假。</string>
+    <string name="onboardingPlusLeaveTitle">請幾日假，換一個長假</string>
     <string name="onboardingPlusLifeBody">加埋你識嘅日期。 DoneAt 將生活同投射嘅時間分開，而唔會將估計轉化為歷史。</string>
     <string name="onboardingPlusRecordsActual">實際</string>
     <string name="onboardingPlusRecordsBody">Plus 會打開你嘅全部記錄，然後用人生簡介去將你由第一份工到退休嘅工作放入透視角度。</string>
@@ -627,6 +631,7 @@
     <string name="plusBenefitCharts">完整年度和工作人生檢視</string>
     <string name="plusBenefitEdit">從紀錄頁修改任何一天</string>
     <string name="plusBenefitFocus">喺更內安排專注時段</string>
+    <string name="plusBenefitLeave">按假期同排班計劃放假</string>
     <string name="plusBenefitLife">從出生到退休的人生畫布</string>
     <string name="plusBenefitSync">透過你自己嘅 iCloud 同步錄音同設定</string>
     <string name="plusBestValue">更抵</string>
@@ -636,7 +641,7 @@
     <string name="plusEditLocked">改已經過去嘅一日</string>
     <string name="plusFocusLocked">先專注一件事</string>
     <string name="plusGracePeriod">付款出咗啲問題。而家仲用得，去 App Store 更新付款方式就可以保留。</string>
-    <string name="plusIntroBody">倒數同最近一星期保持免費。Plus 解鎖完整年度、工作人生、編輯、專注同 iCloud 同步。</string>
+    <string name="plusIntroBody">倒數同最近一星期保持免費。Plus 解鎖完整年度、工作人生、編輯、專注、放假計劃同 iCloud 同步。</string>
     <string name="plusIntroTitle">睇見時間嘅形狀</string>
     <string name="plusLeaveLocked">隨時計劃放假</string>
     <string name="plusLifeLocked">用更長嘅尺度睇工作</string>

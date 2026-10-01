@@ -381,6 +381,8 @@
     <string name="leaveRoleEarly">Pulang lebih awal</string>
     <string name="leaveRoleLate">Mulai lebih siang</string>
     <string name="leaveSecondHalf">Paruh kedua</string>
+    <string name="leaveSetupIntro">Isi jumlah cutimu, lalu setiap rencana menunjukkan berapa yang terpakai.</string>
+    <string name="leaveSetupTitle">Atur cutimu dulu</string>
     <string name="leaveTitle">Cuti</string>
     <string name="leaveTrialNotice">Setiap membuka rencana terhitung satu kali, termasuk rencana yang sama.</string>
     <plurals name="leaveTrialsLeft">
@@ -580,6 +582,8 @@
     <string name="onboardingPlusFocusBreakBody">Tugas selanjutnya menunggu sampai Anda siap. Tidak ada yang dimulai dengan sendirinya.</string>
     <string name="onboardingPlusFocusTask">Selesaikan review mingguan</string>
     <string name="onboardingPlusFocusTitle">Berikan satu tugas jangka waktu yang jelas</string>
+    <string name="onboardingPlusLeaveBody">Tambahkan saldo cuti, DoneAt mencocokkan hari libur dan jadwalmu setahun ke depan lalu menampilkan tanggal dan cuti yang dibutuhkan.</string>
+    <string name="onboardingPlusLeaveTitle">Ubah beberapa hari cuti jadi libur panjang</string>
     <string name="onboardingPlusLifeBody">Tambahkan tanggal yang anda ketahui. DoneAt memisahkan waktu hidup dan waktu yang diproyeksikan tanpa mengubah perkiraan menjadi sejarah.</string>
     <string name="onboardingPlusRecordsActual">Aktual</string>
     <string name="onboardingPlusRecordsBody">Plus membuka catatan lengkap Anda, lalu menggunakan profil kehidupan untuk menempatkan pekerjaan dalam perspektif dari pekerjaan pertama Anda hingga pensiun.</string>
@@ -627,6 +631,7 @@
     <string name="plusBenefitCharts">Tampilan setahun penuh dan kehidupan kerja</string>
     <string name="plusBenefitEdit">Ubah hari apa pun dari Catatan</string>
     <string name="plusBenefitFocus">Blok Fokus di dalam jam kerja</string>
+    <string name="plusBenefitLeave">Rencanakan cuti sesuai hari libur dan jadwal</string>
     <string name="plusBenefitLife">Kanvas hidup dari lahir sampai pensiun</string>
     <string name="plusBenefitSync">Catatan dan pengaturan disinkronkan melalui iCloud Anda sendiri</string>
     <string name="plusBestValue">Paling hemat</string>
@@ -636,7 +641,7 @@
     <string name="plusEditLocked">Ubah hari yang sudah lewat</string>
     <string name="plusFocusLocked">Fokus pada satu hal</string>
     <string name="plusGracePeriod">Ada masalah dengan pembayaran. Akses masih berjalan untuk sekarang, dan memperbarui metode pembayaran di App Store akan mempertahankannya.</string>
-    <string name="plusIntroBody">Timer dan minggu terakhirmu tetap gratis. Plus membuka setahun penuh, kehidupan kerja, pengeditan, fokus, dan sinkronisasi iCloud.</string>
+    <string name="plusIntroBody">Timer dan minggu terakhirmu tetap gratis. Plus membuka setahun penuh, kehidupan kerja, pengeditan, fokus, perencanaan cuti, dan sinkronisasi iCloud.</string>
     <string name="plusIntroTitle">Lihat bentuk waktumu</string>
     <string name="plusLeaveLocked">Rencanakan cuti kapan saja</string>
     <string name="plusLifeLocked">Lihat kerja dalam skala yang lebih panjang</string>

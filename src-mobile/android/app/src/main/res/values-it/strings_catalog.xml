@@ -383,6 +383,8 @@
     <string name="leaveRoleEarly">Uscire prima</string>
     <string name="leaveRoleLate">Iniziare più tardi</string>
     <string name="leaveSecondHalf">Seconda metà</string>
+    <string name="leaveSetupIntro">Indica quante ferie hai: ogni piano mostrerà quante ne usa.</string>
+    <string name="leaveSetupTitle">Imposta le ferie</string>
     <string name="leaveTitle">Ferie</string>
     <string name="leaveTrialNotice">Ogni apertura di un piano conta una volta, anche se è lo stesso.</string>
     <plurals name="leaveTrialsLeft">
@@ -584,6 +586,8 @@
     <string name="onboardingPlusFocusBreakBody">Il prossimo compito attende finché non sei pronto. Niente inizia da solo.</string>
     <string name="onboardingPlusFocusTask">Termina la revisione settimanale</string>
     <string name="onboardingPlusFocusTitle">Assegna a un compito un periodo di tempo chiaro</string>
+    <string name="onboardingPlusLeaveBody">Aggiungi i saldi ferie: DoneAt incrocia festività e turni dell’anno a venire e mostra date e ferie necessarie.</string>
+    <string name="onboardingPlusLeaveTitle">Trasforma pochi giorni di ferie in una lunga pausa</string>
     <string name="onboardingPlusLifeBody">Aggiungi le date che conosci. DoneAt separa il tempo vissuto da quello previsto senza trasformare le stime in storia.</string>
     <string name="onboardingPlusRecordsActual">Reale</string>
     <string name="onboardingPlusRecordsBody">Plus apre il tuo record completo, quindi utilizza un profilo di vita per mettere il lavoro in prospettiva dal tuo primo lavoro alla pensione.</string>
@@ -631,6 +635,7 @@
     <string name="plusBenefitCharts">Viste dell’anno completo e della vita lavorativa</string>
     <string name="plusBenefitEdit">Modifica qualsiasi giorno da Registri</string>
     <string name="plusBenefitFocus">Blocchi Focus dentro il turno</string>
+    <string name="plusBenefitLeave">Pianificare le ferie su festività e turni</string>
     <string name="plusBenefitLife">Una tela di vita dalla nascita alla pensione</string>
     <string name="plusBenefitSync">Registrazioni e impostazioni sincronizzate tramite il tuo iCloud</string>
     <string name="plusBestValue">Più conveniente</string>
@@ -640,7 +645,7 @@
     <string name="plusEditLocked">Modificare un giorno passato</string>
     <string name="plusFocusLocked">Concentrarti su una cosa sola</string>
     <string name="plusGracePeriod">C’è un problema con il pagamento. L’accesso continua per ora, e aggiornare il metodo di pagamento nell’App Store lo mantiene.</string>
-    <string name="plusIntroBody">Il timer e l’ultima settimana restano gratis. Plus apre l’anno completo, la vita lavorativa, le modifiche, la concentrazione e la sincronizzazione iCloud.</string>
+    <string name="plusIntroBody">Il timer e l’ultima settimana restano gratis. Plus apre l’anno completo, la vita lavorativa, le modifiche, la concentrazione, la pianificazione delle ferie e la sincronizzazione iCloud.</string>
     <string name="plusIntroTitle">Vedere la forma del tuo tempo</string>
     <string name="plusLeaveLocked">Pianifica le ferie quando vuoi</string>
     <string name="plusLifeLocked">Guardare il lavoro su una scala più ampia</string>

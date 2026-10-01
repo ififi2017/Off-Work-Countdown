@@ -382,6 +382,8 @@
     <string name="leaveRoleEarly">Erken çık</string>
     <string name="leaveRoleLate">Daha geç başla</string>
     <string name="leaveSecondHalf">İkinci yarı</string>
+    <string name="leaveSetupIntro">Ne kadar iznin olduğunu ekle; her plan ondan ne kadar kullandığını gösterir.</string>
+    <string name="leaveSetupTitle">Önce iznini ayarla</string>
     <string name="leaveTitle">İzin</string>
     <string name="leaveTrialNotice">Her plan açılışı bir hak kullanır; aynı planı yeniden açmak da sayılır.</string>
     <plurals name="leaveTrialsLeft">
@@ -582,6 +584,8 @@
     <string name="onboardingPlusFocusBreakBody">Bir sonraki görev siz hazır olana kadar bekler. Hiçbir şey kendi kendine başlamaz.</string>
     <string name="onboardingPlusFocusTask">Haftalık incelemeyi bitirin</string>
     <string name="onboardingPlusFocusTitle">Bir göreve net bir süre verin</string>
+    <string name="onboardingPlusLeaveBody">İzin bakiyeni ekle; DoneAt önümüzdeki yılın tatillerini ve vardiyanı karşılaştırıp tarihleri ve gereken izni gösterir.</string>
+    <string name="onboardingPlusLeaveTitle">Birkaç günlük izni uzun bir tatile çevir</string>
     <string name="onboardingPlusLifeBody">Bildiğiniz tarihleri ekleyin. DoneAt, tahminleri tarihe dönüştürmeden yaşanan ve öngörülen zamanı ayırır.</string>
     <string name="onboardingPlusRecordsActual">Gerçek</string>
     <string name="onboardingPlusRecordsBody">Plus tüm kayıtlarınızı açar, ardından ilk işinizden emekliliğinize kadar olan süreci bir perspektife oturtmak için bir yaşam profili kullanır.</string>
@@ -629,6 +633,7 @@
     <string name="plusBenefitCharts">Tüm yıl ve çalışma hayatı görünümleri</string>
     <string name="plusBenefitEdit">Kayıtlar’dan herhangi bir günü düzenle</string>
     <string name="plusBenefitFocus">Vardiyanın içinde Odak blokları</string>
+    <string name="plusBenefitLeave">Tatillere ve vardiyana göre izin planla</string>
     <string name="plusBenefitLife">Doğumdan emekliliğe yaşam tuvali</string>
     <string name="plusBenefitSync">Kendi iCloud\'unuz aracılığıyla senkronize edilen kayıtlar ve ayarlar</string>
     <string name="plusBestValue">En avantajlı</string>
@@ -638,7 +643,7 @@
     <string name="plusEditLocked">Geçmiş bir günü değiştir</string>
     <string name="plusFocusLocked">Tek bir işe odaklan</string>
     <string name="plusGracePeriod">Ödemede bir sorun var. Erişim şimdilik sürüyor; App Store’da ödeme yöntemini güncellersen devam eder.</string>
-    <string name="plusIntroBody">Zamanlayıcı ve son haftan ücretsiz kalır. Plus; tüm yılı, çalışma hayatını, düzenlemeyi, odağı ve iCloud eşzamanlamayı açar.</string>
+    <string name="plusIntroBody">Zamanlayıcı ve son haftan ücretsiz kalır. Plus; tüm yılı, çalışma hayatını, düzenlemeyi, odağı, izin planlamayı ve iCloud eşzamanlamayı açar.</string>
     <string name="plusIntroTitle">Zamanının biçimini gör</string>
     <string name="plusLeaveLocked">İznini dilediğin zaman planla</string>
     <string name="plusLifeLocked">Çalışmayı daha geniş ölçekte gör</string>

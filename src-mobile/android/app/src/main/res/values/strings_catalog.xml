@@ -382,6 +382,8 @@
     <string name="leaveRoleEarly">Leave early</string>
     <string name="leaveRoleLate">Start later</string>
     <string name="leaveSecondHalf">Second half</string>
+    <string name="leaveSetupIntro">Add how much leave you have. Plans then show exactly what each break takes from it.</string>
+    <string name="leaveSetupTitle">Set up your leave</string>
     <string name="leaveTitle">Time off</string>
     <string name="leaveTrialNotice">Opening a plan uses one free view, even the same plan again.</string>
     <plurals name="leaveTrialsLeft">
@@ -582,6 +584,8 @@
     <string name="onboardingPlusFocusBreakBody">The next task waits until you are ready. Nothing starts on its own.</string>
     <string name="onboardingPlusFocusTask">Finish the weekly review</string>
     <string name="onboardingPlusFocusTitle">Give one task a clear stretch of time</string>
+    <string name="onboardingPlusLeaveBody">Add your leave balances and DoneAt checks holidays and your own shifts across the year ahead, then shows the dates and how much leave each break takes.</string>
+    <string name="onboardingPlusLeaveTitle">Turn a few days of leave into a long break</string>
     <string name="onboardingPlusLifeBody">Add the dates you know. DoneAt separates lived and projected time without turning estimates into history.</string>
     <string name="onboardingPlusRecordsActual">Actual</string>
     <string name="onboardingPlusRecordsBody">Plus opens your full record, then uses a life profile to put work in perspective from your first job to retirement.</string>
@@ -629,6 +633,7 @@
     <string name="plusBenefitCharts">Full-year and working-life views</string>
     <string name="plusBenefitEdit">Edit any day from Records</string>
     <string name="plusBenefitFocus">Focus blocks inside your shift</string>
+    <string name="plusBenefitLeave">Plan time off around your holidays and shifts</string>
     <string name="plusBenefitLife">A life canvas from birth to retirement</string>
     <string name="plusBenefitSync">Records and settings synced through your own iCloud</string>
     <string name="plusBestValue">Best value</string>
@@ -638,7 +643,7 @@
     <string name="plusEditLocked">Change a day that already passed</string>
     <string name="plusFocusLocked">Focus on one thing</string>
     <string name="plusGracePeriod">There is a problem with the payment. Access continues for now, and updating the payment method in the App Store keeps it.</string>
-    <string name="plusIntroBody">The timer and your recent week stay free. Plus opens the full year, your working life, editing, focus, and iCloud sync.</string>
+    <string name="plusIntroBody">The timer and your recent week stay free. Plus opens the full year, your working life, editing, focus, time off planning, and iCloud sync.</string>
     <string name="plusIntroTitle">See the shape of your time</string>
     <string name="plusLeaveLocked">Plan time off whenever you like</string>
     <string name="plusLifeLocked">See work on a longer scale</string>

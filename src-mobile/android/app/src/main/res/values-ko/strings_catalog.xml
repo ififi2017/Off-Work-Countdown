@@ -381,6 +381,8 @@
     <string name="leaveRoleEarly">일찍 퇴근</string>
     <string name="leaveRoleLate">늦게 출근</string>
     <string name="leaveSecondHalf">후반 반차</string>
+    <string name="leaveSetupIntro">가진 휴가를 입력하면 계획마다 얼마나 쓰는지 알 수 있어요.</string>
+    <string name="leaveSetupTitle">먼저 휴가 설정하기</string>
     <string name="leaveTitle">휴가</string>
     <string name="leaveTrialNotice">계획을 열 때마다 1번씩 차감돼요. 같은 계획을 다시 열어도 차감돼요.</string>
     <plurals name="leaveTrialsLeft">
@@ -580,6 +582,8 @@
     <string name="onboardingPlusFocusBreakBody">다음 작업은 준비가 될 때까지 기다립니다. 아무것도 저절로 시작되지 않습니다.</string>
     <string name="onboardingPlusFocusTask">주간 복습을 마무리하세요</string>
     <string name="onboardingPlusFocusTitle">한 가지 일에 명확한 시간을 할당하라</string>
+    <string name="onboardingPlusLeaveBody">휴가 잔여를 입력하면 DoneAt이 공휴일과 내 일정을 바탕으로 앞으로 1년 안의 연휴를 찾아 날짜와 필요한 휴가를 알려 줘요.</string>
+    <string name="onboardingPlusLeaveTitle">며칠 휴가로 긴 연휴 만들기</string>
     <string name="onboardingPlusLifeBody">당신이 알고 있는 날짜를 추가하세요. DoneAt는 추정치를 기록으로 전환하지 않고 실제 시간과 예상 시간을 분리합니다.</string>
     <string name="onboardingPlusRecordsActual">실제</string>
     <string name="onboardingPlusRecordsBody">플러스는 전체 기록을 연 다음 인생 프로필을 사용하여 첫 직장부터 은퇴까지의 일을 관점에서 살펴봅니다.</string>
@@ -627,6 +631,7 @@
     <string name="plusBenefitCharts">연간 전체와 직장 생활 보기</string>
     <string name="plusBenefitEdit">기록 페이지에서 아무 날이나 수정</string>
     <string name="plusBenefitFocus">근무 시간 안의 집중 블록</string>
+    <string name="plusBenefitLeave">공휴일과 일정에 맞춰 휴가 계획</string>
     <string name="plusBenefitLife">출생부터 퇴직까지 인생 캔버스</string>
     <string name="plusBenefitSync">자신의 iCloud를 통해 동기화된 기록 및 설정</string>
     <string name="plusBestValue">가장 알뜰</string>
@@ -636,7 +641,7 @@
     <string name="plusEditLocked">지난 날 고치기</string>
     <string name="plusFocusLocked">한 가지에 집중하기</string>
     <string name="plusGracePeriod">결제에 문제가 있습니다. 지금은 계속 쓸 수 있고, App Store에서 결제 수단을 업데이트하면 유지됩니다.</string>
-    <string name="plusIntroBody">타이머와 최근 한 주는 계속 무료예요. Plus에서 연간 전체, 직장 생활, 편집, 집중, iCloud 동기화를 이용할 수 있어요.</string>
+    <string name="plusIntroBody">타이머와 최근 한 주는 계속 무료예요. Plus에서 연간 전체, 직장 생활, 편집, 집중, 휴가 계획, iCloud 동기화를 이용할 수 있어요.</string>
     <string name="plusIntroTitle">시간의 모양을 보다</string>
     <string name="plusLeaveLocked">언제든 휴가 계획하기</string>
     <string name="plusLifeLocked">일을 더 긴 눈금으로 보기</string>

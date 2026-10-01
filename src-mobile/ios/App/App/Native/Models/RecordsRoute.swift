@@ -6,6 +6,8 @@ enum RecordsRoute: Hashable, Sendable {
     case monthList(year: Int, month: Int)
     case day(String)
     case conflictCenter
+    /// Plan 020's time off page, reached from the month calendar.
+    case leave
 }
 
 struct RecordsDayIdentified: Identifiable, Hashable {

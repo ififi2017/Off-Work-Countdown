@@ -1411,6 +1411,12 @@
     "leaveSecondHalf": {
       "resource": "string/leaveSecondHalf"
     },
+    "leaveSetupIntro": {
+      "resource": "string/leaveSetupIntro"
+    },
+    "leaveSetupTitle": {
+      "resource": "string/leaveSetupTitle"
+    },
     "leaveTitle": {
       "resource": "string/leaveTitle"
     },
@@ -2056,6 +2062,12 @@
     "onboardingPlusFocusTitle": {
       "resource": "string/onboardingPlusFocusTitle"
     },
+    "onboardingPlusLeaveBody": {
+      "resource": "string/onboardingPlusLeaveBody"
+    },
+    "onboardingPlusLeaveTitle": {
+      "resource": "string/onboardingPlusLeaveTitle"
+    },
     "onboardingPlusLifeBody": {
       "resource": "string/onboardingPlusLifeBody"
     },
@@ -2221,6 +2233,9 @@
     },
     "plusBenefitFocus": {
       "resource": "string/plusBenefitFocus"
+    },
+    "plusBenefitLeave": {
+      "resource": "string/plusBenefitLeave"
     },
     "plusBenefitLife": {
       "resource": "string/plusBenefitLife"
