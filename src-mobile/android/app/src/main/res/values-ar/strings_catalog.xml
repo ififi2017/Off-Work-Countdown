@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">تستخدم خطة معتمدة هذا الرصيد. ألغِ تلك الخطة لحذفه.</string>
     <string name="leaveBalanceNamePlaceholder">الاسم، مثل إجازة الزواج</string>
     <string name="leaveBalancesSection">أرصدة الإجازات</string>
+    <string name="leaveCancelDay">إلغاء إجازة هذا اليوم</string>
+    <string name="leaveCancelDayConfirm">يعود هذا اليوم إلى جدولك وتعود إجازته إلى أرصدتك. تبقى بقية الخطة كما هي.</string>
     <string name="leaveCarriedOverCaveat">بعض الأيام تكرر شهرًا سابقًا من جدولك.</string>
     <string name="leaveDayHalf">نصف يوم</string>
     <string name="leaveDayHoliday">عطلة رسمية</string>
@@ -372,6 +374,7 @@
     <string name="leaveKindCustom">أخرى</string>
     <string name="leaveLastShiftEnds">تنتهي آخر مناوبة</string>
     <string name="leaveMainlandHolidaysMissing">لا يتضمن هذا الإصدار عطلات البر الرئيسي الصيني لعام %1$s بعد، لذا يتبع عام %1$s جدولك المعتاد. حدّث DoneAt بعد إضافتها لتُحتسب.</string>
+    <string name="leaveManage">إدارة الإجازات</string>
     <string name="leaveNewBalance">رصيد إجازة جديد</string>
     <string name="leaveNextShiftStarts">العودة إلى العمل</string>
     <string name="leaveNoBalancesHint">أضف رصيد إجازة للتخطيط به. تظهر فترات الراحة التي لا تحتاج إجازة أيضًا.</string>

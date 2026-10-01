@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">अपनाई गई एक योजना यह शेष इस्तेमाल कर रही है। हटाने के लिए उस योजना को रद्द करें।</string>
     <string name="leaveBalanceNamePlaceholder">नाम, जैसे विवाह अवकाश</string>
     <string name="leaveBalancesSection">छुट्टी शेष</string>
+    <string name="leaveCancelDay">इस दिन की छुट्टी रद्द करें</string>
+    <string name="leaveCancelDayConfirm">यह दिन आपके शेड्यूल में लौट आएगा और छुट्टी शेष में लौट जाएगी। योजना के बाकी दिन वैसे ही रहेंगे।</string>
     <string name="leaveCarriedOverCaveat">कुछ दिन आपके पिछले किसी महीने के रोस्टर को दोहराते हैं।</string>
     <string name="leaveDayHalf">आधा दिन</string>
     <string name="leaveDayHoliday">सार्वजनिक छुट्टी</string>
@@ -368,6 +370,7 @@
     <string name="leaveKindCustom">अन्य</string>
     <string name="leaveLastShiftEnds">आख़िरी शिफ़्ट ख़त्म</string>
     <string name="leaveMainlandHolidaysMissing">इस वर्ज़न में अभी मुख्यभूमि चीन की %1$s की छुट्टियाँ शामिल नहीं हैं, इसलिए %1$s आपके सामान्य शेड्यूल से चलता है। जुड़ने के बाद उन्हें शामिल करने के लिए DoneAt अपडेट करें।</string>
+    <string name="leaveManage">छुट्टी प्रबंधित करें</string>
     <string name="leaveNewBalance">नई छुट्टी शेष</string>
     <string name="leaveNextShiftStarts">काम पर वापसी</string>
     <string name="leaveNoBalancesHint">योजना में इस्तेमाल के लिए छुट्टी शेष जोड़ें। बिना छुट्टी वाले लंबे ब्रेक भी दिखते हैं।</string>

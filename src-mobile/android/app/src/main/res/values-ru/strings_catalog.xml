@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">Этот остаток использует принятый план. Отмените план, чтобы удалить остаток.</string>
     <string name="leaveBalanceNamePlaceholder">Название, например «свадебный»</string>
     <string name="leaveBalancesSection">Остатки отпуска</string>
+    <string name="leaveCancelDay">Отменить отпуск в этот день</string>
+    <string name="leaveCancelDayConfirm">Этот день вернётся в график, а отпуск — в остатки. Остальные дни плана сохранятся.</string>
     <string name="leaveCarriedOverCaveat">Некоторые дни повторяют прошлый месяц графика.</string>
     <string name="leaveDayHalf">Полдня</string>
     <string name="leaveDayHoliday">Праздник</string>
@@ -370,6 +372,7 @@
     <string name="leaveKindCustom">Другое</string>
     <string name="leaveLastShiftEnds">Последняя смена заканчивается</string>
     <string name="leaveMainlandHolidaysMissing">В этой версии ещё нет праздников материкового Китая на %1$s год, поэтому %1$s год считается по вашему обычному графику. Когда их добавят, обновите DoneAt, чтобы учесть их.</string>
+    <string name="leaveManage">Управлять отпуском</string>
     <string name="leaveNewBalance">Новый остаток отпуска</string>
     <string name="leaveNextShiftStarts">Снова на работу</string>
     <string name="leaveNoBalancesHint">Добавьте остаток отпуска, чтобы планировать с ним. Перерывы без отпуска тоже будут показаны.</string>

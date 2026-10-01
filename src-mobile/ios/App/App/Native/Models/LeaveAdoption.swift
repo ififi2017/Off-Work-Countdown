@@ -97,6 +97,15 @@ extension RecordCoordinator {
         }
         return keys
     }
+
+    /// Gives back one day of leave, whichever plan wrote it. The rest of the
+    /// plan keeps its id, so undoing it later still finds its other days.
+    @discardableResult
+    func cancelLeaveDay(_ dayKey: String, at date: Date = .now) -> Bool {
+        guard state.leaveDays.contains(where: { $0.dayKey == dayKey }) else { return false }
+        erase(.leaveDay, key: dayKey, at: date)
+        return true
+    }
 }
 
 extension RecordsActions {
@@ -131,6 +140,15 @@ extension RecordsActions {
         records.submitCommand { [self] in
             guard !records.blocksWrites else { return 0 }
             return records.undoLeavePlan(planID, at: date).count
+        }
+    }
+
+    /// Gives back one day of an adopted plan.
+    @discardableResult
+    func cancelLeaveDay(_ dayKey: String, at date: Date = .now) -> RecordCommand<Bool> {
+        records.submitCommand { [self] in
+            guard !records.blocksWrites else { return false }
+            return records.cancelLeaveDay(dayKey, at: date)
         }
     }
 }

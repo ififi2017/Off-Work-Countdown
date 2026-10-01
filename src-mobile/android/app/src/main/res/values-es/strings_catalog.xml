@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">Un plan adoptado usa estos días. Deshaz ese plan para eliminarlos.</string>
     <string name="leaveBalanceNamePlaceholder">Nombre, p. ej. permiso por matrimonio</string>
     <string name="leaveBalancesSection">Días disponibles</string>
+    <string name="leaveCancelDay">Cancelar el permiso de este día</string>
+    <string name="leaveCancelDayConfirm">Este día vuelve a tu horario y sus días vuelven a tus disponibles. El resto del plan se mantiene.</string>
     <string name="leaveCarriedOverCaveat">Algunos días repiten un mes anterior de tus turnos.</string>
     <string name="leaveDayHalf">Medio día</string>
     <string name="leaveDayHoliday">Festivo</string>
@@ -369,6 +371,7 @@
     <string name="leaveKindCustom">Otro</string>
     <string name="leaveLastShiftEnds">Fin del último turno</string>
     <string name="leaveMainlandHolidaysMissing">Esta versión aún no incluye los festivos de %1$s de China continental, así que %1$s sigue tu horario habitual. Cuando se añadan, actualiza DoneAt para tenerlos en cuenta.</string>
+    <string name="leaveManage">Gestionar vacaciones</string>
     <string name="leaveNewBalance">Nuevos días disponibles</string>
     <string name="leaveNextShiftStarts">Vuelta al trabajo</string>
     <string name="leaveNoBalancesHint">Añade días disponibles para planificar con ellos. Los descansos que no necesitan días también aparecen.</string>

@@ -11,6 +11,9 @@ nonisolated struct LifeViewModelCacheKey: Codable, Equatable, Sendable {
     var exceptions: [CalendarException]
     var overrides: [DayOverride]
     var observations: [WorkObservation]
+    /// Adopted leave by day (plan 020): only what the walk reads. `nil`
+    /// without leave, so caches written before leave existed still match.
+    var leaveDays: [String: LeavePortion]?
     var dayKey: String
     var timeZoneIdentifier: String
     var hours: ScheduleHoursConfiguration?
@@ -78,6 +81,9 @@ final class LifeSummaryInputsCache {
                 var copy = value; copy.editedAt = stable(value.editedAt); copy.occurredAt = stable(value.occurredAt)
                 return copy
             },
+            leaveDays: archive.leaveDays.isEmpty ? nil : Dictionary(
+                archive.leaveDays.map { ($0.dayKey, $0.portion) }, uniquingKeysWith: { first, _ in first }
+            ),
             dayKey: input.dayKey,
             timeZoneIdentifier: input.timeZoneIdentifier,
             hours: input.hours,

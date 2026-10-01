@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">Uygulanan bir plan bu bakiyeyi kullanıyor. Silmek için o planı geri al.</string>
     <string name="leaveBalanceNamePlaceholder">Ad, ör. evlilik izni</string>
     <string name="leaveBalancesSection">İzin bakiyeleri</string>
+    <string name="leaveCancelDay">Bu günün iznini iptal et</string>
+    <string name="leaveCancelDayConfirm">Bu gün vardiyana geri döner ve izni bakiyene iade edilir. Planın geri kalanı aynı kalır.</string>
     <string name="leaveCarriedOverCaveat">Bazı günler vardiya planının önceki bir ayını tekrarlıyor.</string>
     <string name="leaveDayHalf">Yarım gün</string>
     <string name="leaveDayHoliday">Resmî tatil</string>
@@ -368,6 +370,7 @@
     <string name="leaveKindCustom">Diğer</string>
     <string name="leaveLastShiftEnds">Son vardiya biter</string>
     <string name="leaveMainlandHolidaysMissing">Bu sürüm Çin anakarasının %1$s tatillerini henüz içermiyor; bu yüzden %1$s her zamanki vardiyana göre hesaplanıyor. Eklendiğinde DoneAt’i güncelleyerek dahil edebilirsin.</string>
+    <string name="leaveManage">İzinleri yönet</string>
     <string name="leaveNewBalance">Yeni izin bakiyesi</string>
     <string name="leaveNextShiftStarts">İşe dönüş</string>
     <string name="leaveNoBalancesHint">Planlamak için bir izin bakiyesi ekle. İzin gerektirmeyen tatiller yine de gösterilir.</string>

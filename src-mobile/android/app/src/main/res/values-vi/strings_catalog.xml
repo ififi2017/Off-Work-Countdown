@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">Một kế hoạch đã áp dụng đang dùng số ngày phép này. Huỷ kế hoạch đó để xoá.</string>
     <string name="leaveBalanceNamePlaceholder">Tên, ví dụ: nghỉ cưới</string>
     <string name="leaveBalancesSection">Số ngày phép</string>
+    <string name="leaveCancelDay">Huỷ phép ngày này</string>
+    <string name="leaveCancelDayConfirm">Ngày này trở lại lịch làm việc và phép được trả lại. Các ngày khác của kế hoạch giữ nguyên.</string>
     <string name="leaveCarriedOverCaveat">Một số ngày lặp lại lịch của tháng trước.</string>
     <string name="leaveDayHalf">Nửa ngày</string>
     <string name="leaveDayHoliday">Ngày lễ</string>
@@ -367,6 +369,7 @@
     <string name="leaveKindCustom">Khác</string>
     <string name="leaveLastShiftEnds">Ca cuối kết thúc</string>
     <string name="leaveMainlandHolidaysMissing">Phiên bản này chưa có lịch nghỉ lễ %1$s của Trung Quốc đại lục, nên năm %1$s được tính theo lịch làm việc thường ngày của bạn. Khi lịch được bổ sung, hãy cập nhật DoneAt để đưa vào.</string>
+    <string name="leaveManage">Quản lý ngày nghỉ</string>
     <string name="leaveNewBalance">Số ngày phép mới</string>
     <string name="leaveNextShiftStarts">Đi làm lại</string>
     <string name="leaveNoBalancesHint">Thêm số ngày phép để lên kế hoạch. Các kỳ nghỉ không cần xin phép vẫn được hiển thị.</string>

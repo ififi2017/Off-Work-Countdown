@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">Rencana yang diterapkan memakai saldo ini. Batalkan rencana itu untuk menghapusnya.</string>
     <string name="leaveBalanceNamePlaceholder">Nama, mis. cuti menikah</string>
     <string name="leaveBalancesSection">Saldo cuti</string>
+    <string name="leaveCancelDay">Batalkan cuti hari ini</string>
+    <string name="leaveCancelDayConfirm">Hari ini kembali ke jadwalmu dan cutinya kembali ke saldo. Sisa rencana tetap.</string>
     <string name="leaveCarriedOverCaveat">Beberapa hari mengulang jadwal bulan sebelumnya.</string>
     <string name="leaveDayHalf">Setengah hari</string>
     <string name="leaveDayHoliday">Hari libur nasional</string>
@@ -367,6 +369,7 @@
     <string name="leaveKindCustom">Lainnya</string>
     <string name="leaveLastShiftEnds">Sif terakhir selesai</string>
     <string name="leaveMainlandHolidaysMissing">Versi ini belum memuat hari libur Tiongkok daratan %1$s, jadi %1$s mengikuti jadwal biasamu. Setelah ditambahkan, perbarui DoneAt untuk menyertakannya.</string>
+    <string name="leaveManage">Kelola cuti</string>
     <string name="leaveNewBalance">Saldo cuti baru</string>
     <string name="leaveNextShiftStarts">Kembali bekerja</string>
     <string name="leaveNoBalancesHint">Tambahkan saldo cuti untuk merencanakan. Libur panjang tanpa cuti tetap ditampilkan.</string>

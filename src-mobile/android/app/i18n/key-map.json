@@ -1293,6 +1293,12 @@
     "leaveBalancesSection": {
       "resource": "string/leaveBalancesSection"
     },
+    "leaveCancelDay": {
+      "resource": "string/leaveCancelDay"
+    },
+    "leaveCancelDayConfirm": {
+      "resource": "string/leaveCancelDayConfirm"
+    },
     "leaveCarriedOverCaveat": {
       "resource": "string/leaveCarriedOverCaveat"
     },
@@ -1364,6 +1370,9 @@
       "params": [
         "year"
       ]
+    },
+    "leaveManage": {
+      "resource": "string/leaveManage"
     },
     "leaveNewBalance": {
       "resource": "string/leaveNewBalance"

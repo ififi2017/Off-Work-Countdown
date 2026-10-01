@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">Un plan adopté utilise ce solde. Annulez ce plan pour le supprimer.</string>
     <string name="leaveBalanceNamePlaceholder">Nom, par ex. congé de mariage</string>
     <string name="leaveBalancesSection">Soldes de congés</string>
+    <string name="leaveCancelDay">Annuler le congé de ce jour</string>
+    <string name="leaveCancelDayConfirm">Ce jour revient à votre planning et son congé retourne à vos soldes. Le reste du plan ne change pas.</string>
     <string name="leaveCarriedOverCaveat">Certains jours reprennent un mois précédent de votre planning.</string>
     <string name="leaveDayHalf">Demi-journée</string>
     <string name="leaveDayHoliday">Férié</string>
@@ -369,6 +371,7 @@
     <string name="leaveKindCustom">Autre</string>
     <string name="leaveLastShiftEnds">Fin du dernier service</string>
     <string name="leaveMainlandHolidaysMissing">Cette version n’inclut pas encore les jours fériés %1$s de Chine continentale : %1$s suit donc votre planning habituel. Mettez à jour DoneAt une fois qu’ils seront ajoutés pour les prendre en compte.</string>
+    <string name="leaveManage">Gérer les congés</string>
     <string name="leaveNewBalance">Nouveau solde de congés</string>
     <string name="leaveNextShiftStarts">Reprise</string>
     <string name="leaveNoBalancesHint">Ajoutez un solde de congés pour planifier avec. Les pauses sans congé s’affichent quand même.</string>

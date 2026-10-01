@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">채택한 계획에서 이 잔여를 쓰고 있어요. 그 계획을 취소하면 삭제할 수 있어요.</string>
     <string name="leaveBalanceNamePlaceholder">이름(예: 경조휴가)</string>
     <string name="leaveBalancesSection">휴가 잔여</string>
+    <string name="leaveCancelDay">이날 휴가 취소</string>
+    <string name="leaveCancelDayConfirm">이날은 원래 일정으로 돌아가고 쓴 휴가는 잔여로 돌아가요. 계획의 다른 날은 그대로예요.</string>
     <string name="leaveCarriedOverCaveat">일부 날짜는 이전 달 일정을 반복해요.</string>
     <string name="leaveDayHalf">반차</string>
     <string name="leaveDayHoliday">공휴일</string>
@@ -367,6 +369,7 @@
     <string name="leaveKindCustom">기타</string>
     <string name="leaveLastShiftEnds">마지막 근무 종료</string>
     <string name="leaveMainlandHolidaysMissing">이 버전에는 아직 중국 본토의 %1$s년 공휴일이 없어서 %1$s년은 평소 일정으로 계산해요. 추가된 뒤 DoneAt을 업데이트하면 반영돼요.</string>
+    <string name="leaveManage">휴가 관리</string>
     <string name="leaveNewBalance">새 휴가 잔여</string>
     <string name="leaveNextShiftStarts">복귀</string>
     <string name="leaveNoBalancesHint">휴가 잔여를 추가하면 계획에 쓸 수 있어요. 휴가가 필요 없는 연휴도 보여 드려요.</string>

@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">แผนที่ใช้อยู่ใช้วันลานี้ ยกเลิกแผนนั้นก่อนจึงจะลบได้</string>
     <string name="leaveBalanceNamePlaceholder">ชื่อ เช่น ลาแต่งงาน</string>
     <string name="leaveBalancesSection">วันลาคงเหลือ</string>
+    <string name="leaveCancelDay">ยกเลิกการลาวันนี้</string>
+    <string name="leaveCancelDayConfirm">วันนี้จะกลับไปเป็นตามตารางงานเดิม และวันลาจะคืนกลับวันลาคงเหลือ วันอื่นในแผนยังอยู่เหมือนเดิม</string>
     <string name="leaveCarriedOverCaveat">บางวันใช้ตารางงานของเดือนก่อนหน้าซ้ำ</string>
     <string name="leaveDayHalf">ครึ่งวัน</string>
     <string name="leaveDayHoliday">วันหยุดนักขัตฤกษ์</string>
@@ -367,6 +369,7 @@
     <string name="leaveKindCustom">อื่นๆ</string>
     <string name="leaveLastShiftEnds">กะสุดท้ายเลิก</string>
     <string name="leaveMainlandHolidaysMissing">เวอร์ชันนี้ยังไม่มีวันหยุดของจีนแผ่นดินใหญ่ปี %1$s ปี %1$s จึงคิดตามตารางงานปกติของคุณ เมื่อมีการเพิ่มแล้ว อัปเดต DoneAt เพื่อรวมไว้</string>
+    <string name="leaveManage">จัดการวันลา</string>
     <string name="leaveNewBalance">วันลาคงเหลือใหม่</string>
     <string name="leaveNextShiftStarts">กลับมาทำงาน</string>
     <string name="leaveNoBalancesHint">เพิ่มวันลาคงเหลือเพื่อใช้วางแผน วันหยุดยาวที่ไม่ต้องลาก็ยังแสดงอยู่</string>

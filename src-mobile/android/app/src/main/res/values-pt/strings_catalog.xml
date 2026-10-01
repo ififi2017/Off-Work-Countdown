@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">Um plano adotado usa este saldo. Anule esse plano para o eliminar.</string>
     <string name="leaveBalanceNamePlaceholder">Nome, ex. licença de casamento</string>
     <string name="leaveBalancesSection">Saldos de férias</string>
+    <string name="leaveCancelDay">Cancelar as férias deste dia</string>
+    <string name="leaveCancelDayConfirm">Este dia volta à sua escala e as férias voltam aos saldos. O resto do plano mantém-se.</string>
     <string name="leaveCarriedOverCaveat">Alguns dias repetem um mês anterior da sua escala.</string>
     <string name="leaveDayHalf">Meio dia</string>
     <string name="leaveDayHoliday">Feriado</string>
@@ -369,6 +371,7 @@
     <string name="leaveKindCustom">Outro</string>
     <string name="leaveLastShiftEnds">Fim do último turno</string>
     <string name="leaveMainlandHolidaysMissing">Esta versão ainda não inclui os feriados de %1$s da China continental, por isso %1$s segue a sua escala habitual. Quando forem adicionados, atualize o DoneAt para os incluir.</string>
+    <string name="leaveManage">Gerir férias</string>
     <string name="leaveNewBalance">Novo saldo de férias</string>
     <string name="leaveNextShiftStarts">Regresso ao trabalho</string>
     <string name="leaveNoBalancesHint">Adicione um saldo de férias para planear com ele. As pausas sem férias também aparecem.</string>

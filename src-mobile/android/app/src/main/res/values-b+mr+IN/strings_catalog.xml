@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">स्वीकारलेले एक नियोजन ही शिल्लक वापरत आहे. हटवण्यासाठी ते नियोजन रद्द करा.</string>
     <string name="leaveBalanceNamePlaceholder">नाव, उदा. विवाह रजा</string>
     <string name="leaveBalancesSection">सुट्टी शिल्लक</string>
+    <string name="leaveCancelDay">या दिवसाची रजा रद्द करा</string>
+    <string name="leaveCancelDayConfirm">हा दिवस वेळापत्रकात परत येईल आणि रजा शिल्लकेत परत जाईल. नियोजनाचे बाकी दिवस तसेच राहतील.</string>
     <string name="leaveCarriedOverCaveat">काही दिवस आधीच्या महिन्याचे वेळापत्रक पुन्हा वापरतात.</string>
     <string name="leaveDayHalf">अर्धा दिवस</string>
     <string name="leaveDayHoliday">सार्वजनिक सुट्टी</string>
@@ -368,6 +370,7 @@
     <string name="leaveKindCustom">इतर</string>
     <string name="leaveLastShiftEnds">शेवटची शिफ्ट संपते</string>
     <string name="leaveMainlandHolidaysMissing">या आवृत्तीत अजून मुख्य भूमी चीनच्या %1$s च्या सुट्ट्या नाहीत, म्हणून %1$s तुमच्या नेहमीच्या वेळापत्रकानुसार धरले आहे. त्या जोडल्यावर DoneAt अपडेट करा.</string>
+    <string name="leaveManage">रजा व्यवस्थापित करा</string>
     <string name="leaveNewBalance">नवीन सुट्टी शिल्लक</string>
     <string name="leaveNextShiftStarts">कामावर परत</string>
     <string name="leaveNoBalancesHint">नियोजनासाठी सुट्टी शिल्लक जोडा. रजा न लागणाऱ्या सलग सुट्ट्याही दिसतील.</string>

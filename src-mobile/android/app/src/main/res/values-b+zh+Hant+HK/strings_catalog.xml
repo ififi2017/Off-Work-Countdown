@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">有個已採用嘅計劃用緊呢份餘額，撤銷咗個計劃就可以刪除。</string>
     <string name="leaveBalanceNamePlaceholder">名稱，例如婚假</string>
     <string name="leaveBalancesSection">假期餘額</string>
+    <string name="leaveCancelDay">取消呢日嘅假</string>
+    <string name="leaveCancelDayConfirm">呢日會返返原本嘅排班，用咗嘅假退返去餘額，計劃其他日子唔變。</string>
     <string name="leaveCarriedOverCaveat">有啲日子沿用之前月份嘅排班。</string>
     <string name="leaveDayHalf">半日</string>
     <string name="leaveDayHoliday">公眾假期</string>
@@ -367,6 +369,7 @@
     <string name="leaveKindCustom">其他</string>
     <string name="leaveLastShiftEnds">最後一更完</string>
     <string name="leaveMainlandHolidaysMissing">呢個版本仲未收錄 %1$s 年中國內地嘅節假日安排，%1$s 年暫時按你平時嘅排班計。收錄咗之後更新 App，就會計埋入規劃。</string>
+    <string name="leaveManage">管理假期</string>
     <string name="leaveNewBalance">新假期餘額</string>
     <string name="leaveNextShiftStarts">返工</string>
     <string name="leaveNoBalancesHint">加入假期餘額就可以用嚟計劃。唔使請假嘅連假都會列出嚟。</string>

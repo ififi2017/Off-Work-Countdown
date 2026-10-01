@@ -23,6 +23,19 @@ extension ShiftSessionStore {
         ExtendedScheduleResolver.dayNumber(dayKey: dayKey).map { leaveDayLabel($0, template: template) } ?? dayKey
     }
 
+    /// An adopted plan's dates, e.g. "Oct 12 – Oct 23".
+    func leavePlanTitle(_ days: [LeaveDay]) -> String {
+        guard let first = days.first, let last = days.last else { return "" }
+        let start = leaveDayLabel(dayKey: first.dayKey, template: "MMMd")
+        return first.dayKey == last.dayKey
+            ? start
+            : OWCText.ltrRange(start, leaveDayLabel(dayKey: last.dayKey, template: "MMMd"))
+    }
+
+    func leavePlanCost(_ days: [LeaveDay]) -> String {
+        text.formatDays(Double(days.reduce(0) { $0 + $1.portion.halfDays }) / 2)
+    }
+
     func leaveTime(_ ms: Double) -> String {
         queries.formatRecordsTime(Date(timeIntervalSince1970: ms / 1_000))
     }
@@ -65,7 +78,7 @@ struct LeaveView: View {
     var backTitleKey = "settings"
     @State private var editing: LeaveBalanceEditing?
     @State private var isPlanning = false
-    @State private var undoing: UUID?
+    @State private var viewingPlan: LeavePlanSelection?
 
     private var text: AppText { shifts.text }
     private var trialsLeft: Int { shifts.preferences.leavePlannerTrialsLeft }
@@ -112,13 +125,11 @@ struct LeaveView: View {
                         .padding(.top, OWCDesign.sectionGap)
                     OWCGroupCard {
                         ForEach(Array(plans.enumerated()), id: \.element.id) { index, plan in
-                            Button { undoing = plan.id } label: {
-                                OWCRow(icon: "airplane", title: planTitle(plan.days),
-                                       subtitle: text.t("leaveUses", values: ["days": planLeave(plan.days)]),
+                            Button { viewingPlan = .init(id: plan.id) } label: {
+                                OWCRow(icon: "airplane", title: shifts.leavePlanTitle(plan.days),
+                                       subtitle: text.t("leaveUses", values: ["days": shifts.leavePlanCost(plan.days)]),
                                        isLast: index == plans.count - 1, centersVertically: true) {
-                                    Text(text.t("leaveUndoPlan"))
-                                        .font(.subheadline)
-                                        .foregroundStyle(OWCDesign.accent)
+                                    OWCDetailAccessory(text: nil)
                                 }
                             }
                             .buttonStyle(OWCRowButtonStyle())
@@ -137,17 +148,8 @@ struct LeaveView: View {
         .sheet(isPresented: $isPlanning) {
             LeavePlannerSheet(shifts: shifts, actions: actions)
         }
-        .confirmationDialog(
-            text.t("leaveUndoPlan"),
-            isPresented: Binding(get: { undoing != nil }, set: { if !$0 { undoing = nil } }),
-            titleVisibility: .visible,
-            presenting: undoing
-        ) { id in
-            Button(text.t("leaveUndoPlan"), role: .destructive) {
-                actions.undoLeavePlan(id)
-            }
-        } message: { _ in
-            Text(text.t("leaveUndoConfirm"))
+        .sheet(item: $viewingPlan) { selection in
+            AdoptedLeavePlanSheet(shifts: shifts, actions: actions, planID: selection.id)
         }
     }
 
@@ -162,21 +164,96 @@ struct LeaveView: View {
         }
     }
 
-    private func planTitle(_ days: [LeaveDay]) -> String {
-        guard let first = days.first, let last = days.last else { return "" }
-        let start = shifts.leaveDayLabel(dayKey: first.dayKey, template: "MMMd")
-        return first.dayKey == last.dayKey
-            ? start
-            : OWCText.ltrRange(start, shifts.leaveDayLabel(dayKey: last.dayKey, template: "MMMd"))
-    }
-
-    private func planLeave(_ days: [LeaveDay]) -> String {
-        text.formatDays(Double(days.reduce(0) { $0 + $1.portion.halfDays }) / 2)
-    }
-
     static func newBalance() -> LeaveBalance {
         LeaveBalance(id: UUID(), kind: .annual, name: nil, entitledHalfDays: 10, usedHalfDays: 0,
                      validFromDayKey: nil, validThroughDayKey: nil)
+    }
+}
+
+private struct LeavePlanSelection: Identifiable {
+    let id: UUID
+}
+
+/// One adopted plan's days. A day can be handed back on its own; the rest of
+/// the plan keeps its id, so undoing it later still finds them.
+private struct AdoptedLeavePlanSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let shifts: ShiftSessionStore
+    let actions: RecordsActions
+    let planID: UUID
+    @State private var cancelling: String?
+    @State private var confirmsUndo = false
+
+    private var text: AppText { shifts.text }
+    private var days: [LeaveDay] { shifts.adoptedLeavePlans.first { $0.id == planID }?.days ?? [] }
+
+    var body: some View {
+        let days = days
+        NavigationStack {
+            Form {
+                Section {
+                    ForEach(days, id: \.dayKey) { day in
+                        Button { cancelling = day.dayKey } label: {
+                            HStack(spacing: 12) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(shifts.leaveDayLabel(dayKey: day.dayKey))
+                                        .foregroundStyle(OWCDesign.primary)
+                                    if let uses = usesLabel(day) {
+                                        Text(uses).font(.caption).foregroundStyle(OWCDesign.secondary)
+                                    }
+                                }
+                                Spacer(minLength: 8)
+                                Text(text.t(day.portion.titleKey))
+                                    .foregroundStyle(OWCDesign.secondary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .accessibilityHint(text.t("leaveCancelDay"))
+                    }
+                } footer: {
+                    Text(text.t("leaveUses", values: ["days": shifts.leavePlanCost(days)]))
+                }
+                Section {
+                    Button(text.t("leaveUndoPlan"), role: .destructive) { confirmsUndo = true }
+                }
+            }
+            .navigationTitle(shifts.leavePlanTitle(days))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(text.t("done")) { dismiss() }
+                }
+            }
+            .confirmationDialog(
+                text.t("leaveCancelDay"),
+                isPresented: Binding(get: { cancelling != nil }, set: { if !$0 { cancelling = nil } }),
+                titleVisibility: .visible,
+                presenting: cancelling
+            ) { key in
+                Button(text.t("leaveCancelDay"), role: .destructive) { actions.cancelLeaveDay(key) }
+            } message: { key in
+                Text(shifts.leaveDayLabel(dayKey: key) + "\n" + text.t("leaveCancelDayConfirm"))
+            }
+            .confirmationDialog(text.t("leaveUndoPlan"), isPresented: $confirmsUndo, titleVisibility: .visible) {
+                Button(text.t("leaveUndoPlan"), role: .destructive) {
+                    actions.undoLeavePlan(planID)
+                    dismiss()
+                }
+            } message: {
+                Text(text.t("leaveUndoConfirm"))
+            }
+            .onChange(of: days.isEmpty) { if days.isEmpty { dismiss() } }
+        }
+        .presentationDragIndicator(.visible)
+    }
+
+    private func usesLabel(_ day: LeaveDay) -> String? {
+        let balances = shifts.records.state.leaveBalances
+        let parts = day.uses.compactMap { use -> String? in
+            guard let balance = balances.first(where: { $0.id == use.budgetID }) else { return nil }
+            return shifts.leaveBalanceName(balance) + " " + text.formatDays(Double(use.halfDays) / 2)
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
     }
 }
 

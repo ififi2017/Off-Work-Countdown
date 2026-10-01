@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">Un piano adottato usa questo saldo. Annulla il piano per eliminarlo.</string>
     <string name="leaveBalanceNamePlaceholder">Nome, es. congedo matrimoniale</string>
     <string name="leaveBalancesSection">Saldi ferie</string>
+    <string name="leaveCancelDay">Annulla le ferie di questo giorno</string>
+    <string name="leaveCancelDayConfirm">Il giorno torna nei tuoi turni e le ferie tornano ai saldi. Il resto del piano resta.</string>
     <string name="leaveCarriedOverCaveat">Alcuni giorni ripetono un mese precedente dei tuoi turni.</string>
     <string name="leaveDayHalf">Mezza giornata</string>
     <string name="leaveDayHoliday">Festivo</string>
@@ -369,6 +371,7 @@
     <string name="leaveKindCustom">Altro</string>
     <string name="leaveLastShiftEnds">Fine dell’ultimo turno</string>
     <string name="leaveMainlandHolidaysMissing">Questa versione non include ancora le festività %1$s della Cina continentale, quindi il %1$s segue i tuoi turni abituali. Quando saranno aggiunte, aggiorna DoneAt per includerle.</string>
+    <string name="leaveManage">Gestisci ferie</string>
     <string name="leaveNewBalance">Nuovo saldo ferie</string>
     <string name="leaveNextShiftStarts">Rientro</string>
     <string name="leaveNoBalancesHint">Aggiungi un saldo ferie per pianificare. Le pause senza ferie compaiono comunque.</string>

@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">An adopted plan uses this balance. Undo that plan to delete it.</string>
     <string name="leaveBalanceNamePlaceholder">Name, e.g. marriage leave</string>
     <string name="leaveBalancesSection">Leave balances</string>
+    <string name="leaveCancelDay">Cancel this day’s leave</string>
+    <string name="leaveCancelDayConfirm">This day goes back on your schedule and its leave returns to your balances. The rest of the plan stays.</string>
     <string name="leaveCarriedOverCaveat">Some days repeat an earlier month of your roster.</string>
     <string name="leaveDayHalf">Half day</string>
     <string name="leaveDayHoliday">Holiday</string>
@@ -368,6 +370,7 @@
     <string name="leaveKindCustom">Other</string>
     <string name="leaveLastShiftEnds">Last shift ends</string>
     <string name="leaveMainlandHolidaysMissing">This version doesn’t include mainland China’s %1$s holidays yet, so %1$s follows your usual schedule. Once they’re added, update DoneAt to include them.</string>
+    <string name="leaveManage">Manage time off</string>
     <string name="leaveNewBalance">New leave balance</string>
     <string name="leaveNextShiftStarts">Back at work</string>
     <string name="leaveNoBalancesHint">Add a leave balance to plan with it. Breaks that need no leave still show up.</string>

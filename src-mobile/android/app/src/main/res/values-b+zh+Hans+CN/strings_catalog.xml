@@ -343,6 +343,8 @@
     <string name="leaveBalanceInUse">已采用的方案正在使用这份余额，撤销该方案后即可删除。</string>
     <string name="leaveBalanceNamePlaceholder">名称，例如婚假</string>
     <string name="leaveBalancesSection">假期余额</string>
+    <string name="leaveCancelDay">取消这天的请假</string>
+    <string name="leaveCancelDayConfirm">这天会恢复为原来的排班，用掉的假期退回余额，方案的其他日子不变。</string>
     <string name="leaveCarriedOverCaveat">部分日子沿用之前月份的排班。</string>
     <string name="leaveDayHalf">半天</string>
     <string name="leaveDayHoliday">节假日</string>
@@ -367,6 +369,7 @@
     <string name="leaveKindCustom">其他</string>
     <string name="leaveLastShiftEnds">最后一班结束</string>
     <string name="leaveMainlandHolidaysMissing">当前版本尚未收录 %1$s 年中国大陆节假日安排，%1$s 年暂按你的日常排班计算。相关安排收录到新版后，更新 App 即可纳入规划。</string>
+    <string name="leaveManage">管理休假</string>
     <string name="leaveNewBalance">新建假期余额</string>
     <string name="leaveNextShiftStarts">回到工作</string>
     <string name="leaveNoBalancesHint">添加假期余额后即可用于规划。无需请假的连休也会列出。</string>

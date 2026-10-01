@@ -156,6 +156,30 @@ struct LeaveAdoptionTests {
         #expect(again != planID)
         #expect(!records.state.isErased(.leaveDay, key: "2026-10-20"))
     }
+
+    @Test("Cancelling one day gives back only that day; the rest of the plan still undoes as one")
+    func cancelOneDay() async throws {
+        let suite = "LeaveAdoption.cancel.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let records = RecordCoordinator.inMemory()
+        let actions = actions(defaults: defaults, records: records)
+        records.upsertLeaveBalance(Self.balance())
+        let now = Date(timeIntervalSince1970: try Self.ms("2026-10-10", hour: 12) / 1_000)
+        let planID = try await actions.adoptLeavePlan(try Self.proposal(), at: now).value.get()
+
+        #expect(await actions.cancelLeaveDay("2026-10-20", at: now).value)
+        #expect(records.state.isErased(.leaveDay, key: "2026-10-20"))
+        #expect(records.state.leaveDays.map(\.dayKey) == ["2026-10-19", "2026-10-21"])
+        #expect(records.state.leaveDays.allSatisfy { $0.planID == planID })
+        let budgets = LeaveAdoption.budgets(balances: records.state.leaveBalances, leaveDays: records.state.leaveDays)
+        #expect(budgets.map(\.availableHalfDays) == [17])
+        // Nothing there to cancel any more.
+        #expect(await actions.cancelLeaveDay("2026-10-20", at: now).value == false)
+
+        #expect(await actions.undoLeavePlan(planID, at: now).value == 2)
+        #expect(records.state.leaveDays.isEmpty)
+    }
 }
 
 /// Plan 020 P3: searching is free; each time a free user opens a plan's
