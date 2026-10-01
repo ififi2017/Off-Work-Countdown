@@ -1,11 +1,16 @@
 import {
   addCivilDaysMs,
+  buildShiftTimeline,
+  civilDateKey,
+  civilDateAtMs,
+  getPlannedShiftDurationMs,
   getMonthlySalaryEquivalent,
   isScheduledWorkday,
   isScheduledWorkdayInZone,
   startOfCivilDayMs,
   type WorkScheduleConfig,
 } from "./countdown";
+import { resolveScheduleDay } from "./extended-schedule";
 
 // 周期性汇总。**完全由配置推算，不依赖任何历史记录。**
 //
@@ -553,7 +558,7 @@ export function countScheduledWorkdays(
   schedule?: WorkScheduleConfig | null,
   timeZone?: string
 ): number {
-  if (schedule?.mode === "off") return 0;
+  if (!schedule?.extendedSchedule && schedule?.mode === "off") return 0;
   if (timeZone) {
     let cursor = startOfCivilDayMs(from.getTime(), timeZone);
     const end = startOfCivilDayMs(to.getTime(), timeZone);
@@ -652,8 +657,20 @@ export function summarize(params: {
     : 0;
 
   const days = completed + todayFraction;
+  let completedHours = completed * plannedDailyHours;
+  if (schedule?.extendedSchedule) {
+    completedHours = 0;
+    const end = currentShiftCoversAsOfDay ? shiftDayMs : asOfDayMs;
+    for (let cursor = periodDayMs; cursor < end; cursor = addCivilDaysMs(cursor, 1, timeZone)) {
+      const day = resolveScheduleDay(schedule.extendedSchedule, civilDateKey(cursor, timeZone));
+      if (!day.isWorkday || !day.hours) continue;
+      const noon = new Date(civilDateAtMs(civilDateKey(cursor, timeZone), timeZone, "12:00"));
+      const timeline = buildShiftTimeline(day.hours.startTime, day.hours.endTime, noon, { extendedSchedule: schedule.extendedSchedule }, timeZone);
+      completedHours += getPlannedShiftDurationMs(timeline) / 3_600_000;
+    }
+  }
   const hours =
-    completed * plannedDailyHours +
+    completedHours +
     (todayCounts
       ? (todayEffectiveHours ?? plannedDailyHours) * todayFraction
       : 0);

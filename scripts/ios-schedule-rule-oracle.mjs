@@ -10,6 +10,7 @@ import ts from "typescript";
 // app.
 
 const moduleSources = {
+  "./extended-schedule": resolve("lib/extended-schedule.ts"),
   "./countdown": resolve("lib/countdown.ts"),
   "./reminders": resolve("lib/reminders.ts"),
   "./summary": resolve("lib/summary.ts"),
@@ -519,7 +520,7 @@ const ORACLE_BODY = `
 export function createScheduleRuleOracleScript() {
   return createRulesScript({
     header: "// Rule oracle for plan 019 R1–R3 fixtures. Not shipped.",
-    moduleNames: ["./countdown", "./reminders", "./summary", "./watch-projection"],
+    moduleNames: ["./extended-schedule", "./countdown", "./reminders", "./summary", "./watch-projection"],
     body: ORACLE_BODY,
   });
 }
