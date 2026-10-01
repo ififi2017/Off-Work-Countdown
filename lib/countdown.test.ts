@@ -668,7 +668,7 @@ describe("expandScheduleRange", () => {
     const saturday = days.find((day) => day.dayKey === "2026-08-29");
     expect(saturday?.isWorkday).toBe(false);
     expect(saturday?.segments).toHaveLength(1);
-    expect(saturday?.segments[0].endAtMs - saturday!.segments[0].startAtMs).toBe(
+    expect(saturday!.segments[0].endAtMs - saturday!.segments[0].startAtMs).toBe(
       8 * 60 * 60 * 1000
     );
 

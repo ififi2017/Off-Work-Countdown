@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 
 // 2023-01-01 是周日，以它为锚点按 getDay() 的 0–6 取出对应日期，
@@ -17,6 +17,10 @@ interface WorkdaySelectorProps {
   onChange: (days: number[]) => void;
   compact?: boolean;
   mobile?: boolean;
+  /** Shown at the end of the label row. */
+  accessory?: ReactNode;
+  /** A short note right after the label, such as today's holiday. */
+  labelNote?: ReactNode;
 }
 
 export function WorkdaySelector({
@@ -26,6 +30,8 @@ export function WorkdaySelector({
   onChange,
   compact = false,
   mobile = false,
+  accessory,
+  labelNote,
 }: WorkdaySelectorProps) {
   const names = useMemo(() => {
     let fmt: Intl.DateTimeFormat;
@@ -56,12 +62,19 @@ export function WorkdaySelector({
   };
 
   return (
-    <div className={compact ? "space-y-1.5" : mobile ? "space-y-2.5" : "space-y-2"}>
-      <Label
-        className={compact || mobile ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}
-      >
-        {label}
-      </Label>
+    // 标签行带右侧入口时略高，按钮与它多留一点距离。
+    <div className={compact ? (accessory ? "space-y-2" : "space-y-1.5") : mobile ? "space-y-2.5" : "space-y-2"}>
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <Label
+            className={`shrink-0 ${compact || mobile ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}`}
+          >
+            {label}
+          </Label>
+          {labelNote}
+        </span>
+        {accessory}
+      </div>
       <div className="flex gap-1.5">
         {DISPLAY_ORDER.map((day) => {
           const on = value.includes(day);

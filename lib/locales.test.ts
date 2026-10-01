@@ -68,6 +68,8 @@ const SAME_AS_ENGLISH_ON_PURPOSE: Record<string, "*" | readonly string[]> = {
   menuEdit: ["id"],
   menuZoom: ["es", "fr", "id", "it", "pt"],
   menuServices: ["fr"],
+  // Spanish uses the same spelling for the ordinary color label.
+  extendedColor: ["es"],
 };
 
 const mayMatchEnglish = (key: string, locale: string): boolean => {

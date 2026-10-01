@@ -7,6 +7,24 @@
 Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动向商店提交更新。
 商店版的更新功能接入微软商店。
 
+## PC 与 macOS 排班（2026-10-01）
+
+桌面端（Windows / macOS）同步 iOS 的排班：固定星期、单双休、轮班轮休、自由排班和手动计时。
+模型与 iOS 相同——自动排班都是「班次类型 + 循环规则 + 手动指定日期」，由 `lib/extended-schedule.ts`
+逐日解析（以 Swift 生成的扩展排班 fixture 核对）；`lib/schedule-settings.ts` 移植 iOS
+`ExtendedScheduleEditing` 的编辑步骤。只有一种上班班次的固定星期仍折回原来的上下班时间、工作日与午休，
+主界面照旧；其余排班在主界面只显示今天的班次。
+
+排班页是设置里的子页（与「活动」同一条横移轨道），也可从主界面工作日一行右侧的排班名称进入；
+主窗口仍是 430 × 430，不另开窗口。改动即时生效，与其他桌面设置一致；切换排班时保留离开的那种
+（循环与之后的手动日期），切回来原样恢复，因此不需要确认框。Web 仍只有固定星期。
+节假日安排与 iOS 共用 `src-mobile/ios/Shared/Resources/HolidayTemplates.json`：
+`npm run generate:desktop-holidays` 按地区拆成 `public/holidays/<地区>.json`（中国约 18 KB），
+`index.json` 附上游 MIT 署名，`npm test` 检查是否与 iOS 数据一致。设置只存地区代码，放假与调休在
+计算时叠加，不写进计划；固定星期开启节假日后主界面表单不变。数据覆盖不到的年份按日常排班计算并提示。
+Rust、macOS 原生 Mini Timer 和桌面小组件继续只接收前端解析的绝对班次及下一班快照；手动计时不提供自动下一班。
+这是客户端功能同步，不增加设备间数据同步或桌面网络请求（节假日文件随应用打包，本地读取）。
+
 ## 当前进度
 
 | 阶段 | 内容 | 状态 |
@@ -1218,4 +1236,3 @@ APPLE_ID / APPLE_PASSWORD / APPLE_TEAM_ID
 
 这同时回答了 8. 未决问题里「是否把商店徽章放到下载页」——有了付费差异之后，下载页需要
 说明两个渠道的能力区别，那条不再是纯文案问题。
-

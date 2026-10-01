@@ -1,4 +1,5 @@
 // Pure countdown/salary helpers, kept framework-free so they can be unit tested.
+import { resolveScheduleDay, type ExtendedSchedulePlan } from "./extended-schedule";
 
 function addCalendarDays(date: Date, days: number): Date {
   const next = new Date(date);
@@ -49,8 +50,10 @@ export function getShiftBounds(
   startTime: string,
   endTime: string,
   now: Date,
-  timeZone?: string | null
+  timeZone?: string | null,
+  extendedSchedule?: ExtendedSchedulePlan | null
 ): ShiftBounds {
+  if (extendedSchedule) return extendedShiftBounds(startTime, endTime, now.getTime(), timeZone, extendedSchedule);
   if (timeZone?.trim()) {
     return getShiftBoundsInZone(startTime, endTime, now.getTime(), timeZone.trim());
   }
@@ -70,6 +73,7 @@ export function getShiftBounds(
 }
 
 export interface ShiftBuildOptions {
+  extendedSchedule?: ExtendedSchedulePlan | null;
   breakStartTime?: string | null;
   breakDurationMinutes?: number;
   overtimeEndAtMs?: number | null;
@@ -78,11 +82,12 @@ export interface ShiftBuildOptions {
 export type WorkScheduleMode = "classic" | "alternating" | "rotation" | "off";
 
 /**
- * Mobile schedule configuration. Dates are local calendar anchors represented
+ * Shared schedule configuration. Dates are local calendar anchors represented
  * as Unix milliseconds; callers must not advance them by fixed 24-hour spans.
  */
 export interface WorkScheduleConfig {
   mode: WorkScheduleMode;
+  extendedSchedule?: ExtendedSchedulePlan | null;
   referenceWeekStartMs?: number | null;
   referenceWeekType?: "single" | "double";
   singleWeekendWorkday?: 0 | 6;
@@ -118,6 +123,11 @@ export function isScheduledWorkday(
   schedule?: WorkScheduleConfig | null,
   timeZone?: string | null
 ): boolean {
+  const extended = schedule?.extendedSchedule;
+  if (extended) {
+    const day = resolveScheduleDay(extended, civilDateKey(shiftStart.getTime(), timeZone));
+    if (day.source !== "unassigned" || !extended.fallsBackToBaseSchedule) return day.isWorkday;
+  }
   const mode = schedule?.mode ?? "classic";
   if (mode === "off") return true;
   if (timeZone?.trim()) {
@@ -166,7 +176,7 @@ export function findNextRestDate(params: {
   if (timeZone?.trim()) {
     return findNextRestDateInZone(afterMs, workdays, schedule, timeZone.trim());
   }
-  if (schedule?.mode === "off") return null;
+  if (!schedule?.extendedSchedule && schedule?.mode === "off") return null;
   const cursor = localDay(new Date(afterMs));
   for (let offset = 0; offset <= 366; offset += 1) {
     const day = addCalendarDays(cursor, offset);
@@ -228,8 +238,9 @@ export function buildShiftTimeline(
   options: ShiftBuildOptions = {},
   timeZone?: string | null
 ): ShiftTimeline {
-  const { start, end } = getShiftBounds(startTime, endTime, now, timeZone);
-  return buildTimelineFromBounds(start, end, options, timeZone);
+  const { start, end } = getShiftBounds(startTime, endTime, now, timeZone, options.extendedSchedule);
+  const hours = options.extendedSchedule && resolveScheduleDay(options.extendedSchedule, civilDateKey(start.getTime(), timeZone)).hours;
+  return buildTimelineFromBounds(start, end, hours ? { ...options, ...hours } : options, timeZone);
 }
 
 export function extendShiftWithOvertime(
@@ -301,8 +312,8 @@ export function findEndedShiftOnEndCalendarDay(params: {
   forcedWorkdayStartMs?: number | null;
   timeZone?: string | null;
 }): ShiftTimeline | null {
-  if (params.timeZone?.trim()) {
-    return findEndedShiftOnEndCalendarDayInZone(params, params.timeZone.trim());
+  if (params.timeZone?.trim() || params.schedule?.extendedSchedule) {
+    return findEndedShiftOnEndCalendarDayInZone(params, params.timeZone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone);
   }
   const now = new Date(params.nowMs);
   const today = localDay(now);
@@ -353,11 +364,11 @@ export function findNextShiftTimeline(params: {
   timeZone?: string | null;
 }): ShiftTimeline | null {
   const { startTime, endTime, workdays, afterMs, schedule, options = {}, timeZone } = params;
-  if (timeZone?.trim()) {
-    return findNextShiftTimelineInZone(params, timeZone.trim());
+  if (timeZone?.trim() || schedule?.extendedSchedule) {
+    return findNextShiftTimelineInZone(params, timeZone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone);
   }
-  if (schedule?.mode === "off") return null;
-  if ((schedule?.mode ?? "classic") === "classic" && workdays.length === 0) return null;
+  if (!schedule?.extendedSchedule && schedule?.mode === "off") return null;
+  if (!schedule?.extendedSchedule && (schedule?.mode ?? "classic") === "classic" && workdays.length === 0) return null;
 
   const cursor = new Date(afterMs);
   cursor.setHours(0, 0, 0, 0);
@@ -824,6 +835,11 @@ export function isScheduledWorkdayInZone(
   schedule: WorkScheduleConfig | null | undefined,
   timeZone: string
 ): boolean {
+  const extended = schedule?.extendedSchedule;
+  if (extended) {
+    const day = resolveScheduleDay(extended, civilDateKey(shiftStartMs, timeZone));
+    if (day.source !== "unassigned" || !extended.fallsBackToBaseSchedule) return day.isWorkday;
+  }
   const mode = schedule?.mode ?? "classic";
   if (mode === "off") return false;
   const weekday = zonedCivil(shiftStartMs, timeZone).weekday;
@@ -996,7 +1012,7 @@ function findNextRestDateInZone(
   schedule: WorkScheduleConfig | null | undefined,
   timeZone: string
 ): Date | null {
-  if (schedule?.mode === "off") return null;
+  if (!schedule?.extendedSchedule && schedule?.mode === "off") return null;
   const startCivil = zonedCivil(afterMs, timeZone);
   for (let offset = 0; offset <= 366; offset += 1) {
     const day = addZonedCivilDays(
@@ -1055,15 +1071,15 @@ function findEndedShiftOnEndCalendarDayInZone(
   for (let offset = 0; offset <= 2; offset += 1) {
     const dayMs = addCivilDaysMs(todayMs, -offset, timeZone);
     const civil = zonedCivil(dayMs, timeZone);
-    const { start, end } = getShiftBoundsInZone(
-      params.startTime,
-      params.endTime,
-      zonedTimeToUtcMs(civil.year, civil.month, civil.day, 12, 0, timeZone),
-      timeZone
+    const { start, end } = getShiftBounds(
+      params.startTime, params.endTime,
+      new Date(zonedTimeToUtcMs(civil.year, civil.month, civil.day, 12, 0, timeZone)),
+      timeZone, params.schedule?.extendedSchedule
     );
     if (end.getTime() <= start.getTime()) continue;
     if (!startIsWorkday(start.getTime())) continue;
-    const timeline = buildTimelineFromBounds(start, end, options, timeZone);
+    const hours = params.schedule?.extendedSchedule && resolveScheduleDay(params.schedule.extendedSchedule, civilDateKey(start.getTime(), timeZone)).hours;
+    const timeline = buildTimelineFromBounds(start, end, hours ? { ...options, ...hours } : options, timeZone);
     const startAtMs = getShiftStartAtMs(timeline);
     const endAtMs = getShiftEndAtMs(timeline);
     if (params.nowMs >= startAtMs && params.nowMs < endAtMs) {
@@ -1091,8 +1107,8 @@ function findNextShiftTimelineInZone(
   timeZone: string
 ): ShiftTimeline | null {
   const { startTime, endTime, workdays, afterMs, schedule, options = {} } = params;
-  if (schedule?.mode === "off") return null;
-  if ((schedule?.mode ?? "classic") === "classic" && workdays.length === 0) {
+  if (!schedule?.extendedSchedule && schedule?.mode === "off") return null;
+  if (!schedule?.extendedSchedule && (schedule?.mode ?? "classic") === "classic" && workdays.length === 0) {
     return null;
   }
 
@@ -1100,11 +1116,10 @@ function findNextShiftTimelineInZone(
   for (let offset = 0; offset <= 366; offset += 1) {
     const dayMs = addCivilDaysMs(cursorMs, offset, timeZone);
     const civil = zonedCivil(dayMs, timeZone);
-    const { start, end } = getShiftBoundsInZone(
-      startTime,
-      endTime,
-      zonedTimeToUtcMs(civil.year, civil.month, civil.day, 12, 0, timeZone),
-      timeZone
+    const { start, end } = getShiftBounds(
+      startTime, endTime,
+      new Date(zonedTimeToUtcMs(civil.year, civil.month, civil.day, 12, 0, timeZone)),
+      timeZone, schedule?.extendedSchedule
     );
     if (
       !isScheduledWorkdayInZone(start.getTime(), workdays, schedule, timeZone) ||
@@ -1112,7 +1127,8 @@ function findNextShiftTimelineInZone(
     ) {
       continue;
     }
-    return buildTimelineFromBounds(start, end, options, timeZone);
+    const hours = schedule?.extendedSchedule && resolveScheduleDay(schedule.extendedSchedule, civilDateKey(start.getTime(), timeZone)).hours;
+    return buildTimelineFromBounds(start, end, hours ? { ...options, ...hours } : options, timeZone);
   }
   return null;
 }
@@ -1147,7 +1163,7 @@ export function expandScheduleRange(params: {
   throughMs: number;
   timeZone?: string | null;
 }): ScheduleDayExpansion[] {
-  const timeZone = params.timeZone?.trim() || null;
+  const timeZone = params.timeZone?.trim() || (params.schedule?.extendedSchedule ? Intl.DateTimeFormat().resolvedOptions().timeZone : null);
   if (timeZone) {
     return expandScheduleRangeInZone(params, timeZone);
   }
@@ -1203,13 +1219,6 @@ function expandScheduleRangeInZone(
   const throughCivil = zonedCivil(params.throughMs, timeZone);
   if (compareCivil(throughCivil, fromCivil) < 0) return [];
 
-  const startClock = parseClock(params.startTime);
-  const endClock = parseClock(params.endTime);
-  const breakClock = params.breakStartTime
-    ? parseClock(params.breakStartTime)
-    : null;
-  const breakDurationMs =
-    Math.floor(params.breakDurationMinutes ?? 0) * 60_000;
   const days: ScheduleDayExpansion[] = [];
 
   for (
@@ -1217,6 +1226,13 @@ function expandScheduleRangeInZone(
     compareCivil(civil, throughCivil) <= 0;
     civil = addZonedCivilDays(civil.year, civil.month, civil.day, 1)
   ) {
+    const key = `${civil.year}-${String(civil.month).padStart(2, "0")}-${String(civil.day).padStart(2, "0")}`;
+    const hours = params.schedule?.extendedSchedule && resolveScheduleDay(params.schedule.extendedSchedule, key).hours;
+    const startClock = parseClock(hours ? hours.startTime : params.startTime);
+    const endClock = parseClock(hours ? hours.endTime : params.endTime);
+    const breakStartTime = hours ? hours.breakStartTime : params.breakStartTime;
+    const breakClock = breakStartTime ? parseClock(breakStartTime) : null;
+    const breakDurationMs = Math.floor(hours ? hours.breakDurationMinutes : params.breakDurationMinutes ?? 0) * 60_000;
     const startAtMs = zonedTimeToUtcMs(
       civil.year,
       civil.month,
@@ -1294,4 +1310,43 @@ function expandScheduleRangeInZone(
     });
   }
   return days;
+}
+
+/** YYYY-MM-DD in the schedule's civil zone, never parsed as UTC by the UI. */
+export function civilDateKey(ms: number, timeZone?: string | null): string {
+  return timeZone ? zonedDayKey(ms, timeZone) : localDayKey(new Date(ms));
+}
+
+export function civilDateAtMs(key: string, timeZone?: string | null, time = "00:00"): number {
+  const [year, month, day] = key.split("-").map(Number);
+  const { hour, minute } = parseClock(time);
+  return zonedTimeToUtcMs(year, month, day, hour, minute, timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+}
+
+function extendedShiftBounds(startTime: string, endTime: string, nowMs: number, timeZone: string | null | undefined, plan: ExtendedSchedulePlan): ShiftBounds {
+  const zone = timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const today = zonedCivil(nowMs, zone);
+  const clocks = (civil: { year: number; month: number; day: number }) => {
+    const key = `${civil.year}-${String(civil.month).padStart(2, "0")}-${String(civil.day).padStart(2, "0")}`;
+    const hours = resolveScheduleDay(plan, key).hours;
+    return { start: parseClock(hours?.startTime ?? startTime), end: parseClock(hours?.endTime ?? endTime) };
+  };
+  const instant = (civil: { year: number; month: number; day: number }, clock: { hour: number; minute: number }) => zonedTimeToUtcMs(civil.year, civil.month, civil.day, clock.hour, clock.minute, zone);
+  const yesterday = addZonedCivilDays(today.year, today.month, today.day, -1);
+  const previous = clocks(yesterday);
+  const overnight = previous.end.hour * 60 + previous.end.minute <= previous.start.hour * 60 + previous.start.minute;
+  if (overnight && nowMs >= instant(yesterday, previous.start) && nowMs < instant(today, previous.end)) {
+    return { start: new Date(instant(yesterday, previous.start)), end: new Date(instant(today, previous.end)) };
+  }
+  const current = clocks(today);
+  let start = instant(today, current.start);
+  let end = instant(today, current.end);
+  if (end <= start) {
+    if (current.end.hour * 60 + current.end.minute > current.start.hour * 60 + current.start.minute) end = start;
+    else if (nowMs < end) {
+      start = instant(yesterday, previous.start);
+      end = instant(today, previous.end);
+    } else end = instant(addZonedCivilDays(today.year, today.month, today.day, 1), current.end);
+  }
+  return { start: new Date(start), end: new Date(end) };
 }

@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Android task T08. Extended scheduling has no TypeScript oracle: the Swift in
-// src-mobile/ios/Shared is the specification. This compiles that Swift with
+// Extended scheduling started in Swift. These native answers verify both the
+// Kotlin implementation and lib/extended-schedule.test.ts. This compiles Swift with
 // scripts/android-extended-fixtures/main.swift on macOS and records its answers
 // for the Kotlin port. The header hashes every Swift input, so a Swift change
 // makes the fixture stale on any platform; regenerating needs Xcode.

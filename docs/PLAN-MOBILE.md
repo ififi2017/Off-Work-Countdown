@@ -237,8 +237,10 @@ P4/P5 的真机验收状态不因此改为完成。
   Widget 班次、Watch 投影、区间展开、提醒、汇总与收入。scripts/ios-schedule-rule-oracle.mjs 保留
   对应的 TypeScript 入口，npm run generate:ios-rule-fixtures 生成差分 fixture，npm test 与 Xcode Cloud
   检查它是否过期。
-- ExtendedScheduleRules.swift（018 P8-b）：扩展排班逐日解析出的班次。只有 iOS 有这个功能，
-  没有对应的 TS 入口，也不生成差分 fixture，由 AppTests 的 Swift 测试单独覆盖。它把每一天解析成
+- ExtendedScheduleRules.swift（018 P8-b）：扩展排班逐日解析出的班次。桌面端（Windows/macOS）已接入
+  固定星期、单双休、轮班轮休、自由排班与手动计时；自由排班的 TypeScript 移植位于
+  lib/extended-schedule.ts，以现有 Swift/Kotlin fixtures 核对逐日解析、跨月沿用、夜班与休息。
+  Native 与 TypeScript 共同复用生成的扩展排班 fixture，并保留 AppTests 的 Swift 测试。它把每一天解析成
   与上面三个文件相同的「上班时段 + 中途休息 + 是否上班」，再交给 CivilZone，不构成第二套排班算法。
   排班页（018 P8-c1b）把班次类型与规律作为草稿，与工时一起保存、一起询问是否用于今天；
   ExtendedScheduleEditing.swift 只做草稿变换，初始规律由共享规则展开现有排班得到，不另写星期或轮班公式。
