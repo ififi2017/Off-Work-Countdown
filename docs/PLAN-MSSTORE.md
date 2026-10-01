@@ -636,8 +636,16 @@ job publish     needs: build, runs-on: windows-latest
                 winapp pack → .msixbundle
                 microsoft/microsoft-store-apppublisher@v1.1
                 msstore reconfigure --tenantId … --sellerId … --clientId … --clientSecret …
-                msstore publish ./*.msixbundle -id <StoreProductId>
+                msstore publish ./*.msixbundle -id <StoreProductId> --noCommit
+                node scripts/microsoft-store-sync.mjs --release-notes   # 本版更新说明
+                node scripts/microsoft-store-sync.mjs --commit
 ```
+
+`msstore publish` 会删掉已有的待处理提交，再从上一个已发布提交克隆。直接提交的话
+新包会带着上一版的更新说明上架，所以先 `--noCommit` 上传，只写入
+`listing-copy.mjs` 的 `releaseNotes`，再提交。商品页尚未开放的语言要连截图一起建，
+截图 ZIP 会覆盖同一提交里的安装包，因此这类变更在发版提交上架后另跑
+`msstore:sync` / `msstore:commit`。
 
 `winapp pack` 需要两个架构的产物在同一台机器上，所以必须拆成两个 job 用 artifact
 汇总——不能像 `release-desktop.yml` 那样让矩阵各自独立完成。
