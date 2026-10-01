@@ -91,6 +91,10 @@ struct OnboardingView: View {
                             }
                         case OnboardingPages.plusFocus:
                             OnboardingPlusFocusPage(preferences: preferences, text: text) {
+                                showPage(OnboardingPages.plusLeave)
+                            }
+                        case OnboardingPages.plusLeave:
+                            OnboardingPlusLeavePage(preferences: preferences, text: text) {
                                 showPage(OnboardingPages.finale)
                             }
                         default:
@@ -761,17 +765,18 @@ enum OnboardingPages {
     static let adaptiveLayouts = 6
     static let plusRecords = 7
     static let plusFocus = 8
-    static let finale = 9
+    static let plusLeave = 9
+    static let finale = 10
     /// Highest page index plus one. The visible path can be shorter when
     /// there is no schedule: confirmation is skipped, but the remaining
     /// pages keep these indices so a QA jump still lands on the same screen.
-    static let count = 10
+    static let count = 11
 
     static func sequence(includesAllSet: Bool) -> [Int] {
         if includesAllSet {
-            [landing, schedule, reminders, allSet, privacy, systemSurfaces, adaptiveLayouts, plusRecords, plusFocus, finale]
+            [landing, schedule, reminders, allSet, privacy, systemSurfaces, adaptiveLayouts, plusRecords, plusFocus, plusLeave, finale]
         } else {
-            [landing, schedule, reminders, privacy, systemSurfaces, adaptiveLayouts, plusRecords, plusFocus, finale]
+            [landing, schedule, reminders, privacy, systemSurfaces, adaptiveLayouts, plusRecords, plusFocus, plusLeave, finale]
         }
     }
 
@@ -882,7 +887,9 @@ private struct OnboardingSchedulePage: View {
             Text(text.t("onboardingCustomScheduleNote"))
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 12)
 
             OWCGroupCard {

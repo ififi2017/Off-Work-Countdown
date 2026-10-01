@@ -347,6 +347,7 @@ struct ScheduleCalendarEditor: View {
         let chosen = isPainting ? handSetDays[key] == paint.brushID : key == (selectedKey ?? today)
         let isToday = key == today
         let holiday = holidayDay(key)
+        let leave = leavePortion(key)
         return Button {
             if isPainting {
                 paint.endStroke()
@@ -362,6 +363,13 @@ struct ScheduleCalendarEditor: View {
                     if holiday != nil {
                         Circle().fill(holiday?.isWorkday == true ? OWCDesign.accent : OWCDesign.secondary)
                             .frame(width: 3, height: 3)
+                    }
+                    // Adopted leave sits over the plan this page edits, so the
+                    // day keeps its shift and gains a mark, not a new colour.
+                    if let leave {
+                        Image(systemName: Self.leaveSymbol(leave))
+                            .imageScale(.small)
+                            .foregroundStyle(OWCDesign.accent)
                     }
                     Text(type.map { shortName($0) } ?? "–")
                         .lineLimit(1)
@@ -395,7 +403,8 @@ struct ScheduleCalendarEditor: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(dayLabel(key: key, type: type, isToday: isToday, holiday: holiday))
+        .accessibilityLabel([dayLabel(key: key, type: type, isToday: isToday, holiday: holiday), leave.map(leaveLabel)]
+            .compactMap { $0 }.joined(separator: ", "))
         .accessibilityAddTraits(chosen ? [.isSelected] : [])
     }
 
@@ -514,6 +523,10 @@ struct ScheduleCalendarEditor: View {
                     }
                     Text(text.t(sourceKey(result?.source)))
                         .font(.caption).foregroundStyle(OWCDesign.secondary)
+                    if let leave = leavePortion(selected) {
+                        Label(leaveLabel(leave), systemImage: Self.leaveSymbol(leave))
+                            .font(.caption).foregroundStyle(OWCDesign.accent)
+                    }
                 }
                 .contentTransition(.opacity)
                 Spacer(minLength: 0)
@@ -575,6 +588,15 @@ struct ScheduleCalendarEditor: View {
                         .font(.subheadline).frame(minHeight: 44)
                 }
                 .buttonStyle(.plain).disabled(!canEdit)
+                .padding(.horizontal, 4)
+            }
+            if leavePortion(selected) != nil {
+                NavigationLink(value: AppRoute.leave) {
+                    Label(text.t("leaveManage"), systemImage: "suitcase")
+                        .font(.subheadline).frame(minHeight: 44)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(OWCDesign.accent)
                 .padding(.horizontal, 4)
             }
         }
@@ -676,8 +698,24 @@ struct ScheduleCalendarEditor: View {
         case .rule: "extendedPattern"
         case .annualRange: "extendedSourceAnnualRange"
         case .carriedOver: "extendedCarriedOver"
+        // The editor's plans never carry leave; it edits the plan beneath it.
+        case .leave, .leaveOverBase: "extendedSetByHand"
         case .unassigned, nil: "extendedUnassigned"
         }
+    }
+
+    /// Leave adopted from a plan (plan 020) on `key`, which the live schedule
+    /// lays over the plan edited here.
+    private func leavePortion(_ key: String) -> LeavePortion? {
+        shifts.records.state.leaveDays.first { $0.dayKey == key }?.portion
+    }
+
+    private func leaveLabel(_ portion: LeavePortion) -> String {
+        text.t("leaveDayLeave") + " · " + text.t(portion.titleKey)
+    }
+
+    static func leaveSymbol(_ portion: LeavePortion) -> String {
+        portion == .whole ? "suitcase.fill" : "circle.lefthalf.filled"
     }
 
     private func shortName(_ type: ShiftType) -> String {

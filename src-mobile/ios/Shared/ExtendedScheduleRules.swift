@@ -22,6 +22,59 @@ nonisolated struct ExtendedScheduleDayHours: Codable, Equatable, Sendable {
     var endTime: String
     var breakStartTime: String?
     var breakDurationMinutes: Int
+
+    /// What is still worked once `portion` is taken as leave (plan 020), or
+    /// `nil` when nothing is. The shift splits at half its working minutes
+    /// with the break left out, so 09:00–18:00 with lunch at 12:00–13:00
+    /// splits at 14:00: taking the morning leaves 14:00–18:00, taking the
+    /// afternoon leaves 09:00–14:00 with its lunch.
+    ///
+    /// Minutes are wall-clock minutes. Across a DST change during the shift
+    /// the split can sit an hour away from half the elapsed time; the planner,
+    /// which works on absolute segments, may preview that night differently.
+    func remaining(after portion: LeavePortion) -> ExtendedScheduleDayHours? {
+        guard portion != .whole else { return nil }
+        let start = Clock(startTime).minutes
+        let length = (Clock(endTime).minutes - start + 1_440 - 1) % 1_440 + 1
+        var breakOffset: Int?
+        if let breakStartTime, breakDurationMinutes > 0 {
+            let offset = (Clock(breakStartTime).minutes - start + 1_440) % 1_440
+            // The same test `CivilZone.timeline` applies: strictly inside.
+            if offset > 0, offset + breakDurationMinutes < length { breakOffset = offset }
+        }
+        let working = length - (breakOffset == nil ? 0 : breakDurationMinutes)
+        let half = working / 2
+        guard half > 0 else { return nil }
+        func clock(_ offset: Int) -> String { ExtendedScheduleResolver.timeString((start + offset) % 1_440) }
+        let keepsBreak: Bool
+        let from: Int
+        let to: Int
+        if let breakOffset, half > breakOffset {
+            // The first half runs through the break.
+            let split = half + breakDurationMinutes
+            (from, to, keepsBreak) = portion == .firstHalf ? (split, length, false) : (0, split, true)
+        } else {
+            let secondStart = breakOffset == half ? half + breakDurationMinutes : half
+            (from, to, keepsBreak) = portion == .firstHalf
+                ? (secondStart, length, breakOffset.map { $0 > half } ?? false)
+                : (0, half, false)
+        }
+        return ExtendedScheduleDayHours(
+            startTime: clock(from),
+            endTime: clock(to),
+            breakStartTime: keepsBreak ? breakStartTime : nil,
+            breakDurationMinutes: keepsBreak ? breakDurationMinutes : 0
+        )
+    }
+}
+
+/// Which part of one shift a leave request frees (plan 020).
+nonisolated enum LeavePortion: String, Codable, Sendable, CaseIterable {
+    case whole
+    case firstHalf
+    case secondHalf
+
+    var halfDays: Int { self == .whole ? 2 : 1 }
 }
 
 /// One civil day's conclusion, and which layer reached it.
@@ -37,6 +90,13 @@ nonisolated struct ExtendedScheduleDay: Equatable, Sendable {
         case holiday
         /// Copied by day number from an earlier month the user filled in.
         case carriedOver
+        /// Leave (plan 020) replaced an assigned shift: rest for a whole
+        /// shift, the remaining half's hours for half of one.
+        case leave
+        /// Half a shift of leave over the fixed schedule underneath a
+        /// fallback plan. The hours are the remaining half; whether the day
+        /// is worked at all is still the fixed schedule's answer.
+        case leaveOverBase
         /// Nothing assigns this day, so nothing counts down on it.
         case unassigned
     }
@@ -52,6 +112,10 @@ nonisolated struct ExtendedScheduleDay: Equatable, Sendable {
     static let unassigned = ExtendedScheduleDay(
         isWorkday: false, hours: nil, shiftTypeID: nil, source: .unassigned
     )
+
+    /// Whether a fallback plan leaves this day's work-or-rest answer to the
+    /// fixed schedule underneath.
+    var followsBaseSchedule: Bool { source == .unassigned || source == .leaveOverBase }
 }
 
 /// The stored extended schedule flattened into what resolution needs, so it can
@@ -87,6 +151,12 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
     /// counting as a day the user set: otherwise it would make a carried-over
     /// month authored, and every other day of that month would read as rest.
     let pinnedDayKey: String?
+    /// Leave taken per civil day key (plan 020), laid over whatever the rest
+    /// of the plan resolves. Empty for every plan without adopted leave.
+    let leaveDays: [String: LeavePortion]
+    /// The fixed hours underneath a fallback plan, which half a shift of
+    /// leave on an otherwise unassigned day is taken from.
+    let baseHours: ExtendedScheduleDayHours?
     /// Process-local version from `RecordCoordinator`, so caches keyed on a
     /// plan can tell two plans apart without comparing every day.
     let revision: Int
@@ -102,9 +172,13 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
         frozenShiftTypes: [String: ShiftType] = [:],
         fallsBackToBaseSchedule: Bool = false,
         pinnedDayKey: String? = nil,
+        leaveDays: [String: LeavePortion] = [:],
+        baseHours: ExtendedScheduleDayHours? = nil,
         revision: Int = 0
     ) {
         self.shiftTypes = shiftTypes
+        self.leaveDays = leaveDays
+        self.baseHours = baseHours
         self.rule = rule
         self.holidayRegionIdentifier = holidayRegionIdentifier
         self.clearedFromDayKey = clearedFromDayKey
@@ -123,7 +197,43 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             holidayOverrides: holidayOverrides,
             frozenShiftTypes: frozenShiftTypes,
             fallsBackToBaseSchedule: fallsBackToBaseSchedule,
-            pinnedDayKey: pinnedDayKey
+            pinnedDayKey: pinnedDayKey,
+            leaveDays: leaveDays,
+            baseHours: baseHours
+        )
+    }
+
+    /// The same plan with `leave` laid over it, or a fallback plan carrying
+    /// only the leave over `baseHours` when there is no plan. `nil` stays
+    /// `nil` without leave, so a user who never adopted any keeps the exact
+    /// path they had.
+    static func applying(
+        leave: [String: LeavePortion],
+        to plan: ExtendedSchedulePlan?,
+        baseHours: ExtendedScheduleDayHours,
+        revision: Int
+    ) -> ExtendedSchedulePlan? {
+        guard !leave.isEmpty else { return plan }
+        guard let plan else {
+            return ExtendedSchedulePlan(
+                shiftTypes: [], rule: nil, handSetDays: [:],
+                fallsBackToBaseSchedule: true,
+                leaveDays: leave, baseHours: baseHours, revision: revision
+            )
+        }
+        return ExtendedSchedulePlan(
+            shiftTypes: plan.shiftTypes,
+            rule: plan.rule,
+            handSetDays: plan.handSetDays,
+            holidayRegionIdentifier: plan.holidayRegionIdentifier,
+            clearedFromDayKey: plan.clearedFromDayKey,
+            holidayOverrides: plan.holidayOverrides,
+            frozenShiftTypes: plan.frozenShiftTypes,
+            fallsBackToBaseSchedule: plan.fallsBackToBaseSchedule,
+            pinnedDayKey: plan.pinnedDayKey,
+            leaveDays: leave,
+            baseHours: plan.fallsBackToBaseSchedule ? baseHours : plan.baseHours,
+            revision: revision
         )
     }
 
@@ -188,7 +298,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case clearedFromDayKey, shiftTypes, rule, handSetDays, holidayRegionIdentifier, holidayOverrides, frozenShiftTypes, fallsBackToBaseSchedule, pinnedDayKey, revision
+        case clearedFromDayKey, shiftTypes, rule, handSetDays, holidayRegionIdentifier, holidayOverrides, frozenShiftTypes, fallsBackToBaseSchedule, pinnedDayKey, leaveDays, baseHours, revision
     }
 
     init(from decoder: any Decoder) throws {
@@ -203,8 +313,29 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             frozenShiftTypes: try container.decodeIfPresent([String: ShiftType].self, forKey: .frozenShiftTypes) ?? [:],
             fallsBackToBaseSchedule: try container.decodeIfPresent(Bool.self, forKey: .fallsBackToBaseSchedule) ?? false,
             pinnedDayKey: try container.decodeIfPresent(String.self, forKey: .pinnedDayKey),
+            leaveDays: try container.decodeIfPresent([String: LeavePortion].self, forKey: .leaveDays) ?? [:],
+            baseHours: try container.decodeIfPresent(ExtendedScheduleDayHours.self, forKey: .baseHours),
             revision: try container.decode(Int.self, forKey: .revision)
         )
+    }
+
+    /// Written as before for a plan without leave, so the Watch payload and
+    /// every fixture that encodes a plan stay byte-for-byte what they were.
+    func encode(to encoder: any Encoder) throws {
+        // The synthesized order, which is `CodingKeys` order.
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(clearedFromDayKey, forKey: .clearedFromDayKey)
+        try container.encode(shiftTypes, forKey: .shiftTypes)
+        try container.encodeIfPresent(rule, forKey: .rule)
+        try container.encode(handSetDays, forKey: .handSetDays)
+        try container.encodeIfPresent(holidayRegionIdentifier, forKey: .holidayRegionIdentifier)
+        try container.encodeIfPresent(holidayOverrides, forKey: .holidayOverrides)
+        try container.encode(frozenShiftTypes, forKey: .frozenShiftTypes)
+        try container.encode(fallsBackToBaseSchedule, forKey: .fallsBackToBaseSchedule)
+        try container.encodeIfPresent(pinnedDayKey, forKey: .pinnedDayKey)
+        if !leaveDays.isEmpty { try container.encode(leaveDays, forKey: .leaveDays) }
+        try container.encodeIfPresent(baseHours, forKey: .baseHours)
+        try container.encode(revision, forKey: .revision)
     }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
@@ -218,6 +349,8 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             && lhs.frozenShiftTypes == rhs.frozenShiftTypes
             && lhs.fallsBackToBaseSchedule == rhs.fallsBackToBaseSchedule
             && lhs.pinnedDayKey == rhs.pinnedDayKey
+            && lhs.leaveDays == rhs.leaveDays
+            && lhs.baseHours == rhs.baseHours
     }
 
     /// The hours this plan gives one civil day, or `nil` when it is rest.
@@ -260,6 +393,8 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             frozenShiftTypes: frozenShiftTypes,
             fallsBackToBaseSchedule: fallsBackToBaseSchedule,
             pinnedDayKey: dayKey,
+            leaveDays: leaveDays,
+            baseHours: baseHours,
             revision: revision
         )
     }
@@ -285,14 +420,24 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
     let authoredMonths: [Int: [Int: UUID]]
     let authoredFrozenMonths: [Int: [Int: ShiftType]]
     let authoredMonthKeys: [Int]
+    let leaveByDayNumber: [Int: LeavePortion]
+    let baseHours: ExtendedScheduleDayHours?
 
     init(
         shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID],
         holidayRegionIdentifier: String?, clearedFromDayKey: String?,
         holidayOverrides: [Int: Bool]?,
         frozenShiftTypes: [String: ShiftType], fallsBackToBaseSchedule: Bool,
-        pinnedDayKey: String?
+        pinnedDayKey: String?,
+        leaveDays: [String: LeavePortion],
+        baseHours: ExtendedScheduleDayHours?
     ) {
+        var leave: [Int: LeavePortion] = [:]
+        for (key, portion) in leaveDays {
+            if let dayNumber = ExtendedScheduleResolver.dayNumber(dayKey: key) { leave[dayNumber] = portion }
+        }
+        leaveByDayNumber = leave
+        self.baseHours = baseHours
         self.holidayRegionIdentifier = holidayRegionIdentifier
         clearedFromDayNumber = clearedFromDayKey.flatMap(ExtendedScheduleResolver.dayNumber(dayKey:))
         self.holidayOverrides = holidayOverrides
@@ -382,8 +527,29 @@ nonisolated final class ExtendedScheduleResolver {
         return resolved
     }
 
-    /// Explicit assignments win over bundled holidays, then the saved pattern.
+    /// Leave is laid over everything else. It only ever frees work: leave on
+    /// a day the schedule already rests changes nothing.
     private func resolve(dayNumber: Int) -> ExtendedScheduleDay {
+        let base = resolveSchedule(dayNumber: dayNumber)
+        guard let portion = index.leaveByDayNumber[dayNumber] else { return base }
+        if base.source == .unassigned, index.fallsBackToBaseSchedule {
+            guard portion != .whole else {
+                return ExtendedScheduleDay(isWorkday: false, hours: nil, shiftTypeID: nil, source: .leave)
+            }
+            guard let hours = index.baseHours?.remaining(after: portion) else { return base }
+            return ExtendedScheduleDay(isWorkday: true, hours: hours, shiftTypeID: nil, source: .leaveOverBase)
+        }
+        guard base.isWorkday, let hours = base.hours else { return base }
+        return ExtendedScheduleDay(
+            isWorkday: portion != .whole,
+            hours: hours.remaining(after: portion),
+            shiftTypeID: base.shiftTypeID,
+            source: .leave
+        )
+    }
+
+    /// Explicit assignments win over bundled holidays, then the saved pattern.
+    private func resolveSchedule(dayNumber: Int) -> ExtendedScheduleDay {
         if let type = index.frozenByDayNumber[dayNumber] {
             return day(type: type, source: .handSet)
         }
@@ -498,6 +664,7 @@ nonisolated final class ExtendedScheduleResolver {
     }
 
     var fallsBackToBaseSchedule: Bool { index.fallsBackToBaseSchedule }
+    var baseHours: ExtendedScheduleDayHours? { index.baseHours }
 
     static func monthKey(year: Int, month: Int) -> Int { year * 12 + (month - 1) }
 

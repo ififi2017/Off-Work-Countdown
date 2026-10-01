@@ -79,6 +79,48 @@ struct OffMainActorResolveTests {
         #expect(offMainActor.workShare > 0)
     }
 
+    @Test("Adopted leave takes its days out of the Life projection on both builds")
+    func adoptedLeaveReachesLife() async throws {
+        let asyncSuite = "OffMainActorResolveTests.leave.async.\(UUID().uuidString)"
+        let inlineSuite = "OffMainActorResolveTests.leave.inline.\(UUID().uuidString)"
+        let (asyncStore, asyncDefaults, calendar) = try seededStore(suite: asyncSuite)
+        let (inlineStore, inlineDefaults, _) = try seededStore(suite: inlineSuite)
+        defer {
+            asyncDefaults.removePersistentDomain(forName: asyncSuite)
+            inlineDefaults.removePersistentDomain(forName: inlineSuite)
+        }
+        let now = try #require(calendar.date(from: DateComponents(year: 2026, month: 8, day: 31, hour: 12)))
+        for store in [asyncStore, inlineStore] {
+            store.life.saveLifeProfile(
+                birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
+                sleepHours: 8, hidesExactAges: false
+            )
+        }
+        let before = try #require(inlineStore.life.lifeViewModel(now: now))
+        let keyBefore = inlineStore.life.lifeViewModelCacheKey(now: now)
+        #expect(keyBefore.leaveDays == nil)
+
+        // Two working weeks in October 2026, Monday the 12th to Friday the 23rd.
+        let keys = (12...23).map { String(format: "2026-10-%02d", $0) }
+            .filter { key in
+                let date = RecordJSON.date(fromDayKey: key, calendar: calendar)
+                return date.map { !calendar.isDateInWeekend($0) } ?? false
+            }
+        #expect(keys.count == 10)
+        for store in [asyncStore, inlineStore] {
+            store.records.adoptLeave(keys.map {
+                LeaveDay(dayKey: $0, portion: .whole, uses: [], planID: UUID(),
+                         timeZoneIdentifier: calendar.timeZone.identifier)
+            }, at: now)
+        }
+
+        #expect(inlineStore.life.lifeViewModelCacheKey(now: now).leaveDays?.count == 10)
+        let offMainActor = try #require(await asyncStore.life.prepareLifeViewModel(now: now))
+        let inline = try #require(inlineStore.life.lifeViewModel(now: now))
+        #expect(offMainActor == inline)
+        #expect(inline.workShare < before.workShare)
+    }
+
     @Test("Adding an annual bonus reuses the life projection, while profile edits invalidate it")
     func annualBonusKeepsLifeProjection() async throws {
         let suite = "OffMainActorResolveTests.bonus.\(UUID().uuidString)"

@@ -23,6 +23,7 @@ struct SettingsSectionCard: View {
         case .shift:
             // Lunch is part of the schedule page; reminders live under Reminders.
             link(.schedule, icon: "calendar.badge.clock", title: shifts.text.t("workSchedule"), value: shifts.scheduleLabel)
+            link(.leave, icon: "suitcase", title: shifts.text.t("leaveTitle"), value: shifts.leaveSummaryLabel)
             link(.salary, icon: "banknote", title: shifts.text.t("salarySettings"), value: shifts.text.salaryTypeLabel, isLast: true)
 
         case .reminders:

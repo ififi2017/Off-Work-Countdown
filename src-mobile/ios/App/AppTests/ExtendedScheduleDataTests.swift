@@ -80,7 +80,7 @@ struct ExtendedScheduleDataTests {
             Self.rosterDay("2026-10-04", Self.rest),
         ]
         let document = try Self.exportedDocument(state)
-        #expect(document.schemaVersion == 6)
+        #expect(document.schemaVersion == RecordJSON.schemaVersion)
 
         var imported = RecordState()
         let report = try RecordJSON.apply(document, to: &imported, mode: .skipErased)

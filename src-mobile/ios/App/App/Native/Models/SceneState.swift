@@ -12,6 +12,7 @@ enum AppTab: String, CaseIterable, Hashable, Identifiable {
 
 enum AppRoute: String, Hashable, Identifiable {
     case schedule
+    case leave
     case salary
     case notifications
     case lunch

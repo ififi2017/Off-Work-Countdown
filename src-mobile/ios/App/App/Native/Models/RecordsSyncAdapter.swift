@@ -82,6 +82,10 @@ nonisolated struct SyncConflictCopy: Equatable, Codable, Sendable {
         case .workObservation, .focusSession, .scheduleSnapshot, .focusPlanningConfiguration,
              .syncedPreferences, .extendedSchedule:
             return false
+        // A leave day's uses must add up to its portion, and a balance's
+        // window must stay ordered; a field-by-field mix could break either.
+        case .leaveBalance, .leaveDay:
+            return false
         default:
             return localPayload != nil && incomingPayload != nil
         }
@@ -189,6 +193,8 @@ enum RecordsSyncIdentity {
         case .syncedPreferences: return SyncedPreferences.logicalKey
         case .extendedSchedule: return ExtendedSchedule.logicalKey
         case .rosterDay: return "roster.\(key)"
+        case .leaveBalance: return "leavebal.\(key.lowercased())"
+        case .leaveDay: return "leave.\(key)"
         }
     }
 
@@ -201,7 +207,8 @@ enum RecordsSyncIdentity {
     /// a device whose stored revision is older fetches everything once.
     /// 1: the types through `syncedPreferences` (3.2.0 and earlier).
     /// 2: plan 018 P8's `extendedSchedule` and `rosterDay`.
-    static let entityTypeRevision = 2
+    /// 3: plan 020's `leaveBalance` and `leaveDay`.
+    static let entityTypeRevision = 3
 
     static func needsFullRefetch(storedRevision: Int?) -> Bool {
         (storedRevision ?? 1) < entityTypeRevision
@@ -800,6 +807,10 @@ enum RecordsSyncPayload {
             return try? JSONEncoder().encode(ExtendedScheduleDTO(schedule))
         case .rosterDay(let day):
             return try? JSONEncoder().encode(RosterDayDTO(day))
+        case .leaveBalance(let balance):
+            return try? JSONEncoder().encode(LeaveBalanceDTO(balance))
+        case .leaveDay(let day):
+            return try? JSONEncoder().encode(LeaveDayDTO(day))
         }
     }
 
@@ -843,6 +854,12 @@ enum RecordsSyncPayload {
         case .rosterDay:
             return state.rosterDays.first(where: { $0.dayKey == key })
                 .flatMap { try? JSONEncoder().encode(RosterDayDTO($0)) }
+        case .leaveBalance:
+            return state.leaveBalances.first(where: { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame })
+                .flatMap { try? JSONEncoder().encode(LeaveBalanceDTO($0)) }
+        case .leaveDay:
+            return state.leaveDays.first(where: { $0.dayKey == key })
+                .flatMap { try? JSONEncoder().encode(LeaveDayDTO($0)) }
         }
     }
 
@@ -895,6 +912,14 @@ enum RecordsSyncPayload {
             return (try? JSONDecoder().decode(RosterDayDTO.self, from: data))
                 .flatMap { $0.value() }
                 .map { .rosterDay($0) }
+        case .leaveBalance:
+            return (try? JSONDecoder().decode(LeaveBalanceDTO.self, from: data))
+                .flatMap { $0.value() }
+                .map { .leaveBalance($0) }
+        case .leaveDay:
+            return (try? JSONDecoder().decode(LeaveDayDTO.self, from: data))
+                .flatMap { $0.value() }
+                .map { .leaveDay($0) }
         }
     }
 
@@ -915,6 +940,8 @@ enum RecordsSyncPayload {
         case .syncedPreferences(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         case .extendedSchedule(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         case .rosterDay(let value): return value.editedAt.timeIntervalSince1970 * 1_000
+        case .leaveBalance(let value): return value.editedAt.timeIntervalSince1970 * 1_000
+        case .leaveDay(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         }
     }
 
@@ -956,6 +983,12 @@ enum RecordsSyncPayload {
         case .rosterDay:
             return state.rosterDays.first(where: { $0.dayKey == key })
                 .map { ($0.editCount, $0.editTieBreaker.uuidString) }
+        case .leaveBalance:
+            return state.leaveBalances.first(where: { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame })
+                .map { ($0.editCount, $0.editTieBreaker.uuidString) }
+        case .leaveDay:
+            return state.leaveDays.first(where: { $0.dayKey == key })
+                .map { ($0.editCount, $0.editTieBreaker.uuidString) }
         }
     }
 
@@ -976,6 +1009,8 @@ enum RecordsSyncPayload {
         case .syncedPreferences(let value): return (value.editCount, value.editTieBreaker.uuidString)
         case .extendedSchedule(let value): return (value.editCount, value.editTieBreaker.uuidString)
         case .rosterDay(let value): return (value.editCount, value.editTieBreaker.uuidString)
+        case .leaveBalance(let value): return (value.editCount, value.editTieBreaker.uuidString)
+        case .leaveDay(let value): return (value.editCount, value.editTieBreaker.uuidString)
         }
     }
 

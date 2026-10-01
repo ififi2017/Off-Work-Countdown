@@ -249,6 +249,7 @@ enum PlusPaywallReason: String, Hashable, Sendable, Identifiable {
     case sync
     case focus
     case cycleEndSummaryNotifications
+    case leavePlanning
 
     var id: String { rawValue }
 }
