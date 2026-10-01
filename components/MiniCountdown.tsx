@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AppWindow, Palette, Pin, PinOff, Volume2, VolumeX, X, Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -59,11 +59,15 @@ export function MiniCountdown() {
   const [nowMs, setNowMs] = useState(0);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
   const [woodfishCount, setWoodfishCount] = useState(0);
+  /** 计数所属的自然日。跨过零点后，即使还没敲，读数也要归零。 */
+  const [woodfishCountDay, setWoodfishCountDay] = useState(() => localDateKey());
   /** 每次敲击生成一个独立实例；连击时多个数字同时在飞，靠 id 各自卸载。 */
   const [knockFloaters, setKnockFloaters] = useState<
     { id: number; value: number }[]
   >([]);
   const [woodfishStruck, setWoodfishStruck] = useState(false);
+  /** 本次打开后的敲击次数，只用来重播回弹动画；打开窗口时不该自己弹一下。 */
+  const [bonkKey, setBonkKey] = useState(0);
   /** 静音状态下敲击：把声音按钮亮一下，比弹一行字更轻。 */
   const [mutedHintVisible, setMutedHintVisible] = useState(false);
   const [forceWoodfishPreview, setForceWoodfishPreview] = useState(false);
@@ -117,6 +121,7 @@ export function MiniCountdown() {
       if (cancelled) return;
       const today = localDateKey();
       const stored = stats?.days[today]?.woodfishCount ?? 0;
+      setWoodfishCountDay(today);
       if (stored > 0) {
         setWoodfishCount(stored);
         return;
@@ -282,7 +287,8 @@ export function MiniCountdown() {
   };
 
   const knockWoodfish = () => {
-    if (draggedRef.current) return;
+    // 木鱼按钮不是拖动区域，按在它上面拖不动窗口；按下到松开之间手抖一两个
+    // 像素也算一次敲击，不能拿 draggedRef 拦掉。
     let firstTapSeen = woodfishTappedThisSessionRef.current;
     try {
       firstTapSeen =
@@ -301,8 +307,10 @@ export function MiniCountdown() {
     } catch {
       // 读不到就当作今天，最坏情况是少清一次零。
     }
-    const nextCount = storedDay === today ? woodfishCount + 1 : 1;
+    const nextCount =
+      storedDay === today && woodfishCountDay === today ? woodfishCount + 1 : 1;
     setWoodfishCount(nextCount);
+    setWoodfishCountDay(today);
     try {
       localStorage.setItem("woodfishCount", String(nextCount));
       localStorage.setItem("woodfishCountDate", today);
@@ -327,6 +335,7 @@ export function MiniCountdown() {
     );
 
     setWoodfishStruck(true);
+    setBonkKey((key) => key + 1);
     if (glowTimerRef.current) window.clearTimeout(glowTimerRef.current);
     glowTimerRef.current = window.setTimeout(
       () => setWoodfishStruck(false),
@@ -352,41 +361,58 @@ export function MiniCountdown() {
   // 金额栏留下的宽度——八位数的跨十小时班次要小一号才不会被截断。
   const timeSizeClass =
     view.time.length >= 8 ? "text-[23px]" : "text-[27px]";
-  // 木鱼皮肤下窗口宽度不变，横向空间要分给字形：228 内容宽减去内边距、
-  // 木鱼与读数列后只剩约 76pt；午休标签和金额同时出现时再缩一级，避免
-  // 时间与金额贴在一起。
-  const woodfishTimeSizeClass = revealSalary
-    ? isOnBreak
-      ? "text-[15px]"
-      : "text-[17px]"
-    : view.time.length >= 8
-      ? "text-[18px]"
-      : "text-[21px]";
+  // 木鱼皮肤下窗口宽度不变，横向空间要分给字形：228 内容宽减去内边距与
+  // 木鱼后约 130pt，金额列再占去约 45pt。状态说明（午休、下一班）放在时间
+  // 上方单独一行，所以时间不必再为它缩字号，只按位数和金额列取两档。
+  const woodfishTimeSizeClass =
+    view.time.length >= 8
+      ? revealSalary
+        ? "text-[17px]"
+        : "text-[19px]"
+      : revealSalary
+        ? "text-[19px]"
+        : "text-[22px]";
+  const woodfishCaption =
+    isWaitingForShift || isBetweenShifts
+      ? t("nextShiftLabelShort")
+      : isOnBreak
+        ? t("lunchInProgress")
+        : null;
 
-  const woodfishCountLabel = formatWoodfishCountLabel(woodfishCount);
+  const displayedWoodfishCount =
+    woodfishCountDay === localDateKey(new Date(nowMs || Date.now())) ? woodfishCount : 0;
+  const woodfishCountLabel = formatWoodfishCountLabel(displayedWoodfishCount);
 
   // 两个皮肤共用同一块读数：金额在上、百分比在下。薪资显隐属于窗口操作，
   // 和置顶、关闭统一放进顶部工具栏，避免它挤压不同皮肤的读数列。
-  const readoutColumn = showsReadout ? (
+  const readout = (woodfish: boolean) => showsReadout ? (
             <span
               className="flex shrink-0 flex-col items-end leading-none"
             >
               {/* 金额是主信息、百分比是次要读数（进度条已经表达过一遍），
-                  与 macOS 原生面板保持同一套层级。 */}
+                  与 macOS 原生面板保持同一套层级。木鱼皮肤里时间已经和木鱼
+                  并排抢眼，金额退一级，只做读数，不与时间比大小。 */}
               {revealSalary && (
-                <span className="text-[13px] font-semibold tabular-nums text-zinc-900 dark:text-white">
+                <span
+                  className={`tabular-nums ${
+                    woodfish
+                      ? "text-[12px] font-medium tracking-[-0.01em] text-zinc-700 dark:text-zinc-200"
+                      : "text-[13px] font-semibold text-zinc-900 dark:text-white"
+                  }`}
+                >
                   {(view.earned ?? 0).toFixed(2)}
                 </span>
               )}
               <span
                 className={`text-[10px] font-medium tabular-nums text-zinc-500 dark:text-zinc-400 ${
-                  revealSalary ? "mt-0.5" : ""
+                  revealSalary ? (woodfish ? "mt-1" : "mt-0.5") : ""
                 }`}
               >
                 {Math.floor(progress)}%
               </span>
             </span>
   ) : null;
+  const readoutColumn = readout(false);
 
 
   // 外层 main 的留白就是投影的画布：窗口无边框且透明，CSS 画到窗口之外的部分
@@ -544,10 +570,12 @@ export function MiniCountdown() {
             }}
             // 木鱼皮肤不接管整面板点击：敲木鱼和唤起主窗口会抢同一个手势。
             // 唤起改由右上角的显式按钮承担（标准皮肤无此冲突，保留点击）。
-            className="flex min-w-0 translate-y-1.5 items-center gap-2 px-4"
+            // 进度条占去底部约 13pt；时间上方可能还有一行状态说明，整行按
+            // 进度条以上的区域居中，而不是按整张卡片居中。
+            className="flex min-w-0 -translate-y-0.5 items-center gap-2 px-4"
           >
-            {hasCountdown && (
-            <span className="relative -translate-y-[7px] shrink-0">
+            {/* 没开计时也能敲：统计页本来就记「只敲了木鱼」的日子。 */}
+            <span className="relative -translate-y-0.5 shrink-0">
               <button
                 data-tauri-drag-region="false"
                 type="button"
@@ -560,74 +588,64 @@ export function MiniCountdown() {
                   woodfishStruck ? "woodfish-struck" : "woodfish-idle"
                 }`}
               >
-                <WoodfishIllustration />
+                {/* 每敲一次换一个 key，让回弹动画从头再播一遍。 */}
+                <span key={bonkKey} className={bonkKey > 0 ? "woodfish-bonk" : "block"}>
+                  <WoodfishIllustration />
+                </span>
               </button>
               <span
                 aria-live="polite"
-                aria-label={t("knockCount", { count: woodfishCount })}
+                aria-label={t("knockCount", { count: displayedWoodfishCount })}
                 className="pointer-events-none absolute inset-x-0 top-[10%] h-0"
               >
                 {knockFloaters.map((floater) => (
                   <span
                     key={floater.id}
-                    className="woodfish-floater absolute start-1/2 whitespace-nowrap text-[10px] font-bold text-amber-500 dark:text-amber-300"
+                    // 飘字会经过木鱼本身，描一圈卡片底色才读得出来。
+                    className="woodfish-floater absolute start-1/2 whitespace-nowrap text-[10px] font-bold text-amber-600 [text-shadow:0_0_2px_#f6f6f7,0_0_4px_#f6f6f7] dark:text-amber-300 dark:[text-shadow:0_0_2px_#232326,0_0_4px_#232326]"
                   >
                     {t("meritGain")}
                   </span>
                 ))}
               </span>
-              {/* 常驻计数落在木鱼左下角：+1 飘字是转瞬即逝的反馈，攒了多少
-                  得有个地方能一直看到。放这儿不与右侧的百分比、金额争位置。 */}
-              {woodfishCount > 0 && (
+              {/* 常驻计数居中落在鱼身正下方：+1 飘字是转瞬即逝的反馈，攒了多少
+                  得有个地方一直看得到，又不能压在木鱼上或贴着时间。 */}
+              {displayedWoodfishCount > 0 && (
                 <span
-                  title={t("knockCount", { count: woodfishCount })}
-                  className={`pointer-events-none absolute -bottom-0.5 start-0.5 font-semibold leading-none tabular-nums text-[#b0763f]/70 dark:text-[#d69b5c]/70 ${
-                    woodfishCountLabel.length > 3 ? "text-[8px]" : "text-[9px]"
-                  }`}
+                  title={t("knockCount", { count: displayedWoodfishCount })}
+                  className="pointer-events-none absolute inset-x-0 -bottom-1.5 text-center text-[9px] font-semibold leading-none tabular-nums tracking-[-0.02em] text-[#b0763f]/80 dark:text-[#d69b5c]/80"
                 >
                   {woodfishCountLabel}
                 </span>
               )}
             </span>
-            )}
-            {isWaitingForShift ? (
-              <p className="flex min-w-0 flex-1 flex-col justify-center leading-tight">
-                <span className="truncate text-[9px] font-medium text-zinc-500 dark:text-zinc-400">
-                  {t("nextShiftLabelShort")}
-                </span>
-                <span
-                  className={`whitespace-nowrap font-semibold leading-none tracking-[-0.035em] tabular-nums ${woodfishTimeSizeClass}`}
-                >
-                  <RollingText text={view.time} />
-                </span>
-              </p>
-            ) : hasCountdown ? (
-              <p
-                className={`flex min-w-0 flex-1 items-baseline ${
-                  isOnBreak && revealSalary ? "gap-0.5" : "gap-1"
-                }`}
-              >
-                {isOnBreak && (
+            {hasCountdown ? (
+              // 状态说明（下一班、午休）统一在时间上方占一行，时间本身的字号与
+              // 位置在各状态间保持一致，不再被行内标签挤小。
+              <p className="flex min-w-0 flex-1 flex-col justify-center">
+                {woodfishCaption && (
                   <span
-                    className={`shrink-0 font-semibold text-amber-600 dark:text-amber-400 ${
-                      revealSalary ? "text-[9px]" : "text-[10px]"
+                    className={`mb-0.5 truncate text-[10px] font-medium leading-3 ${
+                      isOnBreak
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-zinc-500 dark:text-zinc-400"
                     }`}
                   >
-                    {t("lunchInProgress")}
+                    {woodfishCaption}
                   </span>
                 )}
                 <span
-                  className={`whitespace-nowrap font-semibold leading-none tracking-[-0.035em] tabular-nums ${woodfishTimeSizeClass}`}
+                  className={`whitespace-nowrap font-semibold leading-none tracking-[-0.03em] tabular-nums ${woodfishTimeSizeClass}`}
                 >
                   <RollingText text={view.time} />
                 </span>
               </p>
             ) : (
-              <p className="min-w-0 flex-1 truncate text-center text-[13px] font-semibold tracking-tight text-zinc-700 dark:text-zinc-200">
+              <p className="min-w-0 flex-1 truncate text-[12px] font-medium text-zinc-500 dark:text-zinc-400">
                 {t("countdownNotStarted")}
               </p>
             )}
-            {readoutColumn}
+            {readout(true)}
           </div>
         ) : (
         <div
@@ -676,11 +694,14 @@ export function MiniCountdown() {
         )}
 
         <div className="absolute inset-x-4 bottom-2.5 h-[3px] overflow-hidden rounded-full bg-black/10 dark:bg-white/15">
+          {/* 用平移而不是改 width：进度每秒都在变，width 过渡会让这个整天常驻的
+              窗口在每一帧都重新排版（实测约 28 次/秒）；transform 只走合成，
+              高刷屏上也不占主线程。整条填充平移出轨道，圆角轨道负责裁切。 */}
           <div
-            className="h-full rounded-full bg-orange-500 transition-[width] duration-500 ease-out"
+            className="h-full w-full rounded-full bg-orange-500 transition-transform duration-500 ease-out ltr:-translate-x-[var(--progress-rest)] rtl:translate-x-[var(--progress-rest)]"
             // 班次之间要保持满格：这一班确实做完了，清零会读成「重新开始」。
-              // 只有完全没有倒计时（空闲态）才归零。
-              style={{ width: `${showsCountdown ? progress : 0}%` }}
+            // 只有完全没有倒计时（空闲态）才归零。
+            style={{ "--progress-rest": `${100 - (showsCountdown ? progress : 0)}%` } as CSSProperties}
           />
         </div>
       </section>
