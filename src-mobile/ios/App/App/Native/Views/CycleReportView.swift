@@ -86,6 +86,8 @@ struct CycleReportView: View {
             }
         }
         .preferredColorScheme(.dark)
+        // A full-screen cover does not carry the root's reading direction with it.
+        .environment(\.layoutDirection, preferences.layoutDirection)
         .task { await load() }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active { player?.pause() }
@@ -358,11 +360,13 @@ struct CycleReportPresentationModifier: ViewModifier {
                 guard let raw = defaults.string(forKey: "ios.native.qaCycleReport"),
                       let kind = CycleReportKind(rawValue: raw) else { return }
                 defaults.removeObject(forKey: "ios.native.qaCycleReport")
+                runtime.shifts.disableAutomaticReviewPrompt()
+                scene.showsReleaseNotes = false
                 _ = await runtime.debug.debugSeedSampleRecords().value
                 let queries = runtime.queries
                 let calendar = queries.recordsGridCalendar
                 var period = queries.reportPeriod(kind, containing: .now)
-                if kind == .week { period = period.previous(calendar: calendar) ?? period }
+                period = period.previous(calendar: calendar) ?? period
                 scene.openCycleReport(CycleReportRequest(period: period))
             }
 #endif
@@ -388,8 +392,8 @@ struct CycleReportPresentationModifier: ViewModifier {
 
 // MARK: - Wording
 
-/// Every sentence a report says, built from one snapshot, so the animated pages,
-/// their spoken labels and the plain reading all agree.
+/// Every sentence a report says, built from one snapshot, so the animated
+/// chapters, their spoken labels and the plain reading all agree.
 @MainActor
 struct CycleReportCopy {
     let text: AppText
@@ -409,25 +413,107 @@ struct CycleReportCopy {
 
     func hours(_ milliseconds: Int64) -> String { text.formatRelativeDuration(Double(milliseconds)) }
     func days(_ count: Int) -> String { text.t("daysShort", values: ["count": text.formatCount(count)]) }
+    /// Whole and half days, as leave is kept.
+    func leaveDays(halfDays: Int) -> String { text.formatDays(Double(halfDays) / 2) }
     func workdays(_ snapshot: CycleReportSnapshot) -> String {
         text.t("recordsWorkdayCount", values: ["count": text.formatCount(snapshot.figures.workdays)])
     }
-
-    func comparisonTitle(_ snapshot: CycleReportSnapshot) -> String {
-        text.t(snapshot.period.kind == .week ? "reportCompareWeek" : "reportCompareMonth")
+    func headline(_ snapshot: CycleReportSnapshot) -> String { text.t(snapshot.headline.titleKey) }
+    func weekday(_ date: Date) -> String { queries.formatRecordsWeekdayShort(date) }
+    func weekdayLabels(_ snapshot: CycleReportSnapshot) -> [String] {
+        snapshot.period.kind == .week ? snapshot.days.map { weekday($0.date) } : []
     }
 
-    func comparisonSentence(_ comparison: CycleReportComparison) -> String {
-        let delta = comparison.workedDeltaMs
-        guard abs(delta) >= 60_000 else { return text.t("reportCompareSame") }
-        return text.t(delta > 0 ? "reportCompareMore" : "reportCompareLess", values: [
-            "duration": hours(abs(delta)),
+    /// Pay is shown only when the person chose it for this report, so it is
+    /// formatted without the global mask: that mask would hide the very number
+    /// they asked to see.
+    func money(_ value: Double?) -> String { text.formatMoney(value) }
+
+    // MARK: Against your usual
+
+    func baselineTitle(_ snapshot: CycleReportSnapshot) -> String {
+        guard let baseline = snapshot.baseline else { return "" }
+        switch baseline.kind {
+        case .usual(let periods):
+            return text.t(snapshot.period.kind == .week ? "reportUsualBasisWeek" : "reportUsualBasisMonth",
+                          values: ["count": text.formatCount(periods)])
+        case .previous:
+            return text.t(snapshot.period.kind == .week ? "reportCompareWeek" : "reportCompareMonth")
+        }
+    }
+
+    /// Label of the baseline's own bar.
+    func baselineBarLabel(_ snapshot: CycleReportSnapshot) -> String {
+        guard let baseline = snapshot.baseline else { return "" }
+        switch baseline.kind {
+        case .usual: return text.t(snapshot.period.kind == .week ? "reportUsualWeek" : "reportUsualMonth")
+        case .previous:
+            let calendar = queries.recordsGridCalendar
+            return snapshot.period.previous(calendar: calendar).map(periodTitle) ?? ""
+        }
+    }
+
+    func baselineSentence(_ snapshot: CycleReportSnapshot) -> String {
+        guard let baseline = snapshot.baseline else { return "" }
+        let delta = baseline.deltaMs
+        guard abs(delta) >= 60_000 else {
+            return text.t(baseline.kind == .previous ? "reportCompareSame" : "reportUsualSame")
+        }
+        let values = ["duration": hours(abs(delta))]
+        switch baseline.kind {
+        case .usual:
+            return delta > 0 ? text.t("reportUsualMore", values: values) : text.t("reportUsualLess", values: values)
+        case .previous:
+            return delta > 0 ? text.t("reportCompareMore", values: values) : text.t("reportCompareLess", values: values)
+        }
+    }
+
+    // MARK: How the days finished
+
+    func finishRatio(_ finish: CycleReportFinish) -> String {
+        text.t("reportFinishRatio", values: [
+            "done": text.formatCount(finish.onScheduleCount), "total": text.formatCount(finish.recordedCount),
         ])
     }
 
-    func income(_ snapshot: CycleReportSnapshot) -> String? {
-        snapshot.income.map { text.moneyText($0) }
+    func finishLatest(_ finish: CycleReportFinish, kind: CycleReportKind) -> String? {
+        guard let latest = finish.latest, case .late(let ms) = latest.kind else { return nil }
+        // A week names the weekday; in a month that would be ambiguous, so the date.
+        let day = kind == .week ? weekday(latest.date) : queries.formatRecordsMonthDay(latest.date)
+        return text.t("reportFinishLatest", values: ["day": day, "duration": hours(ms)])
     }
+
+    func finishEarly(_ finish: CycleReportFinish) -> String? {
+        finish.earlyCount > 0
+            ? text.t("reportFinishEarly", values: ["count": text.formatCount(finish.earlyCount)]) : nil
+    }
+
+    // MARK: Looking ahead
+
+    func aheadHero(_ ahead: CycleReportAhead) -> String? {
+        guard let next = ahead.nextBreak else { return nil }
+        return next.daysAway == 1 ? text.t("reportAheadTomorrow") : days(next.daysAway)
+    }
+
+    func aheadBreak(_ ahead: CycleReportAhead) -> String? {
+        guard let next = ahead.nextBreak else { return nil }
+        return text.t("reportAheadBreak", values: [
+            "length": days(next.length), "date": queries.formatRecordsMonthDay(next.startDate),
+        ])
+    }
+
+    // MARK: Focus
+
+    func focusBest(_ focus: CycleReportFocus, snapshot: CycleReportSnapshot) -> String? {
+        guard snapshot.days.indices.contains(focus.bestDayIndex) else { return nil }
+        let day = snapshot.days[focus.bestDayIndex]
+        return text.t("reportFocusBest", values: [
+            "day": snapshot.period.kind == .week ? weekday(day.date) : queries.formatRecordsMonthDay(day.date),
+            "count": text.formatCount(focus.perDay[focus.bestDayIndex]),
+        ])
+    }
+
+    // MARK: Facts and speech
 
     /// The facts as label/value pairs, for the reading page and the summary page.
     func facts(_ snapshot: CycleReportSnapshot) -> [(label: String, value: String)] {
@@ -438,25 +524,38 @@ struct CycleReportCopy {
         if snapshot.figures.overtimeMs > 0 {
             rows.append((text.t("recordsOvertime"), hours(snapshot.figures.overtimeMs)))
         }
+        if let finish = snapshot.finish {
+            rows.append((text.t("reportFinishTitle"), finishRatio(finish)))
+        }
         rows.append((text.t("reportRestDays"), days(snapshot.restDayCount)))
         if snapshot.longestRestRun > 0 {
             rows.append((text.t("reportLongestRest"), days(snapshot.longestRestRun)))
         }
-        if let comparison = snapshot.comparison {
-            rows.append((comparisonTitle(snapshot), comparisonSentence(comparison)))
+        if snapshot.baseline != nil {
+            rows.append((baselineTitle(snapshot), baselineSentence(snapshot)))
         }
-        if let income = income(snapshot) {
-            rows.append((text.t("reportIncomeTitle"), income))
+        if let ahead = snapshot.ahead {
+            if let next = aheadBreak(ahead) { rows.append((text.t("reportAheadTitle"), next)) }
+            if let left = ahead.leaveRemainingHalfDays { rows.append((text.t("reportLeaveLeft"), leaveDays(halfDays: left))) }
+            if ahead.leaveUsedHalfDays > 0 { rows.append((text.t("reportLeaveUsed"), leaveDays(halfDays: ahead.leaveUsedHalfDays))) }
+        }
+        if let focus = snapshot.focus {
+            rows.append((text.t("reportFocusRounds"), text.formatCount(focus.rounds)))
+        }
+        if let pay = snapshot.pay {
+            rows.append((text.t("reportIncomeTitle"), money(pay.total)))
+            if let perHour = pay.perHour { rows.append((text.t("reportPerHour"), money(perHour))) }
+            if let extra = pay.overtimeExtra { rows.append((text.t("reportIncomeExtra"), money(extra))) }
         }
         return rows
     }
 
-    /// What VoiceOver says for a page: its final state, never a mid-count one.
+    /// What VoiceOver says for a chapter: its final state, never a mid-count one.
     func spoken(_ stage: CycleReportStage, snapshot: CycleReportSnapshot) -> String {
         let head = periodTitle(snapshot.period)
         switch stage {
         case .calendar:
-            return [head, workdays(snapshot), snapshot.isInProgress ? text.t("reportSoFar") : nil]
+            return [head, headline(snapshot), workdays(snapshot), snapshot.isInProgress ? text.t("reportSoFar") : nil]
                 .compactMap { $0 }.joined(separator: ". ")
         case .hours:
             var parts = [text.t("recordsWorkedTime"), hours(snapshot.figures.workedMs)]
@@ -464,17 +563,39 @@ struct CycleReportCopy {
                 parts.append(text.t("reportIncludingOvertime", values: ["overtime": hours(snapshot.figures.overtimeMs)]))
             }
             return parts.joined(separator: ". ")
+        case .finish:
+            guard let finish = snapshot.finish else { return "" }
+            return [text.t("reportFinishTitle"), finishRatio(finish), text.t("reportFinishCaption"),
+                    finishLatest(finish, kind: snapshot.period.kind), finishEarly(finish)].compactMap { $0 }.joined(separator: ". ")
+        case .baseline:
+            return [baselineTitle(snapshot), baselineSentence(snapshot)].joined(separator: ". ")
         case .rest:
             guard snapshot.restDayCount > 0 else { return text.t("reportRestNone") }
             return [
                 text.t("reportRestDays"), days(snapshot.restDayCount),
                 text.t("reportLongestRest"), days(snapshot.longestRestRun),
             ].joined(separator: ". ")
-        case .comparison:
-            guard let comparison = snapshot.comparison else { return "" }
-            return [comparisonTitle(snapshot), comparisonSentence(comparison)].joined(separator: ". ")
+        case .ahead:
+            guard let ahead = snapshot.ahead else { return "" }
+            var parts: [String] = [text.t("reportAheadTitle")]
+            if let hero = aheadHero(ahead) { parts.append(hero) }
+            if let next = aheadBreak(ahead) { parts.append(next) }
+            if let left = ahead.leaveRemainingHalfDays { parts.append("\(text.t("reportLeaveLeft")) \(leaveDays(halfDays: left))") }
+            if ahead.leaveUsedHalfDays > 0 { parts.append("\(text.t("reportLeaveUsed")) \(leaveDays(halfDays: ahead.leaveUsedHalfDays))") }
+            return parts.joined(separator: ". ")
+        case .focus:
+            guard let focus = snapshot.focus else { return "" }
+            var parts = [text.t("reportFocusRounds"), text.formatCount(focus.rounds)]
+            if let best = focusBest(focus, snapshot: snapshot) { parts.append(best) }
+            if let icon = focus.topIcon { parts.append("\(text.t("reportFocusTop")) \(text.t(icon.titleKey))") }
+            return parts.joined(separator: ". ")
         case .income:
-            return [text.t("reportIncomeTitle"), income(snapshot) ?? ""].joined(separator: ". ")
+            guard let pay = snapshot.pay else { return "" }
+            var parts = [text.t("reportIncomeTitle"), money(pay.total)]
+            if let perHour = pay.perHour { parts.append("\(money(perHour)) \(text.t("reportPerHour"))") }
+            if let extra = pay.overtimeExtra { parts.append("\(text.t("reportIncomeExtra")) \(money(extra))") }
+            parts.append(text.t("reportIncomeNote"))
+            return parts.joined(separator: ". ")
         case .summary:
             return ([head] + facts(snapshot).map { "\($0.label), \($0.value)" }).joined(separator: ". ")
         }

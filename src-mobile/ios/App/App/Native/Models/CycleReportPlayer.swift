@@ -7,18 +7,26 @@ import Observation
 nonisolated enum CycleReportStage: Hashable, Sendable {
     case calendar
     case hours
+    case finish
+    case baseline
     case rest
-    case comparison
+    case ahead
+    case focus
     case income
     case summary
 
-    /// Chapters left out: no comparison without a previous period that holds
-    /// data, no income unless the person asked for it.
+    /// Chapters are told in this order. One with nothing honest to say is left
+    /// out: no finish page without recorded days, no comparison without history,
+    /// no income unless the person asked for it.
     static func stages(for snapshot: CycleReportSnapshot) -> [Self] {
         guard snapshot.hasData else { return [] }
-        var result: [Self] = [.calendar, .hours, .rest]
-        if snapshot.comparison != nil { result.append(.comparison) }
-        if snapshot.income != nil { result.append(.income) }
+        var result: [Self] = [.calendar, .hours]
+        if snapshot.finish != nil { result.append(.finish) }
+        if snapshot.baseline != nil { result.append(.baseline) }
+        result.append(.rest)
+        if snapshot.ahead != nil { result.append(.ahead) }
+        if snapshot.focus != nil { result.append(.focus) }
+        if snapshot.pay != nil { result.append(.income) }
         result.append(.summary)
         return result
     }
@@ -28,11 +36,14 @@ nonisolated enum CycleReportStage: Hashable, Sendable {
     func timeline(for snapshot: CycleReportSnapshot) -> CycleReportTimeline {
         let monthly = snapshot.period.kind == .month
         return switch self {
-        case .calendar: CycleReportTimeline(build: monthly ? 2.6 : 1.9, hold: 1.7)
-        case .hours: CycleReportTimeline(build: 2.8, hold: 2.1)
-        case .rest: CycleReportTimeline(build: 2.4, hold: 2.2)
-        case .comparison: CycleReportTimeline(build: 1.8, hold: 2.3)
-        case .income: CycleReportTimeline(build: 2.1, hold: 2.3)
+        case .calendar: CycleReportTimeline(build: monthly ? 2.6 : 2.0, hold: 1.9)
+        case .hours: CycleReportTimeline(build: 2.8, hold: 2.0)
+        case .finish: CycleReportTimeline(build: 2.2, hold: 2.1)
+        case .baseline: CycleReportTimeline(build: 1.9, hold: 2.2)
+        case .rest: CycleReportTimeline(build: 2.4, hold: 2.1)
+        case .ahead: CycleReportTimeline(build: 2.2, hold: 2.3)
+        case .focus: CycleReportTimeline(build: 2.0, hold: 2.0)
+        case .income: CycleReportTimeline(build: 2.1, hold: 2.2)
         case .summary: CycleReportTimeline(build: 1.4, hold: .infinity)
         }
     }

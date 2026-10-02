@@ -54,6 +54,8 @@ final class RecordsQueries {
     private var countdownStarted: Bool { sources.isCounting() }
     private var presentationSalaryEnabled: Bool { sources.salaryIsVisible() }
     private var salaryType: SalaryType? { sources.salaryType() }
+    /// A fixed monthly salary does not grow with overtime; a daily rate does.
+    var reportOvertimeIsPaid: Bool { salaryType == .daily }
     private func snapshot(at date: Date) -> NativeShiftSnapshot? { sources.snapshot(date) }
     func rulesInput(at date: Date, using source: RulesScheduleSource = .effective) -> NativeRulesInput? {
         sources.rules(date, source)
@@ -1579,6 +1581,10 @@ final class RecordsQueries {
     /// "Wed, 26 Aug" — a day's identity in a list.
     func formatRecordsDayTitle(_ date: Date) -> String {
         recordsDateString(date, template: "EEEMMMd")
+    }
+
+    func formatRecordsWeekdayShort(_ date: Date) -> String {
+        recordsDateString(date, template: "EEE")
     }
 
     /// "26 Aug" — a day heading, where the weekday is already implied.

@@ -219,20 +219,12 @@ nonisolated struct CycleReportDay: Equatable, Sendable, Identifiable {
     var id: String { dayKey }
 }
 
-/// The change from the period before, only ever built from two periods that
-/// both hold data.
-nonisolated struct CycleReportComparison: Equatable, Sendable {
-    var workedDeltaMs: Int64
-    var overtimeDeltaMs: Int64
-}
-
 /// Everything a report plays, computed once. Each stage reads this one value,
 /// so the numbers cannot change between the first page and the last.
 nonisolated struct CycleReportSnapshot: Equatable, Sendable {
     var period: CycleReportPeriod
     var days: [CycleReportDay]
     var figures: CycleReportFigures
-    var comparison: CycleReportComparison?
     var restDayCount: Int
     var longestRestRun: Int
     /// Index into `days` where the longest rest stretch begins; the first one
@@ -240,6 +232,12 @@ nonisolated struct CycleReportSnapshot: Equatable, Sendable {
     var longestRestStart: Int?
     /// The period is still running; figures read "so far", never a forecast.
     var isInProgress: Bool
+    var headline: CycleReportHeadline = .plain
+    var baseline: CycleReportBaseline?
+    var finish: CycleReportFinish?
+    var ahead: CycleReportAhead?
+    var focus: CycleReportFocus?
+    var pay: CycleReportPay?
 
     var hasData: Bool { figures.hasData }
     var income: Double? { figures.income }
@@ -250,18 +248,30 @@ nonisolated struct CycleReportSnapshot: Equatable, Sendable {
     func withoutIncome() -> Self {
         var copy = self
         copy.figures.income = nil
+        copy.pay = nil
         return copy
     }
 }
 
+/// What the builder is given besides the period's own days.
+nonisolated struct CycleReportExtras: Sendable {
+    /// Earlier periods, newest first.
+    var priors: [CycleReportFigures] = []
+    var finish: CycleReportFinish?
+    var ahead: CycleReportAhead?
+    var focus: CycleReportFocus?
+    /// Whether the salary rules pay overtime at the usual rate (not a fixed
+    /// monthly salary).
+    var overtimeIsPaid = false
+}
+
 nonisolated enum CycleReportBuilder {
-    /// `cells` are the period's own days, in order, as the Records page builds
-    /// them. `previous` is the period before, when it holds records.
+    /// `cells` are the period's own days, in order, as the Records page builds them.
     static func snapshot(
         period: CycleReportPeriod,
         cells: [RecordsDayCell],
         figures: CycleReportFigures,
-        previous: CycleReportFigures?,
+        extras: CycleReportExtras = CycleReportExtras(),
         isInProgress: Bool
     ) -> CycleReportSnapshot {
         let days = cells.map { cell -> CycleReportDay in
@@ -295,22 +305,28 @@ nonisolated enum CycleReportBuilder {
                 run = 0
             }
         }
-        var comparison: CycleReportComparison?
-        if figures.hasData, let previous, previous.hasData {
-            comparison = CycleReportComparison(
-                workedDeltaMs: figures.workedMs - previous.workedMs,
-                overtimeDeltaMs: figures.overtimeMs - previous.overtimeMs
-            )
-        }
+        let baseline = CycleReportBaseline.make(
+            current: figures, priors: extras.priors,
+            window: period.kind == .week ? 4 : 3,
+            minimumWorkdays: period.kind == .week ? 2 : 6, isInProgress: isInProgress
+        )
         return CycleReportSnapshot(
             period: period,
             days: days,
             figures: figures,
-            comparison: comparison,
             restDayCount: restDays,
             longestRestRun: longest,
             longestRestStart: longestStart,
-            isInProgress: isInProgress
+            isInProgress: isInProgress,
+            headline: CycleReportHeadline.choose(
+                figures: figures, baseline: baseline, restDayCount: restDays, longestRestRun: longest,
+                kind: period.kind, nextBreak: extras.ahead?.nextBreak, isInProgress: isInProgress
+            ),
+            baseline: baseline,
+            finish: extras.finish,
+            ahead: extras.ahead,
+            focus: extras.focus,
+            pay: CycleReportPay.make(figures: figures, overtimeIsPaid: extras.overtimeIsPaid)
         )
     }
 }
