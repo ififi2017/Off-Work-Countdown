@@ -188,6 +188,10 @@ release gates. No rule, plan or script may depend on locally installed skills.
 - Keep `docs/PLAN-MSSTORE.md` and `docs/PLAN-MOBILE.md` aligned with material
   architecture/milestones; remove stale TODOs when verified.
 - Stop `next dev` before a build: it shares `.next` with `next build`.
+- In the user's local macOS environment, prefer Xcode MCP when available
+  for Apple-platform development, builds, tests and debugging. The same
+  validation gates and explicit-request requirement for simulator visual
+  testing apply; use documented CLI commands when MCP is unavailable or unsuitable.
 
 Setup: `npm install`. Common checks: `npm run lint`, `npm test`,
 `npm run check:version`. Complete the applicable gates before code hand-off:
