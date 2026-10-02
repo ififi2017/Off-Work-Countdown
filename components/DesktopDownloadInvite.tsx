@@ -5,7 +5,7 @@ import { Download, Monitor, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { officialPageUrl } from "@/lib/site-urls";
+import { officialDownloadUrlFromWeb } from "@/lib/site-urls";
 import { track } from "@/lib/track";
 
 const DISMISS_KEY = "desktop-download-invite-v1-dismissed";
@@ -41,7 +41,7 @@ export function DesktopDownloadInvite() {
     track("desktop_invite_open");
   };
 
-  const downloadHref = officialPageUrl(i18n.language, "download");
+  const downloadHref = officialDownloadUrlFromWeb(i18n.language);
 
   return (
     <AnimatePresence>

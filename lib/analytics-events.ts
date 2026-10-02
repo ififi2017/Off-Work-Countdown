@@ -29,18 +29,6 @@ export const trackedEvents = [
   "desktop_invite_open",
   /** 用户主动关闭客户端下载邀请。 */
   "desktop_invite_dismiss",
-  /** 下载页的微软商店入口点击。与直链分开计数，用来看商店渠道的分流。 */
-  "desktop_download_msstore",
-  /** Mac App Store：推荐浮窗打开、以及从浮窗真正跳转商店，分开计数。 */
-  "desktop_macappstore_dialog_open",
-  "desktop_download_macappstore",
-  /** 下载页的各平台安装包与 GitHub Releases 点击。 */
-  "desktop_download_windows_intel",
-  "desktop_download_windows_arm",
-  "desktop_download_macos_apple",
-  "desktop_download_macos_intel",
-  "desktop_download_linux_intel",
-  "desktop_download_github",
 ] as const;
 
 export type TrackedEvent = (typeof trackedEvents)[number];

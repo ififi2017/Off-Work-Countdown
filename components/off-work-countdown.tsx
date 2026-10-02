@@ -113,7 +113,7 @@ import { useTranslation } from "react-i18next";
 import { decodeShift } from "@/lib/share";
 import { track } from "@/lib/track";
 import { siteConfig } from "@/config/site";
-import { officialHomeUrl, officialPageUrl } from "@/lib/site-urls";
+import { officialDownloadUrlFromWeb, officialHomeUrl, officialPageUrl } from "@/lib/site-urls";
 import { WORK_HOURS_CALCULATOR_SLUG } from "@/lib/work-hours";
 import {
   requestNotificationPermission,
@@ -4402,7 +4402,7 @@ export function OffWorkCountdown({
               </a>
             </div>
             <a
-              href={officialPageUrl(lang, "download")}
+              href={officialDownloadUrlFromWeb(lang)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-gray-950 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus-visible:ring-offset-gray-950"

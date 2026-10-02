@@ -18,7 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { siteConfig } from "@/config/site";
-import { officialHomeUrl, officialPageUrl } from "@/lib/site-urls";
+import { officialDownloadUrlFromWeb, officialHomeUrl, officialPageUrl } from "@/lib/site-urls";
 import { formatMinutes } from "@/lib/mobile/format";
 import type { IosAppState } from "@/lib/mobile/use-ios-app";
 import { languageNames } from "@/i18n-config";
@@ -166,7 +166,7 @@ export function MobileSettingsScreen({
             external
             separator
             onClick={() =>
-              openExternal(officialPageUrl(lang, "download"))
+              openExternal(officialDownloadUrlFromWeb(lang))
             }
           />
           <IosRow

@@ -67,3 +67,11 @@ export function webAppAlternates(
     "x-default": path ? webAppPageUrl(defaultLocale, path) : webAppRootUrl(),
   };
 }
+
+/**
+ * Download page URL with `?from=web` for cross-site attribution.
+ * The website counts `s:<date>:download_from_web` when it sees this parameter.
+ */
+export function officialDownloadUrlFromWeb(lang: string): string {
+  return `${officialPageUrl(lang, "download")}?from=web`;
+}
