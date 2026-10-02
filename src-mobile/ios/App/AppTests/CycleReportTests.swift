@@ -4,6 +4,12 @@ import UserNotifications
 @testable import App
 
 /// Plan 020 §4: weekly and monthly reports, without the screen.
+/// Advances 50 ms per call, for a clock the test controls.
+private final class Ticks: @unchecked Sendable {
+    private var value = 0.0
+    func next() -> Double { value += 0.05; return value }
+}
+
 @Suite("Cycle reports")
 struct CycleReportTests {
     // MARK: Periods
@@ -290,46 +296,86 @@ struct CycleReportTests {
         return CycleReportPlayer(snapshot: snapshot, autoplay: autoplay, sleep: { _ in })
     }
 
-    @Test("Playback builds every page in turn and stops on the summary")
+    @Test("The clock builds each chapter, holds it, hands over, and stops built on the summary")
     @MainActor
-    func playsThrough() async {
+    func playsThrough() {
         let player = player()
-        await player.run()
-        #expect(player.stage == .summary)
-        #expect(player.isLastStage && player.isBuilt)
-        #expect(!player.isPlaying)
+        var seen: [CycleReportStage] = [player.stage]
+        var lastProgress = 0.0
+        for _ in 0..<2_000 where player.isPlaying {
+            player.advance(by: 0.05)
+            if player.stage != seen.last { seen.append(player.stage); lastProgress = 0 }
+            #expect(player.progress >= lastProgress)
+            lastProgress = player.progress
+            if player.isLastStage, player.isBuilt { break }
+        }
+        #expect(seen == player.stages)
+        #expect(player.stage == .summary && player.isBuilt)
+        #expect(player.build == 1)
     }
 
-    @Test("Pausing stops where it is; resuming carries on, and from the end replays")
+    @Test("A finger holding the screen, or a pause, stops the clock; neither loses the place")
     @MainActor
-    func pauseAndResume() async {
-        let player = player(autoplay: false)
-        await player.run()
-        #expect(player.stageIndex == 0 && player.beat == 0)
+    func holdAndPause() {
+        let player = player()
+        player.advance(by: 1)
+        let t = player.time
+        player.isHeld = true
+        player.advance(by: 5)
+        #expect(player.time == t)
+        player.isHeld = false
+        player.pause()
+        player.advance(by: 5)
+        #expect(player.time == t && player.stageIndex == 0)
+        player.resume()
+        player.advance(by: 0.5)
+        #expect(player.time > t)
+    }
 
+    @Test("run() ticks the clock until the last chapter is built")
+    @MainActor
+    func runLoop() async {
+        let ticks = Ticks()
+        let figures = CycleReportFigures(workdays: 3, workedMs: 26 * hour, overtimeMs: 0, income: nil)
+        let snapshot = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, previous: nil, isInProgress: false)
+        let player = CycleReportPlayer(snapshot: snapshot, sleep: { _ in }, now: { ticks.next() })
+        await player.run()
+        #expect(player.isLastStage && player.isBuilt && !player.isPlaying)
+    }
+
+    @Test("Previous restarts a chapter that has begun, then steps back; next and skip stay in range")
+    @MainActor
+    func navigation() {
+        let player = player(autoplay: false)
+        player.previous()
+        #expect(player.stageIndex == 0)
         player.next()
         player.next()
         #expect(player.stage == .rest)
         player.resume()
-        await player.run()
-        #expect(player.stage == .summary)
-
-        player.resume() // at the end, playing again means from the top
-        #expect(player.stageIndex == 0 && player.beat == 0 && player.isPlaying)
-    }
-
-    @Test("Skipping lands on a finished summary; previous and next stay in range")
-    @MainActor
-    func skipping() {
-        let player = player(autoplay: false)
-        player.previous()
-        #expect(player.stageIndex == 0)
+        player.advance(by: 1.5)
+        player.previous() // restarts this chapter
+        #expect(player.stage == .rest && player.time == 0)
+        player.previous() // then steps back
+        #expect(player.stage == .hours)
         player.skipToSummary()
         #expect(player.isLastStage && player.isBuilt && !player.isPlaying)
         player.next()
         #expect(player.isLastStage)
-        player.previous()
-        #expect(player.stage == .rest && player.beat == 0)
+        player.resume() // at the end, playing again means from the top
+        #expect(player.stageIndex == 0 && player.time == 0 && player.isPlaying)
+    }
+
+    @Test("Easing stays inside its range and staggering starts items one after another")
+    func easing() {
+        for x in stride(from: -0.5, through: 1.5, by: 0.1) {
+            #expect((0...1).contains(ReportEase.outCubic(x)))
+            #expect((0...1).contains(ReportEase.inOutCubic(x)))
+        }
+        #expect(ReportEase.staggered(0, index: 3, count: 7) == 0)
+        #expect(ReportEase.staggered(1, index: 0, count: 7) == 1)
+        #expect(ReportEase.staggered(0.3, index: 0, count: 7) > ReportEase.staggered(0.3, index: 5, count: 7))
+        #expect(ReportEase.window(0.5, 0.25, 0.75) == 0.5)
     }
 
     // MARK: Notification delivery
