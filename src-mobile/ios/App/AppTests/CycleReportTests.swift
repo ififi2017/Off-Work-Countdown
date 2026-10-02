@@ -174,13 +174,13 @@ struct CycleReportTests {
         let snapshot = CycleReportBuilder.snapshot(
             period: week, cells: weekCells(),
             figures: .init(workdays: 3, workedMs: 26 * hour, overtimeMs: 2 * hour, income: nil),
-            previous: nil, isInProgress: false
+            isInProgress: false
         )
         #expect(snapshot.days.map(\.kind) == [.work, .work, .rest, .rest, .work, .rest, .rest])
         #expect(snapshot.restDayCount == 4)
         #expect(snapshot.longestRestRun == 2)
         #expect(snapshot.longestRestStart == 2) // the first of two equal stretches wins
-        #expect(snapshot.comparison == nil)
+        #expect(snapshot.baseline == nil)
     }
 
     @Test("Days after today are upcoming, never rest, and do not extend a stretch")
@@ -191,7 +191,7 @@ struct CycleReportTests {
         let snapshot = CycleReportBuilder.snapshot(
             period: week, cells: cells,
             figures: .init(workdays: 3, workedMs: 26 * hour, overtimeMs: 2 * hour, income: nil),
-            previous: nil, isInProgress: true
+            isInProgress: true
         )
         #expect(snapshot.days.suffix(2).map(\.kind) == [.upcoming, .upcoming])
         #expect(snapshot.restDayCount == 2)
@@ -205,28 +205,132 @@ struct CycleReportTests {
         let snapshot = CycleReportBuilder.snapshot(
             period: week, cells: cells,
             figures: .init(workdays: 3, workedMs: 32 * hour, overtimeMs: 0, income: nil),
-            previous: nil, isInProgress: false
+            isInProgress: false
         )
         #expect(snapshot.days[2].kind == .work)
         #expect(snapshot.restDayCount == 3)
     }
 
-    @Test("A comparison needs both periods to hold records")
-    func comparisonNeedsData() {
-        let figures = CycleReportFigures(workdays: 3, workedMs: 26 * hour, overtimeMs: 2 * hour, income: nil)
-        let before = CycleReportFigures(workdays: 5, workedMs: 40 * hour, overtimeMs: 0, income: nil)
-        let with = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, previous: before, isInProgress: false)
-        #expect(with.comparison == CycleReportComparison(workedDeltaMs: -14 * hour, overtimeDeltaMs: 2 * hour))
-
+    @Test("Against your usual: the average of earlier periods that hold records, never a running period")
+    func baselineUsesTheOwnPast() {
+        let now = CycleReportFigures(workdays: 3, workedMs: 26 * hour, overtimeMs: 2 * hour, income: nil)
+        func figures(_ h: Int64) -> CycleReportFigures { .init(workdays: 5, workedMs: h * hour, overtimeMs: 0, income: nil) }
         let empty = CycleReportFigures(workdays: 0, workedMs: 0, overtimeMs: 0, income: nil)
-        #expect(CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, previous: empty, isInProgress: false).comparison == nil)
-        #expect(CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: empty, previous: before, isInProgress: false).comparison == nil)
+
+        let usual = CycleReportBaseline.make(current: now, priors: [figures(40), empty, figures(44), figures(42)], window: 4, isInProgress: false)
+        #expect(usual?.kind == .usual(periods: 3))
+        #expect(usual?.baselineWorkedMs == 42 * hour)
+        #expect(usual?.deltaMs == -16 * hour)
+
+        // One earlier period with records is only "the period before".
+        let previous = CycleReportBaseline.make(current: now, priors: [figures(40), empty], window: 4, isInProgress: false)
+        #expect(previous?.kind == .previous)
+        #expect(previous?.deltaMs == -14 * hour)
+
+        #expect(CycleReportBaseline.make(current: now, priors: [empty, empty], window: 4, isInProgress: false) == nil)
+        // Where records began: a single day on file is not a usual to measure against.
+        let thin = CycleReportFigures(workdays: 1, workedMs: 8 * hour, overtimeMs: 0, income: nil)
+        #expect(CycleReportBaseline.make(current: now, priors: [thin, thin], window: 4, isInProgress: false) == nil)
+        #expect(CycleReportBaseline.make(current: now, priors: [figures(40), thin, thin], window: 4, isInProgress: false)?.kind == .previous)
+        #expect(CycleReportBaseline.make(current: empty, priors: [figures(40), figures(42)], window: 4, isInProgress: false) == nil)
+        #expect(CycleReportBaseline.make(current: now, priors: [figures(40), figures(42)], window: 4, isInProgress: true) == nil)
+        // Only the window counts: a fifth week back is not "your last four".
+        #expect(CycleReportBaseline.make(current: now, priors: [empty, empty, empty, empty, figures(40), figures(42)], window: 4, isInProgress: false) == nil)
+    }
+
+    @Test("Finish: late only where overtime was logged, early only where the person clocked off; too few days says nothing")
+    func finishDays() {
+        let calendar = Self.calendar()
+        func input(_ key: String, planned: Double, finished: Double?) -> CycleReportFinishInput {
+            .init(dayKey: key, date: RecordJSON.date(fromDayKey: key, calendar: calendar)!, plannedEndMs: planned, finishedAtMs: finished)
+        }
+        let end = 18.0 * 3_600_000
+        let finish = CycleReportFinish.make([
+            input("2026-09-21", planned: end, finished: nil),
+            input("2026-09-22", planned: end, finished: end + 80 * 60_000),
+            input("2026-09-23", planned: end, finished: end + 5 * 60_000),   // inside the tolerance
+            input("2026-09-24", planned: end, finished: end + 30 * 60_000),
+            input("2026-09-25", planned: end, finished: end - 90 * 60_000),
+        ])
+        #expect(finish?.recordedCount == 5)
+        #expect(finish?.lateCount == 2)
+        #expect(finish?.earlyCount == 1)
+        #expect(finish?.onScheduleCount == 3)
+        #expect(finish?.latest?.dayKey == "2026-09-22")
+        #expect(CycleReportFinish.make([input("2026-09-21", planned: end, finished: nil)]) == nil)
+    }
+
+    @Test("The next break is the first run of three rest days, counted from tomorrow")
+    func nextBreak() {
+        let calendar = Self.calendar()
+        func days(_ rest: [Bool]) -> [(dayKey: String, date: Date, isRest: Bool)] {
+            rest.enumerated().map { index, isRest in
+                let date = calendar.date(byAdding: .day, value: index + 1, to: Self.date(calendar, 2026, 9, 30))!
+                return (RecordJSON.dayKey(date, calendar: calendar), date, isRest)
+            }
+        }
+        // A two-day weekend first, then a four-day break.
+        let next = CycleReportAhead.findBreak(in: days([false, false, true, true, false, false, true, true, true, true, false]))
+        #expect(next?.length == 4)
+        #expect(next?.daysAway == 7)
+        #expect(next?.startDayKey == "2026-10-07")
+        #expect(CycleReportAhead.findBreak(in: days([false, true, true, false, true, true, false])) == nil)
+        #expect(CycleReportAhead.make(upcoming: days([false, true, false]), leaveUsedHalfDays: 0, leaveRemainingHalfDays: nil) == nil)
+        #expect(CycleReportAhead.make(upcoming: days([false, true, false]), leaveUsedHalfDays: 0, leaveRemainingHalfDays: 7)?.leaveRemainingHalfDays == 7)
+    }
+
+    @Test("Focus: busiest day, most common kind, and nothing under two rounds")
+    func focusRounds() {
+        let rounds: [(dayIndex: Int, ms: Int64, icon: FocusTaskIcon?)] = [
+            (1, 1_500_000, .code), (1, 1_500_000, .code), (3, 1_500_000, .writing), (3, 1_500_000, .code), (3, 1_500_000, nil),
+        ]
+        let focus = CycleReportFocus.make(rounds: rounds, dayCount: 7)
+        #expect(focus?.rounds == 5)
+        #expect(focus?.perDay == [0, 2, 0, 3, 0, 0, 0])
+        #expect(focus?.bestDayIndex == 3)
+        #expect(focus?.topIcon == .code)
+        #expect(CycleReportFocus.make(rounds: [(0, 1_500_000, .code)], dayCount: 7) == nil)
+    }
+
+    @Test("Pay as a rate; overtime adds only where the rules pay it")
+    func payReading() {
+        let figures = CycleReportFigures(workdays: 5, workedMs: 40 * hour, overtimeMs: 4 * hour, income: 4_400)
+        let paid = CycleReportPay.make(figures: figures, overtimeIsPaid: true)
+        #expect(paid?.perHour == 110)
+        #expect(paid?.overtimeExtra == 440)
+        let fixed = CycleReportPay.make(figures: figures, overtimeIsPaid: false)
+        #expect(fixed?.overtimeExtra == nil)
+        #expect(CycleReportPay.make(figures: .init(workdays: 5, workedMs: 40 * hour, overtimeMs: 0, income: nil), overtimeIsPaid: true) == nil)
+        #expect(CycleReportPay.make(figures: .init(workdays: 1, workedMs: hour / 2, overtimeMs: 0, income: 50), overtimeIsPaid: true)?.perHour == nil)
+    }
+
+    @Test("The headline follows plain rules and never an outcome word")
+    func headlines() {
+        let base = CycleReportFigures(workdays: 5, workedMs: 40 * hour, overtimeMs: 0, income: nil)
+        func baseline(_ delta: Int64) -> CycleReportBaseline {
+            .init(kind: .usual(periods: 4), baselineWorkedMs: 40 * hour, deltaMs: delta * hour)
+        }
+        func pick(_ b: CycleReportBaseline?, figures: CycleReportFigures = base, rest: Int = 2, run: Int = 2,
+                  next: CycleReportNextBreak? = nil, running: Bool = false) -> CycleReportHeadline {
+            CycleReportHeadline.choose(figures: figures, baseline: b, restDayCount: rest, longestRestRun: run, kind: .week, nextBreak: next, isInProgress: running)
+        }
+        #expect(pick(nil, running: true) == .inProgress)
+        #expect(pick(baseline(1)) == .steady)
+        #expect(pick(baseline(6)) == .fullStretch)
+        #expect(pick(baseline(-6)) == .lighter)
+        #expect(pick(nil) == .plain)
+        #expect(pick(nil, rest: 5, run: 3) == .roomToBreathe)
+        let soon = CycleReportNextBreak(startDayKey: "2026-10-01", startDate: .now, length: 4, daysAway: 3)
+        #expect(pick(baseline(3), next: soon) == .sprint)
+        #expect(pick(baseline(0), next: soon) == .steady)
+        let heavy = CycleReportFigures(workdays: 5, workedMs: 44 * hour, overtimeMs: 4 * hour, income: nil)
+        #expect(pick(nil, figures: heavy) == .fullStretch)
     }
 
     @Test("Pay is carried only until a report is told not to show it")
     func incomeIsStripped() {
         let figures = CycleReportFigures(workdays: 3, workedMs: 26 * hour, overtimeMs: 0, income: 1_800)
-        let snapshot = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, previous: nil, isInProgress: false)
+        let snapshot = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, isInProgress: false)
         #expect(snapshot.income == 1_800)
         let hidden = snapshot.withoutIncome()
         #expect(hidden.income == nil)
@@ -270,21 +374,30 @@ struct CycleReportTests {
         #expect(figures.workdays == 4 && figures.workedMs == 32 * hour && figures.income == nil)
         #expect(!CycleReportFigures(headline: nil).hasData)
         #expect(CycleReportStage.stages(for: CycleReportBuilder.snapshot(
-            period: week, cells: weekCells(), figures: .init(headline: nil), previous: nil, isInProgress: false
+            period: week, cells: weekCells(), figures: .init(headline: nil), isInProgress: false
         )).isEmpty)
     }
 
     @Test("Pages are told in order, and a page with nothing to say is left out")
     func stageOrder() {
         let base = CycleReportFigures(workdays: 3, workedMs: 26 * hour, overtimeMs: 0, income: nil)
-        let plain = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: base, previous: nil, isInProgress: false)
+        let plain = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: base, isInProgress: false)
         #expect(CycleReportStage.stages(for: plain) == [.calendar, .hours, .rest, .summary])
 
         var figures = base
         figures.income = 100
         let before = CycleReportFigures(workdays: 5, workedMs: 40 * hour, overtimeMs: 0, income: nil)
-        let full = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, previous: before, isInProgress: false)
-        #expect(CycleReportStage.stages(for: full) == [.calendar, .hours, .rest, .comparison, .income, .summary])
+        var extras = CycleReportExtras(priors: [before])
+        extras.finish = CycleReportFinish.make([
+            .init(dayKey: "2026-09-21", date: .now, plannedEndMs: 1, finishedAtMs: nil),
+            .init(dayKey: "2026-09-22", date: .now, plannedEndMs: 1, finishedAtMs: nil),
+        ])
+        extras.ahead = CycleReportAhead.make(upcoming: [], leaveUsedHalfDays: 0, leaveRemainingHalfDays: 4)
+        extras.focus = CycleReportFocus.make(rounds: [(0, 1, .code), (1, 1, .code)], dayCount: 7)
+        extras.overtimeIsPaid = true
+        let full = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, extras: extras, isInProgress: false)
+        #expect(CycleReportStage.stages(for: full) == [.calendar, .hours, .finish, .baseline, .rest, .ahead, .focus, .income, .summary])
+        #expect(CycleReportStage.stages(for: full.withoutIncome()) == [.calendar, .hours, .finish, .baseline, .rest, .ahead, .focus, .summary])
     }
 
     // MARK: Player
@@ -292,7 +405,7 @@ struct CycleReportTests {
     @MainActor
     private func player(autoplay: Bool = true) -> CycleReportPlayer {
         let figures = CycleReportFigures(workdays: 3, workedMs: 26 * hour, overtimeMs: 0, income: nil)
-        let snapshot = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, previous: nil, isInProgress: false)
+        let snapshot = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, isInProgress: false)
         return CycleReportPlayer(snapshot: snapshot, autoplay: autoplay, sleep: { _ in })
     }
 
@@ -337,7 +450,7 @@ struct CycleReportTests {
     func runLoop() async {
         let ticks = Ticks()
         let figures = CycleReportFigures(workdays: 3, workedMs: 26 * hour, overtimeMs: 0, income: nil)
-        let snapshot = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, previous: nil, isInProgress: false)
+        let snapshot = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, isInProgress: false)
         let player = CycleReportPlayer(snapshot: snapshot, sleep: { _ in }, now: { ticks.next() })
         await player.run()
         #expect(player.isLastStage && player.isBuilt && !player.isPlaying)
@@ -473,6 +586,18 @@ struct CycleReportTests {
         let fake = FakeCenter()
         await NotificationService(shiftCenter: fake.center).rescheduleCycleReports(shifts: runtime.shifts)
         #expect(fake.reportIDs.count == 1)
+    }
+
+    @Test("Pay a report was asked to show is not masked by the global hide setting")
+    @MainActor
+    func chosenPayIsNotMasked() throws {
+        let (runtime, _, cleanup) = try makeRuntime(plus: true)
+        defer { cleanup() }
+        runtime.preferences.hideEarnings = true
+        let copy = CycleReportCopy(text: runtime.text, queries: runtime.queries)
+        #expect(runtime.text.moneyText(1_234.5) == "••••")
+        #expect(copy.money(1_234.5) == runtime.text.formatMoney(1_234.5))
+        #expect(!copy.money(1_234.5).contains("•"))
     }
 
     @Test("The old 100% reminder no longer carries a cycle summary")

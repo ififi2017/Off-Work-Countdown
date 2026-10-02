@@ -2920,6 +2920,19 @@
     "replayCelebration": {
       "resource": "string/replayCelebration"
     },
+    "reportAheadBreak": {
+      "resource": "string/reportAheadBreak",
+      "params": [
+        "length",
+        "date"
+      ]
+    },
+    "reportAheadTitle": {
+      "resource": "string/reportAheadTitle"
+    },
+    "reportAheadTomorrow": {
+      "resource": "string/reportAheadTomorrow"
+    },
     "reportBasisNote": {
       "resource": "string/reportBasisNote"
     },
@@ -2956,6 +2969,66 @@
     "reportEntryWeek": {
       "resource": "string/reportEntryWeek"
     },
+    "reportFinishCaption": {
+      "resource": "string/reportFinishCaption"
+    },
+    "reportFinishEarly": {
+      "resource": "string/reportFinishEarly",
+      "params": [
+        "count"
+      ]
+    },
+    "reportFinishLatest": {
+      "resource": "string/reportFinishLatest",
+      "params": [
+        "day",
+        "duration"
+      ]
+    },
+    "reportFinishRatio": {
+      "resource": "string/reportFinishRatio",
+      "params": [
+        "done",
+        "total"
+      ]
+    },
+    "reportFinishTitle": {
+      "resource": "string/reportFinishTitle"
+    },
+    "reportFocusBest": {
+      "resource": "string/reportFocusBest",
+      "params": [
+        "day",
+        "count"
+      ]
+    },
+    "reportFocusRounds": {
+      "resource": "string/reportFocusRounds"
+    },
+    "reportFocusTop": {
+      "resource": "string/reportFocusTop"
+    },
+    "reportHeadlineFull": {
+      "resource": "string/reportHeadlineFull"
+    },
+    "reportHeadlineInProgress": {
+      "resource": "string/reportHeadlineInProgress"
+    },
+    "reportHeadlineLighter": {
+      "resource": "string/reportHeadlineLighter"
+    },
+    "reportHeadlinePlain": {
+      "resource": "string/reportHeadlinePlain"
+    },
+    "reportHeadlineRoom": {
+      "resource": "string/reportHeadlineRoom"
+    },
+    "reportHeadlineSprint": {
+      "resource": "string/reportHeadlineSprint"
+    },
+    "reportHeadlineSteady": {
+      "resource": "string/reportHeadlineSteady"
+    },
     "reportIncludeIncome": {
       "resource": "string/reportIncludeIncome"
     },
@@ -2968,11 +3041,23 @@
         "overtime"
       ]
     },
+    "reportIncomeExtra": {
+      "resource": "string/reportIncomeExtra"
+    },
     "reportIncomeNote": {
       "resource": "string/reportIncomeNote"
     },
     "reportIncomeTitle": {
       "resource": "string/reportIncomeTitle"
+    },
+    "reportIncomeTotal": {
+      "resource": "string/reportIncomeTotal"
+    },
+    "reportLeaveLeft": {
+      "resource": "string/reportLeaveLeft"
+    },
+    "reportLeaveUsed": {
+      "resource": "string/reportLeaveUsed"
     },
     "reportLongestRest": {
       "resource": "string/reportLongestRest"
@@ -3001,6 +3086,9 @@
     "reportPause": {
       "resource": "string/reportPause"
     },
+    "reportPerHour": {
+      "resource": "string/reportPerHour"
+    },
     "reportPlay": {
       "resource": "string/reportPlay"
     },
@@ -3027,6 +3115,39 @@
     },
     "reportUnavailable": {
       "resource": "string/reportUnavailable"
+    },
+    "reportUsualBasisMonth": {
+      "resource": "string/reportUsualBasisMonth",
+      "params": [
+        "count"
+      ]
+    },
+    "reportUsualBasisWeek": {
+      "resource": "string/reportUsualBasisWeek",
+      "params": [
+        "count"
+      ]
+    },
+    "reportUsualLess": {
+      "resource": "string/reportUsualLess",
+      "params": [
+        "duration"
+      ]
+    },
+    "reportUsualMonth": {
+      "resource": "string/reportUsualMonth"
+    },
+    "reportUsualMore": {
+      "resource": "string/reportUsualMore",
+      "params": [
+        "duration"
+      ]
+    },
+    "reportUsualSame": {
+      "resource": "string/reportUsualSame"
+    },
+    "reportUsualWeek": {
+      "resource": "string/reportUsualWeek"
     },
     "reportWeekly": {
       "resource": "string/reportWeekly"

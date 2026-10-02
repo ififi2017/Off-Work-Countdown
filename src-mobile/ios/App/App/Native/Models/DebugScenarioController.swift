@@ -66,8 +66,50 @@ final class DebugScenarioController {
             completedAt: now, sortIndex: 1, editedAt: now, editCount: 0,
             editTieBreaker: DebugRecordSeed.id(803)
         ))
+        seedReportExtras(today: today, calendar: calendar, zone: zone, now: now)
         return true
         }
+    }
+
+    /// Visual QA for the weekly and monthly reports: completed focus rounds of
+    /// a few kinds, and a leave balance with some of it spent.
+    private func seedReportExtras(today: Date, calendar: Calendar, zone: TimeZone, now: Date) {
+        let records = shifts.records
+        // Soft-deleted, so they only give the rounds their category and never
+        // show in the day's task list.
+        let icons: [FocusTaskIcon] = [.code, .writing, .meeting]
+        for (offset, icon) in icons.enumerated() {
+            records.upsertFocusTask(.init(
+                id: DebugRecordSeed.id(810 + offset), createdAt: now, plannedForDate: nil,
+                scheduledStartAt: nil, title: "Sample \(icon.rawValue)", estimatedPomodoros: 4,
+                icon: icon, completedAt: nil, deletedAt: now, sortIndex: 10 + offset, editedAt: now, editCount: 0,
+                editTieBreaker: DebugRecordSeed.id(820 + offset)
+            ))
+        }
+        var n = 0
+        for back in 1...40 {
+            guard let day = calendar.date(byAdding: .day, value: -back, to: today),
+                  (2...6).contains(calendar.component(.weekday, from: day)) else { continue }
+            let rounds = (back * 7 + 3) % 5
+            for round in 0..<rounds {
+                let started = calendar.date(bySettingHour: 10, minute: 15 * round * 2, second: 0, of: day) ?? day
+                let ended = started.addingTimeInterval(25 * 60)
+                records.upsertFocusSession(.init(
+                    id: DebugRecordSeed.id(1000 + n), taskID: DebugRecordSeed.id(810 + (n + back) % 3),
+                    shiftAnchorDate: day, startedAt: started, plannedEndAt: ended, endedAt: ended,
+                    endReason: .completed, editedAt: now, editCount: 0,
+                    editTieBreaker: DebugRecordSeed.id(5000 + n), kind: .focus,
+                    timeZoneIdentifier: zone.identifier,
+                    anchorDayKey: RecordJSON.dayKey(day, calendar: calendar),
+                    actualDurationSeconds: 25 * 60
+                ))
+                n += 1
+            }
+        }
+        records.upsertLeaveBalance(.init(
+            id: DebugRecordSeed.id(830), kind: .annual, name: nil,
+            entitledHalfDays: 20, usedHalfDays: 6, validFromDayKey: nil, validThroughDayKey: nil
+        ))
     }
 
     private func seedSampleWorkday(
@@ -79,6 +121,7 @@ final class DebugScenarioController {
         let stopMinutes: Int
         switch index {
         case 2: (startMinutes, stopMinutes) = (8 * 60 + 25, 18 * 60)
+        case 4: (startMinutes, stopMinutes) = (9 * 60, 16 * 60 + 30)
         case 5:
             _ = recordActions.markDayNotWorking(dayKey: dayKey).synchronousResult
             return
@@ -107,15 +150,16 @@ final class DebugScenarioController {
             shiftAnchorDate: day, occurredAt: stopped, snapshotID: snapshotID,
             timeZoneIdentifier: zone.identifier
         )
-        if index == 11 {
-            let overtimeEnd = calendar.date(bySettingHour: 20, minute: 30, second: 0, of: day) ?? day
+        if [1, 3, 11].contains(index) {
+            let lateHour = [1: (19, 40), 3: (20, 10), 11: (20, 30)][index] ?? (20, 30)
+            let overtimeEnd = calendar.date(bySettingHour: lateHour.0, minute: lateHour.1, second: 0, of: day) ?? day
             let plannedEnd = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: day) ?? stopped
             let payload = try? JSONEncoder().encode(OvertimeDeclarationPayload(
                 overtimeEndAtMs: overtimeEnd.timeIntervalSince1970 * 1_000,
                 plannedEndAtMs: plannedEnd.timeIntervalSince1970 * 1_000
             ))
             records.recordObservation(
-                kind: .overtimeDeclared, eventID: DebugRecordSeed.id(700),
+                kind: .overtimeDeclared, eventID: DebugRecordSeed.id(700 + index),
                 shiftAnchorDate: day, occurredAt: stopped, snapshotID: snapshotID,
                 valueData: payload, timeZoneIdentifier: zone.identifier
             )

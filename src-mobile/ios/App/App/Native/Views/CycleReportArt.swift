@@ -347,7 +347,7 @@ struct ReportRingArt: View {
             let count = max(1, days.count)
             let centre = CGPoint(x: size.width / 2, y: size.height / 2)
             let outer = min(size.width, size.height) / 2
-            let inner = outer * 0.52
+            let inner = outer * 0.58
             let peak = Double(max(1, days.map { $0.workMs + $0.overtimeMs }.max() ?? 1))
             let spoke = max(3, min(count <= 8 ? 30 : 14, 2 * .pi * inner / CGFloat(count) * 0.56))
             // Spokes are round-capped: leave the cap's radius inside the canvas.
@@ -389,6 +389,187 @@ struct ReportRingArt: View {
                 }
             }
         }
+        .accessibilityHidden(true)
+    }
+}
+
+// MARK: - Finish times
+
+/// Each recorded day as a dot against the line of its planned end: on the line
+/// when it ended as planned, below it with a trail when overtime pushed it
+/// later, above it when the person clocked off early.
+struct ReportFinishArt: View {
+    let finish: CycleReportFinish
+    /// Weekday symbols for a week; a month's dots are too small to label.
+    let labels: [String]
+    var build: Double
+
+    private static let lateReach: Double = 3 * 3_600_000
+
+    var body: some View {
+        Canvas { context, size in
+            let days = finish.days
+            guard !days.isEmpty else { return }
+            let slot = size.width / CGFloat(days.count)
+            let dot = max(10, min(30, slot * 0.5))
+            let lineY = size.height * 0.42
+            let drop = size.height * 0.46 - dot / 2
+            let rise = size.height * 0.30 - dot / 2
+
+            // The planned end: a quiet line the dots measure themselves against.
+            var line = Path(); line.move(to: CGPoint(x: 0, y: lineY)); line.addLine(to: CGPoint(x: size.width, y: lineY))
+            context.stroke(line, with: .color(.white.opacity(0.28 * ReportEase.window(build, 0, 0.2))),
+                           style: StrokeStyle(lineWidth: 1.5, dash: [5, 5]))
+
+            for (i, day) in days.enumerated() {
+                let t = ReportEase.staggered(ReportEase.window(build, 0.1, 1), index: i, count: days.count, span: 0.45)
+                guard t > 0 else { continue }
+                let x = slot * (CGFloat(i) + 0.5)
+                let land = ReportEase.outBack(t, 1.3)
+                var y = lineY
+                var trailColor: Gradient?
+                switch day.kind {
+                case .onPlan: break
+                case .late(let ms):
+                    y = lineY + CGFloat(min(1, Double(ms) / Self.lateReach)) * drop * CGFloat(ReportEase.outCubic(t)) + dot * 0.7
+                    trailColor = ReportPalette.overtime
+                case .early(let ms):
+                    y = lineY - CGFloat(min(1, Double(ms) / Self.lateReach)) * rise * CGFloat(ReportEase.outCubic(t)) - dot * 0.7
+                    trailColor = Gradient(colors: [ReportPalette.moon, ReportPalette.cream])
+                }
+                if let trailColor, abs(y - lineY) > 1 {
+                    var trail = Path(); trail.move(to: CGPoint(x: x, y: lineY)); trail.addLine(to: CGPoint(x: x, y: y))
+                    context.stroke(trail, with: .linearGradient(trailColor, startPoint: CGPoint(x: x, y: lineY), endPoint: CGPoint(x: x, y: y)),
+                                   style: StrokeStyle(lineWidth: max(3, dot * 0.22), lineCap: .round))
+                }
+                let radius = dot / 2 * CGFloat(0.5 + 0.5 * land)
+                let rect = CGRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2)
+                let fill: Gradient = switch day.kind {
+                case .onPlan: ReportPalette.work
+                case .late: ReportPalette.overtime
+                case .early: ReportPalette.rest
+                }
+                context.drawLayer { layer in
+                    layer.opacity = min(1, t * 2)
+                    layer.addFilter(.shadow(color: (day.kind == .onPlan ? ReportPalette.orange : ReportPalette.hot).opacity(0.5), radius: 8))
+                    layer.fill(Path(ellipseIn: rect), with: .linearGradient(fill, startPoint: CGPoint(x: x, y: rect.minY), endPoint: CGPoint(x: x, y: rect.maxY)))
+                }
+                if labels.indices.contains(i) {
+                    context.draw(
+                        Text(labels[i]).font(.caption.weight(.semibold)).foregroundStyle(.white.opacity(0.6 * min(1, t * 2))),
+                        at: CGPoint(x: x, y: size.height - 8), anchor: .center
+                    )
+                }
+            }
+        }
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+        .accessibilityHidden(true)
+    }
+}
+
+// MARK: - The road ahead
+
+/// The next four weeks as a row of days, rest days lit, with the coming break
+/// picked out. Left is tomorrow.
+struct ReportHorizonArt: View {
+    let ahead: CycleReportAhead
+    var build: Double
+    var time: Double
+
+    var body: some View {
+        Canvas { context, size in
+            let flags = ahead.horizon
+            guard !flags.isEmpty else { return }
+            let slot = size.width / CGFloat(flags.count)
+            let width = max(4, slot * 0.62)
+            let height: CGFloat = min(size.height * 0.6, 74)
+            let baseline = size.height * 0.72
+            let breakRange: Range<Int>? = ahead.nextBreak.map { ($0.daysAway - 1)..<($0.daysAway - 1 + $0.length) }
+
+            for (i, rest) in flags.enumerated() {
+                let t = ReportEase.outBack(ReportEase.staggered(ReportEase.window(build, 0, 0.8), index: i, count: flags.count, span: 0.35), 1.2)
+                guard t > 0 else { continue }
+                let inBreak = breakRange?.contains(i) ?? false
+                let lit = inBreak ? ReportEase.outCubic(ReportEase.window(build, 0.72, 1)) : 0
+                let h = (rest ? height * 0.78 : height * 0.5) * CGFloat(min(1.15, t))
+                let rect = CGRect(x: slot * (CGFloat(i) + 0.5) - width / 2, y: baseline - h, width: width, height: h)
+                let path = Path(roundedRect: rect, cornerRadius: width / 2)
+                if lit > 0.01 {
+                    context.drawLayer { layer in
+                        layer.addFilter(.blur(radius: 10))
+                        layer.fill(Path(roundedRect: rect.insetBy(dx: -width * 0.5, dy: -width * 0.5), cornerRadius: width),
+                                   with: .color(ReportPalette.gold.opacity(0.6 * lit * (1 + 0.1 * sin(time * 2.2 + Double(i))))))
+                    }
+                }
+                let base: Color = rest ? ReportPalette.moon.opacity(0.55) : .white.opacity(0.16)
+                context.fill(path, with: .color(base))
+                if lit > 0.01 {
+                    context.fill(path, with: .linearGradient(Gradient(colors: [ReportPalette.cream, ReportPalette.gold]),
+                                                             startPoint: CGPoint(x: 0, y: rect.minY), endPoint: CGPoint(x: 0, y: rect.maxY)))
+                }
+            }
+            if let range = breakRange, ReportEase.window(build, 0.72, 1) > 0 {
+                let progress = ReportEase.outCubic(ReportEase.window(build, 0.8, 1))
+                let x0 = slot * CGFloat(range.lowerBound) + slot * 0.1
+                let x1 = slot * CGFloat(range.upperBound) - slot * 0.1
+                var bracket = Path(); bracket.move(to: CGPoint(x: x0, y: baseline + 14))
+                bracket.addLine(to: CGPoint(x: ReportEase.lerp(x0, x1, progress), y: baseline + 14))
+                context.stroke(bracket, with: .color(ReportPalette.gold), style: StrokeStyle(lineWidth: 4, lineCap: .round))
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+// MARK: - Focus
+
+/// Completed focus rounds on each day, the best day picked out in gold.
+struct ReportFocusArt: View {
+    let focus: CycleReportFocus
+    let labels: [String]
+    var build: Double
+
+    var body: some View {
+        Canvas { context, size in
+            let counts = focus.perDay
+            let n = counts.count
+            guard n > 0 else { return }
+            let peak = CGFloat(max(1, counts.max() ?? 1))
+            let slot = size.width / CGFloat(n)
+            let width = max(4, min(40, slot * 0.6))
+            let labelBand: CGFloat = labels.isEmpty ? 0 : 26
+            let area = size.height - labelBand - 22
+            for (i, count) in counts.enumerated() {
+                let t = ReportEase.outBack(ReportEase.staggered(ReportEase.window(build, 0.05, 1), index: i, count: n, span: 0.5), 1.25)
+                let h = max(width, CGFloat(count) / peak * area) * CGFloat(max(0, t))
+                let rect = CGRect(x: slot * (CGFloat(i) + 0.5) - width / 2, y: size.height - labelBand - h, width: width, height: h)
+                let best = i == focus.bestDayIndex
+                let path = Path(roundedRect: rect, cornerRadius: width / 2)
+                if count == 0 {
+                    context.fill(Path(ellipseIn: CGRect(x: rect.midX - width / 2, y: size.height - labelBand - width, width: width, height: width)),
+                                 with: .color(.white.opacity(0.12)))
+                } else {
+                    if best {
+                        context.drawLayer { layer in
+                            layer.addFilter(.blur(radius: 12))
+                            layer.fill(path, with: .color(ReportPalette.gold.opacity(0.6)))
+                        }
+                    }
+                    context.fill(path, with: .linearGradient(
+                        best ? Gradient(colors: [ReportPalette.cream, ReportPalette.gold]) : Gradient(colors: [.white.opacity(0.55), .white.opacity(0.22)]),
+                        startPoint: CGPoint(x: 0, y: rect.minY), endPoint: CGPoint(x: 0, y: rect.maxY)))
+                    if t > 0.9, slot > 18 {
+                        context.draw(Text("\(count)").font(.footnote.weight(.bold).monospacedDigit()).foregroundStyle(.white.opacity(0.9)),
+                                     at: CGPoint(x: rect.midX, y: rect.minY - 12), anchor: .center)
+                    }
+                }
+                if labels.indices.contains(i) {
+                    context.draw(Text(labels[i]).font(.caption.weight(.semibold)).foregroundStyle(.white.opacity(0.6)),
+                                 at: CGPoint(x: slot * (CGFloat(i) + 0.5), y: size.height - 8), anchor: .center)
+                }
+            }
+        }
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
         .accessibilityHidden(true)
     }
 }
