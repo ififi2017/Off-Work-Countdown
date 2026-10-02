@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Luggage
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Payments
@@ -69,6 +70,8 @@ import com.rainif.doneat.ui.components.RowDivider
 import com.rainif.doneat.ui.components.SettingsFooter
 import com.rainif.doneat.ui.components.SettingsGroup
 import com.rainif.doneat.ui.components.SwitchRow
+import com.rainif.doneat.ui.leave.leaveSummaryHalfDays
+import com.rainif.doneat.ui.timer.TimerText
 import org.json.JSONArray
 
 /** Applies an edit to the settings; the repository drops edits that change nothing. */
@@ -107,6 +110,14 @@ object SettingsLabels {
             else -> R.string.monthly
         },
     )
+
+    /** What is left across every leave balance; nothing before the first one. */
+    @Composable
+    fun leave(records: RecordState): String? {
+        val halfDays = records.leaveSummaryHalfDays() ?: return null
+        val resources = LocalResources.current
+        return TimerText(resources, resources.configuration.locales[0], use24Hour = false, hideEarnings = false).days(halfDays / 2.0)
+    }
 
     @Composable
     fun notificationMode(mode: String) = stringResource(
@@ -156,6 +167,8 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, open: (Route)
             NavigationRow(stringResource(R.string.workSchedule), { open(Route.Schedule) }, Icons.Outlined.EditCalendar, SettingsLabels.schedule(p, records))
             RowDivider()
             NavigationRow(stringResource(R.string.salarySettings), { open(Route.Salary) }, Icons.Outlined.Payments, SettingsLabels.salary(p))
+            RowDivider()
+            NavigationRow(stringResource(R.string.leaveTitle), { open(Route.Leave()) }, Icons.Outlined.Luggage, SettingsLabels.leave(records))
         }
         SettingsGroup(stringResource(R.string.remindersSection)) {
             NavigationRow(stringResource(R.string.shiftReminders), { open(Route.Notifications) }, Icons.Outlined.NotificationsActive, SettingsLabels.notificationMode(p.notificationMode))

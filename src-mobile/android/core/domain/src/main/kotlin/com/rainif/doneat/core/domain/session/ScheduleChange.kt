@@ -414,16 +414,20 @@ fun ShiftSession.rulesInputApplying(c: ScheduleFieldChange, nowMs: Double): Sche
     } else {
         null
     }
+    val hours = ScheduleHours(
+        startTime = ShiftSession.timeString(c.startMinutes ?: p.startMinutes),
+        endTime = ShiftSession.timeString(c.endMinutes ?: p.endMinutes),
+        workdays = (c.workdays ?: p.workdays.toSet()).sorted(),
+        schedule = workScheduleApplying(c, nowMs),
+        breakStartTime = if (lunchOn) ShiftSession.timeString(c.lunchStartMinutes ?: p.lunchStartMinutes) else null,
+        breakDurationMinutes = if (lunchOn) c.lunchDurationMinutes ?: p.lunchDurationMinutes else 0,
+    )
+    // The saved draft keeps the adopted leave, as the live input does.
+    val leaveBase = com.rainif.doneat.core.domain.schedule.ExtendedScheduleDayHours(
+        hours.startTime, hours.endTime, hours.breakStartTime, hours.breakDurationMinutes,
+    )
     return ScheduleRuleInput(
-        hours = ScheduleHours(
-            startTime = ShiftSession.timeString(c.startMinutes ?: p.startMinutes),
-            endTime = ShiftSession.timeString(c.endMinutes ?: p.endMinutes),
-            workdays = (c.workdays ?: p.workdays.toSet()).sorted(),
-            schedule = workScheduleApplying(c, nowMs),
-            breakStartTime = if (lunchOn) ShiftSession.timeString(c.lunchStartMinutes ?: p.lunchStartMinutes) else null,
-            breakDurationMinutes = if (lunchOn) c.lunchDurationMinutes ?: p.lunchDurationMinutes else 0,
-            extended = extended,
-        ),
+        hours = hours.copy(extended = env.planApplyingLeave(extended, leaveBase)),
         nowMs = nowMs,
         zone = countdownZone,
         forcedWorkdayStartMs = forcedWorkdayStartMs,

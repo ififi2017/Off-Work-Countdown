@@ -116,6 +116,8 @@ fun AppShell(graph: AppGraph) {
             PlusPendingAction.CycleSummary -> graph.scope.launch {
                 graph.settings.edit { it.copy(cycleEndSummaryNotificationEnabled = true) }
             }
+            // The options stay underneath, so Back from the plan returns to them.
+            is PlusPendingAction.LeavePlan -> source.add(Route.LeavePlanDetail(action.index))
         }
     }
     val requestedTab by graph.requestedTab.collectAsStateWithLifecycle()
@@ -330,6 +332,23 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
         }
         Route.About -> AboutScreen(open, back) { com.rainif.doneat.plus.PlusDebugSection(graph.plus) }
         Route.Acknowledgements -> AcknowledgementsScreen(back)
+        is Route.Leave -> com.rainif.doneat.ui.leave.LeaveScreen(graph, key.fromRecords, open, back)
+        is Route.LeaveBalanceEdit -> com.rainif.doneat.ui.leave.LeaveBalanceEditScreen(graph, key.balanceID, key.guided, back) {
+            // A first balance set up from Records opens the time off page in the editor's place.
+            if (key.guided && stack.lastOrNull() == key) {
+                stack.removeAt(stack.lastIndex)
+                stack.add(Route.Leave(fromRecords = true))
+            } else back()
+        }
+        Route.LeavePlanner -> com.rainif.doneat.ui.leave.LeavePlannerScreen(graph, open, back)
+        Route.LeavePlanResults -> com.rainif.doneat.ui.leave.LeavePlanResultsScreen(graph, open, back)
+        is Route.LeavePlanDetail -> com.rainif.doneat.ui.leave.LeavePlanDetailScreen(graph, key.index, back) {
+            // Adopted: back to the page the planner was opened from.
+            while (stack.size > 1 && stack.last().let { it is Route.LeavePlanner || it is Route.LeavePlanResults || it is Route.LeavePlanDetail }) {
+                stack.removeAt(stack.lastIndex)
+            }
+        }
+        is Route.LeaveAdoptedPlan -> com.rainif.doneat.ui.leave.AdoptedLeavePlanScreen(graph, key.planID, back)
         else -> PendingScreen("", back, settingsLabel)
     }
 }

@@ -35,6 +35,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material.icons.outlined.Luggage
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -94,6 +95,7 @@ fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
             is PlusPendingAction.FocusCreate, PlusPendingAction.FocusHome -> R.string.focusTitle
             is PlusPendingAction.RecordsDay, PlusPendingAction.RecordsLifeEdit, PlusPendingAction.RecordsCharts -> R.string.recordsTab
             PlusPendingAction.CycleSummary, null -> R.string.settings
+            is PlusPendingAction.LeavePlan -> R.string.leaveResultsTitle
         })
 }
 
@@ -270,6 +272,7 @@ private fun PlusBenefits() {
         Icons.Outlined.GridView to R.string.plusBenefitLife,
         Icons.Outlined.Edit to R.string.plusBenefitEdit,
         Icons.Outlined.Timer to R.string.plusBenefitFocus,
+        Icons.Outlined.Luggage to R.string.plusBenefitLeave,
     )
     Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {
         Column {

@@ -70,6 +70,6 @@ object RecordHistory {
         val period = DayRecordResolver.period(dayKey, state.periods)
         val snapshot = period?.let { DayRecordResolver.snapshot(dayKey, it, state.snapshots) }
         val expansion = if (period != null && snapshot != null) expansion(state, snapshot, period, dayKey, holidays) else ScheduleExpansion.NONE
-        return DayRecordResolver.resolve(dayKey, period, snapshot, DayRecordLookup(state.exceptions, state.overrides), expansion)
+        return DayRecordResolver.resolve(dayKey, period, snapshot, DayRecordLookup(state.exceptions, state.overrides, state.leaveDays), expansion)
     }
 }

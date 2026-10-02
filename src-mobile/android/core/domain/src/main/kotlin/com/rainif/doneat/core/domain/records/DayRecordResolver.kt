@@ -1,5 +1,7 @@
 package com.rainif.doneat.core.domain.records
 
+import com.rainif.doneat.core.domain.leave.LeaveShiftHalves
+import com.rainif.doneat.core.domain.schedule.LeavePortion
 import com.rainif.doneat.core.domain.schedule.ShiftSegment
 
 /** Which layer produced a day's conclusion — the source marker every record UI shows. */
@@ -46,7 +48,7 @@ data class DayResolution(
  * decided once rather than per resolved day. It asks [DayRecordResolver] for
  * the winners, so there is still one definition of which row wins.
  */
-class DayRecordLookup(exceptions: List<CalendarException>, overrides: List<DayOverride>) {
+class DayRecordLookup(exceptions: List<CalendarException>, overrides: List<DayOverride>, leaveDays: List<LeaveDay> = emptyList()) {
     private val exceptions: Map<String, CalendarException> = exceptions
         .groupBy { it.dayKey.substringBefore('#') }
         .mapNotNull { (date, bucket) -> DayRecordResolver.exception(date, bucket)?.let { date to it } }
@@ -55,7 +57,12 @@ class DayRecordLookup(exceptions: List<CalendarException>, overrides: List<DayOv
     // First row per key wins, as `first(where:)` does, including a cleared one.
     private val overrides: Map<String, DayOverride> = overrides.reversed().associateBy { it.dayKey }
 
+    // Adopted leave (plan 020), first row per key.
+    private val leave: Map<String, LeavePortion> = leaveDays.portionsByDay()
+
     fun exception(dayKey: String) = exceptions[dayKey]
+
+    fun leavePortion(dayKey: String) = leave[dayKey]
 
     /** Null when missing or cleared, so the chain falls through. */
     fun dayOverride(dayKey: String) = overrides[dayKey]?.takeIf { it.kind != DayOverrideKind.CLEARED }
@@ -64,7 +71,7 @@ class DayRecordLookup(exceptions: List<CalendarException>, overrides: List<DayOv
 /**
  * Read-time resolution (iOS `DayRecordResolver`). The order is fixed: an
  * active day override, else a calendar exception, else the winning schedule
- * snapshot. `cleared` on either layer falls through rather than leaving a
+ * snapshot, with adopted leave laid over the latter two. `cleared` on either layer falls through rather than leaving a
  * layer of its own. Observations are never consulted: they are evidence, not
  * plan. Day keys and period bounds are civil-date labels, so comparing them
  * as strings is comparing dates.
@@ -109,11 +116,12 @@ object DayRecordResolver {
         snapshots: List<ScheduleSnapshot>,
         exceptions: List<CalendarException>,
         overrides: List<DayOverride>,
+        leaveDays: List<LeaveDay> = emptyList(),
         expand: (ScheduleSnapshot) -> ScheduleExpansion,
     ): DayResolution {
         val period = period(dayKey, periods)
         val snapshot = period?.let { snapshot(dayKey, it, snapshots) }
-        return resolve(dayKey, period, snapshot, DayRecordLookup(exceptions, overrides), snapshot?.let(expand) ?: ScheduleExpansion.NONE)
+        return resolve(dayKey, period, snapshot, DayRecordLookup(exceptions, overrides, leaveDays), snapshot?.let(expand) ?: ScheduleExpansion.NONE)
     }
 
     /** The same chain with its lookups already done, for walking a range. */
@@ -144,15 +152,33 @@ object DayRecordResolver {
                 return result(DayResolutionLayer.OVERRIDE, plan.isWorkday, if (plan.isWorkday) plan.segments else emptyList())
             DayOverrideKind.CLEARED, null -> Unit
         }
-        if (exception != null) {
+        val planned = if (exception != null) {
             val isWorkday = exception.effect == CalendarEffect.WORK
             // The exception's base is the raw expansion, whether or not a snapshot supplied it.
-            return result(
+            result(
                 DayResolutionLayer.CALENDAR_EXCEPTION, isWorkday, if (isWorkday) plan.segments else emptyList(),
                 baseWorkday = plan.isWorkday, base = if (plan.isWorkday) plan.segments else emptyList(),
             )
+        } else {
+            if (snapshot == null && !plan.hasPlannedRoster) return empty
+            result(DayResolutionLayer.SCHEDULE, plan.isWorkday, if (plan.isWorkday) plan.segments else emptyList())
         }
-        if (snapshot == null && !plan.hasPlannedRoster) return empty
-        return result(DayResolutionLayer.SCHEDULE, plan.isWorkday, if (plan.isWorkday) plan.segments else emptyList())
+        return applyingLeave(lookup.leavePortion(dayKey), planned)
+    }
+
+    /**
+     * Adopted leave (plan 020) frees whatever the day was planned to work,
+     * holiday makeup days included; on a rest day it changes nothing. It reads
+     * as a correction, like leave marked by hand, while the base schedule
+     * underneath stays for income.
+     *
+     * Halves split the planned segments by elapsed working time. The live
+     * rules split by wall-clock minutes, which differs only when a DST change
+     * falls inside the shift.
+     */
+    private fun applyingLeave(portion: LeavePortion?, planned: DayResolution): DayResolution {
+        if (portion == null || !planned.isScheduledWorkday || planned.segments.isEmpty()) return planned
+        val segments = if (portion == LeavePortion.WHOLE) emptyList() else LeaveShiftHalves(planned.segments).remaining(portion)
+        return planned.copy(layer = DayResolutionLayer.OVERRIDE, segments = segments, isScheduledWorkday = segments.isNotEmpty())
     }
 }

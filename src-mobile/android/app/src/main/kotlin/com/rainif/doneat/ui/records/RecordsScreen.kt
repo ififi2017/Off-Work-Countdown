@@ -28,6 +28,7 @@ import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.ListAlt
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Luggage
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material.icons.outlined.CloseFullscreen
@@ -58,6 +59,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
@@ -123,6 +125,25 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         val loaded = withContext(Dispatchers.Default) { loadPage(context, scale, anchor) }
         page = loaded
         if (selectedDayKey != null && loaded.cells.none { it.dayKey == selectedDayKey }) selectedDayKey = null
+    }
+
+    // Plan 020 §5: recorded overtime is open to free users as one number. Plus
+    // reads it inside its summary, so only Life and free periods load it here.
+    var overtime by remember { mutableStateOf<RecordedOvertime?>(null) }
+    LaunchedEffect(context, scale, anchor) {
+        val q = context.queries
+        if (scale != RecordsScale.LIFE && q.authorized) return@LaunchedEffect
+        val first = q.window(scale, anchor).first
+        val ms = withContext(Dispatchers.Default) {
+            if (scale == RecordsScale.LIFE) {
+                q.lifetimeRecordedOvertimeMs(context.nowMs)
+            } else {
+                val last = q.window(scale, anchor).second
+                val days = q.displayDays(first.minusDays(1), last, context.nowMs)
+                q.recordedOvertimeMs(days, days.map { it.dayKey }.filter { it >= first.toString() }.toSet(), context.nowMs)
+            }
+        }
+        overtime = RecordedOvertime(context, scale, first, ms)
     }
 
     // Life's allocation walks a whole career, so it is built once per revision and only while Life is shown.
@@ -225,6 +246,10 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
             { selectMonth(it) }, { openMonth(it) },
             onUnlock = { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsCharts)) }, life = life,
             onExpand = { expanded = !expanded },
+            onPlanLeave = {
+                if (graph.records.state.value.leaveBalances.isEmpty()) open(Route.LeaveBalanceEdit(null, guided = true))
+                else open(Route.Leave(fromRecords = true))
+            },
             onPinch = { zoom ->
                 if (zoom > 1.22f) {
                     if (scale == RecordsScale.YEAR) openMonth(month) else setScale(scale.zoomedIn)
@@ -239,9 +264,16 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                 val loaded = lifeModel?.takeIf { it.first == context.lifeInputs }
                 LifeAllocationCard(loaded?.second, loading = loaded == null, decline = profile.futureIncomeDecline, text = text)
             }
+            val overtimeMs = overtime?.takeIf {
+                it.context == context && it.scale == scale && it.first == context.queries.window(scale, anchor).first
+            }?.milliseconds
+            // Life totals only overtime actually recorded, for everyone; the projected career never adds to it.
+            if (scale == RecordsScale.LIFE && overtimeMs != null) OvertimeLine(text, overtimeMs)
             if (context.queries.authorized && profile == null && !device.lifeSetupPromptDismissed && scale == RecordsScale.MONTH) {
                 LifeSetupCard(text, { editLife() }, { dismissLifeSetup() })
             }
+            // A free user gets just this line, under the canvas or its locked placeholder.
+            if (scale != RecordsScale.LIFE && !context.queries.authorized && overtimeMs != null) OvertimeLine(text, overtimeMs)
             // As on iOS, a period without a summary shows none: locked, or nothing recorded yet.
             val headline = current?.headline
             if (scale != RecordsScale.LIFE && current != null && headline != null) {
@@ -368,6 +400,7 @@ private fun ChartCard(
     life: @Composable () -> Unit,
     onExpand: () -> Unit,
     onPinch: (Float) -> Unit,
+    onPlanLeave: () -> Unit,
 ) {
     val text = context.text
     val (first, last) = context.queries.window(scale, anchor)
@@ -472,7 +505,26 @@ private fun ChartCard(
                 }
             }
             MarkLegend(includesLock = !context.queries.authorized, text = text)
+            if (scale == RecordsScale.MONTH) LeavePlanningEntry(text, onPlanLeave)
         }
+    }
+}
+
+/**
+ * Plan 020: time off from the month being looked at (iOS `leavePlanningEntry`).
+ * A first visit without any leave balance sets one up before the page opens.
+ */
+@Composable
+private fun LeavePlanningEntry(text: RecordsText, onClick: () -> Unit) {
+    val accent = MaterialTheme.colorScheme.primary
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 44.dp).clickable(role = Role.Button, onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(Icons.Outlined.Luggage, null, Modifier.size(18.dp), tint = accent)
+        Text(text.string(R.string.leavePlanAction), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = accent)
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -565,6 +617,22 @@ private fun HeadlineCard(context: RecordsContext, title: String, summary: Record
                 HelpButton(title, context.text.string(R.string.recordsSummaryHelp))
             }
             HeadlineContent(context.text, summary)
+        }
+    }
+}
+
+/** One loaded overtime total, kept with the revision and window it answers. */
+private data class RecordedOvertime(val context: RecordsContext, val scale: RecordsScale, val first: LocalDate, val milliseconds: Double?)
+
+/**
+ * Recorded overtime for the period as one line (iOS `RecordsOvertimeLine`).
+ * Open to free users, so it is given the total alone and nothing it was made from.
+ */
+@Composable
+private fun OvertimeLine(text: RecordsText, milliseconds: Double) {
+    RecordsCard {
+        Box(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+            Metric(text.string(R.string.recordsOvertimeRecorded), text.duration(milliseconds))
         }
     }
 }

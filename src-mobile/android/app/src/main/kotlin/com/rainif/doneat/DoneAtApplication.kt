@@ -104,6 +104,9 @@ class AppGraph(app: Application) {
     /** The Life profile editor's unsaved fields, likewise. */
     val lifeEditDraft = MutableStateFlow<LifeProfileDraft?>(null)
 
+    /** The leave planner's last options, which its results and plan pages read by index. */
+    val leaveProposals = MutableStateFlow<List<com.rainif.doneat.core.domain.leave.LeavePlanProposal>?>(null)
+
     private val _loaded = MutableStateFlow(false)
     /** False until the archive has been read: until then nothing can tell setup from a restored install. */
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()

@@ -56,9 +56,19 @@ data class DeviceSettings(
     val ongoingLeadMinutes: Int = 15,
     /** The running focus phase in a notification (iOS's focus Live Activity); on by default, as on iOS. */
     val focusOngoingEnabled: Boolean = true,
+    /**
+     * Plan 020's free leave plans used on this device: searching is free, and
+     * each time a free user opens a plan's details one of three is used, the
+     * same plan again included. Never synced or put in the archive; like iOS's
+     * UserDefaults it comes back with a device backup and nowhere else.
+     */
+    val leavePlannerTrialsUsed: Int = 0,
 ) {
+    val leavePlannerTrialsLeft get() = maxOf(0, LEAVE_PLANNER_FREE_TRIALS - leavePlannerTrialsUsed)
+
     companion object {
         val ONGOING_LEAD_MINUTES = listOf(5, 15, 30)
+        const val LEAVE_PLANNER_FREE_TRIALS = 3
     }
 }
 
@@ -99,6 +109,7 @@ class DeviceSettingsStore(private val file: Path) {
             ongoingEnabled = bool("ongoingEnabled", false),
             ongoingLeadMinutes = o["ongoingLeadMinutes"]?.jsonPrimitive?.intOrNull?.takeIf { it in DeviceSettings.ONGOING_LEAD_MINUTES } ?: 15,
             focusOngoingEnabled = bool("focusOngoingEnabled", true),
+            leavePlannerTrialsUsed = o["leavePlannerTrialsUsed"]?.jsonPrimitive?.intOrNull?.coerceAtLeast(0) ?: 0,
         )
     }.getOrElse { DeviceSettings() }
 
@@ -119,6 +130,7 @@ class DeviceSettingsStore(private val file: Path) {
             "ongoingEnabled" to JsonPrimitive(s.ongoingEnabled),
             "ongoingLeadMinutes" to JsonPrimitive(s.ongoingLeadMinutes),
             "focusOngoingEnabled" to JsonPrimitive(s.focusOngoingEnabled),
+            "leavePlannerTrialsUsed" to JsonPrimitive(s.leavePlannerTrialsUsed),
         ),
     ).toString()
 }

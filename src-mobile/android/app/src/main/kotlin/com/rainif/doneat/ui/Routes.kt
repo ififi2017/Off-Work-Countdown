@@ -52,6 +52,18 @@ sealed interface Route : NavKey {
     /** The schedule page's shift types, edited within its draft. */
     @Serializable data object ShiftTypes : Route
     @Serializable data class ShiftTypeEdit(val id: String, val isNew: Boolean) : Route
+
+    /**
+     * Time off (plan 020): balances and adopted plans, from Settings or Records;
+     * a balance (new when [balanceID] is null; [guided] when Records asks for
+     * the first one); the planner's form, its options, one option, one adopted plan.
+     */
+    @Serializable data class Leave(val fromRecords: Boolean = false) : Route
+    @Serializable data class LeaveBalanceEdit(val balanceID: String?, val guided: Boolean = false) : Route
+    @Serializable data object LeavePlanner : Route
+    @Serializable data object LeavePlanResults : Route
+    @Serializable data class LeavePlanDetail(val index: Int) : Route
+    @Serializable data class LeaveAdoptedPlan(val planID: String) : Route
 }
 
 @Serializable
@@ -62,6 +74,8 @@ sealed interface PlusPendingAction {
     @Serializable data object RecordsLifeEdit : PlusPendingAction
     @Serializable data object RecordsCharts : PlusPendingAction
     @Serializable data object CycleSummary : PlusPendingAction
+    /** One of the planner's options, opened once the free views are used up. */
+    @Serializable data class LeavePlan(val index: Int) : PlusPendingAction
 }
 
 val AppTab.root: Route
