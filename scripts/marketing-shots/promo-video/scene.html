@@ -1,0 +1,1349 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>DoneAt Promo</title>
+<style>
+  :root {
+    --orange: #F45A1E; --orange-bright: #FF9A45; --cream: #FFF1D8; --plum: #2B1935;
+    --ink: #1c1c1e; --gray: #8a8a8e; --gray2: #aeaeb2; --sep: #e5e5ea;
+    --sans: -apple-system, "SF Pro Display", "PingFang SC", "Helvetica Neue", sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+  body { font-family: var(--sans); -webkit-font-smoothing: antialiased; font-kerning: normal; }
+  #stage { position: absolute; inset: 0; overflow: hidden; }
+  .abs { position: absolute; }
+  .layer { position: absolute; inset: 0; }
+  .num { font-variant-numeric: tabular-nums; }
+  .en { font-family: "Helvetica Neue", Helvetica, sans-serif; font-weight: 400; }
+  .tp { margin-right: -.5em; }
+
+  /* page backgrounds */
+  #bg-cream { background: radial-gradient(120% 70% at 50% 38%, #FFF8EC 0%, #FFF1D8 55%, #FBE6C6 100%); }
+  #bg-dark { background: radial-gradient(90% 55% at 50% 22%, #2a1733 0%, #140c1a 60%, #0b070e 100%); }
+  #bg-evening { background: radial-gradient(80% 50% at 20% 10%, #4a2656 0%, transparent 60%),
+    radial-gradient(70% 45% at 85% 80%, #5a2320 0%, transparent 65%),
+    linear-gradient(170deg, #3B2048 0%, #241530 50%, #1D1329 100%); }
+
+  /* rolling digits */
+  .roll { display: inline-flex; align-items: baseline; white-space: pre; }
+  .slot { position: relative; display: inline-block; width: 1ch; text-align: center; }
+  .slot > span { position: absolute; left: 0; right: 0; top: 0; will-change: transform, opacity; }
+  .slot > .sizer { position: static; visibility: hidden; }
+  .lit { display: inline-block; }
+
+  /* centred display lines */
+  .a1 { position: absolute; left: 0; right: 0; text-align: center; color: #FFF1D8; }
+  .grad { background: linear-gradient(95deg, #FF9A45 0%, #F45A1E 55%, #E8453C 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* office */
+  #o-svg { position: absolute; left: 0; top: 0; }
+  #o-unknown { position: absolute; left: 230px; top: 610px; width: 620px; padding: 26px 40px 34px; border-radius: 36px; background: rgba(14,18,28,.6); color: #FFF1D8; }
+  .u-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 38px; font-weight: 600; }
+  .u-q { font-size: 64px; font-weight: 700; color: #FF9A45; }
+  .u-bar { position: relative; margin-top: 18px; height: 18px; border-radius: 9px; background: rgba(255,241,216,.12); overflow: hidden; }
+  .u-stripes { position: absolute; top: 0; bottom: 0; left: -60px; right: 0; background: repeating-linear-gradient(-45deg, rgba(255,241,216,.2) 0 14px, transparent 14px 28px); }
+  #confetti { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  .shot { width: 215px; height: 467px; border-radius: 18px; object-fit: cover; box-shadow: 0 0 0 .5px rgba(0,0,0,.1); }
+  #tap { position: absolute; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 23px; background: rgba(60,60,67,.28); box-shadow: 0 0 0 2px rgba(255,255,255,.7); opacity: 0; }
+  #scr-store { background: #fff; }
+
+  /* brand reveal */
+  #rv-mark { left: 390px; top: 610px; width: 300px; height: 300px; }
+  #rv-word { top: 950px; font-size: 104px; font-weight: 700; letter-spacing: -2px; color: #2B1935; }
+  #rv-slogan { top: 1105px; font-size: 64px; font-weight: 600; color: #2B1935; letter-spacing: 1px; }
+
+  /* captions */
+  .cap { position: absolute; left: 60px; right: 60px; top: 180px; text-align: center; }
+  .cap h1 { font-size: 80px; font-weight: 700; letter-spacing: -1px; color: #2B1935; line-height: 1.2; }
+  .cap p { margin-top: 22px; font-size: 38px; font-weight: 500; color: rgba(43,25,53,.58); }
+  .cap.dark h1 { color: #FFF1D8; }
+  .cap.dark p { color: rgba(255,241,216,.66); }
+
+  /* phone */
+  #phone { position: absolute; left: 210px; top: 520px; width: 660px; height: 1346.94px; transform-origin: 50% 0; }
+  #phone .frame { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #phone .hole { position: absolute; left: 5.102041%; top: 2.2%; width: 89.795918%; height: 95.6%;
+    border-radius: 14.4% / 6.62%; overflow: hidden; background: #F2F2F7; }
+  .screen { position: absolute; left: 0; top: 0; width: 440px; height: 956px; transform-origin: 0 0; }
+  .scr { position: absolute; inset: 0; overflow: hidden; }
+  .phone-shadow { position: absolute; left: 6%; right: 6%; top: 6%; bottom: 2%; border-radius: 90px;
+    box-shadow: 0 60px 120px rgba(80,40,10,.28), 0 20px 40px rgba(80,40,10,.12); }
+
+  /* iOS status bar */
+  .sb { position: absolute; left: 0; right: 0; top: 0; height: 54px; font-size: 17px; font-weight: 600; color: #000; }
+  .sb .time { position: absolute; left: 50px; top: 20px; width: 70px; text-align: center; letter-spacing: -.2px; }
+  .sb .icons { position: absolute; right: 36px; top: 21px; display: flex; gap: 7px; align-items: center; }
+  .sb.light { color: #fff; }
+
+  /* timer screen */
+  #scr-timer { background: #F2F2F7; }
+  .glasspill { position: absolute; left: 306px; top: 62px; width: 114px; height: 44px; border-radius: 22px;
+    background: rgba(255,255,255,.75); box-shadow: 0 4px 16px rgba(0,0,0,.08), inset 0 0 0 .5px rgba(0,0,0,.08);
+    display: flex; align-items: center; justify-content: space-around; padding: 0 6px; }
+  #t-count { position: absolute; left: 0; right: 0; top: 128px; text-align: center; font-size: 57px; font-weight: 700; color: #000; letter-spacing: -.5px; line-height: 70px; }
+  #t-label { position: absolute; left: 0; right: 0; top: 206px; text-align: center; font-size: 15px; color: var(--gray); display: flex; justify-content: center; gap: 6px; align-items: center; height: 20px; }
+  .track { position: absolute; left: 20px; width: 400px; top: 259px; height: 8px; border-radius: 4px; background: #E3E3E8; }
+  .track .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #F25A14; }
+  .bubble { position: absolute; top: 231px; height: 21px; padding: 0 9px; border-radius: 11px; background: #F25A14; color: #fff; font-size: 13.5px; font-weight: 600; line-height: 21px; transform: translateX(-50%); white-space: nowrap; }
+  .bubble::after { content: ""; position: absolute; left: 50%; bottom: -4px; margin-left: -4px; border: 4px solid transparent; border-bottom: 0; border-top-color: inherit; }
+  .sec { position: absolute; left: 36px; font-size: 13px; color: #86868b; }
+  .card { position: absolute; left: 17px; width: 406px; background: #fff; border-radius: 22px; overflow: hidden; }
+  .row { position: absolute; left: 0; right: 0; display: flex; align-items: center; }
+  .row .ic { position: absolute; left: 14px; width: 22px; height: 22px; color: #8e8e93; }
+  .row .tt { position: absolute; left: 46px; font-size: 17px; color: #000; }
+  .row .vv { position: absolute; right: 16px; font-size: 16px; color: #8e8e93; }
+  .row.sep::after { content: ""; position: absolute; left: 46px; right: 0; bottom: 0; height: .5px; background: #E0E0E5; }
+  .nrow .dot { position: absolute; left: 15px; width: 32px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+  .nrow .tt { left: 60px; top: 9px; }
+  .nrow .st { position: absolute; left: 60px; top: 32px; font-size: 13px; color: #8e8e93; }
+  .nrow .vv { font-size: 17px; }
+  .nrow.sep::after { left: 60px; }
+  .btn { position: absolute; top: 809px; height: 48px; border-radius: 16px; background: #E6E6EB; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; font-weight: 600; color: #1c1c1e; }
+  .tabbar { position: absolute; left: 21px; top: 873px; width: 398px; height: 61px; border-radius: 31px; background: rgba(250,250,252,.92);
+    box-shadow: 0 6px 24px rgba(0,0,0,.08), inset 0 0 0 .5px rgba(0,0,0,.1); }
+  .tab { position: absolute; top: 0; height: 61px; width: 94px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10.5px; font-weight: 600; color: #1c1c1e; }
+  .tab.on { color: #F25A14; }
+  .tabsel { position: absolute; left: 5px; top: 5px; width: 104px; height: 51px; border-radius: 26px; background: rgba(0,0,0,.06); }
+
+  /* home screen */
+  #scr-home { background: #6fa3c8; }
+  .wall { position: absolute; inset: -20px; background:
+      radial-gradient(60% 40% at 80% 18%, #1f3fb8 0%, transparent 70%),
+      radial-gradient(70% 45% at 10% 75%, #8fe0cf 0%, transparent 70%),
+      radial-gradient(55% 35% at 85% 70%, #2d4fd6 0%, transparent 70%),
+      radial-gradient(80% 50% at 30% 20%, #cfe6ee 0%, transparent 70%),
+      linear-gradient(160deg, #a9d4e0 0%, #3f67c9 55%, #10206e 100%); }
+  .widget { position: absolute; left: 38px; width: 364px; border-radius: 26px; background: rgba(255,249,243,.93);
+    box-shadow: 0 10px 30px rgba(10,20,60,.18); overflow: hidden; }
+  .wlabel { position: absolute; left: 0; right: 0; text-align: center; font-size: 12px; font-weight: 500; color: rgba(255,255,255,.92); text-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .whead { position: absolute; left: 18px; top: 16px; display: flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 600; color: #1c1c1e; }
+  .whead svg { width: 22px; height: 22px; }
+  .wchip { position: absolute; left: 18px; height: 26px; padding: 0 11px 0 22px; border-radius: 13px; background: rgba(244,90,30,.1); font-size: 13px; color: #3a2a20; line-height: 26px; }
+  .wchip::before { content: ""; position: absolute; left: 10px; top: 10.5px; width: 5px; height: 5px; border-radius: 3px; background: #F45A1E; }
+  .wtime { position: absolute; left: 17px; font-weight: 700; color: #111; letter-spacing: -.5px; }
+  .wsmall { position: absolute; font-size: 12.5px; color: #8e8e93; display: flex; gap: 4px; align-items: center; }
+  .dock { position: absolute; left: 12px; right: 12px; top: 852px; height: 90px; border-radius: 34px; background: rgba(255,255,255,.22);
+    box-shadow: inset 0 0 0 .5px rgba(255,255,255,.4); backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; padding: 0 12px; }
+  .appic { width: 62px; height: 62px; border-radius: 16px; background: rgba(255,255,255,.28); box-shadow: inset 0 0 0 .6px rgba(255,255,255,.5); display: flex; align-items: center; justify-content: center; }
+  .search { position: absolute; left: 50%; top: 806px; transform: translateX(-50%); height: 30px; padding: 0 16px; border-radius: 15px; background: rgba(255,255,255,.25); color: #fff; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  #di { position: absolute; background: #000; border-radius: 999px; overflow: hidden; }
+  #di .l { position: absolute; left: 12px; top: 7px; width: 22px; height: 22px; }
+  #di .r { position: absolute; right: 14px; top: 0; line-height: 36px; font-size: 16px; font-weight: 600; color: #FF8A3D; }
+
+  /* schedule screen */
+  #scr-cal { background: #F2F2F7; }
+  .navbtn { position: absolute; top: 64px; width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,.85); box-shadow: 0 3px 12px rgba(0,0,0,.07), inset 0 0 0 .5px rgba(0,0,0,.08); display: flex; align-items: center; justify-content: center; }
+  .navtitle { position: absolute; left: 0; right: 0; top: 74px; text-align: center; font-size: 17px; font-weight: 600; }
+  .cal { position: absolute; left: 17px; top: 126px; width: 406px; height: 372px; background: #fff; border-radius: 22px; }
+  .cal .mon { position: absolute; left: 18px; top: 18px; font-size: 20px; font-weight: 700; }
+  .cal .wk { position: absolute; top: 60px; width: 54px; text-align: center; font-size: 12px; color: #8e8e93; }
+  .cell { position: absolute; width: 50px; height: 50px; border-radius: 12px; text-align: center; }
+  .cell .n { position: absolute; left: 0; right: 0; top: 7px; font-size: 16px; font-weight: 500; color: #1c1c1e; }
+  .cell .s { position: absolute; left: 0; right: 0; top: 30px; font-size: 10px; color: #8e8e93; white-space: nowrap; }
+  .cell.work { background: #EEEBFB; }
+  .cell.work .n { color: #2e2a6b; }
+  .cell .hd { display: inline-block; width: 4px; height: 4px; border-radius: 2px; background: #F45A1E; margin-right: 2px; vertical-align: 2px; }
+  .cell.sel { box-shadow: inset 0 0 0 2px #F45A1E; }
+  .pcard { position: absolute; left: 17px; width: 406px; background: #fff; border-radius: 22px; }
+  .pchip { position: absolute; top: 58px; width: 50px; height: 34px; border-radius: 10px; font-size: 13.5px; font-weight: 600; text-align: center; line-height: 34px; background: #F2F2F7; color: #8e8e93; }
+
+  /* watch */
+  #watch { position: absolute; width: 300px; height: 471.43px; }
+  #watch .frame { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #watch .hole { position: absolute; left: 38.57px; top: 102.86px; width: 222.86px; height: 265.71px; border-radius: 52px; background: #000; overflow: hidden; }
+  .wscreen { position: absolute; left: 0; top: 0; width: 208px; height: 248px; transform-origin: 0 0; color: #fff; }
+
+  /* desktop */
+  #desk-win { position: absolute; width: 430px; height: 430px; border-radius: 24px; background: #F5F6F8; overflow: hidden;
+    box-shadow: 0 50px 120px rgba(0,0,0,.45), 0 0 0 .5px rgba(255,255,255,.2); transform-origin: 0 0; font-family: -apple-system, "PingFang SC", sans-serif; }
+  .tl { position: absolute; top: 16px; width: 12px; height: 12px; border-radius: 6px; }
+  .dbtn { position: absolute; top: 41px; width: 35px; height: 35px; border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08), inset 0 0 0 .5px rgba(0,0,0,.1); display: flex; align-items: center; justify-content: center; }
+  .dfoot { position: absolute; top: 382px; height: 36px; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 600; }
+  #desk-mini { position: absolute; width: 248px; height: 100px; border-radius: 22px; background: rgba(247,247,247,.97);
+    box-shadow: 0 30px 70px rgba(0,0,0,.45), inset 0 0 0 .5px rgba(0,0,0,.12); transform-origin: 0 0; font-family: -apple-system, sans-serif; }
+  .floater { position: absolute; font-size: 13px; font-weight: 700; color: #b07a45; }
+
+  /* finale */
+  #f-count { top: 780px; font-size: 190px; font-weight: 700; letter-spacing: -4px; color: #FFF1D8; }
+  #f-label { top: 700px; font-size: 40px; color: rgba(255,241,216,.55); font-weight: 500; }
+  #f-done { top: 800px; font-size: 150px; font-weight: 800; letter-spacing: -2px; }
+  #e-mark { left: 440px; top: 560px; width: 200px; height: 200px; }
+  #e-word { top: 800px; font-size: 96px; font-weight: 700; color: #FFF1D8; letter-spacing: -2px; }
+  #e-slogan { top: 945px; font-size: 56px; font-weight: 600; color: #FFF1D8; letter-spacing: 1px; }
+  #e-plat { top: 1090px; font-size: 32px; color: rgba(255,241,216,.6); font-weight: 500; letter-spacing: 1px; }
+  #e-cta { top: 1200px; display: flex; justify-content: center; }
+  #e-web { top: 1330px; font-size: 38px; font-weight: 600; color: #FF9A45; letter-spacing: .5px; }
+  #e-cta span { font-size: 34px; font-weight: 600; color: #1D1329; background: #FFF1D8; padding: 18px 44px; border-radius: 999px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="bg-cream"></div>
+  <div class="layer" id="bg-evening"></div>
+  <div class="layer" id="bg-dark"></div>
+
+  <!-- ACT 1: an ordinary, heavy workday -->
+  <div class="layer" id="office">
+    <svg id="o-svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+      <defs>
+        <linearGradient id="o-wallg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EADFCF"/><stop offset="1" stop-color="#D8C6AE"/></linearGradient>
+        <linearGradient id="o-skyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A3ADB8"/><stop offset="1" stop-color="#77838F"/></linearGradient>
+        <linearGradient id="o-skyw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FD0FF"/><stop offset=".55" stop-color="#FFE2A8"/><stop offset="1" stop-color="#FFBE7A"/></linearGradient>
+        <radialGradient id="o-sung"><stop offset="0" stop-color="#FFF6D8" stop-opacity="1"/><stop offset="1" stop-color="#FFE2A0" stop-opacity="0"/></radialGradient>
+        <linearGradient id="o-beamg" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="#FFF1CC" stop-opacity=".95"/><stop offset="1" stop-color="#FFF1CC" stop-opacity="0"/></linearGradient>
+        <linearGradient id="o-deskg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C79B6E"/><stop offset="1" stop-color="#B0845A"/></linearGradient>
+        <linearGradient id="o-lockg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4B5C7C"/><stop offset="1" stop-color="#1F2738"/></linearGradient>
+        <linearGradient id="o-scrimg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0E16" stop-opacity=".75"/><stop offset="1" stop-color="#0B0E16" stop-opacity="0"/></linearGradient>
+        <clipPath id="o-glass"><rect x="112" y="262" width="336" height="536"/></clipPath>
+        <clipPath id="o-stclip"><rect x="-34" y="-78" width="68" height="156" rx="10"/></clipPath>
+        <linearGradient id="o-stwall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F7B36B"/><stop offset=".6" stop-color="#E0726A"/><stop offset="1" stop-color="#6A4C8C"/></linearGradient>
+        <clipPath id="o-phclip"><rect x="-52" y="-112" width="104" height="224" rx="17"/></clipPath>
+      </defs>
+      <g id="o-cam">
+        <rect x="-400" y="-400" width="1880" height="2720" fill="url(#o-wallg)"/>
+        <!-- window -->
+        <rect x="90" y="240" width="380" height="580" rx="6" fill="#F6F2EC"/>
+        <g clip-path="url(#o-glass)">
+          <rect x="112" y="262" width="336" height="536" fill="url(#o-skyg)"/>
+          <g id="o-skywarm" opacity="0">
+            <rect x="112" y="262" width="336" height="536" fill="url(#o-skyw)"/>
+            <circle cx="370" cy="380" r="170" fill="url(#o-sung)"/>
+            <circle cx="370" cy="380" r="44" fill="#FFF8DD"/>
+            <g fill="#FFFFFF" opacity=".85"><ellipse cx="190" cy="330" rx="54" ry="16"/><ellipse cx="226" cy="318" rx="34" ry="18"/><ellipse cx="300" cy="470" rx="46" ry="13"/></g>
+          </g>
+          <path d="M112 798 V650 h46 v-56 h40 v84 h34 v-126 h56 v104 h40 v-54 h58 v76 h62 V798Z" fill="#5E6874"/>
+          <g id="o-rain" stroke="#E8EEF5" stroke-width="2.2" stroke-linecap="round"></g>
+        </g>
+        <rect x="276" y="262" width="8" height="536" fill="#F6F2EC"/>
+        <rect x="112" y="524" width="336" height="8" fill="#F6F2EC"/>
+        <rect x="74" y="814" width="412" height="18" rx="4" fill="#EEE7DD"/>
+        <!-- wall calendar -->
+        <g transform="translate(862 640) scale(.8)">
+          <rect x="0" y="0" width="150" height="190" rx="8" fill="#FBF8F3"/>
+          <rect x="0" y="0" width="150" height="46" rx="8" fill="#C9674A"/>
+          <text x="75" y="33" text-anchor="middle" font-size="26" font-weight="700" fill="#fff">9 月</text>
+          <g id="o-calgrid" fill="#B9B2A8"></g>
+        </g>
+        <!-- wall clock -->
+        <g transform="translate(830 430)">
+          <circle r="124" fill="#2F2B29"/>
+          <circle r="110" fill="#FCFBF8"/>
+          <g id="o-ticks" stroke="#2F2B29" stroke-linecap="round"></g>
+          <line id="o-ch" x1="0" y1="14" x2="0" y2="-56" stroke="#1F1D1C" stroke-width="10" stroke-linecap="round"/>
+          <line id="o-cm" x1="0" y1="18" x2="0" y2="-86" stroke="#1F1D1C" stroke-width="6" stroke-linecap="round"/>
+          <line id="o-cs" x1="0" y1="22" x2="0" y2="-94" stroke="#F45A1E" stroke-width="3" stroke-linecap="round"/>
+          <circle r="8" fill="#1F1D1C"/><circle r="3.5" fill="#F45A1E"/>
+        </g>
+        <!-- sunbeam -->
+        <polygon id="o-beam" points="112,262 448,262 1080,1180 380,1260" fill="url(#o-beamg)" opacity="0" style="mix-blend-mode:screen"/>
+        <!-- desk -->
+        <rect x="-400" y="1150" width="1880" height="112" fill="url(#o-deskg)"/>
+        <rect x="-400" y="1262" width="1880" height="26" fill="#8C6442"/>
+        <rect x="-400" y="1288" width="1880" height="1100" fill="#2B2320"/>
+        <!-- mug -->
+        <g transform="translate(96 1088)">
+          <g id="o-steam" opacity="0" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round">
+            <path id="o-steam1" d="M22 -10 q-12 -20 0 -40 q12 -20 0 -40"/>
+            <path id="o-steam2" d="M44 -14 q-12 -20 0 -40 q12 -20 0 -40"/>
+          </g>
+          <path d="M0 0 h66 v62 a14 14 0 0 1 -14 14 h-38 a14 14 0 0 1 -14 -14z" fill="#EDE8E1"/>
+          <path d="M66 16 a18 18 0 0 1 0 36" stroke="#EDE8E1" stroke-width="9" fill="none"/>
+          <rect x="0" y="0" width="66" height="10" fill="#6B4A36"/>
+        </g>
+        <!-- plant -->
+        <g transform="translate(1000 1080)">
+          <g fill="#5E8F5B"><ellipse cx="-20" cy="-40" rx="16" ry="44" transform="rotate(-24 -20 -40)"/><ellipse cx="18" cy="-46" rx="15" ry="48" transform="rotate(20 18 -46)"/><ellipse cx="0" cy="-60" rx="14" ry="50"/></g>
+          <path d="M-40 -6 h80 l-9 82 h-62z" fill="#C8674A"/>
+        </g>
+        <!-- monitor -->
+        <rect x="446" y="1086" width="48" height="80" fill="#9199A3"/>
+        <ellipse cx="470" cy="1168" rx="120" ry="13" fill="#A7AEB7"/>
+        <rect x="150" y="640" width="640" height="452" rx="18" fill="#1A1C21"/>
+        <g id="o-screen">
+          <rect x="166" y="656" width="608" height="412" rx="4" fill="#F2F4F7"/>
+          <rect x="166" y="656" width="608" height="26" fill="#E4E7EC"/>
+          <circle cx="182" cy="669" r="5" fill="#1c1c1e"/>
+          <text x="198" y="674" font-size="13" font-weight="600" fill="#1c1c1e">表格</text>
+          <text x="238" y="674" font-size="13" fill="#3a3a3c">文件　编辑　视图　插入　格式</text>
+          <text id="o-montime" x="762" y="675" font-size="15" font-weight="600" text-anchor="end" fill="#1c1c1e">周三 10:24</text>
+          <rect x="182" y="694" width="576" height="362" rx="8" fill="#FFFFFF" stroke="#D3D8DF"/>
+          <rect x="182" y="694" width="576" height="30" rx="8" fill="#F0F2F5"/>
+          <circle cx="199" cy="709" r="5" fill="#FF5F57"/><circle cx="215" cy="709" r="5" fill="#FEBC2E"/><circle cx="231" cy="709" r="5" fill="#28C840"/>
+          <text x="470" y="714" font-size="12" text-anchor="middle" fill="#6b6b70">Q3 工时汇总.xlsx</text>
+          <g id="o-sheet"></g>
+        </g>
+        <!-- keyboard -->
+        <path d="M290 1188 h340 l16 40 h-372z" fill="#D9DCE1"/>
+        <!-- woodfish mini timer floating on the monitor -->
+        <g id="o-mini" opacity="0">
+          <rect x="582" y="984" width="160" height="64" rx="14" fill="#F7F7F7" stroke="#000" stroke-opacity=".12"/>
+          <g transform="translate(590 996) scale(.028)" fill="#B07A45" id="o-mini-fish"><path d="M1.450653 780.39695c-10.175905 64.255398 36.031662 101.161718 59.626108 112.361614 23.594445 11.178562 63.274073 0 78.825927 0 116.542907 11.178562 366.759228 131.220103 678.606972 131.220103 0 0 504.635269 7.445264 543.31224-360.487287 9.19458-95.529771 4.885288-277.458732-71.039334-286.162651-63.956734-8.426588-102.121709 4.074628-183.315615 20.565141-53.908828 10.922564-189.011561 29.973052-212.926004 44.970245-260.989553 118.718887-403.324219 204.371417-442.299853 217.128631-29.439724 0-54.975485-7.359931-62.100752-69.972677 0-25.706426 98.089747-87.039184 140.137353-96.959091C682.660267 452.869354 796.365867 435.333519 809.720409 435.333519c19.263819 0 441.489194-101.588381 454.438406-111.188291 12.949212-9.59991 26.62375-18.986489 26.623751-52.543508 0-15.359856-33.813016-49.663534-72.319322-91.455142-45.674238-49.556869-99.94573-107.092329-140.606682-120.788201C1002.934597 20.958737 856.077308-10.912964 727.779844 3.572233 446.929143 35.273269 271.677453 342.662388 256.424263 363.995521c-64.852725 90.708483-116.542907 205.587406-143.678653 256.296264C86.548522 669.272659 11.71189 735.149375 1.450653 780.39695z"/></g>
+          <text id="o-mini-knocks" x="591" y="1034" font-size="7" font-weight="700" fill="#C49A6C">64</text>
+          <text id="o-mini-plus" x="600" y="992" font-size="8" font-weight="700" fill="#B07A45" opacity="0">+1</text>
+          <text id="o-mini-time" x="682" y="1022" text-anchor="middle" font-size="17" font-weight="700" fill="#111">5:31:00</text>
+          <text id="o-mini-pct" x="734" y="1021" text-anchor="end" font-size="9.5" font-weight="600" fill="#6b6b70">21%</text>
+          <rect x="590" y="1036" width="144" height="3.5" rx="1.75" fill="#E3E3E6"/>
+          <rect id="o-mini-bar" x="590" y="1036" width="30" height="3.5" rx="1.75" fill="#F57A1E"/>
+        </g>
+        <!-- phone stand on the desk -->
+        <g id="o-stand">
+          <path d="M866 1152 L946 1152 L936 1134 L876 1134 Z" fill="#9AA1AA"/>
+          <rect x="896" y="1100" width="20" height="40" fill="#8C939C"/>
+          <g id="o-stand-phone" transform="translate(906 1060)">
+            <rect x="-38" y="-82" width="76" height="164" rx="13" fill="#16181D"/>
+            <g clip-path="url(#o-stclip)">
+              <rect id="o-st-off" x="-34" y="-78" width="68" height="156" fill="#0B0C0F"/>
+              <g id="o-st-lock" opacity="0">
+                <rect x="-34" y="-78" width="68" height="156" fill="url(#o-stwall)"/>
+                <text x="0" y="-60" text-anchor="middle" font-size="4.6" fill="#fff" opacity=".9">9月23日 星期三</text>
+                <text id="o-st-time" x="0" y="-40" text-anchor="middle" font-size="21" font-weight="700" fill="#fff">10:28</text>
+                <rect x="-30" y="34" width="60" height="34" rx="8" fill="#141418" opacity=".9"/>
+                <g transform="translate(-28 38) scale(.0117)"><path d="M415 793.8 A 298 298 0 1 1 804.5 568.9" fill="none" stroke="#F45A1E" stroke-width="110" stroke-linecap="round"/><path d="M512 347 L512 512 L573 617.7" fill="none" stroke="#FFF1D8" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/><circle cx="664.5" cy="776.1" r="86" fill="#F45A1E"/></g>
+                <text id="o-st-count" x="27" y="48" text-anchor="end" font-size="9.5" font-weight="700" fill="#FF8A3D">5:31:00</text>
+                <rect x="-24" y="56" width="48" height="2.6" rx="1.3" fill="#3A3A40"/>
+                <rect id="o-st-bar" x="-24" y="56" width="10" height="2.6" rx="1.3" fill="#F45A1E"/>
+              </g>
+              <g id="o-st-banner" opacity="0">
+                <rect x="-31" y="-75" width="62" height="28" rx="8" fill="#F4F4F6" opacity=".97"/>
+                <image href="../../../assets/brand/off-work-countdown-icon-rounded.svg" x="-28" y="-67" width="12" height="12"/>
+                <text x="-13" y="-65.2" font-size="4.6" font-weight="700" fill="#111">今天还剩 25%</text>
+                <text x="28" y="-65.2" text-anchor="end" font-size="3.3" fill="#8e8e93">现在</text>
+                <text x="-13" y="-59" font-size="3.8" fill="#3a3a3c">今天最难熬的部分</text>
+                <text x="-13" y="-53.8" font-size="3.8" fill="#3a3a3c">已经过去了。</text>
+              </g>
+            </g>
+            <rect x="-11" y="-76" width="22" height="6" rx="3" fill="#000"/>
+          </g>
+        </g>
+        <!-- person -->
+        <g id="o-person">
+          <path id="o-armL" fill="none" stroke="#34506F" stroke-width="64" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle id="o-handL" r="28" fill="#D9A987"/>
+          <path id="o-armR" fill="none" stroke="#34506F" stroke-width="64" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle id="o-handR" r="28" fill="#D9A987"/>
+          <g id="o-phone-hand">
+            <rect x="-58" y="-118" width="116" height="236" rx="22" fill="#16181D"/>
+            <g clip-path="url(#o-phclip)">
+              <g id="o-ph-lock">
+                <rect x="-52" y="-112" width="104" height="224" fill="url(#o-lockg)"/>
+                <text x="0" y="-74" text-anchor="middle" font-size="9" fill="#E8ECF4" opacity=".85">9月23日 星期三</text>
+                <text id="o-ph-time" x="0" y="-38" text-anchor="middle" font-size="38" font-weight="700" fill="#F4F6FA">10:27</text>
+                <rect x="-38" y="100" width="76" height="4" rx="2" fill="#fff" opacity=".7"/>
+              </g>
+              <g id="o-ph-app" opacity="0">
+                <rect x="-52" y="-112" width="104" height="224" fill="#F2F2F7"/>
+                <text id="o-ph-count" x="0" y="-52" text-anchor="middle" font-size="19" font-weight="700" fill="#111">05:32:00</text>
+                <text x="0" y="-36" text-anchor="middle" font-size="6.5" fill="#8a8a8e">今天的班次还剩</text>
+                <rect x="-44" y="-26" width="88" height="3" rx="1.5" fill="#E3E3E8"/>
+                <rect id="o-ph-bar" x="-44" y="-26" width="18" height="3" rx="1.5" fill="#F25A14"/>
+                <rect x="-46" y="-12" width="92" height="40" rx="7" fill="#fff"/>
+                <rect x="-46" y="34" width="92" height="56" rx="7" fill="#fff"/>
+              </g>
+            </g>
+            <rect x="-17" y="-107" width="34" height="10" rx="5" fill="#000"/>
+          </g>
+          <g id="o-body">
+            <path d="M360 1920 C370 1740 402 1642 472 1602 C542 1566 622 1552 701 1550 C780 1552 860 1566 930 1602 C1000 1642 1032 1740 1042 1920 Z" fill="#3E5878"/>
+            <path d="M530 1590 C600 1660 802 1660 872 1590" stroke="#34506F" stroke-width="5" fill="none" opacity=".6"/>
+            <rect x="656" y="1418" width="92" height="146" rx="30" fill="#D9A987"/>
+            <path d="M636 1552 q66 30 132 0 l10 18 q-76 36 -152 0z" fill="#2F4764"/>
+          </g>
+          <g id="o-head">
+            <ellipse cx="588" cy="1362" rx="17" ry="27" fill="#DDA985"/>
+            <ellipse cx="814" cy="1362" rx="17" ry="27" fill="#DDA985"/>
+            <ellipse cx="701" cy="1350" rx="112" ry="124" fill="#DDA985"/>
+            <path d="M586 1352 C584 1262 632 1206 701 1204 C772 1206 818 1262 816 1352 C816 1410 786 1446 760 1456 C740 1440 662 1440 642 1456 C614 1444 586 1410 586 1352 Z" fill="#2A211E"/>
+            <path d="M640 1236 C668 1220 720 1216 760 1236" stroke="#3B302B" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </g>
+          <path d="M452 1920 V1724 Q452 1662 514 1662 H908 Q970 1662 970 1724 V1920 Z" fill="#26282E"/>
+          <path d="M488 1690 H934" stroke="#34373F" stroke-width="6" stroke-linecap="round"/>
+        </g>
+      </g>
+      <rect id="o-tint" width="1080" height="1920" fill="#2B4066" style="mix-blend-mode:multiply" opacity=".5"/>
+      <rect id="o-glow" width="1080" height="1920" fill="#FFC47E" style="mix-blend-mode:soft-light" opacity="0"/>
+      <rect id="o-scrim" width="1080" height="620" fill="url(#o-scrimg)"/>
+    </svg>
+    <div id="o-unknown">
+      <div class="u-row"><span>离下班还有</span><span class="u-q num">?%</span></div>
+      <div class="u-bar"><div class="u-stripes" id="u-stripes"></div></div>
+    </div>
+  </div>
+
+  <!-- brand reveal -->
+  <div class="layer" id="reveal">
+    <svg class="abs" id="rv-mark" viewBox="0 0 1024 1024">
+      <path id="rv-ring" d="M415 793.8 A 298 298 0 1 1 804.5 568.9" pathLength="1" fill="none" stroke="#F45A1E" stroke-width="110" stroke-linecap="round"/>
+      <path id="rv-hands" d="M512 347 L512 512 L573 617.7" pathLength="1" fill="none" stroke="#2B1935" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle id="rv-dot" cx="664.5" cy="776.1" r="86" fill="#F45A1E"/>
+    </svg>
+    <div class="a1" id="rv-word">DoneAt</div>
+    <div class="a1" id="rv-slogan">几点下班，<span class="grad">心里有数</span>。</div>
+  </div>
+
+  <!-- captions -->
+  <div class="cap dark" id="cap0"><h1>每一个打工人</h1><p>都有过这样的一天。</p></div>
+  <div class="cap dark" id="capN"><h1>今天第 <span id="cn" class="num" style="display:inline-block">3</span> 次看时间</h1><p>离下班，好像还很远。</p></div>
+  <div class="cap dark" id="capQ"><h1>只知道现在几点</h1><p>看不到进度，越看越焦虑。</p></div>
+  <div class="cap dark" id="capS"><h1>打开 App Store</h1><p>搜索「下班倒计时」，免费下载。</p></div>
+  <div class="cap" id="capR"><h1>还剩 5 小时 32 分</h1><p>进度和百分比，一眼就有数。</p></div>
+  <div class="cap" id="capW"><h1>抬眼就能看到进度</h1><p>电脑上的木鱼浮窗，一直待在角落。</p></div>
+  <div class="cap" id="capM"><h1>快下班时，一段段提醒</h1><p>还剩 25%、10%、5%，都会推送给你。</p></div>
+  <div class="cap" id="capA"><h1>一眼看清几点下班</h1><p>还剩多久、走了多远、接下来做什么。</p></div>
+  <div class="cap" id="capB"><h1>午休时，倒计时会停</h1><p>午饭不算工时，剩下的时间才准。</p></div>
+  <div class="cap" id="capC"><h1>不用打开，也能看到</h1><p>小组件和灵动岛，倒计时一直在走。</p></div>
+  <div class="cap" id="capD"><h1>抬手就能看</h1><p>Apple Watch 版，免费使用。</p></div>
+  <div class="cap" id="capE"><h1>节假日和调休，一次排好</h1><p>单双休、轮班轮休，也都算得明白。</p></div>
+  <div class="cap dark" id="capF"><h1>在电脑上，也一样</h1><p>Mac 和 Windows，迷你计时器一直看得见。</p></div>
+
+  <div id="phone">
+    <div class="phone-shadow"></div>
+    <div class="hole">
+      <div class="screen" id="screen">
+        <!-- APP STORE -->
+        <div class="scr" id="scr-store">
+          <div class="sb"><div class="time num">10:27</div><div class="icons" data-icons="dark"></div></div>
+          <div class="abs" style="left:14px;top:60px;font-size:17px;color:#007AFF;display:flex;align-items:center;gap:2px"><span data-i="chevleftblue"></span>搜索</div>
+          <img class="abs" src="../../../assets/brand/off-work-countdown-icon-rounded.svg" style="left:20px;top:104px;width:118px;height:118px;border-radius:26px;box-shadow:0 0 0 .5px rgba(0,0,0,.08)" alt="">
+          <div class="abs" style="left:154px;top:108px;font-size:22px;font-weight:700;color:#000;letter-spacing:-.2px">DoneAt - 下班倒计时</div>
+          <div class="abs" style="left:154px;top:140px;font-size:14px;color:#8a8a8e">灵动岛小组件，排班与工资计时</div>
+          <div class="abs" id="st-btn" style="left:154px;top:188px;width:78px;height:32px;border-radius:16px;background:#007AFF;color:#fff;font-size:16px;font-weight:700;text-align:center;line-height:32px">获取</div>
+          <svg class="abs" id="st-ring" style="left:175px;top:186px;width:36px;height:36px;display:none" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="15" fill="none" stroke="#E3E5EA" stroke-width="3"/>
+            <circle id="st-prog" cx="18" cy="18" r="15" fill="none" stroke="#007AFF" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 18 18)"/>
+            <rect x="13.5" y="13.5" width="9" height="9" rx="1.5" fill="#007AFF"/>
+          </svg>
+          <span class="abs" style="right:22px;top:192px" data-i="shareblue"></span>
+          <div class="abs" style="left:20px;right:0;top:246px;height:.5px;background:#E0E0E5"></div>
+          <img class="abs shot" src="../ios/out/creative-3.2.0/zh-CN-iphone-01-countdown.png" style="left:20px;top:264px" alt="">
+          <img class="abs shot" src="../ios/out/creative-3.2.0/zh-CN-iphone-02-countdown-detail.png" style="left:245px;top:264px" alt="">
+          <img class="abs shot" src="../ios/out/creative-3.2.0/zh-CN-iphone-03-watch.png" style="left:470px;top:264px" alt="">
+          <div class="abs" style="left:20px;top:756px;font-size:21px;font-weight:700">新功能</div>
+          <div class="abs" style="right:20px;top:762px;font-size:13px;color:#8a8a8e">版本 3.2.0</div>
+          <div class="abs" style="left:20px;top:796px;font-size:15px;color:#3a3a3c;line-height:26px">• 月历排班<br>• 节假日与调休<br>• 免费 Apple Watch</div>
+          <div id="tap"></div>
+        </div>
+        <!-- TIMER -->
+        <div class="scr" id="scr-timer">
+          <div class="sb"><div class="time num" id="t-sbtime">10:24</div><div class="icons" data-icons="dark"></div></div>
+          <div class="glasspill"><span data-i="eyeslash"></span><span data-i="sun"></span></div>
+          <div id="t-count" class="num"></div>
+          <div id="t-label"><span id="t-cup" data-i="cup" style="display:none"></span><span id="t-labeltext">今天的班次还剩</span></div>
+          <div class="track"><div class="fill" id="t-fill"></div></div>
+          <div class="bubble num" id="t-bubble">0%</div>
+          <div class="sec" style="top:289px">按当前设置推算</div>
+          <div class="card" style="top:311px;height:155px">
+            <div class="row sep" style="top:0;height:52px"><span class="ic" data-i="clock"></span><span class="tt">今天的班次</span><span class="vv num">09:00 <span class="en">–</span> 17:00</span></div>
+            <div class="row sep" style="top:52px;height:52px"><span class="ic" data-i="cal"></span><span class="tt">本周</span><span class="vv num" id="t-week">4.6 天 · 32.4小时</span></div>
+            <div class="row" style="top:104px;height:52px"><span class="ic" data-i="calclock"></span><span class="tt">今年</span><span class="vv num" id="t-year">169.6 天 · 1,187.4小时</span></div>
+          </div>
+          <div class="sec" style="top:480px">接下来</div>
+          <div class="card" style="top:503px;height:274px" id="t-next"></div>
+          <div class="btn" style="left:17px;width:168px"><span data-i="arrowleft"></span>提前下班</div>
+          <div class="btn" style="left:195px;width:169px">加班</div>
+          <div class="btn" style="left:374px;width:49px"><span data-i="share"></span></div>
+          <div class="tabbar">
+            <div class="tabsel"></div>
+            <div class="tab on" style="left:10px"><span data-i="tabtimer"></span>计时</div>
+            <div class="tab" style="left:106px"><span data-i="tabfocus"></span>专注</div>
+            <div class="tab" style="left:200px"><span data-i="tabrec"></span>记录</div>
+            <div class="tab" style="left:294px"><span data-i="tabset"></span>设置</div>
+          </div>
+        </div>
+
+        <!-- HOME -->
+        <div class="scr" id="scr-home">
+          <div class="wall"></div>
+          <div class="sb light"><div class="time num" id="h-sbtime">14:22</div><div class="icons" data-icons="light"></div></div>
+          <div class="widget" style="top:92px;height:170px" id="w-med">
+            <div class="whead"><span data-i="mark"></span>DoneAt</div>
+            <div class="wchip" style="top:50px">工作中</div>
+            <div class="wtime num" style="top:84px;font-size:40px;line-height:48px" id="wm-time"></div>
+            <div class="wsmall num" style="left:18px;top:138px"><span data-i="clocksm"></span>17:00</div>
+            <svg class="abs" style="left:250px;top:40px;width:96px;height:96px" viewBox="0 0 100 100">
+              <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB02E"/><stop offset="1" stop-color="#F45A1E"/></linearGradient></defs>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#EFE6DE" stroke-width="10"/>
+              <circle id="wm-ring" cx="50" cy="50" r="42" fill="none" stroke="url(#rg)" stroke-width="10" stroke-linecap="round" pathLength="100" stroke-dasharray="62 100" transform="rotate(-90 50 50)"/>
+              <text id="wm-pct" x="50" y="57" text-anchor="middle" font-size="20" font-weight="500" fill="#111" font-family="-apple-system">62%</text>
+            </svg>
+          </div>
+          <div class="wlabel" style="top:270px">DoneAt</div>
+          <div class="widget" style="top:296px;height:382px" id="w-large">
+            <div class="whead"><span data-i="mark"></span>DoneAt</div>
+            <div class="wchip" style="top:50px">工作中</div>
+            <div class="wtime num" style="top:86px;font-size:46px;line-height:56px" id="wl-time"></div>
+            <div class="abs" style="left:18px;top:152px;width:328px;height:8px;border-radius:4px;background:#EAE3DC"><div id="wl-fill" style="position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#F45A1E,#FFA53A)"></div></div>
+            <div class="abs num" style="left:18px;top:170px;font-size:15px;font-weight:600;color:#F45A1E" id="wl-pct">62%</div>
+            <div class="wsmall num" style="right:18px;top:171px"><span data-i="clocksm"></span>17:00</div>
+            <div class="abs" style="left:18px;top:206px;font-size:13px;color:#8e8e93;font-weight:500">接下来</div>
+            <div id="wl-list"></div>
+          </div>
+          <div class="wlabel" style="top:686px">DoneAt</div>
+          <div class="search"><span data-i="search"></span>搜索</div>
+          <div class="dock">
+            <div class="appic"><span data-i="d-phone"></span></div>
+            <div class="appic"><span data-i="d-safari"></span></div>
+            <div class="appic"><span data-i="d-msg"></span></div>
+            <div class="appic"><span data-i="d-cam"></span></div>
+          </div>
+        </div>
+
+        <!-- SCHEDULE -->
+        <div class="scr" id="scr-cal">
+          <div class="sb"><div class="time num">14:22</div><div class="icons" data-icons="dark"></div></div>
+          <div class="navbtn" style="left:17px"><span data-i="chevleft"></span></div>
+          <div class="navtitle">工作时间与排班</div>
+          <div class="navbtn" style="right:17px"><span data-i="check"></span></div>
+          <div class="cal" id="cal">
+            <div class="mon num">2026年10月</div>
+            <span class="abs" style="left:318px;top:20px" data-i="chevleftk"></span>
+            <span class="abs" style="left:360px;top:20px" data-i="chevrightk"></span>
+          </div>
+          <div class="pcard" style="top:514px;height:108px">
+            <div class="abs" style="left:18px;top:18px;font-size:16px">排班规律</div>
+            <div class="abs" style="right:18px;top:18px;font-size:15px;color:#1c1c1e;display:flex;gap:4px;align-items:center" id="c-mode">固定星期<span data-i="updown"></span></div>
+            <div id="c-chips"></div>
+          </div>
+          <div class="pcard" style="top:636px;height:56px">
+            <div class="abs" style="left:18px;top:17px;font-size:16px">节假日安排</div>
+            <div class="abs" style="right:18px;top:17px;font-size:15px;color:#8e8e93;display:flex;gap:6px;align-items:center" id="c-hol">中国大陆<span data-i="chevrightsm"></span></div>
+          </div>
+          <div class="abs" style="left:34px;top:712px;font-size:15px;font-weight:600">10月1日 星期四</div>
+          <div class="abs" style="left:34px;top:734px;font-size:12.5px;color:#8e8e93">国庆节 · 放假</div>
+          <div class="pcard" style="top:760px;height:120px">
+            <div class="abs" style="left:18px;top:18px;font-size:16px;display:flex;gap:10px;align-items:center"><span style="width:7px;height:7px;border-radius:4px;background:#F45A1E"></span>白班</div>
+            <div class="abs num" style="right:18px;top:19px;font-size:14px;color:#8e8e93">09:00<span class="en">–</span>17:00</div>
+            <div class="abs" style="left:46px;right:0;top:58px;height:.5px;background:#E0E0E5"></div>
+            <div class="abs" style="left:18px;top:76px;font-size:16px;display:flex;gap:10px;align-items:center"><span style="width:7px;height:7px;border-radius:4px;background:#aeaeb2"></span>休息</div>
+            <span class="abs" style="right:18px;top:75px" data-i="checkmark"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <img class="frame" src="../ios/frames/iphone-17-pro-max-deep-blue.png" alt="">
+    <div id="di"><span class="l" data-i="markdark"></span><span class="r num" id="di-time"></span></div>
+  </div>
+
+  <div id="watch">
+    <div class="hole">
+      <div class="wscreen" id="wscreen">
+        <div class="abs num" style="right:14px;top:10px;font-size:17px;font-weight:600">14:22</div>
+        <div class="abs" style="left:0;right:0;top:66px;display:flex;justify-content:center;gap:7px;align-items:center;color:#FF9A2E;font-size:17px;font-weight:600"><span data-i="briefcase"></span>工作中</div>
+        <div class="abs" style="left:0;right:0;top:92px;text-align:center;font-size:15px;color:#9a9a9f">剩余时间</div>
+        <div class="abs num" id="wa-time" style="left:0;right:0;top:112px;text-align:center;font-size:47px;font-weight:700;letter-spacing:-1px;line-height:56px"></div>
+        <div class="abs" style="left:16px;right:16px;top:172px;height:13px;border-radius:7px;background:#5a2f10"><div id="wa-fill" style="position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:#FF9A2E"></div></div>
+        <div class="abs num" style="left:0;right:0;top:196px;text-align:center;font-size:15px;color:#9a9a9f">17:00 下班</div>
+      </div>
+    </div>
+    <img class="frame" src="../ios/frames/watch-s11-46mm-gold-milanese.png" alt="">
+  </div>
+
+  <!-- desktop -->
+  <div id="desk-win">
+    <div class="tl" style="left:18px;background:#FF5F57"></div>
+    <div class="tl" style="left:38px;background:#FEBC2E"></div>
+    <div class="tl" style="left:58px;background:#28C840"></div>
+    <div class="abs" style="left:24px;top:44px;font-size:22px;font-weight:700;color:#111;letter-spacing:-.3px">DoneAt</div>
+    <div class="dbtn" style="left:328px"><span data-i="pip"></span></div>
+    <div class="dbtn" style="left:370px"><span data-i="sliders"></span></div>
+    <div class="abs num" id="d-count" style="left:0;right:0;top:100px;text-align:center;font-size:36px;font-weight:700;color:#111;letter-spacing:-.3px;line-height:44px"></div>
+    <div class="abs" style="left:24px;top:188px;width:381px;height:7px;border-radius:4px;background:#E6E7EA"><div id="d-fill" style="position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#111"></div></div>
+    <div class="abs num" id="d-bubble" style="top:152px;height:28px;padding:0 12px;border-radius:14px;background:#111;color:#fff;font-size:14px;font-weight:600;line-height:28px;transform:translateX(-50%)">62%</div>
+    <div class="abs" style="left:24px;top:207px;width:381px;height:138px;border-radius:14px;background:#fff">
+      <div class="abs" style="left:16px;top:14px;font-size:12.5px;color:#8a8f98">按当前设置推算</div>
+      <div class="abs" style="left:16px;right:16px;top:44px;display:flex;justify-content:space-between;font-size:15px;color:#111"><span>今天</span><span class="num">09:00 <span class="en">–</span> 17:00</span></div>
+      <div class="abs" style="left:16px;right:16px;top:74px;height:.5px;background:#ECEDF0"></div>
+      <div class="abs" style="left:16px;right:16px;top:86px;display:flex;justify-content:space-between;font-size:14px;color:#333"><span>本周</span><span class="num">4.6天 · 32.4小时</span></div>
+      <div class="abs" style="left:16px;right:16px;top:110px;display:flex;justify-content:space-between;font-size:14px;color:#333"><span>今年</span><span class="num">169.6天 · 1,187.4小时</span></div>
+    </div>
+    <div class="abs" style="left:0;right:0;top:366px;height:.5px;background:#E4E5E8"></div>
+    <div class="dfoot" style="left:95px;width:85px;background:#fff;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.15);color:#111"><span data-i="arrowleftsm"></span>返回</div>
+    <div class="dfoot" style="left:189px;width:53px;background:#fff;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.15);color:#111">加班</div>
+    <div class="dfoot" style="left:251px;width:83px;background:#111;color:#fff"><span data-i="sharew"></span>分享</div>
+  </div>
+  <div id="desk-mini">
+    <svg id="fish" class="abs" style="left:14px;top:22px;width:58px;height:44px" viewBox="0 0 1365 1024" fill="#B07A45"><path d="M1.450653 780.39695c-10.175905 64.255398 36.031662 101.161718 59.626108 112.361614 23.594445 11.178562 63.274073 0 78.825927 0 116.542907 11.178562 366.759228 131.220103 678.606972 131.220103 0 0 504.635269 7.445264 543.31224-360.487287 9.19458-95.529771 4.885288-277.458732-71.039334-286.162651-63.956734-8.426588-102.121709 4.074628-183.315615 20.565141-53.908828 10.922564-189.011561 29.973052-212.926004 44.970245-260.989553 118.718887-403.324219 204.371417-442.299853 217.128631-29.439724 0-54.975485-7.359931-62.100752-69.972677 0-25.706426 98.089747-87.039184 140.137353-96.959091C682.660267 452.869354 796.365867 435.333519 809.720409 435.333519c19.263819 0 441.489194-101.588381 454.438406-111.188291 12.949212-9.59991 26.62375-18.986489 26.623751-52.543508 0-15.359856-33.813016-49.663534-72.319322-91.455142-45.674238-49.556869-99.94573-107.092329-140.606682-120.788201C1002.934597 20.958737 856.077308-10.912964 727.779844 3.572233 446.929143 35.273269 271.677453 342.662388 256.424263 363.995521c-64.852725 90.708483-116.542907 205.587406-143.678653 256.296264C86.548522 669.272659 11.71189 735.149375 1.450653 780.39695z"/></svg>
+    <div class="abs num" id="m-knocks" style="left:14px;top:66px;font-size:12px;font-weight:700;color:#C49A6C">64</div>
+    <div id="m-floaters"></div>
+    <div class="abs num" id="m-time" style="left:82px;top:28px;font-size:28px;font-weight:700;color:#111;letter-spacing:-.3px;line-height:34px"></div>
+    <div class="abs num" id="m-pct" style="right:16px;top:34px;font-size:17px;font-weight:600;color:#6b6b70">62%</div>
+    <div class="abs" style="left:14px;right:14px;top:82px;height:5px;border-radius:3px;background:#E3E3E6"><div id="m-fill" style="position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:#F57A1E"></div></div>
+  </div>
+
+  <!-- finale -->
+  <div class="layer" id="finale">
+    <div class="a1" id="f-label">今天的班次还剩</div>
+    <div class="a1 num" id="f-count"></div>
+    <div class="a1" id="f-done"><span class="grad">下班时间到！</span></div>
+    <svg class="abs" id="e-mark" viewBox="0 0 1024 1024">
+      <path id="e-ring" d="M415 793.8 A 298 298 0 1 1 804.5 568.9" pathLength="1" fill="none" stroke="#F45A1E" stroke-width="110" stroke-linecap="round"/>
+      <path id="e-hands" d="M512 347 L512 512 L573 617.7" pathLength="1" fill="none" stroke="#FFF1D8" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle id="e-dot" cx="664.5" cy="776.1" r="86" fill="#F45A1E"/>
+    </svg>
+    <div class="a1" id="e-word">DoneAt</div>
+    <div class="a1" id="e-slogan">几点下班，<span class="grad">心里有数</span>。</div>
+    <div class="a1" id="e-plat">iPhone · iPad · Apple Watch · Mac · Windows</div>
+    <div class="a1" id="e-cta"><span>App Store 搜索 DoneAt</span></div>
+    <div class="a1" id="e-web">doneat.app</div>
+    <canvas id="confetti" width="1080" height="1920"></canvas>
+  </div>
+</div>
+
+<script>
+/* ---------- icons ---------- */
+const S = (w, h, body, extra = "") => `<svg width="${w}" height="${h}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${body}</svg>`;
+const MARK = (hands) => `<svg viewBox="0 0 1024 1024" width="100%" height="100%"><path d="M415 793.8 A 298 298 0 1 1 804.5 568.9" fill="none" stroke="#F45A1E" stroke-width="110" stroke-linecap="round"/><path d="M512 347 L512 512 L573 617.7" fill="none" stroke="${hands}" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/><circle cx="664.5" cy="776.1" r="86" fill="#F45A1E"/></svg>`;
+const ICONS = {
+  eyeslash: `<span style="color:#F45A1E">${S(26, 26, '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/>', 'stroke-width="2"')}</span>`,
+  sun: `<span style="color:#F45A1E">${S(24, 24, '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', 'stroke-width="2"')}</span>`,
+  clock: S(22, 22, '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l-3 2"/>', 'stroke-width="1.6"'),
+  cal: S(22, 22, '<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18"/><path d="M7 12.5h.01M10.5 12.5h.01M14 12.5h.01M17.5 12.5h.01M7 16h.01M10.5 16h.01M14 16h.01"/>', 'stroke-width="1.6"'),
+  calclock: S(22, 22, '<rect x="3" y="5" width="16" height="14" rx="3"/><path d="M3 9h16"/><path d="M7 12.5h.01M10.5 12.5h.01M7 16h.01"/><circle cx="18" cy="17" r="4" fill="#8e8e93" stroke="#fff"/><path d="M18 15.3v1.9l1 .8" stroke="#fff" stroke-width="1.3"/>', 'stroke-width="1.6"'),
+  walk: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#34C759"><circle cx="13.5" cy="3.8" r="2.2"/><path d="M11.2 7.2l-3.4 2.1-1.3 3.7 1.7.6 1.1-3 1.6-1-1.6 6.4-3.2 5 1.6 1 3.4-5.3.9-2.2 2.6 3 .9 4.9 1.8-.4-1-5.6-2.9-3.4.8-3.4.9 1.7 3 1.4.8-1.6-2.6-1.2-1.4-2.8c-.5-1-1.600-1.4-2.6-1.1z"/></svg>`,
+  bell: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#6E5BF0"><path d="M12 2.5a6 6 0 0 0-6 6v4.2L4.3 15.6c-.5.8.1 1.9 1 1.9h13.4c.9 0 1.5-1.1 1-1.9L18 12.7V8.5a6 6 0 0 0-6-6z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0z"/><circle cx="18" cy="5" r="3.2" fill="#6E5BF0" stroke="#EDEAFD" stroke-width="1.5"/></svg>`,
+  resume: `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#1EB6E8"/><path d="M7 12h9M12.5 8l4 4-4 4" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  chevdown: `<span style="color:#F45A1E">${S(18, 18, '<path d="M6 9l6 6 6-6"/>', 'stroke-width="2.2"')}</span>`,
+  arrowleft: S(20, 20, '<path d="M19 12H5M11 6l-6 6 6 6"/>', 'stroke-width="2.2"'),
+  share: S(22, 22, '<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v9h14v-9h-1"/>', 'stroke-width="1.8"'),
+  tabtimer: `<span style="color:#F25A14">${S(28, 28, '<path d="M9.2 3.6A9 9 0 1 1 3.8 9"/><path d="M12 7v5l3 3"/>', 'stroke-width="2.2"')}</span>`,
+  tabfocus: `<svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="9" fill="#1c1c1e"/><path d="M12 13.5V9" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M10 2.5h4" stroke="#1c1c1e" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  tabrec: `<svg width="26" height="26" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3" fill="#1c1c1e"/><rect x="3" y="4" width="18" height="4.5" rx="2" fill="#1c1c1e"/><g fill="#fff"><circle cx="7.5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="16.5" cy="12" r="1"/><circle cx="7.5" cy="16" r="1"/><circle cx="12" cy="16" r="1"/><circle cx="16.5" cy="16" r="1"/></g></svg>`,
+  tabset: S(26, 26, '<path d="M3 7h18M3 17h18"/><circle cx="15" cy="7" r="2.6" fill="#fff"/><circle cx="8" cy="17" r="2.6" fill="#fff"/>', 'stroke-width="2" style="color:#1c1c1e"'),
+  cup: `<span style="color:#8a8a8e">${S(18, 18, '<path d="M4 9h13v3a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M3 21h16"/>', 'stroke-width="1.7"')}</span>`,
+  mark: MARK("#2B1935"),
+  markdark: MARK("#FFF1D8"),
+  clocksm: S(12, 12, '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 'stroke-width="2.2"'),
+  search: S(14, 14, '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>', 'stroke-width="2.6"'),
+  "d-phone": `<span style="color:#fff">${S(32, 32, '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>', 'stroke-width="1.8" fill="currentColor"')}</span>`,
+  "d-safari": `<span style="color:#fff">${S(34, 34, '<circle cx="12" cy="12" r="9.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor"/>', 'stroke-width="1.6"')}</span>`,
+  "d-msg": `<span style="color:#fff">${S(34, 34, '<path d="M12 4c5 0 9 3.1 9 7s-4 7-9 7c-1 0-2-.1-2.9-.4L5 19.5l1-3.3C4.1 14.9 3 13 3 11c0-3.9 4-7 9-7z" fill="currentColor"/>', 'stroke-width="1"')}</span>`,
+  "d-cam": `<span style="color:#fff">${S(34, 34, '<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.6"/>', 'stroke-width="1.7"')}</span>`,
+  chevleftblue: `<span style="color:#007AFF">${S(22, 22, '<path d="M15 5l-7 7 7 7"/>', 'stroke-width="2.6"')}</span>`,
+  shareblue: `<span style="color:#007AFF">${S(24, 24, '<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v9h14v-9h-1"/>', 'stroke-width="2"')}</span>`,
+  chevleft: `<span style="color:#F45A1E">${S(22, 22, '<path d="M15 5l-7 7 7 7"/>', 'stroke-width="2.4"')}</span>`,
+  check: `<span style="color:#F45A1E">${S(22, 22, '<path d="M5 12.5l4.5 4.5L19 7"/>', 'stroke-width="2.6"')}</span>`,
+  checkmark: `<span style="color:#F45A1E">${S(20, 20, '<path d="M5 12.5l4.5 4.5L19 7"/>', 'stroke-width="2.4"')}</span>`,
+  chevleftk: S(20, 20, '<path d="M15 5l-7 7 7 7"/>', 'stroke-width="2.4"'),
+  chevrightk: S(20, 20, '<path d="M9 5l7 7-7 7"/>', 'stroke-width="2.4"'),
+  chevrightsm: S(14, 14, '<path d="M9 5l7 7-7 7"/>', 'stroke-width="2.4"'),
+  updown: S(14, 14, '<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>', 'stroke-width="2.2"'),
+  briefcase: S(20, 20, '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2M3 12.5h18"/>', 'stroke-width="2"'),
+  pip: S(18, 18, '<rect x="3" y="5" width="18" height="14" rx="3"/><rect x="11" y="11" width="7" height="5" rx="1.2"/>', 'stroke-width="1.8" style="color:#111"'),
+  sliders: S(18, 18, '<path d="M4 7h8M16 7h4M4 17h4M12 17h8"/><circle cx="14" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/>', 'stroke-width="1.8" style="color:#111"'),
+  arrowleftsm: S(16, 16, '<path d="M19 12H5M11 6l-6 6 6 6"/>', 'stroke-width="2.2"'),
+  sharew: S(16, 16, '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/>', 'stroke-width="1.9"'),
+};
+const SBICONS = (c) => `<svg width="24" height="6" viewBox="0 0 24 6"><g fill="${c}" opacity=".35"><circle cx="3" cy="3" r="2.4"/><circle cx="9" cy="3" r="2.4"/><circle cx="15" cy="3" r="2.4"/><circle cx="21" cy="3" r="2.4"/></g></svg>
+  <svg width="18" height="13" viewBox="0 0 18 13"><path d="M9 12.5l2.4-2.7a3.4 3.4 0 0 0-4.8 0z M4.2 7.4l1.5 1.6a4.7 4.7 0 0 1 6.6 0l1.5-1.6a6.9 6.9 0 0 0-9.6 0z M1.4 4.6l1.5 1.6a8.7 8.7 0 0 1 12.2 0l1.5-1.6a10.9 10.9 0 0 0-15.2 0z" fill="${c}"/></svg>
+  <svg width="28" height="13" viewBox="0 0 28 13"><rect x=".5" y=".5" width="24" height="12" rx="3.8" fill="none" stroke="${c}" stroke-opacity=".4"/><rect x="2.3" y="2.3" width="20.4" height="8.4" rx="2.3" fill="${c}"/><path d="M26 4.5v4a2 2 0 0 0 0-4z" fill="${c}" fill-opacity=".45"/></svg>`;
+document.querySelectorAll("[data-i]").forEach((el) => { el.innerHTML = ICONS[el.dataset.i] || ""; el.style.display = el.style.display || "inline-flex"; });
+document.querySelectorAll("[data-icons]").forEach((el) => { el.innerHTML = SBICONS(el.dataset.icons === "light" ? "#fff" : "#000"); });
+
+/* ---------- math ---------- */
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, p) => a + (b - a) * p;
+const eo = (p) => 1 - Math.pow(1 - p, 3);
+const eo5 = (p) => 1 - Math.pow(1 - p, 5);
+const eio = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+const back = (p) => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+const tw = (t, a, b, e = eo) => e(clamp((t - a) / (b - a)));
+const mod = (n, m) => ((n % m) + m) % m;
+const $ = (id) => document.getElementById(id);
+const set = (el, o) => { if (typeof el === "string") el = $(el); Object.assign(el.style, o); return el; };
+const HMS = (s) => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`; };
+
+/* Fade/blur/slide a block in at `a` and out at `b`. */
+function show(el, t, a, b, { dy = 40, dur = 0.7, outDur = 0.45, blur = 14, outDy = -24, scaleIn = 1 } = {}) {
+  if (typeof el === "string") el = $(el);
+  const pin = tw(t, a, a + dur, eo);
+  const pout = b == null ? 0 : tw(t, b, b + outDur, (p) => p * p);
+  const op = pin * (1 - pout);
+  el.style.opacity = op;
+  el.style.visibility = op <= 0.001 ? "hidden" : "visible";
+  const s = lerp(scaleIn, 1, pin);
+  el.style.transform = `translateY(${(1 - pin) * dy + pout * outDy}px) scale(${s})`;
+  const bl = (1 - pin) * blur + pout * blur * 0.6;
+  el.style.filter = bl > 0.05 ? `blur(${bl}px)` : "none";
+  return op;
+}
+
+/* ---------- rolling digits (iOS numericText style) ---------- */
+const ROLL = 0.34;
+function makeRoller(el, spec) {
+  el.innerHTML = "";
+  const centered = getComputedStyle(el).textAlign === "center";
+  el.classList.add("roll");
+  if (centered) el.style.justifyContent = "center";
+  const items = spec.map((it) => {
+    if (typeof it === "string") { const s = document.createElement("span"); s.className = "lit"; s.textContent = it; el.appendChild(s); return null; }
+    const slot = document.createElement("span"); slot.className = "slot";
+    const sizer = document.createElement("span"); sizer.className = "sizer"; sizer.textContent = "0";
+    const a = document.createElement("span"), b = document.createElement("span");
+    slot.append(sizer, a, b); el.appendChild(slot);
+    return { u: it[0], b: it[1], a, bEl: b };
+  }).filter(Boolean);
+  return {
+    update(v, rate, down = true) {
+      for (const d of items) {
+        const y = v / d.u, fl = Math.floor(y), f = y - fl;
+        const w = Math.min(1, (ROLL * Math.abs(rate)) / d.u);
+        const cur = mod(fl, d.b), prev = mod(down ? fl + 1 : fl - 1, d.b);
+        const since = down ? 1 - f : f;
+        const p = w <= 1e-6 ? 1 : clamp(since / w);
+        const e = eio(p), dir = down ? 1 : -1;
+        d.a.textContent = prev; d.bEl.textContent = cur;
+        const sh = 0.42;
+        d.a.style.transform = `translateY(${dir * e * sh}em) scale(${1 - 0.25 * e})`;
+        d.a.style.opacity = 1 - e;
+        d.a.style.filter = e > 0.02 && e < 0.98 ? `blur(${e * 5}px)` : "none";
+        d.bEl.style.transform = `translateY(${-dir * (1 - e) * sh}em) scale(${0.75 + 0.25 * e})`;
+        d.bEl.style.opacity = e;
+        d.bEl.style.filter = e > 0.02 && e < 0.98 ? `blur(${(1 - e) * 5}px)` : "none";
+      }
+    },
+  };
+}
+const HHMMSS = [[36000, 10], [3600, 10], ":", [600, 6], [60, 10], ":", [10, 6], [1, 10]];
+const HMMSS = [[3600, 10], ":", [600, 6], [60, 10], ":", [10, 6], [1, 10]];
+const DESK = [[3600, 10], " 小时 ", [600, 6], [60, 10], " 分钟 ", [10, 6], [1, 10], " 秒"];
+const R = {
+  timer: makeRoller($("t-count"), HHMMSS),
+  wm: makeRoller($("wm-time"), HMMSS),
+  wl: makeRoller($("wl-time"), HMMSS),
+  di: makeRoller($("di-time"), HMMSS),
+  wa: makeRoller($("wa-time"), HMMSS),
+  desk: makeRoller($("d-count"), DESK),
+  mini: makeRoller($("m-time"), HMMSS),
+  fin: makeRoller($("f-count"), HHMMSS),
+};
+
+/* ---------- the working day ---------- */
+const H = 3600;
+const DAY = { start: 9 * H, lunchA: 12 * H, lunchB: 13 * H, end: 17 * H };
+const TOTAL = 7 * H;
+const worked = (c) => clamp(c, DAY.start, DAY.lunchA) - DAY.start + clamp(c, DAY.lunchB, DAY.end) - DAY.lunchB;
+const remaining = (c) => TOTAL - worked(c);
+const hms = (h, m, s) => h * H + m * 60 + s;
+
+/* Master timeline (seconds). Act 1 runs on O; the product tour on T. */
+const O = {
+  mon: 2.0, clock: 3.5, phone1: 5.0, wide: 6.6, phone2: 9.2, get: 10.6, ringA: 10.7, ringB: 11.4, open: 11.5,
+  tapOpen: 11.85, launch: 11.95, warm: 12.5, back: 13.7, down: 14.5, stretch: 14.9, pc: 15.5, knock: 16.5,
+  notif: 17.3, banner: 18.0, fade: 19.4,
+};
+const D = 8.2;
+const T = {
+  rv: 19.7, rvOut: 22.6,
+  phoneIn: 14.8 + D, ff1: 16.2 + D, ff1End: 18.4 + D, lunch: 20.4 + D, ff2: 21.6 + D, ff2End: 23.6 + D,
+  home: 24.6 + D, watch: 29.0 + D, sched: 32.6 + D, desk: 37.4 + D, fin: 42.6 + D, zero: 46.0 + D, end: 48.0 + D, total: 51.6 + D,
+};
+
+/* Wall clock seen by the phone. */
+function phoneClock(t) {
+  if (t < T.phoneIn - 0.5) return hms(10, 27, 40) + (t - O.launch);
+  if (t < T.ff1) return hms(10, 28, 37) + (t - T.phoneIn + 0.4);
+  if (t < T.ff1End) return lerp(hms(10, 28, 37) + (T.ff1 - T.phoneIn + 0.4), hms(11, 59, 57.6), eio((t - T.ff1) / (T.ff1End - T.ff1)));
+  if (t < T.ff2) return hms(11, 59, 57.6) + (t - T.ff1End);
+  if (t < T.ff2End) return lerp(hms(11, 59, 57.6) + (T.ff2 - T.ff1End), hms(12, 58, 30), eio((t - T.ff2) / (T.ff2End - T.ff2)));
+  if (t < T.home) return hms(12, 58, 30) + (t - T.ff2End);
+  return hms(14, 22, 8.3) + (t - T.home);
+}
+/* Countdown value handed to the rollers: remaining + 0.5 puts the tick on the whole second. */
+const cdv = (c) => remaining(c) + 0.5;
+const rateOf = (f, t) => (f(t + 1 / 120) - f(t - 1 / 120)) * 60;
+
+/* ---------- timer screen content ---------- */
+function nextRows(list) {
+  return list.map((r, i) => `<div class="row nrow sep" style="top:${i * 58}px;height:58px">
+    <span class="dot" style="background:${r.bg}">${ICONS[r.icon]}</span><span class="tt">${r.t}</span><span class="st">${r.s}</span><span class="vv num">${r.v}</span></div>`).join("")
+    + `<div class="row" style="top:${list.length * 58}px;height:42px"><span style="position:absolute;left:18px;font-size:14px;font-weight:600;color:#F45A1E">展开其余 2 项</span><span style="position:absolute;right:14px;top:12px">${ICONS.chevdown}</span></div>`;
+}
+const NEXT_MORNING = [
+  { icon: "walk", bg: "#E4F6E8", t: "健康提醒", s: "60 分钟", v: "11:00" },
+  { icon: "resume", bg: "#DDF3FB", t: "午休", s: "开始", v: "12:00" },
+  { icon: "bell", bg: "#EDEAFD", t: "下班提醒", s: "今天还剩 25%", v: "15:15" },
+  { icon: "bell", bg: "#EDEAFD", t: "下班提醒", s: "今天还剩 10%", v: "16:18" },
+];
+const NEXT_LUNCH = [
+  { icon: "resume", bg: "#DDF3FB", t: "午休", s: "恢复时间", v: "13:00" },
+  { icon: "bell", bg: "#EDEAFD", t: "下班提醒", s: "今天还剩 25%", v: "15:15" },
+  { icon: "walk", bg: "#E4F6E8", t: "健康提醒", s: "60 分钟", v: "16:00" },
+  { icon: "bell", bg: "#EDEAFD", t: "下班提醒", s: "今天还剩 10%", v: "16:18" },
+];
+let nextState = "";
+function setNext(which) {
+  if (which === nextState) return;
+  nextState = which;
+  $("t-next").innerHTML = nextRows(which === "lunch" ? NEXT_LUNCH : NEXT_MORNING);
+}
+
+/* widget list */
+$("wl-list").innerHTML = [
+  { icon: "walk", t: "健康提醒", s: "60 分钟", v: "15:00" },
+  { icon: "bell", t: "下班提醒", s: "今天还剩 25%", v: "15:15" },
+  { icon: "bell", t: "下班提醒", s: "今天还剩 10%", v: "16:18" },
+  { icon: "bell", t: "下班提醒", s: "今天还剩 5%", v: "16:39" },
+].map((r, i) => `<div class="abs" style="left:18px;right:18px;top:${228 + i * 38}px;height:38px;${i < 3 ? "border-bottom:.5px solid #E6E0DA" : ""}">
+  <span class="abs" style="left:0;top:9px;color:#F45A1E">${r.icon === "walk" ? ICONS.walk.replace("#34C759", "#F45A1E") : ICONS.bell.replaceAll("#6E5BF0", "#F45A1E").replace("#EDEAFD", "#FFF6EF")}</span>
+  <span class="abs" style="left:28px;top:2px;font-size:13.5px;font-weight:600;color:#1c1c1e">${r.t}</span>
+  <span class="abs" style="left:28px;top:19px;font-size:12px;color:#8e8e93">${r.s}</span>
+  <span class="abs num" style="right:0;top:10px;font-size:14px;color:#8e8e93">${r.v}</span></div>`).join("");
+
+/* ---------- schedule screen ---------- */
+const CAL = [];
+(function buildCal() {
+  const cal = $("cal");
+  ["日", "一", "二", "三", "四", "五", "六"].forEach((d, i) => {
+    const w = document.createElement("div"); w.className = "wk"; w.style.left = `${14 + i * 54}px`; w.textContent = d; cal.appendChild(w);
+  });
+  // Oct 2026 starts on Thursday.
+  for (let day = 1; day <= 31; day++) {
+    const idx = 3 + day;
+    const col = idx % 7, row = Math.floor(idx / 7);
+    const holiday = day <= 7, makeup = day === 10;
+    const weekend = col === 0 || col === 6;
+    const work = makeup || (!holiday && !weekend);
+    const el = document.createElement("div");
+    el.className = "cell";
+    el.style.left = `${16 + col * 54}px`; el.style.top = `${84 + row * 54}px`;
+    el.innerHTML = `<div class="n num">${day}</div><div class="s"><span class="hd" style="opacity:0"></span><span class="lbl">休息</span></div>`;
+    cal.appendChild(el);
+    CAL.push({ el, day, work, mark: holiday || makeup, col, row, lbl: el.querySelector(".lbl"), hd: el.querySelector(".hd") });
+  }
+  const chips = $("c-chips");
+  ["周一", "周二", "周三", "周四", "周五", "周六", "周日"].forEach((d, i) => {
+    const c = document.createElement("div"); c.className = "pchip"; c.style.left = `${14 + i * 54}px`; c.textContent = d; c.id = `chip${i}`; chips.appendChild(c);
+  });
+})();
+
+/* ---------- act 1 helpers ---------- */
+const fmtHMS = (v) => { const n = Math.max(0, Math.floor(v)); const p = (x) => String(x).padStart(2, "0"); return `${p(Math.floor(n / 3600))}:${p(Math.floor(n % 3600 / 60))}:${p(n % 60)}`; };
+/* Camera moves: [start, duration, focusX, focusY, scale]. */
+const CAM = [
+  [0, 1.8, 540, 990, 1.0],
+  [O.mon, 0.6, 690, 676, 3.4],
+  [O.clock, 0.6, 830, 440, 2.3],
+  [O.phone1, 0.6, 967, 1154, 2.2],
+  [O.wide, 0.6, 540, 1000, 1.0],
+  [O.phone2 + 0.1, 0.7, 967, 1154, 2.6],
+  [O.back, 0.8, 560, 1010, 1.0],
+  [O.pc, 0.7, 662, 1016, 3.3],
+  [O.notif, 0.7, 906, 1046, 3.9],
+  [O.fade, 0.8, 900, 1050, 4.3],
+];
+function camAt(t) {
+  let cur = { x: 540, y: 960, s: 1.08 };
+  for (const [a, d, x, y, s] of CAM) {
+    if (t <= a) break;
+    const p = eio(clamp((t - a) / d));
+    cur = { x: lerp(cur.x, x, p), y: lerp(cur.y, y, p), s: lerp(cur.s, s, p) };
+    if (p < 1) break;
+  }
+  return cur;
+}
+const POSES = {
+  screen: { dx: -4, dy: 0, r: -4 }, clock: { dx: 16, dy: -16, r: 11 }, phone: { dx: 14, dy: 10, r: 7 },
+  droop: { dx: -2, dy: 22, r: -7 }, relaxed: { dx: 0, dy: -10, r: 2 },
+  work: { dx: -6, dy: -4, r: -5 }, stand: { dx: 14, dy: 4, r: 7 },
+};
+const POSE_MOVES = [
+  [O.clock - 0.1, 0.5, "clock"], [O.phone1, 0.5, "phone"], [O.wide + 0.2, 0.6, "droop"],
+  [O.phone2, 0.5, "phone"], [O.stretch, 0.5, "relaxed"], [O.pc, 0.5, "work"], [O.notif, 0.5, "stand"],
+];
+function poseAt(t) {
+  let cur = { ...POSES.screen };
+  for (const [a, d, name] of POSE_MOVES) {
+    if (t <= a) break;
+    const p = eio(clamp((t - a) / d)), to = POSES[name];
+    cur = { dx: lerp(cur.dx, to.dx, p), dy: lerp(cur.dy, to.dy, p), r: lerp(cur.r, to.r, p) };
+    if (p < 1) break;
+  }
+  return cur;
+}
+const RAIN = [];
+(function buildOffice() {
+  const NS = "http://www.w3.org/2000/svg";
+  const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 46; i++) {
+    const x = 112 + rnd() * 336;
+    RAIN.push({ seed: rnd(), el: mk("line", { x1: x, x2: x - 5, y1: 0, y2: 28 }, $("o-rain")) });
+  }
+  for (let i = 0; i < 60; i++) {
+    const a = (i * 6 * Math.PI) / 180, big = i % 5 === 0, r1 = big ? 88 : 96;
+    mk("line", { x1: Math.sin(a) * r1, y1: -Math.cos(a) * r1, x2: Math.sin(a) * 102, y2: -Math.cos(a) * 102, "stroke-width": big ? 5 : 2 }, $("o-ticks"));
+  }
+  const sheet = $("o-sheet");
+  mk("rect", { x: 182, y: 724, width: 576, height: 22, fill: "#EEF1F5" }, sheet);
+  for (let c = 0; c <= 8; c++) mk("line", { x1: 182 + c * 64, x2: 182 + c * 64, y1: 724, y2: 1056, stroke: "#E3E6EB", "stroke-width": 1 }, sheet);
+  for (let r = 0; r <= 13; r++) mk("line", { x1: 182, x2: 758, y1: 746 + r * 24, y2: 746 + r * 24, stroke: "#E3E6EB", "stroke-width": 1 }, sheet);
+  for (let r = 0; r < 13; r++) for (let c = 0; c < 6; c++) {
+    const w = 18 + rnd() * 34;
+    mk("rect", { x: 190 + c * 64 + (c ? 40 - w : 0), y: 754 + r * 24, width: c ? w : 44, height: 7, rx: 2, fill: c ? "#B6BCC6" : "#8C939E" }, sheet);
+  }
+  for (let i = 0; i < 6; i++) mk("rect", { x: 580 + i * 26, y: 960 - (20 + rnd() * 70), width: 16, height: 20 + rnd() * 70, rx: 2, fill: i === 5 ? "#E6874E" : "#9DB1CC" }, sheet);
+  mk("rect", { x: 566, y: 870, width: 180, height: 100, fill: "none", stroke: "#E3E6EB" }, sheet);
+  for (let i = 0; i < 30; i++) mk("rect", { x: 14 + (i % 7) * 18.5, y: 60 + Math.floor(i / 7) * 24, width: 12, height: 12, rx: 2, fill: i === 22 ? "#C9674A" : "#D8D2C8" }, $("o-calgrid"));
+})();
+
+/* Full-width punctuation sits in the left half of its em box; pull it back
+   at the end of centred lines so the line reads as centred. */
+function trimTrailingPunct(el) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let last = null;
+  while (walker.nextNode()) if (walker.currentNode.nodeValue.trim()) last = walker.currentNode;
+  if (!last) return;
+  const v = last.nodeValue.replace(/\s+$/, "");
+  if (!/[。！？，、；：」』）]$/.test(v)) return;
+  last.nodeValue = v.slice(0, -1);
+  const span = document.createElement("span");
+  span.className = "tp";
+  span.textContent = v.slice(-1);
+  last.parentNode.insertBefore(span, last.nextSibling);
+}
+document.querySelectorAll(".cap h1, .cap p, .a1").forEach(trimTrailingPunct);
+
+
+/* ---------- confetti ----------
+   The Web app fires canvas-confetti when the shift ends (components/Confetti.tsx):
+   two cannons every 250 ms for 5 s, spread 360, startVelocity 30, ticks 60.
+   The video renders frames by timestamp, so the same physics
+   (canvas-confetti randomPhysics/updateFetti) is replayed deterministically. */
+const CONFETTI = (() => {
+  const VW = 415.4, VH = 738.5; // a phone-sized canvas, scaled up to 1080 wide
+  const COLORS = ["#26ccff", "#a25afd", "#ff5e7e", "#88ff5a", "#fcff42", "#ffa62d", "#ff36ff"].map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)));
+  let seed = 20260928;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const list = [];
+  for (let k = 0; k < 20; k++) {
+    const left = 5 - k * 0.25;
+    const count = Math.round(50 * (left / 5));
+    for (const side of [0, 1]) {
+      const ox = side ? 0.7 + rnd() * 0.2 : 0.1 + rnd() * 0.2, oy = rnd() - 0.2;
+      for (let i = 0; i < count; i++) {
+        list.push({
+          at: k * 0.25, x: VW * ox, y: VH * oy,
+          color: COLORS[Math.floor(rnd() * COLORS.length)], circle: rnd() < 0.5,
+          wobble: rnd() * 10, wobbleSpeed: Math.min(0.11, rnd() * 0.1 + 0.05),
+          velocity: 15 + rnd() * 30, angle2D: -Math.PI / 2 + (Math.PI - rnd() * 2 * Math.PI),
+          tiltAngle: (rnd() * 0.5 + 0.25) * Math.PI, rs: Math.floor(rnd() * 1e9),
+        });
+      }
+    }
+  }
+  return { list, scale: 1080 / VW };
+})();
+function drawConfetti(t) {
+  const cv = $("confetti"), ctx = cv.getContext("2d");
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  const since = t - T.zero;
+  if (since < 0 || since > 6.2) return;
+  ctx.setTransform(CONFETTI.scale, 0, 0, CONFETTI.scale, 0, 0);
+  for (const p of CONFETTI.list) {
+    const n = Math.floor((since - p.at) * 60) + 1;
+    if (n < 1 || n > 60) continue;
+    let x = p.x, y = p.y, v = p.velocity, wob = p.wobble, tilt = p.tiltAngle, rs = p.rs, random = 2;
+    for (let i = 0; i < n; i++) {
+      x += Math.cos(p.angle2D) * v; y += Math.sin(p.angle2D) * v + 3; v *= 0.9;
+      wob += p.wobbleSpeed; tilt += 0.1;
+      rs = (rs * 16807) % 2147483647; random = (rs / 2147483647) + 2;
+    }
+    const progress = (n - 1) / 60;
+    const wx = x + 10 * Math.cos(wob), wy = y + 10 * Math.sin(wob);
+    const x1 = x + random * Math.cos(tilt), y1 = y + random * Math.sin(tilt);
+    const x2 = wx + random * Math.cos(tilt), y2 = wy + random * Math.sin(tilt);
+    ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${1 - progress})`;
+    ctx.beginPath();
+    if (p.circle) ctx.ellipse(x, y, Math.abs(x2 - x1) * 0.6, Math.abs(y2 - y1) * 0.6, (Math.PI / 10) * wob, 0, 2 * Math.PI);
+    else { ctx.moveTo(x, y); ctx.lineTo(wx, y1); ctx.lineTo(x2, y2); ctx.lineTo(x1, wy); }
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+/* ---------- geometry helpers ---------- */
+const PH = { x: 210, y: 520, w: 660 };
+const k = (660 * 0.89795918) / 440;
+set("screen", { transform: `scale(${k})` });
+set("wscreen", { transform: `scale(${222.86 / 208})` });
+
+function placePhone(x, y, s, extraOpacity = 1) {
+  set("phone", { transform: `translate(${x - PH.x}px, ${y - PH.y}px) scale(${s})`, opacity: extraOpacity, visibility: extraOpacity < 0.001 ? "hidden" : "visible" });
+}
+
+/* ---------- render ---------- */
+function render(t) {
+  /* backgrounds */
+  const eveningIn = tw(t, T.desk + 0.2, T.desk + 1.0, eio);
+  const darkBack = tw(t, T.fin, T.fin + 0.8, eio);
+  set("bg-cream", { opacity: 1 });
+  set("bg-evening", { opacity: eveningIn });
+
+  /* ---- ACT 1: the office ---- */
+  const officeOn = t < O.fade + 0.8;
+  set("office", { display: officeOn ? "block" : "none" });
+  if (officeOn) {
+    const cam = camAt(t);
+    $("o-cam").setAttribute("transform", `translate(${540 - cam.x * cam.s} ${960 - cam.y * cam.s}) scale(${cam.s})`);
+    const warm = tw(t, O.warm, O.warm + 1.0, eio);
+    const dof = 16 * tw(t, O.phone2 + 0.35, O.phone2 + 0.8, eio) * (1 - tw(t, O.back, O.back + 0.8, eio));
+    const fade = tw(t, O.fade, O.fade + 0.6, eio);
+    const blur = dof + 24 * fade;
+    set("o-svg", { filter: `saturate(${lerp(0.42, 1.06, warm)}) brightness(${lerp(0.72, 1.02, warm)})${blur > 0.05 ? ` blur(${blur}px)` : ""}` });
+    set("office", { opacity: 1 - fade });
+    $("o-tint").setAttribute("opacity", lerp(0.5, 0, warm));
+    $("o-glow").setAttribute("opacity", lerp(0, 0.4, warm));
+    $("o-scrim").setAttribute("opacity", 1 - warm);
+    $("o-skywarm").setAttribute("opacity", warm);
+    $("o-beam").setAttribute("opacity", 0.6 * warm);
+    $("o-rain").setAttribute("opacity", 0.55 * (1 - warm));
+    RAIN.forEach((r) => {
+      const y = 232 + mod(r.seed * 600 + t * 820, 600);
+      r.el.setAttribute("y1", y); r.el.setAttribute("y2", y + 28);
+    });
+    $("o-steam").setAttribute("opacity", 0.55 * warm);
+    $("o-steam1").setAttribute("transform", `translate(0 ${-mod(t * 14, 12)})`);
+    $("o-steam2").setAttribute("transform", `translate(0 ${-mod(t * 14 + 6, 12)})`);
+
+    // wall clock, 10:26 and slowly ticking
+    // three glances, more than an hour apart; the hands sweep forward between them
+    const G0 = hms(9, 18, 10), G1 = hms(9, 47, 5), G2 = hms(10, 27, 10);
+    const wc = t < O.clock ? G0 + t
+      : t < O.clock + 0.6 ? lerp(G0 + O.clock, G1, eio((t - O.clock) / 0.6))
+      : t < O.phone1 ? G1 + (t - O.clock - 0.6)
+      : t < O.phone1 + 0.6 ? lerp(G1 + (O.phone1 - O.clock - 0.6), G2, eio((t - O.phone1) / 0.6))
+      : G2 + (t - O.phone1 - 0.6);
+    const hh = (wc / 3600) % 12, mm = (wc / 60) % 60, ss = Math.floor(wc % 60);
+    $("o-ch").setAttribute("transform", `rotate(${hh * 30})`);
+    $("o-cm").setAttribute("transform", `rotate(${mm * 6})`);
+    $("o-cs").setAttribute("transform", `rotate(${ss * 6})`);
+    $("o-montime").textContent = `周三 ${HMS(wc)}`;
+
+    // head, arms, phone
+    const hp = poseAt(t);
+    const dy = hp.dy + (t < O.mon ? Math.sin(t * 9) * 1.5 : 0);
+    const sink = 10 * tw(t, O.wide + 0.4, O.wide + 1.0, eio) * (1 - tw(t, O.phone2, O.phone2 + 0.4, eio));
+    const lift = -8 * tw(t, O.stretch, O.stretch + 0.5, eio);
+    const sy = sink + lift;
+    $("o-body").setAttribute("transform", `translate(0 ${sy})`);
+    $("o-head").setAttribute("transform", `translate(${hp.dx} ${dy + sy}) rotate(${hp.r} 701 1440)`);
+    const raise = Math.max(
+      tw(t, O.phone1 - 0.1, O.phone1 + 0.4, eio) * (1 - tw(t, O.wide, O.wide + 0.4, eio)),
+      tw(t, O.phone2, O.phone2 + 0.4, eio) * (1 - tw(t, O.down, O.down + 0.35, eio)),
+    );
+    const stretch = tw(t, O.stretch, O.stretch + 0.5, back) * (1 - tw(t, O.pc - 0.1, O.pc + 0.4, eio));
+    // Arms sit behind the torso: only the elbow breaks the silhouette at rest,
+    // the forearm rises beside the head to hold the phone up in front.
+    const R_REST = { e: [990, 1700], h: [900, 1600] }, R_UP = { e: [1050, 1560], h: [975, 1262] }, R_STR = { e: [1000, 1330], h: [790, 1108] };
+    const L_REST = { e: [412, 1700], h: [500, 1600] }, L_STR = { e: [402, 1330], h: [612, 1108] };
+    const mix = (a, b, p) => [lerp(a[0], b[0], p), lerp(a[1], b[1], p)];
+    let re = mix(R_REST.e, R_UP.e, raise), rh = mix(R_REST.h, R_UP.h, raise);
+    re = mix(re, R_STR.e, stretch); rh = mix(rh, R_STR.h, stretch);
+    const le = mix(L_REST.e, L_STR.e, stretch), lh = mix(L_REST.h, L_STR.h, stretch);
+    $("o-armR").setAttribute("d", `M905 ${1600 + sy} Q${re[0]} ${re[1]} ${rh[0]} ${rh[1]}`);
+    $("o-handR").setAttribute("cx", rh[0]); $("o-handR").setAttribute("cy", rh[1]);
+    $("o-armL").setAttribute("d", `M497 ${1600 + sy} Q${le[0]} ${le[1]} ${lh[0]} ${lh[1]}`);
+    $("o-handL").setAttribute("cx", lh[0]); $("o-handL").setAttribute("cy", lh[1]);
+    const inHand = raise > 0.3;
+    $("o-phone-hand").setAttribute("transform", `translate(${rh[0] - 8} ${rh[1] - 108}) rotate(-6)`);
+    $("o-phone-hand").setAttribute("opacity", inHand ? 1 : 0);
+    $("o-stand-phone").setAttribute("opacity", inHand ? 0 : 1);
+    const appOn = t >= O.launch;
+    $("o-ph-lock").setAttribute("opacity", appOn ? 0 : 1);
+    $("o-ph-app").setAttribute("opacity", appOn ? 1 : 0);
+    const c = phoneClock(t);
+    if (appOn) {
+      $("o-ph-count").textContent = fmtHMS(remaining(c) + 0.5);
+      $("o-ph-bar").setAttribute("width", (88 * worked(c)) / TOTAL);
+    }
+
+    // the phone on its stand: dark before DoneAt, then a Live Activity
+    const standOn = t >= O.down;
+    $("o-st-off").setAttribute("opacity", standOn ? 0 : 1);
+    $("o-st-lock").setAttribute("opacity", standOn ? 1 : 0);
+    const later = t >= O.notif + 0.35; // montage: the afternoon passes
+    const cs = later ? hms(15, 15, 0) + (t - O.notif - 0.35) : c;
+    $("o-st-time").textContent = HMS(cs);
+    $("o-st-count").textContent = fmtHMS(remaining(cs) + 0.5).replace(/^0/, "");
+    $("o-st-bar").setAttribute("width", (48 * worked(cs)) / TOTAL);
+    const bn = tw(t, O.banner, O.banner + 0.45, back);
+    $("o-st-banner").setAttribute("opacity", clamp(bn * 1.4));
+    $("o-st-banner").setAttribute("transform", `translate(0 ${48 - (1 - bn) * 16})`);
+
+    // the woodfish mini timer shows up on the monitor once DoneAt is installed
+    const mi = tw(t, O.warm + 0.3, O.warm + 0.8, back);
+    $("o-mini").setAttribute("opacity", clamp(mi));
+    $("o-mini").setAttribute("transform", `translate(662 1016) scale(${0.85 + 0.15 * mi}) translate(-662 -1016)`);
+    $("o-mini-time").textContent = fmtHMS(remaining(c) + 0.5).replace(/^0/, "");
+    $("o-mini-pct").textContent = `${Math.floor((worked(c) / TOTAL) * 100)}%`;
+    $("o-mini-bar").setAttribute("width", (144 * worked(c)) / TOTAL);
+    const knocks = [O.knock, O.knock + 0.45];
+    $("o-mini-knocks").textContent = 64 + knocks.filter((kk) => t >= kk).length;
+    let squash = 0, plus = 0, plusY = 0;
+    knocks.forEach((kk) => { const d = t - kk; if (d >= 0 && d < 0.25) squash = Math.max(squash, Math.sin((d / 0.25) * Math.PI)); if (d >= 0 && d < 0.8) { plus = 1 - (d / 0.8) ** 2; plusY = -14 * eo(d / 0.8); } });
+    $("o-mini-fish").setAttribute("transform", `translate(590 ${996 + 3 * squash}) scale(${0.028 * (1 - 0.1 * squash)} ${0.028 * (1 - 0.16 * squash)})`);
+    $("o-mini-plus").setAttribute("opacity", plus);
+    $("o-mini-plus").setAttribute("transform", `translate(0 ${plusY})`);
+
+    // captions
+    show("cap0", t, 0.3, O.mon - 0.2);
+    const n = t < O.clock + 0.45 ? 3 : t < O.phone1 + 0.45 ? 4 : 5;
+    $("cn").textContent = n;
+    const popAt = n === 4 ? O.clock + 0.45 : n === 5 ? O.phone1 + 0.45 : -9;
+    const pop = t > popAt && t < popAt + 0.35 ? Math.sin(((t - popAt) / 0.35) * Math.PI) : 0;
+    set("cn", { transform: `scale(${1 + 0.25 * pop})`, color: pop > 0.05 ? "#FF9A45" : "" });
+    show("capN", t, O.mon + 0.1, O.wide - 0.1);
+    show("capQ", t, O.wide + 0.3, O.phone2 - 0.1);
+    show("o-unknown", t, O.wide + 0.7, O.phone2 - 0.1, { dy: 20 });
+    set("u-stripes", { transform: `translateX(${mod(t * 40, 39.6)}px)` });
+    show("capS", t, O.phone2 + 0.5, O.launch - 0.1);
+    show("capR", t, O.warm + 0.25, O.pc - 0.2);
+    show("capW", t, O.pc + 0.2, O.notif - 0.2);
+    show("capM", t, O.notif + 0.3, O.fade - 0.1);
+  } else {
+    ["cap0", "capN", "capQ", "capS", "capR", "capW", "capM"].forEach((id) => set(id, { visibility: "hidden" }));
+  }
+
+  /* ---- brand reveal ---- */
+  const rvOn = t > T.rv - 0.2 && t < T.rvOut + 1.2;
+  set("reveal", { display: rvOn ? "block" : "none" });
+  if (rvOn) {
+    const a = T.rv;
+    const ring = tw(t, a, a + 1.1, eio);
+    const hands = tw(t, a + 0.6, a + 1.2, eo);
+    const dot = tw(t, a + 1.0, a + 1.6, back);
+    set("rv-ring", { strokeDasharray: "1 1", strokeDashoffset: 1 - ring, opacity: ring > 0 ? 1 : 0 });
+    set("rv-hands", { strokeDasharray: "1 1", strokeDashoffset: 1 - hands, opacity: hands > 0 ? 1 : 0 });
+    $("rv-dot").setAttribute("r", 86 * clamp(dot, 0, 1.3));
+    const markOut = tw(t, T.rvOut, T.rvOut + 0.6, (p) => p * p);
+    set("rv-mark", { opacity: 1 - markOut, transform: `translateY(${-markOut * 40}px) scale(${1 - markOut * 0.1})` });
+    show("rv-word", t, a + 1.2, T.rvOut, { dy: 30 });
+    show("rv-slogan", t, a + 1.75, T.rvOut + 0.05, { dy: 30, blur: 18 });
+  }
+  /* ---- captions ---- */
+  show("capA", t, T.phoneIn + 0.3, T.lunch - 0.3);
+  show("capB", t, T.lunch + 0.1, T.home - 0.25);
+  show("capC", t, T.home + 0.2, T.watch - 0.25);
+  show("capD", t, T.watch + 0.15, T.sched - 0.25);
+  show("capE", t, T.sched + 0.2, T.desk - 0.3);
+  show("capF", t, T.desk + 0.7, T.fin - 0.3);
+
+  /* ---- phone ---- */
+  const early = t > O.phone2 + 0.4 && t < O.back + 0.85;
+  const phoneOn = early || (t > T.phoneIn - 0.1 && t < T.desk + 1.0);
+  set("phone", { display: phoneOn ? "block" : "none" });
+  set("watch", { display: t > T.watch - 0.1 && t < T.sched + 0.8 ? "block" : "none" });
+  if (phoneOn) {
+    const rise = tw(t, T.phoneIn, T.phoneIn + 1.1, eo5);
+    let px = PH.x, py = lerp(1960, PH.y, rise), ps = lerp(0.92, 1, rise);
+    // lunch push-in on the top of the screen
+    const push = tw(t, T.lunch + 0.5, T.lunch + 1.2, eio) * (1 - tw(t, T.ff2End + 0.2, T.ff2End + 0.9, eio));
+    ps *= 1 + 0.2 * push; px -= 66 * push; py += 20 * push;
+    // watch: slide left & shrink
+    const wIn = tw(t, T.watch, T.watch + 0.8, eio) * (1 - tw(t, T.sched, T.sched + 0.7, eio));
+    px -= 150 * wIn; ps *= 1 - 0.1 * wIn; py += 40 * wIn;
+    // leave for desktop
+    const out = tw(t, T.desk, T.desk + 0.7, (p) => p * p);
+    py += out * 1500;
+    if (early) {
+      // the phone in the person's hand, then back into it
+      const inP = tw(t, O.phone2 + 0.45, O.phone2 + 0.9, eo5);
+      const outP = tw(t, O.back, O.back + 0.8, eio);
+      const cam = camAt(t);
+      const X = 540 + (967 - cam.x) * cam.s, Y = 960 + (1154 - cam.y) * cam.s, sc = (250 * cam.s) / 1347;
+      px = lerp(210, X - 330, outP); ps = lerp(lerp(0.8, 0.93, inP), sc, outP);
+      py = lerp(lerp(470, 430, inP), Y - 673.5 * sc, outP);
+      placePhone(px, py, ps, inP * (1 - tw(t, O.back + 0.55, O.back + 0.8, eio)));
+    } else placePhone(px, py, ps, 1);
+
+    /* which screen */
+    const homeP = tw(t, T.home, T.home + 0.7, eio);
+    const schedP = tw(t, T.sched + 0.3, T.sched + 0.95, eio);
+    const cT = phoneClock(Math.min(t, T.home - 1e-3));
+    // timer screen (opens from the App Store icon the first time)
+    const launchP = t < T.phoneIn - 0.5 ? tw(t, O.launch, O.launch + 0.5, eio) : 1;
+    const timerVis = homeP < 1 && launchP > 0;
+    if (launchP < 1) set("scr-timer", { display: timerVis ? "block" : "none", transform: `scale(${lerp(0.27, 1, launchP)})`, opacity: clamp(launchP * 2.5), borderRadius: `${(1 - launchP) * 90}px`, transformOrigin: "79px 163px" });
+    else set("scr-timer", { display: timerVis ? "block" : "none", transform: `scale(${1 - 0.18 * homeP})`, opacity: 1 - homeP, borderRadius: `${homeP * 60}px`, transformOrigin: "50% 45%" });
+    // App Store: get → download → open
+    const storeVis = t < T.phoneIn - 0.5 && launchP < 1;
+    set("scr-store", { display: storeVis ? "block" : "none", transform: `scale(${1 - 0.05 * launchP})` });
+    if (storeVis) {
+      const ringOn = t >= O.get + 0.08 && t < O.open;
+      set("st-btn", { display: ringOn ? "none" : "block", transform: `scale(${t > O.get - 0.04 && t < O.get + 0.08 ? 0.94 : 1})` });
+      $("st-btn").textContent = t >= O.open ? "打开" : "获取";
+      set("st-ring", { display: ringOn ? "block" : "none" });
+      $("st-prog").setAttribute("stroke-dasharray", `${100 * tw(t, O.ringA, O.ringB, (p) => p)} 100`);
+      let tap = 0;
+      for (const at of [O.get, O.tapOpen]) { const d = t - at + 0.12; if (d > 0 && d < 0.45) tap = Math.sin((d / 0.45) * Math.PI); }
+      set("tap", { left: "193px", top: "204px", opacity: tap, transform: `scale(${0.7 + 0.3 * tap})` });
+    }
+    if (timerVis) {
+      const vt = (tt) => cdv(phoneClock(Math.min(tt, T.home - 1e-3)));
+      R.timer.update(vt(t), rateOf(vt, t), true);
+      $("t-sbtime").textContent = HMS(cT);
+      const pct = (worked(cT) / TOTAL) * 100;
+      set("t-fill", { width: `${pct}%` });
+      const lunchP = tw(t, T.lunch, T.lunch + 0.45, eio);
+      const col = lunchP > 0.5 ? "#9C9CA1" : "#F25A14";
+      set("t-fill", { background: col });
+      set("t-bubble", { left: `${20 + 4 * pct}px`, background: col, borderTopColor: col });
+      $("t-bubble").textContent = `${pct.toFixed(1)}%`;
+      const inLunch = t >= T.lunch;
+      $("t-labeltext").textContent = inLunch ? "午休中" : "今天的班次还剩";
+      set("t-cup", { display: inLunch ? "inline-flex" : "none" });
+      const labelFlip = Math.abs(t - T.lunch) < 0.25 ? 1 - Math.abs(t - T.lunch) / 0.25 : 0;
+      set("t-label", { opacity: 1 - labelFlip, filter: labelFlip > 0.02 ? `blur(${labelFlip * 4}px)` : "none" });
+      setNext(inLunch ? "lunch" : "morning");
+      if (!inLunch) {
+        // the 11:00 health reminder leaves the list once it has passed
+        const rows = $("t-next").querySelectorAll(".nrow");
+        const slide = cT >= hms(11, 0, 0) ? 1 : 0;
+        rows.forEach((r, i) => { r.style.transform = `translateY(${-58 * slide}px)`; r.style.opacity = i === 0 ? 1 - slide : 1; });
+      }
+    }
+    // home screen
+    const homeVis = homeP > 0 && schedP < 1;
+    set("scr-home", { display: homeVis ? "block" : "none", opacity: homeP, transform: `scale(${(1.12 - 0.12 * homeP) * (1 + 0.06 * schedP)})`, filter: schedP > 0.01 ? `blur(${schedP * 6}px)` : "none" });
+    const c = phoneClock(t);
+    const v = (tt) => cdv(phoneClock(tt));
+    const rate = rateOf(v, t);
+    const pctNow = (worked(c) / TOTAL) * 100;
+    if (homeVis) {
+      $("h-sbtime").textContent = HMS(c);
+      R.wm.update(v(t), rate, true);
+      R.wl.update(v(t), rate, true);
+      $("wm-ring").setAttribute("stroke-dasharray", `${pctNow} 100`);
+      $("wm-pct").textContent = `${Math.floor(pctNow)}%`;
+      set("wl-fill", { width: `${pctNow}%` });
+      $("wl-pct").textContent = `${Math.floor(pctNow)}%`;
+      const w1 = tw(t, T.home + 0.25, T.home + 0.85, eo5), w2 = tw(t, T.home + 0.35, T.home + 0.95, eo5);
+      set("w-med", { transform: `scale(${0.9 + 0.1 * w1})`, opacity: w1 });
+      set("w-large", { transform: `scale(${0.9 + 0.1 * w2})`, opacity: w2 });
+    }
+    // Dynamic Island expands into a Live Activity on the home screen
+    const diP = tw(t, T.home + 0.7, T.home + 1.25, back) * (1 - tw(t, T.sched + 0.2, T.sched + 0.6, eio));
+    const hole = { x: 660 * 0.05102041, y: 660 * (3000 / 1470) * 0.022 };
+    const diW = lerp(123, 224, diP), diX = 220 - diW / 2;
+    set("di", { left: `${hole.x + diX * k}px`, top: `${hole.y + 14.7 * k}px`, width: `${diW * k}px`, height: `${35.7 * k}px`, display: diP > 0.001 ? "block" : "none" });
+    set($("di").querySelector(".l"), { transform: `scale(${k})`, transformOrigin: "0 0", opacity: clamp(diP * 1.6 - 0.6), left: `${12 * k}px`, top: `${7 * k}px` });
+    set($("di").querySelector(".r"), { fontSize: `${16 * k}px`, lineHeight: `${35.7 * k}px`, right: `${14 * k}px`, opacity: clamp(diP * 1.6 - 0.6) });
+    if (diP > 0) R.di.update(v(t), rate, true);
+    set("h-sbtime", { left: `${lerp(50, 36, clamp(diP))}px` });
+
+    // schedule screen
+    const calVis = schedP > 0;
+    set("scr-cal", { display: calVis ? "block" : "none", opacity: schedP, transform: `scale(${0.86 + 0.14 * schedP})`, borderRadius: `${(1 - schedP) * 60}px`, transformOrigin: "50% 50%" });
+    if (calVis) {
+      const s0 = T.sched + 1.0;
+      for (let i = 0; i < 5; i++) {
+        const on = tw(t, s0 + i * 0.12, s0 + i * 0.12 + 0.25, eo);
+        set(`chip${i}`, { background: on > 0.5 ? "#FDE6DA" : "#F2F2F7", color: on > 0.5 ? "#F45A1E" : "#8e8e93", transform: `scale(${1 + 0.12 * Math.sin(on * Math.PI)})` });
+      }
+      const c0 = s0 + 0.7;
+      CAL.forEach((d) => {
+        const at = c0 + (d.row * 7 + d.col) * 0.035;
+        const p = tw(t, at, at + 0.35, eo);
+        const on = d.work && p > 0.5;
+        d.el.classList.toggle("work", on);
+        d.lbl.textContent = on ? "白班" : "休息";
+        d.el.style.transform = `scale(${d.work ? 1 - 0.12 * Math.sin(p * Math.PI) : 1})`;
+        const h = tw(t, c0 + 1.6, c0 + 2.0, eo);
+        d.hd.style.opacity = d.mark ? h : 0;
+        d.hd.style.display = d.mark ? "inline-block" : "none";
+        d.el.classList.toggle("sel", d.day === 1 && h > 0.5);
+      });
+      set("c-hol", { color: tw(t, c0 + 1.5, c0 + 1.9) > 0.5 ? "#F45A1E" : "#8e8e93" });
+    }
+
+    /* watch */
+    if (t > T.watch - 0.1 && t < T.sched + 0.8) {
+      const wi = tw(t, T.watch + 0.15, T.watch + 1.0, eo5);
+      const wo = tw(t, T.sched, T.sched + 0.6, (p) => p * p);
+      set("watch", { left: `${lerp(1200, 690, wi) + wo * 520}px`, top: `${lerp(1060, 1010, wi)}px`, transform: `rotate(${(1 - wi) * 8}deg) scale(1.05)`, opacity: 1 });
+      R.wa.update(v(t), rate, true);
+      set("wa-fill", { width: `${pctNow}%` });
+    }
+  }
+
+  /* ---- desktop ---- */
+  const deskOn = t > T.desk && t < T.fin + 1.0;
+  set("desk-win", { display: deskOn ? "block" : "none" });
+  set("desk-mini", { display: deskOn ? "block" : "none" });
+  if (deskOn) {
+    const c = phoneClock(t);
+    const v = (tt) => cdv(phoneClock(tt));
+    const rate = rateOf(v, t);
+    const pct = (worked(c) / TOTAL) * 100;
+    const wIn = tw(t, T.desk + 0.6, T.desk + 1.5, eo5);
+    const mIn = tw(t, T.desk + 1.2, T.desk + 2.0, eo5);
+    const out = tw(t, T.fin - 0.2, T.fin + 0.5, (p) => p * p);
+    const ws = 2.0;
+    set("desk-win", { left: `${540 - 215 * ws}px`, top: `${lerp(1900, 560, wIn) - out * 60}px`, transform: `scale(${ws * (1 - out * 0.08)})`, opacity: wIn * (1 - out) });
+    const ms = 2.3;
+    set("desk-mini", { left: `${540 - 124 * ms}px`, top: `${lerp(2000, 1500, mIn) - out * 60}px`, transform: `scale(${ms * (1 - out * 0.08)})`, opacity: mIn * (1 - out) });
+    R.desk.update(v(t), rate, true);
+    R.mini.update(v(t), rate, true);
+    set("d-fill", { width: `${pct}%` });
+    set("d-bubble", { left: `${24 + 3.81 * pct}px` });
+    $("d-bubble").textContent = `${pct.toFixed(1)}%`;
+    set("m-fill", { width: `${pct}%` });
+    $("m-pct").textContent = `${Math.floor(pct)}%`;
+    // knock the wooden fish
+    const knocks = [T.desk + 2.5, T.desk + 2.95, T.desk + 3.3, T.desk + 3.6];
+    const n = knocks.filter((kk) => t >= kk).length;
+    $("m-knocks").textContent = 64 + n;
+    let squash = 0;
+    knocks.forEach((kk) => { const d = t - kk; if (d >= 0 && d < 0.25) squash = Math.max(squash, Math.sin((d / 0.25) * Math.PI)); });
+    set("fish", { transform: `scale(${1 - 0.1 * squash}, ${1 - 0.14 * squash})`, transformOrigin: "50% 80%" });
+    $("m-floaters").innerHTML = knocks.map((kk) => {
+      const d = t - kk; if (d < 0 || d > 0.9) return "";
+      const p = d / 0.9;
+      return `<div class="floater" style="left:46px;top:${16 - 26 * eo(p)}px;opacity:${1 - p * p}">+1</div>`;
+    }).join("");
+  }
+
+  /* ---- finale ---- */
+  const finOn = t > T.fin - 0.1;
+  set("finale", { display: finOn ? "block" : "none" });
+  if (finOn) {
+    // the last three seconds of the shift
+    const val = t < T.zero ? T.zero - t + 0.5 : 0.5;
+    R.fin.update(val, t < T.zero ? 1 : 0, true);
+    show("f-count", t, T.fin + 0.3, T.zero + 0.35, { dy: 30, blur: 20, outDy: -40, outDur: 0.5 });
+    show("f-label", t, T.fin + 0.5, T.zero + 0.25, { dy: 20 });
+    const pulse = t > T.zero && t < T.zero + 0.4 ? Math.sin(((t - T.zero) / 0.4) * Math.PI) : 0;
+    $("f-count").style.transform += ` scale(${1 + pulse * 0.06})`;
+    $("f-count").style.color = t >= T.zero - 0.05 ? "#FF9A45" : "#FFF1D8";
+    show("f-done", t, T.zero + 0.3, T.end - 0.1, { dy: 20, scaleIn: 0.85, blur: 20, dur: 0.6 });
+
+    const a = T.end + 0.2;
+    const ring = tw(t, a, a + 1.0, eio), hands = tw(t, a + 0.5, a + 1.0, eo), dot = tw(t, a + 0.85, a + 1.4, back);
+    set("e-ring", { strokeDasharray: "1 1", strokeDashoffset: 1 - ring, opacity: ring > 0 ? 1 : 0 });
+    set("e-hands", { strokeDasharray: "1 1", strokeDashoffset: 1 - hands, opacity: hands > 0 ? 1 : 0 });
+    $("e-dot").setAttribute("r", 86 * clamp(dot, 0, 1.3));
+    show("e-word", t, a + 0.8, null, { dy: 30 });
+    show("e-slogan", t, a + 1.2, null, { dy: 30, blur: 18 });
+    show("e-plat", t, a + 1.7, null, { dy: 20 });
+    show("e-cta", t, a + 2.0, null, { dy: 20 });
+    show("e-web", t, a + 2.3, null, { dy: 20 });
+    drawConfetti(t);
+  }
+  // the dark backdrop returns for the finale
+  set("bg-dark", { opacity: darkBack });
+}
+
+window.render = render;
+window.VIDEO_LENGTH = T.total;
+// render.mjs hands this to audio.mjs so the soundtrack lands on the same beats.
+window.AUDIO_TIMELINE = { O, T, cam: CAM.map(([at, d]) => [at, d]) };
+const q = new URLSearchParams(location.search);
+if (q.has("t")) render(parseFloat(q.get("t")));
+else if (q.has("play")) { const t0 = performance.now(); const loop = () => { render((performance.now() - t0) / 1000 % T.total); requestAnimationFrame(loop); }; loop(); }
+else render(0);
+</script>
+</body>
+</html>

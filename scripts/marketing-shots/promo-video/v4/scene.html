@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>DoneAt Promo V4</title>
+<!--
+  DoneAt · promo V4. One idea: stop reading the clock, read how much of today is left.
+  Every frame is drawn from a timestamp: render(t). Preview: ?t=6.5   Play: ?play
+  Alignment check against the real screenshot: ?t=13&align   Safe-area overlay: &safe
+  The timer screen in shot 3 is the real 3.2.0 screenshot (../../ios/raw/zh-1.png); only
+  the parts that move are redrawn on top of it.
+-->
+<style>
+  :root { --cream: #FFF1D8; --plum: #2B1935; --orange: #F2590A; --screen: #F2F2F7; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--cream); }
+  body { font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif; -webkit-font-smoothing: antialiased; color: var(--plum); }
+  .num { font-variant-numeric: tabular-nums; }
+  #stage { position: absolute; inset: 0; overflow: hidden; background: var(--cream); }
+
+  /* rolling digits (as in ../scene.html, the app's RollingText) */
+  .roll { display: inline-flex; align-items: baseline; white-space: pre; }
+  .slot { position: relative; display: inline-block; width: 1ch; text-align: center; }
+  .slot > span { position: absolute; left: 0; right: 0; top: 0; }
+  .slot > .sizer { position: static; visibility: hidden; }
+  .lit { display: inline-block; }
+
+  /* the phone screen, in iOS points (440×956); camera = one transform */
+  #screen { position: absolute; left: 0; top: 0; width: 440px; height: 956px; transform-origin: 0 0; border-radius: 63px; overflow: hidden; }
+  #scr-bg { position: absolute; inset: 0; background: var(--screen); }
+  #shot { position: absolute; inset: 0; }
+  #shot img { position: absolute; left: 0; top: 0; width: 440px; height: 956px; }
+  #shot .patch { position: absolute; background: var(--screen); }
+  #count { position: absolute; left: 0; right: 0; top: 131.5px; height: 70px; text-align: center; font-size: 56.4px; font-weight: 700; line-height: 70px; letter-spacing: -.3px; }
+  #label { position: absolute; left: 0; right: 0; top: 206px; text-align: center; font-size: 15px; line-height: 20px; color: #8A8A8E; }
+  #label span { position: absolute; left: 0; right: 0; top: 0; }
+  #track { position: absolute; left: 20px; width: 400px; top: 259px; height: 8px; border-radius: 4px; background: #E3E3E9; transform-origin: 0 50%; }
+  #fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--orange); }
+  #bubble { position: absolute; top: 231px; height: 22px; padding: 0 10.5px; border-radius: 11px; background: var(--orange); color: #fff; font-size: 13px; font-weight: 600; line-height: 22px; white-space: nowrap; transform-origin: 50% 100%; }
+  #bubble::after { content: ""; position: absolute; left: 50%; bottom: -5.5px; margin-left: -5.5px; border: 5.5px solid transparent; border-bottom: 0; border-top-color: var(--orange); }
+
+  /* the iPhone frame (Apple Design Resources), same camera as the screen */
+  #frame { position: absolute; left: 0; top: 0; width: 490px; height: 1000px; transform-origin: 0 0; }
+  #frame img { width: 100%; height: 100%; filter: drop-shadow(0 12px 24px rgba(43, 25, 53, .14)); }
+
+  /* the clock: huge in shot 1, then it settles into the status bar */
+  #clock { position: absolute; left: 0; top: 0; font-size: 300px; font-weight: 600; line-height: 1; letter-spacing: -2px; white-space: nowrap; transform-origin: 0 0; }
+
+  /* captions: one place, one style, for the whole film */
+  .cap { position: absolute; left: 160px; right: 160px; top: 1300px; text-align: center; }
+  .cap h1 { font-size: 64px; font-weight: 600; line-height: 1.25; letter-spacing: -.5px; }
+  .cap p { margin-top: 14px; font-size: 40px; font-weight: 500; line-height: 1.3; color: rgba(43, 25, 53, .58); }
+  .cap .line { display: block; }
+
+  /* end card */
+  #end { position: absolute; inset: 0; text-align: center; }
+  #end > * { position: absolute; left: 0; right: 0; }
+  #end-icon { left: 452px; width: 176px; height: 176px; top: 486px; }
+  #end-name { top: 694px; font-size: 104px; font-weight: 700; letter-spacing: -2px; line-height: 1.1; }
+  #end-tag { top: 824px; font-size: 44px; font-weight: 500; color: rgba(43, 25, 53, .62); }
+  #end-cta { top: 1004px; font-size: 50px; font-weight: 600; color: var(--orange); }
+  #end-web { top: 1082px; font-size: 32px; font-weight: 500; color: rgba(43, 25, 53, .45); letter-spacing: .5px; }
+  #morph { position: absolute; left: 0; top: 0; border-radius: 99px; background: var(--orange); }
+
+  #safe { position: absolute; inset: 0; display: none; pointer-events: none; }
+  #safe div { position: absolute; background: rgba(0, 120, 255, .18); }
+  #align { position: absolute; left: 0; top: 0; width: 440px; height: 956px; opacity: .5; display: none; transform-origin: 0 0; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="screen">
+    <div id="scr-bg"></div>
+    <div id="shot">
+      <img src="../../ios/raw/zh-1.png" alt="">
+      <div class="patch" style="left:60px;top:18px;width:66px;height:28px"></div>
+      <div class="patch" style="left:0;top:118px;width:440px;height:156px"></div>
+    </div>
+    <div id="count" class="num"></div>
+    <div id="label"><span id="label-a">今天的班次还剩</span><span id="label-b">今日已下班</span></div>
+    <div id="track"><div id="fill"></div></div>
+    <div id="bubble" class="num">62.4%</div>
+  </div>
+  <div id="frame"><img src="../../ios/frames/iphone-17-pro-max-deep-blue.png" alt=""></div>
+  <img id="align" src="../../ios/raw/zh-1.png" alt="">
+  <div id="clock" class="num">14:22</div>
+
+  <div class="cap" id="c1"><h1>又看了一眼时间。</h1><p id="c1p">可离下班，还有多久？</p></div>
+  <div class="cap" id="c2"><h1>不只是几点，</h1><p>还有今天走了多少。</p></div>
+  <div class="cap" id="c3"><h1>DoneAt 下班倒计时</h1><p>把一天，变成一条进度条。</p></div>
+  <div class="cap" id="c4"><h1>今天，准点下班。</h1></div>
+
+  <div id="end">
+    <img id="end-icon" src="../../../../assets/brand/off-work-countdown-icon-rounded.svg" alt="">
+    <div id="end-name">DoneAt</div>
+    <div id="end-tag">几点下班，心里有数</div>
+    <div id="end-cta">App Store 搜索 DoneAt</div>
+    <div id="end-web">doneat.app</div>
+  </div>
+  <div id="morph"></div>
+  <div id="safe"><div style="left:0;right:0;top:0;height:150px"></div><div style="left:0;right:0;bottom:0;height:380px"></div><div style="left:920px;right:0;top:700px;height:860px"></div></div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const mod = (a, n) => ((a % n) + n) % n;
+const lerp = (a, b, p) => a + (b - a) * p;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+
+/* CSS cubic-bezier, solved for x. */
+function bezier(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const X = (s) => ((ax * s + bx) * s + cx) * s, Y = (s) => ((ay * s + by) * s + cy) * s;
+  const dX = (s) => (3 * ax * s + 2 * bx) * s + cx;
+  return (x) => {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    let s = x;
+    for (let i = 0; i < 8; i++) { const e = X(s) - x, d = dX(s); if (Math.abs(e) < 1e-6 || Math.abs(d) < 1e-6) break; s -= e / d; }
+    return Y(clamp(s));
+  };
+}
+const out = bezier(0.22, 1, 0.36, 1);      // arrivals: fast, then a long settle
+const inOut = bezier(0.65, 0, 0.35, 1);    // camera moves and morphs
+const eio = bezier(0.45, 0, 0.55, 1);      // digit rolls
+
+/* ---------- rolling digits ---------- */
+function makeRoller(el, spec) {
+  el.innerHTML = "";
+  el.classList.add("roll");
+  el.style.justifyContent = "center";
+  el.style.display = "flex";
+  const kids = [];
+  const items = spec.map((it) => {
+    if (typeof it === "string") { const s = document.createElement("span"); s.className = "lit"; s.textContent = it; el.appendChild(s); kids.push(s); return null; }
+    const slot = document.createElement("span"); slot.className = "slot";
+    const sizer = document.createElement("span"); sizer.className = "sizer"; sizer.textContent = "0";
+    const a = document.createElement("span"), b = document.createElement("span");
+    slot.append(sizer, a, b); el.appendChild(slot); kids.push(slot);
+    return { u: it[0], b: it[1], a, bEl: b };
+  }).filter(Boolean);
+  return {
+    kids,
+    update(v) {
+      for (const d of items) {
+        const y = v / d.u, fl = Math.floor(y), f = y - fl;
+        const w = Math.min(1, 0.34 / d.u);
+        const cur = mod(fl, d.b), prev = mod(fl + 1, d.b);
+        const e = eio(w <= 1e-6 ? 1 : clamp((1 - f) / w));
+        d.a.textContent = prev; d.bEl.textContent = cur;
+        d.a.style.transform = `translateY(${e * 0.42}em) scale(${1 - 0.25 * e})`;
+        d.a.style.opacity = 1 - e;
+        d.a.style.filter = e > 0.02 && e < 0.98 ? `blur(${e * 5}px)` : "none";
+        d.bEl.style.transform = `translateY(${-(1 - e) * 0.42}em) scale(${0.75 + 0.25 * e})`;
+        d.bEl.style.opacity = e;
+        d.bEl.style.filter = e > 0.02 && e < 0.98 ? `blur(${(1 - e) * 5}px)` : "none";
+      }
+    },
+  };
+}
+const COUNT = makeRoller($("count"), [[36000, 10], [3600, 10], ":", [600, 6], [60, 10], ":", [10, 6], [1, 10]]);
+
+/* ---------- the day: 09:00–17:00, lunch 12:00–13:00, 7 effective hours ---------- */
+const SHIFT = 7 * 3600;
+/* 96 BPM: one bar is 2.5 s, and every shot starts on a bar line. */
+const BAR = 2.5;
+const S = {
+  answer: 2 * BAR,          // 5.0  the clock steps aside, the countdown arrives
+  c2: 3 * BAR,              // 7.5
+  pull: 4 * BAR,            // 10.0 pull back into the real screen
+  pullEnd: 4 * BAR + 1.8,
+  cut: 6 * BAR,             // 15.0 hard cut to 16:59:57
+  zero: 7 * BAR,            // 17.5
+  end: 8 * BAR,             // 20.0 end card
+  length: 10 * BAR,         // 25.0
+};
+/* Seconds left. Shot 2–3 runs from 14:22:08 (2:37:52 left); ticks land 0.05 s after
+   each whole second so the first one falls just after the digits finish arriving. */
+function remaining(t) {
+  if (t < S.cut) return 9472 + 0.05 - (t - S.answer);
+  return 2.5 - (t - S.cut);
+}
+// The display rounds up, like the app. Past zero the value keeps falling for a moment so
+// the last digit can finish its roll, then rests on 0.
+const shown = (t) => Math.max(0.5, remaining(t) + 1 - 1e-6);
+const pct = (t) => ((SHIFT - Math.max(0, remaining(t))) / SHIFT) * 100;
+
+/* ---------- camera: screen points → canvas pixels ---------- */
+const CAM2 = { k: 2.3, x: 34, y: 375 };      // inside the screen, countdown in the upper middle
+const CAM3 = { k: 1.05, x: 309, y: 223 };    // the whole phone, space to breathe
+const ANCHOR = { x: 220, y: 165 };           // the countdown's centre, in points
+const MEASURE = new URLSearchParams(location.search).has("measure"); // screen at exactly 2 px/pt, no screenshot or frame
+function cam(t) {
+  if (MEASURE) return { k: 2, x: 0, y: 0 };
+  if (t < S.pull || t >= S.cut) return CAM2;
+  const p = inOut(seg(t, S.pull, S.pullEnd));
+  const drift = 1 + 0.02 * out(seg(t, S.pullEnd, S.cut)); // a slow settle while the caption reads
+  const k = Math.exp(lerp(Math.log(CAM2.k), Math.log(CAM3.k), p)) * drift;
+  const ax = lerp(CAM2.x + ANCHOR.x * CAM2.k, CAM3.x + ANCHOR.x * CAM3.k, p);
+  const ay = lerp(CAM2.y + ANCHOR.y * CAM2.k, CAM3.y + ANCHOR.y * CAM3.k, p);
+  return { k, x: ax - ANCHOR.x * k, y: ay - ANCHOR.y * k };
+}
+const place = (el, c, dx = 0, dy = 0) => { el.style.transform = `translate(${c.x + dx * c.k}px, ${c.y + dy * c.k}px) scale(${c.k})`; };
+/* how much of the real screen is showing: 0 in the typographic shots, 1 on the phone */
+function reveal(t) {
+  if (t < S.pull || t >= S.cut) return 0;
+  return seg(inOut(seg(t, S.pull, S.pullEnd)), 0.06, 0.4);
+}
+
+const mix = (a, b, p) => `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], p))).join(",")})`;
+const PLUM = [43, 25, 53], BLACK = [0, 0, 0];
+
+/* ---------- captions ---------- */
+function cap(el, t, a, b, { sub = null, subAt = null } = {}) {
+  const pin = a <= 0 ? 1 : out(seg(t, a, a + 0.55));
+  const pout = b == null ? 0 : seg(t, b, b + 0.3);
+  el.style.opacity = pin * (1 - pout);
+  el.style.transform = `translateY(${(1 - pin) * 26 - out(pout) * 14}px)`;
+  el.style.visibility = el.style.opacity > 0.001 ? "visible" : "hidden";
+  if (sub) {
+    const ps = out(seg(t, subAt, subAt + 0.55));
+    sub.style.opacity = ps;
+    sub.style.transform = `translateY(${(1 - ps) * 20}px)`;
+  }
+}
+
+/* ---------- the status-bar clock ---------- */
+const CLOCK_BIG = { cx: 540, cy: 800, size: 300 };
+const CLOCK_SLOT = { cx: 91.2, cy: 32, size: 19.6 };   // measured on zh-1.png
+let clockBox = null;
+
+function render(t) {
+  const c = cam(t), r = reveal(t);
+  const onPhone = t >= S.pull && t < S.cut;
+
+  /* screen + frame */
+  place($("screen"), c);
+  place($("frame"), c, -25, -22);
+  place($("align"), c);
+  $("scr-bg").style.opacity = r;
+  $("shot").style.opacity = MEASURE ? 0 : r;
+  $("frame").style.opacity = MEASURE ? 0 : onPhone ? seg(inOut(seg(t, S.pull, S.pullEnd)), 0.02, 0.3) : 0;
+  $("screen").style.borderRadius = r > 0 ? "63px" : "0";
+  const ink = MEASURE ? "#000" : mix(PLUM, BLACK, r);
+
+  /* countdown: arrives digit by digit at 5.0, rolls in real time, leaves at the end card */
+  COUNT.update(shown(t));
+  $("count").style.color = ink;
+  COUNT.kids.forEach((k, i) => {
+    const a = S.answer + 0.3 + i * 0.045;
+    const pin = t >= S.cut ? 1 : out(seg(t, a, a + 0.75));
+    const po = out(seg(t, S.end + i * 0.02, S.end + 0.3 + i * 0.02));
+    k.style.opacity = pin * (1 - po);
+    k.style.transform = `translateY(${(1 - pin) * 0.38 - po * 0.25}em)`;
+  });
+
+  /* label */
+  const pl = t >= S.cut ? 1 : out(seg(t, S.answer + 0.65, S.answer + 1.25));
+  const plo = seg(t, S.end, S.end + 0.25);
+  $("label").style.opacity = pl * (1 - plo);
+  $("label").style.transform = `translateY(${(1 - pl) * 6 - plo * 6}px)`;
+  const done = seg(t, S.zero + 0.05, S.zero + 0.45);
+  $("label-a").style.opacity = 1 - done;
+  $("label-b").style.opacity = done;
+
+  /* track, fill, bubble */
+  const pt = t >= S.cut ? 1 : out(seg(t, S.answer + 0.75, S.answer + 1.45));
+  $("track").style.opacity = t >= S.end ? 0 : pt;
+  $("track").style.transform = `scaleX(${pt})`;
+  const fillP = t >= S.cut ? 1 : out(seg(t, S.answer + 1.0, S.answer + 2.1));
+  const shownPct = pct(t) * fillP;
+  $("fill").style.width = `${shownPct}%`;
+  const pb = t >= S.cut ? 0 : out(seg(t, S.answer + 1.25, S.answer + 1.7));
+  const bubble = $("bubble");
+  bubble.textContent = `${(Math.floor(shownPct * 10) / 10).toFixed(1)}%`;
+  bubble.style.left = `${20 + 4 * shownPct}px`;
+  bubble.style.opacity = pb;
+  bubble.style.transform = `translateX(-50%) translateY(${(1 - pb) * 4}px) scale(${0.85 + 0.15 * pb})`;
+
+  /* clock: big and alone, then it steps aside into the status bar */
+  const clock = $("clock");
+  clock.textContent = t < S.cut ? "14:22" : t < S.zero ? "16:59" : "17:00";
+  if (!clockBox) { clock.style.transform = "none"; const b = clock.getBoundingClientRect(); clockBox = { w: b.width, h: b.height }; }
+  const pc = t >= S.cut ? 1 : out(seg(t, S.answer - 0.05, S.answer + 1.0));
+  const slot = { cx: c.x + CLOCK_SLOT.cx * c.k, cy: c.y + CLOCK_SLOT.cy * c.k, size: CLOCK_SLOT.size * c.k };
+  const bigSize = CLOCK_BIG.size * (1 + 0.035 * eio(seg(t, 0, S.answer))); // a slow push while the question sinks in
+  const size = Math.exp(lerp(Math.log(bigSize), Math.log(slot.size), pc));
+  const cx = lerp(CLOCK_BIG.cx, slot.cx, pc), cy = lerp(CLOCK_BIG.cy, slot.cy, pc);
+  const s = size / CLOCK_BIG.size;
+  clock.style.transform = `translate(${cx - (clockBox.w * s) / 2}px, ${cy - (clockBox.h * s) / 2}px) scale(${s})`;
+  clock.style.color = ink;
+  clock.style.opacity = (1 - seg(t, S.end, S.end + 0.25)) * (t < S.cut ? 1 - 0.35 * pc * (1 - r) : 0.65);
+  clock.style.fontWeight = 600;
+
+  /* captions */
+  cap($("c1"), t, 0, S.answer - 0.2, { sub: $("c1p"), subAt: BAR });
+  cap($("c2"), t, S.c2, S.pull - 0.15);
+  cap($("c3"), t, S.pullEnd + 0.1, S.cut - 0.15);
+  cap($("c4"), t, S.zero + 0.4, S.end - 0.1);
+  for (const id of ["c1", "c2", "c3"]) if (t >= S.cut && id !== "c4") $(id).style.visibility = "hidden";
+
+  /* end: the finished bar draws in to become the divider, then the brand arrives */
+  const pm = inOut(seg(t, S.end + 0.05, S.end + 0.95));
+  const morph = $("morph");
+  if (t >= S.end) {
+    const a = { x: CAM2.x + 20 * CAM2.k, y: CAM2.y + 259 * CAM2.k, w: 400 * CAM2.k, h: 8 * CAM2.k };
+    const b = { x: 470, y: 940, w: 140, h: 6 };
+    const x = lerp(a.x, b.x, pm), y = lerp(a.y, b.y, pm), w = lerp(a.w, b.w, pm), h = lerp(a.h, b.h, pm);
+    morph.style.display = "block";
+    morph.style.transform = `translate(${x}px, ${y}px)`;
+    morph.style.width = `${w}px`; morph.style.height = `${h}px`;
+  } else morph.style.display = "none";
+  const endBits = [["end-icon", 0.45], ["end-name", 0.55], ["end-tag", 0.65], ["end-cta", 0.95], ["end-web", 1.05]];
+  for (const [id, d] of endBits) {
+    const p = out(seg(t, S.end + d, S.end + d + 0.8));
+    $(id).style.opacity = p;
+    $(id).style.transform = `translateY(${(1 - p) * 30}px)`;
+  }
+}
+
+/* ---------- sound cues (read by render.mjs → audio.mjs) ---------- */
+window.VIDEO_LENGTH = S.length;
+window.AUDIO_TIMELINE = {
+  end: S.length, bar: BAR, S,
+  cues: [
+    { t: S.answer + 0.3, kind: "roll" },          // digits arrive
+    { t: S.answer + 1.0, kind: "fill" },           // the bar fills to 62%
+    { t: S.cut + 0.5, kind: "tick" },              // 00:00:02
+    { t: S.cut + 1.5, kind: "tick" },              // 00:00:01
+    { t: S.zero, kind: "zero" },                   // 00:00:00
+    { t: S.end + 0.45, kind: "brand" },
+  ],
+};
+
+const QS = new URLSearchParams(location.search);
+if (QS.has("safe")) $("safe").style.display = "block";
+if (QS.has("align")) $("align").style.display = "block";
+document.fonts.ready.then(() => {
+  if (QS.has("play")) {
+    const t0 = performance.now() - (Number(QS.get("t")) || 0) * 1000;
+    const loop = () => { render(((performance.now() - t0) / 1000) % S.length); requestAnimationFrame(loop); };
+    loop();
+  } else render(Number(QS.get("t")) || 0);
+});
+</script>
+</body>
+</html>
