@@ -31,7 +31,7 @@ const REPORT_USER_AGENT = "off-work-countdown-report/1.0";
 /**
  * 报表里逐个列出的下载渠道，顺序即卡片里的展示顺序。
  *
- * 2024-08-29 下载页迁移到 doneat.app，原有的 `e:desktop_download_*` 已无触发点，
+ * 2026-08-29 下载页迁移到 doneat.app，原有的 `e:desktop_download_*` 已无触发点，
  * 改为读取网站端的 `s:` 事件。如果网站 Redis 未配置或与产品端不在同一个库，
  * 这些计数会是 0——可以接受，不会报错。
  */
@@ -623,8 +623,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // 可选的官网 Redis 凭据。如果 doneat.app 和 off.rainif.com 共用同一个
   // Upstash 库，这两个变量可以不配；如果分开部署，需要在 GitHub Secrets 里
   // 加上 SITE_KV_REST_API_URL 和 SITE_KV_REST_API_TOKEN。
-  const siteRedisUrl = process.env.SITE_KV_REST_API_URL;
-  const siteRedisToken = process.env.SITE_KV_REST_API_TOKEN;
+  // GitHub Actions 对未设置的 secret 传入空字符串，需要显式当作 undefined。
+  const siteRedisUrl = process.env.SITE_KV_REST_API_URL || undefined;
+  const siteRedisToken = process.env.SITE_KV_REST_API_TOKEN || undefined;
 
   // 缺配置就安静退出，和 lark-notify.mjs 一致：本地和 fork 都拿不到 secrets，
   // 那不是错误。

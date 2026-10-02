@@ -57,7 +57,12 @@ jobs:
           # 不通。配了这两个就优先直连，绕开整条公网链路。
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          # 可选：官网 doneat.app 的 Upstash 凭据。如果官网和产品端共用同一个
+          # Upstash 库，这两个可以不配；如果分开部署，需要单独配置才能读取 s: 事件。
+          SITE_KV_REST_API_URL: ${{ secrets.SITE_KV_REST_API_URL }}
+          SITE_KV_REST_API_TOKEN: ${{ secrets.SITE_KV_REST_API_TOKEN }}
           # 回退用：没配 Upstash 时才会走到，与 Vercel 上校验的令牌须一致。
+          # 注意：HTTP 回退路径只能读取 e: 事件，s: 下载渠道数据不会显示。
           ANALYTICS_STATS_TOKEN: ${{ secrets.ANALYTICS_STATS_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PERIOD: ${{ steps.period.outputs.period }}
