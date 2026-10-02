@@ -98,6 +98,11 @@ final class SceneState {
         didSet { if timerSheet != nil { presentAddFocus = false } }
     }
     var pendingPlusAction: PlusPendingAction?
+    /// A weekly or monthly report waiting to be shown (plan 020 §4). A link
+    /// sets it whatever the app was doing, and the root view presents it once
+    /// first-run screens are out of the way, so a cold start and a running app
+    /// arrive at the same page.
+    var cycleReportRequest: CycleReportRequest?
     var dayEditor: RecordDayEditDraft?
     var showsFirstRunCloudChoice = false
     var showsReleaseNotes = false
@@ -420,6 +425,11 @@ final class SceneState {
             presentedRoute = nil
             return
         }
+        if url.host == CycleReportPeriod.urlHost {
+            // A link that names no valid period opens nothing.
+            if let period = CycleReportPeriod(url: url) { openCycleReport(CycleReportRequest(period: period)) }
+            return
+        }
         guard let route = AppRoute(rawValue: url.host ?? "") else { return }
         if route == .focus || route == .focusPlan {
             let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
@@ -434,6 +444,11 @@ final class SceneState {
         settingsPath.removeAll()
         selectedTab = .settings
         presentedRoute = route
+    }
+
+    func openCycleReport(_ request: CycleReportRequest) {
+        presentedRoute = nil
+        cycleReportRequest = request
     }
 
     func openTimer() {
@@ -575,6 +590,8 @@ final class SceneState {
             openFocusTab()
         case .enableCycleEndSummaryNotifications:
             actions.preferences.applyPreferences { $0.cycleEndSummaryNotificationEnabled = true }
+        case .enableMonthlyReportNotifications:
+            actions.preferences.monthlyReportNotificationEnabled = true
         case .enableSync:
             Task { await enableCloudSync(using: recovery) }
         case .enableShiftAlarms:
@@ -595,6 +612,19 @@ final class SceneState {
             preferences.applyPreferences { $0.cycleEndSummaryNotificationEnabled = enabled }
         } else {
             pendingPlusAction = .enableCycleEndSummaryNotifications
+            paywallSheet = .cycleEndSummaryNotifications
+        }
+    }
+
+    /// The monthly report switch. Like the weekly one it is Plus, and a
+    /// purchase from the paywall turns it on.
+    func setMonthlyReportNotifications(
+        _ enabled: Bool, preferences: PreferencesStore, plus: PlusEntitlement
+    ) {
+        if !enabled || plus.isAuthorized {
+            preferences.monthlyReportNotificationEnabled = enabled
+        } else {
+            pendingPlusAction = .enableMonthlyReportNotifications
             paywallSheet = .cycleEndSummaryNotifications
         }
     }

@@ -56,6 +56,7 @@ export const SAME_AS_ENGLISH_ON_PURPOSE = {
   // English words these languages use as they are
   focusTitle: ["fr", "it"],
   focusStart: ["de"],
+  reportPause: ["fr"],
   plusStatus: ["de", "id"],
   notificationCapability: ["de", "id", "pt"],
   // "OK" is the standard affirmative button in these languages; Apple's own

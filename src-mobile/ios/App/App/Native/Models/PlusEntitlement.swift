@@ -211,6 +211,7 @@ enum PlusPendingAction: Equatable, Sendable {
     case presentAddFocus
     case openFocus
     case enableCycleEndSummaryNotifications
+    case enableMonthlyReportNotifications
     case enableSync
     case enableShiftAlarms
 }

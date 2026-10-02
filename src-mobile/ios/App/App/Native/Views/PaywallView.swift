@@ -701,7 +701,7 @@ extension PlusPaywallReason {
         case .historyEdit: "plusEditLocked"
         case .sync: "plusSyncLocked"
         case .focus: "plusFocusLocked"
-        case .cycleEndSummaryNotifications: "cycleEndSummaryNotificationTitle"
+        case .cycleEndSummaryNotifications: "plusReportsLocked"
         case .leavePlanning: "plusLeaveLocked"
         case .shiftAlarms: "plusShiftAlarmsLocked"
         }

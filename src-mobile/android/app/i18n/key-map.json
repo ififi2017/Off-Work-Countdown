@@ -345,13 +345,16 @@
         "days",
         "work",
         "overtime"
-      ]
+      ],
+      "androidOnly": true
     },
     "cycleEndSummaryNotificationNote": {
-      "resource": "string/cycleEndSummaryNotificationNote"
+      "resource": "string/cycleEndSummaryNotificationNote",
+      "androidOnly": true
     },
     "cycleEndSummaryNotificationTitle": {
-      "resource": "string/cycleEndSummaryNotificationTitle"
+      "resource": "string/cycleEndSummaryNotificationTitle",
+      "androidOnly": true
     },
     "daily": {
       "resource": "string/daily"
@@ -2315,6 +2318,9 @@
     "plusReplayCelebration": {
       "resource": "string/plusReplayCelebration"
     },
+    "plusReportsLocked": {
+      "resource": "string/plusReportsLocked"
+    },
     "plusRestore": {
       "resource": "string/plusRestore"
     },
@@ -2913,6 +2919,120 @@
     },
     "replayCelebration": {
       "resource": "string/replayCelebration"
+    },
+    "reportBasisNote": {
+      "resource": "string/reportBasisNote"
+    },
+    "reportCompareLess": {
+      "resource": "string/reportCompareLess",
+      "params": [
+        "duration"
+      ]
+    },
+    "reportCompareMonth": {
+      "resource": "string/reportCompareMonth"
+    },
+    "reportCompareMore": {
+      "resource": "string/reportCompareMore",
+      "params": [
+        "duration"
+      ]
+    },
+    "reportCompareSame": {
+      "resource": "string/reportCompareSame"
+    },
+    "reportCompareWeek": {
+      "resource": "string/reportCompareWeek"
+    },
+    "reportEmpty": {
+      "resource": "string/reportEmpty"
+    },
+    "reportEntryMonth": {
+      "resource": "string/reportEntryMonth"
+    },
+    "reportEntryTitle": {
+      "resource": "string/reportEntryTitle"
+    },
+    "reportEntryWeek": {
+      "resource": "string/reportEntryWeek"
+    },
+    "reportIncludeIncome": {
+      "resource": "string/reportIncludeIncome"
+    },
+    "reportIncludeIncomeNote": {
+      "resource": "string/reportIncludeIncomeNote"
+    },
+    "reportIncludingOvertime": {
+      "resource": "string/reportIncludingOvertime",
+      "params": [
+        "overtime"
+      ]
+    },
+    "reportIncomeNote": {
+      "resource": "string/reportIncomeNote"
+    },
+    "reportIncomeTitle": {
+      "resource": "string/reportIncomeTitle"
+    },
+    "reportLongestRest": {
+      "resource": "string/reportLongestRest"
+    },
+    "reportMonthly": {
+      "resource": "string/reportMonthly"
+    },
+    "reportNext": {
+      "resource": "string/reportNext"
+    },
+    "reportNotificationMonthBody": {
+      "resource": "string/reportNotificationMonthBody"
+    },
+    "reportNotificationMonthTitle": {
+      "resource": "string/reportNotificationMonthTitle"
+    },
+    "reportNotificationWeekBody": {
+      "resource": "string/reportNotificationWeekBody"
+    },
+    "reportNotificationWeekTitle": {
+      "resource": "string/reportNotificationWeekTitle"
+    },
+    "reportNotificationsNote": {
+      "resource": "string/reportNotificationsNote"
+    },
+    "reportPause": {
+      "resource": "string/reportPause"
+    },
+    "reportPlay": {
+      "resource": "string/reportPlay"
+    },
+    "reportPrevious": {
+      "resource": "string/reportPrevious"
+    },
+    "reportRead": {
+      "resource": "string/reportRead"
+    },
+    "reportReplay": {
+      "resource": "string/reportReplay"
+    },
+    "reportRestDays": {
+      "resource": "string/reportRestDays"
+    },
+    "reportRestNone": {
+      "resource": "string/reportRestNone"
+    },
+    "reportResume": {
+      "resource": "string/reportResume"
+    },
+    "reportSoFar": {
+      "resource": "string/reportSoFar"
+    },
+    "reportUnavailable": {
+      "resource": "string/reportUnavailable"
+    },
+    "reportWeekly": {
+      "resource": "string/reportWeekly"
+    },
+    "reportWorkdays": {
+      "resource": "string/reportWorkdays"
     },
     "retryAction": {
       "resource": "string/retryAction"

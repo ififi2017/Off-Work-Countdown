@@ -1,0 +1,167 @@
+import Foundation
+import Observation
+
+/// The chapters of a report, in the order the plan tells them: the period, the
+/// time put in, the time off, how it compares, the pay, and a close. Each makes
+/// a single point; a chapter with nothing to say is left out.
+nonisolated enum CycleReportStage: Hashable, Sendable {
+    case calendar
+    case hours
+    case rest
+    case comparison
+    case income
+    case summary
+
+    /// Chapters left out: no comparison without a previous period that holds
+    /// data, no income unless the person asked for it.
+    static func stages(for snapshot: CycleReportSnapshot) -> [Self] {
+        guard snapshot.hasData else { return [] }
+        var result: [Self] = [.calendar, .hours, .rest]
+        if snapshot.comparison != nil { result.append(.comparison) }
+        if snapshot.income != nil { result.append(.income) }
+        result.append(.summary)
+        return result
+    }
+
+    /// Seconds the chapter spends building itself, then holding still for the
+    /// reader. The last chapter holds until the person leaves.
+    func timeline(for snapshot: CycleReportSnapshot) -> CycleReportTimeline {
+        let monthly = snapshot.period.kind == .month
+        return switch self {
+        case .calendar: CycleReportTimeline(build: monthly ? 2.6 : 1.9, hold: 1.7)
+        case .hours: CycleReportTimeline(build: 2.8, hold: 2.1)
+        case .rest: CycleReportTimeline(build: 2.4, hold: 2.2)
+        case .comparison: CycleReportTimeline(build: 1.8, hold: 2.3)
+        case .income: CycleReportTimeline(build: 2.1, hold: 2.3)
+        case .summary: CycleReportTimeline(build: 1.4, hold: .infinity)
+        }
+    }
+}
+
+nonisolated struct CycleReportTimeline: Equatable, Sendable {
+    var build: Double
+    var hold: Double
+    var duration: Double { build + hold }
+}
+
+/// Drives a report's playback from one clock. A chapter is a pure function of
+/// `stageIndex` and `time`, so pausing, holding a finger on the screen, jumping
+/// between chapters and replaying only move those two numbers and nothing is
+/// ever left half-built. Every chapter reads the one `snapshot` it was given.
+@MainActor
+@Observable
+final class CycleReportPlayer {
+    let snapshot: CycleReportSnapshot
+    let stages: [CycleReportStage]
+    private(set) var stageIndex = 0
+    /// Seconds into the current chapter.
+    private(set) var time: Double = 0
+    /// Seconds played in all, never reset; the backdrop drifts on this so a
+    /// change of chapter does not make the light jump.
+    private(set) var clock: Double = 0
+    private(set) var isPlaying: Bool
+    /// A finger resting on the screen holds the clock without changing intent.
+    var isHeld = false
+    @ObservationIgnored private let sleep: @Sendable (Duration) async -> Void
+    @ObservationIgnored private let now: @Sendable () -> Double
+
+    init(
+        snapshot: CycleReportSnapshot,
+        autoplay: Bool = true,
+        sleep: @escaping @Sendable (Duration) async -> Void = { try? await Task.sleep(for: $0) },
+        now: @escaping @Sendable () -> Double = { Double(DispatchTime.now().uptimeNanoseconds) / 1_000_000_000 }
+    ) {
+        self.snapshot = snapshot
+        stages = CycleReportStage.stages(for: snapshot)
+        isPlaying = autoplay
+        self.sleep = sleep
+        self.now = now
+    }
+
+    var stage: CycleReportStage { stages[stageIndex] }
+    var isLastStage: Bool { stageIndex == stages.count - 1 }
+    var timeline: CycleReportTimeline { stage.timeline(for: snapshot) }
+    /// 0 → 1 over the chapter's build; the whole chapter is drawn from this.
+    var build: Double { min(1, max(0, time / timeline.build)) }
+    var isBuilt: Bool { time >= timeline.build }
+    /// 0 → 1 over the whole chapter, for the progress bar.
+    var progress: Double {
+        isLastStage ? (isBuilt ? 1 : build) : min(1, time / timeline.duration)
+    }
+    var isRunning: Bool { isPlaying && !isHeld }
+
+    /// Moves the clock. A chapter that has held long enough hands over to the
+    /// next; the last one stops where it is.
+    func advance(by delta: Double) {
+        guard isRunning, delta > 0 else { return }
+        time += delta
+        clock += delta
+        while time >= timeline.duration, !isLastStage {
+            time -= timeline.duration
+            stageIndex += 1
+        }
+        if isLastStage, time >= timeline.build { time = timeline.build + 0.0001 }
+    }
+
+    /// Ticks until paused, cancelled, or the last chapter is built. The view
+    /// re-runs it whenever `isPlaying` changes, which is what cancels a pause.
+    func run() async {
+        var last = now()
+        while !Task.isCancelled, isPlaying {
+            await sleep(.milliseconds(16))
+            guard !Task.isCancelled else { return }
+            let current = now()
+            advance(by: min(0.1, current - last))
+            last = current
+            if isLastStage, isBuilt {
+                isPlaying = false
+                return
+            }
+        }
+    }
+
+#if DEBUG
+    /// Visual QA: parks the clock on an exact frame.
+    func debugSeek(stage index: Int, buildFraction: Double) {
+        stageIndex = min(max(0, index), stages.count - 1)
+        time = timeline.build * buildFraction
+        clock = time + Double(stageIndex) * 3
+        isPlaying = false
+    }
+#endif
+
+    func pause() { isPlaying = false }
+    func resume() {
+        if isLastStage, isBuilt { replay() } else { isPlaying = true }
+    }
+    func togglePlayback() { isPlaying ? pause() : resume() }
+
+    func next() {
+        guard !isLastStage else { return }
+        stageIndex += 1
+        time = 0
+    }
+
+    /// Near the start of a chapter this goes back a chapter; otherwise it
+    /// restarts this one, as story viewers do.
+    func previous() {
+        if time > 0.8 || stageIndex == 0 {
+            time = 0
+        } else {
+            stageIndex -= 1
+            time = 0
+        }
+    }
+
+    func skipToSummary() {
+        stageIndex = stages.count - 1
+        time = timeline.build + 0.0001
+        isPlaying = false
+    }
+
+    func replay() {
+        stageIndex = 0
+        time = 0
+        isPlaying = true
+    }
+}

@@ -38,8 +38,13 @@ final class ShiftSessionStore {
     var lastCelebratedEndAtMs: Double = 0
     private var reviewPromptState = AppReviewPromptState()
     private var reviewPromptEligibleThisLaunch = false
-    var cycleEndSummaryNotificationsAreActive: Bool {
+    /// The stored preference keeps its pre-report name so synced devices and
+    /// backups read it unchanged; it now switches the weekly report.
+    var weeklyReportNotificationsAreActive: Bool {
         preferences.cycleEndSummaryNotificationEnabled && plus.isAuthorized
+    }
+    var monthlyReportNotificationsAreActive: Bool {
+        preferences.monthlyReportNotificationEnabled && plus.isAuthorized
     }
 
     init(session: ShiftSession, records: RecordCoordinator, queries: RecordsQueries,
@@ -157,30 +162,18 @@ final class ShiftSessionStore {
 
     func shiftReminders(at date: Date = .now) -> [NativeReminder] {
         let currentSnapshot = self.session.snapshot(at: date)
-        let inputs = reminderInputs(
-            cycleEndSummaryBody: currentSnapshot.flatMap {
-                cycleEndSummaryNotificationBody(for: $0, at: date)
-            }
-        )
+        let inputs = reminderInputs()
         let effective = ScheduleRules.reminders(
             input: self.session.rulesInput(at: date),
             reminderInputs: inputs
         )
         let current = effective.filter { $0.id.hasPrefix("current:") }
-        let nextSnapshot = currentSnapshot?.nextShiftStartDate.flatMap {
-            self.session.snapshot(at: $0.addingTimeInterval(1))
-        }
-        let nextInputs = reminderInputs(
-            cycleEndSummaryBody: nextSnapshot.flatMap {
-                cycleEndSummaryNotificationBody(for: $0, at: $0.startDate)
-            }
-        )
         let next = ScheduleRules.reminders(
             input: self.session.rulesInput(
                 at: date,
                 using: self.session.projectsFutureFromBase(at: date) ? .base : .effective
             ),
-            reminderInputs: nextInputs
+            reminderInputs: inputs
         ).filter { $0.id.hasPrefix("next:") }
         guard let snapshot = currentSnapshot else { return current + next }
         // Rest days and settlement both still produce a `current:` window from
@@ -194,7 +187,7 @@ final class ShiftSessionStore {
         return focus.applyingFocusBreakTakeover(to: (includeCurrent ? current : []) + next, at: date)
     }
 
-    func reminderInputs(cycleEndSummaryBody: String? = nil) -> NativeReminderInputs {
+    func reminderInputs() -> NativeReminderInputs {
         func title(_ remaining: Int) -> String {
             text.t("notificationMilestoneTitle", values: ["percent": "\(remaining)"])
         }
@@ -224,51 +217,12 @@ final class ShiftSessionStore {
             microBreakTitle: text.t("microBreakReminder"),
             microBreakIntervalMinutes: self.session.presentationMicroBreakIntervalMinutes,
             microBreakMessages: text.strings("microBreakMessages"),
-            cycleEndSummaryBody: cycleEndSummaryBody
+            // Pre-report iOS folded a cycle summary into the 100% reminder.
+            // The shared rule still accepts one (Android uses it); iOS sends
+            // reports as their own notifications instead.
+            cycleEndSummaryBody: nil
         )
     }
-    /// Builds the body only for the last resolved workday before a rest day.
-    /// Work/rest classification has already come from the schedule expansion
-    /// and then passed through calendar exceptions and manual edits.
-    func cycleEndSummaryNotificationBody(
-        for snapshot: NativeShiftSnapshot,
-        at date: Date = .now
-    ) -> String? {
-        guard cycleEndSummaryNotificationsAreActive,
-              preferences.scheduleMode != .off,
-              snapshot.isWorkday || self.session.isForcedWorkday(snapshot)
-        else { return nil }
-
-        let calendar = preferences.recordsCalendar
-        let anchor = calendar.startOfDay(for: snapshot.startDate)
-        guard let from = calendar.date(byAdding: .day, value: -31, to: anchor),
-              let through = calendar.date(byAdding: .day, value: 1, to: anchor)
-        else { return nil }
-        let resolved = queries.resolvedDays(from: from, through: through, now: date)
-        let days = resolved.map { day in
-            ScheduleCycleDay(
-                dayKey: day.dayKey,
-                isWorkday: day.isScheduledWorkday,
-                workMs: day.segments.reduce(0) { partial, segment in
-                    partial + Int64(max(0, segment.endAtMs - segment.startAtMs).rounded())
-                },
-                overtimeMs: queries.overtimeSegments(on: day).reduce(0) { partial, segment in
-                    partial + Int64(max(0, segment.endAtMs - segment.startAtMs).rounded())
-                },
-                isComplete: !day.expansionFailed
-            )
-        }
-        let dayKey = RecordJSON.dayKey(snapshot.startDate, calendar: calendar)
-        guard let summary = ScheduleCycleSummaryCalculator.summary(endingAt: dayKey, in: days) else {
-            return nil
-        }
-        return text.t("cycleEndSummaryNotificationBody", values: [
-            "days": text.formatCount(summary.workdayCount),
-            "work": text.formatDuration(Double(summary.workMs), includeSeconds: false),
-            "overtime": text.formatDuration(Double(summary.overtimeMs), includeSeconds: false),
-        ])
-    }
-
     func noteCountdownCompleted(endAtMs: Double) {
         let previous = reviewPromptState
         reviewPromptState.noteCompletion(atMs: endAtMs)
@@ -605,7 +559,6 @@ final class ShiftSessionStore {
         guard preferences.liveActivityEnabled, preferences.notificationMode == .off else { return false }
         guard self.session.publishesLiveSurfaces else { return false }
         guard let snapshot else { return false }
-        guard cycleEndSummaryNotificationBody(for: snapshot, at: date) == nil else { return false }
         guard snapshot.endAtMs > date.timeIntervalSince1970 * 1_000 else { return false }
         guard !self.session.isEndedEarly(snapshot) else { return false }
         return (snapshot.isWorkday || self.session.isForcedWorkday(snapshot)) && !self.session.isShiftComplete(snapshot)

@@ -271,6 +271,8 @@ final class NotificationService {
 
     private func performReschedule(shifts: ShiftSessionStore, now: Date, generation: Int) async {
         await refresh()
+        await reconcileCycleReports(shifts: shifts, now: now, generation: generation)
+        guard generation == scheduleGeneration else { return }
         let center = shiftCenter
         let pending = await center.pendingIDs()
         let existingIdentifiers = Set(
@@ -302,7 +304,10 @@ final class NotificationService {
             snapshot: snapshot,
             at: now
         )
-        let desired = Array((essential + health).prefix(schedulesLiveActivityFallback ? 59 : 60))
+        // iOS keeps 64 pending requests: focus timers (2), the alarm refresh (1)
+        // and the report notifications leave the shift reminders the rest.
+        let shiftBudget = 60 - CycleReportNotificationPlan.reservedSlots
+        let desired = Array((essential + health).prefix(schedulesLiveActivityFallback ? shiftBudget - 1 : shiftBudget))
         var desiredIdentifiers = Set<String>()
         var allSucceeded = true
 
@@ -362,6 +367,51 @@ final class NotificationService {
             let stale = existingIdentifiers.subtracting(desiredIdentifiers)
             center.removePending(Array(stale))
         }
+    }
+
+    /// For a user the shift schedule does not drive (no countdown, no schedule):
+    /// reports come from Records, which they may still keep.
+    func rescheduleCycleReports(shifts: ShiftSessionStore, now: Date? = nil) async {
+        await enqueueShiftOperation { generation in
+            await self.refresh()
+            await self.reconcileCycleReports(shifts: shifts, now: now ?? .now, generation: generation)
+        }
+    }
+
+    /// Leaves the system with the next weekly and monthly report requests the
+    /// user has turned on, and nothing else under `owc.report.`. A request is
+    /// replaced by its own identifier, so a rebuilt schedule never doubles one;
+    /// stale ones go only after every new one was accepted.
+    private func reconcileCycleReports(shifts: ShiftSessionStore, now: Date, generation: Int) async {
+        let center = shiftCenter
+        let existing = Set(await center.pendingIDs().filter {
+            $0.hasPrefix(CycleReportPeriod.notificationIdentifierPrefix)
+        })
+        guard generation == scheduleGeneration else { return }
+        let wanted = status == .allowed ? shifts.cycleReportNotifications(at: now) : []
+        var desired = Set<String>()
+        var allSucceeded = true
+        for item in wanted {
+            guard generation == scheduleGeneration else { return }
+            let content = UNMutableNotificationContent()
+            content.title = item.title
+            content.body = item.body
+            content.sound = .default
+            content.userInfo = ["url": item.period.url.absoluteString]
+            let identifier = item.period.notificationIdentifier
+            do {
+                try await center.add(UNNotificationRequest(
+                    identifier: identifier,
+                    content: content,
+                    trigger: UNCalendarNotificationTrigger(dateMatching: item.trigger, repeats: false)
+                ))
+                desired.insert(identifier)
+            } catch {
+                allSucceeded = false
+            }
+        }
+        guard allSucceeded, generation == scheduleGeneration else { return }
+        center.removePending(Array(existing.subtracting(desired)))
     }
 
     /// Clears after any in-flight add has completed, so stopping cannot leave

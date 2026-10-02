@@ -678,17 +678,30 @@ struct NotificationDesignView: View {
         .sensoryFeedback(.selection, trigger: shifts.preferences.liveActivityEnabled)
         .sensoryFeedback(.selection, trigger: shifts.preferences.liveActivityLeadMinutes)
         .sensoryFeedback(.selection, trigger: shifts.preferences.cycleEndSummaryNotificationEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.monthlyReportNotificationEnabled)
         .sensoryFeedback(.selection, trigger: shifts.preferences.lunchStartReminderEnabled)
         .sensoryFeedback(.selection, trigger: shifts.preferences.lunchEndReminderEnabled)
         .onChange(of: shifts.preferences.cycleEndSummaryNotificationEnabled) { _, enabled in
-            guard enabled, notifications.status == .notDetermined else { return }
-            Task { @MainActor in
-                let granted = await notifications.request()
-                if granted {
-                    await notifications.reschedule(shifts: shifts)
-                } else {
-                    shifts.preferences.applyPreferences { $0.cycleEndSummaryNotificationEnabled = false }
-                }
+            askForNotificationsIfNeeded(enabled) {
+                shifts.preferences.applyPreferences { $0.cycleEndSummaryNotificationEnabled = false }
+            }
+        }
+        .onChange(of: shifts.preferences.monthlyReportNotificationEnabled) { _, enabled in
+            askForNotificationsIfNeeded(enabled) {
+                shifts.preferences.monthlyReportNotificationEnabled = false
+            }
+        }
+    }
+
+    /// A report switch turned on before the system has been asked is the moment
+    /// to ask; a refusal puts the switch back rather than leaving it on and silent.
+    private func askForNotificationsIfNeeded(_ enabled: Bool, declined: @escaping () -> Void) {
+        guard enabled, notifications.status == .notDetermined else { return }
+        Task { @MainActor in
+            if await notifications.request() {
+                await notifications.reschedule(shifts: shifts)
+            } else {
+                declined()
             }
         }
     }
@@ -711,9 +724,9 @@ struct NotificationDesignView: View {
 
             liveActivitySection
 
-            cycleEndSummarySection
+            reportNotificationsSection
 
-            detailFooter(shifts.text.t("cycleEndSummaryNotificationNote"))
+            detailFooter(shifts.text.t("reportNotificationsNote"))
             detailFooter(shifts.text.t("liveActivityScheduleNote"))
 
             detailFooter(shifts.text.t("notificationPrivacyNote"))
@@ -747,42 +760,54 @@ struct NotificationDesignView: View {
         .padding(.top, 16)
     }
 
-    private var cycleEndSummarySection: some View {
+    private var reportNotificationsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            OWCSectionHeader(title: shifts.text.t("cycleEndSummaryNotificationTitle"))
+            OWCSectionHeader(title: shifts.text.t("reportEntryTitle"))
             OWCGroupCard {
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(shifts.text.t("cycleEndSummaryNotificationTitle"))
-                            .font(.body)
-                        if !shifts.plus.isAuthorized {
-                            Text(shifts.text.t("plusStatusSubscribed"))
-                                .font(.caption2.bold())
-                                .foregroundStyle(OWCDesign.accent)
+                reportToggleRow(
+                    title: shifts.text.t("reportWeekly"),
+                    isOn: Binding(
+                        get: { shifts.weeklyReportNotificationsAreActive },
+                        set: { enabled in
+                            scene.setCycleEndSummaryNotifications(
+                                enabled, preferences: shifts.preferences, plus: shifts.plus
+                            )
                         }
-                    }
-                    Spacer()
-                    Toggle(
-                        shifts.text.t("cycleEndSummaryNotificationTitle"),
-                        isOn: Binding(
-                            get: { shifts.cycleEndSummaryNotificationsAreActive },
-                            set: { enabled in
-                                scene.setCycleEndSummaryNotifications(
-                                    enabled,
-                                    preferences: shifts.preferences,
-                                    plus: shifts.plus
-                                )
-                            }
-                        )
                     )
-                    .labelsHidden()
-                }
-                .padding(.horizontal, 16)
-                .frame(minHeight: 58)
+                )
+                .owcDivider()
+                reportToggleRow(
+                    title: shifts.text.t("reportMonthly"),
+                    isOn: Binding(
+                        get: { shifts.monthlyReportNotificationsAreActive },
+                        set: { enabled in
+                            scene.setMonthlyReportNotifications(
+                                enabled, preferences: shifts.preferences, plus: shifts.plus
+                            )
+                        }
+                    )
+                )
             }
         }
         .padding(.horizontal, OWCDesign.pageInset)
         .padding(.top, 16)
+    }
+
+    private func reportToggleRow(title: String, isOn: Binding<Bool>) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.body)
+                if !shifts.plus.isAuthorized {
+                    Text(shifts.text.t("plusStatusSubscribed"))
+                        .font(.caption2.bold())
+                        .foregroundStyle(OWCDesign.accent)
+                }
+            }
+            Spacer()
+            Toggle(title, isOn: isOn).labelsHidden()
+        }
+        .padding(.horizontal, 16)
+        .frame(minHeight: 58)
     }
 
     /// The Live Activity controls, shown whether or not local notifications
