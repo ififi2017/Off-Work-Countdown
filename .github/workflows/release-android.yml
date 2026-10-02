@@ -67,6 +67,11 @@ jobs:
       ORG_GRADLE_PROJECT_doneatPlusLifetimePurchaseOption: ${{ vars.DONEAT_PLUS_LIFETIME_PURCHASE_OPTION }}
       ORG_GRADLE_PROJECT_doneatPlayBillingPublicKey: ${{ vars.DONEAT_PLAY_BILLING_PUBLIC_KEY }}
       # push 没有 inputs：合并触发的固定为上传到 alpha 并提审。
+      # 签名属性和 keystore 路径要在同一处出现：Gradle 配置阶段会在每个任务里读它们，
+      # 只给打包那一步会让前面的测试步骤拿到一半的签名配置。
+      ORG_GRADLE_PROJECT_doneatUploadStorePassword: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+      ORG_GRADLE_PROJECT_doneatUploadKeyAlias: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+      ORG_GRADLE_PROJECT_doneatUploadKeyPassword: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
       UPLOAD: ${{ github.event_name == 'push' || inputs.upload }}
       TRACK: ${{ inputs.track || 'alpha' }}
       STATUS: ${{ inputs.status || 'completed' }}
@@ -143,10 +148,6 @@ jobs:
 
       - name: Build signed AAB
         working-directory: src-mobile/android
-        env:
-          ORG_GRADLE_PROJECT_doneatUploadStorePassword: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
-          ORG_GRADLE_PROJECT_doneatUploadKeyAlias: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
-          ORG_GRADLE_PROJECT_doneatUploadKeyPassword: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
         run: ./gradlew :app:bundleRelease --console=plain
 
       # Gradle 签名失败时不一定报错（比如 signingConfig 没挂上），所以单独验一遍。
