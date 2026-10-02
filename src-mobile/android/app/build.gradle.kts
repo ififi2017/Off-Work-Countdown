@@ -34,15 +34,20 @@ android {
     }
 
     // Play upload key, supplied by the release workflow or an untracked local gradle.properties.
-    // Without it the release output stays unsigned, as before.
+    // Read leniently: tests and debug builds configure this script too and must not need it.
+    // Without all four values the release output stays unsigned; the release workflow
+    // verifies the AAB's signature, so a missing secret fails there, not here.
     val uploadStoreFile = providers.gradleProperty("doneatUploadStoreFile").orNull
+    val uploadStorePassword = providers.gradleProperty("doneatUploadStorePassword").orNull
+    val uploadKeyAlias = providers.gradleProperty("doneatUploadKeyAlias").orNull
+    val uploadKeyPassword = providers.gradleProperty("doneatUploadKeyPassword").orNull
     signingConfigs {
-        if (uploadStoreFile != null) {
+        if (uploadStoreFile != null && uploadStorePassword != null && uploadKeyAlias != null && uploadKeyPassword != null) {
             create("upload") {
                 storeFile = file(uploadStoreFile)
-                storePassword = providers.gradleProperty("doneatUploadStorePassword").get()
-                keyAlias = providers.gradleProperty("doneatUploadKeyAlias").get()
-                keyPassword = providers.gradleProperty("doneatUploadKeyPassword").get()
+                storePassword = uploadStorePassword
+                keyAlias = uploadKeyAlias
+                keyPassword = uploadKeyPassword
             }
         }
     }
