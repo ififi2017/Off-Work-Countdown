@@ -208,6 +208,13 @@ for (const [locale, listing] of Object.entries(LISTINGS)) {
 
 console.log(`\n将新建 ${created.length} 个语言: ${created.join(", ") || "无"}`);
 console.log(`将更新 ${updated.length} 个语言: ${updated.join(", ")}`);
+// 代码对不上安装包声明的语言（比如 zh 对 zh-hans），网页端会把它归到「其他 Store
+// 一览语言」，安装包那一栏的同一语言则显示「已删除」。本地没有的旧语言只能在网页端删。
+const localKeys = new Set(Object.keys(LISTINGS).map(apiLocale));
+const strays = Object.keys(submission.listings).filter((key) => !localKeys.has(key));
+if (strays.length > 0) {
+  console.log(`⚠️ 提交里还有本地没有的语言（去网页端「管理 Store 一览语言」删掉）: ${strays.join(", ")}`);
+}
 console.log(`每个语言写入 ${SHOTS.length} 张截图，共 ${Object.keys(LISTINGS).length * SHOTS.length} 张`);
 
 // 商店限制：一个语言的所有搜索词加起来不超过 21 个词（不是每条 21 个）。
@@ -245,6 +252,18 @@ await api(`/applications/${STORE_ID}/submissions/${submissionId}`, accessToken, 
 });
 console.log("\n提交数据已写入（文案 + 截图清单）。");
 
+// ⚠️ 合作伙伴中心里处于「已删除」状态的语言，PUT 照样返回 200，内容却被静默丢掉。
+// 所以读回来逐个核对，不信返回码。
+const stored = await api(`/applications/${STORE_ID}/submissions/${submissionId}`, accessToken);
+const dropped = Object.entries(LISTINGS)
+  .filter(([locale, listing]) => stored.listings?.[apiLocale(locale)]?.baseListing?.releaseNotes !== listing.releaseNotes)
+  .map(([locale]) => apiLocale(locale));
+if (dropped.length > 0) {
+  throw new Error(`这些语言没写进去：${dropped.join(", ")}。多半是网页端「管理 Store 一览语言」里它们处于`
+    + "「已删除」状态：在那里点「添加」并保存，再重跑 --apply。");
+}
+console.log(`读回核对：${Object.keys(LISTINGS).length} 个语言的文案都在。`);
+
 if (textOnly) {
   console.log("--text-only：跳过截图上传（沿用这次提交里已上传的那批）。");
   process.exit(0);
@@ -267,13 +286,40 @@ execFileSync("zip", ["-X", "-q", zipPath, ...SHOTS.flatMap((shot, index) =>
 const zipSize = statSync(zipPath).size;
 console.log(`已打包 ${packed} 张截图，${(zipSize / 1048576).toFixed(1)} MB，开始上传…`);
 
-// 单次 PUT 即可：块 blob 的单请求上限是 256 MB，这个 ZIP 远小于它。
-const upload = await fetch(submission.fileUploadUrl.replace("+", "%2B"), {
+// 分块上传：近两百兆的 ZIP 一次 PUT 时连接曾在中途被重置。每块 8 MB 单独传、失败重试，
+// 最后用块列表一次拼成 blob。块 ID 必须等长，所以补零到六位再转 base64。
+const blobUrl = submission.fileUploadUrl.replace("+", "%2B");
+const blobHeaders = { "x-ms-version": "2020-04-08" };
+const zipData = readFileSync(zipPath);
+const BLOCK_SIZE = 8 * 1024 * 1024;
+const blockIds = [];
+for (let offset = 0; offset < zipData.length; offset += BLOCK_SIZE) {
+  const blockId = Buffer.from(String(blockIds.length).padStart(6, "0")).toString("base64");
+  const chunk = zipData.subarray(offset, offset + BLOCK_SIZE);
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      const response = await fetch(`${blobUrl}&comp=block&blockid=${encodeURIComponent(blockId)}`, {
+        method: "PUT",
+        headers: { ...blobHeaders, "Content-Length": String(chunk.length) },
+        body: chunk,
+      });
+      if (response.ok) break;
+      if (attempt >= 4) throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      if (attempt >= 4) throw new Error(`上传 ZIP 第 ${blockIds.length + 1} 块失败：${error.message}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+  }
+  blockIds.push(blockId);
+}
+const blockList = `<?xml version="1.0" encoding="utf-8"?><BlockList>${
+  blockIds.map((id) => `<Latest>${id}</Latest>`).join("")}</BlockList>`;
+const upload = await fetch(`${blobUrl}&comp=blocklist`, {
   method: "PUT",
-  headers: { "x-ms-blob-type": "BlockBlob", "Content-Length": String(zipSize) },
-  body: readFileSync(zipPath),
+  headers: { ...blobHeaders, "Content-Type": "application/xml" },
+  body: blockList,
 });
 rmSync(staging, { recursive: true, force: true });
-if (!upload.ok) throw new Error(`上传 ZIP 失败：HTTP ${upload.status}`);
+if (!upload.ok) throw new Error(`拼合 ZIP 失败：HTTP ${upload.status}`);
 console.log("截图已上传。");
 console.log("\n下一步：确认无误后跑 --commit。它会把这一版推进到预处理与认证。");

@@ -84,7 +84,17 @@ npm run msstore:commit   # 真正提交，进入预处理与认证
 - 导出的截图字段里是 Partner Center 的资源 URL。原样回填会被判「您提供的值无效」——
   语言被移除又加回之后那些 URL 就失效了。留空表示保留现有图。
 
-API 那边这些问题都不存在，而且报错是具体的（比如 `KeywordsTotalCount must be 21 or
+**API 那边也要求语言先处于「已添加」状态。** 合作伙伴中心「管理 Store 一览语言」里
+标着「已删除」的语言，提交 API 的 PUT 照样返回 200，写进去的内容却被静默丢掉——3.1.9
+那轮的十三个新语言就是这样从来没进过商店。先在那一页点「添加」并保存，再跑
+`msstore:sync`；脚本写完会读回逐个核对，丢了哪个语言会直接报出来。
+
+**语言代码要逐字对上安装包。** `listing-copy.mjs` 的键必须等于
+`src-tauri/msstore/Package.appxmanifest` 里 `<Resource Language>` 的代码（`zh-hans`、
+`zh-hant-tw`、`ko`，不是 `zh`、`zh-hant`、`ko-kr`）。对不上的会被归到「其他 Store
+一览语言」，安装包那一栏的同一语言则一直显示「已删除」。`pack-msix.test.mjs` 会检查。
+
+API 其余方面没有导入那些问题，而且报错是具体的（比如 `KeywordsTotalCount must be 21 or
 less`）。唯一要留意的是：**在合作伙伴中心里建出来的待处理提交，API 往往整份不可写**，
 原样 PUT 回去也会 409 `InvalidState`。遇到就把它删掉，让脚本自己新建。
 

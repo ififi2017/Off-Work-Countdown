@@ -62,6 +62,20 @@ describe("Microsoft Store package manifest", () => {
     expect(languages.length).toBeGreaterThan(1);
   });
 
+  it("lists the store page in exactly the languages the package declares", async () => {
+    // 商品页的语言代码必须逐字等于这里声明的代码：zh 对不上 zh-hans，网页端会把它
+    // 归到「其他 Store 一览语言」，安装包那一栏的同一语言则一直显示「已删除」。
+    const { LISTINGS } = await import("./marketing-shots/windows/listing-copy.mjs");
+    const declared = [...manifest.matchAll(/<Resource Language="([^"]+)"/g)]
+      .map((m) => m[1].toLowerCase())
+      .sort();
+    // 印尼语在文案里写成 id-id（见 listing-copy.mjs 的说明），提交 API 用 id。
+    const listed = Object.keys(LISTINGS)
+      .map((locale) => (locale === "id-id" ? "id" : locale))
+      .sort();
+    expect(listed).toEqual(declared);
+  });
+
   it("declares every locale the app ships", () => {
     // 少声明一种，商店页面就会少标一种，而这一栏是用户判断「有没有我的语言」
     // 的唯一依据。
