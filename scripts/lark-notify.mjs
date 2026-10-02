@@ -72,6 +72,19 @@ export function buildCard(kind, data = {}) {
       lines.push(link("打开 Release 草稿", data.releaseUrl));
       break;
 
+    case "play-upload":
+      title = `Android 已上传 Play · ${data.version ?? "?"} (${data.versionCode ?? "?"})`;
+      color = COLORS.info;
+      lines.push(`**轨道**：${data.track ?? "?"}`);
+      // 草稿要在 Play Console 里手动发布，测试人员才收得到。
+      lines.push(
+        data.status === "draft"
+          ? "当前是**草稿**，在 Play Console 确认后发布给测试人员。"
+          : "已发布到该轨道，Play 审核通过后测试人员即可更新。"
+      );
+      lines.push(link("查看运行", data.runUrl));
+      break;
+
     case "release-published": {
       title = `新版本发布 · ${data.version ?? "?"}`;
       color = COLORS.release;
