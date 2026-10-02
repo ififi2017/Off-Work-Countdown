@@ -3,6 +3,7 @@ package com.rainif.doneat.core.domain.leave
 import com.rainif.doneat.core.domain.records.LeaveBalance
 import com.rainif.doneat.core.domain.records.LeaveBalanceUse
 import com.rainif.doneat.core.domain.records.LeaveBudget
+import com.rainif.doneat.core.domain.schedule.ExtendedScheduleDayHours
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
@@ -307,6 +308,16 @@ class LeavePlannerTest {
         val best = result.first()
         assertEquals(10, best.costHalfDays)
         assertEquals(setOf<LeavePlannerCaveat>(LeavePlannerCaveat.HolidaysNotIncluded(2027)), best.caveats)
+    }
+
+    @Test fun `adopted leave over fixed hours is not an estimate`() {
+        val plan = ExtendedSchedulePlan.applying(
+            mapOf("2026-10-12" to LeavePortion.WHOLE), null, ExtendedScheduleDayHours("09:00", "17:00", null, 0),
+        )
+        val days = LeavePlannerSchedule.days(hours(plan), dayNumber("2026-10-01")..dayNumber("2026-10-31"), ZoneId.of(SHANGHAI), holidays)
+        assertTrue(days.all { it.caveats.isEmpty() })
+        assertTrue(days.first { it.dayKey == "2026-10-12" }.segments.isEmpty())
+        assertFalse(days.first { it.dayKey == "2026-10-13" }.segments.isEmpty())
     }
 
     @Test fun `a whole rolling year is searched for both goals`() {

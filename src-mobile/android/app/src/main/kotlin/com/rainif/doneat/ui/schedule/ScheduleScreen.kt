@@ -541,16 +541,19 @@ private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, is
             .padding(vertical = DoneAtSpacing.xs),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            java.text.NumberFormat.getIntegerInstance(locale).format(day),
-            style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
-            fontWeight = if (chosen || isToday) FontWeight.SemiBold else null,
-            color = if (chosen || isToday) scheme.primary else scheme.onSurface,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                java.text.NumberFormat.getIntegerInstance(locale).format(day),
+                style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
+                fontWeight = if (chosen || isToday) FontWeight.SemiBold else null,
+                color = if (chosen || isToday) scheme.primary else scheme.onSurface,
+            )
+            // Adopted leave sits over the plan this page edits, so the day keeps its shift and gains a mark, not a new colour.
+            // Beside the date, so the shift's name below keeps its full width.
+            if (leave != null) Icon(leaveIcon(leave), null, Modifier.padding(start = 2.dp).size(10.dp), tint = scheme.primary)
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (holiday != null) Box(Modifier.padding(end = 2.dp).size(3.dp).background(if (holiday.isWorkday) scheme.primary else scheme.onSurfaceVariant, CircleShape))
-            // Adopted leave sits over the plan this page edits, so the day keeps its shift and gains a mark, not a new colour.
-            if (leave != null) Icon(leaveIcon(leave), null, Modifier.padding(end = 2.dp).size(10.dp), tint = scheme.primary)
             Text(type?.name ?: "–", style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Clip)
         }
     }

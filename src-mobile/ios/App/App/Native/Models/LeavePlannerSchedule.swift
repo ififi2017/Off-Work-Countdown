@@ -65,7 +65,9 @@ nonisolated enum LeavePlannerSchedule {
             var caveats: Set<LeavePlannerCaveat> = []
             switch source {
             case .carriedOver: caveats.insert(.carriedOverRoster)
-            case .unassigned: caveats.insert(.unassigned)
+            // A fallback plan (leave over the fixed hours) leaves such a day
+            // to the fixed schedule: known, not unassigned.
+            case .unassigned where plan?.fallsBackToBaseSchedule != true: caveats.insert(.unassigned)
             default: break
             }
             if let region, source != .handSet {
