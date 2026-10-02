@@ -40,6 +40,16 @@ release CI, store listings/media or release download counts.
 - GitHub macOS builds intentionally use ad-hoc signing; the project does not
   buy Developer ID certificates. Installation docs must accurately explain
   Gatekeeper and Windows SmartScreen. Mac App Store signing differs below.
+- Android ships through Google Play. `.github/workflows/release-android.yml`
+  is manual (`workflow_dispatch`): it builds a signed AAB with the upload key
+  from Secrets (`ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_STORE_PASSWORD`,
+  `ANDROID_UPLOAD_KEY_ALIAS`, `ANDROID_UPLOAD_KEY_PASSWORD`) and the Play billing
+  IDs from repository Variables (`DONEAT_PLUS_*`, `DONEAT_PLAY_BILLING_PUBLIC_KEY`).
+  By default it only stores the AAB and R8 mapping as an artifact; with
+  `upload` it sends them to the chosen track (default `alpha`, closed testing)
+  as a draft through the `PLAY_SERVICE_ACCOUNT_JSON` service account.
+  `versionCode` defaults to 100 + run number. The upload keystore itself stays
+  outside the repository.
 - iOS ships only through App Store Connect, without a GitHub channel/tag
   workflow. Universal Purchase shares one record and bundle ID
   (`com.rainif.offworkcountdown.macappstore`) with the Mac App Store app;

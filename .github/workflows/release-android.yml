@@ -1,0 +1,166 @@
+name: Android Release
+
+# Google Play 产线，与 release-desktop.yml / release-msstore.yml 并列、互不依赖。
+#
+# 只能手动触发：Play 的 versionCode 每次上传都必须递增，跟 desktop-v* tag 的
+# 节奏不一定一致，绑在 tag 上会让桌面发版顺带消耗一个 versionCode。
+#
+# 和 release-msstore.yml 一样，默认只干跑：出签名 AAB 当 artifact，不碰 Play。
+# 勾上 upload 才会真的推到测试轨道，且默认以**草稿**上传，要在 Console 里点发布。
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Upload the AAB to Google Play
+        type: boolean
+        default: false
+      track:
+        description: Play track (alpha is the default closed testing track)
+        type: string
+        default: alpha
+      status:
+        description: Release status on that track
+        type: choice
+        options:
+          - draft
+          - completed
+        default: draft
+      version_code:
+        description: versionCode override (empty = 100 + run number)
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Signed AAB
+    runs-on: ubuntu-latest
+    env:
+      # Play 后台的商品 ID 和验签公钥都是公开值，放仓库 Variables 而不是 Secrets。
+      # 缺了它们照样能打包，但装上之后 Plus 页会显示「暂不可购买」，所以下面会先拦住。
+      ORG_GRADLE_PROJECT_doneatPlusSubscriptionProduct: ${{ vars.DONEAT_PLUS_SUBSCRIPTION_PRODUCT }}
+      ORG_GRADLE_PROJECT_doneatPlusMonthlyBasePlan: ${{ vars.DONEAT_PLUS_MONTHLY_BASE_PLAN }}
+      ORG_GRADLE_PROJECT_doneatPlusYearlyBasePlan: ${{ vars.DONEAT_PLUS_YEARLY_BASE_PLAN }}
+      ORG_GRADLE_PROJECT_doneatPlusYearlyTrialOffer: ${{ vars.DONEAT_PLUS_YEARLY_TRIAL_OFFER }}
+      ORG_GRADLE_PROJECT_doneatPlusLifetimeProduct: ${{ vars.DONEAT_PLUS_LIFETIME_PRODUCT }}
+      ORG_GRADLE_PROJECT_doneatPlusLifetimePurchaseOption: ${{ vars.DONEAT_PLUS_LIFETIME_PURCHASE_OPTION }}
+      ORG_GRADLE_PROJECT_doneatPlayBillingPublicKey: ${{ vars.DONEAT_PLAY_BILLING_PUBLIC_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Check product versions
+        run: npm run check:version
+
+      - name: Generated strings are current
+        run: node scripts/generate-android-strings.mjs --check
+
+      # 除试用 offer 外全部必填（docs/android/play-console-preparation.md）。
+      - name: Require Play billing configuration
+        run: |
+          missing=()
+          for name in doneatPlusSubscriptionProduct doneatPlusMonthlyBasePlan doneatPlusYearlyBasePlan \
+                      doneatPlusLifetimeProduct doneatPlusLifetimePurchaseOption doneatPlayBillingPublicKey; do
+            var="ORG_GRADLE_PROJECT_${name}"
+            [ -n "${!var}" ] || missing+=("$name")
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing repository variables for: ${missing[*]}"
+            exit 1
+          fi
+
+      # keystore 只落在 runner 的临时目录，任务结束即销毁。
+      - name: Restore upload keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_UPLOAD_KEYSTORE_BASE64 is not set"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.jks"
+          echo "ORG_GRADLE_PROJECT_doneatUploadStoreFile=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+
+      - name: Resolve version
+        id: version
+        env:
+          OVERRIDE: ${{ inputs.version_code }}
+        run: |
+          set -euo pipefail
+          # 100 起步，给此前本地 jarsigner 上传过的 versionCode（1–5）留足余量。
+          code="${OVERRIDE:-$((100 + ${{ github.run_number }}))}"
+          name=$(node -p "require('./package.json').version")
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "ORG_GRADLE_PROJECT_doneatVersionCode=$code" >> "$GITHUB_ENV"
+          echo "Building $name ($code)"
+
+      - name: Build signed AAB
+        working-directory: src-mobile/android
+        env:
+          ORG_GRADLE_PROJECT_doneatUploadStorePassword: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          ORG_GRADLE_PROJECT_doneatUploadKeyAlias: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          ORG_GRADLE_PROJECT_doneatUploadKeyPassword: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: ./gradlew :app:bundleRelease --console=plain
+
+      # Gradle 签名失败时不一定报错（比如 signingConfig 没挂上），所以单独验一遍。
+      - name: Verify upload signature
+        run: |
+          set -euo pipefail
+          aab=src-mobile/android/app/build/outputs/bundle/release/app-release.aab
+          jarsigner -verify -strict "$aab"
+          sha256sum "$aab"
+
+      - name: Upload AAB and mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            src-mobile/android/app/build/outputs/bundle/release/app-release.aab
+            src-mobile/android/app/build/outputs/mapping/release/mapping.txt
+
+      - name: Upload to Google Play
+        if: inputs.upload
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.rainif.doneat
+          releaseFiles: src-mobile/android/app/build/outputs/bundle/release/app-release.aab
+          mappingFile: src-mobile/android/app/build/outputs/mapping/release/mapping.txt
+          releaseName: ${{ steps.version.outputs.name }} (${{ steps.version.outputs.code }})
+          track: ${{ inputs.track }}
+          status: ${{ inputs.status }}
+
+      # 同 release-desktop.yml：只在上传成功后通知，通知自身失败不影响流程。
+      - name: Notify Lark that the build is on Play
+        if: inputs.upload
+        continue-on-error: true
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+        run: |
+          node scripts/lark-notify.mjs play-upload "$(jq -nc \
+            --arg repo "${{ github.repository }}" \
+            --arg version "${{ steps.version.outputs.name }}" \
+            --arg versionCode "${{ steps.version.outputs.code }}" \
+            --arg track "${{ inputs.track }}" \
+            --arg status "${{ inputs.status }}" \
+            --arg runUrl "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            '$ARGS.named')"

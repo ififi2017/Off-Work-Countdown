@@ -56,6 +56,19 @@ describe("buildCard", () => {
     expect(content(card)).not.toContain("[镜像](");
   });
 
+  it("tells whether a Play upload still needs publishing", () => {
+    const draft = buildCard("play-upload", {
+      version: "3.2.1",
+      versionCode: "101",
+      track: "alpha",
+      status: "draft",
+    });
+    expect(draft.header.title.content).toContain("3.2.1 (101)");
+    expect(content(draft)).toContain("草稿");
+    const completed = buildCard("play-upload", { status: "completed" });
+    expect(content(completed)).not.toContain("草稿");
+  });
+
   it("lists both the direct and mirrored download for each asset", () => {
     const card = buildCard("release-published", {
       version: "3.1.6",
