@@ -1,13 +1,14 @@
-// Render scene.html to a 1080×1920 vertical promo video.
+// Render promo V4 (scene.html) to a 1080×1920 video.
 //
-// The page draws every frame from a timestamp (window.render(t)), so the
-// output does not depend on how fast Chrome runs: we step t, screenshot, and
-// pipe the frames into ffmpeg. The frame range is split across several
-// headless Chromes and the segments are concatenated without re-encoding.
+// Same approach as ../render.mjs: the page draws any frame from a timestamp,
+// we step t, screenshot in parallel headless Chromes, stitch with ffmpeg, then
+// synthesize the soundtrack from the page's cue list.
 //
-//   node scripts/marketing-shots/promo-video/render.mjs               # full video
-//   node scripts/marketing-shots/promo-video/render.mjs --stills 3,20 # preview PNGs
-//   FPS=30 WORKERS=4 node scripts/marketing-shots/promo-video/render.mjs
+//   node render.mjs                        # effects-only + music cuts
+//   node render.mjs --stills 0,6.5         # preview PNGs
+//   node render.mjs --safe --stills 0      # with the safe-area overlay
+//   node render.mjs --align --stills 13    # real screenshot at 50% over the redraw
+//   FPS=30 WORKERS=4 node render.mjs
 
 import { spawn } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -27,8 +28,12 @@ const args = process.argv.slice(2);
 const arg = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
 const stillsArg = arg("--stills");
 const workerArg = arg("--worker"); // "index,firstFrame,endFrame"
+const flags = ["safe", "align", "measure"].filter((f) => args.includes(`--${f}`));
+const QUERY = flags.length ? `?${flags.join("&")}` : "";
+const OUTV = OUT;
+const PORT0 = 9480;
 
-mkdirSync(OUT, { recursive: true });
+mkdirSync(OUTV, { recursive: true });
 
 /** Open one headless Chrome with scene.html loaded; returns helpers bound to it. */
 async function openScene(port) {
@@ -40,7 +45,7 @@ async function openScene(port) {
     "--font-render-hinting=none", "--allow-file-access-from-files",
     "--disable-background-timer-throttling", "--disable-renderer-backgrounding",
     "--disable-backgrounding-occluded-windows", "--disable-features=IntensiveWakeUpThrottling,MacAppCodeSignClone",
-    `--user-data-dir=${join(tmpdir(), `doneat-promo-video-${port}`)}`, "about:blank",
+    `--user-data-dir=${join(tmpdir(), `doneat-promo-v4-${port}`)}`, "about:blank",
   ], { stdio: "ignore" });
   process.on("exit", () => chrome.kill());
 
@@ -77,7 +82,7 @@ async function openScene(port) {
   await send("Page.bringToFront", {}, sessionId);
   await send("Emulation.setFocusEmulationEnabled", { enabled: true }, sessionId);
   await send("Emulation.setDeviceMetricsOverride", { width: 1080, height: 1920, deviceScaleFactor: 1, mobile: false }, sessionId);
-  await send("Page.navigate", { url: pathToFileURL(join(HERE, "scene.html")).href }, sessionId);
+  await send("Page.navigate", { url: pathToFileURL(join(HERE, "scene.html")).href + QUERY }, sessionId);
   await sleep(1500);
   await send("Runtime.evaluate", { expression: "document.fonts.ready.then(() => Promise.all([...document.images].map(i => i.decode())))", awaitPromise: true }, sessionId);
 
@@ -109,18 +114,18 @@ const encoder = (file) => spawn("ffmpeg", [
 ], { stdio: ["pipe", "inherit", "inherit"] });
 
 if (stillsArg) {
-  const scene = await openScene(9337);
+  const scene = await openScene(PORT0);
   for (const t of stillsArg.split(",").map(Number)) {
     await scene.render(t);
-    const file = join(OUT, `still-${t.toFixed(2)}.png`);
+    const file = join(OUTV, `still-${t.toFixed(2)}.png`);
     writeFileSync(file, await scene.grab("png"));
     console.log(file);
   }
   scene.close();
 } else if (workerArg) {
   const [index, first, end] = workerArg.split(",").map(Number);
-  const scene = await openScene(9340 + index);
-  const file = join(OUT, `segment-${index}.mp4`);
+  const scene = await openScene(PORT0 + 1 + index);
+  const file = join(OUTV, `segment-${index}.mp4`);
   const ff = encoder(file);
   for (let f = first; f < end; f++) {
     await scene.render(f / FPS);
@@ -132,12 +137,12 @@ if (stillsArg) {
   await new Promise((r) => ff.on("close", r));
   scene.close();
 } else {
-  const probe = await openScene(9337);
+  const probe = await openScene(PORT0);
   const total = await probe.total();
-  const timelineFile = join(OUT, "timeline.json");
+  const timelineFile = join(OUTV, "timeline.json");
   writeFileSync(timelineFile, await probe.timeline());
   probe.close();
-  if (!(total > 0 && total < 300)) throw new Error(`unexpected video length: ${total}s`);
+  if (!(total > 0 && total < 120)) throw new Error(`unexpected video length: ${total}s`);
   const frames = Math.round(total * FPS);
   const started = Date.now();
   const bounds = Array.from({ length: WORKERS + 1 }, (_, i) => Math.round((frames * i) / WORKERS));
@@ -145,23 +150,24 @@ if (stillsArg) {
     const child = spawn(process.execPath, [SELF, "--worker", `${i},${first},${bounds[i + 1]}`], { stdio: "inherit", env: process.env });
     child.on("close", (code) => (code === 0 ? res() : rej(new Error(`worker ${i} exited ${code}`))));
   })));
-  const list = join(OUT, "segments.txt");
+  const list = join(OUTV, "segments.txt");
   writeFileSync(list, bounds.slice(0, -1).map((_, i) => `file 'segment-${i}.mp4'`).join("\n"));
   const run = (cmd, argv) => new Promise((res, rej) => spawn(cmd, argv, { stdio: "inherit" })
     .on("close", (code) => (code === 0 ? res() : rej(new Error(`${cmd} exited ${code}`)))));
-  const silent = join(OUT, "video-only.mp4");
+  const silent = join(OUTV, "video-only.mp4");
   await run("ffmpeg", ["-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", list, "-c", "copy", silent]);
-  for (let i = 0; i < WORKERS; i++) rmSync(join(OUT, `segment-${i}.mp4`), { force: true });
+  for (let i = 0; i < WORKERS; i++) rmSync(join(OUTV, `segment-${i}.mp4`), { force: true });
   rmSync(list, { force: true });
 
   // Two cuts: effects only (pick a platform track on top), and effects + the synthesized bed.
-  const outputs = [["", "sfx.wav", []], ["-music", "mix.wav", ["--music"]]];
-  for (const [suffix, wav, flags] of outputs) {
-    const wavFile = join(OUT, wav);
+  // Only the music cut is loudness-normalized; the effects-only cut is sparse and stays quiet.
+  const outputs = [["", "sfx.wav", [], []], ["-music", "mix.wav", ["--music"], ["-af", "loudnorm=I=-16:TP=-2:LRA=20"]]];
+  for (const [suffix, wav, flags, filter] of outputs) {
+    const wavFile = join(OUTV, wav);
     await run(process.execPath, [join(HERE, "audio.mjs"), timelineFile, wavFile, ...flags]);
-    const file = join(OUT, `doneat-promo-${FPS}fps${suffix}.mp4`);
+    const file = join(OUTV, `doneat-v4-zh-${FPS}fps${suffix}.mp4`);
     await run("ffmpeg", ["-y", "-loglevel", "error", "-i", silent, "-i", wavFile, "-map", "0:v", "-map", "1:a",
-      "-c:v", "copy", "-af", "loudnorm=I=-16:TP=-1.5:LRA=20", "-ar", "48000", "-c:a", "aac", "-b:a", "192k",
+      "-c:v", "copy", ...filter, "-ar", "48000", "-c:a", "aac", "-b:a", "192k",
       "-shortest", "-movflags", "+faststart", file]);
     rmSync(wavFile, { force: true });
     console.log(file);

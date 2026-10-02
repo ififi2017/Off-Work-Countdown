@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>DoneAt TikTok v3</title>
+<!--
+  DoneAt · TikTok v3. One illustrated office, one character, three openings.
+  Every frame is drawn from a timestamp: render(t). Variant: ?variant=progress|glance|woodfish
+  Preview: ?variant=glance&t=2.4   Safe-area overlay: add &safe
+  Icons, rolling digits, the timer screen and the confetti physics are carried over from ../scene.html.
+-->
+<style>
+  :root { --orange: #F45A1E; --cream: #FFF1D8; --plum: #2B1935; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #111; }
+  body { font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif; -webkit-font-smoothing: antialiased; }
+  .abs { position: absolute; }
+  .num { font-variant-numeric: tabular-nums; }
+  .en { font-family: "Helvetica Neue", Helvetica, sans-serif; font-weight: 400; }
+  .tp { margin-right: -.6em; }
+  #frame { position: absolute; inset: 0; overflow: hidden; background: #E9DCC8; }
+  .layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; }
+  .layer > svg { position: absolute; left: 0; top: 0; overflow: visible; }
+  #mid-back, #mid-front, #monitor, #standphone { filter: drop-shadow(34px 14px 22px rgba(96,60,34,.2)); }
+
+  /* rolling digits */
+  .roll { display: inline-flex; align-items: baseline; white-space: pre; }
+  .slot { position: relative; display: inline-block; width: 1ch; text-align: center; }
+  .slot > span { position: absolute; left: 0; right: 0; top: 0; }
+  .slot > .sizer { position: static; visibility: hidden; }
+  .lit { display: inline-block; }
+
+  /* phone device (iPhone frame from ../ios/frames) */
+  .dev { position: absolute; left: 0; top: 0; width: 660px; height: 1346.94px; transform-origin: 0 0; }
+  .dev .frame { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .dev .hole { position: absolute; left: 5.102041%; top: 2.2%; width: 89.795918%; height: 95.6%; border-radius: 14.4% / 6.62%; overflow: hidden; background: #000; }
+  .screen { position: absolute; left: 0; top: 0; width: 440px; height: 956px; transform-origin: 0 0; }
+  .scr { position: absolute; inset: 0; overflow: hidden; }
+  .sb { position: absolute; left: 0; right: 0; top: 0; height: 54px; font-size: 17px; font-weight: 600; color: #000; }
+  .sb .time { position: absolute; left: 50px; top: 20px; width: 70px; text-align: center; }
+  .sb .icons { position: absolute; right: 36px; top: 21px; display: flex; gap: 7px; align-items: center; }
+  .sb.light { color: #fff; }
+
+  /* lock screen */
+  #lock { background: linear-gradient(160deg, #F7C27A 0%, #EE8E6A 42%, #B8657C 72%, #5E4A86 100%); }
+  #lock .blob { position: absolute; border-radius: 50%; filter: blur(30px); }
+  #lk-date { position: absolute; left: 0; right: 0; top: 78px; text-align: center; font-size: 20px; font-weight: 600; color: rgba(255,255,255,.92); }
+  #lk-time { position: absolute; left: 0; right: 0; top: 96px; text-align: center; font-size: 108px; font-weight: 700; color: #fff; letter-spacing: -2px; line-height: 124px; }
+  #lk-note { position: absolute; left: 14px; right: 14px; top: 548px; height: 94px; border-radius: 26px; background: rgba(248,246,244,.93); box-shadow: 0 10px 30px rgba(40,20,30,.18); }
+  #lk-note img { position: absolute; left: 14px; top: 17px; width: 42px; height: 42px; border-radius: 10px; }
+  #lk-note .t { position: absolute; left: 68px; top: 16px; font-size: 19px; font-weight: 700; color: #111; }
+  #lk-note .b { position: absolute; left: 68px; top: 45px; font-size: 17px; color: #3a3a3c; }
+  #lk-note .w { position: absolute; right: 18px; top: 19px; font-size: 14px; color: #8e8e93; }
+  #la { position: absolute; left: 14px; right: 14px; top: 660px; height: 164px; border-radius: 30px; background: rgba(30,22,32,.84); box-shadow: 0 10px 30px rgba(20,10,20,.25); color: #fff; }
+  #la .hd { position: absolute; left: 20px; top: 18px; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: rgba(255,255,255,.72); }
+  #la .hd svg { width: 26px; height: 26px; }
+  #la-state { position: absolute; right: 20px; top: 18px; height: 28px; padding: 0 12px 0 24px; border-radius: 14px; background: rgba(255,154,69,.18); font-size: 15px; font-weight: 600; line-height: 28px; color: #FFB27A; }
+  #la-state::before { content: ""; position: absolute; left: 11px; top: 11px; width: 7px; height: 7px; border-radius: 4px; background: currentColor; }
+  #la-count { position: absolute; left: 20px; top: 52px; font-size: 56px; font-weight: 700; color: #FF9A45; letter-spacing: -1px; line-height: 64px; }
+  #la-end { position: absolute; right: 20px; top: 62px; font-size: 16px; color: rgba(255,255,255,.66); }
+  #la-pct { position: absolute; right: 20px; top: 84px; font-size: 26px; font-weight: 700; color: #fff; }
+  #la .track { position: absolute; left: 20px; right: 20px; top: 132px; height: 10px; border-radius: 5px; background: rgba(255,255,255,.18); }
+  #la-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: linear-gradient(90deg, #F45A1E, #FFA53A); }
+  .lk-btn { position: absolute; top: 862px; width: 50px; height: 50px; border-radius: 25px; background: rgba(40,30,40,.28); }
+
+  /* timer app (as in ../scene.html) */
+  #app { background: #F2F2F7; }
+  .glasspill { position: absolute; left: 306px; top: 62px; width: 114px; height: 44px; border-radius: 22px; background: rgba(255,255,255,.75); box-shadow: 0 4px 16px rgba(0,0,0,.08), inset 0 0 0 .5px rgba(0,0,0,.08); display: flex; align-items: center; justify-content: space-around; padding: 0 6px; }
+  #t-count { position: absolute; left: 0; right: 0; top: 128px; text-align: center; font-size: 57px; font-weight: 700; color: #000; letter-spacing: -.5px; line-height: 70px; }
+  #t-label { position: absolute; left: 0; right: 0; top: 206px; text-align: center; font-size: 15px; color: #8a8a8e; }
+  .ttrack { position: absolute; left: 20px; width: 400px; top: 259px; height: 8px; border-radius: 4px; background: #E3E3E8; }
+  .ttrack .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #F25A14; }
+  .bubble { position: absolute; top: 231px; height: 21px; padding: 0 9px; border-radius: 11px; background: #F25A14; color: #fff; font-size: 13.5px; font-weight: 600; line-height: 21px; transform: translateX(-50%); white-space: nowrap; }
+  .bubble::after { content: ""; position: absolute; left: 50%; bottom: -4px; margin-left: -4px; border: 4px solid transparent; border-bottom: 0; border-top-color: inherit; }
+  #t-label .cup { display: none; margin-right: 6px; vertical-align: -3px; }
+  .sec { position: absolute; left: 36px; font-size: 13px; color: #86868b; }
+  .card { position: absolute; left: 17px; width: 406px; background: #fff; border-radius: 22px; overflow: hidden; }
+  .row { position: absolute; left: 0; right: 0; display: flex; align-items: center; }
+  .row .ic { position: absolute; left: 14px; width: 22px; height: 22px; color: #8e8e93; }
+  .row .tt { position: absolute; left: 46px; font-size: 17px; color: #000; }
+  .row .vv { position: absolute; right: 16px; font-size: 16px; color: #8e8e93; }
+  .row.sep::after { content: ""; position: absolute; left: 46px; right: 0; bottom: 0; height: .5px; background: #E0E0E5; }
+  .nrow .dot { position: absolute; left: 15px; width: 32px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+  .nrow .tt { left: 60px; top: 9px; }
+  .nrow .st { position: absolute; left: 60px; top: 32px; font-size: 13px; color: #8e8e93; }
+  .nrow.sep::after { left: 60px; }
+
+  /* Mac desktop inside the monitor (designed at 836×528, shown at half size) */
+  #desktop { position: absolute; left: 0; top: 0; width: 836px; height: 528px; transform: scale(.5); transform-origin: 0 0;
+    background: radial-gradient(70% 90% at 80% 20%, #F2B27E 0%, transparent 60%), radial-gradient(80% 80% at 10% 90%, #7C6BA8 0%, transparent 60%), linear-gradient(135deg, #E9A27F, #B77794 60%, #6E5C98); }
+  #menubar { position: absolute; left: 0; right: 0; top: 0; height: 26px; background: rgba(255,255,255,.55); backdrop-filter: blur(12px); font-size: 13px; color: #1c1c1e; }
+  #menubar .l { position: absolute; left: 14px; top: 5px; display: flex; gap: 16px; }
+  #mb-time { position: absolute; right: 14px; top: 4px; font-size: 14px; font-weight: 600; }
+  #sheet { position: absolute; left: 290px; top: 46px; width: 526px; height: 454px; border-radius: 12px; background: #fff; box-shadow: 0 16px 40px rgba(40,20,40,.25); overflow: hidden; }
+  #mini { position: absolute; left: 560px; top: 386px; width: 250px; height: 100px; border-radius: 22px; background: rgba(248,248,248,.97); box-shadow: 0 14px 34px rgba(30,10,30,.3), inset 0 0 0 .5px rgba(0,0,0,.1); }
+  #mini-time { position: absolute; left: 84px; top: 27px; font-size: 32px; font-weight: 700; color: #111; letter-spacing: -.3px; line-height: 38px; }
+  #mini-pct { position: absolute; right: 16px; top: 36px; font-size: 18px; font-weight: 600; color: #6b6b70; }
+  #mini-k { position: absolute; left: 16px; top: 70px; font-size: 13px; font-weight: 700; color: #C49A6C; }
+  #mini .bar { position: absolute; left: 14px; right: 14px; top: 86px; height: 5px; border-radius: 3px; background: #E3E3E6; }
+  #mini-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: #F57A1E; }
+  .plus { position: absolute; font-size: 15px; font-weight: 800; color: #B07A45; }
+  #cursor { position: absolute; width: 22px; height: 30px; }
+
+  /* grading, grain, captions, CTA */
+  #grade-a, #grade-b, #dusk, #vignette { position: absolute; inset: 0; pointer-events: none; }
+  #grade-a { mix-blend-mode: soft-light; }
+  #grade-b { mix-blend-mode: multiply; }
+  #vignette { background: radial-gradient(120% 80% at 50% 45%, transparent 55%, rgba(40,22,20,.35) 100%); }
+  #grain { position: absolute; inset: -40px; opacity: .07; mix-blend-mode: overlay; pointer-events: none; }
+  #confetti { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  .cap { position: absolute; left: 64px; right: 64px; top: 196px; text-align: center; }
+  .cap h1 { font-size: 74px; font-weight: 800; letter-spacing: -1px; line-height: 1.18; color: #2B1935;
+    text-shadow: 0 0 22px rgba(255,248,236,.85), 0 0 3px rgba(255,248,236,.9); }
+  .cap p { margin-top: 18px; font-size: 40px; font-weight: 600; color: #4A3346; text-shadow: 0 0 16px rgba(255,248,236,.95), 0 0 2px rgba(255,248,236,.9); }
+  .cap .o { color: #F45A1E; }
+  .cap.dark h1 { color: #FFF1D8; text-shadow: 0 2px 24px rgba(20,8,20,.6); }
+  .cap.dark p { color: rgba(255,241,216,.85); text-shadow: 0 2px 18px rgba(20,8,20,.6); }
+  #cta { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+  #cta-scrim { position: absolute; inset: 0; background: radial-gradient(90% 55% at 50% 50%, rgba(24,12,30,.72), rgba(24,12,30,.35)); }
+  #cta-block { position: absolute; left: 0; right: 0; top: 540px; text-align: center; color: #FFF1D8; }
+  #cta-icon { width: 168px; height: 168px; border-radius: 38px; box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+  #cta-name { margin-top: 26px; font-size: 104px; font-weight: 800; letter-spacing: -2px; }
+  #cta-sub { margin-top: 2px; font-size: 44px; font-weight: 600; color: rgba(255,241,216,.8); }
+  #cta-pill { display: inline-block; margin-top: 54px; padding: 26px 56px; border-radius: 999px; background: #F45A1E; color: #fff; font-size: 50px; font-weight: 800; box-shadow: 0 16px 40px rgba(244,90,30,.35); }
+  #cta-web { margin-top: 30px; font-size: 40px; font-weight: 700; color: #FFB27A; letter-spacing: .5px; }
+  #cta-more { margin-top: 18px; font-size: 30px; font-weight: 500; color: rgba(255,241,216,.62); letter-spacing: .5px; }
+  /* after the story: a short look at Focus, Records and the Life view */
+  #tour { position: absolute; inset: 0; }
+  #tour-bg { position: absolute; inset: 0; background: radial-gradient(80% 50% at 20% 10%, #4a2656 0%, transparent 60%), radial-gradient(70% 45% at 85% 80%, #5a2320 0%, transparent 65%), linear-gradient(170deg, #3B2048 0%, #241530 50%, #1D1329 100%); }
+  #tour-dev { position: absolute; left: 230px; top: 520px; width: 620px; height: 1265px; transform-origin: 0 0; }
+  #tour-dev > .dev { transform: scale(.939394); }
+  #tour-dev .dev::before { content: ""; position: absolute; left: 6%; right: 6%; top: 4%; bottom: 2%; border-radius: 90px; box-shadow: 0 50px 110px rgba(0,0,0,.45); }
+  .tv { position: absolute; inset: 0; overflow: hidden; background: #F2F2F7; }
+  .shot { position: absolute; left: 0; width: 440px; background-size: 440px 956px; background-repeat: no-repeat; }
+  .ocard { position: absolute; left: 16px; right: 16px; background: #fff; border-radius: 22px; padding: 16px; color: #000; }
+  .ocard .hd { font-size: 17px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .qm { width: 20px; height: 20px; border-radius: 10px; border: 1.5px solid #C7C7CC; color: #AEAEB2; font-size: 12px; font-weight: 700; text-align: center; line-height: 17px; }
+  .metric { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .metric .l { flex: 1; color: #8a8a8e; font-size: 15px; }
+  .metric .l small { display: block; font-size: 13px; margin-top: 4px; }
+  .metric .v { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .metric .v.m { font-size: 17px; font-weight: 500; }
+  .hr { height: .5px; background: #E0E0E5; margin-top: 12px; }
+  .litem .l { font-size: 13px; color: #8a8a8e; }
+  .litem .v { margin-top: 3px; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tbar { position: absolute; left: 21px; top: 873px; width: 398px; height: 61px; border-radius: 31px; background: rgba(250,250,252,.92); box-shadow: 0 6px 24px rgba(0,0,0,.08), inset 0 0 0 .5px rgba(0,0,0,.1); }
+  .tbar .tab { position: absolute; top: 0; height: 61px; width: 94px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10.5px; font-weight: 600; color: #1c1c1e; }
+  .tbar .tab.on { color: #F25A14; }
+  .tbar .sel { position: absolute; top: 5px; width: 94px; height: 51px; border-radius: 26px; background: rgba(0,0,0,.06); }
+  .navc { position: absolute; left: 16px; top: 58px; width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,.85); box-shadow: 0 3px 12px rgba(0,0,0,.07), inset 0 0 0 .5px rgba(0,0,0,.08); display: flex; align-items: center; justify-content: center; }
+  #ft-time { position: absolute; left: 33px; top: 205px; width: 86px; height: 36px; background: #fff; font-size: 28.4px; font-weight: 700; color: #000; letter-spacing: -.2px; line-height: 36px; }
+  .plus-chip { display: inline-block; margin-bottom: 16px; padding: 6px 16px; border-radius: 999px; border: 2px solid rgba(255,154,69,.8); color: #FFB27A; font-size: 28px; font-weight: 700; letter-spacing: .5px; }
+  #safe { position: absolute; inset: 0; pointer-events: none; display: none; }
+  #safe.on { display: block; }
+</style>
+</head>
+<body>
+<div id="frame">
+  <!-- far: wall, window, clock, shelf, floor -->
+  <div class="layer" id="L-bg">
+    <svg width="1080" height="1920" viewBox="0 0 1080 1920">
+      <defs>
+        <linearGradient id="g-wall" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F4E9D9"/><stop offset=".55" stop-color="#EEE0CC"/><stop offset="1" stop-color="#E2D0B8"/></linearGradient>
+        <linearGradient id="g-wallv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6B4A3A" stop-opacity=".07"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#5A3A2A" stop-opacity=".12"/></linearGradient>
+        <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop id="sky0" offset="0" stop-color="#A9CDEB"/><stop id="sky1" offset="1" stop-color="#E8F0F4"/></linearGradient>
+        <linearGradient id="g-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A98460"/><stop offset="1" stop-color="#86623F"/></linearGradient>
+        <radialGradient id="g-clockface" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#FFFDF8"/><stop offset="1" stop-color="#EDE3D4"/></radialGradient>
+        <linearGradient id="g-beam" x1="0" y1="0" x2="1" y2=".25"><stop offset="0" stop-color="#FFF4DC" stop-opacity=".95"/><stop offset="1" stop-color="#FFF4DC" stop-opacity="0"/></linearGradient>
+        <filter id="f-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+        <filter id="f-soft2" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5"/></filter>
+        <clipPath id="c-window"><rect x="62" y="262" width="316" height="716" rx="4"/></clipPath>
+      </defs>
+      <rect x="-1400" y="-1400" width="4000" height="2900" fill="url(#g-wall)"/>
+      <rect x="-1400" y="-1400" width="4000" height="2900" fill="url(#g-wallv)"/>
+      <!-- window -->
+      <rect x="40" y="240" width="360" height="760" rx="10" fill="#FBF7F1"/>
+      <g clip-path="url(#c-window)">
+        <rect x="62" y="262" width="316" height="716" fill="url(#g-sky)"/>
+        <circle id="sunhalo" cx="300" cy="360" r="150" fill="#FFF3D0" opacity=".4" filter="url(#f-soft)"/>
+        <circle id="sun" cx="300" cy="360" r="44" fill="#FFF8E0"/>
+        <g fill="#FFFFFF" opacity=".75" id="clouds"><ellipse cx="130" cy="330" rx="54" ry="15"/><ellipse cx="160" cy="318" rx="32" ry="17"/><ellipse cx="300" cy="520" rx="46" ry="12"/></g>
+        <g id="city">
+          <path d="M62 978 V700 h58 v-40 h46 v120 h40 v-190 h64 v150 h44 v-80 h70 V978Z" fill="#A9B8C6" opacity=".55"/>
+          <path d="M62 978 V790 h40 v-50 h60 v130 h52 v-90 h58 v60 h40 v-120 h66 V978Z" fill="#96A7B8" opacity=".85"/>
+        </g>
+        <g id="citylights" fill="#FFD27A" opacity="0">
+          <rect x="80" y="810" width="6" height="8"/><rect x="92" y="850" width="6" height="8"/><rect x="176" y="900" width="6" height="8"/><rect x="232" y="860" width="6" height="8"/><rect x="250" y="880" width="6" height="8"/><rect x="330" y="820" width="6" height="8"/><rect x="345" y="850" width="6" height="8"/><rect x="118" y="930" width="6" height="8"/><rect x="290" y="930" width="6" height="8"/>
+        </g>
+      </g>
+      <rect x="216" y="262" width="8" height="716" fill="#FBF7F1"/>
+      <rect x="62" y="600" width="316" height="8" fill="#FBF7F1"/>
+      <rect x="26" y="992" width="388" height="22" rx="6" fill="#F5EEE4"/>
+      <rect x="26" y="1012" width="388" height="10" fill="#6B4A3A" opacity=".08"/>
+      <!-- sun on the wall -->
+      <polygon id="beam" points="378,262 378,978 1400,1260 1400,420" fill="url(#g-beam)" opacity=".55" style="mix-blend-mode:soft-light"/>
+      <polygon id="patch" points="480,560 700,520 760,940 540,990" fill="#FFF3D6" opacity=".22" filter="url(#f-soft)"/>
+      <!-- framed print -->
+      <g transform="translate(902 380) scale(.8)">
+        <rect x="6" y="10" width="170" height="214" rx="4" fill="#6B4A3A" opacity=".14" filter="url(#f-soft2)"/>
+        <rect width="170" height="214" rx="4" fill="#FBF7F0"/>
+        <rect x="16" y="16" width="138" height="182" fill="#F2D8BE"/>
+        <circle cx="85" cy="92" r="40" fill="#F45A1E" opacity=".85"/>
+        <rect x="16" y="140" width="138" height="58" fill="#E4B78F"/>
+      </g>
+      <!-- wall clock -->
+      <g id="clock" transform="translate(600 560)">
+        <circle r="114" cx="7" cy="12" fill="#6B4A36" opacity=".2" filter="url(#f-soft2)"/>
+        <circle r="114" fill="#C79363"/>
+        <circle r="114" fill="none" stroke="#AA7A50" stroke-width="3"/>
+        <circle r="101" fill="url(#g-clockface)"/>
+        <g id="ticks" stroke="#3A302C" stroke-linecap="round"></g>
+        <line id="c-h" x1="0" y1="10" x2="0" y2="-50" stroke="#2E2624" stroke-width="9" stroke-linecap="round"/>
+        <line id="c-m" x1="0" y1="14" x2="0" y2="-76" stroke="#2E2624" stroke-width="6" stroke-linecap="round"/>
+        <line id="c-s" x1="0" y1="18" x2="0" y2="-86" stroke="#F45A1E" stroke-width="2.6" stroke-linecap="round"/>
+        <circle r="7" fill="#2E2624"/><circle r="3" fill="#F45A1E"/>
+      </g>
+      <!-- shelf -->
+      <g transform="translate(880 600)">
+        <rect x="0" y="120" width="220" height="14" rx="3" fill="#C99A6B"/>
+        <rect x="0" y="132" width="220" height="8" fill="#6B4A3A" opacity=".12"/>
+        <rect x="16" y="52" width="22" height="68" rx="3" fill="#E07B4F"/>
+        <rect x="40" y="40" width="18" height="80" rx="3" fill="#3C4E6E"/>
+        <rect x="60" y="62" width="26" height="58" rx="3" fill="#E9D9BF"/>
+        <path d="M128 120 h48 l-6 -40 h-36z" fill="#E6DED2"/>
+        <g fill="#6E9A63"><ellipse cx="140" cy="62" rx="12" ry="26" transform="rotate(-25 140 62)"/><ellipse cx="164" cy="58" rx="12" ry="28" transform="rotate(20 164 58)"/><ellipse cx="153" cy="46" rx="11" ry="30"/></g>
+      </g>
+      <!-- floor -->
+      <rect x="-1400" y="1478" width="4000" height="26" fill="#DCCAB2"/>
+      <rect x="-1400" y="1500" width="4000" height="1400" fill="url(#g-floor)"/>
+      <g stroke="#6E4E33" stroke-width="2" opacity=".3"><line x1="-1400" y1="1560" x2="2600" y2="1560"/><line x1="-1400" y1="1650" x2="2600" y2="1650"/><line x1="-1400" y1="1770" x2="2600" y2="1770"/><line x1="-1400" y1="1930" x2="2600" y2="1930"/></g>
+    </svg>
+  </div>
+
+  <!-- mid: desk, chair, person, screens -->
+  <div class="layer" id="L-mid">
+    <svg id="mid-back" width="1080" height="1920" viewBox="0 0 1080 1920">
+      <defs>
+        <linearGradient id="g-desk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DDB07F"/><stop offset="1" stop-color="#C39263"/></linearGradient>
+        <linearGradient id="g-sweater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5D749B"/><stop offset=".3" stop-color="#4A5E83"/><stop offset="1" stop-color="#33435E"/></linearGradient>
+        <linearGradient id="g-pants" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3C404C"/><stop offset="1" stop-color="#2A2D36"/></linearGradient>
+        <linearGradient id="g-alu" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D7DBE1"/><stop offset="1" stop-color="#A7ADB6"/></linearGradient>
+        <filter id="f-blur14" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="14"/></filter>
+      </defs>
+      <ellipse cx="320" cy="1536" rx="230" ry="26" fill="#3A2618" opacity=".3" filter="url(#f-blur14)"/>
+      <ellipse cx="780" cy="1596" rx="420" ry="30" fill="#3A2618" opacity=".24" filter="url(#f-blur14)"/>
+      <!-- chair (rolls back when he stands) -->
+      <g id="chairAll"><g id="chair">
+        <path d="M150 972 Q150 930 186 930 L196 930 Q228 930 228 970 L226 1252 L152 1252 Z" fill="#2E323D"/>
+        <path d="M168 962 L168 1232" stroke="#434858" stroke-width="6" stroke-linecap="round"/>
+        <rect x="300" y="1300" width="18" height="180" fill="#4A4F5C"/>
+        <path d="M180 1492 L440 1492" stroke="#3A3E4A" stroke-width="16" stroke-linecap="round"/>
+        <circle cx="190" cy="1512" r="14" fill="#262932"/><circle cx="430" cy="1512" r="14" fill="#262932"/><circle cx="310" cy="1514" r="14" fill="#262932"/>
+      </g>
+      <!-- his tote, hanging on the chair back -->
+      <g id="chairbag"><path d="M170 1016 C170 980 214 980 214 1016" stroke="#B85A34" stroke-width="7" fill="none"/><rect x="150" y="1012" width="84" height="104" rx="16" fill="#E07B4F"/><rect x="150" y="1012" width="84" height="16" rx="8" fill="#C8643C"/></g>
+      </g>
+      <!-- desk -->
+      <g id="desk">
+        <rect x="455" y="1178" width="16" height="410" fill="#4A4F5C"/>
+        <rect x="1180" y="1178" width="16" height="410" fill="#3E4250"/>
+        <path d="M444 1128 L1400 1128 L1400 1150 L432 1150 Z" fill="#E8C08F"/>
+        <rect x="432" y="1150" width="968" height="30" rx="4" fill="url(#g-desk)"/>
+        <rect x="432" y="1176" width="968" height="6" fill="#7E5634" opacity=".45"/>
+      </g>
+      <!-- monitor stand -->
+      <ellipse cx="850" cy="1134" rx="94" ry="9" fill="url(#g-alu)"/>
+      <path d="M836 1036 L864 1036 L870 1132 L830 1132 Z" fill="url(#g-alu)"/>
+      <!-- phone stand -->
+      <path d="M716 1142 L838 1142 L828 1126 L726 1126 Z" fill="#CBCFD5"/>
+      <!-- mug -->
+      <g transform="translate(1120 1066)">
+        <path d="M0 0 h58 v58 a12 12 0 0 1 -12 12 h-34 a12 12 0 0 1 -12 -12z" fill="#F6F1EA"/>
+        <rect x="0" y="0" width="58" height="10" fill="#E07B4F"/>
+        <path d="M58 14 a16 16 0 0 1 0 32" stroke="#F6F1EA" stroke-width="8" fill="none"/>
+        <g id="steam" opacity="0" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"><path d="M18 -8 q-10 -16 0 -32 q10 -16 0 -32"/><path d="M38 -12 q-10 -16 0 -32 q10 -16 0 -32"/></g>
+      </g>
+      <!-- far limbs, behind the torso; transformed together with #person -->
+      <g id="person-back">
+        <path id="legFar" fill="none" stroke="#262932" stroke-width="80" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse id="shoeFar" rx="46" ry="20" fill="#D5D8DD"/>
+        <path id="armFar" fill="none" stroke="#2F3D57" stroke-width="50" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse id="handFar" rx="24" ry="18" fill="#D9A987"/>
+      </g>
+      <g id="seatAll"><path id="seat" d="M186 1262 L430 1262 Q444 1262 444 1276 L444 1288 Q444 1300 430 1300 L186 1300 Q172 1300 172 1288 L172 1276 Q172 1262 186 1262 Z" fill="#3A3F4C"/></g>
+    </svg>
+
+    <div id="monitor" class="abs" style="left:632px;top:758px;width:436px;height:282px;transform-origin:30% 50%">
+      <div class="abs" style="inset:0;border-radius:14px;background:#17191E"></div>
+      <div id="mon-screen" class="abs" style="left:9px;top:9px;width:418px;height:264px;border-radius:6px;overflow:hidden;background:#E9ECF1">
+        <div id="desktop">
+          <div id="menubar"><div class="l"><span style="font-weight:700"></span><b>表格</b><span>文件</span><span>编辑</span><span>视图</span><span>插入</span></div><div id="mb-time" class="num">周三 10:27</div></div>
+          <div id="sheet"></div>
+          <div id="mini">
+            <svg id="fish" class="abs" style="left:14px;top:22px;width:58px;height:44px" viewBox="0 0 1365 1024" fill="#B07A45"><path d="M1.450653 780.39695c-10.175905 64.255398 36.031662 101.161718 59.626108 112.361614 23.594445 11.178562 63.274073 0 78.825927 0 116.542907 11.178562 366.759228 131.220103 678.606972 131.220103 0 0 504.635269 7.445264 543.31224-360.487287 9.19458-95.529771 4.885288-277.458732-71.039334-286.162651-63.956734-8.426588-102.121709 4.074628-183.315615 20.565141-53.908828 10.922564-189.011561 29.973052-212.926004 44.970245-260.989553 118.718887-403.324219 204.371417-442.299853 217.128631-29.439724 0-54.975485-7.359931-62.100752-69.972677 0-25.706426 98.089747-87.039184 140.137353-96.959091C682.660267 452.869354 796.365867 435.333519 809.720409 435.333519c19.263819 0 441.489194-101.588381 454.438406-111.188291 12.949212-9.59991 26.62375-18.986489 26.623751-52.543508 0-15.359856-33.813016-49.663534-72.319322-91.455142-45.674238-49.556869-99.94573-107.092329-140.606682-120.788201C1002.934597 20.958737 856.077308-10.912964 727.779844 3.572233 446.929143 35.273269 271.677453 342.662388 256.424263 363.995521c-64.852725 90.708483-116.542907 205.587406-143.678653 256.296264C86.548522 669.272659 11.71189 735.149375 1.450653 780.39695z"/></svg>
+            <div id="mini-k" class="num">64</div>
+            <div id="plusbox"></div>
+            <div id="mini-time" class="num"></div>
+            <div id="mini-pct" class="num">21%</div>
+            <div class="bar"><div id="mini-fill"></div></div>
+          </div>
+          <svg id="cursor" viewBox="0 0 22 30" style="left:598px;top:430px"><path d="M2 2 L2 24 L8 18 L12 28 L16 26 L12 17 L20 17 Z" fill="#111" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div id="standphone" class="abs" style="left:730px;top:936px;width:94px;height:192px;transform-origin:50% 60%">
+      <div class="dev" id="dev">
+        <div class="hole">
+          <div class="screen" id="screen">
+            <!-- LOCK SCREEN -->
+            <div class="scr" id="lock">
+              <div class="blob" style="left:-60px;top:260px;width:320px;height:320px;background:#FFD79A;opacity:.6"></div>
+              <div class="blob" style="left:220px;top:520px;width:300px;height:300px;background:#8E5FA8;opacity:.45"></div>
+              <div class="sb light"><div class="time"></div><div class="icons" data-icons="light"></div></div>
+              <div id="lk-date">9月23日 星期三</div>
+              <div id="lk-time" class="num">10:27</div>
+              <div id="lk-note"><img src="../../../../assets/brand/off-work-countdown-icon-rounded.svg" alt=""><div class="t" id="lk-note-t">今天还剩 10%</div><div class="b" id="lk-note-b">只剩最后一小段。</div><div class="w">现在</div></div>
+              <div id="la">
+                <div class="hd"><span data-i="markdark"></span>DoneAt</div>
+                <div id="la-state">工作中</div>
+                <div id="la-count" class="num"></div>
+                <div id="la-end" class="num">17:00 下班</div>
+                <div id="la-pct" class="num">21%</div>
+                <div class="track"><div id="la-fill"></div></div>
+              </div>
+              <div class="lk-btn" style="left:46px"></div><div class="lk-btn" style="right:46px"></div>
+              <div class="abs" style="left:150px;right:150px;top:936px;height:5px;border-radius:3px;background:rgba(255,255,255,.85)"></div>
+            </div>
+            <!-- TIMER APP -->
+            <div class="scr" id="app">
+              <div class="sb"><div class="time num" id="app-sb">10:27</div><div class="icons" data-icons="dark"></div></div>
+              <div class="glasspill"><span data-i="eyeslash"></span><span data-i="sun"></span></div>
+              <div id="t-count" class="num"></div>
+              <div id="t-label"><span class="cup" id="t-cup" data-i="cup"></span><span id="t-labeltext">今天的班次还剩</span></div>
+              <div class="ttrack"><div class="fill" id="t-fill"></div></div>
+              <div class="bubble num" id="t-bubble" style="border-top-color:#F25A14">0%</div>
+              <div class="sec" style="top:289px">按当前设置推算</div>
+              <div class="card" style="top:311px;height:155px">
+                <div class="row sep" style="top:0;height:52px"><span class="ic" data-i="clock"></span><span class="tt">今天的班次</span><span class="vv num">09:00 <span class="en">–</span> 17:00</span></div>
+                <div class="row sep" style="top:52px;height:52px"><span class="ic" data-i="cal"></span><span class="tt">本周</span><span class="vv num">2.2 天 · 15.5小时</span></div>
+                <div class="row" style="top:104px;height:52px"><span class="ic" data-i="calclock"></span><span class="tt">今年</span><span class="vv num">167.2 天 · 1,170.5小时</span></div>
+              </div>
+              <div class="sec" style="top:480px">接下来</div>
+              <div class="card" style="top:503px;height:274px" id="t-next"></div>
+            </div>
+          </div>
+        </div>
+        <img class="frame" src="../../ios/frames/iphone-17-pro-max-deep-blue.png" alt="">
+      </div>
+    </div>
+
+    <svg id="mid-front" width="1080" height="1920" viewBox="0 0 1080 1920">
+      <!-- keyboard & mouse -->
+      <path d="M470 1136 L640 1136 L646 1148 L464 1148 Z" fill="#E4E6EA"/>
+      <rect x="470" y="1130" width="170" height="6" rx="2" fill="#CDD1D7"/>
+      <path d="M662 1146 C662 1132 702 1130 706 1146 Z" fill="#E4E6EA"/>
+      <!-- lunch box -->
+      <g id="bento" opacity="0">
+        <rect x="478" y="1106" width="156" height="36" rx="9" fill="#2E3440"/>
+        <rect x="484" y="1099" width="144" height="12" rx="5" fill="#F4E3C6"/>
+        <circle cx="508" cy="1100" r="8" fill="#F2A65A"/><circle cx="528" cy="1098" r="7" fill="#7BA05B"/><ellipse cx="584" cy="1100" rx="28" ry="7" fill="#FFFDF7"/>
+        <rect id="bento-lid" x="474" y="1088" width="164" height="15" rx="7" fill="#E07B4F"/>
+      </g>
+      <!-- person -->
+      <g id="person">
+        <path id="legNear" fill="none" stroke="url(#g-pants)" stroke-width="86" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse id="shoeNear" rx="50" ry="22" fill="#F1F2F4"/>
+        <path id="neck" fill="none" stroke="#E1AD8A" stroke-width="46" stroke-linecap="round"/>
+        <g id="torso">
+          <path d="M298 948 C250 960 230 1016 228 1084 C224 1162 238 1228 268 1266 L420 1272 C432 1230 430 1150 422 1082 C416 1012 394 964 360 950 Z" fill="url(#g-sweater)"/>
+          <path d="M244 1034 C240 1094 242 1164 260 1232" stroke="#7B92B8" stroke-width="7" fill="none" opacity=".5" stroke-linecap="round"/>
+          <path d="M304 954 C318 974 360 974 372 956" stroke="#2C3A52" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <path d="M318 958 C326 966 350 966 358 958" stroke="#F4F1EC" stroke-width="6" fill="none" stroke-linecap="round"/>
+        </g>
+        <g id="head">
+          <path d="M-46 -34 C-100 -76 -104 -200 -30 -236 C22 -258 76 -228 84 -176 L86 -156 C90 -146 100 -128 104 -118 C106 -112 98 -109 92 -108 C94 -102 94 -96 90 -92 C92 -86 92 -80 86 -72 C80 -58 64 -50 46 -46 C30 -44 22 -38 20 -30 L-28 -26 Z" fill="#F2C9A7"/>
+          <path d="M-40 -40 C-62 -60 -70 -90 -66 -120" stroke="#E0AE8A" stroke-width="10" fill="none" opacity=".6" stroke-linecap="round"/>
+          <ellipse cx="-14" cy="-126" rx="16" ry="23" fill="#E6B18D"/>
+          <path d="M-18 -134 C-10 -132 -8 -120 -14 -114" stroke="#C98F6C" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <ellipse cx="52" cy="-104" rx="17" ry="9" fill="#F29C82" opacity=".38"/>
+          <g id="eye"><ellipse id="eyeball" cx="62" cy="-150" rx="6.5" ry="8.5" fill="#2A2226"/><circle id="eyehi" cx="64.5" cy="-153" r="2.2" fill="#fff" opacity=".9"/></g>
+          <path id="brow" d="M46 -171 Q62 -178 80 -171" stroke="#2A2226" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+          <path id="mouth" d="M76 -84 Q82 -83 88 -85" stroke="#9C5A4A" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M-60 -60 C-114 -106 -106 -216 -34 -246 C24 -268 94 -238 94 -184 C80 -196 62 -196 50 -182 C46 -200 22 -212 2 -204 C-12 -172 -6 -134 -24 -102 C-32 -86 -44 -72 -60 -60 Z" fill="#2A2226"/>
+          <path d="M-6 -236 C30 -246 66 -232 84 -204" stroke="#4A3C42" stroke-width="6" fill="none" stroke-linecap="round" opacity=".8"/>
+          <path d="M-40 -210 C-56 -180 -60 -140 -52 -110" stroke="#3B2F34" stroke-width="5" fill="none" stroke-linecap="round" opacity=".8"/>
+        </g>
+        <path id="armNear" fill="none" stroke="#4E6490" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/>
+        <path id="armNearShade" fill="none" stroke="#3A4B6A" stroke-width="14" stroke-linecap="round" opacity=".55"/>
+        <ellipse id="handNear" rx="26" ry="19" fill="#F2C9A7"/>
+        <g id="chopsticks" opacity="0"><line id="chop1" x1="-6" y1="-3" x2="60" y2="-1.5" stroke="#B5763F" stroke-width="4.5" stroke-linecap="round"/><line id="chop2" x1="-6" y1="4" x2="60" y2="1.5" stroke="#B5763F" stroke-width="4.5" stroke-linecap="round"/></g>
+        <g id="bag" opacity="0"><path d="M-22 18 C-22 -18 22 -18 22 18" stroke="#B85A34" stroke-width="7" fill="none"/><rect x="-42" y="14" width="84" height="104" rx="16" fill="#E07B4F"/><rect x="-42" y="14" width="84" height="16" rx="8" fill="#C8643C"/></g>
+      </g>
+    </svg>
+  </div>
+
+  <div class="layer" id="L-fg">
+    <svg width="1080" height="1920" viewBox="0 0 1080 1920">
+      <g id="fgleaves" fill="#4F7A48" opacity=".95" style="filter:blur(12px)">
+        <ellipse cx="-40" cy="1760" rx="100" ry="230" transform="rotate(28 -40 1760)"/>
+        <ellipse cx="50" cy="1860" rx="70" ry="200" transform="rotate(6 50 1860)"/>
+      </g>
+    </svg>
+  </div>
+
+  <div id="grade-a"></div>
+  <div id="grade-b"></div>
+  <div id="dusk"></div>
+  <div id="vignette"></div>
+  <canvas id="grain" width="580" height="1000"></canvas>
+  <canvas id="confetti" width="1080" height="1920"></canvas>
+
+  <div id="tour">
+    <div id="tour-bg"></div>
+    <div id="tour-dev">
+      <div class="dev" id="tdev">
+        <div class="hole">
+          <div class="screen" id="tscreen">
+            <!-- Focus: the real 3.2.0 screen, with its pomodoro running -->
+            <div class="tv" id="tv-focus">
+              <div class="shot" style="top:0;height:956px;background-image:url(../../ios/raw/zh-focus-3.2.0.png)"></div>
+              <div id="ft-time" class="num"></div>
+            </div>
+            <!-- Records › Year, scrolled to the annual summary -->
+            <div class="tv" id="tv-recs">
+              <div id="rec-scroll" class="abs" style="left:0;top:0;width:440px;height:1200px">
+                <div class="shot" style="top:54px;height:698px;background-image:url(../../ios/raw/zh-4.png);background-position:0 -54px"></div>
+                <div class="ocard" style="top:764px">
+                  <div class="hd">2026 年汇总<span class="qm">?</span></div>
+                  <div class="metric"><div class="l">已工作<small>187 个工作日</small></div><div class="v">1,309小时42分钟</div></div>
+                  <div class="hr"></div>
+                  <div class="metric"><div class="l">预计薪资<small id="rec-earned">已赚 106,500.00 · 74.0%</small></div><div class="v m" id="rec-income">144,000.00</div></div>
+                </div>
+                <div class="ocard" style="top:957px;height:120px"><div class="hd">时间分配<span class="qm">?</span></div></div>
+              </div>
+              <div class="abs" style="left:0;right:0;top:0;height:54px;background:rgba(242,242,247,.94)"></div>
+              <div class="sb"><div class="time num">19:30</div><div class="icons" data-icons="dark"></div></div>
+              <div class="tbar" id="tbar-recs"></div>
+            </div>
+            <!-- the Life view -->
+            <div class="tv" id="tv-life">
+              <div class="sb"><div class="time num">19:31</div><div class="icons" data-icons="dark"></div></div>
+              <div class="navc"><span data-i="chevleft"></span></div>
+              <div class="abs" style="left:0;right:0;top:70px;text-align:center;font-size:17px;font-weight:600">人生视图</div>
+              <div class="ocard" style="top:120px;display:grid;grid-template-columns:1fr 1fr;gap:14px 16px">
+                <div class="litem"><div class="l">人生里用来工作的部分</div><div class="v">19.4%</div></div>
+                <div class="litem"><div class="l">属于你自己的清醒时间</div><div class="v">41.8%</div></div>
+                <div class="litem"><div class="l">已工作的周数</div><div class="v">574 周</div></div>
+              </div>
+              <div class="ocard" style="top:260px">
+                <div class="hd">预计一生税前总收入</div>
+                <div class="litem" style="margin-top:12px"><div class="l">截至今天的收入</div><div class="v num" id="life-hist">1,248,000.00</div></div>
+                <div class="hr"></div>
+                <div class="litem" style="margin-top:12px"><div class="l">到退休前的收入</div><div class="v num" id="life-fut">3,888,000.00</div></div>
+                <div class="hr"></div>
+                <div class="litem" style="margin-top:12px"><div class="l">一生总收入</div><div class="v num" id="life-tot">5,136,000.00</div></div>
+                <div style="margin-top:12px;font-size:12px;line-height:16px;color:#8a8a8e">历史收入按已填薪资计算，待业空档为零。未来收入使用当前薪资设置，不假设通胀或投资收益。</div>
+              </div>
+              <div class="ocard" style="top:590px;height:282px;padding:0;overflow:hidden">
+                <div class="shot" style="left:-16px;top:-8px;height:300px;background-image:url(../../ios/raw/zh-5.png);background-position:0 -304px"></div>
+              </div>
+              <div class="tbar" id="tbar-life"></div>
+            </div>
+          </div>
+        </div>
+        <img class="frame" src="../../ios/frames/iphone-17-pro-max-deep-blue.png" alt="">
+      </div>
+    </div>
+    <!-- keeps the captions readable when the phone is pushed in -->
+    <div class="abs" style="left:0;right:0;top:0;height:640px;background:linear-gradient(180deg, rgba(40,22,50,.97) 0%, rgba(40,22,50,.9) 52%, rgba(40,22,50,0) 100%)"></div>
+  </div>
+  <div class="cap dark" id="cap-t1"><div class="plus-chip">DoneAt Plus</div><h1>专心一会儿，再歇一会儿</h1><p>把待办排进番茄钟，工作和休息都有节奏。</p></div>
+  <div class="cap dark" id="cap-t2"><div class="plus-chip">DoneAt Plus</div><h1>忙过的日子，都有迹可循</h1><p>工时和收入，按周、月、年回看。</p></div>
+  <div class="cap dark" id="cap-t3"><div class="plus-chip">DoneAt Plus</div><h1>你的时间，不止属于工作</h1><p>人生视图：看见一生的工时和收入。</p></div>
+
+  <div class="cap" id="cap-hook"><h1 id="cap-hook-h"></h1><p id="cap-hook-p"></p></div>
+  <div class="cap" id="cap-lunch"><h1>午休时，倒计时会停</h1><p>吃饭时间，不算工时。</p></div>
+  <div class="cap" id="cap-fish"><h1>累了，就敲两下木鱼</h1><p>电脑上也有下班倒计时。</p></div>
+  <div class="cap" id="cap-remind"><h1>快到点了，它会提醒你</h1></div>
+  <div class="cap" id="cap-done"><h1>今天，准点下班。</h1></div>
+
+  <div id="cta">
+    <div id="cta-scrim"></div>
+    <div id="cta-block">
+      <img id="cta-icon" src="../../../../assets/brand/off-work-countdown-icon-rounded.svg" alt="">
+      <div id="cta-name">DoneAt</div>
+      <div id="cta-sub">下班倒计时 · 几点下班，心里有数</div>
+      <div id="cta-pill">App Store 搜索 DoneAt</div>
+      <div id="cta-web">doneat.app</div>
+      <div id="cta-more">iPhone · Apple Watch · Mac · Windows</div>
+    </div>
+  </div>
+
+  <svg id="safe" viewBox="0 0 1080 1920" width="1080" height="1920">
+    <rect x="0" y="0" width="1080" height="150" fill="#f00" opacity=".18"/>
+    <rect x="920" y="700" width="160" height="860" fill="#f00" opacity=".18"/>
+    <rect x="0" y="1540" width="1080" height="380" fill="#f00" opacity=".18"/>
+    <rect x="64" y="190" width="856" height="1310" fill="none" stroke="#0a0" stroke-width="4" stroke-dasharray="16 10"/>
+  </svg>
+</div>
+
+<script>
+/* ---------- icons (shared with ../scene.html) ---------- */
+const S = (w, h, body, extra = "") => `<svg width="${w}" height="${h}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${body}</svg>`;
+const MARK = (hands) => `<svg viewBox="0 0 1024 1024" width="100%" height="100%"><path d="M415 793.8 A 298 298 0 1 1 804.5 568.9" fill="none" stroke="#F45A1E" stroke-width="110" stroke-linecap="round"/><path d="M512 347 L512 512 L573 617.7" fill="none" stroke="${hands}" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/><circle cx="664.5" cy="776.1" r="86" fill="#F45A1E"/></svg>`;
+const ICONS = {
+  eyeslash: `<span style="color:#F45A1E">${S(26, 26, '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/>', 'stroke-width="2"')}</span>`,
+  sun: `<span style="color:#F45A1E">${S(24, 24, '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', 'stroke-width="2"')}</span>`,
+  clock: S(22, 22, '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l-3 2"/>', 'stroke-width="1.6"'),
+  cal: S(22, 22, '<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18"/><path d="M7 12.5h.01M10.5 12.5h.01M14 12.5h.01M17.5 12.5h.01M7 16h.01M10.5 16h.01M14 16h.01"/>', 'stroke-width="1.6"'),
+  calclock: S(22, 22, '<rect x="3" y="5" width="16" height="14" rx="3"/><path d="M3 9h16"/><path d="M7 12.5h.01M10.5 12.5h.01M7 16h.01"/><circle cx="18" cy="17" r="4" fill="#8e8e93" stroke="#fff"/><path d="M18 15.3v1.9l1 .8" stroke="#fff" stroke-width="1.3"/>', 'stroke-width="1.6"'),
+  walk: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#34C759"><circle cx="13.5" cy="3.8" r="2.2"/><path d="M11.2 7.2l-3.4 2.1-1.3 3.7 1.7.6 1.1-3 1.6-1-1.6 6.4-3.2 5 1.6 1 3.4-5.3.9-2.2 2.6 3 .9 4.9 1.8-.4-1-5.6-2.9-3.4.8-3.4.9 1.7 3 1.4.8-1.6-2.6-1.2-1.4-2.8c-.5-1-1.600-1.4-2.6-1.1z"/></svg>`,
+  bell: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#6E5BF0"><path d="M12 2.5a6 6 0 0 0-6 6v4.2L4.3 15.6c-.5.8.1 1.9 1 1.9h13.4c.9 0 1.5-1.1 1-1.9L18 12.7V8.5a6 6 0 0 0-6-6z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0z"/><circle cx="18" cy="5" r="3.2" fill="#6E5BF0" stroke="#EDEAFD" stroke-width="1.5"/></svg>`,
+  resume: `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#1EB6E8"/><path d="M7 12h9M12.5 8l4 4-4 4" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  chevdown: `<span style="color:#F45A1E">${S(18, 18, '<path d="M6 9l6 6 6-6"/>', 'stroke-width="2.2"')}</span>`,
+  arrowleft: S(20, 20, '<path d="M19 12H5M11 6l-6 6 6 6"/>', 'stroke-width="2.2"'),
+  share: S(22, 22, '<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v9h14v-9h-1"/>', 'stroke-width="1.8"'),
+  tabtimer: `<span style="color:#F25A14">${S(28, 28, '<path d="M9.2 3.6A9 9 0 1 1 3.8 9"/><path d="M12 7v5l3 3"/>', 'stroke-width="2.2"')}</span>`,
+  tabfocus: `<svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="9" fill="#1c1c1e"/><path d="M12 13.5V9" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M10 2.5h4" stroke="#1c1c1e" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  tabrec: `<svg width="26" height="26" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3" fill="#1c1c1e"/><rect x="3" y="4" width="18" height="4.5" rx="2" fill="#1c1c1e"/><g fill="#fff"><circle cx="7.5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="16.5" cy="12" r="1"/><circle cx="7.5" cy="16" r="1"/><circle cx="12" cy="16" r="1"/><circle cx="16.5" cy="16" r="1"/></g></svg>`,
+  tabset: S(26, 26, '<path d="M3 7h18M3 17h18"/><circle cx="15" cy="7" r="2.6" fill="#fff"/><circle cx="8" cy="17" r="2.6" fill="#fff"/>', 'stroke-width="2" style="color:#1c1c1e"'),
+  cup: `<span style="color:#8a8a8e">${S(18, 18, '<path d="M4 9h13v3a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M3 21h16"/>', 'stroke-width="1.7"')}</span>`,
+  mark: MARK("#2B1935"),
+  markdark: MARK("#FFF1D8"),
+  clocksm: S(12, 12, '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 'stroke-width="2.2"'),
+  search: S(14, 14, '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>', 'stroke-width="2.6"'),
+  "d-phone": `<span style="color:#fff">${S(32, 32, '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>', 'stroke-width="1.8" fill="currentColor"')}</span>`,
+  "d-safari": `<span style="color:#fff">${S(34, 34, '<circle cx="12" cy="12" r="9.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor"/>', 'stroke-width="1.6"')}</span>`,
+  "d-msg": `<span style="color:#fff">${S(34, 34, '<path d="M12 4c5 0 9 3.1 9 7s-4 7-9 7c-1 0-2-.1-2.9-.4L5 19.5l1-3.3C4.1 14.9 3 13 3 11c0-3.9 4-7 9-7z" fill="currentColor"/>', 'stroke-width="1"')}</span>`,
+  "d-cam": `<span style="color:#fff">${S(34, 34, '<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.6"/>', 'stroke-width="1.7"')}</span>`,
+  chevleftblue: `<span style="color:#007AFF">${S(22, 22, '<path d="M15 5l-7 7 7 7"/>', 'stroke-width="2.6"')}</span>`,
+  shareblue: `<span style="color:#007AFF">${S(24, 24, '<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v9h14v-9h-1"/>', 'stroke-width="2"')}</span>`,
+  chevleft: `<span style="color:#F45A1E">${S(22, 22, '<path d="M15 5l-7 7 7 7"/>', 'stroke-width="2.4"')}</span>`,
+  check: `<span style="color:#F45A1E">${S(22, 22, '<path d="M5 12.5l4.5 4.5L19 7"/>', 'stroke-width="2.6"')}</span>`,
+  checkmark: `<span style="color:#F45A1E">${S(20, 20, '<path d="M5 12.5l4.5 4.5L19 7"/>', 'stroke-width="2.4"')}</span>`,
+  chevleftk: S(20, 20, '<path d="M15 5l-7 7 7 7"/>', 'stroke-width="2.4"'),
+  chevrightk: S(20, 20, '<path d="M9 5l7 7-7 7"/>', 'stroke-width="2.4"'),
+  chevrightsm: S(14, 14, '<path d="M9 5l7 7-7 7"/>', 'stroke-width="2.4"'),
+  updown: S(14, 14, '<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>', 'stroke-width="2.2"'),
+  briefcase: S(20, 20, '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2M3 12.5h18"/>', 'stroke-width="2"'),
+  pip: S(18, 18, '<rect x="3" y="5" width="18" height="14" rx="3"/><rect x="11" y="11" width="7" height="5" rx="1.2"/>', 'stroke-width="1.8" style="color:#111"'),
+  sliders: S(18, 18, '<path d="M4 7h8M16 7h4M4 17h4M12 17h8"/><circle cx="14" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/>', 'stroke-width="1.8" style="color:#111"'),
+  arrowleftsm: S(16, 16, '<path d="M19 12H5M11 6l-6 6 6 6"/>', 'stroke-width="2.2"'),
+  sharew: S(16, 16, '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/>', 'stroke-width="1.9"'),
+};
+const SBICONS = (c) => `<svg width="24" height="6" viewBox="0 0 24 6"><g fill="${c}" opacity=".35"><circle cx="3" cy="3" r="2.4"/><circle cx="9" cy="3" r="2.4"/><circle cx="15" cy="3" r="2.4"/><circle cx="21" cy="3" r="2.4"/></g></svg>
+  <svg width="18" height="13" viewBox="0 0 18 13"><path d="M9 12.5l2.4-2.7a3.4 3.4 0 0 0-4.8 0z M4.2 7.4l1.5 1.6a4.7 4.7 0 0 1 6.6 0l1.5-1.6a6.9 6.9 0 0 0-9.6 0z M1.4 4.6l1.5 1.6a8.7 8.7 0 0 1 12.2 0l1.5-1.6a10.9 10.9 0 0 0-15.2 0z" fill="${c}"/></svg>
+  <svg width="28" height="13" viewBox="0 0 28 13"><rect x=".5" y=".5" width="24" height="12" rx="3.8" fill="none" stroke="${c}" stroke-opacity=".4"/><rect x="2.3" y="2.3" width="20.4" height="8.4" rx="2.3" fill="${c}"/><path d="M26 4.5v4a2 2 0 0 0 0-4z" fill="${c}" fill-opacity=".45"/></svg>`;
+document.querySelectorAll("[data-i]").forEach((el) => { el.innerHTML = ICONS[el.dataset.i] || ""; el.style.display = el.style.display || "inline-flex"; });
+document.querySelectorAll("[data-icons]").forEach((el) => { el.innerHTML = SBICONS(el.dataset.icons === "light" ? "#fff" : "#000"); });
+
+/* ---------- math ---------- */
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, p) => a + (b - a) * p;
+const eo = (p) => 1 - Math.pow(1 - p, 3);
+const eio = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+const ei = (p) => p * p * p;
+const back = (p) => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+const tw = (t, a, b, e = eo) => e(clamp((t - a) / (b - a)));
+const mod = (n, m) => ((n % m) + m) % m;
+const $ = (id) => document.getElementById(id);
+const set = (el, o) => { if (typeof el === "string") el = $(el); Object.assign(el.style, o); return el; };
+const attr = (el, o) => { if (typeof el === "string") el = $(el); for (const k in o) el.setAttribute(k, o[k]); return el; };
+const pad2 = (n) => String(n).padStart(2, "0");
+const HM = (s) => { s = Math.floor(s); return `${pad2(Math.floor(s / 3600) % 24)}:${pad2(Math.floor((s % 3600) / 60))}`; };
+
+/* ---------- rolling digits (iOS numericText style) ---------- */
+function makeRoller(el, spec) {
+  el.innerHTML = "";
+  const centered = getComputedStyle(el).textAlign === "center";
+  el.classList.add("roll");
+  if (centered) el.style.justifyContent = "center";
+  const items = spec.map((it) => {
+    if (typeof it === "string") { const s = document.createElement("span"); s.className = "lit"; s.textContent = it; el.appendChild(s); return null; }
+    const slot = document.createElement("span"); slot.className = "slot";
+    const sizer = document.createElement("span"); sizer.className = "sizer"; sizer.textContent = "0";
+    const a = document.createElement("span"), b = document.createElement("span");
+    slot.append(sizer, a, b); el.appendChild(slot);
+    return { u: it[0], b: it[1], a, bEl: b };
+  }).filter(Boolean);
+  return {
+    update(v, rate) {
+      for (const d of items) {
+        const y = v / d.u, fl = Math.floor(y), f = y - fl;
+        const w = Math.min(1, (0.34 * Math.abs(rate)) / d.u);
+        const cur = mod(fl, d.b), prev = mod(fl + 1, d.b);
+        const p = w <= 1e-6 ? 1 : clamp((1 - f) / w);
+        const e = eio(p);
+        d.a.textContent = prev; d.bEl.textContent = cur;
+        d.a.style.transform = `translateY(${e * 0.42}em) scale(${1 - 0.25 * e})`;
+        d.a.style.opacity = 1 - e;
+        d.a.style.filter = e > 0.02 && e < 0.98 ? `blur(${e * 5}px)` : "none";
+        d.bEl.style.transform = `translateY(${-(1 - e) * 0.42}em) scale(${0.75 + 0.25 * e})`;
+        d.bEl.style.opacity = e;
+        d.bEl.style.filter = e > 0.02 && e < 0.98 ? `blur(${(1 - e) * 5}px)` : "none";
+      }
+    },
+  };
+}
+const HHMMSS = [[36000, 10], [3600, 10], ":", [600, 6], [60, 10], ":", [10, 6], [1, 10]];
+const HMMSS = [[3600, 10], ":", [600, 6], [60, 10], ":", [10, 6], [1, 10]];
+const R = { app: makeRoller($("t-count"), HHMMSS), la: makeRoller($("la-count"), HMMSS), mini: makeRoller($("mini-time"), HMMSS) };
+
+/* ---------- the working day: 09:00–17:00 with lunch 12:00–13:00 ---------- */
+const H = 3600, hms = (h, m, s = 0) => h * H + m * 60 + s;
+const DAY = { start: hms(9, 0), lunchA: hms(12, 0), lunchB: hms(13, 0), end: hms(17, 0) };
+const SHIFT = 7 * H;
+const worked = (c) => clamp(c, DAY.start, DAY.lunchA) - DAY.start + clamp(c, DAY.lunchB, DAY.end) - DAY.lunchB;
+const remaining = (c) => SHIFT - worked(c);
+const inLunch = (c) => c >= DAY.lunchA && c < DAY.lunchB;
+const pctOf = (c) => (worked(c) / SHIFT) * 100;
+const cdv = (c) => remaining(c) + 0.5; // roller value: ticks land on whole seconds
+
+/* ---------- variant & timeline ---------- */
+const QS = new URLSearchParams(location.search);
+const VARIANT = QS.get("variant") || "glance";
+const HOOK = 6.0;
+/* the "glance" opening: clock → monitor → phone → Live Activity */
+const GL = { clockPush: 0.35, menubar: 1.8, phone: 3.0, unlock: 3.5, la: 3.75, sub: 4.1, out: 4.9 };
+/* Shared story after the opening (seconds). A countdown on screen always runs in real
+   time; only wide shots fast-forward, and then the clock, the light and the typing all do. */
+const B = {
+  tl1: HOOK, lunch: 7.4, lunchIn: 7.55, lunchNoon: 8.6, lunchOut: 10.0, tl2: 11.7,
+  fish: 12.7, fishIn: 14.0, knock1: 14.9, knock2: 15.5, fishOut: 16.1,
+  jump: 17.3, remindIn: 17.45, banner: 17.9, remindOut: 19.6,
+  // the last forty minutes pass in the wide shot, he glances down, and the camera follows his eyes to the phone
+  tl3: 20.4, look: 21.35, zeroIn: 21.6, zero: 24.1, pullOut: 24.4, cheer: 25.3,
+  // he picks the phone off its stand and pockets it before getting up
+  reach: 26.1, phoneGrab: 26.5, pocket: 26.95,
+  prep: 27.0, rise: 27.45, settle: 28.05, turn: 28.3, grab: 28.6, walk: 29.2, gone: 30.9,
+  // a short look at the rest of the app, then the end card
+  tour: 31.0, recs: 33.8, life: 36.6, cta: 39.5, ctaStable: 40.0, end: 43.5,
+};
+/* opening clock: A and C in real time from 10:26:58; B skips ahead a little at each cut */
+function hookClock(t) {
+  if (VARIANT !== "glance") return hms(10, 26, 58) + t;
+  if (t < GL.menubar) return hms(10, 25, 40) + t;
+  if (t < GL.phone) return hms(10, 26, 30) + (t - GL.menubar);
+  return hms(10, 27, 12) + (t - GL.phone);
+}
+/* wall-clock time (seconds since midnight) as the film tells it */
+function wallClock(t) {
+  if (t < HOOK) return hookClock(t);
+  const k = [
+    [HOOK, hookClock(HOOK)], [B.tl1 + 1.3, hms(11, 59, 58.7)], [B.lunchNoon + 0.3, hms(12, 0, 0.3)],
+    [B.lunchNoon + 1.3, hms(12, 24, 0)], [B.tl2, hms(12, 24, 0) + (B.tl2 - B.lunchNoon - 1.3)],
+    [B.fish, hms(15, 10, 0)], [B.jump - 0.05, hms(15, 10, 0) + (B.jump - 0.05 - B.fish)],
+    [B.jump + 0.2, hms(16, 18, 0)], [B.tl3, hms(16, 18, 0) + (B.tl3 - B.jump - 0.2)],
+    [B.tl3 + 1.1, hms(16, 59, 56.9)], [B.end, hms(16, 59, 56.9) + (B.end - B.tl3 - 1.1)],
+  ];
+  for (let i = 0; i < k.length - 1; i++) {
+    const [t0, c0] = k[i], [t1, c1] = k[i + 1];
+    if (t <= t1) {
+      const p = clamp((t - t0) / (t1 - t0 || 1));
+      const realtime = Math.abs((c1 - c0) - (t1 - t0)) < 0.5;
+      return realtime ? c0 + (t - t0) : lerp(c0, c1, eio(p));
+    }
+  }
+  return k[k.length - 1][1];
+}
+// forward difference: a cut into a real-time shot must not inherit the previous shot's speed
+const rateOf = (f, t) => (f(t + 1 / 60) - f(t)) * 60;
+
+/* ---------- camera ---------- */
+const WIDE = { x: 580, y: 900, s: 1.34 };
+const FOCUS = {
+  wide: WIDE,
+  clock: { x: 640, y: 470, s: 3.2 },
+  headClock: { x: 470, y: 690, s: 2.0 },
+  menubar: null, lockLA: null, lockTop: null, phone: null, mini: null, appBar: null, monitor: null,
+};
+function phonePoint(px, py) { // lock/app screen point (pt) → world, ignoring the small cheat angle
+  const sc = 94 / 660, hole = { x: 660 * 0.05102041, y: 1346.94 * 0.022 }, k = (660 * 0.89795918) / 440;
+  return { x: 730 + (hole.x + px * k) * sc, y: 936 + (hole.y + py * k) * sc };
+}
+function deskPoint(dx, dy) { return { x: 632 + 9 + dx * 0.5, y: 758 + 9 + dy * 0.5 }; }
+{
+  const la = phonePoint(220, 742); FOCUS.lockLA = { x: la.x + 5, y: la.y - 4, s: 10.0 };
+  const lt = phonePoint(220, 470); FOCUS.lockTop = { x: lt.x, y: lt.y - 12, s: 6.0 };
+  const ph = phonePoint(220, 478); FOCUS.phone = { x: ph.x, y: ph.y - 12, s: 5.9 };
+  const ab = phonePoint(220, 200); FOCUS.appBar = { x: ab.x + 4, y: ab.y - 6, s: 11.2 };
+  const mi = deskPoint(685, 436); FOCUS.mini = { x: mi.x + 9, y: mi.y - 6, s: 6.0 };
+  const rm = phonePoint(220, 600); FOCUS.remind = { x: rm.x + 4, y: rm.y + 4, s: 9.6 };
+  const am = phonePoint(220, 215); FOCUS.appMid = { x: am.x + 4, y: am.y + 6, s: 9.4 };
+  const at = phonePoint(220, 175); FOCUS.appTop = { x: at.x + 4, y: at.y + 8, s: 9.0 };
+  const mb = deskPoint(770, 13); FOCUS.menubar = { x: mb.x - 34, y: mb.y + 30, s: 7.2 };
+  FOCUS.monitor = { x: 850, y: 900, s: 2.4 };
+}
+/* camera moves per variant: [start, duration, focus] (duration 0 = cut) */
+const CLOCK_PUSH = { x: 600, y: 600, s: 2.4 }, LUNCH_WIDE = { x: 520, y: 870, s: 1.55 };
+const HOOK_CAM = {
+  progress: [[0, 0, FOCUS.appBar], [0.1, 2.8, { ...FOCUS.appBar, s: FOCUS.appBar.s * 1.08 }], [2.9, 2.3, WIDE]],
+  glance: [[0, 0, FOCUS.headClock], [GL.clockPush, 1.2, CLOCK_PUSH], [GL.menubar, 0, FOCUS.menubar], [GL.phone, 0, FOCUS.phone], [GL.la, 0.7, FOCUS.appMid], [GL.out, 1.1, WIDE]],
+  woodfish: [[0, 0, FOCUS.mini], [0.1, 2.6, { ...FOCUS.mini, s: FOCUS.mini.s * 1.08 }], [2.7, 2.3, WIDE]],
+};
+const BODY_CAM = [
+  [B.lunchIn, 0.7, FOCUS.appTop], [B.lunchOut, 1.0, LUNCH_WIDE], [B.tl2, 0.8, WIDE],
+  [B.fishIn, 0.7, FOCUS.mini], [B.fishOut, 0.8, WIDE],
+  [B.remindIn, 0.6, FOCUS.lockTop], [B.banner + 0.1, 0.6, FOCUS.remind], [B.remindOut, 0.8, WIDE],
+  [B.zeroIn, 1.0, FOCUS.lockLA], [B.pullOut, 0.9, WIDE], [B.gone, 4.0, { x: 620, y: 930, s: 1.4 }],
+];
+function camAt(t) {
+  const moves = [...HOOK_CAM[VARIANT], ...BODY_CAM];
+  let cur = { ...moves[0][2] };
+  for (const [a, d, to] of moves) {
+    if (t < a) break;
+    const p = d ? eio(clamp((t - a) / d)) : 1;
+    // zoom in log space so pushes feel even
+    const s = Math.exp(lerp(Math.log(cur.s), Math.log(to.s), p));
+    const w = d ? (s - cur.s) / ((to.s - cur.s) || 1) : 1;
+    const pp = Math.abs(to.s - cur.s) > 0.01 ? clamp(w) : p;
+    cur = { x: lerp(cur.x, to.x, pp), y: lerp(cur.y, to.y, pp), s };
+  }
+  return cur;
+}
+function camera(c) {
+  for (const [id, d] of [["L-bg", 0.9], ["L-mid", 1], ["L-fg", 1.25]]) {
+    const s = Math.pow(c.s, d), fx = 540 + (c.x - 540) * d, fy = 960 + (c.y - 960) * d;
+    set(id, { transform: `translate(${540 - fx * s}px, ${960 - fy * s}px) scale(${s})` });
+  }
+  // depth of field: the wall and the foreground soften as we move in on a screen
+  const dof = clamp((c.s - 2.2) / 3);
+  set("L-bg", { filter: dof > 0.01 ? `blur(${dof * 3.5 / Math.max(1, c.s * 0.6)}px)` : "none" });
+  // screens turn to face the camera as it approaches them
+  // how squarely the camera is on a screen: 1 inside its rectangle, fading out around it
+  const onRect = (x0, y0, x1, y1, m) => clamp(1 - Math.max(x0 - c.x, c.x - x1, y0 - c.y, c.y - y1, 0) / m);
+  const nearPhone = onRect(730, 936, 824, 1128, 160) * clamp((c.s - 1.6) / 3);
+  const nearMon = onRect(632, 758, 1068, 1040, 200) * clamp((c.s - 1.6) / 3);
+  // Flat, unfiltered layers when close: a 3D transform or a filter makes Chrome
+  // rasterize the screen at its small layout size and blow it up.
+  set("standphone", { transform: nearPhone > 0.995 ? "none" : `perspective(900px) rotateY(${lerp(14, 0, nearPhone)}deg)` });
+  set("monitor", { transform: nearMon > 0.995 ? "none" : `perspective(1400px) rotateY(${lerp(-18, 0, nearMon)}deg)` });
+  const shadow = c.s < 1.9 ? "" : "none";
+  for (const id of ["mid-back", "mid-front", "monitor", "standphone"]) $(id).style.filter = shadow;
+}
+
+/* ---------- rig ---------- */
+function ik(ax, ay, tx, ty, l1, l2, bend) {
+  let dx = tx - ax, dy = ty - ay, d = Math.hypot(dx, dy);
+  const dm = Math.min(d, l1 + l2 - 0.01);
+  if (d > dm) { tx = ax + (dx / d) * dm; ty = ay + (dy / d) * dm; dx = tx - ax; dy = ty - ay; d = dm; }
+  const a = Math.acos(clamp((l1 * l1 + d * d - l2 * l2) / (2 * l1 * d), -1, 1));
+  const base = Math.atan2(dy, dx) + bend * a;
+  return { ex: ax + Math.cos(base) * l1, ey: ay + Math.sin(base) * l1, hx: tx, hy: ty };
+}
+/* Poses. Hands, feet and hx are in the person's own frame (facing right; mirrored after he turns).
+   hx/rise move the hips; chairX rolls the chair. */
+const SIT_FEET = { foot: [590, 1560], footF: [560, 1552] };
+const STAND_FEET = { foot: [400, 1556], footF: [412, 1552] };
+const POSES = {
+  type:    { hr: 0,   hdx: 0,  hdy: 0,  handN: [566, 1128], handF: [612, 1126], lean: 0,  mouth: "neutral" },
+  clock:   { hr: -26, hdx: 6,  hdy: -4, handN: [566, 1128], handF: [612, 1126], lean: -2, mouth: "neutral", brow: -2 },
+  monitor: { hr: -3,  hdx: 2,  hdy: 0,  handN: [566, 1128], handF: [612, 1126], lean: 2,  mouth: "neutral" },
+  phone:   { hr: 16,  hdx: 8,  hdy: 6,  handN: [566, 1128], handF: [612, 1126], lean: 4,  mouth: "neutral" },
+  phoneSmile: { hr: 14, hdx: 8, hdy: 4, handN: [566, 1128], handF: [612, 1126], lean: 2, mouth: "smile", brow: -3 },
+  relief:  { hr: -4,  hdx: 0,  hdy: -4, handN: [560, 1124], handF: [606, 1122], lean: -3, mouth: "smile", brow: -3 },
+  calm:    { hr: -4,  hdx: 0,  hdy: -2, handN: [520, 1150], handF: [560, 1150], lean: -2, mouth: "smile", brow: -3 },
+  eatUp:   { hr: 2,   hdx: 4,  hdy: 4,  handN: [516, 930],  handF: [560, 1120], lean: 5,  mouth: "chew", chop: 1 },
+  eatDown: { hr: 12,  hdx: 6,  hdy: 8,  handN: [556, 1086], handF: [560, 1120], lean: 8,  mouth: "neutral", chop: 1 },
+  slump:   { hr: 16,  hdx: -4, hdy: 20, handN: [556, 1140], handF: [600, 1138], lean: 9,  mouth: "sigh", brow: 3, lid: 0.45 },
+  yawn:    { hr: -16, hdx: 0,  hdy: 6,  handN: [556, 1140], handF: [600, 1138], lean: -4, mouth: "open", lid: 0.7 },
+  mouse:   { hr: -2,  hdx: 4,  hdy: 0,  handN: [684, 1134], handF: [606, 1124], lean: 10, mouth: "neutral" },
+  mouseSmile: { hr: -4, hdx: 4, hdy: -2, handN: [684, 1134], handF: [606, 1124], lean: 8, mouth: "smile", brow: -3 },
+  cheer:   { hr: -16, hdx: -4, hdy: -10, handN: [452, 672], handF: [372, 650], lean: -9, mouth: "open", brow: -6 },
+  reachPhone: { hr: 16, hdx: 6, hdy: 8, handN: [740, 1012], handF: [560, 1150], lean: 18, mouth: "smile", brow: -2 },
+  pocket:  { hr: 2,   hdx: 2,  hdy: 2,  handN: [392, 1232], handF: [540, 1150], lean: 4,  mouth: "smile" },
+  // standing up: feet come back under the knees, he leans in and pushes off the desk,
+  // the hips rise and travel forward, then the back straightens
+  prep:    { hr: 10,  hdx: 4,  hdy: 6,  handN: [476, 1146], handF: [506, 1146], lean: 17, mouth: "smile", ...STAND_FEET, foot: [430, 1558], footF: [440, 1552] },
+  rise:    { hr: 4,   hdx: 2,  hdy: 2,  handN: [470, 1150], handF: [500, 1150], lean: 9,  mouth: "smile", rise: 176, hx: 38, chairX: -26, foot: [430, 1558], footF: [440, 1552] },
+  standIdle: { hr: -3, hdx: 0, hdy: 0, handN: [396, 1092], handF: [372, 1086], lean: 1, mouth: "smile", rise: 241, hx: 45, chairX: -46, ...STAND_FEET },
+  grab:    { hr: 14,  hdx: 4,  hdy: 8,  handN: [516, 1060], handF: [372, 1090], lean: 12, mouth: "smile", rise: 228, hx: 45, chairX: -46, ...STAND_FEET },
+  standBag: { hr: -2, hdx: 0,  hdy: 0,  handN: [408, 1082], handF: [372, 1086], lean: 1, mouth: "smile", rise: 241, hx: 45, chairX: -46, ...STAND_FEET },
+};
+const NUM_KEYS = ["hr", "hdx", "hdy", "lean", "rise", "hx", "chairX", "brow", "lid", "chop"];
+function blendPose(a, b, p) {
+  const o = {};
+  for (const kk of NUM_KEYS) o[kk] = lerp(a[kk] || 0, b[kk] || 0, p);
+  for (const kk of ["handN", "handF", "foot", "footF"]) {
+    const A = a[kk] || SIT_FEET[kk], Bv = b[kk] || SIT_FEET[kk];
+    o[kk] = [lerp(A[0], Bv[0], p), lerp(A[1], Bv[1], p)];
+  }
+  o.mouth = p < 0.5 ? a.mouth : b.mouth;
+  return o;
+}
+function applyPose(p, t) {
+  const rise = p.rise || 0, lean = p.lean || 0, hx = p.hx || 0;
+  const breathe = Math.sin(t * 2.2) * 2;
+  const rad = (lean * Math.PI) / 180;
+  // rotate about the hips, then carry the hips
+  const rot = (x, y) => { const dx = x - 300, dy = y - 1250; return [300 + hx + dx * Math.cos(rad) - dy * Math.sin(rad), 1250 - rise + dx * Math.sin(rad) + dy * Math.cos(rad)]; };
+  $("torso").setAttribute("transform", `translate(${hx} ${-rise}) rotate(${lean} 300 1250) translate(0 ${breathe * 0.4}) scale(1 ${1 + breathe * 0.002})`);
+  const [nx, ny] = rot(346, 954 + breathe * 0.5);
+  const hX = nx + (p.hdx || 0), hY = ny + (p.hdy || 0), hr0 = ((p.hr || 0) * Math.PI) / 180;
+  attr("head", { transform: `translate(${hX} ${hY}) rotate(${p.hr || 0} 0 -12)` });
+  // the neck runs from inside the collar to under the jaw, so the head never floats free
+  const [bx, by] = rot(346, 990);
+  const jx = hX + 26 * Math.sin(hr0), jy = hY - 12 - 26 * Math.cos(hr0);
+  attr("neck", { d: `M${bx} ${by} L${jx} ${jy}` });
+  const [sxN, syN] = rot(340, 996), [sxF, syF] = rot(356, 986);
+  const aN = ik(sxN, syN, p.handN[0], p.handN[1], 165, 178, 1);
+  const aF = ik(sxF, syF, p.handF[0], p.handF[1], 165, 178, 1);
+  attr("armNear", { d: `M${sxN} ${syN} L${aN.ex} ${aN.ey} L${aN.hx} ${aN.hy}` });
+  attr("armNearShade", { d: `M${lerp(sxN, aN.ex, 0.35)} ${lerp(syN, aN.ey, 0.35) + 13} L${aN.ex - 2} ${aN.ey + 11}` });
+  attr("armFar", { d: `M${sxF} ${syF} L${aF.ex} ${aF.ey} L${aF.hx} ${aF.hy}` });
+  const angN = Math.atan2(aN.hy - aN.ey, aN.hx - aN.ex), angF = Math.atan2(aF.hy - aF.ey, aF.hx - aF.ex);
+  attr("handNear", { cx: aN.hx + Math.cos(angN) * 12, cy: aN.hy + Math.sin(angN) * 12, transform: `rotate(${(angN * 180) / Math.PI} ${aN.hx} ${aN.hy})` });
+  attr("handFar", { cx: aF.hx + Math.cos(angF) * 12, cy: aF.hy + Math.sin(angF) * 12, transform: `rotate(${(angF * 180) / Math.PI} ${aF.hx} ${aF.hy})` });
+  // chopsticks point at the lips when the hand is up, into the lunch box when it is down
+  const hr = ((p.hr || 0) * Math.PI) / 180, ml = { x: 84, y: -86 + 12 };
+  const mouthW = { x: nx + (p.hdx || 0) + ml.x * Math.cos(hr) - ml.y * Math.sin(hr), y: ny + (p.hdy || 0) - 12 + ml.x * Math.sin(hr) + ml.y * Math.cos(hr) };
+  const toMouth = Math.hypot(mouthW.x - aN.hx, mouthW.y - aN.hy);
+  const aim = toMouth < 120 ? mouthW : { x: aN.hx + 44, y: aN.hy + 34 };
+  const aimAng = (Math.atan2(aim.y - aN.hy, aim.x - aN.hx) * 180) / Math.PI;
+  const len = toMouth < 120 ? Math.max(20, toMouth - 4) : 60;
+  attr("chop1", { x2: len }); attr("chop2", { x2: len });
+  attr("chopsticks", { transform: `translate(${aN.hx} ${aN.hy}) rotate(${aimAng})`, opacity: p.chop > 0.5 ? 1 : 0 });
+  attr("bag", { transform: `translate(${aN.hx + 4} ${aN.hy - 6})` });
+  HAND.x = aN.hx; HAND.y = aN.hy;
+  // legs: knees always point forward (bend -1 in this frame), sitting or standing
+  const hip = { x: 300 + hx, y: 1250 - rise };
+  const foot = p.foot || SIT_FEET.foot, footF = p.footF || SIT_FEET.footF;
+  const lN = ik(hip.x + 10, hip.y + 10, foot[0], foot[1], 255, 300, -1);
+  const lF = ik(hip.x - 6, hip.y + 4, footF[0], footF[1], 255, 300, -1);
+  attr("legNear", { d: `M${hip.x + 10} ${hip.y + 10} L${lN.ex} ${lN.ey} L${lN.hx} ${lN.hy}` });
+  attr("legFar", { d: `M${hip.x - 6} ${hip.y + 4} L${lF.ex} ${lF.ey} L${lF.hx} ${lF.hy}` });
+  attr("shoeNear", { cx: lN.hx + 26, cy: lN.hy + 18 });
+  attr("shoeFar", { cx: lF.hx + 24, cy: lF.hy + 16 });
+  // face: blink every ~2.7 s, heavy lids when tired
+  const bp = mod(t + 0.8, 2.7), blink = bp < 0.14 ? Math.sin((bp / 0.14) * Math.PI) : 0;
+  const lid = Math.max(blink, p.lid || 0);
+  attr("eyeball", { ry: 8.5 * (1 - 0.88 * lid) });
+  attr("eyehi", { opacity: lid > 0.5 ? 0 : 0.9 });
+  const mouths = {
+    neutral: "M76 -84 Q82 -83 88 -85", smile: "M71 -89 Q81 -76 91 -89", sigh: "M76 -80 Q82 -85 88 -80",
+    open: "M75 -90 Q84 -64 92 -90 Z", chew: "M76 -85 Q82 -80 88 -85",
+  };
+  const m = p.mouth === "chew" && mod(t, 0.36) < 0.18 ? "neutral" : p.mouth;
+  attr("mouth", { d: mouths[m] || mouths.neutral, fill: m === "open" ? "#8A3F36" : "none" });
+  attr("brow", { transform: `translate(0 ${p.brow || 0})` });
+}
+const HAND = { x: 0, y: 0 }; // near hand, world coords (for the phone he picks up)
+/* pose track per variant: [time, pose, blend seconds] */
+const HOOK_POSES = {
+  progress: [[0, "phoneSmile", 0], [5.0, "type", 0.5]],
+  glance: [[0, "type", 0], [0.02, "clock", 0.35], [GL.menubar - 0.05, "monitor", 0.25], [GL.phone - 0.05, "phone", 0.25], [GL.sub, "phoneSmile", 0.4], [GL.out + 0.25, "relief", 0.4], [5.5, "type", 0.4]],
+  woodfish: [[0, "mouseSmile", 0], [4.9, "type", 0.5]],
+};
+const EAT = [];
+for (let tt = B.lunch + 0.05, i = 0; tt < B.tl2 - 0.3; tt += 0.62, i++) EAT.push([tt, i % 2 ? "eatUp" : "eatDown", 0.34]);
+const BODY_POSES = [
+  [B.lunch - 0.3, "type", 0.2], ...EAT,
+  [B.tl2 + 0.1, "type", 0.35],
+  [B.fish, "slump", 0.4], [B.fish + 0.5, "yawn", 0.3], [B.fish + 0.95, "slump", 0.25], [B.fish + 1.15, "mouse", 0.35],
+  [B.fishOut + 0.15, "mouseSmile", 0.3], [B.fishOut + 0.8, "type", 0.35],
+  [B.jump + 0.05, "phone", 0.3], [B.remindOut, "phoneSmile", 0.35], [B.remindOut + 0.7, "type", 0.35],
+  [B.look, "phone", 0.3], [B.pullOut, "phoneSmile", 0.3],
+  [B.cheer, "cheer", 0.35], [B.reach, "reachPhone", 0.4], [B.phoneGrab + 0.02, "pocket", 0.42],
+  [B.prep, "prep", 0.45], [B.rise, "rise", 0.5], [B.rise + 0.45, "standIdle", 0.45],
+  [B.grab, "grab", 0.3], [B.grab + 0.35, "standBag", 0.25],
+];
+function poseAt(t) {
+  const track = [...HOOK_POSES[VARIANT], ...BODY_POSES];
+  let cur = POSES[track[0][1]];
+  for (const [a, name, d] of track) {
+    if (t < a) break;
+    const p = d ? eio(clamp((t - a) / d)) : 1;
+    cur = blendPose(cur, POSES[name], p);
+  }
+  return cur;
+}
+/* Walking, in the mirrored frame after he turns: one foot planted while the hips pass over
+   it, the other swinging ahead; hips bob, arms swing against the legs. */
+const GAIT = { P: 0.9, S: 112 };
+function walkDist(w) { const v = (2 * GAIT.S) / GAIT.P, ramp = 0.35; return w < ramp ? (v * w * w) / (2 * ramp) : v * (w - ramp / 2); }
+function walkPose(base, w) {
+  const hip0 = 300 + (base.hx || 0), hipAt = (x) => hip0 + walkDist(Math.max(0, x));
+  const feet = [base.foot, base.footF].map((start, j) => {
+    const o = (j * GAIT.P) / 2, tau = w - o;
+    const land = (n) => hipAt(o + n * GAIT.P) + GAIT.S / 2;
+    let x, lift = 0;
+    if (tau < 0) { const q = clamp((tau + GAIT.P / 2) / (GAIT.P / 2)); x = lerp(start[0], land(0), eio(q)); lift = j ? Math.sin(Math.PI * q) * 24 : 0; }
+    else {
+      const n = Math.floor(tau / GAIT.P), ph = (tau - n * GAIT.P) / GAIT.P;
+      if (ph < 0.5) x = land(n);
+      else { const q = (ph - 0.5) / 0.5; x = lerp(land(n), land(n + 1), eio(q)); lift = Math.sin(Math.PI * q) * 26; }
+    }
+    return [x, start[1] - lift];
+  });
+  const sw = Math.sin((2 * Math.PI * w) / GAIT.P);
+  const hx = (base.hx || 0) + walkDist(w);
+  return {
+    ...base, hx, foot: feet[0], footF: feet[1], lean: 4,
+    rise: (base.rise || 0) + 5 * Math.cos((4 * Math.PI * w) / GAIT.P),
+    handN: [300 + hx + 63 + sw * 16, 1250 - (base.rise || 0) + 73], // the bag hand swings a little
+    handF: [300 + hx + 27 - sw * 46, 1250 - (base.rise || 0) + 77 - Math.abs(sw) * 10],
+  };
+}
+function walkSteps() { const out = []; for (let w = 0; w < B.gone - B.walk; w += GAIT.P / 2) out.push(B.walk + w + 0.02); return out; }
+
+/* ---------- builders ---------- */
+(() => {
+  const NS = "http://www.w3.org/2000/svg", g = $("ticks");
+  for (let i = 0; i < 12; i++) {
+    const a = (i * 30 * Math.PI) / 180, r1 = i % 3 === 0 ? 74 : 84;
+    const l = document.createElementNS(NS, "line");
+    attr(l, { x1: Math.sin(a) * r1, y1: -Math.cos(a) * r1, x2: Math.sin(a) * 92, y2: -Math.cos(a) * 92, "stroke-width": i % 3 === 0 ? 6 : 3 });
+    g.appendChild(l);
+  }
+  // spreadsheet
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let html = `<div style="position:absolute;left:0;right:0;top:0;height:40px;background:#F2F3F6;border-bottom:1px solid #E1E3E8"></div>
+    <div style="position:absolute;left:14px;top:14px;width:12px;height:12px;border-radius:6px;background:#FF5F57"></div><div style="position:absolute;left:32px;top:14px;width:12px;height:12px;border-radius:6px;background:#FEBC2E"></div><div style="position:absolute;left:50px;top:14px;width:12px;height:12px;border-radius:6px;background:#28C840"></div>
+    <div style="position:absolute;left:0;right:0;top:12px;text-align:center;font-size:13px;color:#6b6b70">Q3 工时汇总.xlsx</div>`;
+  for (let r = 0; r < 15; r++) {
+    html += `<div style="position:absolute;left:0;right:0;top:${52 + r * 26}px;height:1px;background:#EEF0F3"></div>`;
+    for (let c = 0; c < 5; c++) {
+      const w = c ? 30 + rnd() * 50 : 70;
+      html += `<div style="position:absolute;left:${16 + c * 100 + (c ? 86 - w : 0)}px;top:${60 + r * 26}px;width:${w}px;height:9px;border-radius:3px;background:${c ? "#C3C8D1" : "#8C939E"}"></div>`;
+    }
+  }
+  $("sheet").innerHTML = html;
+  // timer app list (as in ../scene.html)
+  const rows = [
+    { icon: "walk", bg: "#E4F6E8", t: "健康提醒", s: "60 分钟", v: "11:00" },
+    { icon: "resume", bg: "#DDF3FB", t: "午休", s: "开始", v: "12:00" },
+    { icon: "bell", bg: "#EDEAFD", t: "下班提醒", s: "今天还剩 25%", v: "15:15" },
+    { icon: "bell", bg: "#EDEAFD", t: "下班提醒", s: "今天还剩 10%", v: "16:18" },
+  ];
+  $("t-next").innerHTML = rows.map((r, i) => `<div class="row nrow sep" style="top:${i * 58}px;height:58px"><span class="dot" style="background:${r.bg}">${ICONS[r.icon]}</span><span class="tt">${r.t}</span><span class="st">${r.s}</span><span class="vv num">${r.v}</span></div>`).join("")
+    + `<div class="row" style="top:${rows.length * 58}px;height:42px"><span style="position:absolute;left:18px;font-size:14px;font-weight:600;color:#F45A1E">展开其余 2 项</span><span style="position:absolute;right:14px;top:12px">${ICONS.chevdown}</span></div>`;
+  // film grain, drawn once and shifted per frame
+  const g2 = $("grain").getContext("2d"), img = g2.createImageData(580, 1000);
+  for (let i = 0; i < img.data.length; i += 4) { const v = 128 + (rnd() - 0.5) * 255; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+  g2.putImageData(img, 0, 0);
+  set("grain", { width: "1160px", height: "2000px" });
+})();
+const k = (660 * 0.89795918) / 440;
+set("screen", { transform: `scale(${k})` });
+set("tscreen", { transform: `scale(${k})` });
+function tabBar(on) {
+  const items = [["tabtimer", "计时"], ["tabfocus", "专注"], ["tabrec", "记录"], ["tabset", "设置"]];
+  const icon = (name, active) => {
+    let h = ICONS[name];
+    if (name === "tabtimer" && !active) h = h.replaceAll("#F25A14", "#1c1c1e");
+    if (name !== "tabtimer" && active) h = h.replaceAll("#1c1c1e", "#F25A14");
+    return h;
+  };
+  return `<div class="sel" style="left:${5 + on * 94}px"></div>` + items.map(([n, label], i) => `<div class="tab${i === on ? " on" : ""}" style="left:${10 + i * 94}px">${icon(n, i === on)}${label}</div>`).join("");
+}
+$("tbar-recs").innerHTML = tabBar(2);
+$("tbar-life").innerHTML = tabBar(2);
+R.focus = makeRoller($("ft-time"), [[600, 6], [60, 10], ":", [10, 6], [1, 10]]);
+set("dev", { transform: `scale(${94 / 660})` });
+
+/* Full-width punctuation sits in the left half of its em box; pull it back at the end of centred lines. */
+function trimTrailingPunct(el) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let last = null;
+  while (walker.nextNode()) if (walker.currentNode.nodeValue.trim()) last = walker.currentNode;
+  if (!last) return;
+  const v = last.nodeValue.replace(/\s+$/, "");
+  if (!/[。！？，、；：」』）]$/.test(v)) return;
+  last.nodeValue = v.slice(0, -1);
+  const span = document.createElement("span"); span.className = "tp"; span.textContent = v.slice(-1);
+  last.parentNode.insertBefore(span, last.nextSibling);
+}
+
+/* ---------- hooks ---------- */
+const HOOKS = {
+  progress: { h: "下班，原来可以<span class=\"o\">看进度条</span>。", p: "不只是几点，还有今天走了多少。", pAt: 2.0 },
+  glance:   { h: "今天第 <span id=\"cnt\" class=\"o num\" style=\"display:inline-block\">8</span> 次看时间了。", p: "原来，今天已经走过 20%。", pAt: GL.sub },
+  woodfish: { h: "等下班的时候，<br>还能<span class=\"o\">敲两下</span>。", p: "电脑角落里的下班倒计时。", pAt: 1.5 },
+};
+$("cap-hook-h").innerHTML = HOOKS[VARIANT].h;
+$("cap-hook-p").textContent = HOOKS[VARIANT].p;
+document.querySelectorAll(".cap h1, .cap p, #cta-sub").forEach(trimTrailingPunct);
+if (QS.has("safe")) $("safe").classList.add("on");
+
+/* captions: quick, readable; no long blur */
+function cap(el, t, a, b, { dur = 0.22, outDur = 0.2, dy = 18 } = {}) {
+  if (typeof el === "string") el = $(el);
+  const pin = a <= 0 ? 1 : tw(t, a, a + dur, eo), pout = b == null ? 0 : tw(t, b, b + outDur, (x) => x * x);
+  const op = pin * (1 - pout);
+  set(el, { opacity: op, visibility: op < 0.002 ? "hidden" : "visible", transform: `translateY(${(1 - pin) * dy - pout * 10}px)` });
+  return op;
+}
+
+/* ---------- light through the day ---------- */
+function daylight(c) {
+  const hh = c / 3600;
+  // 0 morning → 1 late afternoon → 2 after sunset
+  const warm = clamp((hh - 12.2) / 4.6), dusk = clamp((hh - 16.995) / 0.08) * 0;
+  return { warm, dusk };
+}
+
+/* ---------- confetti: canvas-confetti settings from components/Confetti.tsx, replayed per frame ---------- */
+const CONFETTI = (() => {
+  const VW = 415.4, VH = 738.5;
+  const COLORS = ["#26ccff", "#a25afd", "#ff5e7e", "#88ff5a", "#fcff42", "#ffa62d", "#ff36ff"].map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)));
+  let seed = 20260928;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const list = [];
+  for (let kk = 0; kk < 20; kk++) {
+    const count = Math.round(50 * ((5 - kk * 0.25) / 5));
+    for (const side of [0, 1]) {
+      const ox = side ? 0.7 + rnd() * 0.2 : 0.1 + rnd() * 0.2, oy = rnd() - 0.2;
+      for (let i = 0; i < count; i++) list.push({
+        at: kk * 0.25, x: VW * ox, y: VH * oy, color: COLORS[Math.floor(rnd() * COLORS.length)], circle: rnd() < 0.5,
+        wobble: rnd() * 10, wobbleSpeed: Math.min(0.11, rnd() * 0.1 + 0.05), velocity: 15 + rnd() * 30,
+        angle2D: -Math.PI / 2 + (Math.PI - rnd() * 2 * Math.PI), tiltAngle: (rnd() * 0.5 + 0.25) * Math.PI, rs: Math.floor(rnd() * 1e9),
+      });
+    }
+  }
+  return { list, scale: 1080 / VW };
+})();
+function drawConfetti(t) {
+  const cv = $("confetti"), ctx = cv.getContext("2d");
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+  const since = t - B.zero;
+  if (since < 0 || since > 6.2) return;
+  ctx.setTransform(CONFETTI.scale, 0, 0, CONFETTI.scale, 0, 0);
+  for (const p of CONFETTI.list) {
+    const n = Math.floor((since - p.at) * 60) + 1;
+    if (n < 1 || n > 60) continue;
+    let x = p.x, y = p.y, v = p.velocity, wob = p.wobble, tilt = p.tiltAngle, rs = p.rs, random = 2;
+    for (let i = 0; i < n; i++) { x += Math.cos(p.angle2D) * v; y += Math.sin(p.angle2D) * v + 3; v *= 0.9; wob += p.wobbleSpeed; tilt += 0.1; rs = (rs * 16807) % 2147483647; random = rs / 2147483647 + 2; }
+    const progress = (n - 1) / 60, wx = x + 10 * Math.cos(wob), wy = y + 10 * Math.sin(wob);
+    const x1 = x + random * Math.cos(tilt), y1 = y + random * Math.sin(tilt), x2 = wx + random * Math.cos(tilt), y2 = wy + random * Math.sin(tilt);
+    ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${1 - progress})`;
+    ctx.beginPath();
+    if (p.circle) ctx.ellipse(x, y, Math.abs(x2 - x1) * 0.6, Math.abs(y2 - y1) * 0.6, (Math.PI / 10) * wob, 0, 2 * Math.PI);
+    else { ctx.moveTo(x, y); ctx.lineTo(wx, y1); ctx.lineTo(x2, y2); ctx.lineTo(x1, wy); }
+    ctx.closePath(); ctx.fill();
+  }
+}
+
+/* ---------- render ---------- */
+function render(t) {
+  const c = wallClock(t);
+  const v = (tt) => cdv(wallClock(tt));
+  const rate = rateOf(v, t);
+
+  /* camera & light */
+  const cam = camAt(t);
+  camera(cam);
+  const { warm } = daylight(c);
+  const duskP = tw(t, B.walk + 0.4, B.cta + 0.4, eio);
+  set("grade-a", { background: `linear-gradient(170deg, rgba(${lerp(210, 255, warm)},${lerp(226, 170, warm)},${lerp(245, 110, warm)},${lerp(0.28, 0.5, warm)}), rgba(${lerp(230, 255, warm)},${lerp(236, 140, warm)},${lerp(240, 90, warm)},${lerp(0.12, 0.42, warm)}))` });
+  set("grade-b", { background: `rgba(255,${lerp(255, 226, warm)},${lerp(255, 200, warm)},1)` });
+  set("dusk", { background: `rgba(52,30,70,${0.45 * duskP})`, mixBlendMode: "multiply" });
+  attr("sky0", { "stop-color": warm < 0.5 ? "#A9CDEB" : `rgb(${lerp(169, 250, (warm - 0.5) * 2)},${lerp(205, 170, (warm - 0.5) * 2)},${lerp(235, 140, (warm - 0.5) * 2)})` });
+  attr("sky1", { "stop-color": `rgb(${lerp(232, 255, warm)},${lerp(240, 214, warm)},${lerp(244, 170, warm)})` });
+  attr("sun", { cy: lerp(330, 760, warm), cx: lerp(320, 250, warm), fill: warm > 0.6 ? "#FFD9A0" : "#FFF8E0" });
+  attr("sunhalo", { cy: lerp(330, 760, warm), cx: lerp(320, 250, warm), opacity: lerp(0.4, 0.7, warm) });
+  attr("beam", { points: `378,262 378,978 1400,${lerp(1260, 1500, warm)} 1400,${lerp(420, 980, warm)}`, opacity: lerp(0.5, 0.75, warm) * (1 - duskP) });
+  attr("patch", { transform: `translate(${lerp(0, 260, warm)} ${lerp(0, 180, warm)})`, opacity: 0.22 * (1 - duskP) });
+  attr("citylights", { opacity: duskP });
+  set("grain", { transform: `translate(${-mod(t * 997, 40)}px, ${-mod(t * 613, 40)}px)` });
+
+  /* wall clock */
+  attr("c-h", { transform: `rotate(${((c / 3600) % 12) * 30})` });
+  attr("c-m", { transform: `rotate(${((c / 60) % 60) * 6})` });
+  attr("c-s", { transform: `rotate(${Math.floor(c % 60) * 6})` });
+
+  /* person */
+  let pose = poseAt(t);
+  const TYPING = [[5.3, B.tl1, 13], [B.tl1, B.lunch - 0.2, 26], [B.tl2 + 0.2, B.fish, 26], [B.fishOut + 0.9, B.jump, 13], [B.remindOut + 0.9, B.tl3, 13], [B.tl3, B.look, 26]];
+  const typing = TYPING.find(([a0, b0]) => t > a0 && t < b0);
+  if (typing) {
+    const speed = typing[2];
+    pose.handN = [pose.handN[0] + Math.sin(t * speed) * 3, pose.handN[1] - Math.abs(Math.sin(t * speed)) * 5];
+    pose.handF = [pose.handF[0] + Math.sin(t * speed + 1.7) * 3, pose.handF[1] - Math.abs(Math.sin(t * speed + 1.7)) * 5];
+  }
+  if (t >= B.walk) pose = walkPose(pose, t - B.walk);
+  applyPose(pose, t);
+  // turning round: a quick squash through edge-on, pivoting on his own hips
+  const pivot = 345, turnP = tw(t, B.turn, B.turn + 0.24, eio);
+  let sx = Math.cos(Math.PI * turnP);
+  if (Math.abs(sx) < 0.12) sx = sx < 0 ? -0.12 : 0.12;
+  const flipT = t >= B.turn ? `translate(${pivot * (1 - sx)} 0) scale(${sx} 1)` : "";
+  attr("person", { transform: flipT, opacity: t < B.gone ? 1 : 0 });
+  attr("person-back", { transform: flipT, opacity: t < B.gone ? 1 : 0 });
+  const chairX = pose.chairX || 0;
+  attr("chairAll", { transform: `translate(${chairX} 0)` });
+  attr("seatAll", { transform: `translate(${chairX} 0)` });
+  // the phone leaves its stand with his hand and goes into his pocket
+  if (t >= B.phoneGrab && t < B.tour) {
+    const fade = 1 - tw(t, B.pocket - 0.12, B.pocket, (x) => x);
+    set("standphone", { transform: `translate(${HAND.x - 777 + 4}px, ${HAND.y - 1032 - 70}px) rotate(-10deg) scale(.86)`, opacity: fade });
+  } else set("standphone", { opacity: t < B.phoneGrab ? 1 : 0 });
+  const hasBag = t >= B.grab + 0.28;
+  attr("chairbag", { opacity: hasBag ? 0 : 1 });
+  attr("bag", { opacity: hasBag ? 1 : 0 });
+  attr("bento", { opacity: tw(t, B.lunch - 0.2, B.lunch + 0.2) * (1 - tw(t, B.tl2 + 0.1, B.tl2 + 0.4)), transform: `translate(0 ${(1 - tw(t, B.lunch - 0.2, B.lunch + 0.2)) * 14})` });
+  attr("bento-lid", { transform: `translate(${tw(t, B.lunch + 0.05, B.lunch + 0.4) * -40} ${tw(t, B.lunch + 0.05, B.lunch + 0.4) * -22}) rotate(${tw(t, B.lunch + 0.05, B.lunch + 0.4) * -18} 474 1090)`, opacity: 1 - tw(t, B.lunch + 0.3, B.lunch + 0.5) });
+  attr("steam", { opacity: 0.6 * tw(t, B.fishOut, B.fishOut + 0.6) * (1 - duskP) });
+
+  /* The phone on its stand. Mornings and lunch: the DoneAt app he left open. In the
+     glance opening he wakes a locked phone (only the time) and unlocks it into the app.
+     From the 16:18 reminder on: the lock screen. The Live Activity only starts
+     15 minutes before the end of the shift (the app's default lead). */
+  const unlockP = VARIANT === "glance" ? tw(t, GL.unlock, GL.unlock + 0.35, eio) : 1;
+  const locked = t >= B.jump;
+  const appOn = !locked && unlockP > 0;
+  set("app", { display: appOn ? "block" : "none" });
+  set("lock", { display: locked || unlockP < 1 ? "block" : "none", zIndex: 2, transform: locked ? "none" : `translateY(${-unlockP * 956}px)` });
+  const sbTime = HM(c);
+  $("app-sb").textContent = sbTime;
+  if (appOn) {
+    R.app.update(v(t), rate);
+    const fill = VARIANT === "progress" ? eo(clamp((t - 0.2) / 1.4)) : 1;
+    const pct = pctOf(c) * fill;
+    const lunchApp = inLunch(c), col = lunchApp ? "#9C9CA1" : "#F25A14";
+    set("t-fill", { width: `${pct}%`, background: col });
+    set("t-bubble", { left: `${20 + 4 * pct}px`, opacity: VARIANT === "progress" ? tw(t, 1.45, 1.75) : 1, background: col, borderTopColor: col });
+    $("t-bubble").textContent = `${(pctOf(c) * fill).toFixed(1)}%`;
+    $("t-labeltext").textContent = lunchApp ? "午休中" : "今天的班次还剩";
+    set("t-cup", { display: lunchApp ? "inline-block" : "none" });
+  }
+  set("la", { display: c >= hms(16, 45) || t >= B.zero ? "block" : "none" });
+  // lock screen: wakes when looked at, stays lit on the stand
+  $("lk-time").textContent = sbTime;
+  const zeroDone = t >= B.zero;
+  const lunchNow = inLunch(c);
+  $("la-state").textContent = zeroDone ? "已下班" : lunchNow ? "午休中" : "工作中";
+  set("la-state", { color: lunchNow ? "#C9C4CF" : "#FFB27A", background: lunchNow ? "rgba(255,255,255,.14)" : "rgba(255,154,69,.18)" });
+  R.la.update(zeroDone ? 0.5 : v(t), zeroDone ? 0 : rate);
+  set("la-count", { color: lunchNow ? "#E4DEE8" : "#FF9A45" });
+  set("la-fill", { width: zeroDone ? "100%" : `${pctOf(c)}%`, background: lunchNow ? "#A9A3AE" : "linear-gradient(90deg, #F45A1E, #FFA53A)" });
+  $("la-pct").textContent = zeroDone ? "100%" : `${Math.floor(pctOf(c))}%`;
+  const noteKind = t >= B.zero ? "done" : t >= B.banner && t < B.tl3 ? "remind" : null;
+  const noteAt = noteKind === "done" ? B.zero : B.banner;
+  const nIn = noteKind ? tw(t, noteAt, noteAt + 0.4, back) : 0;
+  set("lk-note", { opacity: clamp(nIn * 1.3), transform: `translateY(${(1 - nIn) * -60}px) scale(${0.94 + 0.06 * nIn})` });
+  $("lk-note-t").textContent = noteKind === "done" ? "下班时间到！" : "今天还剩 10%";
+  $("lk-note-b").textContent = noteKind === "done" ? "今天辛苦了，好好休息。" : "只剩最后一小段。";
+  // the phone buzzes: a small shake before the reminder and at zero
+  const buzz = (a) => (t > a && t < a + 0.5 ? Math.sin((t - a) * 90) * 3 * (1 - (t - a) / 0.5) : 0);
+  const shake = buzz(B.jump) + buzz(B.zero);
+  set("dev", { transform: `translateX(${shake}px) scale(${94 / 660})` });
+
+  /* monitor */
+  $("mb-time").textContent = `周三 ${sbTime}`;
+  R.mini.update(zeroDone ? 0.5 : v(t), zeroDone ? 0 : rate);
+  set("mini-fill", { width: `${pctOf(c)}%` });
+  $("mini-pct").textContent = zeroDone ? "100%" : `${Math.floor(pctOf(c))}%`;
+  const knocks = VARIANT === "woodfish" ? [0.15, 0.9, B.knock1, B.knock2] : [B.knock1, B.knock2];
+  const kn = knocks.filter((kk) => t >= kk).length;
+  $("mini-k").textContent = 64 + kn;
+  let squash = 0;
+  knocks.forEach((kk) => { const d = t - kk; if (d >= 0 && d < 0.25) squash = Math.max(squash, Math.sin((d / 0.25) * Math.PI)); });
+  set("fish", { transform: `scale(${1 - 0.1 * squash}, ${1 - 0.15 * squash})`, transformOrigin: "50% 80%" });
+  $("plusbox").innerHTML = knocks.map((kk) => { const d = t - kk; if (d < 0 || d > 0.8) return ""; const p = d / 0.8; return `<div class="plus" style="left:44px;top:${10 - 30 * eo(p)}px;opacity:${1 - p * p}">+1</div>`; }).join("");
+  const click = knocks.some((kk) => t >= kk - 0.02 && t < kk + 0.1);
+  set("cursor", { left: "596px", top: `${lerp(430, 424, click ? 1 : 0)}px`, opacity: (t < 5.0 && VARIANT === "woodfish") || (t > B.fish + 1.1 && t < B.fishOut + 0.5) ? 1 : 0 });
+
+  /* captions */
+  const HK = HOOKS[VARIANT];
+  cap("cap-hook", t, 0, HOOK - 0.25);
+  cap("cap-hook-p", t, HK.pAt, null);
+  if (VARIANT === "glance") {
+    const n = t < GL.menubar ? 8 : t < GL.phone ? 9 : 10, at = n === 9 ? GL.menubar : n === 10 ? GL.phone : -9;
+    $("cnt").textContent = n;
+    const pop = t > at && t < at + 0.3 ? Math.sin(((t - at) / 0.3) * Math.PI) : 0;
+    set("cnt", { transform: `scale(${1 + 0.3 * pop})` });
+  }
+  cap("cap-lunch", t, B.lunchNoon - 0.2, B.tl2 - 0.1);
+  cap("cap-fish", t, B.fish + 0.2, B.jump - 0.2);
+  cap("cap-remind", t, B.banner + 0.15, B.tl3 - 0.1);
+  cap("cap-done", t, B.cheer - 0.15, B.tour - 0.1);
+
+  /* the tour */
+  const tourIn = tw(t, B.tour, B.tour + 0.5, eio);
+  set("tour", { opacity: tourIn, visibility: tourIn < 0.002 ? "hidden" : "visible" });
+  if (tourIn > 0) {
+    const rise = tw(t, B.tour + 0.05, B.tour + 0.9, (x) => 1 - Math.pow(1 - x, 5));
+    const leave = tw(t, B.cta - 0.2, B.cta + 0.4, (x) => x * x);
+    // show the whole phone, then move in on the card that matters so its numbers read on a phone
+    const PT = (px, py) => [31.6 + px * 1.26545, 27.8 + py * 1.26545];
+    const zoomTo = (pt, S) => { const [lx, ly] = PT(...pt); return { tx: 540 - 230 - lx * S, ty: 1030 - 520 - ly * S, S }; };
+    const Z0 = { tx: 0, ty: 0, S: 1 };
+    const moves = [
+      [B.tour + 1.0, 0.8, zoomTo([220, 232], 1.6)], [B.recs - 0.1, 0.5, Z0], [B.recs + 1.7, 0.75, zoomTo([220, 704], 1.62)],
+      [B.life - 0.1, 0.5, Z0], [B.life + 0.55, 0.75, zoomTo([220, 408], 1.5)], [B.cta - 0.4, 0.6, Z0],
+    ];
+    let z = Z0;
+    for (const [a0, d0, to] of moves) { if (t < a0) break; const q = eio(clamp((t - a0) / d0)); z = { tx: lerp(z.tx, to.tx, q), ty: lerp(z.ty, to.ty, q), S: lerp(z.S, to.S, q) }; }
+    set("tour-dev", { transform: `translate(${z.tx}px, ${z.ty + (1 - rise) * 1100 + leave * 120}px) scale(${z.S * lerp(0.94, 1, rise)})`, opacity: 1 - leave });
+    // screens slide like tabs and pushes: Focus → Records → Life
+    const toRecs = tw(t, B.recs, B.recs + 0.45, eio), toLife = tw(t, B.life, B.life + 0.45, eio);
+    set("tv-focus", { transform: `translateX(${-toRecs * 440}px)` });
+    set("tv-recs", { transform: `translateX(${(1 - toRecs) * 440 - toLife * 130}px)`, filter: toLife > 0 ? `brightness(${1 - 0.15 * toLife})` : "none" });
+    set("tv-life", { transform: `translateX(${(1 - toLife) * 440}px)`, boxShadow: "-10px 0 30px rgba(0,0,0,.12)" });
+    // the pomodoro keeps running: 21:06 and counting down
+    R.focus.update(21 * 60 + 6 - Math.max(0, t - B.tour - 0.9) + 0.5, 1);
+    set("rec-scroll", { transform: `translateY(${-150 * tw(t, B.recs + 0.9, B.recs + 1.8, eio)}px)` });
+    const count = tw(t, B.life + 1.0, B.life + 2.0, (x) => 1 - Math.pow(1 - x, 3));
+    const money = (x) => x.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    $("life-hist").textContent = money(Math.round(1248000 * count / 100) * 100);
+    $("life-fut").textContent = money(Math.round(3888000 * count / 100) * 100);
+    $("life-tot").textContent = money(Math.round(5136000 * count / 100) * 100);
+  }
+  cap("cap-t1", t, B.tour + 0.35, B.recs - 0.15);
+  cap("cap-t2", t, B.recs + 0.2, B.life - 0.15);
+  cap("cap-t3", t, B.life + 0.2, B.cta - 0.15);
+
+  /* ending */
+  drawConfetti(t);
+  const ctaP = tw(t, B.cta, B.ctaStable, eo);
+  if (ctaP <= 0) $("L-mid").style.filter = "none";
+  set("cta", { opacity: ctaP, visibility: ctaP < 0.002 ? "hidden" : "visible" });
+  set("cta-block", { transform: `translateY(${(1 - ctaP) * 24}px)` });
+  set("cta-pill", { transform: `scale(${1 + 0.035 * Math.sin(clamp((t - B.ctaStable - 0.4) / 0.6) * Math.PI)})` });
+}
+
+/* ---------- sound cues for audio.mjs ---------- */
+function cues() {
+  const list = [];
+  const add = (t, kind, gain = 1, pan = 0) => list.push({ t, kind, gain, pan });
+  if (VARIANT === "progress") {
+    add(0.2, "fill", 0.9); add(1.6, "chime", 0.6, 0.2); add(2.9, "whooshOut", 0.55);
+  } else if (VARIANT === "glance") {
+    for (const tt of [0, 0.5, 1.0, 1.5]) add(tt, "tickLoud", tt < 0.6 ? 1 : 0.8, -0.2);
+    add(GL.menubar - 0.03, "whip", 0.6); add(GL.menubar, "click", 0.35, 0.3);
+    add(GL.phone - 0.03, "whip", 0.6); add(GL.phone + 0.05, "wake", 0.55, 0.4);
+    add(GL.la, "whooshIn", 0.45); add(GL.sub, "chime", 0.7, 0.3); add(GL.out, "whooshOut", 0.5);
+  } else {
+    add(0.13, "click", 0.5, 0.2); add(0.15, "woodfish", 1, 0.1); add(0.88, "click", 0.5, 0.2); add(0.9, "woodfish", 1, 0.1); add(2.7, "whooshOut", 0.55);
+  }
+  add(B.tl1, "timelapse", 0.8); add(B.lunch - 0.1, "lid", 0.8, -0.2); add(B.lunchIn, "whooshIn", 0.35); add(B.lunchNoon, "pauseChime", 0.55, 0.3);
+  add(B.lunchOut, "whooshOut", 0.4); add(B.tl2, "timelapse", 0.8);
+  add(B.fish + 0.5, "yawn", 0.5, -0.3); add(B.fishIn, "whooshIn", 0.4);
+  add(B.knock1 - 0.02, "click", 0.45, 0.2); add(B.knock1, "woodfish", 1, 0.1); add(B.knock2 - 0.02, "click", 0.45, 0.2); add(B.knock2, "woodfish", 1, 0.1);
+  add(B.fishOut, "whooshOut", 0.4);
+  add(B.jump - 0.3, "timelapse", 0.45); add(B.jump, "buzz", 0.9, 0.35); add(B.banner, "notify", 0.8, 0.35); add(B.remindOut, "whooshOut", 0.4);
+  add(B.tl3, "timelapse", 0.7); add(B.zeroIn, "whooshIn", 0.35);
+  add(B.zero - 2.0, "beep", 0.45); add(B.zero - 1.0, "beep", 0.6); add(B.zero, "zero", 1);
+  add(B.zero, "popper", 1, -0.6); add(B.zero + 0.04, "popper", 1, 0.6); add(B.zero + 0.05, "sparkle", 1); add(B.zero + 0.05, "buzz", 0.5, 0.35);
+  add(B.cheer + 0.05, "cheer", 0.5); add(B.rise, "chair", 0.6, -0.2);
+  walkSteps().forEach((tt, i) => add(tt, "step", 0.45, -0.1 - i * 0.12));
+  add(B.pocket - 0.2, "chair", 0.25, 0.3); add(B.tour + 0.05, "whooshIn", 0.5); add(B.recs, "whip", 0.35); add(B.life, "whip", 0.35);
+  add(B.cta, "brand", 0.8);
+  return list;
+}
+window.render = render;
+window.VIDEO_LENGTH = B.end;
+window.AUDIO_TIMELINE = {
+  variant: VARIANT, hook: HOOK, B, cues: cues(), end: B.end,
+  musicFrom: VARIANT === "glance" ? GL.sub : VARIANT === "woodfish" ? 1.5 : 0.3,
+  // key clicks while he types; the time-lapses type faster
+  typing: [[5.3, B.tl1, 11], [B.tl1, B.lunch - 0.2, 22], [B.tl2 + 0.2, B.fish, 22], [B.fishOut + 0.9, B.jump - 0.3, 11], [B.remindOut + 0.9, B.tl3, 11], [B.tl3, B.look, 22]],
+};
+if (QS.has("play")) { const t0 = performance.now(); const loop = () => { render(((performance.now() - t0) / 1000) % B.end); requestAnimationFrame(loop); }; loop(); }
+else render(+(QS.get("t") || 0));
+</script>
+</body>
+</html>

@@ -1,13 +1,13 @@
-// Render scene.html to a 1080×1920 vertical promo video.
+// Render one of three isolated 1080×1920 TikTok edits. Legacy files remain untouched.
 //
 // The page draws every frame from a timestamp (window.render(t)), so the
 // output does not depend on how fast Chrome runs: we step t, screenshot, and
 // pipe the frames into ffmpeg. The frame range is split across several
 // headless Chromes and the segments are concatenated without re-encoding.
 //
-//   node scripts/marketing-shots/promo-video/render.mjs               # full video
-//   node scripts/marketing-shots/promo-video/render.mjs --stills 3,20 # preview PNGs
-//   FPS=30 WORKERS=4 node scripts/marketing-shots/promo-video/render.mjs
+//   node scripts/marketing-shots/promo-video/tiktok-v2/render.mjs --variant office
+//   node scripts/marketing-shots/promo-video/tiktok-v2/render.mjs --stills 0,3,18
+//   node scripts/marketing-shots/promo-video/tiktok-v2/render.mjs --check
 
 import { spawn } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -17,10 +17,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SELF = fileURLToPath(import.meta.url);
-const OUT = join(HERE, "out");
+const VARIANT = process.argv.includes("--variant") ? process.argv[process.argv.indexOf("--variant") + 1] : "progress";
+if (!["progress", "office", "woodfish"].includes(VARIANT)) throw new Error(`Unknown variant: ${VARIANT}`);
+const OUT = join(HERE, "out", VARIANT);
 const CHROME = process.env.CHROME_BIN || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const FPS = Number(process.env.FPS || 60);
-const WORKERS = Number(process.env.WORKERS || Math.max(2, Math.min(6, Math.floor(cpus().length / 2))));
+const WORKERS = Number(process.env.WORKERS || Math.max(2, Math.min(4, Math.floor(cpus().length / 2))));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const args = process.argv.slice(2);
@@ -40,7 +42,7 @@ async function openScene(port) {
     "--font-render-hinting=none", "--allow-file-access-from-files",
     "--disable-background-timer-throttling", "--disable-renderer-backgrounding",
     "--disable-backgrounding-occluded-windows", "--disable-features=IntensiveWakeUpThrottling,MacAppCodeSignClone",
-    `--user-data-dir=${join(tmpdir(), `doneat-promo-video-${port}`)}`, "about:blank",
+    `--user-data-dir=${join(tmpdir(), `doneat-tiktok-v2-${port}`)}`, "about:blank",
   ], { stdio: "ignore" });
   process.on("exit", () => chrome.kill());
 
@@ -77,9 +79,10 @@ async function openScene(port) {
   await send("Page.bringToFront", {}, sessionId);
   await send("Emulation.setFocusEmulationEnabled", { enabled: true }, sessionId);
   await send("Emulation.setDeviceMetricsOverride", { width: 1080, height: 1920, deviceScaleFactor: 1, mobile: false }, sessionId);
-  await send("Page.navigate", { url: pathToFileURL(join(HERE, "scene.html")).href }, sessionId);
+  await send("Page.navigate", { url: `${pathToFileURL(join(HERE, "scene.html")).href}?variant=${VARIANT}` }, sessionId);
   await sleep(1500);
-  await send("Runtime.evaluate", { expression: "document.fonts.ready.then(() => Promise.all([...document.images].map(i => i.decode())))", awaitPromise: true }, sessionId);
+  const ready = await send("Runtime.evaluate", { expression: "window.ready", awaitPromise: true }, sessionId);
+  if (ready.exceptionDetails) throw new Error(ready.exceptionDetails.exception?.description ?? ready.exceptionDetails.text);
 
   return {
     async render(t) {
@@ -96,6 +99,14 @@ async function openScene(port) {
     async timeline() {
       return (await send("Runtime.evaluate", { expression: "JSON.stringify(window.AUDIO_TIMELINE)", returnByValue: true }, sessionId)).result.value;
     },
+    async validate() {
+      const result = await send("Runtime.evaluate", { expression: `JSON.stringify([...document.querySelectorAll('[data-safe]')].flatMap(el => {
+        const r = el.getBoundingClientRect();
+        return r.width && r.height && (r.left < 64 || r.right > 920 || r.top < 190 || r.bottom > 1500) ? [el.id] : [];
+      }))`, returnByValue: true }, sessionId);
+      const outside = JSON.parse(result.result.value);
+      if (outside.length) throw new Error('Text outside editorial safe area: ' + outside.join(', '));
+    },
     close() { ws.close(); chrome.kill(); },
   };
 }
@@ -108,8 +119,17 @@ const encoder = (file) => spawn("ffmpeg", [
   "-r", String(FPS), file,
 ], { stdio: ["pipe", "inherit", "inherit"] });
 
-if (stillsArg) {
-  const scene = await openScene(9337);
+if (args.includes("--check")) {
+  const scene = await openScene(9457);
+  try {
+    for (const t of [0, .65, 1.1, 1.65, 2.9, 3, 3.3, 5.6, 6.8, 8.4, 10.8, 11.5, 13.8, 16.8, 17.8, 20.9]) {
+      await scene.render(t);
+      await scene.validate();
+    }
+    console.log(`${VARIANT}: all editorial cuts render; captions and CTA fit the safe area`);
+  } finally { scene.close(); }
+} else if (stillsArg) {
+  const scene = await openScene(9457);
   for (const t of stillsArg.split(",").map(Number)) {
     await scene.render(t);
     const file = join(OUT, `still-${t.toFixed(2)}.png`);
@@ -119,7 +139,7 @@ if (stillsArg) {
   scene.close();
 } else if (workerArg) {
   const [index, first, end] = workerArg.split(",").map(Number);
-  const scene = await openScene(9340 + index);
+  const scene = await openScene(9460 + index);
   const file = join(OUT, `segment-${index}.mp4`);
   const ff = encoder(file);
   for (let f = first; f < end; f++) {
@@ -129,10 +149,10 @@ if (stillsArg) {
     if ((f - first) % 120 === 0) console.log(`worker ${index}: ${f - first}/${end - first}`);
   }
   ff.stdin.end();
-  await new Promise((r) => ff.on("close", r));
+  await new Promise((res, rej) => ff.on("close", code => code === 0 ? res() : rej(new Error(`ffmpeg exited ${code}`))));
   scene.close();
 } else {
-  const probe = await openScene(9337);
+  const probe = await openScene(9457);
   const total = await probe.total();
   const timelineFile = join(OUT, "timeline.json");
   writeFileSync(timelineFile, await probe.timeline());
@@ -142,7 +162,7 @@ if (stillsArg) {
   const started = Date.now();
   const bounds = Array.from({ length: WORKERS + 1 }, (_, i) => Math.round((frames * i) / WORKERS));
   await Promise.all(bounds.slice(0, -1).map((first, i) => new Promise((res, rej) => {
-    const child = spawn(process.execPath, [SELF, "--worker", `${i},${first},${bounds[i + 1]}`], { stdio: "inherit", env: process.env });
+    const child = spawn(process.execPath, [SELF, "--variant", VARIANT, "--worker", `${i},${first},${bounds[i + 1]}`], { stdio: "inherit", env: process.env });
     child.on("close", (code) => (code === 0 ? res() : rej(new Error(`worker ${i} exited ${code}`))));
   })));
   const list = join(OUT, "segments.txt");
@@ -159,7 +179,7 @@ if (stillsArg) {
   for (const [suffix, wav, flags] of outputs) {
     const wavFile = join(OUT, wav);
     await run(process.execPath, [join(HERE, "audio.mjs"), timelineFile, wavFile, ...flags]);
-    const file = join(OUT, `doneat-promo-${FPS}fps${suffix}.mp4`);
+    const file = join(OUT, `doneat-${VARIANT}-zh-${FPS}fps${suffix}.mp4`);
     await run("ffmpeg", ["-y", "-loglevel", "error", "-i", silent, "-i", wavFile, "-map", "0:v", "-map", "1:a",
       "-c:v", "copy", "-af", "loudnorm=I=-16:TP=-1.5:LRA=20", "-ar", "48000", "-c:a", "aac", "-b:a", "192k",
       "-shortest", "-movflags", "+faststart", file]);

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DoneAt · 三个开头</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;padding:36px;background:#f7f2ea;color:#302534;font:15px/1.5 -apple-system,"PingFang SC",sans-serif}main{max-width:1180px;margin:auto}h1{font-size:30px;letter-spacing:-1px;margin:0 0 8px}p{color:#796d79;margin:0 0 24px}header{display:flex;align-items:center;justify-content:space-between;gap:20px}button,a{font:inherit}button{background:#302534;color:#fff;border:0;border-radius:9px;padding:10px 17px;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #ec632d;outline-offset:4px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}h2{font-size:18px;margin:0 0 12px}video{display:block;width:100%;aspect-ratio:9/16;background:#251c2a;border-radius:12px}nav{display:flex;gap:18px;margin:14px 0 10px}a{color:#9c4528;text-decoration:underline;text-underline-offset:3px}small{display:block;color:#796d79}footer{border-top:1px solid #30253422;margin-top:32px;padding-top:20px}footer a{margin-right:24px}@media(max-width:760px){body{padding:20px}.grid{grid-template-columns:1fr}header{display:block;margin-bottom:24px}video{max-height:75vh;width:auto;max-width:100%;margin:auto}}
+</style></head>
+<body><main>
+<header><div><h1>三个开头，同一个 DoneAt。</h1><p>中文 · 21 秒 · 1080×1920 · 60 fps · 3 秒后为共同主体</p></div><button id="together">从头同步播放（静音）</button></header>
+<div class="grid">
+<article><h2>A · 进度条</h2><video controls playsinline muted preload="metadata" poster="out/progress/still-0.00.png" src="out/progress/doneat-progress-zh-60fps-music.mp4?preview=2"></video><nav><a href="out/progress/doneat-progress-zh-60fps-music.mp4" download>配乐版</a><a href="out/progress/doneat-progress-zh-60fps.mp4" download>纯音效版</a></nav><small>下班，原来可以看进度条。</small></article>
+<article><h2>B · 反复看时间</h2><video controls playsinline muted preload="metadata" poster="out/office/still-0.00.png" src="out/office/doneat-office-zh-60fps-music.mp4?preview=2"></video><nav><a href="out/office/doneat-office-zh-60fps-music.mp4" download>配乐版</a><a href="out/office/doneat-office-zh-60fps.mp4" download>纯音效版</a></nav><small>今天第 8 次看时间了。</small></article>
+<article><h2>C · 木鱼互动</h2><video controls playsinline muted preload="metadata" poster="out/woodfish/still-0.00.png" src="out/woodfish/doneat-woodfish-zh-60fps-music.mp4?preview=2"></video><nav><a href="out/woodfish/doneat-woodfish-zh-60fps-music.mp4" download>配乐版</a><a href="out/woodfish/doneat-woodfish-zh-60fps.mp4" download>纯音效版</a></nav><small>等下班，还能敲两下。</small></article>
+</div>
+<p id="status" role="status" style="margin-top:20px"></p>
+<footer><a href="../out/doneat-promo-60fps-music.mp4">查看原版 · 59.8 秒</a><a href="README.md">制作说明与测试建议</a><p style="margin-top:14px">播放器默认静音，可单独开启一条的声音。同步播放用于比较画面；判断声音时请单独播放。</p></footer>
+</main><script>
+const videos=[...document.querySelectorAll('video')];
+document.getElementById('together').addEventListener('click',async()=>{
+  document.getElementById('status').textContent='正在启动播放…';
+  for(const v of videos){v.pause();v.muted=true;v.currentTime=0;}
+  const result=await Promise.allSettled(videos.map(v=>v.play()));
+  document.getElementById('status').textContent=result.some(r=>r.status==='rejected')?'浏览器未启动同步播放，可使用各视频的播放按钮或下载后观看。':'正在同步播放三个版本。';
+});
+for(const v of videos)v.addEventListener('volumechange',()=>{if(!v.muted)for(const other of videos)if(other!==v)other.muted=true;});
+</script></body></html>

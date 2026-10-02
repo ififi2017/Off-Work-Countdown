@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>DoneAt · TikTok creative tests</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #f5eddf; }
+  body { font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif; -webkit-font-smoothing: antialiased; color: #302534; }
+  #stage, .full { position: absolute; inset: 0; overflow: hidden; }
+  #paper { background: radial-gradient(ellipse at 30% 32%, #fffaf2, #f5eddf 65%, #e5d6c1); }
+  #office { width: 1080px; height: 1920px; object-fit: cover; transform-origin: 54% 58%; }
+  #veil { background: linear-gradient(180deg, rgba(252,246,234,.55), transparent 52%, rgba(35,22,25,.12)); }
+  #dark { background: radial-gradient(ellipse at 36% 36%, #36263e, #19121f 75%); }
+  #brand { position: absolute; left: 84px; top: 202px; display: flex; align-items: center; gap: 14px; font-size: 31px; font-weight: 650; letter-spacing: -.5px; }
+  #brand img { width: 46px; height: 46px; border-radius: 12px; }
+  #copy { position: absolute; left: 84px; top: 320px; width: 810px; }
+  #headline { font-size: 88px; line-height: 1.18; letter-spacing: -3px; font-weight: 730; }
+  #headline em { color: #ed5b28; font-style: normal; }
+  #sub { margin-top: 25px; font-size: 36px; line-height: 1.45; color: #716772; font-weight: 500; }
+  #ui { border: 0; background: transparent; pointer-events: none; width: 1080px; height: 1920px; }
+  #detail { position: absolute; left: 84px; top: 1260px; font-size: 35px; line-height: 1.5; font-weight: 550; }
+  #detail strong { color: #ed5b28; font-weight: 650; }
+  #desk-context { position: absolute; left: 60px; top: 670px; width: 850px; height: 570px; border-radius: 22px; background: rgba(255,255,255,.7); box-shadow: 0 24px 70px #20171915; overflow: hidden; }
+  #desk-context .bar { height: 50px; background: #f2f0ed; padding: 17px 20px; display: flex; gap: 9px; }
+  #desk-context i { width: 12px; height: 12px; border-radius: 50%; background: #bfb8af; }
+  #desk-context .rows { margin: 42px; height: 350px; background: repeating-linear-gradient(0deg, transparent 0 49px, #a4937c18 49px 50px), repeating-linear-gradient(90deg, transparent 0 126px, #a4937c18 126px 127px); }
+  #desk-context .line { position: absolute; left: 45px; top: 100px; width: 240px; height: 13px; border-radius: 8px; background: #c3b8a83a; box-shadow: 0 50px #c3b8a82a, 0 100px #c3b8a82a; }
+  #pointer { position: absolute; width: 48px; height: 64px; filter: drop-shadow(0 3px 3px #0004); }
+  #pulse { position: absolute; border: 3px solid #f3793f; border-radius: 50%; width: 108px; height: 108px; }
+  #finish { position: absolute; left: 84px; top: 725px; width: 810px; color: #fff4e4; }
+  #finish-label { font-size: 36px; color: #d4c5d8; margin-bottom: 40px; }
+  #digits { font-size: 174px; line-height: 1.1; font-weight: 650; letter-spacing: -6px; font-variant-numeric: tabular-nums; }
+  #done { font-size: 99px; font-weight: 700; line-height: 1.15; color: #ffb378; }
+  #cta { position: absolute; left: 84px; top: 565px; width: 810px; color: #fff5e8; }
+  #cta img { width: 158px; height: 158px; border-radius: 36px; box-shadow: 0 15px 45px #0003; }
+  #cta h2 { margin-top: 32px; font-size: 100px; font-weight: 680; letter-spacing: -3px; }
+  #cta p { font-size: 46px; line-height: 1.5; margin-top: 20px; }
+  #cta .action { margin-top: 65px; padding: 23px 32px; width: fit-content; border-radius: 20px; background: #fff2df; color: #302534; font-size: 39px; font-weight: 650; }
+  #cta .platforms { font-size: 29px; color: #c5b6cd; margin-top: 30px; }
+  #confetti { pointer-events: none; }
+  #safe { display: none; position: absolute; left: 64px; top: 190px; width: 856px; height: 1310px; border: 3px dashed #ff276b; pointer-events: none; }
+  .white #brand, .white #headline { color: #fff4e4; }
+  .white #sub { color: #d4c5d8; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="paper" class="full"></div>
+  <img id="office" class="full" src="assets/office.png" alt="窗边办公的人物与木质桌面">
+  <div id="veil" class="full"></div>
+  <div id="dark" class="full"></div>
+  <div id="desk-context"><div class="bar"><i></i><i></i><i></i></div><div class="rows"></div><div class="line"></div></div>
+  <iframe id="ui" class="full" src="../scene.html" title="DoneAt 产品界面"></iframe>
+  <div id="brand" data-safe><img src="../../../../assets/brand/off-work-countdown-icon-rounded.svg" alt="">DoneAt</div>
+  <div id="copy" data-safe><h1 id="headline"></h1><p id="sub"></p></div>
+  <div id="detail" data-safe></div>
+  <div id="pulse"></div>
+  <svg id="pointer" viewBox="0 0 32 42"><path d="M2 2 L27 23 L16 25 L11 37 Z" fill="#fff" stroke="#352b30" stroke-width="2" stroke-linejoin="round"/></svg>
+  <div id="finish" data-safe><div id="finish-label">今天的班次还剩</div><div id="digits"></div><div id="done">下班时间到。</div></div>
+  <div id="cta" data-safe><img src="../../../../assets/brand/off-work-countdown-icon-rounded.svg" alt="DoneAt"><h2>DoneAt</h2><p>几点下班，<br>心里有数。</p><div class="action">App Store 搜索 DoneAt</div><div class="platforms">iPhone · iPad · Apple Watch · Mac</div></div>
+  <canvas id="confetti" class="full" width="1080" height="1920"></canvas>
+  <div id="safe"></div>
+</div>
+<script>
+const query = new URLSearchParams(location.search);
+const variant = query.get("variant") || "progress";
+if (!["progress", "office", "woodfish"].includes(variant)) throw new Error(`Unknown variant: ${variant}`);
+const $ = id => document.getElementById(id);
+const clamp = n => Math.max(0, Math.min(1, n));
+const lerp = (a, b, p) => a + (b - a) * p;
+// Existing film's easeOutCubic; deterministic for offline frame stepping.
+const ease = p => 1 - (1 - clamp(p)) ** 3;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const style = (id, value) => Object.assign($(id).style, value);
+const visible = (id, yes) => style(id, { display: yes ? (id === "brand" ? "flex" : "block") : "none" });
+let source, doc, native;
+window.VIDEO_LENGTH = 21;
+window.AUDIO_TIMELINE = { variant, duration: 21, cuts: [3, 5.6, 8.4, 10.8, 13.8, 16.8, 17.8], knocks: variant === "woodfish" ? [.32, .84, 11.35, 11.87] : [11.35, 11.87] };
+
+window.ready = new Promise((resolve, reject) => {
+  const init = async () => {
+    try {
+      source = $("ui").contentWindow; doc = source.document;
+      await doc.fonts.ready;
+      await Promise.all([...doc.images, ...document.images].map(img => img.decode()));
+      const css = doc.createElement("style");
+      css.textContent = `html,body {background:transparent!important} #stage > * {display:none!important}
+        #phone,#desk-mini {display:block!important} #phone {transform-origin:0 0!important}
+        .phone-shadow {box-shadow:0 35px 60px #4d351b24,0 5px 16px #4d351b14!important}
+        #desk-mini {box-shadow:0 24px 40px #291a2125,inset 0 0 0 .5px #ffffffcc!important}
+        #t-count {font-size:60px!important} .track {height:9px!important}
+        #t-next .nrow {transform:none!important;opacity:1!important}`;
+      doc.head.append(css);
+      // Reuse the original hand-built product views, rollers and icons unchanged.
+      native = source.eval("({R, set, nextRows, ICONS, drawConfetti})");
+      resolve();
+    } catch (error) { reject(error); }
+  };
+  if ($("ui").contentDocument?.readyState === "complete" && $("ui").contentWindow.render) init();
+  else $("ui").addEventListener("load", init, { once: true });
+});
+
+function copy(head, sub = "", detail = "") {
+  $("headline").innerHTML = head; $("sub").textContent = sub; $("detail").innerHTML = detail;
+}
+function placePhone(x, y, scale, opacity = 1) {
+  native.set("phone", { left: "0px", top: "0px", transform: `translate(${x}px,${y}px) scale(${scale})`, opacity, visibility: "visible" });
+}
+function timer(t, lunch = false) {
+  source.render(lunch ? 29.4 : 24);
+  native.set("desk-mini", { visibility: "hidden" });
+  // Editorial demo values for the existing 09–17 shift with a 12–13 break.
+  // The film does not implement or export product scheduling rules.
+  native.R.timer.update(lunch ? 14400.5 : 2520.5 - t, lunch ? 0 : 1, true);
+  doc.getElementById("t-sbtime").textContent = lunch ? "12:00" : "16:18";
+  if (!lunch) {
+    native.set("t-fill", { width: "90%" });
+    native.set("t-bubble", { left: "380px" });
+    doc.getElementById("t-bubble").textContent = "90%";
+    doc.getElementById("t-next").innerHTML = native.nextRows([
+      { icon:"bell", bg:"#EDEAFD", t:"下班提醒", s:"今天还剩 5%", v:"16:39" },
+      { icon:"bell", bg:"#EDEAFD", t:"下班时间到", s:"今天的班次", v:"17:00" },
+    ]).replace("展开其余 2 项", "提醒已开启");
+  }
+}
+function widgets(t) {
+  source.render(34.3);
+  native.set("desk-mini", { visibility: "hidden" });
+  for (const name of ["wm", "wl", "di"]) native.R[name].update(2520.5 - t, 1, true);
+  doc.getElementById("h-sbtime").textContent = "16:18";
+  doc.getElementById("wm-pct").textContent = "90%";
+  doc.getElementById("wm-ring").setAttribute("stroke-dasharray", "90 100");
+  doc.getElementById("wl-pct").textContent = "90%";
+  native.set("wl-fill", { width: "90%" });
+  // Frame the medium widget and Dynamic Island; the dense large widget stays below the crop.
+}
+function mini(t, start) {
+  source.render(48.1 + Math.max(0, t - start));
+  native.set("phone", { visibility: "hidden" });
+  native.set("desk-mini", { visibility:"visible", left:"100px", top:"900px", opacity:1, transform:"scale(3.05)" });
+  native.R.mini.update(2520.5 - t, 1, true);
+  doc.getElementById("m-pct").textContent = "90%";
+  native.set("m-fill", { width:"90%" });
+  const knocks = [start, start + .52];
+  const count = knocks.filter(at => t >= at).length;
+  doc.getElementById("m-knocks").textContent = 64 + count;
+  let pulse = 0;
+  for (const at of knocks) { const age = t - at; if (age >= 0 && age < .24) pulse = Math.max(pulse, Math.sin(age / .24 * Math.PI)); }
+  native.set("fish", { transform:`scale(${1 - pulse * .06},${1 - pulse * .12})`, transformOrigin:"50% 80%" });
+  doc.getElementById("m-floaters").innerHTML = knocks.map(at => { const p = (t - at) / .65; return p >= 0 && p < 1 ? `<div class="floater" style="left:46px;top:${8 - 24 * ease(p)}px;opacity:${1-p}">+1</div>` : ""; }).join("");
+  style("pointer", { left:"209px", top:`${995 + pulse * 6}px`, transform:`rotate(-10deg) scale(${1 - pulse * .07})`, opacity:t < start + 1.1 ? 1 : 0 });
+  style("pulse", { left:"164px", top:"938px", opacity:pulse * .55, transform:`scale(${1.05 - pulse * .12})` });
+}
+function confetti(t) {
+  const ctx = $("confetti").getContext("2d"); ctx.clearRect(0, 0, 1080, 1920);
+  if (t < 16.8 || reduce) return;
+  const age = t - 16.8;
+  const colors = ["#ff9450", "#ffcf83", "#d7b9dd", "#fff2db"];
+  for (let i = 0; i < 65; i++) {
+    const seed = Math.sin(i * 127.1 + 47) * 43758.5453;
+    const r = seed - Math.floor(seed);
+    const x = 480 + Math.cos(i * 2.4) * (80 + r * 210) * age;
+    const y = 950 - (260 + r * 260) * age + 165 * age * age;
+    ctx.save(); ctx.globalAlpha = clamp(1 - Math.max(0, age - 1.1) / 1.4);
+    ctx.translate(x, y); ctx.rotate(i + age * (r - .5) * 8);
+    ctx.fillStyle = colors[i % colors.length]; ctx.fillRect(-4, -8, 8, 16); ctx.restore();
+  }
+}
+window.render = function(t) {
+  if (!native) return;
+  const hook = t < 3;
+  const officeHook = hook && variant === "office" && t < 1.65;
+  const fish = (hook && variant === "woodfish") || (t >= 10.8 && t < 13.8);
+  const final = t >= 13.8;
+  document.body.classList.toggle("white", final);
+  for (const id of ["office", "veil"]) visible(id, officeHook || fish);
+  visible("dark", final); visible("ui", !final && !officeHook);
+  visible("desk-context", fish); visible("pointer", fish); visible("pulse", fish);
+  visible("copy", t < 17.8); visible("brand", t < 17.8); visible("detail", t < 13.8);
+  visible("finish", t >= 13.8 && t < 17.8); visible("cta", t >= 17.8);
+  style("office", { transformOrigin:"54% 58%", transform: `scale(${reduce ? 1 : 1.015 + Math.min(t, 3) * .012})`, filter: fish ? "blur(12px) saturate(.65)" : "none", opacity: fish ? .34 : 1 });
+  style("veil", { opacity: fish ? .8 : 1 });
+  style("ui", { clipPath:"none", maskImage:"none", opacity:1 });
+  style("copy", { transform:"none", opacity:1 });
+  style("detail", { top:"1280px", color:final ? "#fff4e4" : "#716772" });
+  if (officeHook) {
+    copy("今天第 <em>8</em> 次<br>看时间了。", "离下班，还剩多久？");
+    if (!reduce && t >= .65 && t < 1.1) style("office", { transformOrigin:"0 0", transform:"translate(-220px,-480px) scale(2.1)" });
+    if (!reduce && t >= 1.1) style("office", { transformOrigin:"0 0", transform:`translate(-390px,-480px) scale(${1.45 + (t-1.1)*.025})` });
+  } else if (fish) {
+    copy(hook ? "等下班，<br>还能<em>敲两下。</em>" : "给等待，<br><em>加点轻松。</em>", "电脑角落里的木鱼倒计时", "敲两下，<strong>松口气。</strong>");
+    mini(t, hook ? .32 : 11.35);
+  } else if (t < 5.6) {
+    timer(t);
+    copy(hook ? "下班，原来可以<br><em>看进度条。</em>" : "还剩多久，<br><em>一眼有数。</em>", "剩余时间 · 今日进度", hook ? "今天，已经走过 <strong>90%</strong>。" : "" );
+    // A close crop first, then a spatially continuous pull-back to show the full app.
+    const pull = reduce ? 1 : ease((t - 3) / .55);
+    placePhone(lerp(70, 272, pull), lerp(630, 640, pull), lerp(1.24, .63, pull));
+    const edge = lerp(1190, 1560, pull);
+    style("ui", { maskImage:`linear-gradient(to bottom,#000 ${edge-55}px,transparent ${edge}px)` });
+  } else if (t < 8.4) {
+    widgets(t);
+    copy("不用打开，<br><em>也能看到。</em>", "小组件 · 灵动岛", "抬眼，就知道还剩多久。");
+    const p = reduce ? 1 : ease((t - 5.6) / .28);
+    placePhone(86, 650 + (1 - p) * 28, 1.17);
+    style("ui", { maskImage:"linear-gradient(to bottom,#000 1100px,transparent 1140px)" });
+    style("detail", { top:"1260px" });
+  } else if (t < 10.8) {
+    timer(t, true);
+    copy("午休，<br><em>自动暂停。</em>", "午饭时间，不计入工时", "倒计时暂停，<strong>安心吃饭。</strong>");
+    placePhone(70, 650, 1.24);
+    style("ui", { maskImage:"linear-gradient(to bottom,#000 1135px,transparent 1190px)" });
+  } else if (t < 16.8) {
+    copy("把这一刻，<br>留给自己。", "");
+    const remaining = Math.max(1, Math.ceil(16.8 - t - 1e-7));
+    $("digits").textContent = `00:00:0${remaining}`;
+    visible("digits", true); visible("done", false); visible("finish-label", true);
+  } else if (t < 17.8) {
+    copy("今天，辛苦了。", "");
+    visible("digits", false); visible("done", true); visible("finish-label", false);
+  }
+  confetti(t);
+  if (query.has("safe")) visible("safe", true);
+};
+window.ready.then(() => {
+  render(Number(query.get("t") || 0));
+  if (query.has("play") && !reduce) { const start = performance.now(); const loop = () => { render(((performance.now() - start) / 1000) % VIDEO_LENGTH); requestAnimationFrame(loop); }; loop(); }
+});
+</script>
+</body>
+</html>
