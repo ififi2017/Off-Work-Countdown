@@ -346,10 +346,18 @@ class RecordsQueries(
 
     private fun date(dayKey: String): LocalDate = LocalDate.parse(dayKey)
 
-    fun dayCell(resolution: DayResolution, previous: DayResolution?, nowMs: Double, includesLifeProjection: Boolean = false): RecordsDayCell {
+    fun dayCell(
+        resolution: DayResolution,
+        previous: DayResolution?,
+        nowMs: Double,
+        includesLifeProjection: Boolean = false,
+        revealingAll: Boolean = false,
+    ): RecordsDayCell {
         val today = today(nowMs)
         val date = date(resolution.dayKey)
-        val revealed = RecordsAccess.canRevealDay(date, today, authorized)
+        // `revealingAll` is for totals open to everyone (the overtime line):
+        // their cells stay inside the query and never reach a view.
+        val revealed = revealingAll || RecordsAccess.canRevealDay(date, today, authorized)
         val future = date.isAfter(today)
         val recorded = isRecordedDay(resolution.dayKey)
         val scheduled = !future && hasSavedSchedule(resolution)
@@ -423,20 +431,8 @@ class RecordsQueries(
         val hasForecast = actualForecast?.let { it.forecast.days > 0 || it.forecast.hours > 0 } == true
         val hasMonthlyIncome = salary?.type == SalaryType.MONTHLY && actualForecast?.total?.earnings != null
         if (recordedKeys.isEmpty() && !hasForecast && !hasMonthlyIncome) return null
-        // Observed, corrected and elapsed saved-schedule days count; a day only
-        // receiving hours after midnight counts for its time, never as a workday.
         val byKey = days.associateBy { it.dayKey }
-        val counted = days.filter { contributesHours(it, nowMs, includesLifeProjection = false) }.map { it.dayKey }.toSet()
-        val shares = cells.mapNotNull { cell ->
-            val day = byKey[cell.dayKey] ?: return@mapNotNull null
-            val contributors = listOfNotNull(previousDay(day, byKey), day).filter { it.dayKey in counted }
-            if (contributors.isEmpty()) return@mapNotNull null
-            val allocation = dayAllocation(day, contributors, nowMs)
-            // A neighbouring record alone does not make this a covered day.
-            if (day.dayKey !in recordedKeys && allocation.workMs <= 0 && allocation.overtimeMs <= 0 && allocation.breakMs <= 0) return@mapNotNull null
-            allocation
-        }
-        val combined = TimeAllocationShare.combining(shares)
+        val combined = TimeAllocationShare.combining(recordedShares(cells, days, nowMs))
         // The allocation describes the whole visible period, forecasts and rest days included.
         val periodShares = cells.mapNotNull { cell ->
             val day = byKey[cell.dayKey] ?: return@mapNotNull null
@@ -457,6 +453,75 @@ class RecordsQueries(
             sleepFromHealth = sleepFromHealth,
             actualForecast = actualForecast,
         )
+    }
+
+    /**
+     * Each day of [cells] that actually holds recorded time, split at
+     * midnight. The headline and the free overtime line both total these, so
+     * a free user and a Plus user read the same overtime.
+     */
+    fun recordedShares(cells: List<RecordsDayCell>, days: List<DayResolution>, nowMs: Double): List<TimeAllocationShare> {
+        val recordedKeys = cells.filter { it.appearance == RecordsDayAppearance.RECORDED || it.appearance == RecordsDayAppearance.CORRECTED }
+            .map { it.dayKey }.toSet()
+        // Observed, corrected and elapsed saved-schedule days count; a day only
+        // receiving hours after midnight counts for its time, never as a workday.
+        val byKey = days.associateBy { it.dayKey }
+        val counted = days.filter { contributesHours(it, nowMs, includesLifeProjection = false) }.map { it.dayKey }.toSet()
+        return cells.mapNotNull { cell ->
+            val day = byKey[cell.dayKey] ?: return@mapNotNull null
+            val contributors = listOfNotNull(previousDay(day, byKey), day).filter { it.dayKey in counted }
+            if (contributors.isEmpty()) return@mapNotNull null
+            val allocation = dayAllocation(day, contributors, nowMs)
+            // A neighbouring record alone does not make this a covered day.
+            if (day.dayKey !in recordedKeys && allocation.workMs <= 0 && allocation.overtimeMs <= 0 && allocation.breakMs <= 0) return@mapNotNull null
+            allocation
+        }
+    }
+
+    /**
+     * Recorded overtime in the visible period (plan 020 §5). Free users see it
+     * too, so it hands out this one number and nothing else. It is the figure
+     * the Plus summary prints: the shared summary rules' actual overtime, or
+     * the midnight-split total when they have nothing to say. Null when the
+     * period recorded none, so the line never prints a zero that only means
+     * "no data".
+     *
+     * [dayKeys] are the period's days; [days] may reach one day earlier for an
+     * overnight shift. Days past a free user's window count too: the cells
+     * that read them are built here and never leave.
+     */
+    fun recordedOvertimeMs(days: List<DayResolution>, dayKeys: Set<String>, nowMs: Double): Double? {
+        val cells = days.mapIndexedNotNull { index, day ->
+            if (day.dayKey !in dayKeys) null else dayCell(day, days.getOrNull(index - 1), nowMs, revealingAll = true)
+        }
+        val ms = actualForecast(cells, days, nowMs)?.let { it.actualOvertimeHours * 3_600_000 }
+            ?: recordedShares(cells, days, nowMs).sumOf { it.overtimeMs }.toDouble()
+        return if (ms > 0) ms else null
+    }
+
+    /**
+     * All overtime ever recorded, for the life scale. Only days that declared
+     * overtime can hold any, so only they are resolved, never the projected
+     * career. Same rules as a period's line.
+     */
+    fun lifetimeRecordedOvertimeMs(nowMs: Double): Double? {
+        val keys = state.observations.filter { it.kind == WorkObservationKind.OVERTIME_DECLARED }
+            .map { it.shiftAnchorDate }.filter { DAY_KEY.matches(it) }.toSet()
+        val first = keys.minOrNull()?.let(::date) ?: return null
+        val last = keys.maxOrNull()?.let(::date) ?: return null
+        val resolved = resolvedDays(first.minusDays(1), last)
+        // The day before rides along for an overnight shift; each day goes in
+        // once, or two overtime days in a row would count twice.
+        val included = mutableSetOf<String>()
+        val days = buildList {
+            resolved.forEachIndexed { index, day ->
+                if (day.dayKey !in keys) return@forEachIndexed
+                for (candidate in listOfNotNull(resolved.getOrNull(index - 1), day)) {
+                    if (included.add(candidate.dayKey)) add(candidate)
+                }
+            }
+        }
+        return recordedOvertimeMs(days, keys, nowMs)
     }
 
     private fun previousDay(day: DayResolution, index: Map<String, DayResolution>) =

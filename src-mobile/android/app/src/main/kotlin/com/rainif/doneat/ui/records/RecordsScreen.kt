@@ -125,6 +125,25 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         if (selectedDayKey != null && loaded.cells.none { it.dayKey == selectedDayKey }) selectedDayKey = null
     }
 
+    // Plan 020 §5: recorded overtime is open to free users as one number. Plus
+    // reads it inside its summary, so only Life and free periods load it here.
+    var overtime by remember { mutableStateOf<RecordedOvertime?>(null) }
+    LaunchedEffect(context, scale, anchor) {
+        val q = context.queries
+        if (scale != RecordsScale.LIFE && q.authorized) return@LaunchedEffect
+        val first = q.window(scale, anchor).first
+        val ms = withContext(Dispatchers.Default) {
+            if (scale == RecordsScale.LIFE) {
+                q.lifetimeRecordedOvertimeMs(context.nowMs)
+            } else {
+                val last = q.window(scale, anchor).second
+                val days = q.displayDays(first.minusDays(1), last, context.nowMs)
+                q.recordedOvertimeMs(days, days.map { it.dayKey }.filter { it >= first.toString() }.toSet(), context.nowMs)
+            }
+        }
+        overtime = RecordedOvertime(context, scale, first, ms)
+    }
+
     // Life's allocation walks a whole career, so it is built once per revision and only while Life is shown.
     var lifeModel by remember { mutableStateOf<Pair<LifeInputs, LifeViewModel?>?>(null) }
     LaunchedEffect(context, scale, locked) {
@@ -239,9 +258,16 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                 val loaded = lifeModel?.takeIf { it.first == context.lifeInputs }
                 LifeAllocationCard(loaded?.second, loading = loaded == null, decline = profile.futureIncomeDecline, text = text)
             }
+            val overtimeMs = overtime?.takeIf {
+                it.context == context && it.scale == scale && it.first == context.queries.window(scale, anchor).first
+            }?.milliseconds
+            // Life totals only overtime actually recorded, for everyone; the projected career never adds to it.
+            if (scale == RecordsScale.LIFE && overtimeMs != null) OvertimeLine(text, overtimeMs)
             if (context.queries.authorized && profile == null && !device.lifeSetupPromptDismissed && scale == RecordsScale.MONTH) {
                 LifeSetupCard(text, { editLife() }, { dismissLifeSetup() })
             }
+            // A free user gets just this line, under the canvas or its locked placeholder.
+            if (scale != RecordsScale.LIFE && !context.queries.authorized && overtimeMs != null) OvertimeLine(text, overtimeMs)
             // As on iOS, a period without a summary shows none: locked, or nothing recorded yet.
             val headline = current?.headline
             if (scale != RecordsScale.LIFE && current != null && headline != null) {
@@ -565,6 +591,22 @@ private fun HeadlineCard(context: RecordsContext, title: String, summary: Record
                 HelpButton(title, context.text.string(R.string.recordsSummaryHelp))
             }
             HeadlineContent(context.text, summary)
+        }
+    }
+}
+
+/** One loaded overtime total, kept with the revision and window it answers. */
+private data class RecordedOvertime(val context: RecordsContext, val scale: RecordsScale, val first: LocalDate, val milliseconds: Double?)
+
+/**
+ * Recorded overtime for the period as one line (iOS `RecordsOvertimeLine`).
+ * Open to free users, so it is given the total alone and nothing it was made from.
+ */
+@Composable
+private fun OvertimeLine(text: RecordsText, milliseconds: Double) {
+    RecordsCard {
+        Box(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+            Metric(text.string(R.string.recordsOvertimeRecorded), text.duration(milliseconds))
         }
     }
 }
