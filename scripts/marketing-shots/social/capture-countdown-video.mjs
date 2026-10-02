@@ -81,6 +81,7 @@ function send(ws, method, params = {}, sessionId) {
 
 const chrome = spawn(CHROME, [
   "--headless=new",
+  "--disable-features=MacAppCodeSignClone",
   `--remote-debugging-port=${PORT}`,
   "--hide-scrollbars",
   "--force-color-profile=srgb",
