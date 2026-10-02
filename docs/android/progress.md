@@ -277,8 +277,7 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 
 ## 2026-10-02 · 同步 iOS 计划 020：免费加班一行与请假规划
 
-- 云端会话从最新 main 建分支 `claude/android-plan-020-dw7cnx`。此前 Mac 线程未推送的工作不可达，本轮从零移植。网络策略拒绝 `dl.google.com`，无法下载 Android SDK 与 AGP，因此 `:app`、`:core:designsystem` 未编译、未运行；`:core:domain` 与 `:core:data` 用仓库外的纯 JVM Gradle 根编译和测试。
+- 云端会话从最新 main 建分支 `claude/android-plan-020-dw7cnx`。此前 Mac 线程未推送的工作不可达，本轮从零移植。网络策略拒绝 `dl.google.com`，本地只能用仓库外的纯 JVM Gradle 根编译和测试 `:core:domain` 与 `:core:data`。
 - **免费加班一行**（iOS PR #254）：`RecordsQueries.recordedOvertimeMs` 与 `lifetimeRecordedOvertimeMs`，免费用户在周/月/年显示一行已记录加班，人生尺度对所有人显示一生已记录加班（每天只计一次）。新增 1 条测试。
 - **请假叠加与规划**（iOS PR #251/#252）：规则见 `rule-parity.md`。已采用的请假（包括从 iOS 导入的）在倒计时、提醒、小组件、汇总与 Records 中不再算作上班。界面：设置“班次”组新增“休假”（显示剩余天数）；休假页（规划入口、余额、已采用计划）、余额编辑（类型、自定义名称、额度与已用、有效期）、规划表单（至少休 N 天或最多用 N 个半天、日期范围限于滚动一年、余额选择）、方案列表、方案详情（日历以图标加底色标出休息/节假日/请假/半天，请假时间、余额剩余、前后班次、估算说明，整体采用）、已采用计划（单日取消、撤销整份）；Records 月视图“规划休假”入口（无余额时先引导建立）；排班日历在请假日加标记并可进入休假页；Plus 权益加入休假。免费用户每次打开方案消耗一次（本机计 3 次），用完进入 Plus 并在购买后回到该方案。所需文案此前已随 iOS 生成到 19 语言，本轮未新增文案。
-- 自动检查：domain 370、data 76 项测试通过（0 failure/error/skip），其中请假 32 条移植自 iOS。`:app` 新代码只做了 Kotlin 编译器语法检查（无 Compose/Android 依赖，不能代替真实编译）。未运行 lint、Debug/Release 构建、模拟器或真机；需在可访问 Google Maven 的环境（本机 Mac）运行 Android 指南的 Gradle 检查与界面验收后才能合并。
-
+- 自动检查：domain 370、data 76 项测试通过（0 failure/error/skip），其中请假 32 条移植自 iOS。云端无法下载 Android 依赖，`:app` 由 PR #264 的 GitHub Android CI（`fc32e1b`）完成单元测试、lint 与 Debug/Release 构建，全部通过。未运行模拟器或真机，界面视觉与交互仍待设备验收。
