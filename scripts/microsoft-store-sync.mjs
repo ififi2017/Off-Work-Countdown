@@ -107,6 +107,16 @@ let submissionId = app.pendingApplicationSubmission?.id ?? null;
 let submission;
 if (submissionId) {
   submission = await api(`/applications/${STORE_ID}/submissions/${submissionId}`, accessToken);
+}
+// 认证前失败（CommitFailed）的提交既不能改也不能重新提交，API 明说只能删掉重建。
+if (submission?.status === "CommitFailed" && mode === "apply") {
+  console.log(`待处理提交 ${submissionId} 处于 CommitFailed，删掉后重建。`);
+  await api(`/applications/${STORE_ID}/submissions/${submissionId}`, accessToken, { method: "DELETE" });
+  submissionId = null;
+  submission = undefined;
+}
+if (submission) {
+  // 已取到待处理的提交。
 } else if (mode === "plan") {
   submissionId = app.lastPublishedApplicationSubmission?.id;
   if (!submissionId) throw new Error("既没有待处理的提交，也没有已发布的提交。");
@@ -213,7 +223,8 @@ console.log(`将更新 ${updated.length} 个语言: ${updated.join(", ")}`);
 const localKeys = new Set(Object.keys(LISTINGS).map(apiLocale));
 const strays = Object.keys(submission.listings).filter((key) => !localKeys.has(key));
 if (strays.length > 0) {
-  console.log(`⚠️ 提交里还有本地没有的语言（去网页端「管理 Store 一览语言」删掉）: ${strays.join(", ")}`);
+  console.log(`将移除本地没有的语言: ${strays.join(", ")}`);
+  for (const key of strays) delete submission.listings[key];
 }
 console.log(`每个语言写入 ${SHOTS.length} 张截图，共 ${Object.keys(LISTINGS).length * SHOTS.length} 张`);
 
@@ -263,6 +274,19 @@ if (dropped.length > 0) {
     + "「已删除」状态：在那里点「添加」并保存，再重跑 --apply。");
 }
 console.log(`读回核对：${Object.keys(LISTINGS).length} 个语言的文案都在。`);
+
+// 提交时商店按每张 PendingUpload 截图的文件名去 ZIP 里找，缺一张整份 CommitFailed，
+// 而 CommitFailed 的提交只能删掉重建。所以上传前先核对：提交里等着上传的每个文件，
+// ZIP 里都得有。（曾因一个没移除的旧语言 zh 还挂着 zh-01-countdown.png 而失败。）
+const zipNames = new Set(Object.keys(LISTINGS).flatMap((locale) =>
+  SHOTS.map((shot, index) => `${apiLocale(locale)}-${String(index + 1).padStart(2, "0")}-${shot}.png`)));
+const unmatched = Object.entries(stored.listings ?? {}).flatMap(([key, listing]) =>
+  (listing.baseListing?.images ?? [])
+    .filter((image) => image.fileStatus === "PendingUpload" && !zipNames.has(image.fileName))
+    .map((image) => `${key}: ${image.fileName}`));
+if (unmatched.length > 0) {
+  throw new Error(`这些截图在提交里等着上传，ZIP 里却没有：${unmatched.join(", ")}`);
+}
 
 if (textOnly) {
   console.log("--text-only：跳过截图上传（沿用这次提交里已上传的那批）。");
