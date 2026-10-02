@@ -181,7 +181,7 @@ export async function captureDesktop({
   mkdirSync(outDir, { recursive: true });
   // Chrome 的用户目录放到仓库外：它里面带着 Chrome 自带扩展的 JS，留在仓库里
   // `eslint .` 会去 lint 它们并报错。.gitignore 挡得住 git，挡不住 eslint。
-  const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${PORT}`,
+  const chrome = spawn(CHROME, ["--headless=new", "--disable-features=MacAppCodeSignClone", `--remote-debugging-port=${PORT}`,
     "--hide-scrollbars", "--force-color-profile=srgb",
     `--user-data-dir=${join(tmpdir(), `off-work-shots-capture-${platform}`)}`, "about:blank"],
   { stdio: "ignore" });

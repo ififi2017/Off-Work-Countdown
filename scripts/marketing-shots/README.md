@@ -183,6 +183,23 @@ Chrome 的用户目录刻意建在系统临时目录而不是这里：它里面�
 JS，留在仓库里 `eslint .` 会去 lint 它们并报错——`.gitignore` 挡得住 git，挡不住
 eslint。
 
+### Chrome 临时应用副本
+
+所有营销截图、排版检查和视频渲染的 Chrome 启动参数都需要包含
+`--disable-features=MacAppCodeSignClone`。已有 `--disable-features` 时，把
+`MacAppCodeSignClone` 用逗号追加到同一个参数中。系统 Chrome 默认给每个浏览器
+进程创建 APFS 应用克隆，用于更新期间保持代码签名可验证；短时渲染无需这项机制。
+源码说明见 [Chromium CodeSignCloneManager](https://chromium.googlesource.com/chromium/src/+/main/chrome/browser/mac/code_sign_clone_manager.mm)。
+
+`chrome.mjs` 等待 `--screenshot` 写完图片，优先用 `SIGTERM` 结束仍在运行的进程，
+等进程退出后再清理本次用户目录；五秒仍未退出时才强制终止。
+部分 Chrome 版本出图后仍会继续运行，不能只等它自行退出。
+也不能立即 `SIGKILL`：那会跳过 Chrome 正常退出时启动的克隆清理助手，
+让 `…/X/com.google.Chrome.code_sign_clone` 逐次累积。
+
+历史克隆位于 macOS 的开机清理目录，退出 Chrome 后重启可由系统回收。
+APFS 克隆共享文件块，`du` 的总量不能直接当成独占或可释放的磁盘空间。
+
 ## iPhone 与 iPad
 
 一条命令完成 Debug 构建、模拟器布景、截图、排版与规格检查：

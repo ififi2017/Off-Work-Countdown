@@ -6,28 +6,6 @@ import { join } from "node:path";
 const CHROME =
   process.env.CHROME_BIN || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
-function waitForFile(path, timeoutMs) {
-  const started = Date.now();
-  let lastSize = -1;
-  return new Promise((resolve, reject) => {
-    const timer = setInterval(() => {
-      if (existsSync(path)) {
-        const size = statSync(path).size;
-        if (size > 0 && size === lastSize) {
-          clearInterval(timer);
-          resolve();
-          return;
-        }
-        lastSize = size;
-      }
-      if (Date.now() - started > timeoutMs) {
-        clearInterval(timer);
-        reject(new Error(`Chrome did not write ${path}`));
-      }
-    }, 150);
-  });
-}
-
 /**
  * Render an HTML file to a PNG via Chrome --screenshot.
  *
@@ -37,14 +15,15 @@ function waitForFile(path, timeoutMs) {
  */
 export async function captureHtml({ html, htmlPath, width, height, scale, outFile, transparent = false }) {
   writeFileSync(htmlPath, html);
-  // waitForFile 只看文件在不在、大小稳不稳。重跑时上一轮的成品已经在那儿，
-  // 不先删掉就会立刻判定完成、杀掉 Chrome，旧图原样留下，脚本照样报 composed。
+  // Remove the previous image so a failed run cannot leave an old success behind.
   rmSync(outFile, { force: true });
   const profile = mkdtempSync(join(tmpdir(), "off-work-shots-"));
   const chrome = spawn(
     CHROME,
     [
       "--headless=new",
+      // Short-lived renderers do not need Chrome's update-time app-bundle clone.
+      "--disable-features=MacAppCodeSignClone",
       "--disable-gpu",
       "--disable-extensions",
       "--disable-background-networking",
@@ -65,15 +44,49 @@ export async function captureHtml({ html, htmlPath, width, height, scale, outFil
     ],
     { stdio: "ignore" },
   );
-  const exited = new Promise((resolve) => {
-    chrome.once("exit", resolve);
-    chrome.once("error", resolve);
+  let stopped = false;
+  const exited = new Promise((resolve, reject) => {
+    chrome.once("exit", (code, signal) => {
+      stopped = true;
+      resolve({ code, signal });
+    });
+    chrome.once("error", (error) => {
+      stopped = true;
+      reject(error);
+    });
   });
+  let poll;
+  let timeout;
   try {
-    await waitForFile(outFile, 60000);
+    // Some Chrome versions keep running after --screenshot has written the PNG.
+    // Wait for a complete file or an early process exit, whichever comes first.
+    const result = await Promise.race([
+      new Promise((resolve, reject) => {
+        let lastSize = -1;
+        poll = setInterval(() => {
+          if (!existsSync(outFile)) return;
+          const size = statSync(outFile).size;
+          if (size > 0 && size === lastSize) resolve();
+          lastSize = size;
+        }, 150);
+        timeout = setTimeout(() => reject(new Error(`Chrome timed out writing ${outFile}`)), 60000);
+      }),
+      exited,
+    ]);
+    if (result && result.code !== 0) {
+      throw new Error(`Chrome exited with ${result.signal ?? result.code} writing ${outFile}`);
+    }
+    if (!existsSync(outFile) || statSync(outFile).size === 0) {
+      throw new Error(`Chrome did not write ${outFile}`);
+    }
   } finally {
-    chrome.kill("SIGKILL");
-    await exited;
+    clearTimeout(timeout);
+    clearInterval(poll);
+    if (!stopped) {
+      chrome.kill("SIGTERM");
+      const forceKill = setTimeout(() => chrome.kill("SIGKILL"), 5000);
+      await exited.catch(() => {}).finally(() => clearTimeout(forceKill));
+    }
     rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 }

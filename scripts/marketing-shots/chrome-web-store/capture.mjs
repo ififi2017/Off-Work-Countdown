@@ -129,7 +129,7 @@ async function shot(ws, { name, height, prelude, after }) {
   await send(ws, "Target.closeTarget", { targetId });
 }
 
-const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${CDP_PORT}`,
+const chrome = spawn(CHROME, ["--headless=new", "--disable-features=MacAppCodeSignClone", `--remote-debugging-port=${CDP_PORT}`,
   "--hide-scrollbars", "--force-color-profile=srgb", "--font-render-hinting=none",
   `--user-data-dir=${join(tmpdir(), "off-work-shots-chrome-web-store")}`, "about:blank"],
 { stdio: "ignore" });
