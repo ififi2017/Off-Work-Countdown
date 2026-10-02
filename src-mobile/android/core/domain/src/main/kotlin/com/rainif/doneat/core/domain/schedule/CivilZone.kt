@@ -141,10 +141,21 @@ class CivilZone(
      * the same timeline the countdown runs rather than measuring a second way.
      */
     fun plannedHours(dayNumber: Int): Double? {
-        val hours = extended?.day(dayNumber)?.hours ?: return null
+        val resolver = extended ?: return null
+        val day = resolver.day(dayNumber)
+        // A fallback plan carrying only leave answers with its fixed hours for
+        // the days it leaves alone, so a summary over it counts them in full.
+        val hours = day.hours
+            ?: (if (resolver.fallsBackToBaseSchedule && day.followsBaseSchedule) resolver.baseHours else null)
+            ?: return null
         val (start, end) = shiftBounds(hours.startTime, hours.endTime, utcMs(dayNumber, WallClock.NOON))
         if (end <= start) return 0.0
-        val options = dayOptions(start, ShiftOptions(breakStartTime = null, breakDurationMinutes = 0))
+        // The fixed hours bring their own break; an assigned day's comes through `dayOptions`.
+        val options = if (day.hours == null) {
+            ShiftOptions(breakStartTime = hours.breakStartTime, breakDurationMinutes = hours.breakDurationMinutes)
+        } else {
+            dayOptions(start, ShiftOptions(breakStartTime = null, breakDurationMinutes = 0))
+        }
         return timeline(start, end, options).plannedDurationMs / 3_600_000.0
     }
 
@@ -161,7 +172,7 @@ class CivilZone(
     private fun extendedWorkday(shiftStartMs: Double): Boolean? {
         val resolver = extended ?: return null
         val day = resolver.day(civil(shiftStartMs).dayNumber)
-        return if (day.source != ExtendedScheduleDay.Source.UNASSIGNED || !resolver.fallsBackToBaseSchedule) day.isWorkday else null
+        return if (!day.followsBaseSchedule || !resolver.fallsBackToBaseSchedule) day.isWorkday else null
     }
 
     // Work patterns

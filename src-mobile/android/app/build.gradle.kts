@@ -13,7 +13,8 @@ android {
         applicationId = "com.rainif.doneat"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
+        // Play uploads need a higher code each time; the release workflow passes one in.
+        versionCode = providers.gradleProperty("doneatVersionCode").orNull?.toInt() ?: 5
         versionName = "3.2.1"
         // Public Play configuration only. Empty values keep the store unavailable.
         val plusProduct = providers.gradleProperty("doneatPlusSubscriptionProduct").orElse("").get()
@@ -32,8 +33,23 @@ android {
         buildConfigField("String", "PLAY_BILLING_PUBLIC_KEY", "\"$playKey\"")
     }
 
+    // Play upload key, supplied by the release workflow or an untracked local gradle.properties.
+    // Without it the release output stays unsigned, as before.
+    val uploadStoreFile = providers.gradleProperty("doneatUploadStoreFile").orNull
+    signingConfigs {
+        if (uploadStoreFile != null) {
+            create("upload") {
+                storeFile = file(uploadStoreFile)
+                storePassword = providers.gradleProperty("doneatUploadStorePassword").get()
+                keyAlias = providers.gradleProperty("doneatUploadKeyAlias").get()
+                keyPassword = providers.gradleProperty("doneatUploadKeyPassword").get()
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("upload")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

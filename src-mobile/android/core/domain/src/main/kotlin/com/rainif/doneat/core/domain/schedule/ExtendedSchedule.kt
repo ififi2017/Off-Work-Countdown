@@ -162,7 +162,68 @@ data class ExtendedScheduleDayHours(
     val endTime: String,
     val breakStartTime: String?,
     val breakDurationMinutes: Int,
-)
+) {
+    /**
+     * What is still worked once [portion] is taken as leave (plan 020), or
+     * null when nothing is. The shift splits at half its working minutes with
+     * the break left out, so 09:00–18:00 with lunch at 12:00–13:00 splits at
+     * 14:00: taking the morning leaves 14:00–18:00, taking the afternoon
+     * leaves 09:00–14:00 with its lunch.
+     *
+     * Minutes are wall-clock minutes. Across a DST change during the shift the
+     * split can sit an hour away from half the elapsed time; the planner,
+     * which works on absolute segments, may preview that night differently.
+     */
+    fun remaining(after: LeavePortion): ExtendedScheduleDayHours? {
+        if (after == LeavePortion.WHOLE) return null
+        val start = WallClock.parse(startTime).minutes
+        val length = Math.floorMod(WallClock.parse(endTime).minutes - start + 1_440 - 1, 1_440) + 1
+        var breakOffset: Int? = null
+        if (breakStartTime != null && breakDurationMinutes > 0) {
+            val offset = Math.floorMod(WallClock.parse(breakStartTime).minutes - start + 1_440, 1_440)
+            // The same test `CivilZone.timeline` applies: strictly inside.
+            if (offset > 0 && offset + breakDurationMinutes < length) breakOffset = offset
+        }
+        val working = length - (if (breakOffset == null) 0 else breakDurationMinutes)
+        val half = working / 2
+        if (half <= 0) return null
+        fun clock(offset: Int) = ExtendedScheduleResolver.timeString((start + offset) % 1_440)
+        val from: Int
+        val to: Int
+        val keepsBreak: Boolean
+        if (breakOffset != null && half > breakOffset) {
+            // The first half runs through the break.
+            val split = half + breakDurationMinutes
+            if (after == LeavePortion.FIRST_HALF) { from = split; to = length; keepsBreak = false } else { from = 0; to = split; keepsBreak = true }
+        } else {
+            val secondStart = if (breakOffset == half) half + breakDurationMinutes else half
+            if (after == LeavePortion.FIRST_HALF) {
+                from = secondStart; to = length; keepsBreak = breakOffset != null && breakOffset > half
+            } else {
+                from = 0; to = half; keepsBreak = false
+            }
+        }
+        return ExtendedScheduleDayHours(
+            startTime = clock(from),
+            endTime = clock(to),
+            breakStartTime = if (keepsBreak) breakStartTime else null,
+            breakDurationMinutes = if (keepsBreak) breakDurationMinutes else 0,
+        )
+    }
+}
+
+/** Which part of one shift a leave request frees (plan 020). */
+enum class LeavePortion(val raw: String) {
+    WHOLE("whole"),
+    FIRST_HALF("firstHalf"),
+    SECOND_HALF("secondHalf");
+
+    val halfDays get() = if (this == WHOLE) 2 else 1
+
+    companion object {
+        fun fromRaw(raw: String) = entries.firstOrNull { it.raw == raw }
+    }
+}
 
 /** One civil day's conclusion, and which layer reached it. */
 data class ExtendedScheduleDay(
@@ -178,8 +239,22 @@ data class ExtendedScheduleDay(
         HOLIDAY("holiday"),
         CARRIED_OVER("carriedOver"),
         ANNUAL_RANGE("annualRange"),
+        /**
+         * Leave (plan 020) replaced an assigned shift: rest for a whole shift,
+         * the remaining half's hours for half of one.
+         */
+        LEAVE("leave"),
+        /**
+         * Half a shift of leave over the fixed schedule underneath a fallback
+         * plan. The hours are the remaining half; whether the day is worked at
+         * all is still the fixed schedule's answer.
+         */
+        LEAVE_OVER_BASE("leaveOverBase"),
         UNASSIGNED("unassigned"),
     }
+
+    /** Whether a fallback plan leaves this day's work-or-rest answer to the fixed schedule underneath. */
+    val followsBaseSchedule get() = source == Source.UNASSIGNED || source == Source.LEAVE_OVER_BASE
 
     companion object {
         val UNASSIGNED = ExtendedScheduleDay(false, null, null, Source.UNASSIGNED)
@@ -207,6 +282,13 @@ class ExtendedSchedulePlan(
     /** The day [pinning] fixed; resolves without counting as authored. */
     val pinnedDayKey: String? = null,
     val holidays: HolidayCalendar = HolidayCalendar.EMPTY,
+    /**
+     * Leave taken per civil day key (plan 020), laid over whatever the rest of
+     * the plan resolves. Empty for every plan without adopted leave.
+     */
+    val leaveDays: Map<String, LeavePortion> = emptyMap(),
+    /** The fixed hours underneath a fallback plan, which half a shift of leave on an otherwise unassigned day is taken from. */
+    val baseHours: ExtendedScheduleDayHours? = null,
 ) {
     internal val index = ExtendedScheduleIndex(this)
 
@@ -230,6 +312,7 @@ class ExtendedSchedulePlan(
         return ExtendedSchedulePlan(
             types, rule, handSetDays, holidayRegionIdentifier, clearedFromDayKey, holidayOverrides,
             frozenShiftTypes, fallsBackToBaseSchedule, pinnedDayKey = dayKey, holidays = holidays,
+            leaveDays = leaveDays, baseHours = baseHours,
         )
     }
 
@@ -241,6 +324,26 @@ class ExtendedSchedulePlan(
 
     companion object {
         val PINNED_SHIFT_TYPE_ID: UUID = UUID.fromString("00000000-0000-0000-0000-00000000F1ED")
+
+        /**
+         * The same plan with [leave] laid over it, or a fallback plan carrying
+         * only the leave over [baseHours] when there is no plan. Null stays null
+         * without leave, so a user who never adopted any keeps the exact path
+         * they had.
+         */
+        fun applying(leave: Map<String, LeavePortion>, plan: ExtendedSchedulePlan?, baseHours: ExtendedScheduleDayHours): ExtendedSchedulePlan? {
+            if (leave.isEmpty()) return plan
+            plan ?: return ExtendedSchedulePlan(
+                shiftTypes = emptyList(), rule = null, handSetDays = emptyMap(),
+                fallsBackToBaseSchedule = true, leaveDays = leave, baseHours = baseHours,
+            )
+            return ExtendedSchedulePlan(
+                plan.shiftTypes, plan.rule, plan.handSetDays, plan.holidayRegionIdentifier, plan.clearedFromDayKey,
+                plan.holidayOverrides, plan.frozenShiftTypes, plan.fallsBackToBaseSchedule, plan.pinnedDayKey, plan.holidays,
+                leaveDays = leave,
+                baseHours = if (plan.fallsBackToBaseSchedule) baseHours else plan.baseHours,
+            )
+        }
 
         /** Later rows win, as the Swift dictionary builders do. */
         fun handSetDays(rosterDays: List<RosterDay>): Map<String, UUID> =
@@ -310,6 +413,10 @@ internal class ExtendedScheduleIndex(plan: ExtendedSchedulePlan) {
     val annualWorkTypes = plan.shiftTypes.filter { it.kind == ShiftType.Kind.WORK && !it.isArchived && it.isValid }
         .mapNotNull { type -> type.annualDateRange?.let { type.id to it } }
     val ruleAnchorDayNumber = plan.rule?.let { ExtendedScheduleResolver.dayNumber(it.anchorDayKey) }
+    val leaveByDayNumber: Map<Int, LeavePortion> = plan.leaveDays.mapNotNull { (key, portion) ->
+        ExtendedScheduleResolver.dayNumber(key)?.let { it to portion }
+    }.toMap()
+    val baseHours = plan.baseHours
 
     /** What each defined type resolves to. First valid definition of an id wins; invalid ones resolve to nothing. */
     val dayByType: Map<UUID, Pair<Boolean, ExtendedScheduleDayHours?>>
@@ -372,11 +479,26 @@ class ExtendedScheduleResolver(plan: ExtendedSchedulePlan) {
     private val cache = HashMap<Int, ExtendedScheduleDay>()
 
     val fallsBackToBaseSchedule get() = index.fallsBackToBaseSchedule
+    val baseHours get() = index.baseHours
 
     fun day(dayNumber: Int): ExtendedScheduleDay = cache.getOrPut(dayNumber) { resolve(dayNumber) }
 
-    /** Frozen, then hand-set, then (unless cleared) holidays over the saved pattern. */
+    /** Leave is laid over everything else. It only ever frees work: leave on a day the schedule already rests changes nothing. */
     private fun resolve(dayNumber: Int): ExtendedScheduleDay {
+        val base = resolveSchedule(dayNumber)
+        val portion = index.leaveByDayNumber[dayNumber] ?: return base
+        if (base.source == ExtendedScheduleDay.Source.UNASSIGNED && index.fallsBackToBaseSchedule) {
+            if (portion == LeavePortion.WHOLE) return ExtendedScheduleDay(false, null, null, ExtendedScheduleDay.Source.LEAVE)
+            val hours = index.baseHours?.remaining(portion) ?: return base
+            return ExtendedScheduleDay(true, hours, null, ExtendedScheduleDay.Source.LEAVE_OVER_BASE)
+        }
+        val hours = base.hours
+        if (!base.isWorkday || hours == null) return base
+        return ExtendedScheduleDay(portion != LeavePortion.WHOLE, hours.remaining(portion), base.shiftTypeID, ExtendedScheduleDay.Source.LEAVE)
+    }
+
+    /** Frozen, then hand-set, then (unless cleared) holidays over the saved pattern. */
+    private fun resolveSchedule(dayNumber: Int): ExtendedScheduleDay {
         index.frozenByDayNumber[dayNumber]?.let { return day(it, ExtendedScheduleDay.Source.HAND_SET) }
         index.handSetByDayNumber[dayNumber]?.let { return day(it, ExtendedScheduleDay.Source.HAND_SET) }
         if (index.fallsBackToBaseSchedule) return ExtendedScheduleDay.UNASSIGNED

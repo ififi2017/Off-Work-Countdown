@@ -185,6 +185,39 @@ class RecordsQueriesTest {
         }
     }
 
+    @Test fun recordedOvertimeIsOneNumberForFreeAndPlusAndLifeCountsEachDayOnce() {
+        var state = seeded(from = "2026-08-31")
+        // Well past the free week, so a free user's line still has to count these days.
+        val later = ms("2026-09-20", 10)
+        fun period(q: RecordsQueries): Pair<List<RecordsDayCell>, List<DayResolution>> {
+            val first = LocalDate.parse("2026-09-01")
+            val days = q.resolvedDays(first.minusDays(1), LocalDate.parse("2026-09-02"))
+            return q.cells(days, first, later) to days
+        }
+        val quiet = queries(state)
+        val (quietCells, quietDays) = period(quiet)
+        assertNull(quiet.recordedOvertimeMs(quietDays, quietCells.map { it.dayKey }.toSet(), later))
+        assertNull(quiet.lifetimeRecordedOvertimeMs(later))
+
+        // Tuesday until 19:00 and Wednesday until 20:00, both planned to end at 18:00.
+        for ((day, end) in listOf("2026-09-01" to 19, "2026-09-02" to 20)) {
+            val payload = FoundationCompat.base64(SessionCommands.overtimePayload(ms(day, end), ms(day, 18)).toByteArray(Charsets.UTF_8))
+            state = state.copy(observations = state.observations + observation(day, WorkObservationKind.OVERTIME_DECLARED, 18, payload))
+        }
+        val plus = queries(state)
+        val (cells, days) = period(plus)
+        val keys = cells.map { it.dayKey }.toSet()
+        val plusShown = plus.headline(cells, days, later)!!.actualForecast!!.actualOvertimeHours * 3_600_000
+        assertEquals(3 * 3_600_000.0, plusShown, 0.0)
+        assertEquals(plusShown, plus.recordedOvertimeMs(days, keys, later)!!, 0.0)
+
+        val free = queries(state, authorized = false)
+        assertNull(free.headline(free.cells(days, LocalDate.parse("2026-09-01"), later), days, later))
+        assertEquals(plusShown, free.recordedOvertimeMs(days, keys, later)!!, 0.0)
+        // Two overtime days in a row: the first is also the second's lead-in day.
+        assertEquals(plusShown, free.lifetimeRecordedOvertimeMs(later)!!, 0.0)
+    }
+
     @Test fun thePastDayPageOffersItsOwnShiftForEditing() {
         val canvas = queries(seeded(nights)).dayCanvas("2026-09-15", now)!!
         assertEquals(listOf("2026-09-14", "2026-09-15"), canvas.editableShifts.map { it.anchorDayKey })

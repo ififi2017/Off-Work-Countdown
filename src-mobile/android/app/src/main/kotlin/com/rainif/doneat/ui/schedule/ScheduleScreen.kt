@@ -32,8 +32,11 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Undo
+import androidx.compose.material.icons.filled.Luggage
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.EventBusy
+import androidx.compose.material.icons.outlined.Luggage
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.UnfoldMore
 import androidx.compose.material.icons.outlined.WarningAmber
@@ -89,12 +92,14 @@ import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.domain.records.DayRecordResolver
 import com.rainif.doneat.core.domain.records.RecordHistory
+import com.rainif.doneat.core.domain.records.portionsByDay
 import com.rainif.doneat.core.domain.schedule.CivilZone
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleContent
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleDay
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
+import com.rainif.doneat.core.domain.schedule.LeavePortion
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
 import com.rainif.doneat.core.domain.schedule.ShiftCycleRule
 import com.rainif.doneat.core.domain.schedule.ShiftType
@@ -161,6 +166,7 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
     val handSet = ScheduleEditing.handSetDays(env.handSetDays, draft.rosterEdits)
     val today = session.extendedTodayKey(now)
     val recordsZone = env.preferences.recordsTimeZoneIdentifier
+    val leaveDays = remember(records.leaveDays) { records.leaveDays.portionsByDay() }
 
     fun edit(change: (ScheduleFieldChange) -> ScheduleFieldChange) {
         graph.scheduleDraft.value = change(graph.scheduleDraft.value).settled(env, session.state, now)
@@ -310,6 +316,7 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
                             ScheduleEditing.month(today, monthOffset)?.let { (y, m) -> selectedKey = ExtendedScheduleResolver.dayKey(CivilZone.dayNumber(y, m, 1)) }
                         },
                         onToday = { monthOffset = 0; selectedKey = today },
+                        leave = leaveDays,
                     )
                 }
                 Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {
@@ -332,6 +339,8 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
                     isFree = mode == EditorMode.FREE,
                     brushID = brushID,
                     onChooseBrush = { id -> paintSelection = if (brushID == id) null else CalendarPaintSelection(id) },
+                    leave = leaveDays[selected],
+                    onManageLeave = { open(Route.Leave()) },
                 )
             }
         }
@@ -409,6 +418,7 @@ private fun MonthCalendar(
     onSelect: (String) -> Unit,
     onMonth: (Int) -> Unit,
     onToday: () -> Unit,
+    leave: Map<String, LeavePortion>,
 ) {
     val (year, monthValue) = month
     val first = LocalDate.of(year, monthValue, 1)
@@ -479,7 +489,7 @@ private fun MonthCalendar(
                                         if (brushID != null) handSet[key] == brushID else key == selected,
                                         key == today, holiday, locale, onSelect,
                                         Modifier.onGloballyPositioned { frames[key] = it.boundsInRoot() },
-                                        touchEnabled = brushID == null)
+                                        touchEnabled = brushID == null, leave = leave[key])
                                 }
                             }
                         }
@@ -506,7 +516,7 @@ private fun MonthCalendar(
 private fun dateCode(key: String): Int = ExtendedScheduleResolver.parse(key)!!.let { (y, m, d) -> y * 10_000 + m * 100 + d }
 
 @Composable
-private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, isToday: Boolean, holiday: HolidayCalendar.Day?, locale: Locale, onSelect: (String) -> Unit, modifier: Modifier = Modifier, touchEnabled: Boolean = true) {
+private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, isToday: Boolean, holiday: HolidayCalendar.Day?, locale: Locale, onSelect: (String) -> Unit, modifier: Modifier = Modifier, touchEnabled: Boolean = true, leave: LeavePortion? = null) {
     val scheme = MaterialTheme.colorScheme
     // This page edits plans: one uniform work colour, never an intensity that implies recorded hours.
     val fill = when (type?.kind) {
@@ -518,6 +528,7 @@ private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, is
         DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMMMdEEEE"), locale).format(LocalDate.parse(key)),
         type?.name, holiday?.let { holidayName(it, locale) },
         if (isToday) stringResource(R.string.extendedToday) else null,
+        leave?.let { leaveLabel(it) },
     ).joinToString(", ")
     Column(
         modifier.fillMaxWidth().heightIn(min = 46.dp)
@@ -538,6 +549,8 @@ private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, is
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (holiday != null) Box(Modifier.padding(end = 2.dp).size(3.dp).background(if (holiday.isWorkday) scheme.primary else scheme.onSurfaceVariant, CircleShape))
+            // Adopted leave sits over the plan this page edits, so the day keeps its shift and gains a mark, not a new colour.
+            if (leave != null) Icon(leaveIcon(leave), null, Modifier.padding(end = 2.dp).size(10.dp), tint = scheme.primary)
             Text(type?.name ?: "–", style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Clip)
         }
     }
@@ -749,6 +762,8 @@ private fun SelectedDay(
     isFree: Boolean,
     brushID: java.util.UUID?,
     onChooseBrush: (java.util.UUID) -> Unit,
+    leave: LeavePortion?,
+    onManageLeave: () -> Unit,
 ) {
     val result = ExtendedScheduleResolver.dayNumber(selected)?.let { resolver.day(it) }
     val type = typeForDay(selected, result?.shiftTypeID)
@@ -774,6 +789,12 @@ private fun SelectedDay(
                     ),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (leave != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+                        Icon(leaveIcon(leave), null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
+                        Text(leaveLabel(leave), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
             }
             IconButton(onClick = onTypes) { Icon(Icons.Outlined.MoreHoriz, stringResource(R.string.extendedShiftTypes), tint = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
@@ -799,6 +820,12 @@ private fun SelectedDay(
                 }
             }
         }
+        if (leave != null) {
+            TextButton(onClick = onManageLeave) {
+                Icon(Icons.Outlined.Luggage, null, Modifier.size(18.dp))
+                Text(stringResource(R.string.leaveManage), Modifier.padding(start = DoneAtSpacing.s))
+            }
+        }
         if (handSet[selected] != null) {
             TextButton(onClick = onFollowPattern, enabled = canEdit) {
                 Icon(Icons.AutoMirrored.Outlined.Undo, null, Modifier.size(18.dp))
@@ -807,6 +834,18 @@ private fun SelectedDay(
         }
     }
 }
+
+/** Leave adopted from a plan (plan 020), which the live schedule lays over the plan edited here. */
+@Composable
+private fun leaveLabel(portion: LeavePortion): String = stringResource(R.string.leaveDayLeave) + " · " + stringResource(
+    when (portion) {
+        LeavePortion.WHOLE -> R.string.leaveWhole
+        LeavePortion.FIRST_HALF -> R.string.leaveFirstHalf
+        LeavePortion.SECOND_HALF -> R.string.leaveSecondHalf
+    },
+)
+
+private fun leaveIcon(portion: LeavePortion) = if (portion == LeavePortion.WHOLE) Icons.Filled.Luggage else Icons.Outlined.Contrast
 
 /**
  * Ids for the preview a fixed schedule is shown as. Derived, not random, so

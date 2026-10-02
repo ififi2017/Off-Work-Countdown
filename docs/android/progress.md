@@ -2,7 +2,7 @@
 
 **这是任务状态的唯一记录。** 交接包 `tasks.json` 只定义依赖、范围和验收，不记录状态。
 
-更新：2026-09-30。交接包 1.2。源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
+更新：2026-10-02。交接包 1.2。源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
 
 ## 任务状态
 
@@ -273,3 +273,11 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 自动检查：四模块 449 项测试（domain 337、data 76、design 12、app 24，0 failure/error/skip），lint 0 error / 34 warning / 1 hint，Debug / R8 Release 构建通过。npm lint、44 文件 / 454 项测试、资源与版本检查通过；可用 iPhone 18 Pro 目的地的 iOS headless build 通过，没有启动模拟器进行视觉检查。日志及真机截图在本机 `build/android-pr-sync/phone-audit-2026-09-30/`。
 - 真机追加确认专注示例的深浅色休息标签、英文 Google Play 提示、德文实际 200% 字号下滚动可访问提示/重试/恢复，以及阿拉伯语 RTL。测试后 Preview 恢复为中文、浅色、非会员，系统字号恢复原值 1.0。发现德文 200% 字号时底栏长标签换行较碎，记录为后续导航布局改进；本轮没有改变该布局。该检查针对 Debug Preview，真实 Play 交易、旧 Android 与 HyperOS 仍需对应环境验收。
 - 冻结基线未推进，漂移仍为 `94fefaa9`、`f0ddbdb2`、`76d248e0`、`56817311`、`9f09fb43`、`63a05de1`、`e2d874cf`、`47fef18e`、`a6a6c382`。源码仍为 3.2.1 / versionCode 5，修复继续同步到 PR #250；此前签名的 3.2.0 (5) AAB 未覆盖，本轮未生成新的签名 AAB 或操作 Play Console。
+
+
+## 2026-10-02 · 同步 iOS 计划 020：免费加班一行与请假规划
+
+- 云端会话从最新 main 建分支 `claude/android-plan-020-dw7cnx`。此前 Mac 线程未推送的工作不可达，本轮从零移植。网络策略拒绝 `dl.google.com`，本地只能用仓库外的纯 JVM Gradle 根编译和测试 `:core:domain` 与 `:core:data`。
+- **免费加班一行**（iOS PR #254）：`RecordsQueries.recordedOvertimeMs` 与 `lifetimeRecordedOvertimeMs`，免费用户在周/月/年显示一行已记录加班，人生尺度对所有人显示一生已记录加班（每天只计一次）。新增 1 条测试。
+- **请假叠加与规划**（iOS PR #251/#252）：规则见 `rule-parity.md`。已采用的请假（包括从 iOS 导入的）在倒计时、提醒、小组件、汇总与 Records 中不再算作上班。界面：设置“班次”组新增“休假”（显示剩余天数）；休假页（规划入口、余额、已采用计划）、余额编辑（类型、自定义名称、额度与已用、有效期）、规划表单（至少休 N 天或最多用 N 个半天、日期范围限于滚动一年、余额选择）、方案列表、方案详情（日历以图标加底色标出休息/节假日/请假/半天，请假时间、余额剩余、前后班次、估算说明，整体采用）、已采用计划（单日取消、撤销整份）；Records 月视图“规划休假”入口（无余额时先引导建立）；排班日历在请假日加标记并可进入休假页；Plus 权益加入休假。免费用户每次打开方案消耗一次（本机计 3 次），用完进入 Plus 并在购买后回到该方案。所需文案此前已随 iOS 生成到 19 语言，本轮未新增文案。
+- 自动检查：domain 370、data 76 项测试通过（0 failure/error/skip），其中请假 32 条移植自 iOS。云端无法下载 Android 依赖，`:app` 由 PR #264 的 GitHub Android CI（`fc32e1b`）完成单元测试、lint 与 Debug/Release 构建，全部通过。未运行模拟器或真机，界面视觉与交互仍待设备验收。

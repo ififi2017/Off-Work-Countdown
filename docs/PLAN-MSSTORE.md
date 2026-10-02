@@ -294,8 +294,9 @@ EXE/MSI 那条路直接排除了——它的前置条件正是 M5 明确不做�
 - **不迁移 GitHub 版用户。** 商店版是新增入口，不是替代品。
 - **不做商店内购、不做付费版。** 保持免费——顺带说，GitHub Actions 那条自动
   更新链路目前只支持免费应用（见 §4）。
-- **不追求 19 语言的商店 listing。** 应用 UI 的 19 语言不变；商店页面的描述文案
-  初期只做英文 + 简体中文，与 `lib/content-locales.ts` 对长文内容的既有取舍一致。
+- ~~不追求 19 语言的商店 listing。~~ 已推翻：3.1.9 起商品页按安装包声明的 19 种
+  语言维护（`scripts/marketing-shots/windows/listing-copy.mjs`），流程与坑见
+  `scripts/marketing-shots/README.md`。
 
 ## 2. 架构决策
 
