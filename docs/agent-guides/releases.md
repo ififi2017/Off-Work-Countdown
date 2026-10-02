@@ -40,8 +40,13 @@ release CI, store listings/media or release download counts.
 - GitHub macOS builds intentionally use ad-hoc signing; the project does not
   buy Developer ID certificates. Installation docs must accurately explain
   Gatekeeper and Windows SmartScreen. Mac App Store signing differs below.
-- Android ships through Google Play. `.github/workflows/release-android.yml`
-  is manual (`workflow_dispatch`): it builds a signed AAB with the upload key
+- Android ships through Google Play like iOS through Xcode Cloud: every PR
+  runs the `Android tests` check (`.github/workflows/android.yml`, skipped
+  as passing when nothing Android-related changed), and a merge to `main`
+  that touches `src-mobile/android/` (outside tests/docs) or the shared
+  resources runs `.github/workflows/release-android.yml`, which tests again,
+  uploads to `alpha` and commits it for review (`status: completed`).
+  Manual `workflow_dispatch` runs remain for dry runs and re-sends: it builds a signed AAB with the upload key
   from Secrets (`ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_STORE_PASSWORD`,
   `ANDROID_UPLOAD_KEY_ALIAS`, `ANDROID_UPLOAD_KEY_PASSWORD`) and the Play billing
   IDs from repository Variables (`DONEAT_PLUS_*`, `DONEAT_PLAY_BILLING_PUBLIC_KEY`).

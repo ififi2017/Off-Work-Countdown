@@ -15,22 +15,38 @@ on:
       - 'scripts/android-*-fixtures/**'
       - 'scripts/check-android-record-roundtrip.mjs'
       - '.github/workflows/android.yml'
+  # PR 上不按路径过滤：设成必需检查后，没被触发的工作流会一直卡在「等待中」。
+  # 改由下面的 changes 任务判断，没改到 Android 时测试任务被跳过，跳过算通过。
   pull_request:
-    paths:
-      - 'src-mobile/android/**'
-      - 'src-mobile/ios/Shared/**'
-      - 'docs/android/synthetic-archives/**'
-      - 'src-mobile/ios/App/App/Localizable.xcstrings'
-      - 'scripts/generate-android-strings*'
-      - 'lib/**'
-      - 'src-mobile/ios/App/App/Native/Models/**'
-      - 'scripts/generate-android-*-fixtures*'
-      - 'scripts/android-*-fixtures/**'
-      - 'scripts/check-android-record-roundtrip.mjs'
-      - '.github/workflows/android.yml'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      android: ${{ steps.diff.outputs.android }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "android=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # 与上面 push 的 paths 保持一致。
+          if git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD | grep -qE \
+            '^(src-mobile/android/|src-mobile/ios/Shared/|docs/android/synthetic-archives/|src-mobile/ios/App/App/Localizable\.xcstrings$|scripts/generate-android-|lib/|src-mobile/ios/App/App/Native/Models/|scripts/android-.*-fixtures/|scripts/check-android-record-roundtrip\.mjs$|\.github/workflows/android\.yml$)'; then
+            echo "android=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "android=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    # 分支保护里要勾的就是这个名字。
+    name: Android tests
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
