@@ -26,6 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -64,7 +65,6 @@ import com.rainif.doneat.ui.components.DoneAtPage
 import com.rainif.doneat.ui.components.NavigationRow
 import com.rainif.doneat.ui.components.RowDivider
 import com.rainif.doneat.ui.components.SettingsGroup
-import com.rainif.doneat.ui.components.SwitchRow
 import com.rainif.doneat.ui.onboarding.appIsDark
 import com.rainif.doneat.ui.settings.NumberField
 import com.rainif.doneat.ui.timer.Haptics
@@ -256,18 +256,12 @@ fun LeaveBalanceEditScreen(graph: AppGraph, balanceID: String?, guided: Boolean,
             }
         }
         SettingsGroup {
-            SwitchRow(text.string(R.string.leaveValidFrom), hasStart, { hasStart = it })
-            if (hasStart) {
-                DateRow(text.fullDate(start)) {
-                    showLeaveDatePicker(context, dark, start, lower = null, upper = null) { start = it; if (hasEnd && end < it) end = it }
-                }
+            DateSwitchRow(text.string(R.string.leaveValidFrom), hasStart, { hasStart = it }, text.fullDate(start)) {
+                showLeaveDatePicker(context, dark, start, lower = null, upper = null) { start = it; if (hasEnd && end < it) end = it }
             }
             RowDivider(inset = false)
-            SwitchRow(text.string(R.string.leaveValidUntil), hasEnd, { hasEnd = it })
-            if (hasEnd) {
-                DateRow(text.fullDate(end)) {
-                    showLeaveDatePicker(context, dark, end, lower = if (hasStart) start else null, upper = null) { end = it }
-                }
+            DateSwitchRow(text.string(R.string.leaveValidUntil), hasEnd, { hasEnd = it }, text.fullDate(end)) {
+                showLeaveDatePicker(context, dark, end, lower = if (hasStart) start else null, upper = null) { end = it }
             }
         }
         if (!isNew) {
@@ -290,15 +284,23 @@ private fun AmountRow(title: String, value: String, text: LeaveText, onChange: (
     }
 }
 
-/** A chosen date under its switch, tapped to change it. */
+/**
+ * An optional date on one line: its label, the date (tapped to change it)
+ * once switched on, and the switch, so the date never floats unlabelled.
+ */
 @Composable
-private fun DateRow(value: String, onClick: () -> Unit) {
+private fun DateSwitchRow(title: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, date: String, onPickDate: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().heightIn(min = DoneAtSpacing.minTouch).clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = DoneAtSpacing.l),
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = DoneAtSpacing.l, end = DoneAtSpacing.l),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(value, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+        if (checked) {
+            TextButton(onClick = onPickDate) {
+                Text(date, style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"))
+            }
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange, modifier = Modifier.padding(start = DoneAtSpacing.xs))
     }
 }
 
@@ -374,7 +376,8 @@ fun AdoptedLeavePlanScreen(graph: AppGraph, planID: String, onBack: () -> Unit) 
                     write { state, now -> LeaveAdoption.cancelDay(state, key, now) }
                 }) { Text(text.string(R.string.leaveCancelDay), color = MaterialTheme.colorScheme.error) }
             },
-            dismissButton = { TextButton(onClick = { cancelling = null }) { Text(text.string(R.string.cancelAction)) } },
+            // Not "Cancel" beside "Cancel this day's leave": the two read alike.
+            dismissButton = { TextButton(onClick = { cancelling = null }) { Text(text.string(R.string.notNow)) } },
         )
     }
     if (confirmsUndo) {

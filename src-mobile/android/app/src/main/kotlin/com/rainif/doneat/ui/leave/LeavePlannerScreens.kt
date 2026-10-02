@@ -55,6 +55,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -345,14 +346,19 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs)) {
+                        // The answer leads: how long the break is, then when, then what it costs.
+                        Text(
+                            Strings.leaveDaysOff(context.resources, proposal.fullRestDays),
+                            style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold,
+                        )
                         Text(
                             text.range(text.monthDay(proposal.firstRestDayNumber), text.monthDay(proposal.lastRestDayNumber)),
-                            style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.bodyLarge,
                         )
-                        Text(Strings.leaveDaysOff(context.resources, proposal.fullRestDays), style = MaterialTheme.typography.bodyLarge)
                         Text(
                             if (proposal.costHalfDays == 0) text.string(R.string.leaveNoLeaveNeeded) else text.uses(proposal.costHalfDays),
-                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (proposal.costHalfDays == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         if (proposal.caveats.isNotEmpty()) {
                             Row(horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
@@ -419,7 +425,22 @@ fun LeavePlanDetailScreen(graph: AppGraph, index: Int, onBack: () -> Unit, onAdo
     DoneAtPage(title, onBack, text.string(R.string.leaveResultsTitle)) {
         if (!plus) LeaveTrialBanner(device.leavePlannerTrialsLeft, text)
 
-        SettingsGroup(Strings.leaveDaysOff(context.resources, proposal.fullRestDays)) {
+        // The headline: how long the break is and what it costs, before any detail.
+        Column(
+            Modifier.padding(horizontal = DoneAtSpacing.page + DoneAtSpacing.xs).semantics(mergeDescendants = true) {},
+            verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs),
+        ) {
+            Text(
+                Strings.leaveDaysOff(context.resources, proposal.fullRestDays),
+                Modifier.semantics { heading() },
+                style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
+            )
+            Text(
+                if (proposal.costHalfDays == 0) text.string(R.string.leaveNoLeaveNeeded) else text.uses(proposal.costHalfDays),
+                style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        SettingsGroup {
             LeavePlanCalendar(proposal, text, Modifier.padding(DoneAtSpacing.m))
         }
 

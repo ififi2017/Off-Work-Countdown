@@ -397,6 +397,23 @@ struct LeavePlannerTests {
         #expect(best.caveats == [.holidaysNotIncluded(year: 2027)])
     }
 
+    @Test("Adopted leave over fixed hours is not an estimate")
+    func leaveOverFixedHoursIsKnown() throws {
+        let plan = ExtendedSchedulePlan.applying(
+            leave: ["2026-10-12": .whole], to: nil,
+            baseHours: ExtendedScheduleDayHours(startTime: "09:00", endTime: "17:00", breakStartTime: nil, breakDurationMinutes: 0),
+            revision: 0
+        )
+        let days = LeavePlannerSchedule.days(
+            configuration: Self.configuration(plan: plan),
+            range: try Self.dayNumber("2026-10-01")...Self.dayNumber("2026-10-31"),
+            timeZone: try #require(TimeZone(identifier: Self.shanghai))
+        )
+        #expect(days.allSatisfy { $0.caveats.isEmpty })
+        #expect(try #require(days.first { $0.dayKey == "2026-10-12" }).segments.isEmpty)
+        #expect(!(try #require(days.first { $0.dayKey == "2026-10-13" }).segments.isEmpty))
+    }
+
     @Test("A whole rolling year is searched for both goals")
     func wholeYear() throws {
         var calendar = Calendar(identifier: .gregorian)
