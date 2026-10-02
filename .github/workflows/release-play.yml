@@ -1,0 +1,144 @@
+name: Google Play Release
+
+# Android 产线，与 release-desktop.yml / release-msstore.yml 一样**完全独立**：
+# Play 的上传失败不影响其他渠道，也不碰任何 GitHub Release。
+#
+# 只能手动触发（Actions → Google Play Release → Run workflow）。Android 不跟
+# desktop-v* tag 走：versionCode 每次上传都要涨，而 Play 测试轨道的节奏和桌面发版无关。
+#
+# 默认把签名 AAB 传到封闭测试轨道（alpha）的**草稿**：不会发给测试人员，版本说明和
+# 「开始发布」都在 Play Console 里手动点。取消勾选 upload 就只产出 AAB 当 artifact，
+# 用来先干跑一遍整条链路。
+#
+# 需要的仓库配置（Settings → Secrets and variables → Actions）：
+#   Secrets   ANDROID_UPLOAD_KEYSTORE_BASE64  上传密钥库（base64）
+#             ANDROID_UPLOAD_STORE_PASSWORD / ANDROID_UPLOAD_KEY_ALIAS / ANDROID_UPLOAD_KEY_PASSWORD
+#             PLAY_SERVICE_ACCOUNT_JSON       有测试轨道发布权限的服务账号 JSON
+#   Variables ANDROID_PLAY_GRADLE_PROPERTIES  Plus 商品 ID 和计费公钥（doneatPlus*、doneatPlayBillingPublicKey），
+#                                             都是公开标识，见 docs/android/play-console-preparation.md
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Upload the signed AAB to Google Play as a draft
+        type: boolean
+        default: true
+      track:
+        description: Play track (alpha is the default closed testing track)
+        type: string
+        default: alpha
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Build and upload
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src-mobile/android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check product versions
+        working-directory: .
+        run: node scripts/check-version.mjs
+
+      - name: Generated strings are current
+        working-directory: .
+        run: node scripts/generate-android-strings.mjs --check
+
+      # 少了这些，构建能过、包能传，装上后 Plus 页却显示商店不可用。在这里拦下来。
+      - name: Add Play Billing configuration
+        env:
+          PLAY_GRADLE_PROPERTIES: ${{ vars.ANDROID_PLAY_GRADLE_PROPERTIES }}
+        run: |
+          for key in doneatPlusSubscriptionProduct doneatPlusMonthlyBasePlan doneatPlusYearlyBasePlan \
+                     doneatPlusLifetimeProduct doneatPlusLifetimePurchaseOption doneatPlayBillingPublicKey; do
+            if ! printf '%s\n' "$PLAY_GRADLE_PROPERTIES" | grep -Eq "^[[:space:]]*$key[[:space:]]*=[[:space:]]*[^[:space:]]"; then
+              echo "::error::Repository variable ANDROID_PLAY_GRADLE_PROPERTIES is missing $key"
+              exit 1
+            fi
+          done
+          printf '\n%s\n' "$PLAY_GRADLE_PROPERTIES" >> gradle.properties
+
+      # Play 才是 versionCode 的事实来源：取它见过的最大值 + 1，不写回仓库。
+      - name: Pick the next versionCode
+        id: version
+        working-directory: .
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          code=$(node scripts/google-play-publish.mjs --next-version-code)
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "versionCode $code"
+
+      - name: Decode the upload keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Secret ANDROID_UPLOAD_KEYSTORE_BASE64 is not set"
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/doneat-upload.jks"
+
+      # 与 android.yml 同一套门禁，只是最后产出签名 AAB。
+      - name: Unit tests, lint and signed bundle
+        env:
+          ORG_GRADLE_PROJECT_doneatVersionCode: ${{ steps.version.outputs.code }}
+          ORG_GRADLE_PROJECT_doneatUploadStoreFile: ${{ runner.temp }}/doneat-upload.jks
+          ORG_GRADLE_PROJECT_doneatUploadStorePassword: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          ORG_GRADLE_PROJECT_doneatUploadKeyAlias: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          ORG_GRADLE_PROJECT_doneatUploadKeyPassword: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: ./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:bundleRelease --console=plain
+
+      - name: Reject pre-release Compose/Material3 in release
+        run: |
+          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath -q > deps.txt
+          if grep -E 'androidx\.compose[^ ]*:[0-9.]+-(alpha|beta|rc)' deps.txt; then
+            echo "D-12: release must use stable Compose/Material3" >&2
+            exit 1
+          fi
+
+      # 没签名的 AAB Play 会拒；签错密钥 Play 也会拒，但那要等上传后才知道。
+      - name: Assert the bundle is signed
+        run: |
+          aab=app/build/outputs/bundle/release/app-release.aab
+          jarsigner -verify "$aab" | tee verify.txt
+          grep -q "jar verified" verify.txt
+          name="DoneAt-$(grep -Eo 'versionName = "[^"]+"' app/build.gradle.kts | cut -d'"' -f2)-${{ steps.version.outputs.code }}.aab"
+          mkdir -p "$RUNNER_TEMP/play"
+          cp "$aab" "$RUNNER_TEMP/play/$name"
+
+      - name: Remove the upload keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/doneat-upload.jks"
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-play-aab
+          retention-days: 14
+          if-no-files-found: error
+          path: ${{ runner.temp }}/play/*.aab
+
+      - name: Upload to Google Play as a draft
+        if: inputs.upload
+        working-directory: .
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_TRACK: ${{ inputs.track }}
+        run: node scripts/google-play-publish.mjs --upload "$RUNNER_TEMP"/play/*.aab --track "$PLAY_TRACK"

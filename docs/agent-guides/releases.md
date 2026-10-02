@@ -116,6 +116,25 @@ App Store Connect's workflow triggers, Release archive and distribution.
 - The API cannot edit the listing: listing text and privacy answers are in
   `docs/CHROME-WEB-STORE-LISTING.md`, images from `npm run shots:chrome-web-store`.
 
+## Android (Google Play)
+
+- `.github/workflows/release-play.yml` is manual only (`workflow_dispatch`).
+  It runs Android's Gradle gates, builds a signed AAB and, unless `upload` is
+  unchecked, uploads it to the chosen track (default `alpha`, closed testing)
+  as a **draft**. Release notes, review and rollout stay in Play Console.
+- `versionCode` comes from Play, not the repository:
+  `scripts/google-play-publish.mjs --next-version-code` returns one past every
+  code Play has seen (or the Gradle default if higher) and the workflow passes
+  it as `doneatVersionCode`. Do not bump `versionCode` by hand for CI uploads.
+- Signing reads Gradle properties `doneatUploadStoreFile`,
+  `doneatUploadStorePassword`, `doneatUploadKeyAlias`,
+  `doneatUploadKeyPassword`; without them release builds stay unsigned. CI fills
+  them from the `ANDROID_UPLOAD_*` secrets, Play access from
+  `PLAY_SERVICE_ACCOUNT_JSON`, and Plus billing IDs from the
+  `ANDROID_PLAY_GRADLE_PROPERTIES` repository variable. Locally,
+  `npm run play:status` reads `~/.config/doneat/google-play.env`. The upload
+  keystore never enters the repository.
+
 ## Store media and metadata
 
 - Generate via `scripts/marketing-shots/`, sync with `npm run asc:sync`;

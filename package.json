@@ -76,7 +76,9 @@
     "package:extension": "npm run build:extension && node scripts/package-extension.mjs",
     "cws:status": "node scripts/chrome-web-store-publish.mjs --status",
     "cws:upload": "node scripts/chrome-web-store-publish.mjs --upload",
-    "cws:publish": "node scripts/chrome-web-store-publish.mjs --publish"
+    "cws:publish": "node scripts/chrome-web-store-publish.mjs --publish",
+    "play:status": "node scripts/google-play-publish.mjs --status",
+    "play:upload": "node scripts/google-play-publish.mjs --upload"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^11.2.0",

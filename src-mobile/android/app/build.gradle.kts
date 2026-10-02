@@ -13,7 +13,9 @@ android {
         applicationId = "com.rainif.doneat"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
+        // Play rejects a reused versionCode. The release workflow passes the next one
+        // (`doneatVersionCode`, read from Play by scripts/google-play-publish.mjs).
+        versionCode = providers.gradleProperty("doneatVersionCode").orElse("5").get().toInt()
         versionName = "3.2.1"
         // Public Play configuration only. Empty values keep the store unavailable.
         val plusProduct = providers.gradleProperty("doneatPlusSubscriptionProduct").orElse("").get()
@@ -32,8 +34,22 @@ android {
         buildConfigField("String", "PLAY_BILLING_PUBLIC_KEY", "\"$playKey\"")
     }
 
+    // Upload key for Play App Signing. Only CI and the owner's machine supply it
+    // (scripts/google-play-publish.mjs, .github/workflows/release-play.yml); without
+    // `doneatUploadStoreFile` the release build stays unsigned as before.
+    val uploadStoreFile = providers.gradleProperty("doneatUploadStoreFile").orNull
+    val uploadSigning = uploadStoreFile?.let { path ->
+        signingConfigs.create("upload") {
+            storeFile = file(path)
+            storePassword = providers.gradleProperty("doneatUploadStorePassword").get()
+            keyAlias = providers.gradleProperty("doneatUploadKeyAlias").get()
+            keyPassword = providers.gradleProperty("doneatUploadKeyPassword").get()
+        }
+    }
+
     buildTypes {
         release {
+            uploadSigning?.let { signingConfig = it }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

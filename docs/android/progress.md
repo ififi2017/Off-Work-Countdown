@@ -36,7 +36,7 @@
 | T23 | IN_PROGRESS | 首发 126 项 QA 的证据矩阵见 `preconsole-qa-2026-09-26.md`；自动化和部分 Pixel/模拟器检查已有证据，仍有设备、服务与 Console 阻塞项。 |
 | T24 | IN_PROGRESS | 本地 lint、Debug/R8 Release/AAB、依赖和备份排除检查已有证据；本地版本/哈希及 16 KiB 对齐已核验；3.2.0 (2) 上传签名与 bundletool 校验通过，Play 预发布报告及完整设备回归待完成。 |
 | T25 | IN_PROGRESS | 用户于 2026-09-28 确认 Console 已可上传、商家账号与商品配置完成；应用许可公钥已提供。`store-listing.md`、`privacy-policy-addition.md`、`play-console-preparation.md` 已备本地草稿；1024×500 横幅、512×512 图标和真实页面截图已备草稿；正式隐私页与 Console 声明、素材审核和真实商品查询验收尚待完成。 |
-| T26 | IN_PROGRESS | 用户已进入内部测试上传流程；3.2.0 (1) 和商品接入版 (2) 签名 AAB 已交付。版本 (2) 的本地验证已通过，代理未上传或发布；真实购买与 Play 验收待完成。 |
+| T26 | IN_PROGRESS | 用户已进入内部测试上传流程；3.2.0 (1) 和商品接入版 (2) 签名 AAB 已交付。版本 (2) 的本地验证已通过，代理未上传或发布；真实购买与 Play 验收待完成。 2026-10-02 新增手动工作流 `release-play.yml`：CI 签名 AAB，versionCode 取 Play 最大值 + 1，以草稿传到封闭测试轨道；首次实际运行与 Play 处理结果待验证。 |
 | T27 | DEFERRED | Wear，首发后（D-05） |
 
 ## 执行状态
@@ -152,6 +152,7 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 
 ## 变更记录
 
+- 2026-10-02：T26 新增 Google Play 发布工作流 `release-play.yml` 与 `scripts/google-play-publish.mjs`（手动触发、签名 AAB、封闭测试草稿）；Gradle 发布签名和 versionCode 改由属性提供，本地默认行为不变。
 - 2026-09-21：T00–T02 完成。
 - 2026-09-24：T16 完成（排班编辑器、薪资设置）。
 - 2026-09-23：T16a 完成（会话领域、计时页、收入隐藏与身份确认、班次提醒接入）。
