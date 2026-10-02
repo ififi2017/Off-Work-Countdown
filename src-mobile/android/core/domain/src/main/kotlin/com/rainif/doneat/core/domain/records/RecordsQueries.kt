@@ -132,7 +132,7 @@ class RecordsQueries(
         val fromKey = FoundationCompat.dayKey(from)
         val throughKey = FoundationCompat.dayKey(through)
         val expansions = expansions(fromKey, throughKey, periods, snapshots)
-        val lookup = DayRecordLookup(state.exceptions, state.overrides)
+        val lookup = DayRecordLookup(state.exceptions, state.overrides, state.leaveDays)
         val result = ArrayList<DayResolution>()
         var day = from
         while (!day.isAfter(through)) {

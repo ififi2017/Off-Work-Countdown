@@ -3,16 +3,19 @@ package com.rainif.doneat.core.domain.session
 import com.rainif.doneat.core.domain.records.DayOverride
 import com.rainif.doneat.core.domain.records.DayOverrideProjection
 import com.rainif.doneat.core.domain.records.FoundationCompat
-import com.rainif.doneat.core.domain.schedule.RosterDay
 import com.rainif.doneat.core.domain.records.SnapshotHours
 import com.rainif.doneat.core.domain.records.SyncedPreferences
 import com.rainif.doneat.core.domain.records.TimerDayMarks
+import com.rainif.doneat.core.domain.records.portionsByDay
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedule
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleContent
+import com.rainif.doneat.core.domain.schedule.ExtendedScheduleDayHours
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
+import com.rainif.doneat.core.domain.schedule.LeavePortion
+import com.rainif.doneat.core.domain.schedule.RosterDay
 import com.rainif.doneat.core.domain.schedule.ScheduleHours
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
 import com.rainif.doneat.core.domain.schedule.ScheduleRuleInput
@@ -52,6 +55,8 @@ class SessionEnvironment(
     val deviceZone: String,
     /** Whether use events are written to the archive (Plus decides; free users collect, as on iOS). */
     val collectsObservations: Boolean = true,
+    /** Adopted leave by day (plan 020), laid over whatever the rules resolve. */
+    val leaveDays: Map<String, LeavePortion> = emptyMap(),
 ) {
     val isExtendedScheduleEnabled get() = extendedSchedule?.isEnabled == true
 
@@ -102,8 +107,21 @@ class SessionEnvironment(
     /** The same environment over a newer archive (its settings, schedule and calendar). */
     fun with(records: com.rainif.doneat.core.domain.records.RecordState) = SessionEnvironment(
         records.syncedPreferences?.takeIf { it.isValid } ?: preferences, onboardingComplete, records.extendedSchedule, records.rosterDays,
-        holidays, deviceZone, collectsObservations,
+        holidays, deviceZone, collectsObservations, records.leaveDays.portionsByDay(),
     )
+
+    private var leavePlanCache: Triple<ExtendedSchedulePlan?, ExtendedScheduleDayHours, ExtendedSchedulePlan?>? = null
+
+    /**
+     * [plan] with the adopted leave laid over it, taken from [baseHours] where
+     * no extended schedule assigns the day. Kept while the plan and hours are
+     * the same: the countdown asks every second.
+     */
+    fun planApplyingLeave(plan: ExtendedSchedulePlan?, baseHours: ExtendedScheduleDayHours): ExtendedSchedulePlan? {
+        if (leaveDays.isEmpty()) return plan
+        leavePlanCache?.let { (base, hours, applied) -> if (base === plan && hours == baseHours) return applied }
+        return ExtendedSchedulePlan.applying(leaveDays, plan, baseHours).also { leavePlanCache = Triple(plan, baseHours, it) }
+    }
 
     /** [plan] with one day as it was before a save. */
     fun planKeeping(plan: ExtendedSchedulePlan, day: KeptRosterDay): ExtendedSchedulePlan {
@@ -251,10 +269,12 @@ class ShiftSession(val state: SessionState, val env: SessionEnvironment) {
             schedule = workSchedule(nowMs, source),
             breakStartTime = if (lunchOn) timeString(if (apply) effectiveLunchStartMinutes(nowMs) else prefs.lunchStartMinutes) else null,
             breakDurationMinutes = if (lunchOn) (if (apply) effectiveLunchDurationMinutes(nowMs) else prefs.lunchDurationMinutes) else 0,
-            extended = extendedSchedulePlan(nowMs, source),
+            extended = null,
         )
+        val leaveBase = ExtendedScheduleDayHours(hours.startTime, hours.endTime, hours.breakStartTime, hours.breakDurationMinutes)
         val input = ScheduleRuleInput(
-            hours = hours,
+            // Adopted leave (plan 020) rides on the plan, from these fixed hours where nothing assigns the day.
+            hours = hours.copy(extended = env.planApplyingLeave(extendedSchedulePlan(nowMs, source), leaveBase)),
             nowMs = nowMs,
             zone = countdownZone,
             overtimeEndAtMs = if (apply) state.overtimeEndAtMs else null,
@@ -291,8 +311,10 @@ class ShiftSession(val state: SessionState, val env: SessionEnvironment) {
 
     /** The hours a Records snapshot stores: committed settings, no overtime, no instant, no salary. */
     fun hoursConfiguration(nowMs: Double): SnapshotHours {
+        // Never carries leave: a snapshot records the schedule, and Records lays leave over it as a layer of its own.
         val input = rulesInput(nowMs, source = RulesSource.BASE)
-        return SnapshotHours.of(input.hours, if (input.hours.extended == null) null else env.extendedSchedule?.content)
+        val hours = input.hours.copy(extended = extendedSchedulePlan(nowMs, RulesSource.BASE))
+        return SnapshotHours.of(hours, if (hours.extended == null) null else env.extendedSchedule?.content)
     }
 
     // Marks on the current shift

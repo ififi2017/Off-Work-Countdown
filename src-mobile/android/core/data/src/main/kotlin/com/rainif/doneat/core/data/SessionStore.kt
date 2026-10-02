@@ -1,5 +1,6 @@
 package com.rainif.doneat.core.data
 
+import com.rainif.doneat.core.domain.records.portionsByDay
 import com.rainif.doneat.core.domain.records.RecordEditContext
 import com.rainif.doneat.core.domain.records.FoundationCompat
 import com.rainif.doneat.core.domain.records.ScheduleHoursCodec
@@ -79,7 +80,7 @@ class SessionStore(
 
     /** Rebuilt whenever settings, setup or the archive's schedule changes; plans inside it are built once. */
     val environment: StateFlow<SessionEnvironment> = combine(settings.preferences, settings.isSetUp, records.state, holidays, collectsObservations) { prefs, setUp, archive, days, collects ->
-        SessionEnvironment(prefs, setUp, archive.extendedSchedule, archive.rosterDays, days, deviceZone(), collects)
+        SessionEnvironment(prefs, setUp, archive.extendedSchedule, archive.rosterDays, days, deviceZone(), collects, archive.leaveDays.portionsByDay())
     }.stateIn(scope, SharingStarted.Eagerly, currentEnvironment())
 
     val session: StateFlow<ShiftSession> = combine(state, environment, ::ShiftSession)
@@ -87,7 +88,7 @@ class SessionStore(
 
     private fun currentEnvironment() = SessionEnvironment(
         settings.preferences.value, settings.isSetUp.value, records.state.value.extendedSchedule, records.state.value.rosterDays,
-        holidays.value, deviceZone(), collectsObservations.value,
+        holidays.value, deviceZone(), collectsObservations.value, records.state.value.leaveDays.portionsByDay(),
     )
 
     /**
