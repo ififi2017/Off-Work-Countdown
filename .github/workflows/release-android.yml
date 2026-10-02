@@ -119,11 +119,19 @@ jobs:
         run: ./gradlew :app:bundleRelease --console=plain
 
       # Gradle 签名失败时不一定报错（比如 signingConfig 没挂上），所以单独验一遍。
+      # ⚠️ 不能用 `jarsigner -verify -strict`：AGP 写 AAB 时 MANIFEST.MF 不在第一个
+      # 条目，jarsigner 会对每个条目报「signed in JarFile but is not signed in
+      # JarInputStream」并以 4 退出，但 Play 接受这种包。这里改为确认确实带了签名，
+      # 并打印证书指纹，可与 Play Console「应用签名」页的上传密钥证书核对。
       - name: Verify upload signature
         run: |
           set -euo pipefail
           aab=src-mobile/android/app/build/outputs/bundle/release/app-release.aab
-          jarsigner -verify -strict "$aab"
+          keytool -printcert -jarfile "$aab" | tee cert.txt
+          if ! grep -q "SHA256:" cert.txt; then
+            echo "::error::The AAB is not signed"
+            exit 1
+          fi
           sha256sum "$aab"
 
       - name: Upload AAB and mapping
