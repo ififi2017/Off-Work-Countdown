@@ -69,8 +69,8 @@ describe("Android strings", () => {
   });
 
   it("number placeholders by English order so reordered translations stay correct", () => {
-    const de = line(generated.get(file("values-de")), "cycleEndSummaryNotificationBody");
-    expect(de).toMatch(/%1\$s Arbeitstage, %2\$s .* %3\$s /);
+    const de = line(generated.get(file("values-de")), "extendedAssignedDateBounds");
+    expect(de).toMatch(/%1\$s – %2\$s · %3\$s Tage/);
     const reordered = buildAndroidStrings(
       synthetic({ span: (id) => (id === "de" ? "Bis {{end}}, ab {{start}} – {{end}}" : "From {{start}} to {{end}}") }),
       { strings: {} }

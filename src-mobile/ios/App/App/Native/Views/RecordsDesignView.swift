@@ -556,6 +556,7 @@ struct RecordsDesignView: View {
                     )
                     markLegend
                     leavePlanningEntry
+                    reportEntry(.month)
                 case .week:
                     RecordsWeekStrips(
                         queries: queries,
@@ -567,6 +568,7 @@ struct RecordsDesignView: View {
                         onOpen: openDay
                     )
                     markLegend
+                    reportEntry(.week)
                 case .year:
                     // Expansion reads a selected month with the same metrics
                     // and allocation as the month screen, without another axis.
@@ -644,6 +646,30 @@ struct RecordsDesignView: View {
             HStack(spacing: 6) {
                 Image(systemName: "suitcase")
                 Text(text.t("leavePlanAction"))
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(OWCDesign.tertiary)
+            }
+            .font(.subheadline)
+            .foregroundStyle(OWCDesign.accent)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Plan 020 §4: the week or month on screen, played as a report. It opens
+    /// from here whether or not notifications are on.
+    private func reportEntry(_ kind: CycleReportKind) -> some View {
+        Button {
+            scene.openCycleReport(CycleReportRequest(
+                period: queries.reportPeriod(kind, containing: browsing.anchor)
+            ))
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "play.circle")
+                Text(text.t(kind == .week ? "reportEntryWeek" : "reportEntryMonth"))
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.semibold))

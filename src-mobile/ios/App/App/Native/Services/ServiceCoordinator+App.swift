@@ -75,6 +75,7 @@ extension ServiceCoordinator.Operations {
                 guard !Task.isCancelled else { return }
                 if !shifts.session.publishesLiveSurfaces {
                     await notifications.clearShiftNotifications()
+                    await notifications.rescheduleCycleReports(shifts: shifts)
                 } else {
                     await LaunchTrace.interval("shiftNotifications") { await notifications.reschedule(shifts: shifts) }
                 }

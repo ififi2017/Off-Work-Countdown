@@ -163,6 +163,7 @@ struct OffWorkCountdownRootView: View {
             )
                 .presentationBackground(.clear)
         }
+        .modifier(CycleReportPresentationModifier(runtime: runtime, isReady: quickActionReady))
         .onChange(of: runtime.preferences.seenRelease) { _, seenRelease in
             if seenRelease == ReleaseNotes.current { scene.showsReleaseNotes = false }
         }

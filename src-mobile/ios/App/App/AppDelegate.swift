@@ -92,15 +92,27 @@ enum HomeQuickAction: String, CaseIterable {
 /// Taps only. Without `willPresent`, a notification arriving while the app is
 /// open still stays out of sight, as it did before there was a delegate.
 extension OffWorkCountdownApplicationDelegate: UNUserNotificationCenterDelegate {
-    /// A notification that names a route (the shift alarm refresh reminder)
-    /// opens it through the app's own link, the same way a widget does.
+    /// A notification that names a route (the shift alarm refresh reminder) or
+    /// a report period opens it through the app's own link, the same way a
+    /// widget does.
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        guard let route = response.notification.request.content.userInfo["route"] as? String else { return }
+        let userInfo = response.notification.request.content.userInfo
+        let link = userInfo["url"] as? String
+        let routeName = userInfo["route"] as? String
         await MainActor.run {
-            guard AppRoute(rawValue: route) != nil,
+            // A report names the exact period it closed, so a tap days later
+            // still opens that one.
+            if let link,
+               let url = URL(string: link),
+               CycleReportPeriod(url: url) != nil {
+                UIApplication.shared.open(url)
+                return
+            }
+            guard let route = routeName,
+                  AppRoute(rawValue: route) != nil,
                   let url = URL(string: "offworkcountdown://\(route)") else { return }
             UIApplication.shared.open(url)
         }
