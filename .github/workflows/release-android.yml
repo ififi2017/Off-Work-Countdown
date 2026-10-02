@@ -29,9 +29,14 @@ on:
         description: versionCode override (empty = 100 + run number)
         type: string
         default: ""
+      notes_since:
+        description: Release notes start after this ref (empty = last android-v* tag)
+        type: string
+        default: ""
 
+# write 只用于上传成功后打 android-v* tag，下一次的版本说明从这里接着算。
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   release:
@@ -49,6 +54,9 @@ jobs:
       ORG_GRADLE_PROJECT_doneatPlayBillingPublicKey: ${{ vars.DONEAT_PLAY_BILLING_PUBLIC_KEY }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # 版本说明要回溯到上一个 android-v* tag，浅克隆看不到。
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -134,6 +142,18 @@ jobs:
           fi
           sha256sum "$aab"
 
+      # 只收上次 Android 上传之后合并的 Android PR（feat / fix / perf）。
+      # 还没有 android-v* tag 时，从 3.2.0 (5) 所在的 PR #250 合并点算起：那是 CI
+      # 接手前最后一次手动上传的内容。
+      - name: Write release notes
+        env:
+          NOTES_SINCE: ${{ inputs.notes_since }}
+        run: |
+          set -euo pipefail
+          base="${NOTES_SINCE:-$(git describe --tags --abbrev=0 --match 'android-v*' 2>/dev/null || echo 54d4a381112d32712cc904fa6f513827de90c4f8)}"
+          echo "Release notes since $base"
+          node scripts/android-release-notes.mjs "$base" HEAD whatsnew
+
       - name: Upload AAB and mapping
         uses: actions/upload-artifact@v4
         with:
@@ -152,9 +172,20 @@ jobs:
           packageName: com.rainif.doneat
           releaseFiles: src-mobile/android/app/build/outputs/bundle/release/app-release.aab
           mappingFile: src-mobile/android/app/build/outputs/mapping/release/mapping.txt
+          whatsNewDirectory: whatsnew
           releaseName: ${{ steps.version.outputs.name }} (${{ steps.version.outputs.code }})
           track: ${{ inputs.track }}
           status: ${{ inputs.status }}
+
+      # 和 desktop-v* 一样用 tag 标出这次发出去的代码，下次的版本说明从这里开始。
+      # 草稿后来被丢弃时，下次运行用 notes_since 指定起点即可。
+      - name: Tag the uploaded commit
+        if: inputs.upload
+        run: |
+          set -euo pipefail
+          tag="android-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}"
+          git tag "$tag"
+          git push origin "$tag"
 
       # 同 release-desktop.yml：只在上传成功后通知，通知自身失败不影响流程。
       - name: Notify Lark that the build is on Play

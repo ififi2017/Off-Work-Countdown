@@ -49,7 +49,11 @@ release CI, store listings/media or release download counts.
   `upload` it sends them to the chosen track (default `alpha`, closed testing)
   as a draft through the `PLAY_SERVICE_ACCOUNT_JSON` service account.
   `versionCode` defaults to 100 + run number. The upload keystore itself stays
-  outside the repository.
+  outside the repository. Play "What's new" (en-US) comes from
+  `scripts/android-release-notes.mjs`: user-facing (`feat`/`fix`/`perf`) PRs
+  scoped `android`, or touching `src-mobile/android/` without another platform
+  scope, merged since the last `android-v<version>-<code>` tag, which each
+  successful upload pushes. `notes_since` overrides the start.
 - iOS ships only through App Store Connect, without a GitHub channel/tag
   workflow. Universal Purchase shares one record and bundle ID
   (`com.rainif.offworkcountdown.macappstore`) with the Mac App Store app;
