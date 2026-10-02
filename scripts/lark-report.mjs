@@ -28,16 +28,19 @@ import { sendCard } from "./lark-notify.mjs";
 const DEFAULT_BASE_URL = "https://off.rainif.com";
 const REPORT_USER_AGENT = "off-work-countdown-report/1.0";
 
-/** 报表里逐个列出的下载渠道，顺序即卡片里的展示顺序。 */
+/**
+ * 报表里逐个列出的下载渠道，顺序即卡片里的展示顺序。
+ *
+ * 2024-08-29 下载页迁移到 doneat.app，原有的 `e:desktop_download_*` 已无触发点，
+ * 改为读取网站端的 `s:` 事件。如果网站 Redis 未配置或与产品端不在同一个库，
+ * 这些计数会是 0——可以接受，不会报错。
+ */
 const DOWNLOAD_CHANNELS = [
-  ["desktop_download_msstore", "微软商店"],
-  ["desktop_download_macappstore", "Mac App Store"],
-  ["desktop_download_windows_intel", "Windows x64"],
-  ["desktop_download_windows_arm", "Windows ARM64"],
-  ["desktop_download_macos_apple", "macOS Apple 芯片"],
-  ["desktop_download_macos_intel", "macOS Intel"],
-  ["desktop_download_linux_intel", "Linux"],
-  ["desktop_download_github", "GitHub Releases"],
+  ["s:download_from_web", "从 Web 版来"],
+  ["s:app_store_open", "App Store"],
+  ["s:microsoft_store_open", "微软商店"],
+  ["s:github_releases_open", "GitHub Releases"],
+  ["s:chrome_extension_open", "Chrome 扩展"],
 ];
 
 /** 比率都是**次数之比**，不是人数之比——分子分母来自两个独立的计数器。 */
@@ -48,14 +51,14 @@ const RATIOS = [
     to: "share_convert",
   },
   {
-    label: "Mac 浮窗 → 跳转 App Store",
-    from: "desktop_macappstore_dialog_open",
-    to: "desktop_download_macappstore",
-  },
-  {
     label: "下载邀请 → 进入下载页",
     from: "desktop_invite_view",
     to: "desktop_invite_open",
+  },
+  {
+    label: "Web 版邀请 → 到达官网下载页",
+    from: "desktop_invite_open",
+    to: "s:download_from_web",
   },
 ];
 
@@ -345,18 +348,41 @@ export function buildReportCard({ period, buckets, dailyRows = [], repo }) {
 
 // ---------------------------------------------------------------- 取数
 
-/** 键形如 e:2026-08-21:share_land，前缀与 lib/server/analytics.ts 的 eventKey 一致。 */
-export const KEY_PREFIX = "e:";
+/**
+ * 键前缀。
+ *
+ * - `e:` — 产品端（off.rainif.com）的事件，lib/server/analytics.ts eventKey
+ * - `s:` — 官网（doneat.app）的事件，src/lib/server/analytics.ts eventKey
+ *
+ * 两套前缀可以共存于同一个 Upstash 库；报表脚本同时扫两个前缀。
+ */
+export const KEY_PREFIX_PRODUCT = "e:";
+export const KEY_PREFIX_SITE = "s:";
+export const KEY_PREFIX = KEY_PREFIX_PRODUCT; // 向后兼容测试
 
-/** 从键名反解出日期和事件名。格式对不上返回 null，避免把别的键混进报表。 */
+/**
+ * 从键名反解出日期和事件名。
+ * 支持 `e:` 和 `s:` 两种前缀；`s:` 前缀的事件名在返回时会带上 `s:` 标记，
+ * 以区分来源。格式对不上返回 null，避免把别的键混进报表。
+ */
 export function parseEventKey(key) {
-  if (!key.startsWith(KEY_PREFIX)) return null;
-  const rest = key.slice(KEY_PREFIX.length);
+  let prefix = null;
+  if (key.startsWith(KEY_PREFIX_PRODUCT)) {
+    prefix = KEY_PREFIX_PRODUCT;
+  } else if (key.startsWith(KEY_PREFIX_SITE)) {
+    prefix = KEY_PREFIX_SITE;
+  }
+  if (!prefix) return null;
+
+  const rest = key.slice(prefix.length);
   const separator = rest.indexOf(":");
   if (separator <= 0) return null;
   const date = rest.slice(0, separator);
-  const event = rest.slice(separator + 1);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !event) return null;
+  const rawEvent = rest.slice(separator + 1);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !rawEvent) return null;
+
+  // 网站事件加上 `s:` 前缀，产品事件保持原样
+  const event = prefix === KEY_PREFIX_SITE ? `s:${rawEvent}` : rawEvent;
   return { date, event };
 }
 
@@ -389,13 +415,13 @@ async function upstash(command, { url, token, fetchImpl }) {
  * SCAN 必须循环到游标回到 "0"，只取第一页会静默漏数据；MATCH 和 COUNT 都只是
  * 提示，某一轮返回空数组不代表扫完了。
  */
-async function scanEventKeys({ url, token, fetchImpl }) {
+async function scanEventKeys({ url, token, fetchImpl, pattern }) {
   const keys = [];
   let cursor = "0";
   // 防呆上限：真实数据量是「事件数 × 天数」，千级；真跑满说明游标没在推进。
   for (let round = 0; round < 1000; round++) {
     const [next, batch] = await upstash(
-      ["SCAN", cursor, "MATCH", `${KEY_PREFIX}*`, "COUNT", "1000"],
+      ["SCAN", cursor, "MATCH", pattern, "COUNT", "1000"],
       { url, token, fetchImpl }
     );
     keys.push(...(batch ?? []));
@@ -414,10 +440,15 @@ async function scanEventKeys({ url, token, fetchImpl }) {
  *
  * 返回的形状与 HTTP 那条路一致，好让后面的分桶和渲染只认一种输入。窗口内没有
  * 任何事件的日子也会补一行 0——否则趋势图会缺格，看起来像那天没统计。
+ *
+ * @param siteUrl/siteToken 可选的官网 Redis 凭据。如果网站与产品共用同一个
+ *   Upstash 库，可以不填；如果分开部署，需要单独配置。
  */
 export async function readStatsFromUpstash({
   url,
   token,
+  siteUrl,
+  siteToken,
   days,
   today,
   fetchImpl = fetch,
@@ -425,10 +456,34 @@ export async function readStatsFromUpstash({
   const base = url.replace(/\/$/, "");
   const oldest = addDays(today, -(days - 1));
 
-  const keys = await scanEventKeys({ url: base, token, fetchImpl });
+  // 扫描产品端 `e:` 前缀
+  const productKeys = await scanEventKeys({
+    url: base,
+    token,
+    fetchImpl,
+    pattern: `${KEY_PREFIX_PRODUCT}*`,
+  });
+
+  // 扫描官网 `s:` 前缀（如果提供了单独凭据则用单独凭据，否则尝试同一个库）
+  let siteKeys = [];
+  const siteBase = siteUrl ? siteUrl.replace(/\/$/, "") : base;
+  const siteAccessToken = siteToken ?? token;
+  try {
+    siteKeys = await scanEventKeys({
+      url: siteBase,
+      token: siteAccessToken,
+      fetchImpl,
+      pattern: `${KEY_PREFIX_SITE}*`,
+    });
+  } catch (err) {
+    // 网站 Redis 不可用时静默继续——产品端数据仍然有效
+    console.warn(`Warning: could not read site keys (s:*): ${err.message}`);
+  }
+
+  const allKeys = [...productKeys, ...siteKeys];
 
   const wanted = [];
-  for (const key of keys) {
+  for (const key of allKeys) {
     const parsed = parseEventKey(key);
     if (parsed && parsed.date >= oldest && parsed.date <= today) {
       wanted.push({ key, ...parsed });
@@ -442,18 +497,41 @@ export async function readStatsFromUpstash({
   }
 
   if (wanted.length > 0) {
-    const values = await upstash(["MGET", ...wanted.map((w) => w.key)], {
-      url: base,
-      token,
-      fetchImpl,
-    });
-    wanted.forEach((w, i) => {
-      const row = byDate.get(w.date);
-      if (!row) return;
-      row[w.event] = Number(values?.[i] ?? 0) || 0;
-      // 键存在本身就是证据：那天埋点确实在跑。
-      row.observed = true;
-    });
+    // 分开取值：产品端和官网可能在不同的库
+    const productWanted = wanted.filter((w) => w.key.startsWith(KEY_PREFIX_PRODUCT));
+    const siteWanted = wanted.filter((w) => w.key.startsWith(KEY_PREFIX_SITE));
+
+    if (productWanted.length > 0) {
+      const values = await upstash(["MGET", ...productWanted.map((w) => w.key)], {
+        url: base,
+        token,
+        fetchImpl,
+      });
+      productWanted.forEach((w, i) => {
+        const row = byDate.get(w.date);
+        if (!row) return;
+        row[w.event] = Number(values?.[i] ?? 0) || 0;
+        row.observed = true;
+      });
+    }
+
+    if (siteWanted.length > 0) {
+      try {
+        const values = await upstash(["MGET", ...siteWanted.map((w) => w.key)], {
+          url: siteBase,
+          token: siteAccessToken,
+          fetchImpl,
+        });
+        siteWanted.forEach((w, i) => {
+          const row = byDate.get(w.date);
+          if (!row) return;
+          row[w.event] = Number(values?.[i] ?? 0) || 0;
+          // 网站键存在不影响 observed 状态：只有产品端键才是「埋点在跑」的证据
+        });
+      } catch (err) {
+        console.warn(`Warning: could not fetch site values: ${err.message}`);
+      }
+    }
   }
 
   return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
@@ -542,6 +620,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
   const baseUrl = (process.env.SITE_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/$/, "");
 
+  // 可选的官网 Redis 凭据。如果 doneat.app 和 off.rainif.com 共用同一个
+  // Upstash 库，这两个变量可以不配；如果分开部署，需要在 GitHub Secrets 里
+  // 加上 SITE_KV_REST_API_URL 和 SITE_KV_REST_API_TOKEN。
+  const siteRedisUrl = process.env.SITE_KV_REST_API_URL;
+  const siteRedisToken = process.env.SITE_KV_REST_API_TOKEN;
+
   // 缺配置就安静退出，和 lark-notify.mjs 一致：本地和 fork 都拿不到 secrets，
   // 那不是错误。
   const canRead = (redisUrl && redisToken) || statsToken;
@@ -562,6 +646,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     rows = await readStatsFromUpstash({
       url: redisUrl,
       token: redisToken,
+      siteUrl: siteRedisUrl,
+      siteToken: siteRedisToken,
       days: PERIODS[period].days,
       today,
     });

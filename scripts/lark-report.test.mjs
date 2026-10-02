@@ -164,33 +164,35 @@ describe("buildReportCard", () => {
   });
 
   it("lists only download channels that saw traffic", () => {
+    // 下载渠道现在从网站的 s: 事件读取
     const card = buildReportCard({
       period: "daily",
-      buckets: buckets(() => ({ desktop_download_macappstore: 2 })),
+      buckets: buckets(() => ({ "s:app_store_open": 2 })),
     });
     const text = card.body.elements[0].content;
-    expect(text).toContain("Mac App Store **2**");
-    expect(text).not.toContain("Linux");
+    expect(text).toContain("App Store **2**");
+    expect(text).not.toContain("GitHub");
   });
 
   it("puts the busiest channel first and gives each its own line", () => {
     // 原来所有渠道挤在一行用「·」分隔，手机上折行后最大的和最小的混在一起，
     // 扫一眼看不出谁多谁少。
+    // 下载渠道现在从网站的 s: 事件读取
     const card = buildReportCard({
       period: "daily",
       buckets: buckets(() => ({
-        desktop_download_msstore: 19,
-        desktop_download_windows_intel: 31,
-        desktop_download_macappstore: 1,
+        "s:microsoft_store_open": 19,
+        "s:github_releases_open": 31,
+        "s:app_store_open": 1,
       })),
     });
     const channelLines = card.body.elements[0].content
       .split("\n")
       .filter((line) => /\*\*\d+\*\* `/.test(line));
     expect(channelLines.map((line) => line.split(" **")[0])).toEqual([
-      "Windows x64",
+      "GitHub Releases",
       "微软商店",
-      "Mac App Store",
+      "App Store",
     ]);
     // 最大的那条最长，最小的那条也得看得见
     expect(channelLines[0]).toMatch(/`█{12}`/);
@@ -365,21 +367,52 @@ describe("readStatsFromUpstash", () => {
    * 假的 Upstash。SCAN 刻意分成多页返回，并且中间夹一页空结果——真实的 SCAN
    * 就是这样：MATCH 过滤发生在服务端，某一轮扫到的槽位里一个都没命中很正常，
    * 此时游标还没到 0，不能就此收手。
+   *
+   * 现在 readStatsFromUpstash 会扫描两次（e:* 和 s:*），按 pattern 过滤返回的键。
    */
   function fakeRedis(keys, values, { pageSize = 1 } = {}) {
     const seen = [];
-    const pages = [];
-    for (let i = 0; i < keys.length; i += pageSize) {
-      pages.push(keys.slice(i, i + pageSize));
+    // 按前缀分组键
+    const eKeys = keys.filter((k) => k.startsWith("e:"));
+    const sKeys = keys.filter((k) => k.startsWith("s:"));
+
+    function buildPages(keyList) {
+      const pages = [];
+      for (let i = 0; i < keyList.length; i += pageSize) {
+        pages.push(keyList.slice(i, i + pageSize));
+      }
+      if (pages.length > 0) pages.splice(1, 0, []); // 中间插一页空的
+      return pages;
     }
-    pages.splice(1, 0, []); // 中间插一页空的
+
+    const ePages = buildPages(eKeys);
+    const sPages = buildPages(sKeys);
+
+    // 每个 pattern 维护独立的游标状态
+    const cursors = new Map();
+
     const fetchImpl = async (_url, init) => {
       const command = JSON.parse(init.body);
       seen.push(command);
       if (command[0] === "SCAN") {
-        const index = Number(command[1]);
+        const cursorStr = command[1];
+        const pattern = command[3]; // MATCH pattern
+        const pages = pattern === "e:*" ? ePages : sPages;
+        const cursorKey = pattern;
+
+        // 初始化或读取游标
+        if (cursorStr === "0") {
+          cursors.set(cursorKey, 0);
+        }
+        const index = cursors.get(cursorKey) ?? 0;
         const batch = pages[index] ?? [];
-        const next = index + 1 < pages.length ? String(index + 1) : "0";
+        const nextIndex = index + 1 < pages.length ? index + 1 : 0;
+        cursors.set(cursorKey, nextIndex);
+        const next = nextIndex === 0 && pages.length > 0 ? "0" : String(nextIndex);
+        // 如果是空列表，直接返回 "0"
+        if (pages.length === 0) {
+          return { ok: true, json: async () => ({ result: ["0", []] }) };
+        }
         return { ok: true, json: async () => ({ result: [next, batch] }) };
       }
       const asked = command.slice(1);
@@ -475,8 +508,10 @@ describe("readStatsFromUpstash", () => {
       today: "2026-08-21",
       fetchImpl,
     });
-    const mget = seen.find((c) => c[0] === "MGET");
-    expect(mget.slice(1)).toEqual(["e:2026-08-20:share_land"]);
+    // 现在会有两次 SCAN（e: 和 s:），但 MGET 只取窗口内的键
+    const mgets = seen.filter((c) => c[0] === "MGET");
+    expect(mgets).toHaveLength(1);
+    expect(mgets[0].slice(1)).toEqual(["e:2026-08-20:share_land"]);
   });
 
   it("skips MGET entirely when nothing matched", async () => {
@@ -488,7 +523,9 @@ describe("readStatsFromUpstash", () => {
       today: "2026-08-21",
       fetchImpl,
     });
-    expect(seen.map((c) => c[0])).toEqual(["SCAN"]);
+    // 现在会有两次 SCAN（e: 和 s:），但没有 MGET
+    expect(seen.filter((c) => c[0] === "SCAN")).toHaveLength(2);
+    expect(seen.filter((c) => c[0] === "MGET")).toHaveLength(0);
     expect(rows).toHaveLength(2);
   });
 
