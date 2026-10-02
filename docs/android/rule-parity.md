@@ -87,9 +87,13 @@ Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 
 
 本次 Swift oracle 扩展至 18 个计划、2,376 个 snapshots、66 组 widgetShifts／expansions，覆盖季节边界、沿用月份、节假日、冻结历史和归档类型。`RecordJson` 与快照配置保留年度字段，记录 oracle 共 102 份文档，新增合法范围、无效日期、休息类型、重叠、缺少边界及冻结历史的导入／导出案例。两个 fixture 完整比对及 domain／data 回归通过；iOS 年度编辑入口不在本次 Android UI 范围内。
 
-### 2026-09-30 请假叠加层（计划 020，Kotlin 尚未移植）
+### 2026-10-02 请假叠加层（计划 020，已移植）
 
-iOS 在 `ExtendedSchedulePlan` 上新增 `leaveDays`（民用日 → 整班／前半班／后半班）与 `baseHours`（回退计划下的固定时间），解析器在其余层之后叠加：整班改为休息，半班按有效工作分钟（去掉班内休息）换算为剩余一半的起止与休息，只作用于原本上班的日子；固定排班用户用只含请假的回退计划表达，`.leaveOverBase` 的上班与否仍由固定排班判断。记录层把请假作为 `DayRecordLookup` 的一层，排在人工修正之后、节假日与排班之前。计划编码在没有请假时与此前逐字节相同，因此两份 Swift fixture 只更新了源哈希，现有答案不变。用户确认 Android 休假功能在 iOS 完成后再做，届时移植并补充请假用例。
+iOS 在 `ExtendedSchedulePlan` 上新增 `leaveDays`（民用日 → 整班／前半班／后半班）与 `baseHours`（回退计划下的固定时间），解析器在其余层之后叠加：整班改为休息，半班按有效工作分钟（去掉班内休息）换算为剩余一半的起止与休息，只作用于原本上班的日子；固定排班用户用只含请假的回退计划表达，`.leaveOverBase` 的上班与否仍由固定排班判断。记录层把请假作为 `DayRecordLookup` 的一层，排在人工修正之后、节假日与排班之前。计划编码在没有请假时与此前逐字节相同，因此两份 Swift fixture 只更新了源哈希，现有答案不变。
+
+Kotlin 对应：`ExtendedSchedulePlan.applying`、`LeavePortion`、`ExtendedScheduleDayHours.remaining(after:)`、`CivilZone.plannedHours` 的回退分支；`DayRecordResolver` 的请假层；`ShiftSession.rulesInput` 与 `ScheduleChange.rulesInputApplying` 把已采用的请假叠加到倒计时、提醒、小组件与汇总，`hoursConfiguration` 仍读去掉请假的计划。规划器 `leave/LeavePlanner`、`LeavePlannerSchedule`（滚动一年、前后各 31 天上下文）与 `LeaveAdoption`（整体采用或拒绝、撤销整份计划、取消单日、余额增改与删除）逐条对应 Swift。
+
+共享 fixture 没有请假用例（生成需 macOS 上的 Swift）。改为移植 iOS 测试：`LeavePlannerTest` 15 条、`LeaveAdoptionTest` 4 条、`LeaveOverlayTest` 13 条（含一条 Android 会话层用例），全部通过。未移植：Watch V2 编码（无 Kotlin 对应）、`UserDefaults` 试用次数持久化（Android 为 `DeviceSettings.leavePlannerTrialsUsed`）、`LeaveRecordsTests`（编解码已由 T10 覆盖）。
 
 ### 不在 T08 范围
 

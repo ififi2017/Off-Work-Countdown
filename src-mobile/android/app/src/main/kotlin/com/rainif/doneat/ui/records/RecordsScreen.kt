@@ -28,6 +28,7 @@ import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.ListAlt
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Luggage
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material.icons.outlined.CloseFullscreen
@@ -58,6 +59,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
@@ -244,6 +246,10 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
             { selectMonth(it) }, { openMonth(it) },
             onUnlock = { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsCharts)) }, life = life,
             onExpand = { expanded = !expanded },
+            onPlanLeave = {
+                if (graph.records.state.value.leaveBalances.isEmpty()) open(Route.LeaveBalanceEdit(null, guided = true))
+                else open(Route.Leave(fromRecords = true))
+            },
             onPinch = { zoom ->
                 if (zoom > 1.22f) {
                     if (scale == RecordsScale.YEAR) openMonth(month) else setScale(scale.zoomedIn)
@@ -394,6 +400,7 @@ private fun ChartCard(
     life: @Composable () -> Unit,
     onExpand: () -> Unit,
     onPinch: (Float) -> Unit,
+    onPlanLeave: () -> Unit,
 ) {
     val text = context.text
     val (first, last) = context.queries.window(scale, anchor)
@@ -498,7 +505,26 @@ private fun ChartCard(
                 }
             }
             MarkLegend(includesLock = !context.queries.authorized, text = text)
+            if (scale == RecordsScale.MONTH) LeavePlanningEntry(text, onPlanLeave)
         }
+    }
+}
+
+/**
+ * Plan 020: time off from the month being looked at (iOS `leavePlanningEntry`).
+ * A first visit without any leave balance sets one up before the page opens.
+ */
+@Composable
+private fun LeavePlanningEntry(text: RecordsText, onClick: () -> Unit) {
+    val accent = MaterialTheme.colorScheme.primary
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 44.dp).clickable(role = Role.Button, onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(Icons.Outlined.Luggage, null, Modifier.size(18.dp), tint = accent)
+        Text(text.string(R.string.leavePlanAction), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = accent)
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
