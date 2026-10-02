@@ -190,10 +190,29 @@ jobs:
         continue-on-error: true
         run: msstore apps list
 
-      # 提交 ≠ 上线：之后还要过微软认证，几小时到几天。这一步绿只代表提交成功。
-      - name: Publish to the Microsoft Store
+      # 先只上传、不提交：msstore publish 会删掉已有的待处理提交，再从上一个已发布的
+      # 提交克隆一份——直接提交的话，新包会带着上一版的更新说明上架。
+      - name: Upload the package to a new Store submission
         if: github.event_name == 'push' || inputs.submit
         shell: pwsh
         run: |
           $pkg = Get-ChildItem -Filter *.msixbundle | Select-Object -First 1
-          msstore publish $pkg.FullName -id 9PM0HJ2PP2LJ -v
+          msstore publish $pkg.FullName -id 9PM0HJ2PP2LJ -v --noCommit
+
+      # 只改 releaseNotes（scripts/marketing-shots/windows/listing-copy.mjs），包和截图不动。
+      - name: Write this version's release notes
+        if: github.event_name == 'push' || inputs.submit
+        env:
+          MSSTORE_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+          MSSTORE_CLIENT_ID: ${{ secrets.AZURE_AD_APPLICATION_CLIENT_ID }}
+          MSSTORE_CLIENT_SECRET: ${{ secrets.AZURE_AD_APPLICATION_SECRET }}
+        run: node scripts/microsoft-store-sync.mjs --release-notes
+
+      # 提交 ≠ 上线：之后还要过微软认证，几小时到几天。这一步绿只代表提交成功。
+      - name: Submit for certification
+        if: github.event_name == 'push' || inputs.submit
+        env:
+          MSSTORE_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+          MSSTORE_CLIENT_ID: ${{ secrets.AZURE_AD_APPLICATION_CLIENT_ID }}
+          MSSTORE_CLIENT_SECRET: ${{ secrets.AZURE_AD_APPLICATION_SECRET }}
+        run: node scripts/microsoft-store-sync.mjs --commit

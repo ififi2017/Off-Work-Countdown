@@ -5,6 +5,12 @@
 //   node scripts/microsoft-store-sync.mjs --plan     # 只读，打印当前提交与将要发生的改动
 //   node scripts/microsoft-store-sync.mjs --apply    # 写入文案、上传截图 ZIP（不提交审核）
 //   node scripts/microsoft-store-sync.mjs --commit   # 真正提交，会进入预处理与认证
+//   node scripts/microsoft-store-sync.mjs --release-notes  # 只把本版更新说明写进待处理提交
+//
+// --release-notes 给发版工作流用：`msstore publish --noCommit` 建好带新包的提交后，
+// 只改各语言的 releaseNotes，包、截图和其余文案原样保留，再由 --commit 提交。
+// 不能用 --apply：它会把截图全部标成待上传，而且上传截图 ZIP 会覆盖同一提交里
+// 刚传上去的安装包。
 //
 // 为什么不用网页端的「导入列表」：那条路要求语言必须先存在于商品页语言集里，
 // 而且图片要靠浏览器逐张传。API 这边语言直接写在提交 JSON 里，图片打成一个 ZIP
@@ -36,6 +42,7 @@ const IMAGES_DIR = new URL("marketing-shots/windows/out/", import.meta.url).path
 const textOnly = process.argv.includes("--text-only");
 const mode = process.argv.includes("--apply") ? "apply"
   : process.argv.includes("--commit") ? "commit"
+  : process.argv.includes("--release-notes") ? "release-notes"
   : "plan";
 
 function credentials() {
@@ -105,12 +112,39 @@ if (submissionId) {
   if (!submissionId) throw new Error("既没有待处理的提交，也没有已发布的提交。");
   submission = await api(`/applications/${STORE_ID}/submissions/${submissionId}`, accessToken);
   console.log("（当前没有待处理提交，以下以最近已发布的那个作为预览底稿）");
-} else if (mode === "commit") {
-  throw new Error("没有待处理的提交可提交；先跑 --apply。");
+} else if (mode === "commit" || mode === "release-notes") {
+  throw new Error(`没有待处理的提交（--${mode}）；发版时应先由 msstore publish --noCommit 建好提交。`);
 } else {
   submission = await api(`/applications/${STORE_ID}/submissions`, accessToken, { method: "POST" });
   submissionId = submission.id;
   console.log(`已新建提交 ${submissionId}（克隆自上一个已发布的提交）`);
+}
+
+// CSV 那条路的印尼语必须写成 id-id（列名 id 会和 CSV 自带的 ID 列撞名），
+// API 这边没有这个问题，用商店惯用的 id。
+const apiLocale = (locale) => (locale === "id-id" ? "id" : locale);
+
+if (mode === "release-notes") {
+  // 只更新提交里已有的语言。新语言要连截图一起建，那会覆盖同一提交里的安装包，
+  // 所以留给发版之后单独跑 --apply / --commit。
+  const written = [];
+  const skipped = [];
+  for (const [locale, listing] of Object.entries(LISTINGS)) {
+    const base = submission.listings?.[apiLocale(locale)]?.baseListing;
+    if (!base) { skipped.push(apiLocale(locale)); continue; }
+    base.releaseNotes = listing.releaseNotes;
+    written.push(apiLocale(locale));
+  }
+  if (written.length === 0) throw new Error("待处理提交里没有任何本地文案覆盖的语言。");
+  await api(`/applications/${STORE_ID}/submissions/${submissionId}`, accessToken, {
+    method: "PUT",
+    body: JSON.stringify(submission),
+  });
+  console.log(`已写入 ${written.length} 个语言的更新说明：${written.join(", ")}`);
+  if (skipped.length > 0) {
+    console.log(`商品页还没有这些语言，跳过（发版后用 --apply / --commit 补上）：${skipped.join(", ")}`);
+  }
+  process.exit(0);
 }
 
 const locales = Object.keys(submission.listings ?? {});
@@ -159,9 +193,6 @@ function baseListingFor(locale, listing) {
   };
 }
 
-// CSV 那条路的印尼语必须写成 id-id（列名 id 会和 CSV 自带的 ID 列撞名），
-// API 这边没有这个问题，用商店惯用的 id。
-const apiLocale = (locale) => (locale === "id-id" ? "id" : locale);
 
 const created = [];
 const updated = [];
