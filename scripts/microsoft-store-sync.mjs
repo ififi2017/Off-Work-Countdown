@@ -189,12 +189,19 @@ function baseListingFor(locale, listing) {
     ...template,
     description: listing.description,
     releaseNotes: listing.releaseNotes,
-    features: [...(listing.features ?? template.features ?? []), listing.feature15],
+    // 没写 features 的语言沿用商店里那组，再补上本地新增的条目。去重是因为上一次同步
+    // 已经把它们写进了商店，再追加就会出现两遍。
+    features: [...new Set([
+      ...(listing.features ?? template.features ?? []),
+      listing.feature15,
+      listing.feature16,
+    ].filter(Boolean))],
     keywords: listing.searchTerms ?? template.keywords ?? [],
     shortDescription: listing.shortDescription ?? template.shortDescription ?? "",
     copyrightAndTrademarkInfo: template.copyrightAndTrademarkInfo || "MIT License",
     devStudio: template.devStudio || "fi_niaR Studio",
-    images: SHOTS.map((shot, index) => ({
+    // --text-only 不传 ZIP：沿用商店里已有的截图，否则挂着 PendingUpload 提交时会找不到文件。
+    images: textOnly && current?.images?.length ? current.images : SHOTS.map((shot, index) => ({
       fileName: `${locale}-${String(index + 1).padStart(2, "0")}-${shot}.png`,
       fileStatus: "PendingUpload",
       description: listing.captions[index],
@@ -278,7 +285,7 @@ console.log(`读回核对：${Object.keys(LISTINGS).length} 个语言的文案�
 // 提交时商店按每张 PendingUpload 截图的文件名去 ZIP 里找，缺一张整份 CommitFailed，
 // 而 CommitFailed 的提交只能删掉重建。所以上传前先核对：提交里等着上传的每个文件，
 // ZIP 里都得有。（曾因一个没移除的旧语言 zh 还挂着 zh-01-countdown.png 而失败。）
-const zipNames = new Set(Object.keys(LISTINGS).flatMap((locale) =>
+const zipNames = new Set(textOnly ? [] : Object.keys(LISTINGS).flatMap((locale) =>
   SHOTS.map((shot, index) => `${apiLocale(locale)}-${String(index + 1).padStart(2, "0")}-${shot}.png`)));
 const unmatched = Object.entries(stored.listings ?? {}).flatMap(([key, listing]) =>
   (listing.baseListing?.images ?? [])
