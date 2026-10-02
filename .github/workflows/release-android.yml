@@ -2,12 +2,21 @@ name: Android Release
 
 # Google Play 产线，与 release-desktop.yml / release-msstore.yml 并列、互不依赖。
 #
-# 只能手动触发：Play 的 versionCode 每次上传都必须递增，跟 desktop-v* tag 的
-# 节奏不一定一致，绑在 tag 上会让桌面发版顺带消耗一个 versionCode。
+# 和 iOS 的 Xcode Cloud 一样：影响 Android 的 PR 合并进 main 后自动打包，传到 alpha
+# （封闭测试）并直接提交审核（status: completed），不留草稿。不绑 desktop-v* tag：
+# Play 的 versionCode 每次上传都必须递增，桌面发版不该顺带消耗一个。
 #
-# 和 release-msstore.yml 一样，默认只干跑：出签名 AAB 当 artifact，不碰 Play。
-# 勾上 upload 才会真的推到测试轨道，且默认以**草稿**上传，要在 Console 里点发布。
+# 手动运行保留给补发和干跑：默认只出签名 AAB 当 artifact，不碰 Play；
+# 勾上 upload 才上传，且默认以**草稿**上传。
 on:
+  push:
+    branches: [main]
+    # 只看会进安装包的东西；测试、文档改动不发版。
+    paths:
+      - 'src-mobile/android/**'
+      - '!src-mobile/android/**/src/test/**'
+      - '!src-mobile/android/**/*.md'
+      - 'src-mobile/ios/Shared/Resources/**'
   workflow_dispatch:
     inputs:
       upload:
@@ -38,6 +47,11 @@ on:
 permissions:
   contents: write
 
+# 连续合并时排队依次发，不并行上传、也不取消正在上传的那次。
+concurrency:
+  group: release-android
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Signed AAB
@@ -52,6 +66,10 @@ jobs:
       ORG_GRADLE_PROJECT_doneatPlusLifetimeProduct: ${{ vars.DONEAT_PLUS_LIFETIME_PRODUCT }}
       ORG_GRADLE_PROJECT_doneatPlusLifetimePurchaseOption: ${{ vars.DONEAT_PLUS_LIFETIME_PURCHASE_OPTION }}
       ORG_GRADLE_PROJECT_doneatPlayBillingPublicKey: ${{ vars.DONEAT_PLAY_BILLING_PUBLIC_KEY }}
+      # push 没有 inputs：合并触发的固定为上传到 alpha 并提审。
+      UPLOAD: ${{ github.event_name == 'push' || inputs.upload }}
+      TRACK: ${{ inputs.track || 'alpha' }}
+      STATUS: ${{ inputs.status || 'completed' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -118,6 +136,11 @@ jobs:
           echo "ORG_GRADLE_PROJECT_doneatVersionCode=$code" >> "$GITHUB_ENV"
           echo "Building $name ($code)"
 
+      # PR 上已经跑过，这里再跑一遍是因为合并结果可能和 PR 分支不同。
+      - name: Unit tests
+        working-directory: src-mobile/android
+        run: ./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest --console=plain
+
       - name: Build signed AAB
         working-directory: src-mobile/android
         env:
@@ -165,7 +188,7 @@ jobs:
             src-mobile/android/app/build/outputs/mapping/release/mapping.txt
 
       - name: Upload to Google Play
-        if: inputs.upload
+        if: env.UPLOAD == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
@@ -174,13 +197,13 @@ jobs:
           mappingFile: src-mobile/android/app/build/outputs/mapping/release/mapping.txt
           whatsNewDirectory: whatsnew
           releaseName: ${{ steps.version.outputs.name }} (${{ steps.version.outputs.code }})
-          track: ${{ inputs.track }}
-          status: ${{ inputs.status }}
+          track: ${{ env.TRACK }}
+          status: ${{ env.STATUS }}
 
       # 和 desktop-v* 一样用 tag 标出这次发出去的代码，下次的版本说明从这里开始。
       # 草稿后来被丢弃时，下次运行用 notes_since 指定起点即可。
       - name: Tag the uploaded commit
-        if: inputs.upload
+        if: env.UPLOAD == 'true'
         run: |
           set -euo pipefail
           tag="android-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}"
@@ -189,7 +212,7 @@ jobs:
 
       # 同 release-desktop.yml：只在上传成功后通知，通知自身失败不影响流程。
       - name: Notify Lark that the build is on Play
-        if: inputs.upload
+        if: env.UPLOAD == 'true'
         continue-on-error: true
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
@@ -199,7 +222,7 @@ jobs:
             --arg repo "${{ github.repository }}" \
             --arg version "${{ steps.version.outputs.name }}" \
             --arg versionCode "${{ steps.version.outputs.code }}" \
-            --arg track "${{ inputs.track }}" \
-            --arg status "${{ inputs.status }}" \
+            --arg track "$TRACK" \
+            --arg status "$STATUS" \
             --arg runUrl "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             '$ARGS.named')"

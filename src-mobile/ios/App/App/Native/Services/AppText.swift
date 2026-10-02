@@ -142,6 +142,12 @@ final class AppText {
         let calendar = Calendar.current
         if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
            calendar.isDate(date, inSameDayAs: tomorrow) { return t("tomorrow") }
+        // A week or more away (after leave, say), a weekday alone reads as this
+        // week's, so the date comes with it.
+        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: date)).day ?? 0
+        if days >= 7 {
+            return date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day().locale(preferences.locale))
+        }
         return date.formatted(.dateTime.weekday(.wide).locale(preferences.locale))
     }
 

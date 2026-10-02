@@ -67,7 +67,8 @@ object LeavePlannerSchedule {
             val caveats = HashSet<LeavePlannerCaveat>()
             when (source) {
                 ExtendedScheduleDay.Source.CARRIED_OVER -> caveats += LeavePlannerCaveat.CarriedOverRoster
-                ExtendedScheduleDay.Source.UNASSIGNED -> caveats += LeavePlannerCaveat.Unassigned
+                // A fallback plan (leave over fixed hours) leaves such a day to the fixed schedule: known, not unassigned.
+                ExtendedScheduleDay.Source.UNASSIGNED -> if (plan?.fallsBackToBaseSchedule != true) caveats += LeavePlannerCaveat.Unassigned
                 else -> Unit
             }
             if (region != null && source != ExtendedScheduleDay.Source.HAND_SET) {

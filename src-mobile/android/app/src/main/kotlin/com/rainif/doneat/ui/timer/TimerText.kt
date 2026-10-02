@@ -33,6 +33,7 @@ class TimerText(
     private val weekdayTimeFormat =
         DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, if (use24Hour) "EEEHm" else "EEEhm"), locale)
     private val weekdayFormat = DateTimeFormatter.ofPattern("EEEE", locale)
+    private val weekdayDateFormat = DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "EEEEMMMd"), locale)
 
     fun string(id: Int) = res.getString(id)
 
@@ -74,11 +75,16 @@ class TimerText(
         return if (at.toLocalDate() == now.toLocalDate()) timeFormat.format(at) else weekdayTimeFormat.format(at)
     }
 
-    /** "Tomorrow", or the weekday's full name. */
+    /** "Tomorrow", the weekday's full name, or that with its date from a week out. */
     fun relativeDay(atMs: Double, nowMs: Double): String {
         val at = Instant.ofEpochMilli(atMs.toLong()).atZone(zone).toLocalDate()
         val today = Instant.ofEpochMilli(nowMs.toLong()).atZone(zone).toLocalDate()
-        return if (at == today.plusDays(1)) res.getString(R.string.tomorrow) else weekdayFormat.format(at)
+        return when {
+            at == today.plusDays(1) -> res.getString(R.string.tomorrow)
+            // A week or more away (after leave, say), a weekday alone reads as this week's.
+            !at.isBefore(today.plusDays(7)) -> weekdayDateFormat.format(at)
+            else -> weekdayFormat.format(at)
+        }
     }
 
     /** Two decimals, no currency symbol, as iOS; masked while earnings are hidden. */
