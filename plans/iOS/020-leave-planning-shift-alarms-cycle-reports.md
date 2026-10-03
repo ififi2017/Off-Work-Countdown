@@ -421,3 +421,4 @@
 - **文案**：新增 9 个键，移除 6 个收工键；19 种语言同步，更新报告入口、权益与通知说明，重新生成 Android 资源。
 - **验证**：iOS 模拟器构建与报告/显示时钟 42 项测试通过，覆盖闰年、1 月 1 日通知边界、独立开关、历史连休锚点、月收入剥离与单轮专注。`lint`、`npm test` 531 项、`check:ios`、`check:ios-strings` 与生成器检查通过；Android 四模块单测、`lintDebug`、`assembleDebug`、`assembleRelease` 通过。iPhone 17 检查中/德/阿语加班与年报画面，12 月柱图按阅读方向与月份标签对齐；月份标签在播放前生成。截图保存在 `/private/tmp/plan020-annual/`。模拟器点击注入未产生可靠页面变化，文字简报、暂停、关闭等手动交互仍待人工复查，不将工具成功回执视为通过。
 - **QA 入口**：DEBUG 支持 `qaCycleReport year`，`qaCycleReportCurrentPeriod YES` 选择有样例记录的当前年，`qaCycleReportRead YES` 直接检查文字简报；Release 不读取这些参数。
+- **文字简报目测**：经 DEBUG 入口直接打开中文年报，检查年度汇总与月度列表开头；隐藏收入时没有金额行，截图为 `year-zh-reading-hidden.jpg`。列表滚动的工具注入仍没有可靠画面变化，未声明滚动交互通过。
