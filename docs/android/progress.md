@@ -334,3 +334,8 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 
 - **清理完成**：独立 QA 包已卸载，临时通知探针、合成数据、相关系统预约一并移除，活动测试通知为 0；字号恢复 1.0、动画倍率恢复原先未设置、辅助服务恢复未设置/关闭。正式应用及已有 Preview 保持原样。
 - **提交**：代码与合成截图提交 `ff3874fb`，已推送 [PR #283](https://github.com/ififi2017/Off-Work-Countdown/pull/283)。本地验证结果如上；PR 不宣称闹钟平台集成或年度展开性能已经完成。
+
+### 2026-10-04 真机预览与动画恢复补验
+
+- 用户反馈减弱动态效果未恢复：此前仅删除 `animator_duration_scale`，不能据此声称实际动画已恢复。本次明确写回 `1.0`，读回窗口、转场、Animator 三项倍率均为 `1.0`，并在系统 Color & motion 页面确认 Remove animations 开关为关闭。
+- 按用户要求重新构建并安装独立 `com.rainif.doneat.preview321`，不包含通知测试探针。使用合成 schema 7 数据，报告通知关闭；已打开 2026 年 9 月月报，保留安装供用户体验。正式应用数据未修改。Debug 构建成功，随后停止 Gradle daemon，未启动模拟器。
