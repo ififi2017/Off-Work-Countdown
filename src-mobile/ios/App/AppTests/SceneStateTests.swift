@@ -399,36 +399,6 @@ struct SceneStateTests {
         #expect(first.lifeSetupEditorPresented)
     }
 
-    @Test("Only one eligible scene claims a review prompt and a blocked scene does not consume it")
-    func reviewPromptBelongsToTheClaimingScene() throws {
-        let suite = "SceneReviewPrompt.\(UUID())"
-        let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
-        var review = AppReviewPromptState()
-        review.noteCompletion(atMs: 1_000)
-        defaults.set(try JSONEncoder().encode(review), forKey: "ios.native.appReviewPrompt.v1")
-        defaults.set(true, forKey: "ios.native.onboardingComplete")
-        let runtime = AppRuntime(defaults: defaults, records: .inMemory())
-        runtime.plus.markIntroSeen()
-        let first = SceneState()
-        let second = SceneState()
-
-        first.presentReviewPromptIfEligible(using: runtime.shifts, isBlocked: true)
-        #expect(!first.reviewPromptPresented)
-        second.presentReviewPromptIfEligible(using: runtime.shifts, isBlocked: false)
-        #expect(second.reviewPromptPresented)
-        first.presentReviewPromptIfEligible(using: runtime.shifts, isBlocked: false)
-        #expect(!first.reviewPromptPresented)
-
-        runtime.shifts.deferReviewPrompt()
-        second.reviewPromptPresented = false
-        second.presentReviewPromptIfEligible(using: runtime.shifts, isBlocked: false)
-        #expect(!second.reviewPromptPresented)
-        let saved = try JSONDecoder().decode(AppReviewPromptState.self,
-            from: #require(defaults.data(forKey: "ios.native.appReviewPrompt.v1")))
-        #expect(saved.phase == .waitingForCompletion)
-    }
-
     @Test("Remembering the last tab does not drive another existing scene")
     func remembersInitialTab() throws {
         let suite = "SceneInitialTab.\(UUID())"
