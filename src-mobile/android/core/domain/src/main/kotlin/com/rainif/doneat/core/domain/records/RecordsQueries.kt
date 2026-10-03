@@ -537,33 +537,7 @@ class RecordsQueries(
         val cellsByKey = cells.associateBy { it.dayKey }
         val inputs = days.mapNotNull { day ->
             val cell = cellsByKey[day.dayKey] ?: return@mapNotNull null
-            val dayObservations = observationIndex[day.dayKey].orEmpty()
-            val hasActualObservation = dayObservations.any { it.kind != WorkObservationKind.TIMER_SURFACE_FIRST_SEEN }
-            val actualKind = when {
-                cell.appearance == RecordsDayAppearance.CORRECTED -> SummaryRules.ActualKind.CORRECTED
-                cell.appearance == RecordsDayAppearance.RECORDED && hasActualObservation -> SummaryRules.ActualKind.OBSERVED
-                !cell.isFuture && hasSavedSchedule(day) -> SummaryRules.ActualKind.SCHEDULED
-                else -> null
-            }
-            val isForecast = actualKind == null && (
-                cell.isFromSavedSchedule || cell.appearance == RecordsDayAppearance.PLANNED || cell.isProjection ||
-                    (cell.appearance == RecordsDayAppearance.RECORDED && !hasActualObservation)
-                )
-            if (actualKind == null && !isForecast) return@mapNotNull null
-            SummaryRules.RecordsDay(
-                actualKind = actualKind,
-                resolvedSegments = day.segments,
-                plannedSegments = day.baseScheduleSegments,
-                overtimeSegments = if (actualKind == null) emptyList() else overtimeSegments(day),
-                observations = dayObservations.mapNotNull {
-                    when (it.kind) {
-                        WorkObservationKind.COUNTDOWN_STARTED -> SummaryRules.Observation(true, it.occurredAtMs)
-                        WorkObservationKind.COUNTDOWN_STOPPED -> SummaryRules.Observation(false, it.occurredAtMs)
-                        else -> null
-                    }
-                },
-                isActiveAnchor = activeAnchorDayKey == day.dayKey,
-            )
+            recordsSummaryDay(day, cell)
         }
         if (inputs.isEmpty() && salary?.type != SalaryType.MONTHLY) return null
         return SummaryRules.recordsActualForecast(
@@ -576,6 +550,190 @@ class RecordsQueries(
                 zone = zone,
             ),
         )
+    }
+
+    private fun recordsSummaryDay(day: DayResolution, cell: RecordsDayCell): SummaryRules.RecordsDay? {
+        val dayObservations = observationIndex[day.dayKey].orEmpty()
+        val hasActualObservation = dayObservations.any { it.kind != WorkObservationKind.TIMER_SURFACE_FIRST_SEEN }
+        val actualKind = when {
+            cell.appearance == RecordsDayAppearance.CORRECTED -> SummaryRules.ActualKind.CORRECTED
+            cell.appearance == RecordsDayAppearance.RECORDED && hasActualObservation -> SummaryRules.ActualKind.OBSERVED
+            !cell.isFuture && hasSavedSchedule(day) -> SummaryRules.ActualKind.SCHEDULED
+            else -> null
+        }
+        val isForecast = actualKind == null && (
+            cell.isFromSavedSchedule || cell.appearance == RecordsDayAppearance.PLANNED || cell.isProjection ||
+                (cell.appearance == RecordsDayAppearance.RECORDED && !hasActualObservation)
+            )
+        if (actualKind == null && !isForecast) return null
+        return SummaryRules.RecordsDay(
+            actualKind = actualKind,
+            resolvedSegments = day.segments,
+            plannedSegments = day.baseScheduleSegments,
+            overtimeSegments = if (actualKind == null) emptyList() else overtimeSegments(day),
+            observations = dayObservations.mapNotNull {
+                when (it.kind) {
+                WorkObservationKind.COUNTDOWN_STARTED -> SummaryRules.Observation(true, it.occurredAtMs)
+                WorkObservationKind.COUNTDOWN_STOPPED -> SummaryRules.Observation(false, it.occurredAtMs)
+                else -> null
+                }
+            },
+            isActiveAnchor = activeAnchorDayKey == day.dayKey,
+        )
+    }
+
+    /** Civil-day chart figures pass the same Records rule inputs through the same summary oracle. */
+    private fun reportElapsedFigures(day: DayResolution, previous: DayResolution?, nowMs: Double, cells: Map<String, RecordsDayCell>): CycleReportFigures {
+        val lower = dayStartMs(date(day.dayKey))
+        val upper = dayStartMs(date(day.dayKey).plusDays(1))
+        fun clip(segments: List<ShiftSegment>) = segments.mapNotNull { segment ->
+            val start = maxOf(lower, segment.startAtMs)
+            val end = minOf(upper, segment.endAtMs)
+            if (end > start) ShiftSegment(start, end) else null
+        }
+        val inputs = listOfNotNull(previous, day).mapNotNull { contributor ->
+            val cell = cells[contributor.dayKey] ?: dayCell(contributor, null, nowMs, revealingAll = true)
+            val input = recordsSummaryDay(contributor, cell) ?: return@mapNotNull null
+            if (input.actualKind == null) return@mapNotNull null
+            input.copy(resolvedSegments = clip(input.resolvedSegments), overtimeSegments = clip(input.overtimeSegments))
+        }
+        val actual = SummaryRules.recordsActualForecast(SummaryRules.ActualForecastInput(inputs, listOf(day.dayKey),
+            null, nowMs, null, zone))
+        return CycleReportFigures(actual.actual.days.toInt(), kotlin.math.round(actual.actual.hours * 3_600_000).toLong(),
+            kotlin.math.round(actual.actualOvertimeHours * 3_600_000).toLong())
+    }
+
+    /** A report uses one archive revision, one clock and the zone carried by its request. */
+    fun reportPeriod(kind: CycleReportKind, date: LocalDate) = CycleReportPeriod.containing(date, kind, zone, firstDayOfWeek)
+
+    fun cycleReportSnapshot(period: CycleReportPeriod, nowMs: Double): CycleReportSnapshot? {
+        if (!authorized || CycleReportPeriod.fromUrl(period.url) == null) return null
+        if (period.zone != zone) return RecordsQueries(state, holidays, period.zone, authorized, salary, dailySalary,
+            activeAnchorDayKey, currentHours, firstDayOfWeek).cycleReportSnapshot(period, nowMs)
+        val days = displayDays(period.startDate.minusDays(1), period.endDate, nowMs)
+        val cells = cells(days, period.startDate, nowMs)
+        val figures = CycleReportFigures.fromHeadline(headline(cells, days, nowMs))
+        val resolutionIndex = days.withIndex().associate { it.value.dayKey to it.index }
+        val cellsByKey = cells.associateBy { it.dayKey }
+        val reportDays = cells.map { cell ->
+            val index = resolutionIndex.getValue(cell.dayKey)
+            val resolution = days[index]
+            val previous = days.getOrNull(index - 1)
+            val elapsed = if (cell.isFuture) CycleReportFigures() else reportElapsedFigures(resolution, previous, nowMs, cellsByKey)
+            val reliable = !cell.isProjection && resolution.layer != DayResolutionLayer.NONE && !resolution.expansionFailed && previous?.expansionFailed != true
+            val kind = when {
+                cell.isFuture -> CycleReportDayKind.UPCOMING
+                elapsed.workedMs > 0 -> CycleReportDayKind.WORK
+                reliable && resolution.segments.isEmpty() && previous?.segments.orEmpty().none { it.endAtMs > dayStartMs(cell.date) } -> CycleReportDayKind.REST
+                else -> CycleReportDayKind.UNKNOWN
+            }
+            CycleReportDay(cell.dayKey, cell.date, kind, maxOf(0L, elapsed.workedMs - elapsed.overtimeMs), elapsed.overtimeMs, cell.isToday)
+        }
+
+        var longest = 0
+        var longestStart: Int? = null
+        var run = 0
+        reportDays.forEachIndexed { index, day ->
+            run = if (day.kind == CycleReportDayKind.REST) run + 1 else 0
+            if (run > longest) { longest = run; longestStart = index - run + 1 }
+        }
+        val elapsed = reportDays.filter { it.kind != CycleReportDayKind.UPCOMING }
+        val overtimeDays = elapsed.filter { it.overtimeMs > 0 }
+        val overtime = overtimeDays.maxByOrNull { it.overtimeMs }?.let { CycleReportOvertime(elapsed, overtimeDays.size, it) }
+        val complete = period.isComplete(nowMs)
+        val todayKey = today(nowMs).toString()
+        val used = state.leaveDays.filter { it.dayKey in period.dayKeys && it.dayKey <= todayKey }.sumOf { leave ->
+            if (leave.dayKey < todayKey) return@sumOf LeaveDay.PORTION_HALF_DAYS[leave.portion] ?: 0
+            val resolution = days.firstOrNull { it.dayKey == leave.dayKey } ?: return@sumOf 0
+            val halves = com.rainif.doneat.core.domain.leave.LeaveShiftHalves(resolution.baseScheduleSegments)
+            val taken = when (leave.leavePortion) {
+                com.rainif.doneat.core.domain.schedule.LeavePortion.WHOLE -> listOf(halves.first, halves.second)
+                com.rainif.doneat.core.domain.schedule.LeavePortion.FIRST_HALF -> listOf(halves.first)
+                com.rainif.doneat.core.domain.schedule.LeavePortion.SECOND_HALF -> listOf(halves.second)
+                null -> emptyList()
+            }
+            taken.count { half -> half.isNotEmpty() && half.maxOf { it.endAtMs } <= nowMs }
+        }
+        val focus = reportFocus(period, nowMs, if (period.kind == CycleReportKind.YEAR) 1 else 2)
+        val months = if (period.kind == CycleReportKind.YEAR) (0L..11L).map { offset ->
+            val monthPeriod = reportPeriod(CycleReportKind.MONTH, period.startDate.plusMonths(offset))
+            // Reuse the annual resolution rather than resolving the same calendar thirteen times.
+            val monthKeys = monthPeriod.dayKeys.toSet()
+            val monthCells = cells.filter { it.dayKey in monthKeys }
+            val monthFigures = CycleReportFigures.fromHeadline(headline(monthCells, days, nowMs))
+            val restCount = reportDays.count { it.dayKey in monthKeys && it.kind == CycleReportDayKind.REST }
+            CycleReportMonth(monthPeriod, monthFigures, restCount, reportFocus(monthPeriod, nowMs, 1)?.rounds ?: 0)
+        } else emptyList()
+        val baseline = if (complete && period.kind != CycleReportKind.YEAR && figures.hasData) {
+            val window = if (period.kind == CycleReportKind.WEEK) 4 else 3
+            val minimum = if (period.kind == CycleReportKind.WEEK) 2 else 6
+            val priors = (1L..window.toLong()).map { offset ->
+                val before = period.neighbour(-offset, firstDayOfWeek)
+                val earlierDays = displayDays(before.startDate.minusDays(1), before.endDate, nowMs)
+                CycleReportFigures.fromHeadline(headline(cells(earlierDays, before.startDate, nowMs), earlierDays, nowMs))
+            }
+            val usable = priors.filter { it.hasData && it.workdays >= minimum }
+            val selected = if (usable.size >= 2) usable else priors.take(1).filter { it.hasData && it.workdays >= minimum }
+            selected.takeIf { it.isNotEmpty() }?.let {
+                val average = it.sumOf { prior -> prior.workedMs } / it.size
+                CycleReportBaseline(it.size, average, figures.workedMs - average)
+            }
+        } else null
+        val pay = figures.income?.let { income ->
+            val perHour = if (figures.workedMs >= 3_600_000) income / (figures.workedMs / 3_600_000.0) else null
+            val extra = if (salary?.type != SalaryType.MONTHLY && figures.overtimeMs >= 900_000 && figures.workedMs > 0)
+                income * figures.overtimeMs / figures.workedMs else null
+            CycleReportPay(income, perHour, extra)
+        }
+        return CycleReportSnapshot(period, reportDays, figures, reportDays.count { it.kind == CycleReportDayKind.REST },
+            longest, longestStart, !complete, baseline, overtime,
+            if (period.kind == CycleReportKind.YEAR) null else reportAhead(period, nowMs, used), focus, pay, months, used)
+    }
+
+    private fun reportFocus(period: CycleReportPeriod, nowMs: Double, minimum: Int): CycleReportFocus? {
+        val index = period.dayKeys.withIndex().associate { it.value to it.index }
+        val sessions = state.focusSessions.filter { it.kind == FocusSessionKind.FOCUS && it.endReason == FocusEndReason.COMPLETED &&
+            (it.endedAtMs ?: it.plannedEndAtMs) <= nowMs && it.anchorDayKey in index }
+        if (sessions.size < minimum) return null
+        val perDay = MutableList(index.size) { 0 }
+        sessions.forEach { perDay[index.getValue(it.anchorDayKey)]++ }
+        val icons = state.focusTasks.associate { it.id to it.icon }
+        val topIcon = sessions.mapNotNull { icons[it.taskID] }.groupingBy { it }.eachCount().entries
+            .sortedWith(compareByDescending<Map.Entry<FocusTaskIcon, Int>> { it.value }.thenBy { it.key.ordinal }).firstOrNull()?.key
+        val focused = sessions.sumOf { it.actualDurationSeconds?.times(1_000L) ?: maxOf(0.0, (it.endedAtMs ?: it.plannedEndAtMs) - it.startedAtMs).toLong() }
+        return CycleReportFocus(sessions.size, focused, perDay, perDay.indexOf(perDay.max()), topIcon)
+    }
+
+    private fun reportAhead(period: CycleReportPeriod, nowMs: Double, used: Int): CycleReportAhead? {
+        val reference = period.referenceDate(nowMs)
+        val upcoming = resolvedDays(reference, reference.plusDays(28))
+        // An overnight tail prevents a full rest day, using the same midnight-split allocation as Records.
+        val rest = upcoming.drop(1).mapIndexed { index, day ->
+            val previous = upcoming[index]
+            val share = dayAllocation(day, listOf(previous, day), dayStartMs(reference.plusDays(29)))
+            day.layer != DayResolutionLayer.NONE && share.workMs + share.overtimeMs == 0L && !day.expansionFailed && !previous.expansionFailed
+        }
+        var nextBreak: CycleReportNextBreak? = null
+        var index = 0
+        while (index < rest.size) {
+            if (!rest[index]) { index++; continue }
+            var end = index
+            while (end + 1 < rest.size && rest[end + 1]) end++
+            if (end - index + 1 >= 3) {
+                val start = reference.plusDays(index.toLong() + 1)
+                nextBreak = CycleReportNextBreak(start.toString(), start, end - index + 1, index + 1)
+                break
+            }
+            index = end + 1
+        }
+        val historical = period.isComplete(nowMs)
+        val balances = if (historical) emptyList() else com.rainif.doneat.core.domain.leave.LeaveAdoption.budgets(state.leaveBalances, state.leaveDays)
+            .filter { it.covers(reference.toEpochDay().toInt()) }
+        val remaining = if (!historical && state.leaveBalances.isNotEmpty()) balances.sumOf { it.availableHalfDays } else null
+        val ids = balances.map { it.id }.toSet()
+        val entitled = if (remaining != null) state.leaveBalances.filter { it.id in ids }.sumOf { it.entitledHalfDays } else null
+        if (nextBreak == null && used == 0 && remaining == null) return null
+        return CycleReportAhead(used, remaining, entitled, nextBreak, rest, historical)
     }
 
     // Days

@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material.icons.outlined.CloseFullscreen
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -115,7 +117,10 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     var selectedStageID by rememberSaveable { mutableStateOf<String?>(null) }
     var showStageCallout by rememberSaveable { mutableStateOf(false) }
     var expanded by rememberSaveable { mutableStateOf(false) }
+    val regularScroll = rememberScrollState()
+    val expandedScroll = rememberScrollState()
     var page by remember { mutableStateOf<RecordsPage?>(null) }
+    val monthHeadlines = remember(page) { mutableMapOf<Int, LoadedMonthHeadline>() }
     val locked = scale.requiresPlus && !context.queries.authorized
     val profile = context.queries.state.lifeProfile
 
@@ -130,13 +135,19 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     // Plan 020 §5: recorded overtime is open to free users as one number. Plus
     // reads it inside its summary, so only Life and free periods load it here.
     var overtime by remember { mutableStateOf<RecordedOvertime?>(null) }
-    LaunchedEffect(context, scale, anchor) {
+    LaunchedEffect(context, scale, anchor, page) {
         val q = context.queries
         if (scale != RecordsScale.LIFE && q.authorized) return@LaunchedEffect
         val first = q.window(scale, anchor).first
         val ms = withContext(Dispatchers.Default) {
             if (scale == RecordsScale.LIFE) {
                 q.lifetimeRecordedOvertimeMs(context.nowMs)
+            } else if (!locked) {
+                // The page already resolved this window. Await its snapshot rather
+                // than expanding the same schedule twice for free week/month views.
+                val loaded = page?.takeIf { it.context === context && it.scale == scale && it.first == first }
+                    ?: return@withContext null
+                loaded.recordedOvertimeMs
             } else {
                 val last = q.window(scale, anchor).second
                 val days = q.displayDays(first.minusDays(1), last, context.nowMs)
@@ -242,6 +253,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     val chart: @Composable () -> Unit = {
         ChartCard(
             context, scale, anchor, current, selectedDayKey, month, calloutMonth == month, locked, expanded,
+            monthHeadlines,
             { shift(it) }, { returnToToday() }, { select(it) }, { openDay(it) },
             { selectMonth(it) }, { openMonth(it) },
             onUnlock = { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsCharts)) }, life = life,
@@ -259,6 +271,24 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     }
     val conclusion: @Composable () -> Unit = {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            if (scale != RecordsScale.LIFE) {
+                TextButton(onClick = {
+                    if (!context.queries.authorized) openSettings(Route.Plus)
+                    else {
+                        val kind = when (scale) {
+                            RecordsScale.WEEK -> com.rainif.doneat.core.domain.records.CycleReportKind.WEEK
+                            RecordsScale.YEAR -> com.rainif.doneat.core.domain.records.CycleReportKind.YEAR
+                            else -> com.rainif.doneat.core.domain.records.CycleReportKind.MONTH
+                        }
+                        val period = context.queries.reportPeriod(kind, anchor)
+                        open(Route.CycleReport(kind.name, period.startDayKey, period.endDayKey, period.timeZoneIdentifier))
+                    }
+                }) { Text(stringResource(when (scale) {
+                    RecordsScale.WEEK -> R.string.reportEntryWeek
+                    RecordsScale.YEAR -> R.string.reportEntryYear
+                    else -> R.string.reportEntryMonth
+                })) }
+            }
             // Life's conclusion is behind Plus too: a locked life never prints a projected number.
             if (scale == RecordsScale.LIFE && !locked && profile != null) {
                 val loaded = lifeModel?.takeIf { it.first == context.lifeInputs }
@@ -291,17 +321,13 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     }
 
     Box(Modifier.fillMaxSize()) {
-        if (expanded) {
-            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-                Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(DoneAtSpacing.page).padding(bottom = LocalDoneAtBottomBarPadding.current)) { chart() }
-            }
-            return@Box
-        }
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
             BoxWithConstraints(Modifier.safeDrawingPadding()) {
-                val twoColumns = maxWidth >= 720.dp
+                val twoColumns = !expanded && maxWidth >= 720.dp
                 Column(Modifier.fillMaxSize()) {
-                    Header(graph, text, onAllRecords = { open(Route.RecordsAll) }) { note -> scope.launch { snackbar.showSnackbar(note) } }
+                    if (!expanded) {
+                        Header(graph, text, onAllRecords = { open(Route.RecordsAll) }) { note -> scope.launch { snackbar.showSnackbar(note) } }
+                    }
                     if (twoColumns) {
                         Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                             // A local function reference compares equal despite its captured scale.
@@ -314,18 +340,23 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                         }
                     } else {
                         Column(
-                            Modifier.verticalScroll(rememberScrollState()).padding(horizontal = DoneAtSpacing.page).padding(bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current),
+                            Modifier.verticalScroll(if (expanded) expandedScroll else regularScroll).padding(
+                                start = DoneAtSpacing.page, end = DoneAtSpacing.page,
+                                top = if (expanded) DoneAtSpacing.page else 0.dp,
+                                bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current,
+                            ),
                             verticalArrangement = Arrangement.spacedBy(14.dp),
                         ) {
-                            ScalePicker(text, scale) { setScale(it) }
+                            if (!expanded) ScalePicker(text, scale) { setScale(it) }
+                            // Expansion keeps this chart in the same composition slot on phones.
                             chart()
-                            conclusion()
+                            if (!expanded) conclusion()
                         }
                     }
                 }
             }
         }
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current))
+        if (!expanded) SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current))
     }
 }
 
@@ -390,6 +421,7 @@ private fun ChartCard(
     showMonthCallout: Boolean,
     locked: Boolean,
     expanded: Boolean,
+    monthHeadlines: MutableMap<Int, LoadedMonthHeadline>,
     shift: (Long) -> Unit,
     returnToToday: () -> Unit,
     onSelect: (RecordsDayCell) -> Unit,
@@ -480,7 +512,7 @@ private fun ChartCard(
                 when (scale) {
                     RecordsScale.YEAR -> {
                         if (expanded && page != null) {
-                            YearMonths(page, selectedMonth, context, onSelectMonth, onOpenMonth)
+                            YearMonths(page, selectedMonth, context, monthHeadlines, onSelectMonth, onOpenMonth)
                         } else {
                             YearCanvas(cells, first.year, selectedMonth, showMonthCallout, text, onSelectMonth, onOpenMonth)
                         }
@@ -543,11 +575,14 @@ private fun SelectedDay(cell: RecordsDayCell, text: RecordsText, onOpen: () -> U
 }
 
 /** The expanded year reads the same month's headline as the month scale. */
+private data class LoadedMonthHeadline(val page: RecordsPage, val month: Int, val summary: RecordsHeadlineSummary?)
+
 @Composable
 private fun YearMonths(
     page: RecordsPage,
     selectedMonth: Int,
     context: RecordsContext,
+    cache: MutableMap<Int, LoadedMonthHeadline>,
     onSelect: (Int) -> Unit,
     onOpen: (Int) -> Unit,
 ) {
@@ -556,8 +591,14 @@ private fun YearMonths(
     val year = page.first.year
     val month = selectedMonth.coerceIn(1, 12)
     val monthDate = LocalDate.of(year, month, 1)
-    val monthlyCells = remember(page, month) { page.cells.filter { it.date.monthValue == month } }
-    val summary = remember(page, month, context.nowMs) { context.queries.headline(monthlyCells, page.days, context.nowMs) }
+    val result by produceState(cache[month], page, month) {
+        value = cache[month] ?: withContext(Dispatchers.Default) {
+            val cells = page.cells.filter { it.date.monthValue == month }
+            LoadedMonthHeadline(page, month, page.context.queries.headline(cells, page.days, page.context.nowMs))
+        }.also { cache[month] = it }
+    }
+    val loaded = result?.takeIf { it.page === page && it.month == month }
+    val summary = loaded?.summary
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -589,7 +630,9 @@ private fun YearMonths(
             }
         }
         HorizontalDivider(color = scheme.outlineVariant)
-        if (summary == null) {
+        if (loaded == null) {
+            CircularProgressIndicator(Modifier.size(DoneAtSpacing.xl), strokeWidth = DoneAtSpacing.xxs)
+        } else if (summary == null) {
             Text(text.monthYear(monthDate), style = MaterialTheme.typography.titleMedium)
             Text(text.string(R.string.recordsUnrecorded), color = scheme.onSurfaceVariant)
         } else {
@@ -629,7 +672,7 @@ private data class RecordedOvertime(val context: RecordsContext, val scale: Reco
  * Open to free users, so it is given the total alone and nothing it was made from.
  */
 @Composable
-private fun OvertimeLine(text: RecordsText, milliseconds: Double) {
+internal fun OvertimeLine(text: RecordsText, milliseconds: Double) {
     RecordsCard {
         Box(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
             Metric(text.string(R.string.recordsOvertimeRecorded), text.duration(milliseconds))

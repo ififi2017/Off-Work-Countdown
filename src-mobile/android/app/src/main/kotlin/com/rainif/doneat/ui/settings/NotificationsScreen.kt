@@ -93,6 +93,11 @@ fun NotificationsScreen(
         refresh++
         if (!granted) editDevice { it.copy(ongoingEnabled = false) }
     }
+    val reportRequest = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        markPermissionRequested()
+        refresh++
+        if (!granted) editDevice { it.copy(weeklyReportEnabled = false, monthlyReportEnabled = false, yearlyReportEnabled = false) }
+    }
     fun choose(mode: String) {
         edit { it.copy(notificationMode = mode) }
         if (mode != "off" && access == NotificationAccess.NOT_ASKED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -146,14 +151,23 @@ fun NotificationsScreen(
                 }
             }
         }
-        SettingsGroup(stringResource(R.string.cycleEndSummaryNotificationTitle), footer = stringResource(R.string.cycleEndSummaryNotificationNote)) {
-            SwitchRow(
-                stringResource(R.string.cycleEndSummaryNotificationTitle),
-                checked = isPlus && p.cycleEndSummaryNotificationEnabled,
-                onCheckedChange = { on -> if (isPlus) edit { it.copy(cycleEndSummaryNotificationEnabled = on) }
-                    else if (on) open(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.CycleSummary)) },
-                badge = if (isPlus) null else stringResource(R.string.plusStatusSubscribed),
-            )
+        SettingsGroup(stringResource(R.string.reportEntryTitle), footer = stringResource(R.string.reportNotificationsNote)) {
+            listOf(R.string.reportWeekly to device.weeklyReportEnabled, R.string.reportMonthly to device.monthlyReportEnabled,
+                R.string.reportYearly to device.yearlyReportEnabled).forEachIndexed { index, (title, enabled) ->
+                if (index > 0) RowDivider(inset = false)
+                SwitchRow(stringResource(title), checked = isPlus && enabled, onCheckedChange = { on ->
+                    if (isPlus) {
+                        editDevice { current -> when (index) {
+                            0 -> current.copy(weeklyReportEnabled = on)
+                            1 -> current.copy(monthlyReportEnabled = on)
+                            else -> current.copy(yearlyReportEnabled = on)
+                        } }
+                        if (on && access == NotificationAccess.NOT_ASKED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            reportRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    } else if (on) open(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.CycleSummary))
+                }, badge = if (isPlus) null else stringResource(R.string.plusStatusSubscribed))
+            }
         }
         PageFooter(stringResource(R.string.notificationPrivacyNote))
     }

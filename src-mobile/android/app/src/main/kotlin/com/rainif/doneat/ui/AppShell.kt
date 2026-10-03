@@ -3,6 +3,14 @@ package com.rainif.doneat.ui
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.slideInHorizontally
@@ -28,6 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -72,7 +81,9 @@ import java.time.Instant
  * returns to the timer, and from the timer's root it leaves the app.
  */
 @Composable
-fun AppShell(graph: AppGraph) {
+fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
+    val reportStageChanged by rememberUpdatedState(onReportStageChanged)
+    DisposableEffect(Unit) { onDispose { reportStageChanged(false) } }
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val selectedState = rememberSaveable { mutableStateOf(tabFromStoredName(device.selectedTab)) }
     var selected by selectedState
@@ -114,7 +125,7 @@ fun AppShell(graph: AppGraph) {
             }
             PlusPendingAction.RecordsCharts -> select(AppTab.RECORDS)
             PlusPendingAction.CycleSummary -> graph.scope.launch {
-                graph.settings.edit { it.copy(cycleEndSummaryNotificationEnabled = true) }
+                graph.settings.updateDevice { it.copy(weeklyReportEnabled = true) }
             }
             // The options stay underneath, so Back from the plan returns to them.
             is PlusPendingAction.LeavePlan -> source.add(Route.LeavePlanDetail(action.index))
@@ -129,7 +140,20 @@ fun AppShell(graph: AppGraph) {
             graph.requestedTab.value = null
         }
     }
+    val requestedReport by graph.requestedReport.collectAsStateWithLifecycle()
+    LaunchedEffect(requestedReport) {
+        requestedReport?.let { period ->
+            val reports = stacks.getValue(AppTab.RECORDS)
+            while (reports.size > 1) reports.removeAt(reports.lastIndex)
+            reports.add(Route.CycleReport(period.kind.name, period.startDayKey, period.endDayKey, period.timeZoneIdentifier))
+            select(AppTab.RECORDS)
+            graph.requestedReport.value = null
+        }
+    }
     val stack = stacks.getValue(selected)
+    LaunchedEffect(selected, stack.lastOrNull()) {
+        reportStageChanged(stack.lastOrNull() is Route.CycleReport)
+    }
     val reviewBlocked by graph.reviewBlocked.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val activity = remember(context) { context.fragmentActivity() }
@@ -161,7 +185,7 @@ fun AppShell(graph: AppGraph) {
         // navigation inside that tab slides; it never crossfades two root pages.
         tabState.SaveableStateProvider(selected) {
         NavDisplay(
-            backStack = stack,
+            backStack = stack.filterNot { it is Route.CycleReport },
             sizeTransform = null,
             transitionSpec = {
                 if (motion.reduced) EnterTransition.None togetherWith ExitTransition.None
@@ -185,7 +209,7 @@ fun AppShell(graph: AppGraph) {
             },
             onBack = { if (stack.size > 1) stack.removeAt(stack.lastIndex) },
             entryProvider = { key ->
-                entry(key, stack, graph, { action -> continueAfterPlus(action) }) { route ->
+                entry(key, stack, graph, { action -> continueAfterPlus(action) }, openSettings = { route ->
                     if (route is Route.PlusFor) {
                         // A purchase prompted by a feature returns to that feature on Back.
                         stack.add(route)
@@ -196,7 +220,7 @@ fun AppShell(graph: AppGraph) {
                         route?.let(settings::add)
                         select(AppTab.SETTINGS)
                     }
-                }
+                })
             },
         )
         }
@@ -205,6 +229,9 @@ fun AppShell(graph: AppGraph) {
         if (tab == selected) stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) }
         else select(tab)
     }
+    val reportRoute = stack.lastOrNull() as? Route.CycleReport
+    Box(Modifier.fillMaxSize()) {
+    Box(if (reportRoute != null) Modifier.clearAndSetSemantics { } else Modifier) {
     if (layout == NavigationSuiteType.NavigationBar) {
         DoneAtGlassNavigation(
             items = AppTab.entries.map { DoneAtNavigationItem(stringResource(it.title), it.icon) },
@@ -224,6 +251,36 @@ fun AppShell(graph: AppGraph) {
             },
             content = content,
         )
+    }
+    }
+    if (reportRoute != null) {
+        // Keep both the source screen and the report alive until the cover has left.
+        // Moving NavDisplay between two branches destroyed its transition state.
+        val cover = remember(reportRoute) { MutableTransitionState(false).apply { targetState = true } }
+        var unlock by remember(reportRoute) { mutableStateOf(false) }
+        val close = { cover.targetState = false }
+        LaunchedEffect(cover.isIdle, cover.currentState, cover.targetState) {
+            if (cover.isIdle && !cover.currentState && !cover.targetState) {
+                if (stack.lastOrNull() == reportRoute) stack.removeAt(stack.lastIndex)
+                if (unlock) stack.add(Route.PlusFor(PlusPendingAction.RecordsCharts))
+            }
+        }
+        AnimatedVisibility(
+            visibleState = cover,
+            enter = if (motion.reduced) EnterTransition.None else slideInVertically(motion.reportCover()) { it },
+            exit = if (motion.reduced) ExitTransition.None else slideOutVertically(motion.reportCover()) { it },
+        ) {
+            NavDisplay(
+                backStack = listOf<NavKey>(reportRoute),
+                onBack = close,
+                entryProvider = { key -> entry(key, stack, graph, ::continueAfterPlus, {}, close) {
+                    unlock = true
+                    close()
+                } },
+            )
+        }
+        BackHandler { close() }
+    }
     }
 }
 
@@ -257,7 +314,8 @@ private val AppTab.icon
 
 /** The single destination registry every stack uses (iOS `AppRouteDestination`). */
 private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
-    continueAfterPlus: (PlusPendingAction) -> Unit, openSettings: (Route?) -> Unit): NavEntry<NavKey> = NavEntry(key) {
+    continueAfterPlus: (PlusPendingAction) -> Unit, openSettings: (Route?) -> Unit,
+    closeReport: (() -> Unit)? = null, unlockReport: (() -> Unit)? = null): NavEntry<NavKey> = NavEntry(key) {
     if (key is Route.RecordsDayEdit || key == Route.RecordsLifeEdit || key is Route.FocusTemplateEdit) {
         // Keep the outgoing page intact during a predictive gesture and its finish animation.
         // A child editor or tab switch keeps this key in the stack, so its draft survives.
@@ -291,6 +349,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
         Route.FocusTimerSettings -> com.rainif.doneat.ui.focus.FocusTimerSettingsScreen(graph, back)
         is Route.FocusTemplateEdit -> com.rainif.doneat.ui.focus.FocusTemplateEditScreen(graph, key.templateID, open, back)
         is Route.FocusTemplateTask -> com.rainif.doneat.ui.focus.FocusTemplateTaskScreen(graph, key.taskID, back)
+        is Route.CycleReport -> com.rainif.doneat.ui.records.CycleReportScreen(graph, key, closeReport ?: back, unlockReport ?: {})
         Route.RecordsHome -> com.rainif.doneat.ui.records.RecordsScreen(graph, open, openSettings)
         is Route.RecordsDay -> com.rainif.doneat.ui.records.RecordsDayScreen(graph, key.dayKey, open, back, openSettings)
         Route.RecordsAll -> com.rainif.doneat.ui.records.AllRecordsScreen(graph, open, back)

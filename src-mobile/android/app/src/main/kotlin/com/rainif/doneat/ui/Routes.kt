@@ -32,6 +32,7 @@ sealed interface Route : NavKey {
 
     /** Records: one day, and the list of every recorded day by year and month. */
     @Serializable data class RecordsDay(val dayKey: String) : Route
+    @Serializable data class CycleReport(val kind: String, val startDayKey: String, val endDayKey: String, val timeZoneIdentifier: String) : Route
     @Serializable data object RecordsAll : Route
     @Serializable data class RecordsYear(val year: Int) : Route
     @Serializable data class RecordsMonth(val year: Int, val month: Int) : Route

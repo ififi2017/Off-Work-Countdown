@@ -335,6 +335,13 @@ Android 已建立原生 Kotlin / Compose 工程，位于 `src-mobile/android`，
 Glance 与系统倒计时通知。Kotlin 实现以固定 iOS 基线与共享 TypeScript 规则为规格，通过
 差分 fixture 校验；不运行 JavaScript，也不共享 Web 标记。所有常驻表面继续不含薪资。
 
+Android 3.2.1 的 Plan 020 增量固定读取 iOS `18129168acd23edc3a872cca3633a2831f60c6f2`。
+动态周、月、年报由 Kotlin 领域层生成统计快照，Compose 播放与文字简报共用；
+通知携带周期边界和记录时区。档案继续使用 schema 7 的原子 JSON 存储。
+班次起床闹钟当前只提供纯规则规划与差量模型：原生响铃生命周期，以及客户端
+Play Billing 未提供的已验证精确订阅到期时刻，仍是平台接入边界；产品没有开放闹钟开关。
+规则对应与平台差异见 [Android 规则说明](android/rule-parity.md)。
+
 任务状态仅维护在 [Android 进度](android/progress.md)，架构与检查见
 [Android Agent Guide](agent-guides/android.md)。首发不包含 Drive 同步、服务端购买验证或 Wear。
 Play Billing 和商店发布验收仍未完成，Web/PWA 继续可用。

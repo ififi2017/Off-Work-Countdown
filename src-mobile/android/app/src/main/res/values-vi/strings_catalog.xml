@@ -388,6 +388,7 @@
     <string name="leaveSetupTitle">Thiết lập ngày phép</string>
     <string name="leaveTitle">Nghỉ phép</string>
     <string name="leaveTrialNotice">Mỗi lần mở một kế hoạch tính một lượt, kể cả mở lại cùng kế hoạch.</string>
+    <string name="leaveTrialSaveFailed">Không thể mở kế hoạch này. Vui lòng thử lại.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="other">Còn %d lần xem kế hoạch miễn phí</item>
     </plurals>

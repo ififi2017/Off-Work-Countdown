@@ -4,6 +4,8 @@ import com.rainif.doneat.core.domain.records.RecordState
 import com.rainif.doneat.core.domain.settings.PreferencesRules
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -32,6 +34,26 @@ class SettingsRepositoryTest {
         val scope = CoroutineScope(backgroundScope.coroutineContext + dispatcher)
         val repo = SettingsRepository(records, device, scope, { now }, { zone }, { "00000000-0000-4000-8000-%012d".format(++ids) })
         return Triple(records, device, repo)
+    }
+
+    @Test fun reportNotificationMigrationReadsRestoredArchiveBeforeDerivedFlowCatchesUp() = runTest {
+        val (records, device, original) = open()
+        records.load()
+        original.edit { it.copy(cycleEndSummaryNotificationEnabled = true) }
+        original.completeSetup()
+        val delayed = SettingsRepository(records, device, backgroundScope, { now }, { zone }, { "00000000-0000-4000-8000-000000000999" })
+        delayed.migrateCycleReportNotifications()
+        assertTrue(device.settings.value.weeklyReportEnabled)
+        assertFalse(device.settings.value.monthlyReportEnabled)
+        assertFalse(device.settings.value.yearlyReportEnabled)
+        assertTrue(device.settings.value.reportNotificationMigrationComplete)
+        assertFalse(records.state.value.syncedPreferences!!.cycleEndSummaryNotificationEnabled)
+        delayed.updateDevice { it.copy(weeklyReportEnabled = false) }
+        delayed.migrateCycleReportNotifications()
+        assertFalse(device.settings.value.weeklyReportEnabled)
+        val restored = DeviceSettingsStore(deviceFile).settings.value
+        assertTrue(restored.reportNotificationMigrationComplete)
+        assertFalse(restored.weeklyReportEnabled)
     }
 
     @Test fun beforeSetupEditsStayInTheDraftAndNeverReachTheArchive() = runTest {
@@ -127,5 +149,27 @@ class SettingsRepositoryTest {
         assertFalse(repo.edit { it.copy(microBreakIntervalMinutes = 0) })
         repo.updateDevice { it.copy(hideEarnings = true) }
         assertTrue(DeviceSettingsStore(deviceFile).settings.value.hideEarnings)
+    }
+
+    @Test fun detailViewsReserveExactlyThreeTrialsAndPersistBeforeReturning() = runTest {
+        val (records, _, repo) = open()
+        records.load()
+        val before = records.state.value
+        val allowed = (1..12).map { async { repo.consumeLeavePlannerTrial() } }.awaitAll()
+        assertEquals(3, allowed.count { it })
+        assertEquals(3, repo.device.value.leavePlannerTrialsUsed)
+        assertEquals(0, repo.device.value.leavePlannerTrialsLeft)
+        val restarted = DeviceSettingsStore(deviceFile)
+        assertEquals(3, restarted.settings.value.leavePlannerTrialsUsed)
+        assertFalse(restarted.consumeLeavePlannerTrial())
+        assertEquals("trial views never write business records", before, records.state.value)
+    }
+
+    @Test fun failedTrialPersistenceDoesNotConsumeAView() = runTest {
+        val (_, _, repo) = open()
+        Files.createDirectories(deviceFile.parent)
+        Files.createDirectory(deviceFile)
+        assertTrue(runCatching { repo.consumeLeavePlannerTrial() }.isFailure)
+        assertEquals(3, repo.device.value.leavePlannerTrialsLeft)
     }
 }

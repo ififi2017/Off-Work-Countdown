@@ -6,7 +6,7 @@ import com.rainif.doneat.core.domain.schedule.ReminderKind
 import kotlin.math.ceil
 
 /** Which system channel a reminder posts to, so the user can mute one kind without the others. */
-enum class ReminderChannel { SHIFT, HEALTH, FOCUS }
+enum class ReminderChannel { SHIFT, HEALTH, FOCUS, REPORT }
 
 /**
  * One system alarm: everything the receiver needs to post it without
@@ -20,6 +20,8 @@ data class PlannedReminder(
     val title: String,
     val body: String,
     val expiresAtMs: Long? = null,
+    /** Salary-free frozen civil report route, persisted with the alarm. */
+    val reportUrl: String? = null,
 ) {
     fun isDeliverable(nowMs: Long) = expiresAtMs == null || nowMs < expiresAtMs
 }

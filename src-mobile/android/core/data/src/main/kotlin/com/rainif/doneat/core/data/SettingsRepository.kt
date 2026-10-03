@@ -63,6 +63,10 @@ data class DeviceSettings(
      * UserDefaults it comes back with a device backup and nowhere else.
      */
     val leavePlannerTrialsUsed: Int = 0,
+    val weeklyReportEnabled: Boolean = false,
+    val monthlyReportEnabled: Boolean = false,
+    val yearlyReportEnabled: Boolean = false,
+    val reportNotificationMigrationComplete: Boolean = false,
 ) {
     val leavePlannerTrialsLeft get() = maxOf(0, LEAVE_PLANNER_FREE_TRIALS - leavePlannerTrialsUsed)
 
@@ -89,6 +93,17 @@ class DeviceSettingsStore(private val file: Path) {
         _settings.value = next
     }
 
+    /** Reserve a detail view under the same lock as all device edits, before navigation. */
+    suspend fun consumeLeavePlannerTrial(): Boolean = mutex.withLock {
+        val current = _settings.value
+        if (current.leavePlannerTrialsLeft == 0) return@withLock false
+        val next = current.copy(leavePlannerTrialsUsed = current.leavePlannerTrialsUsed + 1)
+        Files.createDirectories(file.parent)
+        RecordStore.writeAtomically(file, encode(next).toByteArray())
+        _settings.value = next
+        true
+    }
+
     private fun read(): DeviceSettings = runCatching {
         if (!Files.exists(file)) return DeviceSettings()
         val o = Json.parseToJsonElement(Files.readString(file)).jsonObject
@@ -109,6 +124,10 @@ class DeviceSettingsStore(private val file: Path) {
             ongoingEnabled = bool("ongoingEnabled", false),
             ongoingLeadMinutes = o["ongoingLeadMinutes"]?.jsonPrimitive?.intOrNull?.takeIf { it in DeviceSettings.ONGOING_LEAD_MINUTES } ?: 15,
             focusOngoingEnabled = bool("focusOngoingEnabled", true),
+            weeklyReportEnabled = bool("weeklyReportEnabled", false),
+            monthlyReportEnabled = bool("monthlyReportEnabled", false),
+            yearlyReportEnabled = bool("yearlyReportEnabled", false),
+            reportNotificationMigrationComplete = bool("reportNotificationMigrationComplete", false),
             leavePlannerTrialsUsed = o["leavePlannerTrialsUsed"]?.jsonPrimitive?.intOrNull?.coerceAtLeast(0) ?: 0,
         )
     }.getOrElse { DeviceSettings() }
@@ -131,6 +150,10 @@ class DeviceSettingsStore(private val file: Path) {
             "ongoingLeadMinutes" to JsonPrimitive(s.ongoingLeadMinutes),
             "focusOngoingEnabled" to JsonPrimitive(s.focusOngoingEnabled),
             "leavePlannerTrialsUsed" to JsonPrimitive(s.leavePlannerTrialsUsed),
+            "weeklyReportEnabled" to JsonPrimitive(s.weeklyReportEnabled),
+            "monthlyReportEnabled" to JsonPrimitive(s.monthlyReportEnabled),
+            "yearlyReportEnabled" to JsonPrimitive(s.yearlyReportEnabled),
+            "reportNotificationMigrationComplete" to JsonPrimitive(s.reportNotificationMigrationComplete),
         ),
     ).toString()
 }
@@ -242,6 +265,17 @@ class SettingsRepository(
         return changed
     }
 
+    /** Read archive sources directly: the derived preference flow may lag after restoring an archive. */
+    suspend fun migrateCycleReportNotifications() {
+        val old = records.state.value.syncedPreferences?.cycleEndSummaryNotificationEnabled
+            ?: device.value.setupDraft?.cycleEndSummaryNotificationEnabled ?: false
+        deviceStore.update { local ->
+            if (local.reportNotificationMigrationComplete) local
+            else local.copy(weeklyReportEnabled = local.weeklyReportEnabled || old, reportNotificationMigrationComplete = true)
+        }
+        if (old) edit { it.copy(cycleEndSummaryNotificationEnabled = false) }
+    }
+
     /** Commits the first-run choices in one archive write, then marks setup done. */
     suspend fun completeSetup(): Boolean {
         val draft = device.value.setupDraft ?: fallback()
@@ -261,4 +295,6 @@ class SettingsRepository(
     }
 
     suspend fun updateDevice(change: (DeviceSettings) -> DeviceSettings) = deviceStore.update(change)
+
+    suspend fun consumeLeavePlannerTrial(): Boolean = deviceStore.consumeLeavePlannerTrial()
 }

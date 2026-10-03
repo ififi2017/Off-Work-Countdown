@@ -388,6 +388,7 @@
     <string name="leaveSetupTitle">ตั้งค่าวันลาก่อน</string>
     <string name="leaveTitle">วันหยุดพักผ่อน</string>
     <string name="leaveTrialNotice">เปิดแผนแต่ละครั้งนับ 1 ครั้ง แม้เปิดแผนเดิมซ้ำ</string>
+    <string name="leaveTrialSaveFailed">เปิดแผนนี้ไม่ได้ โปรดลองอีกครั้ง</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="other">ดูแผนฟรีได้อีก %d ครั้ง</item>
     </plurals>

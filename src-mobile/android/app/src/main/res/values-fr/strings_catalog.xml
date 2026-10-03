@@ -390,6 +390,7 @@
     <string name="leaveSetupTitle">Configurer vos congés</string>
     <string name="leaveTitle">Congés</string>
     <string name="leaveTrialNotice">Chaque ouverture d’un plan compte une fois, même pour le même plan.</string>
+    <string name="leaveTrialSaveFailed">Impossible d’ouvrir ce plan. Réessayez.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="one">Encore %d consultation gratuite</item>
         <item quantity="many">Encore %d consultations gratuites</item>

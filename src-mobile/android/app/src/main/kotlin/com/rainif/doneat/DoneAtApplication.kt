@@ -44,6 +44,7 @@ class AppGraph(app: Application) {
     val settings = SettingsRepository(records, device, scope, nowMs, systemZone, newId)
     /** A launcher shortcut or notification waits here until setup has finished. */
     val requestedTab = MutableStateFlow<String?>(null)
+    val requestedReport = MutableStateFlow<com.rainif.doneat.core.domain.records.CycleReportPeriod?>(null)
 
     private val _holidays = MutableStateFlow(HolidayCalendar.EMPTY)
     /** The bundled holiday dataset (shared with iOS); read once, off the main thread. */
@@ -72,13 +73,10 @@ class AppGraph(app: Application) {
         app, sessions, settings, scope, nowMs,
         planChanges = combine(records.state, plus.authorized) { state, plus -> state to plus },
         adjust = { prefs -> focusCoordinator.breakTakeover(records.state.value, prefs.microBreakEnabled) },
-        cycleSummary = { res, session, shift ->
-            com.rainif.doneat.core.domain.reminders.ScheduleCycleSummaryCalculator.forShift(records.state.value, session, shift, plus.authorized.value)?.let { summary ->
-                val text = com.rainif.doneat.ui.timer.TimerText(res, res.configuration.locales[0], android.text.format.DateFormat.is24HourFormat(app), hideEarnings = true)
-                com.rainif.doneat.l10n.Strings.cycleEndSummaryNotificationBody(res, text.count(summary.workdayCount), text.relativeDuration(summary.workMs.toDouble()), text.relativeDuration(summary.overtimeMs.toDouble()))
-            }
-        },
+
     )
+
+    val reportNotifications = com.rainif.doneat.reminders.CycleReportCoordinator(app, settings, plus.authorized, scope, nowMs, plus.state)
 
     /** The countdown notification before clock-off and during focus phases. */
     val ongoing = com.rainif.doneat.ongoing.OngoingCoordinator(app, sessions, records, settings, focus, plus.authorized, scope, nowMs)
@@ -118,6 +116,7 @@ class AppGraph(app: Application) {
             timer.reconcile()
             focusCoordinator.reconcile()
             _loaded.value = true
+            reportNotifications.start()
             timer.start()
             focusCoordinator.start()
             widgets.start()

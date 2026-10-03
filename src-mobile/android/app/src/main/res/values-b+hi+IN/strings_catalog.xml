@@ -389,6 +389,7 @@
     <string name="leaveSetupTitle">पहले छुट्टी सेट करें</string>
     <string name="leaveTitle">छुट्टियाँ</string>
     <string name="leaveTrialNotice">हर बार योजना खोलने पर एक मौका लगता है, वही योजना दोबारा खोलने पर भी।</string>
+    <string name="leaveTrialSaveFailed">यह योजना नहीं खुल सकी। कृपया फिर कोशिश करें।</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="one">%d मुफ़्त योजना देखना बाकी</item>
         <item quantity="other">%d मुफ़्त योजनाएँ देखना बाकी</item>

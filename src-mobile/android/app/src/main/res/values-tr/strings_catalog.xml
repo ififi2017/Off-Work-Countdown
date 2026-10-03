@@ -389,6 +389,7 @@
     <string name="leaveSetupTitle">Önce iznini ayarla</string>
     <string name="leaveTitle">İzin</string>
     <string name="leaveTrialNotice">Her plan açılışı bir hak kullanır; aynı planı yeniden açmak da sayılır.</string>
+    <string name="leaveTrialSaveFailed">Bu plan açılamadı. Lütfen tekrar deneyin.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="one">%d ücretsiz plan görüntüleme kaldı</item>
         <item quantity="other">%d ücretsiz plan görüntüleme kaldı</item>

@@ -388,6 +388,7 @@
     <string name="leaveSetupTitle">Atur cutimu dulu</string>
     <string name="leaveTitle">Cuti</string>
     <string name="leaveTrialNotice">Setiap membuka rencana terhitung satu kali, termasuk rencana yang sama.</string>
+    <string name="leaveTrialSaveFailed">Tidak dapat membuka rencana ini. Silakan coba lagi.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="other">Sisa %d kali lihat rencana gratis</item>
     </plurals>

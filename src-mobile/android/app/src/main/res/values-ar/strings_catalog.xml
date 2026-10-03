@@ -393,6 +393,7 @@
     <string name="leaveSetupTitle">إعداد إجازاتك</string>
     <string name="leaveTitle">الإجازات</string>
     <string name="leaveTrialNotice">كل فتح لخطة يُحتسب مرة، حتى لو كانت الخطة نفسها.</string>
+    <string name="leaveTrialSaveFailed">تعذر فتح هذه الخطة. حاول مرة أخرى.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="zero">مرات عرض الخطط المجانية المتبقية: %d</item>
         <item quantity="one">مرات عرض الخطط المجانية المتبقية: %d</item>

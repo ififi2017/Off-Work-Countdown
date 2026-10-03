@@ -390,6 +390,7 @@
     <string name="leaveSetupTitle">Imposta le ferie</string>
     <string name="leaveTitle">Ferie</string>
     <string name="leaveTrialNotice">Ogni apertura di un piano conta una volta, anche se è lo stesso.</string>
+    <string name="leaveTrialSaveFailed">Impossibile aprire questo piano. Riprova.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="one">Puoi aprire ancora %d piano gratis</item>
         <item quantity="many">Puoi aprire ancora %d piani gratis</item>

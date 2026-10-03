@@ -188,4 +188,19 @@ class LeaveAdoptionTest {
         assertEquals(2, before - state.leaveDays.size)
         assertTrue(state.leaveDays.isEmpty())
     }
+
+    @Test fun `undo preserves a later replacement and returns only the remaining plan spend`() {
+        val now = ms("2026-10-10", 12)
+        val initial = LeaveAdoption.upsertBalance(RecordState(), balance(), now, ::newId)
+        val (adopted, result) = adopt(initial, proposal(), now)
+        val replacement = leaveDay(
+            "2026-10-20", LeavePortion.SECOND_HALF, listOf(LeaveBalanceUse(annual, 1)),
+        )
+        val edited = LeaveAdoption.adopt(adopted, listOf(replacement), now + 1, ::newId)
+        val laterRow = edited.leaveDays.single { it.dayKey == replacement.dayKey }
+        val undone = LeaveAdoption.undoPlan(edited, result.getOrThrow(), now + 2)
+        assertEquals(listOf(laterRow), undone.leaveDays)
+        assertEquals(19, LeaveAdoption.budgets(undone.leaveBalances, undone.leaveDays).single().availableHalfDays)
+        assertFalse(undone.isErased(RecordEntityType.LEAVE_DAY, replacement.dayKey))
+    }
 }

@@ -1435,6 +1435,10 @@
     "leaveTrialNotice": {
       "resource": "string/leaveTrialNotice"
     },
+    "leaveTrialSaveFailed": {
+      "resource": "string/leaveTrialSaveFailed",
+      "androidOnly": true
+    },
     "leaveTrialsLeft": {
       "resource": "plurals/leaveTrialsLeft"
     },
