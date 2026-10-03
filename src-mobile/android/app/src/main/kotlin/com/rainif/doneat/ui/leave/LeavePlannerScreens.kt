@@ -314,22 +314,36 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     // Options are not kept across a restart; the form is, one step back.
+    var opening by remember { mutableStateOf(false) }
+    var trialWriteFailed by remember { mutableStateOf(false) }
     LaunchedEffect(proposals == null) { if (proposals == null) onBack() }
     val options = proposals.orEmpty()
 
     // Each time a free user opens an option, one free view is used, the same option again included.
     fun openPlan(index: Int) {
+        if (opening) return
         when {
             plus -> open(Route.LeavePlanDetail(index))
-            graph.settings.device.value.leavePlannerTrialsLeft > 0 -> {
-                scope.launch { graph.settings.updateDevice { it.copy(leavePlannerTrialsUsed = it.leavePlannerTrialsUsed + 1) } }
-                open(Route.LeavePlanDetail(index))
+            else -> {
+                opening = true
+                scope.launch {
+                    val reserved = withContext(Dispatchers.IO) {
+                        runCatching { graph.settings.consumeLeavePlannerTrial() }
+                    }
+                    opening = false
+                    reserved.fold(
+                        onSuccess = { allowed ->
+                            open(if (allowed) Route.LeavePlanDetail(index) else Route.PlusFor(PlusPendingAction.LeavePlan(index)))
+                        },
+                        onFailure = { trialWriteFailed = true },
+                    )
+                }
             }
-            else -> open(Route.PlusFor(PlusPendingAction.LeavePlan(index)))
         }
     }
 
     DoneAtPage(text.string(R.string.leaveResultsTitle), onBack, text.string(R.string.leavePlanAction)) {
+        if (trialWriteFailed) PageFooter(text.string(R.string.leaveTrialSaveFailed))
         if (!plus && options.isNotEmpty()) LeaveTrialBanner(device.leavePlannerTrialsLeft, text, explainsCost = true)
         if (options.isEmpty()) {
             SettingsGroup {

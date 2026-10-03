@@ -389,6 +389,7 @@
     <string name="leaveSetupTitle">आधी रजा सेट करा</string>
     <string name="leaveTitle">सुट्ट्या</string>
     <string name="leaveTrialNotice">प्रत्येक वेळी नियोजन उघडल्यावर एक संधी वापरली जाते, तेच नियोजन पुन्हा उघडले तरी.</string>
+    <string name="leaveTrialSaveFailed">ही योजना उघडता आली नाही. कृपया पुन्हा प्रयत्न करा.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="one">आणखी %d नियोजन मोफत पाहता येईल</item>
         <item quantity="other">आणखी %d नियोजने मोफत पाहता येतील</item>

@@ -388,6 +388,7 @@
     <string name="leaveSetupTitle">まず休暇を設定</string>
     <string name="leaveTitle">休暇</string>
     <string name="leaveTrialNotice">プランを開くたびに1回使います。同じプランを開き直した場合も含みます。</string>
+    <string name="leaveTrialSaveFailed">このプランを開けませんでした。もう一度お試しください。</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="other">あと %d 回、無料でプランを見られます</item>
     </plurals>

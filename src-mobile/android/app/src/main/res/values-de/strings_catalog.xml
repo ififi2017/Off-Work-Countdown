@@ -389,6 +389,7 @@
     <string name="leaveSetupTitle">Urlaub einrichten</string>
     <string name="leaveTitle">Urlaub</string>
     <string name="leaveTrialNotice">Jedes Öffnen eines Plans zählt einmal, auch beim selben Plan.</string>
+    <string name="leaveTrialSaveFailed">Dieser Plan konnte nicht geöffnet werden. Bitte versuche es erneut.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="one">Noch %d kostenlose Planansicht</item>
         <item quantity="other">Noch %d kostenlose Planansichten</item>

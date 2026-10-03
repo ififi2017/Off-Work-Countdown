@@ -388,6 +388,7 @@
     <string name="leaveSetupTitle">먼저 휴가 설정하기</string>
     <string name="leaveTitle">휴가</string>
     <string name="leaveTrialNotice">계획을 열 때마다 1번씩 차감돼요. 같은 계획을 다시 열어도 차감돼요.</string>
+    <string name="leaveTrialSaveFailed">이 계획을 열 수 없습니다. 다시 시도해 주세요.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="other">무료로 계획을 %d번 더 볼 수 있어요</item>
     </plurals>

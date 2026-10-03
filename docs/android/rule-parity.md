@@ -2,7 +2,7 @@
 
 Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 iOS `ScheduleRuleFixtures` 数据相同）的覆盖。比较方式与 Swift 一致：逐字段精确相等（IEEE `==`，不设公差）；长列表比 SHA-256 摘要。
 
-更新：2026-09-23（T07）。
+规则对应说明更新：2026-10-03。执行结果与任务状态统一见 [progress.md](progress.md)。
 
 ## 覆盖
 
@@ -105,6 +105,8 @@ Kotlin 对应：`ExtendedSchedulePlan.applying`、`LeavePortion`、`ExtendedSche
 
 `RecordJSON`（v1–v6 解码、逐行校验、三种合并模式、v6 导出）没有 TS oracle。`npm run generate:android-record-fixtures`（macOS）编译真实的 `RecordJSON` 与 14 个模型文件，对 88 份文档给出答案：6 份合成档案、5 份非法档案、每类实体的拒绝与默认值、旧字段迁移、生命档案/专注计划被拒后的提前返回、12 个合并场景。Kotlin `RecordJsonFixtureTest` 比较结果类型、各项计数、拒绝/冲突/采纳列表，以及规范化后的整份 v6 导出，全部通过。
 
+上段为 T10 初始差分记录；当前协议已扩展为 **schema 7，接受 1–7、导出 7**，假期余额与请假日随档案编解码。原子 `RecordLocalFile` 封装与备份文档保持分离，未引入 Room。
+
 植入错误验证（均被捕获）：`UTC` 不改写为 `GMT`、去掉生命档案被拒后的提前返回、同 editCount 时 tie-break 反向、睡眠分钟改为四舍六入五成双、接受无填充 base64。其中睡眠用例起初取值 7.00833 小时不能区分舍入方式，已改为 2.875 小时（172.5 分钟）。
 
 Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`、缩写（`EST`、`PST` 等）保留原样；UUID 严格 8-4-4-4-12、输出大写；日期键需 4-2-2 位且为真实公历日期；`PartialCivilDate` 的计算锚点按 `Calendar` 宽松进位（2 月 30 日 → 3 月 1 日）；`Double.rounded()` 为远离零的四舍五入；旧 `editedAt` 为 2001 年起的秒；base64 必须带填充。
@@ -146,3 +148,43 @@ Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`
 - **调度**：`ReminderPlanner` 对应 iOS `performReschedule` 的筛选（将来、有文案、提前下班只留下一班次、关键提醒优先、60 条上限），另加 Android 需要的差量、重启恢复与定时方式选择。
 
 植入错误验证（25 项，全部被捕获）：规则 5 项（午休开始有效期不截断、小数结束时刻仍取文案、健康提醒跨段计数、替换全部占位符、总结不 trim）；规划 6 项（关键提醒不优先、提前下班不过滤、差量忽略内容变化、恢复时补发、闹钟时刻向下取整、休息日窗口照样提醒）；周期与专注 7 项（后一天未解析、加班与常规重叠、取最早申报、最后一块仍排休息、接管范围扩到下一班次、短休息也提醒、无任务的计划也接管）；登记 7 项（授权变化不重登、拒绝后不重试、重复触发、提前触发、过期仍发、覆盖其他前缀、前台每次都恢复）；另有 1 项等价变异（恢复时强制重登，与原逻辑结果相同）已删去冗余代码。起初未被捕获的 4 项已补用例。共享 fixture 中没有短于 2 分钟的午休，因此"午休开始有效期截断到午休结束"目前只由 Kotlin 单测锁定，建议日后在 TS oracle 中加入这类档案。
+
+## 2026-10-03 · Android 3.2.1 增量规则对应
+
+本节采用经授权的 iOS 固定提交 `18129168acd23edc3a872cca3633a2831f60c6f2`（[PR #281](https://github.com/ififi2017/Off-Work-Countdown/pull/281)），对应 Plan 020 与本轮暂停翻页修复；原冻结源 `9252fdfdc66aab88b4acb7493684f11991fd773d` 继续作为其余移植范围的基线。下面说明代码契约及测试入口，执行结果、设备证据和剩余工作仅记入 [progress.md](progress.md)。
+
+### 动态周、月、年报
+
+- `records/CycleReport` 对应 iOS `CycleReport`：周按调用方传入的周起始日，月、年按自然周期；周期保存首尾日期与记录时区。历史周报的邻接周期沿用已保存的周边界，语言改变不会重新定位原周期。API 26 使用已有 `java.time` 与字符串编码接口，不依赖较新的 `LocalDate.datesUntil`、Stream 收集或 Charset 编解码重载。
+- `RecordsQueries.cycleReportSnapshot` 对应 `RecordsQueries+CycleReport` 与 `CycleReportInsights`：同一档案版本和参考时刻一次构造报告，工时、加班、收入复用 `SummaryRules.recordsActualForecast`。日图表按民用日裁切并截至参考时刻，未知或解析失败的日期不冒充完整休息日；未来工时、加班和尚未完成的当日请假时段不计为已发生。
+- 历史周、月的后续连休以报告结束日为锚点，展示具体日期，不带当前余额。年报包含全年工时、加班、完整休息日、最长连休、已休假期及 12 个月趋势；专注按已完成的记录统计，年报没有后续连休或同比基线。年度解析结果供月度统计复用。
+- `CycleReportSnapshot.withoutIncome` 同时剥离总收入、收入章节及 12 个月的收入。报告收入选择以全局隐藏设置为默认值，主动显示复用 `EarningsGate`，本次选择不写回全局设置。Compose 只格式化快照，不重新计算业务统计。
+- `CycleReportPlayer` 对应 iOS 播放器：主动暂停和按住暂停分别保存；主动暂停后前后翻页立即展示完成帧，临时暂停保持播放时序。文字简报、TalkBack 和减少动画路径静态展示同一快照；动效复用 `DoneAtMotion`。
+
+测试入口：领域 `CycleReportTest`、`RecordsQueriesTest`；应用 `CycleReportPlayerTest`。覆盖周期与闰年、未知日期、当日累计、收入剥离、历史连休、年度月度趋势、暂停导航及临时暂停语义。
+
+### 报告通知与旧开关迁移
+
+`CycleReportNotificationPlan` 分别规划周、月、年报告，触发点为周期结束后第一天记录时区 09:00；1 月 1 日年报指向上一年。首日上午 09:00 前重排保留刚结束的周期。`CycleReportCoordinator` 使用独立报告前缀，复用绝对预约与差量登记，不套用 iOS 待发通知容量预算。通知登记保存报告 URI 内的类型、周期首尾和时区，冷、热启动均经 `CycleReportPeriod.fromUrl` 校验后路由；正文和 URI 均不含薪资。
+
+`SettingsRepository` 的迁移直接读取档案源，避免异步偏好流尚未追上恢复档案时丢失旧开关。旧静态周期总结迁到周报，月报和年报默认关闭；计时提醒停止构造旧静态总结，并由其原前缀差量更新预约。通知权限和精确提醒能力继续遵守已有 Android 授权与降级规则。
+
+测试入口：`CycleReportTest` 的首日上午、独立开关与 URI 边界；`SettingsRepositoryTest` 的恢复档案先于派生流的迁移用例；既有 `ReminderSyncTest` 的登记、恢复和差量契约。设备通知点击、系统授权及后台送达证据见进度文档。
+
+### 休假试用与免费加班入口
+
+`LeavePlannerSchedule.rollingYear`、`LeaveShiftHalves`、`LeaveAdoption` 继续复用滚动一个日历年、有效段等分及整份原子采用规则。撤销按仍属于原计划的请假日删除，后来单独修改的日期与排班层保留，余额由现存请假使用量推导。
+
+`DeviceSettingsStore.consumeLeavePlannerTrial` 在设备设置的同一锁内检查并持久化详情试用次数，成功后才导航；每次重开详情计一次，共三次。搜索和耗尽后的列表浏览不扣次数；写入失败保持次数与页面。计数不进入业务档案。`SettingsRepositoryTest` 覆盖并发请求、重启与写入失败；`LeaveAdoptionTest` 覆盖单日取消、整份撤销及后来替换的保留。
+
+`RecordsQueries.recordedOvertimeMs`、`lifetimeRecordedOvertimeMs` 只向免费界面交付记录加班总量，日、周、月、年、人生入口不因此构造付费详情或收入。日详情仍遵守历史锁定；尚未发生的申报加班不计入。免费周、月页复用已经解析的日期窗口，避免重复展开排班。相关统计口径由 `RecordsQueriesTest` 锁定，不从人生投影推算历史加班。
+
+### 班次闹钟纯规则与平台边界
+
+`alarms/ShiftAlarmPlanner` 对应 iOS `ShiftAlarmPlanner`，输入为既有 `ScheduleRules` 最终排班（含手排、节假日、跨夜及请假叠加）、班次提前量和明确的权益边界。ID 使用与 iOS 相同的 SHA-256 派生 UUID；`ShiftAlarmReconciliation` 提供去重、差量、实际成功预约覆盖及最后成功闹钟后 10 分钟的刷新规则。九分钟贪睡也受精确到期边界约束。
+
+授权输入明确分为无法验证、终身与已验证精确到期时刻；终身窗口按记录时区滚动一个日历年，订阅严格排除到期时刻及其后。取消自动续订本身不改变已付费周期。普通 Play Billing `Purchase` 不提供可供本规则使用的已验证精确到期时刻，因此现有活跃 Plus 布尔值不能代替该输入，也不从购买日期或商品周期猜算。
+
+这些类是纯 JVM 规则，**没有开放 Android 起床闹钟的平台集成或产品开关**。它们不证明原生响铃、锁屏、后台、重启、权限变化、停止或贪睡已经可用。起床闹钟需要真正的响铃生命周期与系统预约接口，普通通知不可替代；须与现有 `SCHEDULE_EXACT_ALARM`、无轮询的架构约束一起解决。iOS `stopIntent` 自动补排仍未实现，不能作为 Android 已验证能力。
+
+测试入口：`ShiftAlarmPlannerTest`，包含排班、节假日与调班、请假、跨夜提前量、精确到期、滚动日历年、稳定 ID、差量、成功覆盖、刷新时刻、关闭清理规则与贪睡边界。这些测试不等同平台预约或设备响铃验收。

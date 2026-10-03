@@ -85,9 +85,20 @@ fun RecordsDayScreen(graph: AppGraph, dayKey: String, open: (Route) -> Unit, onB
     val model by produceState<RecordsDayCanvasModel?>(null, context, dayKey) {
         value = withContext(Dispatchers.Default) { context.queries.dayCanvas(dayKey, context.nowMs) }
     }
+    val recordedOvertime by produceState<Double?>(null, context, dayKey) {
+        value = withContext(Dispatchers.Default) {
+            if (context.queries.authorized) return@withContext null
+            val date = LocalDate.parse(dayKey)
+            val days = context.queries.resolvedDays(date.minusDays(1), date)
+            context.queries.recordedOvertimeMs(days, setOf(dayKey), context.nowMs)
+        }
+    }
     DoneAtPage(text.dayTitle(dayKey), onBack, text.string(R.string.recordsTitle)) {
         val current = model ?: return@DoneAtPage
         Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            if (!context.queries.authorized && recordedOvertime != null) {
+                OvertimeLine(text, recordedOvertime!!)
+            }
             if (current.isLocked) {
                 LockedPlaceholder(LockedKind.DAY, text) {
                     openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsDay(dayKey)))

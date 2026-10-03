@@ -390,6 +390,7 @@
     <string name="leaveSetupTitle">Configurar férias</string>
     <string name="leaveTitle">Férias</string>
     <string name="leaveTrialNotice">Cada vez que abre um plano conta uma vez, mesmo que seja o mesmo.</string>
+    <string name="leaveTrialSaveFailed">Não foi possível abrir este plano. Tente novamente.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="one">Pode abrir mais %d plano grátis</item>
         <item quantity="many">Pode abrir mais %d planos grátis</item>

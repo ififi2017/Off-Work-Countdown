@@ -120,12 +120,14 @@ internal fun switchRecordsScale(next: RecordsScale, show: (String) -> Unit, appS
 /** One loaded window: its days (with one lead-in day), cells and summary. */
 @Immutable
 data class RecordsPage(
+    val context: RecordsContext,
     val scale: RecordsScale,
     val first: LocalDate,
     val last: LocalDate,
     val days: List<DayResolution>,
     val cells: List<RecordsDayCell>,
     val headline: RecordsHeadlineSummary?,
+    val recordedOvertimeMs: Double?,
 )
 
 /**
@@ -137,5 +139,8 @@ fun loadPage(context: RecordsContext, scale: RecordsScale, anchor: LocalDate): R
     val (first, last) = q.window(scale, anchor)
     val days = q.displayDays(first.minusDays(1), last, context.nowMs)
     val cells = q.cells(days, first, context.nowMs)
-    return RecordsPage(scale, first, last, days, cells, q.headline(cells, days, context.nowMs))
+    return RecordsPage(
+        context, scale, first, last, days, cells, q.headline(cells, days, context.nowMs),
+        if (q.authorized) null else q.recordedOvertimeMs(days, cells.map { it.dayKey }.toSet(), context.nowMs),
+    )
 }

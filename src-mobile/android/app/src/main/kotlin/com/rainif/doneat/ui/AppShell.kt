@@ -28,6 +28,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -72,7 +73,9 @@ import java.time.Instant
  * returns to the timer, and from the timer's root it leaves the app.
  */
 @Composable
-fun AppShell(graph: AppGraph) {
+fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
+    val reportStageChanged by rememberUpdatedState(onReportStageChanged)
+    DisposableEffect(Unit) { onDispose { reportStageChanged(false) } }
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val selectedState = rememberSaveable { mutableStateOf(tabFromStoredName(device.selectedTab)) }
     var selected by selectedState
@@ -114,7 +117,7 @@ fun AppShell(graph: AppGraph) {
             }
             PlusPendingAction.RecordsCharts -> select(AppTab.RECORDS)
             PlusPendingAction.CycleSummary -> graph.scope.launch {
-                graph.settings.edit { it.copy(cycleEndSummaryNotificationEnabled = true) }
+                graph.settings.updateDevice { it.copy(weeklyReportEnabled = true) }
             }
             // The options stay underneath, so Back from the plan returns to them.
             is PlusPendingAction.LeavePlan -> source.add(Route.LeavePlanDetail(action.index))
@@ -129,7 +132,20 @@ fun AppShell(graph: AppGraph) {
             graph.requestedTab.value = null
         }
     }
+    val requestedReport by graph.requestedReport.collectAsStateWithLifecycle()
+    LaunchedEffect(requestedReport) {
+        requestedReport?.let { period ->
+            val reports = stacks.getValue(AppTab.RECORDS)
+            while (reports.size > 1) reports.removeAt(reports.lastIndex)
+            reports.add(Route.CycleReport(period.kind.name, period.startDayKey, period.endDayKey, period.timeZoneIdentifier))
+            select(AppTab.RECORDS)
+            graph.requestedReport.value = null
+        }
+    }
     val stack = stacks.getValue(selected)
+    LaunchedEffect(selected, stack.lastOrNull()) {
+        reportStageChanged(stack.lastOrNull() is Route.CycleReport)
+    }
     val reviewBlocked by graph.reviewBlocked.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val activity = remember(context) { context.fragmentActivity() }
@@ -205,7 +221,9 @@ fun AppShell(graph: AppGraph) {
         if (tab == selected) stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) }
         else select(tab)
     }
-    if (layout == NavigationSuiteType.NavigationBar) {
+    if (stack.lastOrNull() is Route.CycleReport) {
+        content()
+    } else if (layout == NavigationSuiteType.NavigationBar) {
         DoneAtGlassNavigation(
             items = AppTab.entries.map { DoneAtNavigationItem(stringResource(it.title), it.icon) },
             selectedIndex = selected.ordinal,
@@ -291,6 +309,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
         Route.FocusTimerSettings -> com.rainif.doneat.ui.focus.FocusTimerSettingsScreen(graph, back)
         is Route.FocusTemplateEdit -> com.rainif.doneat.ui.focus.FocusTemplateEditScreen(graph, key.templateID, open, back)
         is Route.FocusTemplateTask -> com.rainif.doneat.ui.focus.FocusTemplateTaskScreen(graph, key.taskID, back)
+        is Route.CycleReport -> com.rainif.doneat.ui.records.CycleReportScreen(graph, key, back)
         Route.RecordsHome -> com.rainif.doneat.ui.records.RecordsScreen(graph, open, openSettings)
         is Route.RecordsDay -> com.rainif.doneat.ui.records.RecordsDayScreen(graph, key.dayKey, open, back, openSettings)
         Route.RecordsAll -> com.rainif.doneat.ui.records.AllRecordsScreen(graph, open, back)

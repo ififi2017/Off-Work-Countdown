@@ -391,6 +391,7 @@
     <string name="leaveSetupTitle">Укажите отпуск</string>
     <string name="leaveTitle">Отпуск</string>
     <string name="leaveTrialNotice">Каждое открытие плана расходует один просмотр, даже повторное.</string>
+    <string name="leaveTrialSaveFailed">Не удалось открыть этот план. Попробуйте ещё раз.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="one">Можно бесплатно открыть ещё %d план</item>
         <item quantity="few">Бесплатных просмотров планов: %d</item>

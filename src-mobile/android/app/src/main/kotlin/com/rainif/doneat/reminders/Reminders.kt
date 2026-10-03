@@ -26,6 +26,7 @@ import com.rainif.doneat.core.domain.reminders.ReminderChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeout
 
 /**
@@ -53,7 +54,7 @@ object Reminders {
      */
     suspend fun schedule(context: Context, desired: List<PlannedReminder>, prefix: String, channelNames: Map<ReminderChannel, String>): ReminderSyncResult {
         ReminderNotifier.ensureChannels(context, channelNames)
-        return sync(context).sync(desired, prefix)
+        return sync(context).sync(desired, prefix, System.currentTimeMillis())
     }
 
     fun capability(context: Context) = ReminderCapability(
@@ -130,7 +131,14 @@ class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val id = intent.data?.takeIf { it.scheme == "doneat" && it.authority == "reminder" }?.lastPathSegment ?: return
         runAsync {
-            Reminders.sync(context).take(id, System.currentTimeMillis())?.let { ReminderNotifier.post(context, it) }
+            Reminders.sync(context).take(id, System.currentTimeMillis())?.let { reminder ->
+                ReminderNotifier.post(context, reminder)
+                if (reminder.channel == ReminderChannel.REPORT) {
+                    val graph = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph
+                    graph.loaded.first { it }
+                    graph.reportNotifications.reconcile()
+                }
+            }
         }
     }
 }
@@ -205,7 +213,13 @@ internal object ReminderNotifier {
             context, if (focus) 1 else 0,
             Intent(context, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                .apply { if (focus) putExtra(MainActivity.EXTRA_TAB, "focus") },
+                .apply {
+                    if (focus) putExtra(MainActivity.EXTRA_TAB, "focus")
+                    reminder.reportUrl?.takeIf { com.rainif.doneat.core.domain.records.CycleReportPeriod.fromUrl(it) != null }?.let { route ->
+                        data = Uri.parse(route)
+                        putExtra(MainActivity.EXTRA_TAB, "records")
+                    }
+                },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val notification = NotificationCompat.Builder(context, channelID(reminder.channel))

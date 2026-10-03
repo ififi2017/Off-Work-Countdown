@@ -53,6 +53,101 @@ class RecordsQueriesTest {
         return q.cells(q.displayDays(first.minusDays(1), last, now), first, now)
     }
 
+    @Test fun historicalReportBreakUsesPeriodEndAndOmitsCurrentBalances() {
+        val hours = weekdays.copy(workdays = listOf(1, 2, 3, 4))
+        val state = seeded(hours).copy(leaveBalances = listOf(LeaveBalance("balance", "annual", null, 20, 0, null, null, now, 1, "tie")))
+        val q = queries(state)
+        val period = q.reportPeriod(CycleReportKind.WEEK, LocalDate.parse("2026-09-16"))
+        val report = q.cycleReportSnapshot(period, ms("2026-10-03", 10))!!
+        assertTrue(report.ahead!!.isHistorical)
+        assertEquals("2026-09-25", report.ahead.nextBreak!!.startDayKey)
+        assertEquals(LocalDate.parse("2026-09-27"), report.ahead.nextBreak.endDate)
+        assertNull(report.ahead.leaveRemainingHalfDays)
+        assertNull(report.ahead.leaveEntitledHalfDays)
+    }
+
+    @Test fun annualMonthTotalsReuseTheSameActualRecords() {
+        val q = queries(seeded())
+        val report = q.cycleReportSnapshot(q.reportPeriod(CycleReportKind.YEAR, LocalDate.parse("2026-09-16")), now)!!
+        assertEquals(report.figures.workedMs, report.months.sumOf { it.figures.workedMs })
+        assertEquals(report.figures.overtimeMs, report.months.sumOf { it.figures.overtimeMs })
+        assertEquals(0L, report.months.last().figures.workedMs)
+    }
+
+    @Test fun reportsCountFiveMinuteOvertimeAndFindThePeak() {
+        var state = seeded()
+        for ((day, duration) in listOf("2026-09-14" to 300_000.0, "2026-09-15" to 3_600_000.0)) {
+            val payload = FoundationCompat.base64(SessionCommands.overtimePayload(ms(day, 18) + duration, ms(day, 18)).toByteArray())
+            state = state.copy(observations = state.observations + observation(day, WorkObservationKind.OVERTIME_DECLARED, 18, payload))
+        }
+        val q = queries(state)
+        val report = q.cycleReportSnapshot(q.reportPeriod(CycleReportKind.WEEK, LocalDate.parse("2026-09-16")), now)!!
+        assertEquals(3_900_000L, report.figures.overtimeMs)
+        assertEquals(2, report.overtime!!.dayCount)
+        assertEquals("2026-09-15", report.overtime.longestDay.dayKey)
+    }
+
+    @Test fun reportNightTailDoesNotCountAsFullRest() {
+        val q = queries(seeded(nights.copy(workdays = listOf(5))))
+        val report = q.cycleReportSnapshot(q.reportPeriod(CycleReportKind.WEEK, LocalDate.parse("2026-09-11")), now)!!
+        assertEquals(CycleReportDayKind.WORK, report.days.first { it.dayKey == "2026-09-12" }.kind)
+        assertEquals(6 * 3_600_000L, report.days.first { it.dayKey == "2026-09-12" }.workMs)
+    }
+
+    @Test fun reportRequestKeepsItsZoneWhenCurrentRecordsZoneDiffers() {
+        val q = queries(seeded())
+        val reportZone = ZoneId.of("Pacific/Honolulu")
+        val period = CycleReportPeriod.containing(LocalDate.parse("2026-09-16"), CycleReportKind.WEEK, reportZone)
+        val report = q.cycleReportSnapshot(period, now)!!
+        assertEquals(reportZone.id, report.period.timeZoneIdentifier)
+        assertEquals(period, report.period)
+    }
+
+    @Test fun annualLeaveOnlyCanOpenAndFutureLeaveDoesNotCount() {
+        val past = LeaveDay("2026-09-14", "firstHalf", emptyList(), null, zone.id, now, 1, "tie")
+        val future = past.copy(dayKey = "2026-12-24", portion = "whole")
+        val q = queries(RecordState(leaveDays = listOf(past, future)))
+        val report = q.cycleReportSnapshot(q.reportPeriod(CycleReportKind.YEAR, LocalDate.parse("2026-09-16")), now)!!
+        assertTrue(report.hasData)
+        assertEquals(1, report.leaveUsedHalfDays)
+        assertFalse(report.figures.hasData)
+    }
+
+    @Test fun annualOneFocusRoundCanOpenAndFutureCompletedRowsDoNotCount() {
+        val past = FocusSession("focus", null, "2026-09-14", ms("2026-09-14", 9), ms("2026-09-14", 10), ms("2026-09-14", 10),
+            FocusEndReason.COMPLETED, now, 1, "tie", FocusSessionKind.FOCUS, zone.id, "2026-09-14", 1500, FocusEndReason.COMPLETED)
+        val future = past.copy(id = "future", anchorDayKey = "2026-12-24", startedAtMs = ms("2026-12-24", 9), endedAtMs = ms("2026-12-24", 10))
+        val q = queries(RecordState(focusSessions = listOf(past, future)))
+        val report = q.cycleReportSnapshot(q.reportPeriod(CycleReportKind.YEAR, LocalDate.parse("2026-09-16")), now)!!
+        assertTrue(report.hasData)
+        assertEquals(1, report.focus!!.rounds)
+        assertEquals(1, report.months[8].focusRounds)
+        assertEquals(0, report.months[11].focusRounds)
+    }
+
+    @Test fun currentDayReportBarsStopAtNowAndDoNotCountFutureOvertimeOrLeave() {
+        val payload = FoundationCompat.base64(SessionCommands.overtimePayload(ms("2026-09-16", 20), ms("2026-09-16", 18)).toByteArray())
+        val state = seeded().copy(observations = listOf(observation("2026-09-16", WorkObservationKind.OVERTIME_DECLARED, 9, payload)),
+            leaveDays = listOf(LeaveDay("2026-09-16", "secondHalf", emptyList(), null, zone.id, now, 1, "tie")))
+        val q = queries(state)
+        val report = q.cycleReportSnapshot(q.reportPeriod(CycleReportKind.WEEK, LocalDate.parse("2026-09-16")), now)!!
+        val today = report.days.first { it.dayKey == "2026-09-16" }
+        assertEquals(0L, today.overtimeMs)
+        assertNull(report.overtime)
+        assertEquals(0, report.leaveUsedHalfDays)
+        // An overtime declaration alone isn't attendance, so verify scheduled work with the same archive without it.
+        val scheduled = queries(seeded()).cycleReportSnapshot(q.reportPeriod(CycleReportKind.WEEK, LocalDate.parse("2026-09-16")), now)!!
+        assertEquals(3_600_000L, scheduled.days.first { it.dayKey == "2026-09-16" }.workMs)
+    }
+
+    @Test fun annualUncoveredDatesDoNotBecomeFullRestDays() {
+        val q = queries(seeded())
+        val report = q.cycleReportSnapshot(q.reportPeriod(CycleReportKind.YEAR, LocalDate.parse("2026-09-16")), now)!!
+        assertEquals(CycleReportDayKind.UNKNOWN, report.days.first().kind)
+        assertEquals(0, report.months.first().restDayCount)
+        assertTrue(report.longestRestRun <= 2)
+    }
+
     @Test fun windowsFollowTheLanguagesFirstWeekday() {
         val monday = RecordsQueries(RecordState(), HolidayCalendar.EMPTY, zone, true)
         val sunday = RecordsQueries(RecordState(), HolidayCalendar.EMPTY, zone, true, firstDayOfWeek = DayOfWeek.SUNDAY)
@@ -216,6 +311,11 @@ class RecordsQueriesTest {
         assertEquals(plusShown, free.recordedOvertimeMs(days, keys, later)!!, 0.0)
         // Two overtime days in a row: the first is also the second's lead-in day.
         assertEquals(plusShown, free.lifetimeRecordedOvertimeMs(later)!!, 0.0)
+        val day = LocalDate.parse("2026-09-01")
+        val singleDays = free.resolvedDays(day.minusDays(1), day)
+        assertTrue("old day remains locked while its single total is available", free.dayCanvas(day.toString(), later)!!.isLocked)
+        assertEquals(3_600_000.0, free.recordedOvertimeMs(singleDays, setOf(day.toString()), later)!!, 0.0)
+        assertNull("future declared overtime has not happened", free.recordedOvertimeMs(singleDays, setOf(day.toString()), ms(day.toString(), 16)))
     }
 
     @Test fun thePastDayPageOffersItsOwnShiftForEditing() {

@@ -80,6 +80,9 @@ class DoneAtMotion(val reduced: Boolean) {
         if (reduced) snap() else spring(dampingRatio = 1f, stiffness = 1000f)
 
     companion object {
+        const val REPORT_CHAPTER_MS = 6_000L
+        const val REPORT_MAX_FRAME_MS = 100
+        const val REPORT_ART_ENTER_MS = 900
         const val REDUCED_MS = 160
         const val COUNTDOWN_TICK_MS = 260
         const val PRESS_MS = 140

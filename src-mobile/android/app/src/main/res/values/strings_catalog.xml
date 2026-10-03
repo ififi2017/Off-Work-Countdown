@@ -389,6 +389,7 @@
     <string name="leaveSetupTitle">Set up your leave</string>
     <string name="leaveTitle">Time off</string>
     <string name="leaveTrialNotice">Opening a plan uses one free view, even the same plan again.</string>
+    <string name="leaveTrialSaveFailed">Couldn’t open this plan. Please try again.</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="one">You can open %d more plan for free</item>
         <item quantity="other">You can open %d more plans for free</item>

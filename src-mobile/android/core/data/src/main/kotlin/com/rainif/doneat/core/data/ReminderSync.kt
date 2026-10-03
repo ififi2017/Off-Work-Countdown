@@ -55,10 +55,42 @@ class ReminderSync(private val file: Path, private val alarms: AlarmPort) {
     suspend fun registered(): List<PlannedReminder> = mutex.withLock { read().alarms }
 
     /** Makes the alarms under [prefix] exactly [desired]; other prefixes are left alone. */
-    suspend fun sync(desired: List<PlannedReminder>, prefix: String): ReminderSyncResult = mutex.withLock {
+    suspend fun sync(desired: List<PlannedReminder>, prefix: String, nowMs: Long? = null): ReminderSyncResult = mutex.withLock {
         val registry = read()
         val kept = registry.alarms.filter { !it.id.startsWith(prefix) } + desired
-        apply(registry, kept, ReminderPlanner.diff(registry.alarms, desired, prefix))
+        apply(registry, kept, ReminderPlanner.diff(registry.alarms, desired, prefix)) { reminder ->
+            reminder.channel != ReminderChannel.REPORT || nowMs == null || reminder.atMs > nowMs
+        }
+    }
+
+    /**
+     * Reports can arrive while a cold process rebuilds the next cycle. Keep a due
+     * report as a one-shot delivery token until its receiver takes it; never arm
+     * that token again. Cold launches re-arm future reports because force-stop
+     * can clear AlarmManager without changing this device-local registry.
+     */
+    suspend fun syncReports(
+        desired: List<PlannedReminder>,
+        enabledKinds: Set<com.rainif.doneat.core.domain.records.CycleReportKind>,
+        nowMs: Long,
+        rearmFuture: Boolean,
+        permitFutureRegistration: Boolean = true,
+    ): ReminderSyncResult = mutex.withLock {
+        val prefix = com.rainif.doneat.core.domain.records.CycleReportPeriod.PREFIX
+        val registry = read()
+        val due = registry.alarms.filter { reminder ->
+            reminder.id.startsWith(prefix) && reminder.atMs <= nowMs && reminder.isDeliverable(nowMs) &&
+                reminder.reportUrl?.let(com.rainif.doneat.core.domain.records.CycleReportPeriod::fromUrl)?.kind in enabledKinds
+        }
+        // Keep only the latest due token of each enabled kind. Missed receivers do
+        // not accumulate history, and no past item is scheduled as a backfill.
+        val latestDue = due.groupBy { com.rainif.doneat.core.domain.records.CycleReportPeriod.fromUrl(it.reportUrl!!)!!.kind }
+            .values.mapNotNull { sameKind -> sameKind.maxByOrNull { it.atMs } }
+        val wanted = (desired.filter { it.atMs > nowMs } + latestDue).distinctBy { it.id }
+        val kept = registry.alarms.filter { !it.id.startsWith(prefix) } + wanted
+        val difference = ReminderPlanner.diff(registry.alarms, wanted, prefix)
+        val diff = if (rearmFuture || registry.exact != alarms.canScheduleExact()) difference.copy(schedule = wanted.filter { it.atMs > nowMs }) else difference
+        apply(registry, kept, diff) { reminder -> !reminder.id.startsWith(prefix) || (permitFutureRegistration && reminder.atMs > nowMs) }
     }
 
     /**
@@ -104,9 +136,9 @@ class ReminderSync(private val file: Path, private val alarms: AlarmPort) {
      * from the one the alarms were registered under, every kept alarm is
      * registered again so none keeps a timing it is no longer allowed.
      */
-    private fun apply(registry: Registry, kept: List<PlannedReminder>, diff: ReminderDiff): ReminderSyncResult {
+    private fun apply(registry: Registry, kept: List<PlannedReminder>, diff: ReminderDiff, mayRegister: (PlannedReminder) -> Boolean = { true }): ReminderSyncResult {
         val exact = alarms.canScheduleExact()
-        val schedule = if (registry.exact == exact) diff.schedule else kept
+        val schedule = (if (registry.exact == exact) diff.schedule else kept).distinctBy { it.id }.filter(mayRegister)
         write(Registry(exact, kept))
         for (id in diff.cancel) alarms.cancel(id)
         val failed = schedule.filter { reminder ->
@@ -140,6 +172,7 @@ class ReminderSync(private val file: Path, private val alarms: AlarmPort) {
     private fun PlannedReminder.toJson() = JsonObject(
         mapOf(
             "id" to JsonPrimitive(id), "atMs" to JsonPrimitive(atMs), "channel" to JsonPrimitive(channel.name),
+            "reportUrl" to (reportUrl?.let(::JsonPrimitive) ?: JsonNull),
             "title" to JsonPrimitive(title), "body" to JsonPrimitive(body), "expiresAtMs" to (expiresAtMs?.let(::JsonPrimitive) ?: JsonNull),
         ),
     )
@@ -151,5 +184,6 @@ class ReminderSync(private val file: Path, private val alarms: AlarmPort) {
         title = getValue("title").jsonPrimitive.content,
         body = getValue("body").jsonPrimitive.content,
         expiresAtMs = get("expiresAtMs")?.jsonPrimitive?.longOrNull,
+        reportUrl = get("reportUrl")?.jsonPrimitive?.contentOrNull?.takeIf { com.rainif.doneat.core.domain.records.CycleReportPeriod.fromUrl(it) != null },
     )
 }

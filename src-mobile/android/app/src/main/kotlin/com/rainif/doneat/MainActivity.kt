@@ -25,6 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
@@ -69,6 +72,7 @@ class MainActivity : FragmentActivity() {
                 graph.focusCoordinator.reconcile()
                 graph.widgets.refresh()
                 graph.ongoing.apply()
+                graph.reportNotifications.reconcile()
             }
         }
     }
@@ -77,7 +81,7 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val graph = (application as DoneAtApplication).graph
-        if (savedInstanceState == null) openRequestedTab(intent)
+        if (savedInstanceState == null || intent?.data != null) openRequestedTab(intent)
         setContent {
             val loaded by graph.loaded.collectAsStateWithLifecycle()
             val archiveError by graph.records.persistenceError.collectAsStateWithLifecycle()
@@ -97,7 +101,9 @@ class MainActivity : FragmentActivity() {
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
             }
-            SystemBarsFollowTheme(dark)
+            var reportStage by remember { mutableStateOf(false) }
+            // One window owner: report routes use light icons, then return to the app theme.
+            SystemBarsFollowTheme(dark || reportStage)
             AppLanguageScope(prefs.languageOverride) {
                 DoneAtTheme(themeMode = mode, dynamicColor = device.dynamicColor, accentColor = device.accentColor) {
                     val motion = LocalDoneAtMotion.current
@@ -119,7 +125,7 @@ class MainActivity : FragmentActivity() {
                             },
                             label = "setupComplete",
                         ) { complete ->
-                            if (complete) AppShell(graph) else SetupFlow(graph)
+                            if (complete) AppShell(graph, onReportStageChanged = { reportStage = it }) else SetupFlow(graph)
                         }
                     }
                 }
@@ -134,12 +140,17 @@ class MainActivity : FragmentActivity() {
 
     /** A notification names the tab it belongs to: a focus alert opens Focus, as on iOS. */
     private fun openRequestedTab(intent: Intent?) {
-        val tab = intent?.getStringExtra(EXTRA_TAB)?.takeIf { it in setOf("timer", "focus", "records", "settings") } ?: return
-        intent.removeExtra(EXTRA_TAB)
+        val report = intent?.data?.toString()?.let(com.rainif.doneat.core.domain.records.CycleReportPeriod::fromUrl)
+        val tab = (if (report != null) "records" else intent?.getStringExtra(EXTRA_TAB))?.takeIf { it in setOf("timer", "focus", "records", "settings") } ?: return
+        intent?.removeExtra(EXTRA_TAB)
+        if (report != null) intent.data = null
         val graph = (application as DoneAtApplication).graph
         lifecycleScope.launch {
             graph.loaded.first { it }
-            graph.requestedTab.value = tab
+            if (report != null) {
+                graph.requestedTab.value = null
+                graph.requestedReport.value = report
+            } else graph.requestedTab.value = tab
         }
     }
 

@@ -1,6 +1,28 @@
 {
   "note": "Android-only copy, merged with src-mobile/ios/App/App/Localizable.xcstrings by scripts/generate-android-strings.mjs. Every key needs all 19 locales and the English placeholders; a key may not repeat a catalog key.",
   "strings": {
+    "leaveTrialSaveFailed": {
+      "comment": "Trial reservation could not be saved; remain on the options list.",
+      "en": "Couldn’t open this plan. Please try again.",
+      "zh-CN": "无法打开此方案，请重试。",
+      "zh-HK": "開唔到呢個方案，請再試。",
+      "zh-TW": "無法開啟此方案，請再試一次。",
+      "ja": "このプランを開けませんでした。もう一度お試しください。",
+      "ko": "이 계획을 열 수 없습니다. 다시 시도해 주세요.",
+      "de": "Dieser Plan konnte nicht geöffnet werden. Bitte versuche es erneut.",
+      "es": "No se pudo abrir este plan. Inténtalo de nuevo.",
+      "fr": "Impossible d’ouvrir ce plan. Réessayez.",
+      "it": "Impossibile aprire questo piano. Riprova.",
+      "pt": "Não foi possível abrir este plano. Tente novamente.",
+      "ru": "Не удалось открыть этот план. Попробуйте ещё раз.",
+      "ar": "تعذر فتح هذه الخطة. حاول مرة أخرى.",
+      "hi-IN": "यह योजना नहीं खुल सकी। कृपया फिर कोशिश करें।",
+      "mr-IN": "ही योजना उघडता आली नाही. कृपया पुन्हा प्रयत्न करा.",
+      "th": "เปิดแผนนี้ไม่ได้ โปรดลองอีกครั้ง",
+      "vi": "Không thể mở kế hoạch này. Vui lòng thử lại.",
+      "id": "Tidak dapat membuka rencana ini. Silakan coba lagi.",
+      "tr": "Bu plan açılamadı. Lütfen tekrar deneyin."
+    },
     "plusAndroidComingSoon": {
       "comment": "Plus page: Android purchases are not available yet; no purchase action is shown.",
       "en": "Plus purchases are coming to Android. Your recent records and timer are ready to use now.",

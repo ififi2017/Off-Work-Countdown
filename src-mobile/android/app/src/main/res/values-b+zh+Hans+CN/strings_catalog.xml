@@ -388,6 +388,7 @@
     <string name="leaveSetupTitle">先设置假期</string>
     <string name="leaveTitle">休假</string>
     <string name="leaveTrialNotice">每打开一个方案会用掉 1 次，重复打开同一方案也会计算。</string>
+    <string name="leaveTrialSaveFailed">无法打开此方案，请重试。</string>
     <plurals name="leaveTrialsLeft">
         <item quantity="other">还可免费查看 %d 次方案</item>
     </plurals>
