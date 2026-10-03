@@ -1,6 +1,18 @@
 package com.rainif.doneat.ui.records
 
 import android.content.Context
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import com.rainif.doneat.core.designsystem.DoneAtReportMotion as ReportEase
+import kotlinx.coroutines.delay
 import android.view.accessibility.AccessibilityManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -19,7 +31,6 @@ import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -58,7 +69,7 @@ import java.time.ZoneId
 
 /** The full-screen report owns one query revision, one reference instant and a draw-only display clock. */
 @Composable
-fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Unit) {
+fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Unit, unlock: () -> Unit) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val records = rememberRecordsContext(graph)
@@ -85,14 +96,28 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
     val noLock = stringResource(R.string.earningsShownWithoutLock)
     val motion = LocalDoneAtMotion.current
     val talkBack = rememberTouchExploration()
-    var mode by rememberSaveable(route) { mutableStateOf("setup") }
-    val static = mode == "reading" || motion.reduced || talkBack
+    var mode by remember(route) { mutableStateOf("setup") }
+    val static = mode == "reading"
     var player by remember(route) { mutableStateOf(CycleReportPlayer()) }
-    // Frames invalidate the artwork and progress strip only, not headings or the screen.
+    // Only drawing and counted text consume frames; the screen and statistics do not.
     val elapsed = remember(route) { mutableLongStateOf(0L) }
     val clock = remember(elapsed) { { elapsed.longValue } }
-    fun current() = player.copy(elapsedMs = elapsed.longValue)
-    fun setPlayer(next: CycleReportPlayer) { elapsed.longValue = next.elapsedMs; player = next }
+    val totalElapsed = remember(route) { mutableLongStateOf(0L) }
+    val drift = remember(totalElapsed) { { totalElapsed.longValue } }
+    var previousChapter by remember(route) { mutableStateOf<Int?>(null) }
+    val teaserElapsed = remember(route) { mutableLongStateOf(0L) }
+    val teaserClock = remember(teaserElapsed) { { teaserElapsed.longValue } }
+    val haptic = LocalHapticFeedback.current
+    fun current() = player.copy(elapsedMs = elapsed.longValue, clockMs = totalElapsed.longValue)
+    fun setPlayer(next: CycleReportPlayer) {
+        if (next.chapter != player.chapter) {
+            previousChapter = if (next.userPaused) null else player.chapter
+            haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+        }
+        elapsed.longValue = next.elapsedMs
+        totalElapsed.longValue = next.clockMs
+        player = next
+    }
     fun play() { setPlayer(player.replay()); mode = "playing" }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var foreground by remember(lifecycle) { mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) }
@@ -107,6 +132,21 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
     val report = remember(snapshot, includeIncome) { snapshot?.let { if (includeIncome) it else it.withoutIncome() } }
     val chapters = remember(report, text, records.text, context) { report?.let { reportChapters(it, text, records.text, context, records.queries.firstDayOfWeek) }.orEmpty() }
     val count = chapters.size
+    val timelines = remember(chapters) { chapters.map { it.timeline } }
+    LaunchedEffect(motion.reduced, talkBack) {
+        if ((motion.reduced || talkBack) && mode == "playing") { setPlayer(current().copy(userPaused = true, held = false)); mode = "reading" }
+    }
+    LaunchedEffect(report, mode, motion.reduced, talkBack, foreground) {
+        if (mode != "setup" || report?.hasData != true || !foreground) return@LaunchedEffect
+        if (motion.reduced || talkBack) { teaserElapsed.longValue = DoneAtMotion.REPORT_TEASER_BUILD_MS; return@LaunchedEffect }
+        delay(DoneAtMotion.REPORT_TEASER_DELAY_MS)
+        var previous = withFrameNanos { it }
+        while (teaserElapsed.longValue < DoneAtMotion.REPORT_TEASER_BUILD_MS) {
+            val next = withFrameNanos { it }
+            teaserElapsed.longValue += ((next - previous) / 1_000_000).coerceIn(0, DoneAtMotion.REPORT_MAX_FRAME_MS.toLong())
+            previous = next
+        }
+    }
     LaunchedEffect(player.paused, foreground, static, mode, count) {
         if (count == 0 || player.paused || !foreground || static || mode != "playing") return@LaunchedEffect
         var previous = withFrameNanos { it }
@@ -117,9 +157,11 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
             val delta = (nanos / 1_000_000).coerceIn(0L, DoneAtMotion.REPORT_MAX_FRAME_MS.toLong())
             remainder = nanos % 1_000_000
             previous = frame
-            val next = current().advance(delta, count)
+            val next = current().advance(delta, timelines)
             elapsed.longValue = next.elapsedMs
-            if (next.chapter != player.chapter || next.finished != player.finished) player = next
+            totalElapsed.longValue = next.clockMs
+            if (next.chapter != player.chapter || next.finished != player.finished) setPlayer(next)
+            if (next.finished) break
         }
     }
     val title = stringResource(when (period.kind) {
@@ -134,53 +176,76 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
     } }
     CompositionLocalProvider(LocalContentColor provides DoneAtReportPalette.ink) {
         Box(Modifier.fillMaxSize()) {
-            ReportBackdrop(if (mode == "playing" && count > 0) chapters[player.chapter.coerceIn(0, count - 1)].artKind else ReportArtKind.TIME, energized = mode == "playing" && player.chapter == 1)
+            ReportBackdrop(if (mode == "playing" && count > 0 && !static) chapters[player.chapter.coerceIn(0, count - 1)].stage else if (static) ReportStage.SUMMARY else ReportStage.CALENDAR,
+                previousChapter?.let { chapters.getOrNull(it)?.stage }.takeIf { mode == "playing" && !static }, clock, if (mode == "playing") drift else { { 0L } })
+            AnimatedContent(targetState = if (static) "reading" else mode, transitionSpec = {
+                fadeIn(tween(if (motion.reduced) 0 else DoneAtMotion.STATE_ENTER_MS,
+                    delayMillis = if (motion.reduced) 0 else DoneAtMotion.STATE_EXIT_MS, easing = motion.emphasizedDecelerate)) togetherWith
+                    fadeOut(tween(if (motion.reduced) 0 else DoneAtMotion.STATE_EXIT_MS, easing = motion.emphasizedDecelerate))
+            }, label = "report mode") { displayMode ->
             Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = DoneAtReportLayout.page).padding(top = DoneAtSpacing.s, bottom = DoneAtSpacing.l)) {
-                if (mode == "playing" && !static && report?.hasData == true && authorized) {
+                if (displayMode == "playing" && report?.hasData == true && authorized) {
                     val index = player.chapter.coerceIn(0, count - 1)
-                    ReportProgress(index, count, clock)
+                    ReportProgress(index, timelines, clock)
                     ReportHeader("$title · $dateTitle", back)
                     val direction = LocalLayoutDirection.current
                     val chapter = chapters[index]
                     BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().pointerInput(count, direction) {
                         detectTapGestures(
-                            onPress = { try { tryAwaitRelease() } finally { setPlayer(current().hold(false)) } },
+                            onPress = { setPlayer(current().hold(true)); try { tryAwaitRelease() } finally { setPlayer(current().hold(false)) } },
                             onLongPress = { setPlayer(current().hold(true)) },
                             onTap = { at ->
                                 val forward = (at.x >= size.width / 2f) == (direction == LayoutDirection.Ltr)
-                                setPlayer(current().navigate(if (forward) 1 else -1, count))
+                                setPlayer(current().navigate(if (forward) 1 else -1, timelines))
                             },
                         )
                     }) {
                         val scrollStage = configuration.fontScale >= 1.5f || maxHeight < 450.dp
-                        val artHeight = if (scrollStage) DoneAtReportLayout.compactArtHeight else minOf(DoneAtReportLayout.artHeight, maxHeight * .62f)
+                        val finale = chapter.stage == ReportStage.SUMMARY
+                        val artHeight = if (scrollStage) DoneAtReportLayout.compactArtHeight else minOf(DoneAtReportLayout.artHeight, maxHeight * if (finale) .43f else .55f)
                         Column((if (scrollStage) Modifier.verticalScroll(rememberScrollState()) else Modifier.fillMaxHeight()).fillMaxWidth().padding(top = DoneAtReportLayout.stageTop), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
-                            StoryHeading(chapter, index == 0)
+                            StoryHeading(chapter, clock)
                             if (scrollStage) Spacer(Modifier.height(DoneAtSpacing.l)) else Spacer(Modifier.weight(1f))
-                            ReportArtwork(chapter, clock, index, Modifier.fillMaxWidth().height(artHeight))
-                            if (index == 0 && !chapter.isYear) ReportLegend()
-                            StoryCaption(chapter)
+                            if (finale && (chapter.isYear || chapter.isWeek)) {
+                                Text(chapter.centerValue.orEmpty(), color = DoneAtReportPalette.ink, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                                Text(chapter.centerLabel.orEmpty(), color = DoneAtReportPalette.muted, style = MaterialTheme.typography.labelLarge)
+                            }
+                            ReportArtwork(chapter, clock, Modifier.fillMaxWidth().height(artHeight), drift = drift)
+                            if (index <= 1 && !chapter.isYear) {
+                                Box(Modifier.height(30.dp).graphicsLayer { alpha = if (index == 0) ReportEase.window(chapter.timeline.build(clock()), .7f, 1f) else 0f }) {
+                                    ReportLegend(report.figures.overtimeMs > 0)
+                                }
+                            }
+                            if (finale) {
+                                SummaryFacts(chapter, clock)
+                                Row(Modifier.fillMaxWidth().reportReveal(chapter, clock, .55f, 1f), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                                    FilledTonalButton(onClick = { play() }, modifier = Modifier.weight(1f), colors = ButtonDefaults.filledTonalButtonColors(containerColor = DoneAtReportPalette.control, contentColor = DoneAtReportPalette.ink)) { Text(stringResource(R.string.reportReplay)) }
+                                    Button(onClick = back, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = DoneAtReportPalette.cream, contentColor = DoneAtReportPalette.plum)) { Text(stringResource(R.string.done)) }
+                                }
+                            }
                             Spacer(Modifier.height(DoneAtSpacing.s))
                         }
                     }
-                    FlowRow(Modifier.fillMaxWidth().padding(top = DoneAtSpacing.l), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                        ReportControl(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, stringResource(R.string.reportPrevious), index > 0) { setPlayer(current().navigate(-1, count)) }
+                    val finaleBuilt by remember(chapters, player.chapter) { derivedStateOf { chapters[player.chapter].stage == ReportStage.SUMMARY && chapters[player.chapter].timeline.build(clock()) >= 1f } }
+                    if (finaleBuilt) Spacer(Modifier.fillMaxWidth().height(DoneAtReportLayout.controlSize + DoneAtSpacing.l))
+                    else FlowRow(Modifier.fillMaxWidth().padding(top = DoneAtSpacing.l), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                        ReportControl(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, stringResource(R.string.reportPrevious), index > 0) { setPlayer(current().navigate(-1, timelines)) }
                         ReportControl(if (player.finished) Icons.Outlined.Replay else if (player.paused) Icons.Outlined.PlayArrow else Icons.Outlined.Pause,
                             stringResource(if (player.finished) R.string.reportReplay else if (player.paused) R.string.reportResume else R.string.reportPause)) {
-                            setPlayer(if (player.finished) player.replay() else current().toggle())
+                            setPlayer(if (player.finished || chapter.stage == ReportStage.SUMMARY && chapter.timeline.build(clock()) >= 1f) player.replay() else current().toggle())
                         }
-                        ReportControl(Icons.AutoMirrored.Outlined.KeyboardArrowRight, stringResource(R.string.reportNext), index < count - 1) { setPlayer(current().navigate(1, count)) }
+                        ReportControl(Icons.AutoMirrored.Outlined.KeyboardArrowRight, stringResource(R.string.reportNext), index < count - 1) { setPlayer(current().navigate(1, timelines)) }
                         FilledTonalButton(onClick = { setPlayer(current().copy(userPaused = true)); mode = "reading" }, colors = ButtonDefaults.filledTonalButtonColors(containerColor = DoneAtReportPalette.control, contentColor = DoneAtReportPalette.ink)) {
                             Icon(Icons.AutoMirrored.Outlined.ListAlt, null, Modifier.size(18.dp))
                             Spacer(Modifier.width(DoneAtSpacing.s))
                             Text(stringResource(R.string.reportRead))
                         }
                     }
-                } else if (static && authorized && report?.hasData == true) {
+                } else if (displayMode == "reading" && authorized && report?.hasData == true) {
                     ReportHeader(title, back)
                     Text(dateTitle, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = DoneAtReportPalette.cream)
                     if (!motion.reduced && !talkBack) TextButton(onClick = { play() }, colors = ButtonDefaults.textButtonColors(contentColor = DoneAtReportPalette.cream)) { Text(stringResource(R.string.reportPlay)) }
-                    ReportReading(report, text, records.text, chapters, Modifier.weight(1f))
+                    ReportReading(report, text, records.text, chapters, Modifier.weight(1f), back)
                 } else {
                     val scrollSetup = configuration.fontScale >= 1.5f || configuration.screenHeightDp <= 650
                     Column(Modifier.weight(1f).fillMaxWidth().let { if (scrollSetup) it.verticalScroll(rememberScrollState()) else it }) {
@@ -188,7 +253,7 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
                     Text(dateTitle, Modifier.padding(top = DoneAtReportLayout.stageTop).semantics { heading() }, fontSize = DoneAtReportLayout.setupHero, lineHeight = DoneAtReportLayout.setupHero, fontWeight = FontWeight.ExtraBold, color = DoneAtReportPalette.cream)
                     if (report?.isInProgress == true) Text(stringResource(R.string.reportSoFar), Modifier.padding(top = DoneAtSpacing.s), color = DoneAtReportPalette.muted, style = MaterialTheme.typography.titleMedium)
                     Box((if (scrollSetup) Modifier.height(DoneAtReportLayout.teaserHeight).padding(vertical = DoneAtSpacing.l) else Modifier.weight(1f)).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        if (report?.hasData == true && authorized) ReportArtwork(chapters.first(), { CycleReportPlayer.CHAPTER_MS }, 0, Modifier.fillMaxWidth().height(DoneAtReportLayout.teaserHeight), teaser = true)
+                        if (report?.hasData == true && authorized) ReportArtwork(chapters.first(), teaserClock, Modifier.fillMaxWidth().height(DoneAtReportLayout.teaserHeight), teaser = true)
                         else if (!loaded && authorized) CircularProgressIndicator(color = DoneAtReportPalette.cream)
                     }
                     if (authorized && report?.hasData == true && preferences.salaryEnabled) {
@@ -198,6 +263,7 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
                             Text(stringResource(R.string.reportIncludeIncome), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
                             Switch(checked = includeIncome, onCheckedChange = { wanted ->
                                 if (!wanted) includeIncome = false
+                                else if (!device.hideEarnings) includeIncome = true
                                 else scope.launch {
                                     when (EarningsGate.confirmOwner(context, reason)) {
                                         EarningsGate.Result.CONFIRMED -> includeIncome = true
@@ -214,7 +280,8 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
                     }
                     val ready = authorized && report?.hasData == true
                     if (!ready && (loaded || !authorized)) Text(stringResource(if (!authorized) R.string.plusReportsLocked else if (report == null) R.string.reportUnavailable else R.string.reportEmpty), Modifier.padding(bottom = DoneAtSpacing.l), color = DoneAtReportPalette.muted)
-                    Button(onClick = { play() }, enabled = ready, modifier = Modifier.fillMaxWidth().heightIn(min = DoneAtReportLayout.controlSize), colors = ButtonDefaults.buttonColors(containerColor = DoneAtReportPalette.orange, contentColor = DoneAtReportPalette.ink)) {
+                    if (!authorized) Button(onClick = unlock, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.plusSeePlans)) }
+                    if (!motion.reduced && !talkBack) Button(onClick = { play() }, enabled = ready, modifier = Modifier.fillMaxWidth().heightIn(min = DoneAtReportLayout.controlSize), colors = ButtonDefaults.buttonColors(containerColor = DoneAtReportPalette.orange, contentColor = DoneAtReportPalette.ink)) {
                         Icon(Icons.Outlined.PlayArrow, null)
                         Spacer(Modifier.width(DoneAtSpacing.s))
                         Text(stringResource(R.string.reportPlay), fontWeight = FontWeight.Bold)
@@ -222,6 +289,7 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
                     FilledTonalButton(onClick = { mode = "reading" }, enabled = ready, modifier = Modifier.fillMaxWidth().padding(top = DoneAtSpacing.s).heightIn(min = DoneAtReportLayout.controlSize), colors = ButtonDefaults.filledTonalButtonColors(containerColor = DoneAtReportPalette.control, contentColor = DoneAtReportPalette.ink)) { Text(stringResource(R.string.reportRead), fontWeight = FontWeight.SemiBold) }
                     }
                 }
+            }
             }
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding())
         }
@@ -243,31 +311,76 @@ private fun ReportControl(icon: ImageVector, label: String, enabled: Boolean = t
     }
 }
 
-internal enum class ReportArtKind { TIME, OVERTIME, REST, FOCUS, BASELINE, PAY, AHEAD, SUMMARY }
-internal data class ReportChapter(val title: String, val metric: String, val lines: List<String>, val bars: List<Pair<String, Long>> = emptyList(), val restRange: IntRange? = null, val restCalendar: Boolean = false, val calendarLeading: Int = 0, val cellLabels: List<String> = emptyList(), val artKind: ReportArtKind = ReportArtKind.TIME, val isYear: Boolean = false, val restIndices: Set<Int> = emptySet(), val overtimeIndices: Set<Int> = emptySet(), val axisLabels: List<String> = emptyList(), val centerLabel: String? = null, val centerValue: String? = null, val overtimeShares: List<Float> = emptyList())
+/** Opacity/translation are read in the layer phase; no page layout follows the frame clock. */
+private fun Modifier.reportReveal(chapter: ReportChapter, clock: () -> Long, from: Float = 0f, to: Float = .2f): Modifier = graphicsLayer {
+    val p = ReportEase.outCubic(ReportEase.window(chapter.timeline.build(clock()), from, to))
+    alpha = p
+    translationY = 18.dp.toPx() * (1 - p)
+}
 
 @Composable
-private fun StoryHeading(chapter: ReportChapter, opening: Boolean) {
-    Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-        Text(chapter.title.uppercase(), Modifier.semantics { heading() }, color = DoneAtReportPalette.muted, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
-        val metric = remember(chapter.metric, opening) {
-            buildAnnotatedString {
-                val parts = Regex("[\\p{N}.,]+|[^\\p{N}.,]+").findAll(chapter.metric)
-                parts.forEach { part ->
-                    val numeric = part.value.any { it.isDigit() }
-                    withStyle(SpanStyle(fontSize = if (opening) DoneAtReportLayout.storyHeadline else if (numeric) DoneAtReportLayout.storyHero else DoneAtReportLayout.unitSize, fontWeight = FontWeight.ExtraBold)) { append(part.value) }
+private fun StoryHeading(chapter: ReportChapter, clock: () -> Long) {
+    val opening = chapter.stage == ReportStage.CALENDAR || chapter.stage == ReportStage.SUMMARY
+    Column(Modifier.reportReveal(chapter, clock).clearAndSetSemantics {
+        contentDescription = (listOf(chapter.title, chapter.metric) + chapter.lines).joinToString(". ")
+        heading()
+    }, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+        Text(chapter.title.uppercase(), color = DoneAtReportPalette.muted, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+        if (chapter.metric.isNotEmpty()) {
+            val metric by remember(chapter, clock) { derivedStateOf {
+                val b = chapter.timeline.build(clock())
+                val fraction = when (chapter.stage) {
+                    ReportStage.REST -> ReportEase.window(b, .34f, .86f)
+                    ReportStage.OVERTIME, ReportStage.FOCUS -> ReportEase.outCubic(ReportEase.window(b, .08f, .85f))
+                    else -> ReportEase.outCubic(ReportEase.window(b, .08f, 1f))
                 }
-            }
+                chapter.countedMetric?.invoke(fraction) ?: chapter.metric
+            } }
+            val styled = remember(metric, opening) { buildAnnotatedString {
+                Regex("[\\p{N}.,]+|[^\\p{N}.,]+").findAll(metric).forEach { part ->
+                    withStyle(SpanStyle(fontSize = if (opening) DoneAtReportLayout.storyHeadline else if (part.value.any { it.isDigit() }) DoneAtReportLayout.storyHero else DoneAtReportLayout.unitSize, fontWeight = FontWeight.ExtraBold)) { append(part.value) }
+                }
+            } }
+            Text(styled, color = DoneAtReportPalette.ink, lineHeight = if (opening) DoneAtReportLayout.storyHeadline else DoneAtReportLayout.storyHero)
         }
-        if (chapter.metric.isNotEmpty()) Text(metric, color = DoneAtReportPalette.ink, lineHeight = if (opening) DoneAtReportLayout.storyHeadline else DoneAtReportLayout.storyHero)
-        if (chapter.lines.isNotEmpty()) Text(chapter.lines.first(), color = DoneAtReportPalette.muted, style = MaterialTheme.typography.titleMedium)
+        chapter.lines.forEachIndexed { index, line ->
+            val delayed = when (chapter.stage) {
+                ReportStage.HOURS -> .82f
+                ReportStage.REST -> .86f
+                ReportStage.OVERTIME -> if (index == 0) 0f else .7f
+                ReportStage.INCOME -> .55f
+                else -> if (index == 0) 0f else .6f
+            }
+            Text(line, Modifier.reportReveal(chapter, clock, delayed, if (delayed == 0f) .22f else 1f), color = if (index == 0) DoneAtReportPalette.muted else DoneAtReportPalette.cream, style = MaterialTheme.typography.titleMedium)
+        }
     }
 }
 
 @Composable
-private fun StoryCaption(chapter: ReportChapter) {
-    chapter.lines.drop(1).forEach { Text(it, color = DoneAtReportPalette.cream, style = MaterialTheme.typography.bodyLarge) }
+private fun SummaryFacts(chapter: ReportChapter, clock: () -> Long) {
+    val large = LocalConfiguration.current.fontScale >= 1.5f
+    val modifier = Modifier.fillMaxWidth().reportReveal(chapter, clock, .55f, 1f)
+    if (large) {
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+            chapter.summaryFacts.forEach { (label, value) -> SummaryFact(label, value, Modifier.fillMaxWidth()) }
+        }
+    } else {
+        // Fixed columns let long labels wrap inside their cell; FlowRow can drop
+        // an overflowing last item when the story stage constrains its height.
+        Row(modifier, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
+            chapter.summaryFacts.forEach { (label, value) -> SummaryFact(label, value, Modifier.weight(1f)) }
+        }
+    }
 }
+
+@Composable
+private fun SummaryFact(label: String, value: String, modifier: Modifier) {
+    Column(modifier) {
+        Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = DoneAtReportPalette.ink)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = DoneAtReportPalette.muted)
+    }
+}
+
 @Composable
 private fun rememberTouchExploration(): Boolean {
     val context = LocalContext.current
@@ -281,122 +394,10 @@ private fun rememberTouchExploration(): Boolean {
     return enabled
 }
 
-/** Presentation formats facts already built by RecordsQueries; it never totals records. */
-private fun reportChapters(report: CycleReportSnapshot, text: TimerText, dates: RecordsText, context: Context, firstDayOfWeek: java.time.DayOfWeek): List<ReportChapter> = buildList {
-    val res = context.resources
-    fun title(id: Int) = res.getString(id)
-    fun formatted(id: Int, vararg values: String) = res.getString(id, *values)
-    fun duration(ms: Long) = text.relativeDuration(ms.toDouble())
-    val calendarLeading = (report.period.startDate.dayOfWeek.value - firstDayOfWeek.value + 7) % 7
-    val cellLabels = if (report.period.kind == CycleReportKind.YEAR) report.months.map { dates.shortMonth(it.period.startDate) }
-        else report.days.map { text.count(it.date.dayOfMonth) }
-    val year = report.period.kind == CycleReportKind.YEAR
-    val restIndices = report.days.mapIndexedNotNull { index, day -> index.takeIf { day.kind == CycleReportDayKind.REST } }.toSet()
-    val overtimeShares = if (year) report.months.map { if (it.figures.workedMs > 0) (it.figures.overtimeMs.toFloat() / it.figures.workedMs).coerceIn(0f, 1f) else 0f }
-        else report.days.map { val total = it.workMs + it.overtimeMs; if (total > 0) (it.overtimeMs.toFloat() / total).coerceIn(0f, 1f) else 0f }
-    val overtimeIndices = report.days.mapIndexedNotNull { index, day -> index.takeIf { day.overtimeMs > 0 } }.toSet()
-    val axisLabels = if (year) report.months.map { text.count(it.period.startDate.monthValue) } else if (report.period.kind == CycleReportKind.WEEK) report.days.map { dates.weekdayNarrow(it.date) } else emptyList()
-    val daily = report.days.map { dates.dayTitle(it.dayKey) + " · " + duration(it.workMs + it.overtimeMs) to it.workMs + it.overtimeMs }
-    val workBars = if (report.period.kind == CycleReportKind.YEAR) report.months.map { dates.shortMonth(it.period.startDate) + " · " + duration(it.figures.workedMs) to it.figures.workedMs } else daily
-    val headline = when {
-        report.isInProgress -> title(R.string.reportHeadlineInProgress)
-        report.restDayCount > 0 -> formatted(R.string.reportHeadlineRoom, text.count(report.restDayCount))
-        report.figures.overtimeMs > 0 -> formatted(R.string.reportHeadlineOvertime, duration(report.figures.overtimeMs))
-        else -> title(R.string.reportHeadlinePlain)
-    }
-    add(ReportChapter(title(R.string.reportWorkdays) + " · " + text.count(report.figures.workdays), headline,
-        if (report.isInProgress) listOf(title(R.string.reportSoFar)) else emptyList(), workBars,
-        calendarLeading = calendarLeading, cellLabels = cellLabels, isYear = year, restIndices = restIndices, overtimeIndices = overtimeIndices, axisLabels = axisLabels, overtimeShares = overtimeShares))
-    add(ReportChapter(title(R.string.recordsWorkedTime), duration(report.figures.workedMs), listOf(
-        formatted(R.string.reportIncludingOvertime, duration(report.figures.overtimeMs)),
-    ), workBars, calendarLeading = calendarLeading, cellLabels = cellLabels, isYear = year, restIndices = restIndices, overtimeIndices = overtimeIndices, axisLabels = axisLabels, overtimeShares = overtimeShares))
-    report.baseline?.let { baseline ->
-        val statement = when {
-            baseline.deltaMs > 0 -> formatted(R.string.reportUsualMore, duration(baseline.deltaMs))
-            baseline.deltaMs < 0 -> formatted(R.string.reportUsualLess, duration(-baseline.deltaMs))
-            else -> title(R.string.reportUsualSame)
-        }
-        add(ReportChapter(title(if (report.period.kind == CycleReportKind.WEEK) R.string.reportUsualWeek else R.string.reportUsualMonth), duration(kotlin.math.abs(baseline.deltaMs)), listOf(
-            statement,
-            formatted(if (report.period.kind == CycleReportKind.WEEK) R.string.reportUsualBasisWeek else R.string.reportUsualBasisMonth, text.count(baseline.periods)),
-        ), bars = listOf(title(if (report.period.kind == CycleReportKind.WEEK) R.string.reportUsualWeek else R.string.reportUsualMonth) + " · " + duration(baseline.baselineWorkedMs) to baseline.baselineWorkedMs, title(R.string.recordsWorkedTime) + " · " + duration(report.figures.workedMs) to report.figures.workedMs), artKind = ReportArtKind.BASELINE))
-    }
-    add(ReportChapter(title(R.string.overtime), duration(report.figures.overtimeMs), buildList {
-        add(formatted(R.string.reportOvertimeDays, text.count(report.overtime?.dayCount ?: 0)))
-        report.overtime?.longestDay?.let { add(formatted(R.string.reportOvertimePeak, dates.dayTitle(it.dayKey), duration(it.overtimeMs))) }
-    }, if (year) report.months.map { dates.shortMonth(it.period.startDate) + " · " + duration(it.figures.overtimeMs) to it.figures.overtimeMs } else report.days.map { dates.dayTitle(it.dayKey) + " · " + duration(it.overtimeMs) to it.overtimeMs }, artKind = ReportArtKind.OVERTIME, isYear = year, axisLabels = axisLabels))
-    val restStart = report.longestRestStart
-    val restRange = restStart?.let { it until it + report.longestRestRun }
-    add(ReportChapter(title(R.string.reportRestDays), text.days(report.restDayCount.toDouble()), buildList {
-        add(title(R.string.reportLongestRest) + " · " + text.days(report.longestRestRun.toDouble()))
-        if (restStart != null && report.longestRestRun > 0) {
-            add(dates.dayTitle(report.days[restStart].dayKey) + " – " + dates.dayTitle(report.days[restStart + report.longestRestRun - 1].dayKey))
-        }
-        add(title(R.string.reportLeaveUsed) + " · " + text.days(report.leaveUsedHalfDays / 2.0))
-    }, if (year) report.months.map { dates.shortMonth(it.period.startDate) + " · " + text.days(it.restDayCount.toDouble()) to it.restDayCount.toLong() } else daily, restRange, restCalendar = !year, calendarLeading = calendarLeading, cellLabels = cellLabels, artKind = ReportArtKind.REST, isYear = year, restIndices = restIndices, axisLabels = axisLabels))
-    report.focus?.let { focus ->
-        add(ReportChapter(title(R.string.reportFocusRounds), text.count(focus.rounds), buildList {
-            if (focus.bestDayIndex in report.days.indices && focus.bestDayIndex in focus.perDay.indices) add(formatted(R.string.reportFocusBest, dates.dayTitle(report.days[focus.bestDayIndex].dayKey), text.count(focus.perDay[focus.bestDayIndex])))
-            add(title(R.string.reportFocusDuration) + " · " + duration(focus.focusedMs))
-        }, if (year) report.months.map { dates.shortMonth(it.period.startDate) + " · " + text.count(it.focusRounds) to it.focusRounds.toLong() } else report.days.mapIndexed { index, day -> dates.dayTitle(day.dayKey) + " · " + text.count(focus.perDay.getOrElse(index) { 0 }) to focus.perDay.getOrElse(index) { 0 }.toLong() }, artKind = ReportArtKind.FOCUS, isYear = year, axisLabels = axisLabels))
-    }
-    report.pay?.let { pay ->
-        add(ReportChapter(title(R.string.reportIncomeTitle), "", buildList {
-            add(title(R.string.reportIncomeTotal) + " · " + text.money(pay.total))
-            pay.perHour?.let { add(title(R.string.reportPerHour) + " · " + text.money(it)) }
-            pay.overtimeExtra?.let { add(title(R.string.reportIncomeExtra) + " · " + text.money(it)) }
-            add(title(R.string.reportIncomeNote))
-        }, artKind = ReportArtKind.PAY, centerLabel = title(if (pay.perHour != null) R.string.reportPerHour else R.string.reportIncomeTitle), centerValue = text.money(pay.perHour ?: pay.total)))
-    }
-    report.ahead?.let { ahead ->
-        val next = ahead.nextBreak
-        add(ReportChapter(title(if (ahead.isHistorical) R.string.reportAheadHistoricalTitle else R.string.reportAheadTitle), next?.let { text.days(it.length.toDouble()) } ?: title(R.string.reportLeaveUsed), buildList {
-            if (next != null) add(dates.dayTitle(next.startDayKey) + " – " + dates.dayTitle(next.endDate))
-            add(title(R.string.reportLeaveUsed) + " · " + text.days(ahead.leaveUsedHalfDays / 2.0))
-            ahead.leaveRemainingHalfDays?.let { add(title(R.string.reportLeaveLeft) + " · " + text.days(it / 2.0)) }
-        }, bars = ahead.horizon.mapIndexed { index, rest -> text.count(index + 1) to if (rest) 1L else 0L }, artKind = ReportArtKind.AHEAD, restRange = next?.let { (it.daysAway - 1) until (it.daysAway - 1 + it.length) }))
-    }
-    if (report.months.isNotEmpty()) {
-        add(ReportChapter(title(R.string.reportMonthlyTrend), duration(report.figures.workedMs), emptyList(), report.months.map { month ->
-            val date = month.period.startDate
-            val label = buildList {
-                add(dates.shortMonth(date))
-                add(duration(month.figures.workedMs))
-                add(title(R.string.overtime) + " " + duration(month.figures.overtimeMs))
-                month.figures.income?.let { add(title(R.string.reportIncomeTitle) + " " + text.money(it)) }
-            }.joinToString(" · ")
-            label to month.figures.workedMs
-        }, artKind = ReportArtKind.SUMMARY, isYear = true, axisLabels = axisLabels))
-    }
-}
-
 @Composable
-private fun ReportReading(report: CycleReportSnapshot, text: TimerText, dates: RecordsText, chapters: List<ReportChapter>, modifier: Modifier) {
+private fun ReportReading(report: CycleReportSnapshot, text: TimerText, dates: RecordsText, chapters: List<ReportChapter>, modifier: Modifier, close: () -> Unit) {
     val context = LocalContext.current
-    val rows = remember(report, text, dates, context) {
-        val res = context.resources
-        fun t(id: Int) = res.getString(id)
-        buildList<Pair<String, String>> {
-            add(t(R.string.reportWorkdays) to text.count(report.figures.workdays))
-            add(t(R.string.recordsWorkedTime) to text.relativeDuration(report.figures.workedMs.toDouble()))
-            add(t(R.string.overtime) to text.relativeDuration(report.figures.overtimeMs.toDouble()))
-            add(t(R.string.reportRestDays) to text.days(report.restDayCount.toDouble()))
-            add(t(R.string.reportLongestRest) to text.days(report.longestRestRun.toDouble()))
-            add(t(R.string.reportLeaveUsed) to text.days(report.leaveUsedHalfDays / 2.0))
-            report.baseline?.let { baseline ->
-                add(t(if (report.period.kind == CycleReportKind.WEEK) R.string.reportUsualWeek else R.string.reportUsualMonth) to res.getString(
-                    if (baseline.deltaMs < 0) R.string.reportUsualLess else if (baseline.deltaMs > 0) R.string.reportUsualMore else R.string.reportUsualSame,
-                    text.relativeDuration(kotlin.math.abs(baseline.deltaMs).toDouble()),
-                ))
-            }
-            report.ahead?.nextBreak?.let { next -> add(t(if (report.ahead?.isHistorical == true) R.string.reportAheadHistoricalTitle else R.string.reportAheadTitle) to "${text.days(next.length.toDouble())} · ${dates.monthDay(next.startDate)} – ${dates.monthDay(next.endDate)}") }
-            report.focus?.let { focus ->
-                add(t(R.string.reportFocusRounds) to text.count(focus.rounds))
-                add(t(R.string.reportFocusDuration) to text.relativeDuration(focus.focusedMs.toDouble()))
-            }
-            report.pay?.let { add(t(R.string.reportIncomeTitle) to text.money(it.total)) }
-        }
-    }
+    val rows = remember(report, text, dates, context) { ReportCopy(report, text, dates, context).facts() }
     Column(modifier.verticalScroll(rememberScrollState()).padding(top = DoneAtSpacing.xl), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xl)) {
         if (report.isInProgress) Text(stringResource(R.string.reportSoFar), color = DoneAtReportPalette.muted)
         Surface(modifier = Modifier.fillMaxWidth(), color = DoneAtReportPalette.control, shape = RoundedCornerShape(DoneAtReportLayout.readingCardRadius)) {
@@ -426,7 +427,7 @@ private fun ReportReading(report: CycleReportSnapshot, text: TimerText, dates: R
             }
         } else {
             Surface(modifier = Modifier.fillMaxWidth(), color = DoneAtReportPalette.control, shape = RoundedCornerShape(DoneAtReportLayout.readingCardRadius)) {
-                ReportArtwork(chapters.first(), { CycleReportPlayer.CHAPTER_MS }, 0, Modifier.fillMaxWidth().height(DoneAtReportLayout.artHeight).padding(DoneAtSpacing.l))
+                ReportArtwork(chapters.first(), { Long.MAX_VALUE }, Modifier.fillMaxWidth().height(DoneAtReportLayout.artHeight).padding(DoneAtSpacing.l))
             }
         }
         // Detailed values keep all chart facts available to readers and TalkBack.
@@ -435,18 +436,19 @@ private fun ReportReading(report: CycleReportSnapshot, text: TimerText, dates: R
                 Column(Modifier.padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
                     Text(chapter.title, Modifier.semantics { heading() }, fontWeight = FontWeight.Bold, color = DoneAtReportPalette.ink)
                     chapter.lines.forEach { Text(it, color = DoneAtReportPalette.muted) }
-                    if (report.months.isEmpty() && chapter.artKind != ReportArtKind.REST) chapter.bars.forEach { (label, _) -> Text(label, color = DoneAtReportPalette.muted) }
+                    if (report.months.isEmpty() && chapter.artKind in listOf(ReportArtKind.OVERTIME, ReportArtKind.FOCUS)) chapter.bars.forEach { (label, value) -> Text(label + " · " + if (chapter.artKind == ReportArtKind.FOCUS) text.count(value.toInt()) else text.relativeDuration(value.toDouble()), color = DoneAtReportPalette.muted) }
                 }
             }
         }
         Text(stringResource(R.string.reportBasisNote), color = DoneAtReportPalette.muted, style = MaterialTheme.typography.bodySmall)
+        Button(onClick = close, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DoneAtReportPalette.orange, contentColor = DoneAtReportPalette.ink)) { Text(stringResource(R.string.done)) }
     }
 }
 
 @Composable
-private fun ReportLegend() {
+private fun ReportLegend(hasOvertime: Boolean) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
-        listOf(DoneAtReportPalette.orange to R.string.recordsWorkRegular, DoneAtReportPalette.hot to R.string.overtime, DoneAtReportPalette.muted to R.string.recordsRestDay).forEach { (color, key) ->
+        listOf(DoneAtReportPalette.orange to R.string.recordsWorkRegular, DoneAtReportPalette.hot to R.string.overtime, DoneAtReportPalette.muted to R.string.recordsRestDay).filter { hasOvertime || it.second != R.string.overtime }.forEach { (color, key) ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
                 Box(Modifier.size(DoneAtSpacing.s).background(color, CircleShape))
                 Text(stringResource(key), color = DoneAtReportPalette.muted, style = MaterialTheme.typography.labelMedium)

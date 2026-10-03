@@ -70,6 +70,9 @@ class DoneAtMotion(val reduced: Boolean) {
     fun <T> stateEnter(): AnimationSpec<T> = if (reduced) tween(REDUCED_MS) else tween(STATE_ENTER_MS, easing = emphasizedDecelerate)
     fun <T> stateExit(): AnimationSpec<T> = if (reduced) tween(REDUCED_MS) else tween(STATE_EXIT_MS, easing = emphasizedDecelerate)
     fun <T> phase(): FiniteAnimationSpec<T> = if (reduced) tween(REDUCED_MS) else tween(PHASE_MS, easing = FastOutSlowInEasing)
+    /** Full-screen report cover, matching the direction of iOS fullScreenCover. */
+    fun <T> reportCover(): FiniteAnimationSpec<T> = if (reduced) snap() else
+        tween(REPORT_COVER_MS, easing = CubicBezierEasing(.32f, .72f, 0f, 1f))
 
     /** Shape and position changes; a little bounce, never on colour or opacity. */
     fun <T> spatial(): AnimationSpec<T> =
@@ -80,9 +83,12 @@ class DoneAtMotion(val reduced: Boolean) {
         if (reduced) snap() else spring(dampingRatio = 1f, stiffness = 1000f)
 
     companion object {
-        const val REPORT_CHAPTER_MS = 6_000L
+        const val REPORT_COVER_MS = 500
+        const val REPORT_TEASER_DELAY_MS = 250L
+        const val REPORT_TEASER_BUILD_MS = 1_500L
+        const val REPORT_BACKDROP_MS = 500L
+        const val REPORT_PREVIOUS_RESTART_MS = 800L
         const val REPORT_MAX_FRAME_MS = 100
-        const val REPORT_ART_ENTER_MS = 900
         const val REDUCED_MS = 160
         const val COUNTDOWN_TICK_MS = 260
         const val PRESS_MS = 140

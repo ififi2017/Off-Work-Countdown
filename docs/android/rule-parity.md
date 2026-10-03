@@ -160,8 +160,11 @@ Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`
 - 历史周、月的后续连休以报告结束日为锚点，展示具体日期，不带当前余额。年报包含全年工时、加班、完整休息日、最长连休、已休假期及 12 个月趋势；专注按已完成的记录统计，年报没有后续连休或同比基线。年度解析结果供月度统计复用。
 - `CycleReportSnapshot.withoutIncome` 同时剥离总收入、收入章节及 12 个月的收入。报告收入选择以全局隐藏设置为默认值，主动显示复用 `EarningsGate`，本次选择不写回全局设置。Compose 只格式化快照，不重新计算业务统计。
 - `CycleReportPlayer` 对应 iOS 播放器：主动暂停和按住暂停分别保存；主动暂停后前后翻页立即展示完成帧，临时暂停保持播放时序。文字简报、TalkBack 和减少动画路径静态展示同一快照；动效复用 `DoneAtMotion`。
+- `CycleReportHeadline.choose` 对应固定版本的事实标题选择：当前周期优先标记进行中，年报用中性标题；近期连休需要实际历史基线增幅，工时增减、加班占比和休息天数沿用 iOS 阈值。标题由纯 JVM 快照产生，不在 UI 中判断生活状态。
+- `ReportStage` 保留 iOS 的章节顺序与条件：日历、工时、存在时的加班/基线、休息、存在时的后续连休/专注/收入，最后收尾。各章分为构建与阅读停留两段；上一页在播放超过 800 ms 时先重播当前章，暂停时直接跳到目标完成帧；末页构建结束后停止，重播重置两个时钟。
+- `ReportStripGeometry` 对应 `ReportDayStrip.frame`：月历先缩成圆点、移动到柱底，再按序生长；两段交界的坐标连续，第一、二章共用同一绘图区域。月份日期按对角线顺序落入；休息章回到日历、淡化工作日、点亮休息日，最后强调最长连休。数值和标签在快照准备时构建，Canvas 与文字子组件消费播放时钟；进入/退出的覆盖动画保留原记录页至退出结束。
 
-测试入口：领域 `CycleReportTest`、`RecordsQueriesTest`；应用 `CycleReportPlayerTest`。覆盖周期与闰年、未知日期、当日累计、收入剥离、历史连休、年度月度趋势、暂停导航及临时暂停语义。
+测试入口：领域 `CycleReportTest`、`RecordsQueriesTest`、`CycleReportHeadlineTest`；应用 `CycleReportPlayerTest`、`ReportStripGeometryTest`。覆盖周期与闰年、未知日期、当日累计、收入剥离、历史连休、年度月度趋势、事实标题、可选章节、构建/停留、暂停导航、临时暂停、重播以及月历变形交界。
 
 ### 报告通知与旧开关迁移
 

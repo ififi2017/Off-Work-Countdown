@@ -105,9 +105,32 @@ data class CycleReportSnapshot(
     val ahead: CycleReportAhead? = null, val focus: CycleReportFocus? = null, val pay: CycleReportPay? = null,
     val months: List<CycleReportMonth> = emptyList(), val leaveUsedHalfDays: Int = 0,
 ) {
+    val headline: CycleReportHeadline get() = CycleReportHeadline.choose(this)
     val hasData get() = figures.hasData || (period.kind == CycleReportKind.YEAR && ((focus?.rounds ?: 0) > 0 || leaveUsedHalfDays > 0))
     val income get() = figures.income
     fun withoutIncome() = copy(figures = figures.copy(income = null), pay = null, months = months.map { it.copy(figures = it.figures.copy(income = null)) })
+}
+
+/** The same factual opening as iOS CycleReportHeadline; no view invents a verdict. */
+enum class CycleReportHeadline {
+    STEADY, FULL, LIGHTER, REST, BREAK_SOON, IN_PROGRESS, PLAIN;
+
+    companion object {
+        fun choose(report: CycleReportSnapshot): CycleReportHeadline = with(report) {
+            if (isInProgress) return IN_PROGRESS
+            if (period.kind == CycleReportKind.YEAR) return PLAIN
+            val delta = baseline?.deltaFraction ?: 0.0
+            val share = if (figures.workedMs > 0) figures.overtimeMs.toDouble() / figures.workedMs else 0.0
+            when {
+                ahead?.nextBreak?.daysAway?.let { it <= 7 } == true && baseline != null && delta >= .05 -> BREAK_SOON
+                share >= .08 && figures.overtimeMs >= 7_200_000 || baseline != null && delta >= .10 -> FULL
+                baseline != null && delta <= -.10 -> LIGHTER
+                restDayCount >= (if (period.kind == CycleReportKind.WEEK) 4 else 12) || longestRestRun >= 3 -> REST
+                baseline != null -> STEADY
+                else -> PLAIN
+            }
+        }
+    }
 }
 
 object CycleReportNotificationPlan {
