@@ -136,18 +136,17 @@ final class CycleReportPlayer {
     func next() {
         guard !isLastStage else { return }
         stageIndex += 1
-        time = 0
+        // A paused chapter has no clock to reveal its first frame.
+        time = isPlaying ? 0 : timeline.build
     }
 
     /// Near the start of a chapter this goes back a chapter; otherwise it
-    /// restarts this one, as story viewers do.
+    /// restarts this one. While paused, browse completed chapters directly.
     func previous() {
-        if time > 0.8 || stageIndex == 0 {
-            time = 0
-        } else {
+        if stageIndex > 0, !isPlaying || time <= 0.8 {
             stageIndex -= 1
-            time = 0
         }
+        time = isPlaying ? 0 : timeline.build
     }
 
     func skipToSummary() {
