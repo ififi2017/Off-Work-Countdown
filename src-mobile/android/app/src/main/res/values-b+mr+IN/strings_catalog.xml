@@ -921,11 +921,6 @@
     <string name="reportYearly">वार्षिक अहवाल</string>
     <string name="retryAction">पुन्हा प्रयत्न करा</string>
     <string name="return_">परत जा</string>
-    <string name="reviewPromptBody">App Store वर रेटिंग द्याल का? त्यामुळे अधिक लोकांना हे ॲप सापडण्यास मदत होते.</string>
-    <string name="reviewPromptLater">नंतर</string>
-    <string name="reviewPromptNever">पुन्हा आठवण नको</string>
-    <string name="reviewPromptRateNow">आता रेट करा</string>
-    <string name="reviewPromptTitle">DoneAt वापरणे आवडते आहे का?</string>
     <string name="rotationRestDays">सुट्टीचे दिवस</string>
     <string name="rotationRestdayOption">दिवस %1$s · विश्रांती</string>
     <string name="rotationStartDay">दिवस %1$s पासून सुरू करा</string>

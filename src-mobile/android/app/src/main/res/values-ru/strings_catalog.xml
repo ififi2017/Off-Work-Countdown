@@ -927,11 +927,6 @@
     <string name="reportYearly">Годовой отчёт</string>
     <string name="retryAction">Попробовать снова</string>
     <string name="return_">Вернуться</string>
-    <string name="reviewPromptBody">Хотите оставить оценку в App Store? Это поможет другим людям найти приложение.</string>
-    <string name="reviewPromptLater">Позже</string>
-    <string name="reviewPromptNever">Больше не напоминать</string>
-    <string name="reviewPromptRateNow">Оценить сейчас</string>
-    <string name="reviewPromptTitle">Вам нравится DoneAt?</string>
     <string name="rotationRestDays">Выходные дни</string>
     <string name="rotationRestdayOption">День %1$s · Отдых</string>
     <string name="rotationStartDay">Начать с дня %1$s</string>

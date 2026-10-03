@@ -921,11 +921,6 @@
     <string name="reportYearly">Yıllık rapor</string>
     <string name="retryAction">Yeniden dene</string>
     <string name="return_">Geri Dön</string>
-    <string name="reviewPromptBody">App Store’da puan vermek ister misiniz? Bu, daha fazla kişinin uygulamayı bulmasına yardımcı olur.</string>
-    <string name="reviewPromptLater">Daha sonra</string>
-    <string name="reviewPromptNever">Bir daha hatırlatma</string>
-    <string name="reviewPromptRateNow">Şimdi değerlendir</string>
-    <string name="reviewPromptTitle">DoneAt’i beğendiniz mi?</string>
     <string name="rotationRestDays">İzin günleri</string>
     <string name="rotationRestdayOption">%1$s. gün · Dinlenme</string>
     <string name="rotationStartDay">%1$s. günden başla</string>

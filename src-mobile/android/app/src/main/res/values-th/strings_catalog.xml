@@ -918,11 +918,6 @@
     <string name="reportYearly">รายงานรายปี</string>
     <string name="retryAction">ลองอีกครั้ง</string>
     <string name="return_">ย้อนกลับ</string>
-    <string name="reviewPromptBody">ต้องการให้คะแนนใน App Store ไหม? คะแนนของคุณช่วยให้คนอื่นพบแอปนี้มากขึ้น</string>
-    <string name="reviewPromptLater">ไว้ภายหลัง</string>
-    <string name="reviewPromptNever">ไม่ต้องเตือนอีก</string>
-    <string name="reviewPromptRateNow">ให้คะแนนตอนนี้</string>
-    <string name="reviewPromptTitle">ชอบใช้ DoneAt ไหม?</string>
     <string name="rotationRestDays">วันพัก</string>
     <string name="rotationRestdayOption">วันที่ %1$s · พัก</string>
     <string name="rotationStartDay">เริ่มจากวันที่ %1$s</string>

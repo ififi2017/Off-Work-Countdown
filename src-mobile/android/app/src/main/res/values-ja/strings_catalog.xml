@@ -918,11 +918,6 @@
     <string name="reportYearly">年のレポート</string>
     <string name="retryAction">もう一度</string>
     <string name="return_">戻る</string>
-    <string name="reviewPromptBody">App Storeで評価していただけますか？より多くの方がアプリを見つける助けになります。</string>
-    <string name="reviewPromptLater">あとで</string>
-    <string name="reviewPromptNever">今後は表示しない</string>
-    <string name="reviewPromptRateNow">今すぐ評価</string>
-    <string name="reviewPromptTitle">DoneAtを気に入っていただけましたか？</string>
     <string name="rotationRestDays">休日数</string>
     <string name="rotationRestdayOption">%1$s日目・休日</string>
     <string name="rotationStartDay">%1$s日目から開始</string>

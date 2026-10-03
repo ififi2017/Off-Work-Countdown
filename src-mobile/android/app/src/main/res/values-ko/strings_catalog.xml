@@ -918,11 +918,6 @@
     <string name="reportYearly">연간 리포트</string>
     <string name="retryAction">다시 시도</string>
     <string name="return_">돌아가기</string>
-    <string name="reviewPromptBody">App Store에 평가를 남겨 주시겠어요? 더 많은 사람이 앱을 찾는 데 도움이 됩니다.</string>
-    <string name="reviewPromptLater">나중에</string>
-    <string name="reviewPromptNever">다시 알리지 않기</string>
-    <string name="reviewPromptRateNow">지금 평가</string>
-    <string name="reviewPromptTitle">DoneAt이 마음에 드시나요?</string>
     <string name="rotationRestDays">휴무일</string>
     <string name="rotationRestdayOption">%1$s일째 · 휴무</string>
     <string name="rotationStartDay">%1$s일째부터 시작</string>

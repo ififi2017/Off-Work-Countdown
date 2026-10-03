@@ -6,7 +6,6 @@ struct RecordsLifeSetupPromptModifier: ViewModifier {
     @Environment(SceneState.self) private var scene
     let life: LifeSummaryModel
     let actions: RecordsActions
-    let reviewPromptPresented: Bool
     let paywallPresentationActive: Bool
     let hasBlockingPresentation: Bool
     @Binding var presentationActive: Bool
@@ -16,7 +15,6 @@ struct RecordsLifeSetupPromptModifier: ViewModifier {
             && actions.plus.isAuthorized && scene.selectedTab == .records
             && actions.records.state.lifeProfile == nil
             && scene.recordsPath.isEmpty && scene.dayEditor?.dayKey == nil
-            && !reviewPromptPresented
             && scene.paywallSheet == nil && !paywallPresentationActive
             && !hasBlockingPresentation
     }

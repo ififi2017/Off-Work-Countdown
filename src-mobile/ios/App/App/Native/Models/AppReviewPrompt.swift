@@ -1,9 +1,12 @@
 import Foundation
 
-/// Durable eligibility for the one respectful App Store review prompt.
+/// Durable eligibility for the system App Store review prompt.
 ///
-/// A completion only arms a future launch. Choosing Later consumes that
-/// completion, so the same finished shift cannot trigger the prompt again.
+/// Following App Store Review Guideline 5.6.1, we call the system review API
+/// directly without a custom pre-prompt. Throttling ensures respectful usage:
+/// - At most once per app version (CFBundleShortVersionString)
+/// - At least 120 days between triggers
+/// The system itself limits display to 3 times per year.
 nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
     enum Phase: String, Codable, Sendable {
         case waitingForCompletion
@@ -11,9 +14,14 @@ nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
         case never
     }
 
+    static let minimumIntervalDays: Int = 120
+    private static let minimumIntervalMs: Double = Double(minimumIntervalDays) * 24 * 60 * 60 * 1_000
+
     var phase: Phase = .waitingForCompletion
     var readyCompletionAtMs: Double?
     var handledCompletionAtMs: Double?
+    var lastTriggeredVersion: String?
+    var lastTriggeredAtMs: Double?
 
     mutating func noteCompletion(atMs completionAtMs: Double) {
         guard phase == .waitingForCompletion,
@@ -38,8 +46,24 @@ nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
         return phase == .readyForNextLaunch
     }
 
-    mutating func deferUntilNextCompletion() {
-        guard phase == .readyForNextLaunch else { return }
+    /// Returns whether the system review should be triggered, applying throttling.
+    /// Call this after `isEligibleOnLaunch` returns true.
+    func shouldTriggerSystemReview(currentVersion: String, nowMs: Double) -> Bool {
+        guard phase == .readyForNextLaunch else { return false }
+        if let lastVersion = lastTriggeredVersion, lastVersion == currentVersion {
+            return false
+        }
+        if let lastMs = lastTriggeredAtMs, nowMs - lastMs < Self.minimumIntervalMs {
+            return false
+        }
+        return true
+    }
+
+    /// Records that the system review was triggered. Call this after requesting
+    /// the system review.
+    mutating func recordTrigger(version: String, atMs: Double) {
+        lastTriggeredVersion = version
+        lastTriggeredAtMs = atMs
         if let readyCompletionAtMs {
             handledCompletionAtMs = max(handledCompletionAtMs ?? 0, readyCompletionAtMs)
         }

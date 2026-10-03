@@ -921,11 +921,6 @@
     <string name="reportYearly">Yearly report</string>
     <string name="retryAction">Try again</string>
     <string name="return_">Return</string>
-    <string name="reviewPromptBody">Would you like to leave a rating in the App Store? It helps more people find the app.</string>
-    <string name="reviewPromptLater">Later</string>
-    <string name="reviewPromptNever">Never remind me</string>
-    <string name="reviewPromptRateNow">Rate now</string>
-    <string name="reviewPromptTitle">Enjoying DoneAt?</string>
     <string name="rotationRestDays">Rest days</string>
     <string name="rotationRestdayOption">Day %1$s · Rest</string>
     <string name="rotationStartDay">Start from day %1$s</string>
