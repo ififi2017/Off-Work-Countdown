@@ -100,4 +100,76 @@ struct CycleReportPlaybackTests {
         #expect(player.isBuilt)
         #expect(!player.isPlaying)
     }
+
+    @Test("Paused navigation shows complete chapters and keeps playback paused")
+    @MainActor
+    func pausedNavigationShowsContent() {
+        let player = player()
+        player.advance(by: 1)
+        player.pause()
+
+        player.next()
+        #expect(player.stage == .hours)
+        #expect(player.build == 1)
+        #expect(player.isPlaying == false)
+
+        player.previous()
+        #expect(player.stage == .calendar)
+        #expect(player.build == 1)
+        player.previous()
+        #expect(player.stageIndex == 0)
+        #expect(player.build == 1)
+        #expect(player.isPlaying == false)
+
+        player.resume()
+        player.advance(by: 0.1)
+        #expect(player.stage == .calendar)
+        #expect(player.build == 1)
+        #expect(player.isPlaying)
+    }
+
+    @Test("Going back from the stopped summary reveals the preceding chapter")
+    @MainActor
+    func previousFromSummaryShowsContent() {
+        let player = player()
+        player.skipToSummary()
+
+        player.previous()
+        #expect(player.stageIndex == player.stages.count - 2)
+        #expect(player.build == 1)
+        #expect(player.isPlaying == false)
+
+        player.next()
+        #expect(player.isLastStage)
+        #expect(player.build == 1)
+        player.replay()
+        #expect(player.stageIndex == 0)
+        #expect(player.build == 0)
+        #expect(player.isPlaying)
+    }
+
+    @Test("Playing navigation keeps chapter animations, including during a temporary hold")
+    @MainActor
+    func playingNavigationStartsAnimation() {
+        let player = player()
+        player.next()
+        #expect(player.stage == .hours)
+        #expect(player.build == 0)
+
+        player.advance(by: 1)
+        player.previous()
+        #expect(player.stage == .hours)
+        #expect(player.build == 0)
+        player.previous()
+        #expect(player.stage == .calendar)
+
+        player.isHeld = true
+        player.next()
+        #expect(player.stage == .hours)
+        #expect(player.build == 0)
+        #expect(player.isPlaying)
+        player.isHeld = false
+        player.advance(by: 0.1)
+        #expect(player.build > 0)
+    }
 }

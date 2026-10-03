@@ -256,9 +256,6 @@ struct RecordsAllocationBar: View {
                     .accessibilityLabel(text.t(item.kind.titleKey))
                     .accessibilityValue(accessibilityValue(item))
                     .accessibilityAddTraits(activeKind == item.kind ? .isSelected : [])
-                    .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
-                        [item.kind.rawValue: $0]
-                    }
                 }
             }
             .frame(maxHeight: .infinity)
@@ -699,9 +696,7 @@ struct RecordsMonthGrid: View {
                     .accessibilityAction(named: Text(text.t("recordsSeeThisDay"))) {
                         onOpen(cell)
                     }
-                    .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
-                        [cell.dayKey: $0]
-                    }
+                    .modifier(RecordsSelectionAnchor(id: cell.dayKey, selectedID: selectedDayKey))
                 }
             }
         }
@@ -882,9 +877,7 @@ struct RecordsWeekStrips: View {
                 .accessibilityAction(named: Text(text.t("recordsSeeThisDay"))) {
                     onOpen(cell)
                 }
-                .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
-                    [cell.dayKey: $0]
-                }
+                .modifier(RecordsSelectionAnchor(id: cell.dayKey, selectedID: selectedDayKey))
             }
         }
         .frame(height: 188)
