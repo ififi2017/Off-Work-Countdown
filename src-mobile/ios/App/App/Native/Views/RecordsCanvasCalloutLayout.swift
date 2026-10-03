@@ -8,6 +8,23 @@ struct RecordsSelectionAnchorKey: PreferenceKey {
     }
 }
 
+/// Only the selected cell needs a floating label. Tracking every cell's
+/// anchor otherwise propagates scroll transforms through the entire grid.
+struct RecordsSelectionAnchor: ViewModifier {
+    let id: String
+    let selectedID: String?
+
+    func body(content: Content) -> some View {
+        content.overlay {
+            if id == selectedID {
+                Color.clear
+                    .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) { [id: $0] }
+                    .allowsHitTesting(false)
+            }
+        }
+    }
+}
+
 /// An in-chart label keeps other dates tappable while the selection is visible.
 struct RecordsSelectionCallout<Label: View>: ViewModifier {
     let selectedID: String?
@@ -18,16 +35,16 @@ struct RecordsSelectionCallout<Label: View>: ViewModifier {
         content
             .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selectedID)
             .overlayPreferenceValue(RecordsSelectionAnchorKey.self) { anchors in
-                GeometryReader { proxy in
-                    ZStack {
-                        if let selectedID, let anchor = anchors[selectedID] {
+                if let selectedID, let anchor = anchors[selectedID] {
+                    GeometryReader { proxy in
+                        ZStack {
                             RecordsCanvasCalloutLayout(anchor: proxy[anchor]) {
                                 label()
                             }
                             .transition(.opacity)
                         }
+                        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selectedID)
                     }
-                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selectedID)
                 }
             }
     }
