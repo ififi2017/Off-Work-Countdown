@@ -17,6 +17,7 @@ enum ReportPalette {
     static let work = Gradient(colors: [cream, orange])
     static let overtime = Gradient(colors: [Color(red: 1.0, green: 0.55, blue: 0.30), hot])
     static let rest = Gradient(colors: [cream, moon])
+    static let restRun = Gradient(colors: [cream, Color(red: 0.96, green: 0.83, blue: 0.61)])
 }
 
 /// Easing for hand-built motion. Everything in a report is a function of the
@@ -88,35 +89,46 @@ struct ReportBackdrop: View {
 
     let mood: Mood
     let time: Double
+    var previousMood: Mood? = nil
+    var blend: Double = 1
 
     var body: some View {
         // The interior points drift on slow sines so the light is never still.
         let drift = { (phase: Double, amount: Double) in sin(time * 0.35 + phase) * amount }
-        MeshGradient(
-            width: 3, height: 3,
-            points: [
+        let points: [SIMD2<Float>] = [
                 [0, 0], [0.5, 0], [1, 0],
                 [0, Float(0.5 + drift(1.0, 0.08))],
                 [Float(0.5 + drift(2.0, 0.10)), Float(0.5 + drift(3.0, 0.10))],
                 [1, Float(0.5 + drift(5.0, 0.08))],
                 [0, 1], [Float(0.5 + drift(6.0, 0.08)), 1], [1, 1],
-            ],
-            colors: mood.colors,
-            smoothsColors: true
-        )
-        .ignoresSafeArea()
-        .animation(.easeInOut(duration: 1.4), value: moodIndex)
-    }
-
-    private var moodIndex: Int {
-        switch mood {
-        case .dawn: 0
-        case .energy: 1
-        case .calm: 2
-        case .contrast: 3
-        case .gold: 4
-        case .finale: 5
+            ]
+        ZStack {
+            MeshGradient(width: 3, height: 3, points: points, colors: mood.colors, smoothsColors: true)
+            if let previousMood, blend < 1 {
+                MeshGradient(width: 3, height: 3, points: points, colors: previousMood.colors, smoothsColors: true)
+                    .opacity(1 - blend)
+            }
         }
+        .ignoresSafeArea()
+    }
+}
+
+/// Draws into a larger surface while retaining the chart's original layout.
+/// Blur tails need pixels beyond the plotted bounds, not outer SwiftUI padding.
+private struct ReportCanvas: View {
+    private let bleed: CGFloat = 40
+    var renderer: (inout GraphicsContext, CGSize) -> Void
+
+    var body: some View {
+        GeometryReader { geometry in
+            Canvas { context, _ in
+                context.translateBy(x: bleed, y: bleed)
+                renderer(&context, geometry.size)
+            }
+            .frame(width: geometry.size.width + bleed * 2, height: geometry.size.height + bleed * 2)
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+        }
+        .allowsHitTesting(false)
     }
 }
 
@@ -175,6 +187,7 @@ struct ReportStripArt: View {
     let weekdaySymbols: [String]
     let leadingBlanks: Int
     let dayNumbers: [Int]
+    let peak: Double
     /// 0 → 1 per day: the day arriving.
     var reveals: [Double]
     /// 0 = calendar slot, 1 = bar.
@@ -185,13 +198,13 @@ struct ReportStripArt: View {
     var dim: Double = 0
     /// 0 → 1: hours written above each bar (weeks only; a month's bars are too thin).
     var valueLabels: Double = 0
-    /// The longest rest stretch, and how much of its underline is drawn.
+    /// The longest rest stretch, and how much its dates are emphasized.
     var run: Range<Int>?
     var runProgress: Double = 0
     var time: Double = 0
 
     var body: some View {
-        Canvas { context, size in
+        ReportCanvas { context, size in
             draw(&context, size: size)
         }
         // The labels sit in a fixed band; let them grow only so far.
@@ -202,17 +215,20 @@ struct ReportStripArt: View {
     private func draw(_ context: inout GraphicsContext, size: CGSize) {
         let days = snapshot.days
         let geometry = ReportStripGeometry(kind: snapshot.period.kind, count: days.count, leadingBlanks: leadingBlanks, size: size)
-        let peak = Double(max(1, days.map { $0.workMs + $0.overtimeMs }.max() ?? 1))
-
         // Rest glow underneath, so lit days seem to give off light.
         for (i, day) in days.enumerated() where day.kind == .rest && lights[i] > 0.01 {
             let rect = frame(for: i, day: day, geometry: geometry, peak: peak)
             let pulse = 1 + 0.06 * sin(time * 2.2 + Double(i))
             let glow = rect.insetBy(dx: -rect.width * 0.35 * pulse, dy: -rect.width * 0.35 * pulse)
+            let emphasis = restEmphasis(for: i)
             context.drawLayer { layer in
-                layer.addFilter(.blur(radius: 16))
+                layer.addFilter(.blur(radius: 10))
                 layer.fill(Path(roundedRect: glow, cornerRadius: glow.width / 2),
-                           with: .color(ReportPalette.moon.opacity(0.55 * lights[i])))
+                           with: .color(ReportPalette.moon.opacity(0.24 * lights[i])))
+                if emphasis > 0 {
+                    layer.fill(Path(roundedRect: glow, cornerRadius: glow.width / 2),
+                               with: .color(ReportPalette.cream.opacity(0.20 * emphasis)))
+                }
             }
         }
 
@@ -250,6 +266,8 @@ struct ReportStripArt: View {
                     if lit > 0.01 {
                         layer.opacity = alpha * lit
                         layer.fill(path, with: .linearGradient(ReportPalette.rest, startPoint: CGPoint(x: 0, y: rect.minY), endPoint: CGPoint(x: 0, y: rect.maxY)))
+                        layer.opacity *= restEmphasis(for: i)
+                        layer.fill(path, with: .linearGradient(ReportPalette.restRun, startPoint: CGPoint(x: 0, y: rect.minY), endPoint: CGPoint(x: 0, y: rect.maxY)))
                     }
                 }
                 context.stroke(path, with: .color(.white.opacity(0.30 * alpha * (1 - lit))), lineWidth: 1.5)
@@ -268,18 +286,11 @@ struct ReportStripArt: View {
                 )
             }
         }
+    }
 
-        if let run, runProgress > 0, let first = run.first, let last = run.last {
-            let a = geometry.calendarRect(first), b = geometry.calendarRect(last)
-            let y = a.maxY + (snapshot.period.kind == .week ? 12 : 10)
-            let start = a.minX + 2, end = b.maxX - 2
-            var line = Path()
-            line.move(to: CGPoint(x: start, y: y))
-            line.addLine(to: CGPoint(x: ReportEase.lerp(start, end, runProgress), y: y))
-            context.stroke(line, with: .linearGradient(Gradient(colors: [ReportPalette.cream, ReportPalette.moon]),
-                                                        startPoint: CGPoint(x: start, y: y), endPoint: CGPoint(x: end, y: y)),
-                           style: StrokeStyle(lineWidth: 5, lineCap: .round))
-        }
+    private func restEmphasis(for index: Int) -> Double {
+        guard let run, run.count > 1, run.contains(index) else { return 0 }
+        return ReportEase.staggered(runProgress, index: index - run.lowerBound, count: run.count, span: 0.8)
     }
 
     private func frame(for i: Int, day: CycleReportDay, geometry: ReportStripGeometry, peak: Double) -> CGRect {
@@ -287,12 +298,29 @@ struct ReportStripArt: View {
         let fraction = day.kind == .work ? Double(day.workMs + day.overtimeMs) / peak : 0
         let bar = geometry.barRect(i, fraction: fraction)
         let m = morphs[i]
-        var rect = CGRect(
-            x: ReportEase.lerp(calendar.minX, bar.minX, m),
-            y: ReportEase.lerp(calendar.minY, bar.minY, m),
-            width: ReportEase.lerp(calendar.width, bar.width, m),
-            height: ReportEase.lerp(calendar.height, bar.height, m)
-        )
+        func interpolate(_ a: CGRect, _ b: CGRect, _ t: Double) -> CGRect {
+            CGRect(x: ReportEase.lerp(a.minX, b.minX, t), y: ReportEase.lerp(a.minY, b.minY, t),
+                   width: ReportEase.lerp(a.width, b.width, t), height: ReportEase.lerp(a.height, b.height, t))
+        }
+        var rect: CGRect
+        if geometry.kind == .month {
+            let diameter = bar.width
+            let dot = CGRect(x: calendar.midX - diameter / 2, y: calendar.midY - diameter / 2,
+                             width: diameter, height: diameter)
+            let landing = geometry.barRect(i, fraction: 0)
+            // Long columns grow only after every date has reached the baseline.
+            // Keeping travelling dates small avoids columns crossing the grid.
+            if m < 0.2 {
+                rect = interpolate(calendar, dot, OWCMotion.reportMorphCurve.value(at: ReportEase.window(m, 0, 0.2)))
+            } else if m < 0.64 {
+                rect = interpolate(dot, landing, OWCMotion.reportMorphCurve.value(at: ReportEase.window(m, 0.2, 0.64)))
+            } else {
+                let growth = ReportEase.staggered(ReportEase.window(m, 0.64, 1), index: i, count: snapshot.days.count, span: 0.85)
+                rect = interpolate(landing, bar, ReportEase.outCubic(growth))
+            }
+        } else {
+            rect = interpolate(calendar, bar, m)
+        }
         // Arrival: rise from a little below and settle with a small overshoot.
         let r = reveals[i]
         let land = ReportEase.outBack(r)
@@ -319,11 +347,13 @@ struct ReportStripArt: View {
             )
         case .month:
             let m = morphs[i]
-            guard m < 0.4 else { return }
+            guard m < 0.12 else { return }
+            let ink = day.kind == .work ? ReportPalette.deep
+                : Color.white.mix(with: ReportPalette.deep, by: lights[i])
             context.draw(
                 Text("\(dayNumbers[i])")
                     .font(.footnote.weight(.bold).monospacedDigit())
-                    .foregroundStyle((day.kind == .work ? ReportPalette.deep : Color.white).opacity(alpha * (1 - m * 2.5) * (day.kind == .rest ? 0.7 : 1))),
+                    .foregroundStyle(ink.opacity(alpha * (1 - ReportEase.window(m, 0, 0.12)))),
                 at: CGPoint(x: rect.midX, y: rect.midY), anchor: .center
             )
         }
@@ -339,16 +369,15 @@ struct ReportRingArt: View {
     let snapshot: CycleReportSnapshot
     /// 0 → 1 over the build.
     var build: Double
-    var time: Double
+    let peak: Double
 
     var body: some View {
-        Canvas { context, size in
+        ReportCanvas { context, size in
             let days = snapshot.days
             let count = max(1, days.count)
             let centre = CGPoint(x: size.width / 2, y: size.height / 2)
             let outer = min(size.width, size.height) / 2
             let inner = outer * 0.58
-            let peak = Double(max(1, days.map { $0.workMs + $0.overtimeMs }.max() ?? 1))
             let spoke = max(3, min(count <= 8 ? 30 : 14, 2 * .pi * inner / CGFloat(count) * 0.56))
             // Spokes are round-capped: leave the cap's radius inside the canvas.
             let reach = outer - inner - 4 - spoke / 2 - 2
@@ -407,7 +436,7 @@ struct ReportFinishArt: View {
     private static let lateReach: Double = 3 * 3_600_000
 
     var body: some View {
-        Canvas { context, size in
+        ReportCanvas { context, size in
             let days = finish.days
             guard !days.isEmpty else { return }
             let slot = size.width / CGFloat(days.count)
@@ -477,7 +506,7 @@ struct ReportHorizonArt: View {
     var time: Double
 
     var body: some View {
-        Canvas { context, size in
+        ReportCanvas { context, size in
             let flags = ahead.horizon
             guard !flags.isEmpty else { return }
             let slot = size.width / CGFloat(flags.count)
@@ -530,7 +559,7 @@ struct ReportFocusArt: View {
     var build: Double
 
     var body: some View {
-        Canvas { context, size in
+        ReportCanvas { context, size in
             let counts = focus.perDay
             let n = counts.count
             guard n > 0 else { return }
@@ -551,8 +580,8 @@ struct ReportFocusArt: View {
                 } else {
                     if best {
                         context.drawLayer { layer in
-                            layer.addFilter(.blur(radius: 12))
-                            layer.fill(path, with: .color(ReportPalette.gold.opacity(0.6)))
+                            layer.addFilter(.blur(radius: 10))
+                            layer.fill(path, with: .color(ReportPalette.gold.opacity(0.4)))
                         }
                     }
                     context.fill(path, with: .linearGradient(

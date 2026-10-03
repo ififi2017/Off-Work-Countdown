@@ -92,6 +92,9 @@ struct CycleReportView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase != .active { player?.pause() }
         }
+        .onChange(of: reduceMotion) { _, reduced in
+            if reduced, mode == .playing { readInstead() }
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIAccessibility.voiceOverStatusDidChangeNotification)) { _ in
             voiceOverRunning = UIAccessibility.isVoiceOverRunning
         }
@@ -247,6 +250,8 @@ struct CycleReportView: View {
                 play()
                 player?.debugSeek(stage: Int(parts[0]), buildFraction: parts[1])
             }
+        } else if snapshot.hasData, UserDefaults.standard.bool(forKey: "ios.native.qaCycleReportAutoplay") {
+            play()
         }
 #endif
     }
@@ -329,14 +334,19 @@ struct ReportPillStyle: ButtonStyle {
 /// page already promises what the report is about.
 private struct ReportTeaser: View {
     let snapshot: CycleReportSnapshot
-    let queries: RecordsQueries
+    private let layout: ReportStripScene.Layout
     @State private var start = Date()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    init(snapshot: CycleReportSnapshot, queries: RecordsQueries) {
+        self.snapshot = snapshot
+        layout = ReportStripScene.Layout(snapshot: snapshot, queries: queries)
+    }
+
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60, paused: false)) { timeline in
+        TimelineView(.animation(paused: reduceMotion)) { timeline in
             let elapsed = reduceMotion ? 9 : timeline.date.timeIntervalSince(start) - 0.25
-            ReportStripScene.art(snapshot: snapshot, queries: queries, state: .teaser(elapsed))
+            ReportStripScene.art(snapshot: snapshot, layout: layout, state: .teaser(elapsed))
         }
         .accessibilityHidden(true)
     }
@@ -651,7 +661,7 @@ struct CycleReportReadingView: View {
                 }
                 .background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                ReportStripScene.art(snapshot: snapshot, queries: copy.queries, state: .settled)
+                ReportStripScene.art(snapshot: snapshot, layout: .init(snapshot: snapshot, queries: copy.queries), state: .settled)
                     .frame(height: snapshot.period.kind == .week ? 240 : 300)
                     .padding(18)
                     .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 24, style: .continuous))

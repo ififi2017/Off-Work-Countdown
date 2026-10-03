@@ -9,27 +9,49 @@ enum ReportStripScene {
         case hours(build: Double)
         case rest(build: Double, time: Double)
         case settled
-        case settledBars
+        case summaryBars(Double)
+    }
+
+    /// Prepared once per report; calendar and labels do not change on each frame.
+    struct Layout {
+        let weekdaySymbols: [String]
+        let leadingBlanks: Int
+        let dayNumbers: [Int]
+        let arrivalRanks: [Int]
+        let restOrders: [Int]
+        let restCount: Int
+        let peak: Double
+
+        @MainActor
+        init(snapshot: CycleReportSnapshot, queries: RecordsQueries) {
+            let days = snapshot.days
+            let blanks = snapshot.period.kind == .month
+                ? days.first.map { queries.recordsGridLeadingBlanks(before: $0.date) } ?? 0 : 0
+            leadingBlanks = blanks
+            weekdaySymbols = queries.recordsWeekdayGridSymbols()
+            dayNumbers = days.map { queries.recordsCalendar.component(.day, from: $0.date) }
+            arrivalRanks = days.indices.map { i in
+                snapshot.period.kind == .week ? i : (blanks + i) % 7 + (blanks + i) / 7
+            }
+            var order = 0
+            restOrders = days.map { day in
+                guard day.kind == .rest else { return 0 }
+                defer { order += 1 }
+                return order
+            }
+            restCount = order
+            peak = Double(max(1, days.map { $0.workMs + $0.overtimeMs }.max() ?? 1))
+        }
     }
 
     @MainActor
-    static func art(snapshot: CycleReportSnapshot, queries: RecordsQueries, state: State) -> ReportStripArt {
+    static func art(snapshot: CycleReportSnapshot, layout: Layout, state: State) -> ReportStripArt {
         let days = snapshot.days
         let count = days.count
-        let calendar = queries.recordsCalendar
-        let blanks = snapshot.period.kind == .month
-            ? days.first.map { queries.recordsGridLeadingBlanks(before: $0.date) } ?? 0
-            : 0
-        // Weeks arrive left to right, months in a diagonal wave from the corner.
-        let ranks = days.indices.map { i -> Int in
-            snapshot.period.kind == .week ? i : (blanks + i) % 7 + (blanks + i) / 7
-        }
-        let maxRank = max(1, (ranks.max() ?? 1))
+        let maxRank = max(1, layout.arrivalRanks.max() ?? 1)
         func arrival(_ t: Double, _ i: Int) -> Double {
-            ReportEase.staggered(t, index: ranks[i], count: maxRank + 1, span: 0.42)
+            ReportEase.staggered(t, index: layout.arrivalRanks[i], count: maxRank + 1, span: 0.42)
         }
-        let rest = days.indices.filter { days[$0].kind == .rest }
-        func restOrder(_ i: Int) -> Int { rest.firstIndex(of: i) ?? 0 }
 
         var reveals = [Double](repeating: 1, count: count)
         var morphs = [Double](repeating: 0, count: count)
@@ -47,7 +69,11 @@ enum ReportStripScene {
             reveals = days.indices.map { arrival(b, $0) }
         case .hours(let b):
             labels = ReportEase.window(b, 0.86, 1)
-            morphs = days.indices.map { ReportEase.inOutCubic(ReportEase.staggered(ReportEase.window(b, 0.05, 1), index: $0, count: count, span: 0.55)) }
+            morphs = days.indices.map { i in
+                snapshot.period.kind == .month
+                    ? ReportEase.window(b, 0.04, 1)
+                    : ReportEase.inOutCubic(ReportEase.staggered(ReportEase.window(b, 0.05, 1), index: i, count: count, span: 0.88))
+            }
         case .rest(let b, let time):
             clock = time
             let back = ReportEase.inOutCubic(ReportEase.window(b, 0, 0.32))
@@ -55,21 +81,23 @@ enum ReportStripScene {
             dim = ReportEase.inOutCubic(ReportEase.window(b, 0.28, 0.55))
             lights = days.indices.map { i in
                 days[i].kind == .rest
-                    ? ReportEase.outCubic(ReportEase.staggered(ReportEase.window(b, 0.34, 0.86), index: restOrder(i), count: max(1, rest.count), span: 0.5))
+                    ? ReportEase.outCubic(ReportEase.staggered(ReportEase.window(b, 0.34, 0.86), index: layout.restOrders[i], count: max(1, layout.restCount), span: 0.5))
                     : 0
             }
             runProgress = ReportEase.outCubic(ReportEase.window(b, 0.84, 1))
         case .settled:
             break
-        case .settledBars:
+        case .summaryBars(let t):
             morphs = days.indices.map { _ in 1 }
+            reveals = days.indices.map { ReportEase.staggered(t, index: $0, count: count, span: 0.7) }
+            labels = ReportEase.window(t, 0.7, 1)
         }
 
         var art = ReportStripArt(
             snapshot: snapshot,
-            weekdaySymbols: queries.recordsWeekdayGridSymbols(),
-            leadingBlanks: blanks,
-            dayNumbers: days.map { calendar.component(.day, from: $0.date) },
+            weekdaySymbols: layout.weekdaySymbols,
+            leadingBlanks: layout.leadingBlanks,
+            dayNumbers: layout.dayNumbers, peak: layout.peak,
             reveals: reveals, morphs: morphs, lights: lights
         )
         art.dim = dim
@@ -82,13 +110,23 @@ enum ReportStripScene {
 }
 
 /// The animated chapters. Each is drawn straight from the player's clock: no
-/// SwiftUI animation is in play, so what is on screen is always exactly the
+/// implicit chapter animation is in play, so what is on screen is always exactly the
 /// chapter at that moment.
 struct CycleReportPlayerView: View {
     let player: CycleReportPlayer
     let copy: CycleReportCopy
     var onRead: () -> Void
     var onClose: () -> Void
+    private let stripLayout: ReportStripScene.Layout
+    @State private var previousMood: ReportBackdrop.Mood?
+
+    init(player: CycleReportPlayer, copy: CycleReportCopy, onRead: @escaping () -> Void, onClose: @escaping () -> Void) {
+        self.player = player
+        self.copy = copy
+        self.onRead = onRead
+        self.onClose = onClose
+        stripLayout = ReportStripScene.Layout(snapshot: player.snapshot, queries: copy.queries)
+    }
 
     @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 76
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -98,26 +136,24 @@ struct CycleReportPlayerView: View {
 
     var body: some View {
         ZStack {
-            ReportBackdrop(mood: mood, time: player.clock)
+            ReportBackdrop(mood: mood, time: player.clock, previousMood: previousMood,
+                           blend: ReportEase.outCubic(player.time / OWCMotion.reportBackdropDuration))
             VStack(spacing: 0) {
                 hud
                 stage
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .padding(.horizontal, 22)
-                    .id(player.stageIndex)
-                    .transition(.opacity)
-                    .animation(.easeInOut(duration: 0.4), value: player.stageIndex)
+
                 controls
             }
         }
-        .contentShape(Rectangle())
-        .gesture(
-            SpatialTapGesture().onEnded { tap in
-                if tap.location.x < 120 { player.previous() } else { player.next() }
-            }
-        )
-        .onLongPressGesture(minimumDuration: 0.18, maximumDistance: 60, perform: {}, onPressingChanged: { player.isHeld = $0 })
-        .task(id: player.isPlaying) { await player.run() }
+        .onChange(of: player.isRunning, initial: true) {
+            if player.isRunning { player.startDisplayLink() } else { player.stopDisplayLink() }
+        }
+        .onDisappear { player.stopDisplayLink() }
+        .onChange(of: player.stageIndex) { old, _ in
+            previousMood = player.isRunning ? mood(for: player.stages[old]) : nil
+        }
         .sensoryFeedback(.impact(weight: .light), trigger: player.stageIndex)
         .sensoryFeedback(.success, trigger: player.isLastStage && player.isBuilt)
         .accessibilityAction(named: Text(text.t("reportNext"))) { player.next() }
@@ -125,7 +161,11 @@ struct CycleReportPlayerView: View {
     }
 
     private var mood: ReportBackdrop.Mood {
-        switch player.stage {
+        mood(for: player.stage)
+    }
+
+    private func mood(for stage: CycleReportStage) -> ReportBackdrop.Mood {
+        switch stage {
         case .calendar: .dawn
         case .hours: .energy
         case .finish: .contrast
@@ -201,7 +241,8 @@ struct CycleReportPlayerView: View {
         .padding(.horizontal, 22)
         .padding(.bottom, 12)
         .opacity(player.isLastStage && player.isBuilt ? 0 : 1)
-        .animation(.easeOut(duration: 0.3), value: player.isLastStage && player.isBuilt)
+        .allowsHitTesting(!(player.isLastStage && player.isBuilt))
+        .accessibilityHidden(player.isLastStage && player.isBuilt)
     }
 
     // MARK: Chapters
@@ -210,8 +251,7 @@ struct CycleReportPlayerView: View {
     private var stage: some View {
         VStack(alignment: .leading, spacing: 0) {
             switch player.stage {
-            case .calendar: calendarChapter
-            case .hours: hoursChapter
+            case .calendar, .hours: timeChapters
             case .finish: finishChapter
             case .baseline: baselineChapter
             case .rest: restChapter
@@ -221,49 +261,64 @@ struct CycleReportPlayerView: View {
             case .summary: summaryChapter
             }
         }
-        .accessibilityElement(children: .ignore)
+        .contentShape(Rectangle())
+        .gesture(SpatialTapGesture().onEnded { tap in
+            if tap.location.x < 120 { player.previous() } else { player.next() }
+        }, including: .gesture)
+        .onLongPressGesture(minimumDuration: 0.18, maximumDistance: 60, perform: {}, onPressingChanged: { player.isHeld = $0 })
+        .accessibilityElement(children: .contain)
         .accessibilityLabel(copy.spoken(player.stage, snapshot: snapshot))
     }
 
     private var stripHeight: CGFloat { snapshot.period.kind == .week ? 330 : 360 }
 
     private func strip(_ state: ReportStripScene.State) -> some View {
-        ReportStripScene.art(snapshot: snapshot, queries: copy.queries, state: state)
-            .frame(height: stripHeight)
+        ReportStripScene.art(snapshot: snapshot, layout: stripLayout, state: state)
     }
 
-    /// The period named in one line, then the days arriving beneath it.
-    private var calendarChapter: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            heading(eyebrow: copy.workdays(snapshot), hero: copy.headline(snapshot), size: 0.62,
-                    caption: snapshot.isInProgress ? text.t("reportSoFar") : nil,
-                    appear: ReportEase.window(b, 0, 0.28), lines: 3)
-            Spacer(minLength: 12)
-            strip(.calendar(build: b))
-            legend.opacity(ReportEase.window(b, 0.7, 1))
-            Spacer(minLength: 24)
+    /// The calendar and hours share one drawing surface and one baseline.
+    /// Only their heading changes; the dates themselves remain on screen.
+    private var timeChapters: some View {
+        GeometryReader { geometry in
+            let artHeight = min(stripHeight, geometry.size.height * 0.55)
+            VStack(alignment: .leading, spacing: 0) {
+                Group {
+                    if player.stage == .calendar {
+                        heading(eyebrow: copy.workdays(snapshot), hero: copy.headline(snapshot), size: 0.62,
+                                caption: snapshot.isInProgress ? text.t("reportSoFar") : nil,
+                                appear: ReportEase.window(b, 0, 0.28), lines: 3)
+                    } else {
+                        hoursHeading
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                ReportStripScene.art(snapshot: snapshot, layout: stripLayout,
+                                     state: player.stage == .calendar ? .calendar(build: b) : .hours(build: b))
+                    .frame(height: artHeight)
+                legend
+                    .frame(height: 30, alignment: .topLeading)
+                    .opacity(player.stage == .calendar ? ReportEase.window(b, 0.7, 1) : 0)
+                Spacer().frame(height: 20)
+            }
         }
     }
 
-    private var hoursChapter: some View {
+    private var hoursHeading: some View {
         let counted = Int64(Double(snapshot.figures.workedMs) * ReportEase.outCubic(ReportEase.window(b, 0.08, 1)))
-        return VStack(alignment: .leading, spacing: 0) {
-            heading(eyebrow: text.t("recordsWorkedTime"), hero: copy.hours(counted), size: 0.9,
-                    caption: nil, appear: ReportEase.window(b, 0, 0.18))
+        return VStack(alignment: .leading, spacing: 6) {
+            Text(text.t("recordsWorkedTime").uppercased())
+                .font(.caption.weight(.bold)).tracking(1.4)
+                .foregroundStyle(.white.opacity(0.62))
+            ReportDurationText(value: copy.hours(counted), numberSize: heroSize * 0.85)
             if snapshot.figures.overtimeMs > 0 {
                 Text(text.t("reportIncludingOvertime", values: ["overtime": copy.hours(snapshot.figures.overtimeMs)]))
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(
-                        LinearGradient(colors: [Color(red: 1.0, green: 0.62, blue: 0.40), ReportPalette.hot], startPoint: .leading, endPoint: .trailing)
-                    )
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(ReportPalette.cream)
                     .opacity(ReportEase.window(b, 0.82, 1))
-                    .offset(y: 8 * (1 - ReportEase.window(b, 0.82, 1)))
-                    .padding(.top, 6)
             }
-            Spacer(minLength: 12)
-            strip(.hours(build: b))
-            Spacer(minLength: 24)
         }
+        .opacity(ReportEase.outCubic(ReportEase.window(b, 0, 0.18)))
+        .padding(.top, 18)
     }
 
     /// When the recorded days ended, against when they were planned to.
@@ -271,8 +326,11 @@ struct CycleReportPlayerView: View {
     private var finishChapter: some View {
         if let finish = snapshot.finish {
             VStack(alignment: .leading, spacing: 0) {
-                heading(eyebrow: text.t("reportFinishTitle"), hero: copy.finishRatio(finish), size: 1.0,
-                        caption: text.t("reportFinishCaption"), appear: ReportEase.window(b, 0, 0.2))
+                heading(eyebrow: text.t("reportFinishTitle"), hero: text.formatCount(finish.onScheduleCount), size: 1.0,
+                        caption: text.t("reportFinishCaption"), appear: ReportEase.window(b, 0, 0.2), lines: 1)
+                Text(copy.finishRatio(finish))
+                    .font(.subheadline).foregroundStyle(.white.opacity(0.6))
+                    .padding(.top, 6)
                 VStack(alignment: .leading, spacing: 4) {
                     if let latest = copy.finishLatest(finish, kind: snapshot.period.kind) {
                         Text(latest)
@@ -315,7 +373,7 @@ struct CycleReportPlayerView: View {
                     .padding(.top, 6)
             }
             Spacer(minLength: 12)
-            strip(.rest(build: b, time: player.clock))
+            strip(.rest(build: b, time: player.clock)).frame(height: stripHeight)
             Spacer(minLength: 24)
         }
     }
@@ -585,30 +643,40 @@ struct CycleReportPlayerView: View {
             Text(snapshot.isInProgress ? text.t("reportSoFar") : copy.periodTitle(snapshot.period))
                 .font(.subheadline.weight(.medium)).foregroundStyle(.white.opacity(0.7))
                 .padding(.top, 2)
-            ZStack {
-                ReportRingArt(snapshot: snapshot, build: ring, time: player.clock)
-                GeometryReader { geo in
-                    // The hours sit inside the ring's open middle and shrink to
-                    // fit it, whatever the language makes of "34 h 10 m".
-                    let inner = min(geo.size.width, geo.size.height) * 0.58 * 0.8
-                    VStack(spacing: 2) {
-                        Text(copy.hours(snapshot.figures.workedMs))
-                            .font(.system(size: heroSize * 0.32, weight: .heavy, design: .rounded))
-                            .minimumScaleFactor(0.3).lineLimit(1)
-                            .foregroundStyle(.white)
+            Group {
+                if snapshot.period.kind == .week {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ReportDurationText(value: copy.hours(snapshot.figures.workedMs), numberSize: heroSize * 0.48)
                         Text(text.t("recordsWorkedTime"))
-                            .font(.footnote.weight(.semibold))
-                            .minimumScaleFactor(0.5).lineLimit(1)
-                            .foregroundStyle(.white.opacity(0.65))
+                            .font(.footnote.weight(.semibold)).foregroundStyle(.white.opacity(0.65))
+                        strip(.summaryBars(ring)).frame(height: 180)
                     }
-                    .frame(width: inner)
-                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
-                    .opacity(ReportEase.window(b, 0.3, 0.7))
+                    .padding(.top, 28)
+                } else {
+                    ZStack {
+                        ReportRingArt(snapshot: snapshot, build: ring, peak: stripLayout.peak)
+                        GeometryReader { geo in
+                            let inner = min(geo.size.width, geo.size.height) * 0.58 * 0.8
+                            VStack(spacing: 2) {
+                                Text(copy.hours(snapshot.figures.workedMs))
+                                    .font(.system(size: heroSize * 0.32, weight: .heavy, design: .rounded))
+                                    .minimumScaleFactor(0.3).lineLimit(1)
+                                    .foregroundStyle(.white)
+                                Text(text.t("recordsWorkedTime"))
+                                    .font(.footnote.weight(.semibold))
+                                    .minimumScaleFactor(0.5).lineLimit(1)
+                                    .foregroundStyle(.white.opacity(0.65))
+                            }
+                            .frame(width: inner)
+                            .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                            .opacity(ReportEase.window(b, 0.3, 0.7))
+                        }
+                    }
+                    .aspectRatio(1, contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 8)
                 }
             }
-            .aspectRatio(1, contentMode: .fit)
-            .frame(maxWidth: .infinity)
-            .padding(.top, 8)
 
             // Three columns until the text is large enough to break words.
             let stats = dynamicTypeSize.isAccessibilitySize
@@ -693,5 +761,41 @@ struct CycleReportPlayerView: View {
             Circle().fill(color).frame(width: 9, height: 9)
             Text(title)
         }
+    }
+}
+
+/// Keeps a localized duration intact while giving its numbers more weight than
+/// its units. The original formatted string also remains the spoken value.
+private struct ReportDurationText: View {
+    let value: String
+    let numberSize: CGFloat
+
+    var body: some View {
+        Text(styled)
+            .lineLimit(1).minimumScaleFactor(0.45)
+            .foregroundStyle(.white)
+            .accessibilityLabel(value)
+    }
+
+    private var styled: AttributedString {
+        var result = AttributedString(value)
+        result.font = .system(size: numberSize * 0.38, weight: .semibold, design: .rounded)
+        var start: String.Index?
+        func emphasize(until end: String.Index) {
+            guard let begin = start,
+                  let lower = AttributedString.Index(begin, within: result),
+                  let upper = AttributedString.Index(end, within: result) else { return }
+            result[lower..<upper].font = .system(size: numberSize, weight: .bold, design: .rounded).monospacedDigit()
+        }
+        for index in value.indices {
+            if value[index].isNumber {
+                if start == nil { start = index }
+            } else {
+                emphasize(until: index)
+                start = nil
+            }
+        }
+        emphasize(until: value.endIndex)
+        return result
     }
 }

@@ -4,11 +4,6 @@ import UserNotifications
 @testable import App
 
 /// Plan 020 §4: weekly and monthly reports, without the screen.
-/// Advances 50 ms per call, for a clock the test controls.
-private final class Ticks: @unchecked Sendable {
-    private var value = 0.0
-    func next() -> Double { value += 0.05; return value }
-}
 
 @Suite("Cycle reports")
 struct CycleReportTests {
@@ -406,7 +401,7 @@ struct CycleReportTests {
     private func player(autoplay: Bool = true) -> CycleReportPlayer {
         let figures = CycleReportFigures(workdays: 3, workedMs: 26 * hour, overtimeMs: 0, income: nil)
         let snapshot = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, isInProgress: false)
-        return CycleReportPlayer(snapshot: snapshot, autoplay: autoplay, sleep: { _ in })
+        return CycleReportPlayer(snapshot: snapshot, autoplay: autoplay)
     }
 
     @Test("The clock builds each chapter, holds it, hands over, and stops built on the summary")
@@ -443,17 +438,6 @@ struct CycleReportTests {
         player.resume()
         player.advance(by: 0.5)
         #expect(player.time > t)
-    }
-
-    @Test("run() ticks the clock until the last chapter is built")
-    @MainActor
-    func runLoop() async {
-        let ticks = Ticks()
-        let figures = CycleReportFigures(workdays: 3, workedMs: 26 * hour, overtimeMs: 0, income: nil)
-        let snapshot = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, isInProgress: false)
-        let player = CycleReportPlayer(snapshot: snapshot, sleep: { _ in }, now: { ticks.next() })
-        await player.run()
-        #expect(player.isLastStage && player.isBuilt && !player.isPlaying)
     }
 
     @Test("Previous restarts a chapter that has begun, then steps back; next and skip stay in range")
