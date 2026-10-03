@@ -73,20 +73,12 @@ final class CycleReportPlayer {
     private(set) var isPlaying: Bool
     /// A finger resting on the screen holds the clock without changing intent.
     var isHeld = false
-    @ObservationIgnored private let sleep: @Sendable (Duration) async -> Void
-    @ObservationIgnored private let now: @Sendable () -> Double
+    @ObservationIgnored private var displayLink: CycleReportDisplayLink?
 
-    init(
-        snapshot: CycleReportSnapshot,
-        autoplay: Bool = true,
-        sleep: @escaping @Sendable (Duration) async -> Void = { try? await Task.sleep(for: $0) },
-        now: @escaping @Sendable () -> Double = { Double(DispatchTime.now().uptimeNanoseconds) / 1_000_000_000 }
-    ) {
+    init(snapshot: CycleReportSnapshot, autoplay: Bool = true) {
         self.snapshot = snapshot
         stages = CycleReportStage.stages(for: snapshot)
         isPlaying = autoplay
-        self.sleep = sleep
-        self.now = now
     }
 
     var stage: CycleReportStage { stages[stageIndex] }
@@ -114,22 +106,16 @@ final class CycleReportPlayer {
         if isLastStage, time >= timeline.build { time = timeline.build + 0.0001 }
     }
 
-    /// Ticks until paused, cancelled, or the last chapter is built. The view
-    /// re-runs it whenever `isPlaying` changes, which is what cancels a pause.
-    func run() async {
-        var last = now()
-        while !Task.isCancelled, isPlaying {
-            await sleep(.milliseconds(16))
-            guard !Task.isCancelled else { return }
-            let current = now()
-            advance(by: min(0.1, current - last))
-            last = current
-            if isLastStage, isBuilt {
-                isPlaying = false
-                return
-            }
-        }
+    /// Starts the UI clock when the visible player is running.
+    func startDisplayLink() {
+        guard isRunning else { return }
+        if displayLink == nil { displayLink = CycleReportDisplayLink(player: self) }
+        displayLink?.start()
     }
+
+    /// Stops the UI clock and discards its timestamp so resume never catches
+    /// up time spent paused, held, or outside the foreground.
+    func stopDisplayLink() { displayLink?.stop() }
 
 #if DEBUG
     /// Visual QA: parks the clock on an exact frame.

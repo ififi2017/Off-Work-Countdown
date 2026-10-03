@@ -385,3 +385,13 @@
 - **动画打磨**：章节入场用 `outCubic`；收工圆点图（点落在计划结束线上，加班向下带红色拖尾、提前下班向上）、“路”图、专注柱和收入环都由同一条时钟驱动；辐条环中心不再溢出。
 - **QA 钩子（仅 DEBUG）**：`-ios.native.qaCycleReport week|month`（取上一个完整周期）与 `-ios.native.qaCycleReportFrame 章:进度`；样例记录新增几天加班、一次提前下班、专注轮次与一笔年假余额，仅供目测。
 - 验证（R2）：新增／改写 `CycleReportTests` 共 32 项（基线与薄历史、收工日分类、下一次休息、专注统计、薪资读法、标题规则、薪资不受全局遮罩影响、章节顺序）；iOS 全量 AppTests 926 项通过（除 RecordsPerformanceTests）；`npm test` 531、`lint`、`check:ios`、`check:ios-strings` 通过；Android `lintDebug`、`assembleDebug`、`testDebugUnitTest` 通过。模拟器目测：英文／简体中文周报与月报全部章节，德、俄、泰、阿、越、日的开篇、收工、休息、向前看与结尾页（中央文字无溢出）；阿拉伯语补上 RTL 方向（全屏覆盖层不继承根视图的方向）。含 hideEarnings 的“选择显示收入”路径在模拟器上会弹出设备密码，未输入；该路径的金额不被遮罩由单元测试覆盖。
+
+### R3 · 报告转场与显示刷新（2026-10-03，分支 `codex/ios-cycle-report-polish`）
+
+- 首两章共用图形区域、基线和图例占位，移除整章重建与淡入淡出。月历先缩成小点，移动到基线后再长成柱子，避免长柱穿过尚未离开的日期；周报收窄各柱之间的延迟。背景换色也读取报告时钟，暂停时不会继续变色。
+- `CycleReportDisplayLink` 替换每 16 ms 休眠的循环，跟随显示刷新，按屏幕能力请求 60–120 Hz；现有 `CADisableMinimumFrameDurationOnPhone` 保留。暂停、按住、退到后台与结束都会停止显示时钟，恢复时丢弃旧时间戳；长帧间隔最多推进 0.1 秒。日历、日期、休息顺序与工时峰值在开始报告时准备，不再逐帧计算。
+- Canvas 绘图面向四周扩展 40 pt，图表布局仍使用原尺寸，给光晕留出像素。减少休息与专注光晕的模糊范围和强度；最长连休移除横线，改为日期本身依次亮成暖色，跨行日历也沿用此表达。发光日期文字随明暗切换颜色。
+- 工时保留各语言的原格式，突出数字、缩小单位，限制为一行；收工页突出无加班记录的天数，比例句降为说明。周报结束页改为七天柱图，月报保留辐条环。播放中打开系统“减少动态效果”会切换到文字简报。
+- 渲染边界：SwiftUI 状态、布局和 Canvas 绘图指令仍由 CPU 执行，图形绘制与合成交给系统图形管线；此次没有改成 Metal 着色器。[Apple 的 ProMotion 文档](https://developer.apple.com/documentation/quartzcore/optimizing-iphone-and-ipad-apps-to-support-promotion-displays)说明刷新范围是请求，系统会按硬件、电量和温度调整。模拟器截图与录屏不证明真机稳定 120fps。
+- DEBUG 增加 `-ios.native.qaCycleReportAutoplay YES`，可在不指定静帧时复查连续播放。仅用于已请求的视觉 QA，不进入 Release 行为。
+- 验证：iOS 模拟器构建、`check:ios`、`check:ios-strings`、`lint`、`npm test` 531 项通过；报告与显示时钟的 33 项测试实际运行并通过。经用户请求在 iPhone 17 检查首两章中间帧、柱图、中文收工页、连休页、周报结尾，以及德语／阿拉伯语工时排版；连续月报播放走到结尾并自动停止。截图与录屏保存在 `/tmp/plan020-audit/`。模拟器点击注入虽回报成功，但暂停、重播、关闭和文字简报等多处未得到可靠的画面变化；此次不把点击自动化视为通过，实际交互仍需人工复查。真机持续帧率与触感未测。
