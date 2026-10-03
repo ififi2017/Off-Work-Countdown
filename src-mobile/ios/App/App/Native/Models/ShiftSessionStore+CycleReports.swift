@@ -15,10 +15,11 @@ extension ShiftSessionStore {
     func cycleReportNotifications(at now: Date = .now) -> [CycleReportNotification] {
         let weekly = weeklyReportNotificationsAreActive
         let monthly = monthlyReportNotificationsAreActive
-        guard preferences.onboardingComplete, weekly || monthly else { return [] }
+        let yearly = yearlyReportNotificationsAreActive
+        guard preferences.onboardingComplete, weekly || monthly || yearly else { return [] }
         let calendar = queries.recordsGridCalendar
         return CycleReportNotificationPlan
-            .items(weekly: weekly, monthly: monthly, now: now, calendar: calendar)
+            .items(weekly: weekly, monthly: monthly, yearly: yearly, now: now, calendar: calendar)
             .map { item in
                 var components = calendar.dateComponents(
                     [.year, .month, .day, .hour, .minute], from: item.fireDate
@@ -27,6 +28,7 @@ extension ShiftSessionStore {
                 let copy: (title: String, body: String) = switch item.period.kind {
                 case .week: (text.t("reportNotificationWeekTitle"), text.t("reportNotificationWeekBody"))
                 case .month: (text.t("reportNotificationMonthTitle"), text.t("reportNotificationMonthBody"))
+                case .year: (text.t("reportNotificationYearTitle"), text.t("reportNotificationYearBody"))
                 }
                 return CycleReportNotification(
                     period: item.period,

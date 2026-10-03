@@ -53,6 +53,7 @@ final class PreferencesStore {
         static let notificationMode = "ios.native.notificationMode"
         static let cycleEndSummaryNotificationEnabled = "ios.native.cycleEndSummaryNotificationEnabled"
         static let monthlyReportNotificationEnabled = "ios.native.monthlyReportNotificationEnabled"
+        static let yearlyReportNotificationEnabled = "ios.native.yearlyReportNotificationEnabled"
         static let focusLiveActivityEnabled = "ios.native.focusLiveActivityEnabled"
         static let liveActivityEnabled = "ios.native.liveActivityEnabled"
         static let liveActivityLead = "ios.native.liveActivityLead"
@@ -133,6 +134,10 @@ final class PreferencesStore {
     /// is opt-in and stays on this device, outside synced preferences.
     var monthlyReportNotificationEnabled: Bool {
         didSet { defaults.set(monthlyReportNotificationEnabled, forKey: Key.monthlyReportNotificationEnabled) }
+    }
+    /// Annual reports are opt-in on this device, like monthly reports.
+    var yearlyReportNotificationEnabled: Bool {
+        didSet { defaults.set(yearlyReportNotificationEnabled, forKey: Key.yearlyReportNotificationEnabled) }
     }
     var liveActivityEnabled: Bool { didSet { defaults.set(liveActivityEnabled, forKey: Key.liveActivityEnabled) } }
     var liveActivityLeadMinutes: Int { didSet { defaults.set(liveActivityLeadMinutes, forKey: Key.liveActivityLead) } }
@@ -308,6 +313,7 @@ final class PreferencesStore {
         notificationMode = OffWorkNotificationMode(rawValue: defaults.string(forKey: Key.notificationMode) ?? "off") ?? .off
         cycleEndSummaryNotificationEnabled = defaults.bool(forKey: Key.cycleEndSummaryNotificationEnabled)
         monthlyReportNotificationEnabled = defaults.bool(forKey: Key.monthlyReportNotificationEnabled)
+        yearlyReportNotificationEnabled = defaults.bool(forKey: Key.yearlyReportNotificationEnabled)
         focusLiveActivityEnabled = defaults.object(forKey: Key.focusLiveActivityEnabled) as? Bool ?? true
         liveActivityEnabled = defaults.bool(forKey: Key.liveActivityEnabled)
         let storedLead = defaults.object(forKey: Key.liveActivityLead) == nil ? 15 : defaults.integer(forKey: Key.liveActivityLead)

@@ -1,14 +1,47 @@
 import Foundation
 
-/// Weekly and monthly reports (plan 020 §4).
+/// Weekly, monthly and annual reports (plan 020 §4).
 ///
-/// A report is one week or month of the Records page, read out of the same
+/// A report is one week, month or year of the Records page, read out of the same
 /// aggregates the Records summary prints. Nothing here adds up hours or pay a
 /// second way: `CycleReportBuilder` only arranges what `RecordsHeadlineSummary`
 /// and the day cells already say, so a report cannot disagree with Records.
 nonisolated enum CycleReportKind: String, Codable, CaseIterable, Sendable {
     case week
     case month
+    case year
+
+    var titleKey: String {
+        switch self {
+        case .week: "reportWeekly"
+        case .month: "reportMonthly"
+        case .year: "reportYearly"
+        }
+    }
+
+    var entryKey: String {
+        switch self {
+        case .week: "reportEntryWeek"
+        case .month: "reportEntryMonth"
+        case .year: "reportEntryYear"
+        }
+    }
+
+    var calendarComponent: Calendar.Component {
+        switch self {
+        case .week: .weekOfYear
+        case .month: .month
+        case .year: .year
+        }
+    }
+
+    var maximumDayCount: Int {
+        switch self {
+        case .week: 7
+        case .month: 31
+        case .year: 366
+        }
+    }
 }
 
 /// A report's period, named by civil day keys rather than instants. A
@@ -27,7 +60,7 @@ nonisolated struct CycleReportPeriod: Hashable, Codable, Sendable {
 
     // MARK: Period arithmetic
 
-    /// The week or month holding `date`. `calendar` is the Records grid
+    /// The week, month or year holding `date`. `calendar` is the Records grid
     /// calendar, so weeks begin where the Records page's weeks do.
     static func containing(_ date: Date, kind: CycleReportKind, calendar: Calendar) -> Self {
         let day = calendar.startOfDay(for: date)
@@ -40,6 +73,9 @@ nonisolated struct CycleReportPeriod: Hashable, Codable, Sendable {
         case .month:
             start = calendar.date(from: calendar.dateComponents([.year, .month], from: day)) ?? day
             end = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: start) ?? day
+        case .year:
+            start = calendar.date(from: calendar.dateComponents([.year], from: day)) ?? day
+            end = calendar.date(byAdding: DateComponents(year: 1, day: -1), to: start) ?? day
         }
         return Self(
             kind: kind,
@@ -58,7 +94,7 @@ nonisolated struct CycleReportPeriod: Hashable, Codable, Sendable {
     private func neighbour(by offset: Int, calendar: Calendar) -> Self? {
         guard let start = startDate(calendar: calendar),
               let moved = calendar.date(
-                byAdding: kind == .week ? .weekOfYear : .month, value: offset, to: start
+                byAdding: kind.calendarComponent, value: offset, to: start
               )
         else { return nil }
         return Self.containing(moved, kind: kind, calendar: calendar)
@@ -69,7 +105,8 @@ nonisolated struct CycleReportPeriod: Hashable, Codable, Sendable {
         guard let start = startDate(calendar: calendar), let end = endDate(calendar: calendar) else { return [] }
         var keys: [String] = []
         var cursor = start
-        while cursor <= end, keys.count <= 31 {
+        while cursor <= end {
+            guard keys.count < kind.maximumDayCount else { return [] }
             keys.append(RecordJSON.dayKey(cursor, calendar: calendar))
             guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
             cursor = next
@@ -83,7 +120,12 @@ nonisolated struct CycleReportPeriod: Hashable, Codable, Sendable {
         return calendar.startOfDay(for: now) > end
     }
 
-    /// Reports arrive the morning after a period closes: a week or month that
+    /// A completed report always looks ahead from its own last day.
+    func referenceDate(at now: Date, calendar: Calendar) -> Date {
+        min(calendar.startOfDay(for: now), endDate(calendar: calendar) ?? now)
+    }
+
+    /// Reports arrive the morning after a period closes: a period that
     /// has not ended has nothing to look back on.
     static let notificationHour = 9
 
@@ -136,10 +178,16 @@ nonisolated struct CycleReportPeriod: Hashable, Codable, Sendable {
               let zone = value("tz"), TimeZone(identifier: zone) != nil
         else { return nil }
         self.init(kind: kind, startDayKey: start, endDayKey: end, timeZoneIdentifier: zone)
-        // A week or a month, never a free range: reject a span the kind cannot hold.
+        // A calendar period, never an arbitrary range: reject a span the kind cannot hold.
         let calendar = Calendar.civil(timeZoneIdentifier: zone)
         let span = dayKeys(calendar: calendar).count
-        guard span > 0, kind == .week ? span == 7 : (28...31).contains(span) else { return nil }
+        switch kind {
+        case .week: guard span == 7 else { return nil }
+        case .month: guard (28...31).contains(span) else { return nil }
+        case .year:
+            guard (365...366).contains(span), let date = startDate(calendar: calendar),
+                  Self.containing(date, kind: .year, calendar: calendar) == self else { return nil }
+        }
     }
 
     private static func isDayKey(_ key: String) -> Bool {
@@ -234,12 +282,16 @@ nonisolated struct CycleReportSnapshot: Equatable, Sendable {
     var isInProgress: Bool
     var headline: CycleReportHeadline = .plain
     var baseline: CycleReportBaseline?
-    var finish: CycleReportFinish?
+    var overtime: CycleReportOvertime?
     var ahead: CycleReportAhead?
     var focus: CycleReportFocus?
     var pay: CycleReportPay?
+    var months: [CycleReportMonth] = []
+    var leaveUsedHalfDays: Int = 0
 
-    var hasData: Bool { figures.hasData }
+    var hasData: Bool {
+        figures.hasData || (period.kind == .year && ((focus?.rounds ?? 0) > 0 || leaveUsedHalfDays > 0))
+    }
     var income: Double? { figures.income }
 
     /// The snapshot a report that was not asked for pay is allowed to hold.
@@ -249,17 +301,31 @@ nonisolated struct CycleReportSnapshot: Equatable, Sendable {
         var copy = self
         copy.figures.income = nil
         copy.pay = nil
+        copy.months = copy.months.map { month in
+            var month = month
+            month.figures.income = nil
+            return month
+        }
         return copy
     }
+}
+
+/// Each month's figures use the same Records query as a monthly report.
+nonisolated struct CycleReportMonth: Equatable, Sendable {
+    var period: CycleReportPeriod
+    var figures: CycleReportFigures
+    var restDayCount: Int
+    var focusRounds: Int
 }
 
 /// What the builder is given besides the period's own days.
 nonisolated struct CycleReportExtras: Sendable {
     /// Earlier periods, newest first.
     var priors: [CycleReportFigures] = []
-    var finish: CycleReportFinish?
     var ahead: CycleReportAhead?
     var focus: CycleReportFocus?
+    var months: [CycleReportMonth] = []
+    var leaveUsedHalfDays: Int = 0
     /// Whether the salary rules pay overtime at the usual rate (not a fixed
     /// monthly salary).
     var overtimeIsPaid = false
@@ -305,7 +371,7 @@ nonisolated enum CycleReportBuilder {
                 run = 0
             }
         }
-        let baseline = CycleReportBaseline.make(
+        let baseline = period.kind == .year ? nil : CycleReportBaseline.make(
             current: figures, priors: extras.priors,
             window: period.kind == .week ? 4 : 3,
             minimumWorkdays: period.kind == .week ? 2 : 6, isInProgress: isInProgress
@@ -318,15 +384,17 @@ nonisolated enum CycleReportBuilder {
             longestRestRun: longest,
             longestRestStart: longestStart,
             isInProgress: isInProgress,
-            headline: CycleReportHeadline.choose(
+            headline: period.kind == .year ? (isInProgress ? .inProgress : .plain) : CycleReportHeadline.choose(
                 figures: figures, baseline: baseline, restDayCount: restDays, longestRestRun: longest,
                 kind: period.kind, nextBreak: extras.ahead?.nextBreak, isInProgress: isInProgress
             ),
             baseline: baseline,
-            finish: extras.finish,
+            overtime: CycleReportOvertime.make(days: days),
             ahead: extras.ahead,
             focus: extras.focus,
-            pay: CycleReportPay.make(figures: figures, overtimeIsPaid: extras.overtimeIsPaid)
+            pay: CycleReportPay.make(figures: figures, overtimeIsPaid: extras.overtimeIsPaid),
+            months: extras.months,
+            leaveUsedHalfDays: extras.leaveUsedHalfDays
         )
     }
 }
@@ -344,17 +412,24 @@ nonisolated struct CycleReportNotificationPlan: Equatable, Sendable {
     }
 
     /// The slots this feature may use; the shift reminders give them up.
-    static let reservedSlots = 2
+    static let reservedSlots = 3
 
     static func items(
         weekly: Bool,
         monthly: Bool,
+        yearly: Bool = false,
         now: Date,
         calendar: Calendar
     ) -> [Item] {
         var items: [Item] = []
-        for (kind, enabled) in [(CycleReportKind.week, weekly), (.month, monthly)] where enabled {
+        for (kind, enabled) in [(CycleReportKind.week, weekly), (.month, monthly), (.year, yearly)] where enabled {
             var period = CycleReportPeriod.containing(now, kind: kind, calendar: calendar)
+            // Opening the app on January 1 before 09:00 must still schedule
+            // last year's report rather than skipping ahead an entire year.
+            if kind == .year, let previous = period.previous(calendar: calendar),
+               let fire = previous.notificationDate(calendar: calendar), fire > now {
+                period = previous
+            }
             // The running period closes in the future, so its morning-after is
             // too; the loop only matters if that morning has already passed.
             for _ in 0..<2 {
@@ -371,7 +446,7 @@ nonisolated struct CycleReportNotificationPlan: Equatable, Sendable {
 }
 
 /// What a report asks to open: one period, from a notification, a link, or
-/// the Records page's own week or month.
+/// the Records page's own week, month or year.
 struct CycleReportRequest: Identifiable, Equatable {
     let id = UUID()
     var period: CycleReportPeriod

@@ -54,76 +54,20 @@ nonisolated struct CycleReportBaseline: Equatable, Sendable {
     }
 }
 
-// MARK: - How the days finished
+// MARK: - Overtime
 
-/// One recorded workday's finish against its planned end.
-nonisolated struct CycleReportFinishInput: Equatable, Sendable {
-    var dayKey: String
-    var date: Date
-    var plannedEndMs: Double
-    /// When the day actually ended, if the person said so: a declared overtime
-    /// end, or an early clock-off. `nil` means nothing moved it.
-    var finishedAtMs: Double?
-}
+/// Daily overtime already measured by Records; even a short entry counts.
+/// The period total remains CycleReportFigures.overtimeMs.
+nonisolated struct CycleReportOvertime: Equatable, Sendable {
+    var days: [CycleReportDay]
+    var dayCount: Int
+    var longestDay: CycleReportDay
 
-/// Only what is recorded: the app learns a day ran late when overtime is logged
-/// and that it ended early when the person clocked off. A day with neither is
-/// read as finishing on schedule, which the page says plainly.
-nonisolated struct CycleReportFinish: Equatable, Sendable {
-    nonisolated enum Kind: Equatable, Sendable {
-        case onPlan
-        case late(ms: Int64)
-        case early(ms: Int64)
-    }
-
-    nonisolated struct Day: Equatable, Sendable, Identifiable {
-        var dayKey: String
-        var date: Date
-        var kind: Kind
-        var id: String { dayKey }
-    }
-
-    var days: [Day]
-    var lateCount: Int
-    var earlyCount: Int
-    var latest: Day?
-
-    var recordedCount: Int { days.count }
-    var onScheduleCount: Int { days.count - lateCount }
-
-    /// Ten minutes either way is "on schedule": a clock-off a minute early is
-    /// not a story.
-    static let tolerance: Double = 10 * 60_000
-    static let minimumDays = 2
-
-    static func make(_ inputs: [CycleReportFinishInput]) -> Self? {
-        guard inputs.count >= minimumDays else { return nil }
-        let days = inputs.map { input -> Day in
-            let kind: Kind
-            if let finished = input.finishedAtMs {
-                let delta = finished - input.plannedEndMs
-                if delta > tolerance { kind = .late(ms: Int64(delta)) }
-                else if delta < -tolerance { kind = .early(ms: Int64(-delta)) }
-                else { kind = .onPlan }
-            } else {
-                kind = .onPlan
-            }
-            return Day(dayKey: input.dayKey, date: input.date, kind: kind)
-        }
-        var lateCount = 0
-        var earlyCount = 0
-        var latest: Day?
-        var latestLate: Int64 = 0
-        for day in days {
-            switch day.kind {
-            case .late(let ms):
-                lateCount += 1
-                if ms > latestLate { latestLate = ms; latest = day }
-            case .early: earlyCount += 1
-            case .onPlan: break
-            }
-        }
-        return Self(days: days, lateCount: lateCount, earlyCount: earlyCount, latest: latest)
+    static func make(days: [CycleReportDay]) -> Self? {
+        let elapsed = days.filter { $0.kind != .upcoming }
+        let recorded = elapsed.filter { $0.overtimeMs > 0 }
+        guard let longest = recorded.max(by: { $0.overtimeMs < $1.overtimeMs }) else { return nil }
+        return Self(days: elapsed, dayCount: recorded.count, longestDay: longest)
     }
 }
 
@@ -133,7 +77,7 @@ nonisolated struct CycleReportNextBreak: Equatable, Sendable {
     var startDayKey: String
     var startDate: Date
     var length: Int
-    /// From today: 1 is tomorrow.
+    /// From the report reference day: 1 is the next day.
     var daysAway: Int
 }
 
@@ -144,8 +88,9 @@ nonisolated struct CycleReportAhead: Equatable, Sendable {
     /// What the same balances were granted, so what is left can be drawn as a share.
     var leaveEntitledHalfDays: Int?
     var nextBreak: CycleReportNextBreak?
-    /// Rest flags for the days after today, for drawing the road ahead.
+    /// Rest flags for the days after the report reference day, for drawing the road ahead.
     var horizon: [Bool]
+    var isHistorical = false
 
     static let minimumBreak = 3
     static let horizonDays = 28
@@ -198,7 +143,8 @@ nonisolated struct CycleReportFocus: Equatable, Sendable {
     /// belongs to (an index into the period), its length and its task's icon.
     static func make(
         rounds: [(dayIndex: Int, ms: Int64, icon: FocusTaskIcon?)],
-        dayCount: Int
+        dayCount: Int,
+        minimumRounds: Int = Self.minimumRounds
     ) -> Self? {
         guard rounds.count >= minimumRounds, dayCount > 0 else { return nil }
         var perDay = [Int](repeating: 0, count: dayCount)

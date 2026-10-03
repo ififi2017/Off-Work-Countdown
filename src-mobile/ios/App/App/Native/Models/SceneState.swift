@@ -592,6 +592,8 @@ final class SceneState {
             actions.preferences.applyPreferences { $0.cycleEndSummaryNotificationEnabled = true }
         case .enableMonthlyReportNotifications:
             actions.preferences.monthlyReportNotificationEnabled = true
+        case .enableYearlyReportNotifications:
+            actions.preferences.yearlyReportNotificationEnabled = true
         case .enableSync:
             Task { await enableCloudSync(using: recovery) }
         case .enableShiftAlarms:
@@ -625,6 +627,19 @@ final class SceneState {
             preferences.monthlyReportNotificationEnabled = enabled
         } else {
             pendingPlusAction = .enableMonthlyReportNotifications
+            paywallSheet = .cycleEndSummaryNotifications
+        }
+    }
+
+    /// The yearly report switch. Like the weekly one it is Plus, and a
+    /// purchase from the paywall turns it on.
+    func setYearlyReportNotifications(
+        _ enabled: Bool, preferences: PreferencesStore, plus: PlusEntitlement
+    ) {
+        if !enabled || plus.isAuthorized {
+            preferences.yearlyReportNotificationEnabled = enabled
+        } else {
+            pendingPlusAction = .enableYearlyReportNotifications
             paywallSheet = .cycleEndSummaryNotifications
         }
     }

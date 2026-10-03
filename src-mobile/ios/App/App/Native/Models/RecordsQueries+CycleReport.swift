@@ -1,7 +1,7 @@
 import Foundation
 
 extension RecordsQueries {
-    /// The week or month holding `date`, cut the way Records cuts them.
+    /// The week, month or year holding `date`, cut the way Records cuts them.
     func reportPeriod(_ kind: CycleReportKind, containing date: Date) -> CycleReportPeriod {
         CycleReportPeriod.containing(date, kind: kind, calendar: recordsGridCalendar)
     }
@@ -17,7 +17,7 @@ extension RecordsQueries {
 
         // The person's own past: up to four weeks or three months before.
         var priors: [CycleReportFigures] = []
-        if !isInProgress {
+        if !isInProgress, period.kind != .year {
             var cursor = period
             for _ in 0..<(period.kind == .week ? 4 : 3) {
                 guard let before = cursor.previous(calendar: calendar),
@@ -29,11 +29,26 @@ extension RecordsQueries {
         }
         guard !Task.isCancelled else { return nil }
 
+        var months: [CycleReportMonth] = []
+        if period.kind == .year, let start = period.startDate(calendar: calendar) {
+            for offset in 0..<12 {
+                guard !Task.isCancelled,
+                      let date = calendar.date(byAdding: .month, value: offset, to: start) else { return nil }
+                let month = CycleReportPeriod.containing(date, kind: .month, calendar: calendar)
+                guard let measuredMonth = await reportMeasurement(of: month, calendar: calendar, now: now) else { return nil }
+                let snapshot = CycleReportBuilder.snapshot(period: month, cells: measuredMonth.cells,
+                    figures: measuredMonth.figures, isInProgress: !month.isComplete(at: now, calendar: calendar))
+                months.append(CycleReportMonth(period: month, figures: measuredMonth.figures,
+                    restDayCount: snapshot.restDayCount, focusRounds: reportFocus(period: month, calendar: calendar, minimumRounds: 1)?.rounds ?? 0))
+            }
+        }
+        guard !Task.isCancelled else { return nil }
         let extras = CycleReportExtras(
             priors: priors,
-            finish: reportFinish(period: period, days: measured.days, calendar: calendar, now: now),
-            ahead: reportAhead(period: period, calendar: calendar, now: now),
-            focus: reportFocus(period: period, calendar: calendar),
+            ahead: period.kind == .year ? nil : reportAhead(period: period, calendar: calendar, now: now),
+            focus: reportFocus(period: period, calendar: calendar, minimumRounds: period.kind == .year ? 1 : CycleReportFocus.minimumRounds),
+            months: months,
+            leaveUsedHalfDays: reportLeaveUsed(period: period, calendar: calendar, now: now),
             overtimeIsPaid: reportOvertimeIsPaid
         )
         return CycleReportBuilder.snapshot(
@@ -70,44 +85,13 @@ extension RecordsQueries {
 
     // MARK: Insights
 
-    /// Recorded workdays only. The app learns a day ran late when overtime was
-    /// logged, and that it ended early when the person clocked off; a day with
-    /// neither is read as finishing on schedule.
-    private func reportFinish(
-        period: CycleReportPeriod,
-        days: [DayResolution],
-        calendar: Calendar,
-        now: Date
-    ) -> CycleReportFinish? {
-        let keys = Set(period.dayKeys(calendar: calendar))
-        let today = recordsCalendar.startOfDay(for: now)
-        var inputs: [CycleReportFinishInput] = []
-        for day in days where keys.contains(day.dayKey) && day.isScheduledWorkday {
-            guard let plannedEnd = day.segments.map(\.endAtMs).max() else { continue }
-            let date = recordsCalendar.startOfDay(for: day.shiftAnchorDate)
-            guard date < today else { continue }
-            let observed = observations(on: day.shiftAnchorDate)
-            guard observed.contains(where: { $0.kind.isWorkSessionRecord }) else { continue }
-            let overtimeEnd = overtimeSegments(on: day).map(\.endAtMs).max()
-            let earlyStop = observed
-                .filter { $0.kind == .countdownStopped }
-                .map { $0.occurredAt.timeIntervalSince1970 * 1_000 }
-                .filter { $0 < plannedEnd - CycleReportFinish.tolerance }
-                .max()
-            inputs.append(CycleReportFinishInput(
-                dayKey: day.dayKey, date: date, plannedEndMs: plannedEnd,
-                finishedAtMs: overtimeEnd ?? earlyStop
-            ))
-        }
-        return CycleReportFinish.make(inputs.sorted { $0.dayKey < $1.dayKey })
-    }
-
     /// Leave taken in the period, what is left to take, and the next run of
     /// three or more days off in the live schedule (adopted leave and holidays
-    /// included), counted from today.
+    /// included), counted from the period end for completed reports.
     private func reportAhead(period: CycleReportPeriod, calendar: Calendar, now: Date) -> CycleReportAhead? {
         let recordsCalendar = self.recordsCalendar
-        let today = recordsCalendar.startOfDay(for: now)
+        let today = period.referenceDate(at: now, calendar: calendar)
+        let historical = period.isComplete(at: now, calendar: calendar)
         guard let tomorrow = recordsCalendar.date(byAdding: .day, value: 1, to: today),
               let through = recordsCalendar.date(byAdding: .day, value: CycleReportAhead.horizonDays - 1, to: tomorrow)
         else { return nil }
@@ -116,12 +100,11 @@ extension RecordsQueries {
              date: recordsCalendar.startOfDay(for: day.shiftAnchorDate),
              isRest: !day.isScheduledWorkday || day.segments.isEmpty)
         }
-        let keys = Set(period.dayKeys(calendar: calendar))
         let state = records.state
-        let used = state.leaveDays.filter { keys.contains($0.dayKey) }.reduce(0) { $0 + $1.portion.halfDays }
+        let used = reportLeaveUsed(period: period, calendar: calendar, now: now)
         var remaining: Int?
         var entitled: Int?
-        if !state.leaveBalances.isEmpty {
+        if !historical, !state.leaveBalances.isEmpty {
             let todayNumber = ExtendedScheduleResolver.dayNumber(dayKey: RecordJSON.dayKey(today, calendar: recordsCalendar))
             let live = LeaveAdoption.budgets(balances: state.leaveBalances, leaveDays: state.leaveDays)
                 .filter { budget in todayNumber.map(budget.covers(dayNumber:)) ?? true }
@@ -129,11 +112,20 @@ extension RecordsQueries {
             let liveIDs = Set(live.map(\.id))
             entitled = state.leaveBalances.filter { liveIDs.contains($0.id) }.reduce(0) { $0 + $1.entitledHalfDays }
         }
-        return CycleReportAhead.make(upcoming: upcoming, leaveUsedHalfDays: used, leaveRemainingHalfDays: remaining,
-                                     leaveEntitledHalfDays: entitled)
+        var ahead = CycleReportAhead.make(upcoming: upcoming, leaveUsedHalfDays: used, leaveRemainingHalfDays: remaining,
+                                         leaveEntitledHalfDays: entitled)
+        ahead?.isHistorical = historical
+        return ahead
     }
 
-    private func reportFocus(period: CycleReportPeriod, calendar: Calendar) -> CycleReportFocus? {
+    private func reportLeaveUsed(period: CycleReportPeriod, calendar: Calendar, now: Date) -> Int {
+        let keys = Set(period.dayKeys(calendar: calendar))
+        let todayKey = RecordJSON.dayKey(now, calendar: calendar)
+        return records.state.leaveDays.filter { keys.contains($0.dayKey) && $0.dayKey <= todayKey }
+            .reduce(0) { $0 + $1.portion.halfDays }
+    }
+
+    private func reportFocus(period: CycleReportPeriod, calendar: Calendar, minimumRounds: Int = CycleReportFocus.minimumRounds) -> CycleReportFocus? {
         let keys = period.dayKeys(calendar: calendar)
         let index = Dictionary(uniqueKeysWithValues: keys.enumerated().map { ($1, $0) })
         let state = records.state
@@ -146,6 +138,6 @@ extension RecordsQueries {
                 ?? Int64(max(0, (session.endedAt ?? session.plannedEndAt).timeIntervalSince(session.startedAt) * 1_000))
             rounds.append((dayIndex, ms, session.taskID.flatMap { icons[$0] }))
         }
-        return CycleReportFocus.make(rounds: rounds, dayCount: keys.count)
+        return CycleReportFocus.make(rounds: rounds, dayCount: keys.count, minimumRounds: minimumRounds)
     }
 }

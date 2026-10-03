@@ -603,6 +603,7 @@ struct RecordsDesignView: View {
                             browsing.selectedYearMonth = month
                         }
                     }
+                    reportEntry(.year)
                 case .life:
                     lifeCanvas(expandedPresentation: expandedPresentation)
                 }
@@ -659,7 +660,7 @@ struct RecordsDesignView: View {
         .buttonStyle(.plain)
     }
 
-    /// Plan 020 §4: the week or month on screen, played as a report. It opens
+    /// Plan 020 §4: the week, month or year on screen, played as a report. It opens
     /// from here whether or not notifications are on.
     private func reportEntry(_ kind: CycleReportKind) -> some View {
         Button {
@@ -669,7 +670,7 @@ struct RecordsDesignView: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "play.circle")
-                Text(text.t(kind == .week ? "reportEntryWeek" : "reportEntryMonth"))
+                Text(text.t(kind.entryKey))
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.semibold))

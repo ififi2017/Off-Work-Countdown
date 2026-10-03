@@ -378,7 +378,7 @@ final class NotificationService {
         }
     }
 
-    /// Leaves the system with the next weekly and monthly report requests the
+    /// Leaves the system with the next weekly, monthly and annual report requests the
     /// user has turned on, and nothing else under `owc.report.`. A request is
     /// replaced by its own identifier, so a rebuilt schedule never doubles one;
     /// stale ones go only after every new one was accepted.

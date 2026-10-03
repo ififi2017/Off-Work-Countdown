@@ -3,7 +3,7 @@ import Testing
 import UserNotifications
 @testable import App
 
-/// Plan 020 §4: weekly and monthly reports, without the screen.
+/// Period reports, their Records queries and notification delivery.
 
 @Suite("Cycle reports")
 struct CycleReportTests {
@@ -62,6 +62,31 @@ struct CycleReportTests {
         #expect(week.isComplete(at: Self.date(calendar, 2026, 9, 28, 0), calendar: calendar))
     }
 
+    @Test("A natural year includes leap day and changes only at civil midnight")
+    func naturalYears() {
+        for zone in ["Asia/Shanghai", "America/New_York"] {
+            let calendar = Self.calendar(zone)
+            let leap = CycleReportPeriod.containing(Self.date(calendar, 2028, 12, 31, 23), kind: .year, calendar: calendar)
+            #expect(leap.startDayKey == "2028-01-01")
+            #expect(leap.endDayKey == "2028-12-31")
+            #expect(leap.dayKeys(calendar: calendar).count == 366)
+            #expect(leap.dayKeys(calendar: calendar).contains("2028-02-29"))
+            #expect(!leap.isComplete(at: Self.date(calendar, 2028, 12, 31, 23), calendar: calendar))
+            #expect(leap.isComplete(at: Self.date(calendar, 2029, 1, 1, 0), calendar: calendar))
+            #expect(leap.previous(calendar: calendar)?.startDayKey == "2027-01-01")
+            #expect(leap.previous(calendar: calendar)?.dayKeys(calendar: calendar).count == 365)
+            #expect(leap.following(calendar: calendar)?.endDayKey == "2029-12-31")
+        }
+    }
+
+    @Test("A completed period keeps its own final day as the look-ahead reference")
+    func historicalReference() {
+        let calendar = Self.calendar()
+        let month = CycleReportPeriod.containing(Self.date(calendar, 2026, 9, 15), kind: .month, calendar: calendar)
+        #expect(month.referenceDate(at: Self.date(calendar, 2027, 4, 10), calendar: calendar) == Self.date(calendar, 2026, 9, 30, 0))
+        #expect(month.referenceDate(at: Self.date(calendar, 2026, 9, 15, 23), calendar: calendar) == Self.date(calendar, 2026, 9, 15, 0))
+    }
+
     // MARK: Link
 
     @Test("A report link names its period and reads back unchanged")
@@ -75,14 +100,18 @@ struct CycleReportTests {
         }
     }
 
-    @Test("A link that is not a well-formed week or month opens nothing")
+    @Test("A link must name a well-formed report period")
     func linkRejectsMalformed() throws {
         func parse(_ query: String) -> CycleReportPeriod? {
             CycleReportPeriod(url: URL(string: "offworkcountdown://report?\(query)")!)
         }
         #expect(parse("kind=week&start=2026-09-21&end=2026-09-27&tz=Asia/Shanghai") != nil)
         #expect(parse("kind=month&start=2026-09-01&end=2026-09-30&tz=Asia/Shanghai") != nil)
-        #expect(parse("kind=year&start=2026-01-01&end=2026-12-31&tz=Asia/Shanghai") == nil)
+        #expect(parse("kind=year&start=2026-01-01&end=2026-12-31&tz=Asia/Shanghai") != nil)
+        #expect(parse("kind=year&start=2028-01-01&end=2028-12-31&tz=Asia/Shanghai") != nil)
+        #expect(parse("kind=year&start=2026-02-01&end=2027-01-31&tz=Asia/Shanghai") == nil)
+        #expect(parse("kind=year&start=2028-01-01&end=2028-12-30&tz=Asia/Shanghai") == nil)
+        #expect(parse("kind=year&start=2026-01-01&end=2027-01-01&tz=Asia/Shanghai") == nil)
         #expect(parse("kind=week&start=2026-09-27&end=2026-09-21&tz=Asia/Shanghai") == nil)
         #expect(parse("kind=week&start=2026-09-21&end=2026-10-21&tz=Asia/Shanghai") == nil)
         #expect(parse("kind=month&start=2026-09-01&end=2026-09-07&tz=Asia/Shanghai") == nil)
@@ -131,8 +160,29 @@ struct CycleReportTests {
     func notificationBudget() {
         let calendar = Self.calendar()
         let now = Self.date(calendar, 2026, 9, 23)
-        let items = CycleReportNotificationPlan.items(weekly: true, monthly: true, now: now, calendar: calendar)
+        let items = CycleReportNotificationPlan.items(weekly: true, monthly: true, yearly: true, now: now, calendar: calendar)
+        #expect(items.count == 3)
+        #expect(CycleReportNotificationPlan.reservedSlots == 3)
         #expect(items.count <= CycleReportNotificationPlan.reservedSlots)
+    }
+
+    @Test("January 1 before nine still schedules the preceding year, then moves to the running year")
+    func januaryNotificationBoundary() throws {
+        for zone in ["Asia/Shanghai", "America/New_York"] {
+            let calendar = Self.calendar(zone)
+            for now in [Self.date(calendar, 2028, 12, 31, 23), Self.date(calendar, 2029, 1, 1, 8)] {
+                let item = try #require(CycleReportNotificationPlan.items(weekly: false, monthly: false, yearly: true,
+                    now: now, calendar: calendar).first)
+                #expect(item.period.startDayKey == "2028-01-01")
+                #expect(item.period.endDayKey == "2028-12-31")
+                #expect(item.fireDate == Self.date(calendar, 2029, 1, 1, 9))
+                #expect(CycleReportPeriod(url: item.period.url) == item.period)
+            }
+            let after = try #require(CycleReportNotificationPlan.items(weekly: false, monthly: false, yearly: true,
+                now: Self.date(calendar, 2029, 1, 1, 9), calendar: calendar).first)
+            #expect(after.period.startDayKey == "2029-01-01")
+            #expect(after.fireDate == Self.date(calendar, 2030, 1, 1, 9))
+        }
     }
 
     // MARK: Snapshot
@@ -233,26 +283,28 @@ struct CycleReportTests {
         #expect(CycleReportBaseline.make(current: now, priors: [empty, empty, empty, empty, figures(40), figures(42)], window: 4, isInProgress: false) == nil)
     }
 
-    @Test("Finish: late only where overtime was logged, early only where the person clocked off; too few days says nothing")
-    func finishDays() {
-        let calendar = Self.calendar()
-        func input(_ key: String, planned: Double, finished: Double?) -> CycleReportFinishInput {
-            .init(dayKey: key, date: RecordJSON.date(fromDayKey: key, calendar: calendar)!, plannedEndMs: planned, finishedAtMs: finished)
-        }
-        let end = 18.0 * 3_600_000
-        let finish = CycleReportFinish.make([
-            input("2026-09-21", planned: end, finished: nil),
-            input("2026-09-22", planned: end, finished: end + 80 * 60_000),
-            input("2026-09-23", planned: end, finished: end + 5 * 60_000),   // inside the tolerance
-            input("2026-09-24", planned: end, finished: end + 30 * 60_000),
-            input("2026-09-25", planned: end, finished: end - 90 * 60_000),
-        ])
-        #expect(finish?.recordedCount == 5)
-        #expect(finish?.lateCount == 2)
-        #expect(finish?.earlyCount == 1)
-        #expect(finish?.onScheduleCount == 3)
-        #expect(finish?.latest?.dayKey == "2026-09-22")
-        #expect(CycleReportFinish.make([input("2026-09-21", planned: end, finished: nil)]) == nil)
+    @Test("Every elapsed overtime entry counts, including five minutes and a night-shift tail")
+    @MainActor
+    func overtimeDays() throws {
+        let cells = [
+            cell("2026-09-21", work: 8 * hour),
+            cell("2026-09-22", work: 8 * hour, overtime: 5 * 60_000),
+            cell("2026-09-23", overtime: 2 * hour),
+            cell("2026-09-24", work: 8 * hour, overtime: hour),
+            cell("2026-09-25", overtime: 9 * hour, future: true),
+        ]
+        let snapshot = CycleReportBuilder.snapshot(period: week, cells: cells,
+            figures: .init(workdays: 4, workedMs: 27 * hour, overtimeMs: 3 * hour + 5 * 60_000, income: nil),
+            isInProgress: true)
+        let overtime = try #require(snapshot.overtime)
+        #expect(overtime.dayCount == 3)
+        #expect(overtime.longestDay.dayKey == "2026-09-23")
+        #expect(overtime.longestDay.overtimeMs == 2 * hour)
+        let expectedDayKeys = cells.prefix(4).map { $0.dayKey }
+        #expect(overtime.days.map(\.dayKey) == expectedDayKeys)
+        #expect(snapshot.days[2].kind == .work)
+        #expect(snapshot.figures.overtimeMs == 3 * hour + 5 * 60_000)
+        #expect(CycleReportOvertime.make(days: [snapshot.days[0], snapshot.days[4]]) == nil)
     }
 
     @Test("The next break is the first run of three rest days, counted from tomorrow")
@@ -334,6 +386,41 @@ struct CycleReportTests {
         #expect(CycleReportStage.stages(for: snapshot).contains(.income))
     }
 
+    @Test("Removing income also removes every monthly amount and preserves time and leave")
+    func yearlyIncomeIsStripped() {
+        let calendar = Self.calendar()
+        let year = CycleReportPeriod.containing(Self.date(calendar, 2026, 6, 1), kind: .year, calendar: calendar)
+        let figures = CycleReportFigures(workdays: 3, workedMs: 24 * hour, overtimeMs: hour, income: 1_800)
+        var extras = CycleReportExtras()
+        extras.months = (1...12).map { month in
+            CycleReportMonth(period: .containing(Self.date(calendar, 2026, month, 1), kind: .month, calendar: calendar),
+                figures: figures, restDayCount: month, focusRounds: 1)
+        }
+        extras.leaveUsedHalfDays = 7
+        let snapshot = CycleReportBuilder.snapshot(period: year, cells: weekCells(), figures: figures,
+            extras: extras, isInProgress: false)
+        let hidden = snapshot.withoutIncome()
+        #expect(snapshot.months.allSatisfy { $0.figures.income == 1_800 })
+        #expect(hidden.months.count == 12)
+        #expect(hidden.months.allSatisfy { $0.figures.income == nil })
+        #expect(hidden.pay == nil && hidden.income == nil)
+        #expect(hidden.months.map(\.figures.workedMs) == snapshot.months.map(\.figures.workedMs))
+        #expect(hidden.months.map(\.focusRounds) == snapshot.months.map(\.focusRounds))
+        #expect(hidden.leaveUsedHalfDays == 7)
+    }
+
+    @Test("The overtime chapter depends on the Records period total")
+    func overtimeStageUsesTotal() {
+        let none = CycleReportBuilder.snapshot(period: week, cells: weekCells(),
+            figures: .init(workdays: 3, workedMs: 24 * hour, overtimeMs: 0, income: nil), isInProgress: false)
+        #expect(none.overtime != nil)
+        #expect(!CycleReportStage.stages(for: none).contains(.overtime))
+        let positive = CycleReportBuilder.snapshot(period: week, cells: [cell("2026-09-21", work: hour)],
+            figures: .init(workdays: 1, workedMs: hour, overtimeMs: 5 * 60_000, income: nil), isInProgress: false)
+        #expect(positive.overtime == nil)
+        #expect(CycleReportStage.stages(for: positive).contains(.overtime))
+    }
+
     // MARK: Figures
 
     @Test("Figures count what happened; a forecast is not worked time")
@@ -383,16 +470,13 @@ struct CycleReportTests {
         figures.income = 100
         let before = CycleReportFigures(workdays: 5, workedMs: 40 * hour, overtimeMs: 0, income: nil)
         var extras = CycleReportExtras(priors: [before])
-        extras.finish = CycleReportFinish.make([
-            .init(dayKey: "2026-09-21", date: .now, plannedEndMs: 1, finishedAtMs: nil),
-            .init(dayKey: "2026-09-22", date: .now, plannedEndMs: 1, finishedAtMs: nil),
-        ])
+        figures.overtimeMs = 2 * hour
         extras.ahead = CycleReportAhead.make(upcoming: [], leaveUsedHalfDays: 0, leaveRemainingHalfDays: 4)
         extras.focus = CycleReportFocus.make(rounds: [(0, 1, .code), (1, 1, .code)], dayCount: 7)
         extras.overtimeIsPaid = true
         let full = CycleReportBuilder.snapshot(period: week, cells: weekCells(), figures: figures, extras: extras, isInProgress: false)
-        #expect(CycleReportStage.stages(for: full) == [.calendar, .hours, .finish, .baseline, .rest, .ahead, .focus, .income, .summary])
-        #expect(CycleReportStage.stages(for: full.withoutIncome()) == [.calendar, .hours, .finish, .baseline, .rest, .ahead, .focus, .summary])
+        #expect(CycleReportStage.stages(for: full) == [.calendar, .hours, .overtime, .baseline, .rest, .ahead, .focus, .income, .summary])
+        #expect(CycleReportStage.stages(for: full.withoutIncome()) == [.calendar, .hours, .overtime, .baseline, .rest, .ahead, .focus, .summary])
     }
 
     // MARK: Player
@@ -501,7 +585,10 @@ struct CycleReportTests {
         if plus { defaults.set(true, forKey: "ios.native.debugPlusAuthorized") }
         let runtime = AppRuntime(defaults: defaults, records: .inMemory())
         runtime.preferences.onboardingComplete = true
-        runtime.preferences.applyPreferences { $0.languageOverride = "en" }
+        runtime.preferences.applyPreferences {
+            $0.languageOverride = "en"
+            $0.recordsTimeZoneIdentifier = "Asia/Shanghai"
+        }
         return (runtime, defaults, { defaults.removePersistentDomain(forName: suite) })
     }
 
@@ -517,6 +604,9 @@ struct CycleReportTests {
 
         await service.reschedule(shifts: runtime.shifts)
         #expect(fake.reportIDs.count == 2)
+        runtime.preferences.yearlyReportNotificationEnabled = true
+        await service.reschedule(shifts: runtime.shifts)
+        #expect(fake.reportIDs.count == 3)
         for id in fake.reportIDs {
             let request = try #require(fake.requests[id])
             let link = try #require(request.content.userInfo["url"] as? String)
@@ -527,6 +617,12 @@ struct CycleReportTests {
         }
 
         runtime.preferences.monthlyReportNotificationEnabled = false
+        await service.reschedule(shifts: runtime.shifts)
+        #expect(fake.reportIDs.count == 2)
+        #expect(fake.reportIDs.contains { $0.hasPrefix("owc.report.week.") })
+        #expect(fake.reportIDs.contains { $0.hasPrefix("owc.report.year.") })
+
+        runtime.preferences.yearlyReportNotificationEnabled = false
         await service.reschedule(shifts: runtime.shifts)
         #expect(fake.reportIDs.count == 1)
         #expect(fake.reportIDs[0].hasPrefix("owc.report.week."))
@@ -570,6 +666,124 @@ struct CycleReportTests {
         let fake = FakeCenter()
         await NotificationService(shiftCenter: fake.center).rescheduleCycleReports(shifts: runtime.shifts)
         #expect(fake.reportIDs.count == 1)
+    }
+
+    @Test("The yearly preference starts off, persists locally, and has its own Plus gate")
+    @MainActor
+    func yearlyPreferenceAndGate() async throws {
+        let (free, _, cleanFree) = try makeRuntime(plus: false)
+        defer { cleanFree() }
+        #expect(!free.preferences.yearlyReportNotificationEnabled)
+        free.preferences.yearlyReportNotificationEnabled = true
+        #expect(!free.shifts.yearlyReportNotificationsAreActive)
+        let fakeFree = FakeCenter()
+        await NotificationService(shiftCenter: fakeFree.center).rescheduleCycleReports(shifts: free.shifts)
+        #expect(fakeFree.reportIDs.isEmpty)
+
+        let (paid, defaults, cleanPaid) = try makeRuntime(plus: true)
+        defer { cleanPaid() }
+        #expect(!paid.preferences.yearlyReportNotificationEnabled)
+        paid.preferences.yearlyReportNotificationEnabled = true
+        #expect(paid.shifts.yearlyReportNotificationsAreActive)
+        #expect(!paid.shifts.weeklyReportNotificationsAreActive)
+        #expect(!paid.shifts.monthlyReportNotificationsAreActive)
+        let reloaded = AppRuntime(defaults: defaults, records: .inMemory())
+        #expect(reloaded.preferences.yearlyReportNotificationEnabled)
+        paid.preferences.applyPreferences { $0.scheduleMode = .off }
+        let fake = FakeCenter()
+        let service = NotificationService(shiftCenter: fake.center)
+        await service.rescheduleCycleReports(shifts: paid.shifts)
+        await service.rescheduleCycleReports(shifts: paid.shifts)
+        #expect(fake.reportIDs.count == 1)
+        #expect(fake.reportIDs.first?.hasPrefix("owc.report.year.") == true)
+        fake.allowed = false
+        await service.rescheduleCycleReports(shifts: paid.shifts)
+        #expect(fake.reportIDs.isEmpty)
+    }
+
+    @Test("A yearly request uses the Records zone and only follows completed onboarding")
+    @MainActor
+    func yearlyNotificationUsesRecordsZone() throws {
+        let (runtime, _, cleanup) = try makeRuntime(plus: true)
+        defer { cleanup() }
+        runtime.preferences.yearlyReportNotificationEnabled = true
+        runtime.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "America/New_York" }
+        let calendar = runtime.preferences.recordsCalendar
+        let now = Self.date(calendar, 2029, 1, 1, 8)
+        let request = try #require(runtime.shifts.cycleReportNotifications(at: now).first)
+        #expect(request.period.kind == .year)
+        #expect(request.period.startDayKey == "2028-01-01")
+        #expect(request.period.timeZoneIdentifier == "America/New_York")
+        #expect(request.trigger.year == 2029 && request.trigger.month == 1 && request.trigger.day == 1)
+        #expect(request.trigger.hour == 9 && request.trigger.minute == 0)
+        #expect(request.trigger.timeZone?.identifier == "America/New_York")
+        #expect(request.fireDate == Self.date(calendar, 2029, 1, 1, 9))
+        runtime.preferences.onboardingComplete = false
+        #expect(runtime.shifts.cycleReportNotifications(at: now).isEmpty)
+    }
+
+    @Test("Historical look-ahead starts after the report and excludes current leave balances")
+    @MainActor
+    func historicalQueryUsesItsOwnEnd() async throws {
+        let (runtime, _, cleanup) = try makeRuntime(plus: true)
+        defer { cleanup() }
+        runtime.preferences.applyPreferences { $0.scheduleMode = .off }
+        let calendar = runtime.preferences.recordsCalendar
+        runtime.records.upsertLeaveBalance(LeaveBalance(id: UUID(), kind: .annual, name: nil,
+            entitledHalfDays: 20, usedHalfDays: 3, validFromDayKey: nil, validThroughDayKey: nil))
+        runtime.records.upsertLeaveDay(LeaveDay(dayKey: "2026-09-23", portion: .firstHalf,
+            uses: [], planID: nil, timeZoneIdentifier: calendar.timeZone.identifier))
+        let completed = try #require(await runtime.queries.cycleReportSnapshot(for: week, now: Self.date(calendar, 2026, 11, 15)))
+        let historical = try #require(completed.ahead)
+        #expect(historical.isHistorical)
+        #expect(historical.nextBreak?.startDayKey == "2026-09-28")
+        #expect(historical.nextBreak?.daysAway == 1)
+        #expect(historical.leaveRemainingHalfDays == nil)
+        #expect(historical.leaveEntitledHalfDays == nil)
+        #expect(historical.leaveUsedHalfDays == 1)
+        let current = try #require(await runtime.queries.cycleReportSnapshot(for: week, now: Self.date(calendar, 2026, 9, 24)))
+        let live = try #require(current.ahead)
+        #expect(!live.isHistorical)
+        #expect(live.nextBreak?.startDayKey == "2026-09-25")
+        #expect(live.leaveRemainingHalfDays == 17)
+        #expect(live.leaveEntitledHalfDays == 20)
+    }
+
+    @Test("Annual Records queries return twelve calendar months and keep a lone focus round")
+    @MainActor
+    func annualQueryKeepsMonthlyFocus() async throws {
+        let (runtime, _, cleanup) = try makeRuntime(plus: true)
+        defer { cleanup() }
+        runtime.preferences.applyPreferences { $0.scheduleMode = .off }
+        let calendar = runtime.preferences.recordsCalendar
+        let start = Self.date(calendar, 2024, 2, 29, 10)
+        let end = start.addingTimeInterval(25 * 60)
+        runtime.records.upsertFocusSession(FocusSession(id: UUID(), taskID: nil,
+            shiftAnchorDate: calendar.startOfDay(for: start), startedAt: start, plannedEndAt: end,
+            endedAt: end, endReason: .completed, editedAt: end, editCount: 1, editTieBreaker: UUID(),
+            kind: .focus, timeZoneIdentifier: calendar.timeZone.identifier, anchorDayKey: "2024-02-29"), at: end)
+        runtime.records.upsertLeaveDay(LeaveDay(dayKey: "2024-02-29", portion: .whole,
+            uses: [], planID: nil, timeZoneIdentifier: calendar.timeZone.identifier))
+        let year = runtime.queries.reportPeriod(.year, containing: start)
+        let now = Self.date(calendar, 2025, 1, 2)
+        let snapshot = try #require(await runtime.queries.cycleReportSnapshot(for: year, now: now))
+        #expect(snapshot.hasData)
+        #expect(CycleReportStage.stages(for: snapshot).contains(.focus))
+        #expect(snapshot.days.count == 366)
+        #expect(snapshot.months.count == 12)
+        #expect(snapshot.months.first?.period.startDayKey == "2024-01-01")
+        #expect(snapshot.months.last?.period.endDayKey == "2024-12-31")
+        #expect(snapshot.months[1].period.endDayKey == "2024-02-29")
+        #expect(snapshot.months[1].focusRounds == 1)
+        #expect(snapshot.months.filter { $0.focusRounds > 0 }.count == 1)
+        #expect(snapshot.focus?.rounds == 1)
+        #expect(snapshot.focus?.perDay[59] == 1)
+        #expect(snapshot.leaveUsedHalfDays == 2)
+        #expect(snapshot.baseline == nil && snapshot.ahead == nil)
+        let month = try #require(await runtime.queries.cycleReportSnapshot(for: snapshot.months[1].period, now: now))
+        #expect(snapshot.months[1].figures == month.figures)
+        #expect(snapshot.months[1].restDayCount == month.restDayCount)
+        #expect(month.focus == nil)
     }
 
     @Test("Pay a report was asked to show is not masked by the global hide setting")
