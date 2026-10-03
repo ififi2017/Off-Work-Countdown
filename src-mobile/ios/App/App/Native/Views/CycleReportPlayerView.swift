@@ -326,9 +326,9 @@ struct CycleReportPlayerView: View {
     private var finishChapter: some View {
         if let finish = snapshot.finish {
             VStack(alignment: .leading, spacing: 0) {
-                heading(eyebrow: text.t("reportFinishTitle"), hero: text.formatCount(finish.onScheduleCount), size: 1.0,
-                        caption: text.t("reportFinishCaption"), appear: ReportEase.window(b, 0, 0.2), lines: 1)
-                Text(copy.finishRatio(finish))
+                heading(eyebrow: text.t("reportFinishTitle"), hero: copy.days(finish.onScheduleCount), size: 1.0,
+                        caption: copy.finishCaption(), appear: ReportEase.window(b, 0, 0.2), lines: 1, emphasizeNumbers: true)
+                Text(copy.finishBasis(finish))
                     .font(.subheadline).foregroundStyle(.white.opacity(0.6))
                     .padding(.top, 6)
                 VStack(alignment: .leading, spacing: 4) {
@@ -725,17 +725,21 @@ struct CycleReportPlayerView: View {
 
     // MARK: Pieces
 
-    private func heading(eyebrow: String?, hero: String, size: CGFloat, caption: String?, appear: Double, lines: Int = 2) -> some View {
+    private func heading(eyebrow: String?, hero: String, size: CGFloat, caption: String?, appear: Double, lines: Int = 2, emphasizeNumbers: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             if let eyebrow {
                 Text(eyebrow.uppercased())
                     .font(.caption.weight(.bold)).tracking(1.4)
                     .foregroundStyle(.white.opacity(0.62))
             }
-            Text(hero)
-                .font(.system(size: heroSize * size, weight: .heavy, design: .rounded))
-                .minimumScaleFactor(0.45).lineLimit(lines)
-                .foregroundStyle(.white)
+            if emphasizeNumbers {
+                ReportDurationText(value: hero, numberSize: heroSize * size)
+            } else {
+                Text(hero)
+                    .font(.system(size: heroSize * size, weight: .heavy, design: .rounded))
+                    .minimumScaleFactor(0.45).lineLimit(lines)
+                    .foregroundStyle(.white)
+            }
             if let caption {
                 Text(caption).font(.title3.weight(.medium)).foregroundStyle(.white.opacity(0.7))
             }
