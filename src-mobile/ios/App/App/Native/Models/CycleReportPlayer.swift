@@ -7,7 +7,7 @@ import Observation
 nonisolated enum CycleReportStage: Hashable, Sendable {
     case calendar
     case hours
-    case finish
+    case overtime
     case baseline
     case rest
     case ahead
@@ -16,12 +16,12 @@ nonisolated enum CycleReportStage: Hashable, Sendable {
     case summary
 
     /// Chapters are told in this order. One with nothing honest to say is left
-    /// out: no finish page without recorded days, no comparison without history,
+    /// out: no overtime page without overtime, no comparison without history,
     /// no income unless the person asked for it.
     static func stages(for snapshot: CycleReportSnapshot) -> [Self] {
         guard snapshot.hasData else { return [] }
         var result: [Self] = [.calendar, .hours]
-        if snapshot.finish != nil { result.append(.finish) }
+        if snapshot.figures.overtimeMs > 0 { result.append(.overtime) }
         if snapshot.baseline != nil { result.append(.baseline) }
         result.append(.rest)
         if snapshot.ahead != nil { result.append(.ahead) }
@@ -34,11 +34,11 @@ nonisolated enum CycleReportStage: Hashable, Sendable {
     /// Seconds the chapter spends building itself, then holding still for the
     /// reader. The last chapter holds until the person leaves.
     func timeline(for snapshot: CycleReportSnapshot) -> CycleReportTimeline {
-        let monthly = snapshot.period.kind == .month
+        let monthly = snapshot.period.kind != .week
         return switch self {
         case .calendar: CycleReportTimeline(build: monthly ? 2.6 : 2.0, hold: 1.9)
         case .hours: CycleReportTimeline(build: 2.8, hold: 2.0)
-        case .finish: CycleReportTimeline(build: 2.2, hold: 2.1)
+        case .overtime: CycleReportTimeline(build: 2.2, hold: 2.1)
         case .baseline: CycleReportTimeline(build: 1.9, hold: 2.2)
         case .rest: CycleReportTimeline(build: 2.4, hold: 2.1)
         case .ahead: CycleReportTimeline(build: 2.2, hold: 2.3)

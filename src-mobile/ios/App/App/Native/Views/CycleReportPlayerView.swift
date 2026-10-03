@@ -118,6 +118,8 @@ struct CycleReportPlayerView: View {
     var onRead: () -> Void
     var onClose: () -> Void
     private let stripLayout: ReportStripScene.Layout
+    private let monthLabels: [String]
+    private let overtimeLabels: [String]
     @State private var previousMood: ReportBackdrop.Mood?
 
     init(player: CycleReportPlayer, copy: CycleReportCopy, onRead: @escaping () -> Void, onClose: @escaping () -> Void) {
@@ -126,6 +128,8 @@ struct CycleReportPlayerView: View {
         self.onRead = onRead
         self.onClose = onClose
         stripLayout = ReportStripScene.Layout(snapshot: player.snapshot, queries: copy.queries)
+        monthLabels = copy.monthLabels(player.snapshot)
+        overtimeLabels = copy.dayLabels(player.snapshot.overtime?.days ?? [], kind: player.snapshot.period.kind)
     }
 
     @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 76
@@ -168,7 +172,7 @@ struct CycleReportPlayerView: View {
         switch stage {
         case .calendar: .dawn
         case .hours: .energy
-        case .finish: .contrast
+        case .overtime: .contrast
         case .baseline: .contrast
         case .rest: .calm
         case .ahead: .calm
@@ -196,7 +200,7 @@ struct CycleReportPlayerView: View {
             }
             .accessibilityHidden(true)
             HStack {
-                Text("\(text.t(snapshot.period.kind == .week ? "reportWeekly" : "reportMonthly")) · \(copy.periodTitle(snapshot.period))".uppercased())
+                Text("\(text.t(snapshot.period.kind.titleKey)) · \(copy.periodTitle(snapshot.period))".uppercased())
                     .font(.caption2.weight(.bold))
                     .tracking(1.4)
                     .foregroundStyle(.white.opacity(0.6))
@@ -251,8 +255,9 @@ struct CycleReportPlayerView: View {
     private var stage: some View {
         VStack(alignment: .leading, spacing: 0) {
             switch player.stage {
-            case .calendar, .hours: timeChapters
-            case .finish: finishChapter
+            case .calendar, .hours:
+                if snapshot.period.kind == .year { yearTimeChapters } else { timeChapters }
+            case .overtime: overtimeChapter
             case .baseline: baselineChapter
             case .rest: restChapter
             case .ahead: aheadChapter
@@ -321,38 +326,54 @@ struct CycleReportPlayerView: View {
         .padding(.top, 18)
     }
 
-    /// When the recorded days ended, against when they were planned to.
-    @ViewBuilder
-    private var finishChapter: some View {
-        if let finish = snapshot.finish {
-            VStack(alignment: .leading, spacing: 0) {
-                heading(eyebrow: text.t("reportFinishTitle"), hero: copy.days(finish.onScheduleCount), size: 1.0,
-                        caption: copy.finishCaption(), appear: ReportEase.window(b, 0, 0.2), lines: 1, emphasizeNumbers: true)
-                Text(copy.finishBasis(finish))
-                    .font(.subheadline).foregroundStyle(.white.opacity(0.6))
-                    .padding(.top, 6)
-                VStack(alignment: .leading, spacing: 4) {
-                    if let latest = copy.finishLatest(finish, kind: snapshot.period.kind) {
-                        Text(latest)
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(LinearGradient(colors: [Color(red: 1.0, green: 0.62, blue: 0.40), ReportPalette.hot], startPoint: .leading, endPoint: .trailing))
-                    }
-                    if let early = copy.finishEarly(finish) {
-                        Text(early).font(.title3.weight(.semibold)).foregroundStyle(ReportPalette.moon)
-                    }
-                }
-                .opacity(ReportEase.window(b, 0.8, 1))
-                .offset(y: 8 * (1 - ReportEase.window(b, 0.8, 1)))
-                .padding(.top, 10)
-                Spacer(minLength: 12)
-                ReportFinishArt(
-                    finish: finish,
-                    labels: snapshot.period.kind == .week ? finish.days.map { copy.weekday($0.date) } : [],
-                    build: b
-                )
-                .frame(height: 250)
-                Spacer(minLength: 24)
+    private var yearTimeChapters: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if player.stage == .calendar {
+                heading(eyebrow: copy.workdays(snapshot), hero: copy.headline(snapshot), size: 0.62,
+                        caption: snapshot.isInProgress ? text.t("reportSoFar") : copy.periodTitle(snapshot.period),
+                        appear: ReportEase.window(b, 0, 0.28), lines: 3)
+            } else {
+                hoursHeading
             }
+            Spacer(minLength: 16)
+            yearBars(snapshot.months.map { Double($0.figures.workedMs) }, label: text.t("recordsWorkedTime"))
+            Spacer(minLength: 24)
+        }
+    }
+
+    private func yearBars(_ values: [Double], label: String, color: Color = ReportPalette.orange) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("\(text.t("reportMonthlyTrend")) · \(label)")
+                .font(.footnote.weight(.semibold)).foregroundStyle(.white.opacity(0.65))
+            ReportMetricBars(values: values, labels: monthLabels, build: b, color: color)
+                .frame(height: 230)
+        }
+    }
+
+    /// The same overtime total as Records, with daily or monthly detail.
+    private var overtimeChapter: some View {
+        let counted = Int64(Double(snapshot.figures.overtimeMs) * ReportEase.outCubic(ReportEase.window(b, 0.08, 0.85)))
+        return VStack(alignment: .leading, spacing: 0) {
+            Text(text.t("recordsOvertime").uppercased())
+                .font(.caption.weight(.bold)).tracking(1.4).foregroundStyle(.white.opacity(0.62))
+            ReportDurationText(value: copy.hours(counted), numberSize: heroSize * 0.85)
+                .padding(.top, 14)
+            if let overtime = snapshot.overtime {
+                Text(copy.overtimeDays(overtime))
+                    .font(.subheadline).foregroundStyle(.white.opacity(0.7)).padding(.top, 8)
+                Text(copy.overtimePeak(overtime, kind: snapshot.period.kind))
+                    .font(.title3.weight(.semibold)).foregroundStyle(ReportPalette.cream)
+                    .opacity(ReportEase.window(b, 0.7, 1)).padding(.top, 12)
+            }
+            Spacer(minLength: 12)
+            if snapshot.period.kind == .year {
+                yearBars(snapshot.months.map { Double($0.figures.overtimeMs) }, label: text.t("recordsOvertime"), color: ReportPalette.hot)
+            } else if let overtime = snapshot.overtime {
+                ReportMetricBars(values: overtime.days.map { Double($0.overtimeMs) },
+                                 labels: overtimeLabels, build: b, color: ReportPalette.hot)
+                    .frame(height: 250)
+            }
+            Spacer(minLength: 24)
         }
     }
 
@@ -373,7 +394,13 @@ struct CycleReportPlayerView: View {
                     .padding(.top, 6)
             }
             Spacer(minLength: 12)
-            strip(.rest(build: b, time: player.clock)).frame(height: stripHeight)
+            if snapshot.period.kind == .year {
+                Text("\(text.t("reportLeaveUsed")) · \(copy.leaveDays(halfDays: snapshot.leaveUsedHalfDays))")
+                    .font(.subheadline).foregroundStyle(.white.opacity(0.75)).padding(.bottom, 20)
+                yearBars(snapshot.months.map { Double($0.restDayCount) }, label: text.t("reportRestDays"), color: ReportPalette.moon)
+            } else {
+                strip(.rest(build: b, time: player.clock)).frame(height: stripHeight)
+            }
             Spacer(minLength: 24)
         }
     }
@@ -455,11 +482,11 @@ struct CycleReportPlayerView: View {
         if let ahead = snapshot.ahead {
             let hero = copy.aheadHero(ahead)
                 ?? ahead.leaveRemainingHalfDays.map { copy.leaveDays(halfDays: $0) }
-                ?? ""
+                ?? copy.leaveDays(halfDays: ahead.leaveUsedHalfDays)
             VStack(alignment: .leading, spacing: 0) {
-                heading(eyebrow: text.t(ahead.nextBreak == nil ? "reportLeaveLeft" : "reportAheadTitle"),
+                heading(eyebrow: text.t(copy.aheadTitleKey(ahead)),
                         hero: hero, size: 1.15, caption: copy.aheadBreak(ahead),
-                        appear: ReportEase.window(b, 0, 0.22))
+                        appear: ReportEase.window(b, 0, 0.22), emphasizeNumbers: ahead.isHistorical || ahead.nextBreak == nil)
                 Spacer(minLength: 16)
                 if ahead.nextBreak != nil {
                     ReportHorizonArt(ahead: ahead, build: b, time: player.clock)
@@ -507,7 +534,7 @@ struct CycleReportPlayerView: View {
     private func leaveCard(_ ahead: CycleReportAhead) -> some View {
         let rows: [(String, String)] = [
             ahead.nextBreak != nil ? ahead.leaveRemainingHalfDays.map { (text.t("reportLeaveLeft"), copy.leaveDays(halfDays: $0)) } : nil,
-            ahead.leaveUsedHalfDays > 0 ? (text.t("reportLeaveUsed"), copy.leaveDays(halfDays: ahead.leaveUsedHalfDays)) : nil,
+            ahead.leaveUsedHalfDays > 0 && (ahead.nextBreak != nil || ahead.leaveRemainingHalfDays != nil) ? (text.t("reportLeaveUsed"), copy.leaveDays(halfDays: ahead.leaveUsedHalfDays)) : nil,
         ].compactMap { $0 }
         if !rows.isEmpty {
             VStack(spacing: 0) {
@@ -534,8 +561,14 @@ struct CycleReportPlayerView: View {
                 heading(eyebrow: text.t("reportFocusRounds"), hero: text.formatCount(shown), size: 1.5,
                         caption: copy.focusBest(focus, snapshot: snapshot), appear: ReportEase.window(b, 0, 0.2))
                 Spacer(minLength: 16)
-                ReportFocusArt(focus: focus, labels: copy.weekdayLabels(snapshot), build: b)
-                    .frame(height: 220)
+                Text("\(text.t("reportFocusDuration")) · \(copy.hours(focus.focusedMs))")
+                    .font(.subheadline).foregroundStyle(.white.opacity(0.75)).padding(.bottom, 16)
+                if snapshot.period.kind == .year {
+                    yearBars(snapshot.months.map { Double($0.focusRounds) }, label: text.t("reportFocusRounds"), color: ReportPalette.gold)
+                } else {
+                    ReportFocusArt(focus: focus, labels: copy.weekdayLabels(snapshot), build: b)
+                        .frame(height: 220)
+                }
                 if let icon = focus.topIcon {
                     HStack(spacing: 10) {
                         Image(systemName: icon.systemName).font(.body.weight(.semibold)).foregroundStyle(ReportPalette.gold)
@@ -644,12 +677,18 @@ struct CycleReportPlayerView: View {
                 .font(.subheadline.weight(.medium)).foregroundStyle(.white.opacity(0.7))
                 .padding(.top, 2)
             Group {
-                if snapshot.period.kind == .week {
+                if snapshot.period.kind != .month {
                     VStack(alignment: .leading, spacing: 8) {
                         ReportDurationText(value: copy.hours(snapshot.figures.workedMs), numberSize: heroSize * 0.48)
                         Text(text.t("recordsWorkedTime"))
                             .font(.footnote.weight(.semibold)).foregroundStyle(.white.opacity(0.65))
-                        strip(.summaryBars(ring)).frame(height: 180)
+                        if snapshot.period.kind == .year {
+                            ReportMetricBars(values: snapshot.months.map { Double($0.figures.workedMs) },
+                                             labels: monthLabels, build: ring)
+                                .frame(height: 180)
+                        } else {
+                            strip(.summaryBars(ring)).frame(height: 180)
+                        }
                     }
                     .padding(.top, 28)
                 } else {

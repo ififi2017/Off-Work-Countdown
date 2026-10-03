@@ -2927,6 +2927,9 @@
         "date"
       ]
     },
+    "reportAheadHistoricalTitle": {
+      "resource": "string/reportAheadHistoricalTitle"
+    },
     "reportAheadInDays": {
       "resource": "string/reportAheadInDays",
       "params": [
@@ -2975,41 +2978,8 @@
     "reportEntryWeek": {
       "resource": "string/reportEntryWeek"
     },
-    "reportFinishBasis": {
-      "resource": "string/reportFinishBasis",
-      "params": [
-        "total"
-      ]
-    },
-    "reportFinishCaption": {
-      "resource": "string/reportFinishCaption",
-      "params": [
-        "duration"
-      ]
-    },
-    "reportFinishEarly": {
-      "resource": "string/reportFinishEarly",
-      "params": [
-        "count"
-      ]
-    },
-    "reportFinishLatest": {
-      "resource": "string/reportFinishLatest",
-      "params": [
-        "day",
-        "duration"
-      ]
-    },
-    "reportFinishRatio": {
-      "resource": "string/reportFinishRatio",
-      "params": [
-        "done",
-        "total",
-        "duration"
-      ]
-    },
-    "reportFinishTitle": {
-      "resource": "string/reportFinishTitle"
+    "reportEntryYear": {
+      "resource": "string/reportEntryYear"
     },
     "reportFocusBest": {
       "resource": "string/reportFocusBest",
@@ -3017,6 +2987,9 @@
         "day",
         "count"
       ]
+    },
+    "reportFocusDuration": {
+      "resource": "string/reportFocusDuration"
     },
     "reportFocusRounds": {
       "resource": "string/reportFocusRounds"
@@ -3096,6 +3069,9 @@
     "reportMonthly": {
       "resource": "string/reportMonthly"
     },
+    "reportMonthlyTrend": {
+      "resource": "string/reportMonthlyTrend"
+    },
     "reportNext": {
       "resource": "string/reportNext"
     },
@@ -3111,8 +3087,27 @@
     "reportNotificationWeekTitle": {
       "resource": "string/reportNotificationWeekTitle"
     },
+    "reportNotificationYearBody": {
+      "resource": "string/reportNotificationYearBody"
+    },
+    "reportNotificationYearTitle": {
+      "resource": "string/reportNotificationYearTitle"
+    },
     "reportNotificationsNote": {
       "resource": "string/reportNotificationsNote"
+    },
+    "reportOvertimeDays": {
+      "resource": "string/reportOvertimeDays",
+      "params": [
+        "count"
+      ]
+    },
+    "reportOvertimePeak": {
+      "resource": "string/reportOvertimePeak",
+      "params": [
+        "day",
+        "duration"
+      ]
     },
     "reportPause": {
       "resource": "string/reportPause"
@@ -3185,6 +3180,9 @@
     },
     "reportWorkdays": {
       "resource": "string/reportWorkdays"
+    },
+    "reportYearly": {
+      "resource": "string/reportYearly"
     },
     "retryAction": {
       "resource": "string/retryAction"

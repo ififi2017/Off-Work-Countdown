@@ -679,6 +679,7 @@ struct NotificationDesignView: View {
         .sensoryFeedback(.selection, trigger: shifts.preferences.liveActivityLeadMinutes)
         .sensoryFeedback(.selection, trigger: shifts.preferences.cycleEndSummaryNotificationEnabled)
         .sensoryFeedback(.selection, trigger: shifts.preferences.monthlyReportNotificationEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.yearlyReportNotificationEnabled)
         .sensoryFeedback(.selection, trigger: shifts.preferences.lunchStartReminderEnabled)
         .sensoryFeedback(.selection, trigger: shifts.preferences.lunchEndReminderEnabled)
         .onChange(of: shifts.preferences.cycleEndSummaryNotificationEnabled) { _, enabled in
@@ -689,6 +690,11 @@ struct NotificationDesignView: View {
         .onChange(of: shifts.preferences.monthlyReportNotificationEnabled) { _, enabled in
             askForNotificationsIfNeeded(enabled) {
                 shifts.preferences.monthlyReportNotificationEnabled = false
+            }
+        }
+        .onChange(of: shifts.preferences.yearlyReportNotificationEnabled) { _, enabled in
+            askForNotificationsIfNeeded(enabled) {
+                shifts.preferences.yearlyReportNotificationEnabled = false
             }
         }
     }
@@ -782,6 +788,18 @@ struct NotificationDesignView: View {
                         get: { shifts.monthlyReportNotificationsAreActive },
                         set: { enabled in
                             scene.setMonthlyReportNotifications(
+                                enabled, preferences: shifts.preferences, plus: shifts.plus
+                            )
+                        }
+                    )
+                )
+                .owcDivider()
+                reportToggleRow(
+                    title: shifts.text.t("reportYearly"),
+                    isOn: Binding(
+                        get: { shifts.yearlyReportNotificationsAreActive },
+                        set: { enabled in
+                            scene.setYearlyReportNotifications(
                                 enabled, preferences: shifts.preferences, plus: shifts.plus
                             )
                         }

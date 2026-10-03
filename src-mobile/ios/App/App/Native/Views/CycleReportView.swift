@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// Weekly and monthly reports (plan 020 §4).
+/// Weekly, monthly and annual reports (plan 020 §4).
 ///
 /// The period is measured once when the screen opens. The person then decides
 /// whether pay is part of this report, and either plays the animated chapters
@@ -105,7 +105,7 @@ struct CycleReportView: View {
     private var setupPage: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(text.t(period.kind == .week ? "reportWeekly" : "reportMonthly").uppercased())
+                Text(text.t(period.kind.titleKey).uppercased())
                     .font(.caption.weight(.bold))
                     .tracking(1.6)
                     .foregroundStyle(.white.opacity(0.62))
@@ -130,7 +130,7 @@ struct CycleReportView: View {
 
             Spacer(minLength: 16)
             if let measured, isAuthorized, mode == .ready {
-                ReportTeaser(snapshot: measured, queries: queries)
+                ReportTeaser(snapshot: measured, copy: copy)
                     .frame(height: period.kind == .week ? 210 : 250)
                     .padding(.bottom, 8)
             }
@@ -242,6 +242,10 @@ struct CycleReportView: View {
         measured = snapshot
         mode = snapshot.hasData ? .ready : .empty
 #if DEBUG
+        if UserDefaults.standard.bool(forKey: "ios.native.qaCycleReportRead"), snapshot.hasData {
+            read()
+            return
+        }
         // `-ios.native.qaCycleReportFrame 2:0.6` plays the report parked on
         // chapter 2 at 60% of its build.
         if let frame = UserDefaults.standard.string(forKey: "ios.native.qaCycleReportFrame"), snapshot.hasData {
@@ -330,23 +334,30 @@ struct ReportPillStyle: ButtonStyle {
     }
 }
 
-/// The finished week or month, rising once beside the buttons, so the setup
+/// The finished week, month or year, rising once beside the buttons, so the setup
 /// page already promises what the report is about.
 private struct ReportTeaser: View {
     let snapshot: CycleReportSnapshot
     private let layout: ReportStripScene.Layout
+    private let monthLabels: [String]
     @State private var start = Date()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(snapshot: CycleReportSnapshot, queries: RecordsQueries) {
+    init(snapshot: CycleReportSnapshot, copy: CycleReportCopy) {
         self.snapshot = snapshot
-        layout = ReportStripScene.Layout(snapshot: snapshot, queries: queries)
+        monthLabels = copy.monthLabels(snapshot)
+        layout = ReportStripScene.Layout(snapshot: snapshot, queries: copy.queries)
     }
 
     var body: some View {
         TimelineView(.animation(paused: reduceMotion)) { timeline in
             let elapsed = reduceMotion ? 9 : timeline.date.timeIntervalSince(start) - 0.25
-            ReportStripScene.art(snapshot: snapshot, layout: layout, state: .teaser(elapsed))
+            if snapshot.period.kind == .year {
+                ReportMetricBars(values: snapshot.months.map { Double($0.figures.workedMs) },
+                                 labels: monthLabels, build: min(1, max(0, elapsed / 2)))
+            } else {
+                ReportStripScene.art(snapshot: snapshot, layout: layout, state: .teaser(elapsed))
+            }
         }
         .accessibilityHidden(true)
     }
@@ -363,7 +374,7 @@ struct CycleReportPresentationModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
 #if DEBUG
-            // Visual QA: `-ios.native.qaCycleReport week|month [income]` seeds
+            // Visual QA: `-ios.native.qaCycleReport week|month|year` seeds
             // sample records and opens that report.
             .task {
                 let defaults = UserDefaults.standard
@@ -376,7 +387,9 @@ struct CycleReportPresentationModifier: ViewModifier {
                 let queries = runtime.queries
                 let calendar = queries.recordsGridCalendar
                 var period = queries.reportPeriod(kind, containing: .now)
-                period = period.previous(calendar: calendar) ?? period
+                if !defaults.bool(forKey: "ios.native.qaCycleReportCurrentPeriod") {
+                    period = period.previous(calendar: calendar) ?? period
+                }
                 scene.openCycleReport(CycleReportRequest(period: period))
             }
 #endif
@@ -413,6 +426,8 @@ struct CycleReportCopy {
         let calendar = queries.recordsGridCalendar
         guard let start = period.startDate(calendar: calendar) else { return period.startDayKey }
         switch period.kind {
+        case .year:
+            return text.formatYear(calendar.component(.year, from: start))
         case .month:
             return queries.formatRecordsMonthYear(start)
         case .week:
@@ -492,45 +507,54 @@ struct CycleReportCopy {
         }
     }
 
-    // MARK: How the days finished
+    // MARK: Overtime
 
-    func finishCaption() -> String {
-        text.t("reportFinishCaption", values: ["duration": hours(Int64(CycleReportFinish.tolerance))])
+    func overtimeDays(_ overtime: CycleReportOvertime) -> String {
+        text.t("reportOvertimeDays", values: ["count": text.formatCount(overtime.dayCount)])
     }
 
-    func finishBasis(_ finish: CycleReportFinish) -> String {
-        text.t("reportFinishBasis", values: ["total": text.formatCount(finish.recordedCount)])
+    func overtimePeak(_ overtime: CycleReportOvertime, kind: CycleReportKind) -> String {
+        let peak = overtime.longestDay
+        let day = kind == .week ? weekday(peak.date) : queries.formatRecordsMonthDay(peak.date)
+        return text.t("reportOvertimePeak", values: ["day": day, "duration": hours(peak.overtimeMs)])
     }
 
-    func finishRatio(_ finish: CycleReportFinish) -> String {
-        text.t("reportFinishRatio", values: [
-            "done": text.formatCount(finish.onScheduleCount), "total": text.formatCount(finish.recordedCount),
-            "duration": hours(Int64(CycleReportFinish.tolerance)),
-        ])
+    func monthLabels(_ snapshot: CycleReportSnapshot) -> [String] {
+        snapshot.months.map { month in
+            month.period.startDate(calendar: queries.recordsGridCalendar).map {
+                text.formatCount(queries.recordsGridCalendar.component(.month, from: $0))
+            } ?? ""
+        }
     }
 
-    func finishLatest(_ finish: CycleReportFinish, kind: CycleReportKind) -> String? {
-        guard let latest = finish.latest, case .late(let ms) = latest.kind else { return nil }
-        // A week names the weekday; in a month that would be ambiguous, so the date.
-        let day = kind == .week ? weekday(latest.date) : queries.formatRecordsMonthDay(latest.date)
-        return text.t("reportFinishLatest", values: ["day": day, "duration": hours(ms)])
-    }
-
-    func finishEarly(_ finish: CycleReportFinish) -> String? {
-        finish.earlyCount > 0
-            ? text.t("reportFinishEarly", values: ["count": text.formatCount(finish.earlyCount)]) : nil
+    func dayLabels(_ days: [CycleReportDay], kind: CycleReportKind) -> [String] {
+        days.enumerated().map { index, day in
+            if kind == .week { return weekday(day.date) }
+            guard index == 0 || index == days.count - 1 || (index + 1) % 5 == 0 else { return "" }
+            return text.formatCount(queries.recordsGridCalendar.component(.day, from: day.date))
+        }
     }
 
     // MARK: Looking ahead
 
+    func aheadTitleKey(_ ahead: CycleReportAhead) -> String {
+        if ahead.nextBreak != nil { return ahead.isHistorical ? "reportAheadHistoricalTitle" : "reportAheadTitle" }
+        return ahead.leaveRemainingHalfDays != nil ? "reportLeaveLeft" : "reportLeaveUsed"
+    }
+
     func aheadHero(_ ahead: CycleReportAhead) -> String? {
         guard let next = ahead.nextBreak else { return nil }
+        if ahead.isHistorical { return days(next.length) }
         return next.daysAway == 1 ? text.t("reportAheadTomorrow")
             : text.t("reportAheadInDays", values: ["days": days(next.daysAway)])
     }
 
     func aheadBreak(_ ahead: CycleReportAhead) -> String? {
         guard let next = ahead.nextBreak else { return nil }
+        if ahead.isHistorical {
+            let end = queries.recordsGridCalendar.date(byAdding: .day, value: next.length - 1, to: next.startDate) ?? next.startDate
+            return OWCText.ltrRange(queries.formatRecordsMonthDay(next.startDate), queries.formatRecordsMonthDay(end))
+        }
         return text.t("reportAheadBreak", values: [
             "length": days(next.length), "date": queries.formatRecordsMonthDay(next.startDate),
         ])
@@ -558,9 +582,6 @@ struct CycleReportCopy {
         if snapshot.figures.overtimeMs > 0 {
             rows.append((text.t("recordsOvertime"), hours(snapshot.figures.overtimeMs)))
         }
-        if let finish = snapshot.finish {
-            rows.append((text.t("reportFinishTitle"), finishRatio(finish)))
-        }
         rows.append((text.t("reportRestDays"), days(snapshot.restDayCount)))
         if snapshot.longestRestRun > 0 {
             rows.append((text.t("reportLongestRest"), days(snapshot.longestRestRun)))
@@ -569,12 +590,19 @@ struct CycleReportCopy {
             rows.append((baselineTitle(snapshot), baselineSentence(snapshot)))
         }
         if let ahead = snapshot.ahead {
-            if let next = aheadBreak(ahead) { rows.append((text.t("reportAheadTitle"), next)) }
+            if let next = aheadBreak(ahead) {
+                let detail = ahead.isHistorical ? "\(aheadHero(ahead) ?? "") · \(next)" : next
+                rows.append((text.t(aheadTitleKey(ahead)), detail))
+            }
             if let left = ahead.leaveRemainingHalfDays { rows.append((text.t("reportLeaveLeft"), leaveDays(halfDays: left))) }
             if ahead.leaveUsedHalfDays > 0 { rows.append((text.t("reportLeaveUsed"), leaveDays(halfDays: ahead.leaveUsedHalfDays))) }
         }
+        if snapshot.period.kind == .year {
+            rows.append((text.t("reportLeaveUsed"), leaveDays(halfDays: snapshot.leaveUsedHalfDays)))
+        }
         if let focus = snapshot.focus {
             rows.append((text.t("reportFocusRounds"), text.formatCount(focus.rounds)))
+            rows.append((text.t("reportFocusDuration"), hours(focus.focusedMs)))
         }
         if let pay = snapshot.pay {
             rows.append((text.t("reportIncomeTitle"), money(pay.total)))
@@ -597,29 +625,34 @@ struct CycleReportCopy {
                 parts.append(text.t("reportIncludingOvertime", values: ["overtime": hours(snapshot.figures.overtimeMs)]))
             }
             return parts.joined(separator: ". ")
-        case .finish:
-            guard let finish = snapshot.finish else { return "" }
-            return [text.t("reportFinishTitle"), finishRatio(finish),
-                    finishLatest(finish, kind: snapshot.period.kind), finishEarly(finish)].compactMap { $0 }.joined(separator: ". ")
+        case .overtime:
+            var parts = [text.t("recordsOvertime"), hours(snapshot.figures.overtimeMs)]
+            if let overtime = snapshot.overtime {
+                parts += [overtimeDays(overtime), overtimePeak(overtime, kind: snapshot.period.kind)]
+            }
+            return parts.joined(separator: ". ")
         case .baseline:
             return [baselineTitle(snapshot), baselineSentence(snapshot)].joined(separator: ". ")
         case .rest:
-            guard snapshot.restDayCount > 0 else { return text.t("reportRestNone") }
-            return [
-                text.t("reportRestDays"), days(snapshot.restDayCount),
-                text.t("reportLongestRest"), days(snapshot.longestRestRun),
-            ].joined(separator: ". ")
+            var parts = snapshot.restDayCount > 0
+                ? [text.t("reportRestDays"), days(snapshot.restDayCount),
+                   text.t("reportLongestRest"), days(snapshot.longestRestRun)]
+                : [text.t("reportRestNone")]
+            if snapshot.period.kind == .year {
+                parts += [text.t("reportLeaveUsed"), leaveDays(halfDays: snapshot.leaveUsedHalfDays)]
+            }
+            return parts.joined(separator: ". ")
         case .ahead:
             guard let ahead = snapshot.ahead else { return "" }
             var parts: [String] = []
-            if let hero = aheadHero(ahead) { parts.append("\(text.t("reportAheadTitle")) \(hero)") }
+            if let hero = aheadHero(ahead) { parts.append("\(text.t(aheadTitleKey(ahead))) \(hero)") }
             if let next = aheadBreak(ahead) { parts.append(next) }
             if let left = ahead.leaveRemainingHalfDays { parts.append("\(text.t("reportLeaveLeft")) \(leaveDays(halfDays: left))") }
             if ahead.leaveUsedHalfDays > 0 { parts.append("\(text.t("reportLeaveUsed")) \(leaveDays(halfDays: ahead.leaveUsedHalfDays))") }
             return parts.joined(separator: ". ")
         case .focus:
             guard let focus = snapshot.focus else { return "" }
-            var parts = [text.t("reportFocusRounds"), text.formatCount(focus.rounds)]
+            var parts = [text.t("reportFocusRounds"), text.formatCount(focus.rounds), text.t("reportFocusDuration"), hours(focus.focusedMs)]
             if let best = focusBest(focus, snapshot: snapshot) { parts.append(best) }
             if let icon = focus.topIcon { parts.append("\(text.t("reportFocusTop")) \(text.t(icon.titleKey))") }
             return parts.joined(separator: ". ")
@@ -651,7 +684,7 @@ struct CycleReportReadingView: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(copy.text.t(snapshot.period.kind == .week ? "reportWeekly" : "reportMonthly").uppercased())
+                        Text(copy.text.t(snapshot.period.kind.titleKey).uppercased())
                             .font(.caption.weight(.bold)).tracking(1.6)
                             .foregroundStyle(.white.opacity(0.62))
                             .accessibilityAddTraits(.isHeader)
@@ -685,10 +718,14 @@ struct CycleReportReadingView: View {
                 }
                 .background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                ReportStripScene.art(snapshot: snapshot, layout: .init(snapshot: snapshot, queries: copy.queries), state: .settled)
-                    .frame(height: snapshot.period.kind == .week ? 240 : 300)
-                    .padding(18)
-                    .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                if snapshot.period.kind == .year {
+                    monthlyReading
+                } else {
+                    ReportStripScene.art(snapshot: snapshot, layout: .init(snapshot: snapshot, queries: copy.queries), state: .settled)
+                        .frame(height: snapshot.period.kind == .week ? 240 : 300)
+                        .padding(18)
+                        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                }
 
                 Text(copy.text.t("reportBasisNote"))
                     .font(.footnote)
@@ -709,5 +746,30 @@ struct CycleReportReadingView: View {
             .padding(.bottom, 24)
         }
         .scrollBounceBehavior(.basedOnSize)
+    }
+
+    private var monthlyReading: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text(copy.text.t("reportMonthlyTrend")).font(.headline).accessibilityAddTraits(.isHeader)
+            ForEach(snapshot.months, id: \.period) { month in
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(copy.periodTitle(month.period)).font(.subheadline.weight(.semibold))
+                    Text("\(copy.text.t("recordsWorkedTime")) · \(copy.hours(month.figures.workedMs))")
+                    Text("\(copy.text.t("recordsOvertime")) · \(copy.hours(month.figures.overtimeMs))")
+                    Text("\(copy.text.t("reportRestDays")) · \(copy.days(month.restDayCount))")
+                    if month.focusRounds > 0 {
+                        Text("\(copy.text.t("reportFocusRounds")) · \(copy.text.formatCount(month.focusRounds))")
+                    }
+                    if let income = month.figures.income {
+                        Text("\(copy.text.t("reportIncomeTitle")) · \(copy.money(income))")
+                    }
+                }
+                .font(.footnote).foregroundStyle(.white.opacity(0.8))
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 }

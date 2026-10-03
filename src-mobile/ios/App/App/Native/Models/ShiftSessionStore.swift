@@ -46,6 +46,9 @@ final class ShiftSessionStore {
     var monthlyReportNotificationsAreActive: Bool {
         preferences.monthlyReportNotificationEnabled && plus.isAuthorized
     }
+    var yearlyReportNotificationsAreActive: Bool {
+        preferences.yearlyReportNotificationEnabled && plus.isAuthorized
+    }
 
     init(session: ShiftSession, records: RecordCoordinator, queries: RecordsQueries,
          focus: FocusStore, plus: PlusEntitlement, defaults: UserDefaults) {

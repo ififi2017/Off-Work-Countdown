@@ -152,6 +152,7 @@ struct ReportStripGeometry {
 
     func calendarRect(_ i: Int) -> CGRect {
         switch kind {
+        case .year: return .zero // Annual reports use ReportMetricBars.
         case .week:
             let slot = size.width / CGFloat(max(1, count))
             let width = min(slot * 0.66, 46)
@@ -334,6 +335,7 @@ struct ReportStripArt: View {
     private func drawLabel(_ context: inout GraphicsContext, i: Int, day: CycleReportDay,
                            geometry: ReportStripGeometry, rect: CGRect, alpha: Double) {
         switch geometry.kind {
+        case .year: return
         case .week:
             let base = geometry.calendarRect(i)
             let symbol = weekdaySymbols.indices.contains(i % 7) ? weekdaySymbols[i % 7] : ""
@@ -422,72 +424,49 @@ struct ReportRingArt: View {
     }
 }
 
-// MARK: - Finish times
+// MARK: - Period metrics
 
-/// Each recorded day as a dot against the line of its planned end: on the line
-/// when it ended as planned, below it with a trail when overtime pushed it
-/// later, above it when the person clocked off early.
-struct ReportFinishArt: View {
-    let finish: CycleReportFinish
-    /// Weekday symbols for a week; a month's dots are too small to label.
+/// One bar per day or month, with labels outside the drawing surface.
+struct ReportMetricBars: View {
+    let values: [Double]
     let labels: [String]
     var build: Double
-
-    private static let lateReach: Double = 3 * 3_600_000
+    var color: Color = ReportPalette.orange
+    @Environment(\.layoutDirection) private var layoutDirection
 
     var body: some View {
-        ReportCanvas { context, size in
-            let days = finish.days
-            guard !days.isEmpty else { return }
-            let slot = size.width / CGFloat(days.count)
-            let dot = max(10, min(30, slot * 0.5))
-            let lineY = size.height * 0.42
-            let drop = size.height * 0.46 - dot / 2
-            let rise = size.height * 0.30 - dot / 2
-
-            // The planned end: a quiet line the dots measure themselves against.
-            var line = Path(); line.move(to: CGPoint(x: 0, y: lineY)); line.addLine(to: CGPoint(x: size.width, y: lineY))
-            context.stroke(line, with: .color(.white.opacity(0.28 * ReportEase.window(build, 0, 0.2))),
-                           style: StrokeStyle(lineWidth: 1.5, dash: [5, 5]))
-
-            for (i, day) in days.enumerated() {
-                let t = ReportEase.staggered(ReportEase.window(build, 0.1, 1), index: i, count: days.count, span: 0.45)
-                guard t > 0 else { continue }
-                let x = slot * (CGFloat(i) + 0.5)
-                let land = ReportEase.outBack(t, 1.3)
-                var y = lineY
-                var trailColor: Gradient?
-                switch day.kind {
-                case .onPlan: break
-                case .late(let ms):
-                    y = lineY + CGFloat(min(1, Double(ms) / Self.lateReach)) * drop * CGFloat(ReportEase.outCubic(t)) + dot * 0.7
-                    trailColor = ReportPalette.overtime
-                case .early(let ms):
-                    y = lineY - CGFloat(min(1, Double(ms) / Self.lateReach)) * rise * CGFloat(ReportEase.outCubic(t)) - dot * 0.7
-                    trailColor = Gradient(colors: [ReportPalette.moon, ReportPalette.cream])
+        VStack(spacing: 12) {
+            Canvas { context, size in
+                guard !values.isEmpty else { return }
+                let peak = max(1, values.max() ?? 0)
+                let slot = size.width / Double(values.count)
+                let width = min(24, slot * 0.62)
+                let baseline = size.height - 12
+                let available = max(0, baseline - 24)
+                for (index, value) in values.enumerated() {
+                    let delay = Double(index) / Double(max(1, values.count - 1)) * 0.18
+                    let grow = ReportEase.outCubic(ReportEase.window(build, delay, 0.82 + delay))
+                    let height = max(3, available * max(0, value) / peak * grow)
+                    let position = layoutDirection == .rightToLeft ? values.count - index - 1 : index
+                    let x = slot * (Double(position) + 0.5) - width / 2
+                    let path = Path(roundedRect: CGRect(x: x, y: baseline - height, width: width, height: height),
+                                    cornerRadius: min(width / 2, 8))
+                    if value > 0 {
+                        context.fill(path, with: .linearGradient(
+                            Gradient(colors: [ReportPalette.cream, color]),
+                            startPoint: CGPoint(x: x, y: baseline - height), endPoint: CGPoint(x: x, y: baseline)))
+                    } else {
+                        context.fill(path, with: .color(.white.opacity(0.16)))
+                    }
                 }
-                if let trailColor, abs(y - lineY) > 1 {
-                    var trail = Path(); trail.move(to: CGPoint(x: x, y: lineY)); trail.addLine(to: CGPoint(x: x, y: y))
-                    context.stroke(trail, with: .linearGradient(trailColor, startPoint: CGPoint(x: x, y: lineY), endPoint: CGPoint(x: x, y: y)),
-                                   style: StrokeStyle(lineWidth: max(3, dot * 0.22), lineCap: .round))
-                }
-                let radius = dot / 2 * CGFloat(0.5 + 0.5 * land)
-                let rect = CGRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2)
-                let fill: Gradient = switch day.kind {
-                case .onPlan: ReportPalette.work
-                case .late: ReportPalette.overtime
-                case .early: ReportPalette.rest
-                }
-                context.drawLayer { layer in
-                    layer.opacity = min(1, t * 2)
-                    layer.addFilter(.shadow(color: (day.kind == .onPlan ? ReportPalette.orange : ReportPalette.hot).opacity(0.5), radius: 8))
-                    layer.fill(Path(ellipseIn: rect), with: .linearGradient(fill, startPoint: CGPoint(x: x, y: rect.minY), endPoint: CGPoint(x: x, y: rect.maxY)))
-                }
-                if labels.indices.contains(i) {
-                    context.draw(
-                        Text(labels[i]).font(.caption.weight(.semibold)).foregroundStyle(.white.opacity(0.6 * min(1, t * 2))),
-                        at: CGPoint(x: x, y: size.height - 8), anchor: .center
-                    )
+            }
+            HStack(spacing: 0) {
+                ForEach(values.indices, id: \.self) { index in
+                    Text(labels.indices.contains(index) ? labels[index] : "")
+                        .font(.caption2.weight(.medium).monospacedDigit())
+                        .foregroundStyle(.white.opacity(0.55))
+                        .lineLimit(1).minimumScaleFactor(0.65)
+                        .frame(maxWidth: .infinity)
                 }
             }
         }
@@ -499,7 +478,7 @@ struct ReportFinishArt: View {
 // MARK: - The road ahead
 
 /// The next four weeks as a row of days, rest days lit, with the coming break
-/// picked out. Left is tomorrow.
+/// picked out. Left is the day after the report reference date.
 struct ReportHorizonArt: View {
     let ahead: CycleReportAhead
     var build: Double

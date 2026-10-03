@@ -44,7 +44,7 @@ struct ServiceScheduleSignal: Equatable, Sendable {
             "\(shifts.preferences.lunchEnabled)-\(shifts.preferences.lunchStartMinutes)-\(shifts.preferences.lunchDurationMinutes)",
             shifts.preferences.notificationMode.rawValue,
             "\(shifts.preferences.lunchStartReminderEnabled)-\(shifts.preferences.lunchEndReminderEnabled)-\(shifts.preferences.microBreakEnabled)-\(shifts.preferences.microBreakIntervalMinutes)",
-            "\(shifts.preferences.cycleEndSummaryNotificationEnabled)-\(shifts.preferences.monthlyReportNotificationEnabled)-\(shifts.plus.isAuthorized)-\(shifts.preferences.onboardingComplete)",
+            "\(shifts.preferences.cycleEndSummaryNotificationEnabled)-\(shifts.preferences.monthlyReportNotificationEnabled)-\(shifts.preferences.yearlyReportNotificationEnabled)-\(shifts.plus.isAuthorized)-\(shifts.preferences.onboardingComplete)",
             "\(shifts.session.overtimeEndAtMs ?? 0)",
             "\(shifts.session.earlyOffAtMs ?? 0)-\(shifts.session.earlyOffShiftEndAtMs ?? 0)",
             "\(shifts.session.earlyStartAtMs ?? 0)",
