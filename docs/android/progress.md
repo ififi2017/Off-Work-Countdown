@@ -333,3 +333,4 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 上述数据不能证明持续物理 120 fps；GPU 百分位也不能替代主线程与端到端帧时间。后续应在可测 Plus 年页的优化包中继续定位布局开销。旧 Android、HyperOS、真实 Play 交易没有追加验收。截图使用合成数据，保存在 `docs/android/qa/2026-10-03-321/`；原始日志/trace 留在本机 `build/android-321/`。
 
 - **清理完成**：独立 QA 包已卸载，临时通知探针、合成数据、相关系统预约一并移除，活动测试通知为 0；字号恢复 1.0、动画倍率恢复原先未设置、辅助服务恢复未设置/关闭。正式应用及已有 Preview 保持原样。
+- **提交**：代码与合成截图提交 `ff3874fb`，已推送 [PR #283](https://github.com/ififi2017/Off-Work-Countdown/pull/283)。本地验证结果如上；PR 不宣称闹钟平台集成或年度展开性能已经完成。
