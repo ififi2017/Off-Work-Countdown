@@ -921,11 +921,6 @@
     <string name="reportYearly">वार्षिक रिपोर्ट</string>
     <string name="retryAction">फिर कोशिश करें</string>
     <string name="return_">वापस जाएं</string>
-    <string name="reviewPromptBody">क्या आप App Store पर रेटिंग देना चाहेंगे? इससे ज़्यादा लोगों को ऐप खोजने में मदद मिलती है।</string>
-    <string name="reviewPromptLater">बाद में</string>
-    <string name="reviewPromptNever">फिर याद न दिलाएँ</string>
-    <string name="reviewPromptRateNow">अभी रेट करें</string>
-    <string name="reviewPromptTitle">क्या आपको DoneAt पसंद आ रहा है?</string>
     <string name="rotationRestDays">छुट्टी के दिन</string>
     <string name="rotationRestdayOption">दिन %1$s · आराम</string>
     <string name="rotationStartDay">दिन %1$s से शुरू करें</string>

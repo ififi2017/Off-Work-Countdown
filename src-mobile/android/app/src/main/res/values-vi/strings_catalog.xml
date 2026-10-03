@@ -918,11 +918,6 @@
     <string name="reportYearly">Báo cáo năm</string>
     <string name="retryAction">Thử lại</string>
     <string name="return_">Quay lại</string>
-    <string name="reviewPromptBody">Bạn có muốn đánh giá trên App Store không? Đánh giá của bạn giúp nhiều người tìm thấy ứng dụng hơn.</string>
-    <string name="reviewPromptLater">Để sau</string>
-    <string name="reviewPromptNever">Không nhắc lại</string>
-    <string name="reviewPromptRateNow">Đánh giá ngay</string>
-    <string name="reviewPromptTitle">Bạn thích DoneAt chứ?</string>
     <string name="rotationRestDays">Ngày nghỉ</string>
     <string name="rotationRestdayOption">Ngày %1$s · Nghỉ</string>
     <string name="rotationStartDay">Bắt đầu từ ngày %1$s</string>

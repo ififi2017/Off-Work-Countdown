@@ -232,23 +232,27 @@ final class ShiftSessionStore {
         if reviewPromptState != previous { persistReviewPromptState() }
     }
 
-    /// Claims the launch opportunity once; the requesting scene owns its alert.
+    /// Claims the launch opportunity and checks throttling. Returns true if the
+    /// system review should be triggered. Call `recordReviewTriggered()` after
+    /// requesting the system review.
     func claimReviewPromptIfEligible() -> Bool {
         guard reviewPromptEligibleThisLaunch,
               preferences.onboardingComplete,
               plus.hasSeenIntro
         else { return false }
         reviewPromptEligibleThisLaunch = false
-        return true
+        let nowMs = Date.now.timeIntervalSince1970 * 1_000
+        return reviewPromptState.shouldTriggerSystemReview(
+            currentVersion: Self.appVersion,
+            nowMs: nowMs
+        )
     }
 
-    func acceptReviewPrompt() {
-        reviewPromptState.disable()
-        persistReviewPromptState()
-    }
-
-    func deferReviewPrompt() {
-        reviewPromptState.deferUntilNextCompletion()
+    /// Records that the system review was triggered. Call this after requesting
+    /// the system review.
+    func recordReviewTriggered() {
+        let nowMs = Date.now.timeIntervalSince1970 * 1_000
+        reviewPromptState.recordTrigger(version: Self.appVersion, atMs: nowMs)
         persistReviewPromptState()
     }
 
@@ -256,6 +260,10 @@ final class ShiftSessionStore {
         reviewPromptEligibleThisLaunch = false
         reviewPromptState.disable()
         persistReviewPromptState()
+    }
+
+    private static var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
     }
     private func revokeCountdownCompletion(endAtMs: Double?) {
         guard let endAtMs else { return }

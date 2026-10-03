@@ -3190,21 +3190,6 @@
     "return": {
       "resource": "string/return_"
     },
-    "reviewPromptBody": {
-      "resource": "string/reviewPromptBody"
-    },
-    "reviewPromptLater": {
-      "resource": "string/reviewPromptLater"
-    },
-    "reviewPromptNever": {
-      "resource": "string/reviewPromptNever"
-    },
-    "reviewPromptRateNow": {
-      "resource": "string/reviewPromptRateNow"
-    },
-    "reviewPromptTitle": {
-      "resource": "string/reviewPromptTitle"
-    },
     "rotationRestDays": {
       "resource": "string/rotationRestDays"
     },

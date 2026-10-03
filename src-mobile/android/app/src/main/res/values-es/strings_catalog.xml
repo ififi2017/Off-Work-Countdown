@@ -924,11 +924,6 @@
     <string name="reportYearly">Informe anual</string>
     <string name="retryAction">Reintentar</string>
     <string name="return_">Regresar</string>
-    <string name="reviewPromptBody">¿Quieres dejar una valoración en el App Store? Ayudará a que más personas encuentren la app.</string>
-    <string name="reviewPromptLater">Más tarde</string>
-    <string name="reviewPromptNever">No volver a recordar</string>
-    <string name="reviewPromptRateNow">Valorar ahora</string>
-    <string name="reviewPromptTitle">¿Te gusta DoneAt?</string>
     <string name="rotationRestDays">Días de descanso</string>
     <string name="rotationRestdayOption">Día %1$s · Descanso</string>
     <string name="rotationStartDay">Empezar desde el día %1$s</string>

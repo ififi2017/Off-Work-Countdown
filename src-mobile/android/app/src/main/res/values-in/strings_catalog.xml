@@ -918,11 +918,6 @@
     <string name="reportYearly">Laporan tahunan</string>
     <string name="retryAction">Coba lagi</string>
     <string name="return_">Kembali</string>
-    <string name="reviewPromptBody">Mau memberi nilai di App Store? Penilaianmu membantu lebih banyak orang menemukan aplikasi ini.</string>
-    <string name="reviewPromptLater">Nanti</string>
-    <string name="reviewPromptNever">Jangan ingatkan lagi</string>
-    <string name="reviewPromptRateNow">Nilai sekarang</string>
-    <string name="reviewPromptTitle">Suka menggunakan DoneAt?</string>
     <string name="rotationRestDays">Hari libur</string>
     <string name="rotationRestdayOption">Hari %1$s · Istirahat</string>
     <string name="rotationStartDay">Mulai dari hari ke-%1$s</string>

@@ -933,11 +933,6 @@
     <string name="reportYearly">التقرير السنوي</string>
     <string name="retryAction">إعادة المحاولة</string>
     <string name="return_">عودة</string>
-    <string name="reviewPromptBody">هل تود ترك تقييم في App Store؟ يساعد تقييمك مزيدًا من الأشخاص على العثور على التطبيق.</string>
-    <string name="reviewPromptLater">لاحقًا</string>
-    <string name="reviewPromptNever">عدم التذكير مجددًا</string>
-    <string name="reviewPromptRateNow">التقييم الآن</string>
-    <string name="reviewPromptTitle">هل تستمتع باستخدام DoneAt؟</string>
     <string name="rotationRestDays">أيام الراحة</string>
     <string name="rotationRestdayOption">اليوم %1$s · راحة</string>
     <string name="rotationStartDay">البدء من اليوم %1$s</string>

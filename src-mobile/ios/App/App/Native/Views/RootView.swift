@@ -140,13 +140,13 @@ struct OffWorkCountdownRootView: View {
             }
         }
         .modifier(RecordsLifeSetupPromptModifier(
-            life: runtime.life, actions: runtime.recordActions, reviewPromptPresented: scene.reviewPromptPresented,
+            life: runtime.life, actions: runtime.recordActions,
             paywallPresentationActive: paywallPresentationActive || scene.showsReleaseNotes,
             hasBlockingPresentation: hasRootPresentation(excludingLifeSetup: true),
             presentationActive: $lifeSetupPresentationActive
         ))
         .modifier(AppReviewPromptModifier(
-            shifts: runtime.shifts, isBlocked: hasRootPresentation(excludingReview: true)
+            shifts: runtime.shifts, isBlocked: hasRootPresentation()
                 || lifeSetupPresentationActive || scenePhase != .active
         ))
         .fullScreenCover(isPresented: Binding(
@@ -274,7 +274,7 @@ struct OffWorkCountdownRootView: View {
     }
 
     private func hasRootPresentation(
-        excludingLifeSetup: Bool = false, excludingFocusActivity: Bool = false, excludingReview: Bool = false
+        excludingLifeSetup: Bool = false, excludingFocusActivity: Bool = false
     ) -> Bool {
         scene.paywallSheet != nil
             || paywallPresentationActive
@@ -285,7 +285,6 @@ struct OffWorkCountdownRootView: View {
             || scene.showsReleaseNotes
             || (!excludingFocusActivity && scene.hasFocusActivityPresentation)
             || (!excludingLifeSetup && (scene.lifeSetupOfferPresented || scene.lifeSetupEditorPresented))
-            || (!excludingReview && scene.reviewPromptPresented)
     }
 
     private func reportScenePhase() {
@@ -338,30 +337,17 @@ private struct AdaptivePresentationSizing<Wide: PresentationSizing, Compact: Pre
 private struct AppReviewPromptModifier: ViewModifier {
     let shifts: ShiftSessionStore
     let isBlocked: Bool
-    @Environment(SceneState.self) private var scene
     @Environment(\.requestReview) private var requestReview
 
     func body(content: Content) -> some View {
         content
-        .alert(shifts.text.t("reviewPromptTitle"), isPresented: Bindable(scene).reviewPromptPresented) {
-            Button(shifts.text.t("reviewPromptRateNow")) {
-                shifts.acceptReviewPrompt()
-                requestReview()
-            }
-            Button(shifts.text.t("reviewPromptLater"), role: .cancel) {
-                shifts.deferReviewPrompt()
-            }
-            Button(shifts.text.t("reviewPromptNever"), role: .destructive) {
-                shifts.disableAutomaticReviewPrompt()
-            }
-        } message: {
-            Text(shifts.text.t("reviewPromptBody"))
-        }
         .task(id: presentationGate) {
             guard presentationGate else { return }
             try? await Task.sleep(for: .milliseconds(650))
             guard !Task.isCancelled, presentationGate else { return }
-            scene.presentReviewPromptIfEligible(using: shifts, isBlocked: !presentationGate)
+            guard shifts.claimReviewPromptIfEligible() else { return }
+            requestReview()
+            shifts.recordReviewTriggered()
         }
     }
 

@@ -134,12 +134,6 @@ final class SceneState {
     var hasFocusActivityPresentation: Bool {
         focusActivityRequest != nil || dismissingFocusActivitySheetID != nil
     }
-    var reviewPromptPresented = false
-
-    func presentReviewPromptIfEligible(using shifts: ShiftSessionStore, isBlocked: Bool) {
-        guard !isBlocked, !reviewPromptPresented, shifts.claimReviewPromptIfEligible() else { return }
-        reviewPromptPresented = true
-    }
 
     var lifeSetupOfferPresented = false
     var lifeSetupEditorPresented = false
