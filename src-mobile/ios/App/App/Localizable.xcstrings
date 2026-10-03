@@ -113970,115 +113970,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تضمين الدخل"
+            "value": "عرض الدخل التقديري"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Einkommen einbeziehen"
+            "value": "Geschätztes Einkommen anzeigen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Include income"
+            "value": "Show estimated income"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Incluir ingresos"
+            "value": "Mostrar ingresos estimados"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inclure le revenu"
+            "value": "Afficher le revenu estimé"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "आय शामिल करें"
+            "value": "अनुमानित आय दिखाएँ"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sertakan pendapatan"
+            "value": "Tampilkan perkiraan pendapatan"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Includi il guadagno"
+            "value": "Mostra reddito stimato"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "収入を含める"
+            "value": "推定収入を表示"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "수입 포함"
+            "value": "예상 수입 표시"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "उत्पन्न समाविष्ट करा"
+            "value": "अंदाजित उत्पन्न दाखवा"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Incluir rendimentos"
+            "value": "Mostrar rendimento estimado"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Показать доход"
+            "value": "Показывать расчётный доход"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "รวมรายได้"
+            "value": "แสดงรายได้โดยประมาณ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Geliri dahil et"
+            "value": "Tahmini geliri göster"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bao gồm thu nhập"
+            "value": "Hiện thu nhập ước tính"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "包含收入"
+            "value": "显示预估收入"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "包含收入"
+            "value": "顯示預估收入"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "包含收入"
+            "value": "顯示預估收入"
           }
         }
       }
@@ -114089,115 +114089,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "يظهر في هذا التقرير فقط. تبقى إعدادات الأجر الأخرى كما هي."
+            "value": "يسري هذا الاختيار على هذا التقرير فقط."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nur in diesem Bericht sichtbar. Deine übrigen Gehaltseinstellungen bleiben unverändert."
+            "value": "Diese Auswahl gilt nur für diesen Bericht."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Shown in this report only. Your other pay settings stay as they are."
+            "value": "This choice applies only to this report."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Solo se muestra en este informe. El resto de tus ajustes de sueldo no cambia."
+            "value": "Esta elección solo se aplica a este informe."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Affiché uniquement dans ce bilan. Vos autres réglages de salaire ne changent pas."
+            "value": "Ce choix s’applique uniquement à ce rapport."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "केवल इस रिपोर्ट में दिखेगा। आपकी बाकी वेतन सेटिंग जैसी हैं वैसी रहेंगी।"
+            "value": "यह विकल्प केवल इस रिपोर्ट पर लागू होता है।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hanya tampil di laporan ini. Pengaturan gaji lainnya tidak berubah."
+            "value": "Pilihan ini hanya berlaku untuk laporan ini."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Visibile solo in questo report. Le altre impostazioni dello stipendio restano come sono."
+            "value": "Questa scelta vale solo per questo rapporto."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "このレポートでのみ表示されます。ほかの給与設定は変わりません。"
+            "value": "この設定は今回のレポートにのみ適用されます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 리포트에서만 표시됩니다. 다른 급여 설정은 그대로 유지됩니다."
+            "value": "이 선택은 이번 보고서에만 적용됩니다."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "फक्त या अहवालात दिसेल. तुमच्या इतर वेतन सेटिंग्ज आहेत तशाच राहतील."
+            "value": "ही निवड फक्त या अहवालाला लागू होते."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aparece só neste relatório. As outras definições de salário ficam como estão."
+            "value": "Esta escolha aplica-se apenas a este relatório."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Отображается только в этом отчёте. Остальные настройки зарплаты не меняются."
+            "value": "Этот выбор действует только для этого отчёта."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "แสดงเฉพาะในรายงานนี้ การตั้งค่าเงินเดือนอื่นๆ ยังคงเหมือนเดิม"
+            "value": "ตัวเลือกนี้ใช้กับรายงานนี้เท่านั้น"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Yalnızca bu raporda gösterilir. Diğer maaş ayarların olduğu gibi kalır."
+            "value": "Bu seçim yalnızca bu rapor için geçerlidir."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chỉ hiển thị trong báo cáo này. Các cài đặt lương khác vẫn giữ nguyên."
+            "value": "Lựa chọn này chỉ áp dụng cho báo cáo này."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "仅在这份报告中显示，其他薪资设置保持不变。"
+            "value": "这次选择只用于当前报告。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "只會在這份報告中顯示，其他薪酬設定維持不變。"
+            "value": "呢個選擇只適用於今次報告。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "僅在這份報告中顯示，其他薪資設定維持不變。"
+            "value": "這次選擇只用於目前報告。"
           }
         }
       }
@@ -116588,115 +116588,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تقدير مبني على إعدادات راتبك وأيام هذا التقرير."
+            "value": "تقدير يستند إلى إعدادات راتبك وسجلاتك."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Geschätzt aus deinen Gehaltseinstellungen und den Tagen in diesem Bericht."
+            "value": "Aus deinen Gehaltseinstellungen und Aufzeichnungen geschätzt."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estimated from your salary settings and the days in this report."
+            "value": "Estimated from your pay settings and records."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estimado a partir de tus ajustes de sueldo y los días de este informe."
+            "value": "Estimado a partir de tus ajustes salariales y registros."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estimé d’après vos réglages de salaire et les jours de ce bilan."
+            "value": "Estimation à partir de vos réglages de salaire et de vos données enregistrées."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "आपकी वेतन सेटिंग और इस रिपोर्ट के दिनों के आधार पर अनुमानित।"
+            "value": "आपकी वेतन सेटिंग और रिकॉर्ड के आधार पर अनुमान।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Diperkirakan dari pengaturan gaji dan hari-hari dalam laporan ini."
+            "value": "Diperkirakan dari pengaturan gaji dan catatanmu."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stimato in base alle impostazioni dello stipendio e ai giorni di questo report."
+            "value": "Stimato dalle impostazioni salariali e dai tuoi registri."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "給与設定とこのレポートの日数から見積もっています。"
+            "value": "給与設定と記録に基づく推定です。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "급여 설정과 이 리포트의 일수를 바탕으로 추정했어요."
+            "value": "급여 설정과 기록을 바탕으로 추정한 금액입니다."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "तुमच्या वेतन सेटिंग्ज आणि या अहवालातील दिवसांवरून अंदाजित."
+            "value": "तुमच्या पगाराच्या सेटिंग्ज आणि नोंदींवर आधारित अंदाज."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estimado com base nas definições de salário e nos dias deste relatório."
+            "value": "Estimado a partir das tuas definições de salário e registos."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Рассчитано по настройкам зарплаты и дням этого отчёта."
+            "value": "Расчёт на основе настроек зарплаты и записей."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ประมาณจากการตั้งค่าเงินเดือนและวันต่างๆ ในรายงานนี้"
+            "value": "ประมาณจากการตั้งค่าเงินเดือนและบันทึกของคุณ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Maaş ayarlarından ve bu rapordaki günlerden tahmin edildi."
+            "value": "Maaş ayarların ve kayıtların üzerinden tahmin edilir."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ước tính từ cài đặt lương và các ngày trong báo cáo này."
+            "value": "Ước tính từ cài đặt lương và dữ liệu đã ghi nhận."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "根据你的薪资设置和这份报告中的天数估算。"
+            "value": "按你的薪资设置和记录估算。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "根據你的薪酬設定和這份報告中的日數估算。"
+            "value": "按你嘅薪酬設定同記錄估算。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "根據你的薪資設定與這份報告中的天數估算。"
+            "value": "依你的薪資設定和紀錄估算。"
           }
         }
       }
@@ -117540,115 +117540,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "أسبوع متّزن"
+            "value": "ساعات عمل قريبة من الفترات السابقة"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gleichmäßig"
+            "value": "Ähnliche Arbeitszeit wie zuvor"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A steady one"
+            "value": "Similar hours this time"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un ritmo constante"
+            "value": "Horas similares a antes"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un rythme régulier"
+            "value": "Un temps de travail proche des périodes précédentes"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "एक स्थिर दौर"
+            "value": "इस बार काम के घंटे लगभग उतने ही रहे"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ritme yang stabil"
+            "value": "Jam kerja hampir sama seperti sebelumnya"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un ritmo costante"
+            "value": "Ore di lavoro simili alle precedenti"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "安定したペース"
+            "value": "勤務時間は前とほぼ同じ"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "꾸준한 흐름"
+            "value": "이전과 비슷한 근무 시간"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "स्थिर वेग"
+            "value": "यावेळी कामाचे तास जवळपास तेवढेच"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Um ritmo constante"
+            "value": "Horas de trabalho semelhantes às anteriores"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ровный ритм"
+            "value": "Рабочее время почти не изменилось"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "จังหวะสม่ำเสมอ"
+            "value": "ชั่วโมงทำงานใกล้เคียงกับช่วงก่อน"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dengeli bir tempo"
+            "value": "Çalışma süresi öncekine yakın"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nhịp độ đều đặn"
+            "value": "Giờ làm gần như trước"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "稳稳的节奏"
+            "value": "工时与往期接近"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "穩穩的節奏"
+            "value": "工時同之前差唔多"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "穩穩的節奏"
+            "value": "工時與前期接近"
           }
         }
       }
@@ -117659,115 +117659,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "فترة حافلة بالعمل"
+            "value": "زيادة وقت العمل بمقدار {{duration}}"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Eine volle Strecke"
+            "value": "{{duration}} mehr Arbeitszeit"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A full stretch"
+            "value": "{{duration}} more work time"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Una etapa intensa"
+            "value": "{{duration}} más de trabajo"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Une période bien remplie"
+            "value": "{{duration}} de travail en plus"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "व्यस्त दौर"
+            "value": "काम का समय {{duration}} बढ़ा"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Periode yang padat"
+            "value": "Waktu kerja bertambah {{duration}}"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un periodo pieno"
+            "value": "{{duration}} di lavoro in più"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "充実した時期"
+            "value": "勤務時間が{{duration}}増加"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "알찬 시간"
+            "value": "근무 시간 {{duration}} 증가"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "भरगच्च काळ"
+            "value": "कामाचा वेळ {{duration}} वाढला"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uma fase cheia"
+            "value": "Mais {{duration}} de trabalho"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Насыщенный период"
+            "value": "Рабочее время выросло на {{duration}}"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ช่วงที่เต็มอิ่ม"
+            "value": "เวลาทำงานเพิ่มขึ้น {{duration}}"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dolu dolu bir dönem"
+            "value": "Çalışma süresi {{duration}} arttı"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Một quãng đầy ắp"
+            "value": "Thời gian làm việc tăng {{duration}}"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "满满当当的一段"
+            "value": "工时增加 {{duration}}"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "滿滿當當的一段"
+            "value": "工時多咗 {{duration}}"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "滿滿當當的一段"
+            "value": "工時增加 {{duration}}"
           }
         }
       }
@@ -117778,115 +117778,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "فترة أخفّ"
+            "value": "انخفاض وقت العمل بمقدار {{duration}}"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Eine leichtere Phase"
+            "value": "{{duration}} weniger Arbeitszeit"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A lighter stretch"
+            "value": "{{duration}} less work time"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Una etapa más ligera"
+            "value": "{{duration}} menos de trabajo"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Une période plus légère"
+            "value": "{{duration}} de travail en moins"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "हल्का दौर"
+            "value": "काम का समय {{duration}} घटा"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Periode yang lebih ringan"
+            "value": "Waktu kerja berkurang {{duration}}"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un periodo più leggero"
+            "value": "{{duration}} di lavoro in meno"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ゆとりのある時期"
+            "value": "勤務時間が{{duration}}減少"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "한결 가벼운 시간"
+            "value": "근무 시간 {{duration}} 감소"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "हलका काळ"
+            "value": "कामाचा वेळ {{duration}} कमी झाला"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uma fase mais leve"
+            "value": "Menos {{duration}} de trabalho"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Период полегче"
+            "value": "Рабочее время сократилось на {{duration}}"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ช่วงที่เบาลง"
+            "value": "เวลาทำงานลดลง {{duration}}"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Daha hafif bir dönem"
+            "value": "Çalışma süresi {{duration}} azaldı"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Một quãng nhẹ nhàng hơn"
+            "value": "Thời gian làm việc giảm {{duration}}"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "轻松一些的一段"
+            "value": "工时减少 {{duration}}"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "輕鬆一些的一段"
+            "value": "工時少咗 {{duration}}"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "輕鬆一些的一段"
+            "value": "工時減少 {{duration}}"
           }
         }
       }
@@ -117897,115 +117897,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "مساحة لتلتقط أنفاسك"
+            "value": "أيام الراحة الكاملة: {{count}}"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zeit zum Durchatmen"
+            "value": "Volle Ruhetage: {{count}}"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Room to breathe"
+            "value": "Full rest days: {{count}}"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Espacio para respirar"
+            "value": "Días completos de descanso: {{count}}"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "De quoi souffler"
+            "value": "Jours de repos complets : {{count}}"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "साँस लेने की जगह"
+            "value": "पूरे आराम के दिन: {{count}}"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ruang untuk bernapas"
+            "value": "Hari istirahat penuh: {{count}}"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spazio per respirare"
+            "value": "Giorni interi di riposo: {{count}}"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ひと息つける時間"
+            "value": "丸一日の休日：{{count}}日"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "숨 돌릴 틈"
+            "value": "온전한 휴일: {{count}}일"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "श्वास घेण्यास उसंत"
+            "value": "पूर्ण विश्रांतीचे दिवस: {{count}}"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Espaço para respirar"
+            "value": "Dias completos de descanso: {{count}}"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Время выдохнуть"
+            "value": "Полных дней отдыха: {{count}}"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "มีเวลาได้พักหายใจ"
+            "value": "วันพักเต็มวัน: {{count}}"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nefes alacak alan"
+            "value": "Tam dinlenme günü: {{count}}"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Có chỗ để thở"
+            "value": "Ngày nghỉ trọn vẹn: {{count}}"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "有空喘口气"
+            "value": "完整休息日 · {{count}}"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "有空喘口氣"
+            "value": "完整休息日 · {{count}}"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "有空喘口氣"
+            "value": "完整休息日 · {{count}}"
           }
         }
       }
@@ -118016,115 +118016,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "اندفاعة قبل الاستراحة"
+            "value": "أيام الراحة المتتالية تقترب"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Endspurt vor der Pause"
+            "value": "Die nächste Auszeit steht bevor"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A sprint before a break"
+            "value": "Time off is coming up"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un último empujón antes del descanso"
+            "value": "Se acercan días de descanso"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un dernier élan avant la pause"
+            "value": "Les prochains jours de repos approchent"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "छुट्टी से पहले की दौड़"
+            "value": "लगातार छुट्टियाँ जल्द शुरू होंगी"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Berlari sebelum libur"
+            "value": "Libur berturut-turut segera tiba"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Una volata prima della pausa"
+            "value": "I prossimi giorni liberi si avvicinano"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "休みの前のラストスパート"
+            "value": "連休がもうすぐ"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "쉬기 전 마지막 스퍼트"
+            "value": "연휴가 곧 시작돼요"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "सुट्टीपूर्वीची धावपळ"
+            "value": "सलग सुट्टी लवकरच सुरू होईल"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uma corrida antes da pausa"
+            "value": "Os próximos dias de descanso estão a chegar"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Рывок перед отдыхом"
+            "value": "Скоро несколько выходных подряд"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ช่วงเร่งก่อนวันหยุด"
+            "value": "วันหยุดต่อเนื่องใกล้เข้ามาแล้ว"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Moladan önce bir hamle"
+            "value": "İzin günleri yaklaşıyor"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nước rút trước kỳ nghỉ"
+            "value": "Ngày nghỉ liên tiếp sắp đến"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "连休前的冲刺"
+            "value": "连休快到了"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "連休前的衝刺"
+            "value": "連休就快到"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "連休前的衝刺"
+            "value": "連休快到了"
           }
         }
       }
@@ -118135,115 +118135,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "لا تزال الصورة تتشكّل"
+            "value": "هذه الفترة ما زالت جارية"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Es nimmt Form an"
+            "value": "Dieser Zeitraum läuft noch"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Still taking shape"
+            "value": "This period is still underway"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aún tomando forma"
+            "value": "Este período sigue en curso"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "En train de se dessiner"
+            "value": "Cette période est encore en cours"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "अभी आकार ले रहा है"
+            "value": "यह अवधि अभी जारी है"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Masih terbentuk"
+            "value": "Periode ini masih berjalan"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sta prendendo forma"
+            "value": "Questo periodo è ancora in corso"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "まだ形になっている途中"
+            "value": "この期間はまだ続いています"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "아직 만들어지는 중"
+            "value": "아직 진행 중인 기간이에요"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "अजून आकार घेत आहे"
+            "value": "हा कालावधी अजून सुरू आहे"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ainda a tomar forma"
+            "value": "Este período ainda está a decorrer"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Всё ещё складывается"
+            "value": "Этот период ещё продолжается"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "กำลังค่อยๆ เป็นรูปเป็นร่าง"
+            "value": "ช่วงเวลานี้ยังไม่สิ้นสุด"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Henüz şekilleniyor"
+            "value": "Bu dönem henüz bitmedi"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vẫn đang thành hình"
+            "value": "Kỳ này vẫn đang tiếp tục"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "还在成形中"
+            "value": "这一期还在继续"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "仍在成形中"
+            "value": "呢期仲未完"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "還在成形中"
+            "value": "這一期還在繼續"
           }
         }
       }
@@ -118254,115 +118254,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "هكذا سارت الأمور"
+            "value": "عملك وراحتك في هذه الفترة"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "So ist es gelaufen"
+            "value": "Arbeit und Ruhe in diesem Zeitraum"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Here’s how it went"
+            "value": "Your work and rest"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Así fue"
+            "value": "Tu trabajo y descanso"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Voici comment ça s’est passé"
+            "value": "Votre travail et vos jours de repos"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "ऐसा रहा यह दौर"
+            "value": "इस अवधि में काम और आराम"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Begini perjalanannya"
+            "value": "Kerja dan istirahat selama periode ini"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ecco com’è andata"
+            "value": "Il tuo lavoro e il tuo riposo"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ふりかえってみましょう"
+            "value": "この期間の仕事と休み"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이렇게 흘러갔어요"
+            "value": "이번 기간의 일과 휴식"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "असा गेला हा काळ"
+            "value": "या कालावधीतील काम आणि विश्रांती"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Foi assim"
+            "value": "O teu trabalho e descanso"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Вот как всё прошло"
+            "value": "Работа и отдых за этот период"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ที่ผ่านมาเป็นอย่างนี้"
+            "value": "การทำงานและการพักผ่อนของคุณ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Şöyle geçti"
+            "value": "Bu dönemde çalışma ve dinlenme"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mọi chuyện diễn ra thế này"
+            "value": "Công việc và nghỉ ngơi trong kỳ này"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "回头看看"
+            "value": "这一期的工作与休息"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "回頭看看"
+            "value": "呢期嘅工作同休息"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "回頭看看"
+            "value": "這一期的工作與休息"
           }
         }
       }
@@ -118373,115 +118373,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "كيف أنهيت أيامك"
+            "value": "سجلات انتهاء العمل"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wie die Tage endeten"
+            "value": "Feierabendaufzeichnungen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "How you wrapped up"
+            "value": "Finish records"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cómo cerraste los días"
+            "value": "Registros de fin de jornada"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Comment vos journées se sont terminées"
+            "value": "Fin de journée enregistrée"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "दिन कैसे खत्म हुए"
+            "value": "काम खत्म करने के रिकॉर्ड"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cara Anda menutup hari"
+            "value": "Catatan selesai kerja"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Come hai chiuso le giornate"
+            "value": "Fine lavoro registrata"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "一日の終わり方"
+            "value": "退勤の記録"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "하루를 마무리한 모습"
+            "value": "퇴근 기록"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "दिवस कसे संपले"
+            "value": "काम संपवल्याच्या नोंदी"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Como fechou os dias"
+            "value": "Registos de fim de trabalho"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Как заканчивались дни"
+            "value": "Записи об окончании работы"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "วิธีที่คุณปิดวัน"
+            "value": "บันทึกเวลาเลิกงาน"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Günleri nasıl bitirdin"
+            "value": "İş bitiş kayıtları"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bạn kết thúc ngày thế nào"
+            "value": "Ghi nhận giờ kết thúc"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "收工的节奏"
+            "value": "收工记录"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "收工的節奏"
+            "value": "收工記錄"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "收工的節奏"
+            "value": "收工紀錄"
           }
         }
       }
@@ -118492,115 +118492,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} من {{total}}"
+            "value": "من بين {{total}} يوم عمل مسجّل، لم يُسجّل انتهاء العمل بتأخير يتجاوز {{duration}} في {{done}} منها"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} von {{total}}"
+            "value": "An {{done}} von {{total}} erfassten Arbeitstagen wurde kein Arbeitsende mit mehr als {{duration}} Verspätung erfasst"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} of {{total}}"
+            "value": "{{done}} of {{total}} recorded workdays had no finish logged more than {{duration}} late"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} de {{total}}"
+            "value": "En {{done}} de {{total}} días de trabajo registrados no se registró un fin de jornada con más de {{duration}} de retraso"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} sur {{total}}"
+            "value": "Sur {{total}} jours travaillés enregistrés, {{done}} n’ont aucune fin de travail enregistrée avec plus de {{duration}} de retard"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{total}} में से {{done}}"
+            "value": "दर्ज किए गए {{total}} काम के दिनों में से {{done}} दिनों में {{duration}} से ज़्यादा देर से काम खत्म होने का रिकॉर्ड नहीं है"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} dari {{total}}"
+            "value": "Dari {{total}} hari kerja tercatat, {{done}} tidak memiliki catatan selesai kerja terlambat lebih dari {{duration}}"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} su {{total}}"
+            "value": "In {{done}} dei {{total}} giorni di lavoro registrati non è stata registrata una fine lavoro con oltre {{duration}} di ritardo"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{total}}日中{{done}}日"
+            "value": "記録のある勤務日{{total}}日中、{{done}}日は{{duration}}を超える退勤の遅れの記録がありません"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{total}}일 중 {{done}}일"
+            "value": "기록된 근무일 {{total}}일 중 {{done}}일은 {{duration}} 넘게 늦은 퇴근 기록이 없습니다"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{total}} पैकी {{done}}"
+            "value": "नोंदवलेल्या {{total}} कामाच्या दिवसांपैकी {{done}} दिवसांत {{duration}} पेक्षा जास्त उशिरा काम संपल्याची नोंद नाही"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} de {{total}}"
+            "value": "Em {{done}} dos {{total}} dias de trabalho registados, não há registo de fim de trabalho com mais de {{duration}} de atraso"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} из {{total}}"
+            "value": "В {{done}} из {{total}} записанных рабочих дней нет записи об окончании работы с задержкой более {{duration}}"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} จาก {{total}}"
+            "value": "จากวันทำงานที่บันทึก {{total}} วัน มี {{done}} วันที่ไม่มีบันทึกเลิกงานช้ากว่ากำหนดเกิน {{duration}}"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{total}} günün {{done}}'i"
+            "value": "Kaydedilen {{total}} çalışma gününün {{done}} gününde {{duration}} üzerinde geç bitiş kaydı yok"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} trên {{total}}"
+            "value": "Trong {{total}} ngày làm việc đã ghi nhận, {{done}} ngày không có ghi nhận kết thúc muộn quá {{duration}}"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{total}} 天里有 {{done}} 天"
+            "value": "记录的{{total}}个工作日中，{{done}}天没有超过{{duration}}的延后收工记录"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{total}} 日中有 {{done}} 日"
+            "value": "有記錄嘅 {{total}} 個工作日入面，{{done}} 日冇延後超過 {{duration}} 收工嘅記錄"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{total}} 天裡有 {{done}} 天"
+            "value": "記錄的{{total}}個工作日中，{{done}}天沒有超過{{duration}}的延後收工紀錄"
           }
         }
       }
@@ -118611,115 +118611,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "أيام بلا وقت إضافي مسجَّل"
+            "value": "لا يوجد انتهاء عمل مسجّل بتأخير يتجاوز {{duration}}"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tage ohne erfasste Überstunden"
+            "value": "kein Arbeitsende mit mehr als {{duration}} Verspätung erfasst"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "days without logged overtime"
+            "value": "no finish logged more than {{duration}} late"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "días sin horas extra registradas"
+            "value": "sin un fin de jornada registrado con más de {{duration}} de retraso"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "jours sans heures supp. relevées"
+            "value": "aucune fin de travail enregistrée avec plus de {{duration}} de retard"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "दिन बिना दर्ज अधिक समय के"
+            "value": "{{duration}} से ज़्यादा देर से काम खत्म होने का रिकॉर्ड नहीं"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "hari tanpa lembur tercatat"
+            "value": "tanpa catatan selesai kerja terlambat lebih dari {{duration}}"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "giorni senza straordinari registrati"
+            "value": "nessuna fine lavoro registrata con oltre {{duration}} di ritardo"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "残業の記録がなかった日"
+            "value": "{{duration}}を超える退勤の遅れの記録なし"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "초과 근무 기록이 없는 날"
+            "value": "{{duration}} 넘게 늦은 퇴근 기록 없음"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "नोंदवलेल्या अधिक वेळाशिवायचे दिवस"
+            "value": "{{duration}} पेक्षा जास्त उशिरा काम संपल्याची नोंद नाही"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "dias sem hora extra registada"
+            "value": "sem fim de trabalho registado com mais de {{duration}} de atraso"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "дней без записанной переработки"
+            "value": "нет записи об окончании работы с задержкой более {{duration}}"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "วันที่ไม่ได้บันทึกล่วงเวลา"
+            "value": "ไม่มีบันทึกเลิกงานช้ากว่ากำหนดเกิน {{duration}}"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "kayıtlı mesaisi olmayan gün"
+            "value": "{{duration}} üzerinde geç bitiş kaydı yok"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "ngày không ghi tăng ca"
+            "value": "không ghi nhận kết thúc muộn quá {{duration}}"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "天没有记录加班"
+            "value": "没有超过{{duration}}的延后收工记录"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "日沒有記錄加班"
+            "value": "冇延後超過 {{duration}} 收工嘅記錄"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "天沒有記錄加班"
+            "value": "沒有超過{{duration}}的延後收工紀錄"
           }
         }
       }
@@ -119897,19 +119897,19 @@
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "下一个连休"
+            "value": "下一次连休"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "下一個連休"
+            "value": "下一次連休"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "下一個連休"
+            "value": "下一次連休"
           }
         }
       }
@@ -120277,115 +120277,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "الإجازة المستخدمة"
+            "value": "الإجازة المستخدمة في هذه الفترة"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Genommener Urlaub"
+            "value": "Genommener Urlaub in diesem Zeitraum"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Leave taken"
+            "value": "Leave taken this period"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vacaciones usadas"
+            "value": "Permiso usado en este período"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Congés pris"
+            "value": "Congés pris sur cette période"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "ली गई छुट्टी"
+            "value": "इस अवधि में ली गई छुट्टी"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cuti terpakai"
+            "value": "Cuti diambil periode ini"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ferie usate"
+            "value": "Ferie prese in questo periodo"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "取得した休暇"
+            "value": "この期間に取得した休暇"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "사용한 휴가"
+            "value": "이번 기간 사용한 휴가"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "घेतलेली सुट्टी"
+            "value": "या कालावधीत घेतलेली रजा"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Férias gozadas"
+            "value": "Férias gozadas neste período"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Использовано отпуска"
+            "value": "Отпуск за этот период"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "วันลาที่ใช้ไป"
+            "value": "วันลาที่ใช้ในช่วงนี้"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kullanılan izin"
+            "value": "Bu dönemde kullanılan izin"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Phép đã nghỉ"
+            "value": "Ngày phép đã dùng trong kỳ này"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "已休假期"
+            "value": "本期休假"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "已休假期"
+            "value": "呢期休假"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "已休假期"
+            "value": "本期休假"
           }
         }
       }
@@ -120515,115 +120515,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "أفضل يوم: {{day}} ({{count}})"
+            "value": "أكبر عدد من الجولات: {{day}} · {{count}}"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bester Tag: {{day}} ({{count}})"
+            "value": "Meiste Runden: {{day}} · {{count}}"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Best day: {{day}} ({{count}})"
+            "value": "Most rounds: {{day}} · {{count}}"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mejor día: {{day}} ({{count}})"
+            "value": "Más rondas: {{day}} · {{count}}"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meilleur jour : {{day}} ({{count}})"
+            "value": "Le plus de sessions : {{day}} · {{count}}"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "सबसे अच्छा दिन: {{day}} ({{count}})"
+            "value": "सबसे अधिक राउंड: {{day}} · {{count}}"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hari terbaik: {{day}} ({{count}})"
+            "value": "Ronde terbanyak: {{day}} · {{count}}"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Giorno migliore: {{day}} ({{count}})"
+            "value": "Più sessioni: {{day}} · {{count}}"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "いちばん集中した日：{{day}}（{{count}}）"
+            "value": "ラウンド最多：{{day}} · {{count}}回"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "가장 집중한 날: {{day}} ({{count}})"
+            "value": "최다 라운드: {{day}} · {{count}}회"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "सर्वोत्तम दिवस: {{day}} ({{count}})"
+            "value": "सर्वाधिक फेऱ्या: {{day}} · {{count}}"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Melhor dia: {{day}} ({{count}})"
+            "value": "Mais sessões: {{day}} · {{count}}"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Лучший день: {{day}} ({{count}})"
+            "value": "Больше всего раундов: {{day}} · {{count}}"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "วันที่โฟกัสดีที่สุด: {{day}} ({{count}})"
+            "value": "รอบมากที่สุด: {{day}} · {{count}}"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "En iyi gün: {{day}} ({{count}})"
+            "value": "En çok tur: {{day}} · {{count}}"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ngày tập trung nhất: {{day}} ({{count}})"
+            "value": "Nhiều lượt nhất: {{day}} · {{count}}"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "最专注的一天：{{day}}（{{count}}）"
+            "value": "轮数最多：{{day}} · {{count}} 轮"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "最專注的一天：{{day}}（{{count}}）"
+            "value": "輪數最多：{{day}} · {{count}} 輪"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "最專注的一天：{{day}}（{{count}}）"
+            "value": "輪數最多：{{day}} · {{count}} 輪"
           }
         }
       }
@@ -120753,115 +120753,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "في الساعة"
+            "value": "المتوسط لكل ساعة"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "pro Stunde"
+            "value": "Durchschnitt pro Stunde"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "per hour"
+            "value": "Average per hour"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "por hora"
+            "value": "Promedio por hora"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "par heure"
+            "value": "Moyenne par heure"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "प्रति घंटा"
+            "value": "प्रति घंटे औसत"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "per jam"
+            "value": "Rata-rata per jam"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "all’ora"
+            "value": "Media all’ora"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "時給換算"
+            "value": "1時間あたりの平均"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "시간당"
+            "value": "시간당 평균"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "प्रति तास"
+            "value": "प्रति तास सरासरी"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "por hora"
+            "value": "Média por hora"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "в час"
+            "value": "В среднем за час"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ต่อชั่วโมง"
+            "value": "เฉลี่ยต่อชั่วโมง"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "saat başına"
+            "value": "Saatlik ortalama"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "mỗi giờ"
+            "value": "Trung bình mỗi giờ"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "每小时"
+            "value": "平均每小时"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "每小時"
+            "value": "平均每小時"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "每小時"
+            "value": "平均每小時"
           }
         }
       }
@@ -120872,115 +120872,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "المكتسَب"
+            "value": "إجمالي الدخل التقديري"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Verdient"
+            "value": "Geschätztes Gesamteinkommen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Earned"
+            "value": "Estimated total"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ganado"
+            "value": "Total estimado"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gagné"
+            "value": "Total estimé"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "कमाया"
+            "value": "अनुमानित कुल आय"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Diperoleh"
+            "value": "Perkiraan total pendapatan"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Guadagnato"
+            "value": "Totale stimato"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "この期間の収入"
+            "value": "推定収入の合計"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "번 금액"
+            "value": "예상 총수입"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "कमावले"
+            "value": "अंदाजित एकूण उत्पन्न"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ganho"
+            "value": "Total estimado"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Заработано"
+            "value": "Расчётный общий доход"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ที่ได้รับ"
+            "value": "รายได้รวมโดยประมาณ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kazanılan"
+            "value": "Tahmini toplam gelir"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Đã kiếm được"
+            "value": "Tổng thu nhập ước tính"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "这段时间赚到"
+            "value": "本期预估收入"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "這段時間賺到"
+            "value": "呢期預估收入"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "這段時間賺到"
+            "value": "本期預估收入"
           }
         }
       }
@@ -120991,49 +120991,49 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "من الوقت الإضافي"
+            "value": "حصة العمل الإضافي"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Durch Überstunden"
+            "value": "Anteil der Überstunden"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "From overtime"
+            "value": "Overtime portion"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Por horas extra"
+            "value": "Parte por horas extra"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Grâce aux heures supp."
+            "value": "Part des heures supplémentaires"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "अधिक समय से"
+            "value": "ओवरटाइम का हिस्सा"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dari lembur"
+            "value": "Bagian lembur"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dallo straordinario"
+            "value": "Quota degli straordinari"
           }
         },
         "ja": {
@@ -121045,61 +121045,418 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "초과 근무로"
+            "value": "초과 근무 부분"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "अधिक वेळेतून"
+            "value": "ओव्हरटाइमचा भाग"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Das horas extra"
+            "value": "Parcela de horas extra"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "За переработку"
+            "value": "Доля сверхурочных"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "จากการทำล่วงเวลา"
+            "value": "ส่วนจากการทำงานล่วงเวลา"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mesaiden"
+            "value": "Fazla mesai payı"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Từ tăng ca"
+            "value": "Phần làm thêm giờ"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "来自加班"
+            "value": "加班部分"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "來自加班"
+            "value": "加班部分"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "來自加班"
+            "value": "加班部分"
+          }
+        }
+      }
+    },
+    "reportHeadlineOvertime": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عمل إضافي: {{duration}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überstunden: {{duration}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{duration}} of overtime"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas extra: {{duration}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{duration}} d’heures supplémentaires"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इस अवधि में ओवरटाइम: {{duration}}"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lembur: {{duration}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Straordinari: {{duration}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この期間の残業：{{duration}}"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이번 기간 초과 근무 {{duration}}"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "या कालावधीत ओव्हरटाइम: {{duration}}"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas extra: {{duration}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сверхурочная работа: {{duration}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทำงานล่วงเวลา {{duration}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fazla mesai: {{duration}}"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Làm thêm giờ: {{duration}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本期加班 {{duration}}"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呢期加班 {{duration}}"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本期加班 {{duration}}"
+          }
+        }
+      }
+    },
+    "reportFinishBasis": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أيام العمل المسجّلة: {{total}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erfasste Arbeitstage: {{total}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{total}} workdays recorded"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días de trabajo registrados: {{total}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jours travaillés enregistrés : {{total}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "दर्ज किए गए काम के दिन: {{total}}"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hari kerja tercatat: {{total}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giorni di lavoro registrati: {{total}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記録のある勤務日：{{total}}日"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록된 근무일: {{total}}일"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नोंदवलेले कामाचे दिवस: {{total}}"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dias de trabalho registados: {{total}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записано рабочих дней: {{total}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันทำงานที่บันทึก: {{total}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydedilen çalışma günü: {{total}}"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngày làm việc đã ghi nhận: {{total}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "共记录{{total}}个工作日"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "總共記錄咗 {{total}} 個工作日"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "共記錄{{total}}個工作日"
+          }
+        }
+      }
+    },
+    "reportAheadInDays": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بعد {{days}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In {{days}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In {{days}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dentro de {{days}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dans {{days}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{days}} बाद"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{days}} lagi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tra {{days}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{days}}後"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{days}} 후"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{days}} नंतर"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daqui a {{days}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Через {{days}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อีก {{days}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{days}} sonra"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sau {{days}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{days}}后"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{days}}後"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{days}}後"
           }
         }
       }

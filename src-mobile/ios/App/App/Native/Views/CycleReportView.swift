@@ -428,7 +428,21 @@ struct CycleReportCopy {
     func workdays(_ snapshot: CycleReportSnapshot) -> String {
         text.t("recordsWorkdayCount", values: ["count": text.formatCount(snapshot.figures.workdays)])
     }
-    func headline(_ snapshot: CycleReportSnapshot) -> String { text.t(snapshot.headline.titleKey) }
+    func headline(_ snapshot: CycleReportSnapshot) -> String {
+        switch snapshot.headline {
+        case .fullStretch:
+            if let baseline = snapshot.baseline, baseline.deltaMs > 0 {
+                return text.t(snapshot.headline.titleKey, values: ["duration": hours(baseline.deltaMs)])
+            }
+            return text.t("reportHeadlineOvertime", values: ["duration": hours(snapshot.figures.overtimeMs)])
+        case .lighter:
+            return text.t(snapshot.headline.titleKey, values: ["duration": hours(abs(snapshot.baseline?.deltaMs ?? 0))])
+        case .roomToBreathe:
+            return text.t(snapshot.headline.titleKey, values: ["count": text.formatCount(snapshot.restDayCount)])
+        default:
+            return text.t(snapshot.headline.titleKey)
+        }
+    }
     func weekday(_ date: Date) -> String { queries.formatRecordsWeekdayShort(date) }
     func weekdayLabels(_ snapshot: CycleReportSnapshot) -> [String] {
         snapshot.period.kind == .week ? snapshot.days.map { weekday($0.date) } : []
@@ -480,9 +494,18 @@ struct CycleReportCopy {
 
     // MARK: How the days finished
 
+    func finishCaption() -> String {
+        text.t("reportFinishCaption", values: ["duration": hours(Int64(CycleReportFinish.tolerance))])
+    }
+
+    func finishBasis(_ finish: CycleReportFinish) -> String {
+        text.t("reportFinishBasis", values: ["total": text.formatCount(finish.recordedCount)])
+    }
+
     func finishRatio(_ finish: CycleReportFinish) -> String {
         text.t("reportFinishRatio", values: [
             "done": text.formatCount(finish.onScheduleCount), "total": text.formatCount(finish.recordedCount),
+            "duration": hours(Int64(CycleReportFinish.tolerance)),
         ])
     }
 
@@ -502,7 +525,8 @@ struct CycleReportCopy {
 
     func aheadHero(_ ahead: CycleReportAhead) -> String? {
         guard let next = ahead.nextBreak else { return nil }
-        return next.daysAway == 1 ? text.t("reportAheadTomorrow") : days(next.daysAway)
+        return next.daysAway == 1 ? text.t("reportAheadTomorrow")
+            : text.t("reportAheadInDays", values: ["days": days(next.daysAway)])
     }
 
     func aheadBreak(_ ahead: CycleReportAhead) -> String? {
@@ -575,7 +599,7 @@ struct CycleReportCopy {
             return parts.joined(separator: ". ")
         case .finish:
             guard let finish = snapshot.finish else { return "" }
-            return [text.t("reportFinishTitle"), finishRatio(finish), text.t("reportFinishCaption"),
+            return [text.t("reportFinishTitle"), finishRatio(finish),
                     finishLatest(finish, kind: snapshot.period.kind), finishEarly(finish)].compactMap { $0 }.joined(separator: ". ")
         case .baseline:
             return [baselineTitle(snapshot), baselineSentence(snapshot)].joined(separator: ". ")
@@ -587,8 +611,8 @@ struct CycleReportCopy {
             ].joined(separator: ". ")
         case .ahead:
             guard let ahead = snapshot.ahead else { return "" }
-            var parts: [String] = [text.t("reportAheadTitle")]
-            if let hero = aheadHero(ahead) { parts.append(hero) }
+            var parts: [String] = []
+            if let hero = aheadHero(ahead) { parts.append("\(text.t("reportAheadTitle")) \(hero)") }
             if let next = aheadBreak(ahead) { parts.append(next) }
             if let left = ahead.leaveRemainingHalfDays { parts.append("\(text.t("reportLeaveLeft")) \(leaveDays(halfDays: left))") }
             if ahead.leaveUsedHalfDays > 0 { parts.append("\(text.t("reportLeaveUsed")) \(leaveDays(halfDays: ahead.leaveUsedHalfDays))") }
@@ -602,7 +626,7 @@ struct CycleReportCopy {
         case .income:
             guard let pay = snapshot.pay else { return "" }
             var parts = [text.t("reportIncomeTitle"), money(pay.total)]
-            if let perHour = pay.perHour { parts.append("\(money(perHour)) \(text.t("reportPerHour"))") }
+            if let perHour = pay.perHour { parts.append("\(text.t("reportPerHour")) \(money(perHour))") }
             if let extra = pay.overtimeExtra { parts.append("\(text.t("reportIncomeExtra")) \(money(extra))") }
             parts.append(text.t("reportIncomeNote"))
             return parts.joined(separator: ". ")
@@ -675,7 +699,7 @@ struct CycleReportReadingView: View {
                     Button(action: onClose) { Text(copy.text.t("done")) }
                         .buttonStyle(ReportPillStyle(prominent: true))
                     if canPlay {
-                        Button(action: onPlay) { Text(copy.text.t("reportReplay")) }
+                        Button(action: onPlay) { Text(copy.text.t("reportPlay")) }
                             .buttonStyle(ReportPillStyle(prominent: false))
                     }
                 }
