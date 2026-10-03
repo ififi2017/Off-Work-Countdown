@@ -30,6 +30,13 @@ if (target === "web") {
   if (missing.length > 0) {
     fail(`Web route manifests are missing:\n${missing.join("\n")}`);
   }
+  // Every visitor's Service Worker downloads its precache list on install; the
+  // lazy showcase images and the Desktop-only holiday calendars stay out of it.
+  const serviceWorker = existsSync("public/sw.js") ? readFileSync("public/sw.js", "utf8") : "";
+  if (!serviceWorker) fail("Web build is missing public/sw.js.");
+  for (const dir of ["showcase", "holidays"]) {
+    if (serviceWorker.includes(`'url':'/${dir}/`)) fail(`Web Service Worker precaches public/${dir}.`);
+  }
   console.log("Web Route Handler manifests use deployable route.ts output names.");
 } else if (target === "desktop") {
   const leaked = webRouteManifests.filter((path) => existsSync(path));

@@ -211,7 +211,8 @@ const withSerwist = withSerwistInit({
   register: true,
   // 默认会把 public/ 全部预缓存。首屏以下的 App 展示图（public/showcase，19 种语言
   // 约 2MB）只在浏览器页面上按需懒加载，不该在装 Service Worker 时整包下载。
-  globPublicPatterns: ['*', '!(showcase)/**/*'],
+  // public/holidays（249 个地区约 4MB）只供桌面端安装包离线读取，网页不使用。
+  globPublicPatterns: ['*', '!(showcase|holidays)/**/*'],
 });
 
 export default withSerwist(nextConfig);
