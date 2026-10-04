@@ -38,6 +38,10 @@ on:
         description: versionCode override (empty = 100 + run number)
         type: string
         default: ""
+      billing_api_public_keys:
+        description: Receipt public-key JSON for this test build (empty = repository variable)
+        type: string
+        default: ""
       notes_since:
         description: Release notes start after this ref (empty = last android-v* tag)
         type: string
@@ -66,8 +70,9 @@ jobs:
       ORG_GRADLE_PROJECT_doneatPlusLifetimeProduct: ${{ vars.DONEAT_PLUS_LIFETIME_PRODUCT }}
       ORG_GRADLE_PROJECT_doneatPlusLifetimePurchaseOption: ${{ vars.DONEAT_PLUS_LIFETIME_PURCHASE_OPTION }}
       ORG_GRADLE_PROJECT_doneatPlayBillingPublicKey: ${{ vars.DONEAT_PLAY_BILLING_PUBLIC_KEY }}
-      # Set only after the Worker and public privacy disclosure have passed deployment acceptance.
-      ORG_GRADLE_PROJECT_doneatBillingApiPublicKeys: ${{ vars.DONEAT_BILLING_API_PUBLIC_KEYS }}
+      # A manual test build can verify the deployed service before enabling it for every release.
+      # Public keys only; the repository default stays empty until license-test acceptance.
+      ORG_GRADLE_PROJECT_doneatBillingApiPublicKeys: ${{ inputs.billing_api_public_keys || vars.DONEAT_BILLING_API_PUBLIC_KEYS }}
       # push 没有 inputs：合并触发的固定为上传到 alpha 并提审。
       # 签名属性和 keystore 路径要在同一处出现：Gradle 配置阶段会在每个任务里读它们，
       # 只给打包那一步会让前面的测试步骤拿到一半的签名配置。
