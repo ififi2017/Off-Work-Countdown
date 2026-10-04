@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">Kadran komplikasyonları</string>
     <string name="appleWatchFeaturesSection">Özellikler</string>
     <string name="appleWatchIntro">Bileğinize bir göz atarak iş gününüzün nerede olduğunu görün.</string>
-    <string name="appleWatchLearnMore">Apple Watch özellikleri hakkında bilgi alın</string>
     <string name="appleWatchPrivacyNote">Eşzamanlamadan sonra Watch, çevrimdışıyken bile kayıtlı programınızı izler. Maaş ve çalışma kayıtları iPhone’unuzda kalır.</string>
     <string name="appleWatchSetupFace">Kadranınıza dokunup basılı tutun, Düzenle’ye dokunun, ardından bir komplikasyon için DoneAt’ı seçin.</string>
     <string name="appleWatchSetupInstall">DoneAt’ı iPhone’unuzdaki Watch uygulamasından veya Apple Watch’taki App Store’dan yükleyin.</string>
@@ -1063,14 +1062,11 @@
     <string name="watchWaitingForIPhone">iPhone bekleniyor</string>
     <string name="watchWidgetDescription">İş çıkışına kadar kalan süre ve ilerleme.</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">DoneAt Plus ile alarm her vardiyadan seçtiğiniz süre önce çalar; resmî tatilleri, program değişikliklerini ve planlanan izinleri hesaba katar. %1$s bölümünden açın.</string>
     <string name="whatsNewContinue">Devam</string>
-    <string name="whatsNewHolidayBody">Programınız artık ulusal tatil takvimini izleyebilir. Açmak için %1$s bölümünü açıp bir ülke veya bölge seçin.</string>
-    <string name="whatsNewHolidayTitle">Tatiller ve telafi iş günleri</string>
-    <string name="whatsNewSmartStackBody">Geri sayımın Canlı Etkinliği artık Apple Watch’ta kendi kompakt düzenine sahip.</string>
-    <string name="whatsNewSmartStackTitle">Akıllı Gruplama için tasarlanmış bir geri sayım</string>
+    <string name="whatsNewLeaveBody">Kalan izin günlerinizi girin; DoneAt resmî tatillere ve kendi vardiyalarınıza göre önümüzdeki bir yıldaki en uzun tatilleri bulur ve seçtiğiniz planı programınıza ekler. %2$s → %1$s bölümünden başlayın; ilk 3 plan ücretsiz.</string>
+    <string name="whatsNewReportsBody">DoneAt Plus ile her haftanın, ayın ve yılın iş ve dinlenme özetini kısa bir animasyonla izleyin; maaşı gösterip göstermemek size kalmış. %1$s bölümünde bulabilirsiniz.</string>
     <string name="whatsNewTitle">Yenilikler</string>
-    <string name="whatsNewWatchBody">Durum, kalan süre, ilerleme ve iş çıkış saatiniz tek bakışta. Dairesel bir ilerleme halkası veya dikdörtgen bir komplikasyonda kalan süre ile iş çıkış saatiniz.</string>
-    <string name="whatsNewWatchTitle">Apple Watch’ta çalışma gününüz</string>
     <string name="widgetDescription">Kalan çalışma sürenizi bir bakışta görün.</string>
     <string name="widgetOpenToRefresh">Yenilemek için uygulamayı açın</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

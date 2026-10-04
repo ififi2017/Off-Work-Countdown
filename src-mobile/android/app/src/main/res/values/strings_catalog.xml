@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">Watch face complications</string>
     <string name="appleWatchFeaturesSection">Features</string>
     <string name="appleWatchIntro">See where your workday stands with a glance at your wrist.</string>
-    <string name="appleWatchLearnMore">Learn about Apple Watch</string>
     <string name="appleWatchPrivacyNote">After syncing, your Watch follows your saved schedule, even offline. Salary and work records stay on your iPhone.</string>
     <string name="appleWatchSetupFace">Touch and hold your watch face, tap Edit, then choose DoneAt for a complication.</string>
     <string name="appleWatchSetupInstall">Install DoneAt from the Watch app on your iPhone, or from the App Store on Apple Watch.</string>
@@ -1063,14 +1062,11 @@
     <string name="watchWaitingForIPhone">Waiting for iPhone</string>
     <string name="watchWidgetDescription">Time left and progress until you\'re off work.</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">With DoneAt Plus, an alarm wakes you a set time before each shift and follows holidays, schedule changes and planned time off. Turn it on in %1$s.</string>
     <string name="whatsNewContinue">Continue</string>
-    <string name="whatsNewHolidayBody">Your schedule can now follow your national holiday calendar. Open %1$s and choose a country or region to turn it on.</string>
-    <string name="whatsNewHolidayTitle">Holidays and makeup workdays</string>
-    <string name="whatsNewSmartStackBody">The countdown Live Activity now has its own compact layout on Apple Watch.</string>
-    <string name="whatsNewSmartStackTitle">A countdown made for the Smart Stack</string>
+    <string name="whatsNewLeaveBody">Add your leave balances and DoneAt finds the longest breaks around holidays and your own shifts in the year ahead, then adds the plan you pick to your schedule. Start from %1$s in %2$s; your first 3 plans are free.</string>
+    <string name="whatsNewReportsBody">With DoneAt Plus, look back on each week, month and year of work and rest as a short animation, with or without pay. Find them in %1$s.</string>
     <string name="whatsNewTitle">What’s new</string>
-    <string name="whatsNewWatchBody">Status, time left, progress and your off-work time in one glance. A circular progress ring, or time left and your off-work time in a rectangle.</string>
-    <string name="whatsNewWatchTitle">Your workday on Apple Watch</string>
     <string name="widgetDescription">See your remaining work time at a glance.</string>
     <string name="widgetOpenToRefresh">Open the app to refresh</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

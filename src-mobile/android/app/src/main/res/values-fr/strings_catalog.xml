@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">Complications du cadran</string>
     <string name="appleWatchFeaturesSection">Fonctionnalités</string>
     <string name="appleWatchIntro">D’un coup d’œil à votre poignet, découvrez où en est votre journée de travail.</string>
-    <string name="appleWatchLearnMore">En savoir plus sur Apple Watch</string>
     <string name="appleWatchPrivacyNote">Après synchronisation, votre Watch suit le planning enregistré, même hors ligne. Le salaire et les relevés de travail restent sur votre iPhone.</string>
     <string name="appleWatchSetupFace">Touchez le cadran et maintenez la pression, appuyez sur Modifier, puis choisissez DoneAt pour une complication.</string>
     <string name="appleWatchSetupInstall">Installez DoneAt depuis l’app Watch sur votre iPhone, ou depuis l’App Store sur votre Apple Watch.</string>
@@ -1066,14 +1065,11 @@
     <string name="watchWaitingForIPhone">En attente de l’iPhone</string>
     <string name="watchWidgetDescription">Temps restant et progression jusqu’au départ.</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">Avec DoneAt Plus, un réveil sonne à l’avance choisie avant chaque service et suit les jours fériés, les changements de planning et les congés prévus. Activez-le dans %1$s.</string>
     <string name="whatsNewContinue">Continuer</string>
-    <string name="whatsNewHolidayBody">Votre planning peut désormais suivre le calendrier national des jours fériés. Ouvrez %1$s et choisissez un pays ou une région pour l’activer.</string>
-    <string name="whatsNewHolidayTitle">Jours fériés et jours de rattrapage</string>
-    <string name="whatsNewSmartStackBody">L’activité en direct du compte à rebours a désormais sa propre mise en page compacte sur l’Apple Watch.</string>
-    <string name="whatsNewSmartStackTitle">Un compte à rebours pensé pour le Défilement intelligent</string>
+    <string name="whatsNewLeaveBody">Indiquez vos soldes de congés : DoneAt trouve les plus longues pauses de l’année à venir en tenant compte des jours fériés et de vos propres services, puis ajoute le plan choisi à votre planning. Commencez depuis %1$s dans %2$s ; les 3 premiers plans sont offerts.</string>
+    <string name="whatsNewReportsBody">Avec DoneAt Plus, revivez chaque semaine, mois et année de travail et de repos en une courte animation, avec ou sans salaire. Retrouvez-les dans %1$s.</string>
     <string name="whatsNewTitle">Nouveautés</string>
-    <string name="whatsNewWatchBody">Statut, temps restant, progression et votre heure de départ en un coup d’œil. Un anneau de progression circulaire, ou le temps restant et votre heure de départ dans une complication rectangulaire.</string>
-    <string name="whatsNewWatchTitle">Votre journée de travail sur l’Apple Watch</string>
     <string name="widgetDescription">Consultez votre temps de travail restant en un coup d’œil.</string>
     <string name="widgetOpenToRefresh">Ouvrez l’application pour actualiser</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

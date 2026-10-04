@@ -3,8 +3,6 @@ import SwiftUI
 struct WhatsNewView: View {
     let text: AppText
     let onDismiss: () -> Void
-    /// Closes the sheet and opens the Apple Watch explainer. iPhone only.
-    var onLearnAboutWatch: (() -> Void)? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var revealed = false
@@ -59,19 +57,17 @@ struct WhatsNewView: View {
             }
             .padding(.trailing, 36)
             feature(
-                "calendar.badge.checkmark", "whatsNewHolidayTitle", "whatsNewHolidayBody",
-                bodyValues: ["schedule": text.t("workSchedule")]
+                "suitcase", "leavePlanAction", "whatsNewLeaveBody",
+                bodyValues: ["leave": text.t("leaveTitle"), "settings": text.t("settings")]
             )
-            VStack(alignment: .leading, spacing: 6) {
-                feature("applewatch", "whatsNewWatchTitle", "whatsNewWatchBody")
-                if let onLearnAboutWatch, UIDevice.current.userInterfaceIdiom == .phone {
-                    Button(text.t("appleWatchLearnMore"), action: onLearnAboutWatch)
-                        .font(.subheadline.weight(.semibold))
-                        // Aligned with the feature text, past the 26 pt glyph and 14 pt gap.
-                        .padding(.leading, dynamicTypeSize.isAccessibilitySize ? 0 : 40)
-                }
-            }
-            feature("square.stack", "whatsNewSmartStackTitle", "whatsNewSmartStackBody")
+            feature(
+                "alarm", "shiftAlarmsTitle", "whatsNewAlarmsBody",
+                bodyValues: ["settings": text.t("settings")]
+            )
+            feature(
+                "play.circle", "reportEntryTitle", "whatsNewReportsBody",
+                bodyValues: ["records": text.t("recordsTab")]
+            )
             Button(text.t("whatsNewContinue"), action: onDismiss)
                 .buttonStyle(.borderedProminent)
                 .frame(maxWidth: .infinity)

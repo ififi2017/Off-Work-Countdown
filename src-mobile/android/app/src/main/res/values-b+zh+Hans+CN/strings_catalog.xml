@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">表盘复杂功能</string>
     <string name="appleWatchFeaturesSection">功能</string>
     <string name="appleWatchIntro">抬腕即可了解今天的工作进度。</string>
-    <string name="appleWatchLearnMore">了解 Apple Watch 功能</string>
     <string name="appleWatchPrivacyNote">同步后，手表会按已保存的排班运行，离线时也能接续。薪资和工作记录保留在 iPhone 上。</string>
     <string name="appleWatchSetupFace">按住表盘，轻点“编辑”，然后为复杂功能选择 DoneAt。</string>
     <string name="appleWatchSetupInstall">在 iPhone 上的 Watch App 或 Apple Watch 上的 App Store 中安装 DoneAt。</string>
@@ -1060,14 +1059,11 @@
     <string name="watchWaitingForIPhone">正在等待 iPhone</string>
     <string name="watchWidgetDescription">查看距离下班的剩余时间和进度。</string>
     <string name="weekdayRange">%1$s至%2$s</string>
+    <string name="whatsNewAlarmsBody">订阅 DoneAt Plus 后，闹钟会在每个班次前按你设定的时间叫醒你，并自动跟随节假日、排班调整和已规划的休假。在“%1$s”中开启。</string>
     <string name="whatsNewContinue">继续使用</string>
-    <string name="whatsNewHolidayBody">排班现可自动适配国家或地区的节假日与调休。请打开“%1$s”，选择国家或地区后手动开启。</string>
-    <string name="whatsNewHolidayTitle">节假日与调休</string>
-    <string name="whatsNewSmartStackBody">倒计时实时活动在 Apple Watch 上有了专属的紧凑样式。</string>
-    <string name="whatsNewSmartStackTitle">为智能叠放设计的倒计时</string>
+    <string name="whatsNewLeaveBody">填好年假、调休假等余额，DoneAt 会结合节假日和你的排班，在未来一年里找出最长的连休，选中的方案可一键加入排班。在“%2$s”的“%1$s”里开始，前 3 次方案免费查看。</string>
+    <string name="whatsNewReportsBody">订阅 DoneAt Plus 后，可用一段简短动画回顾每周、每月和每年的工作与休息，可选择是否显示薪资。在“%1$s”中查看。</string>
     <string name="whatsNewTitle">这次更新了什么</string>
-    <string name="whatsNewWatchBody">一眼看到状态、剩余时间、进度和下班时间。 圆形显示进度环，长方形显示剩余时间和下班时间。</string>
-    <string name="whatsNewWatchTitle">在 Apple Watch 上查看工作日</string>
     <string name="widgetDescription">一眼查看剩余工作时间。</string>
     <string name="widgetOpenToRefresh">打开应用以刷新</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

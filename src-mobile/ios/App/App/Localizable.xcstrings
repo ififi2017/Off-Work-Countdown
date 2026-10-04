@@ -1,264 +1,383 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "whatsNewHolidayTitle": {
+    "whatsNewLeaveBody": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "العطلات وأيام العمل التعويضية"
+            "value": "أدخل رصيد إجازاتك، وسيجد DoneAt أطول فترات الراحة خلال العام القادم بناءً على العطلات الرسمية ومناوباتك، ثم يضيف الخطة التي تختارها إلى جدولك. ابدأ من {{settings}} ← {{leave}}، وأول 3 خطط مجانية."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Feiertage und Ersatzarbeitstage"
+            "value": "Trag deine Urlaubstage ein, und DoneAt findet anhand von Feiertagen und deinen eigenen Schichten die längsten freien Zeiträume im kommenden Jahr. Den gewählten Plan übernimmst du direkt in deinen Plan. Starte unter {{leave}} in {{settings}}; die ersten 3 Pläne sind kostenlos."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Holidays and makeup workdays"
+            "value": "Add your leave balances and DoneAt finds the longest breaks around holidays and your own shifts in the year ahead, then adds the plan you pick to your schedule. Start from {{leave}} in {{settings}}; your first 3 plans are free."
           }
         },
         "en-GB": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bank holidays and makeup workdays"
+            "value": "Add your leave balances and DoneAt finds the longest breaks around bank holidays and your own shifts in the year ahead, then adds the plan you pick to your rota. Start from {{leave}} in {{settings}}; your first 3 plans are free."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Festivos y días laborables compensatorios"
+            "value": "Añade tus días de vacaciones disponibles y DoneAt encontrará los descansos más largos del próximo año según los festivos y tus propios turnos; el plan que elijas se añade a tu horario con un toque. Empieza en {{leave}}, dentro de {{settings}}; los 3 primeros planes son gratis."
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Feriados y días laborables compensatorios"
+            "value": "Añade tus días de vacaciones disponibles y DoneAt encontrará los descansos más largos del próximo año según los feriados y tus propios turnos; el plan que elijas se añade a tu rol de turnos con un toque. Empieza en {{leave}}, dentro de {{settings}}; los 3 primeros planes son gratis."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jours fériés et jours de rattrapage"
+            "value": "Indiquez vos soldes de congés : DoneAt trouve les plus longues pauses de l’année à venir en tenant compte des jours fériés et de vos propres services, puis ajoute le plan choisi à votre planning. Commencez depuis {{leave}} dans {{settings}} ; les 3 premiers plans sont offerts."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "छुट्टियाँ और प्रतिपूरक कार्यदिवस"
+            "value": "अपनी बची छुट्टियाँ दर्ज करें, और DoneAt सार्वजनिक अवकाशों और आपकी शिफ़्टों के हिसाब से अगले एक साल में सबसे लंबा आराम ढूँढेगा, फिर चुनी गई योजना आपके शेड्यूल में जोड़ देगा। {{settings}} → {{leave}} से शुरू करें; पहली 3 योजनाएँ मुफ़्त हैं।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hari libur dan hari kerja pengganti"
+            "value": "Masukkan sisa cuti Anda, lalu DoneAt mencari libur terpanjang dalam setahun ke depan berdasarkan hari libur dan sif Anda sendiri, kemudian menambahkan rencana pilihan ke jadwal Anda. Mulai dari {{leave}} di {{settings}}; 3 rencana pertama gratis."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Festività e giorni lavorativi di recupero"
+            "value": "Inserisci i giorni di ferie disponibili e DoneAt trova le pause più lunghe del prossimo anno in base alle festività e ai tuoi turni, poi aggiunge il piano scelto al tuo orario. Inizia da {{leave}} in {{settings}}; i primi 3 piani sono gratuiti."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "祝日と振替出勤日"
+            "value": "有給休暇や振替休暇の残日数を入れると、祝日と自分のシフトをもとに、この先1年で最も長く休める日程を見つけ、選んだプランを勤務スケジュールに追加できます。{{settings}}の「{{leave}}」から始められ、最初の3回は無料でプランを見られます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "공휴일과 대체 근무일"
+            "value": "연차, 대체휴가 등 남은 휴가를 입력하면 DoneAt이 공휴일과 내 근무 일정을 바탕으로 앞으로 1년 중 가장 길게 쉴 수 있는 일정을 찾아 주고, 고른 계획을 근무 일정에 바로 추가합니다. {{settings}}의 {{leave}}에서 시작하세요. 처음 3번은 무료로 계획을 볼 수 있습니다."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "सुट्ट्या आणि बदली कामाचे दिवस"
+            "value": "तुमच्या शिल्लक रजा नोंदवा; DoneAt सार्वजनिक सुट्ट्या आणि तुमच्या शिफ्टनुसार पुढच्या वर्षभरातील सर्वात मोठी सुट्टी शोधेल आणि निवडलेले नियोजन वेळापत्रकात जोडेल. {{settings}} → {{leave}} मधून सुरुवात करा; पहिली 3 नियोजने मोफत आहेत."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Feriados e dias de trabalho compensatórios"
+            "value": "Informe seus saldos de férias e folgas, e o DoneAt encontra os descansos mais longos do próximo ano com base nos feriados e nos seus turnos, depois adiciona o plano escolhido ao seu horário. Comece por {{leave}} em {{settings}}; os 3 primeiros planos são grátis."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Праздники и перенесённые рабочие дни"
+            "value": "Укажите остаток отпуска и отгулов, и DoneAt найдёт самые длинные периоды отдыха на год вперёд с учётом праздников и ваших смен, а затем добавит выбранный план в расписание. Откройте {{settings}} → {{leave}}; первые 3 плана — бесплатно."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "วันหยุดและวันทำงานชดเชย"
+            "value": "ใส่วันลาที่เหลือ แล้ว DoneAt จะหาช่วงหยุดยาวที่สุดในหนึ่งปีข้างหน้าจากวันหยุดและกะของคุณเอง พร้อมเพิ่มแผนที่เลือกลงในตารางงาน เริ่มได้ที่ {{settings}} → {{leave}} ดูแผนได้ฟรี 3 ครั้งแรก"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tatiller ve telafi iş günleri"
+            "value": "Kalan izin günlerinizi girin; DoneAt resmî tatillere ve kendi vardiyalarınıza göre önümüzdeki bir yıldaki en uzun tatilleri bulur ve seçtiğiniz planı programınıza ekler. {{settings}} → {{leave}} bölümünden başlayın; ilk 3 plan ücretsiz."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ngày lễ và ngày làm bù"
+            "value": "Nhập số ngày phép còn lại, DoneAt sẽ dựa vào ngày lễ và ca làm của bạn để tìm kỳ nghỉ dài nhất trong một năm tới, rồi thêm kế hoạch bạn chọn vào lịch làm việc. Bắt đầu tại {{settings}} → {{leave}}; 3 kế hoạch đầu tiên miễn phí."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "节假日与调休"
+            "value": "填好年假、调休假等余额，DoneAt 会结合节假日和你的排班，在未来一年里找出最长的连休，选中的方案可一键加入排班。在“{{settings}}”的“{{leave}}”里开始，前 3 次方案免费查看。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "公眾假期與補班日"
+            "value": "填好年假、補假等假期結餘，DoneAt 會配合公眾假期和你的更表，在未來一年內找出最長的連假，揀好的方案可一鍵加入工作安排。由「{{settings}}」的「{{leave}}」開始，首 3 次方案免費查看。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "國定假日與補班日"
+            "value": "填好年假、補休等假期餘額，DoneAt 會結合國定假日和你的班表，在未來一年內找出最長的連假，選好的方案可一鍵加入工作安排。從「{{settings}}」的「{{leave}}」開始，前 3 次方案免費查看。"
           }
         }
       }
     },
-    "whatsNewHolidayBody": {
+    "whatsNewAlarmsBody": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "يمكن الآن لجدولك اتباع تقويم العطلات الوطني. افتح {{schedule}} واختر بلدًا أو منطقة لتفعيله."
+            "value": "مع DoneAt Plus، يوقظك منبّه قبل كل مناوبة بالمدة التي تختارها، ويراعي العطلات وتغييرات الجدول والإجازات المخطط لها. فعّله من {{settings}}."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dein Plan kann jetzt dem nationalen Feiertagskalender folgen. Öffne {{schedule}} und wähle ein Land oder eine Region, um ihn einzuschalten."
+            "value": "Mit DoneAt Plus weckt dich ein Wecker zu einer festen Zeit vor jeder Schicht und berücksichtigt Feiertage, Planänderungen und geplanten Urlaub. Einschalten kannst du ihn in {{settings}}."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your schedule can now follow your national holiday calendar. Open {{schedule}} and choose a country or region to turn it on."
+            "value": "With DoneAt Plus, an alarm wakes you a set time before each shift and follows holidays, schedule changes and planned time off. Turn it on in {{settings}}."
           }
         },
         "en-GB": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your rota can now follow your bank holiday calendar. Open {{schedule}} and choose a country or region to turn it on."
+            "value": "With DoneAt Plus, an alarm wakes you a set time before each shift and follows bank holidays, rota changes and planned time off. Turn it on in {{settings}}."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu horario ahora puede seguir el calendario nacional de festivos. Abre {{schedule}} y elige un país o una región para activarlo."
+            "value": "Con DoneAt Plus, una alarma te despierta con la antelación que elijas antes de cada turno y tiene en cuenta los festivos, los cambios de horario y las vacaciones planificadas. Actívala en {{settings}}."
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu rol de turnos ahora puede seguir el calendario nacional de feriados. Abre {{schedule}} y elige un país o una región para activarlo."
+            "value": "Con DoneAt Plus, una alarma te despierta con la antelación que elijas antes de cada turno y tiene en cuenta los feriados, los cambios en tu rol de turnos y las vacaciones planificadas. Actívala en {{settings}}."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Votre planning peut désormais suivre le calendrier national des jours fériés. Ouvrez {{schedule}} et choisissez un pays ou une région pour l’activer."
+            "value": "Avec DoneAt Plus, un réveil sonne à l’avance choisie avant chaque service et suit les jours fériés, les changements de planning et les congés prévus. Activez-le dans {{settings}}."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "आपका शेड्यूल अब राष्ट्रीय अवकाश कैलेंडर का पालन कर सकता है। इसे चालू करने के लिए {{schedule}} खोलें और देश या क्षेत्र चुनें।"
+            "value": "DoneAt Plus के साथ, हर शिफ़्ट से आपके चुने समय पहले अलार्म बजता है और सार्वजनिक अवकाशों, शेड्यूल में बदलाव और तय छुट्टियों का ध्यान रखता है। इसे {{settings}} में चालू करें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jadwal Anda kini dapat mengikuti kalender hari libur nasional. Buka {{schedule}} dan pilih negara atau wilayah untuk mengaktifkannya."
+            "value": "Dengan DoneAt Plus, alarm membangunkan Anda pada waktu yang Anda pilih sebelum setiap sif dan mengikuti hari libur, perubahan jadwal, dan cuti yang direncanakan. Aktifkan di {{settings}}."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ora il tuo orario può seguire il calendario nazionale delle festività. Apri {{schedule}} e scegli un paese o un’area geografica per attivarlo."
+            "value": "Con DoneAt Plus, una sveglia suona con l’anticipo che scegli prima di ogni turno e tiene conto di festività, cambi di orario e ferie pianificate. Attivala in {{settings}}."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "勤務スケジュールが国や地域の祝日カレンダーに対応しました。{{schedule}}を開き、国または地域を選んで有効にしてください。"
+            "value": "DoneAt Plusでは、各シフトの設定した時間前にアラームが鳴り、祝日や勤務の変更、計画した休暇にも自動で合わせます。{{settings}}でオンにできます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이제 근무 일정에 국가 공휴일 달력을 적용할 수 있습니다. {{schedule}}을 열고 국가 또는 지역을 선택해 켜세요."
+            "value": "DoneAt Plus를 이용하면 각 근무 시작 전 정한 시간에 알람이 울리고, 공휴일과 일정 변경, 계획한 휴가도 자동으로 반영됩니다. {{settings}}에서 켤 수 있습니다."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "तुमचे वेळापत्रक आता राष्ट्रीय सुट्टीच्या कॅलेंडरनुसार चालू शकते. ते सुरू करण्यासाठी {{schedule}} उघडा आणि देश किंवा प्रदेश निवडा."
+            "value": "DoneAt Plus सह, प्रत्येक शिफ्टच्या तुम्ही निवडलेल्या वेळेआधी अलार्म वाजतो आणि सार्वजनिक सुट्ट्या, वेळापत्रकातील बदल आणि नियोजित रजा लक्षात घेतो. तो {{settings}} मध्ये सुरू करा."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Seu horário agora pode seguir o calendário nacional de feriados. Abra {{schedule}} e escolha um país ou região para ativá-lo."
+            "value": "Com o DoneAt Plus, um alarme toca com a antecedência que você escolher antes de cada turno e acompanha feriados, mudanças na escala e férias planejadas. Ative em {{settings}}."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Теперь расписание может учитывать национальный календарь праздников. Откройте {{schedule}} и выберите страну или регион, чтобы включить его."
+            "value": "С DoneAt Plus будильник звонит за выбранное время до каждой смены и учитывает праздники, изменения графика и запланированный отпуск. Включите его в разделе {{settings}}."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ตอนนี้ตารางงานของคุณใช้ปฏิทินวันหยุดประจำชาติได้แล้ว เปิด {{schedule}} แล้วเลือกประเทศหรือภูมิภาคเพื่อเปิดใช้"
+            "value": "เมื่อใช้ DoneAt Plus นาฬิกาปลุกจะดังก่อนเริ่มแต่ละกะตามเวลาที่คุณตั้งไว้ และปรับตามวันหยุด การเปลี่ยนตาราง และวันลาที่วางแผนไว้ เปิดใช้ได้ใน {{settings}}"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Programınız artık ulusal tatil takvimini izleyebilir. Açmak için {{schedule}} bölümünü açıp bir ülke veya bölge seçin."
+            "value": "DoneAt Plus ile alarm her vardiyadan seçtiğiniz süre önce çalar; resmî tatilleri, program değişikliklerini ve planlanan izinleri hesaba katar. {{settings}} bölümünden açın."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lịch làm việc giờ có thể theo lịch ngày lễ quốc gia. Mở {{schedule}} và chọn quốc gia hoặc khu vực để bật."
+            "value": "Với DoneAt Plus, báo thức sẽ đánh thức bạn trước mỗi ca theo khoảng thời gian bạn chọn, tự điều chỉnh theo ngày lễ, thay đổi lịch và kỳ nghỉ đã lên kế hoạch. Bật trong {{settings}}."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "排班现可自动适配国家或地区的节假日与调休。请打开“{{schedule}}”，选择国家或地区后手动开启。"
+            "value": "订阅 DoneAt Plus 后，闹钟会在每个班次前按你设定的时间叫醒你，并自动跟随节假日、排班调整和已规划的休假。在“{{settings}}”中开启。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "工作安排現可配合國家或地區的公眾假期與補班日。請開啟「{{schedule}}」，選擇國家或地區後手動啟用。"
+            "value": "訂閱 DoneAt Plus 後，鬧鐘會在每更開始前按你設定的時間叫醒你，並自動配合公眾假期、更表調整和已計劃的假期。在「{{settings}}」中開啟。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "工作安排現可配合國家或地區的國定假日與補班日。請開啟「{{schedule}}」，選擇國家或地區後手動啟用。"
+            "value": "訂閱 DoneAt Plus 後，鬧鐘會在每個班次前按你設定的時間叫醒你，並自動配合國定假日、班表調整和已規劃的休假。在「{{settings}}」中開啟。"
+          }
+        }
+      }
+    },
+    "whatsNewReportsBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مع DoneAt Plus، استرجع كل أسبوع وشهر وسنة من العمل والراحة في رسوم متحركة قصيرة، مع الراتب أو بدونه. تجدها في {{records}}."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit DoneAt Plus blickst du in einer kurzen Animation auf jede Woche, jeden Monat und jedes Jahr mit Arbeit und Freizeit zurück, wahlweise mit oder ohne Gehalt. Du findest sie unter {{records}}."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With DoneAt Plus, look back on each week, month and year of work and rest as a short animation, with or without pay. Find them in {{records}}."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con DoneAt Plus, repasa cada semana, mes y año de trabajo y descanso en una breve animación, con o sin sueldo. Los encontrarás en {{records}}."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avec DoneAt Plus, revivez chaque semaine, mois et année de travail et de repos en une courte animation, avec ou sans salaire. Retrouvez-les dans {{records}}."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt Plus के साथ, हर हफ़्ते, महीने और साल के काम और आराम को एक छोटे ऐनिमेशन में देखें, वेतन के साथ या उसके बिना। ये {{records}} में मिलेंगी।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dengan DoneAt Plus, lihat kembali setiap minggu, bulan, dan tahun kerja serta istirahat dalam animasi singkat, dengan atau tanpa gaji. Temukan di {{records}}."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con DoneAt Plus, ripercorri ogni settimana, mese e anno di lavoro e riposo in una breve animazione, con o senza stipendio. Li trovi in {{records}}."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt Plusでは、毎週・毎月・毎年の仕事と休みを短いアニメーションで振り返れます。給与を表示するかどうかも選べます。{{records}}から見られます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt Plus를 이용하면 매주, 매달, 매년의 근무와 휴식을 짧은 애니메이션으로 돌아볼 수 있으며, 급여 표시 여부도 고를 수 있습니다. {{records}}에서 확인하세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt Plus सह, प्रत्येक आठवडा, महिना आणि वर्षातील काम आणि विश्रांतीचा आढावा छोट्या ॲनिमेशनमध्ये घ्या, पगारासह किंवा पगाराशिवाय. ते {{records}} मध्ये मिळतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Com o DoneAt Plus, reveja cada semana, mês e ano de trabalho e descanso em uma animação curta, com ou sem salário. Veja em {{records}}."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С DoneAt Plus можно пересмотреть каждую неделю, месяц и год работы и отдыха в короткой анимации, с зарплатой или без. Отчёты находятся в разделе {{records}}."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เมื่อใช้ DoneAt Plus ย้อนดูการทำงานและการพักผ่อนของแต่ละสัปดาห์ เดือน และปีเป็นแอนิเมชันสั้นๆ เลือกได้ว่าจะแสดงรายได้หรือไม่ ดูได้ใน {{records}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt Plus ile her haftanın, ayın ve yılın iş ve dinlenme özetini kısa bir animasyonla izleyin; maaşı gösterip göstermemek size kalmış. {{records}} bölümünde bulabilirsiniz."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Với DoneAt Plus, xem lại công việc và nghỉ ngơi của mỗi tuần, tháng và năm qua một đoạn hoạt ảnh ngắn, có hoặc không kèm lương. Xem trong {{records}}."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "订阅 DoneAt Plus 后，可用一段简短动画回顾每周、每月和每年的工作与休息，可选择是否显示薪资。在“{{records}}”中查看。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "訂閱 DoneAt Plus 後，可用一段簡短動畫回顧每週、每月和每年的工作與休息，可選擇是否顯示薪金。在「{{records}}」中查看。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "訂閱 DoneAt Plus 後，可用一段簡短動畫回顧每週、每月和每年的工作與休息，可選擇是否顯示薪資。在「{{records}}」中查看。"
           }
         }
       }
@@ -3300,125 +3419,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "抬起手腕即可了解今天的工作進度。"
-          }
-        }
-      }
-    },
-    "appleWatchLearnMore": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تعرّف على ميزات Apple Watch"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mehr über Apple Watch erfahren"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Learn about Apple Watch"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Descubre las funciones de Apple Watch"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "En savoir plus sur Apple Watch"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch सुविधाओं के बारे में जानें"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pelajari fitur Apple Watch"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scopri le funzioni di Apple Watch"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watchの機能について"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch 기능 알아보기"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch वैशिष्ट्यांबद्दल जाणून घ्या"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Conheça os recursos do Apple Watch"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Узнать о возможностях Apple Watch"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ดูฟีเจอร์ Apple Watch"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch özellikleri hakkında bilgi alın"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tìm hiểu về các tính năng Apple Watch"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "了解 Apple Watch 功能"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "了解 Apple Watch 功能"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "了解 Apple Watch 功能"
           }
         }
       }
@@ -96468,256 +96468,6 @@
         }
       }
     },
-    "whatsNewSmartStackBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أصبح للنشاط المباشر الخاص بالعدّ التنازلي تصميم مضغوط خاص به على Apple Watch."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die Live-Aktivität des Feierabend-Countdowns hat jetzt ihr eigenes kompaktes Layout auf der Apple Watch."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The countdown Live Activity now has its own compact layout on Apple Watch."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La actividad en vivo de la cuenta atrás ahora tiene su propio diseño compacto en el Apple Watch."
-          }
-        },
-        "es-MX": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La actividad en vivo de la cuenta regresiva ahora tiene su propio diseño compacto en el Apple Watch."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "L’activité en direct du compte à rebours a désormais sa propre mise en page compacte sur l’Apple Watch."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "काउंटडाउन की लाइव ऐक्टिविटी को अब Apple Watch पर अपना खास कॉम्पैक्ट लेआउट मिल गया है।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Live Activity hitung mundur kini punya tata letak ringkasnya sendiri di Apple Watch."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "L’attività in tempo reale del conto alla rovescia ha ora un suo layout compatto su Apple Watch."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "カウントダウンのライブアクティビティに、Apple Watch専用のコンパクトなレイアウトが追加されました。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "카운트다운 실시간 액티비티가 이제 Apple Watch에 맞는 컴팩트한 레이아웃을 갖췄습니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "काउंटडाउनच्या लाइव्ह ॲक्टिव्हिटीला आता Apple Watch वर स्वतःचा कॉम्पॅक्ट लेआउट मिळाला आहे."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A Atividade ao Vivo da contagem regressiva agora tem seu próprio layout compacto no Apple Watch."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Live-активность обратного отсчёта теперь получила отдельный компактный вид на Apple Watch."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "กิจกรรมสดของตัวนับถอยหลังตอนนี้มีเลย์เอาต์ขนาดกะทัดรัดเฉพาะบน Apple Watch แล้ว"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Geri sayımın Canlı Etkinliği artık Apple Watch’ta kendi kompakt düzenine sahip."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoạt động trực tiếp của bộ đếm ngược giờ đây có bố cục gọn gàng riêng trên Apple Watch."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "倒计时实时活动在 Apple Watch 上有了专属的紧凑样式。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "倒數即時動態在 Apple Watch 上有了專屬的精簡樣式。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "倒數即時動態在 Apple Watch 上有了專屬的精簡樣式。"
-          }
-        }
-      }
-    },
-    "whatsNewSmartStackTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "عدّاد تنازلي مصمم للحزمة المكدسة الذكية"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ein Countdown für den Smart-Stapel"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A countdown made for the Smart Stack"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Una cuenta atrás pensada para el grupo inteligente"
-          }
-        },
-        "es-MX": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Una cuenta regresiva pensada para el grupo inteligente"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un compte à rebours pensé pour le Défilement intelligent"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "स्मार्ट स्टैक के लिए बना काउंटडाउन"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hitung mundur yang dibuat untuk Smart Stack"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un conto alla rovescia pensato per la raccolta smart"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "スマートスタックのためのカウントダウン"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "스마트 스택을 위한 카운트다운"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "स्मार्ट स्टॅकसाठी बनवलेला काउंटडाउन"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Uma contagem regressiva feita para o Conjunto Inteligente"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Обратный отсчёт для смарт-стопки"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ตัวนับถอยหลังที่ออกแบบมาสำหรับวิดเจ็ตซ้อนอัจฉริยะ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Akıllı Gruplama için tasarlanmış bir geri sayım"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bộ đếm ngược dành cho Ngăn xếp thông minh"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "为智能叠放设计的倒计时"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "為智慧型疊放設計的倒數"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "為智慧型疊放設計的倒數"
-          }
-        }
-      }
-    },
     "whatsNewTitle": {
       "extractionState": "manual",
       "localizations": {
@@ -96833,244 +96583,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "這次更新了什麼"
-          }
-        }
-      }
-    },
-    "whatsNewWatchBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "الحالة والوقت المتبقي والتقدم ووقت الانصراف في نظرة واحدة. حلقة تقدم دائرية، أو الوقت المتبقي ووقت الانصراف في إضافة مستطيلة."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Status, verbleibende Zeit, Fortschritt und dein Feierabend auf einen Blick. Ein runder Fortschrittsring oder verbleibende Zeit und dein Feierabend in einer rechteckigen Komplikation."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Status, time left, progress and your off-work time in one glance. A circular progress ring, or time left and your off-work time in a rectangle."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estado, tiempo restante, progreso y tu hora de salida de un vistazo. Un anillo de progreso circular, o el tiempo restante y tu hora de salida en una complicación rectangular."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Statut, temps restant, progression et votre heure de départ en un coup d’œil. Un anneau de progression circulaire, ou le temps restant et votre heure de départ dans une complication rectangulaire."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "एक नज़र में स्थिति, बचा हुआ समय, प्रगति और आपके छूटने का समय। एक गोल प्रगति रिंग, या एक आयताकार में बचा हुआ समय और आपके छूटने का समय।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Status, sisa waktu, kemajuan, dan waktu pulang Anda sekilas. Cincin kemajuan bundar, atau sisa waktu dan waktu pulang Anda dalam bentuk persegi panjang."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stato, tempo rimanente, avanzamento e la tua uscita in un colpo d’occhio. Un anello di avanzamento circolare, oppure tempo rimanente e la tua uscita in una complicazione rettangolare."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ステータス、残り時間、進捗、退勤時刻をひと目で。 丸型の進捗リング、または長方形で残り時間と退勤時刻を表示します。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "상태, 남은 시간, 진행률, 퇴근 시간을 한눈에. 원형 진행률 링, 또는 사각형에 남은 시간과 퇴근 시간을 표시합니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "स्थिती, उरलेला वेळ, प्रगती आणि तुमची सुट्टीची वेळ एका नजरेत. गोल प्रगती रिंग, किंवा आयताकृतीमध्ये उरलेला वेळ आणि तुमची सुट्टीची वेळ."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Status, tempo restante, progresso e sua hora de saída em um único olhar. Um anel de progresso circular, ou o tempo restante e sua hora de saída em formato retangular."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Статус, оставшееся время, прогресс и время окончания работы одним взглядом. Круглое кольцо прогресса или прямоугольное расширение с оставшимся временем и временем окончания работы."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "สถานะ เวลาที่เหลือ ความคืบหน้า และเวลาเลิกงานของคุณในที่เดียว วงแหวนความคืบหน้าทรงกลม หรือเวลาที่เหลือและเวลาเลิกงานของคุณในกลไกทรงสี่เหลี่ยม"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Durum, kalan süre, ilerleme ve iş çıkış saatiniz tek bakışta. Dairesel bir ilerleme halkası veya dikdörtgen bir komplikasyonda kalan süre ile iş çıkış saatiniz."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trạng thái, thời gian còn lại, tiến độ và giờ tan ca của bạn, xem trong nháy mắt. Vòng tiến độ hình tròn, hoặc thời gian còn lại và giờ tan ca của bạn trong tổ hợp hình chữ nhật."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "一眼看到状态、剩余时间、进度和下班时间。 圆形显示进度环，长方形显示剩余时间和下班时间。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "一眼睇到狀態、剩餘時間、進度同下班時間。 圓形顯示進度環，長方形顯示剩餘時間同下班時間。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "一眼看到狀態、剩餘時間、進度和下班時間。 圓形顯示進度環，長方形顯示剩餘時間和下班時間。"
-          }
-        }
-      }
-    },
-    "whatsNewWatchTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "يوم عملك على Apple Watch"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dein Arbeitstag auf der Apple Watch"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your workday on Apple Watch"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu jornada en el Apple Watch"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Votre journée de travail sur l’Apple Watch"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch पर आपका कार्यदिवस"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hari kerjamu di Apple Watch"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La tua giornata lavorativa su Apple Watch"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watchでもわかる勤務状況"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch에서 확인하는 근무 현황"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch वर तुमचा कामाचा दिवस"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seu dia de trabalho no Apple Watch"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ваш рабочий день на Apple Watch"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "วันทำงานของคุณบน Apple Watch"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch’ta çalışma gününüz"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ngày làm việc của bạn trên Apple Watch"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 Apple Watch 上查看工作日"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 Apple Watch 上查看工作日"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 Apple Watch 上查看工作日"
           }
         }
       }

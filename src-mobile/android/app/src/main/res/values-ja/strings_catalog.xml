@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">文字盤のコンプリケーション</string>
     <string name="appleWatchFeaturesSection">機能</string>
     <string name="appleWatchIntro">手首にひと目で、今日の勤務状況がわかります。</string>
-    <string name="appleWatchLearnMore">Apple Watchの機能について</string>
     <string name="appleWatchPrivacyNote">同期後はオフラインでも、Watch が保存済みのシフトに従って動作します。給与と勤務記録は iPhone に保持されます。</string>
     <string name="appleWatchSetupFace">文字盤を長押しして「編集」をタップし、コンプリケーションにDoneAtを選択します。</string>
     <string name="appleWatchSetupInstall">iPhoneのWatchアプリから、またはApple WatchのApp StoreからDoneAtをインストールしてください。</string>
@@ -1060,14 +1059,11 @@
     <string name="watchWaitingForIPhone">iPhoneを待っています</string>
     <string name="watchWidgetDescription">退勤までの残り時間と進捗。</string>
     <string name="weekdayRange">%1$s〜%2$s</string>
+    <string name="whatsNewAlarmsBody">DoneAt Plusでは、各シフトの設定した時間前にアラームが鳴り、祝日や勤務の変更、計画した休暇にも自動で合わせます。%1$sでオンにできます。</string>
     <string name="whatsNewContinue">続ける</string>
-    <string name="whatsNewHolidayBody">勤務スケジュールが国や地域の祝日カレンダーに対応しました。%1$sを開き、国または地域を選んで有効にしてください。</string>
-    <string name="whatsNewHolidayTitle">祝日と振替出勤日</string>
-    <string name="whatsNewSmartStackBody">カウントダウンのライブアクティビティに、Apple Watch専用のコンパクトなレイアウトが追加されました。</string>
-    <string name="whatsNewSmartStackTitle">スマートスタックのためのカウントダウン</string>
+    <string name="whatsNewLeaveBody">有給休暇や振替休暇の残日数を入れると、祝日と自分のシフトをもとに、この先1年で最も長く休める日程を見つけ、選んだプランを勤務スケジュールに追加できます。%2$sの「%1$s」から始められ、最初の3回は無料でプランを見られます。</string>
+    <string name="whatsNewReportsBody">DoneAt Plusでは、毎週・毎月・毎年の仕事と休みを短いアニメーションで振り返れます。給与を表示するかどうかも選べます。%1$sから見られます。</string>
     <string name="whatsNewTitle">新着情報</string>
-    <string name="whatsNewWatchBody">ステータス、残り時間、進捗、退勤時刻をひと目で。 丸型の進捗リング、または長方形で残り時間と退勤時刻を表示します。</string>
-    <string name="whatsNewWatchTitle">Apple Watchでもわかる勤務状況</string>
     <string name="widgetDescription">残りの勤務時間をひと目で確認できます。</string>
     <string name="widgetOpenToRefresh">アプリを開いて更新</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

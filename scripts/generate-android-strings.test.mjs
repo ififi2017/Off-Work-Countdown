@@ -59,10 +59,10 @@ describe("Android strings", () => {
     const british = files.get(file("values-en-rGB"));
     const latin = files.get(file("values-b+es+419"));
     const spanish = files.get(file("values-es"));
-    expect(line(british, "whatsNewHolidayTitle")).toContain("Bank holidays");
+    expect(line(british, "holidayCalendar")).toContain("Bank holiday");
     expect(line(british, "wallpaperColors")).toContain("colours");
     expect(line(british, "aboutProject")).toBeUndefined();
-    expect(line(latin, "whatsNewHolidayTitle")).toContain("Feriados");
+    expect(line(latin, "holidayCalendar")).toContain("feriados");
     expect(line(latin, "ongoingNote")).toContain("cuenta regresiva");
     expect(line(spanish, "ongoingNote")).toContain("cuenta atrás");
     expect(line(latin, "aboutProject")).toBeUndefined();

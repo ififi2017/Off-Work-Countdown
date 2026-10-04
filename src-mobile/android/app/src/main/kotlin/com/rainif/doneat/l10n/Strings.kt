@@ -131,6 +131,8 @@ object Strings {
     fun watchOvertimeUntil(res: Resources, time: String): String = res.getString(R.string.watchOvertimeUntil, time)
     fun watchTimeLeft(res: Resources, duration: String): String = res.getString(R.string.watchTimeLeft, duration)
     fun weekdayRange(res: Resources, start: String, end: String): String = res.getString(R.string.weekdayRange, start, end)
-    fun whatsNewHolidayBody(res: Resources, schedule: String): String = res.getString(R.string.whatsNewHolidayBody, schedule)
+    fun whatsNewAlarmsBody(res: Resources, settings: String): String = res.getString(R.string.whatsNewAlarmsBody, settings)
+    fun whatsNewLeaveBody(res: Resources, leave: String, settings: String): String = res.getString(R.string.whatsNewLeaveBody, leave, settings)
+    fun whatsNewReportsBody(res: Resources, records: String): String = res.getString(R.string.whatsNewReportsBody, records)
     fun workOnWeekday(res: Resources, day: String): String = res.getString(R.string.workOnWeekday, day)
 }

@@ -54,7 +54,7 @@
     <string name="syncPrivacyDetail">Your work rota, salary, reminders, appearance, language, Life profile, records and Focus data sync through your private iCloud database. Notification permission, biometric protection and Live Activities stay on this device.</string>
     <string name="wallpaperColors">Use wallpaper colours</string>
     <string name="watchCacheCorrupt">The saved rota couldn’t be read. Open DoneAt on your iPhone.</string>
-    <string name="whatsNewHolidayBody">Your rota can now follow your bank holiday calendar. Open %1$s and choose a country or region to turn it on.</string>
-    <string name="whatsNewHolidayTitle">Bank holidays and makeup workdays</string>
+    <string name="whatsNewAlarmsBody">With DoneAt Plus, an alarm wakes you a set time before each shift and follows bank holidays, rota changes and planned time off. Turn it on in %1$s.</string>
+    <string name="whatsNewLeaveBody">Add your leave balances and DoneAt finds the longest breaks around bank holidays and your own shifts in the year ahead, then adds the plan you pick to your rota. Start from %1$s in %2$s; your first 3 plans are free.</string>
     <string name="workSchedule">Hours &amp; rota</string>
 </resources>

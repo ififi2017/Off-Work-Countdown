@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">إضافات شاشة الساعة</string>
     <string name="appleWatchFeaturesSection">الميزات</string>
     <string name="appleWatchIntro">ألقِ نظرة على معصمك لمعرفة أين وصل يوم عملك.</string>
-    <string name="appleWatchLearnMore">تعرّف على ميزات Apple Watch</string>
     <string name="appleWatchPrivacyNote">بعد المزامنة، تتبع الساعة جدولك المحفوظ حتى دون اتصال. يبقى الراتب وسجل العمل على iPhone.</string>
     <string name="appleWatchSetupFace">المس شاشة الساعة مع الاستمرار، ثم اضغط على تعديل، ثم اختر DoneAt كإضافة.</string>
     <string name="appleWatchSetupInstall">ثبّت DoneAt من تطبيق Watch على iPhone، أو من App Store على Apple Watch.</string>
@@ -1075,14 +1074,11 @@
     <string name="watchWaitingForIPhone">بانتظار iPhone</string>
     <string name="watchWidgetDescription">الوقت المتبقي والتقدم حتى الانصراف.</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">مع DoneAt Plus، يوقظك منبّه قبل كل مناوبة بالمدة التي تختارها، ويراعي العطلات وتغييرات الجدول والإجازات المخطط لها. فعّله من %1$s.</string>
     <string name="whatsNewContinue">متابعة</string>
-    <string name="whatsNewHolidayBody">يمكن الآن لجدولك اتباع تقويم العطلات الوطني. افتح %1$s واختر بلدًا أو منطقة لتفعيله.</string>
-    <string name="whatsNewHolidayTitle">العطلات وأيام العمل التعويضية</string>
-    <string name="whatsNewSmartStackBody">أصبح للنشاط المباشر الخاص بالعدّ التنازلي تصميم مضغوط خاص به على Apple Watch.</string>
-    <string name="whatsNewSmartStackTitle">عدّاد تنازلي مصمم للحزمة المكدسة الذكية</string>
+    <string name="whatsNewLeaveBody">أدخل رصيد إجازاتك، وسيجد DoneAt أطول فترات الراحة خلال العام القادم بناءً على العطلات الرسمية ومناوباتك، ثم يضيف الخطة التي تختارها إلى جدولك. ابدأ من %2$s ← %1$s، وأول 3 خطط مجانية.</string>
+    <string name="whatsNewReportsBody">مع DoneAt Plus، استرجع كل أسبوع وشهر وسنة من العمل والراحة في رسوم متحركة قصيرة، مع الراتب أو بدونه. تجدها في %1$s.</string>
     <string name="whatsNewTitle">ما الجديد</string>
-    <string name="whatsNewWatchBody">الحالة والوقت المتبقي والتقدم ووقت الانصراف في نظرة واحدة. حلقة تقدم دائرية، أو الوقت المتبقي ووقت الانصراف في إضافة مستطيلة.</string>
-    <string name="whatsNewWatchTitle">يوم عملك على Apple Watch</string>
     <string name="widgetDescription">اعرض وقت العمل المتبقي بنظرة سريعة.</string>
     <string name="widgetOpenToRefresh">افتح التطبيق للتحديث</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

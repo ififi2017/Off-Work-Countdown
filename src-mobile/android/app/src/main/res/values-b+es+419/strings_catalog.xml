@@ -84,9 +84,7 @@
     <string name="shiftAlarmsOpenSettings">Abrir Configuración</string>
     <string name="syncPrivacyDetail">Su rol de turnos, salario, recordatorios, apariencia, idioma, perfil de vida, registros y datos de Focus se sincronizan a través de su base de datos privada de iCloud. El permiso de notificación, la protección biométrica y las actividades en vivo permanecen en este dispositivo.</string>
     <string name="watchCacheCorrupt">No se pudo leer el rol de turnos guardado. Abre DoneAt en tu iPhone.</string>
-    <string name="whatsNewHolidayBody">Tu rol de turnos ahora puede seguir el calendario nacional de feriados. Abre %1$s y elige un país o una región para activarlo.</string>
-    <string name="whatsNewHolidayTitle">Feriados y días laborables compensatorios</string>
-    <string name="whatsNewSmartStackBody">La actividad en vivo de la cuenta regresiva ahora tiene su propio diseño compacto en el Apple Watch.</string>
-    <string name="whatsNewSmartStackTitle">Una cuenta regresiva pensada para el grupo inteligente</string>
+    <string name="whatsNewAlarmsBody">Con DoneAt Plus, una alarma te despierta con la antelación que elijas antes de cada turno y tiene en cuenta los feriados, los cambios en tu rol de turnos y las vacaciones planificadas. Actívala en %1$s.</string>
+    <string name="whatsNewLeaveBody">Añade tus días de vacaciones disponibles y DoneAt encontrará los descansos más largos del próximo año según los feriados y tus propios turnos; el plan que elijas se añade a tu rol de turnos con un toque. Empieza en %1$s, dentro de %2$s; los 3 primeros planes son gratis.</string>
     <string name="workSchedule">Horas y rol de turnos</string>
 </resources>

@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">워치 페이스 컴플리케이션</string>
     <string name="appleWatchFeaturesSection">기능</string>
     <string name="appleWatchIntro">손목을 한 번 보는 것만으로 오늘 근무가 어디까지 왔는지 알 수 있어요.</string>
-    <string name="appleWatchLearnMore">Apple Watch 기능 알아보기</string>
     <string name="appleWatchPrivacyNote">동기화 후 Watch는 오프라인에서도 저장된 근무 일정에 따라 작동합니다. 급여와 근무 기록은 iPhone에 보관됩니다.</string>
     <string name="appleWatchSetupFace">워치 페이스를 길게 터치한 다음 편집을 탭하고, 컴플리케이션으로 DoneAt을 선택하세요.</string>
     <string name="appleWatchSetupInstall">iPhone의 Watch 앱 또는 Apple Watch의 App Store에서 DoneAt을 설치하세요.</string>
@@ -1060,14 +1059,11 @@
     <string name="watchWaitingForIPhone">iPhone을 기다리는 중</string>
     <string name="watchWidgetDescription">퇴근까지 남은 시간과 진행률.</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">DoneAt Plus를 이용하면 각 근무 시작 전 정한 시간에 알람이 울리고, 공휴일과 일정 변경, 계획한 휴가도 자동으로 반영됩니다. %1$s에서 켤 수 있습니다.</string>
     <string name="whatsNewContinue">계속</string>
-    <string name="whatsNewHolidayBody">이제 근무 일정에 국가 공휴일 달력을 적용할 수 있습니다. %1$s을 열고 국가 또는 지역을 선택해 켜세요.</string>
-    <string name="whatsNewHolidayTitle">공휴일과 대체 근무일</string>
-    <string name="whatsNewSmartStackBody">카운트다운 실시간 액티비티가 이제 Apple Watch에 맞는 컴팩트한 레이아웃을 갖췄습니다.</string>
-    <string name="whatsNewSmartStackTitle">스마트 스택을 위한 카운트다운</string>
+    <string name="whatsNewLeaveBody">연차, 대체휴가 등 남은 휴가를 입력하면 DoneAt이 공휴일과 내 근무 일정을 바탕으로 앞으로 1년 중 가장 길게 쉴 수 있는 일정을 찾아 주고, 고른 계획을 근무 일정에 바로 추가합니다. %2$s의 %1$s에서 시작하세요. 처음 3번은 무료로 계획을 볼 수 있습니다.</string>
+    <string name="whatsNewReportsBody">DoneAt Plus를 이용하면 매주, 매달, 매년의 근무와 휴식을 짧은 애니메이션으로 돌아볼 수 있으며, 급여 표시 여부도 고를 수 있습니다. %1$s에서 확인하세요.</string>
     <string name="whatsNewTitle">새로운 소식</string>
-    <string name="whatsNewWatchBody">상태, 남은 시간, 진행률, 퇴근 시간을 한눈에. 원형 진행률 링, 또는 사각형에 남은 시간과 퇴근 시간을 표시합니다.</string>
-    <string name="whatsNewWatchTitle">Apple Watch에서 확인하는 근무 현황</string>
     <string name="widgetDescription">남은 근무 시간을 한눈에 확인하세요.</string>
     <string name="widgetOpenToRefresh">앱을 열어 새로고침</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>
