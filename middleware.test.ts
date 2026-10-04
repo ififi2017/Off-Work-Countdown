@@ -24,7 +24,7 @@ describe("locale redirect", () => {
     expect(response.headers.get("location")).toBeNull();
   });
 
-  it.each(["LICENSE", "LICENSE-MIT-LEGACY", "source.txt"])(
+  it.each(["LICENSE", "LICENSES/MIT-legacy.txt", "source.txt"])(
     "serves the packaged licensing resource %s without a locale redirect",
     (file) => {
       const response = middleware(new NextRequest(`https://off.rainif.com/licenses/${file}`, {

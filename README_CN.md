@@ -269,7 +269,7 @@ PWA 会继续维护；如果你需要常驻菜单栏／迷你计时器、原生�
 
 DoneAt 源代码采用 [MPL-2.0](LICENSE)，另有声明的内容除外。允许商业分支；分发时须履行适用的源码提供和声明保留义务。范围与切换记录见 [LICENSING.md](LICENSING.md)，各版本源码获取方式见 [SOURCE.md](SOURCE.md)。
 
-历史 MIT 授权继续有效，原文保留在 [LICENSE-MIT-LEGACY](LICENSE-MIT-LEGACY)。DoneAt 品牌与指定素材不包含在新的 MPL 授权中，详见 [ASSETS.md](ASSETS.md) 和 [TRADEMARKS.md](TRADEMARKS.md)。独立发行版不得冒充官方。第三方组件保留各自许可证。
+历史 MIT 授权继续有效，原文保留在 [LICENSES/MIT-legacy.txt](LICENSES/MIT-legacy.txt)。DoneAt 品牌与指定素材不包含在新的 MPL 授权中，详见 [ASSETS.md](ASSETS.md) 和 [TRADEMARKS.md](TRADEMARKS.md)。独立发行版不得冒充官方。第三方组件保留各自许可证。
 
 新贡献规则见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 

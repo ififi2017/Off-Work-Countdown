@@ -90,7 +90,7 @@ for (const path of [
   "fonts/GeistVF.woff",
   "fonts/LICENSE.txt",
   "licenses/LICENSE",
-  "licenses/LICENSE-MIT-LEGACY",
+  "licenses/LICENSES/MIT-legacy.txt",
   "licenses/source.txt",
   ...Object.values(manifest.icons),
   ...Object.values(manifest.action.default_icon),

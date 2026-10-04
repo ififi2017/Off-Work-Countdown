@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 import { execFileSync } from "node:child_process";
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -12,13 +12,14 @@ export function prepareLicenseNotices(destination = resolve(root, "public/licens
   mkdirSync(destination, { recursive: true });
   for (const [source, name] of [
     ["LICENSE", "LICENSE"],
-    ["LICENSE-MIT-LEGACY", "LICENSE-MIT-LEGACY"],
+    ["LICENSES/MIT-legacy.txt", "LICENSES/MIT-legacy.txt"],
     ["LICENSING.md", "LICENSING.md"],
     ["ASSETS.md", "ASSETS.md"],
     ["TRADEMARKS.md", "TRADEMARKS.md"],
     ["SOURCE.md", "SOURCE.md"],
     ["CONTRIBUTING.md", "CONTRIBUTING.md"],
   ]) {
+    mkdirSync(dirname(resolve(destination, name)), { recursive: true });
     copyFileSync(resolve(root, source), resolve(destination, name));
   }
   let revision;
@@ -44,7 +45,7 @@ export function prepareLicenseNotices(destination = resolve(root, "public/licens
     `DoneAt ${version}\nCovered source: Mozilla Public License 2.0 (MPL-2.0).\n` +
     `${status}\n${repository}/tree/${revision}\n` +
     `Source archive: ${repository}/archive/${revision}.tar.gz\n` +
-    "See LICENSE (MPL-2.0), LICENSE-MIT-LEGACY, LICENSING.md and SOURCE.md.\n" +
+    "See LICENSE (MPL-2.0), LICENSES/MIT-legacy.txt, LICENSING.md and SOURCE.md.\n" +
     "Existing MIT permissions and third-party licenses are preserved.\n" +
     "Source questions: hello@doneat.app (no purchase required).\n");
   return { revision, dirty, destination };

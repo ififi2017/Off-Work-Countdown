@@ -27,7 +27,7 @@ function filesUnder(root) {
 
 if (target === "web" || target === "desktop") {
   const noticeRoot = target === "web" ? "public/licenses" : "out/licenses";
-  for (const name of ["LICENSE", "LICENSE-MIT-LEGACY", "LICENSING.md", "ASSETS.md", "TRADEMARKS.md", "SOURCE.md", "CONTRIBUTING.md"]) {
+  for (const name of ["LICENSE", "LICENSES/MIT-legacy.txt", "LICENSING.md", "ASSETS.md", "TRADEMARKS.md", "SOURCE.md", "CONTRIBUTING.md"]) {
     const file = join(noticeRoot, name);
     if (!existsSync(file) || readFileSync(file, "utf8") !== readFileSync(name, "utf8")) {
       fail(`Missing or stale packaged license notice: ${file}`);

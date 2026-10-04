@@ -30,8 +30,9 @@ is identified by the commit introducing this document and the MPL LICENSE;
 publication of that revision offers its covered source under MPL. Existing
 store binaries retain the licensing applicable to the source they used.
 
-[LICENSE-MIT-LEGACY](LICENSE-MIT-LEGACY) preserves the previous MIT notice
-verbatim. Rights already granted under MIT remain available, including for
+[LICENSES/MIT-legacy.txt](LICENSES/MIT-legacy.txt) preserves the previous MIT notice
+verbatim. It lives outside the root so repository license detection does not
+misread it as a second current top-level license. Rights already granted under MIT remain available, including for
 previously licensed code or artwork still present in this revision. The
 change does not revoke those grants or retroactively impose MPL obligations
 on an independent derivative of an MIT revision. Conversely, the historical

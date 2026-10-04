@@ -356,7 +356,7 @@ source-availability and notice obligations. See [LICENSING.md](LICENSING.md)
 and [source for releases](SOURCE.md).
 
 Previously granted MIT rights remain in effect; the original notice is in
-[LICENSE-MIT-LEGACY](LICENSE-MIT-LEGACY). DoneAt branding and designated
+[LICENSES/MIT-legacy.txt](LICENSES/MIT-legacy.txt). DoneAt branding and designated
 artwork are excluded from new MPL grants: see [ASSETS.md](ASSETS.md) and
 [TRADEMARKS.md](TRADEMARKS.md). Independent releases must not impersonate
 DoneAt. Third-party components keep their own licenses.

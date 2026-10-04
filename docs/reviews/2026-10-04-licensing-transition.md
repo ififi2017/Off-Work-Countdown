@@ -32,7 +32,7 @@ statements/brand policy are updated in a coordinated PR.
   `check:ios`, Web build/check, Desktop export/check and extension build/check
   passed locally. Headless iOS simulator build passed; no simulator visual
   testing, signed native packaging or store submission was performed.
-- [ ] Product PR merged before the coordinated website PR.
+- [ ] Product [PR #298](https://github.com/ififi2017/Off-Work-Countdown/pull/298) merged before website [PR #31](https://github.com/ififi2017/doneat.app/pull/31).
 
 Future releases must follow SOURCE.md and the release guide: preserve an
 immutable source reference per distributed platform/version/build, including
