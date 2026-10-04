@@ -8,6 +8,10 @@
 
 当前 Android 档案是 **schema 7，接受 1…7**，四模块使用原子 JSON 存储（D-13），没有 Room。下方“版本号四套”和初次环境表是 2026-09-21 的历史登记，不是当前架构或验证结果。
 
+## 2026-10-04 服务端验证授权
+
+用户明确授权实施 Cloudflare Worker + D1 的购买验证服务并使用 `api.doneat.app`，修订此前排除 T21 的范围。该服务是 Android 平台接入，不推进 iOS 基线，也不自动纳入 main 的后续行为。部署 runbook 在 `services/billing-api/README.md`；配置/测试状态只记 `progress.md`。
+
 ## 固定源
 
 | 项 | 值 |

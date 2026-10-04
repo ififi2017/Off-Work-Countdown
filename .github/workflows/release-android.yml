@@ -66,6 +66,8 @@ jobs:
       ORG_GRADLE_PROJECT_doneatPlusLifetimeProduct: ${{ vars.DONEAT_PLUS_LIFETIME_PRODUCT }}
       ORG_GRADLE_PROJECT_doneatPlusLifetimePurchaseOption: ${{ vars.DONEAT_PLUS_LIFETIME_PURCHASE_OPTION }}
       ORG_GRADLE_PROJECT_doneatPlayBillingPublicKey: ${{ vars.DONEAT_PLAY_BILLING_PUBLIC_KEY }}
+      # Set only after the Worker and public privacy disclosure have passed deployment acceptance.
+      ORG_GRADLE_PROJECT_doneatBillingApiPublicKeys: ${{ vars.DONEAT_BILLING_API_PUBLIC_KEYS }}
       # push 没有 inputs：合并触发的固定为上传到 alpha 并提审。
       # 签名属性和 keystore 路径要在同一处出现：Gradle 配置阶段会在每个任务里读它们，
       # 只给打包那一步会让前面的测试步骤拿到一半的签名配置。

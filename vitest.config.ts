@@ -12,6 +12,7 @@ export default defineConfig({
       "**/cypress/**",
       "**/.{idea,git,cache,output,temp}/**",
       "**/.claude/worktrees/**",
+      "services/**", // Workers use their own runtime and independent test command.
     ],
   },
   resolve: {

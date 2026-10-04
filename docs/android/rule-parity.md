@@ -193,3 +193,9 @@ Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`
 这些类是纯 JVM 规则，**没有开放 Android 起床闹钟的平台集成或产品开关**。它们不证明原生响铃、锁屏、后台、重启、权限变化、停止或贪睡已经可用。起床闹钟需要真正的响铃生命周期与系统预约接口，普通通知不可替代；须与现有 `SCHEDULE_EXACT_ALARM`、无轮询的架构约束一起解决。iOS `stopIntent` 自动补排仍未实现，不能作为 Android 已验证能力。
 
 测试入口：`ShiftAlarmPlannerTest`，包含排班、节假日与调班、请假、跨夜提前量、精确到期、滚动日历年、稳定 ID、差量、成功覆盖、刷新时刻、关闭清理规则与贪睡边界。这些测试不等同平台预约或设备响铃验收。
+
+## Google Play 精确到期输入（2026-10-04 授权增量）
+
+`services/billing-api` 查询 Google `subscriptionsv2` / `productsv2` 并签发 RS256 凭据。Android `BillingReceipt` 检查签名、包名、商品、购买令牌哈希、nonce 与时间边界；`PlusStoreState.shiftAlarmAuthorization(now)` 仅在订阅凭据含未来精确到期时返回 `VerifiedUntil`，不从本地活跃布尔值推算。取消自动续订仍采用 Google 的剩余有效周期；续订和退款需重新核验。终身继续由 `ShiftAlarmPlanner` 按记录时区滚动一个日历年，凭据缓存期限不是闹钟范围。
+
+服务端 RTDN 认证、去重、重查与替换令牌撤销由 Worker 合约测试覆盖；客户端验签/串包/串商品/串令牌/篡改/到期边界由 `BillingReceiptTest` 覆盖。离线设备不会立即获知服务端的新退款状态。实际部署、许可购买与设备验证证据仅见 progress.md；这些规则不证明响铃、停止或贪睡的平台能力已经完成。
