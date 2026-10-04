@@ -54,6 +54,7 @@
     <string name="biometryOpticID">Optic ID</string>
     <string name="biometryTouchID">Touch ID</string>
     <string name="breakReminder">विश्रांतीची आठवण</string>
+    <string name="calendarWeekStart">आठवड्याचा पहिला दिवस</string>
     <string name="cancel">रद्द करा</string>
     <string name="cancelAction">रद्द करा</string>
     <string name="cancelManualTiming">रद्द करा</string>

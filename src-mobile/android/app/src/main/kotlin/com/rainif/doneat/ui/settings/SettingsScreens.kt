@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsWalk
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Contrast
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material.icons.outlined.Info
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.outlined.RateReview
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.Icon
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -150,8 +152,11 @@ object SettingsLabels {
 
 /** The settings list (iOS `SettingsSection`): shift, reminders, appearance, records & data, about. Plus is a title action. */
 @Composable
-fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, open: (Route) -> Unit) {
+fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: DeviceSettings, setWeekStart: (Int) -> Unit, open: (Route) -> Unit) {
     val context = LocalContext.current
+    val locale = LocalResources.current.configuration.locales[0]
+    val firstDay = device.calendarFirstDay(locale)
+    var choosingWeekStart by rememberSaveable { mutableStateOf(false) }
     DoneAtPage(
         title = stringResource(R.string.settings),
         inlineTitle = true,
@@ -181,6 +186,9 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, open: (Route)
             NavigationRow(stringResource(R.string.chooselanguage), { open(Route.Language) }, Icons.Outlined.Language, SettingsLabels.language(p.languageOverride))
         }
         SettingsGroup(stringResource(R.string.recordsDataSection)) {
+            NavigationRow(stringResource(R.string.calendarWeekStart), { choosingWeekStart = true }, Icons.Outlined.CalendarToday,
+                firstDay.getDisplayName(java.time.format.TextStyle.FULL, locale))
+            RowDivider()
             NavigationRow(stringResource(R.string.recordsDataTitle), { open(Route.RecordsData) }, Icons.Outlined.Storage)
         }
         SettingsGroup(stringResource(R.string.aboutSection)) {
@@ -192,6 +200,22 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, open: (Route)
             }, Icons.Outlined.RateReview, Icons.AutoMirrored.Outlined.OpenInNew)
         }
     }
+    if (choosingWeekStart) AlertDialog(
+        onDismissRequest = { choosingWeekStart = false },
+        title = { Text(stringResource(R.string.calendarWeekStart)) },
+        text = {
+            Column {
+                listOf(java.time.DayOfWeek.SUNDAY, java.time.DayOfWeek.MONDAY).forEach { day ->
+                    ChoiceRow(day.getDisplayName(java.time.format.TextStyle.FULL, locale), firstDay == day, {
+                        setWeekStart(day.value)
+                        choosingWeekStart = false
+                    })
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = { choosingWeekStart = false }) { Text(stringResource(R.string.cancel)) } },
+    )
 }
 
 /** The Play listing: the store app when present, the web page otherwise. Never the in-app review card, which may not appear. */

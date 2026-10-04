@@ -54,6 +54,7 @@
     <string name="biometryOpticID">光学 ID</string>
     <string name="biometryTouchID">触控 ID</string>
     <string name="breakReminder">休息提醒</string>
+    <string name="calendarWeekStart">每周第一天</string>
     <string name="cancel">取消</string>
     <string name="cancelAction">取消</string>
     <string name="cancelManualTiming">取消</string>

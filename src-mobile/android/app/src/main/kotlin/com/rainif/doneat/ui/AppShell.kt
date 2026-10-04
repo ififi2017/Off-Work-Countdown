@@ -357,7 +357,8 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
         is Route.RecordsMonth -> com.rainif.doneat.ui.records.MonthRecordsScreen(graph, key.year, key.month, open, back)
         is Route.RecordsDayEdit -> com.rainif.doneat.ui.records.RecordsDayEditScreen(graph, key.dayKey, back)
         Route.RecordsLifeEdit -> com.rainif.doneat.ui.records.LifeProfileEditScreen(graph, back)
-        Route.SettingsHome -> SettingsHomeScreen(prefs, records, open)
+        Route.SettingsHome -> SettingsHomeScreen(prefs, records, device,
+            setWeekStart = { day -> graph.scope.launch { graph.settings.updateDevice { it.copy(calendarWeekStart = day) } } }, open = open)
         Route.Schedule -> com.rainif.doneat.ui.schedule.ScheduleScreen(graph, open, back)
         Route.ShiftTypes -> com.rainif.doneat.ui.schedule.ShiftTypesScreen(graph, open, back)
         is Route.ShiftTypeEdit -> com.rainif.doneat.ui.schedule.ShiftTypeEditScreen(graph, key.id, key.isNew, back)

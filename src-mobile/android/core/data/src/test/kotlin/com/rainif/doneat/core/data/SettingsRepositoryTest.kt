@@ -127,6 +127,54 @@ class SettingsRepositoryTest {
         assertNull(DeviceSettingsStore(deviceFile).settings.value.accentColor)
     }
 
+    @Test fun calendarWeekStartPersistsAndControlsGridReportsAndFutureNotifications() = runTest {
+        val (records, device, repo) = open()
+        records.load()
+        repo.completeSetup()
+        val archiveBefore = Files.readString(archive)
+        val us = java.util.Locale.US
+        val de = java.util.Locale.GERMANY
+        assertEquals(java.time.DayOfWeek.SUNDAY, device.settings.value.calendarFirstDay(us))
+        assertEquals(java.time.DayOfWeek.MONDAY, device.settings.value.calendarFirstDay(de))
+        val zone = java.time.ZoneId.of("UTC")
+        val date = java.time.LocalDate.parse("2026-10-01")
+        val instant = java.time.Instant.parse("2026-10-03T12:00:00Z").toEpochMilli().toDouble()
+        suspend fun choose(day: Int): Pair<com.rainif.doneat.core.domain.records.CycleReportPeriod, Long> {
+            repo.updateDevice { it.copy(calendarWeekStart = day) }
+            val restored = DeviceSettingsStore(deviceFile).settings.value
+            assertEquals(day, restored.calendarFirstDay(us).value)
+            assertEquals(day, restored.calendarFirstDay(de).value)
+            val queries = com.rainif.doneat.core.domain.records.RecordsQueries(records.state.value,
+                com.rainif.doneat.core.domain.schedule.HolidayCalendar.EMPTY, zone, true,
+                firstDayOfWeek = restored.calendarFirstDay(de))
+            assertEquals(if (day == 7) 4 else 3, queries.gridLeadingBlanks(date))
+            val period = queries.reportPeriod(com.rainif.doneat.core.domain.records.CycleReportKind.WEEK, date)
+            val notification = com.rainif.doneat.core.domain.records.CycleReportNotificationPlan.items(
+                true, false, false, instant, zone, restored.calendarFirstDay(de)).single()
+            assertEquals(period, notification)
+            return period to notification.notificationAtMs
+        }
+        val sunday = choose(7)
+        val monday = choose(1)
+        assertEquals("2026-09-27", sunday.first.startDayKey)
+        assertEquals("2026-09-28", monday.first.startDayKey)
+        assertEquals(java.time.Instant.parse("2026-10-04T09:00:00Z").toEpochMilli(), sunday.second)
+        assertEquals(java.time.Instant.parse("2026-10-05T09:00:00Z").toEpochMilli(), monday.second)
+        assertEquals(sunday.first, com.rainif.doneat.core.domain.records.CycleReportPeriod.fromUrl(sunday.first.url))
+        assertEquals("calendar layout never edits a saved roster or the schema 7 archive", archiveBefore, Files.readString(archive))
+    }
+
+    @Test fun invalidWeekStartPreservesOtherSettingsAndFallsBackToLocale() {
+        Files.createDirectories(deviceFile.parent)
+        for (value in listOf("null", "0", "6", "8", "\"invalid\"", "{}")) {
+            Files.writeString(deviceFile, "{\"hideEarnings\":true,\"calendarWeekStart\":$value}")
+            val local = DeviceSettingsStore(deviceFile).settings.value
+            assertNull(local.calendarWeekStart)
+            assertTrue(local.hideEarnings)
+            assertEquals(java.time.DayOfWeek.MONDAY, local.calendarFirstDay(java.util.Locale.GERMANY))
+        }
+    }
+
     @Test fun missingOrInvalidAccentDoesNotDiscardOtherLocalSettings() {
         Files.createDirectories(deviceFile.parent)
         for (value in listOf("null", "-1", "16777216", "\"blue\"", "{}")) {

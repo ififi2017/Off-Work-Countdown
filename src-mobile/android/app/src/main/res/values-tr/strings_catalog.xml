@@ -54,6 +54,7 @@
     <string name="biometryOpticID">Optic ID</string>
     <string name="biometryTouchID">Touch ID</string>
     <string name="breakReminder">Mola hatırlatıcısı</string>
+    <string name="calendarWeekStart">Haftanın ilk günü</string>
     <string name="cancel">Vazgeç</string>
     <string name="cancelAction">İptal</string>
     <string name="cancelManualTiming">İptal</string>

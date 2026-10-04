@@ -1232,6 +1232,28 @@
       "zh-CN": "周期结束总结",
       "zh-HK": "週期結束總結",
       "zh-TW": "週期結束摘要"
+    },
+    "calendarWeekStart": {
+      "comment": "Settings: choose Sunday or Monday for calendar layouts and weekly report boundaries.",
+      "en": "First day of the week",
+      "zh-CN": "每周第一天",
+      "zh-HK": "每週第一日",
+      "zh-TW": "每週第一天",
+      "ja": "週の開始曜日",
+      "ko": "한 주의 시작 요일",
+      "de": "Erster Tag der Woche",
+      "es": "Primer día de la semana",
+      "fr": "Premier jour de la semaine",
+      "it": "Primo giorno della settimana",
+      "pt": "Primeiro dia da semana",
+      "ru": "Первый день недели",
+      "ar": "أول أيام الأسبوع",
+      "hi-IN": "सप्ताह का पहला दिन",
+      "mr-IN": "आठवड्याचा पहिला दिवस",
+      "th": "วันแรกของสัปดาห์",
+      "vi": "Ngày đầu tuần",
+      "id": "Hari pertama dalam seminggu",
+      "tr": "Haftanın ilk günü"
     }
   }
 }

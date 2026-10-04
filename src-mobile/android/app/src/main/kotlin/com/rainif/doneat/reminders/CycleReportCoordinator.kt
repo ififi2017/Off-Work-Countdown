@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.time.ZoneId
-import java.time.temporal.WeekFields
 import java.util.Locale
 
 /** Absolute morning-after report registrations, independent of shift reminder budgets. */
@@ -72,7 +71,7 @@ class CycleReportCoordinator(
         val resources = context.createConfigurationContext(Configuration(context.resources.configuration).apply { setLocales(LocaleList(locale)) }).resources
         val zone = runCatching { ZoneId.of(p.recordsTimeZoneIdentifier) }.getOrElse { ZoneId.systemDefault() }
         val items = CycleReportNotificationPlan.items(d.weeklyReportEnabled && entitlement, d.monthlyReportEnabled && entitlement,
-            d.yearlyReportEnabled && entitlement, nowMs(), zone, WeekFields.of(locale).firstDayOfWeek)
+            d.yearlyReportEnabled && entitlement, nowMs(), zone, d.calendarFirstDay(locale))
         val desired = items.map { period ->
             val (title, body) = when (period.kind) {
                 CycleReportKind.WEEK -> R.string.reportNotificationWeekTitle to R.string.reportNotificationWeekBody

@@ -284,6 +284,10 @@
     "breakReminder": {
       "resource": "string/breakReminder"
     },
+    "calendarWeekStart": {
+      "resource": "string/calendarWeekStart",
+      "androidOnly": true
+    },
     "cancel": {
       "resource": "string/cancel"
     },

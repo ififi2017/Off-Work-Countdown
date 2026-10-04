@@ -55,3 +55,9 @@ data class DoneAtRecordsColors(
 }
 
 val LocalDoneAtRecordsColors = staticCompositionLocalOf { DoneAtRecordsColors.light }
+
+object DoneAtRecordsStyle {
+    const val estimateStrokeOpacity = .55f
+    /** iOS secondary tint (~60%) with the month grid's additional 55% opacity. */
+    const val calendarEstimateTintOpacity = .33f
+}

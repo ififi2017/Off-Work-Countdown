@@ -23,6 +23,9 @@ import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.DayOfWeek
+import java.time.temporal.WeekFields
+import java.util.Locale
 
 /**
  * Settings that belong to this device and are never part of the records
@@ -34,6 +37,8 @@ data class DeviceSettings(
     val hideEarnings: Boolean = false,
     val lifeSetupPromptDismissed: Boolean = false,
     val recordsScale: String = "month",
+    /** ISO weekday (1 = Monday, 7 = Sunday); unset preserves the existing locale default. */
+    val calendarWeekStart: Int? = null,
     /** Android asks for POST_NOTIFICATIONS once; after a denial the app points to system settings instead. */
     val notificationPermissionRequested: Boolean = false,
     /** First-run choices not yet committed; survives the process being killed mid-setup. */
@@ -69,6 +74,8 @@ data class DeviceSettings(
     val reportNotificationMigrationComplete: Boolean = false,
 ) {
     val leavePlannerTrialsLeft get() = maxOf(0, LEAVE_PLANNER_FREE_TRIALS - leavePlannerTrialsUsed)
+    fun calendarFirstDay(locale: Locale): DayOfWeek = calendarWeekStart
+        ?.takeIf { it == 1 || it == 7 }?.let(DayOfWeek::of) ?: WeekFields.of(locale).firstDayOfWeek
 
     companion object {
         val ONGOING_LEAD_MINUTES = listOf(5, 15, 30)
@@ -113,6 +120,7 @@ class DeviceSettingsStore(private val file: Path) {
             hideEarnings = bool("hideEarnings", false),
             lifeSetupPromptDismissed = bool("lifeSetupPromptDismissed", false),
             recordsScale = o["recordsScale"]?.jsonPrimitive?.contentOrNull ?: "month",
+            calendarWeekStart = (o["calendarWeekStart"] as? JsonPrimitive)?.intOrNull?.takeIf { it == 1 || it == 7 },
             notificationPermissionRequested = bool("notificationPermissionRequested", false),
             setupDraft = (o["setupDraft"] as? JsonObject)?.let(PreferencesJson::decode)?.takeIf { it.isValid },
             dynamicColor = bool("dynamicColor", false),
@@ -138,6 +146,7 @@ class DeviceSettingsStore(private val file: Path) {
             "hideEarnings" to JsonPrimitive(s.hideEarnings),
             "lifeSetupPromptDismissed" to JsonPrimitive(s.lifeSetupPromptDismissed),
             "recordsScale" to JsonPrimitive(s.recordsScale),
+            "calendarWeekStart" to (s.calendarWeekStart?.let(::JsonPrimitive) ?: JsonNull),
             "notificationPermissionRequested" to JsonPrimitive(s.notificationPermissionRequested),
             "setupDraft" to (s.setupDraft?.let(PreferencesJson::encode) ?: JsonNull),
             "dynamicColor" to JsonPrimitive(s.dynamicColor),

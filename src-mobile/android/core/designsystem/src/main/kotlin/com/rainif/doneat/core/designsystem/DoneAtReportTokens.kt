@@ -26,7 +26,12 @@ object DoneAtReportPalette {
 
 object DoneAtReportLayout {
     val page = 22.dp
-    val setupHero = 48.sp
+    val setupHero = 46.sp
+    val readingHero = 34.sp
+    val readingWeekArtHeight = 240.dp
+    val readingMonthArtHeight = 300.dp
+    val readingInset = 18.dp
+    val readingRowVertical = 14.dp
     val storyHero = 72.sp
     val storyHeadline = 42.sp
     val teaserHeight = 270.dp
