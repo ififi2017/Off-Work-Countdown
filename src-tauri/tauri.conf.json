@@ -75,7 +75,10 @@
           "Russian",
           "Turkish",
           "Arabic",
-          "Vietnamese"
+          "Vietnamese",
+          "Hindi",
+          "Thai",
+          "Indonesian"
         ],
         "installerIcon": "icons/icon.ico",
         "uninstallerIcon": "icons/icon.ico",
