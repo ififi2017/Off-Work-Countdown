@@ -240,7 +240,7 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                             else -> Icons.Outlined.Contrast
                         },
                         contentDescription = stringResource(R.string.theme),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
             }

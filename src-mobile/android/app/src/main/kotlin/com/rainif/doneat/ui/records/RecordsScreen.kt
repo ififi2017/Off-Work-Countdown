@@ -368,7 +368,7 @@ private fun Header(graph: AppGraph, text: RecordsText, onAllRecords: () -> Unit,
         )
         EarningsVisibilityButton(graph, onShownWithoutLock)
         IconButton(onClick = onAllRecords) {
-            Icon(Icons.AutoMirrored.Outlined.ListAlt, text.string(R.string.recordsAllRecords), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(Icons.AutoMirrored.Outlined.ListAlt, text.string(R.string.recordsAllRecords), tint = MaterialTheme.colorScheme.primary)
         }
     }
 }

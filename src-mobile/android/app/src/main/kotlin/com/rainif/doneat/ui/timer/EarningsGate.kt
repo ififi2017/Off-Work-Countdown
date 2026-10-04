@@ -114,7 +114,7 @@ fun EarningsVisibilityButton(graph: AppGraph, onShownWithoutLock: (String) -> Un
         Icon(
             if (device.hideEarnings) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
             contentDescription = stringResource(if (device.hideEarnings) R.string.unlockSalary else R.string.salaryLocked),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = MaterialTheme.colorScheme.primary,
         )
     }
 }

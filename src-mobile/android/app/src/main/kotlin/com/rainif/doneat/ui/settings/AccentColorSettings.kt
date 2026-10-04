@@ -71,7 +71,7 @@ fun AccentColorSettings(accent: Int?, dynamic: Boolean, onSelect: (Int?) -> Unit
         NavigationRow(stringResource(R.string.accentCustom), { picking = true }, Icons.Outlined.Palette,
             value = accent?.let(DoneAtAccent::hex))
     }
-    if (picking) AccentColorDialog(accent ?: (DoneAtColors.brand.toArgb() and 0xFFFFFF),
+    if (picking) AccentColorDialog(accent ?: (DoneAtColors.accentLight.toArgb() and 0xFFFFFF),
         onDismiss = { picking = false }, onSave = { onSelect(it); picking = false })
 }
 
