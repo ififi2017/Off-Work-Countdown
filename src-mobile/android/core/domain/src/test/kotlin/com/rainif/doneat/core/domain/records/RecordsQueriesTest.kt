@@ -5,6 +5,9 @@ import com.rainif.doneat.core.domain.records.RecordTestFixtures.segment
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
+import com.rainif.doneat.core.domain.schedule.ExtendedScheduleContent
+import com.rainif.doneat.core.domain.schedule.ShiftCycleRule
+import com.rainif.doneat.core.domain.schedule.ShiftType
 import com.rainif.doneat.core.domain.schedule.ScheduleRuleInput
 import com.rainif.doneat.core.domain.schedule.ScheduleRules
 import com.rainif.doneat.core.domain.session.SessionCommands
@@ -17,6 +20,8 @@ import org.junit.Test
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
+import java.io.File
+import java.util.UUID
 
 /**
  * The Records read side over a real archive: what each cell says, what it
@@ -64,6 +69,65 @@ class RecordsQueriesTest {
         assertEquals(LocalDate.parse("2026-09-27"), report.ahead.nextBreak.endDate)
         assertNull(report.ahead.leaveRemainingHalfDays)
         assertNull(report.ahead.leaveEntitledHalfDays)
+    }
+
+    private fun holidayQueries(effectiveFrom: String, firstDay: DayOfWeek = DayOfWeek.MONDAY): RecordsQueries {
+        val work = ShiftType(UUID.fromString("00000000-0000-4000-8000-000000000001"), "Day", ShiftType.Kind.WORK,
+            540, 1_020, true, 720, 60, "#FF8800", false)
+        val rest = work.copy(id = UUID.fromString("00000000-0000-4000-8000-000000000002"), name = "Rest", kind = ShiftType.Kind.REST)
+        val content = ExtendedScheduleContent(listOf(work, rest), ShiftCycleRule(ShiftCycleRule.Preset.WEEKLY,
+            "2026-09-28", List(5) { work.id } + List(2) { rest.id }), holidayRegionIdentifier = "CN")
+        val hours = weekdays.copy(extendedContent = content)
+        val holidays = HolidayCalendar.parse(File(System.getProperty("owc.holidayTemplates")).readText())
+        val context = RecordEditContext(ms("2026-10-04", 10), zone.id, true, holidays,
+            currentHours = { hours }, newId = { "00000000-0000-4000-8000-%012d".format(++ids) })
+        val state = RecordEdits.commitHours(seeded(from = "2026-01-01"), hours, effectiveFrom, context).first
+        return RecordsQueries(state, holidays, zone, true, currentHours = hours, firstDayOfWeek = firstDay)
+    }
+
+    @Test fun historicalMonthBreakIncludesHolidayDaysAlreadyPastWhenOpened() {
+        val q = holidayQueries("2026-10-01")
+        val period = q.reportPeriod(CycleReportKind.MONTH, LocalDate.parse("2026-09-16"))
+        for (openedOn in listOf("2026-10-04", "2026-10-08", "2026-11-04")) {
+            val ahead = q.cycleReportSnapshot(period, ms(openedOn, 10))!!.ahead!!
+            assertTrue(ahead.isHistorical)
+            assertEquals("2026-10-01", ahead.nextBreak!!.startDayKey)
+            assertEquals(LocalDate.parse("2026-10-07"), ahead.nextBreak.endDate)
+            assertEquals(7, ahead.nextBreak.length)
+            assertEquals(1, ahead.nextBreak.daysAway)
+            assertEquals(List(7) { true } + false, ahead.horizon.take(8))
+            assertNull(ahead.leaveRemainingHalfDays)
+        }
+    }
+
+    @Test fun historicalMonthBreakKeepsTheEffectiveDateOfLaterHolidaySettings() {
+        // Pixel reproduction: the old schedule worked Oct 1–2; CN holidays only took effect Oct 5.
+        val q = holidayQueries("2026-10-05")
+        val period = q.reportPeriod(CycleReportKind.MONTH, LocalDate.parse("2026-09-16"))
+        for (openedOn in listOf("2026-10-04", "2026-10-08", "2026-11-04")) {
+            val ahead = q.cycleReportSnapshot(period, ms(openedOn, 10))!!.ahead!!
+            assertTrue(ahead.isHistorical)
+            assertEquals("2026-10-03", ahead.nextBreak!!.startDayKey)
+            assertEquals(LocalDate.parse("2026-10-07"), ahead.nextBreak.endDate)
+            assertEquals(5, ahead.nextBreak.length)
+            assertEquals(3, ahead.nextBreak.daysAway)
+            assertEquals(listOf(false, false) + List(5) { true } + false, ahead.horizon.take(8))
+        }
+    }
+
+    @Test fun historicalCrossMonthWeekBreakStartsAfterItsOwnLastDay() {
+        for ((firstDay, firstBreakDay) in listOf(DayOfWeek.MONDAY to "2026-10-05", DayOfWeek.SUNDAY to "2026-10-04")) {
+            val q = holidayQueries("2026-09-01", firstDay)
+            val period = q.reportPeriod(CycleReportKind.WEEK, LocalDate.parse("2026-09-29"))
+            for (openedOn in listOf("2026-10-08", "2026-11-04")) {
+                val ahead = q.cycleReportSnapshot(period, ms(openedOn, 10))!!.ahead!!
+                assertTrue(ahead.isHistorical)
+                assertEquals(firstBreakDay, ahead.nextBreak!!.startDayKey)
+                assertEquals(period.endDate.plusDays(1), ahead.nextBreak.startDate)
+                assertEquals(LocalDate.parse("2026-10-07"), ahead.nextBreak.endDate)
+                assertEquals(1, ahead.nextBreak.daysAway)
+            }
+        }
     }
 
     @Test fun annualMonthTotalsReuseTheSameActualRecords() {

@@ -158,6 +158,7 @@ Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`
 - `records/CycleReport` 对应 iOS `CycleReport`：周按调用方传入的周起始日，月、年按自然周期；周期保存首尾日期与记录时区。Android 的 `DeviceSettings.calendarFirstDay` 统一读取用户选择的周日/周一，未选择时保留既有 locale 默认值；记录页、排班月历、休假方案日历及新周报共用。选择写入本机设置，不修改 schema 7 档案或交替排班的周规则。历史周报的邻接周期沿用已保存的周边界，语言或周起始设置改变不会重新定位原周期。API 26 使用已有 `java.time` 与字符串编码接口，不依赖较新的 `LocalDate.datesUntil`、Stream 收集或 Charset 编解码重载。
 - `RecordsQueries.cycleReportSnapshot` 对应 `RecordsQueries+CycleReport` 与 `CycleReportInsights`：同一档案版本和参考时刻一次构造报告，工时、加班、收入复用 `SummaryRules.recordsActualForecast`。日图表按民用日裁切并截至参考时刻，未知或解析失败的日期不冒充完整休息日；未来工时、加班和尚未完成的当日请假时段不计为已发生。
 - 历史周、月的后续连休以报告结束日为锚点，展示具体日期，不带当前余额。年报包含全年工时、加班、完整休息日、最长连休、已休假期及 12 个月趋势；专注按已完成的记录统计，年报没有后续连休或同比基线。年度解析结果供月度统计复用。
+- 后续连休按每天实际生效的排班快照解析，保留节假日设置的生效日期。`RecordsQueriesTest` 使用真实节假日数据覆盖：9 月月报在 10 月或 11 月打开，若中国节假日从 10-01 生效，连休为 10-01—10-07；若从 10-05 生效且此前为周一至周五工作，连休为 10-03—10-07。跨月周报从自己的结束日计算，覆盖周日和周一两种周起始。
 - `CycleReportSnapshot.withoutIncome` 同时剥离总收入、收入章节及 12 个月的收入。报告收入选择以全局隐藏设置为默认值，主动显示复用 `EarningsGate`，本次选择不写回全局设置。Compose 只格式化快照，不重新计算业务统计。
 - `CycleReportPlayer` 对应 iOS 播放器：主动暂停和按住暂停分别保存；主动暂停后前后翻页立即展示完成帧，临时暂停保持播放时序。文字简报、TalkBack 和减少动画路径静态展示同一快照；动效复用 `DoneAtMotion`。
 - `CycleReportHeadline.choose` 对应固定版本的事实标题选择：当前周期优先标记进行中，年报用中性标题；近期连休需要实际历史基线增幅，工时增减、加班占比和休息天数沿用 iOS 阈值。标题由纯 JVM 快照产生，不在 UI 中判断生活状态。
