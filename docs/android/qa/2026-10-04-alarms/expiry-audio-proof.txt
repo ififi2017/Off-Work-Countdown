@@ -1,0 +1,16 @@
+10-04 20:10:00:235 new player piid:143 uid/pid:10419/17527 package:com.rainif.doneat.alarmqa type:android.media.MediaPlayer attr:AudioAttributes: usage=USAGE_UNKNOWN content=CONTENT_TYPE_UNKNOWN flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null session:129
+10-04 20:10:00:236 player piid:143 new AudioAttributes:AudioAttributes: usage=USAGE_ALARM content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null
+10-04 20:10:00:319 player piid:143 event:started
+10-04 20:10:00:437 port updated portId:[35] mapped to player piid:143
+10-04 20:10:00:504 player piid:143 event:muted updated source:none 
+10-04 20:10:00:505 player piid:143 format update:FormatInfo{isSpatialized=false, channelMask=0x20000001, sampleRate=48000}
+10-04 20:10:00:514 player piid:143 event:device updated deviceIds:[4]
+10-04 20:10:30:542 player piid:143 event:paused
+10-04 20:10:31:677 player piid:143 event:device updated deviceIds:[4]
+10-04 20:10:37:641 player piid:143 event:device updated deviceIds:[4]
+10-04 20:10:45:037 releasing player piid:143, uid:10419
+10-04 20:10:00:225 AudioHardening focus request for req 2 would be ignored for com.rainif.doneat.alarmqa (10419), android.media.AudioManager@853023com.rainif.doneat.alarms.ShiftAlarmService$$ExternalSyntheticLambda0@b725920, level: full usage: 4 exemption: 4
+10-04 20:10:00:591 AudioHardening background playback would be muted for com.rainif.doneat.alarmqa (10419), level: full, reason: 6, usage: USAGE_ALARM
+10-04 20:10:00:226 requestAudioFocus() from uid/pid 10419/17527 AA=USAGE_ALARM/CONTENT_TYPE_SONIFICATION clientId=android.media.AudioManager@853023com.rainif.doneat.alarms.ShiftAlarmService$$ExternalSyntheticLambda0@b725920 callingPack=com.rainif.doneat.alarmqa req=2 flags=0x0 sdk=36
+10-04 20:10:30:542 focus owner: android.media.AudioManager@853023com.rainif.doneat.alarms.ShiftAlarmService$$ExternalSyntheticLambda0@b725920 in uid: 10419 pack: com.rainif.doneat.alarmqa code: -2 event: handleLoss
+10-04 20:10:45:069 abandonAudioFocus() from uid/pid 10419/17527 clientId=android.media.AudioManager@853023com.rainif.doneat.alarms.ShiftAlarmService$$ExternalSyntheticLambda0@b725920 callingPack=com.rainif.doneat.alarmqa

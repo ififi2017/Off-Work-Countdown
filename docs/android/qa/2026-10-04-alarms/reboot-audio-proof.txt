@@ -1,0 +1,12 @@
+10-04 20:03:25:732 new player piid:127 uid/pid:10419/5192 package:com.rainif.doneat.alarmqa type:android.media.MediaPlayer attr:AudioAttributes: usage=USAGE_UNKNOWN content=CONTENT_TYPE_UNKNOWN flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null session:97
+10-04 20:03:25:732 player piid:127 new AudioAttributes:AudioAttributes: usage=USAGE_ALARM content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null
+10-04 20:03:25:791 player piid:127 event:started
+10-04 20:03:26:032 port updated portId:[34] mapped to player piid:127
+10-04 20:03:26:082 player piid:127 event:muted updated source:none 
+10-04 20:03:26:083 player piid:127 format update:FormatInfo{isSpatialized=false, channelMask=0x20000001, sampleRate=48000}
+10-04 20:03:26:095 player piid:127 event:device updated deviceIds:[4]
+10-04 20:03:26:095 player piid:127 event:device updated deviceIds:[4]
+10-04 20:03:48:695 releasing player piid:127, uid:10419
+10-04 20:03:25:725 AudioHardening focus request for req 2 would be ignored for com.rainif.doneat.alarmqa (10419), android.media.AudioManager@617f31ccom.rainif.doneat.alarms.ShiftAlarmService$$ExternalSyntheticLambda0@7ed3b25, level: full usage: 4 exemption: 4
+10-04 20:03:25:726 requestAudioFocus() from uid/pid 10419/5192 AA=USAGE_ALARM/CONTENT_TYPE_SONIFICATION clientId=android.media.AudioManager@617f31ccom.rainif.doneat.alarms.ShiftAlarmService$$ExternalSyntheticLambda0@7ed3b25 callingPack=com.rainif.doneat.alarmqa req=2 flags=0x0 sdk=36
+10-04 20:03:48:732 abandonAudioFocus() from uid/pid 10419/5192 clientId=android.media.AudioManager@617f31ccom.rainif.doneat.alarms.ShiftAlarmService$$ExternalSyntheticLambda0@7ed3b25 callingPack=com.rainif.doneat.alarmqa
