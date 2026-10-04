@@ -976,10 +976,14 @@
     <string name="shiftAlarmTitleFixed">Travail à %1$s</string>
     <string name="shiftAlarmsAllow">Autoriser les réveils</string>
     <string name="shiftAlarmsAllowNote">DoneAt a besoin d’accéder aux réveils pour vous réveiller, même en mode silencieux.</string>
+    <string name="shiftAlarmsAndroidAccess">Autorisez les notifications et les alarmes exactes pour programmer les réveils.</string>
+    <string name="shiftAlarmsAndroidNote">Utilise votre son et volume d’alarme et vos réglages Ne pas déranger. La sonnerie s’arrête après 10 minutes.</string>
     <string name="shiftAlarmsBeforeWork">Avant le travail</string>
     <string name="shiftAlarmsCoveredThrough">Programmés jusqu’au %1$s</string>
     <string name="shiftAlarmsDenied">L’accès aux réveils est désactivé</string>
     <string name="shiftAlarmsDeniedNote">Autorisez les réveils pour DoneAt dans Réglages pour commencer à les programmer.</string>
+    <string name="shiftAlarmsFullScreen">Alarmes en plein écran</string>
+    <string name="shiftAlarmsFullScreenNote">Autorisez les alertes en plein écran pour afficher Arrêter et Répéter sur l’écran verrouillé. Sinon, utilisez la notification d’alarme.</string>
     <string name="shiftAlarmsIntro">Sonne avant chaque service, aussi tôt que vous le souhaitez. Les réveils sonnent uniquement sur cet appareil.</string>
     <string name="shiftAlarmsLeadOff">Désactivé</string>
     <string name="shiftAlarmsLeadSection">Sonner avant</string>

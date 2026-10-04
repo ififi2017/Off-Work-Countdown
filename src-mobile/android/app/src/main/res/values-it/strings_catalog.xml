@@ -976,10 +976,14 @@
     <string name="shiftAlarmTitleFixed">Lavoro alle %1$s</string>
     <string name="shiftAlarmsAllow">Consenti sveglie</string>
     <string name="shiftAlarmsAllowNote">DoneAt ha bisogno dell’accesso alle sveglie per svegliarti, anche in silenzioso.</string>
+    <string name="shiftAlarmsAndroidAccess">Consenti notifiche e sveglie esatte per programmare le sveglie.</string>
+    <string name="shiftAlarmsAndroidNote">Usa il suono e il volume della sveglia e le impostazioni Non disturbare. Smette di suonare dopo 10 minuti.</string>
     <string name="shiftAlarmsBeforeWork">Prima del lavoro</string>
     <string name="shiftAlarmsCoveredThrough">Impostate fino al %1$s</string>
     <string name="shiftAlarmsDenied">L’accesso alle sveglie è disattivato</string>
     <string name="shiftAlarmsDeniedNote">Consenti le sveglie per DoneAt in Impostazioni per iniziare a programmarle.</string>
+    <string name="shiftAlarmsFullScreen">Sveglie a schermo intero</string>
+    <string name="shiftAlarmsFullScreenNote">Consenti avvisi a schermo intero per mostrare Interrompi e Posticipa nella schermata di blocco. Altrimenti usa la notifica della sveglia.</string>
     <string name="shiftAlarmsIntro">Suona prima di ogni turno, con l’anticipo che scegli. Le sveglie suonano solo su questo dispositivo.</string>
     <string name="shiftAlarmsLeadOff">No</string>
     <string name="shiftAlarmsLeadSection">Suona prima</string>

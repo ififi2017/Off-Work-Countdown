@@ -970,10 +970,14 @@
     <string name="shiftAlarmTitleFixed">Vào làm %1$s</string>
     <string name="shiftAlarmsAllow">Cho phép báo thức</string>
     <string name="shiftAlarmsAllowNote">DoneAt cần quyền báo thức để đánh thức bạn, kể cả khi ở chế độ im lặng.</string>
+    <string name="shiftAlarmsAndroidAccess">Cho phép thông báo và báo thức chính xác để lên lịch báo thức đánh thức.</string>
+    <string name="shiftAlarmsAndroidNote">Sử dụng âm báo, âm lượng báo thức và cài đặt Không làm phiền của bạn. Ngừng đổ chuông sau 10 phút.</string>
     <string name="shiftAlarmsBeforeWork">Trước giờ làm</string>
     <string name="shiftAlarmsCoveredThrough">Đã đặt đến %1$s</string>
     <string name="shiftAlarmsDenied">Quyền báo thức đang tắt</string>
     <string name="shiftAlarmsDeniedNote">Cho phép báo thức cho DoneAt trong Cài đặt để bắt đầu đặt báo thức.</string>
+    <string name="shiftAlarmsFullScreen">Báo thức toàn màn hình</string>
+    <string name="shiftAlarmsFullScreenNote">Cho phép cảnh báo toàn màn hình để hiện Dừng và Báo lại trên màn hình khóa. Nếu không, hãy dùng thông báo báo thức.</string>
     <string name="shiftAlarmsIntro">Reo trước mỗi ca, sớm bao nhiêu tùy bạn chọn. Báo thức chỉ reo trên thiết bị này.</string>
     <string name="shiftAlarmsLeadOff">Tắt</string>
     <string name="shiftAlarmsLeadSection">Reo trước</string>

@@ -976,10 +976,14 @@
     <string name="shiftAlarmTitleFixed">Trabajo a las %1$s</string>
     <string name="shiftAlarmsAllow">Permitir alarmas</string>
     <string name="shiftAlarmsAllowNote">DoneAt necesita acceso a las alarmas para despertarte, incluso en silencio.</string>
+    <string name="shiftAlarmsAndroidAccess">Permite las notificaciones y alarmas exactas para programar despertadores.</string>
+    <string name="shiftAlarmsAndroidNote">Usa el sonido y volumen de alarma y los ajustes de No molestar. Deja de sonar a los 10 minutos.</string>
     <string name="shiftAlarmsBeforeWork">Antes del trabajo</string>
     <string name="shiftAlarmsCoveredThrough">Programadas hasta el %1$s</string>
     <string name="shiftAlarmsDenied">El acceso a alarmas está desactivado</string>
     <string name="shiftAlarmsDeniedNote">Permite las alarmas para DoneAt en Ajustes y empezarán a programarse.</string>
+    <string name="shiftAlarmsFullScreen">Alarmas a pantalla completa</string>
+    <string name="shiftAlarmsFullScreenNote">Permite avisos a pantalla completa para ver Detener y Posponer en la pantalla de bloqueo. Si no, usa la notificación de alarma.</string>
     <string name="shiftAlarmsIntro">Suena antes de cada turno con la antelación que elijas. Las alarmas suenan solo en este dispositivo.</string>
     <string name="shiftAlarmsLeadOff">Desactivada</string>
     <string name="shiftAlarmsLeadSection">Sonar antes</string>

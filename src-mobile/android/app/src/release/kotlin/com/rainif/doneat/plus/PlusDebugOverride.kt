@@ -8,6 +8,9 @@ object PlusDebugOverride {
     const val AVAILABLE = false
 
     @Suppress("UNUSED_PARAMETER")
+    fun alarmExpiry(context: Context): Long? = null
+
+    @Suppress("UNUSED_PARAMETER")
     fun read(context: Context) = false
 
     @Suppress("UNUSED_PARAMETER")

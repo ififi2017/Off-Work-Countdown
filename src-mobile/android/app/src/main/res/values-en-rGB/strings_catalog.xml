@@ -51,6 +51,7 @@
     <string name="scheduleClearExpectedMessage">Clear automatic shifts from today onward. Keep past dates, days with timing records and manual changes. Future dates will no longer be filled from earlier months or bank holidays. Changes take effect when you save.</string>
     <string name="scheduleFreeCalendar">Free rota</string>
     <string name="scheduleOff">No rota yet</string>
+    <string name="shiftAlarmsAndroidAccess">Allow notifications and exact alarms to rota wake-up alarms.</string>
     <string name="syncPrivacyDetail">Your work rota, salary, reminders, appearance, language, Life profile, records and Focus data sync through your private iCloud database. Notification permission, biometric protection and Live Activities stay on this device.</string>
     <string name="wallpaperColors">Use wallpaper colours</string>
     <string name="watchCacheCorrupt">The saved rota couldn’t be read. Open DoneAt on your iPhone.</string>

@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
+        <activity android:name=".alarms.ShiftAlarmQaActivity" android:exported="true" android:label="DoneAt alarm QA" />
         <!-- Debug only (T04): the design-token gallery. Exported so `adb shell am start` can open it; absent from release. -->
         <activity
             android:name=".gallery.DesignGalleryActivity"

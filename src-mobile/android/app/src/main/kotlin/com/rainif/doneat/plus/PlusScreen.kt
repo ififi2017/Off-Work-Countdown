@@ -94,6 +94,7 @@ fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
         backLabel = when (pendingAction) {
             is PlusPendingAction.FocusCreate, PlusPendingAction.FocusHome -> R.string.focusTitle
             is PlusPendingAction.RecordsDay, PlusPendingAction.RecordsLifeEdit, PlusPendingAction.RecordsCharts -> R.string.recordsTab
+            PlusPendingAction.ShiftAlarms -> R.string.shiftAlarmsTitle
             PlusPendingAction.CycleSummary, null -> R.string.settings
             is PlusPendingAction.LeavePlan -> R.string.leaveResultsTitle
         })

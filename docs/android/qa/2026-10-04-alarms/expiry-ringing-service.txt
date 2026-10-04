@@ -1,0 +1,36 @@
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  User 0 active services:
+  * ServiceRecord{b1a3db4 u0 com.rainif.doneat.alarmqa/com.rainif.doneat.alarms.ShiftAlarmService c:com.rainif.doneat.alarmqa}
+    intent={dat=doneat-alarm://com.rainif.doneat.alarmqa/6c656c83-8ada-5ebf-89dd-d712ca86fbd2 cmp=com.rainif.doneat.alarmqa/com.rainif.doneat.alarms.ShiftAlarmService}
+    packageName=com.rainif.doneat.alarmqa
+    processName=com.rainif.doneat.alarmqa
+    targetSdkVersion=36
+    baseDir=/data/app/~~QC657QijQeEYIubN_vrNwg==/com.rainif.doneat.alarmqa-aaAVX8SNVETtD6t8bN-fUw==/base.apk
+    dataDir=/data/user/0/com.rainif.doneat.alarmqa
+    app=ProcessRecord{b3f71df 17527:com.rainif.doneat.alarmqa/u0a419}
+    useNewWiuLogic_forCapabilities()=true
+    useNewWiuLogic_forStart()=true
+    useNewBfslLogic()=true
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=DENIED
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=DENIED
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=DENIED
+    getFgsAllowWiu_forCapabilities=DENIED
+    allowUiJobScheduling=false
+    recentCallingPackage=com.rainif.doneat.alarmqa
+    recentCallingUid=10419
+    mAllowStart_noBinding=ALARM_MANAGER_ALARM_CLOCK
+    mAllowStart_inBindService=DENIED
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=ALARM_MANAGER_ALARM_CLOCK
+    getFgsAllowStart_new=ALARM_MANAGER_ALARM_CLOCK
+    getFgsAllowStart=ALARM_MANAGER_ALARM_CLOCK
+    startForegroundCount=1
+    infoAllowStartForeground=[callingPackage: com.rainif.doneat.alarmqa; callingUid: 10419; uidState: RCVR; uidBFSL: n/a; BFGS denied: false; intent: Intent { dat=doneat-alarm://com.rainif.doneat.alarmqa/... xflg=0x4 cmp=com.rainif.doneat.alarmqa/com.rainif.doneat.alarms.ShiftAlarmService }; code:ALARM_MANAGER_ALARM_CLOCK; tempAllowListReason:<2653bf0 com.rainif.doneat.SHIFT_ALARM_FIRE/u0/0x2055,reasonCode:ALARM_MANAGER_ALARM_CLOCK,duration:10000,callingUid:10419>; allowWiu:-1; targetSdkVersion:36; callerTargetSdkVersion:36; startForegroundCount:0; bindFromPackage:null; isBindService:false]
+    isForeground=true foregroundId=7201 types=0x00000002 foregroundNoti=Notification(channel=shift-wake-alarms shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|NO_CLEAR|FOREGROUND_SERVICE color=0x00000000 category=alarm actions=1 vis=PUBLIC template=null)
+    createTime=-22s447ms startingBgTimeout=--
+    lastActivity=-22s440ms restartTime=-22s440ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=true callStart=true lastStartId=1
+ startCommandResult=2

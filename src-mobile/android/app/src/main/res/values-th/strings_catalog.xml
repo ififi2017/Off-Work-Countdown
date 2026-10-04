@@ -970,10 +970,14 @@
     <string name="shiftAlarmTitleFixed">เข้างาน %1$s</string>
     <string name="shiftAlarmsAllow">อนุญาตนาฬิกาปลุก</string>
     <string name="shiftAlarmsAllowNote">DoneAt ต้องได้รับสิทธิ์นาฬิกาปลุกเพื่อปลุกคุณ แม้อยู่ในโหมดเงียบ</string>
+    <string name="shiftAlarmsAndroidAccess">อนุญาตการแจ้งเตือนและนาฬิกาปลุกแบบตรงเวลาเพื่อตั้งปลุก</string>
+    <string name="shiftAlarmsAndroidNote">ใช้เสียงและระดับเสียงปลุก รวมถึงการตั้งค่าห้ามรบกวนของคุณ เสียงจะหยุดหลังจาก 10 นาที</string>
     <string name="shiftAlarmsBeforeWork">ก่อนเริ่มงาน</string>
     <string name="shiftAlarmsCoveredThrough">ตั้งไว้ถึง %1$s</string>
     <string name="shiftAlarmsDenied">สิทธิ์นาฬิกาปลุกปิดอยู่</string>
     <string name="shiftAlarmsDeniedNote">อนุญาตนาฬิกาปลุกให้ DoneAt ในการตั้งค่าเพื่อเริ่มตั้งปลุก</string>
+    <string name="shiftAlarmsFullScreen">การปลุกแบบเต็มหน้าจอ</string>
+    <string name="shiftAlarmsFullScreenNote">อนุญาตการแจ้งเตือนเต็มหน้าจอเพื่อแสดงปุ่มหยุดและเลื่อนปลุกบนหน้าจอล็อก หรือใช้การแจ้งเตือนของนาฬิกาปลุก</string>
     <string name="shiftAlarmsIntro">ดังก่อนเริ่มแต่ละกะตามเวลาที่คุณเลือก นาฬิกาปลุกจะดังบนอุปกรณ์นี้เท่านั้น</string>
     <string name="shiftAlarmsLeadOff">ปิด</string>
     <string name="shiftAlarmsLeadSection">ดังล่วงหน้า</string>

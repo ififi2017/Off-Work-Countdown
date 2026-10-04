@@ -973,10 +973,14 @@
     <string name="shiftAlarmTitleFixed">Work at %1$s</string>
     <string name="shiftAlarmsAllow">Allow alarms</string>
     <string name="shiftAlarmsAllowNote">DoneAt needs alarm access to wake you, even on silent.</string>
+    <string name="shiftAlarmsAndroidAccess">Allow notifications and exact alarms to schedule wake-up alarms.</string>
+    <string name="shiftAlarmsAndroidNote">Uses your alarm sound, alarm volume and Do Not Disturb settings. Ringing stops after 10 minutes.</string>
     <string name="shiftAlarmsBeforeWork">Before work</string>
     <string name="shiftAlarmsCoveredThrough">Set through %1$s</string>
     <string name="shiftAlarmsDenied">Alarm access is off</string>
     <string name="shiftAlarmsDeniedNote">Allow alarms for DoneAt in Settings to start setting them.</string>
+    <string name="shiftAlarmsFullScreen">Full-screen alarms</string>
+    <string name="shiftAlarmsFullScreenNote">Allow full-screen alerts to show Stop and Snooze on the lock screen. Otherwise, use the alarm notification.</string>
     <string name="shiftAlarmsIntro">Rings before each shift, as early as you choose. Alarms ring on this device only.</string>
     <string name="shiftAlarmsLeadOff">Off</string>
     <string name="shiftAlarmsLeadSection">Ring before</string>

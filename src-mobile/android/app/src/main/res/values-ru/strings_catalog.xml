@@ -979,10 +979,14 @@
     <string name="shiftAlarmTitleFixed">Работа в %1$s</string>
     <string name="shiftAlarmsAllow">Разрешить будильники</string>
     <string name="shiftAlarmsAllowNote">DoneAt нужен доступ к будильникам, чтобы разбудить вас даже в беззвучном режиме.</string>
+    <string name="shiftAlarmsAndroidAccess">Разрешите уведомления и точные будильники, чтобы запланировать пробуждение.</string>
+    <string name="shiftAlarmsAndroidNote">Использует звук и громкость будильника и настройки «Не беспокоить». Звонок прекращается через 10 минут.</string>
     <string name="shiftAlarmsBeforeWork">Перед работой</string>
     <string name="shiftAlarmsCoveredThrough">Поставлены до %1$s</string>
     <string name="shiftAlarmsDenied">Доступ к будильникам выключен</string>
     <string name="shiftAlarmsDeniedNote">Разрешите будильники для DoneAt в Настройках, и они начнут ставиться.</string>
+    <string name="shiftAlarmsFullScreen">Полноэкранные будильники</string>
+    <string name="shiftAlarmsFullScreenNote">Разрешите полноэкранные оповещения, чтобы видеть кнопки остановки и повтора на экране блокировки. Иначе используйте уведомление будильника.</string>
     <string name="shiftAlarmsIntro">Звонит перед каждой сменой — так заранее, как вы выберете. Будильники звонят только на этом устройстве.</string>
     <string name="shiftAlarmsLeadOff">Выкл.</string>
     <string name="shiftAlarmsLeadSection">Звонить заранее</string>

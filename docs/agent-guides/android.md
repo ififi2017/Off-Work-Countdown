@@ -141,8 +141,12 @@ locale and validation rules apply.
   expiry. Empty configuration preserves the previous client-only build. Keep
   receipts in `noBackupFilesDir`, outside schema 7. See the service runbook for
   deployment, privacy and Play license-test gates before enabling production.
-- Reminders are absolute alarms registered up front (`Reminders`, `ReminderSync`),
-  never a foreground service or a polling worker. Exact timing needs the
+- Ordinary reminders are absolute alarms registered up front (`Reminders`, `ReminderSync`),
+  never a foreground service or a polling worker. Native shift wake-up alarms use
+  `setAlarmClock` and a separate, bounded `mediaPlayback` foreground service only
+  while actually ringing. Boot receivers re-arm future alarms but never start
+  playback. Full-screen presentation needs its own system grant and Play
+  declaration; do not claim that a successful local build proves Play approval. Exact timing needs the
   user-granted `SCHEDULE_EXACT_ALARM`; never declare `USE_EXACT_ALARM`. The
   alarm registry lives in `noBackupFilesDir`; receivers stay unexported and
   post only what the registry still holds.

@@ -124,6 +124,7 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
                 select(AppTab.RECORDS)
             }
             PlusPendingAction.RecordsCharts -> select(AppTab.RECORDS)
+            PlusPendingAction.ShiftAlarms -> graph.scope.launch { graph.settings.updateDevice { it.copy(shiftAlarms = it.shiftAlarms.copy(enabled = true)) } }
             PlusPendingAction.CycleSummary -> graph.scope.launch {
                 graph.settings.updateDevice { it.copy(weeklyReportEnabled = true) }
             }
@@ -138,6 +139,16 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
             stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) }
             select(tab)
             graph.requestedTab.value = null
+        }
+    }
+    val requestedAlarms by graph.requestedShiftAlarms.collectAsStateWithLifecycle()
+    LaunchedEffect(requestedAlarms) {
+        if (requestedAlarms) {
+            val settingsStack = stacks.getValue(AppTab.SETTINGS)
+            while (settingsStack.size > 1) settingsStack.removeAt(settingsStack.lastIndex)
+            settingsStack.add(Route.ShiftAlarms)
+            select(AppTab.SETTINGS)
+            graph.requestedShiftAlarms.value = false
         }
     }
     val requestedReport by graph.requestedReport.collectAsStateWithLifecycle()
@@ -367,6 +378,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
         Route.RecordsConflicts -> com.rainif.doneat.ui.settings.RecordsConflictCenter(graph, back)
         Route.Plus -> com.rainif.doneat.plus.PlusScreen(graph, back)
         is Route.PlusFor -> com.rainif.doneat.plus.PlusScreen(graph, back, key.action, continueAfterPlus)
+        Route.ShiftAlarms -> com.rainif.doneat.ui.settings.ShiftAlarmSettingsScreen(graph, open, back)
         Route.Notifications -> NotificationsScreen(
             prefs, device.notificationPermissionRequested, edit,
             markPermissionRequested = { scope.launch { graph.settings.updateDevice { it.copy(notificationPermissionRequested = true) } } },

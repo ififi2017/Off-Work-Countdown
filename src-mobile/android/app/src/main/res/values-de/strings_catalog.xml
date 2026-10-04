@@ -973,10 +973,14 @@
     <string name="shiftAlarmTitleFixed">Arbeit %1$s</string>
     <string name="shiftAlarmsAllow">Wecker erlauben</string>
     <string name="shiftAlarmsAllowNote">DoneAt braucht Zugriff auf Wecker, um dich auch im Stumm-Modus zu wecken.</string>
+    <string name="shiftAlarmsAndroidAccess">Erlaube Benachrichtigungen und exakte Alarme, um Wecker zu stellen.</string>
+    <string name="shiftAlarmsAndroidNote">Verwendet deinen Weckton, die Weckerlautstärke und die Einstellungen für „Nicht stören“. Der Wecker verstummt nach 10 Minuten.</string>
     <string name="shiftAlarmsBeforeWork">Vor der Arbeit</string>
     <string name="shiftAlarmsCoveredThrough">Gestellt bis %1$s</string>
     <string name="shiftAlarmsDenied">Weckerzugriff ist aus</string>
     <string name="shiftAlarmsDeniedNote">Erlaube DoneAt in den Einstellungen Wecker, dann werden sie eingeplant.</string>
+    <string name="shiftAlarmsFullScreen">Vollbildwecker</string>
+    <string name="shiftAlarmsFullScreenNote">Erlaube Vollbildmeldungen, um Stopp und Schlummern auf dem Sperrbildschirm zu sehen. Andernfalls nutze die Weckerbenachrichtigung.</string>
     <string name="shiftAlarmsIntro">Klingelt vor jeder Schicht so früh, wie du möchtest. Die Wecker klingeln nur auf diesem Gerät.</string>
     <string name="shiftAlarmsLeadOff">Aus</string>
     <string name="shiftAlarmsLeadSection">Klingeln vorher</string>

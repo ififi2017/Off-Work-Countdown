@@ -338,7 +338,8 @@ Glance 与系统倒计时通知。Kotlin 实现以固定 iOS 基线与共享 Typ
 Android 3.2.1 的 Plan 020 增量固定读取 iOS `18129168acd23edc3a872cca3633a2831f60c6f2`。
 动态周、月、年报由 Kotlin 领域层生成统计快照，Compose 播放与文字简报共用；
 通知携带周期边界和记录时区。档案继续使用 schema 7 的原子 JSON 存储。
-班次起床闹钟当前只提供纯规则规划与差量模型，产品没有开放闹钟开关。
+班次起床闹钟复用纯规则规划，并接入 `setAlarmClock`、设备本地预约日志及仅响铃期间的原生前台服务。
+锁屏全屏显示受单独授权约束；设置页显示系统实际接受的预约。设备验收与 Play 声明状态见 Android 进度。
 2026-10-04 用户授权同仓库独立 Cloudflare Worker + D1（`services/billing-api`，
 `api.doneat.app`）获取 Google 已验证精确到期，Android 校验签名后供 PlusAccess 使用；
 生产接入需完成部署与许可测试。原生响铃生命周期仍需单独实现与设备验收。

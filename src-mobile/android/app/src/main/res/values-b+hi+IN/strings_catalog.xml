@@ -973,10 +973,14 @@
     <string name="shiftAlarmTitleFixed">काम %1$s</string>
     <string name="shiftAlarmsAllow">अलार्म की अनुमति दें</string>
     <string name="shiftAlarmsAllowNote">साइलेंट मोड में भी जगाने के लिए DoneAt को अलार्म की अनुमति चाहिए।</string>
+    <string name="shiftAlarmsAndroidAccess">जगाने वाले अलार्म तय करने के लिए सूचनाओं और सटीक अलार्म की अनुमति दें।</string>
+    <string name="shiftAlarmsAndroidNote">आपके अलार्म की ध्वनि, वॉल्यूम और परेशान न करें सेटिंग का पालन करता है। 10 मिनट बाद बजना बंद हो जाता है।</string>
     <string name="shiftAlarmsBeforeWork">काम से पहले</string>
     <string name="shiftAlarmsCoveredThrough">%1$s तक लगे हैं</string>
     <string name="shiftAlarmsDenied">अलार्म की अनुमति बंद है</string>
     <string name="shiftAlarmsDeniedNote">सेटिंग्स में DoneAt को अलार्म की अनुमति दें, फिर अलार्म लगने लगेंगे।</string>
+    <string name="shiftAlarmsFullScreen">पूर्ण स्क्रीन अलार्म</string>
+    <string name="shiftAlarmsFullScreenNote">लॉक स्क्रीन पर बंद करें और स्नूज़ दिखाने के लिए पूर्ण स्क्रीन अलर्ट की अनुमति दें। नहीं तो अलार्म की सूचना का उपयोग करें।</string>
     <string name="shiftAlarmsIntro">हर शिफ़्ट से पहले, आपके चुने समय पर बजता है। अलार्म सिर्फ़ इसी डिवाइस पर बजेंगे।</string>
     <string name="shiftAlarmsLeadOff">बंद</string>
     <string name="shiftAlarmsLeadSection">पहले बजे</string>

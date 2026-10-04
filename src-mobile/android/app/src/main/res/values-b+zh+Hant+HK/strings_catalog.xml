@@ -970,10 +970,14 @@
     <string name="shiftAlarmTitleFixed">%1$s 開工</string>
     <string name="shiftAlarmsAllow">允許使用鬧鐘</string>
     <string name="shiftAlarmsAllowNote">DoneAt 需要鬧鐘權限，先可以喺靜音時都叫醒你。</string>
+    <string name="shiftAlarmsAndroidAccess">請允許通知同精確鬧鐘，以預約起床鬧鐘。</string>
+    <string name="shiftAlarmsAndroidNote">使用系統鬧鐘鈴聲，並遵循鬧鐘音量同勿擾設定。響鈴 10 分鐘後停止。</string>
     <string name="shiftAlarmsBeforeWork">開工前</string>
     <string name="shiftAlarmsCoveredThrough">已安排到 %1$s</string>
     <string name="shiftAlarmsDenied">鬧鐘權限已關閉</string>
     <string name="shiftAlarmsDeniedNote">喺「設定」允許 DoneAt 使用鬧鐘，就可以開始安排。</string>
+    <string name="shiftAlarmsFullScreen">全螢幕鬧鐘</string>
+    <string name="shiftAlarmsFullScreenNote">允許全螢幕提醒後，鎖屏時可直接顯示停止同貪睡按鈕。否則請用鬧鐘通知操作。</string>
     <string name="shiftAlarmsIntro">每更開工前，按你設定嘅時間提早響。鬧鐘只會喺呢部裝置響。</string>
     <string name="shiftAlarmsLeadOff">唔響</string>
     <string name="shiftAlarmsLeadSection">提早幾耐響</string>
