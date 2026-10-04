@@ -633,7 +633,7 @@
     <string name="plusAndroidPlansUnavailable">Impossible de charger les offres depuis Google Play. Veuillez réessayer.</string>
     <string name="plusAndroidRenewalNotice">Les abonnements se renouvellent automatiquement jusqu’à leur résiliation. L’achat à vie ne résilie pas un abonnement actif.</string>
     <string name="plusAndroidRequestFailed">Google Play n’a pas pu terminer cette action. Réessayez dans un instant.</string>
-    <string name="plusAndroidStoreOffline">Google Play est indisponible pour le moment. Réessayez de restaurer vos achats une fois connecté.</string>
+    <string name="plusAndroidStoreOffline">Impossible de confirmer votre accès actuel à Plus. Réessayez ou restaurez vos achats.</string>
     <string name="plusAndroidStoreUnconfigured">Les achats Plus ne sont pas encore disponibles sur cet appareil. Le minuteur et vos données récentes restent accessibles.</string>
     <string name="plusAndroidYearlyTrialPrice">7 jours gratuits, puis %1$s par an. Annulez avant la fin de l’essai pour éviter la facturation.</string>
     <string name="plusAutoRenew">Les abonnements se renouvellent automatiquement jusqu’à leur annulation. L’offre annuelle peut inclure 7 jours gratuits, puis le tarif annuel s’applique. L’achat à vie est un paiement unique et n’annule pas un abonnement en cours.</string>

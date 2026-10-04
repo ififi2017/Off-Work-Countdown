@@ -633,7 +633,7 @@
     <string name="plusAndroidPlansUnavailable">Não foi possível carregar os planos do Google Play. Tente novamente.</string>
     <string name="plusAndroidRenewalNotice">As subscrições renovam-se automaticamente até serem canceladas. A compra única Lifetime não cancela uma subscrição ativa.</string>
     <string name="plusAndroidRequestFailed">O Google Play não conseguiu concluir o pedido. Tente novamente dentro de momentos.</string>
-    <string name="plusAndroidStoreOffline">O Google Play está indisponível neste momento. Tente restaurar as compras quando tiver ligação.</string>
+    <string name="plusAndroidStoreOffline">Não foi possível confirmar o seu acesso atual ao Plus. Tente novamente ou restaure as compras.</string>
     <string name="plusAndroidStoreUnconfigured">As compras do Plus ainda não estão disponíveis neste dispositivo. Pode continuar a usar o temporizador e os registos recentes.</string>
     <string name="plusAndroidYearlyTrialPrice">7 dias grátis, depois %1$s por ano. Cancela antes do fim do período experimental para evitar a cobrança.</string>
     <string name="plusAutoRenew">As subscrições renovam-se automaticamente até serem canceladas. O plano anual pode incluir 7 dias grátis; depois aplica-se o preço anual. O vitalício é um pagamento único e não cancela uma subscrição ativa.</string>

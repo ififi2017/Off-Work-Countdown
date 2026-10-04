@@ -629,7 +629,7 @@
     <string name="plusAndroidPlansUnavailable">โหลดแผนจาก Google Play ไม่สำเร็จ โปรดลองอีกครั้ง</string>
     <string name="plusAndroidRenewalNotice">การสมัครสมาชิกจะต่ออายุอัตโนมัติจนกว่าคุณจะยกเลิก การซื้อ Lifetime ครั้งเดียวไม่ยกเลิกการสมัครสมาชิกที่ใช้อยู่</string>
     <string name="plusAndroidRequestFailed">Google Play ไม่สามารถทำรายการนี้ได้ ลองอีกครั้งในอีกสักครู่</string>
-    <string name="plusAndroidStoreOffline">ขณะนี้ Google Play ไม่พร้อมใช้งาน ลองกู้คืนการซื้อเมื่อเชื่อมต่อแล้ว</string>
+    <string name="plusAndroidStoreOffline">ไม่สามารถยืนยันสิทธิ์ Plus ปัจจุบันของคุณได้ โปรดลองอีกครั้งหรือกู้คืนการซื้อ</string>
     <string name="plusAndroidStoreUnconfigured">ยังซื้อ Plus บนอุปกรณ์นี้ไม่ได้ คุณยังใช้ตัวจับเวลาและดูบันทึกล่าสุดได้</string>
     <string name="plusAndroidYearlyTrialPrice">ทดลองใช้ฟรี 7 วัน จากนั้น %1$s ต่อปี ยกเลิกก่อนสิ้นสุดช่วงทดลองใช้เพื่อหลีกเลี่ยงการเรียกเก็บเงิน</string>
     <string name="plusAutoRenew">การสมัครจะต่ออายุเองจนกว่าคุณจะยกเลิก แผนรายปีอาจมีช่วงฟรี 7 วัน หลังจากนั้นคิดตามราคาต่อปี แบบจ่ายครั้งเดียวชำระครั้งเดียวและไม่ยกเลิกการสมัครที่กำลังใช้อยู่ให้อัตโนมัติ</string>

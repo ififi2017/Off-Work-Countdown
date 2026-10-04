@@ -629,7 +629,7 @@
     <string name="plusAndroidPlansUnavailable">Google Play에서 요금제를 불러오지 못했습니다. 다시 시도해 주세요.</string>
     <string name="plusAndroidRenewalNotice">구독은 취소할 때까지 자동 갱신됩니다. 평생 이용권을 구매해도 기존 구독은 취소되지 않습니다.</string>
     <string name="plusAndroidRequestFailed">Google Play에서 요청을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.</string>
-    <string name="plusAndroidStoreOffline">지금 Google Play에 연결할 수 없습니다. 연결 후 구매 복원을 시도해 주세요.</string>
+    <string name="plusAndroidStoreOffline">현재 Plus 이용 권한을 확인할 수 없습니다. 다시 시도하거나 구매를 복원해 주세요.</string>
     <string name="plusAndroidStoreUnconfigured">이 기기에서는 아직 Plus를 구매할 수 없습니다. 타이머와 최근 기록은 계속 사용할 수 있습니다.</string>
     <string name="plusAndroidYearlyTrialPrice">7일 무료 체험 후 연간 %1$s가 청구됩니다. 요금이 청구되지 않도록 체험 종료 전에 취소하세요.</string>
     <string name="plusAutoRenew">구독은 취소할 때까지 자동으로 갱신됩니다. 연간 요금제에는 7일 무료 기간이 포함될 수 있고, 끝나면 연 요금이 청구됩니다. 평생은 한 번만 결제하며, 이미 있는 구독을 자동으로 취소하지는 않습니다.</string>

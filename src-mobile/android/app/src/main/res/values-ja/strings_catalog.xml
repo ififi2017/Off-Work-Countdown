@@ -629,7 +629,7 @@
     <string name="plusAndroidPlansUnavailable">Google Play からプランを読み込めませんでした。もう一度お試しください。</string>
     <string name="plusAndroidRenewalNotice">サブスクリプションは解約するまで自動更新されます。買い切り版を購入しても、現在のサブスクリプションは解約されません。</string>
     <string name="plusAndroidRequestFailed">Google Play で操作を完了できませんでした。しばらくしてからもう一度お試しください。</string>
-    <string name="plusAndroidStoreOffline">現在 Google Play に接続できません。接続後に購入を復元してください。</string>
+    <string name="plusAndroidStoreOffline">現在の Plus の利用権を確認できません。もう一度試すか、購入を復元してください。</string>
     <string name="plusAndroidStoreUnconfigured">この端末ではまだ Plus を購入できません。タイマーと最近の記録は引き続き利用できます。</string>
     <string name="plusAndroidYearlyTrialPrice">7日間無料、その後は年額%1$s。請求を避けるには、無料期間が終了する前に解約してください。</string>
     <string name="plusAutoRenew">サブスクリプションは解約するまで自動更新されます。年額プランには7日間の無料期間が付く場合があり、終了後は年額で請求されます。買い切りは一度の支払いで、進行中のサブスクリプションは自動で解約されません。</string>

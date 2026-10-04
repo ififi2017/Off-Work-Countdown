@@ -635,7 +635,7 @@
     <string name="plusAndroidPlansUnavailable">Не удалось загрузить планы из Google Play. Попробуйте ещё раз.</string>
     <string name="plusAndroidRenewalNotice">Подписки продлеваются автоматически, пока вы их не отмените. Разовая покупка Lifetime не отменяет действующую подписку.</string>
     <string name="plusAndroidRequestFailed">Google Play не удалось выполнить запрос. Повторите попытку чуть позже.</string>
-    <string name="plusAndroidStoreOffline">Google Play сейчас недоступен. Попробуйте восстановить покупки после подключения к сети.</string>
+    <string name="plusAndroidStoreOffline">Не удалось подтвердить ваш текущий доступ к Plus. Повторите попытку или восстановите покупки.</string>
     <string name="plusAndroidStoreUnconfigured">Покупка Plus пока недоступна на этом устройстве. Таймер и недавние записи по-прежнему работают.</string>
     <string name="plusAndroidYearlyTrialPrice">7 дней бесплатно, затем %1$s в год. Отмените подписку до окончания пробного периода, чтобы избежать списания.</string>
     <string name="plusAutoRenew">Подписки продлеваются автоматически, пока вы их не отмените. Годовой тариф может включать 7 бесплатных дней, после чего списывается годовая цена. Покупка навсегда — один платёж, она не отменяет действующую подписку.</string>

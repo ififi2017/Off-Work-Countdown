@@ -629,7 +629,7 @@
     <string name="plusAndroidPlansUnavailable">暫時未能從 Google Play 載入購買方案，請再試一次。</string>
     <string name="plusAndroidRenewalNotice">訂閱會自動續費，直到你取消。終身版係一次性購買，唔會取消現有訂閱。</string>
     <string name="plusAndroidRequestFailed">Google Play 暫時完成唔到呢個操作。請稍後再試。</string>
-    <string name="plusAndroidStoreOffline">暫時連唔到 Google Play。連線後可以試下恢復購買。</string>
+    <string name="plusAndroidStoreOffline">暫時確認唔到你嘅 Plus 權益。請再試，或者恢復購買。</string>
     <string name="plusAndroidStoreUnconfigured">呢部裝置暫時買唔到 Plus。計時器同近期記錄照樣用得。</string>
     <string name="plusAndroidYearlyTrialPrice">免費試用 7 日，之後每年 %1$s。喺試用結束前取消就唔會扣費。</string>
     <string name="plusAutoRenew">訂閱會自動續訂，直到你取消。年訂可以有 7 日試用，試用完就按年價收費。終身係一次性買斷，唔會自動取消你現有嘅訂閱。</string>
