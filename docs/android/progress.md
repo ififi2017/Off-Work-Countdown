@@ -2,7 +2,7 @@
 
 **这是任务状态的唯一记录。** 交接包 `tasks.json` 只定义依赖、范围和验收，不记录状态。
 
-更新：2026-10-03。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
+更新：2026-10-04。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
 
 ## 任务状态
 
@@ -14,7 +14,7 @@
 | T01 | IMPLEMENTED | `source-inventory.md`、`feature-parity.md`、`conflicts.md`。源读自固定 SHA。未跑 iOS XCTest。 |
 | T02 | IMPLEMENTED | `wire-contract.md`、`synthetic-archives/`。检查：`node scripts/android-synthetic-archives.mjs --check`。Kotlin 导入 NOT_RUN。 |
 | T03 | IMPLEMENTED | `environment-lock.md`；`src-mobile/android`；`.github/workflows/android.yml`。初始 T03 探针当时只有 domain 2 项测试、Debug/R8 Release/AAB 与模拟器冷启动；当前四模块与 448 项见下方执行状态。GitHub CI 运行证据另取，不以本地命令代替。 |
-| T04 | IMPLEMENTED | `:core:designsystem`：`DoneAtColors`（浅/深两套完整 M3 配色，页面及卡片对齐 iOS 中性分组背景；浅色主色 `#C2410C`，品牌亮橙仅作装饰）、`DoneAtStateColors`、`DoneAtShapes`（14/22 与 iOS 一致；主操作按下时胶囊收成 12 dp）、`DoneAtMotion`（与 `OWCMotion` 同值，减少动态效果时退化）、`DoneAtType.countdown`（64 sp 等宽数字）、`DoneAtCountdown`（逐位数字翻页，对应 `.numericText(countsDown:)`）、`DoneAtProgressMeter`（浮动百分比气泡，几何与 `OWCProgressMeter` 相同）、`DoneAtTheme`（主题模式、可选壁纸配色与自定义强调色）。对比度、气泡几何与强调色等 12 条单测；Debug 专用 gallery。模拟器（API 36）检查浅色、深色、200% 字体、移除动画、阿拉伯语 RTL、数字翻页录屏。Release 依赖全为稳定版（Material3 1.4.0）。见 `design-tokens-adr.md`。 |
+| T04 | IMPLEMENTED | `:core:designsystem`：`DoneAtColors`（浅/深两套完整 M3 配色，页面及卡片对齐 iOS 中性分组背景；默认强调色已按 2026-10-04 修正对齐 iOS：浅色 `#F2590A` / 深色 `#FF872E`，品牌亮橙仅作装饰）、`DoneAtStateColors`、`DoneAtShapes`（14/22 与 iOS 一致；主操作按下时胶囊收成 12 dp）、`DoneAtMotion`（与 `OWCMotion` 同值，减少动态效果时退化）、`DoneAtType.countdown`（64 sp 等宽数字）、`DoneAtCountdown`（逐位数字翻页，对应 `.numericText(countsDown:)`）、`DoneAtProgressMeter`（浮动百分比气泡，几何与 `OWCProgressMeter` 相同）、`DoneAtTheme`（主题模式、可选壁纸配色与自定义强调色）。对比度、气泡几何与强调色等 12 条单测；Debug 专用 gallery。模拟器（API 36）检查浅色、深色、200% 字体、移除动画、阿拉伯语 RTL、数字翻页录屏。Release 依赖全为稳定版（Material3 1.4.0）。见 `design-tokens-adr.md`。 |
 | T05 | IMPLEMENTED | `scripts/generate-android-strings.mjs`（`npm run generate:android-strings` / `check:android-strings`）把 `Localizable.xcstrings` 的 832 个 key 与 `app/i18n/android-strings.json` 的 Android 专有文案转成 19 个语言目录的 `strings_catalog.xml`、`xml/locales_config.xml`（清单已引用）、可逆的 `app/i18n/key-map.json` 与带命名参数的 `l10n/Strings.kt`。`{{name}}` 按英文顺序转为 `%N$s`；消息池转为 string-array 并保留 `{{name}}` 供共享规则替换；复数按各语言 CLDR 类别生成；Java/Kotlin 关键字 key 加下划线。生成时检查：19 语言齐全、各语言占位符与英文一致、Android 专有 key 不与目录重名、资源名合法且不碰撞、XML 非法字符。12 条 vitest 覆盖中文三变体、印地/马拉地语、阿语复数、德语长句占位符重排、转义与各类拒绝；`npm test` 与 Android CI 在资源过期时失败。Android 专有文案已随记录、Plus、通知等页面扩充，19 语言由生成器检查。aapt2 编译与 lint 通过，无新增告警（`localeConfig` 在 API 33 以下被忽略属预期）。 |
 | T06 | IMPLEMENTED | `scripts/generate-android-rule-fixtures.mjs` → `src-mobile/android/core/domain/src/test/resources/shared-rule-fixtures.json`：5087 条 TS oracle 用例，与 iOS `ScheduleRuleFixtures` 数据逐字相同，另记 6 个输入文件哈希。`npm test` 内含 stale 检查（手改一条用例、给 `lib/countdown.ts` 加注释均使检查失败，已验证）；Kotlin `SharedRuleFixturesTest` 3 条通过。Swift 特有规则的 fixtures 属 T08。 |
 | T07 | IMPLEMENTED | `core/domain/.../schedule`（`CivilZone`、`ScheduleRules`、模型）与 `salary/SalaryRules`。fixture 的 snapshots/widget/expansion/validateBreak/applyToday 共 2927 条全部精确通过；植入错误测试有效；算例测试 5 条。见 `rule-parity.md`。 |
@@ -364,3 +364,49 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 本轮报告 gfxinfo 样本 **1,150 帧，Janky frames 19（1.65%）**，p50/90/95/99 **8/12/15/25 ms**；同份输出的 legacy 指标是 **282（24.52%）**，口径不同，不能只挑较低数字代表流畅度。样本包含 Debug 播放与暂停导航，截图也有额外开销；没有证明持续 120 fps。前节记录页年度展开 81/101 ms 慢帧和起床闹钟平台限制仍未解决，本次不改写为完成。
 - 截图与进出动画分镜保存在 `docs/android/qa/2026-10-04-report/`；完整原始录像 `build/android-321/report-polish-final-motion.mp4`、gfxinfo、设备设置读回与 UI 树保留本机。截图为合成记录，缩放压缩供 PR 查看；无真实收入或私有 iPhone 内容。
 - **最终恢复**：字号 `1.0`，窗口/转场/Animator 三项动画倍率均 `1.0`，辅助服务 `null` / accessibility `0`，预览语言中文。没有创建起床闹钟，报告通知保持关闭，无真实购买或正式数据改动。保留无探针的 `com.rainif.doneat.preview321`，停在 2026 年 9 月报告入口供用户体验；本次不卸载。未启动模拟器，构建结束停止 Gradle daemon。
+
+
+## 2026-10-04 · 周起始设置、记录入口与文字简报复验
+
+### 实现与来源
+
+- 用户并排截图指出 Android 月历报告入口脱离卡片、计划斜纹过重，并要求增加周日/周一起始设置；随后真机发现周报日期末尾的“日”孤立换行、文字简报结构偏离 iOS。逐段核对固定 `18129168` 的 `RecordsDesignView`、`RecordsMonthGrid`、`CycleReportView` 与 `ReportStripScene.State.settled` 后修正。
+- 设置 → 记录与数据 → **每周第一天** 可选择星期日或星期一。统一应用到记录月历/周视图、新周报及未来周报通知、排班月历和休假方案日历。通过 SettingsRepository 写本机 DeviceSettings，重启保留；手选值不随语言改变。缺省继续使用原 locale 默认，非法值只回退该字段。交替排班规则、schema 7 档案和已保存报告 URI 的日期边界保持原契约。
+- 周/月/年报告入口归入对应图表卡片；月历中与“规划休假”并列，补播放图标及箭头。月历计划斜纹补回 iOS 的淡化层，使用设计 token，避免深色斜纹压过日期与记录标记。
+- 报告封面日期恢复 iOS 46 字号上限、最小 50% 和单行适配，使用稳定的 Compose `BasicText` / `TextAutoSize`；不截断范围。200% 字号时按两个完整日期分行，避免拆散日期。文字简报恢复整体滚动页头、紧凑统计卡、静态日历/十二个月趋势、说明及底部完成/播放按钮；去掉重复章节明细卡和顶部播放入口。常规字号数值按内容取宽、基线对齐，大字体改为上下排列。沿用同一统计快照及收入剥离；不在 UI 重算。
+- 新增 Android 专用文案 `calendarWeekStart` 的全部 19 语言，从源生成资源；星期名称沿用对应 locale 的 java.time 文本。没有手改生成文件。
+- 原 PR #283 已合并。本轮从其原提交新建 `codex/android-calendar-week-start`；为确认合并状态读取远端后，规定漂移输出从 39 增至 40 行，新增 `2f867539` 是 iOS 系统评价 API 调整，本轮不采用。未合并 main 或推进冻结源/授权增量。日志 `build/android-321/calendar-entry-drift-after-fetch.txt`。
+
+### 自动验证
+
+- 最终 Android 四模块 **545 项通过**（domain 402 / data 89 / design 12 / app 42），0 failure/error/skip；lint **0 error / 46 warning / 3 hint**；Debug、R8 Release 构建通过。日期和简报修正后已重跑完整 Gradle 门禁，日志 `calendar-reading-gates.log`。
+- `SettingsRepositoryTest` 新增持久化、跨语言、月历补位、周报/通知日期、旧链接不变、档案不改及非法值回退回归。选择周日时 2026-10-03 的下一报告通知为 10-04 09:00 UTC，周一则为 10-05 09:00 UTC。
+- `npm test` **47 文件 / 531 项通过**，含规则 fixture、19 语言及生成文件一致性；npm lint、check:version、check:ios 与本地 iPhone 18 Pro 目的地 headless iOS build 通过。日志 `calendar-entry-*.log`、`calendar-reading-*.log`。本轮未改 iOS/共享规则，未做 iOS 模拟器视觉测试。
+
+### Pixel 实际验收
+
+- Pixel 10 Pro / Android 17 API 37.1；继续使用隔离预览 `com.rainif.doneat.preview321` 和已有合成档案。实际选择周日后记录周视图及报告为 **10-04—10-10**；选择周一后为 **09-28—10-04**，月历相应重排。进程退出重开仍显示星期一；切回周日后，旧日期 URI 仍打开指定的 09-28—10-04 报告。
+- 排班月历和休假方案详情均实际显示周日第一列，未保存排班或采用新方案。报告操作行已在月历卡片内，计划斜纹减淡，周报默认字号的完整日期已在一行显示。文字简报已实际滚动到完成/播放按钮，标题随内容滚动；中文 200% 字号两个完整日期和上下排列的统计值均可读。
+- 阿拉伯语 RTL + 200% 字号 + 关闭动画的周报已实际打开并滚动到“完成”：两个日期完整，数值未挤压，静态路径没有播放按钮；恢复后读回字号与 Animator 均为 1.0。无线调试一度断连，失败的截图尝试不计作通过，重连稳定后的实际图片与 UI 树保存在 `build/android-321/calendar-week-rtl-large-*`。
+- 历史月报简报与当前年报简报已实际查看，年报从 1 月滚动到 12 月和底部“完成/播放报告”；未来月份显示尚无已发生统计，收入隐藏时无收入行。当前周期继续有“截至今天”。本轮未重新做性能采样，不增加 120 fps 或慢帧已解决的结论；此前闹钟平台限制及年度展开慢帧仍按前节记录。
+- 深色主题下的新设置弹窗和减淡后的月历斜纹已实际查看，随后恢复浅色。PR 截图保存在 `docs/android/qa/2026-10-04-calendar/`，来自独立预览的合成档案，无真实薪资或私有 iPhone 图像。
+- **清理与交付**：本机周起始恢复验收前的未设置状态，记录尺度恢复月；试用计数未变。字号、窗口/转场/Animator 动画倍率全部读回 **1.0**，辅助服务 `null` / accessibility `0`，语言中文，主题浅色，息屏时间恢复原值。没有采用方案、创建测试闹钟或开启报告提醒，正式应用未改动。保留新版 `com.rainif.doneat.preview321` 并打开月历供体验；未启动模拟器，Gradle daemon 已停止。
+
+## 2026-10-04 历史月报连休核查
+
+- 用户反馈历史报告似乎从今天寻找连休。无线调试重连后，在 Pixel 10 Pro 的独立预览中实际读取其打开的 **2026 年 9 月月报**：文字简报显示 **5 天 · 10 月 3 日—10 月 7 日**。截图和 UI 树仅保留本机 `build/android-321/historical-report-observed.*`。
+- 只读核对排班发现：中国节假日快照的 `effectiveFrom` 为 **2026-10-05**，此前快照为周一至周五工作、未启用节假日。故 10-01、10-02 仍为工作日，10-03、10-04 为周末，10-05—10-07 为新设置下的节假日。当前结果符合这份档案；查询和展示均已使用 09-30 为基准，本轮没有改动业务规则或回写历史排班。
+- 新增三项领域回归，使用仓库真实 `HolidayTemplates.json`：节假日从 10-01 生效时，9 月月报包含完整 10-01—10-07；从 10-05 生效时，复现设备的 10-03—10-07；周日/周一起始的跨月周报分别从各自结束日的次日查找。将打开时间推进至 10-08、11-04，历史连休仍保持原日期，历史报告不带当前余额。
+- Android 四模块 **548 项通过**（domain 405 / data 89 / design 12 / app 42），无失败、错误或跳过；lint 0 error / 46 warning / 3 hint；Debug、Release 构建通过。`npm test` 47 文件 / 531 项通过，npm lint、check:version、check:ios 和 iPhone 18 Pro 目的地 headless iOS build 通过。日志 `build/android-321/historical-break-*.log`。
+- 设备证据仅限读到上述 9 月月报及排班数据；其他日期矩阵由 JVM 回归验证，不宣称在真机改日期验证。没有重新安装、修改排班/系统设置或创建闹钟；手机保持用户打开的报告。Gradle daemon 已停止，没有启动模拟器界面。
+- 规定漂移命令仍为 40 行，见 `build/android-321/historical-break-drift.txt`。固定 iOS 参考仍为 `18129168`，没有推进基线或跟随 main。
+
+
+## 2026-10-04 默认强调色对齐
+
+- 用户提供 iOS / Android 计时页对照图，指出 Android 偏砖红。根因是初次 T04 将默认 `primary` 为统一 4.5:1 对比度调深为 `#C2410C`（深色 `#FF9A5C`），而固定 iOS `18129168` 的 `OWCDesign.accent` 使用浅色 RGB `(0.95, 0.35, 0.04)` / 深色 `(1, 0.53, 0.18)`。本次将默认 primary、surfaceTint 和 inversePrimary 统一为浅色 `#F2590A` / 深色 `#FF872E`。计时页收入/主题、记录页收入/全部记录按钮从灰色改为主题强调色。
+- 调色对话框的默认草稿使用浅色强调色；品牌标志的装饰橙、自定义色和壁纸配色路径保留。自定义 RGB 采样的全部对比度回归继续通过。设计 ADR 明确默认浅色橙字/橙底白字与 iOS 一致的 3:1 边界，不宣称其满足普通小字 4.5:1；普通文字/状态色/自定义色仍按 4.5:1 验证。
+- Pixel 10 Pro / Android 17 API 37.1，无线 ADB，独立 `com.rainif.doneat.preview321`：新版已安装并实际查看浅/深色计时页及记录页。主按钮、进度条、顶部操作和底栏均使用新的默认强调色。截图见 `docs/android/qa/2026-10-04-accent/`；只提交预览截图，用户 iPhone 对照图留在本机。将 iPhone 图的 Display P3 转换为 sRGB 后，其主按钮约 `(244,88,10)`，Pixel 为 `(242,89,10)`；代码色值以固定 iOS 源为准，不把截图色彩转换后的量化差异误作 UI 色值。
+- 主题已通过界面从自动→浅色→深色→自动恢复，手机停在计时页供体验。读回显示自定义颜色、壁纸配色、隐藏收入等本机设置保留，仅当前 Tab 从记录变为计时；排班快照、名册、手改日和休假数据均与验收前一致。字号及三项动画倍率均为 1.0；没有创建闹钟或修改正式应用。未启动模拟器界面，Gradle daemon 已停止。
+- Android 四模块 **548 项通过**（405 / 89 / 12 / 42），无失败、错误或跳过；lint **0 error / 46 warning / 3 hint**；Debug 与 R8 Release 构建通过。`npm test` **47 文件 / 531 项通过**，含翻译与规则生成一致性；npm lint、check:version、check:ios 与 headless iOS simulator build 通过。日志 `build/android-321/accent-*.log`。本轮未重做大字体/RTL/性能/闹钟矩阵，沿用此前证据，不增加帧率结论。
+- 固定源及漂移范围不变，规定命令输出仍为 40 行，日志 `build/android-321/accent-drift.txt`；未跟随 main。

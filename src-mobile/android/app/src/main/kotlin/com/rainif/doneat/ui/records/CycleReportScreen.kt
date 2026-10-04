@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
@@ -45,6 +47,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -242,15 +247,13 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
                         }
                     }
                 } else if (displayMode == "reading" && authorized && report?.hasData == true) {
-                    ReportHeader(title, back)
-                    Text(dateTitle, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = DoneAtReportPalette.cream)
-                    if (!motion.reduced && !talkBack) TextButton(onClick = { play() }, colors = ButtonDefaults.textButtonColors(contentColor = DoneAtReportPalette.cream)) { Text(stringResource(R.string.reportPlay)) }
-                    ReportReading(report, text, records.text, chapters, Modifier.weight(1f), back)
+                    ReportReading(report, text, records.text, chapters, title, dateTitle,
+                        canPlay = !motion.reduced && !talkBack, onPlay = { play() }, modifier = Modifier.weight(1f), close = back)
                 } else {
                     val scrollSetup = configuration.fontScale >= 1.5f || configuration.screenHeightDp <= 650
                     Column(Modifier.weight(1f).fillMaxWidth().let { if (scrollSetup) it.verticalScroll(rememberScrollState()) else it }) {
                     ReportHeader(title, back)
-                    Text(dateTitle, Modifier.padding(top = DoneAtReportLayout.stageTop).semantics { heading() }, fontSize = DoneAtReportLayout.setupHero, lineHeight = DoneAtReportLayout.setupHero, fontWeight = FontWeight.ExtraBold, color = DoneAtReportPalette.cream)
+                    ReportPeriodHeading(dateTitle, period.kind, DoneAtReportLayout.setupHero, Modifier.padding(top = DoneAtReportLayout.stageTop))
                     if (report?.isInProgress == true) Text(stringResource(R.string.reportSoFar), Modifier.padding(top = DoneAtSpacing.s), color = DoneAtReportPalette.muted, style = MaterialTheme.typography.titleMedium)
                     Box((if (scrollSetup) Modifier.height(DoneAtReportLayout.teaserHeight).padding(vertical = DoneAtSpacing.l) else Modifier.weight(1f)).fillMaxWidth(), contentAlignment = Alignment.Center) {
                         if (report?.hasData == true && authorized) ReportArtwork(chapters.first(), teaserClock, Modifier.fillMaxWidth().height(DoneAtReportLayout.teaserHeight), teaser = true)
@@ -294,6 +297,22 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding())
         }
     }
+}
+
+@Composable
+private fun ReportPeriodHeading(title: String, kind: CycleReportKind, maximum: TextUnit, modifier: Modifier = Modifier) {
+    // iOS limits the cover to one line and scales to 50%. At accessibility
+    // sizes, separate the two whole dates deliberately rather than orphaning 日.
+    val stacked = kind == CycleReportKind.WEEK && LocalConfiguration.current.fontScale >= 1.5f
+    BasicText(
+        text = if (stacked) title.replace(" – ", "\n– ") else title,
+        modifier = modifier.fillMaxWidth().semantics { heading() },
+        style = MaterialTheme.typography.headlineLarge.copy(color = DoneAtReportPalette.ink,
+            fontWeight = FontWeight.ExtraBold, lineHeight = 1.12.em),
+        maxLines = if (stacked) 2 else 1,
+        softWrap = false,
+        autoSize = TextAutoSize.StepBased(minFontSize = maximum * .5f, maxFontSize = maximum),
+    )
 }
 
 @Composable
@@ -395,30 +414,58 @@ private fun rememberTouchExploration(): Boolean {
 }
 
 @Composable
-private fun ReportReading(report: CycleReportSnapshot, text: TimerText, dates: RecordsText, chapters: List<ReportChapter>, modifier: Modifier, close: () -> Unit) {
+private fun ReportReading(
+    report: CycleReportSnapshot, text: TimerText, dates: RecordsText, chapters: List<ReportChapter>,
+    title: String, dateTitle: String, canPlay: Boolean, onPlay: () -> Unit, modifier: Modifier, close: () -> Unit,
+) {
     val context = LocalContext.current
     val rows = remember(report, text, dates, context) { ReportCopy(report, text, dates, context).facts() }
-    Column(modifier.verticalScroll(rememberScrollState()).padding(top = DoneAtSpacing.xl), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xl)) {
-        if (report.isInProgress) Text(stringResource(R.string.reportSoFar), color = DoneAtReportPalette.muted)
+    val large = LocalConfiguration.current.fontScale >= 1.5f
+    Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xl)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+                Text(title.uppercase(), Modifier.semantics { heading() }, style = MaterialTheme.typography.labelMedium,
+                    color = DoneAtReportPalette.muted, fontWeight = FontWeight.Bold)
+                ReportPeriodHeading(dateTitle, report.period.kind, DoneAtReportLayout.readingHero)
+                if (report.isInProgress) Text(stringResource(R.string.reportSoFar), color = DoneAtReportPalette.muted,
+                    style = MaterialTheme.typography.bodyMedium)
+            }
+            ReportControl(Icons.Outlined.Close, stringResource(R.string.close), action = close)
+        }
         Surface(modifier = Modifier.fillMaxWidth(), color = DoneAtReportPalette.control, shape = RoundedCornerShape(DoneAtReportLayout.readingCardRadius)) {
-            Column(Modifier.padding(horizontal = DoneAtSpacing.l)) {
+            Column {
                 rows.forEachIndexed { index, (label, value) ->
-                    Row(Modifier.fillMaxWidth().padding(vertical = DoneAtSpacing.l), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m), verticalAlignment = Alignment.Top) {
-                        Text(label, Modifier.weight(1f), color = DoneAtReportPalette.muted, style = MaterialTheme.typography.bodyLarge)
-                        Text(value, Modifier.weight(1f), color = DoneAtReportPalette.ink, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, textAlign = androidx.compose.ui.text.style.TextAlign.End)
+                    BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = DoneAtReportLayout.readingInset,
+                        vertical = DoneAtReportLayout.readingRowVertical).semantics(mergeDescendants = true) {}) {
+                        val valueWidth = maxWidth * .6f
+                        if (large) {
+                            Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+                                Text(label, color = DoneAtReportPalette.muted, style = MaterialTheme.typography.bodyLarge)
+                                Text(value, color = DoneAtReportPalette.ink, style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold)
+                            }
+                        } else {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
+                                Text(label, Modifier.weight(1f).alignByBaseline(), color = DoneAtReportPalette.muted,
+                                    style = MaterialTheme.typography.bodyLarge)
+                                Text(value, Modifier.widthIn(max = valueWidth).alignByBaseline(), color = DoneAtReportPalette.ink,
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"),
+                                    fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End)
+                            }
+                        }
                     }
-                    if (index != rows.lastIndex) HorizontalDivider(color = DoneAtReportPalette.track)
+                    if (index != rows.lastIndex) HorizontalDivider(Modifier.padding(start = DoneAtReportLayout.readingInset), color = DoneAtReportPalette.track)
                 }
             }
         }
         if (report.months.isNotEmpty()) {
             Surface(modifier = Modifier.fillMaxWidth(), color = DoneAtReportPalette.control, shape = RoundedCornerShape(DoneAtReportLayout.readingCardRadius)) {
-                Column(Modifier.padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                    Text(stringResource(R.string.reportMonthlyTrend), fontWeight = FontWeight.Bold, color = DoneAtReportPalette.ink)
+                Column(Modifier.padding(DoneAtReportLayout.readingInset), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                    Text(stringResource(R.string.reportMonthlyTrend), Modifier.semantics { heading() }, fontWeight = FontWeight.Bold, color = DoneAtReportPalette.ink)
                     report.months.forEach { month ->
                         Text(dates.monthYear(month.period.startDate), Modifier.padding(top = DoneAtSpacing.m).semantics { heading() }, fontWeight = FontWeight.SemiBold, color = DoneAtReportPalette.cream)
                         Text(stringResource(R.string.recordsWorkedTime) + " · " + text.relativeDuration(month.figures.workedMs.toDouble()), color = DoneAtReportPalette.muted)
-                        Text(stringResource(R.string.overtime) + " · " + text.relativeDuration(month.figures.overtimeMs.toDouble()), color = DoneAtReportPalette.muted)
+                        Text(stringResource(R.string.recordsOvertime) + " · " + text.relativeDuration(month.figures.overtimeMs.toDouble()), color = DoneAtReportPalette.muted)
                         Text(stringResource(R.string.reportRestDays) + " · " + text.days(month.restDayCount.toDouble()), color = DoneAtReportPalette.muted)
                         if (month.focusRounds > 0) Text(stringResource(R.string.reportFocusRounds) + " · " + text.count(month.focusRounds), color = DoneAtReportPalette.muted)
                         month.figures.income?.let { Text(stringResource(R.string.reportIncomeTitle) + " · " + text.money(it), color = DoneAtReportPalette.muted) }
@@ -427,21 +474,17 @@ private fun ReportReading(report: CycleReportSnapshot, text: TimerText, dates: R
             }
         } else {
             Surface(modifier = Modifier.fillMaxWidth(), color = DoneAtReportPalette.control, shape = RoundedCornerShape(DoneAtReportLayout.readingCardRadius)) {
-                ReportArtwork(chapters.first(), { Long.MAX_VALUE }, Modifier.fillMaxWidth().height(DoneAtReportLayout.artHeight).padding(DoneAtSpacing.l))
-            }
-        }
-        // Detailed values keep all chart facts available to readers and TalkBack.
-        chapters.filter { it.artKind == ReportArtKind.REST || it.artKind == ReportArtKind.OVERTIME || it.artKind == ReportArtKind.FOCUS || it.artKind == ReportArtKind.PAY || it.artKind == ReportArtKind.AHEAD }.forEach { chapter ->
-            Surface(modifier = Modifier.fillMaxWidth(), color = DoneAtReportPalette.control, shape = RoundedCornerShape(DoneAtReportLayout.readingCardRadius)) {
-                Column(Modifier.padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                    Text(chapter.title, Modifier.semantics { heading() }, fontWeight = FontWeight.Bold, color = DoneAtReportPalette.ink)
-                    chapter.lines.forEach { Text(it, color = DoneAtReportPalette.muted) }
-                    if (report.months.isEmpty() && chapter.artKind in listOf(ReportArtKind.OVERTIME, ReportArtKind.FOCUS)) chapter.bars.forEach { (label, value) -> Text(label + " · " + if (chapter.artKind == ReportArtKind.FOCUS) text.count(value.toInt()) else text.relativeDuration(value.toDouble()), color = DoneAtReportPalette.muted) }
-                }
+                ReportArtwork(chapters.first(), { Long.MAX_VALUE }, Modifier.fillMaxWidth().padding(DoneAtReportLayout.readingInset)
+                    .height(if (report.period.kind == CycleReportKind.WEEK) DoneAtReportLayout.readingWeekArtHeight else DoneAtReportLayout.readingMonthArtHeight))
             }
         }
         Text(stringResource(R.string.reportBasisNote), color = DoneAtReportPalette.muted, style = MaterialTheme.typography.bodySmall)
-        Button(onClick = close, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DoneAtReportPalette.orange, contentColor = DoneAtReportPalette.ink)) { Text(stringResource(R.string.done)) }
+        Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+            Button(onClick = close, modifier = Modifier.fillMaxWidth().heightIn(min = DoneAtReportLayout.controlSize),
+                colors = ButtonDefaults.buttonColors(containerColor = DoneAtReportPalette.orange, contentColor = DoneAtReportPalette.ink)) { Text(stringResource(R.string.done)) }
+            if (canPlay) FilledTonalButton(onClick = onPlay, modifier = Modifier.fillMaxWidth().heightIn(min = DoneAtReportLayout.controlSize),
+                colors = ButtonDefaults.filledTonalButtonColors(containerColor = DoneAtReportPalette.control, contentColor = DoneAtReportPalette.ink)) { Text(stringResource(R.string.reportPlay)) }
+        }
     }
 }
 

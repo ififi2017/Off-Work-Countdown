@@ -12,21 +12,24 @@ import androidx.compose.ui.graphics.Color
  * surfaces match iOS grouped backgrounds, so the accent marks the current state and the
  * main action rather than tinting the whole screen.
  *
- * Text and icon pairs meet WCAG AA (4.5:1) in both schemes; `DoneAtColorsTest`
- * holds every pair to it. The vivid brand orange fails that on light surfaces,
- * so light `primary` is a deeper tone of it and [DoneAtColors.brand] is kept for
- * decoration (the mark, a celebration), never for text or data.
+ * The default accent follows iOS `OWCDesign.accent`, including its brighter
+ * light appearance. It is distinct from the decorative brand orange. Ordinary
+ * text and custom accents retain their contrast checks; default orange text
+ * and white-on-orange controls share iOS's contrast limitation (see the ADR).
  */
 object DoneAtColors {
     /** iOS `OWCDesign.orange`: decoration only. */
     val brand = Color(0xFFF97316)
+    /** Pinned iOS OWCDesign.accent: UIColor RGB (0.95, 0.35, 0.04) / (1, 0.53, 0.18). */
+    val accentLight = Color(0xFFF2590A)
+    val accentDark = Color(0xFFFF872E)
 
     val light: ColorScheme = lightColorScheme(
-        primary = Color(0xFFC2410C),
+        primary = accentLight,
         onPrimary = Color(0xFFFFFFFF),
         primaryContainer = Color(0xFFFFDBCC),
         onPrimaryContainer = Color(0xFF5A1C00),
-        inversePrimary = Color(0xFFFFB690),
+        inversePrimary = accentDark,
         secondary = Color(0xFF77574A),
         onSecondary = Color(0xFFFFFFFF),
         secondaryContainer = Color(0xFFF5DED4),
@@ -41,7 +44,7 @@ object DoneAtColors {
         onSurface = Color(0xFF000000),
         surfaceVariant = Color(0xFFE5E5EA),
         onSurfaceVariant = Color(0xFF5F5F66),
-        surfaceTint = Color(0xFFC2410C),
+        surfaceTint = accentLight,
         inverseSurface = Color(0xFF2C2C2E),
         inverseOnSurface = Color(0xFFF2F2F7),
         outline = Color(0xFF767680),
@@ -56,12 +59,11 @@ object DoneAtColors {
     )
 
     val dark: ColorScheme = darkColorScheme(
-        // iOS dark accent is #FF872E; this keeps its hue at a tone that carries dark text.
-        primary = Color(0xFFFF9A5C),
+        primary = accentDark,
         onPrimary = Color(0xFF3A1400),
         primaryContainer = Color(0xFF7A3000),
         onPrimaryContainer = Color(0xFFFFDBCB),
-        inversePrimary = Color(0xFFC2410C),
+        inversePrimary = accentLight,
         secondary = Color(0xFFE7BDAD),
         onSecondary = Color(0xFF442A1F),
         secondaryContainer = Color(0xFF5D4034),
@@ -76,7 +78,7 @@ object DoneAtColors {
         onSurface = Color(0xFFF2F2F7),
         surfaceVariant = Color(0xFF2C2C2E),
         onSurfaceVariant = Color(0xFFAEAEB2),
-        surfaceTint = Color(0xFFFF9A5C),
+        surfaceTint = accentDark,
         inverseSurface = Color(0xFFF2F2F7),
         inverseOnSurface = Color(0xFF2C2C2E),
         outline = Color(0xFF8E8E93),

@@ -124,7 +124,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
-import java.time.temporal.WeekFields
 import java.util.Locale
 
 /** Presentation-only modes; the saved schedule keeps its own model. iOS `ScheduleEditorMode`. */
@@ -147,6 +146,7 @@ private enum class EditorMode(val title: Int, val preset: ShiftCycleRule.Preset?
  */
 @Composable
 fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
+    val device by graph.settings.device.collectAsStateWithLifecycle()
     val draft by graph.scheduleDraft.collectAsStateWithLifecycle()
     val session by graph.sessions.session.collectAsStateWithLifecycle()
     val records by graph.records.state.collectAsStateWithLifecycle()
@@ -303,6 +303,7 @@ fun ScheduleScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
                     MonthCalendar(
                         month, locale, today, selected, resolver, env.holidays, content, { key, id -> typeForDay(key, id) },
                         brushID = brushID,
+                        firstDay = device.calendarFirstDay(locale),
                         handSet = handSet,
                         onPaint = { key -> paintDay(key) },
                         onStrokeEnd = { paintSelection?.endStroke() },
@@ -412,6 +413,7 @@ private fun MonthCalendar(
     content: ExtendedScheduleContent,
     typeForDay: (String, java.util.UUID?) -> ShiftType?,
     brushID: java.util.UUID?,
+    firstDay: java.time.DayOfWeek,
     handSet: Map<String, java.util.UUID>,
     onPaint: (String) -> Unit,
     onStrokeEnd: () -> Unit,
@@ -422,14 +424,13 @@ private fun MonthCalendar(
 ) {
     val (year, monthValue) = month
     val first = LocalDate.of(year, monthValue, 1)
-    val firstDay = WeekFields.of(locale).firstDayOfWeek
     val leading = Math.floorMod(first.dayOfWeek.value - firstDay.value, 7)
     val count = first.lengthOfMonth()
     val slots = ((leading + count + 6) / 7) * 7
     val firstNumber = CivilZone.dayNumber(year, monthValue, 1)
     val region = content.holidayRegionIdentifier?.takeIf { it.isNotEmpty() }
-    val frames = remember(month) { mutableMapOf<String, Rect>() }
-    val coordinates = remember(month) { arrayOfNulls<LayoutCoordinates>(1) }
+    val frames = remember(month, firstDay) { mutableMapOf<String, Rect>() }
+    val coordinates = remember(month, firstDay) { arrayOfNulls<LayoutCoordinates>(1) }
     val paint by rememberUpdatedState(onPaint)
     val endStroke by rememberUpdatedState(onStrokeEnd)
     Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {

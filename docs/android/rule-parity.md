@@ -155,14 +155,16 @@ Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`
 
 ### 动态周、月、年报
 
-- `records/CycleReport` 对应 iOS `CycleReport`：周按调用方传入的周起始日，月、年按自然周期；周期保存首尾日期与记录时区。历史周报的邻接周期沿用已保存的周边界，语言改变不会重新定位原周期。API 26 使用已有 `java.time` 与字符串编码接口，不依赖较新的 `LocalDate.datesUntil`、Stream 收集或 Charset 编解码重载。
+- `records/CycleReport` 对应 iOS `CycleReport`：周按调用方传入的周起始日，月、年按自然周期；周期保存首尾日期与记录时区。Android 的 `DeviceSettings.calendarFirstDay` 统一读取用户选择的周日/周一，未选择时保留既有 locale 默认值；记录页、排班月历、休假方案日历及新周报共用。选择写入本机设置，不修改 schema 7 档案或交替排班的周规则。历史周报的邻接周期沿用已保存的周边界，语言或周起始设置改变不会重新定位原周期。API 26 使用已有 `java.time` 与字符串编码接口，不依赖较新的 `LocalDate.datesUntil`、Stream 收集或 Charset 编解码重载。
 - `RecordsQueries.cycleReportSnapshot` 对应 `RecordsQueries+CycleReport` 与 `CycleReportInsights`：同一档案版本和参考时刻一次构造报告，工时、加班、收入复用 `SummaryRules.recordsActualForecast`。日图表按民用日裁切并截至参考时刻，未知或解析失败的日期不冒充完整休息日；未来工时、加班和尚未完成的当日请假时段不计为已发生。
 - 历史周、月的后续连休以报告结束日为锚点，展示具体日期，不带当前余额。年报包含全年工时、加班、完整休息日、最长连休、已休假期及 12 个月趋势；专注按已完成的记录统计，年报没有后续连休或同比基线。年度解析结果供月度统计复用。
+- 后续连休按每天实际生效的排班快照解析，保留节假日设置的生效日期。`RecordsQueriesTest` 使用真实节假日数据覆盖：9 月月报在 10 月或 11 月打开，若中国节假日从 10-01 生效，连休为 10-01—10-07；若从 10-05 生效且此前为周一至周五工作，连休为 10-03—10-07。跨月周报从自己的结束日计算，覆盖周日和周一两种周起始。
 - `CycleReportSnapshot.withoutIncome` 同时剥离总收入、收入章节及 12 个月的收入。报告收入选择以全局隐藏设置为默认值，主动显示复用 `EarningsGate`，本次选择不写回全局设置。Compose 只格式化快照，不重新计算业务统计。
 - `CycleReportPlayer` 对应 iOS 播放器：主动暂停和按住暂停分别保存；主动暂停后前后翻页立即展示完成帧，临时暂停保持播放时序。文字简报、TalkBack 和减少动画路径静态展示同一快照；动效复用 `DoneAtMotion`。
 - `CycleReportHeadline.choose` 对应固定版本的事实标题选择：当前周期优先标记进行中，年报用中性标题；近期连休需要实际历史基线增幅，工时增减、加班占比和休息天数沿用 iOS 阈值。标题由纯 JVM 快照产生，不在 UI 中判断生活状态。
 - `ReportStage` 保留 iOS 的章节顺序与条件：日历、工时、存在时的加班/基线、休息、存在时的后续连休/专注/收入，最后收尾。各章分为构建与阅读停留两段；上一页在播放超过 800 ms 时先重播当前章，暂停时直接跳到目标完成帧；末页构建结束后停止，重播重置两个时钟。
 - `ReportStripGeometry` 对应 `ReportDayStrip.frame`：月历先缩成圆点、移动到柱底，再按序生长；两段交界的坐标连续，第一、二章共用同一绘图区域。月份日期按对角线顺序落入；休息章回到日历、淡化工作日、点亮休息日，最后强调最长连休。数值和标签在快照准备时构建，Canvas 与文字子组件消费播放时钟；进入/退出的覆盖动画保留原记录页至退出结束。
+- 文字简报对应 `CycleReportReadingView`：共享 `ReportCopy.facts` 顺序，整页滚动的标题/统计卡/静态日历或十二个月趋势/说明/底部操作。封面日期使用 Compose 原生单行自动字号；无障碍大字号按完整起止日期分行，统计标签和值上下排列，保持完整文本与合并读屏节点。
 
 测试入口：领域 `CycleReportTest`、`RecordsQueriesTest`、`CycleReportHeadlineTest`；应用 `CycleReportPlayerTest`、`ReportStripGeometryTest`。覆盖周期与闰年、未知日期、当日累计、收入剥离、历史连休、年度月度趋势、事实标题、可选章节、构建/停留、暂停导航、临时暂停、重播以及月历变形交界。
 
@@ -170,9 +172,9 @@ Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`
 
 `CycleReportNotificationPlan` 分别规划周、月、年报告，触发点为周期结束后第一天记录时区 09:00；1 月 1 日年报指向上一年。首日上午 09:00 前重排保留刚结束的周期。`CycleReportCoordinator` 使用独立报告前缀，复用绝对预约与差量登记，不套用 iOS 待发通知容量预算。通知登记保存报告 URI 内的类型、周期首尾和时区，冷、热启动均经 `CycleReportPeriod.fromUrl` 校验后路由；正文和 URI 均不含薪资。
 
-`SettingsRepository` 的迁移直接读取档案源，避免异步偏好流尚未追上恢复档案时丢失旧开关。旧静态周期总结迁到周报，月报和年报默认关闭；计时提醒停止构造旧静态总结，并由其原前缀差量更新预约。通知权限和精确提醒能力继续遵守已有 Android 授权与降级规则。
+`SettingsRepository` 的迁移直接读取档案源，避免异步偏好流尚未追上恢复档案时丢失旧开关。旧静态周期总结迁到周报，月报和年报默认关闭；计时提醒停止构造旧静态总结，并由其原前缀差量更新预约。修改周起始日会重新规划未来周报通知，已保存的报告 URI 仍保留原周期。通知权限和精确提醒能力继续遵守已有 Android 授权与降级规则。
 
-测试入口：`CycleReportTest` 的首日上午、独立开关与 URI 边界；`SettingsRepositoryTest` 的恢复档案先于派生流的迁移用例；既有 `ReminderSyncTest` 的登记、恢复和差量契约。设备通知点击、系统授权及后台送达证据见进度文档。
+测试入口：`CycleReportTest` 的首日上午、独立开关与 URI 边界；`SettingsRepositoryTest` 的恢复档案迁移、周起始持久化/跨语言/月历补位/周报及通知日期/旧链接不变/非法值回退；既有 `ReminderSyncTest` 的登记、恢复和差量契约。设备通知点击、系统授权及后台送达证据见进度文档。
 
 ### 休假试用与免费加班入口
 

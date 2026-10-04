@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
+import com.rainif.doneat.core.designsystem.DoneAtRecordsStyle
 import com.rainif.doneat.core.designsystem.LocalDoneAtRecordsColors
 import com.rainif.doneat.core.domain.records.RecordsDayAppearance
 import com.rainif.doneat.core.domain.records.RecordsDayCell
@@ -96,7 +97,7 @@ fun Modifier.estimatedHatch(enabled: Boolean, tint: Color, spacing: Dp = 5.dp, l
         clipRect {
             var x = -size.height
             while (x <= size.width) {
-                drawLine(tint.copy(alpha = tint.alpha * 0.55f), Offset(x, 0f), Offset(x + size.height, size.height), lineWidth.toPx())
+                drawLine(tint.copy(alpha = tint.alpha * DoneAtRecordsStyle.estimateStrokeOpacity), Offset(x, 0f), Offset(x + size.height, size.height), lineWidth.toPx())
                 x += step
             }
         }
@@ -204,7 +205,7 @@ fun MonthGrid(
                                 .then(if (selected) selectionAnchor else Modifier)
                                 .clip(shape)
                                 .background(fill)
-                                .estimatedHatch(RecordsDayMarks.isEstimated(cell), scheme.onSurfaceVariant, spacing = 6.dp)
+                                .estimatedHatch(RecordsDayMarks.isEstimated(cell), scheme.onSurfaceVariant.copy(alpha = DoneAtRecordsStyle.calendarEstimateTintOpacity), spacing = 6.dp)
                                 .border(2.dp, if (selected) scheme.primary else Color.Transparent, shape)
                                 .clickable { onSelect(cell) }
                                 .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }),

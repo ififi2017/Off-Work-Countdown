@@ -12,7 +12,7 @@ D-12 规定 Release 只用稳定版 Compose/Material3；Material 3 Expressive �
 
 | token | 内容 | 与 iOS 的对应 |
 |---|---|---|
-| `DoneAtColors.light/dark` | 完整 M3 颜色角色；页面/卡片对齐 iOS 的中性分组背景，强调色标当前状态与主操作 | 品牌橙 `OWCDesign.orange`；深色主色取 iOS 深色强调色 `#FF872E` 的色相 |
+| `DoneAtColors.light/dark` | 完整 M3 颜色角色；页面/卡片对齐 iOS 的中性分组背景，强调色标当前状态与主操作 | 默认主色精确对应 `OWCDesign.accent`：浅色 `#F2590A`，深色 `#FF872E` |
 | `DoneAtColors.brand` | `#F97316`，仅用于装饰 | 浅色表面上低于 4.5:1，不能作文字或数据 |
 | `DoneAtStateColors` | 工作 / 休息 / 下班 / 加班四种状态色 | 总与文字标签同时出现，不单靠颜色区分 |
 | `DoneAtShapes` | 4 / 8 / 14 / 22 / 28 dp；主操作高 56 dp，按下时圆角降到 12 dp | 14、22 即 `OWCDesign.controlRadius`、`cardRadius` |
@@ -50,9 +50,17 @@ D-12 规定 Release 只用稳定版 Compose/Material3；Material 3 Expressive �
 
 ## 可访问性
 
-- `DoneAtColorsTest` 检查两套配色中每一对"文字/底色"都 ≥ 4.5:1（含四种状态色），描边 ≥ 3:1。
+- `DoneAtColorsTest` 检查普通文字、容器文字和四种状态色均 ≥ 4.5:1，描边 ≥ 3:1；用户自定义强调色仍检查全部文字配对 ≥ 4.5:1。默认强调色的例外见下节，不能再宣称所有配对都达到小字 AA。
 - 倒计时对 TalkBack 用一句完整描述替代数字，不会每秒重读。
 - 阶段标记、分段选择都有文字，不靠颜色传达状态。
+
+### 默认强调色与 iOS 对齐（2026-10-04）
+
+用户的两端对照截图指出默认橙色明显不同。原 Android 为所有强调色文字统一满足 4.5:1，将浅色 `primary` 压为 `#C2410C`、深色改为 `#FF9A5C`，导致主按钮、底栏和进度条偏离 iOS。本次按固定 iOS `18129168` 的 `OWCDesign.accent` 使用浅色 RGB `(0.95, 0.35, 0.04)`、深色 `(1, 0.53, 0.18)`，对应 Android 的 `accentLight` / `accentDark`；`primary`、`surfaceTint` 和另一主题的 `inversePrimary` 共用这两个 token。
+
+计时页收入/主题按钮及记录页收入/全部记录按钮均采用主题 `primary`；自定义和壁纸配色仍能覆盖它。调色对话框的默认草稿从浅色强调色开始，品牌标志的装饰橙 `#F97316` 继续独立使用。
+
+取舍明确保留：默认浅色橙字和橙底白字与 iOS 一致，达到 3:1，但未达到普通小字 4.5:1；测试按这一明确边界检查并锁定 iOS RGB。深色按钮继续使用原有深色前景以保持可读性。普通正文、状态文字和自定义颜色的对比度要求保持 4.5:1。此处只记录设计契约，设备验证结果在 `progress.md`。
 
 ## 验证（Pixel 10 Pro 模拟器，API 36）
 

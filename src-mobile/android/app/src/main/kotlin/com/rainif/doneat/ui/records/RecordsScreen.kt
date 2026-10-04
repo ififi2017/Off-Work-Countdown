@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.outlined.ListAlt
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Luggage
+import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material.icons.outlined.CloseFullscreen
@@ -58,6 +59,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -262,6 +264,15 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                 if (graph.records.state.value.leaveBalances.isEmpty()) open(Route.LeaveBalanceEdit(null, guided = true))
                 else open(Route.Leave(fromRecords = true))
             },
+            onOpenReport = {
+                val kind = when (scale) {
+                    RecordsScale.WEEK -> com.rainif.doneat.core.domain.records.CycleReportKind.WEEK
+                    RecordsScale.YEAR -> com.rainif.doneat.core.domain.records.CycleReportKind.YEAR
+                    else -> com.rainif.doneat.core.domain.records.CycleReportKind.MONTH
+                }
+                val period = context.queries.reportPeriod(kind, anchor)
+                open(Route.CycleReport(kind.name, period.startDayKey, period.endDayKey, period.timeZoneIdentifier))
+            },
             onPinch = { zoom ->
                 if (zoom > 1.22f) {
                     if (scale == RecordsScale.YEAR) openMonth(month) else setScale(scale.zoomedIn)
@@ -271,24 +282,6 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     }
     val conclusion: @Composable () -> Unit = {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            if (scale != RecordsScale.LIFE) {
-                TextButton(onClick = {
-                    if (!context.queries.authorized) openSettings(Route.Plus)
-                    else {
-                        val kind = when (scale) {
-                            RecordsScale.WEEK -> com.rainif.doneat.core.domain.records.CycleReportKind.WEEK
-                            RecordsScale.YEAR -> com.rainif.doneat.core.domain.records.CycleReportKind.YEAR
-                            else -> com.rainif.doneat.core.domain.records.CycleReportKind.MONTH
-                        }
-                        val period = context.queries.reportPeriod(kind, anchor)
-                        open(Route.CycleReport(kind.name, period.startDayKey, period.endDayKey, period.timeZoneIdentifier))
-                    }
-                }) { Text(stringResource(when (scale) {
-                    RecordsScale.WEEK -> R.string.reportEntryWeek
-                    RecordsScale.YEAR -> R.string.reportEntryYear
-                    else -> R.string.reportEntryMonth
-                })) }
-            }
             // Life's conclusion is behind Plus too: a locked life never prints a projected number.
             if (scale == RecordsScale.LIFE && !locked && profile != null) {
                 val loaded = lifeModel?.takeIf { it.first == context.lifeInputs }
@@ -375,7 +368,7 @@ private fun Header(graph: AppGraph, text: RecordsText, onAllRecords: () -> Unit,
         )
         EarningsVisibilityButton(graph, onShownWithoutLock)
         IconButton(onClick = onAllRecords) {
-            Icon(Icons.AutoMirrored.Outlined.ListAlt, text.string(R.string.recordsAllRecords), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(Icons.AutoMirrored.Outlined.ListAlt, text.string(R.string.recordsAllRecords), tint = MaterialTheme.colorScheme.primary)
         }
     }
 }
@@ -433,6 +426,7 @@ private fun ChartCard(
     onExpand: () -> Unit,
     onPinch: (Float) -> Unit,
     onPlanLeave: () -> Unit,
+    onOpenReport: () -> Unit,
 ) {
     val text = context.text
     val (first, last) = context.queries.window(scale, anchor)
@@ -516,6 +510,7 @@ private fun ChartCard(
                         } else {
                             YearCanvas(cells, first.year, selectedMonth, showMonthCallout, text, onSelectMonth, onOpenMonth)
                         }
+                        ReportEntry(scale, text, onOpenReport)
                         return@Column
                     }
                     else -> {
@@ -537,25 +532,34 @@ private fun ChartCard(
                 }
             }
             MarkLegend(includesLock = !context.queries.authorized, text = text)
-            if (scale == RecordsScale.MONTH) LeavePlanningEntry(text, onPlanLeave)
+            if (scale == RecordsScale.MONTH) RecordsActionEntry(text.string(R.string.leavePlanAction), Icons.Outlined.Luggage, onPlanLeave)
+            ReportEntry(scale, text, onOpenReport)
         }
     }
 }
 
 /**
- * Plan 020: time off from the month being looked at (iOS `leavePlanningEntry`).
- * A first visit without any leave balance sets one up before the page opens.
+ * Plan 020: actions belong to the chart window, alongside the leave planner.
  */
 @Composable
-private fun LeavePlanningEntry(text: RecordsText, onClick: () -> Unit) {
+private fun ReportEntry(scale: RecordsScale, text: RecordsText, onClick: () -> Unit) {
+    RecordsActionEntry(text.string(when (scale) {
+        RecordsScale.WEEK -> R.string.reportEntryWeek
+        RecordsScale.YEAR -> R.string.reportEntryYear
+        else -> R.string.reportEntryMonth
+    }), Icons.Outlined.PlayCircleOutline, onClick)
+}
+
+@Composable
+private fun RecordsActionEntry(title: String, icon: ImageVector, onClick: () -> Unit) {
     val accent = MaterialTheme.colorScheme.primary
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 44.dp).clickable(role = Role.Button, onClick = onClick),
+        Modifier.fillMaxWidth().heightIn(min = DoneAtSpacing.minTouch).clip(MaterialTheme.shapes.small).clickable(role = Role.Button, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Icon(Icons.Outlined.Luggage, null, Modifier.size(18.dp), tint = accent)
-        Text(text.string(R.string.leavePlanAction), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = accent)
+        Icon(icon, null, Modifier.size(18.dp), tint = accent)
+        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = accent)
         Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

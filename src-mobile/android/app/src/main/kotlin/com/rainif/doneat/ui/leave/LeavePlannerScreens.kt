@@ -89,7 +89,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.format.TextStyle
-import java.time.temporal.WeekFields
 
 // The leave planner (iOS `LeavePlannerSheet`, `LeavePlanResults`, `LeavePlanDetail`).
 
@@ -455,7 +454,7 @@ fun LeavePlanDetailScreen(graph: AppGraph, index: Int, onBack: () -> Unit, onAdo
             )
         }
         SettingsGroup {
-            LeavePlanCalendar(proposal, text, Modifier.padding(DoneAtSpacing.m))
+            LeavePlanCalendar(proposal, text, device.calendarFirstDay(text.locale), Modifier.padding(DoneAtSpacing.m))
         }
 
         if (proposal.items.isNotEmpty()) {
@@ -548,8 +547,7 @@ private enum class LeaveMark { WORK, REST, HOLIDAY, LEAVE, HALF_LEAVE }
  * half a day of it. One working day either side shows where the break begins.
  */
 @Composable
-private fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, modifier: Modifier = Modifier) {
-    val firstWeekday = WeekFields.of(text.locale).firstDayOfWeek
+private fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, firstWeekday: DayOfWeek, modifier: Modifier = Modifier) {
     val first = minOf(proposal.items.minOfOrNull { it.dayNumber } ?: proposal.firstRestDayNumber, proposal.firstRestDayNumber)
     val last = maxOf(proposal.items.maxOfOrNull { it.dayNumber } ?: proposal.lastRestDayNumber, proposal.lastRestDayNumber)
     val leading = Math.floorMod(LeavePlannerSchedule.date(first).dayOfWeek.value - firstWeekday.value, 7)

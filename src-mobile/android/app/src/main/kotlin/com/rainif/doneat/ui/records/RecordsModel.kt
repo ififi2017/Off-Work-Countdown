@@ -30,7 +30,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.temporal.WeekFields
 
 /**
  * What every records page reads: one archive revision's queries, its
@@ -66,7 +65,7 @@ fun rememberRecordsContext(graph: AppGraph): RecordsContext {
     val nowMs = rememberMinute(graph)
     val use24Hour = android.text.format.DateFormat.is24HourFormat(context)
     val zone = FoundationCompat.javaZone(prefs.recordsTimeZoneIdentifier)
-    val queries = remember(archive, prefs, plus, holidays, session, nowMs, locale) {
+    val queries = remember(archive, prefs, plus, holidays, session, nowMs, locale, device.calendarWeekStart) {
         RecordsQueries(
             state = archive,
             holidays = holidays,
@@ -80,7 +79,7 @@ fun rememberRecordsContext(graph: AppGraph): RecordsContext {
                 null
             },
             currentHours = runCatching { session.hoursConfiguration(nowMs) }.getOrNull(),
-            firstDayOfWeek = WeekFields.of(locale).firstDayOfWeek,
+            firstDayOfWeek = device.calendarFirstDay(locale),
         )
     }
     val text = remember(resources, locale, zone, use24Hour, device.hideEarnings) {

@@ -54,6 +54,7 @@
     <string name="biometryOpticID">Optic ID</string>
     <string name="biometryTouchID">Touch ID</string>
     <string name="breakReminder">แจ้งเตือนการพัก</string>
+    <string name="calendarWeekStart">วันแรกของสัปดาห์</string>
     <string name="cancel">ยกเลิก</string>
     <string name="cancelAction">ยกเลิก</string>
     <string name="cancelManualTiming">ยกเลิก</string>

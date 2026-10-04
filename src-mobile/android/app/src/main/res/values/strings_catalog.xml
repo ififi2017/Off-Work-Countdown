@@ -54,6 +54,7 @@
     <string name="biometryOpticID">Optic ID</string>
     <string name="biometryTouchID">Touch ID</string>
     <string name="breakReminder">Break reminder</string>
+    <string name="calendarWeekStart">First day of the week</string>
     <string name="cancel">Cancel</string>
     <string name="cancelAction">Cancel</string>
     <string name="cancelManualTiming">Cancel</string>
