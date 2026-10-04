@@ -1,11 +1,18 @@
-# Draft Android additions to the official privacy policy
+# Android privacy policy source wording
 
-This is local source copy for the existing site policy. The 2026-10-04 verification additions have also been applied to the local `codex/android-privacy-policy` site draft, but **have not been published**. Before a Play listing uses `https://doneat.app/privacy`, edit these two site files, review the whole page for consistency, update its date, and publish the site through its normal review path:
+This file preserves source wording for the official website. Android privacy and
+liquid-glass acknowledgements are published in all 19 website languages through
+[website PR #30](https://github.com/ififi2017/doneat.app/pull/30). Current wording
+lives in the website repository; do not republish this source as a new policy.
+Publication and device-test evidence are recorded only in [progress.md](progress.md).
 
-- English: `/Users/zhengyuxuan/doneat-site/src/content/pages/en/privacy.md`
-- Simplified Chinese: `/Users/zhengyuxuan/doneat-site/src/content/pages/zh-CN/privacy.md`
+- [English privacy](https://doneat.app/en/privacy)
+- [Simplified Chinese privacy](https://doneat.app/zh-CN/privacy)
+- [Android liquid-glass acknowledgements](https://doneat.app/zh-CN/about#android-液态玻璃)
 
-The root `/privacy` route chooses a supported language; it is the same URL already opened by Android Settings. The current pages name iPhone/iPad/Mac/Windows in the introduction and local-storage paragraph, and name only Apple/Microsoft in purchase/distribution sections. Update those sentences and the third-party list alongside the inserts below; do not leave two conflicting platform lists. The existing iCloud paragraphs stay specific to iPhone and iPad. Any final Data safety answers must be checked against the actual Play-installed artifact and the current Google SDK disclosures.
+The root `/privacy` route is already opened by Android Settings. Play Data safety
+answers still need to match the actual artifact and Google SDK disclosures;
+publishing the website does not update the Console form.
 
 ## English source copy
 
@@ -81,4 +88,4 @@ Android 应用没有加入 DoneAt 使用统计服务。应用会在检查或购�
 
 ## 发布前一致性检查
 
-2026-10-04 用户授权启用购买验证服务。上述文案须与实际上线构建及服务一致；不得继续声称购买状态从不发送给 DoneAt 服务端。Play Data safety 需按购买历史/购买标识的实际处理、服务提供方与保留方式核对，不能仅因只存哈希就声明无数据收集。官网 About 若有 Android 完全无联网的表述，应同步修正。该文件是待发布文案源，不代表官网已更新。
+2026-10-04 用户授权启用购买验证服务。上述文案须与实际上线构建及服务一致；不得继续声称购买状态从不发送给 DoneAt 服务端。Play Data safety 需按购买历史/购买标识的实际处理、服务提供方与保留方式核对，不能仅因只存哈希就声明无数据收集。官网 About 若有 Android 完全无联网的表述，应同步修正。本文件保留文案来源；后续修改以官网当前正文为准，发布与验收状态只记录在 progress.md。

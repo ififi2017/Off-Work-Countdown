@@ -102,6 +102,8 @@ Root Web tests exclude this independent service.
 
 Perform the steps in order. The Android release variable stays unset until
 production and license-tester checks pass and privacy disclosures are published.
+Use the per-run public-key input below for the license-test build; it does not
+change the default configuration of other releases.
 The deployment script rejects the placeholder D1 ID. Never put a Google JSON key,
 private PEM, purchase token or Cloudflare API token in Git, chat, an APK or a URL.
 
@@ -212,21 +214,29 @@ of the two API routes. Authentication for push is the Google OIDC identity.
 2. Send **Test notification** in Play Console. Check Pub/Sub push response counts
    for **204**, the unacknowledged backlog draining, and a new D1 `notifications`
    row. A Play “publish succeeded” alone does not prove Worker delivery.
-3. Update the official English/Chinese privacy policy using
-   [prepared source copy](../../docs/android/privacy-policy-addition.md), About
-   networking wording if needed, and the Play Data safety disclosure to match
+3. Check the [published privacy and About disclosures](../../docs/android/privacy-policy-addition.md)
+   and the separate Play Data safety declaration against the candidate, including
    purchase tokens sent to Cloudflare/Google. The service stores purchase state;
    do not claim that no DoneAt purchase server exists.
-4. After these checks, put the contents of `.secrets/android-public-keys.json`
-   into repository **Variable** `DONEAT_BILLING_API_PUBLIC_KEYS` (public keys only).
-   The Android release workflow maps it to `doneatBillingApiPublicKeys`. For a
-   local build, use `ORG_GRADLE_PROJECT_doneatBillingApiPublicKeys`. Blank keeps
-   the previous client-only mode; nonblank malformed configuration fails closed.
-5. Use an internal/closed Play test build and a configured **license tester**
-   with test payment methods. Check purchase, restore, pending, cancellation with
-   remaining paid time, renewal, grace/hold where available, refund, replacement,
-   network loss, expiry and duplicate/late RTDN. Inspect only sanitized outcomes
-   and exact expiry; never log tokens. Do not perform real purchases for QA.
+4. After deployment and privacy checks, prepare a manual **Android Release** run
+   from the reviewed test branch. Set `billing_api_public_keys` to the contents of
+   `.secrets/android-public-keys.json` (public keys only), leave `upload=false`
+   to inspect the signed AAB first, then use the reviewed candidate in the
+   internal/closed Play track. For a local build, use
+   `ORG_GRADLE_PROJECT_doneatBillingApiPublicKeys`. Blank configuration keeps the
+   previous client-only mode; nonblank malformed configuration fails closed.
+5. Use a configured **license tester** with test payment methods. Being a closed
+   tester alone does not make purchases free. Add the account in Play Console's
+   account-level **Settings → License testing** and to the app's test track.
+   Confirm the Play purchase sheet explicitly identifies a no-charge test payment.
+   Preserve any real purchases; use a separate test account and Android user when
+   the owner's account already owns lifetime Plus. Check purchase, restore,
+   pending, cancellation with remaining paid time, renewal, grace/hold where
+   available, refund, replacement, network loss, expiry and duplicate/late RTDN.
+   Inspect only sanitized outcomes and exact expiry; never log tokens. After
+   license-test acceptance, set repository **Variable**
+   `DONEAT_BILLING_API_PUBLIC_KEYS` to the same public-key JSON for subsequent
+   releases. A one-run override does not update that variable.
 6. Measure production Worker CPU (cold and warm paths), D1 reads/writes and
    Pub/Sub delivery metrics. Local workerd timing does not prove the 10 ms free
    CPU allowance is sufficient. Record actual evidence in `progress.md` before
