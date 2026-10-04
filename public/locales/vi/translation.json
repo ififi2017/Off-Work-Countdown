@@ -302,7 +302,7 @@
   "annualBonusMonths": "Số tháng thưởng",
   "bonusMonthsValue": "{{count}} tháng lương",
   "openSourceAcknowledgements": "Ghi nhận mã nguồn mở",
-  "nativeNoThirdPartySDK": "Ứng dụng iOS thuần không tích hợp SDK bên thứ ba; các quy tắc dùng chung đến từ dự án cấp phép MIT này.",
+  "nativeNoThirdPartySDK": "Ứng dụng iOS thuần không tích hợp SDK bên thứ ba; các quy tắc dùng chung đến từ dự án cấp phép MPL-2.0 này.",
   "shareDone": "Đã tan ca",
   "rotationWorkDays": "Ngày làm việc",
   "rotationRestDays": "Ngày nghỉ",

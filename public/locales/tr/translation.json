@@ -302,7 +302,7 @@
   "annualBonusMonths": "İkramiye ayı",
   "bonusMonthsValue": "{{count}} aylık maaş",
   "openSourceAcknowledgements": "Açık kaynak teşekkürleri",
-  "nativeNoThirdPartySDK": "Yerel iOS uygulaması üçüncü taraf SDK içermez; paylaşılan kurallar MIT lisanslı bu projeden gelir.",
+  "nativeNoThirdPartySDK": "Yerel iOS uygulaması üçüncü taraf SDK içermez; paylaşılan kurallar MPL-2.0 lisanslı bu projeden gelir.",
   "shareDone": "İş bitti",
   "rotationWorkDays": "Çalışma günleri",
   "rotationRestDays": "İzin günleri",

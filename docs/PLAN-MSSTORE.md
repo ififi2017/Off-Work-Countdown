@@ -1245,3 +1245,7 @@ APPLE_ID / APPLE_PASSWORD / APPLE_TEAM_ID
 
 这同时回答了 8. 未决问题里「是否把商店徽章放到下载页」——有了付费差异之后，下载页需要
 说明两个渠道的能力区别，那条不再是纯文案问题。
+
+## 2026-10-04 源码许可证切换
+
+新修订的项目源码采用 MPL-2.0；已发布的 MIT 版本及原有授权不撤销。品牌、指定素材和第三方资源按根目录 `LICENSING.md` / `ASSETS.md` / `TRADEMARKS.md` 区分。独立商业分支允许，不能冒充官方。发行前依 `SOURCE.md` 保存并公开对应平台、版本、build number 的源码提交；商店中已有二进制的许可不因本次 PR 自动改变。实施与验证记录见 `docs/reviews/2026-10-04-licensing-transition.md`。

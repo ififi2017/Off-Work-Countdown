@@ -23,4 +23,16 @@ describe("locale redirect", () => {
     );
     expect(response.headers.get("location")).toBeNull();
   });
+
+  it.each(["LICENSE", "LICENSES/MIT-legacy.txt", "source.txt"])(
+    "serves the packaged licensing resource %s without a locale redirect",
+    (file) => {
+      const response = middleware(new NextRequest(`https://off.rainif.com/licenses/${file}`, {
+        headers: { "accept-language": "zh-CN" },
+      }));
+      expect(response.headers.get("location")).toBeNull();
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+    }
+  );
+
 });

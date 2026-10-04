@@ -86,7 +86,7 @@ export function buildWebAppJsonLd({
         browserRequirements: "Requires JavaScript",
         isAccessibleForFree: true,
         offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-        license: "https://opensource.org/licenses/MIT",
+        license: "https://www.mozilla.org/MPL/2.0/",
         codeRepository: siteConfig.github,
         publisher: { "@id": organizationId },
         isPartOf: officialSite,

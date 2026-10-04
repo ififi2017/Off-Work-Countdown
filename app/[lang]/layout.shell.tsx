@@ -123,6 +123,8 @@ export default async function Layout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="license" href="/licenses/LICENSE" />
+        <link rel="help" href="/licenses/source.txt" title="Source code and licenses" />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         {IS_WEB_BUILD && (
           <link

@@ -302,7 +302,7 @@
   "annualBonusMonths": "أشهر المكافأة",
   "bonusMonthsValue": "راتب {{count}} أشهر",
   "openSourceAcknowledgements": "شكر لمشاريع المصدر المفتوح",
-  "nativeNoThirdPartySDK": "لا يتضمن تطبيق iOS الأصلي حزم SDK خارجية؛ وتأتي القواعد المشتركة من هذا المشروع المرخّص بترخيص MIT.",
+  "nativeNoThirdPartySDK": "لا يتضمن تطبيق iOS الأصلي حزم SDK خارجية؛ وتأتي القواعد المشتركة من هذا المشروع المرخّص بترخيص MPL-2.0.",
   "shareDone": "انتهى العمل",
   "rotationWorkDays": "أيام العمل",
   "rotationRestDays": "أيام الراحة",

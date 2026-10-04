@@ -198,7 +198,8 @@ function baseListingFor(locale, listing) {
     ].filter(Boolean))],
     keywords: listing.searchTerms ?? template.keywords ?? [],
     shortDescription: listing.shortDescription ?? template.shortDescription ?? "",
-    copyrightAndTrademarkInfo: template.copyrightAndTrademarkInfo || "MIT License",
+    // Current source license; do not inherit the old MIT-only store field.
+    copyrightAndTrademarkInfo: "Source: MPL-2.0; historical MIT grants and third-party licenses preserved. DoneAt branding: https://github.com/ififi2017/Off-Work-Countdown/blob/main/TRADEMARKS.md",
     devStudio: template.devStudio || "fi_niaR Studio",
     // --text-only 不传 ZIP：沿用商店里已有的截图，否则挂着 PendingUpload 提交时会找不到文件。
     images: textOnly && current?.images?.length ? current.images : SHOTS.map((shot, index) => ({
