@@ -1,11 +1,13 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { regionalVariant } from "./regional-variants.mjs";
 
 // Android task T05. Android reads its copy through the resource system, so the
 // iOS catalog is converted at development time into native strings, arrays and
-// plurals for all 19 locales; no catalog or translation engine ships in the APK.
-// Android-only copy lives in src-mobile/android/app/i18n/android-strings.json.
+// plurals for the 19 full locales, plus partial en-GB and es-419 folders that
+// hold only the strings that differ. No catalog or translation engine ships
+// in the APK. Android-only copy lives in app/i18n/android-strings.json.
 //
 // Conversions, each checked here rather than trusted:
 // - `{{name}}` becomes a positional `%N$s`, numbered by first appearance in
@@ -50,6 +52,23 @@ export const LOCALES = [
   // Hong Kong and Taiwan keep their own wording; they are never merged into one zh-Hant.
   { id: "zh-HK", dir: "values-b+zh+Hant+HK", tag: "zh-Hant-HK" },
   { id: "zh-TW", dir: "values-b+zh+Hant+TW", tag: "zh-Hant-TW" },
+];
+
+/**
+ * Regional variants. Only keys that differ from `fallback` are written.
+ *
+ * `en-GB` is `values-en-rGB`. Android does not parent other English regions
+ * onto en-GB, so Commonwealth English is overlaid in app code.
+ *
+ * `es-MX` is `values-b+es+419` (BCP 47 `es-419`). minSdk 26 understands that
+ * parent, so es-MX, es-AR, es-CO and the other Latin American regions select
+ * this folder while es-ES keeps `values-es`. `values-es-rMX` would not cover
+ * those other countries. AAPT2 accepts the `b+` directory. The per-app
+ * language tag is `es-419`, which is what `AppLocale.tag("es-MX")` returns.
+ */
+export const PARTIAL_LOCALES = [
+  { id: "en-GB", dir: "values-en-rGB", tag: "en-GB", fallback: "en" },
+  { id: "es-MX", dir: "values-b+es+419", tag: "es-419", fallback: "es" },
 ];
 
 const RESERVED = new Set(
@@ -132,6 +151,58 @@ function unitValue(localization, where) {
   return unit.value;
 }
 
+/** Catalog variants that differ from their parent. Absent means "use the fallback". */
+function stringVariants(localizations, values, where) {
+  const variants = {};
+  for (const partial of PARTIAL_LOCALES) {
+    const explicit = localizations?.[partial.id];
+    if (!explicit) continue;
+    const value = unitValue(explicit, `${where} (${partial.id})`);
+    if (value !== values[partial.fallback]) variants[partial.id] = value;
+  }
+  return variants;
+}
+
+function pluralVariants(localizations, values, key) {
+  const variants = {};
+  for (const partial of PARTIAL_LOCALES) {
+    const plural = localizations?.[partial.id]?.variations?.plural;
+    if (!plural) continue;
+    if (!plural.other) fail(`${key} (${partial.id}): missing plural "other"`);
+    const next = Object.fromEntries(
+      Object.entries(plural).map(([category, loc]) => [category, unitValue(loc, `${key} (${partial.id}, ${category})`)])
+    );
+    const fallback = values[partial.fallback];
+    if (Object.entries(next).some(([category, value]) => value !== fallback[category])) variants[partial.id] = next;
+  }
+  return variants;
+}
+
+function arrayVariants(items, values) {
+  const variants = {};
+  for (const partial of PARTIAL_LOCALES) {
+    const merged = items.map((item) => {
+      const explicit = item.source.localizations?.[partial.id];
+      return explicit
+        ? unitValue(explicit, `${item.key} (${partial.id})`)
+        : unitValue(item.source.localizations?.[partial.fallback], `${item.key} (${partial.fallback})`);
+    });
+    if (merged.some((item, index) => item !== values[partial.fallback][index])) variants[partial.id] = merged;
+  }
+  return variants;
+}
+
+function androidOnlyVariants(source, values) {
+  const variants = {};
+  for (const partial of PARTIAL_LOCALES) {
+    const base = values[partial.fallback];
+    const explicit = source[partial.id];
+    const value = typeof explicit === "string" && explicit.length > 0 ? explicit : regionalVariant(partial.id, base, values.en);
+    if (value !== base) variants[partial.id] = value;
+  }
+  return variants;
+}
+
 /** Reads both sources into one model: key → {kind, comment, values by locale}. */
 export function readSources(catalog, androidOnly) {
   const entries = new Map();
@@ -156,10 +227,10 @@ export function readSources(catalog, androidOnly) {
         if (!plural?.other) fail(`${key} (${id}): missing plural "other"`);
         values[id] = Object.fromEntries(Object.entries(plural).map(([category, loc]) => [category, unitValue(loc, `${key} (${id}, ${category})`)]));
       }
-      add(key, { kind: "plural", values });
+      add(key, { kind: "plural", values, variants: pluralVariants(source.localizations, values, key) });
     } else {
       const values = Object.fromEntries(LOCALES.map(({ id }) => [id, unitValue(source.localizations?.[id], `${key} (${id})`)]));
-      add(key, { kind: "string", values });
+      add(key, { kind: "string", values, variants: stringVariants(source.localizations, values, key) });
     }
   }
   for (const [key, items] of pools) {
@@ -171,7 +242,7 @@ export function readSources(catalog, androidOnly) {
     const values = Object.fromEntries(
       LOCALES.map(({ id }) => [id, items.map((item) => unitValue(item.source.localizations?.[id], `${item.key} (${id})`))])
     );
-    add(key, { kind: "array", values, sourceKeys: items.map((item) => item.key) });
+    add(key, { kind: "array", values, variants: arrayVariants(items, values), sourceKeys: items.map((item) => item.key) });
   }
   for (const [key, source] of Object.entries(androidOnly.strings)) {
     if (entries.has(key)) fail(`Android-only "${key}" repeats a catalog key`);
@@ -180,7 +251,7 @@ export function readSources(catalog, androidOnly) {
       if (typeof source[id] !== "string" || source[id].length === 0) fail(`Android-only ${key} (${id}): missing translation`);
       values[id] = source[id];
     }
-    add(key, { kind: "string", values, androidOnly: true, comment: source.comment });
+    add(key, { kind: "string", values, variants: androidOnlyVariants(source, values), androidOnly: true, comment: source.comment });
   }
   return entries;
 }
@@ -189,8 +260,12 @@ export function readSources(catalog, androidOnly) {
 function paramsFor(key, entry) {
   if (entry.kind === "string") {
     const params = unique(names(entry.values.en));
-    for (const { id } of LOCALES) {
-      const found = unique(names(entry.values[id]));
+    const copies = [
+      ...LOCALES.map(({ id }) => [id, entry.values[id]]),
+      ...PARTIAL_LOCALES.flatMap(({ id }) => (entry.variants?.[id] ? [[id, entry.variants[id]]] : [])),
+    ];
+    for (const [id, value] of copies) {
+      const found = unique(names(value));
       const missing = params.filter((p) => !found.includes(p));
       const extra = found.filter((p) => !params.includes(p));
       if (missing.length || extra.length) {
@@ -201,8 +276,12 @@ function paramsFor(key, entry) {
   }
   if (entry.kind === "array") {
     const params = unique(entry.values.en.flatMap(names));
-    for (const { id } of LOCALES) {
-      const extra = unique(entry.values[id].flatMap(names)).filter((p) => !params.includes(p));
+    const copies = [
+      ...LOCALES.map(({ id }) => [id, entry.values[id]]),
+      ...PARTIAL_LOCALES.flatMap(({ id }) => (entry.variants?.[id] ? [[id, entry.variants[id]]] : [])),
+    ];
+    for (const [id, items] of copies) {
+      const extra = unique(items.flatMap(names)).filter((p) => !params.includes(p));
       if (extra.length) fail(`${key} (${id}): placeholders English does not have: ${extra.join(", ")}`);
     }
     return params;
@@ -215,6 +294,40 @@ function pluralCategories(tag) {
 }
 
 const PLURAL_ORDER = ["zero", "one", "two", "few", "many", "other"];
+
+/** One resource element. `value` is the locale's copy; plurals fill gaps from `fallback`. */
+function resourceLines(entry, name, params, pluralTag, value, fallback) {
+  const where = `${name} (${pluralTag})`;
+  if (entry.kind === "string") {
+    assertXmlSafe(value, where);
+    // A string without arguments is read verbatim, so a literal % is not a format.
+    const unformatted = params.length === 0 && value.includes("%") ? ' formatted="false"' : "";
+    return [`    <string name="${name}"${unformatted}>${formatString(value, params)}</string>`];
+  }
+  if (entry.kind === "array") {
+    const lines = [`    <string-array name="${name}">`];
+    for (const item of value) {
+      assertXmlSafe(item, where);
+      lines.push(`        <item>${escapeResource(item)}</item>`);
+    }
+    lines.push("    </string-array>");
+    return lines;
+  }
+  const english = pluralFormat(entry.values.en.other, `${name} (en)`).tokens.length;
+  // Exactly the locale's CLDR categories: one the language never selects
+  // (Japanese "one") is dropped, one the catalog omits is filled from "other".
+  const categories = [...pluralCategories(pluralTag)].sort((a, b) => PLURAL_ORDER.indexOf(a) - PLURAL_ORDER.indexOf(b));
+  const lines = [`    <plurals name="${name}">`];
+  for (const category of categories) {
+    const source = value[category] ?? fallback[category] ?? value.other ?? fallback.other;
+    assertXmlSafe(source, where);
+    const { text, tokens } = pluralFormat(source, `${where}, ${category}`);
+    if (tokens.length !== english) fail(`${where}, ${category}: ${tokens.length} arguments, English has ${english}`);
+    lines.push(`        <item quantity="${category}">${text}</item>`);
+  }
+  lines.push("    </plurals>");
+  return lines;
+}
 
 export function buildAndroidStrings(catalog, androidOnly) {
   const entries = readSources(catalog, androidOnly);
@@ -238,41 +351,7 @@ export function buildAndroidStrings(catalog, androidOnly) {
   }
 
   const files = new Map();
-  for (const locale of LOCALES) {
-    const lines = [];
-    for (const key of keys) {
-      const { entry, name, params } = resources.get(key);
-      const where = `${key} (${locale.id})`;
-      if (entry.kind === "string") {
-        const value = entry.values[locale.id];
-        assertXmlSafe(value, where);
-        // A string without arguments is read verbatim, so a literal % is not a format.
-        const unformatted = params.length === 0 && value.includes("%") ? ' formatted="false"' : "";
-        lines.push(`    <string name="${name}"${unformatted}>${formatString(value, params)}</string>`);
-      } else if (entry.kind === "array") {
-        lines.push(`    <string-array name="${name}">`);
-        for (const item of entry.values[locale.id]) {
-          assertXmlSafe(item, where);
-          lines.push(`        <item>${escapeResource(item)}</item>`);
-        }
-        lines.push("    </string-array>");
-      } else {
-        const values = entry.values[locale.id];
-        const english = pluralFormat(entry.values.en.other, `${key} (en)`).tokens.length;
-        // Exactly the locale's CLDR categories: one the language never selects
-        // (Japanese "one") is dropped, one the catalog omits is filled from "other".
-        const categories = [...pluralCategories(locale.id)].sort((a, b) => PLURAL_ORDER.indexOf(a) - PLURAL_ORDER.indexOf(b));
-        lines.push(`    <plurals name="${name}">`);
-        for (const category of categories) {
-          const source = values[category] ?? values.other;
-          assertXmlSafe(source, where);
-          const { text, tokens } = pluralFormat(source, `${where}, ${category}`);
-          if (tokens.length !== english) fail(`${where}, ${category}: ${tokens.length} arguments, English has ${english}`);
-          lines.push(`        <item quantity="${category}">${text}</item>`);
-        }
-        lines.push("    </plurals>");
-      }
-    }
+  const writeResources = (locale, lines) => {
     const localeAttr = locale.dir === "values" ? ' tools:locale="en"' : "";
     files.set(
       `${resRoot}/${locale.dir}/${resourceFile}`,
@@ -283,19 +362,45 @@ ${lines.join("\n")}
 </resources>
 `
     );
+  };
+  for (const locale of LOCALES) {
+    const lines = [];
+    for (const key of keys) {
+      const { entry, name, params } = resources.get(key);
+      lines.push(...resourceLines(entry, name, params, locale.id, entry.values[locale.id], entry.values[locale.id]));
+    }
+    writeResources(locale, lines);
+  }
+  for (const locale of PARTIAL_LOCALES) {
+    const lines = [];
+    for (const key of keys) {
+      const { entry, name, params } = resources.get(key);
+      const variant = entry.variants?.[locale.id];
+      if (variant == null) continue;
+      lines.push(...resourceLines(entry, name, params, locale.tag, variant, entry.values[locale.fallback]));
+    }
+    writeResources(locale, lines);
   }
 
+  const configLocales = LOCALES.flatMap((locale) => [
+    locale,
+    ...PARTIAL_LOCALES.filter((partial) => partial.fallback === locale.id),
+  ]);
   files.set(
     `${resRoot}/xml/locales_config.xml`,
     `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generated by scripts/generate-android-strings.mjs. The app's 19 languages, for per-app language settings. -->
+<!-- Generated by scripts/generate-android-strings.mjs. The app's languages, for per-app language settings. en-GB and es-419 are regional variants. -->
 <locale-config xmlns:android="http://schemas.android.com/apk/res/android">
-${LOCALES.map(({ tag }) => `    <locale android:name="${tag}" />`).join("\n")}
+${configLocales.map(({ tag }) => `    <locale android:name="${tag}" />`).join("\n")}
 </locale-config>
 `
   );
 
-  files.set(keyMapPath, `${JSON.stringify({ generator: "scripts/generate-android-strings.mjs", locales: LOCALES, keys: keyMap }, null, 2)}\n`);
+  const keyMapLocales = [
+    ...LOCALES,
+    ...PARTIAL_LOCALES.map((locale) => ({ ...locale, partial: true })),
+  ];
+  files.set(keyMapPath, `${JSON.stringify({ generator: "scripts/generate-android-strings.mjs", locales: keyMapLocales, keys: keyMap }, null, 2)}\n`);
   files.set(accessorPath, accessors(keys.map((key) => resources.get(key))));
   return files;
 }

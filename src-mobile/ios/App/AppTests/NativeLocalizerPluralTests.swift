@@ -87,15 +87,21 @@ func uninflectedLocalesAreUnchanged() {
 @MainActor
 @Test("Every shipped language bundles its own copy")
 func everyLanguageBundlesItsOwnCopy() {
+    let inherited = ["en-GB": "en", "es-MX": "es"]
+    let localizer = NativeLocalizer()
     for language in NativeLocalizer.supportedLanguages {
-        #expect(
-            bundleValue("recordsMonthWorkdays", language.id) != nil,
-            "\(language.id) is missing recordsMonthWorkdays"
-        )
-        #expect(
-            bundleValue("aboutProject", language.id) != nil,
-            "\(language.id) is missing aboutProject"
-        )
+        for key in ["recordsMonthWorkdays", "aboutProject"] {
+            if bundleValue(key, language.id) != nil { continue }
+            let parent = inherited[language.id]
+            #expect(parent != nil, "\(language.id) is missing \(key)")
+            if let parent {
+                #expect(bundleValue(key, parent) != nil, "\(parent) is missing \(key)")
+                #expect(
+                    localizer.string(key, locale: language.id) == localizer.string(key, locale: parent),
+                    "\(language.id) \(key) does not fall back to \(parent)"
+                )
+            }
+        }
     }
 }
 

@@ -8,6 +8,7 @@ import com.rainif.doneat.R
 import com.rainif.doneat.core.data.SessionStore
 import com.rainif.doneat.core.data.SettingsRepository
 import com.rainif.doneat.core.domain.records.SyncedPreferences
+import com.rainif.doneat.core.domain.settings.AppLanguages
 import com.rainif.doneat.core.domain.reminders.ReminderChannel
 import com.rainif.doneat.core.domain.reminders.ReminderPlanner
 import com.rainif.doneat.core.domain.schedule.Reminder
@@ -69,13 +70,17 @@ class TimerCoordinator(
     }
 
     /**
-     * Notifications speak the app's language. Android 13+ already gives the
-     * application that locale; earlier versions need a configured context.
+     * Notifications speak the resolved language. An explicit per-app language
+     * is already on the context. Following the system is not enough when the
+     * device locale does not select that folder (`en-AU` vs `values-en-rGB`).
      */
     private fun localizedResources(override: String?): Resources {
-        if (override == null || AppLocale.hasPerAppLanguage) return context.resources
+        val code = AppLanguages.effective(override, AppLocale.systemPreferred())
+        val current = context.resources.configuration.locales
+        val tags = (0 until current.size()).map { current[it].toLanguageTag() }
+        if (AppLanguages.deviceAlreadyUses(code, tags)) return context.resources
         val configuration = Configuration(context.resources.configuration).apply {
-            setLocales(LocaleList(Locale.forLanguageTag(AppLocale.tag(override))))
+            setLocales(LocaleList(Locale.forLanguageTag(AppLocale.tag(code))))
         }
         return context.createConfigurationContext(configuration).resources
     }

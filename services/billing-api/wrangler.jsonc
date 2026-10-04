@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "doneat-billing-api",
+  "account_id": "5bdf98b2bc34ee3aa04c843987dc80e2",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "api.doneat.app", "custom_domain": true }],
+  "observability": { "enabled": false },
+  "vars": {
+    "PACKAGE_NAME": "com.rainif.doneat",
+    "SUBSCRIPTION_PRODUCT": "doneat_plus",
+    "SUBSCRIPTION_BASE_PLANS": "monthly,yearly",
+    "LIFETIME_PRODUCT": "doneat_plus_lifetime",
+    "LIFETIME_PURCHASE_OPTION": "lifetime",
+    "ISSUER": "https://api.doneat.app",
+    "SIGNING_KEY_ID": "billing-2026-01",
+    "GOOGLE_SERVICE_ACCOUNT_EMAIL": "doneat-billing@august-edge-217210.iam.gserviceaccount.com",
+    "PUBSUB_SERVICE_ACCOUNT_EMAIL": "doneat-rtdn-push@august-edge-217210.iam.gserviceaccount.com",
+    "PUBSUB_SUBSCRIPTION": "projects/august-edge-217210/subscriptions/doneat-play-rtdn-push",
+    "PUBSUB_AUDIENCE": "https://api.doneat.app/v1/billing/google/notifications"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "billing",
+    "database_id": "18e885f9-c9f1-4be9-aef9-e66669ec47c1",
+    "migrations_dir": "migrations"
+  }],
+  "ratelimits": [
+    { "name": "VERIFY_IP_LIMIT", "namespace_id": "32101", "simple": { "limit": 300, "period": 60 } },
+    { "name": "VERIFY_TOKEN_LIMIT", "namespace_id": "32102", "simple": { "limit": 12, "period": 60 } }
+  ]
+}

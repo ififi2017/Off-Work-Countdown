@@ -449,7 +449,7 @@
         "FR-16"
       ],
       "read_first": "PlusEntitlement、01矩阵、02第9章、A06/A08；D-01/D-07。",
-      "instructions": "状态机、ProductDetails本地价格、single-flight购买/恢复、pending/取消/失效/离线；权益只来自 queryPurchasesAsync 与 Play 公钥签名校验；客户端 acknowledge 并持久化待确认重试（3天窗口）；fake隔离debug；保存原操作上下文（D-08 修订：首发无自建服务）。",
+      "instructions": "状态机、ProductDetails本地价格、single-flight购买/恢复、pending/取消/失效/离线；权益只来自 queryPurchasesAsync 与 Play 公钥签名校验；客户端 acknowledge 并持久化待确认重试（3天窗口）；fake隔离debug；保存原操作上下文（D-08 2026-10-04 修订：T21 启用后还需服务端签名凭据，客户端 acknowledge 路径保留）。",
       "deliverables": "EntitlementEngine/BillingRepository/Paywall；状态转移测试。",
       "acceptance": "取消续费未到期仍可用；Pending无权；断网不抹已验证缓存；同意D-07前保持源失效采集行为。",
       "blocking_decisions": [
@@ -469,7 +469,7 @@
     {
       "id": "T21",
       "phase": "M6",
-      "title": "（后续）服务端购买验证与 RTDN",
+      "title": "Cloudflare 服务端购买验证与 RTDN",
       "depends_on": [
         "T20"
       ],
@@ -478,18 +478,18 @@
         "FR-20"
       ],
       "read_first": "02第9章；A07/A08；D-08已确认记录、CFG-BACKEND与服务凭据边界。",
-      "instructions": "首发后按需启动。优先在现有 Next.js/Vercel Route Handlers 实现 Publisher 验证、幂等权益、RTDN 重查、撤销/linkedToken；不收工资或记录。",
-      "deliverables": "权益验证服务代码（优先现有 Vercel Route Handlers）；部署runbook；监控/重试；接口contract tests。",
+      "instructions": "2026-10-04 用户授权：同仓库 services/billing-api 独立 Cloudflare Worker + D1，api.doneat.app；Publisher 精确到期核验、签名凭据、幂等权益、认证 RTDN 重查与 linkedToken 撤销；Android 复用 PlusAccess。不得上传薪资/记录，不执行真实付款或自动退款。",
+      "deliverables": "Worker、D1 migrations、部署 runbook、Android 签名凭据校验与精确到期输入、接口与客户端 contract tests、隐私文案源。",
       "acceptance": "真实许可测试账户购买、恢复、pending、退款、取消及重复RTDN；无密钥进Git/APK；只有mock通过不算生产完成。",
       "blocking_decisions": [],
-      "decision_gate_scope": "D-08 修订：首发纯客户端；本任务为后续阶段，不阻塞首发。",
+      "decision_gate_scope": "D-08 于 2026-10-04 获用户授权启动；部署配置与真实许可测试未通过不能称生产完成。",
       "approved_decisions": [
         "D-08"
       ],
       "pending_configuration": [
         "CFG-BACKEND"
       ],
-      "scope": "POST_FIRST_RELEASE"
+      "scope": "APPROVED_2026_10_04_INCREMENT"
     },
     {
       "id": "T22",
