@@ -122,11 +122,20 @@ object PreferencesRules {
     }
 }
 
-/** The app's 19 languages and how the system's choice maps onto them (iOS `NativeLocalizer`). */
+/**
+ * The app's languages and how the system's choice maps onto them (iOS `NativeLocalizer`).
+ *
+ * `en-GB` is British spelling, also used for other Commonwealth English when the
+ * device is followed. `es-MX` is Latin American Spanish (`es-419` on Android).
+ * Display names: English (UK), Español (Latinoamérica) — the Spanish variant
+ * covers the whole es-419 region, not Mexico alone. Region sets match
+ * `scripts/regional-variants.mjs`.
+ */
 object AppLanguages {
     /** In the order the language picker lists them, with each language's own name. */
     val supported: List<Pair<String, String>> = listOf(
         "en" to "English",
+        "en-GB" to "English (UK)",
         "zh-CN" to "简体中文",
         "zh-HK" to "繁體中文（香港）",
         "zh-TW" to "繁體中文（台灣）",
@@ -134,6 +143,7 @@ object AppLanguages {
         "ko" to "한국어",
         "de" to "Deutsch",
         "es" to "Español",
+        "es-MX" to "Español (Latinoamérica)",
         "fr" to "Français",
         "it" to "Italiano",
         "pt" to "Português",
@@ -152,21 +162,105 @@ object AppLanguages {
     /**
      * The first of [preferred] (BCP 47 tags, most preferred first) the app
      * supports: exact match, then Traditional Chinese by region, then any
-     * Chinese as Simplified, then by language prefix; English otherwise.
-     * Android's legacy `in` counts as Indonesian.
+     * Chinese as Simplified, then English and Spanish by region, then by
+     * language prefix; English otherwise. Android's legacy `in` counts as
+     * Indonesian.
+     *
+     * Region tables run before the prefix match. Otherwise `en-AU` hits `en`
+     * and `es-AR` hits `es`. Bare `en` and `en-US` / `en-CA` / `en-PH` stay
+     * on `en`. Other English regions (GB, IE, AU, NZ, IN, ZA, …) use `en-GB`.
+     * `es-419` and its CLDR children, including `es-US`, use `es-MX`. `es-ES`
+     * stays on `es`.
      */
     fun resolve(preferred: List<String>): String {
         for (raw in preferred) {
             val tag = raw.replace('_', '-').let { if (it == "in" || it.startsWith("in-")) "id" + it.drop(2) else it }
             val lower = tag.lowercase()
             ids.firstOrNull { it.equals(tag, ignoreCase = true) }?.let { return it }
-            if (lower.startsWith("zh-hant-hk")) return "zh-HK"
-            if (lower.startsWith("zh-hant")) return "zh-TW"
+            if (lower.startsWith("zh-hant-hk") || lower.startsWith("zh-hk")) return "zh-HK"
+            if (lower.startsWith("zh-hant") || lower.startsWith("zh-tw")) return "zh-TW"
             if (lower.startsWith("zh")) return "zh-CN"
+            if (lower == "en" || lower.startsWith("en-")) return if (isAmericanEnglish(lower)) "en" else "en-GB"
+            if (lower == "es" || lower.startsWith("es-")) return if (isLatinAmerican(lower)) "es-MX" else "es"
             ids.firstOrNull { lower.startsWith(it.lowercase() + "-") || it.lowercase().startsWith("$lower-") }?.let { return it }
         }
         return "en"
     }
+
+    /** Catalog code to the BCP 47 tag Android resources and per-app language use. `es-MX` is `es-419`. */
+    fun resourceTag(code: String) = when (code) {
+        "zh-CN" -> "zh-Hans-CN"
+        "zh-HK" -> "zh-Hant-HK"
+        "zh-TW" -> "zh-Hant-TW"
+        "es-MX" -> "es-419"
+        else -> code
+    }
+
+    /**
+     * Whether [deviceTags] (the configuration's locales, most preferred first)
+     * already select the resources for [code]. When this is false the UI and
+     * notifications overlay [resourceTag] themselves.
+     *
+     * `en-AU` does not select `values-en-rGB`. `es-AR` does select
+     * `values-b+es+419`, because minSdk 26 follows the es-419 parent.
+     */
+    fun deviceAlreadyUses(code: String, deviceTags: List<String>): Boolean {
+        val raw = deviceTags.firstOrNull()?.replace('_', '-') ?: return code == "en"
+        val core = languageTagCore(raw)
+        val language = core.substringBefore('-').lowercase().let { if (it == "in") "id" else it }
+        val region = regionSubtag(core)
+        return when (code) {
+            "en-GB" -> language == "en" && region == "GB"
+            "en" -> language == "en" && region != "GB"
+            "es-MX" -> language == "es" && region in LATIN_AMERICAN_REGIONS
+            "es" -> language == "es" && region !in LATIN_AMERICAN_REGIONS
+            "zh-CN", "zh-HK", "zh-TW" -> core.equals(resourceTag(code), ignoreCase = true)
+            "id" -> language == "id"
+            else -> {
+                val expected = resourceTag(code)
+                core.equals(expected, ignoreCase = true) || (language == expected.lowercase() && !expected.contains('-'))
+            }
+        }
+    }
+
+    private val AMERICAN_ENGLISH_REGIONS = setOf("US", "CA", "PH", "LR", "PR", "GU", "AS", "VI", "UM", "MP")
+    private val LATIN_AMERICAN_REGIONS = setOf(
+        "419", "MX", "AR", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GT", "HN",
+        "NI", "PA", "PE", "PR", "PY", "SV", "US", "UY", "VE",
+    )
+
+    private fun isAmericanEnglish(tag: String): Boolean {
+        val region = regionSubtag(tag)
+        return region.isEmpty() || region in AMERICAN_ENGLISH_REGIONS
+    }
+
+    private fun isLatinAmerican(tag: String): Boolean = regionSubtag(tag) in LATIN_AMERICAN_REGIONS
+
+    /** Language, optional script and optional region. Drops Unicode extensions. */
+    private fun languageTagCore(tag: String): String {
+        val parts = tag.split('-')
+        if (parts.isEmpty() || parts[0].isEmpty()) return ""
+        val kept = mutableListOf(parts[0])
+        var index = 1
+        if (index < parts.size && parts[index].length == 4 && parts[index].all { it.isLetter() }) {
+            kept.add(parts[index])
+            index++
+        }
+        if (index < parts.size && isRegion(parts[index])) kept.add(parts[index])
+        return kept.joinToString("-")
+    }
+
+    private fun regionSubtag(tag: String): String {
+        val parts = tag.split('-')
+        if (parts.size < 2) return ""
+        var index = 1
+        if (parts[index].length == 4 && parts[index].all { it.isLetter() }) index++
+        if (index >= parts.size || !isRegion(parts[index])) return ""
+        return parts[index].uppercase()
+    }
+
+    private fun isRegion(part: String) =
+        (part.length == 2 && part.all { it.isLetter() }) || (part.length == 3 && part.all { it.isDigit() })
 
     /** The language the UI renders in: the pinned one, else the system's. */
     fun effective(override: String?, systemPreferred: List<String>) = override?.takeIf { it in ids } ?: resolve(systemPreferred)

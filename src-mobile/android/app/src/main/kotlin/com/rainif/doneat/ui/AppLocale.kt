@@ -28,13 +28,8 @@ import java.util.Locale
  * for the chosen language instead.
  */
 object AppLocale {
-    /** Catalog code to BCP 47: Chinese variants carry their script; Indonesian stays `id` (Android maps it to `in`). */
-    fun tag(code: String) = when (code) {
-        "zh-CN" -> "zh-Hans-CN"
-        "zh-HK" -> "zh-Hant-HK"
-        "zh-TW" -> "zh-Hant-TW"
-        else -> code
-    }
+    /** Catalog code to BCP 47. `es-MX` is `es-419` so it hits `values-b+es+419`. */
+    fun tag(code: String) = AppLanguages.resourceTag(code)
 
     val hasPerAppLanguage get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
@@ -57,20 +52,25 @@ object AppLocale {
 }
 
 /**
- * Renders [content] in [override] on versions without a per-app language.
- * On Android 13+ the system has already configured the context, so this only
- * sets the layout direction.
+ * Renders [content] in the resolved language when the current configuration
+ * would not already select those resources.
+ *
+ * Android 13+ per-app language covers an explicit choice. Following the
+ * system does not: `en-AU` never selects `values-en-rGB`, so that case is
+ * overlaid here too. `es-AR` already selects `values-b+es+419` and is left
+ * alone.
  */
 @Composable
 fun AppLanguageScope(override: String?, content: @Composable () -> Unit) {
     val code = AppLanguages.effective(override, AppLocale.systemPreferred())
     val direction = if (AppLanguages.isRightToLeft(code)) LayoutDirection.Rtl else LayoutDirection.Ltr
-    if (AppLocale.hasPerAppLanguage) {
+    val base = LocalContext.current
+    val current = LocalConfiguration.current
+    val deviceTags = (0 until current.locales.size()).map { current.locales[it].toLanguageTag() }
+    if (AppLanguages.deviceAlreadyUses(code, deviceTags)) {
         CompositionLocalProvider(LocalLayoutDirection provides direction, content = content)
         return
     }
-    val base = LocalContext.current
-    val current = LocalConfiguration.current
     val localized = remember(base, current, code) {
         val configuration = Configuration(current).apply {
             setLocales(LocaleList(Locale.forLanguageTag(AppLocale.tag(code))))
