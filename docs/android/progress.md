@@ -476,7 +476,7 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 
 ### 2026-10-04 · 115 签名回执真机验收与提示文案修正
 
-- Pixel 10 Pro / Android 17 已通过 Google Play 更新到 **3.2.1 (115)**，安装来源 `com.android.vending`。从手机读取 APK 的公开代码，确认包含 `billing-2026-01`、预期 RSA 公钥和 API 地址；未读取应用私有购买缓存。验收源码对应已发布 `2ddf11b7`；修复分支基于随后仅补进度的 `85509062`，未跟随新 main 改动。
+- Pixel 10 Pro / Android 17 已通过 Google Play 更新到 **3.2.1 (115)**，安装来源 `com.android.vending`。从手机读取 APK 的公开代码，确认包含 `billing-2026-01`、预期 RSA 公钥和 API 地址；未读取应用私有购买缓存。验收源码对应已发布 `2ddf11b7`；修复分支基于随后仅补进度的 `85509062`，未跟随新 main 改动。规定漂移命令现为 44 行（新增 `310f8890` iOS 版本介绍及合并记录 `c5182d71`）；冻结规则源仍为 `9252fdfd` / `18129168`，本轮不移植这些增量。
 - 新购买确认页再次实际显示测试卡、五分钟测试周期及“不会收费”；用户亲自点击最后订阅确认。115 随后显示 Plus；结合实际 APK 的强制服务器验签配置和客户端策略，这验证了真实购买 → 服务端签名 → Android 接受回执并授权的路径，不再只是 111 的客户端验证。
 - 仅取消了详情页明确标注 `Test: DoneAt` / `Test card, always approves` 的本次月订阅自动续订，没有退款或修改真实终身订单。
 
@@ -490,5 +490,6 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 真机发现：已签名证据到期后，待确认状态沿用了“Google Play 不可用”提示，即使网络正常。现从 Android 专用文案源修改同一键的 19 种语言并重新生成资源：说明当前 Plus 权益暂时无法确认，引导重试/恢复；不推断 Play 故障或断网。权益判断、截止时刻及重试行为不变。
 - Worker 实际联调窗口 `08:23:00Z–08:30:00Z`：45 请求 / 9 子请求，运行时 errors=0，CPU p50 **0.461 ms** / p99 **12.286 ms**。包含本轮客户端回执与 RTDN，但仍是混合路径汇总，未单独分离冷/热请求；尾部仍超过免费档 10 ms。此前 14.293 ms 证据保留，不能宣称免费档容量验收通过。
 - 本轮手机仍只有无线 ADB。USB/用户配合切网待回复，**离线保留/离线到期、离线冷启动 NOT_RUN**，不得用上述有网络的前台测试替代。其他商品、pending、退款、宽限/暂停、替换与重复/迟到 RTDN 的完整矩阵仍待完成；起床闹钟平台实现仍未完成。T21 保持 IN_PROGRESS。
-- 自动检查已通过：`npm test -- --maxWorkers=2` **50 文件 / 545 项**，包含规则与翻译一致性；`check:ios`、`check:version`。Android 构建/真机修正文案与本轮 headless iOS build 结果待补。
-- 测试月订阅已取消并确认到期，未创建闹钟、修改网络/字号/动画/熄屏设置、清除正式数据或安装模拟器。读取到的原熄屏超时为 `2147483647`，保持原值。
+- 自动检查已通过：`npm test -- --maxWorkers=2` **50 文件 / 545 项**，包含规则与翻译一致性；lint、`check:ios`、`check:version`；本轮本地 headless iOS simulator build（201 秒，未启动模拟器界面）及单 worker 独立预览 Debug 构建（79 秒）。PR #296 的 Web build / Desktop export 与对应产物检查、Rust macOS / Windows 已通过；Android [CI 37189750874](https://github.com/ififi2017/Off-Work-Countdown/actions/runs/37189750874) 的四模块测试、lintDebug、Debug / R8 Release 构建及 stable Compose 检查全部通过（Gradle 5 分 2 秒）；没有把 CI 结果当作真机行为证据。
+- **修正文案视觉 PASS**：Pixel 实际安装独立 `com.rainif.doneat.billingqa`，使用现有 Debug gallery 的模拟 OFFLINE 状态、真实 `PlusPage` 验证英文浅色/深色、简体中文、阿拉伯语 RTL，以及英文 200% 字号 + 三项系统动画关闭。提示完整、没有截断或重叠，大字体滚动后重试/恢复按钮可达；预览不执行购买，不能用它代替上述真实 115 验签证据。新截图为 `qa/2026-10-04-billing/receipt-copy-zh-light.png` 和 `receipt-copy-en-large.png`。
+- 测试月订阅已取消并确认到期。视觉检查后已卸载本轮独立 `billingqa` 包、清理设备临时 UI XML，并返回 Play 版；字号与三项动画原值均为 `1.0`，已逐项恢复并读回确认。未修改网络或熄屏设置、清除正式数据、创建闹钟或启动模拟器。读取到的原熄屏超时为 `2147483647`，保持原值。
