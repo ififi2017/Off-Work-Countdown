@@ -136,6 +136,7 @@ export default async function PresetPage({
       backLabel={copy.backToApp}
       heading={item.name}
       intro={item.intro}
+      availableLocales={presetLocales}
     >
       <p className="mb-8 text-base leading-7 text-gray-600 dark:text-gray-300">
         {copy.webBoundary}
