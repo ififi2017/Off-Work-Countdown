@@ -973,10 +973,14 @@
     <string name="shiftAlarmTitleFixed">काम %1$s</string>
     <string name="shiftAlarmsAllow">अलार्मना परवानगी द्या</string>
     <string name="shiftAlarmsAllowNote">सायलेंटवरही उठवण्यासाठी DoneAt ला अलार्मची परवानगी हवी आहे.</string>
+    <string name="shiftAlarmsAndroidAccess">उठण्याचे अलार्म नियोजित करण्यासाठी सूचना आणि अचूक अलार्मला परवानगी द्या.</string>
+    <string name="shiftAlarmsAndroidNote">तुमचा अलार्म आवाज, आवाजाची पातळी आणि व्यत्यय आणू नका सेटिंग वापरतो. 10 मिनिटांनंतर वाजणे थांबते.</string>
     <string name="shiftAlarmsBeforeWork">कामाआधी</string>
     <string name="shiftAlarmsCoveredThrough">%1$s पर्यंत लावले</string>
     <string name="shiftAlarmsDenied">अलार्मची परवानगी बंद आहे</string>
     <string name="shiftAlarmsDeniedNote">सेटिंग्जमध्ये DoneAt ला अलार्मची परवानगी द्या, मग अलार्म लागू होतील.</string>
+    <string name="shiftAlarmsFullScreen">पूर्ण स्क्रीन अलार्म</string>
+    <string name="shiftAlarmsFullScreenNote">लॉक स्क्रीनवर थांबवा आणि स्नूझ दाखवण्यासाठी पूर्ण स्क्रीन सूचनांना परवानगी द्या. अन्यथा अलार्म सूचना वापरा.</string>
     <string name="shiftAlarmsIntro">प्रत्येक शिफ्टआधी तुम्ही निवडलेल्या वेळी वाजतो. अलार्म फक्त याच डिव्हाइसवर वाजतील.</string>
     <string name="shiftAlarmsLeadOff">बंद</string>
     <string name="shiftAlarmsLeadSection">आधी वाजवा</string>

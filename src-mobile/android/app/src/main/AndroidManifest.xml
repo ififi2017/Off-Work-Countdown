@@ -9,8 +9,11 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Purchase verification sends Play tokens only; work records stay on device. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- WorkManager's optional foreground worker is unused: all reminders are alarms. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
+    <!-- Only an actually ringing, user-enabled wake-up alarm runs a foreground service. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".DoneAtApplication"
@@ -37,6 +40,23 @@
             </intent-filter>
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
+
+        <service android:name=".alarms.ShiftAlarmService" android:exported="false"
+            android:directBootAware="true" android:foregroundServiceType="mediaPlayback" />
+        <activity android:name=".alarms.ShiftAlarmActivity" android:exported="false"
+            android:directBootAware="true" android:launchMode="singleTop"
+            android:excludeFromRecents="true" android:taskAffinity="${applicationId}.alarm" />
+        <receiver android:name=".alarms.ShiftAlarmReceiver" android:exported="false" android:directBootAware="true" />
+        <receiver android:name=".alarms.ShiftAlarmSystemReceiver" android:exported="false" android:directBootAware="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
 
         <!-- Not exported: only the system's alarm delivery reaches it. -->
         <receiver

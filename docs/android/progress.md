@@ -511,3 +511,13 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 已恢复 Wi-Fi 和移动数据，读回均为原值 `1`、飞行模式仍为 `0`，默认网络重新出现。联网后点击恢复购买回到 Yearly / Monthly / Lifetime 免费方案页，未恢复已过期月订阅。字号、三项动画均为原值 `1.0`，熄屏超时仍为 `2147483647`；设备临时 UI 文件已清理。未创建闹钟、改动真实购买或用户记录。
 - 设备截图：`qa/2026-10-04-billing/115-offline-expiry-before.png`、`115-offline-expiry-after.png`、`115-offline-cold-expired.png`。本轮仅补证据，源码与已通过完整 [Android CI 37190172604](https://github.com/ififi2017/Off-Work-Countdown/actions/runs/37190172604) / [主 CI 37190172586](https://github.com/ififi2017/Off-Work-Countdown/actions/runs/37190172586) 的 `2bcec6ae` 相同；没有重复宣称自动测试就是设备验证。
 - T21 / T26 仍为 IN_PROGRESS：其他商品、pending、退款、宽限/暂停、替换与重复/迟到 RTDN 的完整矩阵、生产冷/热路径 CPU 余量，以及原生起床闹钟平台接入尚未完成。生产全局公钥变量未启用，未调整 Cloudflare 套餐。
+
+
+### 2026-10-04 · Android 原生班次闹钟接入
+
+- 分支 `codex/android-native-shift-alarms` 从已验证回执/离线验收的 `e8a81751` 继续，未跟随 main 重新冻结规则。仍采用授权的 iOS `18129168` 的班次提前量、最终排班、精确期限/终身日历年、9 分钟贪睡和最后成功预约 +10 分钟规则；没有重做报告或休假规划。
+- 已接入系统 `setAlarmClock`、成功预约日志、差量更新、设置页、停止/贪睡、有限时长原生响铃及锁屏界面。仅实际响铃时运行 mediaPlayback 前台服务，普通提醒没有改用前台服务；未添加轮询或 USE_EXACT_ALARM。
+- 注册日志使用设备加密的 noBackupFilesDir，重启可恢复未来预约，缺失/损坏日志和过期 Intent 不响铃。系统拒绝的预约不计入覆盖，覆盖日期不跨越失败缺口；刷新提醒按最后实际成功预约安排。
+- 订阅仅使用已验证的精确到期；查询暂不可用时不延长期限，也不提前删除仍有效的旧预约。开启、关闭和班次提前量存于现有设备设置，不改变 schema 7。Play 全屏通知及前台服务声明仍须发布前核实，不能用本地授权代替审核。
+- 本轮新增 Android 专用的音量/勿扰/10 分钟停响、精确闹钟与通知授权、全屏授权说明，全部 19 语言从专用源生成。独立 `.alarmqa` 调试包用于物理设备测试，生产包不含测试入口或测试到期时间。
+- 验证进行中：第一次本地编译指出 3 处 Kotlin 类型/可见性错误，已修正；初次 npm test 的 545 用例通过但进程通信超时，正在单线程复跑。尚不能记为完整测试或设备验收通过。Pixel 已通过 USB 连接，正式 Play 包及真实购买保留。

@@ -1,5 +1,8 @@
 package com.rainif.doneat.core.data
 
+import com.rainif.doneat.core.domain.alarms.ShiftAlarmSettings
+import java.util.UUID
+import kotlinx.serialization.json.jsonArray
 import com.rainif.doneat.core.domain.records.SyncedPreferences
 import com.rainif.doneat.core.domain.settings.PreferencesRules
 import kotlinx.coroutines.CoroutineScope
@@ -68,6 +71,7 @@ data class DeviceSettings(
      * UserDefaults it comes back with a device backup and nowhere else.
      */
     val leavePlannerTrialsUsed: Int = 0,
+    val shiftAlarms: ShiftAlarmSettings = ShiftAlarmSettings(),
     val weeklyReportEnabled: Boolean = false,
     val monthlyReportEnabled: Boolean = false,
     val yearlyReportEnabled: Boolean = false,
@@ -132,6 +136,7 @@ class DeviceSettingsStore(private val file: Path) {
             ongoingEnabled = bool("ongoingEnabled", false),
             ongoingLeadMinutes = o["ongoingLeadMinutes"]?.jsonPrimitive?.intOrNull?.takeIf { it in DeviceSettings.ONGOING_LEAD_MINUTES } ?: 15,
             focusOngoingEnabled = bool("focusOngoingEnabled", true),
+            shiftAlarms = decodeAlarms(o["shiftAlarms"] as? JsonObject),
             weeklyReportEnabled = bool("weeklyReportEnabled", false),
             monthlyReportEnabled = bool("monthlyReportEnabled", false),
             yearlyReportEnabled = bool("yearlyReportEnabled", false),
@@ -139,6 +144,20 @@ class DeviceSettingsStore(private val file: Path) {
             leavePlannerTrialsUsed = o["leavePlannerTrialsUsed"]?.jsonPrimitive?.intOrNull?.coerceAtLeast(0) ?: 0,
         )
     }.getOrElse { DeviceSettings() }
+
+    private fun decodeAlarms(o: JsonObject?): ShiftAlarmSettings = runCatching {
+        if (o == null) return ShiftAlarmSettings()
+        ShiftAlarmSettings(
+            o["enabled"]?.jsonPrimitive?.booleanOrNull ?: false,
+            o["defaultLeadMinutes"]?.jsonPrimitive?.intOrNull?.takeIf { it in ShiftAlarmSettings.LEAD_CHOICES } ?: 60,
+            (o["leads"] as? JsonObject).orEmpty().mapNotNull { (id, value) ->
+                val uuid = runCatching { UUID.fromString(id) }.getOrNull()
+                val lead = value.jsonPrimitive.intOrNull?.takeIf { it in ShiftAlarmSettings.LEAD_CHOICES }
+                if (uuid != null && lead != null) uuid to lead else null
+            }.toMap(),
+            (o["silenced"] as? JsonArray).orEmpty().mapNotNull { runCatching { UUID.fromString(it.jsonPrimitive.content) }.getOrNull() }.toSet(),
+        )
+    }.getOrElse { ShiftAlarmSettings() }
 
     private fun encode(s: DeviceSettings) = JsonObject(
         mapOf(
@@ -159,6 +178,12 @@ class DeviceSettingsStore(private val file: Path) {
             "ongoingLeadMinutes" to JsonPrimitive(s.ongoingLeadMinutes),
             "focusOngoingEnabled" to JsonPrimitive(s.focusOngoingEnabled),
             "leavePlannerTrialsUsed" to JsonPrimitive(s.leavePlannerTrialsUsed),
+            "shiftAlarms" to JsonObject(mapOf(
+                "enabled" to JsonPrimitive(s.shiftAlarms.enabled),
+                "defaultLeadMinutes" to JsonPrimitive(s.shiftAlarms.defaultLeadMinutes),
+                "leads" to JsonObject(s.shiftAlarms.leadMinutesByShiftType.mapKeys { it.key.toString() }.mapValues { JsonPrimitive(it.value) }),
+                "silenced" to JsonArray(s.shiftAlarms.silencedShiftTypeIDs.map { JsonPrimitive(it.toString()) }),
+            )),
             "weeklyReportEnabled" to JsonPrimitive(s.weeklyReportEnabled),
             "monthlyReportEnabled" to JsonPrimitive(s.monthlyReportEnabled),
             "yearlyReportEnabled" to JsonPrimitive(s.yearlyReportEnabled),

@@ -44,6 +44,7 @@ class AppGraph(app: Application) {
     val settings = SettingsRepository(records, device, scope, nowMs, systemZone, newId)
     /** A launcher shortcut or notification waits here until setup has finished. */
     val requestedTab = MutableStateFlow<String?>(null)
+    val requestedShiftAlarms = MutableStateFlow(false)
     val requestedReport = MutableStateFlow<com.rainif.doneat.core.domain.records.CycleReportPeriod?>(null)
 
     private val _holidays = MutableStateFlow(HolidayCalendar.EMPTY)
@@ -75,6 +76,8 @@ class AppGraph(app: Application) {
         adjust = { prefs -> focusCoordinator.breakTakeover(records.state.value, prefs.microBreakEnabled) },
 
     )
+
+    val shiftAlarms = com.rainif.doneat.alarms.ShiftAlarmCoordinator(app, settings, sessions, records, plus, scope)
 
     val reportNotifications = com.rainif.doneat.reminders.CycleReportCoordinator(app, settings, plus.authorized, scope, nowMs, plus.state)
 
@@ -116,6 +119,7 @@ class AppGraph(app: Application) {
             timer.reconcile()
             focusCoordinator.reconcile()
             _loaded.value = true
+            shiftAlarms.start()
             reportNotifications.start()
             timer.start()
             focusCoordinator.start()
@@ -131,11 +135,11 @@ class AppGraph(app: Application) {
 }
 
 class DoneAtApplication : Application() {
-    lateinit var graph: AppGraph
-        private set
+    val graph: AppGraph by lazy { AppGraph(this) }
 
     override fun onCreate() {
         super.onCreate()
-        graph = AppGraph(this)
+        // Direct-boot alarm delivery must never open credential-protected records or Billing.
+        if (getSystemService(android.os.UserManager::class.java).isUserUnlocked) graph
     }
 }

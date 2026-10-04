@@ -970,10 +970,14 @@
     <string name="shiftAlarmTitleFixed">%1$s 출근</string>
     <string name="shiftAlarmsAllow">알람 허용</string>
     <string name="shiftAlarmsAllowNote">무음 모드에서도 깨워 드리려면 DoneAt에 알람 권한이 필요해요.</string>
+    <string name="shiftAlarmsAndroidAccess">기상 알람을 예약하려면 알림과 정확한 알람을 허용하세요.</string>
+    <string name="shiftAlarmsAndroidNote">시스템 알람 소리, 알람 음량 및 방해 금지 설정을 따릅니다. 10분 후에 울림이 멈춥니다.</string>
     <string name="shiftAlarmsBeforeWork">출근 전</string>
     <string name="shiftAlarmsCoveredThrough">%1$s까지 설정됨</string>
     <string name="shiftAlarmsDenied">알람 권한이 꺼져 있어요</string>
     <string name="shiftAlarmsDeniedNote">설정에서 DoneAt의 알람을 허용하면 알람을 맞추기 시작해요.</string>
+    <string name="shiftAlarmsFullScreen">전체 화면 알람</string>
+    <string name="shiftAlarmsFullScreenNote">전체 화면 알림을 허용하면 잠금 화면에 중지와 다시 알림 버튼이 표시됩니다. 허용하지 않으면 알람 알림에서 조작하세요.</string>
     <string name="shiftAlarmsIntro">근무마다 원하는 시간만큼 미리 울려요. 알람은 이 기기에서만 울려요.</string>
     <string name="shiftAlarmsLeadOff">끔</string>
     <string name="shiftAlarmsLeadSection">미리 울리기</string>

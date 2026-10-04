@@ -3388,6 +3388,14 @@
     "shiftAlarmsAllowNote": {
       "resource": "string/shiftAlarmsAllowNote"
     },
+    "shiftAlarmsAndroidAccess": {
+      "resource": "string/shiftAlarmsAndroidAccess",
+      "androidOnly": true
+    },
+    "shiftAlarmsAndroidNote": {
+      "resource": "string/shiftAlarmsAndroidNote",
+      "androidOnly": true
+    },
     "shiftAlarmsBeforeWork": {
       "resource": "string/shiftAlarmsBeforeWork"
     },
@@ -3402,6 +3410,14 @@
     },
     "shiftAlarmsDeniedNote": {
       "resource": "string/shiftAlarmsDeniedNote"
+    },
+    "shiftAlarmsFullScreen": {
+      "resource": "string/shiftAlarmsFullScreen",
+      "androidOnly": true
+    },
+    "shiftAlarmsFullScreenNote": {
+      "resource": "string/shiftAlarmsFullScreenNote",
+      "androidOnly": true
     },
     "shiftAlarmsIntro": {
       "resource": "string/shiftAlarmsIntro"

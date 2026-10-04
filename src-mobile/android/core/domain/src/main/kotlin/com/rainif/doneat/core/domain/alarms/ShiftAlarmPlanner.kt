@@ -125,8 +125,10 @@ object ShiftAlarmReconciliation {
         val through = desired.takeWhile { held[it.id] == it }.lastOrNull()?.fireAtMs
         // No accepted alarm means no claim of coverage and no fictional exhaustion event.
         val last = actual.lastOrNull()?.fireAtMs
+        // Android has no reliable client renewal flag. Remind after the last accepted alarm,
+        // still inside the verified paid window; opening the app can verify a renewal.
         val refresh = last?.plus(REFRESH_DELAY_MS)?.takeIf {
-            (lifetime || actual.size < desired.size) && (lifetime || it < untilMs)
+            lifetime || it < untilMs
         }
         return Coverage(actual, through, refresh)
     }

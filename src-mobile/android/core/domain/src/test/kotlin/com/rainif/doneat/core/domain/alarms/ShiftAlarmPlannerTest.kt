@@ -105,7 +105,7 @@ class ShiftAlarmPlannerTest {
 
     @Test fun `completed subscription has no refresh promise and disabled clears all`() {
         val wanted = plan()
-        assertNull(ShiftAlarmReconciliation.coverage(wanted, wanted, 0, Long.MAX_VALUE, false).refreshAtMs)
+        assertEquals(wanted.last().fireAtMs + 600_000, ShiftAlarmReconciliation.coverage(wanted, wanted, 0, Long.MAX_VALUE, false).refreshAtMs)
         assertEquals(wanted.last().fireAtMs + 600_000, ShiftAlarmReconciliation.coverage(wanted, wanted, 0, Long.MAX_VALUE, true).refreshAtMs)
         assertEquals(wanted.map { it.id }.toSet(), ShiftAlarmReconciliation.delta(emptyList(), wanted).cancel)
         assertNull(ShiftAlarmReconciliation.coverage(emptyList(), wanted, 0, Long.MAX_VALUE, true).refreshAtMs)

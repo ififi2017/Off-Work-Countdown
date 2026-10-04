@@ -970,10 +970,14 @@
     <string name="shiftAlarmTitleFixed">Kerja %1$s</string>
     <string name="shiftAlarmsAllow">Izinkan alarm</string>
     <string name="shiftAlarmsAllowNote">DoneAt perlu akses alarm untuk membangunkanmu, bahkan saat senyap.</string>
+    <string name="shiftAlarmsAndroidAccess">Izinkan notifikasi dan alarm tepat waktu untuk menjadwalkan alarm bangun.</string>
+    <string name="shiftAlarmsAndroidNote">Menggunakan suara dan volume alarm serta pengaturan Jangan Ganggu Anda. Berhenti berdering setelah 10 menit.</string>
     <string name="shiftAlarmsBeforeWork">Sebelum kerja</string>
     <string name="shiftAlarmsCoveredThrough">Terjadwal hingga %1$s</string>
     <string name="shiftAlarmsDenied">Akses alarm nonaktif</string>
     <string name="shiftAlarmsDeniedNote">Izinkan alarm untuk DoneAt di Pengaturan agar alarm mulai dijadwalkan.</string>
+    <string name="shiftAlarmsFullScreen">Alarm layar penuh</string>
+    <string name="shiftAlarmsFullScreenNote">Izinkan peringatan layar penuh agar tombol Berhenti dan Tunda muncul di layar kunci. Jika tidak, gunakan notifikasi alarm.</string>
     <string name="shiftAlarmsIntro">Berbunyi sebelum setiap sif, seawal yang kamu pilih. Alarm hanya berbunyi di perangkat ini.</string>
     <string name="shiftAlarmsLeadOff">Mati</string>
     <string name="shiftAlarmsLeadSection">Bunyikan sebelum</string>

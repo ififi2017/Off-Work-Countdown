@@ -14,6 +14,9 @@ object PlusDebugOverride {
     private const val FILE = "debug_plus"
     private const val KEY = "authorized"
 
+    fun alarmExpiry(context: Context): Long? = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+        .getLong("alarmExpiry", 0).takeIf { it > 0 }
+
     fun read(context: Context) = context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getBoolean(KEY, false)
 
     fun write(context: Context, value: Boolean) {

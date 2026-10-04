@@ -57,6 +57,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Isolated device QA without replacing the user’s Play installation.
+            applicationIdSuffix = providers.gradleProperty("doneatDebugSuffix").orNull
+        }
         release {
             signingConfig = signingConfigs.findByName("upload")
             isMinifyEnabled = true

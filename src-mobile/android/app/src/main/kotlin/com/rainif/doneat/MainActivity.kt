@@ -73,6 +73,7 @@ class MainActivity : FragmentActivity() {
                 graph.widgets.refresh()
                 graph.ongoing.apply()
                 graph.reportNotifications.reconcile()
+                graph.shiftAlarms.reconcile()
             }
         }
     }
@@ -140,6 +141,7 @@ class MainActivity : FragmentActivity() {
 
     /** A notification names the tab it belongs to: a focus alert opens Focus, as on iOS. */
     private fun openRequestedTab(intent: Intent?) {
+        val openAlarms = intent?.action == com.rainif.doneat.alarms.ShiftAlarms.OPEN
         val report = intent?.data?.toString()?.let(com.rainif.doneat.core.domain.records.CycleReportPeriod::fromUrl)
         val tab = (if (report != null) "records" else intent?.getStringExtra(EXTRA_TAB))?.takeIf { it in setOf("timer", "focus", "records", "settings") } ?: return
         intent?.removeExtra(EXTRA_TAB)
@@ -147,7 +149,9 @@ class MainActivity : FragmentActivity() {
         val graph = (application as DoneAtApplication).graph
         lifecycleScope.launch {
             graph.loaded.first { it }
-            if (report != null) {
+            if (openAlarms) {
+                graph.requestedShiftAlarms.value = true
+            } else if (report != null) {
                 graph.requestedTab.value = null
                 graph.requestedReport.value = report
             } else graph.requestedTab.value = tab

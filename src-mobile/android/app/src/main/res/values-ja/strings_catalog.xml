@@ -970,10 +970,14 @@
     <string name="shiftAlarmTitleFixed">%1$s 始業</string>
     <string name="shiftAlarmsAllow">アラームを許可</string>
     <string name="shiftAlarmsAllowNote">マナーモードでも起こせるよう、DoneAt にアラームの許可が必要です。</string>
+    <string name="shiftAlarmsAndroidAccess">起床アラームを予約するには、通知と正確なアラームを許可してください。</string>
+    <string name="shiftAlarmsAndroidNote">システムのアラーム音、音量、おやすみモードの設定に従います。10分後に鳴動が止まります。</string>
     <string name="shiftAlarmsBeforeWork">始業前</string>
     <string name="shiftAlarmsCoveredThrough">%1$s まで設定済み</string>
     <string name="shiftAlarmsDenied">アラームの許可がオフです</string>
     <string name="shiftAlarmsDeniedNote">「設定」で DoneAt のアラームを許可すると、設定を始められます。</string>
+    <string name="shiftAlarmsFullScreen">全画面アラーム</string>
+    <string name="shiftAlarmsFullScreenNote">全画面通知を許可すると、ロック画面に停止とスヌーズが表示されます。許可しない場合はアラーム通知から操作できます。</string>
     <string name="shiftAlarmsIntro">各シフトの前に、選んだ時間だけ早く鳴ります。アラームはこのデバイスでのみ鳴ります。</string>
     <string name="shiftAlarmsLeadOff">オフ</string>
     <string name="shiftAlarmsLeadSection">鳴らすタイミング</string>

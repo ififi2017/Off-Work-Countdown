@@ -985,10 +985,14 @@
     <string name="shiftAlarmTitleFixed">العمل %1$s</string>
     <string name="shiftAlarmsAllow">السماح بالمنبهات</string>
     <string name="shiftAlarmsAllowNote">يحتاج DoneAt إلى إذن المنبهات ليوقظك حتى في الوضع الصامت.</string>
+    <string name="shiftAlarmsAndroidAccess">اسمح بالإشعارات والمنبّهات الدقيقة لجدولة منبّهات الاستيقاظ.</string>
+    <string name="shiftAlarmsAndroidNote">يستخدم صوت المنبّه ومستوى صوته وإعدادات عدم الإزعاج. يتوقف الرنين بعد 10 دقائق.</string>
     <string name="shiftAlarmsBeforeWork">قبل العمل</string>
     <string name="shiftAlarmsCoveredThrough">مضبوطة حتى %1$s</string>
     <string name="shiftAlarmsDenied">إذن المنبهات متوقف</string>
     <string name="shiftAlarmsDeniedNote">اسمح لـ DoneAt باستخدام المنبهات في الإعدادات لبدء جدولتها.</string>
+    <string name="shiftAlarmsFullScreen">منبّهات بملء الشاشة</string>
+    <string name="shiftAlarmsFullScreenNote">اسمح بالتنبيهات بملء الشاشة لإظهار الإيقاف والغفوة على شاشة القفل. وإلا فاستخدم إشعار المنبّه.</string>
     <string name="shiftAlarmsIntro">يرنّ قبل كل مناوبة بالمدة التي تختارها. المنبهات ترنّ على هذا الجهاز فقط.</string>
     <string name="shiftAlarmsLeadOff">إيقاف</string>
     <string name="shiftAlarmsLeadSection">موعد الرنين</string>

@@ -49,6 +49,12 @@ class PlusAccess(private val context: Context) {
         if (BuildConfig.PLAY_BILLING_PUBLIC_KEY.isNotBlank()) scope.launch { repository.refresh() }
     }
 
+    fun shiftAlarmAuthorization(nowMs: Long): ShiftAlarmAuthorization =
+        if (PlusDebugOverride.AVAILABLE && PlusDebugOverride.read(context))
+            PlusDebugOverride.alarmExpiry(context)?.let { if (it > nowMs) ShiftAlarmAuthorization.VerifiedUntil(it) else ShiftAlarmAuthorization.Unavailable }
+                ?: ShiftAlarmAuthorization.Lifetime
+        else state.value.shiftAlarmAuthorization(nowMs)
+
     fun refresh() { scope.launch { repository.refresh() } }
     fun restore() { scope.launch { repository.refresh() } }
     fun purchase(activity: Activity, offer: PlusOffer) { scope.launch { repository.purchase(activity, offer) } }

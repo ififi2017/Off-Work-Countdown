@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsWalk
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.DarkMode
@@ -176,6 +177,9 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: Devic
             NavigationRow(stringResource(R.string.leaveTitle), { open(Route.Leave()) }, Icons.Outlined.Luggage, SettingsLabels.leave(records))
         }
         SettingsGroup(stringResource(R.string.remindersSection)) {
+            NavigationRow(stringResource(R.string.shiftAlarmsTitle), { open(Route.ShiftAlarms) }, Icons.Outlined.Alarm,
+                stringResource(if (device.shiftAlarms.enabled) R.string.shiftAlarmsOnShort else R.string.disabledShort))
+            RowDivider()
             NavigationRow(stringResource(R.string.shiftReminders), { open(Route.Notifications) }, Icons.Outlined.NotificationsActive, SettingsLabels.notificationMode(p.notificationMode))
             RowDivider()
             NavigationRow(stringResource(R.string.microBreakReminder), { open(Route.Health) }, Icons.AutoMirrored.Outlined.DirectionsWalk, SettingsLabels.health(p))

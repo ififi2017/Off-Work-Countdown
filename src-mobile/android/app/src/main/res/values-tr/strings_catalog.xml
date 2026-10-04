@@ -973,10 +973,14 @@
     <string name="shiftAlarmTitleFixed">İş %1$s</string>
     <string name="shiftAlarmsAllow">Alarmlara izin ver</string>
     <string name="shiftAlarmsAllowNote">DoneAt’in seni sessiz modda da uyandırabilmesi için alarm erişimine ihtiyacı var.</string>
+    <string name="shiftAlarmsAndroidAccess">Uyanma alarmlarını planlamak için bildirimlere ve tam zamanlı alarmlara izin verin.</string>
+    <string name="shiftAlarmsAndroidNote">Alarm sesinizi, alarm ses düzeyini ve Rahatsız Etmeyin ayarlarını kullanır. 10 dakika sonra çalmayı bırakır.</string>
     <string name="shiftAlarmsBeforeWork">İşten önce</string>
     <string name="shiftAlarmsCoveredThrough">%1$s tarihine kadar kurulu</string>
     <string name="shiftAlarmsDenied">Alarm erişimi kapalı</string>
     <string name="shiftAlarmsDeniedNote">Ayarlar’da DoneAt için alarmlara izin ver, kurulmaya başlasınlar.</string>
+    <string name="shiftAlarmsFullScreen">Tam ekran alarmlar</string>
+    <string name="shiftAlarmsFullScreenNote">Kilit ekranında Durdur ve Ertele düğmelerini göstermek için tam ekran uyarılara izin verin. Aksi hâlde alarm bildirimini kullanın.</string>
     <string name="shiftAlarmsIntro">Her vardiyadan önce, seçtiğin kadar erken çalar. Alarmlar yalnızca bu cihazda çalar.</string>
     <string name="shiftAlarmsLeadOff">Kapalı</string>
     <string name="shiftAlarmsLeadSection">Önceden çal</string>
