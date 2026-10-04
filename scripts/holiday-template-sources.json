@@ -13,5 +13,10 @@
     "dataSha256": "8f82836d0f605506ecdcba32bc2ddda8233bbe91e05f00670b616c4d8225d63b",
     "licenseSha256": "234e246330285b6589ff2be2381d4ae71fac39b11b1882fd1f6bda6d6f46c4c6"
   },
-  "outputSha256": "28dd893d501aa194226bf9943c1c481d1cd5f2b38b27b11547e4c11ffb9b3e6f"
+  "outputSha256": "f5766854251b9514ada32be8255ec1126ddd169a3b07cd2871a9f4e1e9e66537",
+  "englandAndWalesOverlay": {
+    "source": "https://www.gov.uk/bank-holidays.json",
+    "division": "england-and-wales",
+    "note": "vacanza country_holidays(GB) is the UK-common set. generate-holiday-templates.py adds Easter Monday (Good Friday + 3) and the Summer bank holiday (last Monday in August) for 2020-2035. gov.uk publishes england-and-wales through 2028; later years follow those two rules. Scotland and Northern Ireland are not separate regions."
+  }
 }
