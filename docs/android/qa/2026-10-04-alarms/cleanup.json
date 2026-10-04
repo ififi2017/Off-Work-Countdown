@@ -1,0 +1,17 @@
+{
+  "capturedAt": "2026-10-04T20:23:37.390180+08:00",
+  "settings": {
+    "system/font_scale": "1.0",
+    "global/window_animation_scale": "1.0",
+    "global/transition_animation_scale": "1.0",
+    "global/animator_duration_scale": "1.0",
+    "system/screen_off_timeout": "2147483647"
+  },
+  "qaPackageAbsent": true,
+  "qaScheduledAlarmCount": 0,
+  "qaServiceAbsent": true,
+  "formalVersion": [
+    "versionCode=115 minSdk=32 targetSdk=36",
+    "versionName=3.2.1"
+  ]
+}
