@@ -47,6 +47,27 @@
         ]
       }
     },
+    "en-GB": {
+      "promotionalText": "See your shift at a glance on Mac—with a menu-bar countdown, desktop widgets, a floating mini timer and on-device earnings.",
+      "description": "DoneAt shows you exactly how much of your working day is left.\n\nSet your hours once. The countdown, the progress bar and the running total of what you have earned all update every second — in the app, in the menu bar, in a floating mini timer, and on your desktop as a widget.\n\nFEATURES\n• Real-time countdown and progress bar for the day\n• Custom start and end times, including overnight shifts that cross midnight\n• Pick the days you work; the app knows when today is a rest day\n• Live earnings for the day, from a monthly or daily salary\n• Weekly and yearly totals estimated from your schedule\n• Optional reminder 15 minutes before you finish\n• Desktop widgets in two sizes, plus a menu-bar countdown and a floating mini timer\n• Native notifications, launch at login, and a global show/hide shortcut\n• Share your countdown as a mood-based image or a link\n• An Activity page with each month's days worked, hours including overtime, and woodfish knocks\n• 19 languages, following your system language\n\nPRIVACY\nYour schedule, salary and countdown state never leave your Mac. There is no account, no sign-up, no analytics and no server. The app works fully offline.\n\nThe Mac app has no in-app purchases or subscriptions.\n\nTerms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacy Policy: https://doneat.app/en/privacy",
+      "keywords": "countdown,work,timer,shift,working day,rota,menu bar,widget,salary,progress,clock,productivity",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Schedules: choose Fixed weekdays, Alternating weeks, Work/rest rotation, Free roster or Manual timer. In a free roster, pick a shift, then click or drag across dates to fill them in.\n• Holiday calendar: choose your country or region, and its bank holidays and make-up working days go straight into your schedule.\n• Countdown digits now roll as they change, in the main window and in the menu bar Mini Timer.\n• The woodfish floating timer is easier to read, shows how long until your next shift once you're done, and makes every knock easier to see.\n• The countdown no longer skips a second now and then, plus other small fixes.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "en-01-countdown.png",
+          "en-02-mini-woodfish.png",
+          "en-03-stats.png",
+          "en-04-setup.png",
+          "en-05-settings.png",
+          "en-06-widget.png"
+        ]
+      },
+      "name": "DoneAt: Work Shift Countdown",
+      "subtitle": "Widgets, Schedules & Earnings",
+      "privacyPolicyUrl": "https://doneat.app/en/privacy"
+    },
     "en-US": {
       "promotionalText": "See your shift at a glance on Mac—with a menu-bar countdown, desktop widgets, a floating mini timer and on-device earnings.",
       "description": "DoneAt shows you exactly how much of your workday is left.\n\nSet your hours once. The countdown, the progress bar and the running total of what you have earned all update every second — in the app, in the menu bar, in a floating mini timer, and on your desktop as a widget.\n\nFEATURES\n• Real-time countdown and progress bar for the day\n• Custom start and end times, including overnight shifts that cross midnight\n• Pick the days you work; the app knows when today is a rest day\n• Live earnings for the day, from a monthly or daily salary\n• Weekly and yearly totals estimated from your schedule\n• Optional reminder 15 minutes before you finish\n• Desktop widgets in two sizes, plus a menu-bar countdown and a floating mini timer\n• Native notifications, launch at login, and a global show/hide shortcut\n• Share your countdown as a mood-based image or a link\n• An Activity page with each month's days worked, hours including overtime, and woodfish knocks\n• 19 languages, following your system language\n\nPRIVACY\nYour schedule, salary and countdown state never leave your Mac. There is no account, no sign-up, no analytics and no server. The app works fully offline.\n\nThe Mac app has no in-app purchases or subscriptions.\n\nTerms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacy Policy: https://doneat.app/en/privacy",
@@ -72,6 +93,27 @@
       "supportUrl": "https://doneat.app/en/about",
       "marketingUrl": "https://doneat.app/",
       "whatsNew": "• Turnos: elige Días fijos, Semanas alternas, Rotación trabajo/descanso, Horario libre o Temporizador manual. En el horario libre, elige un turno y haz clic o arrastra sobre las fechas para rellenarlas.\n• Calendario de festivos: elige tu país o región y sus festivos y días laborables compensatorios se añaden directamente a tu horario.\n• Los dígitos de la cuenta atrás ahora ruedan al cambiar, en la ventana principal y en el minitemporizador de la barra de menús.\n• El temporizador flotante Woodfish es más fácil de leer, muestra cuánto falta para tu próximo turno al terminar la jornada y cada toque se nota más.\n• La cuenta atrás ya no se salta ningún segundo, además de otras pequeñas correcciones.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "es-01-countdown.png",
+          "es-02-mini-woodfish.png",
+          "es-03-stats.png",
+          "es-04-setup.png",
+          "es-05-settings.png",
+          "es-06-widget.png"
+        ]
+      }
+    },
+    "es-MX": {
+      "name": "DoneAt - Hora de salida",
+      "subtitle": "Horarios, widgets y sueldo",
+      "privacyPolicyUrl": "https://doneat.app/en/privacy",
+      "promotionalText": "Consulta tu jornada en la Mac de un vistazo: cuenta regresiva en la barra de menús, widgets de escritorio, minitemporizador flotante e ingresos privados.",
+      "description": "DoneAt te permite entender tu jornada de un vistazo.\nConfigura tu horario una vez. Antes de trabajar, DoneAt cuenta el tiempo que falta para tu hora de entrada. Durante el turno, muestra el tiempo efectivo restante y pausa el progreso a la hora de la comida. En tus días de descanso, mantiene visible el próximo turno. Si el día cambia, puedes entrar antes, salir antes, agregar horas extra o cronometrar una jornada no programada sin rehacer tu horario.\nFUNCIONES\n• Cuenta regresiva en tiempo real para la entrada y la salida\n• Días fijos, semanas alternas y rotaciones de trabajo y descanso\n• Turnos nocturnos que pasan de la medianoche\n• La hora de la comida no cuenta como tiempo trabajado\n• Entrada anticipada, salida anticipada, horas extra y conteo manual\n• Estimación opcional de ingresos y resúmenes semanales y anuales\n• Avisos de turno, comida y movimiento\n• Widgets de escritorio en dos tamaños, además de una cuenta regresiva en la barra de menús y un minitemporizador flotante\n• Notificaciones nativas, apertura al iniciar sesión y un atajo global para mostrar u ocultar el temporizador\n• Comparte tu cuenta regresiva como imagen o enlace\n• Página Actividad con los días trabajados, las horas con horas extra y los toques del Woodfish de cada mes\n• Disponible en 19 idiomas y adaptado al idioma del sistema\n\nPRIVACIDAD\nTu horario y tus datos de sueldo se quedan en tu Mac. No hay cuenta, registro, análisis ni servidor; la app funciona completamente sin conexión.\n\nLa app para Mac no incluye compras dentro de la app ni suscripciones.\n\nTérminos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacidad: https://doneat.app/en/privacy",
+      "keywords": "trabajo,reloj,checar,jornada,horario,horas extra,descanso,productividad,salida,empleo,turno",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Turnos: elige Días fijos, Semanas alternas, Rotación trabajo/descanso, Horario libre o Temporizador manual. En el horario libre, elige un turno y haz clic o arrastra sobre las fechas para llenarlas.\n• Calendario de días feriados: elige tu país o región, y sus días feriados y días hábiles de reposición se agregan directamente a tu horario.\n• Los dígitos de la cuenta regresiva ahora giran al cambiar, en la ventana principal y en el minitemporizador de la barra de menús.\n• El temporizador flotante Woodfish es más fácil de leer, muestra cuánto falta para tu próximo turno al terminar la jornada y cada toque se nota más.\n• La cuenta regresiva ya no se salta ningún segundo, además de otras pequeñas correcciones.",
       "screenshots": {
         "APP_DESKTOP": [
           "es-01-countdown.png",
