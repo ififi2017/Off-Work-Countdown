@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
@@ -108,9 +111,13 @@ fun ShiftAlarmSettingsScreen(graph: AppGraph, open: (Route) -> Unit, back: () ->
                 plus && exact && notifications && store.status == com.rainif.doneat.plus.PlusStatus.SUBSCRIBED && store.verifiedSubscriptionExpiresAtMs == null -> stringResource(R.string.plusAndroidStoreOffline)
                 else -> null
             }) {
-                ValueRow(stringResource(R.string.shiftAlarmsUpcoming), registry.coveredThroughMs?.takeIf { it > now }?.let {
-                    Strings.shiftAlarmsCoveredThrough(resources, format(it))
-                } ?: stringResource(R.string.shiftAlarmsNoneUpcoming))
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.shiftAlarmsUpcoming)) },
+                    supportingContent = { Text(registry.coveredThroughMs?.takeIf { it > now }?.let {
+                        Strings.shiftAlarmsCoveredThrough(resources, format(it))
+                    } ?: stringResource(R.string.shiftAlarmsNoneUpcoming)) },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
                 ActionRow(stringResource(R.string.shiftAlarmsRefresh), { graph.plus.refresh(); scope.launch { graph.shiftAlarms.reconcile(true) } })
             }
         }

@@ -33,9 +33,11 @@ class ShiftAlarmQaActivity : ComponentActivity() {
         if (!packageName.endsWith(".alarmqa")) { finish(); return }
         enableEdgeToEdge()
         val graph = (application as DoneAtApplication).graph
+        val action = intent.getStringExtra("action")
+        intent.removeExtra("action") // A font/theme recreation must not seed a different test schedule.
         lifecycleScope.launch {
             graph.loaded.first { it }
-            when (intent.getStringExtra("action")) {
+            when (action) {
                 "prepare" -> {
                     val now = System.currentTimeMillis()
                     val fire = ((now + intent.getIntExtra("delaySeconds", 20) * 1_000L) / 60_000 + 1) * 60_000
