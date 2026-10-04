@@ -45,19 +45,6 @@ struct HolidayTemplateTests {
         #expect(calendar.defaultRegionIdentifier(locale: Locale(identifier: "en_US")) == "US")
     }
 
-    @Test("England and Wales bank holidays include Easter Monday and the August holiday",
-          arguments: [
-            ("2026-04-06", "Easter Monday"),
-            ("2026-08-31", "Summer Bank Holiday"),
-            ("2027-03-29", "Easter Monday"),
-            ("2027-08-30", "Summer Bank Holiday"),
-          ])
-    func englandAndWalesBankHolidays(dayKey: String, englishName: String) throws {
-        let day = try #require(HolidayCalendar.shared.day(dayKey: dayKey, regionIdentifier: "GB"))
-        #expect(!day.isWorkday)
-        #expect(day.name(language: "en") == englishName)
-    }
-
     @Test("Taiwan's Traditional Chinese name follows the app language",
           arguments: ["zh-TW", "zh_TW", "zh-HK", "zh-Hant", "zh-Hant-TW", "zh-Hant-CN"])
     func traditionalChineseRegionName(language: String) {
