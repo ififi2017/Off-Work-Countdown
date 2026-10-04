@@ -107,7 +107,9 @@ final class NativeLocalizer {
     /// CO, CL, PE, US, 419 itself, and the rest of that list — uses `es-MX`.
     /// `es`, `es-ES`, `es-GQ` and `es-PH` stay on `es`. The region sets match
     /// `scripts/regional-variants.mjs`.
-    static func resolve(_ candidates: [String]) -> String {
+    /// Pure: tags in, a language id out. `nonisolated` so Swift Testing can
+    /// call it from `#expect` under the app target's default MainActor isolation.
+    nonisolated static func resolve(_ candidates: [String]) -> String {
         for raw in candidates {
             let normalized = raw.replacingOccurrences(of: "_", with: "-")
             if let exact = supportedLanguages.first(where: { $0.id.caseInsensitiveCompare(normalized) == .orderedSame }) {
@@ -133,7 +135,7 @@ final class NativeLocalizer {
     }
 
     /// `en-GB` falls back to `en`, `es-MX` to `es`, then both to `en`.
-    static func parentLanguage(for locale: String) -> String? {
+    nonisolated static func parentLanguage(for locale: String) -> String? {
         switch locale {
         case "en-GB": return "en"
         case "es-MX": return "es"
@@ -142,17 +144,17 @@ final class NativeLocalizer {
     }
 
     /// Regions whose English spelling follows the United States, not Britain.
-    private static let americanEnglishRegions: Set<String> = [
+    nonisolated private static let americanEnglishRegions: Set<String> = [
         "US", "CA", "PH", "LR", "PR", "GU", "AS", "VI", "UM", "MP",
     ]
 
     /// Spanish regions whose CLDR parent is `es-419`, including `es-US`.
-    private static let latinAmericanRegions: Set<String> = [
+    nonisolated private static let latinAmericanRegions: Set<String> = [
         "419", "MX", "AR", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GT", "HN",
         "NI", "PA", "PE", "PR", "PY", "SV", "US", "UY", "VE",
     ]
 
-    private static func regionCode(_ tag: String) -> String? {
+    nonisolated private static func regionCode(_ tag: String) -> String? {
         let parts = tag.split(separator: "-").map(String.init)
         guard parts.count >= 2 else { return nil }
         var index = 1
@@ -166,12 +168,12 @@ final class NativeLocalizer {
         return (letters || digits) ? region.uppercased() : nil
     }
 
-    private static func isAmericanEnglish(_ tag: String) -> Bool {
+    nonisolated private static func isAmericanEnglish(_ tag: String) -> Bool {
         guard let region = regionCode(tag) else { return true }
         return americanEnglishRegions.contains(region)
     }
 
-    private static func isLatinAmerican(_ tag: String) -> Bool {
+    nonisolated private static func isLatinAmerican(_ tag: String) -> Bool {
         guard let region = regionCode(tag) else { return false }
         return latinAmericanRegions.contains(region)
     }
