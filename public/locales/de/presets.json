@@ -1,0 +1,67 @@
+{
+  "backToApp": "Zurück zum Countdown",
+  "startCta": "Web-Countdown starten",
+  "iosCta": "Schichten auf dem iPhone nutzen",
+  "webBoundary": "Diese Seite füllt nur eine Start- und Endzeit in den Browser-Timer ein. Sie erstellt keinen Dienstplan. Wechselnde Wochen, mehrere Schichtarten und ein automatisch wiederholender Kalender gibt es in der iOS-App.",
+  "scheduleLabel": "Arbeitszeit",
+  "perDayLabel": "Pro Tag",
+  "perWeekLabel": "Pro Woche",
+  "hoursUnit": " Std.",
+  "otherPresetsHeading": "Andere Arbeitszeitmodelle",
+  "breakTableHeading": "Bezahlte Stunden nach unbezahlter Pause",
+  "breakTableBreak": "Unbezahlte Pause",
+  "breakNone": "Keine",
+  "breakMinutes": "{{minutes}} Min.",
+  "calculatorLink": "Andere Zeiten im Arbeitszeitrechner ausprobieren",
+  "items": {
+    "996": {
+      "name": "996",
+      "metaTitle": "996-Arbeitszeit — 9 bis 21 Uhr, sechs Tage pro Woche",
+      "metaDescription": "Starten Sie den Browser-Countdown mit 09:00–21:00. Zwölf Stunden pro Tag, 72 pro Woche. Wechselschichten oder mehrere Schichtarten gibt es auf iOS.",
+      "intro": "Morgens um neun bis abends um neun, sechs Tage pro Woche — vorausgefüllt, damit der Web-Timer mit diesen Zeiten starten kann.",
+      "body": [
+        "996 bezeichnet einen Arbeitstag von 9 bis 21 Uhr, sechs Tage pro Woche. Der Begriff stammt ursprünglich aus der chinesischen Tech-Industrie, wird aber inzwischen weit darüber hinaus verwendet.",
+        "Auffällig ist die Rechnung: Zwölf Stunden pro Tag mal sechs Tage ergibt 72 Stunden pro Woche — fast das Doppelte einer üblichen 40-Stunden-Woche, und das ohne Pendelzeit.",
+        "Im August 2021 veröffentlichten der Oberste Volksgerichtshof und das Ministerium für Humanressourcen und soziale Sicherheit in China gemeinsam Arbeitsstreitfälle, die feststellten, dass 996 die gesetzlichen Arbeitszeitgrenzen überschreitet. Ob das für einen bestimmten Job gilt, hängt vom jeweiligen Vertrag und den örtlichen Regelungen ab.",
+        "Der Web-Timer misst das Intervall, das Sie festlegen, von Anfang bis Ende, auch für lange Tage. Er führt keinen Wochenplan und wechselt nicht zwischen Mustern. Wenn 09:00–21:00 heute passt, starten Sie den Countdown; ansonsten ändern Sie eine Zeit auf der Startseite.",
+        "Nutzen Sie den Browser, wenn Sie nur einen Start, ein Ende und keine Installation brauchen. Nutzen Sie iOS, wenn die Woche variiert — abwechselnde Wochen, Arbeits-/Ruherotationen oder mehr als eine Schichtart."
+      ]
+    },
+    "9-to-5": {
+      "name": "9 to 5",
+      "metaTitle": "Wie viele Stunden sind 9 to 5? 8 Stunden, 40 pro Woche",
+      "metaDescription": "9 to 5 sind 8 Stunden pro Tag und 40 pro Woche. Bei unbezahlter 30- oder 60-minütiger Mittagspause sind es 7,5 bzw. 7 Stunden. Starten Sie einen Countdown mit diesen Zeiten im Browser.",
+      "intro": "9 to 5 sind 8 Stunden: 09:00 bis 17:00, fünf Tage pro Woche, insgesamt 40 Stunden. Bei unbezahlter Mittagspause sind es 7,5 Stunden bei 30 Minuten und 7 Stunden bei 60 Minuten Pause.",
+      "body": [
+        "9 to 5 ist die Kurzform für einen Standardarbeitstag: acht Stunden täglich, fünf Tage pro Woche, insgesamt 40 Stunden. In den USA wurde die 40-Stunden-Woche 1938 durch den Fair Labor Standards Act gesetzlich verankert, und der Ausdruck wurde zur allgemeinen Bezeichnung für normale Bürozeiten im Englischen.",
+        "Streng genommen sind 9 to 5 nur dann acht Stunden, wenn die Mittagspause bezahlt ist. Bei unbezahlter Pause entspricht dieselbe Uhrzeit oft nur sieben oder siebeneinhalb Stunden bezahlter Arbeit — das sollte man prüfen, bevor man zwei Angebote nur nach Stunden vergleicht.",
+        "Der Web-Countdown misst die von Ihnen festgelegten Uhrzeiten. Wenn Sie nur die bezahlte Zeit abbilden möchten, setzen Sie auf der Startseite die Endzeit eine Stunde früher. Der Timer plant keine Woche mit gemischten Tagen; das ist Sache der iOS-App.",
+        "Bleiben Sie im Browser für einen einzelnen 09:00–17:00-Abschnitt. Nutzen Sie iOS, wenn Sie mehrere Schichtarten oder einen automatisch wiederholenden Kalender brauchen."
+      ]
+    },
+    "9-to-6": {
+      "name": "9 to 6",
+      "metaTitle": "Wie viele Stunden sind 9 to 6? 9 Stunden, 45 pro Woche",
+      "metaDescription": "9 to 6 sind 9 Stunden pro Tag und 45 pro Woche. Mit unbezahlter 60-minütiger Mittagspause sind es 8 bezahlte Stunden, genau wie bei 9 to 5. Starten Sie einen Countdown mit diesen Zeiten im Browser.",
+      "intro": "9 to 6 sind 9 Stunden: 09:00 bis 18:00, fünf Tage pro Woche, insgesamt 45 Stunden. Mit einer Stunde unbezahlter Mittagspause sind es 8 bezahlte Stunden pro Tag.",
+      "body": [
+        "9 to 6 ist der übliche Bürotag in weiten Teilen Ost- und Südostasiens: neun Stunden von Anfang bis Ende, fünf Tage pro Woche, insgesamt 45 Stunden.",
+        "Die zusätzliche Stunde gegenüber 9 to 5 ist meist die unbezahlte Mittagspause, weshalb beide Modelle trotz unterschiedlich aussehender Zahlen oft die gleiche bezahlte Arbeitszeit ergeben.",
+        "Starten Sie den Web-Countdown, um die neun Stunden von Anfang bis Ende zu verfolgen, oder passen Sie auf der Startseite die Endzeit an, wenn Ihre Pause anders berechnet wird. Die Seite füllt nur zwei Zeiten aus; sie rotiert nicht durch mehrere Tage.",
+        "Nutzen Sie den Browser-Timer für einen einzelnen 09:00–18:00-Abschnitt. Nutzen Sie iOS, wenn die Woche verschiedene Muster mischt oder einem Arbeits-/Ruhezyklus folgt."
+      ]
+    },
+    "night-shift": {
+      "name": "Nachtschicht",
+      "metaTitle": "Nachtarbeit — ein Countdown über Mitternacht",
+      "metaDescription": "Starten Sie den Browser-Countdown mit 22:00–06:00. Endet vor Beginn, wird es als Übernachtung behandelt. Wechselnde Mehrfachschichten gibt es auf iOS.",
+      "intro": "Abends um zehn bis morgens um sechs — vorausgefüllt, damit der Web-Timer einem Tag folgen kann, der über Mitternacht geht.",
+      "body": [
+        "Eine Nachtschicht ist der Fall, in dem ein einfacher Countdown scheitert: Die Endzeit liegt auf der Uhr vor der Startzeit, sodass eine Subtraktion eine negative Zahl ergibt.",
+        "Der Web-Timer erkennt ein Ende, das vor dem Start liegt, als Übernachtung. Öffnen Sie ihn um ein Uhr nachts, zeigt er fünf Stunden Rest der Schicht, die am Vorabend begann, und nicht 29 Stunden bis heute Nacht.",
+        "Dieselbe Behandlung gilt für jedes Übernachtungs-Paar, nicht nur 22 bis 6 Uhr — stellen Sie Ihre eigenen Zeiten auf der Startseite ein, und das Intervall wird genauso verankert. Der Browser führt keine Rotation durch mehrere Nachtmuster.",
+        "Nutzen Sie diese Seite, wenn die einzige Frage heute 22:00–06:00 ist. Nutzen Sie iOS, wenn Nächte, Tage und Ruhetage abwechseln müssen."
+      ]
+    }
+  }
+}

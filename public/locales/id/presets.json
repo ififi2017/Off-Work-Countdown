@@ -1,0 +1,67 @@
+{
+  "backToApp": "Kembali ke hitung mundur",
+  "startCta": "Mulai hitung mundur web",
+  "iosCta": "Gunakan shift di iPhone",
+  "webBoundary": "Halaman ini hanya mengisi waktu mulai dan selesai di timer browser. Tidak membuat jadwal shift. Minggu bergantian, beberapa jenis shift, dan kalender yang berulang otomatis ada di aplikasi iOS.",
+  "scheduleLabel": "Jam kerja",
+  "perDayLabel": "Per hari",
+  "perWeekLabel": "Per minggu",
+  "hoursUnit": " jam",
+  "otherPresetsHeading": "Pola jam kerja lainnya",
+  "breakTableHeading": "Jam dibayar setelah istirahat tidak dibayar",
+  "breakTableBreak": "Istirahat tidak dibayar",
+  "breakNone": "Tidak ada",
+  "breakMinutes": "{{minutes}} menit",
+  "calculatorLink": "Coba jam lain di kalkulator",
+  "items": {
+    "996": {
+      "name": "996",
+      "metaTitle": "Jadwal 996 — jam 9 pagi sampai 9 malam, enam hari seminggu",
+      "metaDescription": "Buka hitung mundur browser dengan 09:00–21:00. Dua belas jam sehari, 72 seminggu. Rotasi atau beberapa jenis shift di iOS.",
+      "intro": "Jam sembilan pagi sampai jam sembilan malam, enam hari seminggu — diisi sebelumnya agar timer web bisa memulai dengan waktu-waktu ini.",
+      "body": [
+        "996 mengacu pada hari kerja dari jam 9 pagi sampai 9 malam, enam hari seminggu. Istilah ini berasal dari industri teknologi Tiongkok, tetapi sekarang digunakan jauh melampaui konteks tersebut.",
+        "Yang mencolok adalah perhitungannya: dua belas jam sehari dikali enam hari sama dengan 72 jam seminggu — hampir dua kali lipat minggu kerja 40 jam standar, dan itu belum termasuk waktu perjalanan.",
+        "Pada Agustus 2021, Mahkamah Agung Rakyat dan Kementerian Sumber Daya Manusia dan Jaminan Sosial Tiongkok bersama-sama menerbitkan kasus sengketa ketenagakerjaan yang menyatakan bahwa jadwal 996 melebihi batas jam kerja yang sah. Apakah itu berlaku untuk pekerjaan tertentu tergantung pada kontrak Anda dan aturan setempat.",
+        "Timer web mengukur interval yang Anda atur, dari awal sampai akhir, termasuk hari yang panjang. Tidak menyimpan jadwal mingguan atau berganti antar pola. Jika hari ini 09:00–21:00, mulai hitung mundur; jika tidak, ubah waktu mana pun di halaman utama.",
+        "Gunakan browser ketika Anda hanya ingin satu mulai, satu selesai, dan tidak perlu menginstal apa pun. Gunakan iOS ketika minggu berubah — minggu bergantian, rotasi kerja/istirahat, atau lebih dari satu jenis hari."
+      ]
+    },
+    "9-to-5": {
+      "name": "9 sampai 5",
+      "metaTitle": "Berapa jam 9 sampai 5? 8 jam, 40 seminggu",
+      "metaDescription": "9 sampai 5 adalah 8 jam sehari dan 40 seminggu. Dengan istirahat makan siang tidak dibayar 30 atau 60 menit, menjadi 7,5 atau 7 jam dibayar. Mulai hitung mundur dengan waktu-waktu ini.",
+      "intro": "9 sampai 5 adalah 8 jam: 09:00 sampai 17:00, lima hari seminggu, total 40 jam. Jika makan siang tidak dibayar, menjadi 7,5 jam dengan istirahat 30 menit dan 7 jam dengan istirahat 60 menit.",
+      "body": [
+        "9 sampai 5 adalah singkatan untuk hari kerja standar: delapan jam sehari, lima hari seminggu, total 40 jam. Di Amerika Serikat, minggu 40 jam ditetapkan menjadi undang-undang oleh Fair Labor Standards Act pada 1938, dan frasa ini sejak itu menjadi nama umum untuk jam kantor biasa dalam bahasa Inggris.",
+        "Secara ketat, 9 sampai 5 adalah delapan jam hanya jika istirahat makan siang dibayar. Jika tidak, jam yang sama di jam tangan biasanya berarti tujuh atau tujuh setengah jam kerja dibayar — layak diperiksa sebelum membandingkan dua tawaran hanya dari jamnya.",
+        "Hitung mundur web mengukur jam yang Anda atur. Jika Anda ingin mencerminkan hanya waktu dibayar, majukan waktu selesai satu jam di halaman utama. Tidak merencanakan minggu dengan hari campuran; itu tugas aplikasi iOS.",
+        "Tetap di browser untuk satu interval 09:00–17:00. Gunakan iOS jika Anda butuh beberapa jenis shift atau kalender yang berulang otomatis."
+      ]
+    },
+    "9-to-6": {
+      "name": "9 sampai 6",
+      "metaTitle": "Berapa jam 9 sampai 6? 9 jam, 45 seminggu",
+      "metaDescription": "9 sampai 6 adalah 9 jam sehari dan 45 seminggu. Dengan istirahat makan siang tidak dibayar 60 menit, menjadi 8 jam dibayar, sama seperti 9 sampai 5. Mulai hitung mundur dengan waktu-waktu ini.",
+      "intro": "9 sampai 6 adalah 9 jam: 09:00 sampai 18:00, lima hari seminggu, total 45 jam. Dengan satu jam istirahat makan siang tidak dibayar, menjadi 8 jam dibayar per hari.",
+      "body": [
+        "9 sampai 6 adalah hari kantor umum di sebagian besar Asia Timur dan Asia Tenggara: sembilan jam dari awal sampai akhir, lima hari seminggu, total 45 jam.",
+        "Jam ekstra dibanding 9 sampai 5 biasanya adalah istirahat makan siang tidak dibayar, itulah mengapa kedua pola meskipun angkanya berbeda sering berarti jumlah kerja dibayar yang sama.",
+        "Mulai hitung mundur web untuk melacak sembilan jam dari awal sampai akhir, atau sesuaikan waktu selesai di halaman utama jika istirahat Anda dihitung berbeda. Halaman ini hanya mengisi dua waktu; tidak merotasi antar beberapa hari.",
+        "Gunakan timer browser untuk satu interval 09:00–18:00. Gunakan iOS jika minggu mencampur pola atau mengikuti siklus kerja/istirahat."
+      ]
+    },
+    "night-shift": {
+      "name": "Shift malam",
+      "metaTitle": "Jam malam — hitung mundur yang melewati tengah malam",
+      "metaDescription": "Buka hitung mundur browser dengan 22:00–06:00. Selesai sebelum mulai diperlakukan sebagai semalam. Rotasi multi-shift di iOS.",
+      "intro": "Jam sepuluh malam sampai jam enam pagi berikutnya — diisi sebelumnya agar timer web mengikuti hari yang melewati tengah malam.",
+      "body": [
+        "Shift malam adalah kasus di mana hitung mundur biasa gagal: waktu selesai di jam lebih awal dari waktu mulai, jadi pengurangan menghasilkan angka negatif.",
+        "Timer web mengenali selesai yang lebih awal dari mulai sebagai melewati tengah malam. Jika Anda membukanya jam satu pagi, akan menampilkan lima jam tersisa dari shift yang dimulai tadi malam, bukan 29 jam sampai malam ini.",
+        "Perlakuan yang sama berlaku untuk pasangan semalam mana pun, bukan hanya 22 sampai 6 — atur waktu Anda sendiri di halaman utama dan intervalnya akan ditambatkan dengan cara yang sama. Browser tidak merotasi antar beberapa pola malam.",
+        "Gunakan halaman ini jika satu-satunya pertanyaan hari ini adalah 22:00–06:00. Gunakan iOS jika malam, siang, dan hari istirahat harus bergantian."
+      ]
+    }
+  }
+}

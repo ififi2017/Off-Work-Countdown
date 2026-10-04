@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { contentLocales } from "@/lib/content-locales";
+import { presetLocales } from "@/lib/content-locales";
 import { presetSlugs } from "@/lib/presets";
 
 const loadPresets = (locale: string) =>
@@ -20,8 +20,8 @@ const loadPresets = (locale: string) =>
   };
 
 describe("preset landing copy", () => {
-  it("keeps EN and zh-CN aligned on the web vs iOS boundary", () => {
-    for (const locale of contentLocales) {
+  it("validates all 19 locale presets and keeps EN/zh-CN aligned on the web vs iOS boundary", () => {
+    for (const locale of presetLocales) {
       const copy = loadPresets(locale);
       expect(copy.webBoundary.length).toBeGreaterThan(40);
       expect(copy.iosCta.length).toBeGreaterThan(0);

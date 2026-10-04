@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { locales } from "@/i18n-config";
 import { siteConfig } from "@/config/site";
-import { contentLocales } from "@/lib/content-locales";
+import { presetLocales } from "@/lib/content-locales";
 import { presetSlugs } from "@/lib/presets";
 import { webAppAlternates, webAppPageUrl } from "@/lib/site-urls";
 import { WORK_HOURS_CALCULATOR_SLUG } from "@/lib/work-hours";
@@ -15,10 +15,10 @@ export const dynamic = "force-static";
 // 不同步。
 const appAlternates = webAppAlternates(locales);
 
-// 预设页仍在 Web App。五页长文已 301 到官网，不再出现在本域 sitemap。
+// 预设页支持所有 19 种 UI 语言。五页长文已 301 到官网，不再出现在本域 sitemap。
 const presetEntries = presetSlugs.flatMap((slug) => {
-  const alternates = webAppAlternates(contentLocales, slug);
-  return contentLocales.map((lang) => ({
+  const alternates = webAppAlternates(presetLocales, slug);
+  return presetLocales.map((lang) => ({
     url: webAppPageUrl(lang, slug),
     alternates: { languages: alternates },
   }));

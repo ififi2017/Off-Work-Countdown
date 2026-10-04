@@ -1,0 +1,67 @@
+{
+  "backToApp": "Torna al conto alla rovescia",
+  "startCta": "Avvia il conto alla rovescia web",
+  "iosCta": "Usa i turni su iPhone",
+  "webBoundary": "Questa pagina inserisce solo un orario di inizio e fine nel timer del browser. Non crea un piano turni. Settimane alternate, più tipi di turno e un calendario che si ripete sono nell'app iOS.",
+  "scheduleLabel": "Orario",
+  "perDayLabel": "Al giorno",
+  "perWeekLabel": "A settimana",
+  "hoursUnit": " h",
+  "otherPresetsHeading": "Altri modelli di orario",
+  "breakTableHeading": "Ore retribuite dopo pausa non pagata",
+  "breakTableBreak": "Pausa non pagata",
+  "breakNone": "Nessuna",
+  "breakMinutes": "{{minutes}} min",
+  "calculatorLink": "Prova altri orari nel calcolatore",
+  "items": {
+    "996": {
+      "name": "996",
+      "metaTitle": "Orario 996 — dalle 9 alle 21, sei giorni a settimana",
+      "metaDescription": "Apri il conto alla rovescia del browser con 09:00–21:00. Dodici ore al giorno, 72 a settimana. Rotazioni o più tipi di turno su iOS.",
+      "intro": "Dalle nove di mattina alle nove di sera, sei giorni a settimana — precompilato per far partire il timer web con questi orari.",
+      "body": [
+        "996 indica una giornata lavorativa dalle 9 alle 21, sei giorni a settimana. Il termine è nato in parte dell'industria tecnologica cinese, ma ora è usato ben oltre quel contesto.",
+        "Ciò che colpisce è il calcolo: dodici ore al giorno per sei giorni fanno 72 ore a settimana — quasi il doppio di una settimana da 40 ore, senza contare il pendolarismo.",
+        "Nell'agosto 2021, la Corte Suprema del Popolo e il Ministero delle Risorse Umane e della Sicurezza Sociale della Cina hanno pubblicato congiuntamente casi di controversie lavorative che stabilivano che il 996 supera i limiti legali sull'orario di lavoro. Se ciò si applichi a un lavoro specifico dipende dal proprio contratto e dalle norme locali.",
+        "Il timer web misura l'intervallo impostato, dall'inizio alla fine, anche per giornate lunghe. Non gestisce un programma settimanale né passa da un modello all'altro. Se oggi è 09:00–21:00, avvia il conto alla rovescia; altrimenti modifica uno degli orari nella home page.",
+        "Usa il browser quando vuoi un inizio, una fine e niente da installare. Usa iOS quando la settimana cambia — settimane alternate, rotazioni lavoro/riposo o più di un tipo di giornata."
+      ]
+    },
+    "9-to-5": {
+      "name": "9–17",
+      "metaTitle": "Quante ore sono dalle 9 alle 17? 8 ore, 40 a settimana",
+      "metaDescription": "Dalle 9 alle 17 sono 8 ore al giorno e 40 a settimana. Con una pausa pranzo non pagata di 30 o 60 minuti sono 7,5 o 7 ore retribuite. Avvia un conto alla rovescia con questi orari.",
+      "intro": "Dalle 9 alle 17 sono 8 ore: dalle 09:00 alle 17:00, cinque giorni a settimana, 40 ore in totale. Se il pranzo non è pagato, sono 7,5 ore con 30 minuti di pausa e 7 ore con 60 minuti.",
+      "body": [
+        "Dalle 9 alle 17 è l'espressione comune per una giornata lavorativa standard: otto ore al giorno, cinque giorni a settimana, 40 ore in totale. Negli Stati Uniti, la settimana di 40 ore è stata sancita per legge dal Fair Labor Standards Act del 1938, e l'espressione è diventata il nome generale degli orari d'ufficio normali in inglese.",
+        "In senso stretto, dalle 9 alle 17 sono otto ore solo se la pausa pranzo è pagata. Quando non lo è, le stesse ore spesso corrispondono a sette o sette ore e mezza di lavoro retribuito — da verificare prima di confrontare due offerte solo in base agli orari.",
+        "Il conto alla rovescia web misura le ore impostate. Se vuoi riflettere solo il tempo retribuito, anticipa l'orario di fine di un'ora nella home page. Non pianifica una settimana con giornate miste; quello è compito dell'app iOS.",
+        "Resta nel browser per un singolo intervallo 09:00–17:00. Passa a iOS se hai bisogno di più tipi di turno o di un calendario che si ripete."
+      ]
+    },
+    "9-to-6": {
+      "name": "9–18",
+      "metaTitle": "Quante ore sono dalle 9 alle 18? 9 ore, 45 a settimana",
+      "metaDescription": "Dalle 9 alle 18 sono 9 ore al giorno e 45 a settimana. Con una pausa pranzo non pagata di 60 minuti sono 8 ore retribuite, come dalle 9 alle 17. Avvia un conto alla rovescia con questi orari.",
+      "intro": "Dalle 9 alle 18 sono 9 ore: dalle 09:00 alle 18:00, cinque giorni a settimana, 45 ore in totale. Con un'ora di pausa pranzo non pagata, sono 8 ore retribuite al giorno.",
+      "body": [
+        "Dalle 9 alle 18 è la giornata d'ufficio comune in gran parte dell'Asia orientale e sudorientale: nove ore dall'inizio alla fine, cinque giorni a settimana, 45 ore in totale.",
+        "L'ora in più rispetto alle 9–17 è solitamente la pausa pranzo non pagata, motivo per cui i due modelli, pur con numeri diversi, spesso corrispondono alla stessa quantità di lavoro retribuito.",
+        "Avvia il conto alla rovescia web per seguire le nove ore dall'inizio alla fine, oppure modifica l'orario di fine nella home page se la tua pausa viene calcolata diversamente. La pagina inserisce solo due orari; non ruota tra più giornate.",
+        "Tieni il timer del browser per un singolo intervallo 09:00–18:00. Usa iOS se la settimana mescola modelli diversi o segue un ciclo lavoro/riposo."
+      ]
+    },
+    "night-shift": {
+      "name": "Turno di notte",
+      "metaTitle": "Orario notturno — un conto alla rovescia che attraversa la mezzanotte",
+      "metaDescription": "Apri il conto alla rovescia del browser con 22:00–06:00. Una fine precedente all'inizio viene trattata come notturna. Rotazioni di più turni su iOS.",
+      "intro": "Dalle dieci di sera alle sei del mattino seguente — precompilato per far seguire al timer web una giornata che attraversa la mezzanotte.",
+      "body": [
+        "Un turno di notte è il caso in cui un conto alla rovescia normale fallisce: l'orario di fine è precedente a quello di inizio sull'orologio, quindi la sottrazione dà un numero negativo.",
+        "Il timer web riconosce una fine precedente all'inizio come un attraversamento della mezzanotte. Se lo apri all'una di notte, mostra le cinque ore rimanenti del turno iniziato la sera prima, non le 29 ore fino a stasera.",
+        "Lo stesso trattamento si applica a qualsiasi coppia notturna, non solo dalle 22 alle 6 — imposta i tuoi orari nella home page e l'intervallo sarà ancorato allo stesso modo. Il browser non ruota tra più modelli notturni.",
+        "Usa questa pagina se l'unica domanda oggi è 22:00–06:00. Usa iOS se notti, giorni e riposi devono alternarsi."
+      ]
+    }
+  }
+}
