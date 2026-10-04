@@ -2,25 +2,27 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { siteConfig } from "@/config/site";
-import { contentLocales, type ContentLocale } from "@/lib/content-locales";
+import { longFormLocales, type LongFormLocale } from "@/lib/content-locales";
 import { webAppPageUrl } from "@/lib/site-urls";
 
-// 内容页语言的自称写法。
-const localeLabels: Record<ContentLocale, string> = {
+// 长文页语言的自称写法。预设页支持 19 种语言，不显示切换器（太多了）。
+const localeLabels: Record<LongFormLocale, string> = {
   en: "English",
   "zh-CN": "中文",
 };
 
-// 预设页外壳。刻意做成服务端组件：这些页面没有交互，全部内容随首屏 HTML
+// 内容页外壳。刻意做成服务端组件：这些页面没有交互，全部内容随首屏 HTML
 // 一起产出，是它们能被收录的前提。FAQ / About 等长文已迁到官网，不再走这里。
 interface ContentPageProps {
-  lang: ContentLocale;
+  lang: string;
   /** 语言切换要跳到的同名路径，例如 "faq" 或预设页的 "996"。 */
   slug: string;
   backLabel: string;
   heading: string;
   intro: string;
   wide?: boolean;
+  /** 显示语言切换器（仅限长文页，预设页 19 种语言太多不显示） */
+  showLanguageSwitcher?: boolean;
   children: ReactNode;
 }
 
@@ -31,6 +33,7 @@ export function ContentPage({
   heading,
   intro,
   wide = false,
+  showLanguageSwitcher = false,
   children,
 }: ContentPageProps) {
   const jsonLd = {
@@ -74,28 +77,30 @@ export function ContentPage({
             {backLabel}
           </Link>
 
-          <nav className="flex items-center gap-1 text-sm">
-            {contentLocales.map((l) =>
-              l === lang ? (
-                <span
-                  key={l}
-                  aria-current="true"
-                  className="rounded-md px-2 py-1 font-medium text-gray-900 dark:text-white"
-                >
-                  {localeLabels[l]}
-                </span>
-              ) : (
-                <Link
-                  key={l}
-                  href={`/${l}/${slug}`}
-                  hrefLang={l}
-                  className="rounded-md px-2 py-1 text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                >
-                  {localeLabels[l]}
-                </Link>
-              )
-            )}
-          </nav>
+          {showLanguageSwitcher && (
+            <nav className="flex items-center gap-1 text-sm">
+              {longFormLocales.map((l) =>
+                l === lang ? (
+                  <span
+                    key={l}
+                    aria-current="true"
+                    className="rounded-md px-2 py-1 font-medium text-gray-900 dark:text-white"
+                  >
+                    {localeLabels[l]}
+                  </span>
+                ) : (
+                  <Link
+                    key={l}
+                    href={`/${l}/${slug}`}
+                    hrefLang={l}
+                    className="rounded-md px-2 py-1 text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                  >
+                    {localeLabels[l]}
+                  </Link>
+                )
+              )}
+            </nav>
+          )}
         </div>
 
         <h1 className="mt-8 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">

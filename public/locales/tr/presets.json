@@ -1,0 +1,67 @@
+{
+  "backToApp": "Geri sayıma dön",
+  "startCta": "Web geri sayımını başlat",
+  "iosCta": "iPhone'da vardiyaları kullan",
+  "webBoundary": "Bu sayfa yalnızca tarayıcı zamanlayıcısına bir başlangıç ve bitiş saati girer. Vardiya çizelgesi oluşturmaz. Değişen haftalar, birden fazla vardiya türü ve otomatik tekrarlayan takvim iOS uygulamasındadır.",
+  "scheduleLabel": "Çalışma saatleri",
+  "perDayLabel": "Günlük",
+  "perWeekLabel": "Haftalık",
+  "hoursUnit": " sa",
+  "otherPresetsHeading": "Diğer çalışma düzenleri",
+  "breakTableHeading": "Ücretsiz moladan sonra ücretli saatler",
+  "breakTableBreak": "Ücretsiz mola",
+  "breakNone": "Yok",
+  "breakMinutes": "{{minutes}} dk",
+  "calculatorLink": "Hesap makinesinde farklı saatler dene",
+  "items": {
+    "996": {
+      "name": "996",
+      "metaTitle": "996 çalışma düzeni — sabah 9'dan akşam 9'a, haftada altı gün",
+      "metaDescription": "Tarayıcı geri sayımını 09:00–21:00 ile başlatın. Günde on iki saat, haftada 72. Rotasyonlar veya birden fazla vardiya türü iOS'ta.",
+      "intro": "Sabah dokuzdan akşam dokuza, haftada altı gün — web zamanlayıcısının bu saatlerle başlaması için önceden doldurulmuş.",
+      "body": [
+        "996, sabah 9'dan akşam 9'a kadar, haftada altı gün çalışmayı ifade eder. Terim başlangıçta Çin'in teknoloji sektöründen çıkmış olsa da artık bu bağlamın çok ötesinde kullanılmaktadır.",
+        "Dikkat çekici olan hesaplamadır: günde on iki saat çarpı altı gün, haftada 72 saat — standart 40 saatlik haftanın neredeyse iki katı ve bu yolculuk süresini bile içermiyor.",
+        "Ağustos 2021'de Çin Yüksek Halk Mahkemesi ve İnsan Kaynakları ve Sosyal Güvenlik Bakanlığı, 996 çalışma düzeninin yasal çalışma saati sınırlarını aştığını belirten iş uyuşmazlığı davalarını birlikte yayınladı. Bunun belirli bir işe uygulanıp uygulanmayacağı kendi sözleşmenize ve yerel kurallara bağlıdır.",
+        "Web zamanlayıcısı, uzun günler dahil, ayarladığınız aralığı baştan sona ölçer. Haftalık çizelge tutmaz veya düzenler arasında geçiş yapmaz. Bugün 09:00–21:00 ise geri sayımı başlatın; değilse ana sayfada bir saati değiştirin.",
+        "Bir başlangıç, bir bitiş ve kurulum gerektirmediğinde tarayıcıyı kullanın. Hafta değiştiğinde — değişen haftalar, iş/dinlenme rotasyonları veya birden fazla gün türü — iOS'u kullanın."
+      ]
+    },
+    "9-to-5": {
+      "name": "9'dan 5'e",
+      "metaTitle": "9'dan 5'e kaç saat? 8 saat, haftada 40",
+      "metaDescription": "9'dan 5'e günde 8 saat ve haftada 40 saattir. 30 veya 60 dakikalık ücretsiz öğle molasıyla 7,5 veya 7 ücretli saat olur. Bu saatlerle tarayıcıda geri sayım başlatın.",
+      "intro": "9'dan 5'e 8 saattir: 09:00'dan 17:00'ye, haftada beş gün, toplam 40 saat. Öğle yemeği ücretsizse, 30 dakikalık molayla 7,5 saat ve 60 dakikalık molayla 7 saattir.",
+      "body": [
+        "9'dan 5'e, standart bir iş gününün kısa adıdır: günde sekiz saat, haftada beş gün, toplam 40 saat. ABD'de 40 saatlik hafta 1938'de Fair Labor Standards Act ile yasalaştırıldı ve bu ifade İngilizce'de normal ofis saatlerinin genel adı haline geldi.",
+        "Kesin olarak konuşursak, 9'dan 5'e yalnızca öğle molası ücretliyse sekiz saattir. Ücretli değilse, aynı saat aralığı genellikle yedi veya yedi buçuk saat ücretli çalışmaya karşılık gelir — iki teklifi yalnızca saatlerine göre karşılaştırmadan önce kontrol etmeye değer.",
+        "Web geri sayımı ayarladığınız saatleri ölçer. Yalnızca ücretli süreyi yansıtmak istiyorsanız, ana sayfada bitiş saatini bir saat öne çekin. Karışık günlerle bir hafta planlamaz; bu iOS uygulamasının işi.",
+        "Tek bir 09:00–17:00 dilimi için tarayıcıda kalın. Birden fazla vardiya türüne veya otomatik tekrarlayan bir takvime ihtiyacınız varsa iOS'a geçin."
+      ]
+    },
+    "9-to-6": {
+      "name": "9'dan 6'ya",
+      "metaTitle": "9'dan 6'ya kaç saat? 9 saat, haftada 45",
+      "metaDescription": "9'dan 6'ya günde 9 saat ve haftada 45 saattir. 60 dakikalık ücretsiz öğle molasıyla 8 ücretli saat olur, tıpkı 9'dan 5'e gibi. Bu saatlerle tarayıcıda geri sayım başlatın.",
+      "intro": "9'dan 6'ya 9 saattir: 09:00'dan 18:00'e, haftada beş gün, toplam 45 saat. Bir saatlik ücretsiz öğle molasıyla günde 8 ücretli saat olur.",
+      "body": [
+        "9'dan 6'ya, Doğu ve Güneydoğu Asya'nın büyük bölümünde yaygın ofis günüdür: baştan sona dokuz saat, haftada beş gün, toplam 45 saat.",
+        "9'dan 5'e kıyasla fazladan bir saat genellikle ücretsiz öğle molasıdır, bu yüzden iki düzen farklı sayılara rağmen genellikle aynı miktarda ücretli çalışmaya denk gelir.",
+        "Web geri sayımını başlatarak dokuz saati baştan sona izleyin veya molanız farklı hesaplanıyorsa ana sayfada bitiş saatini ayarlayın. Sayfa yalnızca iki saat doldurur; günler arasında rotasyon yapmaz.",
+        "Tek bir 09:00–18:00 dilimi için tarayıcı zamanlayıcısını tutun. Hafta düzenleri karıştırıyorsa veya bir iş/dinlenme döngüsü izliyorsa iOS'u kullanın."
+      ]
+    },
+    "night-shift": {
+      "name": "Gece vardiyası",
+      "metaTitle": "Gece saatleri — gece yarısını geçen bir geri sayım",
+      "metaDescription": "Tarayıcı geri sayımını 22:00–06:00 ile başlatın. Başlangıçtan önceki bir bitiş gece olarak işlenir. Birden fazla vardiya rotasyonu iOS'ta.",
+      "intro": "Akşam ondan ertesi sabah altıya — web zamanlayıcısının gece yarısını geçen bir günü takip etmesi için önceden doldurulmuş.",
+      "body": [
+        "Gece vardiyası, sıradan bir geri sayımın başarısız olduğu durumdur: bitiş saati saatte başlangıç saatinden öncedir, bu yüzden birini diğerinden çıkarmak negatif bir sayı verir.",
+        "Web zamanlayıcısı, başlangıçtan önceki bir bitişi gece yarısını geçmiş olarak tanır. Gece yarısından sonra saat birde açarsanız, önceki akşam başlayan vardiyadan kalan beş saati gösterir, bu gece için 29 saati değil.",
+        "Aynı işlem, yalnızca 22'den 6'ya değil, herhangi bir gece çiftine uygulanır — ana sayfada kendi saatlerinizi ayarlayın ve aralık aynı şekilde sabitlenir. Tarayıcı birden fazla gece düzeni arasında rotasyon yapmaz.",
+        "Bugünkü tek soru 22:00–06:00 ise bu sayfayı kullanın. Geceler, gündüzler ve dinlenme günleri sırayla gelmesi gerekiyorsa iOS'u kullanın."
+      ]
+    }
+  }
+}

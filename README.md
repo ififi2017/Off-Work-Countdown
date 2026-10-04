@@ -290,9 +290,9 @@ export const languageNames = {
 
 Long-form FAQ, how-it-works, about, download and privacy live on
 [doneat.app](https://doneat.app). Old URLs on this site permanently redirect
-there. The Web App still publishes schedule presets (`/en/996` and the rest)
-in English and Simplified Chinese only (`lib/content-locales.ts`). For Search
-Console, submit `https://off.rainif.com/sitemap.xml` only — see
+there. Schedule preset pages (`/en/996`, `/ja/9-to-5`, etc.) are available in
+all 19 supported languages (`lib/content-locales.ts` exports `presetLocales`).
+For Search Console, submit `https://off.rainif.com/sitemap.xml` only — see
 [docs/seo.md](docs/seo.md).
 
 ## Usage
@@ -345,8 +345,8 @@ We're looking to expand our app's language support. If you'd like to contribute 
 6. Submit a pull request with your changes.
 
 Those two files are all a new language needs. Schedule presets (`presets.json`)
-exist only for English and Simplified Chinese by design — see "Content pages"
-above.
+are available in all 19 supported languages — add preset translations when
+adding a new locale.
 
 ## License
 

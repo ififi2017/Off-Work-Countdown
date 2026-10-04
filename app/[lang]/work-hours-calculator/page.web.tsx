@@ -8,7 +8,7 @@ import {
   WorkHoursCalculator,
   type WorkHoursCalculatorCopy,
 } from "@/components/WorkHoursCalculator";
-import { contentLocales, type ContentLocale } from "@/lib/content-locales";
+import { presetLocales, type PresetLocale } from "@/lib/content-locales";
 import { presets } from "@/lib/presets";
 import { getTranslations } from "@/lib/server/i18n";
 import { localizedSocialMetadata } from "@/lib/server/metadata";
@@ -17,7 +17,7 @@ import { webAppAlternates, webAppPageUrl } from "@/lib/site-urls";
 import { WORK_HOURS_CALCULATOR_SLUG } from "@/lib/work-hours";
 
 // 工时计算器：独立于倒计时的 Web 小工具（仅 Web 构建；`.web.tsx` 不进桌面导出）。
-// 界面文案短，19 种语言都有；预设页长文仍只有中英两版，只在这两种语言下互链。
+// 界面文案短，19 种语言都有；预设页也支持 19 种语言，可以互链。
 // 计算器本体是客户端组件，但默认输入的结果、标题、说明都在首屏 HTML 里。
 
 export const dynamicParams = false;
@@ -76,7 +76,7 @@ export default async function WorkHoursCalculatorPage({
   if (!locales.includes(lang as Locale)) notFound();
   const copy = await getCalculatorCopy(lang);
 
-  const hasPresets = contentLocales.includes(lang as ContentLocale);
+  const hasPresets = presetLocales.includes(lang as PresetLocale);
   const presetCopy = hasPresets ? await getPresetCopy(lang) : null;
   const pageUrl = webAppPageUrl(lang, WORK_HOURS_CALCULATOR_SLUG);
 

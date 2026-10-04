@@ -13,10 +13,7 @@ import {
 } from "@/lib/work-hours";
 import { encodeShift } from "@/lib/share";
 import { localizedSocialMetadata } from "@/lib/server/metadata";
-import {
-  contentLocales,
-  type ContentLocale,
-} from "@/lib/content-locales";
+import { presetLocales } from "@/lib/content-locales";
 import {
   isContentSlug,
   officialPageUrl,
@@ -29,13 +26,13 @@ import {
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return contentLocales.flatMap((lang) =>
+  return presetLocales.flatMap((lang) =>
     presets.map((p) => ({ lang, preset: p.slug }))
   );
 }
 
 function alternatesFor(slug: string) {
-  return webAppAlternates(contentLocales, slug);
+  return webAppAlternates(presetLocales, slug);
 }
 
 export async function generateMetadata({
@@ -134,7 +131,7 @@ export default async function PresetPage({
 
   return (
     <ContentPage
-      lang={lang as ContentLocale}
+      lang={lang}
       slug={preset}
       backLabel={copy.backToApp}
       heading={item.name}

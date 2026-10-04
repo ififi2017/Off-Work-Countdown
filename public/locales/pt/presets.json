@@ -1,0 +1,67 @@
+{
+  "backToApp": "Voltar à contagem regressiva",
+  "startCta": "Iniciar contagem regressiva web",
+  "iosCta": "Usar turnos no iPhone",
+  "webBoundary": "Esta página apenas preenche um horário de início e fim no temporizador do navegador. Não cria uma escala. Semanas alternadas, vários tipos de turno e um calendário que se repete estão no app iOS.",
+  "scheduleLabel": "Horário",
+  "perDayLabel": "Por dia",
+  "perWeekLabel": "Por semana",
+  "hoursUnit": " h",
+  "otherPresetsHeading": "Outros padrões de horário",
+  "breakTableHeading": "Horas pagas após intervalo não remunerado",
+  "breakTableBreak": "Intervalo não remunerado",
+  "breakNone": "Nenhum",
+  "breakMinutes": "{{minutes}} min",
+  "calculatorLink": "Experimentar outros horários na calculadora",
+  "items": {
+    "996": {
+      "name": "996",
+      "metaTitle": "Horário 996 — das 9h às 21h, seis dias por semana",
+      "metaDescription": "Abra a contagem regressiva do navegador com 09:00–21:00. Doze horas por dia, 72 por semana. Rotações ou vários tipos de turno no iOS.",
+      "intro": "Das nove da manhã às nove da noite, seis dias por semana — preenchido para que o temporizador web comece com esses horários.",
+      "body": [
+        "996 se refere a um dia de trabalho das 9h às 21h, seis dias por semana. O termo surgiu em parte da indústria de tecnologia chinesa, mas agora é usado muito além desse contexto.",
+        "O que chama a atenção é o cálculo: doze horas por dia vezes seis dias são 72 horas por semana — quase o dobro de uma semana de 40 horas, e isso sem contar o deslocamento.",
+        "Em agosto de 2021, o Supremo Tribunal Popular e o Ministério de Recursos Humanos e Seguridade Social da China publicaram conjuntamente casos de disputas trabalhistas estabelecendo que o horário 996 excede os limites legais de horas de trabalho. Se isso se aplica a um emprego específico depende do seu contrato e das regras locais.",
+        "O temporizador web mede o intervalo que você definir, do início ao fim, mesmo para dias longos. Ele não gerencia uma escala semanal nem alterna entre padrões. Se hoje é 09:00–21:00, inicie a contagem regressiva; caso contrário, altere um horário na página inicial.",
+        "Use o navegador quando quiser um início, um fim e nada para instalar. Use o iOS quando a semana mudar — semanas alternadas, rotações trabalho/descanso ou mais de um tipo de jornada."
+      ]
+    },
+    "9-to-5": {
+      "name": "Das 9 às 17",
+      "metaTitle": "Quantas horas são das 9 às 17? 8 horas, 40 por semana",
+      "metaDescription": "Das 9 às 17 são 8 horas por dia e 40 por semana. Com um intervalo não remunerado de 30 ou 60 minutos, são 7,5 ou 7 horas pagas. Inicie uma contagem regressiva com esses horários.",
+      "intro": "Das 9 às 17 são 8 horas: das 09:00 às 17:00, cinco dias por semana, 40 horas no total. Se o almoço não é pago, são 7,5 horas com 30 minutos de intervalo e 7 horas com 60 minutos.",
+      "body": [
+        "Das 9 às 17 é a expressão comum para um dia de trabalho padrão: oito horas por dia, cinco dias por semana, 40 horas no total. Nos Estados Unidos, a semana de 40 horas foi estabelecida em lei pelo Fair Labor Standards Act de 1938, e a expressão tornou-se o nome geral para horários de escritório normais em inglês.",
+        "Estritamente falando, das 9 às 17 são oito horas apenas se o intervalo de almoço é pago. Quando não é, as mesmas horas no relógio geralmente equivalem a sete ou sete horas e meia de trabalho remunerado — vale verificar antes de comparar duas ofertas apenas pelos horários.",
+        "A contagem regressiva web mede as horas que você definir. Se quiser refletir apenas o tempo pago, adiante o horário de fim em uma hora na página inicial. Ela não planeja uma semana com dias mistos; isso é tarefa do app iOS.",
+        "Fique no navegador para um único intervalo 09:00–17:00. Use o iOS se precisar de vários tipos de turno ou um calendário que se repete."
+      ]
+    },
+    "9-to-6": {
+      "name": "Das 9 às 18",
+      "metaTitle": "Quantas horas são das 9 às 18? 9 horas, 45 por semana",
+      "metaDescription": "Das 9 às 18 são 9 horas por dia e 45 por semana. Com um intervalo não remunerado de 60 minutos, são 8 horas pagas, como das 9 às 17. Inicie uma contagem regressiva com esses horários.",
+      "intro": "Das 9 às 18 são 9 horas: das 09:00 às 18:00, cinco dias por semana, 45 horas no total. Com uma hora de almoço não remunerada, são 8 horas pagas por dia.",
+      "body": [
+        "Das 9 às 18 é o dia de escritório comum em grande parte do Leste e Sudeste Asiático: nove horas do início ao fim, cinco dias por semana, 45 horas no total.",
+        "A hora extra em relação às 9–17 é geralmente o intervalo de almoço não remunerado, por isso os dois padrões, apesar dos números diferentes, frequentemente equivalem à mesma quantidade de trabalho pago.",
+        "Inicie a contagem regressiva web para acompanhar as nove horas do início ao fim, ou ajuste o horário de fim na página inicial se seu intervalo é calculado de outra forma. A página apenas preenche dois horários; não alterna entre vários dias.",
+        "Mantenha o temporizador do navegador para um único intervalo 09:00–18:00. Use o iOS se a semana misturar padrões ou seguir um ciclo trabalho/descanso."
+      ]
+    },
+    "night-shift": {
+      "name": "Turno noturno",
+      "metaTitle": "Horário noturno — uma contagem regressiva que cruza a meia-noite",
+      "metaDescription": "Abra a contagem regressiva do navegador com 22:00–06:00. Um fim anterior ao início é tratado como noturno. Rotações de vários turnos no iOS.",
+      "intro": "Das dez da noite às seis da manhã seguinte — preenchido para que o temporizador web siga um dia que cruza a meia-noite.",
+      "body": [
+        "Um turno noturno é o caso em que uma contagem regressiva normal falha: o horário de fim é anterior ao de início no relógio, então a subtração resulta em um número negativo.",
+        "O temporizador web reconhece um fim anterior ao início como cruzando a meia-noite. Se você abrir à uma da manhã, ele mostra as cinco horas restantes do turno que começou na noite anterior, não as 29 horas até esta noite.",
+        "O mesmo tratamento se aplica a qualquer par noturno, não apenas das 22 às 6 — defina seus próprios horários na página inicial e o intervalo será ancorado da mesma forma. O navegador não alterna entre vários padrões noturnos.",
+        "Use esta página se a única questão hoje é 22:00–06:00. Use o iOS se noites, dias e descansos precisam se alternar."
+      ]
+    }
+  }
+}

@@ -217,8 +217,8 @@ export const languageNames = {
 ### 内容页
 
 FAQ、原理、关于、下载和隐私的长文在 [doneat.app](https://doneat.app)。本站旧 URL
-会永久跳转到那里。Web App 仍只以英文和简体中文发布作息预设页（`/zh-CN/996` 等，见
-`lib/content-locales.ts`）。Search Console 只提交
+会永久跳转到那里。作息预设页（`/zh-CN/996`、`/ja/9-to-5` 等）支持全部 19 种语言
+（见 `lib/content-locales.ts` 的 `presetLocales`）。Search Console 只提交
 `https://off.rainif.com/sitemap.xml`，见 [docs/seo.md](docs/seo.md)。
 
 ## 使用说明
@@ -263,7 +263,7 @@ PWA 会继续维护；如果你需要常驻菜单栏／迷你计时器、原生�
 5. 使用新语言彻底测试应用。
 6. 提交包含您更改的pull request。
 
-新增语言只需要这两个文件。作息预设（`presets.json`）按设计只有中英两版——参见上面的"内容页"一节。
+新增语言只需要这两个文件。作息预设（`presets.json`）支持全部 19 种语言，新增语言后也需要添加对应的预设翻译。
 
 ## 许可证
 

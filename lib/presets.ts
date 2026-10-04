@@ -3,10 +3,8 @@ import type { Shift } from "@/lib/share";
 // 常见班次的预设。这里只放数据（班次时间、每周天数），本地化文案在
 // public/locales/{lang}/presets.json —— 时间是事实，不需要翻译。
 //
-// 预设页与内容页一样只做中英两版（见 lib/content-locales.ts）。若把这些页面
-// 铺到 19 种语言，每页又只是同一个应用换个默认时间，就会产生大量近似重复的
-// 页面，容易被判定为为搜索引擎批量生成的门页。控制在两种语言、每页配一段
-// 真实的说明，才站得住。
+// 预设页支持全部 19 种 UI 语言（见 lib/content-locales.ts 的 presetLocales）。
+// 每种语言都有经过人工校对的翻译，每个预设配一段真实的说明文案。
 
 export interface Preset {
   slug: string;

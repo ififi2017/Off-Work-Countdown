@@ -1,0 +1,67 @@
+{
+  "backToApp": "Retour au compte à rebours",
+  "startCta": "Lancer le compte à rebours web",
+  "iosCta": "Utiliser les horaires sur iPhone",
+  "webBoundary": "Cette page remplit simplement une heure de début et de fin dans le minuteur du navigateur. Elle ne crée pas de planning. Semaines alternées, plusieurs types de service et un calendrier à répétition automatique sont dans l'app iOS.",
+  "scheduleLabel": "Horaires",
+  "perDayLabel": "Par jour",
+  "perWeekLabel": "Par semaine",
+  "hoursUnit": " h",
+  "otherPresetsHeading": "Autres modèles d'horaires",
+  "breakTableHeading": "Heures payées après une pause non rémunérée",
+  "breakTableBreak": "Pause non rémunérée",
+  "breakNone": "Aucune",
+  "breakMinutes": "{{minutes}} min",
+  "calculatorLink": "Essayer d'autres horaires dans le calculateur",
+  "items": {
+    "996": {
+      "name": "996",
+      "metaTitle": "Horaires 996 — 9h à 21h, six jours par semaine",
+      "metaDescription": "Lancez le compte à rebours avec 09:00–21:00 dans le navigateur. Douze heures par jour, 72 par semaine. Rotations ou plusieurs types d'horaires sur iOS.",
+      "intro": "De neuf heures du matin à neuf heures du soir, six jours par semaine — pré-rempli pour que le minuteur web démarre avec ces horaires.",
+      "body": [
+        "996 désigne une journée de 9h à 21h, six jours par semaine. L'expression vient à l'origine de certaines entreprises technologiques chinoises, mais elle est désormais utilisée bien au-delà de ce contexte.",
+        "Ce qui frappe, c'est le calcul : douze heures par jour sur six jours font 72 heures par semaine — presque le double d'une semaine de 40 heures, et ce, sans compter le trajet.",
+        "En août 2021, la Cour populaire suprême et le ministère des Ressources humaines et de la Sécurité sociale de Chine ont publié conjointement des cas de litiges du travail établissant que les horaires 996 dépassent les limites légales de temps de travail. Que cela s'applique à un emploi particulier dépend de votre contrat et des règles locales.",
+        "Le minuteur web mesure l'intervalle que vous définissez, du début à la fin, même pour une longue journée. Il ne gère pas de planning hebdomadaire ni ne bascule entre plusieurs modèles. Si 09:00–21:00 correspond à aujourd'hui, lancez le compte à rebours ; sinon, modifiez l'heure sur la page d'accueil.",
+        "Utilisez le navigateur quand vous voulez un début, une fin et rien à installer. Utilisez iOS quand la semaine change — semaines alternées, rotations travail/repos ou plusieurs types de journées."
+      ]
+    },
+    "9-to-5": {
+      "name": "9h–17h",
+      "metaTitle": "Combien d'heures de 9h à 17h ? 8 heures, 40 par semaine",
+      "metaDescription": "9h–17h fait 8 heures par jour et 40 par semaine. Avec une pause déjeuner de 30 ou 60 minutes non rémunérée, c'est 7,5 ou 7 heures payées. Lancez un compte à rebours avec ces horaires.",
+      "intro": "9h–17h fait 8 heures : de 09:00 à 17:00, cinq jours par semaine, 40 heures au total. Si le déjeuner n'est pas payé, c'est 7,5 heures avec 30 minutes de pause et 7 heures avec 60 minutes.",
+      "body": [
+        "9h–17h est l'expression consacrée pour une journée de travail standard : huit heures par jour, cinq jours par semaine, 40 heures au total. Aux États-Unis, la semaine de 40 heures a été inscrite dans la loi par le Fair Labor Standards Act de 1938, et l'expression est depuis devenue le nom courant des horaires de bureau classiques en anglais.",
+        "À proprement parler, 9h–17h ne fait huit heures que si la pause déjeuner est payée. Quand elle ne l'est pas, les mêmes horaires correspondent souvent à sept ou sept heures et demie de travail rémunéré — à vérifier avant de comparer deux offres uniquement sur les horaires.",
+        "Le compte à rebours web mesure les heures que vous définissez. Si vous voulez refléter uniquement le temps payé, avancez l'heure de fin d'une heure sur la page d'accueil. Il ne planifie pas une semaine avec des journées mixtes ; c'est le rôle de l'app iOS.",
+        "Restez sur le navigateur pour une seule période 09:00–17:00. Passez sur iOS si vous avez besoin de plusieurs types de service ou d'un calendrier à répétition automatique."
+      ]
+    },
+    "9-to-6": {
+      "name": "9h–18h",
+      "metaTitle": "Combien d'heures de 9h à 18h ? 9 heures, 45 par semaine",
+      "metaDescription": "9h–18h fait 9 heures par jour et 45 par semaine. Avec une pause déjeuner d'une heure non rémunérée, c'est 8 heures payées, comme 9h–17h. Lancez un compte à rebours avec ces horaires.",
+      "intro": "9h–18h fait 9 heures : de 09:00 à 18:00, cinq jours par semaine, 45 heures au total. Avec une heure de pause déjeuner non rémunérée, cela fait 8 heures payées par jour.",
+      "body": [
+        "9h–18h est la journée de bureau courante dans une grande partie de l'Asie de l'Est et du Sud-Est : neuf heures du début à la fin, cinq jours par semaine, 45 heures au total.",
+        "L'heure supplémentaire par rapport à 9h–17h correspond généralement à la pause déjeuner non rémunérée, ce qui explique pourquoi les deux modèles, malgré des chiffres différents, aboutissent souvent au même temps de travail payé.",
+        "Lancez le compte à rebours web pour suivre les neuf heures du début à la fin, ou ajustez l'heure de fin sur la page d'accueil si votre pause est comptée différemment. La page ne remplit que deux heures ; elle ne fait pas de rotation entre plusieurs journées.",
+        "Gardez le minuteur du navigateur pour une seule période 09:00–18:00. Utilisez iOS si la semaine mélange plusieurs modèles ou suit un cycle travail/repos."
+      ]
+    },
+    "night-shift": {
+      "name": "Service de nuit",
+      "metaTitle": "Horaires de nuit — un compte à rebours qui passe minuit",
+      "metaDescription": "Lancez le compte à rebours avec 22:00–06:00 dans le navigateur. Une fin avant le début est traitée comme une nuit. Rotations multi-services sur iOS.",
+      "intro": "De dix heures du soir à six heures le lendemain matin — pré-rempli pour que le minuteur web suive une journée qui passe minuit.",
+      "body": [
+        "Un service de nuit est le cas où un compte à rebours classique échoue : l'heure de fin est plus tôt que l'heure de début sur l'horloge, ce qui donne un nombre négatif si on soustrait l'une de l'autre.",
+        "Le minuteur web reconnaît une fin antérieure au début comme passant minuit. Si vous l'ouvrez à une heure du matin, il affiche les cinq heures restantes du service commencé la veille au soir, et non les 29 heures jusqu'à ce soir.",
+        "Le même traitement s'applique à toute paire passant minuit, pas seulement de 22h à 6h — définissez vos propres horaires sur la page d'accueil et l'intervalle sera ancré de la même manière. Le navigateur ne gère pas une rotation entre plusieurs modèles de nuit.",
+        "Utilisez cette page si la seule question aujourd'hui est 22:00–06:00. Utilisez iOS si nuits, jours et repos doivent alterner."
+      ]
+    }
+  }
+}

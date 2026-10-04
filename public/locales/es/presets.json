@@ -1,0 +1,67 @@
+{
+  "backToApp": "Volver a la cuenta regresiva",
+  "startCta": "Iniciar cuenta regresiva web",
+  "iosCta": "Usar turnos en iPhone",
+  "webBoundary": "Esta página solo rellena una hora de inicio y fin en el temporizador del navegador. No crea un cuadrante. Semanas alternas, varios tipos de turno y un calendario que se repite solo están en la app iOS.",
+  "scheduleLabel": "Horario",
+  "perDayLabel": "Por día",
+  "perWeekLabel": "Por semana",
+  "hoursUnit": " h",
+  "otherPresetsHeading": "Otros patrones de horario",
+  "breakTableHeading": "Horas pagadas tras descanso no remunerado",
+  "breakTableBreak": "Descanso no remunerado",
+  "breakNone": "Ninguno",
+  "breakMinutes": "{{minutes}} min",
+  "calculatorLink": "Probar otros horarios en la calculadora",
+  "items": {
+    "996": {
+      "name": "996",
+      "metaTitle": "Horario 996 — de 9 a 21 h, seis días a la semana",
+      "metaDescription": "Abre la cuenta regresiva del navegador con 09:00–21:00. Doce horas al día, 72 a la semana. Rotaciones o varios tipos de turno en iOS.",
+      "intro": "De nueve de la mañana a nueve de la noche, seis días a la semana — prerrellenado para que el temporizador web arranque con esos horarios.",
+      "body": [
+        "996 se refiere a una jornada de 9 a 21 h, seis días a la semana. El término surgió en parte de la industria tecnológica china, pero ya se usa mucho más allá de ese contexto.",
+        "Lo llamativo es el cálculo: doce horas al día por seis días son 72 horas a la semana, casi el doble de una semana de 40 horas, y eso sin contar el desplazamiento.",
+        "En agosto de 2021, el Tribunal Supremo Popular y el Ministerio de Recursos Humanos y Seguridad Social de China publicaron conjuntamente casos de conflictos laborales que establecían que el horario 996 supera los límites legales de horas de trabajo. Que esto aplique a un empleo concreto depende de tu contrato y de la normativa local.",
+        "El temporizador web mide el intervalo que configures, de principio a fin, incluso para días largos. No gestiona un cuadrante semanal ni alterna entre patrones. Si hoy es 09:00–21:00, inicia la cuenta regresiva; si es diferente, cambia cualquier hora en la página principal.",
+        "Usa el navegador cuando solo quieras un inicio, un fin y nada que instalar. Usa iOS cuando la semana cambie: semanas alternas, rotaciones trabajo/descanso o más de un tipo de jornada."
+      ]
+    },
+    "9-to-5": {
+      "name": "De 9 a 5",
+      "metaTitle": "¿Cuántas horas son de 9 a 5? 8 horas, 40 a la semana",
+      "metaDescription": "De 9 a 5 son 8 horas al día y 40 a la semana. Con un descanso no remunerado de 30 o 60 minutos son 7,5 o 7 horas pagadas. Inicia una cuenta regresiva con estos horarios.",
+      "intro": "De 9 a 5 son 8 horas: de 09:00 a 17:00, cinco días a la semana, 40 horas en total. Si el almuerzo no se paga, son 7,5 horas con 30 minutos de descanso y 7 horas con 60 minutos.",
+      "body": [
+        "De 9 a 5 es la expresión común para una jornada laboral estándar: ocho horas al día, cinco días a la semana, 40 horas en total. En Estados Unidos, la semana de 40 horas se convirtió en ley con la Fair Labor Standards Act de 1938, y la frase ha pasado a ser el nombre general de los horarios de oficina habituales en inglés.",
+        "Estrictamente hablando, de 9 a 5 solo son ocho horas si el descanso para comer está pagado. Cuando no lo está, las mismas horas en el reloj suelen equivaler a siete o siete horas y media de trabajo remunerado, algo que conviene comprobar antes de comparar dos ofertas solo por sus horarios.",
+        "La cuenta regresiva web mide las horas que configures. Si quieres reflejar solo el tiempo pagado, adelanta la hora de fin una hora en la página principal. No planifica una semana con días mixtos; eso es cosa de la app iOS.",
+        "Quédate en el navegador para un único tramo 09:00–17:00. Recurre a iOS si necesitas varios tipos de turno o un calendario que se repite solo."
+      ]
+    },
+    "9-to-6": {
+      "name": "De 9 a 6",
+      "metaTitle": "¿Cuántas horas son de 9 a 6? 9 horas, 45 a la semana",
+      "metaDescription": "De 9 a 6 son 9 horas al día y 45 a la semana. Con un descanso no remunerado de 60 minutos son 8 horas pagadas, igual que de 9 a 5. Inicia una cuenta regresiva con estos horarios.",
+      "intro": "De 9 a 6 son 9 horas: de 09:00 a 18:00, cinco días a la semana, 45 horas en total. Con una hora de almuerzo no remunerada, son 8 horas pagadas al día.",
+      "body": [
+        "De 9 a 6 es la jornada de oficina habitual en gran parte de Asia Oriental y Sudoriental: nueve horas de principio a fin, cinco días a la semana, 45 horas en total.",
+        "La hora extra respecto a de 9 a 5 suele ser el descanso para comer no remunerado, por lo que ambos patrones, pese a tener números distintos, a menudo equivalen a la misma cantidad de trabajo pagado.",
+        "Inicia la cuenta regresiva web para seguir las nueve horas de principio a fin, o ajusta la hora de fin en la página principal si tu descanso se contabiliza de otra forma. La página solo rellena dos horas; no rota entre varios días.",
+        "Mantén el temporizador del navegador para un único tramo 09:00–18:00. Usa iOS si la semana mezcla patrones o sigue un ciclo trabajo/descanso."
+      ]
+    },
+    "night-shift": {
+      "name": "Turno de noche",
+      "metaTitle": "Horario nocturno — una cuenta regresiva que cruza la medianoche",
+      "metaDescription": "Abre la cuenta regresiva del navegador con 22:00–06:00. Un fin anterior al inicio se trata como nocturno. Rotaciones de varios turnos en iOS.",
+      "intro": "De las diez de la noche a las seis de la mañana siguiente — prerrellenado para que el temporizador web siga un día que cruza la medianoche.",
+      "body": [
+        "Un turno de noche es el caso en que una cuenta regresiva normal falla: la hora de fin es anterior a la de inicio en el reloj, así que restar una de la otra da un número negativo.",
+        "El temporizador web reconoce un fin anterior al inicio como que cruza la medianoche. Si lo abres a la una de la madrugada, muestra las cinco horas restantes del turno que empezó la noche anterior, no las 29 horas hasta esta noche.",
+        "El mismo tratamiento se aplica a cualquier par nocturno, no solo de 22 a 6 — configura tus propios horarios en la página principal y el intervalo se ancla igual. El navegador no rota entre varios patrones nocturnos.",
+        "Usa esta página si la única pregunta hoy es 22:00–06:00. Usa iOS si noches, días y descansos deben turnarse."
+      ]
+    }
+  }
+}

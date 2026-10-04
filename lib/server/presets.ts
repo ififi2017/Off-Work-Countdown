@@ -1,12 +1,12 @@
 import path from "path";
 import fs from "fs/promises";
 import {
-  contentLocales,
-  defaultContentLocale,
-  type ContentLocale,
+  presetLocales,
+  defaultPresetLocale,
+  type PresetLocale,
 } from "@/lib/content-locales";
 
-// 预设页文案。与内容页同样只做中英两版，只在服务端读取。
+// 预设页文案。支持所有 19 种 UI 语言，只在服务端读取。
 
 export interface PresetCopy {
   name: string;
@@ -35,9 +35,9 @@ export interface PresetBundle {
 }
 
 export async function getPresetCopy(lang: string): Promise<PresetBundle> {
-  const safeLang: ContentLocale = contentLocales.includes(lang as ContentLocale)
-    ? (lang as ContentLocale)
-    : defaultContentLocale;
+  const safeLang: PresetLocale = presetLocales.includes(lang as PresetLocale)
+    ? (lang as PresetLocale)
+    : defaultPresetLocale;
 
   const filePath = path.join(
     process.cwd(),

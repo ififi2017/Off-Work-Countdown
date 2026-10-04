@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { siteConfig } from "@/config/site";
 import { locales } from "@/i18n-config";
-import { contentLocales } from "@/lib/content-locales";
+import { presetLocales } from "@/lib/content-locales";
 import {
   officialContentAlternates,
   officialHomeUrl,
@@ -47,8 +47,9 @@ describe("site URLs", () => {
     expect(hall.ja).toBe("https://off.rainif.com/ja");
     expect(hall["x-default"]).toBe("https://off.rainif.com/");
 
-    const preset = webAppAlternates(contentLocales, "996");
+    const preset = webAppAlternates(presetLocales, "996");
     expect(preset["zh-CN"]).toBe("https://off.rainif.com/zh-CN/996");
+    expect(preset["ja"]).toBe("https://off.rainif.com/ja/996");
     expect(preset["x-default"]).toBe("https://off.rainif.com/en/996");
   });
 });
