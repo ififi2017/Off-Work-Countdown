@@ -72,6 +72,73 @@ def translated_names(holidays, code: str, dates: set, default_language: str) -> 
     return by_language
 
 
+def _english_name(regions: dict, english: str) -> dict[str, str]:
+    """Reuse a name row whose every locale is the English label.
+
+    GB's existing vacanza names are untranslated English. Easter Monday and
+    Summer Bank Holiday already exist in that form for other countries.
+    """
+    for rows in regions.values():
+        for _date, _work, names in rows:
+            if names.get("en") == english and all(value == english for value in names.values()):
+                return dict(names)
+    return {language: english for language in LANGUAGES}
+
+
+def _date_code(day) -> int:
+    return day.year * 10_000 + day.month * 100 + day.day
+
+
+def _last_monday_of_august(year: int) -> int:
+    from datetime import date, timedelta
+
+    day = date(year, 8, 31)
+    return _date_code(day - timedelta(days=day.weekday()))
+
+
+def overlay_england_and_wales(regions: dict) -> None:
+    """Add England and Wales bank holidays that vacanza omits from GB.
+
+    ``country_holidays("GB")`` is only the holidays common to the whole UK
+    (New Year's Day, Good Friday, the early-May and spring bank holidays,
+    Christmas Day and Boxing Day, plus weekend substitutes and one-off
+    days). https://www.gov.uk/bank-holidays.json ``england-and-wales`` also
+    includes Easter Monday and the Summer bank holiday.
+
+    Easter Monday is Easter Sunday + 1, which is the bundled Good Friday + 3
+    days. The Summer bank holiday is the last Monday in August. Both are
+    always Mondays, so they have no weekend substitute. Scotland (2 January,
+    St Andrew's Day, first Monday in August) and Northern Ireland
+    (St Patrick's Day, 12 July) need their own region codes; this dataset
+    only accepts two-letter country codes.
+    """
+    rows = regions.get("GB")
+    if not rows:
+        return
+    from datetime import datetime, timedelta
+
+    easter_name = _english_name(regions, "Easter Monday")
+    summer_name = _english_name(regions, "Summer Bank Holiday")
+    by_date = {date: (date, work, names) for date, work, names in rows}
+    for date, _work, names in rows:
+        if names.get("en") != "Good Friday":
+            continue
+        monday = datetime.strptime(str(date), "%Y%m%d").date() + timedelta(days=3)
+        code = _date_code(monday)
+        existing = by_date.get(code)
+        if existing and existing[2].get("en") != "Easter Monday":
+            raise ValueError(f"GB {code} is {existing[2].get('en')}, not Easter Monday")
+        by_date.setdefault(code, (code, 0, easter_name))
+    years = {date // 10000 for date, _work, _names in rows}
+    for year in sorted(years):
+        code = _last_monday_of_august(year)
+        existing = by_date.get(code)
+        if existing and existing[2].get("en") != "Summer Bank Holiday":
+            raise ValueError(f"GB {code} is {existing[2].get('en')}, not Summer Bank Holiday")
+        by_date.setdefault(code, (code, 0, summer_name))
+    regions["GB"] = [by_date[date] for date in sorted(by_date)]
+
+
 def load_global_regions(holidays) -> dict[str, list[tuple[int, int, dict[str, str]]]]:
     from holidays.registry import COUNTRIES
 
@@ -170,6 +237,7 @@ def main() -> None:
             raise ValueError("vacanza/holidays package version does not match source lock")
         regions = load_global_regions(holidays)
         regions["CN"] = load_china(args.holiday_cn)
+        overlay_england_and_wales(regions)
         payload = compact(regions, lock["datasetVersion"])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n")

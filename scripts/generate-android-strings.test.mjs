@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   LOCALES,
+  PARTIAL_LOCALES,
   buildAndroidStrings,
   catalogPath,
   checkAndroidStrings,
@@ -51,6 +52,25 @@ describe("Android strings", () => {
     expect(new Set([cn, hk, tw]).size).toBe(3);
     expect(hk).toContain("我哋");
     expect(generated.get(`${res}/xml/locales_config.xml`)).toContain('"zh-Hant-HK"');
+  });
+
+  it("ship British English and Latin American Spanish as partial resource folders", () => {
+    const files = buildAndroidStrings(catalog, JSON.parse(readFileSync("src-mobile/android/app/i18n/android-strings.json", "utf8")));
+    const british = files.get(file("values-en-rGB"));
+    const latin = files.get(file("values-b+es+419"));
+    const spanish = files.get(file("values-es"));
+    expect(line(british, "whatsNewHolidayTitle")).toContain("Bank holidays");
+    expect(line(british, "wallpaperColors")).toContain("colours");
+    expect(line(british, "aboutProject")).toBeUndefined();
+    expect(line(latin, "whatsNewHolidayTitle")).toContain("Feriados");
+    expect(line(latin, "ongoingNote")).toContain("cuenta regresiva");
+    expect(line(spanish, "ongoingNote")).toContain("cuenta atrás");
+    expect(line(latin, "aboutProject")).toBeUndefined();
+    const config = files.get(`${res}/xml/locales_config.xml`);
+    expect(config).toContain('android:name="en-GB"');
+    expect(config).toContain('android:name="es-419"');
+    expect(config).not.toContain('android:name="es-MX"');
+    expect(PARTIAL_LOCALES.map((locale) => locale.dir)).toEqual(["values-en-rGB", "values-b+es+419"]);
   });
 
   it("write the Indic locales under their region and keep Devanagari intact", () => {
@@ -141,7 +161,7 @@ describe("Android strings", () => {
     scan("src-mobile/android/app/src/main/kotlin");
     const files = buildAndroidStrings(catalog, JSON.parse(readFileSync("src-mobile/android/app/i18n/android-strings.json", "utf8")));
     const leaks = [];
-    for (const { id, dir } of LOCALES) {
+    for (const { id, dir } of [...LOCALES, ...PARTIAL_LOCALES]) {
       for (const [, name, copy] of files.get(file(dir)).matchAll(/<string name="([^"]+)"[^>]*>(.*?)<\/string>/g)) {
         if (used.has(name) && /App\s*Store/i.test(copy)) leaks.push(`${name} (${id}): ${copy}`);
       }

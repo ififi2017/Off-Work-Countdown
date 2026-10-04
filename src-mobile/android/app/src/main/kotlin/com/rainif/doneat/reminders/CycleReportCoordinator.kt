@@ -6,6 +6,7 @@ import android.os.LocaleList
 import com.rainif.doneat.R
 import com.rainif.doneat.core.data.SettingsRepository
 import com.rainif.doneat.core.domain.records.CycleReportKind
+import com.rainif.doneat.core.domain.settings.AppLanguages
 import com.rainif.doneat.core.domain.records.CycleReportNotificationPlan
 import com.rainif.doneat.core.domain.reminders.PlannedReminder
 import com.rainif.doneat.core.domain.reminders.ReminderChannel
@@ -67,7 +68,8 @@ class CycleReportCoordinator(
             rearmFutureOnFirstSync = true
             return@withLock
         }
-        val locale = p.languageOverride?.let { Locale.forLanguageTag(AppLocale.tag(it)) } ?: context.resources.configuration.locales[0]
+        val code = AppLanguages.effective(p.languageOverride, AppLocale.systemPreferred())
+        val locale = Locale.forLanguageTag(AppLocale.tag(code))
         val resources = context.createConfigurationContext(Configuration(context.resources.configuration).apply { setLocales(LocaleList(locale)) }).resources
         val zone = runCatching { ZoneId.of(p.recordsTimeZoneIdentifier) }.getOrElse { ZoneId.systemDefault() }
         val items = CycleReportNotificationPlan.items(d.weeklyReportEnabled && entitlement, d.monthlyReportEnabled && entitlement,

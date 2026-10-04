@@ -95,6 +95,20 @@
       "id": "zh-TW",
       "dir": "values-b+zh+Hant+TW",
       "tag": "zh-Hant-TW"
+    },
+    {
+      "id": "en-GB",
+      "dir": "values-en-rGB",
+      "tag": "en-GB",
+      "fallback": "en",
+      "partial": true
+    },
+    {
+      "id": "es-MX",
+      "dir": "values-b+es+419",
+      "tag": "es-419",
+      "fallback": "es",
+      "partial": true
     }
   ],
   "keys": {
