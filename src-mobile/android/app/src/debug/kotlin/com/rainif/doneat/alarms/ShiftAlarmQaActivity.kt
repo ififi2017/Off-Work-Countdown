@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.rainif.doneat.DoneAtApplication
 import com.rainif.doneat.MainActivity
 import com.rainif.doneat.core.designsystem.DoneAtTheme
@@ -58,6 +59,8 @@ class ShiftAlarmQaActivity : ComponentActivity() {
         }
         setContent {
             val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
+            val dark = when (intent.getStringExtra("theme")) { "dark" -> true; "light" -> false; else -> isSystemInDarkTheme() }
+            com.rainif.doneat.ui.SystemBarsFollowTheme(dark)
             AppLanguageScope(prefs.languageOverride) {
                 DoneAtTheme(themeMode = when (intent.getStringExtra("theme")) { "dark" -> ThemeMode.DARK; "light" -> ThemeMode.LIGHT; else -> ThemeMode.SYSTEM }) {
                     ShiftAlarmSettingsScreen(graph, { startActivity(Intent(this, MainActivity::class.java).setAction(ShiftAlarms.OPEN).putExtra(MainActivity.EXTRA_TAB, "settings")) }, { finish() })
