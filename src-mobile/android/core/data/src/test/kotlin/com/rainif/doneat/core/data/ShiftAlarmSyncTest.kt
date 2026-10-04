@@ -102,7 +102,9 @@ class ShiftAlarmSyncTest {
         sync.take(e.alarm.id, e.alarm.fireAtMs)
         assertTrue(sync.snooze(e.alarm.id, e.alarm.fireAtMs))
         val expected = e.alarm.fireAtMs + 540_000
+        assertEquals(expected + 600_000, port.refresh)
         sync.reconcile(true, until, true, emptyList(), e.alarm.fireAtMs + 1)
+        assertEquals(expected + 600_000, port.refresh)
         val restarted = ShiftAlarmSync(file, port)
         assertEquals(expected, restarted.state.value.entries.single().alarm.fireAtMs)
         assertNull(restarted.take(e.alarm.id, expected - 1))

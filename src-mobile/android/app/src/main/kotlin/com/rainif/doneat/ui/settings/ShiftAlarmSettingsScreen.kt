@@ -34,7 +34,6 @@ import com.rainif.doneat.ui.components.*
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.UUID
 
 @Composable
@@ -68,8 +67,9 @@ fun ShiftAlarmSettingsScreen(graph: AppGraph, open: (Route) -> Unit, back: () ->
     val now = System.currentTimeMillis()
     val waiting = registry.waiting(now)
     val zone = session.countdownZone
-    val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
-        .withLocale(resources.configuration.locales[0]).withZone(zone)
+    val locale = resources.configuration.locales[0]
+    val formatter = DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale,
+        if (android.text.format.DateFormat.is24HourFormat(context)) "yMMMdHm" else "yMMMdhm"), locale).withZone(zone)
     fun format(at: Long) = formatter.format(Instant.ofEpochMilli(at))
     fun edit(change: (ShiftAlarmSettings) -> ShiftAlarmSettings) {
         scope.launch { graph.settings.updateDevice { it.copy(shiftAlarms = change(it.shiftAlarms)) } }

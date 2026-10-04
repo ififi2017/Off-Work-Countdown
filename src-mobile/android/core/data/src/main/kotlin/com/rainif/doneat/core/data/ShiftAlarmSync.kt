@@ -100,7 +100,7 @@ class ShiftAlarmSync(private val file: Path, private val port: ShiftAlarmPort) {
             future.map { it.alarm }, accepted.filter { it.phase == ShiftAlarmEntry.Phase.WAITING }.map { it.alarm },
             nowMs, untilMs, lifetime,
         )
-        val refresh = coverage.refreshAtMs
+        val refresh = refreshAfterAccepted(accepted, nowMs, untilMs, lifetime)
         val refreshAccepted = refresh != null && runCatching { port.scheduleRefresh(refresh) }.isSuccess
         save(ShiftAlarmRegistry(true, untilMs, lifetime, accepted, refresh, refreshAccepted, failed.size, coverage.coveredThroughMs))
         _state.value
@@ -164,7 +164,12 @@ class ShiftAlarmSync(private val file: Path, private val port: ShiftAlarmPort) {
         val snoozed = entry.copy(alarm = entry.alarm.copy(fireAtMs = at), phase = ShiftAlarmEntry.Phase.SNOOZED, ringingSinceMs = null)
         save(old.copy(entries = old.entries.map { if (it.alarm.id == id) snoozed.copy(phase = ShiftAlarmEntry.Phase.REGISTERING) else it }))
         val accepted = runCatching { port.schedule(snoozed) }.isSuccess
-        save(old.copy(entries = old.entries.mapNotNull { if (it.alarm.id == id) snoozed.takeIf { accepted } else it }, failed = if (accepted) old.failed else old.failed + 1))
+        val entries = old.entries.mapNotNull { if (it.alarm.id == id) snoozed.takeIf { accepted } else it }
+        runCatching { port.cancelRefresh() }
+        val refresh = refreshAfterAccepted(entries, nowMs, entry.untilMs, old.lifetime)
+        val refreshed = refresh != null && runCatching { port.scheduleRefresh(refresh) }.isSuccess
+        save(old.copy(entries = entries, failed = if (accepted) old.failed else old.failed + 1,
+            refreshAtMs = refresh, refreshAccepted = refreshed))
         accepted
     }
 
@@ -177,6 +182,11 @@ class ShiftAlarmSync(private val file: Path, private val port: ShiftAlarmPort) {
     }
 
     suspend fun clear() = mutex.withLock { clearLocked() }
+
+    private fun refreshAfterAccepted(entries: List<ShiftAlarmEntry>, nowMs: Long, untilMs: Long, lifetime: Boolean): Long? {
+        val scheduled = entries.filter { it.phase in setOf(ShiftAlarmEntry.Phase.WAITING, ShiftAlarmEntry.Phase.SNOOZED) }.map { it.alarm }
+        return ShiftAlarmReconciliation.coverage(scheduled, scheduled, nowMs, untilMs, lifetime).refreshAtMs
+    }
 
     private fun clearLocked() {
         val old = _state.value
