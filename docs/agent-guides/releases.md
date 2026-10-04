@@ -154,3 +154,21 @@ App Store Connect's workflow triggers, Release archive and distribution.
   box, capture sits in the hole, frame overlays it. Never punch bezels or
   redraw Dynamic Island. App Previews use `IPHONE_67`, 886×1920 portrait,
   with an audio track (silent stereo is acceptable).
+
+## Source and license notices
+
+Before distributing MPL-based builds, follow [SOURCE.md](../../SOURCE.md):
+retain the immutable covered source, record each platform/version/build to
+source-commit mapping, and verify that recipients can obtain it through the
+existing About/GitHub entry. Existing MIT binaries keep their original terms.
+Store-only iOS/macOS builds also need a public source commit/tag in their
+release record; a moving main link alone is not the version record.
+
+Web/Desktop and extension builds generate `licenses/source.txt` with the
+commit and source archive URL, plus MPL, historical MIT and scope notices.
+Confirm these files are in the output; never ship a notice marked as a local
+dirty build. For builds from archives without Git, set `DONEAT_SOURCE_COMMIT`
+to the archive's verified full commit SHA. Independent distributors must
+point source notices to their own modified source, preserve upstream notices
+and use appropriate branding. Store copy changes in this migration take
+effect only when a corresponding release/listing is actually published.

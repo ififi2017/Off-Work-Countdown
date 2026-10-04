@@ -52,6 +52,7 @@ export function middleware(request: NextRequest) {
     pathname === "/sw.js" ||
     pathname.startsWith("/workbox-") ||
     pathname.startsWith("/locales/") ||
+    pathname.startsWith("/licenses/") ||
     pathname.startsWith("/emoji/") ||
     pathname.match(/^\/icon-[\w-]+\.png$/) ||
     pathname === "/robots.txt" ||

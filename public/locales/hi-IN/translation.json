@@ -302,7 +302,7 @@
   "annualBonusMonths": "बोनस के महीने",
   "bonusMonthsValue": "{{count}} महीने का वेतन",
   "openSourceAcknowledgements": "ओपन सोर्स आभार",
-  "nativeNoThirdPartySDK": "मूल iOS ऐप में कोई तृतीय-पक्ष SDK नहीं है; साझा नियम इसी MIT-लाइसेंस प्राप्त प्रोजेक्ट से आते हैं।",
+  "nativeNoThirdPartySDK": "मूल iOS ऐप में कोई तृतीय-पक्ष SDK नहीं है; साझा नियम इसी MPL-2.0-लाइसेंस प्राप्त प्रोजेक्ट से आते हैं।",
   "shareDone": "काम खत्म",
   "rotationWorkDays": "कार्यदिवस",
   "rotationRestDays": "छुट्टी के दिन",

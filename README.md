@@ -350,7 +350,18 @@ adding a new locale.
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
+DoneAt's source code is available under [MPL-2.0](LICENSE), unless otherwise
+noted. Commercial forks are allowed; distribution carries the applicable
+source-availability and notice obligations. See [LICENSING.md](LICENSING.md)
+and [source for releases](SOURCE.md).
+
+Previously granted MIT rights remain in effect; the original notice is in
+[LICENSE-MIT-LEGACY](LICENSE-MIT-LEGACY). DoneAt branding and designated
+artwork are excluded from new MPL grants: see [ASSETS.md](ASSETS.md) and
+[TRADEMARKS.md](TRADEMARKS.md). Independent releases must not impersonate
+DoneAt. Third-party components keep their own licenses.
+
+New contributions follow [CONTRIBUTING.md](CONTRIBUTING.md).
 
 The bundled Geist fonts in `app/fonts/` are licensed separately under the
 [SIL Open Font License 1.1](app/fonts/LICENSE.txt).

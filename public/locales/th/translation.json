@@ -302,7 +302,7 @@
   "annualBonusMonths": "จำนวนเดือนโบนัส",
   "bonusMonthsValue": "เงินเดือน {{count}} เดือน",
   "openSourceAcknowledgements": "กิตติกรรมประกาศโอเพนซอร์ส",
-  "nativeNoThirdPartySDK": "แอป iOS แบบเนทีฟไม่มี SDK จากบุคคลที่สาม กฎที่ใช้ร่วมกันมาจากโครงการลิขสิทธิ์ MIT นี้",
+  "nativeNoThirdPartySDK": "แอป iOS แบบเนทีฟไม่มี SDK จากบุคคลที่สาม กฎที่ใช้ร่วมกันมาจากโครงการลิขสิทธิ์ MPL-2.0 นี้",
   "shareDone": "เลิกงานแล้ว",
   "rotationWorkDays": "วันทำงาน",
   "rotationRestDays": "วันพัก",

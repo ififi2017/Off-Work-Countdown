@@ -302,7 +302,7 @@
   "annualBonusMonths": "Месяцы премии",
   "bonusMonthsValue": "{{count}} месячных окладов",
   "openSourceAcknowledgements": "Благодарности открытому ПО",
-  "nativeNoThirdPartySDK": "Нативное приложение iOS не содержит сторонних SDK; общие правила взяты из этого проекта под лицензией MIT.",
+  "nativeNoThirdPartySDK": "Нативное приложение iOS не содержит сторонних SDK; общие правила взяты из этого проекта под лицензией MPL-2.0.",
   "shareDone": "Работа окончена",
   "rotationWorkDays": "Рабочие дни",
   "rotationRestDays": "Выходные дни",

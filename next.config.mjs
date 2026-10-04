@@ -1,3 +1,4 @@
+import { prepareLicenseNotices } from "./scripts/prepare-license-notices.mjs";
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import { readFileSync } from 'fs';
@@ -9,6 +10,7 @@ import {
 } from './lib/official-content-redirects.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+prepareLicenseNotices();
 // Exposed to the Mobile target only. Desktop reads its version from the Tauri
 // bundle and the native iOS app from MARKETING_VERSION, so neither needs this;
 // it comes from the single source `npm run check:version` already validates.
