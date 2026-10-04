@@ -632,7 +632,7 @@
     <string name="plusAndroidPlansUnavailable">Impossibile caricare i piani da Google Play. Riprova.</string>
     <string name="plusAndroidRenewalNotice">Gli abbonamenti si rinnovano automaticamente finché non li annulli. L’acquisto una tantum Lifetime non annulla un abbonamento attivo.</string>
     <string name="plusAndroidRequestFailed">Google Play non è riuscito a completare la richiesta. Riprova tra poco.</string>
-    <string name="plusAndroidStoreOffline">Google Play non è disponibile al momento. Riprova a ripristinare gli acquisti quando sei online.</string>
+    <string name="plusAndroidStoreOffline">Non è stato possibile confermare il tuo accesso attuale a Plus. Riprova o ripristina gli acquisti.</string>
     <string name="plusAndroidStoreUnconfigured">Gli acquisti Plus non sono ancora disponibili su questo dispositivo. Puoi continuare a usare il timer e i dati recenti.</string>
     <string name="plusAndroidYearlyTrialPrice">7 giorni gratis, poi %1$s all’anno. Annulla prima della fine della prova per evitare addebiti.</string>
     <string name="plusAutoRenew">Gli abbonamenti si rinnovano automaticamente finché non li annulli. Il piano annuale può includere 7 giorni gratuiti; poi si applica il prezzo annuale. L’acquisto per sempre è un pagamento unico e non annulla un abbonamento in corso.</string>

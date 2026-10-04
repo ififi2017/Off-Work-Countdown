@@ -628,7 +628,7 @@
     <string name="plusAndroidPlansUnavailable">Không thể tải các gói từ Google Play. Vui lòng thử lại.</string>
     <string name="plusAndroidRenewalNotice">Gói đăng ký tự động gia hạn cho đến khi bạn hủy. Mua Lifetime một lần không hủy gói đăng ký đang hoạt động.</string>
     <string name="plusAndroidRequestFailed">Google Play không thể hoàn tất yêu cầu này. Hãy thử lại sau ít phút.</string>
-    <string name="plusAndroidStoreOffline">Google Play hiện không khả dụng. Hãy thử khôi phục giao dịch mua khi có kết nối.</string>
+    <string name="plusAndroidStoreOffline">Chưa thể xác nhận quyền truy cập Plus hiện tại của bạn. Hãy thử lại hoặc khôi phục giao dịch mua.</string>
     <string name="plusAndroidStoreUnconfigured">Chưa thể mua Plus trên thiết bị này. Bạn vẫn có thể dùng bộ đếm giờ và xem các bản ghi gần đây.</string>
     <string name="plusAndroidYearlyTrialPrice">Miễn phí 7 ngày, sau đó %1$s mỗi năm. Hủy trước khi hết thời gian dùng thử để tránh bị tính phí.</string>
     <string name="plusAutoRenew">Đăng ký tự gia hạn cho tới khi bạn hủy. Gói năm có thể kèm 7 ngày miễn phí, sau đó tính theo giá năm. Bản trả một lần chỉ thanh toán một lần và không tự hủy đăng ký đang chạy.</string>

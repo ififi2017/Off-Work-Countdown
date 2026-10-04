@@ -630,7 +630,7 @@
     <string name="plusAndroidPlansUnavailable">Google Play वरून योजना लोड करता आल्या नाहीत. कृपया पुन्हा प्रयत्न करा.</string>
     <string name="plusAndroidRenewalNotice">सदस्यता रद्द करेपर्यंत आपोआप नूतनीकरण होते. Lifetime एकदाच खरेदी केल्याने चालू सदस्यता रद्द होत नाही.</string>
     <string name="plusAndroidRequestFailed">Google Play विनंती पूर्ण करू शकले नाही. थोड्या वेळाने पुन्हा प्रयत्न करा.</string>
-    <string name="plusAndroidStoreOffline">Google Play सध्या उपलब्ध नाही. कनेक्ट झाल्यावर खरेदी पुनर्संचयित करून पाहा.</string>
+    <string name="plusAndroidStoreOffline">तुमचा सध्याचा Plus प्रवेश निश्चित करता आला नाही. पुन्हा प्रयत्न करा किंवा खरेदी पुनर्संचयित करा.</string>
     <string name="plusAndroidStoreUnconfigured">या डिव्हाइसवर Plus खरेदी अद्याप उपलब्ध नाही. टाइमर आणि अलीकडील नोंदी वापरता येतील.</string>
     <string name="plusAndroidYearlyTrialPrice">7 दिवस मोफत, त्यानंतर दरवर्षी %1$s. शुल्क टाळण्यासाठी चाचणी संपण्यापूर्वी रद्द करा.</string>
     <string name="plusAutoRenew">तुम्ही रद्द करेपर्यंत सदस्यता आपोआप सुरू राहते. वार्षिक योजनेत 7 दिवस मोफत असू शकतात, त्यानंतर वार्षिक दर लागतो. एकदाच घेण्याची खरेदी एकच पेमेंट आहे आणि सुरू असलेली सदस्यता आपोआप रद्द करत नाही.</string>

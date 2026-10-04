@@ -628,7 +628,7 @@
     <string name="plusAndroidPlansUnavailable">Paket dari Google Play tidak dapat dimuat. Silakan coba lagi.</string>
     <string name="plusAndroidRenewalNotice">Langganan diperpanjang otomatis sampai Anda membatalkannya. Pembelian Lifetime sekali bayar tidak membatalkan langganan aktif.</string>
     <string name="plusAndroidRequestFailed">Google Play tidak dapat menyelesaikan permintaan ini. Coba lagi sebentar lagi.</string>
-    <string name="plusAndroidStoreOffline">Google Play sedang tidak tersedia. Coba pulihkan pembelian saat Anda terhubung.</string>
+    <string name="plusAndroidStoreOffline">Akses Plus Anda saat ini belum dapat dikonfirmasi. Coba lagi atau pulihkan pembelian.</string>
     <string name="plusAndroidStoreUnconfigured">Pembelian Plus belum tersedia di perangkat ini. Pengatur waktu dan catatan terbaru tetap bisa digunakan.</string>
     <string name="plusAndroidYearlyTrialPrice">Gratis 7 hari, lalu %1$s per tahun. Batalkan sebelum masa uji coba berakhir agar tidak dikenai biaya.</string>
     <string name="plusAutoRenew">Langganan diperpanjang otomatis sampai kamu batalkan. Paket tahunan bisa mencakup 7 hari gratis, lalu ditagih harga tahunan. Sekali bayar cukup satu kali dan tidak otomatis membatalkan langganan yang sedang berjalan.</string>

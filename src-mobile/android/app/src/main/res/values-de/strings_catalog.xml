@@ -630,7 +630,7 @@
     <string name="plusAndroidPlansUnavailable">Die Angebote konnten nicht von Google Play geladen werden. Bitte versuche es erneut.</string>
     <string name="plusAndroidRenewalNotice">Abos verlängern sich automatisch, bis du kündigst. Der einmalige Kauf von Lifetime beendet ein laufendes Abo nicht.</string>
     <string name="plusAndroidRequestFailed">Google Play konnte die Anfrage nicht abschließen. Versuche es gleich noch einmal.</string>
-    <string name="plusAndroidStoreOffline">Google Play ist gerade nicht erreichbar. Versuche nach dem Verbinden, Käufe wiederherzustellen.</string>
+    <string name="plusAndroidStoreOffline">Dein aktueller Plus-Zugang konnte nicht bestätigt werden. Versuche es erneut oder stelle deine Käufe wieder her.</string>
     <string name="plusAndroidStoreUnconfigured">Plus kann auf diesem Gerät derzeit nicht gekauft werden. Timer und aktuelle Einträge sind weiterhin verfügbar.</string>
     <string name="plusAndroidYearlyTrialPrice">7 Tage kostenlos, danach %1$s pro Jahr. Kündige vor Ende des Testzeitraums, um eine Abbuchung zu vermeiden.</string>
     <string name="plusAutoRenew">Abos verlängern sich automatisch, bis du kündigst. Das Jahresabo kann 7 Tage kostenlos enthalten; danach gilt der Jahrespreis. Der Einmalkauf ist eine einzelne Zahlung und kündigt kein laufendes Abo.</string>
