@@ -54,7 +54,7 @@ class ShiftAlarmService : Service() {
                     addAction(0, getString(R.string.shiftAlarmSnooze), ShiftAlarms.pending(this@ShiftAlarmService, ShiftAlarms.SNOOZE, id))
                 if (ShiftAlarms.fullScreenAllowed(this@ShiftAlarmService)) setFullScreenIntent(screen, true)
             }.build()
-        ServiceCompat.startForeground(this, ShiftAlarms.RING_NOTIFICATION, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        ServiceCompat.startForeground(this, ShiftAlarms.RING_NOTIFICATION, notification, if (android.os.Build.VERSION.SDK_INT >= 29) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK else 0)
         if (active == id) return START_NOT_STICKY
         val previous = active
         watching?.cancel()

@@ -2,6 +2,9 @@ package com.rainif.doneat.alarms
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.content.edit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -22,6 +25,8 @@ import java.time.ZoneId
 
 /** Seed only the isolated .alarmqa install. Release has neither this activity nor a fake deadline. */
 class ShiftAlarmQaActivity : ComponentActivity() {
+    override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); recreate() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!packageName.endsWith(".alarmqa")) { finish(); return }
@@ -36,13 +41,13 @@ class ShiftAlarmQaActivity : ComponentActivity() {
                     val start = Instant.ofEpochMilli(fire + 15 * 60_000).atZone(ZoneId.systemDefault())
                     val minute = start.hour * 60 + start.minute
                     val expiry = intent.getIntExtra("expirySeconds", 0).takeIf { it > 0 }?.let { fire + it * 1_000L } ?: 0L
-                    getSharedPreferences("debug_plus", MODE_PRIVATE).edit().putLong("alarmExpiry", expiry).commit()
+                    withContext(Dispatchers.IO) { getSharedPreferences("debug_plus", MODE_PRIVATE).edit(commit = true) { putLong("alarmExpiry", expiry) } }
                     graph.plus.setDebugAuthorized(true)
                     graph.settings.edit { it.copy(startMinutes = minute, endMinutes = (minute + 60) % 1440,
                         workdays = (0..6).toList(), scheduleMode = "classic", lunchEnabled = false, salaryEnabled = false,
                         recordsTimeZoneIdentifier = ZoneId.systemDefault().id, notificationMode = "off", microBreakEnabled = false,
                         languageOverride = intent.getStringExtra("language") ?: "zh-CN") }
-                    graph.settings.completeSetup()
+                    if (!graph.settings.device.value.onboardingComplete) graph.settings.completeSetup()
                     graph.settings.updateDevice { it.copy(shiftAlarms = ShiftAlarmSettings(true, 15)) }
                     // Wait for the store's combined environment, not a guessed UI delay.
                     graph.sessions.session.first { it.env.preferences.startMinutes == minute }

@@ -45,6 +45,8 @@ fun ShiftAlarmSettingsScreen(graph: AppGraph, open: (Route) -> Unit, back: () ->
     val records by graph.records.state.collectAsStateWithLifecycle()
     val registry by ShiftAlarms.sync(context).state.collectAsStateWithLifecycle()
     val plus by graph.plus.authorized.collectAsStateWithLifecycle()
+    val store by graph.plus.state.collectAsStateWithLifecycle()
+    val session by graph.sessions.session.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val settings = device.shiftAlarms
     var permissionVersion by remember { mutableIntStateOf(0) }
@@ -52,7 +54,10 @@ fun ShiftAlarmSettingsScreen(graph: AppGraph, open: (Route) -> Unit, back: () ->
     var pickingType by remember { mutableStateOf<UUID?>(null) }
     val owner = LocalLifecycleOwner.current
     DisposableEffect(owner) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) permissionVersion++ }
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) {
+            permissionVersion++
+            scope.launch { graph.shiftAlarms.reconcile() }
+        } }
         owner.lifecycle.addObserver(observer)
         onDispose { owner.lifecycle.removeObserver(observer) }
     }
@@ -62,7 +67,7 @@ fun ShiftAlarmSettingsScreen(graph: AppGraph, open: (Route) -> Unit, back: () ->
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permissionVersion++; scope.launch { graph.shiftAlarms.reconcile(true) } }
     val now = System.currentTimeMillis()
     val waiting = registry.waiting(now)
-    val zone = graph.sessions.session.value.countdownZone
+    val zone = session.countdownZone
     val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
         .withLocale(resources.configuration.locales[0]).withZone(zone)
     fun format(at: Long) = formatter.format(Instant.ofEpochMilli(at))
@@ -100,7 +105,7 @@ fun ShiftAlarmSettingsScreen(graph: AppGraph, open: (Route) -> Unit, back: () ->
                 registry.failed > 0 -> stringResource(R.string.shiftAlarmsLimitReached)
                 registry.lifetime -> stringResource(R.string.shiftAlarmsLifetimeWindow)
                 registry.untilMs != null -> Strings.shiftAlarmsUntilExpiry(resources, format(registry.untilMs!!))
-                plus -> stringResource(R.string.plusAndroidStoreOffline)
+                plus && exact && notifications && store.status == com.rainif.doneat.plus.PlusStatus.SUBSCRIBED && store.verifiedSubscriptionExpiresAtMs == null -> stringResource(R.string.plusAndroidStoreOffline)
                 else -> null
             }) {
                 ValueRow(stringResource(R.string.shiftAlarmsUpcoming), registry.coveredThroughMs?.takeIf { it > now }?.let {
