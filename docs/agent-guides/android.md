@@ -17,8 +17,9 @@ locale and validation rules apply.
   command in `progress.md`, log the result, then decide whether to advance the
   baseline. Never follow `main` silently.
 - Decisions live in the package's `decisions.json`; do not reopen approved
-  ones. First release excludes T21 (server purchase verification), T22 (Drive
-  sync) and T27 (Wear OS). Deferred is neither failed nor done.
+  ones. The 2026-10-04 user approval activates T21 as an independent Cloudflare Worker
+  and D1 service at `api.doneat.app` (D-08 revision). T22 (Drive sync) and T27
+  (Wear OS) remain deferred. Deferred is neither failed nor done.
 
 ## Architecture
 
@@ -131,10 +132,15 @@ locale and validation rules apply.
 - Shares carry hours only: `ShareContent` words the card, and the link is the
   web app with `s=HHMM-HHMM` (as iOS). The card is lent through the `.share`
   FileProvider (cache `share/` only).
-- First release uses client-only Play Billing (D-08), mirroring iOS StoreKit:
-  entitlements come only from `queryPurchasesAsync` plus Play public-key
-  signature checks, never from backups, imports or local booleans. Acknowledge
-  on the client and retry within the three-day window.
+- Play Billing first verifies `queryPurchasesAsync` results with the Play public
+  key and acknowledges on the client with the existing three-day retry path.
+  D-08 now permits the independent `services/billing-api` Worker to query Google
+  for exact expiry and sign a receipt bound to package/product/purchase token.
+  Configuring `doneatBillingApiPublicKeys` enables Android server verification;
+  failures use only still-valid signed evidence, never a local boolean or guessed
+  expiry. Empty configuration preserves the previous client-only build. Keep
+  receipts in `noBackupFilesDir`, outside schema 7. See the service runbook for
+  deployment, privacy and Play license-test gates before enabling production.
 - Reminders are absolute alarms registered up front (`Reminders`, `ReminderSync`),
   never a foreground service or a polling worker. Exact timing needs the
   user-granted `SCHEDULE_EXACT_ALARM`; never declare `USE_EXACT_ALARM`. The

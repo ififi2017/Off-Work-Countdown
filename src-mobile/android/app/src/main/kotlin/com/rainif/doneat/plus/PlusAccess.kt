@@ -3,6 +3,7 @@ package com.rainif.doneat.plus
 import android.app.Activity
 import android.content.Context
 import com.rainif.doneat.BuildConfig
+import com.rainif.doneat.core.domain.alarms.ShiftAlarmAuthorization
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,8 +16,17 @@ enum class PlusPlan { MONTHLY, YEARLY, LIFETIME }
 data class PlusOffer(val plan: PlusPlan, val price: String, val offerToken: String, val sevenDayTrial: Boolean = false)
 data class PlusStoreState(val status: PlusStatus = PlusStatus.LOADING, val offers: List<PlusOffer> = emptyList(),
     val busy: Boolean = false, val hasPurchasedBefore: Boolean = false, val operationFailed: Boolean = false,
-    val hasActiveSubscription: Boolean = status == PlusStatus.SUBSCRIBED) {
+    val hasActiveSubscription: Boolean = status == PlusStatus.SUBSCRIBED,
+    val verifiedSubscriptionExpiresAtMs: Long? = null) {
     val authorized: Boolean get() = status == PlusStatus.SUBSCRIBED || status == PlusStatus.LIFETIME
+
+    /** Callers pass now explicitly. A client cache age must never stand in for Google's expiry. */
+    fun shiftAlarmAuthorization(nowMs: Long): ShiftAlarmAuthorization = when {
+        status == PlusStatus.LIFETIME -> ShiftAlarmAuthorization.Lifetime
+        status == PlusStatus.SUBSCRIBED && (verifiedSubscriptionExpiresAtMs ?: 0) > nowMs ->
+            ShiftAlarmAuthorization.VerifiedUntil(verifiedSubscriptionExpiresAtMs!!)
+        else -> ShiftAlarmAuthorization.Unavailable
+    }
 }
 
 /** The sole purchase gate shared by every paid screen. */

@@ -25,7 +25,9 @@ import com.rainif.doneat.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,6 +58,12 @@ internal class PlayBillingRepository(private val context: Context, private val s
         subscription != lifetime && monthly != yearly
     private val allowed = setOf(subscription, lifetime)
     private val store = AtomicFile(File(context.noBackupFilesDir, "plus-purchases.json"))
+    private val server = BillingServerClient(context, runCatching {
+        kotlinx.serialization.json.Json.parseToJsonElement(BuildConfig.BILLING_API_PUBLIC_KEYS)
+            .let { it as kotlinx.serialization.json.JsonObject }
+            .mapValues { (_, value) -> (value as kotlinx.serialization.json.JsonPrimitive).content }
+    }.getOrDefault(emptyMap()))
+    private val serverRequired = BuildConfig.BILLING_API_PUBLIC_KEYS.isNotBlank()
     private val purchasing = AtomicBoolean(false)
     private val _state = MutableStateFlow(PlusStoreState(if (configured) PlusStatus.LOADING else PlusStatus.UNCONFIGURED))
     val state: StateFlow<PlusStoreState> = _state.asStateFlow()
@@ -63,6 +71,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
     private var hasPurchasedBefore = false
     private var proofs = listOf<Proof>()
     private var details = listOf<ProductDetails>()
+    private var expiryCheck: Job? = null
     private val client: BillingClient? = if (!configured) null else BillingClient.newBuilder(context)
         .setListener { result, _ ->
             purchasing.set(false)
@@ -79,12 +88,14 @@ internal class PlayBillingRepository(private val context: Context, private val s
     init {
         if (configured) {
             loadCache()
+            server.load()
             publish(offline = true)
         }
     }
 
     suspend fun refresh(): Boolean = try { billingMutex.withLock {
         loadCache() // A WorkManager instance may have updated the same no-backup proof file.
+        server.load()
         val billing = client ?: return@withLock false
         _state.value = _state.value.copy(busy = true)
         if (!connect(billing)) {
@@ -120,10 +131,14 @@ internal class PlayBillingRepository(private val context: Context, private val s
         val saved = runCatching { saveCache() }.isSuccess
         if (!saved) scheduleRetry()
         _state.value = _state.value.copy(operationFailed = false)
-        publish(offline = false)
         val acknowledged = acknowledge(billing, now)
+        // Acknowledgement remains on Play's existing retry path even if the verification service is unavailable.
+        val serverVerified = if (serverRequired) server.configured && server.refresh(verifiedPurchases(), now) else true
+        if (!serverVerified) scheduleRetry()
+        _state.value = _state.value.copy(operationFailed = !serverVerified)
+        publish(offline = false)
         queryDetails(billing)
-        acknowledged && saved
+        acknowledged && saved && serverVerified
     } } catch (error: CancellationException) { throw error } catch (error: Exception) {
         publish(offline = true)
         scheduleRetry()
@@ -167,9 +182,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
         }
     }
 
-    private fun publish(offline: Boolean) {
-        val now = System.currentTimeMillis()
-        val verified = proofs.mapNotNull { proof ->
+    private fun verifiedPurchases(): List<VerifiedPurchase> = proofs.mapNotNull { proof ->
             if (!PlaySignature.verify(proof.json, proof.signature, key, context.packageName, allowed)) return@mapNotNull null
             val purchase = proof.purchase ?: runCatching { Purchase(proof.json, proof.signature) }.getOrNull() ?: return@mapNotNull null
             if (purchase.purchaseToken != proof.token) return@mapNotNull null
@@ -178,9 +191,28 @@ internal class PlayBillingRepository(private val context: Context, private val s
                 purchase.purchaseState == Purchase.PurchaseState.PENDING, purchase.isSuspended,
                 purchase.isAcknowledged, proof.firstSeenAtMs)
         }
-        _state.value = _state.value.copy(status = EntitlementEngine.status(verified, now, verifiedAtMs, offline),
+
+    private fun publish(offline: Boolean) {
+        val now = System.currentTimeMillis()
+        val verified = verifiedPurchases()
+        val receipts = if (serverRequired) server.receipts(verified, now) else emptyMap()
+        val status = if (serverRequired) ServerEntitlementPolicy.status(verified, receipts, now, offline)
+            else EntitlementEngine.status(verified, now, verifiedAtMs, offline)
+        val activeSub = if (serverRequired) ServerEntitlementPolicy.status(verified.filter { it.isSubscription }, receipts, now, offline) == PlusStatus.SUBSCRIBED
+            else EntitlementEngine.hasActiveSubscription(verified, now, verifiedAtMs, offline)
+        val expiry = verified.filter { it.isSubscription && it.purchased && !it.suspended }
+            .mapNotNull { receipts[it.token]?.takeIf { receipt -> receipt.activeAt(now) }?.expiresAtMs }.maxOrNull()
+        _state.value = _state.value.copy(status = status,
             busy = false, hasPurchasedBefore = hasPurchasedBefore,
-            hasActiveSubscription = EntitlementEngine.hasActiveSubscription(verified, now, verifiedAtMs, offline))
+            hasActiveSubscription = activeSub, verifiedSubscriptionExpiresAtMs = expiry)
+        // An app kept in the foreground must also stop granting when its signed evidence expires.
+        // This is a single in-memory deadline, with no network polling or system alarm.
+        expiryCheck?.cancel()
+        val deadline = receipts.values.filter { it.activeAt(now) }.minOfOrNull { it.cacheUntilMs }
+        expiryCheck = deadline?.let { end -> scope.launch {
+            delay((end - now).coerceAtLeast(1))
+            billingMutex.withLock { publish(offline = true) }
+        } }
     }
 
     private suspend fun connect(billing: BillingClient): Boolean {
@@ -292,7 +324,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
 
     private data class Proof(val json: String, val signature: String, val token: String, val firstSeenAtMs: Long, val purchase: Purchase?)
 
-    fun close() { client?.endConnection() }
+    fun close() { expiryCheck?.cancel(); client?.endConnection() }
 }
 
 class PlusBillingRetryWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {

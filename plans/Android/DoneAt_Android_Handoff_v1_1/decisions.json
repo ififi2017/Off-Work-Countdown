@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package_version": "1.2",
-  "updated_at": "2026-09-23",
+  "updated_at": "2026-10-04",
   "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
   "approval_evidence": {
     "source": "current_conversation_user_message",
@@ -36,7 +36,6 @@
       "FR-21"
     ],
     "deferred_tasks": [
-      "T21",
       "T22",
       "T27"
     ],
@@ -56,7 +55,7 @@
       "QA-122",
       "QA-137"
     ],
-    "notes": "FR-15 首发范围=系统备份/设备转移换机恢复 + v6 文件迁移；Drive 多设备同步（T22）为后续阶段。FR-16 首发=纯客户端 Play Billing；服务端验证（T21）为后续阶段。"
+    "notes": "2026-10-04 用户授权 T21：同仓库独立 Cloudflare Worker + D1，api.doneat.app，Publisher 精确到期核验与 RTDN。FR-15 继续系统备份/设备转移与 schema 7 JSON；T22 Drive 和 T27 Wear 继续延后。服务端正式启用须完成部署、隐私披露与 Play 许可测试验收。"
   },
   "decisions": [
     {
@@ -196,8 +195,8 @@
       "id": "D-08",
       "conversation_item": 5,
       "status": "APPROVED",
-      "decision": "首发采用纯客户端 Play Billing：queryPurchasesAsync 作为权益来源（只返回有效/宽限期内订阅与未撤销终身）、Play 公钥签名校验、客户端 acknowledge 与重试，与 iOS 纯客户端 StoreKit 对齐。服务端验证/RTDN 保留为后续阶段；届时优先放入现有 Vercel Route Handlers，而非新建独立服务。",
-      "approval_scope": "首发权益验证架构；原「首发含小型验证服务」被本次修订取代",
+      "decision": "2026-10-04 用户授权启动服务端购买验证：同仓库 services/billing-api 独立 Cloudflare Worker + D1，使用 api.doneat.app 的核验与 RTDN 两个接口。Google Publisher 返回精确订阅到期时间；Android 验签后输入 PlusAccess 与闹钟领域边界。仍使用 Play 客户端查询、公钥签名检查与客户端 acknowledge/重试；未配置服务公钥的构建保留已有客户端模式。无产品账号，不上传薪资、排班或记录。",
+      "approval_scope": "本轮 T21 Cloudflare 实施与 Android 接入；生产启用仍需实际配置、隐私披露和许可测试",
       "approved_at": "2026-09-21",
       "requirements": [
         "FR-16",
@@ -211,9 +210,14 @@
       "remaining_configurations": [
         "CFG-BACKEND"
       ],
-      "revised_at": "2026-09-23",
-      "superseded": "2026-09-21：首发采用小型服务端验证服务",
-      "rationale": "iOS PlusEntitlement 为纯客户端 StoreKit，无服务端；Play 客户端查询已给出到期语义，不需推算；独立服务增加部署、凭据、运维与 Data safety 负担。已知代价：退款/撤销在下一次成功查询时才生效，客户端可被 root 篡改。"
+      "revised_at": "2026-10-04",
+      "superseded": "2026-09-23：首发纯客户端、T21 延后且优先 Vercel；保留当时已实现的客户端校验与 acknowledge。",
+      "rationale": "Play Billing Purchase 没有可用于提前预约闹钟的精确订阅到期时刻。用户选择 Cloudflare Worker/D1 获取 Google 已验证时刻；不能用购买时间、商品周期或离线缓存期限猜算。",
+      "approval_evidence": {
+        "source": "current_conversation_user_message",
+        "date": "2026-10-04",
+        "text": "好的，现在开始做这个后端服务吧，需要我做什么的话可以给我指引，我来操作。"
+      }
     },
     {
       "id": "D-09",
@@ -332,11 +336,13 @@
     {
       "id": "CFG-BACKEND",
       "decision_id": "D-08",
-      "status": "DEFERRED",
-      "description": "（后续阶段）部署位置优先现有 Vercel、Publisher API 身份、RTDN 配置",
-      "blocks": "仅阻塞首发后的 服务端验证阶段（T21）",
+      "status": "PENDING_CONFIGURATION",
+      "description": "Cloudflare Worker/D1 api.doneat.app；Google 项目 august-edge-217210；购买查询身份 doneat-billing@august-edge-217210.iam.gserviceaccount.com；RTDN 主题 doneat-play-rtdn。部署配置与实测证据只见 docs/android/progress.md，许可购买与隐私发布仍是生产启用门禁。",
+      "blocks": "T21 生产启用和已验证到期时刻的设备验收",
       "does_not_block": "Independent source audit, Kotlin domain implementation, and local tests/UI",
-      "evidence": []
+      "evidence": [
+        "2026-10-04 用户确认 doneat.app DNS 在 Cloudflare，具有 Play 权限管理权限，提供项目 ID 与查询服务账号；确认已配置 Play RTDN 主题。"
+      ]
     },
     {
       "id": "CFG-PLAY-ACCOUNT",
