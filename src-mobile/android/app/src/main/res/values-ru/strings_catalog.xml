@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">Расширения циферблата</string>
     <string name="appleWatchFeaturesSection">Возможности</string>
     <string name="appleWatchIntro">Взгляните на запястье, чтобы узнать, на каком этапе ваш рабочий день.</string>
-    <string name="appleWatchLearnMore">Узнать о возможностях Apple Watch</string>
     <string name="appleWatchPrivacyNote">После синхронизации Watch следует сохранённому расписанию даже без сети. Зарплата и записи о работе остаются на iPhone.</string>
     <string name="appleWatchSetupFace">Нажмите и удерживайте циферблат, нажмите «Изменить», затем выберите DoneAt для расширения.</string>
     <string name="appleWatchSetupInstall">Установите DoneAt через приложение Watch на iPhone или через App Store на Apple Watch.</string>
@@ -1069,14 +1068,11 @@
     <string name="watchWaitingForIPhone">Ожидание iPhone</string>
     <string name="watchWidgetDescription">Оставшееся время и прогресс до конца работы.</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">С DoneAt Plus будильник звонит за выбранное время до каждой смены и учитывает праздники, изменения графика и запланированный отпуск. Включите его в разделе %1$s.</string>
     <string name="whatsNewContinue">Продолжить</string>
-    <string name="whatsNewHolidayBody">Теперь расписание может учитывать национальный календарь праздников. Откройте %1$s и выберите страну или регион, чтобы включить его.</string>
-    <string name="whatsNewHolidayTitle">Праздники и перенесённые рабочие дни</string>
-    <string name="whatsNewSmartStackBody">Live-активность обратного отсчёта теперь получила отдельный компактный вид на Apple Watch.</string>
-    <string name="whatsNewSmartStackTitle">Обратный отсчёт для смарт-стопки</string>
+    <string name="whatsNewLeaveBody">Укажите остаток отпуска и отгулов, и DoneAt найдёт самые длинные периоды отдыха на год вперёд с учётом праздников и ваших смен, а затем добавит выбранный план в расписание. Откройте %2$s → %1$s; первые 3 плана — бесплатно.</string>
+    <string name="whatsNewReportsBody">С DoneAt Plus можно пересмотреть каждую неделю, месяц и год работы и отдыха в короткой анимации, с зарплатой или без. Отчёты находятся в разделе %1$s.</string>
     <string name="whatsNewTitle">Что нового</string>
-    <string name="whatsNewWatchBody">Статус, оставшееся время, прогресс и время окончания работы одним взглядом. Круглое кольцо прогресса или прямоугольное расширение с оставшимся временем и временем окончания работы.</string>
-    <string name="whatsNewWatchTitle">Ваш рабочий день на Apple Watch</string>
     <string name="widgetDescription">Сразу видно, сколько рабочего времени осталось.</string>
     <string name="widgetOpenToRefresh">Откройте приложение, чтобы обновить</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

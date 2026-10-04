@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">Komplikasi watch face</string>
     <string name="appleWatchFeaturesSection">Fitur</string>
     <string name="appleWatchIntro">Lihat sekilas ke pergelangan tangan Anda untuk tahu sampai mana hari kerja Anda.</string>
-    <string name="appleWatchLearnMore">Pelajari fitur Apple Watch</string>
     <string name="appleWatchPrivacyNote">Setelah sinkronisasi, Watch mengikuti jadwal tersimpan, bahkan saat offline. Gaji dan catatan kerja tetap di iPhone.</string>
     <string name="appleWatchSetupFace">Sentuh dan tahan watch face Anda, ketuk Edit, lalu pilih DoneAt untuk komplikasi.</string>
     <string name="appleWatchSetupInstall">Instal DoneAt dari app Watch di iPhone Anda, atau dari App Store di Apple Watch.</string>
@@ -1060,14 +1059,11 @@
     <string name="watchWaitingForIPhone">Menunggu iPhone</string>
     <string name="watchWidgetDescription">Sisa waktu dan kemajuan sampai pulang.</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">Dengan DoneAt Plus, alarm membangunkan Anda pada waktu yang Anda pilih sebelum setiap sif dan mengikuti hari libur, perubahan jadwal, dan cuti yang direncanakan. Aktifkan di %1$s.</string>
     <string name="whatsNewContinue">Lanjutkan</string>
-    <string name="whatsNewHolidayBody">Jadwal Anda kini dapat mengikuti kalender hari libur nasional. Buka %1$s dan pilih negara atau wilayah untuk mengaktifkannya.</string>
-    <string name="whatsNewHolidayTitle">Hari libur dan hari kerja pengganti</string>
-    <string name="whatsNewSmartStackBody">Live Activity hitung mundur kini punya tata letak ringkasnya sendiri di Apple Watch.</string>
-    <string name="whatsNewSmartStackTitle">Hitung mundur yang dibuat untuk Smart Stack</string>
+    <string name="whatsNewLeaveBody">Masukkan sisa cuti Anda, lalu DoneAt mencari libur terpanjang dalam setahun ke depan berdasarkan hari libur dan sif Anda sendiri, kemudian menambahkan rencana pilihan ke jadwal Anda. Mulai dari %1$s di %2$s; 3 rencana pertama gratis.</string>
+    <string name="whatsNewReportsBody">Dengan DoneAt Plus, lihat kembali setiap minggu, bulan, dan tahun kerja serta istirahat dalam animasi singkat, dengan atau tanpa gaji. Temukan di %1$s.</string>
     <string name="whatsNewTitle">Yang baru</string>
-    <string name="whatsNewWatchBody">Status, sisa waktu, kemajuan, dan waktu pulang Anda sekilas. Cincin kemajuan bundar, atau sisa waktu dan waktu pulang Anda dalam bentuk persegi panjang.</string>
-    <string name="whatsNewWatchTitle">Hari kerjamu di Apple Watch</string>
     <string name="widgetDescription">Lihat sisa waktu kerja Anda sekilas.</string>
     <string name="widgetOpenToRefresh">Buka aplikasi untuk memperbarui</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

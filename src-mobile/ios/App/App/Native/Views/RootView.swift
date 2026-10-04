@@ -155,11 +155,7 @@ struct OffWorkCountdownRootView: View {
         )) {
             WhatsNewView(
                 text: runtime.text,
-                onDismiss: { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) },
-                onLearnAboutWatch: {
-                    scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus)
-                    scene.presentedRoute = .appleWatch
-                }
+                onDismiss: { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) }
             )
                 .presentationBackground(.clear)
         }

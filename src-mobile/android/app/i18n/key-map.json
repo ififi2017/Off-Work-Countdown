@@ -215,9 +215,6 @@
     "appleWatchIntro": {
       "resource": "string/appleWatchIntro"
     },
-    "appleWatchLearnMore": {
-      "resource": "string/appleWatchLearnMore"
-    },
     "appleWatchPrivacyNote": {
       "resource": "string/appleWatchPrivacyNote"
     },
@@ -3679,32 +3676,30 @@
         "end"
       ]
     },
+    "whatsNewAlarmsBody": {
+      "resource": "string/whatsNewAlarmsBody",
+      "params": [
+        "settings"
+      ]
+    },
     "whatsNewContinue": {
       "resource": "string/whatsNewContinue"
     },
-    "whatsNewHolidayBody": {
-      "resource": "string/whatsNewHolidayBody",
+    "whatsNewLeaveBody": {
+      "resource": "string/whatsNewLeaveBody",
       "params": [
-        "schedule"
+        "leave",
+        "settings"
       ]
     },
-    "whatsNewHolidayTitle": {
-      "resource": "string/whatsNewHolidayTitle"
-    },
-    "whatsNewSmartStackBody": {
-      "resource": "string/whatsNewSmartStackBody"
-    },
-    "whatsNewSmartStackTitle": {
-      "resource": "string/whatsNewSmartStackTitle"
+    "whatsNewReportsBody": {
+      "resource": "string/whatsNewReportsBody",
+      "params": [
+        "records"
+      ]
     },
     "whatsNewTitle": {
       "resource": "string/whatsNewTitle"
-    },
-    "whatsNewWatchBody": {
-      "resource": "string/whatsNewWatchBody"
-    },
-    "whatsNewWatchTitle": {
-      "resource": "string/whatsNewWatchTitle"
     },
     "widgetDescription": {
       "resource": "string/widgetDescription",

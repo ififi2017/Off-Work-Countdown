@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">กลไกหน้าปัดนาฬิกา</string>
     <string name="appleWatchFeaturesSection">คุณสมบัติ</string>
     <string name="appleWatchIntro">แค่เหลือบดูข้อมือก็รู้ว่าวันทำงานของคุณไปถึงไหนแล้ว</string>
-    <string name="appleWatchLearnMore">ดูฟีเจอร์ Apple Watch</string>
     <string name="appleWatchPrivacyNote">หลังซิงค์ Watch จะทำงานตามตารางที่บันทึกไว้แม้ออฟไลน์ เงินเดือนและบันทึกงานยังอยู่บน iPhone</string>
     <string name="appleWatchSetupFace">แตะค้างที่หน้าปัด แตะแก้ไข แล้วเลือก DoneAt สำหรับกลไกหน้าปัด</string>
     <string name="appleWatchSetupInstall">ติดตั้ง DoneAt จากแอป Watch บน iPhone หรือจาก App Store บน Apple Watch</string>
@@ -1060,14 +1059,11 @@
     <string name="watchWaitingForIPhone">กำลังรอ iPhone</string>
     <string name="watchWidgetDescription">เวลาที่เหลือและความคืบหน้าจนถึงเวลาเลิกงาน</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">เมื่อใช้ DoneAt Plus นาฬิกาปลุกจะดังก่อนเริ่มแต่ละกะตามเวลาที่คุณตั้งไว้ และปรับตามวันหยุด การเปลี่ยนตาราง และวันลาที่วางแผนไว้ เปิดใช้ได้ใน %1$s</string>
     <string name="whatsNewContinue">ดำเนินการต่อ</string>
-    <string name="whatsNewHolidayBody">ตอนนี้ตารางงานของคุณใช้ปฏิทินวันหยุดประจำชาติได้แล้ว เปิด %1$s แล้วเลือกประเทศหรือภูมิภาคเพื่อเปิดใช้</string>
-    <string name="whatsNewHolidayTitle">วันหยุดและวันทำงานชดเชย</string>
-    <string name="whatsNewSmartStackBody">กิจกรรมสดของตัวนับถอยหลังตอนนี้มีเลย์เอาต์ขนาดกะทัดรัดเฉพาะบน Apple Watch แล้ว</string>
-    <string name="whatsNewSmartStackTitle">ตัวนับถอยหลังที่ออกแบบมาสำหรับวิดเจ็ตซ้อนอัจฉริยะ</string>
+    <string name="whatsNewLeaveBody">ใส่วันลาที่เหลือ แล้ว DoneAt จะหาช่วงหยุดยาวที่สุดในหนึ่งปีข้างหน้าจากวันหยุดและกะของคุณเอง พร้อมเพิ่มแผนที่เลือกลงในตารางงาน เริ่มได้ที่ %2$s → %1$s ดูแผนได้ฟรี 3 ครั้งแรก</string>
+    <string name="whatsNewReportsBody">เมื่อใช้ DoneAt Plus ย้อนดูการทำงานและการพักผ่อนของแต่ละสัปดาห์ เดือน และปีเป็นแอนิเมชันสั้นๆ เลือกได้ว่าจะแสดงรายได้หรือไม่ ดูได้ใน %1$s</string>
     <string name="whatsNewTitle">มีอะไรใหม่</string>
-    <string name="whatsNewWatchBody">สถานะ เวลาที่เหลือ ความคืบหน้า และเวลาเลิกงานของคุณในที่เดียว วงแหวนความคืบหน้าทรงกลม หรือเวลาที่เหลือและเวลาเลิกงานของคุณในกลไกทรงสี่เหลี่ยม</string>
-    <string name="whatsNewWatchTitle">วันทำงานของคุณบน Apple Watch</string>
     <string name="widgetDescription">ดูเวลาทำงานที่เหลือได้อย่างรวดเร็ว</string>
     <string name="widgetOpenToRefresh">เปิดแอปเพื่อรีเฟรช</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">Tổ hợp mặt đồng hồ</string>
     <string name="appleWatchFeaturesSection">Tính năng</string>
     <string name="appleWatchIntro">Chỉ cần liếc nhìn cổ tay là biết ngày làm việc của bạn đã đến đâu.</string>
-    <string name="appleWatchLearnMore">Tìm hiểu về các tính năng Apple Watch</string>
     <string name="appleWatchPrivacyNote">Sau khi đồng bộ, Watch chạy theo lịch đã lưu ngay cả khi ngoại tuyến. Lương và hồ sơ công việc vẫn ở trên iPhone.</string>
     <string name="appleWatchSetupFace">Chạm và giữ mặt đồng hồ, chạm vào Chỉnh sửa, sau đó chọn DoneAt cho một tổ hợp.</string>
     <string name="appleWatchSetupInstall">Cài đặt DoneAt từ ứng dụng Watch trên iPhone, hoặc từ App Store trên Apple Watch.</string>
@@ -1060,14 +1059,11 @@
     <string name="watchWaitingForIPhone">Đang chờ iPhone</string>
     <string name="watchWidgetDescription">Thời gian còn lại và tiến độ cho đến khi tan ca.</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">Với DoneAt Plus, báo thức sẽ đánh thức bạn trước mỗi ca theo khoảng thời gian bạn chọn, tự điều chỉnh theo ngày lễ, thay đổi lịch và kỳ nghỉ đã lên kế hoạch. Bật trong %1$s.</string>
     <string name="whatsNewContinue">Tiếp tục</string>
-    <string name="whatsNewHolidayBody">Lịch làm việc giờ có thể theo lịch ngày lễ quốc gia. Mở %1$s và chọn quốc gia hoặc khu vực để bật.</string>
-    <string name="whatsNewHolidayTitle">Ngày lễ và ngày làm bù</string>
-    <string name="whatsNewSmartStackBody">Hoạt động trực tiếp của bộ đếm ngược giờ đây có bố cục gọn gàng riêng trên Apple Watch.</string>
-    <string name="whatsNewSmartStackTitle">Bộ đếm ngược dành cho Ngăn xếp thông minh</string>
+    <string name="whatsNewLeaveBody">Nhập số ngày phép còn lại, DoneAt sẽ dựa vào ngày lễ và ca làm của bạn để tìm kỳ nghỉ dài nhất trong một năm tới, rồi thêm kế hoạch bạn chọn vào lịch làm việc. Bắt đầu tại %2$s → %1$s; 3 kế hoạch đầu tiên miễn phí.</string>
+    <string name="whatsNewReportsBody">Với DoneAt Plus, xem lại công việc và nghỉ ngơi của mỗi tuần, tháng và năm qua một đoạn hoạt ảnh ngắn, có hoặc không kèm lương. Xem trong %1$s.</string>
     <string name="whatsNewTitle">Có gì mới</string>
-    <string name="whatsNewWatchBody">Trạng thái, thời gian còn lại, tiến độ và giờ tan ca của bạn, xem trong nháy mắt. Vòng tiến độ hình tròn, hoặc thời gian còn lại và giờ tan ca của bạn trong tổ hợp hình chữ nhật.</string>
-    <string name="whatsNewWatchTitle">Ngày làm việc của bạn trên Apple Watch</string>
     <string name="widgetDescription">Xem nhanh thời gian làm việc còn lại.</string>
     <string name="widgetOpenToRefresh">Mở ứng dụng để làm mới</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>

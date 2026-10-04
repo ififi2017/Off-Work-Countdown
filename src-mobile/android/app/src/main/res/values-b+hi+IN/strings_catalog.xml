@@ -34,7 +34,6 @@
     <string name="appleWatchComplicationsTitle">वॉच फ़ेस कॉम्प्लिकेशन</string>
     <string name="appleWatchFeaturesSection">सुविधाएँ</string>
     <string name="appleWatchIntro">अपनी कलाई पर एक नज़र डालकर देखें आपका कार्यदिवस कहाँ तक पहुँचा है।</string>
-    <string name="appleWatchLearnMore">Apple Watch सुविधाओं के बारे में जानें</string>
     <string name="appleWatchPrivacyNote">सिंक होने के बाद Watch ऑफ़लाइन भी आपके सेव किए शेड्यूल के अनुसार चलता है। वेतन और काम के रिकॉर्ड iPhone पर रहते हैं।</string>
     <string name="appleWatchSetupFace">अपनी वॉच फ़ेस को छूकर रखें, संपादित करें पर टैप करें, फिर कॉम्प्लिकेशन के लिए DoneAt चुनें।</string>
     <string name="appleWatchSetupInstall">अपने iPhone पर Watch ऐप से, या Apple Watch पर App Store से DoneAt इंस्टॉल करें।</string>
@@ -1063,14 +1062,11 @@
     <string name="watchWaitingForIPhone">iPhone की प्रतीक्षा हो रही है</string>
     <string name="watchWidgetDescription">छुट्टी तक बचा समय और प्रगति।</string>
     <string name="weekdayRange">%1$s–%2$s</string>
+    <string name="whatsNewAlarmsBody">DoneAt Plus के साथ, हर शिफ़्ट से आपके चुने समय पहले अलार्म बजता है और सार्वजनिक अवकाशों, शेड्यूल में बदलाव और तय छुट्टियों का ध्यान रखता है। इसे %1$s में चालू करें।</string>
     <string name="whatsNewContinue">जारी रखें</string>
-    <string name="whatsNewHolidayBody">आपका शेड्यूल अब राष्ट्रीय अवकाश कैलेंडर का पालन कर सकता है। इसे चालू करने के लिए %1$s खोलें और देश या क्षेत्र चुनें।</string>
-    <string name="whatsNewHolidayTitle">छुट्टियाँ और प्रतिपूरक कार्यदिवस</string>
-    <string name="whatsNewSmartStackBody">काउंटडाउन की लाइव ऐक्टिविटी को अब Apple Watch पर अपना खास कॉम्पैक्ट लेआउट मिल गया है।</string>
-    <string name="whatsNewSmartStackTitle">स्मार्ट स्टैक के लिए बना काउंटडाउन</string>
+    <string name="whatsNewLeaveBody">अपनी बची छुट्टियाँ दर्ज करें, और DoneAt सार्वजनिक अवकाशों और आपकी शिफ़्टों के हिसाब से अगले एक साल में सबसे लंबा आराम ढूँढेगा, फिर चुनी गई योजना आपके शेड्यूल में जोड़ देगा। %2$s → %1$s से शुरू करें; पहली 3 योजनाएँ मुफ़्त हैं।</string>
+    <string name="whatsNewReportsBody">DoneAt Plus के साथ, हर हफ़्ते, महीने और साल के काम और आराम को एक छोटे ऐनिमेशन में देखें, वेतन के साथ या उसके बिना। ये %1$s में मिलेंगी।</string>
     <string name="whatsNewTitle">नया क्या है</string>
-    <string name="whatsNewWatchBody">एक नज़र में स्थिति, बचा हुआ समय, प्रगति और आपके छूटने का समय। एक गोल प्रगति रिंग, या एक आयताकार में बचा हुआ समय और आपके छूटने का समय।</string>
-    <string name="whatsNewWatchTitle">Apple Watch पर आपका कार्यदिवस</string>
     <string name="widgetDescription">अपने बाकी काम के समय पर एक नज़र डालें।</string>
     <string name="widgetOpenToRefresh">रीफ़्रेश करने के लिए ऐप खोलें</string>
     <string name="widgetPickerLarge">DoneAt · 4×4</string>
