@@ -10,6 +10,16 @@ enum OWCMotion {
     /// A compact state panel settling under the control that changed it.
     static let stateEnter = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.18)
     static let navigation = Animation.snappy(duration: 0.28)
+    static let onboardingPage = Animation.snappy(duration: 0.32)
+    /// The user's clock moves into its system surface while the surrounding copy changes.
+    static let onboardingContinuity = Animation.smooth(duration: 0.5)
+    static let onboardingDisclosure = Animation.smooth(duration: 0.3, extraBounce: 0)
+    static let offerFloat = Animation.easeInOut(duration: 2.6)
+    static let offerPeek = Animation.easeInOut(duration: 0.9).delay(1.8)
+    /// A single, silent hand settling into the brand's five-o'clock pose.
+    static let welcomeHand = Animation.timingCurve(0.16, 1, 0.3, 1, duration: 0.9)
+    static let welcomeArrival = Animation.smooth(duration: 0.5)
+    static let welcomeStagger = 0.07
     static let phase = Animation.smooth(duration: 0.28)
     /// A report's background hands over on the same clock as its chapter.
     static let reportBackdropDuration = 0.5

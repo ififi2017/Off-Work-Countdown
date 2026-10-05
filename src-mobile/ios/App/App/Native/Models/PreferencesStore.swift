@@ -597,9 +597,6 @@ final class PreferencesStore {
             guard !didApplyOnboardingReminderDefaults else { return }
             didApplyOnboardingReminderDefaults = true
             _ = applyPreferences {
-                $0.lunchEnabled = true
-                $0.lunchStartReminderEnabled = true
-                $0.lunchEndReminderEnabled = true
                 if $0.notificationMode == .off { $0.notificationMode = .simple }
             }.synchronousResult
         }

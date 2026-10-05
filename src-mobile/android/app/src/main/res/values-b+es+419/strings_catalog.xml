@@ -48,16 +48,13 @@
     <string name="onboardingAllSetTitle">Tu rol de turnos está listo</string>
     <string name="onboardingCustomScheduleNote">Después podrás personalizar tu rol de turnos por completo en Configuración.</string>
     <string name="onboardingEverywhereTitle">Tu cuenta regresiva de un vistazo</string>
-    <string name="onboardingLandscapeBody">En horizontal la cuenta regresiva ocupa toda la pantalla: solo el reloj y la barra.</string>
-    <string name="onboardingPlusRestBody">Añade tus días y DoneAt encuentra descansos largos según feriados y turnos. Antes de cada turno, una alarma te despierta a la hora que elijas.</string>
-    <string name="onboardingPrivacyBody">Sin cuentas. La cuenta regresiva y los registros se quedan en este dispositivo, salvo que tú mires los planes o actives la sincronización con iCloud. Tus horas y tu sueldo nunca llegan al desarrollador.</string>
     <string name="onboardingPrivacyBodyLocal">Sin cuenta. La cuenta regresiva y tus registros se quedan en este dispositivo, y en la copia de seguridad de Android si la tienes activada. Los datos de trabajo y salario nunca se envían al desarrollador.</string>
     <string name="onboardingRemindersBody">El almuerzo pausa la cuenta regresiva. Los avisos llegan sin tener la app abierta.</string>
     <string name="onboardingRemindersMoreInSettings">Más opciones de aviso están en Configuración.</string>
-    <string name="onboardingSidebarBody">Contrae la barra lateral y la cuenta regresiva llena la pantalla: solo el reloj y la barra.</string>
     <string name="ongoingNote">Desde la hora de inicio que elijas, una notificación silenciosa hace la cuenta regresiva hasta la salida en el panel de notificaciones y en la pantalla de bloqueo. Los ajustes de batería pueden retrasar un poco su aparición.</string>
     <string name="ongoingNotification">Notificación de cuenta regresiva</string>
     <string name="plusBenefitLeave">Planificar vacaciones según feriados y turnos</string>
+    <string name="plusTrialAnytimeBody">Cancela en Configuración y no se te cobrará nada.</string>
     <string name="recordsClearDayConfirm">¿Deshacer tu cambio en este día? Volverá a seguir el rol de turnos y el calendario de feriados.</string>
     <string name="recordsClearDayDetail">El día vuelve a seguir el rol de turnos y el calendario de feriados.</string>
     <string name="recordsConfirmScheduled">Seguir el rol de turnos</string>
@@ -76,15 +73,17 @@
     <string name="reportIncomeNote">Estimado a partir de tu configuración salarial y registros.</string>
     <string name="rulesErrorBanner">Las reglas del temporizador no están disponibles. Tu rol de turnos sigue activo.</string>
     <string name="scheduleClearExpectedMessage">Borra los turnos automáticos desde hoy. Se conservan las fechas pasadas, los días con tiempo registrado y los cambios manuales. Las fechas futuras ya no se rellenarán con meses anteriores ni feriados. Los cambios se aplican al guardar.</string>
+    <string name="scheduleCurrentMonthActive">Según tu rol de turnos</string>
     <string name="scheduleFreeCalendar">Rol de turnos libre</string>
+    <string name="scheduleNextMonthPlanned">Según el rol de turnos del próximo mes</string>
     <string name="scheduleOff">Sin rol de turnos aún</string>
+    <string name="scheduleOffDescription">Sin rol de turnos fijo. Inicia tú el temporizador cada día.</string>
     <string name="scheduleOffManualStart">Inicio manual de la cuenta regresiva</string>
     <string name="settings">Configuración</string>
     <string name="shiftAlarmsDeniedNote">Permite las alarmas para DoneAt en Configuración y empezarán a programarse.</string>
     <string name="shiftAlarmsOpenSettings">Abrir Configuración</string>
     <string name="syncPrivacyDetail">Su rol de turnos, salario, recordatorios, apariencia, idioma, perfil de vida, registros y datos de Focus se sincronizan a través de su base de datos privada de iCloud. El permiso de notificación, la protección biométrica y las actividades en vivo permanecen en este dispositivo.</string>
     <string name="watchCacheCorrupt">No se pudo leer el rol de turnos guardado. Abre DoneAt en tu iPhone.</string>
-    <string name="whatsNewAlarmsBody">Con DoneAt Plus, una alarma te despierta con la antelación que elijas antes de cada turno y tiene en cuenta los feriados, los cambios en tu rol de turnos y las vacaciones planificadas. Actívala en %1$s.</string>
-    <string name="whatsNewLeaveBody">Añade tus días de vacaciones disponibles y DoneAt encontrará los descansos más largos del próximo año según los feriados y tus propios turnos; el plan que elijas se añade a tu rol de turnos con un toque. Empieza en %1$s, dentro de %2$s; los 3 primeros planes son gratis.</string>
+    <string name="whatsNewLeaveBody">Añade tus días disponibles y DoneAt encuentra descansos más largos según feriados y turnos. El plan que elijas se añade directamente a tu rol de turnos.</string>
     <string name="workSchedule">Horas y rol de turnos</string>
 </resources>

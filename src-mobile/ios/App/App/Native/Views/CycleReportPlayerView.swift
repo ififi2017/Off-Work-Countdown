@@ -200,7 +200,7 @@ struct CycleReportPlayerView: View {
             }
             .accessibilityHidden(true)
             HStack {
-                Text("\(text.t(snapshot.period.kind.titleKey)) · \(copy.periodTitle(snapshot.period))".uppercased())
+                Text(verbatim: "\(text.t(snapshot.period.kind.titleKey)) · \(copy.periodTitle(snapshot.period))".uppercased())
                     .font(.caption2.weight(.bold))
                     .tracking(1.4)
                     .foregroundStyle(.white.opacity(0.6))
@@ -343,7 +343,7 @@ struct CycleReportPlayerView: View {
 
     private func yearBars(_ values: [Double], label: String, color: Color = ReportPalette.orange) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("\(text.t("reportMonthlyTrend")) · \(label)")
+            Text(verbatim: "\(text.t("reportMonthlyTrend")) · \(label)")
                 .font(.footnote.weight(.semibold)).foregroundStyle(.white.opacity(0.65))
             ReportMetricBars(values: values, labels: monthLabels, build: b, color: color)
                 .frame(height: 230)
@@ -386,7 +386,7 @@ struct CycleReportPlayerView: View {
             } else {
                 heading(eyebrow: text.t("reportRestDays"), hero: text.formatCount(shown), size: 1.25,
                         caption: nil, appear: ReportEase.window(b, 0, 0.18))
-                Text("\(text.t("reportLongestRest")) · \(copy.days(snapshot.longestRestRun))")
+                Text(verbatim: "\(text.t("reportLongestRest")) · \(copy.days(snapshot.longestRestRun))")
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(ReportPalette.cream)
                     .opacity(ReportEase.window(b, 0.86, 1))
@@ -395,7 +395,7 @@ struct CycleReportPlayerView: View {
             }
             Spacer(minLength: 12)
             if snapshot.period.kind == .year {
-                Text("\(text.t("reportLeaveUsed")) · \(copy.leaveDays(halfDays: snapshot.leaveUsedHalfDays))")
+                Text(verbatim: "\(text.t("reportLeaveUsed")) · \(copy.leaveDays(halfDays: snapshot.leaveUsedHalfDays))")
                     .font(.subheadline).foregroundStyle(.white.opacity(0.75)).padding(.bottom, 20)
                 yearBars(snapshot.months.map { Double($0.restDayCount) }, label: text.t("reportRestDays"), color: ReportPalette.moon)
             } else {
@@ -561,7 +561,7 @@ struct CycleReportPlayerView: View {
                 heading(eyebrow: text.t("reportFocusRounds"), hero: text.formatCount(shown), size: 1.5,
                         caption: copy.focusBest(focus, snapshot: snapshot), appear: ReportEase.window(b, 0, 0.2))
                 Spacer(minLength: 16)
-                Text("\(text.t("reportFocusDuration")) · \(copy.hours(focus.focusedMs))")
+                Text(verbatim: "\(text.t("reportFocusDuration")) · \(copy.hours(focus.focusedMs))")
                     .font(.subheadline).foregroundStyle(.white.opacity(0.75)).padding(.bottom, 16)
                 if snapshot.period.kind == .year {
                     yearBars(snapshot.months.map { Double($0.focusRounds) }, label: text.t("reportFocusRounds"), color: ReportPalette.gold)

@@ -100,7 +100,7 @@ struct FocusTaskEditorFields: View {
                         "minutes": "\(focus.focusTimerSettings.normalized.focusMinutes)"
                        ]), isLast: true) {
                     Stepper(value: $draft.pomodoros, in: minimumPomodoros...max(maximumPomodoros ?? 12, draft.pomodoros, minimumPomodoros)) {
-                        Text("\(draft.pomodoros)")
+                        Text(verbatim: "\(draft.pomodoros)")
                     }
                     .labelsHidden()
                     .accessibilityLabel(focus.t("focusEstimate"))

@@ -3,11 +3,18 @@ import Foundation
 /// Durable eligibility for the system App Store review prompt.
 ///
 /// Following App Store Review Guideline 5.6.1, we call the system review API
-/// directly without a custom pre-prompt. Throttling ensures respectful usage:
+/// directly without a custom pre-prompt. Because nothing softens that sheet,
+/// it is only offered at a natural pause the user has just watched happen —
+/// the clock-off celebration in the app — and never on launch, where Apple's
+/// guidance says not to ask. Throttling keeps it respectful:
+/// - Shifts finished on at least `minimumCompletedDays` different days since
+///   the last request, so one trial day is not mistaken for a habit
 /// - At most once per app version (CFBundleShortVersionString)
-/// - At least 120 days between triggers
+/// - At least 120 days between requests
 /// The system itself limits display to 3 times per year.
 nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
+    /// Only `.never` still changes behaviour. The other two cases are what
+    /// earlier versions stored, kept so their saved state still decodes.
     enum Phase: String, Codable, Sendable {
         case waitingForCompletion
         case readyForNextLaunch
@@ -15,72 +22,48 @@ nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
     }
 
     static let minimumIntervalDays: Int = 120
+    static let minimumCompletedDays: Int = 3
     private static let minimumIntervalMs: Double = Double(minimumIntervalDays) * 24 * 60 * 60 * 1_000
 
     var phase: Phase = .waitingForCompletion
-    var readyCompletionAtMs: Double?
-    var handledCompletionAtMs: Double?
     var lastTriggeredVersion: String?
     var lastTriggeredAtMs: Double?
+    /// Different days with a finished shift since the last request. Optional
+    /// so state written before this field existed decodes as zero.
+    var completedDays: Int?
+    var lastCompletedDayKey: String?
 
-    mutating func noteCompletion(atMs completionAtMs: Double) {
-        guard phase == .waitingForCompletion,
-              completionAtMs > (handledCompletionAtMs ?? 0)
-        else { return }
-        phase = .readyForNextLaunch
-        readyCompletionAtMs = completionAtMs
+    /// Counts a finished shift once per calendar day, however many times that
+    /// day's completion is noted.
+    mutating func noteCompletion(dayKey: String) {
+        guard phase != .never, dayKey != lastCompletedDayKey else { return }
+        completedDays = (completedDays ?? 0) + 1
+        lastCompletedDayKey = dayKey
     }
 
-    /// Captures a shift that ended while the app was not running and returns
-    /// whether this cold launch may present the prompt.
-    mutating func isEligibleOnLaunch(
-        trackedCompletionAtMs: Double?,
-        nowMs: Double
-    ) -> Bool {
-        guard phase != .never else { return false }
-        if phase == .waitingForCompletion,
-           let trackedCompletionAtMs,
-           trackedCompletionAtMs <= nowMs {
-            noteCompletion(atMs: trackedCompletionAtMs)
-        }
-        return phase == .readyForNextLaunch
+    /// Undoes `noteCompletion` when the user carries on working that day.
+    mutating func revokeCompletion(dayKey: String) {
+        guard dayKey == lastCompletedDayKey, let days = completedDays, days > 0 else { return }
+        completedDays = days - 1
+        lastCompletedDayKey = nil
     }
 
-    /// Returns whether the system review should be triggered, applying throttling.
-    /// Call this after `isEligibleOnLaunch` returns true.
-    func shouldTriggerSystemReview(currentVersion: String, nowMs: Double) -> Bool {
-        guard phase == .readyForNextLaunch else { return false }
-        if let lastVersion = lastTriggeredVersion, lastVersion == currentVersion {
-            return false
-        }
-        if let lastMs = lastTriggeredAtMs, nowMs - lastMs < Self.minimumIntervalMs {
-            return false
-        }
+    /// Whether this pause may show the system review request.
+    func isDue(currentVersion: String, nowMs: Double) -> Bool {
+        guard phase != .never, (completedDays ?? 0) >= Self.minimumCompletedDays else { return false }
+        if lastTriggeredVersion == currentVersion { return false }
+        if let lastMs = lastTriggeredAtMs, nowMs - lastMs < Self.minimumIntervalMs { return false }
         return true
     }
 
-    /// Records that the system review was triggered. Call this after requesting
-    /// the system review.
+    /// Records the request and starts counting days afresh for the next one.
     mutating func recordTrigger(version: String, atMs: Double) {
         lastTriggeredVersion = version
         lastTriggeredAtMs = atMs
-        if let readyCompletionAtMs {
-            handledCompletionAtMs = max(handledCompletionAtMs ?? 0, readyCompletionAtMs)
-        }
-        phase = .waitingForCompletion
-        readyCompletionAtMs = nil
+        completedDays = 0
     }
 
     mutating func disable() {
         phase = .never
-        readyCompletionAtMs = nil
-    }
-
-    mutating func revokeCompletion(atMs completionAtMs: Double) {
-        guard phase == .readyForNextLaunch,
-              readyCompletionAtMs == completionAtMs
-        else { return }
-        phase = .waitingForCompletion
-        readyCompletionAtMs = nil
     }
 }

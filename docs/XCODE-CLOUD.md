@@ -68,6 +68,8 @@ Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差�
 | Xcode 26.6／iOS 26.5 SDK | 已用于 018 当前实现的自动化测试 | 现有 iOS 26 路径与数据兼容 |
 | Xcode 26.6／watchOS 26.5 SDK＋Simulator runtime 23T570 | 已用于 shipping Watch 构建、WatchAppTests 与配对模拟器通信检查 | Watch 目标、嵌入与 WatchConnectivity 模拟验证（不代替真机） |
 | 含 iOS 27 SDK 的 Xcode | 2026-09-19 已用于完整 802 项 iOS 测试及手机 UI 走查 | 证明当前实现可构建，不代表 P4 Duo 专属适配完成 |
-| 含 iOS 27.1 SDK 的 Xcode | 本机尚未提供 | ArrangementView／Duo 分区的编译与回归 |
+| Xcode 27.1／iOS 27.1 SDK | 2026-10-05 已用于 PR #299 的构建和 Duo 分区模拟验证 | 折痕布局与展开内容双列；真机覆盖范围见发布前评审 R14／R15 |
 
 新 SDK 路径必须使用对应工具链验证；`#available` 不能使旧 SDK 识别它没有声明的 API。Duo 的模拟验证和真机体验分别记录，不互相代替。
+
+`AdaptiveDisplayLayout.horizontalFoldEdges` 将 `GeometryProxy.reservedRegions` 集中在一个编译期保护内：`canImport(SwiftUICore, _version: 8.0.85.27)` 对应本机已验证的 iOS 27.1 SDK 模块版本，内部仍检查 iOS 27.1 运行时。旧 SDK 构建不查询折痕，但仍保留基于窗口宽度的展开双列。新 SDK 下可用 `SWIFT_ACTIVE_COMPILATION_CONDITIONS='DEBUG DONEAT_DISABLE_RESERVED_REGIONS'` 编译验证回退路径；此参数只用于本地验证，不写入项目或 Cloud 工作流默认配置。要交付自动半折检测，归档工具链也必须包含该 API，旧 SDK 成功构建不代表启用了半折检测。

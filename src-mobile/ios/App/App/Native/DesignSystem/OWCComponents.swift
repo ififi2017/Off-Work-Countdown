@@ -305,13 +305,14 @@ struct OWCRow<Accessory: View>: View {
                     // except at accessibility sizes, where the accessory has
                     // already moved onto its own line and the title can use
                     // the full width.
-                    .lineLimit(stacksAccessory ? 3 : (subtitle == nil ? 1 : 2))
+                    .lineLimit(stacksAccessory ? nil : (subtitle == nil ? 1 : 2))
+                    .fixedSize(horizontal: false, vertical: stacksAccessory)
                     .minimumScaleFactor(stacksAccessory || subtitle != nil ? 1 : 0.85)
                 if let subtitle {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
-                        .lineLimit(3)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 3)
                         // Chinese at footnote size sets very tight by default;
                         // a wrapped subtitle read as one solid block. Scaled to
                         // match the 4pt the body copy above these rows uses.
@@ -407,6 +408,7 @@ struct OWCDetailAccessory: View {
 /// trailing chevron in each feature. That makes the hit target, separator and
 /// alignment consistent across Records, Settings and future detail screens.
 struct OWCDisclosureRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let title: String
     var subtitle: String? = nil
     let isLast: Bool
@@ -417,12 +419,13 @@ struct OWCDisclosureRow: View {
                 Text(title)
                     .font(.body)
                     .foregroundStyle(OWCDesign.primary)
-                    .lineLimit(subtitle == nil ? 1 : 2)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : (subtitle == nil ? 1 : 2))
+                    .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
                 if let subtitle {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
-                        .lineLimit(3)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 3)
                         .lineSpacing(3)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -494,6 +497,37 @@ struct OWCRowButtonStyle: ButtonStyle {
                 content
                     .background(configuration.isPressed ? OWCDesign.control : .clear)
                     .opacity(configuration.isPressed ? 0.82 : 1)
+            }
+    }
+}
+
+extension View {
+    /// Opens `items` as a menu from this whole row while the row itself stays
+    /// in its scroll view.
+    ///
+    /// A `Menu` lifts its label into the menu presentation and flies it back
+    /// when the menu closes. With a full-width row as the label, the swipe that
+    /// closes the menu also scrolls the page, and the lifted row glided back on
+    /// its own path, detached from the card around it. Here the row is drawn
+    /// outside the menu and ignores touches; the menu's label is an empty hit
+    /// area above it, so the only thing the menu owns is the press highlight,
+    /// which has faded by the time the menu is open.
+    func owcRowMenu<Items: View>(
+        accessibilityLabel: String,
+        cornerRadius: CGFloat = 0,
+        @ViewBuilder items: () -> Items
+    ) -> some View {
+        allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .overlay {
+                Menu(content: items) {
+                    Color.clear.contentShape(.rect(cornerRadius: cornerRadius))
+                }
+                .buttonStyle(OWCRowButtonStyle())
+                .clipShape(.rect(cornerRadius: cornerRadius))
+                .accessibilityLabel(accessibilityLabel)
+                .accessibilityHidden(false)
+                .allowsHitTesting(true)
             }
     }
 }

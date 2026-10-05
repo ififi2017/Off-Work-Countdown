@@ -152,14 +152,16 @@ struct PreferencesDomainTests {
         let model = PreferencesStore(defaults: defaults, records: records)
         let initial = records.state
         model.applyOnboardingReminderDefaultsIfNeeded()
-        #expect(model.lunchEnabled)
+        #expect(!model.lunchEnabled)
         #expect(model.notificationMode == .simple)
         #expect(model.applyPreferences { $0.notificationMode = .off }.synchronousResult)
         model.applyOnboardingReminderDefaultsIfNeeded()
         #expect(model.notificationMode == .off)
+        #expect(!model.lunchEnabled)
         #expect(records.state == initial)
         model.completeSetup(enableNotifications: true)
         let saved = records.state
+        #expect(saved.syncedPreferences?.lunchEnabled == false)
         #expect(saved.syncedPreferences?.notificationMode == .simple)
         #expect(saved.syncedPreferences?.editCount == 1)
         model.completeSetup(enableNotifications: true)
@@ -169,5 +171,25 @@ struct PreferencesDomainTests {
         #expect(records.state == saved)
         #expect(records.state.periods.isEmpty)
         #expect(records.state.observations.isEmpty)
+    }
+
+    @Test("Setup preserves the user's lunch choice through reminder defaults and reopening", arguments: [false, true])
+    func setupPreservesLunchChoice(enabled: Bool) throws {
+        let suite = "PreferencesDomainLunch.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let records = RecordCoordinator.inMemory()
+        let model = PreferencesStore(defaults: defaults, records: records)
+        #expect(!model.lunchEnabled)
+        // Exercise both opting in and opting back out before finishing setup.
+        model.applyPreferences { $0.lunchEnabled = true }
+        model.applyPreferences { $0.lunchEnabled = enabled }
+        model.applyOnboardingReminderDefaultsIfNeeded()
+        #expect(model.lunchEnabled == enabled)
+        #expect(records.state.syncedPreferences == nil)
+        model.completeSetup(enableNotifications: true)
+        #expect(records.state.syncedPreferences?.lunchEnabled == enabled)
+        let reopened = PreferencesStore(defaults: defaults, records: records)
+        #expect(reopened.lunchEnabled == enabled)
     }
 }

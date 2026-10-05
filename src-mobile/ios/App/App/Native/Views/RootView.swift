@@ -28,7 +28,8 @@ struct OffWorkCountdownRootView: View {
                     shifts: runtime.shifts,
                     recovery: runtime.recovery,
                     actions: runtime.recordActions,
-                    text: runtime.text
+                    text: runtime.text,
+                    onFinish: finishOnboarding
                 )
                     // Only the outgoing side scales. Scaling the incoming app
                     // meant its layout settled at a different size than it
@@ -101,6 +102,9 @@ struct OffWorkCountdownRootView: View {
             if presented { paywallPresentationActive = true }
             scene.writeQASurfaceMarker(onboardingComplete: runtime.preferences.onboardingComplete, hasSeenPlusIntro: runtime.plus.hasSeenIntro)
         }
+        .sheet(isPresented: Bindable(scene).showsLifetimeOffer) {
+            LifetimeOfferSheet(plus: runtime.plus, text: runtime.text)
+        }
         .sheet(item: Bindable(scene).dayEditor) { draft in
             NavigationStack {
                 RecordDayEditView(draft: draft, actions: runtime.recordActions)
@@ -155,6 +159,7 @@ struct OffWorkCountdownRootView: View {
         )) {
             WhatsNewView(
                 text: runtime.text,
+                plus: runtime.plus,
                 onDismiss: { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) }
             )
                 .presentationBackground(.clear)
@@ -224,6 +229,18 @@ struct OffWorkCountdownRootView: View {
         .environment(scene)
     }
 
+    private func finishOnboarding() {
+        runtime.plus.hasSeenIntro = runtime.plus.isAuthorized
+        scene.selectedTab = .timer
+        scene.showsReleaseNotes = false
+        Task {
+            await runtime.shifts.completeSetup(
+                holidayRegionIdentifier: scene.onboardingHolidayRegionIdentifier
+                    ?? HolidayCalendar.shared.defaultRegionIdentifier() ?? ""
+            ).value
+        }
+    }
+
     private var introPaywallTransition: AnyTransition {
         reduceMotion
             ? .opacity
@@ -274,6 +291,7 @@ struct OffWorkCountdownRootView: View {
     ) -> Bool {
         scene.paywallSheet != nil
             || paywallPresentationActive
+            || scene.showsLifetimeOffer
             || scene.pendingPlusAction != nil
             || scene.dayEditor != nil
             || scene.timerSheet != nil
@@ -334,20 +352,33 @@ private struct AppReviewPromptModifier: ViewModifier {
     let shifts: ShiftSessionStore
     let isBlocked: Bool
     @Environment(\.requestReview) private var requestReview
+    @State private var handledOffer = 0
+
+    private struct Trigger: Equatable {
+        let offer: Int
+        let isBlocked: Bool
+    }
 
     func body(content: Content) -> some View {
         content
-        .task(id: presentationGate) {
-            guard presentationGate else { return }
-            try? await Task.sleep(for: .milliseconds(650))
-            guard !Task.isCancelled, presentationGate else { return }
-            guard shifts.claimReviewPromptIfEligible() else { return }
+        // Offered by the clock-off celebration, and asked only once its
+        // five-second animation has finished: the sheet follows the moment
+        // instead of covering it. If anything covers the screen or the app
+        // leaves the foreground first, that moment has passed and the offer
+        // is dropped rather than raised later out of context.
+        .task(id: Trigger(offer: shifts.reviewRequestOffer, isBlocked: isBlocked)) {
+            let offer = shifts.reviewRequestOffer
+            guard offer > handledOffer else { return }
+            guard !isBlocked else {
+                handledOffer = offer
+                return
+            }
+            try? await Task.sleep(for: .seconds(6))
+            guard !Task.isCancelled else { return }
+            handledOffer = offer
+            guard shifts.claimReviewRequest() else { return }
             requestReview()
             shifts.recordReviewTriggered()
         }
-    }
-
-    private var presentationGate: Bool {
-        shifts.preferences.onboardingComplete && shifts.plus.hasSeenIntro && !isBlocked
     }
 }

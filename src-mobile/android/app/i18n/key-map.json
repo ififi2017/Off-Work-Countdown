@@ -2046,31 +2046,31 @@
       "resource": "string/onboardingBack"
     },
     "onboardingCustomScheduleNote": {
-      "resource": "string/onboardingCustomScheduleNote"
+      "resource": "string/onboardingCustomScheduleNote",
+      "androidOnly": true
     },
     "onboardingEnableBiometrics": {
       "resource": "string/onboardingEnableBiometrics",
       "params": [
         "biometry"
-      ]
-    },
-    "onboardingEverywhereBody": {
-      "resource": "string/onboardingEverywhereBody"
-    },
-    "onboardingEverywhereBodyTablet": {
-      "resource": "string/onboardingEverywhereBodyTablet"
+      ],
+      "androidOnly": true
     },
     "onboardingEverywhereTitle": {
       "resource": "string/onboardingEverywhereTitle"
     },
+    "onboardingExplore": {
+      "resource": "string/onboardingExplore"
+    },
+    "onboardingExplorePlus": {
+      "resource": "string/onboardingExplorePlus"
+    },
     "onboardingFinaleMessage": {
-      "resource": "string/onboardingFinaleMessage"
+      "resource": "string/onboardingFinaleMessage",
+      "androidOnly": true
     },
-    "onboardingLandscapeBody": {
-      "resource": "string/onboardingLandscapeBody"
-    },
-    "onboardingLandscapeTitle": {
-      "resource": "string/onboardingLandscapeTitle"
+    "onboardingLockSurface": {
+      "resource": "string/onboardingLockSurface"
     },
     "onboardingLunchNotifyHint": {
       "resource": "string/onboardingLunchNotifyHint"
@@ -2079,10 +2079,8 @@
       "resource": "string/onboardingOfflineBody"
     },
     "onboardingOfflineTitle": {
-      "resource": "string/onboardingOfflineTitle"
-    },
-    "onboardingPlusFocusBody": {
-      "resource": "string/onboardingPlusFocusBody"
+      "resource": "string/onboardingOfflineTitle",
+      "androidOnly": true
     },
     "onboardingPlusFocusBreakBody": {
       "resource": "string/onboardingPlusFocusBreakBody"
@@ -2093,36 +2091,28 @@
     "onboardingPlusFocusTitle": {
       "resource": "string/onboardingPlusFocusTitle"
     },
-    "onboardingPlusLifeBody": {
-      "resource": "string/onboardingPlusLifeBody"
-    },
     "onboardingPlusRecordsActual": {
       "resource": "string/onboardingPlusRecordsActual"
-    },
-    "onboardingPlusRecordsBody": {
-      "resource": "string/onboardingPlusRecordsBody"
     },
     "onboardingPlusRecordsTitle": {
       "resource": "string/onboardingPlusRecordsTitle"
     },
-    "onboardingPlusRestBody": {
-      "resource": "string/onboardingPlusRestBody"
+    "onboardingPlusReportsTitle": {
+      "resource": "string/onboardingPlusReportsTitle"
     },
     "onboardingPlusRestTitle": {
       "resource": "string/onboardingPlusRestTitle"
     },
-    "onboardingPrivacyBody": {
-      "resource": "string/onboardingPrivacyBody"
+    "onboardingPlusShowcaseTitle": {
+      "resource": "string/onboardingPlusShowcaseTitle"
     },
     "onboardingPrivacyBodyLocal": {
       "resource": "string/onboardingPrivacyBodyLocal",
       "androidOnly": true
     },
     "onboardingPrivacyTitle": {
-      "resource": "string/onboardingPrivacyTitle"
-    },
-    "onboardingPrivacyWorkBody": {
-      "resource": "string/onboardingPrivacyWorkBody"
+      "resource": "string/onboardingPrivacyTitle",
+      "androidOnly": true
     },
     "onboardingRemindersBody": {
       "resource": "string/onboardingRemindersBody"
@@ -2141,7 +2131,8 @@
       "resource": "string/onboardingSalaryLockBody",
       "params": [
         "biometry"
-      ]
+      ],
+      "androidOnly": true
     },
     "onboardingScheduleBody": {
       "resource": "string/onboardingScheduleBody"
@@ -2149,23 +2140,31 @@
     "onboardingScheduleTitle": {
       "resource": "string/onboardingScheduleTitle"
     },
+    "onboardingSetMyShift": {
+      "resource": "string/onboardingSetMyShift"
+    },
     "onboardingShiftBody": {
-      "resource": "string/onboardingShiftBody"
+      "resource": "string/onboardingShiftBody",
+      "androidOnly": true
     },
-    "onboardingSidebarBody": {
-      "resource": "string/onboardingSidebarBody"
-    },
-    "onboardingSidebarTitle": {
-      "resource": "string/onboardingSidebarTitle"
+    "onboardingShiftPreview": {
+      "resource": "string/onboardingShiftPreview"
     },
     "onboardingStartExperience": {
-      "resource": "string/onboardingStartExperience"
+      "resource": "string/onboardingStartExperience",
+      "androidOnly": true
+    },
+    "onboardingStartUsing": {
+      "resource": "string/onboardingStartUsing"
     },
     "onboardingSystemBody": {
       "resource": "string/onboardingSystemBody"
     },
     "onboardingSystemTitle": {
       "resource": "string/onboardingSystemTitle"
+    },
+    "onboardingWidgetSurface": {
+      "resource": "string/onboardingWidgetSurface"
     },
     "ongoingNote": {
       "resource": "string/ongoingNote",
@@ -2217,6 +2216,9 @@
     },
     "perWorkday": {
       "resource": "string/perWorkday"
+    },
+    "plusAllBenefits": {
+      "resource": "string/plusAllBenefits"
     },
     "plusAndroidComingSoon": {
       "resource": "string/plusAndroidComingSoon",
@@ -2271,6 +2273,9 @@
     "plusBenefitLife": {
       "resource": "string/plusBenefitLife"
     },
+    "plusBenefitReports": {
+      "resource": "string/plusBenefitReports"
+    },
     "plusBenefitShiftAlarms": {
       "resource": "string/plusBenefitShiftAlarms"
     },
@@ -2298,6 +2303,9 @@
     "plusGracePeriod": {
       "resource": "string/plusGracePeriod"
     },
+    "plusIllustration": {
+      "resource": "string/plusIllustration"
+    },
     "plusIntroBody": {
       "resource": "string/plusIntroBody"
     },
@@ -2322,11 +2330,53 @@
     "plusMonthly": {
       "resource": "string/plusMonthly"
     },
+    "plusOfferClaim": {
+      "resource": "string/plusOfferClaim"
+    },
+    "plusOfferDeadline": {
+      "resource": "string/plusOfferDeadline",
+      "params": [
+        "date"
+      ]
+    },
+    "plusOfferPreview": {
+      "resource": "string/plusOfferPreview"
+    },
+    "plusOfferRemaining": {
+      "resource": "string/plusOfferRemaining"
+    },
+    "plusOfferSavings": {
+      "resource": "string/plusOfferSavings",
+      "params": [
+        "discount"
+      ]
+    },
+    "plusOfferTerms": {
+      "resource": "string/plusOfferTerms"
+    },
+    "plusOfferTitle": {
+      "resource": "string/plusOfferTitle"
+    },
+    "plusOfferUnavailable": {
+      "resource": "string/plusOfferUnavailable"
+    },
+    "plusOfferWelcome": {
+      "resource": "string/plusOfferWelcome"
+    },
+    "plusOfferWelcomeBack": {
+      "resource": "string/plusOfferWelcomeBack"
+    },
     "plusOwnedBody": {
       "resource": "string/plusOwnedBody"
     },
     "plusOwnedTitle": {
       "resource": "string/plusOwnedTitle"
+    },
+    "plusPerMonth": {
+      "resource": "string/plusPerMonth",
+      "params": [
+        "price"
+      ]
     },
     "plusPrivacy": {
       "resource": "string/plusPrivacy"
@@ -2355,9 +2405,6 @@
     "plusShiftAlarmsLocked": {
       "resource": "string/plusShiftAlarmsLocked"
     },
-    "plusSkip": {
-      "resource": "string/plusSkip"
-    },
     "plusStartTrialShort": {
       "resource": "string/plusStartTrialShort"
     },
@@ -2381,6 +2428,9 @@
     },
     "plusStatusTrial": {
       "resource": "string/plusStatusTrial"
+    },
+    "plusStoryBody": {
+      "resource": "string/plusStoryBody"
     },
     "plusSubscribe": {
       "resource": "string/plusSubscribe"
@@ -2406,8 +2456,35 @@
     "plusThanksTitle": {
       "resource": "string/plusThanksTitle"
     },
+    "plusTrialAnytime": {
+      "resource": "string/plusTrialAnytime"
+    },
+    "plusTrialAnytimeBody": {
+      "resource": "string/plusTrialAnytimeBody"
+    },
     "plusTrialBadge": {
       "resource": "string/plusTrialBadge"
+    },
+    "plusTrialEnd": {
+      "resource": "string/plusTrialEnd"
+    },
+    "plusTrialEndBody": {
+      "resource": "string/plusTrialEndBody",
+      "params": [
+        "price"
+      ]
+    },
+    "plusTrialThen": {
+      "resource": "string/plusTrialThen",
+      "params": [
+        "price"
+      ]
+    },
+    "plusTrialToday": {
+      "resource": "string/plusTrialToday"
+    },
+    "plusTrialTodayBody": {
+      "resource": "string/plusTrialTodayBody"
     },
     "plusUnavailable": {
       "resource": "string/plusUnavailable"
@@ -3286,7 +3363,8 @@
       "resource": "string/scheduleNextMonthPlanned"
     },
     "scheduleOff": {
-      "resource": "string/scheduleOff"
+      "resource": "string/scheduleOff",
+      "androidOnly": true
     },
     "scheduleOffDescription": {
       "resource": "string/scheduleOffDescription"
@@ -3691,26 +3769,16 @@
       ]
     },
     "whatsNewAlarmsBody": {
-      "resource": "string/whatsNewAlarmsBody",
-      "params": [
-        "settings"
-      ]
+      "resource": "string/whatsNewAlarmsBody"
     },
     "whatsNewContinue": {
       "resource": "string/whatsNewContinue"
     },
     "whatsNewLeaveBody": {
-      "resource": "string/whatsNewLeaveBody",
-      "params": [
-        "leave",
-        "settings"
-      ]
+      "resource": "string/whatsNewLeaveBody"
     },
     "whatsNewReportsBody": {
-      "resource": "string/whatsNewReportsBody",
-      "params": [
-        "records"
-      ]
+      "resource": "string/whatsNewReportsBody"
     },
     "whatsNewTitle": {
       "resource": "string/whatsNewTitle"

@@ -26,6 +26,7 @@ export const PRODUCT_IDS = {
   monthly: "com.rainif.offworkcountdown.plus.monthly",
   yearly: "com.rainif.offworkcountdown.plus.yearly",
   lifetime: "com.rainif.offworkcountdown.plus.lifetime",
+  lifetimeOffer: "com.rainif.offworkcountdown.plus.lifetime.offer",
 };
 
 const NAME_MAX = 30;
@@ -145,14 +146,14 @@ export function validateIapConfig(config) {
   validateLength(config.reviewNote, "reviewNote", REVIEW_NOTE_MAX);
   validateLocalizationMap(config.groupLocalizations, "groupLocalizations", { descriptionRequired: false });
   expectObject(config.products, "products");
-  const expected = [PRODUCT_IDS.monthly, PRODUCT_IDS.yearly, PRODUCT_IDS.lifetime];
+  const expected = Object.values(PRODUCT_IDS);
   if (Object.keys(config.products).sort().join(",") !== expected.slice().sort().join(",")) {
     fail(`products must be ${expected.join(", ")}.`);
   }
   for (const [productId, product] of Object.entries(config.products)) {
     expectObject(product, `products.${productId}`);
     if (!KINDS.has(product.kind)) fail(`products.${productId}.kind must be subscription or nonConsumable.`);
-    const expectedKind = productId === PRODUCT_IDS.lifetime ? "nonConsumable" : "subscription";
+    const expectedKind = [PRODUCT_IDS.lifetime, PRODUCT_IDS.lifetimeOffer].includes(productId) ? "nonConsumable" : "subscription";
     if (product.kind !== expectedKind) {
       fail(`products.${productId}.kind must be ${expectedKind}.`);
     }

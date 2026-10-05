@@ -9,6 +9,7 @@ struct CelebratingBrandMark: View {
     var playsOnAppear = false
     var accessibilityTitle = OWCBrand.shortName
     var isActive = true
+    var entranceRotation: Angle = .zero
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -27,7 +28,7 @@ struct CelebratingBrandMark: View {
         Button(action: registerTap) {
             OWCBrandMark(
                 isPressed: isPlaying,
-                handRotation: .degrees(handRotation),
+                handRotation: .degrees(handRotation + entranceRotation.degrees),
                 showsDepth: showsDepth
             )
             .opacity(pulse ? 0.80 : 1)

@@ -33,7 +33,6 @@
     <string name="notificationPrivacyNote">Notifications contain rota and progress only—never salary.</string>
     <string name="onboardingAllSetTitle">That’s your rota</string>
     <string name="onboardingCustomScheduleNote">You can fully customise your rota later in Settings.</string>
-    <string name="onboardingPlusRestBody">Add your leave and DoneAt finds longer breaks around bank holidays and your shifts. Before each shift, an alarm wakes you at the time you choose.</string>
     <string name="openSourceLicenses">Open-source licences</string>
     <string name="plusBenefitLeave">Plan time off around your bank holidays and shifts</string>
     <string name="recordsClearDayConfirm">Undo your change to this day? It goes back to what the rota and bank holiday calendar say.</string>
@@ -49,12 +48,14 @@
     <string name="reportBasisNote">Based on your records and saved rota. Planned hours aren’t attendance records.</string>
     <string name="rulesErrorBanner">Countdown rules are unavailable. Your rota is still on.</string>
     <string name="scheduleClearExpectedMessage">Clear automatic shifts from today onward. Keep past dates, days with timing records and manual changes. Future dates will no longer be filled from earlier months or bank holidays. Changes take effect when you save.</string>
+    <string name="scheduleCurrentMonthActive">From your rota</string>
     <string name="scheduleFreeCalendar">Free rota</string>
+    <string name="scheduleNextMonthPlanned">From next month’s rota</string>
     <string name="scheduleOff">No rota yet</string>
+    <string name="scheduleOffDescription">No fixed rota. Start the timer yourself each day.</string>
     <string name="syncPrivacyDetail">Your work rota, salary, reminders, appearance, language, Life profile, records and Focus data sync through your private iCloud database. Notification permission, biometric protection and Live Activities stay on this device.</string>
     <string name="wallpaperColors">Use wallpaper colours</string>
     <string name="watchCacheCorrupt">The saved rota couldn’t be read. Open DoneAt on your iPhone.</string>
-    <string name="whatsNewAlarmsBody">With DoneAt Plus, an alarm wakes you a set time before each shift and follows bank holidays, rota changes and planned time off. Turn it on in %1$s.</string>
-    <string name="whatsNewLeaveBody">Add your leave balances and DoneAt finds the longest breaks around bank holidays and your own shifts in the year ahead, then adds the plan you pick to your rota. Start from %1$s in %2$s; your first 3 plans are free.</string>
+    <string name="whatsNewLeaveBody">Add your leave balances and DoneAt finds longer breaks around bank holidays and your shifts. Pick one and it goes straight onto your rota.</string>
     <string name="workSchedule">Hours &amp; rota</string>
 </resources>

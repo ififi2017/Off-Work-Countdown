@@ -62,6 +62,9 @@ private struct LaunchPlaceholder: View {
         .padding(.horizontal, 24)
         .padding(.bottom, 88)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-        .background(Color(.systemBackground))
+        // Grouped, like LaunchScreen.storyboard and every first screen after
+        // it. Plain systemBackground is white in light mode, so launch went
+        // white, then flipped to the grey page the instant the app appeared.
+        .background(Color(.systemGroupedBackground))
     }
 }

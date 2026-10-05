@@ -10,9 +10,7 @@
     ]
   },
   "identifier" : "DE63966E",
-  "nonRenewingSubscriptions" : [
-
-  ],
+  "nonRenewingSubscriptions" : [],
   "products" : [
     {
       "displayPrice" : "24.99",
@@ -108,6 +106,101 @@
       "productID" : "com.rainif.offworkcountdown.plus.lifetime",
       "referenceName" : "Plus Lifetime",
       "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "18.99",
+      "familyShareable" : true,
+      "internalID" : "6819062722",
+      "localizations" : [
+        {
+          "description" : "شراء لمرة. مشاركة عائلية",
+          "displayName" : "Plus مدى الحياة",
+          "locale" : "ar"
+        },
+        {
+          "description" : "一次买断，支持家庭共享",
+          "displayName" : "Plus 终身",
+          "locale" : "zh_Hans"
+        },
+        {
+          "description" : "Разово. Семейный доступ",
+          "displayName" : "Plus навсегда",
+          "locale" : "ru"
+        },
+        {
+          "description" : "一次買斷，支援家庭共享",
+          "displayName" : "Plus 終身",
+          "locale" : "zh_Hant"
+        },
+        {
+          "description" : "ซื้อครั้งเดียว แชร์กับครอบครัว",
+          "displayName" : "Plus ตลอดชีพ",
+          "locale" : "th"
+        },
+        {
+          "description" : "One-time unlock. Family Sharing included",
+          "displayName" : "Plus Lifetime",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "एक बार खरीदें. परिवार साझा",
+          "displayName" : "Plus आजीवन",
+          "locale" : "hi"
+        },
+        {
+          "description" : "Mua một lần. Chia sẻ gia đình",
+          "displayName" : "Plus Trọn đời",
+          "locale" : "vi"
+        },
+        {
+          "description" : "Compra única. En familia",
+          "displayName" : "Plus De por vida",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "Einmalkauf. Teilen mit Familie",
+          "displayName" : "Plus Lebenslang",
+          "locale" : "de"
+        },
+        {
+          "description" : "평생 구매. 가족 공유 포함",
+          "displayName" : "Plus 평생",
+          "locale" : "ko"
+        },
+        {
+          "description" : "Achat unique. Partage familial",
+          "displayName" : "Plus À vie",
+          "locale" : "fr"
+        },
+        {
+          "description" : "Tek seferlik. Aile Paylaşımı",
+          "displayName" : "Plus Ömür boyu",
+          "locale" : "tr"
+        },
+        {
+          "description" : "買い切り。ファミリー共有に対応",
+          "displayName" : "Plus 買い切り",
+          "locale" : "ja"
+        },
+        {
+          "description" : "Beli sekali. Berbagi keluarga",
+          "displayName" : "Plus Seumur hidup",
+          "locale" : "id"
+        },
+        {
+          "description" : "Acquisto unico. In famiglia",
+          "displayName" : "Plus A vita",
+          "locale" : "it"
+        },
+        {
+          "description" : "Compra única. Compartilhamento familiar",
+          "displayName" : "Plus Vitalício",
+          "locale" : "pt_BR"
+        }
+      ],
+      "productID" : "com.rainif.offworkcountdown.plus.lifetime.offer",
+      "referenceName" : "Plus Lifetime Offer",
+      "type" : "NonConsumable"
     }
   ],
   "settings" : {
@@ -118,13 +211,11 @@
     "_developerTeamID" : "3GSK5B9S3T",
     "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 809854860.90250802,
+    "_lastSynchronizedDate" : 809854860.902508,
     "_locale" : "en_US",
     "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
-    "_storeKitErrors" : [
-
-    ],
+    "_storeKitErrors" : [],
     "_timeRate" : 0
   },
   "subscriptionGroups" : [
@@ -220,9 +311,7 @@
       "name" : "plus",
       "subscriptions" : [
         {
-          "adHocOffers" : [
-
-          ],
+          "adHocOffers" : [],
           "billingPlans" : [
             {
               "billingPlanType" : "BILLED_UPFRONT",
@@ -232,16 +321,12 @@
               "isEnabled" : true
             }
           ],
-          "codeOffers" : [
-
-          ],
+          "codeOffers" : [],
           "displayPrice" : "1.99",
           "familyShareable" : false,
           "groupNumber" : 2,
           "internalID" : "6806745132",
-          "introductoryOffers" : [
-
-          ],
+          "introductoryOffers" : [],
           "localizations" : [
             {
               "description" : "Grafikler, yaşam, Odak ve iCloud",
@@ -334,14 +419,10 @@
           "referenceName" : "Plus Monthly",
           "subscriptionGroupID" : "22345761",
           "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
+          "winbackOffers" : []
         },
         {
-          "adHocOffers" : [
-
-          ],
+          "adHocOffers" : [],
           "billingPlans" : [
             {
               "billingPlanType" : "BILLED_UPFRONT",
@@ -351,9 +432,7 @@
               "isEnabled" : true
             }
           ],
-          "codeOffers" : [
-
-          ],
+          "codeOffers" : [],
           "displayPrice" : "9.99",
           "familyShareable" : false,
           "groupNumber" : 1,
@@ -466,9 +545,7 @@
           "referenceName" : "Plus Yearly",
           "subscriptionGroupID" : "22345761",
           "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
+          "winbackOffers" : []
         }
       ]
     }

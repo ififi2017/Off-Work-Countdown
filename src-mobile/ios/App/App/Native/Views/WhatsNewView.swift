@@ -2,127 +2,99 @@ import SwiftUI
 
 struct WhatsNewView: View {
     let text: AppText
+    let plus: PlusEntitlement
     let onDismiss: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var showsPlus = false
+    @State private var showsOffer = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @State private var revealed = false
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                Color.black.opacity(0.18).ignoresSafeArea()
-                ReleaseNotesCard(isRevealed: revealed, reduceMotion: reduceMotion) { card }
-                    .frame(maxWidth: 460)
-                    .frame(maxHeight: max(160, geometry.size.height - 40))
-                    .padding(.horizontal, 20)
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(verbatim: "DoneAt \(ReleaseNotes.current)")
+                            .font(.subheadline.weight(.semibold)).foregroundStyle(OWCDesign.accent)
+                        Text(text.t("whatsNewTitle"))
+                            .font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
+                    }
+                    OnboardingPlusBadge(text: text)
+                    PlusFeatureStage(text: text, initialSelection: 1, showsFocus: false)
+                    VStack(alignment: .leading, spacing: 20) {
+                        feature("suitcase", "leavePlanAction", "whatsNewLeaveBody")
+                        feature("alarm", "shiftAlarmsTitle", "whatsNewAlarmsBody")
+                        feature("chart.bar.xaxis", "reportEntryTitle", "whatsNewReportsBody")
+                    }
+                    if plus.hasAvailableLifetimeOffer {
+                        Button {
+                            if plus.revealLifetimeOffer(from: .update321) { showsOffer = true }
+                        } label: {
+                            VStack(spacing: 12) {
+                                OfferGiftIcon(size: 64)
+                                Text(text.t("plusOfferTitle")).font(.headline)
+                                Text(text.t("plusOfferWelcomeBack"))
+                                    .font(.subheadline).foregroundStyle(OWCDesign.secondary)
+                            }
+                            .multilineTextAlignment(.center)
+                            .padding(24).frame(maxWidth: .infinity)
+                            .background(OWCDesign.accent.opacity(0.06), in: RoundedRectangle(cornerRadius: OWCDesign.cardRadius))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    if case .pendingAskToBuy = plus.authorization {
+                        Text(text.t("plusWaitingApproval"))
+                            .font(.callout).foregroundStyle(OWCDesign.secondary)
+                    }
+                    if !plus.isAuthorized {
+                        Button(text.t("onboardingExplorePlus")) { showsPlus = true }
+                            .font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    Button(text.t("whatsNewContinue"), action: onDismiss)
+                        .buttonStyle(OWCPrimaryButtonStyle())
+                }
+                .padding(24)
+                .frame(maxWidth: 560)
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .onAppear {
-            withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter) { revealed = true }
+            .scrollBounceBehavior(.basedOnSize)
+            .background(OWCDesign.page)
+            .sheet(isPresented: $showsOffer) {
+                LifetimeOfferSheet(plus: plus, text: text)
+            }
+            .sheet(isPresented: $showsPlus) {
+                NavigationStack {
+                    PaywallView(plus: plus, text: text, showsDismissButton: false) { showsPlus = false }
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button(text.t("close")) { showsPlus = false }
+                            }
+                        }
+                }
+            }
         }
         .tint(OWCDesign.accent)
-        .accessibilityAction(.escape, onDismiss)
-    }
-
-    private var card: some View {
-        // The card takes its height from the text on the first pass. Measuring
-        // the text after layout opened it at one height and settled at another.
-        ViewThatFits(in: .vertical) {
-            content
-            ScrollView { content }
-                .scrollBounceBehavior(.basedOnSize)
-        }
-        .clipShape(.rect(cornerRadius: OWCDesign.cardRadius))
-        .overlay(alignment: .topTrailing) {
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 17, weight: .medium))
-                    .frame(width: 44, height: 44)
-                    .background(.regularMaterial, in: .circle)
+        .interactiveDismissDisabled()
+        .task {
+            await plus.checkCurrentEntitlements()
+            if ReleaseNotes.current == "3.2.1", plus.canOfferLifetime {
+                plus.inviteLifetimeOffer(from: .update321)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(text.t("close"))
-            .padding(12)
+            if !plus.isAuthorized, plus.products.isEmpty { await plus.loadProducts() }
         }
     }
 
-    private var content: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 5) {
-                Text(text.t("whatsNewTitle")).font(.title2.bold())
-                    .accessibilityAddTraits(.isHeader)
-                Text(verbatim: "DoneAt \(ReleaseNotes.current)")
-                    .font(.subheadline).foregroundStyle(.secondary)
-            }
-            .padding(.trailing, 36)
-            feature(
-                "suitcase", "leavePlanAction", "whatsNewLeaveBody",
-                bodyValues: ["leave": text.t("leaveTitle"), "settings": text.t("settings")]
-            )
-            feature(
-                "alarm", "shiftAlarmsTitle", "whatsNewAlarmsBody",
-                bodyValues: ["settings": text.t("settings")]
-            )
-            feature(
-                "play.circle", "reportEntryTitle", "whatsNewReportsBody",
-                bodyValues: ["records": text.t("recordsTab")]
-            )
-            Button(text.t("whatsNewContinue"), action: onDismiss)
-                .buttonStyle(.borderedProminent)
-                .frame(maxWidth: .infinity)
-        }
-        .padding(24)
-    }
-
-    private func feature(
-        _ symbol: String,
-        _ titleKey: String,
-        _ bodyKey: String,
-        bodyValues: [String: String] = [:]
-    ) -> some View {
+    private func feature(_ symbol: String, _ titleKey: String, _ bodyKey: String) -> some View {
         HStack(alignment: .top, spacing: 14) {
             if !dynamicTypeSize.isAccessibilitySize {
-                Image(systemName: symbol)
-                    .font(.system(size: 20)).foregroundStyle(OWCDesign.accent)
-                    .frame(width: 26, height: 26)
-                    .accessibilityHidden(true)
+                Image(systemName: symbol).font(.title3).foregroundStyle(OWCDesign.accent)
+                    .frame(width: 26).accessibilityHidden(true)
             }
             VStack(alignment: .leading, spacing: 5) {
                 Text(text.t(titleKey)).font(.headline)
-                Text(text.t(bodyKey, values: bodyValues)).font(.subheadline).foregroundStyle(.secondary)
+                Text(text.t(bodyKey)).font(.subheadline).foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .accessibilityElement(children: .combine)
-    }
-}
-
-/// Inserts the card whole, glass and text in one transition. Fading an
-/// already-inserted glass card with `.opacity` drew the glass before the text.
-private struct ReleaseNotesCard<Content: View>: View {
-    let isRevealed: Bool
-    let reduceMotion: Bool
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        if #available(iOS 26, *) {
-            GlassEffectContainer {
-                if isRevealed {
-                    content
-                        .glassEffect(.regular, in: .rect(cornerRadius: OWCDesign.cardRadius))
-                        .glassEffectTransition(.materialize)
-                        .transition(transition)
-                }
-            }
-        } else if isRevealed {
-            content
-                .background(.regularMaterial, in: .rect(cornerRadius: OWCDesign.cardRadius))
-                .transition(transition)
-        }
-    }
-
-    private var transition: AnyTransition {
-        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.97))
     }
 }

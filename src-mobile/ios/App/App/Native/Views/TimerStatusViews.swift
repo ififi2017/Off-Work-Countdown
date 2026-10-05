@@ -34,7 +34,9 @@ struct LunchBreakDesignView: View {
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(OWCDesign.secondary)
                                 .padding(.horizontal, 12)
-                                .frame(height: 26)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.vertical, 4)
+                                .frame(minHeight: 26)
                                 .background(OWCDesign.control)
                                 .clipShape(Capsule())
 
@@ -313,6 +315,7 @@ struct UnscheduledTimerView: View {
 }
 
 struct RestDayDesignView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 56
     let shifts: ShiftSessionStore
     let snapshot: NativeShiftSnapshot
@@ -327,7 +330,9 @@ struct RestDayDesignView: View {
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(OWCDesign.secondary)
                         .padding(.horizontal, 12)
-                        .frame(height: 26)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.vertical, 4)
+                        .frame(minHeight: 26)
                         .background(OWCDesign.control, in: Capsule())
                         .padding(.top, 28)
 
@@ -356,14 +361,16 @@ struct RestDayDesignView: View {
                                 Text(summaryText(weekSummary))
                                     .font(.subheadline.monospacedDigit())
                                     .foregroundStyle(OWCDesign.secondary)
-                                    .lineLimit(1)
+                                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                                    .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
                                     .minimumScaleFactor(0.66)
                             }
                             OWCRow(icon: "calendar.badge.clock", title: shifts.text.t("summaryThisYear"), isLast: true) {
                                 Text(summaryText(yearSummary))
                                     .font(.subheadline.monospacedDigit())
                                     .foregroundStyle(OWCDesign.secondary)
-                                    .lineLimit(1)
+                                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                                    .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
                                     .minimumScaleFactor(0.66)
                             }
                         }
@@ -589,6 +596,7 @@ struct CompletedShiftDesignView: View {
         guard shifts.lastCelebratedEndAtMs != celebrationToken else { return }
         shifts.markCelebrated(endAtMs: celebrationToken)
         celebrate()
+        shifts.offerReviewAfterCelebration(endAtMs: celebrationToken)
     }
 
     /// Paced against the five-second animation rather than fired at once: the

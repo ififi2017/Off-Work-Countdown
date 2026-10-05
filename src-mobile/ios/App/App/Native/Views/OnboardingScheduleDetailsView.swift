@@ -90,7 +90,7 @@ struct OnboardingScheduleDetailsView: View {
             OWCGroupCard {
                 Stepper(value: preferences.preferenceBinding(\.rotationWorkDays), in: 1...30) {
                     OWCRow(title: text.t("rotationWorkDays")) {
-                        Text("\(preferences.rotationWorkDays)")
+                        Text(verbatim: "\(preferences.rotationWorkDays)")
                             .monospacedDigit()
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -104,7 +104,7 @@ struct OnboardingScheduleDetailsView: View {
                 }
                 Stepper(value: preferences.preferenceBinding(\.rotationRestDays), in: 1...30) {
                     OWCRow(title: text.t("rotationRestDays")) {
-                        Text("\(preferences.rotationRestDays)")
+                        Text(verbatim: "\(preferences.rotationRestDays)")
                             .monospacedDigit()
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -116,7 +116,16 @@ struct OnboardingScheduleDetailsView: View {
                         .frame(height: 0.5)
                         .padding(.leading, 16)
                 }
-                Menu {
+                OWCRow(
+                    icon: "repeat",
+                    title: text.t("rotationStartDay", values: ["day": "\(preferences.rotationCycleDay)"]),
+                    isLast: true
+                ) {
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(OWCDesign.tertiary)
+                }
+                .owcRowMenu(accessibilityLabel: text.t("rotationStartDay", values: ["day": "\(preferences.rotationCycleDay)"])) {
                     ForEach(1...preferences.rotationCycleLength, id: \.self) { day in
                         Button {
                             preferences.applySetupScheduleChange(ScheduleFieldChange(rotationCycleDay: day))
@@ -130,18 +139,7 @@ struct OnboardingScheduleDetailsView: View {
                             )
                         }
                     }
-                } label: {
-                    OWCRow(
-                        icon: "repeat",
-                        title: text.t("rotationStartDay", values: ["day": "\(preferences.rotationCycleDay)"]),
-                        isLast: true
-                    ) {
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(OWCDesign.tertiary)
-                    }
                 }
-                .buttonStyle(OWCRowButtonStyle())
             }
         case .off:
             OWCGroupCard {

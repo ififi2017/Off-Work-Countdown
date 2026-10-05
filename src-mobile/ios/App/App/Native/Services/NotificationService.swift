@@ -69,7 +69,7 @@ final class NotificationService {
         let identifiers = await center.pendingNotificationRequests()
             .map(\.identifier)
             .filter { $0.hasPrefix("owc.focus.") }
-        center.removePendingNotificationRequests(withIdentifiers: identifiers)
+        await ShiftCenter.system.removePending(identifiers)
     }
     /// Notification-center operations shared by both channels; each owns separate IDs.
     struct ShiftCenter {
@@ -77,8 +77,8 @@ final class NotificationService {
         var pendingIDs: () async -> [String]
         var deliveredIDs: () async -> [String]
         var add: (UNNotificationRequest) async throws -> Void
-        var removePending: ([String]) -> Void
-        var removeDelivered: ([String]) -> Void
+        var removePending: ([String]) async -> Void
+        var removeDelivered: ([String]) async -> Void
 
         static let system = Self(
             authorization: {
@@ -93,8 +93,21 @@ final class NotificationService {
             pendingIDs: { await UNUserNotificationCenter.current().pendingNotificationRequests().map(\.identifier) },
             deliveredIDs: { await UNUserNotificationCenter.current().deliveredNotifications().map(\.request.identifier) },
             add: { try await UNUserNotificationCenter.current().add($0) },
-            removePending: { UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: $0) },
-            removeDelivered: { UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: $0) }
+            // These void APIs can synchronously wait on the notification
+            // daemon. Keep that IPC off MainActor, while awaiting completion
+            // so a replacement add cannot overtake its predecessor's removal.
+            removePending: { identifiers in
+                guard !identifiers.isEmpty else { return }
+                await Task.detached(priority: .utility) {
+                    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
+                }.value
+            },
+            removeDelivered: { identifiers in
+                guard !identifiers.isEmpty else { return }
+                await Task.detached(priority: .utility) {
+                    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
+                }.value
+            }
         )
     }
 
@@ -146,8 +159,8 @@ final class NotificationService {
     /// Which alert of a phase this is. A pomodoro owes the user two of them —
     /// the block ending and the break that follows it ending — and a suspended
     /// phone cannot be asked to compose the second one when it comes due, so
-    /// both are written at the same time. Fixed slots keep cancellation a
-    /// synchronous, exact-identifier operation.
+    /// both are written at the same time. Fixed slots keep cancellation an
+    /// exact-identifier operation, serialized with replacements.
     enum FocusAlertSlot: String, CaseIterable, Sendable {
         case end
         case breakEnd
@@ -199,7 +212,8 @@ final class NotificationService {
         // request resumes. Check ownership before it clears the shared focus
         // channel, not only after it has attempted to add its own request.
         guard isCurrent() else { return .superseded }
-        center.removePending(previous)
+        await center.removePending(previous)
+        guard isCurrent() else { return .superseded }
         // Restoring elapsed blocks must not open a permission prompt for
         // reminders that can no longer fire (or hold up the next phase).
         guard alerts.contains(where: { $0.at > .now }) else { return .scheduled }
@@ -238,7 +252,7 @@ final class NotificationService {
             do {
                 try await center.add(request)
             } catch {
-                center.removePending(written)
+                await center.removePending(written)
                 return .failed
             }
             written.append(identifier)
@@ -246,7 +260,7 @@ final class NotificationService {
             // what this phase wrote is safe; removing all focus notifications
             // here would reintroduce the race this guard closes.
             guard isCurrent() else {
-                center.removePending(written)
+                await center.removePending(written)
                 return .superseded
             }
         }
@@ -254,9 +268,13 @@ final class NotificationService {
     }
 
     static func cancelFocusTimer(id: UUID) {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: FocusAlertSlot.allCases.map { focusTimerIdentifier(id, slot: $0) }
-        )
+        let previous = pendingFocusOperation
+        let identifiers = FocusAlertSlot.allCases.map { focusTimerIdentifier(id, slot: $0) }
+        pendingFocusOperation = Task { @MainActor in
+            _ = await previous?.value
+            await ShiftCenter.system.removePending(identifiers)
+            return .scheduled
+        }
     }
 
     private static func focusTimerIdentifier(_ id: UUID, slot: FocusAlertSlot) -> String {
@@ -283,7 +301,7 @@ final class NotificationService {
         catch { return }
         guard generation == scheduleGeneration else { return }
         guard status == .allowed, shifts.session.publishesLiveSurfaces else {
-            center.removePending(Array(existingIdentifiers))
+            await center.removePending(Array(existingIdentifiers))
             return
         }
         let reminders = shifts.shiftReminders(at: now)
@@ -365,7 +383,7 @@ final class NotificationService {
 
         if allSucceeded, generation == scheduleGeneration, shifts.session.publishesLiveSurfaces {
             let stale = existingIdentifiers.subtracting(desiredIdentifiers)
-            center.removePending(Array(stale))
+            await center.removePending(Array(stale))
         }
     }
 
@@ -411,7 +429,7 @@ final class NotificationService {
             }
         }
         guard allSucceeded, generation == scheduleGeneration else { return }
-        center.removePending(Array(existing.subtracting(desired)))
+        await center.removePending(Array(existing.subtracting(desired)))
     }
 
     /// Clears after any in-flight add has completed, so stopping cannot leave
@@ -421,8 +439,8 @@ final class NotificationService {
             let pending = await self.shiftCenter.pendingIDs().filter { $0.hasPrefix("owc.shift.") }
             let delivered = await self.shiftCenter.deliveredIDs().filter { $0.hasPrefix("owc.shift.") }
             guard generation == self.scheduleGeneration else { return }
-            self.shiftCenter.removePending(pending)
-            self.shiftCenter.removeDelivered(delivered)
+            await self.shiftCenter.removePending(pending)
+            await self.shiftCenter.removeDelivered(delivered)
         }
     }
 }

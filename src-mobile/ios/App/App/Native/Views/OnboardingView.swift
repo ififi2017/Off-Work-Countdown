@@ -1,41 +1,28 @@
-import LocalAuthentication
 import SwiftUI
 import UIKit
 
 struct OnboardingView: View {
     @Environment(SceneState.self) private var scene
-    // Rounded display digits; no text style is this size.
-    @ScaledMetric(relativeTo: .largeTitle) private var heroNumberSize: CGFloat = 46
     @Bindable var preferences: PreferencesStore
     let shifts: ShiftSessionStore
     let recovery: RecoveryStore
     let actions: RecordsActions
     let text: AppText
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    let onFinish: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(NotificationService.self) private var notifications
-    /// Sampled once rather than read in `body`, which would build an
-    /// `LAContext` on every render.
-    @State private var biometry: LABiometryType = .none
     @State private var navigationFeedback = 0
-    /// One reference instant keeps every first-run surface demo in sync.
-    /// Reduce Motion renders this instant without starting a periodic timeline.
-    @State private var demoStartedAt = Date.now
     /// Read by the page transition. Set before `onboardingPage` changes so
     /// insertion and removal agree on direction for this hop.
     @State private var goingBack = false
     @State private var showsReturningUserSetup = false
+    @State private var visitedPages: Set<Int> = []
+    @State private var journeyReferenceDate = Date.now
+    @State private var continuesCountdown = false
+    @State private var glanceSurface: OnboardingSystemSurface = .widget
 
-    private static let pageAnimation = Animation.snappy(duration: 0.32)
-    /// A pure slide, deliberately without a cross-fade.
-    ///
-    /// `.opacity` on a transition sets `allowsGroupOpacity`, which forces the
-    /// whole outgoing *and* incoming page — screen-sized, and carrying blurred
-    /// shadows — into an offscreen transparency layer that has to be composited
-    /// again on every frame. At 120 Hz that is an 8.3 ms budget spent on two
-    /// full-screen offscreen renders plus their gaussian blurs, and it is what
-    /// made the paging feel sticky. Translating a layer costs Core Animation
-    /// almost nothing. Reduce Motion still cross-fades — see `pageTransition`.
+    /// Configuration pages slide in reading order. Result and system surfaces
+    /// cross-fade around the persistent clock; Reduce Motion uses a short fade.
     private static let forwardTransition = AnyTransition.asymmetric(
         insertion: .move(edge: .trailing),
         removal: .move(edge: .leading)
@@ -47,105 +34,65 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            // Every page is a fixed `VStack` sized for an upright phone at the
-            // default text size. The app supports landscape (see
-            // `UISupportedInterfaceOrientations`), and onboarding is shown
-            // before any size-class branching, so in landscape — and at
-            // accessibility text sizes — the three-row cards and the two
-            // buttons under them ran past the bottom of the screen and the
-            // continue button was clipped. On the very first launch that is the
-            // whole app.
-            //
-            // `minHeight: proxy.size.height` rather than a plain `ScrollView`:
-            // a scroll view proposes unbounded height, which collapses the
-            // `Spacer`s these pages use to centre themselves and would bunch
-            // every page against the top. With the minimum in place a page that
-            // fits lays out exactly as before and does not scroll at all;
-            // only one that does not fit becomes scrollable.
+            // Each page scrolls inside its own `OnboardingPageScaffold`, with
+            // its Continue pinned at the bottom. The pages used to share one
+            // scroll view here and carry their button at the end of their
+            // content, so on any screen shorter than the design — a 6.3"
+            // phone on the schedule page, landscape, accessibility sizes, and
+            // the 678 pt cover screen of an iPhone Duo — Continue slid below
+            // the fold and a tap aimed at it landed on whatever had moved up.
+            Group {
+                switch scene.onboardingPage {
+                case OnboardingPages.landing:
+                    welcome
+                case OnboardingPages.schedule:
+                    schedulePage
+                case OnboardingPages.reminders:
+                    OnboardingRemindersPage(
+                        preferences: preferences,
+                        shifts: shifts,
+                        text: text,
+                        onContinue: advanceFromReminders
+                    )
+                case OnboardingPages.ready:
+                    readyPage
+                case OnboardingPages.glance:
+                    glance
+                default:
+                    OnboardingPlusShowcasePage(text: text, onContinue: onFinish) {
+                        scene.paywallSheet = .intro
+                    }
+                }
+            }
+            .id(scene.onboardingPage)
+            .transition(pageTransition)
+        }
+        .overlayPreferenceValue(OnboardingClockAnchorKey.self) { anchors in
             GeometryReader { proxy in
-                ScrollView {
-                    Group {
-                        switch scene.onboardingPage {
-                        case OnboardingPages.landing:
-                            welcome
-                        case OnboardingPages.schedule:
-                            ready
-                        case OnboardingPages.reminders:
-                            OnboardingRemindersPage(
-                                preferences: preferences,
-                                session: shifts.session,
-                                text: text,
-                                onContinue: advanceFromReminders
-                            )
-                        case OnboardingPages.allSet:
-                            allSet
-                        case OnboardingPages.privacy:
-                            privacy
-                        case OnboardingPages.systemSurfaces:
-                            systemSurfaces
-                        case OnboardingPages.adaptiveLayouts:
-                            adaptiveLayouts
-                        case OnboardingPages.plusRecords:
-                            OnboardingPlusRecordsPage(preferences: preferences, text: text) {
-                                showPage(OnboardingPages.plusFocus)
-                            }
-                        case OnboardingPages.plusFocus:
-                            OnboardingPlusFocusPage(preferences: preferences, text: text) {
-                                showPage(OnboardingPages.plusLeave)
-                            }
-                        case OnboardingPages.plusLeave:
-                            OnboardingPlusLeavePage(preferences: preferences, text: text) {
-                                showPage(OnboardingPages.finale)
-                            }
-                        default:
-                            OnboardingFinalePage(
-                                preferences: preferences,
-                                text: text,
-                                logoSize: finaleLogoSize(in: proxy.size)
-                            ) {
-                                Task {
-                                    await shifts.completeSetup(
-                                        holidayRegionIdentifier: scene.onboardingHolidayRegionIdentifier
-                                            ?? HolidayCalendar.shared.defaultRegionIdentifier() ?? ""
-                                    ).value
-                                }
-                            }
+                if let anchor = anchors[scene.onboardingPage] {
+                    let bounds = proxy[anchor]
+                    TimelineView(PausableSecondsSchedule(isPaused: reduceMotion)) { context in
+                        let now = reduceMotion ? journeyReferenceDate : context.date
+                        if let snapshot = scene.setupProjection(at: now, using: shifts)?.snapshot {
+                            OnboardingJourneyDigits(text: text, remainingMs: snapshot.heroRemainingMs(at: now),
+                                                    compact: scene.onboardingPage == OnboardingPages.glance,
+                                                    pointSize: glanceSurface.clockPointSize)
+                                .foregroundStyle(scene.onboardingPage == OnboardingPages.glance && glanceSurface == .lockScreen ? Color.white : OWCDesign.primary)
+                                .frame(width: bounds.width, height: bounds.height)
+                                .position(x: bounds.midX, y: bounds.midY)
+                                .animation(reduceMotion ? nil : OWCMotion.onboardingContinuity, value: scene.onboardingPage)
                         }
                     }
-                    .id(scene.onboardingPage)
-                    .transition(pageTransition)
-                    // `maxWidth: .infinity` is what centres the pages, and it
-                    // has to be here because `GeometryReader` aligns its child
-                    // to `.topLeading`. Before this scroll wrapper existed the
-                    // parent filled the width and every page came out centred by
-                    // accident; afterwards the two pages that cap themselves at
-                    // 560 and stop there — the reminders page and the
-                    // privacy page — were pinned to the left edge on iPad, while
-                    // the pages that happened to add their own
-                    // `.frame(maxWidth: .infinity)` still looked right.
-                    //
-                    // Fixed once here rather than on those two pages, so a page
-                    // added later cannot forget it.
-                    //
-                    // 36 pt for the back control, so a leading-aligned title
-                    // cannot sit under it. Inset first, then `minHeight`:
-                    // padding after the frame made every page after landing
-                    // 36 pt taller than the viewport, so the confirmation
-                    // page scrolled on a 17 Pro even when its spacers still
-                    // had room to give.
-                    .padding(.top, scene.onboardingPage == OnboardingPages.landing ? 0 : 36)
-                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+                    .mask {
+                        if let viewport = anchors[scene.onboardingPage + OnboardingClockAnchorKey.viewportOffset] {
+                            let clip = proxy[viewport]
+                            Rectangle().frame(width: clip.width, height: clip.height)
+                                .position(x: clip.midX, y: clip.midY)
+                        }
+                    }
                 }
-                .scrollIndicators(.hidden)
-                .scrollBounceBehavior(.basedOnSize)
-                .scrollDismissesKeyboard(.interactively)
-                // UIScrollView's default fill is systemBackground — pure white
-                // in light mode, and a mismatch for every page here. While the
-                // number pad is dismissing, GeometryReader grows and that white
-                // shows through the newly uncovered strip under Continue before
-                // the content's minHeight catches up.
-                .scrollContentBackground(.hidden)
             }
+            .allowsHitTesting(false)
         }
         .overlay(alignment: .topLeading) {
             if scene.onboardingPage != OnboardingPages.landing {
@@ -183,7 +130,9 @@ struct OnboardingView: View {
         .environment(\.layoutDirection, preferences.layoutDirection)
         .environment(\.locale, preferences.locale)
         .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedback)
-        .task { biometry = BiometricGate.status().biometry }
+        .onChange(of: reduceMotion) { _, isReduced in
+            if isReduced { journeyReferenceDate = .now }
+        }
         .fullScreenCover(isPresented: $showsReturningUserSetup) {
             FirstRunRecoveryView(recovery: recovery, actions: actions) {
                 showsReturningUserSetup = false
@@ -205,462 +154,23 @@ struct OnboardingView: View {
     }
 
     private var welcome: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            CelebratingBrandMark()
-                .frame(width: 148, height: 148)
-                // Preserve the existing title baseline: the extra 40 points
-                // grow upward into the intentionally empty welcome-page space.
-                .padding(.top, -40)
-            Text(verbatim: OWCBrand.shortName)
-                .font(.largeTitle.bold())
-                .tracking(-0.8)
-                .multilineTextAlignment(.center)
-                .padding(.top, 26)
-            Text(text.t("landingTagline"))
-                .font(.body)
-                .foregroundStyle(OWCDesign.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.top, 12)
-
-#if DEBUG
-            Toggle(isOn: Binding(get: { preferences.debugAlwaysShowOnboarding }, set: { preferences.debugAlwaysShowOnboarding = $0 })) {
-                Text(verbatim: "DEBUG · 每次启动显示欢迎页")
-                    .font(.footnote)
-                    .foregroundStyle(OWCDesign.secondary)
-            }
-            .tint(OWCDesign.accent)
-            .padding(.horizontal, 20)
-            .padding(.top, 8)
-            // Same column as the feature list below, or on iPad it stretches
-            // edge to edge while everything else stays centred.
-            .frame(maxWidth: 420)
-#endif
-            VStack(alignment: .leading, spacing: 18) {
-                feature("clock", text.t("landingFeature1Title"), text.t("onboardingShiftBody"))
-                feature("wifi.slash", text.t("onboardingOfflineTitle"), text.t("onboardingOfflineBody"))
-                feature("rectangle", text.t("onboardingSystemTitle"), text.t("onboardingSystemBody"))
-            }
-            .padding(.top, 34)
-            .frame(maxWidth: 420)
-            Spacer()
-
-            Button(text.t("firstRunQuickSetup")) {
-                navigationFeedback += 1
-                showsReturningUserSetup = true
-            }
-            .font(.body.weight(.semibold))
-            .foregroundStyle(OWCDesign.accent)
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .padding(.horizontal, 20)
-            .padding(.bottom, 8)
-
-            pageDots
-            Button(text.t("continue")) {
-                showPage(OnboardingPages.schedule)
-            }
-            .buttonStyle(OWCPrimaryButtonStyle())
-            .padding(.top, 16)
-            .padding(.horizontal, 20)
-            .padding(.bottom, 24)
-        }
-        .padding(.horizontal, 12)
+        OnboardingWelcomePage(preferences: preferences, text: text, animatesEntrance: !visitedPages.contains(OnboardingPages.landing), onContinue: {
+            showPage(OnboardingPages.schedule)
+        }, onRecover: {
+            navigationFeedback += 1
+            showsReturningUserSetup = true
+        })
     }
 
-    private var systemSurfaces: some View {
-        onboardingShowcase(
-            title: text.t("onboardingEverywhereTitle"),
-            // The iPad copy drops the Dynamic Island along with its mockup.
-            body: text.t(horizontalSizeClass == .regular
-                          ? "onboardingEverywhereBodyTablet"
-                          : "onboardingEverywhereBody"),
-            button: text.t("continue")
-        ) {
-            liveDemo { date in
-                VStack(spacing: 12) {
-                    // The Dynamic Island is an iPhone feature; showing it to an
-                    // iPad owner promises hardware they do not have.
-                    if horizontalSizeClass != .regular {
-                        dynamicIslandDemo(at: date)
-                    }
-
-                    rectangularComplicationDemo(at: date)
-                    largeWidgetDemo(at: date)
-                }
-            }
-        } action: {
-            showPage(OnboardingPages.adaptiveLayouts)
-        }
+    private var glance: some View {
+        OnboardingGlancePage(shifts: shifts, text: text,
+                            referenceDate: journeyReferenceDate, onFinish: onFinish, onContinue: {
+            showPage(OnboardingPages.plus)
+        }, surface: $glanceSurface)
     }
 
-    /// Split by device on purpose: an iPhone owner does not need to hear about
-    /// iPad, and an iPad owner does not rotate to get the full-screen clock —
-    /// they collapse the sidebar. One screen, two truths.
-    private var adaptiveLayouts: some View {
-        let isPad = horizontalSizeClass == .regular
-        return onboardingShowcase(
-            title: text.t(isPad ? "onboardingSidebarTitle" : "onboardingLandscapeTitle"),
-            body: text.t(isPad ? "onboardingSidebarBody" : "onboardingLandscapeBody"),
-            button: text.t("continue")
-        ) {
-            fullScreenClockPreview(showsSidebarHint: isPad)
-        } action: {
-            showPage(OnboardingPages.plusRecords)
-        }
-    }
-
-    private var privacy: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer(minLength: 18)
-            Image(systemName: "lock.shield")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(OWCDesign.orangeDeep)
-                .frame(width: 52, height: 52)
-                .background(OWCDesign.orange.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            Text(text.t("onboardingPrivacyTitle"))
-                .font(.title.bold())
-                .tracking(-0.6)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-                .padding(.top, 22)
-            Text(text.t("onboardingPrivacyBody"))
-                .font(.callout)
-                .foregroundStyle(OWCDesign.secondary)
-                .lineSpacing(3)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 10)
-            OWCGroupCard {
-                OWCRow(
-                    icon: "wifi.slash",
-                    title: text.t("onboardingOfflineTitle"),
-                    subtitle: text.t("onboardingOfflineBody"),
-                    centersVertically: true
-                )
-                OWCRow(
-                    icon: "briefcase",
-                    title: text.t("workSchedule"),
-                    subtitle: text.t("onboardingPrivacyWorkBody"),
-                    centersVertically: true
-                )
-                OWCRow(
-                    // Both the glyph and the copy come from the hardware. A
-                    // face was drawn here on every device, next to a sentence
-                    // that named Face ID, on iPads that only have Touch ID.
-                    icon: biometry.symbolName,
-                    title: text.t("salarySettings"),
-                    subtitle: text.t(
-                        "onboardingSalaryLockBody",
-                        values: ["biometry": text.biometryName(biometry)]
-                    ),
-                    isLast: true,
-                    centersVertically: true
-                )
-            }
-            .padding(.top, 22)
-            Spacer(minLength: 18)
-
-            // Asking here rather than at the salary screen: the first time the
-            // system prompt appears is the one time the user is being told why,
-            // and a permission sheet that arrives with an explanation next to it
-            // gets granted far more often than one that ambushes them later.
-            pageDots
-            VStack(spacing: 10) {
-                Button(text.t(
-                    "onboardingEnableBiometrics",
-                    values: ["biometry": text.biometryName(biometry)]
-                )) {
-                    navigationFeedback += 1
-                    Task {
-                        _ = await BiometricGate.confirmOwner(reason: text.t("unlockSalaryReason"))
-                        showPage(OnboardingPages.systemSurfaces, feedback: false)
-                    }
-                }
-                .buttonStyle(OWCPrimaryButtonStyle())
-                Button(text.t("notNow")) {
-                    showPage(OnboardingPages.systemSurfaces)
-                }
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(OWCDesign.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 50)
-            }
-            .padding(.top, 16)
-            .padding(.bottom, 24)
-        }
-        .padding(.horizontal, 28)
-        .frame(maxWidth: 560)
-    }
-
-    /// The same instrument the landscape and collapsed-sidebar screens show:
-    /// oversized tabular clock, caption, bar. Deliberately nothing else, because
-    /// that is the whole point being made.
-    private func fullScreenClockPreview(showsSidebarHint: Bool) -> some View {
-        liveDemo { date in
-            VStack(spacing: 12) {
-                if showsSidebarHint {
-                    HStack(spacing: 8) {
-                        Image(systemName: "sidebar.left")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(OWCDesign.secondary)
-                            .frame(width: 30, height: 30)
-                            .background(OWCDesign.control, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                        Image(systemName: "arrow.right")
-                            .font(.caption2.bold())
-                            .foregroundStyle(OWCDesign.tertiary)
-                        Spacer(minLength: 0)
-                    }
-                }
-
-                VStack(spacing: 10) {
-                    Text(text.formatDuration(demoRemainingMilliseconds(at: date)))
-                        .font(.system(size: heroNumberSize, weight: .bold, design: .rounded).monospacedDigit())
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                        .environment(\.layoutDirection, .leftToRight)
-                        .contentTransition(.numericText(countsDown: true))
-                    Text(text.t("timeLeftCaption"))
-                        .font(.footnote)
-                        .foregroundStyle(OWCDesign.secondary)
-                    demoProgressBar(at: date, height: 8)
-                        .padding(.top, 4)
-                }
-                .padding(.horizontal, 26)
-                .padding(.vertical, 26)
-                .frame(maxWidth: .infinity)
-                .background(OWCDesign.card)
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                .owcShowcaseLift()
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func liveDemo<Content: View>(
-        @ViewBuilder content: @escaping (Date) -> Content
-    ) -> some View {
-        if reduceMotion {
-            content(demoStartedAt)
-        } else {
-            TimelineView(.periodic(from: demoStartedAt, by: 1)) { context in
-                content(context.date)
-            }
-        }
-    }
-
-    private func dynamicIslandDemo(at date: Date) -> some View {
-        HStack(spacing: 0) {
-            Image(.brandMark)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 20, height: 20)
-            Spacer(minLength: 34)
-            Text(verbatim: demoIslandCountdown(at: date))
-                .font(.subheadline.bold().monospacedDigit())
-                .foregroundStyle(.white)
-                .contentTransition(.numericText(countsDown: true))
-        }
-        .environment(\.colorScheme, .dark)
-        .environment(\.layoutDirection, .leftToRight)
-        .padding(.horizontal, 12)
-        .frame(width: 172, height: 37)
-        .background(.black, in: Capsule())
-        .overlay {
-            Capsule().strokeBorder(.white.opacity(0.22), lineWidth: 0.8)
-        }
-        .owcShowcaseLift()
-    }
-
-    /// Mirrors WidgetKit's accessory-rectangular family: product line,
-    /// countdown, and the compact linear capacity gauge.
-    private func rectangularComplicationDemo(at date: Date) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 5) {
-                Image(.brandMark)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 12, height: 12)
-                Text(verbatim: OWCBrand.shortName)
-                    .font(.caption2.weight(.semibold))
-                    .lineLimit(1)
-            }
-            Text(text.formatDuration(demoRemainingMilliseconds(at: date)))
-                .font(.system(size: 21, weight: .bold, design: .rounded).monospacedDigit())
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .environment(\.layoutDirection, .leftToRight)
-                .contentTransition(.numericText(countsDown: true))
-            demoProgressBar(at: date, height: 5)
-        }
-        .padding(.horizontal, 13)
-        .padding(.vertical, 8)
-        .frame(width: 244, height: 69, alignment: .leading)
-        .background(OWCDesign.card)
-        .clipShape(RoundedRectangle(cornerRadius: 17, style: .continuous))
-        .owcShowcaseLift()
-    }
-
-    /// A scaled likeness of the real system-large widget, including the
-    /// upcoming list that distinguishes it from the old small preview.
-    private func largeWidgetDemo(at date: Date) -> some View {
-        let progress = demoProgress(at: date)
-        return VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
-                Image(.brandMark)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 18, height: 18)
-                Text(verbatim: OWCBrand.shortName)
-                    .font(.caption.bold())
-                Spacer(minLength: 0)
-            }
-            HStack(spacing: 6) {
-                Circle().fill(OWCDesign.accent).frame(width: 6, height: 6)
-                Text(text.t("widgetWorking"))
-                    .font(.caption2.weight(.semibold))
-            }
-            .padding(.horizontal, 9)
-            .frame(height: 25)
-            .background(OWCDesign.accent.opacity(0.12), in: Capsule())
-            .padding(.top, 9)
-
-            Text(text.formatDuration(demoRemainingMilliseconds(at: date)))
-                .font(.system(size: 34, weight: .bold, design: .rounded).monospacedDigit())
-                .lineLimit(1)
-                .minimumScaleFactor(0.68)
-                .environment(\.layoutDirection, .leftToRight)
-                .contentTransition(.numericText(countsDown: true))
-                .padding(.top, 7)
-
-            demoProgressBar(at: date, height: 6)
-                .padding(.top, 8)
-            HStack(spacing: 6) {
-                Text(verbatim: "\(Int((progress * 100).rounded()))%")
-                    .font(.caption2.bold().monospacedDigit())
-                    .foregroundStyle(OWCDesign.accent)
-                Spacer(minLength: 4)
-                Text(verbatim: "19:00")
-                    .font(.caption2.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(OWCDesign.secondary)
-            }
-            .padding(.top, 5)
-
-            Text(text.t("comingUp"))
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(OWCDesign.secondary)
-                .padding(.top, 10)
-                .padding(.bottom, 3)
-            demoUpcomingRow(
-                icon: "figure.walk",
-                title: text.t("microBreakReminder"),
-                time: "15:00"
-            )
-            demoUpcomingRow(
-                icon: "flag.checkered",
-                title: text.t("offWorkReminder"),
-                time: "19:00",
-                isLast: true
-            )
-        }
-        .padding(14)
-        .frame(maxWidth: 326, minHeight: 244, maxHeight: 244, alignment: .leading)
-        .background(OWCDesign.card)
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .owcShowcaseLift()
-    }
-
-    private func demoUpcomingRow(
-        icon: String,
-        title: String,
-        time: String,
-        isLast: Bool = false
-    ) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(OWCDesign.accent)
-                .frame(width: 14)
-            Text(title)
-                .font(.caption2.weight(.semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-            Spacer(minLength: 6)
-            Text(verbatim: time)
-                .font(.caption2.weight(.medium).monospacedDigit())
-                .foregroundStyle(OWCDesign.secondary)
-        }
-        .frame(height: 24)
-        .overlay(alignment: .bottom) {
-            if !isLast {
-                Rectangle()
-                    .fill(OWCDesign.separator)
-                    .frame(height: 0.5)
-                    .padding(.leading, 22)
-            }
-        }
-    }
-
-    private func demoProgressBar(at date: Date, height: CGFloat) -> some View {
-        Capsule().fill(OWCDesign.control)
-            .frame(height: height)
-            .overlay(alignment: .leading) {
-                GeometryReader { proxy in
-                    Capsule().fill(OWCDesign.accent)
-                        .frame(width: proxy.size.width * demoProgress(at: date))
-                }
-            }
-    }
-
-    private func demoElapsed(at date: Date) -> TimeInterval {
-        max(0, date.timeIntervalSince(demoStartedAt))
-    }
-
-    private func demoRemainingMilliseconds(at date: Date) -> Double {
-        max(0, (2 * 3_600 + 34 * 60 + 18) - demoElapsed(at: date)) * 1_000
-    }
-
-    private func demoProgress(at date: Date) -> Double {
-        min(0.98, 0.73 + demoElapsed(at: date) / (8 * 3_600))
-    }
-
-    private func demoIslandCountdown(at date: Date) -> String {
-        let remaining = max(0, Int(14 * 60 + 59 - demoElapsed(at: date)))
-        return String(format: "%02d:%02d", remaining / 60, remaining % 60)
-    }
-
-    private func onboardingShowcase<Showcase: View>(
-        title: String,
-        body: String,
-        button: String,
-        @ViewBuilder showcase: () -> Showcase,
-        action: @escaping () -> Void
-    ) -> some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 18)
-            Text(title)
-                .font(.title.bold())
-                .tracking(-0.6)
-                .multilineTextAlignment(.center)
-            Text(body)
-                .font(.callout)
-                .foregroundStyle(OWCDesign.secondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.top, 10)
-            showcase()
-                .frame(maxWidth: 420)
-                .padding(.top, 28)
-            Spacer(minLength: 18)
-            pageDots
-            Button(button, action: action)
-                .buttonStyle(OWCPrimaryButtonStyle())
-                .padding(.top, 16)
-                .padding(.bottom, 24)
-        }
-        .padding(.horizontal, 24)
-    }
-
-    /// Hours, weekdays, or skip a schedule.
-    private var ready: some View {
+    /// Hours, weekdays, or no fixed schedule.
+    private var schedulePage: some View {
         OnboardingSchedulePage(preferences: preferences, shifts: shifts, text: text) {
             Task {
                 await preferences.applyOnboardingReminderDefaultsIfNeeded().value
@@ -669,21 +179,16 @@ struct OnboardingView: View {
         }
     }
 
-    /// What that schedule will do, now that lunch and reminders are set.
-    private var allSet: some View {
-        OnboardingReadyPage(preferences: preferences, shifts: shifts, text: text) {
-            showPage(OnboardingPages.privacy)
+    /// What that schedule will do, now that lunch and reminders are set, and
+    /// where the rest of the setup lives.
+    private var readyPage: some View {
+        OnboardingReadyPage(preferences: preferences, shifts: shifts, text: text,
+                            referenceDate: journeyReferenceDate,
+                            animatesEntrance: !visitedPages.contains(OnboardingPages.ready), onFinish: onFinish) {
+            showPage(OnboardingPages.glance)
         }
     }
 
-    private var pageDots: some View {
-        OnboardingDots(
-            page: scene.onboardingPage,
-            includesAllSet: preferences.scheduleMode != .off
-        )
-    }
-
-    private var includesAllSet: Bool { preferences.scheduleMode != .off }
 
     private var remindersNeedPermission: Bool {
         preferences.notificationMode != .off
@@ -691,22 +196,11 @@ struct OnboardingView: View {
             || (preferences.lunchEnabled && (preferences.lunchStartReminderEnabled || preferences.lunchEndReminderEnabled))
     }
 
-    private func feature(_ icon: String, _ title: String, _ body: String) -> some View {
-        HStack(alignment: .center, spacing: 12) {
-            Image(systemName: icon)
-                .font(.title3.weight(.medium))
-                .frame(width: 22)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.callout.weight(.semibold))
-                Text(body)
-                    .font(.subheadline)
-                    .foregroundStyle(OWCDesign.secondary)
-            }
-        }
-    }
-
     private func showPage(_ page: Int, reverse: Bool = false, feedback: Bool = true) {
         if feedback { navigationFeedback += 1 }
+        continuesCountdown = Set([scene.onboardingPage, page]) == Set([OnboardingPages.ready, OnboardingPages.glance])
+        if page == OnboardingPages.ready && !continuesCountdown { journeyReferenceDate = .now }
+        visitedPages.insert(scene.onboardingPage)
         goingBack = reverse
         withAnimation(pageAnimation) {
             scene.onboardingPage = page
@@ -714,82 +208,198 @@ struct OnboardingView: View {
     }
 
     private func goBack() {
-        guard let previous = OnboardingPages.previous(
-            from: scene.onboardingPage,
-            includesAllSet: includesAllSet
-        ) else { return }
+        guard let previous = OnboardingPages.previous(from: scene.onboardingPage) else { return }
         showPage(previous, reverse: true)
     }
 
+    /// Moves on first, then asks. The system prompt still lands right after
+    /// the page that explains it, over the summary of the very reminders it
+    /// is for. Waiting for the answer before moving tied the button to a
+    /// system sheet the app cannot see: when the prompt was slow or appeared
+    /// on another display (iPhone Duo), Continue did nothing, and every
+    /// further tap queued another request.
     private func advanceFromReminders() {
         navigationFeedback += 1
-        Task {
-            if remindersNeedPermission {
-                _ = await notifications.request()
-            }
-            guard let next = OnboardingPages.next(
-                from: OnboardingPages.reminders,
-                includesAllSet: includesAllSet
-            ) else { return }
-            showPage(next, feedback: false)
-        }
-    }
-
-    private func finaleLogoSize(in availableSize: CGSize) -> CGFloat {
-        let widthCap: CGFloat = horizontalSizeClass == .regular ? 380 : 300
-        let availableWidth = max(132, availableSize.width - 56)
-        let availableHeight = max(132, availableSize.height * 0.42)
-        return min(widthCap, min(availableWidth, availableHeight))
+        showPage(OnboardingPages.ready, feedback: false)
+        guard remindersNeedPermission else { return }
+        Task { _ = await notifications.request() }
     }
 
     private var pageAnimation: Animation {
-        reduceMotion ? .easeOut(duration: 0.16) : Self.pageAnimation
+        reduceMotion ? OWCMotion.reduced : (continuesCountdown ? OWCMotion.onboardingContinuity : OWCMotion.onboardingPage)
     }
 
     private var pageTransition: AnyTransition {
-        if reduceMotion { return .opacity }
+        if reduceMotion || [OnboardingPages.ready, OnboardingPages.glance].contains(scene.onboardingPage) { return .opacity }
         return goingBack ? Self.backTransition : Self.forwardTransition
+    }
+}
+
+private struct OnboardingWelcomePage: View {
+    @Bindable var preferences: PreferencesStore
+    let text: AppText
+    let animatesEntrance: Bool
+    let onContinue: () -> Void
+    let onRecover: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var arrived = false
+
+    var body: some View {
+        OnboardingPageScaffold(page: OnboardingPages.landing, showsPageIndicator: false) { size in
+            content(availableHeight: size.height)
+        } footer: {
+            if !dynamicTypeSize.isAccessibilitySize { recoveryButton }
+            OnboardingDots(page: OnboardingPages.landing)
+            Button(text.t("onboardingSetMyShift"), action: onContinue)
+                .buttonStyle(OWCPrimaryButtonStyle())
+        }
+        .onAppear { arrived = true }
+    }
+
+    private func content(availableHeight: CGFloat) -> some View {
+        let compact = availableHeight < 550
+        return VStack(spacing: 0) {
+            Spacer(minLength: 12)
+            CelebratingBrandMark(
+                entranceRotation: .degrees(arrived || reduceMotion || !animatesEntrance ? 0 : -120)
+            )
+                .frame(width: compact ? 120 : 168, height: compact ? 120 : 168)
+                .animation(reduceMotion ? nil : OWCMotion.welcomeHand, value: arrived)
+                .welcomeArrival(arrived, index: 0, reduceMotion: reduceMotion || !animatesEntrance)
+            Text(verbatim: OWCBrand.shortName)
+                .font(.title3.weight(.semibold))
+                .multilineTextAlignment(.center)
+                .padding(.top, compact ? 18 : 26)
+                .welcomeArrival(arrived, index: 1, reduceMotion: reduceMotion || !animatesEntrance)
+            Text(text.t("landingTagline"))
+                .font(.largeTitle.bold())
+                .tracking(-0.8)
+                .foregroundStyle(OWCDesign.primary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 12)
+                .welcomeArrival(arrived, index: 2, reduceMotion: reduceMotion || !animatesEntrance)
+
+            Text(text.t("onboardingOfflineBody"))
+                .font(.callout)
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, compact ? 18 : 24)
+                .welcomeArrival(arrived, index: 3, reduceMotion: reduceMotion || !animatesEntrance)
+            if dynamicTypeSize.isAccessibilitySize {
+                recoveryButton.padding(.top, 24)
+            }
+            Spacer(minLength: 16)
+
+        }
+        .padding(.horizontal, 28)
+        .frame(maxWidth: 560)
+    }
+
+    private var recoveryButton: some View {
+        Button(text.t("firstRunQuickSetup"), action: onRecover)
+            .font(.body.weight(.semibold))
+            .foregroundStyle(OWCDesign.accent)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, minHeight: 44)
+    }
+
+}
+
+private extension View {
+    func welcomeArrival(_ arrived: Bool, index: Int, reduceMotion: Bool) -> some View {
+        opacity(arrived || reduceMotion ? 1 : 0)
+            .offset(y: arrived || reduceMotion ? 0 : 12)
+            .animation(
+                reduceMotion ? nil : OWCMotion.welcomeArrival.delay(Double(index) * OWCMotion.welcomeStagger),
+                value: arrived
+            )
     }
 }
 
 /// The pages, in order. One list rather than a count repeated at every call
 /// site: the indicator, the QA jump and the "which page is last" question all
 /// read from here, so adding a page cannot leave one of them behind.
+///
+/// Four setup pages, followed by two optional tours. Every page from Ready
+/// onward can finish setup directly; purchasing is always an explicit action.
 enum OnboardingPages {
     static let landing = 0
     static let schedule = 1
     static let reminders = 2
-    static let allSet = 3
-    static let privacy = 4
-    static let systemSurfaces = 5
-    static let adaptiveLayouts = 6
-    static let plusRecords = 7
-    static let plusFocus = 8
-    static let plusLeave = 9
-    static let finale = 10
-    /// Highest page index plus one. The visible path can be shorter when
-    /// there is no schedule: confirmation is skipped, but the remaining
-    /// pages keep these indices so a QA jump still lands on the same screen.
-    static let count = 11
+    static let ready = 3
+    static let glance = 4
+    static let plus = 5
+    /// Highest page index plus one.
+    static let count = 6
 
-    static func sequence(includesAllSet: Bool) -> [Int] {
-        if includesAllSet {
-            [landing, schedule, reminders, allSet, privacy, systemSurfaces, adaptiveLayouts, plusRecords, plusFocus, plusLeave, finale]
-        } else {
-            [landing, schedule, reminders, privacy, systemSurfaces, adaptiveLayouts, plusRecords, plusFocus, plusLeave, finale]
+    static let sequence = [landing, schedule, reminders, ready, glance, plus]
+
+    static func next(from page: Int) -> Int? {
+        guard let index = sequence.firstIndex(of: page), index + 1 < sequence.count else { return nil }
+        return sequence[index + 1]
+    }
+
+    static func previous(from page: Int) -> Int? {
+        guard let index = sequence.firstIndex(of: page), index > 0 else { return nil }
+        return sequence[index - 1]
+    }
+}
+
+/// One onboarding page: content that scrolls when it does not fit, under the
+/// page's controls pinned to the bottom.
+///
+/// `minHeight` is the visible height rather than leaving it to the scroll view,
+/// which proposes unbounded height and would collapse the `Spacer`s the pages
+/// use to centre themselves. A page that fits lays out exactly as before and
+/// does not scroll; one that does not scrolls under the bar, which the system
+/// softens with its scroll-edge effect instead of a hard cut.
+struct OnboardingPageScaffold<Content: View, Footer: View>: View {
+    let page: Int
+    var showsPageIndicator = true
+    @ViewBuilder var content: (CGSize) -> Content
+    @ViewBuilder var footer: Footer
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                content(proxy.size)
+                    // `maxWidth: .infinity` centres the page: GeometryReader
+                    // aligns its child to the top leading corner, and pages
+                    // that cap themselves at 560 were otherwise pinned left
+                    // on iPad.
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+            }
+            .scrollIndicators(.hidden)
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollDismissesKeyboard(.interactively)
+            // UIScrollView's default fill is systemBackground — pure white in
+            // light mode, and a mismatch for every page here. While the number
+            // pad is dismissing, that white showed through the strip it
+            // uncovered before the content caught up.
+            .scrollContentBackground(.hidden)
+            .transformAnchorPreference(key: OnboardingClockAnchorKey.self, value: .bounds) { anchors, viewport in
+                anchors[page + OnboardingClockAnchorKey.viewportOffset] = viewport
+            }
         }
-    }
-
-    static func next(from page: Int, includesAllSet: Bool) -> Int? {
-        let pages = sequence(includesAllSet: includesAllSet)
-        guard let index = pages.firstIndex(of: page), index + 1 < pages.count else { return nil }
-        return pages[index + 1]
-    }
-
-    static func previous(from page: Int, includesAllSet: Bool) -> Int? {
-        let pages = sequence(includesAllSet: includesAllSet)
-        guard let index = pages.firstIndex(of: page), index > 0 else { return nil }
-        return pages[index - 1]
+        // Room for the floating back control, so a title cannot sit under it
+        // and content that scrolls up passes under the same soft edge.
+        .safeAreaBar(edge: .top) {
+            if page != OnboardingPages.landing {
+                Color.clear.frame(height: 36)
+            }
+        }
+        .safeAreaBar(edge: .bottom) {
+            VStack(spacing: 16) {
+                if showsPageIndicator && page <= OnboardingPages.ready { OnboardingDots(page: page) }
+                footer
+            }
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 28)
+            .frame(maxWidth: 560)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
+        }
     }
 }
 
@@ -803,11 +413,8 @@ enum OnboardingPages {
 /// identical throughout, being the thing that measures progress across them.
 struct OnboardingDots: View {
     let page: Int
-    var includesAllSet: Bool = true
 
-    private var pages: [Int] {
-        OnboardingPages.sequence(includesAllSet: includesAllSet)
-    }
+    private var pages: [Int] { Array(OnboardingPages.sequence.prefix(4)) }
 
     var body: some View {
         let current = pages.firstIndex(of: page) ?? 0
@@ -841,91 +448,17 @@ private struct OnboardingSchedulePage: View {
             ?? HolidayCalendar.shared.defaultRegionIdentifier() ?? ""
     }
 
+    /// Just the region: unlike Settings, where an untouched suggestion is not
+    /// yet applied, setup applies this one when it finishes.
+    private var holidayRegionLabel: String {
+        guard !holidayRegion.isEmpty else { return text.t("holidayCalendarOff") }
+        return HolidayCalendar.shared.regionName(holidayRegion, locale: preferences.locale)
+    }
+
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 18)
-            Text(text.t("onboardingScheduleTitle"))
-                .font(.title.bold())
-                .tracking(-0.6)
-                .multilineTextAlignment(.center)
-            Text(text.t("onboardingScheduleBody"))
-                .font(.callout)
-                .foregroundStyle(OWCDesign.secondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.top, 10)
-
-            HStack(alignment: .timeChipCenter, spacing: 4) {
-                ShiftHeroTimeButton(
-                    title: text.t("startTime"),
-                    time: session.timeString(preferences.startMinutes)
-                ) { timeField = .start }
-                Text(verbatim: "—")
-                    .font(.title3)
-                    .foregroundStyle(OWCDesign.tertiary)
-                    .alignmentGuide(.timeChipCenter) { $0[VerticalAlignment.center] }
-                    .accessibilityHidden(true)
-                ShiftHeroTimeButton(
-                    title: text.t("endTime"),
-                    time: session.timeString(preferences.endMinutes)
-                ) { timeField = .end }
-            }
-            .environment(\.layoutDirection, .leftToRight)
-            .padding(.top, 22)
-
-            OWCGroupCard {
-                modeRow(.classic, title: text.t("scheduleClassic"), subtitle: text.t("scheduleClassicDescription"))
-                modeRow(.alternating, title: text.t("scheduleAlternating"), subtitle: text.t("scheduleAlternatingDescription"))
-                modeRow(.rotation, title: text.t("scheduleRotation"), subtitle: text.t("scheduleRotationDescription"))
-                modeRow(.off, title: text.t("scheduleOff"), subtitle: text.t("scheduleOffDescription"), isLast: true)
-            }
-            .padding(.top, 22)
-
-            OnboardingScheduleDetailsView(preferences: preferences, text: text)
-                .padding(.top, 18)
-
-            Text(text.t("onboardingCustomScheduleNote"))
-                .font(.footnote)
-                .foregroundStyle(OWCDesign.secondary)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 12)
-
-            OWCGroupCard {
-                Toggle(text.t("holidayCalendar"), isOn: Binding(
-                    get: { !holidayRegion.isEmpty },
-                    set: { enabled in
-                        scene.onboardingHolidayRegionIdentifier = enabled
-                            ? HolidayCalendar.shared.defaultRegionIdentifier() ?? "" : ""
-                        if enabled && holidayRegion.isEmpty { showsHolidayRegions = true }
-                    }
-                ))
-                .padding(16)
-                if !holidayRegion.isEmpty {
-                    Divider().padding(.leading, 16)
-                    Button { showsHolidayRegions = true } label: {
-                        HStack {
-                            let name = HolidayCalendar.shared.regionName(holidayRegion, locale: preferences.locale)
-                            Text(scene.onboardingHolidayRegionIdentifier == nil
-                                 ? text.t("holidayCalendarSystemDefault", values: ["region": name]) : name)
-                            Spacer()
-                            Image(systemName: "chevron.forward")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(OWCDesign.secondary)
-                        }
-                        .foregroundStyle(OWCDesign.primary)
-                        .padding(16)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(OWCRowButtonStyle())
-                }
-            }
-            .padding(.top, 18)
-
-            Spacer(minLength: 18)
-
-            onboardingDots
+        OnboardingPageScaffold(page: OnboardingPages.schedule) { _ in
+            form
+        } footer: {
             Button(text.t("continue")) {
                 if preferences.scheduleMode == .classic, preferences.workdays.isEmpty {
                     let command = preferences.applySetupScheduleChange(
@@ -940,16 +473,7 @@ private struct OnboardingSchedulePage: View {
                 }
             }
             .buttonStyle(OWCPrimaryButtonStyle())
-            .padding(.top, 16)
-            .padding(.bottom, 24)
         }
-        // Same cap as the reminders and privacy pages. The outer
-        // `minHeight: proxy.size.height` is what lets the Spacers centre this
-        // page; a second `frame(maxWidth: .infinity)` here would report the
-        // VStack's ideal height instead, and the form would sit against the
-        // top again — the iPad landscape complaint.
-        .padding(.horizontal, 28)
-        .frame(maxWidth: 560)
         .sheet(isPresented: $showsHolidayRegions) {
             HolidayRegionPicker(text: text, locale: preferences.locale, selection: holidayRegion) {
                 scene.onboardingHolidayRegionIdentifier = $0
@@ -983,36 +507,130 @@ private struct OnboardingSchedulePage: View {
         .sensoryFeedback(.selection, trigger: preferences.scheduleMode)
     }
 
-    private func modeRow(_ mode: WorkScheduleMode, title: String, subtitle: String, isLast: Bool = false) -> some View {
-        let selected = preferences.scheduleMode == mode
-        return Button {
-            guard !selected else { return }
+    /// Same cap as the other pages. The scaffold's `minHeight` is what lets
+    /// the Spacers centre this form; a second `frame(maxWidth: .infinity)`
+    /// here would report the VStack's ideal height instead, and the form
+    /// would sit against the top again — the iPad landscape complaint.
+    private var form: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 12)
+            Text(text.t("onboardingScheduleTitle"))
+                .font(.title.bold())
+                .tracking(-0.6)
+                .multilineTextAlignment(.center)
+            Text(text.t("onboardingScheduleBody"))
+                .font(.callout)
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.top, 10)
+
+            HStack(alignment: .timeChipCenter, spacing: 4) {
+                ShiftHeroTimeButton(
+                    title: text.t("startTime"),
+                    time: session.timeString(preferences.startMinutes)
+                ) { timeField = .start }
+                Text(verbatim: "—")
+                    .font(.title3)
+                    .foregroundStyle(OWCDesign.tertiary)
+                    .alignmentGuide(.timeChipCenter) { $0[VerticalAlignment.center] }
+                    .accessibilityHidden(true)
+                ShiftHeroTimeButton(
+                    title: text.t("endTime"),
+                    time: session.timeString(preferences.endMinutes)
+                ) { timeField = .end }
+            }
+            .environment(\.layoutDirection, .leftToRight)
+            .padding(.top, 18)
+
+            OnboardingShiftRibbon(shifts: shifts, text: text)
+                .padding(.top, 20)
+
+            OWCGroupCard {
+                OWCRow(title: text.t("extendedPattern"), isLast: true) {
+                    OWCDetailAccessory(text: text.t(scheduleModeKey))
+                }
+                .owcRowMenu(accessibilityLabel: text.t("extendedPattern")) {
+                    modeOption(.classic, titleKey: "scheduleClassic")
+                    modeOption(.alternating, titleKey: "scheduleAlternating")
+                    modeOption(.rotation, titleKey: "scheduleRotation")
+                    modeOption(.off, titleKey: "scheduleManualTimer")
+                }
+                .accessibilityHint(text.t("landingFeature1Title"))
+            }
+            .padding(.top, 22)
+
+            OnboardingScheduleDetailsView(preferences: preferences, text: text)
+                .padding(.top, 14)
+
+            Text(text.t(scheduleDescriptionKey))
+                .font(.footnote)
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 12)
+
+            // One row, as in Work Hours & Schedule: the picker it opens already
+            // offers Off. A separate switch above it made this the tallest
+            // card on the page and pushed Continue below the fold on a 6.3"
+            // phone, where a tap aimed at it landed on this row instead.
+            OWCGroupCard {
+                Button { showsHolidayRegions = true } label: {
+                    HStack(spacing: 12) {
+                        Text(text.t("holidayCalendar"))
+                        Spacer(minLength: 8)
+                        Text(holidayRegionLabel)
+                            .foregroundStyle(OWCDesign.secondary)
+                            .lineLimit(1)
+                        Image(systemName: "chevron.forward")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(OWCDesign.tertiary)
+                    }
+                    .foregroundStyle(OWCDesign.primary)
+                    .padding(16)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(OWCRowButtonStyle())
+                .accessibilityElement(children: .combine)
+            }
+            .padding(.top, 14)
+
+            Spacer(minLength: 12)
+        }
+        .padding(.horizontal, 28)
+        .frame(maxWidth: 560)
+    }
+
+    private var scheduleModeKey: String {
+        switch preferences.scheduleMode {
+        case .classic: "scheduleClassic"
+        case .alternating: "scheduleAlternating"
+        case .rotation: "scheduleRotation"
+        case .off: "scheduleManualTimer"
+        }
+    }
+
+    private var scheduleDescriptionKey: String {
+        switch preferences.scheduleMode {
+        case .classic: "scheduleClassicDescription"
+        case .alternating: "scheduleAlternatingDescription"
+        case .rotation: "scheduleRotationDescription"
+        case .off: "scheduleOffDescription"
+        }
+    }
+
+    private func modeOption(_ mode: WorkScheduleMode, titleKey: String) -> some View {
+        Button {
             preferences.applySetupScheduleChange(ScheduleFieldChange(
                 workdays: mode == .classic && preferences.workdays.isEmpty ? [1, 2, 3, 4, 5] : nil,
                 scheduleMode: mode
             ))
         } label: {
-            OWCRow(
-                title: title,
-                subtitle: subtitle,
-                isLast: isLast,
-                centersVertically: true
-            ) {
-                ScheduleModeMark(selected: selected)
-            }
-            .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection) { content in
-                content.background(selected ? OWCDesign.accent.opacity(0.07) : .clear)
-            }
+            Label(text.t(titleKey), systemImage: preferences.scheduleMode == mode ? "checkmark" : "calendar")
         }
-        .buttonStyle(OWCRowButtonStyle())
     }
 
-    private var onboardingDots: some View {
-        OnboardingDots(
-            page: scene.onboardingPage,
-            includesAllSet: preferences.scheduleMode != .off
-        )
-    }
 
 }
 
@@ -1033,114 +651,5 @@ struct ScheduleModeMark: View {
             .foregroundStyle(selected ? OWCDesign.accent : OWCDesign.tertiary)
             .contentTransition(.symbolEffect(.replace))
             .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selected)
-    }
-}
-
-/// A schedule confirmation screen: what the schedule they just set — plus
-/// lunch and reminders from the previous page — is going to do.
-///
-/// The list is the real preview the setup screen shows — the same rows, from
-/// the same shared rules — rather than a mock-up written for onboarding. A
-/// first-run summary that disagrees with the app it is summarising is worse
-/// than no summary, and this one cannot: if the schedule says the next shift
-/// starts Monday at 09:00, that is because the rules said so.
-private struct OnboardingReadyPage: View {
-    @Environment(SceneState.self) private var scene
-    @Bindable var preferences: PreferencesStore
-    let shifts: ShiftSessionStore
-    let text: AppText
-    let onContinue: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    /// Flipped once, on appear. The rows are laid out at full size from the
-    /// first frame and only their opacity and offset are driven, so nothing
-    /// below them moves while they arrive.
-    @State private var revealed = false
-    @State private var continueFeedback = 0
-
-    var body: some View {
-        let now = Date.now
-        let upcoming = scene.setupSnapshot(at: now, using: shifts).map {
-            shifts.shiftPreview(for: $0, at: now).upcoming
-        } ?? []
-
-        VStack(spacing: 0) {
-            Spacer(minLength: 8)
-
-            Image(systemName: "calendar.badge.checkmark")
-                .font(.title2.weight(.semibold))
-                // The badge widens the layout box to the right of an otherwise
-                // centred calendar, and SF Symbol baseline alignment sits the
-                // ink slightly high. Nudge the glyph inside a chip that matches
-                // the privacy page (52 / 16).
-                // Optical, not geometric, centring. -0.1 is the measured
-                // rest position for `calendar.badge.checkmark` in this chip.
-                .offset(x: -0.1, y: 0.8)
-                .foregroundStyle(OWCDesign.orangeDeep)
-                .frame(width: 52, height: 52)
-                .background(OWCDesign.orange.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .frame(maxWidth: .infinity)
-
-            Text(text.t("onboardingAllSetTitle"))
-                .font(.title.bold())
-                .tracking(-0.6)
-                .multilineTextAlignment(.center)
-                .padding(.top, 14)
-            Text(shifts.onboardingScheduleRecap())
-                .font(.callout)
-                .foregroundStyle(OWCDesign.secondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.top, 8)
-
-            VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: text.t("comingUp"))
-                OWCGroupCard {
-                    if upcoming.isEmpty {
-                        OWCRow(
-                            icon: "calendar.badge.minus",
-                            title: text.t("scheduleOff"),
-                            subtitle: text.t("scheduleOffManualStart"),
-                            isLast: true
-                        )
-                        .owcRevealed(revealed, index: 0, reduceMotion: reduceMotion)
-                    } else {
-                        ForEach(Array(upcoming.enumerated()), id: \.element.id) { index, entry in
-                            ShiftPreviewRow(
-                                locale: preferences.locale,
-                                entry: entry,
-                                now: now,
-                                showsSeparator: index < upcoming.count - 1,
-                                showsChevron: false,
-                                reservesChevron: false
-                            )
-                            .owcRevealed(revealed, index: index, reduceMotion: reduceMotion)
-                        }
-                    }
-                }
-            }
-            // Fades in with its own first row, so the page never shows an
-            // empty card waiting to be filled.
-            .owcRevealed(revealed, index: 0, reduceMotion: reduceMotion, travels: false)
-            .padding(.top, 16)
-
-            Spacer(minLength: 8)
-
-            OnboardingDots(
-                page: scene.onboardingPage,
-                includesAllSet: preferences.scheduleMode != .off
-            )
-            Button(text.t("continue")) {
-                continueFeedback += 1
-                onContinue()
-            }
-            .buttonStyle(OWCPrimaryButtonStyle())
-            .padding(.top, 16)
-            .padding(.bottom, 24)
-        }
-        .padding(.horizontal, 28)
-        .frame(maxWidth: 560)
-        .sensoryFeedback(.impact(weight: .light), trigger: continueFeedback)
-        .onAppear { revealed = true }
     }
 }

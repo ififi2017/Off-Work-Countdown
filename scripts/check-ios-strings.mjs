@@ -41,6 +41,8 @@ export const INTENTIONAL_DIVERGENCE = {};
 /// locales. Shared keys are listed in lib/locales.test.ts instead. Moved here
 /// from there in plan 019 L2b, reasons included.
 export const SAME_AS_ENGLISH_ON_PURPOSE = {
+  // Apple uses the same localized platform term in these languages.
+  onboardingWidgetSurface: ["de", "fr", "es", "pt"],
   // Brand, product and platform names
   plusSection: "*",
   plusSettings: "*",
