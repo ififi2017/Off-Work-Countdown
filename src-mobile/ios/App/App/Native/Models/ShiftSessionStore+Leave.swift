@@ -61,8 +61,8 @@ extension ShiftSessionStore {
         return (first...last).filter { !HolidayCalendar.shared.covers(year: $0, regionIdentifier: "CN") }
     }
 
-    /// Runs the search off the main actor; a year of days takes tens of
-    /// milliseconds, which a sheet should not stall on.
+    /// Searches a full year's alternative leave windows off the main actor,
+    /// keeping the planning sheet responsive while results are prepared.
     func findLeavePlans(_ request: LeavePlanRequest, at date: Date = .now) async -> [LeavePlanProposal] {
         let configuration = leavePlannerConfiguration(at: date)
         let timeZone = preferences.recordsTimeZone

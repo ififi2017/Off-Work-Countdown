@@ -47,6 +47,8 @@ nonisolated struct LeavePlannerDay: Equatable, Sendable {
 nonisolated struct LeaveShiftHalves: Equatable, Sendable {
     let first: [NativeShiftSegment]
     let second: [NativeShiftSegment]
+    // Reused across the many candidate windows in a rolling-year search.
+    private let whole: [NativeShiftSegment]
 
     init(segments: [NativeShiftSegment]) {
         let ordered = segments.filter { $0.endAtMs > $0.startAtMs }.sorted { $0.startAtMs < $1.startAtMs }
@@ -71,11 +73,12 @@ nonisolated struct LeaveShiftHalves: Equatable, Sendable {
         }
         self.first = first
         self.second = second
+        self.whole = first + second
     }
 
     func removed(_ portion: LeavePortion) -> [NativeShiftSegment] {
         switch portion {
-        case .whole: first + second
+        case .whole: whole
         case .firstHalf: first
         case .secondHalf: second
         }
@@ -84,7 +87,7 @@ nonisolated struct LeaveShiftHalves: Equatable, Sendable {
     /// What is still worked once `portion` is taken; everything when `nil`.
     func remaining(after portion: LeavePortion?) -> [NativeShiftSegment] {
         switch portion {
-        case nil: first + second
+        case nil: whole
         case .whole: []
         case .firstHalf: second
         case .secondHalf: first
@@ -166,7 +169,7 @@ nonisolated enum LeavePlanner {
         var nowMs: Double
         /// The balances the user chose for this plan, in their order.
         var budgets: [LeaveBudget]
-        var maximumProposals: Int = 5
+        var maximumProposals: Int = .max
     }
 
     /// Proposals for distinct stretches of rest, best first.
@@ -327,16 +330,23 @@ private nonisolated struct Search {
         }
 
         var chosen: [LeavePlanProposal] = []
+        // Keep the already-computed bounds and bridge cost. Reading these
+        // from rendered proposals would filter/sum every leave item for
+        // every comparison in a full year's alternatives.
+        var chosenCandidates: [Candidate] = []
         for candidate in eligible {
             if chosen.count == query.maximumProposals { break }
-            let overlapsChosen = chosen.contains {
-                candidate.first <= $0.lastRestDayNumber - days[0].dayNumber
-                    && candidate.last >= $0.firstRestDayNumber - days[0].dayNumber
+            // Shared weekends do not make two leave requests the same plan.
+            // Only drop a shorter stretch fully covered by an already valid,
+            // no-more-expensive plan. Partially overlapping alternatives stay.
+            let isDominated = chosenCandidates.contains {
+                $0.first <= candidate.first && $0.last >= candidate.last && $0.cost <= candidate.cost
             }
-            guard !overlapsChosen,
+            guard !isDominated,
                   let proposal = proposal(for: candidate)
             else { continue }
             chosen.append(proposal)
+            chosenCandidates.append(candidate)
         }
         return chosen
     }
@@ -350,7 +360,7 @@ private nonisolated struct Search {
 
         // A spare half day is spent on leaving earlier, then on returning
         // later. Neither adds a full rest day, so neither affects the ranking.
-        if case .leaveAtMost = query.goal {
+        if case .leaveAtMost = query.goal, candidate.cost < ceiling {
             let edges: [(shift: Int?, portion: LeavePortion, role: LeavePlanItem.Role)] = [
                 (adjacentShift(before: runStart, leave: leave), .secondHalf, .earlyDeparture),
                 (adjacentShift(after: runEnd, leave: leave), .firstHalf, .lateReturn),
@@ -392,6 +402,7 @@ private nonisolated struct Search {
         var caveats = restDays.reduce(into: Set<LeavePlannerCaveat>()) { $0.formUnion($1.caveats) }
         for item in items { caveats.formUnion(days[item.dayNumber - days[0].dayNumber].caveats) }
 
+        let work = remainingWork(leave)
         return LeavePlanProposal(
             firstRestDayNumber: days[candidate.first].dayNumber,
             lastRestDayNumber: days[candidate.last].dayNumber,
@@ -399,8 +410,8 @@ private nonisolated struct Search {
             lastRestDayKey: days[candidate.last].dayKey,
             items: items,
             uses: allocation.totals,
-            lastShiftEndAtMs: remainingWork(leave).filter { $0.endAtMs <= runStart }.map(\.endAtMs).max(),
-            nextShiftStartAtMs: remainingWork(leave).filter { $0.startAtMs >= runEnd }.map(\.startAtMs).min(),
+            lastShiftEndAtMs: work.filter { $0.endAtMs <= runStart }.map(\.endAtMs).max(),
+            nextShiftStartAtMs: work.filter { $0.startAtMs >= runEnd }.map(\.startAtMs).min(),
             dayKinds: dayKinds,
             caveats: caveats
         )

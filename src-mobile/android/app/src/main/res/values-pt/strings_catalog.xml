@@ -373,11 +373,14 @@
     <string name="leaveMainlandHolidaysMissing">Esta versão ainda não inclui os feriados de %1$s da China continental, por isso %1$s segue a sua escala habitual. Quando forem adicionados, atualize o DoneAt para os incluir.</string>
     <string name="leaveManage">Gerir férias</string>
     <string name="leaveNewBalance">Novo saldo de férias</string>
+    <string name="leaveNextPlan">Próxima opção</string>
     <string name="leaveNextShiftStarts">Regresso ao trabalho</string>
     <string name="leaveNoBalancesHint">Adicione um saldo de férias para planear com ele. As pausas sem férias também aparecem.</string>
     <string name="leaveNoLeaveNeeded">Sem férias</string>
     <string name="leaveNoResults">Ainda nada corresponde a estas definições. Um período maior ou mais férias pode ajudar.</string>
     <string name="leavePlanAction">Planear férias</string>
+    <string name="leavePlanPosition">%1$s de %2$s</string>
+    <string name="leavePreviousPlan">Opção anterior</string>
     <string name="leaveRangeEnd">Até</string>
     <string name="leaveRangeFooter">Procura no próximo ano: %1$s – %2$s.</string>
     <string name="leaveRangeStart">A partir de</string>
@@ -408,6 +411,7 @@
     <string name="leaveValidFrom">Válido a partir de</string>
     <string name="leaveValidUntil">Expira em</string>
     <string name="leaveValidUntilDate">Expira a %1$s</string>
+    <string name="leaveViewDetails">Ver detalhes</string>
     <string name="leaveWhole">Turno inteiro</string>
     <string name="lifeAddEmployment">Adicionar emprego anterior</string>
     <string name="lifeAllocationMissing">Acrescenta uma data de reforma e o teu horário habitual, e isto preenche-se.</string>

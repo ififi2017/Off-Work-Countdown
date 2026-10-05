@@ -374,11 +374,14 @@
     <string name="leaveMainlandHolidaysMissing">В этой версии ещё нет праздников материкового Китая на %1$s год, поэтому %1$s год считается по вашему обычному графику. Когда их добавят, обновите DoneAt, чтобы учесть их.</string>
     <string name="leaveManage">Управлять отпуском</string>
     <string name="leaveNewBalance">Новый остаток отпуска</string>
+    <string name="leaveNextPlan">Следующий вариант</string>
     <string name="leaveNextShiftStarts">Снова на работу</string>
     <string name="leaveNoBalancesHint">Добавьте остаток отпуска, чтобы планировать с ним. Перерывы без отпуска тоже будут показаны.</string>
     <string name="leaveNoLeaveNeeded">Без отпуска</string>
     <string name="leaveNoResults">Пока ничего не подходит. Расширьте период или добавьте отпуск.</string>
     <string name="leavePlanAction">Спланировать отпуск</string>
+    <string name="leavePlanPosition">%1$s из %2$s</string>
+    <string name="leavePreviousPlan">Предыдущий вариант</string>
     <string name="leaveRangeEnd">Не позже</string>
     <string name="leaveRangeFooter">Поиск на год вперёд: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Не раньше</string>
@@ -410,6 +413,7 @@
     <string name="leaveValidFrom">Действует с</string>
     <string name="leaveValidUntil">Сгорает</string>
     <string name="leaveValidUntilDate">Сгорает %1$s</string>
+    <string name="leaveViewDetails">Подробнее</string>
     <string name="leaveWhole">Вся смена</string>
     <string name="lifeAddEmployment">Добавить предыдущую работу</string>
     <string name="lifeAllocationMissing">Укажите дату выхода на пенсию и обычные часы — и здесь появится расчёт.</string>

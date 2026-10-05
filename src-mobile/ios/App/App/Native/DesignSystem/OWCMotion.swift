@@ -53,6 +53,11 @@ enum OWCMotion {
     /// reads as a bounce.
     static let reveal = Animation.spring(duration: 0.42, bounce: 0.12)
 
+    /// Welcome-demo spring, with a bounded cascade for long leave ranges.
+    static func leaveCalendarDay(_ index: Int) -> Animation {
+        reveal.delay(Double(min(index, 10)) * revealStagger)
+    }
+
     /// Gap between consecutive rows of that reveal, and the pause before the
     /// first one, which lets the page finish sliding in before its contents
     /// start populating.

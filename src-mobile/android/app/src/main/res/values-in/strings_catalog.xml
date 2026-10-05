@@ -371,11 +371,14 @@
     <string name="leaveMainlandHolidaysMissing">Versi ini belum memuat hari libur Tiongkok daratan %1$s, jadi %1$s mengikuti jadwal biasamu. Setelah ditambahkan, perbarui DoneAt untuk menyertakannya.</string>
     <string name="leaveManage">Kelola cuti</string>
     <string name="leaveNewBalance">Saldo cuti baru</string>
+    <string name="leaveNextPlan">Pilihan berikutnya</string>
     <string name="leaveNextShiftStarts">Kembali bekerja</string>
     <string name="leaveNoBalancesHint">Tambahkan saldo cuti untuk merencanakan. Libur panjang tanpa cuti tetap ditampilkan.</string>
     <string name="leaveNoLeaveNeeded">Tanpa cuti</string>
     <string name="leaveNoResults">Belum ada yang cocok. Rentang tanggal lebih lebar atau cuti lebih banyak mungkin membantu.</string>
     <string name="leavePlanAction">Rencanakan cuti</string>
+    <string name="leavePlanPosition">%1$s dari %2$s</string>
+    <string name="leavePreviousPlan">Pilihan sebelumnya</string>
     <string name="leaveRangeEnd">Paling akhir</string>
     <string name="leaveRangeFooter">Mencari dalam setahun ke depan: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Paling awal</string>
@@ -404,6 +407,7 @@
     <string name="leaveValidFrom">Berlaku mulai</string>
     <string name="leaveValidUntil">Berlaku hingga</string>
     <string name="leaveValidUntilDate">Berlaku hingga %1$s</string>
+    <string name="leaveViewDetails">Lihat detail</string>
     <string name="leaveWhole">Satu sif penuh</string>
     <string name="lifeAddEmployment">Tambah pekerjaan lebih awal</string>
     <string name="lifeAllocationMissing">Tambahkan tanggal pensiun dan jam kerja biasamu, nanti bagian ini terisi.</string>

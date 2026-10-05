@@ -373,11 +373,14 @@
     <string name="leaveMainlandHolidaysMissing">Questa versione non include ancora le festività %1$s della Cina continentale, quindi il %1$s segue i tuoi turni abituali. Quando saranno aggiunte, aggiorna DoneAt per includerle.</string>
     <string name="leaveManage">Gestisci ferie</string>
     <string name="leaveNewBalance">Nuovo saldo ferie</string>
+    <string name="leaveNextPlan">Proposta successiva</string>
     <string name="leaveNextShiftStarts">Rientro</string>
     <string name="leaveNoBalancesHint">Aggiungi un saldo ferie per pianificare. Le pause senza ferie compaiono comunque.</string>
     <string name="leaveNoLeaveNeeded">Senza ferie</string>
     <string name="leaveNoResults">Per ora nulla corrisponde. Un periodo più ampio o più ferie possono aiutare.</string>
     <string name="leavePlanAction">Pianifica le ferie</string>
+    <string name="leavePlanPosition">%1$s di %2$s</string>
+    <string name="leavePreviousPlan">Proposta precedente</string>
     <string name="leaveRangeEnd">Al</string>
     <string name="leaveRangeFooter">Cerca nell’anno a venire: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Dal</string>
@@ -408,6 +411,7 @@
     <string name="leaveValidFrom">Valido dal</string>
     <string name="leaveValidUntil">Scade il</string>
     <string name="leaveValidUntilDate">Scade il %1$s</string>
+    <string name="leaveViewDetails">Vedi dettagli</string>
     <string name="leaveWhole">Turno intero</string>
     <string name="lifeAddEmployment">Aggiungi un lavoro precedente</string>
     <string name="lifeAllocationMissing">Aggiungi una data di pensione e i tuoi orari abituali e qui comparirà il calcolo.</string>

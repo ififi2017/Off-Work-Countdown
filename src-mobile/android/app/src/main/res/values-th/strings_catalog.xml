@@ -371,11 +371,14 @@
     <string name="leaveMainlandHolidaysMissing">เวอร์ชันนี้ยังไม่มีวันหยุดของจีนแผ่นดินใหญ่ปี %1$s ปี %1$s จึงคิดตามตารางงานปกติของคุณ เมื่อมีการเพิ่มแล้ว อัปเดต DoneAt เพื่อรวมไว้</string>
     <string name="leaveManage">จัดการวันลา</string>
     <string name="leaveNewBalance">วันลาคงเหลือใหม่</string>
+    <string name="leaveNextPlan">ตัวเลือกถัดไป</string>
     <string name="leaveNextShiftStarts">กลับมาทำงาน</string>
     <string name="leaveNoBalancesHint">เพิ่มวันลาคงเหลือเพื่อใช้วางแผน วันหยุดยาวที่ไม่ต้องลาก็ยังแสดงอยู่</string>
     <string name="leaveNoLeaveNeeded">ไม่ต้องลา</string>
     <string name="leaveNoResults">ยังไม่มีแผนที่ตรงกับเงื่อนไขนี้ ลองขยายช่วงวันที่หรือเพิ่มวันลา</string>
     <string name="leavePlanAction">วางแผนวันหยุด</string>
+    <string name="leavePlanPosition">%1$s จาก %2$s</string>
+    <string name="leavePreviousPlan">ตัวเลือกก่อนหน้า</string>
     <string name="leaveRangeEnd">ช้าที่สุด</string>
     <string name="leaveRangeFooter">ค้นหาภายในหนึ่งปีข้างหน้า: %1$s – %2$s</string>
     <string name="leaveRangeStart">เร็วที่สุด</string>
@@ -404,6 +407,7 @@
     <string name="leaveValidFrom">เริ่มใช้ได้</string>
     <string name="leaveValidUntil">หมดอายุ</string>
     <string name="leaveValidUntilDate">หมดอายุ %1$s</string>
+    <string name="leaveViewDetails">ดูรายละเอียด</string>
     <string name="leaveWhole">ทั้งกะ</string>
     <string name="lifeAddEmployment">เพิ่มงานก่อนหน้า</string>
     <string name="lifeAllocationMissing">ใส่วันเกษียณกับเวลาทำงานปกติ แล้วส่วนนี้จะขึ้นเอง</string>

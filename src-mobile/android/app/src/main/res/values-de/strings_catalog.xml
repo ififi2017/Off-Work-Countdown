@@ -372,11 +372,14 @@
     <string name="leaveMainlandHolidaysMissing">Diese Version enthält die Feiertage in Festlandchina für %1$s noch nicht, daher gilt %1$s dein üblicher Dienstplan. Sobald sie ergänzt sind, aktualisiere DoneAt, um sie einzubeziehen.</string>
     <string name="leaveManage">Urlaub verwalten</string>
     <string name="leaveNewBalance">Neues Urlaubskonto</string>
+    <string name="leaveNextPlan">Nächster Vorschlag</string>
     <string name="leaveNextShiftStarts">Zurück bei der Arbeit</string>
     <string name="leaveNoBalancesHint">Füge ein Urlaubskonto hinzu, um damit zu planen. Pausen ohne Urlaub erscheinen trotzdem.</string>
     <string name="leaveNoLeaveNeeded">Ohne Urlaub</string>
     <string name="leaveNoResults">Noch passt nichts zu diesen Einstellungen. Ein größerer Zeitraum oder mehr Urlaub kann helfen.</string>
     <string name="leavePlanAction">Urlaub planen</string>
+    <string name="leavePlanPosition">%1$s von %2$s</string>
+    <string name="leavePreviousPlan">Vorheriger Vorschlag</string>
     <string name="leaveRangeEnd">Spätestens</string>
     <string name="leaveRangeFooter">Sucht im kommenden Jahr: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Frühestens</string>
@@ -406,6 +409,7 @@
     <string name="leaveValidFrom">Gültig ab</string>
     <string name="leaveValidUntil">Verfällt am</string>
     <string name="leaveValidUntilDate">Verfällt am %1$s</string>
+    <string name="leaveViewDetails">Details ansehen</string>
     <string name="leaveWhole">Ganze Schicht</string>
     <string name="lifeAddEmployment">Frühere Stelle hinzufügen</string>
     <string name="lifeAllocationMissing">Trage ein Rentendatum und deine üblichen Arbeitszeiten ein, dann füllt sich das hier.</string>

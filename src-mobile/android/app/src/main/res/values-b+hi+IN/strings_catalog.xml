@@ -372,11 +372,14 @@
     <string name="leaveMainlandHolidaysMissing">इस वर्ज़न में अभी मुख्यभूमि चीन की %1$s की छुट्टियाँ शामिल नहीं हैं, इसलिए %1$s आपके सामान्य शेड्यूल से चलता है। जुड़ने के बाद उन्हें शामिल करने के लिए DoneAt अपडेट करें।</string>
     <string name="leaveManage">छुट्टी प्रबंधित करें</string>
     <string name="leaveNewBalance">नई छुट्टी शेष</string>
+    <string name="leaveNextPlan">अगला विकल्प</string>
     <string name="leaveNextShiftStarts">काम पर वापसी</string>
     <string name="leaveNoBalancesHint">योजना में इस्तेमाल के लिए छुट्टी शेष जोड़ें। बिना छुट्टी वाले लंबे ब्रेक भी दिखते हैं।</string>
     <string name="leaveNoLeaveNeeded">छुट्टी की ज़रूरत नहीं</string>
     <string name="leaveNoResults">इन सेटिंग्स से अभी कुछ नहीं मिला। बड़ी तारीख सीमा या ज़्यादा छुट्टी से मदद मिल सकती है।</string>
     <string name="leavePlanAction">छुट्टी की योजना बनाएँ</string>
+    <string name="leavePlanPosition">%2$s में से %1$s</string>
+    <string name="leavePreviousPlan">पिछला विकल्प</string>
     <string name="leaveRangeEnd">सबसे बाद में</string>
     <string name="leaveRangeFooter">आने वाले एक साल में खोजता है: %1$s – %2$s।</string>
     <string name="leaveRangeStart">सबसे पहले</string>
@@ -406,6 +409,7 @@
     <string name="leaveValidFrom">शुरू होने की तारीख</string>
     <string name="leaveValidUntil">समाप्ति तारीख</string>
     <string name="leaveValidUntilDate">%1$s को समाप्त</string>
+    <string name="leaveViewDetails">विवरण देखें</string>
     <string name="leaveWhole">पूरी शिफ़्ट</string>
     <string name="lifeAddEmployment">इससे पहले की नौकरी जोड़ें</string>
     <string name="lifeAllocationMissing">रिटायरमेंट की तारीख और अपने सामान्य घंटे जोड़ें, फिर यह भर जाएगा।</string>

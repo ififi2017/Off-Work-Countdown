@@ -371,11 +371,14 @@
     <string name="leaveMainlandHolidaysMissing">Phiên bản này chưa có lịch nghỉ lễ %1$s của Trung Quốc đại lục, nên năm %1$s được tính theo lịch làm việc thường ngày của bạn. Khi lịch được bổ sung, hãy cập nhật DoneAt để đưa vào.</string>
     <string name="leaveManage">Quản lý ngày nghỉ</string>
     <string name="leaveNewBalance">Số ngày phép mới</string>
+    <string name="leaveNextPlan">Phương án tiếp theo</string>
     <string name="leaveNextShiftStarts">Đi làm lại</string>
     <string name="leaveNoBalancesHint">Thêm số ngày phép để lên kế hoạch. Các kỳ nghỉ không cần xin phép vẫn được hiển thị.</string>
     <string name="leaveNoLeaveNeeded">Không cần xin phép</string>
     <string name="leaveNoResults">Chưa có phương án phù hợp. Mở rộng khoảng ngày hoặc thêm ngày phép có thể giúp ích.</string>
     <string name="leavePlanAction">Lên kế hoạch nghỉ</string>
+    <string name="leavePlanPosition">%1$s trên %2$s</string>
+    <string name="leavePreviousPlan">Phương án trước</string>
     <string name="leaveRangeEnd">Muộn nhất</string>
     <string name="leaveRangeFooter">Tìm trong một năm tới: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Sớm nhất</string>
@@ -404,6 +407,7 @@
     <string name="leaveValidFrom">Có hiệu lực từ</string>
     <string name="leaveValidUntil">Hết hạn</string>
     <string name="leaveValidUntilDate">Hết hạn %1$s</string>
+    <string name="leaveViewDetails">Xem chi tiết</string>
     <string name="leaveWhole">Cả ca</string>
     <string name="lifeAddEmployment">Thêm công việc trước đó</string>
     <string name="lifeAllocationMissing">Thêm ngày nghỉ hưu và giờ làm thường ngày, phần này sẽ hiện ra.</string>

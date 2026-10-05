@@ -371,11 +371,14 @@
     <string name="leaveMainlandHolidaysMissing">当前版本尚未收录 %1$s 年中国大陆节假日安排，%1$s 年暂按你的日常排班计算。相关安排收录到新版后，更新 App 即可纳入规划。</string>
     <string name="leaveManage">管理休假</string>
     <string name="leaveNewBalance">新建假期余额</string>
+    <string name="leaveNextPlan">下一个方案</string>
     <string name="leaveNextShiftStarts">回到工作</string>
     <string name="leaveNoBalancesHint">添加假期余额后即可用于规划。无需请假的连休也会列出。</string>
     <string name="leaveNoLeaveNeeded">无需请假</string>
     <string name="leaveNoResults">当前条件下暂无合适的连休。放宽日期范围或增加可用假期也许会有。</string>
     <string name="leavePlanAction">规划休假</string>
+    <string name="leavePlanPosition">第 %1$s / %2$s 个方案</string>
+    <string name="leavePreviousPlan">上一个方案</string>
     <string name="leaveRangeEnd">最晚</string>
     <string name="leaveRangeFooter">在今后一年内查找：%1$s—%2$s。</string>
     <string name="leaveRangeStart">最早</string>
@@ -404,6 +407,7 @@
     <string name="leaveValidFrom">生效日期</string>
     <string name="leaveValidUntil">到期日期</string>
     <string name="leaveValidUntilDate">%1$s 到期</string>
+    <string name="leaveViewDetails">查看详情</string>
     <string name="leaveWhole">整班</string>
     <string name="lifeAddEmployment">添加更早的工作经历</string>
     <string name="lifeAllocationMissing">填上退休时间和平时的工作时长，这里就会算出来。</string>
