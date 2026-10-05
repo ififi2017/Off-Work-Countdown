@@ -79,15 +79,19 @@ struct WatchSnapshotReceiverTests {
         #expect(model.package?.access.status == .free)
 
         let restoredModel = WatchAppModel()
+        let restoredTransport = RecordingTransport()
+        defer { withExtendedLifetime(restoredTransport) {} }
         let restored = WatchSnapshotReceiver(
-            model: restoredModel, cacheURL: file, transport: RecordingTransport().value)
+            model: restoredModel, cacheURL: file, transport: restoredTransport.value)
         await restored.start()
         #expect(restoredModel.package == upgrade)
         #expect(restoredModel.package?.schemaVersion == 2)
+        #expect(restoredTransport.reloads == 1)
 
         await restored.receiveContext(encoded(package(revision: 4)))
         #expect(restoredModel.package == upgrade)
         #expect(restoredModel.package?.access.status == .free)
+        #expect(restoredTransport.reloads == 1)
     }
 
     @Test("An unreachable phone receives no pairing request")
