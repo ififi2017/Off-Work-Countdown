@@ -164,8 +164,37 @@ struct LeavePlannerTests {
         #expect(best.firstRestDayKey == "2026-10-01")
         #expect(best.lastRestDayKey == "2026-10-07")
         #expect(best.costHalfDays == 0)
-        // Distinct stretches only: nothing else overlaps the week chosen.
-        #expect(!result.dropFirst().contains { $0.firstRestDayNumber <= best.lastRestDayNumber && $0.lastRestDayNumber >= best.firstRestDayNumber })
+        // A shorter plan inside this free week adds no alternative.
+        #expect(!result.dropFirst().contains {
+            $0.firstRestDayNumber >= best.firstRestDayNumber && $0.lastRestDayNumber <= best.lastRestDayNumber
+        })
+    }
+
+    @Test("Shared weekends preserve every weekly nine-day alternative", arguments: [false, true])
+    func overlappingWeeklyAlternatives(budgetGoal: Bool) throws {
+        let result = try Self.proposals(
+            plan: Self.weeklyPlan(region: "CN"),
+            goal: budgetGoal ? .leaveAtMost(halfDays: 10) : .restAtLeast(days: 9),
+            from: "2026-10-05", through: "2026-12-06",
+            now: try Self.instant("2026-10-05", hour: 8),
+            budgets: [try Self.budget(halfDays: 10)]
+        )
+        for (start, end) in [
+            ("2026-10-17", "2026-10-25"), ("2026-10-24", "2026-11-01"),
+            ("2026-10-31", "2026-11-08"), ("2026-11-07", "2026-11-15"),
+            ("2026-11-14", "2026-11-22"), ("2026-11-21", "2026-11-29"),
+            ("2026-11-28", "2026-12-06"),
+        ] {
+            let plan = try #require(result.first { $0.firstRestDayKey == start && $0.lastRestDayKey == end })
+            #expect(plan.fullRestDays == 9)
+            #expect(plan.costHalfDays == 10)
+            #expect(plan.items.count == 5)
+        }
+        #expect(result.count > 5)
+        let ranges = result.map { "\($0.firstRestDayKey)/\($0.lastRestDayKey)" }
+        #expect(Set(ranges).count == result.count)
+        let best = result.filter { $0.fullRestDays == 9 && $0.costHalfDays == 10 }
+        #expect(best.map(\.firstRestDayNumber) == best.map(\.firstRestDayNumber).sorted())
     }
 
     @Test("A spare half day leaves early on the last working afternoon")

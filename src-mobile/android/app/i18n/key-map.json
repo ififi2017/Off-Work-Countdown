@@ -1395,6 +1395,9 @@
     "leaveNewBalance": {
       "resource": "string/leaveNewBalance"
     },
+    "leaveNextPlan": {
+      "resource": "string/leaveNextPlan"
+    },
     "leaveNextShiftStarts": {
       "resource": "string/leaveNextShiftStarts"
     },
@@ -1409,6 +1412,16 @@
     },
     "leavePlanAction": {
       "resource": "string/leavePlanAction"
+    },
+    "leavePlanPosition": {
+      "resource": "string/leavePlanPosition",
+      "params": [
+        "current",
+        "total"
+      ]
+    },
+    "leavePreviousPlan": {
+      "resource": "string/leavePreviousPlan"
     },
     "leaveRangeEnd": {
       "resource": "string/leaveRangeEnd"
@@ -1501,6 +1514,9 @@
       "params": [
         "date"
       ]
+    },
+    "leaveViewDetails": {
+      "resource": "string/leaveViewDetails"
     },
     "leaveWhole": {
       "resource": "string/leaveWhole"

@@ -371,11 +371,14 @@
     <string name="leaveMainlandHolidaysMissing">呢個版本仲未收錄 %1$s 年中國內地嘅節假日安排，%1$s 年暫時按你平時嘅排班計。收錄咗之後更新 App，就會計埋入規劃。</string>
     <string name="leaveManage">管理假期</string>
     <string name="leaveNewBalance">新假期餘額</string>
+    <string name="leaveNextPlan">下一個方案</string>
     <string name="leaveNextShiftStarts">返工</string>
     <string name="leaveNoBalancesHint">加入假期餘額就可以用嚟計劃。唔使請假嘅連假都會列出嚟。</string>
     <string name="leaveNoLeaveNeeded">唔使請假</string>
     <string name="leaveNoResults">而家嘅條件暫時搵唔到合適嘅連假。放寬日期或者加多啲假期可能會有。</string>
     <string name="leavePlanAction">計劃放假</string>
+    <string name="leavePlanPosition">第 %1$s / %2$s 個方案</string>
+    <string name="leavePreviousPlan">上一個方案</string>
     <string name="leaveRangeEnd">最遲</string>
     <string name="leaveRangeFooter">喺未來一年入面搵：%1$s—%2$s。</string>
     <string name="leaveRangeStart">最早</string>
@@ -404,6 +407,7 @@
     <string name="leaveValidFrom">生效日期</string>
     <string name="leaveValidUntil">到期日</string>
     <string name="leaveValidUntilDate">%1$s 到期</string>
+    <string name="leaveViewDetails">查看詳情</string>
     <string name="leaveWhole">成更</string>
     <string name="lifeAddEmployment">加入更早的工作經歷</string>
     <string name="lifeAllocationMissing">填咗退休時間同平時嘅工作時數，呢度就會計到。</string>

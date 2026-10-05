@@ -376,11 +376,14 @@
     <string name="leaveMainlandHolidaysMissing">لا يتضمن هذا الإصدار عطلات البر الرئيسي الصيني لعام %1$s بعد، لذا يتبع عام %1$s جدولك المعتاد. حدّث DoneAt بعد إضافتها لتُحتسب.</string>
     <string name="leaveManage">إدارة الإجازات</string>
     <string name="leaveNewBalance">رصيد إجازة جديد</string>
+    <string name="leaveNextPlan">الخيار التالي</string>
     <string name="leaveNextShiftStarts">العودة إلى العمل</string>
     <string name="leaveNoBalancesHint">أضف رصيد إجازة للتخطيط به. تظهر فترات الراحة التي لا تحتاج إجازة أيضًا.</string>
     <string name="leaveNoLeaveNeeded">دون إجازة</string>
     <string name="leaveNoResults">لا شيء يناسب هذه الإعدادات بعد. قد يساعد نطاق تواريخ أوسع أو إجازة أكثر.</string>
     <string name="leavePlanAction">خطّط لإجازتك</string>
+    <string name="leavePlanPosition">%1$s من %2$s</string>
+    <string name="leavePreviousPlan">الخيار السابق</string>
     <string name="leaveRangeEnd">آخر موعد</string>
     <string name="leaveRangeFooter">يبحث في العام المقبل: %1$s – %2$s.</string>
     <string name="leaveRangeStart">أبكر موعد</string>
@@ -414,6 +417,7 @@
     <string name="leaveValidFrom">يبدأ في</string>
     <string name="leaveValidUntil">ينتهي في</string>
     <string name="leaveValidUntilDate">ينتهي %1$s</string>
+    <string name="leaveViewDetails">عرض التفاصيل</string>
     <string name="leaveWhole">المناوبة كاملة</string>
     <string name="lifeAddEmployment">إضافة عمل أقدم</string>
     <string name="lifeAllocationMissing">أضف تاريخ التقاعد وساعات عملك المعتادة ليظهر هذا الرقم.</string>

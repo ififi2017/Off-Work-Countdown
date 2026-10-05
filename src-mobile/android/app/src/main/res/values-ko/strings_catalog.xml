@@ -371,11 +371,14 @@
     <string name="leaveMainlandHolidaysMissing">이 버전에는 아직 중국 본토의 %1$s년 공휴일이 없어서 %1$s년은 평소 일정으로 계산해요. 추가된 뒤 DoneAt을 업데이트하면 반영돼요.</string>
     <string name="leaveManage">휴가 관리</string>
     <string name="leaveNewBalance">새 휴가 잔여</string>
+    <string name="leaveNextPlan">다음 일정</string>
     <string name="leaveNextShiftStarts">복귀</string>
     <string name="leaveNoBalancesHint">휴가 잔여를 추가하면 계획에 쓸 수 있어요. 휴가가 필요 없는 연휴도 보여 드려요.</string>
     <string name="leaveNoLeaveNeeded">휴가 필요 없음</string>
     <string name="leaveNoResults">이 조건에 맞는 연휴가 아직 없어요. 기간을 넓히거나 휴가를 늘리면 찾을 수도 있어요.</string>
     <string name="leavePlanAction">휴가 계획하기</string>
+    <string name="leavePlanPosition">%2$s개 중 %1$s번째</string>
+    <string name="leavePreviousPlan">이전 일정</string>
     <string name="leaveRangeEnd">가장 늦은 날</string>
     <string name="leaveRangeFooter">앞으로 1년 안에서 찾아요: %1$s–%2$s</string>
     <string name="leaveRangeStart">가장 이른 날</string>
@@ -404,6 +407,7 @@
     <string name="leaveValidFrom">시작일</string>
     <string name="leaveValidUntil">만료일</string>
     <string name="leaveValidUntilDate">%1$s 만료</string>
+    <string name="leaveViewDetails">자세히 보기</string>
     <string name="leaveWhole">종일</string>
     <string name="lifeAddEmployment">이전 경력 추가</string>
     <string name="lifeAllocationMissing">은퇴 시점과 평소 근무 시간을 넣으면 여기가 채워집니다.</string>

@@ -58,6 +58,7 @@ object Strings {
     fun leaveDaysOff(res: Resources, count: Int): String = res.getQuantityString(R.plurals.leaveDaysOff, count, count)
     fun leaveEstimatedYear(res: Resources, year: String): String = res.getString(R.string.leaveEstimatedYear, year)
     fun leaveMainlandHolidaysMissing(res: Resources, year: String): String = res.getString(R.string.leaveMainlandHolidaysMissing, year)
+    fun leavePlanPosition(res: Resources, current: String, total: String): String = res.getString(R.string.leavePlanPosition, current, total)
     fun leaveRangeFooter(res: Resources, start: String, end: String): String = res.getString(R.string.leaveRangeFooter, start, end)
     fun leaveTrialsLeft(res: Resources, count: Int): String = res.getQuantityString(R.plurals.leaveTrialsLeft, count, count)
     fun leaveUpTo(res: Resources, days: String): String = res.getString(R.string.leaveUpTo, days)

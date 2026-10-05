@@ -373,11 +373,14 @@
     <string name="leaveMainlandHolidaysMissing">Cette version n’inclut pas encore les jours fériés %1$s de Chine continentale : %1$s suit donc votre planning habituel. Mettez à jour DoneAt une fois qu’ils seront ajoutés pour les prendre en compte.</string>
     <string name="leaveManage">Gérer les congés</string>
     <string name="leaveNewBalance">Nouveau solde de congés</string>
+    <string name="leaveNextPlan">Proposition suivante</string>
     <string name="leaveNextShiftStarts">Reprise</string>
     <string name="leaveNoBalancesHint">Ajoutez un solde de congés pour planifier avec. Les pauses sans congé s’affichent quand même.</string>
     <string name="leaveNoLeaveNeeded">Sans congé</string>
     <string name="leaveNoResults">Rien ne correspond encore à ces réglages. Une période plus large ou plus de congés peut aider.</string>
     <string name="leavePlanAction">Planifier des congés</string>
+    <string name="leavePlanPosition">%1$s sur %2$s</string>
+    <string name="leavePreviousPlan">Proposition précédente</string>
     <string name="leaveRangeEnd">Au plus tard</string>
     <string name="leaveRangeFooter">Recherche sur l’année à venir : %1$s – %2$s.</string>
     <string name="leaveRangeStart">Au plus tôt</string>
@@ -408,6 +411,7 @@
     <string name="leaveValidFrom">Valable à partir du</string>
     <string name="leaveValidUntil">Expire le</string>
     <string name="leaveValidUntilDate">Expire le %1$s</string>
+    <string name="leaveViewDetails">Voir les détails</string>
     <string name="leaveWhole">Service entier</string>
     <string name="lifeAddEmployment">Ajouter un emploi antérieur</string>
     <string name="lifeAllocationMissing">Ajoutez une date de retraite et vos horaires habituels, et ceci se remplira.</string>

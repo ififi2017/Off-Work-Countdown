@@ -372,11 +372,14 @@
     <string name="leaveMainlandHolidaysMissing">या आवृत्तीत अजून मुख्य भूमी चीनच्या %1$s च्या सुट्ट्या नाहीत, म्हणून %1$s तुमच्या नेहमीच्या वेळापत्रकानुसार धरले आहे. त्या जोडल्यावर DoneAt अपडेट करा.</string>
     <string name="leaveManage">रजा व्यवस्थापित करा</string>
     <string name="leaveNewBalance">नवीन सुट्टी शिल्लक</string>
+    <string name="leaveNextPlan">पुढील पर्याय</string>
     <string name="leaveNextShiftStarts">कामावर परत</string>
     <string name="leaveNoBalancesHint">नियोजनासाठी सुट्टी शिल्लक जोडा. रजा न लागणाऱ्या सलग सुट्ट्याही दिसतील.</string>
     <string name="leaveNoLeaveNeeded">रजा लागणार नाही</string>
     <string name="leaveNoResults">या सेटिंग्जनुसार अजून काही जुळत नाही. मोठी तारीख श्रेणी किंवा अधिक रजा मदत करू शकते.</string>
     <string name="leavePlanAction">सुट्टीचे नियोजन करा</string>
+    <string name="leavePlanPosition">%2$s पैकी %1$s</string>
+    <string name="leavePreviousPlan">मागील पर्याय</string>
     <string name="leaveRangeEnd">सर्वात उशिरा</string>
     <string name="leaveRangeFooter">पुढील एका वर्षात शोधते: %1$s – %2$s.</string>
     <string name="leaveRangeStart">सर्वात आधी</string>
@@ -406,6 +409,7 @@
     <string name="leaveValidFrom">सुरू होण्याची तारीख</string>
     <string name="leaveValidUntil">संपण्याची तारीख</string>
     <string name="leaveValidUntilDate">%1$s रोजी संपते</string>
+    <string name="leaveViewDetails">तपशील पहा</string>
     <string name="leaveWhole">पूर्ण शिफ्ट</string>
     <string name="lifeAddEmployment">आधीची नोकरी जोडा</string>
     <string name="lifeAllocationMissing">निवृत्तीची तारीख आणि नेहमीचे तास भरा, म्हणजे इथे आकडा येईल.</string>

@@ -372,11 +372,14 @@
     <string name="leaveMainlandHolidaysMissing">Bu sürüm Çin anakarasının %1$s tatillerini henüz içermiyor; bu yüzden %1$s her zamanki vardiyana göre hesaplanıyor. Eklendiğinde DoneAt’i güncelleyerek dahil edebilirsin.</string>
     <string name="leaveManage">İzinleri yönet</string>
     <string name="leaveNewBalance">Yeni izin bakiyesi</string>
+    <string name="leaveNextPlan">Sonraki seçenek</string>
     <string name="leaveNextShiftStarts">İşe dönüş</string>
     <string name="leaveNoBalancesHint">Planlamak için bir izin bakiyesi ekle. İzin gerektirmeyen tatiller yine de gösterilir.</string>
     <string name="leaveNoLeaveNeeded">İzin gerekmez</string>
     <string name="leaveNoResults">Bu ayarlara uyan bir şey henüz yok. Daha geniş bir tarih aralığı ya da daha fazla izin yardımcı olabilir.</string>
     <string name="leavePlanAction">İzin planla</string>
+    <string name="leavePlanPosition">%1$s / %2$s</string>
+    <string name="leavePreviousPlan">Önceki seçenek</string>
     <string name="leaveRangeEnd">En geç</string>
     <string name="leaveRangeFooter">Önümüzdeki bir yılda arar: %1$s – %2$s.</string>
     <string name="leaveRangeStart">En erken</string>
@@ -406,6 +409,7 @@
     <string name="leaveValidFrom">Başlangıç</string>
     <string name="leaveValidUntil">Son kullanma</string>
     <string name="leaveValidUntilDate">%1$s tarihinde sona erer</string>
+    <string name="leaveViewDetails">Ayrıntıları gör</string>
     <string name="leaveWhole">Tüm vardiya</string>
     <string name="lifeAddEmployment">Daha önceki bir işi ekle</string>
     <string name="lifeAllocationMissing">Bir emeklilik tarihi ve olağan çalışma saatlerini ekle, burası dolsun.</string>

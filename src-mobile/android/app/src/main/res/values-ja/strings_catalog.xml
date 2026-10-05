@@ -371,11 +371,14 @@
     <string name="leaveMainlandHolidaysMissing">このバージョンには中国本土の %1$s 年の祝日がまだ含まれていないため、%1$s 年は通常のシフトで計算します。収録後に DoneAt をアップデートすると反映されます。</string>
     <string name="leaveManage">休暇を管理</string>
     <string name="leaveNewBalance">新しい休暇</string>
+    <string name="leaveNextPlan">次の候補</string>
     <string name="leaveNextShiftStarts">仕事再開</string>
     <string name="leaveNoBalancesHint">休暇を追加すると計画に使えます。休暇を使わない連休も表示されます。</string>
     <string name="leaveNoLeaveNeeded">休暇不要</string>
     <string name="leaveNoResults">この条件に合う連休はまだありません。期間を広げるか、使える休暇を増やすと見つかるかもしれません。</string>
     <string name="leavePlanAction">休暇を計画</string>
+    <string name="leavePlanPosition">%2$s 件中 %1$s 件目</string>
+    <string name="leavePreviousPlan">前の候補</string>
     <string name="leaveRangeEnd">最も遅い日</string>
     <string name="leaveRangeFooter">今後1年を探します：%1$s～%2$s</string>
     <string name="leaveRangeStart">最も早い日</string>
@@ -404,6 +407,7 @@
     <string name="leaveValidFrom">開始日</string>
     <string name="leaveValidUntil">有効期限</string>
     <string name="leaveValidUntilDate">%1$s まで</string>
+    <string name="leaveViewDetails">詳細を見る</string>
     <string name="leaveWhole">終日</string>
     <string name="lifeAddEmployment">以前の仕事を追加</string>
     <string name="lifeAllocationMissing">退職の時期と普段の勤務時間を入れると、ここが埋まります。</string>

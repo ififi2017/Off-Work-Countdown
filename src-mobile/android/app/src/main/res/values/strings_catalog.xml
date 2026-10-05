@@ -372,11 +372,14 @@
     <string name="leaveMainlandHolidaysMissing">This version doesn’t include mainland China’s %1$s holidays yet, so %1$s follows your usual schedule. Once they’re added, update DoneAt to include them.</string>
     <string name="leaveManage">Manage time off</string>
     <string name="leaveNewBalance">New leave balance</string>
+    <string name="leaveNextPlan">Next plan</string>
     <string name="leaveNextShiftStarts">Back at work</string>
     <string name="leaveNoBalancesHint">Add a leave balance to plan with it. Breaks that need no leave still show up.</string>
     <string name="leaveNoLeaveNeeded">No leave needed</string>
     <string name="leaveNoResults">Nothing fits these settings yet. A wider date range or more leave may help.</string>
     <string name="leavePlanAction">Plan time off</string>
+    <string name="leavePlanPosition">%1$s of %2$s</string>
+    <string name="leavePreviousPlan">Previous plan</string>
     <string name="leaveRangeEnd">Latest</string>
     <string name="leaveRangeFooter">Searches the year ahead: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Earliest</string>
@@ -406,6 +409,7 @@
     <string name="leaveValidFrom">Starts on</string>
     <string name="leaveValidUntil">Expires on</string>
     <string name="leaveValidUntilDate">Expires %1$s</string>
+    <string name="leaveViewDetails">View details</string>
     <string name="leaveWhole">Whole shift</string>
     <string name="lifeAddEmployment">Add an earlier job</string>
     <string name="lifeAllocationMissing">Add a retirement date and your usual hours, and this fills in.</string>
