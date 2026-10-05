@@ -31,6 +31,10 @@ android {
         buildConfigField("String", "PLUS_YEARLY_TRIAL_OFFER", "\"$yearlyTrial\"")
         buildConfigField("String", "PLUS_LIFETIME_PURCHASE_OPTION", "\"$lifetimeOption\"")
         buildConfigField("String", "PLAY_BILLING_PUBLIC_KEY", "\"$playKey\"")
+        // Public receipt verification keys (kid -> base64 DER/SPKI). Empty keeps the existing client-only path.
+        val receiptKeys = providers.gradleProperty("doneatBillingApiPublicKeys").orElse("").get()
+        val escapedReceiptKeys = receiptKeys.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")
+        buildConfigField("String", "BILLING_API_PUBLIC_KEYS", "\"$escapedReceiptKeys\"")
     }
 
     // Play upload key, supplied by the release workflow or an untracked local gradle.properties.

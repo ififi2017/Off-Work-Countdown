@@ -315,7 +315,7 @@ data class SyncedPreferences(
     companion object {
         const val LOGICAL_KEY = "preferences"
         val SUPPORTED_LANGUAGES = setOf(
-            "en", "zh-CN", "zh-HK", "zh-TW", "ja", "ko", "de", "es", "fr", "it",
+            "en", "en-GB", "zh-CN", "zh-HK", "zh-TW", "ja", "ko", "de", "es", "es-MX", "fr", "it",
             "pt", "ru", "ar", "hi-IN", "mr-IN", "id", "th", "tr", "vi",
         )
         val SCHEDULE_MODES = setOf("classic", "alternating", "rotation", "off")

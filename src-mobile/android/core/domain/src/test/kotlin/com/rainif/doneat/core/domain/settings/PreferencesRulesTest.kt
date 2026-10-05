@@ -3,6 +3,7 @@ package com.rainif.doneat.core.domain.settings
 import com.rainif.doneat.core.domain.records.RecordState
 import com.rainif.doneat.core.domain.settings.PreferencesRules.hasSameSettings
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -85,10 +86,54 @@ class PreferencesRulesTest {
             listOf("sv-SE", "fr-CA") to "fr",
             listOf("sv-SE") to "en",
             emptyList<String>() to "en",
+            listOf("en-GB") to "en-GB",
+            listOf("en-AU") to "en-GB",
+            listOf("en-IE") to "en-GB",
+            listOf("en-NZ") to "en-GB",
+            listOf("en-IN") to "en-GB",
+            listOf("en-ZA") to "en-GB",
+            listOf("en-US") to "en",
+            listOf("en-CA") to "en",
+            listOf("en-PH") to "en",
+            listOf("en") to "en",
+            listOf("es-MX") to "es-MX",
+            listOf("es-419") to "es-MX",
+            listOf("es-AR") to "es-MX",
+            listOf("es-CO") to "es-MX",
+            listOf("es-CL") to "es-MX",
+            listOf("es-PE") to "es-MX",
+            listOf("es-US") to "es-MX",
+            listOf("es-ES") to "es",
+            listOf("es") to "es",
+            listOf("es-GQ") to "es",
         )
         for ((preferred, expected) in cases) assertEquals(preferred.toString(), expected, AppLanguages.resolve(preferred))
         assertEquals("ja", AppLanguages.effective("ja", listOf("de")))
         assertEquals("de", AppLanguages.effective("xx", listOf("de")))
-        assertEquals(19, AppLanguages.supported.size)
+        assertEquals("en-GB", AppLanguages.effective(null, listOf("en-AU")))
+        assertEquals("es-MX", AppLanguages.effective(null, listOf("es-AR")))
+        assertEquals("es", AppLanguages.effective(null, listOf("es-ES")))
+        assertEquals(21, AppLanguages.supported.size)
+        assertEquals("es-419", AppLanguages.resourceTag("es-MX"))
+        assertEquals("en-GB", AppLanguages.resourceTag("en-GB"))
+        assertTrue(AppLanguages.deviceAlreadyUses("en-GB", listOf("en-GB")))
+        assertFalse(AppLanguages.deviceAlreadyUses("en-GB", listOf("en-AU")))
+        assertFalse(AppLanguages.deviceAlreadyUses("en-GB", listOf("en-US")))
+        assertTrue(AppLanguages.deviceAlreadyUses("en", listOf("en-US")))
+        assertTrue(AppLanguages.deviceAlreadyUses("en", listOf("en-AU")))
+        assertFalse(AppLanguages.deviceAlreadyUses("en", listOf("en-GB")))
+        assertTrue(AppLanguages.deviceAlreadyUses("es-MX", listOf("es-MX")))
+        assertTrue(AppLanguages.deviceAlreadyUses("es-MX", listOf("es-AR")))
+        assertTrue(AppLanguages.deviceAlreadyUses("es-MX", listOf("es-419")))
+        assertFalse(AppLanguages.deviceAlreadyUses("es-MX", listOf("es-ES")))
+        assertTrue(AppLanguages.deviceAlreadyUses("es", listOf("es-ES")))
+        assertFalse(AppLanguages.deviceAlreadyUses("es", listOf("es-MX")))
+        assertTrue(AppLanguages.deviceAlreadyUses("ja", listOf("ja-JP")))
+        assertTrue(AppLanguages.deviceAlreadyUses("zh-CN", listOf("zh-Hans-CN")))
+        assertFalse(AppLanguages.deviceAlreadyUses("zh-CN", listOf("zh-Hant-TW")))
+        assertTrue(AppLanguages.deviceAlreadyUses("hi-IN", listOf("hi-IN")))
+        assertFalse(AppLanguages.deviceAlreadyUses("hi-IN", listOf("hi")))
+        assertTrue(AppLanguages.deviceAlreadyUses("id", listOf("in")))
+        assertTrue(AppLanguages.deviceAlreadyUses("id", listOf("id-ID")))
     }
 }

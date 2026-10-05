@@ -92,6 +92,17 @@ describe("iOS string catalog checks", () => {
       catalog.strings.greeting.localizations.xx = unit("?");
       expect(catalogProblems(catalog, LOCALES)).toEqual(["greeting: unexpected locale xx"]);
     });
+
+    it("allows a partial en-GB or es-MX entry and does not require one", () => {
+      const catalog = good();
+      catalog.strings.greeting.localizations["en-GB"] = unit("Hi {{name}}");
+      catalog.strings.greeting.localizations["es-MX"] = unit("Hola {{name}}");
+      expect(catalogProblems(catalog, LOCALES)).toEqual([]);
+      catalog.strings.greeting.localizations["en-GB"] = unit("Hi {{user}}");
+      expect(catalogProblems(catalog, LOCALES)).toEqual([
+        "greeting (en-GB): placeholders {{user}} differ from English {{name}}",
+      ]);
+    });
   });
 
   describe("copy left in English", () => {

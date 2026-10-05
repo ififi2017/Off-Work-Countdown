@@ -34,6 +34,12 @@ release gates. No rule, plan or script may depend on locally installed skills.
   The approved 2026-09-05 plan 015 exception permits preferences and career
   salary history in opt-in private CloudKit sync and user-triggered backups.
   No product accounts; no salary in widgets, URLs, analytics or share metadata.
+- The approved 2026-10-04 Android exception permits Play purchase tokens and
+  product IDs to reach `api.doneat.app` (Cloudflare Worker/D1) for Google
+  verification. Store only hashed tokens and entitlement state; no salary,
+  schedules, records or product accounts. Keep secrets out of Git/APKs and
+  signed receipts out of backups. Activation requires the service runbook
+  and matching published privacy disclosures.
 - Share URLs encode only start/end times. Analytics are anonymous aggregate
   event counters: no cookies, identifiers, IP/User-Agent storage or histories.
 - Desktop networking is limited to updates, external links and user-triggered

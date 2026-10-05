@@ -302,7 +302,7 @@
   "annualBonusMonths": "Bonusmonate",
   "bonusMonthsValue": "{{count}} Monatsgehälter",
   "openSourceAcknowledgements": "Open-Source-Danksagungen",
-  "nativeNoThirdPartySDK": "Die native iOS-App enthält keine Drittanbieter-SDKs; die gemeinsamen Regeln stammen aus diesem MIT-lizenzierten Projekt.",
+  "nativeNoThirdPartySDK": "Die native iOS-App enthält keine Drittanbieter-SDKs; die gemeinsamen Regeln stammen aus diesem MPL-2.0-lizenzierten Projekt.",
   "shareDone": "Feierabend",
   "rotationWorkDays": "Arbeitstage",
   "rotationRestDays": "Freie Tage",

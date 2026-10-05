@@ -628,7 +628,7 @@
     <string name="plusAndroidPlansUnavailable">Google Play couldn\'t load the plans. Please try again.</string>
     <string name="plusAndroidRenewalNotice">Subscriptions renew automatically until you cancel. Lifetime is a one-time purchase and does not cancel an active subscription.</string>
     <string name="plusAndroidRequestFailed">Google Play could not complete that request. Try again in a moment.</string>
-    <string name="plusAndroidStoreOffline">Google Play is unavailable right now. Try restoring purchases when you are connected.</string>
+    <string name="plusAndroidStoreOffline">We couldn’t confirm your current Plus access. Try again or restore purchases.</string>
     <string name="plusAndroidStoreUnconfigured">Plus purchases are not available on this device yet. Your timer and recent records are ready to use.</string>
     <string name="plusAndroidYearlyTrialPrice">7 days free, then %1$s per year. Cancel before the trial ends to avoid being charged.</string>
     <string name="plusAutoRenew">Subscriptions renew automatically until you cancel. The yearly plan can include a 7-day trial. After the trial, the yearly price applies. Lifetime is a one-time purchase and does not cancel an active subscription.</string>

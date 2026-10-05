@@ -2,6 +2,11 @@
 import Foundation
 
 nonisolated enum WatchLocalizations {
+    /// Every language the phone can pin, including regional variants whose
+    /// table below only stores strings that differ from the parent.
+    private static let supported = ["en", "en-GB", "zh-CN", "zh-HK", "zh-TW", "ja", "ko", "de", "es", "es-MX", "fr", "it", "pt", "ru", "ar", "hi-IN", "mr-IN", "id", "th", "tr", "vi"]
+    private static let americanEnglishRegions: Set<String> = ["US", "CA", "PH", "LR", "PR", "GU", "AS", "VI", "UM", "MP"]
+    private static let latinAmericanRegions: Set<String> = ["419", "MX", "AR", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GT", "HN", "NI", "PA", "PE", "PR", "PY", "SV", "US", "UY", "VE"]
     private static let values: [String: [String: String]] = [
         "en": [
             "watchCacheCorrupt": "The saved schedule couldn’t be read. Open DoneAt on your iPhone.",
@@ -16,6 +21,9 @@ nonisolated enum WatchLocalizations {
             "watchBackAt": "Back at {{time}}",
             "watchNextShiftAt": "Next shift {{time}}",
             "watchWidgetDescription": "Time left and progress until you're off work."
+        ],
+        "en-GB": [
+            "watchCacheCorrupt": "The saved rota couldn’t be read. Open DoneAt on your iPhone."
         ],
         "zh-CN": [
             "watchCacheCorrupt": "无法读取已保存的排班。请在 iPhone 上打开 DoneAt。",
@@ -114,6 +122,9 @@ nonisolated enum WatchLocalizations {
             "watchBackAt": "Vuelta a las {{time}}",
             "watchNextShiftAt": "Próximo turno a las {{time}}",
             "watchWidgetDescription": "Tiempo restante y progreso hasta la hora de salida."
+        ],
+        "es-MX": [
+            "watchCacheCorrupt": "No se pudo leer el rol de turnos guardado. Abre DoneAt en tu iPhone."
         ],
         "fr": [
             "watchCacheCorrupt": "Le planning enregistré est illisible. Ouvrez DoneAt sur votre iPhone.",
@@ -274,21 +285,59 @@ nonisolated enum WatchLocalizations {
     static func text(_ key: String, localeIdentifier: String? = nil) -> String {
         let candidates = localeIdentifier.map { [$0] } ?? Locale.preferredLanguages
         let locale = resolveLocale(candidates)
-        return values[locale]?[key] ?? values["en"]?[key] ?? key
+        if let value = values[locale]?[key] { return value }
+        if let parent = parentLocale(locale), let value = values[parent]?[key] { return value }
+        return values["en"]?[key] ?? key
     }
 
+    /// Same region tables as `NativeLocalizer.resolve` and Android `AppLanguages.resolve`.
+    /// Keep `scripts/regional-variants.mjs` in step with these sets.
     static func resolveLocale(_ candidates: [String]) -> String {
         for raw in candidates {
             let normalized = raw.replacingOccurrences(of: "_", with: "-")
-            if let exact = values.keys.first(where: { $0.caseInsensitiveCompare(normalized) == .orderedSame }) { return exact }
+            if let exact = supported.first(where: { $0.caseInsensitiveCompare(normalized) == .orderedSame }) { return exact }
             let lower = normalized.lowercased()
             if lower.hasPrefix("zh-hant-hk") || lower.hasPrefix("zh-hk") { return "zh-HK" }
             if lower.hasPrefix("zh-hant") || lower.hasPrefix("zh-tw") { return "zh-TW" }
             if lower.hasPrefix("zh") { return "zh-CN" }
-            if let language = values.keys.first(where: {
+            if lower == "en" || lower.hasPrefix("en-") { return isAmericanEnglish(lower) ? "en" : "en-GB" }
+            if lower == "es" || lower.hasPrefix("es-") { return isLatinAmerican(lower) ? "es-MX" : "es" }
+            if let language = supported.first(where: {
                 lower.hasPrefix($0.lowercased() + "-") || $0.lowercased().hasPrefix(lower + "-")
             }) { return language }
         }
         return "en"
+    }
+
+    private static func parentLocale(_ locale: String) -> String? {
+        switch locale {
+        case "en-GB": return "en"
+        case "es-MX": return "es"
+        default: return nil
+        }
+    }
+
+    private static func regionCode(_ tag: String) -> String? {
+        let parts = tag.split(separator: "-").map(String.init)
+        guard parts.count >= 2 else { return nil }
+        var index = 1
+        if parts[index].count == 4, parts[index].allSatisfy(\.isLetter) {
+            index += 1
+            guard index < parts.count else { return nil }
+        }
+        let region = parts[index]
+        let letters = region.count == 2 && region.allSatisfy(\.isLetter)
+        let digits = region.count == 3 && region.allSatisfy(\.isNumber)
+        return (letters || digits) ? region.uppercased() : nil
+    }
+
+    private static func isAmericanEnglish(_ tag: String) -> Bool {
+        guard let region = regionCode(tag) else { return true }
+        return americanEnglishRegions.contains(region)
+    }
+
+    private static func isLatinAmerican(_ tag: String) -> Bool {
+        guard let region = regionCode(tag) else { return false }
+        return latinAmericanRegions.contains(region)
     }
 }

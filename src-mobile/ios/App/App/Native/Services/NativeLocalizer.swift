@@ -20,6 +20,7 @@ nonisolated struct NativeLanguage: Identifiable, Hashable, Sendable {
 final class NativeLocalizer {
     nonisolated static let supportedLanguages: [NativeLanguage] = [
         .init(id: "en", name: "English"),
+        .init(id: "en-GB", name: "English (UK)"),
         .init(id: "zh-CN", name: "简体中文"),
         .init(id: "zh-HK", name: "繁體中文（香港）"),
         .init(id: "zh-TW", name: "繁體中文（台灣）"),
@@ -27,6 +28,7 @@ final class NativeLocalizer {
         .init(id: "ko", name: "한국어"),
         .init(id: "de", name: "Deutsch"),
         .init(id: "es", name: "Español"),
+        .init(id: "es-MX", name: "Español (Latinoamérica)"),
         .init(id: "fr", name: "Français"),
         .init(id: "it", name: "Italiano"),
         .init(id: "pt", name: "Português"),
@@ -55,7 +57,11 @@ final class NativeLocalizer {
         count: Int? = nil,
         values: [String: String] = [:]
     ) -> String {
-        var value = lookup(key, locale: locale) ?? lookup(key, locale: "en") ?? key
+        let parent = Self.parentLanguage(for: locale)
+        var value = lookup(key, locale: locale)
+            ?? parent.flatMap { lookup(key, locale: $0) }
+            ?? lookup(key, locale: "en")
+            ?? key
         if Self.takesACount(value) {
             // A plural entry arrives as the catalog's format token — Foundation
             // hands back `%#@value@`, not the chosen variation — so this call
@@ -76,35 +82,100 @@ final class NativeLocalizer {
     }
 
     /// A message pool. The catalog has no array type, so the generator writes
-    /// `key.1`, `key.2`, … and they are collected back here. A locale with no
-    /// pool of its own falls back to English whole rather than line by line.
+    /// `key.1`, `key.2`, … and they are collected back here. A regional
+    /// variant fills each missing line from its parent (`en-GB` → `en`,
+    /// `es-MX` → `es`) so a partial pool is not cut short. A locale with no
+    /// pool at all falls back to English whole.
     func strings(_ key: String, locale: String) -> [String] {
         let localized = pool(key, locale: locale)
-        return localized.isEmpty ? pool(key, locale: "en") : localized
+        return localized.isEmpty && locale != "en" ? pool(key, locale: "en") : localized
     }
 
     func languageName(for locale: String) -> String {
         Self.supportedLanguages.first(where: { $0.id == locale })?.name ?? locale
     }
 
-    static func systemLanguage() -> String {
-        let preferred = Bundle.main.preferredLocalizations + Locale.preferredLanguages
-        for raw in preferred {
+    /// The language the UI should use for these BCP 47 tags, most preferred first.
+    ///
+    /// `Locale.preferredLanguages` is read before `Bundle.preferredLocalizations`.
+    /// The bundle collapses `en-AU` to `en` and `es-AR` to `es` once those
+    /// `.lproj` folders exist, which would hide the regional variant.
+    ///
+    /// English with no region, or US, CA, PH, LR and the US territories, stays
+    /// on `en` (American spelling). Any other English region (GB, IE, AU, NZ,
+    /// IN, ZA, …) uses `en-GB`. Spanish whose CLDR parent is `es-419` — MX, AR,
+    /// CO, CL, PE, US, 419 itself, and the rest of that list — uses `es-MX`.
+    /// `es`, `es-ES`, `es-GQ` and `es-PH` stay on `es`. The region sets match
+    /// `scripts/regional-variants.mjs`.
+    /// Pure: tags in, a language id out. `nonisolated` so Swift Testing can
+    /// call it from `#expect` under the app target's default MainActor isolation.
+    nonisolated static func resolve(_ candidates: [String]) -> String {
+        for raw in candidates {
             let normalized = raw.replacingOccurrences(of: "_", with: "-")
-            if supportedLanguages.contains(where: { $0.id.caseInsensitiveCompare(normalized) == .orderedSame }) {
-                return supportedLanguages.first(where: { $0.id.caseInsensitiveCompare(normalized) == .orderedSame })!.id
+            if let exact = supportedLanguages.first(where: { $0.id.caseInsensitiveCompare(normalized) == .orderedSame }) {
+                return exact.id
             }
-            if normalized.lowercased().hasPrefix("zh-hant-hk") { return "zh-HK" }
-            if normalized.lowercased().hasPrefix("zh-hant") { return "zh-TW" }
-            if normalized.lowercased().hasPrefix("zh") { return "zh-CN" }
+            let lower = normalized.lowercased()
+            if lower.hasPrefix("zh-hant-hk") || lower.hasPrefix("zh-hk") { return "zh-HK" }
+            if lower.hasPrefix("zh-hant") || lower.hasPrefix("zh-tw") { return "zh-TW" }
+            if lower.hasPrefix("zh") { return "zh-CN" }
+            if lower == "en" || lower.hasPrefix("en-") { return isAmericanEnglish(lower) ? "en" : "en-GB" }
+            if lower == "es" || lower.hasPrefix("es-") { return isLatinAmerican(lower) ? "es-MX" : "es" }
             if let language = supportedLanguages.first(where: {
-                normalized.lowercased().hasPrefix($0.id.lowercased() + "-")
-                    || $0.id.lowercased().hasPrefix(normalized.lowercased() + "-")
+                lower.hasPrefix($0.id.lowercased() + "-") || $0.id.lowercased().hasPrefix(lower + "-")
             }) {
                 return language.id
             }
         }
         return "en"
+    }
+
+    static func systemLanguage() -> String {
+        resolve(Locale.preferredLanguages + Bundle.main.preferredLocalizations)
+    }
+
+    /// `en-GB` falls back to `en`, `es-MX` to `es`, then both to `en`.
+    nonisolated static func parentLanguage(for locale: String) -> String? {
+        switch locale {
+        case "en-GB": return "en"
+        case "es-MX": return "es"
+        default: return nil
+        }
+    }
+
+    /// Regions whose English spelling follows the United States, not Britain.
+    nonisolated private static let americanEnglishRegions: Set<String> = [
+        "US", "CA", "PH", "LR", "PR", "GU", "AS", "VI", "UM", "MP",
+    ]
+
+    /// Spanish regions whose CLDR parent is `es-419`, including `es-US`.
+    nonisolated private static let latinAmericanRegions: Set<String> = [
+        "419", "MX", "AR", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GT", "HN",
+        "NI", "PA", "PE", "PR", "PY", "SV", "US", "UY", "VE",
+    ]
+
+    nonisolated private static func regionCode(_ tag: String) -> String? {
+        let parts = tag.split(separator: "-").map(String.init)
+        guard parts.count >= 2 else { return nil }
+        var index = 1
+        if parts[index].count == 4, parts[index].allSatisfy(\.isLetter) {
+            index += 1
+            guard index < parts.count else { return nil }
+        }
+        let region = parts[index]
+        let letters = region.count == 2 && region.allSatisfy(\.isLetter)
+        let digits = region.count == 3 && region.allSatisfy(\.isNumber)
+        return (letters || digits) ? region.uppercased() : nil
+    }
+
+    nonisolated private static func isAmericanEnglish(_ tag: String) -> Bool {
+        guard let region = regionCode(tag) else { return true }
+        return americanEnglishRegions.contains(region)
+    }
+
+    nonisolated private static func isLatinAmerican(_ tag: String) -> Bool {
+        guard let region = regionCode(tag) else { return false }
+        return latinAmericanRegions.contains(region)
     }
 
     /// Whether this string is a format the count belongs to.
@@ -119,9 +190,19 @@ final class NativeLocalizer {
     }
 
     private func pool(_ key: String, locale: String) -> [String] {
+        let parent = Self.parentLanguage(for: locale)
         var result: [String] = []
-        while let value = lookup("\(key).\(result.count + 1)", locale: locale) {
-            result.append(value)
+        var index = 1
+        while true {
+            let itemKey = "\(key).\(index)"
+            if let value = lookup(itemKey, locale: locale) {
+                result.append(value)
+            } else if let parent, let value = lookup(itemKey, locale: parent) {
+                result.append(value)
+            } else {
+                break
+            }
+            index += 1
         }
         return result
     }

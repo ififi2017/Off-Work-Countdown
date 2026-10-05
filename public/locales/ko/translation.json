@@ -302,7 +302,7 @@
   "annualBonusMonths": "보너스 개월 수",
   "bonusMonthsValue": "월급 {{count}}개월분",
   "openSourceAcknowledgements": "오픈 소스 감사",
-  "nativeNoThirdPartySDK": "iOS 네이티브 앱에는 타사 SDK가 없으며 공유 규칙은 이 MIT 라이선스 프로젝트에서 제공합니다.",
+  "nativeNoThirdPartySDK": "iOS 네이티브 앱에는 타사 SDK가 없으며 공유 규칙은 이 MPL-2.0 라이선스 프로젝트에서 제공합니다.",
   "shareDone": "퇴근 완료",
   "rotationWorkDays": "근무일",
   "rotationRestDays": "휴무일",

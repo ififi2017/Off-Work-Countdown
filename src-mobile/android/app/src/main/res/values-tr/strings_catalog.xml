@@ -628,7 +628,7 @@
     <string name="plusAndroidPlansUnavailable">Planlar Google Play üzerinden yüklenemedi. Lütfen tekrar dene.</string>
     <string name="plusAndroidRenewalNotice">Abonelikler iptal edene kadar otomatik yenilenir. Tek seferlik Lifetime satın alımı etkin aboneliği iptal etmez.</string>
     <string name="plusAndroidRequestFailed">Google Play isteği tamamlayamadı. Kısa süre sonra tekrar dene.</string>
-    <string name="plusAndroidStoreOffline">Google Play şu anda kullanılamıyor. Bağlandığında satın alımları geri yüklemeyi dene.</string>
+    <string name="plusAndroidStoreOffline">Mevcut Plus erişimin doğrulanamadı. Tekrar dene veya satın alımları geri yükle.</string>
     <string name="plusAndroidStoreUnconfigured">Plus satın alımları bu cihazda henüz kullanılamıyor. Zamanlayıcıyı ve son kayıtlarını kullanmaya devam edebilirsin.</string>
     <string name="plusAndroidYearlyTrialPrice">7 gün ücretsiz, ardından yıllık %1$s. Ücret alınmaması için deneme süresi bitmeden iptal et.</string>
     <string name="plusAutoRenew">Abonelikler sen iptal edene kadar kendiliğinden yenilenir. Yıllık planda 7 gün ücretsiz olabilir; sonrasında yıllık fiyat üzerinden ücret alınır. Tek seferlik satın alma bir kez ödenir ve süren aboneliği kendiliğinden iptal etmez.</string>

@@ -302,7 +302,7 @@
   "annualBonusMonths": "Bulan bonus",
   "bonusMonthsValue": "{{count}} bulan gaji",
   "openSourceAcknowledgements": "Penghargaan sumber terbuka",
-  "nativeNoThirdPartySDK": "Aplikasi iOS native tidak menyertakan SDK pihak ketiga; aturan bersama berasal dari proyek berlisensi MIT ini.",
+  "nativeNoThirdPartySDK": "Aplikasi iOS native tidak menyertakan SDK pihak ketiga; aturan bersama berasal dari proyek berlisensi MPL-2.0 ini.",
   "shareDone": "Selesai bekerja",
   "rotationWorkDays": "Hari kerja",
   "rotationRestDays": "Hari libur",

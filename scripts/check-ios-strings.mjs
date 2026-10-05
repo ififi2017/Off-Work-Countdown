@@ -78,7 +78,14 @@ export const UNSEEN_ON_PURPOSE = {};
 
 /// Languages whose singular differs from the plural. Everyone else has one
 /// nominal form, so a separate "one" there would be an invented word.
-export const INFLECTS_FOR_ONE = ["en", "de", "es", "fr", "it", "pt", "ru", "hi-IN", "mr-IN"];
+export const INFLECTS_FOR_ONE = ["en", "en-GB", "de", "es", "es-MX", "fr", "it", "pt", "ru", "hi-IN", "mr-IN"];
+
+/**
+ * Catalog locales that are not their own public/locales directory. A missing
+ * key falls back to `parent` (iOS `NativeLocalizer`, Android resources). They
+ * are optional on each entry and are not required to repeat unchanged copy.
+ */
+export const PARTIAL_LOCALES = { "en-GB": "en", "es-MX": "es" };
 
 const LOCALES_DIRECTORY = "public/locales";
 const APP_SOURCES = ["src-mobile/ios/App/App"];
@@ -91,7 +98,7 @@ const COUNT_FORMAT = "%lld";
 const POOL_KEY = /^(.+)\.(\d+)$/;
 const KEY = "[A-Za-z][A-Za-z0-9_]*";
 
-/// iOS ships the same 19 languages as Web and Desktop.
+/// The 19 Web and Desktop languages. en-GB and es-MX are catalog-only variants.
 export const localeDirectories = () =>
   readdirSync(LOCALES_DIRECTORY, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -130,6 +137,37 @@ const units = (localization) => {
 const isListed = (listed, locale) =>
   listed === "*" || (Array.isArray(listed) && listed.includes(locale));
 
+function checkCatalogLocale(problems, key, locale, localizations, plural, expected, required) {
+  const found = units(localizations[locale]);
+  if (found.length === 0) {
+    if (required) problems.push(`${key}: missing ${locale}`);
+    return;
+  }
+  if (plural !== Boolean(localizations[locale]?.variations?.plural)) {
+    problems.push(`${key}: ${locale} ${plural ? "is not" : "is"} a plural, unlike English`);
+  }
+  if (plural && !found.some((unit) => unit.name === "other")) {
+    problems.push(`${key}: ${locale} has no "other" form`);
+  }
+  for (const unit of found) {
+    const label = `${key} (${locale}${unit.name ? `, ${unit.name}` : ""})`;
+    if (unit.state !== "translated") {
+      problems.push(`${label}: state is ${unit.state ?? "missing"}, not translated`);
+    }
+    if (typeof unit.value !== "string" || unit.value.trim() === "") {
+      problems.push(`${label}: is empty`);
+      continue;
+    }
+    const actual = placeholders(unit.value);
+    if (actual !== expected) {
+      problems.push(`${label}: placeholders {{${actual}}} differ from English {{${expected}}}`);
+    }
+    if (plural && !unit.value.includes(COUNT_FORMAT)) {
+      problems.push(`${label}: a plural form needs ${COUNT_FORMAT} for Foundation to pick it`);
+    }
+  }
+}
+
 const staleLocales = (listed, found = new Set()) =>
   listed === "*" ? (found.size === 0 ? ["*"] : []) : listed.filter((locale) => !found.has(locale));
 
@@ -150,8 +188,9 @@ export const catalogProblems = (catalog, locales) => {
     if (pool) pools.set(pool[1], [...(pools.get(pool[1]) ?? []), Number(pool[2])]);
 
     const localizations = entry.localizations ?? {};
+    const allowed = new Set([...locales, ...Object.keys(PARTIAL_LOCALES)]);
     for (const locale of Object.keys(localizations)) {
-      if (!locales.includes(locale)) problems.push(`${key}: unexpected locale ${locale}`);
+      if (!allowed.has(locale)) problems.push(`${key}: unexpected locale ${locale}`);
     }
     const plural = Boolean(localizations.en?.variations?.plural);
     const reference = units(localizations.en).find(
@@ -163,35 +202,9 @@ export const catalogProblems = (catalog, locales) => {
     }
     const expected = placeholders(reference.value);
 
-    for (const locale of locales) {
-      const found = units(localizations[locale]);
-      if (found.length === 0) {
-        problems.push(`${key}: missing ${locale}`);
-        continue;
-      }
-      if (plural !== Boolean(localizations[locale]?.variations?.plural)) {
-        problems.push(`${key}: ${locale} ${plural ? "is not" : "is"} a plural, unlike English`);
-      }
-      if (plural && !found.some((unit) => unit.name === "other")) {
-        problems.push(`${key}: ${locale} has no "other" form`);
-      }
-      for (const unit of found) {
-        const label = `${key} (${locale}${unit.name ? `, ${unit.name}` : ""})`;
-        if (unit.state !== "translated") {
-          problems.push(`${label}: state is ${unit.state ?? "missing"}, not translated`);
-        }
-        if (typeof unit.value !== "string" || unit.value.trim() === "") {
-          problems.push(`${label}: is empty`);
-          continue;
-        }
-        const actual = placeholders(unit.value);
-        if (actual !== expected) {
-          problems.push(`${label}: placeholders {{${actual}}} differ from English {{${expected}}}`);
-        }
-        if (plural && !unit.value.includes(COUNT_FORMAT)) {
-          problems.push(`${label}: a plural form needs ${COUNT_FORMAT} for Foundation to pick it`);
-        }
-      }
+    for (const locale of locales) checkCatalogLocale(problems, key, locale, localizations, plural, expected, true);
+    for (const locale of Object.keys(PARTIAL_LOCALES)) {
+      checkCatalogLocale(problems, key, locale, localizations, plural, expected, false);
     }
   }
   // Message pools are collected back until the first missing number, so a
@@ -217,8 +230,13 @@ export const englishProblems = (catalog, tables, allowlist = SAME_AS_ENGLISH_ON_
     const english = new Map(units(localizations.en).map((unit) => [unit.name, unit.value]));
     for (const [locale, localization] of Object.entries(localizations)) {
       if (locale === "en") continue;
+      const parent = PARTIAL_LOCALES[locale];
+      const parentUnits = parent ? units(localizations[parent]) : [];
       for (const unit of units(localization)) {
         if (typeof unit.value !== "string" || unit.value !== english.get(unit.name)) continue;
+        // An unchanged plural category stored next to a real en-GB difference
+        // still equals English. That is the parent fallback, not untranslated copy.
+        if (parent && parentUnits.some((item) => item.name === unit.name && item.value === unit.value)) continue;
         matching.set(key, new Set([...(matching.get(key) ?? []), locale]));
         if (isListed(allowlist[key], locale)) continue;
         problems.push(

@@ -1,3 +1,4 @@
+import { prepareLicenseNotices } from "./prepare-license-notices.mjs";
 import { build } from "esbuild";
 import { spawnSync } from "node:child_process";
 import {
@@ -32,6 +33,7 @@ run([
 rmSync(out, { recursive: true, force: true });
 mkdirSync(resolve(out, "fonts"), { recursive: true });
 mkdirSync(resolve(out, "icons"), { recursive: true });
+prepareLicenseNotices(resolve(out, "licenses"));
 const translationKeys = JSON.parse(
   readFileSync(resolve(root, "src-extension/translation-keys.json"), "utf8"),
 );

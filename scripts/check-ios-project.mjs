@@ -447,14 +447,15 @@ const localizedInfoNames = readdirSync("src-mobile/ios/App/App")
   .map((entry) => `src-mobile/ios/App/App/${entry}/InfoPlist.strings`)
   .filter(existsSync);
 if (
-  localizedInfoNames.length !== 19 ||
+  localizedInfoNames.length !== 20 ||
+  !localizedInfoNames.some((path) => path.includes("/es-MX.lproj/")) ||
   localizedInfoNames.some((path) => {
     const strings = readFileSync(path, "utf8");
     return !strings.includes('"CFBundleDisplayName" = "DoneAt";') ||
       !strings.includes('"CFBundleName" = "DoneAt";');
   })
 ) {
-  fail("All 19 iOS InfoPlist localizations must expose DoneAt on the Home Screen.");
+  fail("iOS InfoPlist localizations must expose DoneAt on the Home Screen. es-MX is a full copy of es, because a missing lproj falls back to English, not to es. en-GB matches en and is omitted.");
 }
 const brandMark = JSON.parse(
   readFileSync(

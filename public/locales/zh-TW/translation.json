@@ -302,7 +302,7 @@
   "annualBonusMonths": "獎金月數",
   "bonusMonthsValue": "{{count}} 個月月薪",
   "openSourceAcknowledgements": "開源致謝",
-  "nativeNoThirdPartySDK": "iOS 原生版未整合第三方 SDK；共用規則來自本 MIT 開源專案。",
+  "nativeNoThirdPartySDK": "iOS 原生版未整合第三方 SDK；共用規則來自本 MPL-2.0 開源專案。",
   "shareDone": "已下班",
   "rotationWorkDays": "工作天數",
   "rotationRestDays": "休息天數",

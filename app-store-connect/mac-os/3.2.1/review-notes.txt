@@ -1,0 +1,46 @@
+1. DEVICES AND OS TESTED
+
+MacBook Pro (MacBookPro18,3, Apple M1 Pro), macOS 27.0. The build is a universal binary (arm64 + x86_64).
+
+2. PURPOSE AND TARGET AUDIENCE
+
+DoneAt, formerly known as Off Work Countdown, is a countdown timer for the working day. The user sets a start time, end time and working days once; the app shows how much of the shift is left, how far along the day is, and optionally how much they have earned so far, updating every second.
+
+The countdown appears in the main window, the menu bar, a floating mini timer and a desktop widget.
+
+Target audience: office and shift workers, including overnight shifts that cross midnight. Localised into 19 languages. No account, no sign-up, no server; all settings and state stay on the user's Mac.
+
+3. SETUP AND ACCESSING MAIN FEATURES
+
+No account, credentials or sample files are required. The app is fully functional on first launch.
+
+1) Launch the app.
+2) Set a start and end time. To see the countdown immediately, set an end time a few minutes ahead.
+3) Optionally select which weekdays are working days.
+4) Press "Start countdown".
+5) The countdown then appears in the main window, the menu bar, and the floating mini timer (toggled from the title-bar button).
+6) Widget: open Notification Center or right-click the desktop, choose "Edit Widgets", find "DoneAt", and add either size. Placing a widget on the desktop requires macOS 14 or later; on macOS 13 it is available in Notification Center only.
+
+New in 3.2.1: Settings > Hours & schedule. Pick a pattern (fixed weekdays, alternating weeks, rotation, free roster or manual timer), click a calendar date to assign a shift, or in a free roster pick a shift and drag across dates. "Holiday calendar" adds a region's public holidays from data bundled in the app (no network).
+
+Optional features are in Settings (title-bar button): salary display, lunch break, notifications, launch at login, and a global show/hide shortcut.
+
+4. EXTERNAL SERVICES, TOOLS AND PLATFORMS
+
+None. The app has no backend and makes no network requests. No analytics, telemetry, crash reporting, accounts or AI services. All computation is done locally from the times the user enters, and all state is stored in a local file inside the app's sandbox container.
+
+The only outbound behaviour is opening a URL in the user's default browser when the user explicitly taps a share button (X, Facebook, WhatsApp, Telegram, LINE, Reddit, Weibo) or a link on the About page. Nothing is sent automatically, and nothing is sent from within the app itself.
+
+The app declares com.apple.security.network.client only because WKWebView spawns helper processes that fail to start under App Sandbox without it. The app itself performs no networking.
+
+5. REGIONAL DIFFERENCES
+
+The app functions identically in all regions. The interface is localised into 19 languages and follows the system language by default; the user can change it in Settings.
+
+6. REGULATED INDUSTRY AND THIRD-PARTY MATERIAL
+
+The app does not operate in a regulated industry. The only third-party material is: social platform icons on the share buttons, from Simple Icons, released under CC0 1.0 Universal (public domain), each used solely to identify the destination of a share action; the Geist typeface (SIL Open Font License 1.1); and bundled public holiday data from Vacanza Holidays and holiday-cn (MIT License, credited in the data files). No other third-party content is included, displayed or accessed.
+
+7. IN-APP PURCHASES AND TERMS OF USE
+
+The Mac app has no in-app purchases, subscriptions or paywall. The DoneAt Plus products on this Universal Purchase record are offered only in the iPhone and iPad app. Every Mac description now ends with links to the Terms of Use (Apple standard EULA) and the Privacy Policy.

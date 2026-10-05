@@ -636,7 +636,7 @@
     <string name="plusAndroidPlansUnavailable">تعذّر تحميل الخطط من Google Play. يُرجى المحاولة مرة أخرى.</string>
     <string name="plusAndroidRenewalNotice">تتجدد الاشتراكات تلقائيًا حتى تلغيها. شراء الخطة مدى الحياة لمرة واحدة لا يلغي اشتراكًا نشطًا.</string>
     <string name="plusAndroidRequestFailed">تعذّر على Google Play إكمال الطلب. حاول مرة أخرى بعد قليل.</string>
-    <string name="plusAndroidStoreOffline">Google Play غير متاح الآن. حاول استعادة مشترياتك بعد الاتصال بالإنترنت.</string>
+    <string name="plusAndroidStoreOffline">تعذّر تأكيد صلاحية وصولك الحالية إلى Plus. حاول مجددًا أو استعد مشترياتك.</string>
     <string name="plusAndroidStoreUnconfigured">شراء Plus غير متاح على هذا الجهاز حاليًا. لا يزال بإمكانك استخدام المؤقت والسجلات الأخيرة.</string>
     <string name="plusAndroidYearlyTrialPrice">7 أيام مجانًا، ثم %1$s سنويًا. ألغِ الاشتراك قبل انتهاء الفترة التجريبية لتجنّب تحصيل الرسوم.</string>
     <string name="plusAutoRenew">تتجدد الاشتراكات تلقائيًا حتى تُلغيها. قد تتضمن الخطة السنوية 7 أيام مجانية، ثم يُحتسب السعر السنوي. الشراء بدفعة واحدة دفعة واحدة فقط ولا يُلغي تلقائيًا اشتراكًا ساريًا.</string>

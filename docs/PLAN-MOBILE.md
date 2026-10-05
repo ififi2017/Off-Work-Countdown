@@ -338,12 +338,14 @@ Glance 与系统倒计时通知。Kotlin 实现以固定 iOS 基线与共享 Typ
 Android 3.2.1 的 Plan 020 增量固定读取 iOS `18129168acd23edc3a872cca3633a2831f60c6f2`。
 动态周、月、年报由 Kotlin 领域层生成统计快照，Compose 播放与文字简报共用；
 通知携带周期边界和记录时区。档案继续使用 schema 7 的原子 JSON 存储。
-班次起床闹钟当前只提供纯规则规划与差量模型：原生响铃生命周期，以及客户端
-Play Billing 未提供的已验证精确订阅到期时刻，仍是平台接入边界；产品没有开放闹钟开关。
+班次起床闹钟当前只提供纯规则规划与差量模型，产品没有开放闹钟开关。
+2026-10-04 用户授权同仓库独立 Cloudflare Worker + D1（`services/billing-api`，
+`api.doneat.app`）获取 Google 已验证精确到期，Android 校验签名后供 PlusAccess 使用；
+生产接入需完成部署与许可测试。原生响铃生命周期仍需单独实现与设备验收。
 规则对应与平台差异见 [Android 规则说明](android/rule-parity.md)。
 
 任务状态仅维护在 [Android 进度](android/progress.md)，架构与检查见
-[Android Agent Guide](agent-guides/android.md)。首发不包含 Drive 同步、服务端购买验证或 Wear。
+[Android Agent Guide](agent-guides/android.md)。Drive 同步与 Wear 继续延后；购买验证按 D-08 的 2026-10-04 授权增量实施。
 Play Billing 和商店发布验收仍未完成，Web/PWA 继续可用。
 
 2026-09-26：Android / iOS 同步增加主屏幕长按快捷入口：计时、专注、记录。
@@ -444,3 +446,7 @@ W0、X1 或 Android 相关平台能力升级时必须重新阅读官方文档，
 ### 2026-09-30 自由排班涂抹与年度班次范围
 
 iOS 自由排班增加选择班次后的日期点选与涂抹，重复操作恢复原安排；班次类型展示未来 12 个月的排班范围，并支持每年重复、可跨年的季节时间范围。复用现有工作／休息日解析与草稿保存，保留手动安排和历史快照；年度范围随备份、CloudKit 和 Watch V5 保存。Android 3.2.1 同步画笔、日期范围展示及年度范围编辑，复用 Kotlin 的相同解析与编解码兼容。实现与自动验证边界见 [本轮记录](reviews/2026-09-30-schedule-paint-annual-ranges.md)。
+
+## 2026-10-04 源码许可证切换
+
+新修订的项目源码采用 MPL-2.0；已发布的 MIT 版本及原有授权不撤销。品牌、指定素材和第三方资源按根目录 `LICENSING.md` / `ASSETS.md` / `TRADEMARKS.md` 区分。独立商业分支允许，不能冒充官方。发行前依 `SOURCE.md` 保存并公开对应平台、版本、build number 的源码提交；商店中已有二进制的许可不因本次 PR 自动改变。实施与验证记录见 `docs/reviews/2026-10-04-licensing-transition.md`。

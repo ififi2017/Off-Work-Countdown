@@ -1,6 +1,375 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "whatsNewLeaveBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أضف رصيد إجازاتك فيجد DoneAt عطلات أطول حول العطلات الرسمية ومناوباتك، وتُضاف الخطة التي تختارها إلى جدولك مباشرة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trag deinen Urlaub ein: DoneAt findet längere Pausen rund um Feiertage und deine Schichten. Den gewählten Plan übernimmst du direkt in deinen Dienstplan."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your leave balances and DoneAt finds longer breaks around holidays and your shifts. Pick one and it goes straight onto your schedule."
+          }
+        },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your leave balances and DoneAt finds longer breaks around bank holidays and your shifts. Pick one and it goes straight onto your rota."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade tus días disponibles y DoneAt encuentra descansos más largos según festivos y turnos. El plan que elijas se añade directamente a tu horario."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade tus días disponibles y DoneAt encuentra descansos más largos según feriados y turnos. El plan que elijas se añade directamente a tu rol de turnos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajoutez vos soldes de congés : DoneAt trouve de plus longues pauses autour des jours fériés et de vos services. Le plan choisi s’ajoute directement à votre planning."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अपनी बची छुट्टियाँ जोड़ें, DoneAt त्योहारों और आपकी शिफ़्ट के हिसाब से लंबे ब्रेक ढूँढेगा। चुना गया प्लान सीधे आपके शेड्यूल में जुड़ जाता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tambahkan sisa cutimu, DoneAt mencari libur lebih panjang di sekitar hari libur dan sifmu. Rencana yang dipilih langsung masuk ke jadwal."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi le ferie disponibili e DoneAt trova pause più lunghe tra festività e turni. Il piano scelto entra subito nel tuo programma."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "休暇の残りを入れると、DoneAt が祝日とシフトから長めの連休を探します。選んだプランはそのまま勤務予定に追加できます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "휴가 잔여를 입력하면 DoneAt이 공휴일과 근무 일정을 바탕으로 더 긴 연휴를 찾아 줘요. 고른 계획은 바로 일정에 추가돼요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमची उरलेली रजा जोडा, DoneAt सुट्ट्या आणि तुमच्या शिफ्टनुसार मोठ्या सुट्ट्या शोधेल. निवडलेली योजना थेट तुमच्या वेळापत्रकात जोडली जाते."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicione os dias de férias e o DoneAt encontra pausas mais longas entre feriados e turnos. O plano escolhido passa diretamente para o seu horário."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Укажите остаток отпуска — DoneAt найдёт более долгий отдых с учётом праздников и графика. Выбранный план сразу попадёт в график."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใส่วันลาที่เหลือ แล้ว DoneAt จะหาวันหยุดยาวขึ้นจากวันหยุดและกะของคุณ แผนที่เลือกจะเพิ่มลงตารางงานได้ทันที"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalan izinlerini ekle, DoneAt tatiller ve vardiyalarına göre daha uzun aralar bulsun. Seçtiğin plan doğrudan programına eklenir."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thêm số ngày phép còn lại, DoneAt tìm kỳ nghỉ dài hơn quanh ngày lễ và ca làm. Kế hoạch bạn chọn được thêm thẳng vào lịch làm."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填好假期余额，DoneAt 会结合节假日和你的排班找出更长的连休；选好的方案可以直接加入排班。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填好假期餘額，DoneAt 會按假期同你嘅排班搵出更長嘅連假；揀好嘅方案可以直接加入排班。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填好假期餘額，DoneAt 會結合節假日和你的排班找出更長的連假；選好的方案可以直接加入排班。"
+          }
+        }
+      }
+    },
+    "whatsNewAlarmsBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختر لكل نوع مناوبة متى يوقظك المنبه قبلها. يرنّ المنبه حتى في الوضع الصامت."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leg für jede Schichtart fest, wie früh du geweckt wirst. Der Wecker klingelt auch im Stumm-Modus."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose how early to wake up for each kind of shift. Alarms ring even in Silent mode."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige con cuánta antelación despertarte para cada tipo de turno. La alarma suena incluso en silencio."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez, pour chaque type de service, combien de temps avant vous réveiller. Le réveil sonne même en mode silencieux."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हर तरह की शिफ़्ट के लिए चुनें कि कितनी जल्दी जगना है। साइलेंट मोड में भी अलार्म बजेगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atur seberapa awal kamu dibangunkan untuk tiap jenis sif. Alarm tetap berbunyi dalam mode senyap."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli per ogni tipo di turno quanto prima svegliarti. La sveglia suona anche in modalità silenziosa."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シフトの種類ごとに、どれくらい前に起きるかを設定できます。マナーモードでもアラームが鳴ります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무 유형마다 얼마나 일찍 일어날지 정할 수 있어요. 무음 모드에서도 알람이 울려요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रत्येक प्रकारच्या शिफ्टसाठी किती लवकर उठायचे ते निवडा. सायलेंट मोडमध्येही अलार्म वाजेल."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha, para cada tipo de turno, com quanta antecedência quer acordar. O alarme toca mesmo em silêncio."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для каждого типа смены задайте, за сколько до начала вас будить. Будильник звонит даже в беззвучном режиме."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งได้ว่าจะให้ปลุกก่อนเข้ากะแต่ละประเภทนานเท่าไร นาฬิกาปลุกจะดังแม้อยู่ในโหมดเงียบ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her vardiya türü için ne kadar erken uyanacağını seç. Alarm sessiz modda da çalar."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn thức dậy sớm bao lâu cho từng loại ca. Báo thức vẫn reo cả khi ở chế độ im lặng."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "为每种班次设定提前多久起床，静音模式下闹钟也会响。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "為每種更份設定提早幾耐起身，靜音模式下鬧鐘都會響。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "為每種班次設定提前多久起床，靜音模式下鬧鐘也會響。"
+          }
+        }
+      }
+    },
+    "whatsNewReportsBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "راجع ساعات عملك والعمل الإضافي والراحة في تقرير متحرك قصير. لا يظهر الدخل إلا إذا اخترت عرضه."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blick in einem kurzen animierten Bericht auf Arbeitszeit, Überstunden und Erholung zurück. Den Verdienst siehst du nur, wenn du ihn einblendest."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Look back on your hours, overtime and rest in a short animated report. Pay appears only when you choose to show it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repasa tus horas, horas extra y descansos en un breve informe animado. Los ingresos solo aparecen si decides mostrarlos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoyez vos heures, heures sup et repos dans un court bilan animé. Les gains n’apparaissent que si vous choisissez de les afficher."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अपने काम के घंटे, ओवरटाइम और आराम को एक छोटी ऐनिमेटेड रिपोर्ट में देखें। कमाई तभी दिखेगी जब आप उसे दिखाना चुनें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tinjau jam kerja, lembur, dan istirahatmu dalam laporan animasi singkat. Penghasilan hanya tampil jika kamu memilih menampilkannya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripercorri ore, straordinari e riposo in un breve report animato. Il guadagno compare solo se scegli di mostrarlo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "勤務時間・残業・休みを短いアニメーションで振り返れます。収入は表示を選んだときだけ出ます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무 시간, 초과 근무, 휴식을 짧은 애니메이션으로 돌아봐요. 수입은 표시하기로 했을 때만 나타나요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कामाचे तास, ओव्हरटाइम आणि विश्रांती एका छोट्या ॲनिमेटेड अहवालात पाहा. कमाई तुम्ही दाखवायचे ठरवल्यासच दिसेल."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reveja horas, horas extra e descanso num breve relatório animado. Os ganhos só aparecem se escolher mostrá-los."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Короткий анимированный отчёт о часах, переработках и отдыхе. Доход виден, только если вы решите его показать."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ย้อนดูชั่วโมงทำงาน โอที และการพักผ่อนในรายงานแบบแอนิเมชันสั้น ๆ รายได้จะแสดงเฉพาะเมื่อคุณเลือกให้แสดง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çalışma saatlerine, fazla mesaine ve dinlenmene kısa, animasyonlu bir raporla göz at. Kazanç yalnızca göstermeyi seçersen görünür."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhìn lại giờ làm, tăng ca và nghỉ ngơi qua một báo cáo hoạt ảnh ngắn. Thu nhập chỉ hiện khi bạn chọn hiển thị."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用一段动画回顾工时、加班和休息；收入只在你选择显示时出现。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用一段動畫回顧工時、加班同休息；收入只會喺你揀咗顯示先出現。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用一段動畫回顧工時、加班和休息；收入只在你選擇顯示時出現。"
+          }
+        }
+      }
+    },
     "holidayCoverageYearWarning": {
       "extractionState": "manual",
       "localizations": {
@@ -22,10 +391,22 @@
             "value": "No data for {{year}}. Your regular schedule will be used. Check for app updates."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No data for {{year}}. Your regular rota will be used. Check for app updates."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "No hay datos de {{year}}. Se usará el horario habitual. Busca actualizaciones de la app."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay datos de {{year}}. Se usará el rol de turnos habitual. Busca actualizaciones de la app."
           }
         },
         "fr": {
@@ -141,10 +522,22 @@
             "value": "Data for {{year}} isn’t available yet. Your regular schedule will be used. Check for app updates."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data for {{year}} isn’t available yet. Your regular rota will be used. Check for app updates."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Los datos de {{year}} aún no están disponibles. Se usará el horario habitual. Busca actualizaciones de la app."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los datos de {{year}} aún no están disponibles. Se usará el rol de turnos habitual. Busca actualizaciones de la app."
           }
         },
         "fr": {
@@ -260,10 +653,22 @@
             "value": "Holiday calendar"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bank holiday calendar"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Calendario de festivos"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario de feriados"
           }
         },
         "fr": {
@@ -736,10 +1141,22 @@
             "value": "Holiday"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bank holiday"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Festivo"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feriado"
           }
         },
         "fr": {
@@ -974,10 +1391,22 @@
             "value": "Holiday calendar"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bank holiday calendar"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Calendario de festivos"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario de feriados"
           }
         },
         "fr": {
@@ -1210,6 +1639,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open-source licenses"
+          }
+        },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open-source licences"
           }
         },
         "es": {
@@ -2984,6 +3419,12 @@
             "value": "After syncing, your Watch follows your saved schedule, even offline. Salary and work records stay on your iPhone."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After syncing, your Watch follows your saved rota, even offline. Salary and work records stay on your iPhone."
+          }
+        },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
@@ -3018,6 +3459,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tras sincronizar, el Watch sigue tu horario guardado, incluso sin conexión. El salario y los registros laborales permanecen en tu iPhone."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras sincronizar, el Watch sigue tu rol de turnos guardado, incluso sin conexión. El salario y los registros laborales permanecen en tu iPhone."
           }
         },
         "fr": {
@@ -3477,6 +3924,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Activa «Mostrar en la pantalla bloqueada» en «Recordatorios de jornada», y tu cuenta atrás también aparecerá en el grupo inteligente de tu Apple Watch emparejado."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activa «Mostrar en la pantalla bloqueada» en «Recordatorios de jornada», y tu cuenta regresiva también aparecerá en el grupo inteligente de tu Apple Watch emparejado."
           }
         },
         "fr": {
@@ -4550,6 +5003,12 @@
             "value": "{{biometry}} no está configurado: añádelo en Ajustes para desbloquear con él"
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{biometry}} no está configurado: añádelo en Configuración para desbloquear con él"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4667,6 +5126,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Biometría no disponible: busca {{app}} en la lista de apps de Ajustes para activarla"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biometría no disponible: busca {{app}} en la lista de apps de Configuración para activarla"
           }
         },
         "fr": {
@@ -8239,6 +8704,12 @@
             "value": "El próximo inicio borrará todos los ajustes de la app y abrirá la pantalla de bienvenida."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El próximo inicio borrará toda la configuración de la app y abrirá la pantalla de bienvenida."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -8590,10 +9061,22 @@
             "value": "Manual schedule · ask about today"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual rota · ask about today"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Horario manual · preguntar por hoy"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rol de turnos manual · preguntar por hoy"
           }
         },
         "fr": {
@@ -11565,6 +12048,12 @@
             "value": "Color"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colour"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
@@ -13713,6 +14202,12 @@
             "value": "Los días con este turno son de descanso, así que no empieza ninguna cuenta atrás."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los días con este turno son de descanso, así que no empieza ninguna cuenta regresiva."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -14903,6 +15398,12 @@
             "value": "Comprobando iCloud para encontrar tus ajustes y registros antes de configurar este dispositivo."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobando iCloud para encontrar tu configuración y registros antes de configurar este dispositivo."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -15135,10 +15636,22 @@
             "value": "No saved DoneAt data was found in this iCloud account. You can now set up your schedule."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No saved DoneAt data was found in this iCloud account. You can now set up your rota."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "No se encontraron datos guardados de DoneAt en esta cuenta de iCloud. Ya puedes configurar tu horario."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se encontraron datos guardados de DoneAt en esta cuenta de iCloud. Ya puedes configurar tu rol de turnos."
           }
         },
         "fr": {
@@ -15254,10 +15767,22 @@
             "value": "Your records are back. We did not find saved schedule settings, so you can finish setting up this device without losing what was restored."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your records are back. We did not find saved rota settings, so you can finish setting up this device without losing what was restored."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Tus registros ya están restaurados. No encontramos un horario guardado, así que puedes terminar de configurar este dispositivo sin perder lo restaurado."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus registros ya están restaurados. No encontramos un rol de turnos guardado, así que puedes terminar de configurar este dispositivo sin perder lo restaurado."
           }
         },
         "fr": {
@@ -15379,6 +15904,12 @@
             "value": "Restaurando tus ajustes y registros. La configuración se aplicará después de comprobar la descarga completa."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurando tu configuración y registros. La configuración se aplicará después de comprobar la descarga completa."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -15496,6 +16027,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "No pudimos comprobar iCloud. Revisa tu conexión e inicio de sesión de iCloud y vuelve a intentarlo. También puedes configurar sin conexión; tus ajustes se quedarán en este dispositivo hasta que elijas cómo conectarlos con iCloud."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pudimos comprobar iCloud. Revisa tu conexión e inicio de sesión de iCloud y vuelve a intentarlo. También puedes configurar sin conexión; tu configuración se quedará en este dispositivo hasta que elijas cómo conectarlos con iCloud."
           }
         },
         "fr": {
@@ -17753,10 +18290,22 @@
             "value": "This schedule uses the “{{name}}” template."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This rota uses the “{{name}}” template."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Este horario utiliza la plantilla «{{name}}»."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este rol de turnos utiliza la plantilla «{{name}}»."
           }
         },
         "fr": {
@@ -24774,10 +25323,22 @@
             "value": "Example schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Example rota"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Horario de ejemplo"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rol de turnos de ejemplo"
           }
         },
         "fr": {
@@ -26684,6 +27245,12 @@
             "value": "Abrir ajustes del sistema"
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir configuración del sistema"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -26801,6 +27368,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Las notificaciones están desactivadas, así que podrías perderte el final del temporizador. Puedes activarlas en los ajustes del sistema."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las notificaciones están desactivadas, así que podrías perderte el final del temporizador. Puedes activarlas en la configuración del sistema."
           }
         },
         "fr": {
@@ -31801,6 +32374,12 @@
             "value": "Ajustes de Pomodoro"
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración de Pomodoro"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -31918,6 +32497,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Estos ajustes se aplican a los temporizadores nuevos. El temporizador activo y el plan guardado conservan sus propios tiempos."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta configuración se aplica a los temporizadores nuevos. El temporizador activo y el plan guardado conservan sus propios tiempos."
           }
         },
         "fr": {
@@ -33705,6 +34290,12 @@
             "value": "Abrir ajustes de comida"
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir configuración de comida"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -33943,6 +34534,12 @@
             "value": "La pausa para comer debe estar completamente dentro de la jornada para iniciar la cuenta atrás."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pausa para comer debe estar completamente dentro de la jornada para iniciar la cuenta regresiva."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -34175,10 +34772,22 @@
             "value": "Keep one weekday, or pick no schedule."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep one weekday, or pick no rota."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Deja un día, o pasa a sin horario."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deja un día, o pasa a sin rol de turnos."
           }
         },
         "fr": {
@@ -34649,6 +35258,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "This changes the language inside the app. The name on your Home Screen and the system's own dialogs still follow your device language."
+          }
+        },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This changes the language inside the app. The name on your Home Screen and the system's own dialogues still follow your device language."
           }
         },
         "es": {
@@ -36317,10 +36932,22 @@
             "value": "Past weeks use the schedule from that time."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Past weeks use the rota from that time."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Las semanas pasadas usan el horario de entonces."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las semanas pasadas usan el rol de turnos de entonces."
           }
         },
         "fr": {
@@ -46319,6 +46946,12 @@
             "value": "La cuenta atrás, el progreso y las ganancias se pausan durante la comida."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La cuenta regresiva, el progreso y las ganancias se pausan durante la comida."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -46436,6 +47069,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La cuenta atrás y el progreso se pausan durante el descanso."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La cuenta regresiva y el progreso se pausan durante el descanso."
           }
         },
         "fr": {
@@ -46674,6 +47313,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Empieza la pausa. La cuenta atrás está pausada."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empieza la pausa. La cuenta regresiva está pausada."
           }
         },
         "fr": {
@@ -51079,6 +51724,12 @@
             "value": "Sin permiso de notificaciones solo puede aparecer la Actividad en Vivo de la pantalla bloqueada. La cuenta atrás sigue funcionando."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin permiso de notificaciones solo puede aparecer la Actividad en Vivo de la pantalla bloqueada. La cuenta regresiva sigue funcionando."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -51196,6 +51847,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Permite las notificaciones en los ajustes del sistema y vuelve a activar los avisos."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permite las notificaciones en la configuración del sistema y vuelve a activar los avisos."
           }
         },
         "fr": {
@@ -52745,6 +53402,12 @@
             "value": "Abrir ajustes"
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir configuración"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -52856,6 +53519,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Notifications contain schedule and progress only—never salary."
+          }
+        },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications contain rota and progress only—never salary."
           }
         },
         "es": {
@@ -53810,10 +54479,22 @@
             "value": "That’s your schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That’s your rota"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Tu horario está listo"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu rol de turnos está listo"
           }
         },
         "fr": {
@@ -54052,6 +54733,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tu cuenta atrás de un vistazo"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu cuenta regresiva de un vistazo"
           }
         },
         "fr": {
@@ -55006,6 +55693,12 @@
             "value": "El almuerzo pausa la cuenta atrás. Los avisos llegan sin tener la app abierta."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El almuerzo pausa la cuenta regresiva. Los avisos llegan sin tener la app abierta."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -55123,6 +55816,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Más opciones de aviso están en Ajustes."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más opciones de aviso están en Configuración."
           }
         },
         "fr": {
@@ -64758,10 +65457,22 @@
             "value": "Undo your change to this day? It goes back to what the schedule and holiday calendar say."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo your change to this day? It goes back to what the rota and bank holiday calendar say."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "¿Deshacer tu cambio en este día? Volverá a seguir el horario y el calendario de festivos."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Deshacer tu cambio en este día? Volverá a seguir el rol de turnos y el calendario de feriados."
           }
         },
         "fr": {
@@ -64877,10 +65588,22 @@
             "value": "Goes back to the schedule and holiday calendar for this day."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goes back to the rota and bank holiday calendar for this day."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "El día vuelve a seguir el horario y el calendario de festivos."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El día vuelve a seguir el rol de turnos y el calendario de feriados."
           }
         },
         "fr": {
@@ -65234,10 +65957,22 @@
             "value": "Keep the schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep the rota"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Seguir el horario"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguir el rol de turnos"
           }
         },
         "fr": {
@@ -68447,10 +69182,22 @@
             "value": "A day shows up here when you start or finish a countdown. Your schedule is not filled in ahead of time."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A day shows up here when you start or finish a countdown. Your rota is not filled in ahead of time."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Un día aparece aquí cuando empiezas o terminas una cuenta atrás. El horario no se rellena de antemano."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un día aparece aquí cuando empiezas o terminas una cuenta regresiva. El rol de turnos no se rellena de antemano."
           }
         },
         "fr": {
@@ -69754,6 +70501,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "More overtime, stronger color. Estimates are pale and hatched."
+          }
+        },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More overtime, stronger colour. Estimates are pale and hatched."
           }
         },
         "es": {
@@ -73911,10 +74664,22 @@
             "value": "Nothing recorded for this day — the schedule is still here."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing recorded for this day — the rota is still here."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Aún no hay observaciones este día; el horario sigue ahí."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay observaciones este día; el rol de turnos sigue ahí."
           }
         },
         "fr": {
@@ -74393,6 +75158,12 @@
             "value": "Iniciaste la cuenta atrás"
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciaste la cuenta regresiva"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -74510,6 +75281,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Detuviste la cuenta atrás"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detuviste la cuenta regresiva"
           }
         },
         "fr": {
@@ -77844,6 +78621,12 @@
             "value": "Estimado según tus ajustes"
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimado según tu configuración"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -78076,10 +78859,22 @@
             "value": "From now on, today’s schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From now on, today’s rota"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "De aquí en adelante, tu horario de hoy"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De aquí en adelante, tu rol de turnos de hoy"
           }
         },
         "fr": {
@@ -78195,10 +78990,22 @@
             "value": "Holiday or makeup day"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bank holiday or makeup day"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Festivo o día de compensación"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feriado o día de compensación"
           }
         },
         "fr": {
@@ -78314,10 +79121,22 @@
             "value": "No schedule for this day"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No rota for this day"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "No hay horario este día"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay rol de turnos este día"
           }
         },
         "fr": {
@@ -78558,6 +79377,12 @@
             "value": "Estimado según tus ajustes de vida actuales"
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimado según tu configuración de vida actual"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -78790,10 +79615,22 @@
             "value": "From your schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From your rota"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Según tu horario de entonces"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Según tu rol de turnos de entonces"
           }
         },
         "fr": {
@@ -79746,6 +80583,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Las fechas del calendario no se mueven. Las nueve siguen siendo las nueve, leídas en esta zona. Una cuenta atrás en curso mantiene la anterior hasta que termine."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las fechas del calendario no se mueven. Las nueve siguen siendo las nueve, leídas en esta zona. Una cuenta regresiva en curso mantiene la anterior hasta que termine."
           }
         },
         "fr": {
@@ -81884,10 +82727,22 @@
             "value": "Countdown rules are unavailable. Your schedule is still on."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Countdown rules are unavailable. Your rota is still on."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Las reglas del temporizador no están disponibles. Tu horario sigue activo."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las reglas del temporizador no están disponibles. Tu rol de turnos sigue activo."
           }
         },
         "fr": {
@@ -83074,10 +83929,22 @@
             "value": "No fixed schedule. Start the timer yourself each day."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No fixed rota. Start the timer yourself each day."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Sin horario fijo. Inicia tú el temporizador cada día."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin rol de turnos fijo. Inicia tú el temporizador cada día."
           }
         },
         "fr": {
@@ -83197,6 +84064,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Inicio manual de la cuenta atrás"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicio manual de la cuenta regresiva"
           }
         },
         "fr": {
@@ -83554,6 +84427,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajustes"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración"
           }
         },
         "fr": {
@@ -88072,10 +88951,22 @@
             "value": "Your work schedule, salary, reminders, appearance, language, Life profile, records and Focus data sync through your private iCloud database. Notification permission, biometric protection and Live Activities stay on this device."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your work rota, salary, reminders, appearance, language, Life profile, records and Focus data sync through your private iCloud database. Notification permission, biometric protection and Live Activities stay on this device."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Su horario de trabajo, salario, recordatorios, apariencia, idioma, perfil de vida, registros y datos de Focus se sincronizan a través de su base de datos privada de iCloud. El permiso de notificación, la protección biométrica y las actividades en vivo permanecen en este dispositivo."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Su rol de turnos, salario, recordatorios, apariencia, idioma, perfil de vida, registros y datos de Focus se sincronizan a través de su base de datos privada de iCloud. El permiso de notificación, la protección biométrica y las actividades en vivo permanecen en este dispositivo."
           }
         },
         "fr": {
@@ -93665,10 +94556,22 @@
             "value": "Hours & schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hours & rota"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Horario y turnos"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas y rol de turnos"
           }
         },
         "fr": {
@@ -94140,10 +95043,22 @@
             "value": "To add a past schedule, first add a career period covering this date."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To add a past rota, first add a career period covering this date."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Para añadir un horario pasado, añade primero un periodo laboral que incluya esta fecha."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para añadir un rol de turnos pasado, añade primero un periodo laboral que incluya esta fecha."
           }
         },
         "fr": {
@@ -94247,6 +95162,12 @@
             "value": "The saved schedule couldn’t be read. Open DoneAt on your iPhone."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The saved rota couldn’t be read. Open DoneAt on your iPhone."
+          }
+        },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
@@ -94281,6 +95202,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "No se pudo leer el horario guardado. Abre DoneAt en tu iPhone."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo leer el rol de turnos guardado. Abre DoneAt en tu iPhone."
           }
         },
         "fr": {
@@ -94485,6 +95412,12 @@
             "value": "From your schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From your rota"
+          }
+        },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
@@ -94525,6 +95458,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Según tu horario"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Según tu rol de turnos"
           }
         },
         "fr": {
@@ -94604,6 +95543,12 @@
             "value": "From next month’s schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From next month’s rota"
+          }
+        },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
@@ -94644,6 +95589,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Según el horario del próximo mes"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Según el rol de turnos del próximo mes"
           }
         },
         "fr": {
@@ -94723,6 +95674,12 @@
             "value": "Free roster"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free rota"
+          }
+        },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
@@ -94763,6 +95720,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Horario libre"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rol de turnos libre"
           }
         },
         "fr": {
@@ -95081,6 +96044,12 @@
             "value": "Clear automatic shifts from today onward. Keep past dates, days with timing records and manual changes. Future dates will no longer be filled from earlier months or holidays. Changes take effect when you save."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear automatic shifts from today onward. Keep past dates, days with timing records and manual changes. Future dates will no longer be filled from earlier months or bank holidays. Changes take effect when you save."
+          }
+        },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
@@ -95121,6 +96090,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Borra los turnos automáticos desde hoy. Se conservan las fechas pasadas, los días con tiempo registrado y los cambios manuales. Las fechas futuras ya no se rellenarán con meses anteriores ni festivos. Los cambios se aplican al guardar."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borra los turnos automáticos desde hoy. Se conservan las fechas pasadas, los días con tiempo registrado y los cambios manuales. Las fechas futuras ya no se rellenarán con meses anteriores ni feriados. Los cambios se aplican al guardar."
           }
         },
         "fr": {
@@ -100557,10 +101532,22 @@
             "value": "This version doesn’t include mainland China’s {{year}} holidays yet, so {{year}} follows your usual schedule. Once they’re added, update DoneAt to include them."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This version doesn’t include mainland China’s {{year}} bank holidays yet, so {{year}} follows your usual rota. Once they’re added, update DoneAt to include them."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Esta versión aún no incluye los festivos de {{year}} de China continental, así que {{year}} sigue tu horario habitual. Cuando se añadan, actualiza DoneAt para tenerlos en cuenta."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta versión aún no incluye los feriados de {{year}} de China continental, así que {{year}} sigue tu rol de turnos habitual. Cuando se añadan, actualiza DoneAt para tenerlos en cuenta."
           }
         },
         "fr": {
@@ -101156,6 +102143,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Todavía nada encaja con estos ajustes. Un periodo más amplio o más días pueden ayudar."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía nada encaja con esta configuración. Un periodo más amplio o más días pueden ayudar."
           }
         },
         "fr": {
@@ -101856,10 +102849,22 @@
             "value": "Partly estimated from your schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partly estimated from your rota"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "En parte estimado según tu horario"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En parte estimado según tu rol de turnos"
           }
         },
         "fr": {
@@ -101975,10 +102980,22 @@
             "value": "{{year}} follows your usual schedule; this version has no holidays for it yet."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{year}} follows your usual rota; this version has no bank holidays for it yet."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "{{year}} sigue tu horario habitual; esta versión aún no tiene sus festivos."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{year}} sigue tu rol de turnos habitual; esta versión aún no tiene sus feriados."
           }
         },
         "fr": {
@@ -102092,6 +103109,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Some days repeat an earlier month of your roster."
+          }
+        },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some days repeat an earlier month of your rota."
           }
         },
         "es": {
@@ -103403,10 +104426,22 @@
             "value": "Add to my schedule"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to my rota"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Añadir a mi horario"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir a mi rol de turnos"
           }
         },
         "fr": {
@@ -103522,10 +104557,22 @@
             "value": "Your schedule or leave changed since this plan was made. Find options again to see what fits now."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your rota or leave changed since this plan was made. Find options again to see what fits now."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Tu horario o tus días cambiaron desde que se creó este plan. Vuelve a buscar para ver qué encaja ahora."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu rol de turnos o tus días cambiaron desde que se creó este plan. Vuelve a buscar para ver qué encaja ahora."
           }
         },
         "fr": {
@@ -103879,10 +104926,22 @@
             "value": "Its leave comes off your schedule and goes back to your balances."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its leave comes off your rota and goes back to your balances."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Sus días salen de tu horario y vuelven a tus días disponibles."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sus días salen de tu rol de turnos y vuelven a tus días disponibles."
           }
         },
         "fr": {
@@ -104117,10 +105176,22 @@
             "value": "Holiday"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bank holiday"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Festivo"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feriado"
           }
         },
         "fr": {
@@ -104712,10 +105783,22 @@
             "value": "Plan time off around your holidays and shifts"
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan time off around your bank holidays and shifts"
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Planificar vacaciones según festivos y turnos"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planificar vacaciones según feriados y turnos"
           }
         },
         "fr": {
@@ -105307,10 +106390,22 @@
             "value": "This day goes back on your schedule and its leave returns to your balances. The rest of the plan stays."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This day goes back on your rota and its leave returns to your balances. The rest of the plan stays."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Este día vuelve a tu horario y sus días vuelven a tus disponibles. El resto del plan se mantiene."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este día vuelve a tu rol de turnos y sus días vuelven a tus disponibles. El resto del plan se mantiene."
           }
         },
         "fr": {
@@ -106027,6 +107122,12 @@
             "value": "Permite las alarmas para DoneAt en Ajustes y empezarán a programarse."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permite las alarmas para DoneAt en Configuración y empezarán a programarse."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -106144,6 +107245,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abrir Ajustes"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Configuración"
           }
         },
         "fr": {
@@ -112572,6 +113679,12 @@
             "value": "Estimado a partir de tus ajustes salariales y registros."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimado a partir de tu configuración salarial y registros."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -112685,10 +113798,22 @@
             "value": "Based on your records and saved schedule. Planned hours aren’t attendance records."
           }
         },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on your records and saved rota. Planned hours aren’t attendance records."
+          }
+        },
         "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Se basa en tus registros y tu horario guardado. Las horas planificadas no son un registro de asistencia."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se basa en tus registros y tu rol de turnos guardado. Las horas planificadas no son un registro de asistencia."
           }
         },
         "fr": {
@@ -120545,6 +121670,12 @@
             "value": "Cancela en Ajustes y no se te cobrará nada."
           }
         },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancela en Configuración y no se te cobrará nada."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -121228,363 +122359,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "立即解鎖全部 Plus 功能，現在不扣款。"
-          }
-        }
-      }
-    },
-    "whatsNewAlarmsBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اختر لكل نوع مناوبة متى يوقظك المنبه قبلها. يرنّ المنبه حتى في الوضع الصامت."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Leg für jede Schichtart fest, wie früh du geweckt wirst. Der Wecker klingelt auch im Stumm-Modus."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose how early to wake up for each kind of shift. Alarms ring even in Silent mode."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elige con cuánta antelación despertarte para cada tipo de turno. La alarma suena incluso en silencio."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choisissez, pour chaque type de service, combien de temps avant vous réveiller. Le réveil sonne même en mode silencieux."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "हर तरह की शिफ़्ट के लिए चुनें कि कितनी जल्दी जगना है। साइलेंट मोड में भी अलार्म बजेगा।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Atur seberapa awal kamu dibangunkan untuk tiap jenis sif. Alarm tetap berbunyi dalam mode senyap."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scegli per ogni tipo di turno quanto prima svegliarti. La sveglia suona anche in modalità silenziosa."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "シフトの種類ごとに、どれくらい前に起きるかを設定できます。マナーモードでもアラームが鳴ります。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "근무 유형마다 얼마나 일찍 일어날지 정할 수 있어요. 무음 모드에서도 알람이 울려요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "प्रत्येक प्रकारच्या शिफ्टसाठी किती लवकर उठायचे ते निवडा. सायलेंट मोडमध्येही अलार्म वाजेल."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolha, para cada tipo de turno, com quanta antecedência quer acordar. O alarme toca mesmo em silêncio."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Для каждого типа смены задайте, за сколько до начала вас будить. Будильник звонит даже в беззвучном режиме."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ตั้งได้ว่าจะให้ปลุกก่อนเข้ากะแต่ละประเภทนานเท่าไร นาฬิกาปลุกจะดังแม้อยู่ในโหมดเงียบ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Her vardiya türü için ne kadar erken uyanacağını seç. Alarm sessiz modda da çalar."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chọn thức dậy sớm bao lâu cho từng loại ca. Báo thức vẫn reo cả khi ở chế độ im lặng."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "为每种班次设定提前多久起床，静音模式下闹钟也会响。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "為每種更份設定提早幾耐起身，靜音模式下鬧鐘都會響。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "為每種班次設定提前多久起床，靜音模式下鬧鐘也會響。"
-          }
-        }
-      }
-    },
-    "whatsNewLeaveBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أضف رصيد إجازاتك فيجد DoneAt عطلات أطول حول العطلات الرسمية ومناوباتك، وتُضاف الخطة التي تختارها إلى جدولك مباشرة."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trag deinen Urlaub ein: DoneAt findet längere Pausen rund um Feiertage und deine Schichten. Den gewählten Plan übernimmst du direkt in deinen Dienstplan."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add your leave balances and DoneAt finds longer breaks around holidays and your shifts. Pick one and it goes straight onto your schedule."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Añade tus días disponibles y DoneAt encuentra descansos más largos según festivos y turnos. El plan que elijas se añade directamente a tu horario."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajoutez vos soldes de congés : DoneAt trouve de plus longues pauses autour des jours fériés et de vos services. Le plan choisi s’ajoute directement à votre planning."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अपनी बची छुट्टियाँ जोड़ें, DoneAt त्योहारों और आपकी शिफ़्ट के हिसाब से लंबे ब्रेक ढूँढेगा। चुना गया प्लान सीधे आपके शेड्यूल में जुड़ जाता है।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tambahkan sisa cutimu, DoneAt mencari libur lebih panjang di sekitar hari libur dan sifmu. Rencana yang dipilih langsung masuk ke jadwal."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aggiungi le ferie disponibili e DoneAt trova pause più lunghe tra festività e turni. Il piano scelto entra subito nel tuo programma."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "休暇の残りを入れると、DoneAt が祝日とシフトから長めの連休を探します。選んだプランはそのまま勤務予定に追加できます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "휴가 잔여를 입력하면 DoneAt이 공휴일과 근무 일정을 바탕으로 더 긴 연휴를 찾아 줘요. 고른 계획은 바로 일정에 추가돼요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "तुमची उरलेली रजा जोडा, DoneAt सुट्ट्या आणि तुमच्या शिफ्टनुसार मोठ्या सुट्ट्या शोधेल. निवडलेली योजना थेट तुमच्या वेळापत्रकात जोडली जाते."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adicione os dias de férias e o DoneAt encontra pausas mais longas entre feriados e turnos. O plano escolhido passa diretamente para o seu horário."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите остаток отпуска — DoneAt найдёт более долгий отдых с учётом праздников и графика. Выбранный план сразу попадёт в график."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ใส่วันลาที่เหลือ แล้ว DoneAt จะหาวันหยุดยาวขึ้นจากวันหยุดและกะของคุณ แผนที่เลือกจะเพิ่มลงตารางงานได้ทันที"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kalan izinlerini ekle, DoneAt tatiller ve vardiyalarına göre daha uzun aralar bulsun. Seçtiğin plan doğrudan programına eklenir."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thêm số ngày phép còn lại, DoneAt tìm kỳ nghỉ dài hơn quanh ngày lễ và ca làm. Kế hoạch bạn chọn được thêm thẳng vào lịch làm."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "填好假期余额，DoneAt 会结合节假日和你的排班找出更长的连休；选好的方案可以直接加入排班。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "填好假期餘額，DoneAt 會按假期同你嘅排班搵出更長嘅連假；揀好嘅方案可以直接加入排班。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "填好假期餘額，DoneAt 會結合節假日和你的排班找出更長的連假；選好的方案可以直接加入排班。"
-          }
-        }
-      }
-    },
-    "whatsNewReportsBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "راجع ساعات عملك والعمل الإضافي والراحة في تقرير متحرك قصير. لا يظهر الدخل إلا إذا اخترت عرضه."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Blick in einem kurzen animierten Bericht auf Arbeitszeit, Überstunden und Erholung zurück. Den Verdienst siehst du nur, wenn du ihn einblendest."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Look back on your hours, overtime and rest in a short animated report. Pay appears only when you choose to show it."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repasa tus horas, horas extra y descansos en un breve informe animado. Los ingresos solo aparecen si decides mostrarlos."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Revoyez vos heures, heures sup et repos dans un court bilan animé. Les gains n’apparaissent que si vous choisissez de les afficher."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अपने काम के घंटे, ओवरटाइम और आराम को एक छोटी ऐनिमेटेड रिपोर्ट में देखें। कमाई तभी दिखेगी जब आप उसे दिखाना चुनें।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tinjau jam kerja, lembur, dan istirahatmu dalam laporan animasi singkat. Penghasilan hanya tampil jika kamu memilih menampilkannya."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ripercorri ore, straordinari e riposo in un breve report animato. Il guadagno compare solo se scegli di mostrarlo."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "勤務時間・残業・休みを短いアニメーションで振り返れます。収入は表示を選んだときだけ出ます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "근무 시간, 초과 근무, 휴식을 짧은 애니메이션으로 돌아봐요. 수입은 표시하기로 했을 때만 나타나요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "कामाचे तास, ओव्हरटाइम आणि विश्रांती एका छोट्या ॲनिमेटेड अहवालात पाहा. कमाई तुम्ही दाखवायचे ठरवल्यासच दिसेल."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reveja horas, horas extra e descanso num breve relatório animado. Os ganhos só aparecem se escolher mostrá-los."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Короткий анимированный отчёт о часах, переработках и отдыхе. Доход виден, только если вы решите его показать."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ย้อนดูชั่วโมงทำงาน โอที และการพักผ่อนในรายงานแบบแอนิเมชันสั้น ๆ รายได้จะแสดงเฉพาะเมื่อคุณเลือกให้แสดง"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Çalışma saatlerine, fazla mesaine ve dinlenmene kısa, animasyonlu bir raporla göz at. Kazanç yalnızca göstermeyi seçersen görünür."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nhìn lại giờ làm, tăng ca và nghỉ ngơi qua một báo cáo hoạt ảnh ngắn. Thu nhập chỉ hiện khi bạn chọn hiển thị."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用一段动画回顾工时、加班和休息；收入只在你选择显示时出现。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用一段動畫回顧工時、加班同休息；收入只會喺你揀咗顯示先出現。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用一段動畫回顧工時、加班和休息；收入只在你選擇顯示時出現。"
           }
         }
       }

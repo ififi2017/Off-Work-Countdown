@@ -1,0 +1,32 @@
+DoneAt 3.2.1 adds leave planning, shift alarms and animated weekly, monthly and yearly reports to the iPhone and iPad app, along with a brush tool for free-form rosters.
+
+New in this version and how to test:
+
+- Leave planning: open Settings → Time off and add a leave balance (for example 10 days of annual leave). Then tap Plan time off, choose either "rest at least N days in a row" or "use at most N days", and search. DoneAt combines the user's own schedule with the selected holiday calendar over a rolling year from today and lists plans that need the least leave or give the longest break. Searching is free. Free users can open 3 plan details. After that, opening another plan presents the paywall. Adding a plan to the schedule and undoing it are always free. Leave balances can use half days.
+- Shift alarms (DoneAt Plus, uses AlarmKit): open Settings → Shift alarms, turn them on and allow alarms when iOS asks. The app schedules a system alarm a chosen time before each upcoming shift, following holidays, schedule changes and adopted time off. Without Plus the switch presents the paywall. When an entitlement ends, all DoneAt shift alarms are removed. If the scheduled alarms run out, a notification asks the user to open the app to refresh them.
+- Weekly, monthly and yearly reports (DoneAt Plus): open Records and tap "Play this week's report" (also available for the month and year). The report animates the period's work and rest. Before playing, a user who has salary enabled chooses whether to include pay. Free users see a locked card with an upgrade option. Optional report notifications open the matching report.
+- Free roster brush: Settings → Hours & schedule → Free roster. Pick a shift, then tap or drag across dates to fill them. Shift types can also use different hours for a fixed date range each year. This is free.
+- Recorded overtime now appears as one summary line in Records for all users.
+- Smoother light and dark appearance changes, plus fixes.
+
+This version has screenshots but no App Preview or review video.
+
+Unchanged from 3.2.0: the countdown, today's schedule, earnings estimate, Apple Watch app and the last 7 days of records are free. Plus unlocks older records, the Year view, editing past days, Life view, Focus and turning on private iCloud sync (leave balances and adopted plans sync with records). Sync already on continues after Plus ends.
+
+How to reach the paid features:
+
+1. On the optional Plus introduction after onboarding, tap See plans.
+2. In Settings → Shift alarms, turning alarms on presents the paywall.
+3. In Records, tap a report, an older locked day, Year, Life, Focus, editing a past day or Enable iCloud Sync to present the paywall.
+4. In Time off, open a fourth plan to present the paywall.
+5. Open Settings → DoneAt Plus to restore or manage purchases. Restore purchases is available without Plus.
+
+Products:
+
+- Yearly subscription: 7-day introductory free trial for eligible new subscribers.
+- Monthly subscription: no trial.
+- Lifetime: one-time non-consumable with Family Sharing. The app warns that it does not cancel an active subscription.
+
+There is no DoneAt account or product sign-in. Please use a Sandbox Apple ID to test purchases.
+
+Privacy: data stays on the device by default. The free leave-plan count is stored only on the device. When the user enables iCloud sync, the listed synced data is stored in that user's private iCloud database. Alarms and the running timer stay on each device. Salary never appears in alarms, widgets, notifications, Live Activities, share links or analytics; a report includes pay only if the user chooses it. A backup export is created only when the user selects Export.

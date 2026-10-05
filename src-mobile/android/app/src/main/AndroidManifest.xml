@@ -7,6 +7,8 @@
     <!-- User-granted exact alarms only; USE_EXACT_ALARM is reserved for alarm-clock apps. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Purchase verification sends Play tokens only; work records stay on device. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- WorkManager's optional foreground worker is unused: all reminders are alarms. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
 
