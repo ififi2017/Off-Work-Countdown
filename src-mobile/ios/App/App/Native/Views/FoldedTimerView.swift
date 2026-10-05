@@ -3,13 +3,24 @@ import SwiftUI
 /// System divisions describe the usable display, including the fold's margins.
 /// Keep navigation and timing state outside this presentation-only adaptation.
 enum AdaptiveDisplayLayout {
-    static func hasHorizontalFold(in geometry: GeometryProxy) -> Bool {
-        if #available(iOS 27.1, *) {
-            return geometry.reservedRegions(kind: .division).contains {
+    static func horizontalFoldEdges(in geometry: GeometryProxy) -> (upper: CGFloat, lower: CGFloat)? {
+        // The verified iOS 27.1 SDK exposes reservedRegions in SwiftUICore
+        // module version 8.0.85.27. Runtime availability alone
+        // cannot protect builds using an older SDK (including Xcode Cloud).
+        // The override lets a current SDK also compile-check the fallback.
+#if canImport(SwiftUICore, _version: 8.0.85.27) && !DONEAT_DISABLE_RESERVED_REGIONS
+        if #available(iOS 27.1, *),
+           let fold = geometry.reservedRegions(kind: .division).first(where: {
                 $0.isActive && $0.frame.width > $0.frame.height
-            }
+           }) {
+            return (fold.frame.minY - fold.margins.top, fold.frame.maxY + fold.margins.bottom)
         }
-        return false
+#endif
+        return nil
+    }
+
+    static func hasHorizontalFold(in geometry: GeometryProxy) -> Bool {
+        horizontalFoldEdges(in: geometry) != nil
     }
 
     static func showsContentColumns(width: CGFloat, hasHorizontalFold: Bool) -> Bool {
@@ -20,7 +31,6 @@ enum AdaptiveDisplayLayout {
 /// The primary panel stays above the active fold; the secondary panel remains
 /// independently scrollable below it. The frames include system fold margins;
 /// the layout also works inside the app's navigation split view.
-@available(iOS 27.1, *)
 struct FoldedTimerView: View {
     @Environment(SceneState.self) private var scene
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 76
@@ -34,22 +44,20 @@ struct FoldedTimerView: View {
             if let snapshot = shifts.session.snapshot(at: now) {
                 let phase = shifts.session.visualPhase(snapshot: snapshot, at: now)
                 GeometryReader { geometry in
-                    let fold = geometry.reservedRegions(kind: .division).first {
-                        $0.isActive && $0.frame.width > $0.frame.height
-                    }
+                    let fold = AdaptiveDisplayLayout.horizontalFoldEdges(in: geometry)
                     if sideBySide {
                         HStack(spacing: 0) {
                             hero(snapshot: snapshot, phase: phase, now: now)
                             upcoming(snapshot: snapshot, phase: phase, now: now)
                         }
                     } else {
-                    FoldedPanelLayout(
-                        upperEdge: fold.map { $0.frame.minY - $0.margins.top } ?? geometry.size.height / 2,
-                        lowerEdge: fold.map { $0.frame.maxY + $0.margins.bottom } ?? geometry.size.height / 2
-                    ) {
-                        hero(snapshot: snapshot, phase: phase, now: now)
-                        upcoming(snapshot: snapshot, phase: phase, now: now)
-                    }
+                        FoldedPanelLayout(
+                            upperEdge: fold?.upper ?? geometry.size.height / 2,
+                            lowerEdge: fold?.lower ?? geometry.size.height / 2
+                        ) {
+                            hero(snapshot: snapshot, phase: phase, now: now)
+                            upcoming(snapshot: snapshot, phase: phase, now: now)
+                        }
                     }
                 }
             }

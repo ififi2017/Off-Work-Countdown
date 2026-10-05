@@ -148,11 +148,10 @@ private struct TabletTimerRoot: View {
 
     var body: some View {
         GeometryReader { geometry in
-            if #available(iOS 27.1, *),
-               AdaptiveDisplayLayout.hasHorizontalFold(in: geometry),
+            if AdaptiveDisplayLayout.hasHorizontalFold(in: geometry),
                shifts.session.shouldQuerySnapshot(at: shifts.session.timerDate(from: .now)) {
                 FoldedTimerView(shifts: shifts, isActive: scene.selectedTab == .timer)
-            } else if #available(iOS 27.1, *), usesColumns, !dynamicTypeSize.isAccessibilitySize,
+            } else if usesColumns, !dynamicTypeSize.isAccessibilitySize,
                       shifts.session.shouldQuerySnapshot(at: shifts.session.timerDate(from: .now)) {
                 FoldedTimerView(shifts: shifts, isActive: scene.selectedTab == .timer, sideBySide: true)
             } else {
