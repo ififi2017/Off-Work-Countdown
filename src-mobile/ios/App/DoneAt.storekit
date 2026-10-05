@@ -10,9 +10,7 @@
     ]
   },
   "identifier" : "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
-  "nonRenewingSubscriptions" : [
-
-  ],
+  "nonRenewingSubscriptions" : [],
   "products" : [
     {
       "displayPrice" : "24.99",
@@ -27,6 +25,21 @@
       ],
       "productID" : "com.rainif.offworkcountdown.plus.lifetime",
       "referenceName" : "Plus Lifetime",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "18.99",
+      "familyShareable" : true,
+      "internalID" : "B10000010000000000000002",
+      "localizations" : [
+        {
+          "description" : "Lifetime access to records charts, life view, and focus.",
+          "displayName" : "Plus Lifetime Offer",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.rainif.offworkcountdown.plus.lifetime.offer",
+      "referenceName" : "Plus Lifetime Offer",
       "type" : "NonConsumable"
     }
   ],
@@ -53,12 +66,8 @@
       "name" : "plus",
       "subscriptions" : [
         {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
+          "adHocOffers" : [],
+          "codeOffers" : [],
           "displayPrice" : "1.99",
           "familyShareable" : false,
           "groupNumber" : 2,
@@ -76,17 +85,11 @@
           "referenceName" : "Plus Monthly",
           "subscriptionGroupID" : "D10000010000000000000001",
           "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
+          "winbackOffers" : []
         },
         {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
+          "adHocOffers" : [],
+          "codeOffers" : [],
           "displayPrice" : "9.99",
           "familyShareable" : false,
           "groupNumber" : 1,
@@ -110,16 +113,12 @@
           "referenceName" : "Plus Yearly",
           "subscriptionGroupID" : "D10000010000000000000001",
           "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
+          "winbackOffers" : []
         }
       ]
     }
   ],
-  "subscriptionOffers" : [
-
-  ],
+  "subscriptionOffers" : [],
   "version" : {
     "major" : 4,
     "minor" : 0

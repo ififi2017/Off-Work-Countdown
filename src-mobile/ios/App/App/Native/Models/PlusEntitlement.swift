@@ -12,7 +12,9 @@ nonisolated enum PlusProductID {
     static let monthly = "com.rainif.offworkcountdown.plus.monthly"
     static let yearly = "com.rainif.offworkcountdown.plus.yearly"
     static let lifetime = "com.rainif.offworkcountdown.plus.lifetime"
-    static let all = [monthly, yearly, lifetime]
+    static let lifetimeOffer = "com.rainif.offworkcountdown.plus.lifetime.offer"
+    static let all = [monthly, yearly, lifetime, lifetimeOffer]
+    static let lifetimeIDs = [lifetime, lifetimeOffer]
 }
 
 nonisolated enum PlusStoreKitGroups {
@@ -274,6 +276,109 @@ final class PlusEntitlement {
 #endif
     }
 
+    private(set) var lifetimeOffer: LifetimeOffer?
+    private static let offerKey = "ios.native.plusLifetimeOffer321"
+
+    var previewsLifetimeOffer: Bool {
+#if DEBUG
+        defaults.bool(forKey: "ios.native.qaLifetimeOffer")
+#else
+        false
+#endif
+    }
+
+    var previewLifetimeOfferPrices: (regular: String, discounted: String)? {
+#if DEBUG
+        guard previewsLifetimeOffer else { return nil }
+        if defaults.string(forKey: "ios.native.qaLifetimeOfferStorefront") == "CHN" {
+            return ("¥58", "¥43")
+        }
+        return ("US$24.99", "US$18.99")
+#else
+        return nil
+#endif
+    }
+
+    var canOfferLifetime: Bool {
+        authorization == .unauthorized && !hasActiveSubscription
+            && ((hasCheckedCurrentEntitlements && !entitlementCheckUnavailable) || previewsLifetimeOffer)
+    }
+
+    var hasAvailableLifetimeOffer: Bool {
+        guard canOfferLifetime, let lifetimeOffer,
+              discountedLifetimeProduct() != nil || previewsLifetimeOffer else { return false }
+        return lifetimeOffer.claimedAt == nil || lifetimeOffer.isActive(at: .now)
+    }
+
+    func inviteLifetimeOffer(from source: LifetimeOffer.Source) {
+        guard lifetimeOffer == nil, !isAuthorized, !hasActiveSubscription else { return }
+        lifetimeOffer = LifetimeOffer(source: source, latestObservedAt: .now)
+        persistLifetimeOffer()
+    }
+
+    func claimLifetimeOffer(at now: Date = .now) {
+        guard canOfferLifetime, discountedLifetimeProduct() != nil || previewsLifetimeOffer else { return }
+        lifetimeOffer?.claim(at: now)
+        persistLifetimeOffer()
+    }
+
+    /// Showing a priced offer activates its single 24-hour window. Merely
+    /// offering an unopened gift in What's New does not consume it.
+    @discardableResult
+    func revealLifetimeOffer(from source: LifetimeOffer.Source, at now: Date = .now) -> Bool {
+        guard canOfferLifetime, discountedLifetimeProduct() != nil || previewsLifetimeOffer else { return false }
+        inviteLifetimeOffer(from: source)
+        claimLifetimeOffer(at: now)
+        return lifetimeOffer?.isActive(at: now) == true
+    }
+
+    func lifetimeSavingsLabel(text: AppText) -> String? {
+        let regular: Double
+        let discounted: Double
+        if let product = discountedLifetimeProduct(), let normal = lifetimeProduct() {
+            regular = NSDecimalNumber(decimal: normal.price).doubleValue
+            discounted = NSDecimalNumber(decimal: product.price).doubleValue
+        } else if previewsLifetimeOffer {
+            let china = defaults.string(forKey: "ios.native.qaLifetimeOfferStorefront") == "CHN"
+            regular = china ? 58 : 24.99
+            discounted = china ? 43 : 18.99
+        } else { return nil }
+        let saving = (1 - discounted / regular) * 100
+        // Apple storefront tiers vary. The approximate quarter-off caption
+        // is only used around that range; other regions show their real rate.
+        let percent = (23...27).contains(saving) ? 25 : saving.rounded(.down)
+        return text.formatOfferSavings(percentOff: percent)
+    }
+
+    func observeLifetimeOffer(at now: Date = .now) {
+        guard lifetimeOffer != nil else { return }
+        lifetimeOffer?.observe(at: now)
+        persistLifetimeOffer()
+    }
+
+    private func persistLifetimeOffer() {
+        if let lifetimeOffer, let data = try? JSONEncoder().encode(lifetimeOffer) {
+            defaults.set(data, forKey: Self.offerKey)
+        }
+    }
+
+    func discountedLifetimeProduct() -> Product? {
+        guard let regular = lifetimeProduct(),
+              let offer = products.first(where: { $0.id == PlusProductID.lifetimeOffer }),
+              offer.type == .nonConsumable,
+              LifetimeOffer.validPrice(regular: regular.price, discounted: offer.price,
+                sameCurrency: regular.priceFormatStyle.currencyCode == offer.priceFormatStyle.currencyCode)
+        else { return nil }
+        return offer
+    }
+
+    func purchaseLifetimeOffer() async {
+        observeLifetimeOffer()
+        guard canOfferLifetime, lifetimeOffer?.isActive(at: .now) == true,
+              let product = discountedLifetimeProduct() else { return }
+        await purchase(product)
+    }
+
     private(set) var authorization: PlusAuthorization = .unauthorized
     private(set) var products: [Product] = []
     private(set) var yearlyEligibleForTrial = false
@@ -285,7 +390,7 @@ final class PlusEntitlement {
     private(set) var hasCheckedCurrentEntitlements = false
     private(set) var entitlementCheckUnavailable = false
     private(set) var hasActiveSubscription = false
-    var hasSeenIntro: Bool {
+    var hasSeenIntro: Bool = false {
         didSet { defaults.set(hasSeenIntro, forKey: Key.hasSeenIntro) }
     }
 
@@ -368,6 +473,13 @@ final class PlusEntitlement {
     ) {
         self.fetchEvidence = fetchEvidence
         self.defaults = defaults
+        if let data = defaults.data(forKey: Self.offerKey) {
+            lifetimeOffer = try? JSONDecoder().decode(LifetimeOffer.self, from: data)
+        }
+        if previewsLifetimeOffer, lifetimeOffer == nil {
+            lifetimeOffer = LifetimeOffer(source: .onboarding, latestObservedAt: .now)
+        }
+        observeLifetimeOffer()
         hasSeenIntro = defaults.bool(forKey: Key.hasSeenIntro)
         if let data = defaults.data(forKey: Key.cachedSnapshot),
            let cached = try? JSONDecoder().decode(CodableSnapshot.self, from: data) {
@@ -681,8 +793,10 @@ nonisolated private func fetchStoreKitEvidence() async -> StoreKitEvidence {
             fetched.unverified = true
             return fetched
         }
-        if transaction.productType == .nonConsumable, transaction.productID == PlusProductID.lifetime {
-            fetched.lifetime = PlusLifetimeEvidence(revoked: transaction.revocationDate != nil)
+        if transaction.productType == .nonConsumable, PlusProductID.lifetimeIDs.contains(transaction.productID) {
+            let revoked = transaction.revocationDate != nil
+            // One refunded SKU cannot erase an independently verified purchase.
+            if fetched.lifetime == nil || !revoked { fetched.lifetime = PlusLifetimeEvidence(revoked: revoked) }
         }
         if transaction.productType == .autoRenewable {
             if let groupID = transaction.subscriptionGroupID {

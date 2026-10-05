@@ -10,8 +10,10 @@ import SwiftUI
 /// lead time stay in Settings.
 struct OnboardingRemindersPage: View {
     @Environment(SceneState.self) private var scene
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Bindable var preferences: PreferencesStore
-    let session: ShiftSession
+    let shifts: ShiftSessionStore
+    private var session: ShiftSession { shifts.session }
     let text: AppText
     let onContinue: () -> Void
 
@@ -21,39 +23,9 @@ struct OnboardingRemindersPage: View {
     @State private var continueFeedback = 0
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 12)
-            Text(text.t("onboardingRemindersTitle"))
-                .font(.title.bold())
-                .tracking(-0.6)
-                .multilineTextAlignment(.center)
-            Text(text.t("onboardingRemindersBody"))
-                .font(.callout)
-                .foregroundStyle(OWCDesign.secondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.top, 10)
-
-            lunchCard
-                .padding(.top, 22)
-
-            if preferences.lunchEnabled {
-                footnote(text.t("onboardingLunchNotifyHint"))
-                    .padding(.top, 8)
-            }
-
-            remindersCard
-                .padding(.top, preferences.lunchEnabled ? 16 : 22)
-
-            footnote(text.t("onboardingRemindersMoreInSettings"))
-                .padding(.top, 8)
-
-            Spacer(minLength: 12)
-
-            OnboardingDots(
-                page: scene.onboardingPage,
-                includesAllSet: preferences.scheduleMode != .off
-            )
+        OnboardingPageScaffold(page: OnboardingPages.reminders) { _ in
+            form
+        } footer: {
             Button(text.t("continue")) {
                 durationFocused = false
                 continueFeedback += 1
@@ -64,11 +36,7 @@ struct OnboardingRemindersPage: View {
                 }
             }
             .buttonStyle(OWCPrimaryButtonStyle())
-            .padding(.top, 16)
-            .padding(.bottom, 24)
         }
-        .padding(.horizontal, 28)
-        .frame(maxWidth: 560)
         .sensoryFeedback(.impact(weight: .light), trigger: continueFeedback)
         .sensoryFeedback(.selection, trigger: preferences.lunchEnabled)
         .sensoryFeedback(.selection, trigger: preferences.notificationMode)
@@ -82,11 +50,6 @@ struct OnboardingRemindersPage: View {
             if !focused { clampDuration() }
         }
         .toolbar {
-            // A `ToolbarItemGroup` with a leading `Spacer` builds a full-width
-            // accessory bar. On iOS 26 that bar's glass fallback is opaque
-            // white, so dismissing the number pad left a white overlay on the
-            // continue row for a frame. One trailing item is just the Done
-            // chip; hiding the shared glass stops the fallback flash.
             ToolbarItem(placement: .keyboard) {
                 Button(text.t("done")) {
                     durationFocused = false
@@ -106,6 +69,48 @@ struct OnboardingRemindersPage: View {
         }
     }
 
+    private var form: some View {
+        VStack(spacing: 0) {
+            Color.clear.frame(height: 12)
+            Text(text.t("onboardingRemindersTitle"))
+                .font(.title.bold())
+                .tracking(-0.6)
+                .multilineTextAlignment(.center)
+            Text(text.t("onboardingRemindersBody"))
+                .font(.callout)
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.top, 10)
+
+            OnboardingShiftRibbon(shifts: shifts, text: text, showsReminders: true)
+                .padding(.top, 22)
+
+            lunchCard
+                .padding(.top, 22)
+
+            if preferences.lunchEnabled {
+                footnote(text.t("onboardingLunchNotifyHint"))
+                    .padding(.top, 8)
+                    .transition(.opacity)
+            }
+
+            remindersCard
+                .padding(.top, preferences.lunchEnabled ? 16 : 22)
+
+            footnote(text.t("onboardingRemindersMoreInSettings"))
+                .padding(.top, 8)
+
+            Spacer(minLength: 12)
+
+        }
+        .padding(.horizontal, 28)
+        .frame(maxWidth: 560)
+        // Animate the committed preference, including queued writes. Keeping
+        // the heading anchored avoids recentering the page as the card grows.
+        .animation(reduceMotion ? nil : OWCMotion.onboardingDisclosure, value: preferences.lunchEnabled)
+    }
+
     private var lunchCard: some View {
         OWCGroupCard {
             OWCRow(title: text.t("lunchBreak"), isLast: !preferences.lunchEnabled) {
@@ -115,38 +120,41 @@ struct OnboardingRemindersPage: View {
             }
 
             if preferences.lunchEnabled {
-                OWCRow(title: text.t("lunchStartTime")) {
-                    Button {
-                        showLunchStartPicker = true
-                    } label: {
-                        OWCDetailAccessory(text: session.timeString(preferences.lunchStartMinutes))
-                            .environment(\.layoutDirection, .leftToRight)
+                VStack(spacing: 0) {
+                    OWCRow(title: text.t("lunchStartTime")) {
+                        Button {
+                            showLunchStartPicker = true
+                        } label: {
+                            OWCDetailAccessory(text: session.timeString(preferences.lunchStartMinutes))
+                                .environment(\.layoutDirection, .leftToRight)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                }
 
-                OWCRow(title: text.t("lunchDuration"), isLast: true) {
-                    HStack(spacing: 8) {
-                        OWCNumberField(
-                            placeholder: "60",
-                            text: $durationText,
-                            width: 58,
-                            textAlignment: .center,
-                            onCommit: { _ = clampDuration() }
-                        )
-                        .focused($durationFocused)
-                        .padding(.vertical, 6)
-                        .background(
-                            OWCDesign.control,
-                            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        )
-                        Text(text.t("minutesUnit"))
-                            .font(.callout)
-                            .foregroundStyle(OWCDesign.secondary)
+                    OWCRow(title: text.t("lunchDuration"), isLast: true) {
+                        HStack(spacing: 8) {
+                            OWCNumberField(
+                                placeholder: "60",
+                                text: $durationText,
+                                width: 58,
+                                textAlignment: .center,
+                                onCommit: { _ = clampDuration() }
+                            )
+                            .focused($durationFocused)
+                            .padding(.vertical, 6)
+                            .background(
+                                OWCDesign.control,
+                                in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            )
+                            Text(text.t("minutesUnit"))
+                                .font(.callout)
+                                .foregroundStyle(OWCDesign.secondary)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel(text.t("lunchDuration"))
                     }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel(text.t("lunchDuration"))
                 }
+                .transition(.opacity)
             }
         }
     }
@@ -184,6 +192,10 @@ struct OnboardingRemindersPage: View {
         Binding(
             get: { preferences.lunchEnabled },
             set: { enabled in
+                if !enabled {
+                    durationFocused = false
+                    showLunchStartPicker = false
+                }
                 preferences.applyPreferences {
                     $0.lunchEnabled = enabled
                     $0.lunchStartReminderEnabled = enabled

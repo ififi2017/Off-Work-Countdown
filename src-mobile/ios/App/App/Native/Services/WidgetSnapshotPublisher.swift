@@ -609,7 +609,8 @@ final class WidgetSnapshotComposer {
             id: "shift-start-\(startMs)",
             kind: "shiftStart",
             title: shifts.text.t("startTime"),
-            detail: shifts.text.t("todaysShift"),
+            // Future entries outlive the day when this snapshot was written.
+            detail: "",
             dateMs: startMs
         ))
         for (index, segment) in shift.segments.dropLast().enumerated() {
@@ -660,7 +661,7 @@ final class WidgetSnapshotComposer {
             id: "shift-end-\(endMs)",
             kind: "shiftEnd",
             title: shifts.text.t("endTime"),
-            detail: shift.overtimeEndAtMs == nil ? shifts.text.t("todaysShift") : shifts.text.t("overtime"),
+            detail: shift.overtimeEndAtMs == nil ? "" : shifts.text.t("overtime"),
             dateMs: endMs
         ))
         return items

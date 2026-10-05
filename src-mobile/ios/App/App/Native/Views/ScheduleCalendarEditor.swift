@@ -209,15 +209,12 @@ struct ScheduleCalendarEditor: View {
     }
 
     private var holidayRegionLabel: String {
-        guard let identifier = content.holidayRegionIdentifier else {
-            guard let system = HolidayCalendar.shared.defaultRegionIdentifier() else {
-                return text.t("holidayCalendarOff")
-            }
-            return text.t("holidayCalendarSystemDefault", values: [
-                "region": HolidayCalendar.shared.regionName(system, locale: shifts.preferences.locale)
-            ])
+        // Never set means off. The device's region used to be shown here as a
+        // suggestion, which read as though it were already applied; the
+        // picker still offers it first, marked as suggested.
+        guard let identifier = content.holidayRegionIdentifier, !identifier.isEmpty else {
+            return text.t("holidayCalendarOff")
         }
-        guard !identifier.isEmpty else { return text.t("holidayCalendarOff") }
         return HolidayCalendar.shared.regionName(identifier, locale: shifts.preferences.locale)
     }
 
@@ -232,7 +229,19 @@ struct ScheduleCalendarEditor: View {
     }
 
     private var modePicker: some View {
-        Menu {
+        HStack(spacing: 12) {
+            LabeledContent {
+                Text(text.t(mode.titleKey)).foregroundStyle(OWCDesign.primary)
+            } label: {
+                Text(text.t("extendedPattern")).foregroundStyle(OWCDesign.secondary)
+            }
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.caption.weight(.semibold)).foregroundStyle(OWCDesign.secondary)
+        }
+        .font(.subheadline)
+        .padding(.horizontal, 16).padding(.vertical, 12)
+        .frame(minHeight: 48)
+        .owcRowMenu(accessibilityLabel: text.t("extendedPattern") + ", " + text.t(mode.titleKey)) {
             Picker(text.t("workSchedule"), selection: Binding(
                 get: { mode }, set: { next in
                     guard next != mode else { return }
@@ -244,22 +253,7 @@ struct ScheduleCalendarEditor: View {
                     Text(text.t(option.titleKey)).tag(option)
                 }
             }
-        } label: {
-            HStack(spacing: 12) {
-                LabeledContent {
-                    Text(text.t(mode.titleKey)).foregroundStyle(OWCDesign.primary)
-                } label: {
-                    Text(text.t("extendedPattern")).foregroundStyle(OWCDesign.secondary)
-                }
-                Image(systemName: "chevron.up.chevron.down")
-                    .font(.caption.weight(.semibold)).foregroundStyle(OWCDesign.secondary)
-            }
-            .font(.subheadline)
-            .padding(.horizontal, 16).padding(.vertical, 12)
-            .frame(minHeight: 48).contentShape(Rectangle())
         }
-        .buttonStyle(OWCRowButtonStyle())
-        .accessibilityLabel(text.t("extendedPattern") + ", " + text.t(mode.titleKey))
     }
 
     private var weekdayLabels: [String] {
@@ -479,30 +473,30 @@ struct ScheduleCalendarEditor: View {
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 2) {
             ForEach(start..<max(start, end), id: \.self) { index in
                 let type = content.shiftTypes.first { $0.id == rule.days[index] }
-                Menu {
+                VStack(spacing: 3) {
+                    Text(mode == .rotation ? text.formatCount(index + 1) : weekdayLabels[index % 7])
+                        .font(.subheadline.weight(type?.kind == .work ? .semibold : .regular))
+                    if mode == .rotation {
+                        Text(type.map { shortName($0) } ?? "–").font(.caption2)
+                    }
+                }
+                .foregroundStyle(type?.kind == .work ? OWCDesign.accent : OWCDesign.secondary)
+                .lineLimit(1).frame(maxWidth: .infinity, minHeight: 44)
+                .background(type?.kind == .work ? OWCDesign.accent.opacity(0.10) : OWCDesign.control.opacity(0.5),
+                            in: .rect(cornerRadius: OWCDesign.controlRadius))
+                .owcRowMenu(
+                    accessibilityLabel: (mode == .rotation ? text.formatCount(index + 1) : weekdayLabels[index % 7])
+                        + ", " + (type?.name ?? text.t("extendedUnassigned")),
+                    cornerRadius: OWCDesign.controlRadius
+                ) {
                     ForEach(types) { option in
                         Button(option.name) {
                             onContentChange(ExtendedScheduleEditing.assigning(option.id, at: index, in: content))
                             assignmentFeedback += 1
                         }
                     }
-                } label: {
-                    VStack(spacing: 3) {
-                        Text(mode == .rotation ? text.formatCount(index + 1) : weekdayLabels[index % 7])
-                            .font(.subheadline.weight(type?.kind == .work ? .semibold : .regular))
-                        if mode == .rotation {
-                            Text(type.map { shortName($0) } ?? "–").font(.caption2)
-                        }
-                    }
-                    .foregroundStyle(type?.kind == .work ? OWCDesign.accent : OWCDesign.secondary)
-                    .lineLimit(1).frame(maxWidth: .infinity, minHeight: 44)
-                    .background(type?.kind == .work ? OWCDesign.accent.opacity(0.10) : OWCDesign.control.opacity(0.5),
-                                in: .rect(cornerRadius: OWCDesign.controlRadius))
-                    .padding(.horizontal, 2)
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel((mode == .rotation ? text.formatCount(index + 1) : weekdayLabels[index % 7]) + ", " + (type?.name ?? text.t("extendedUnassigned")))
+                .padding(.horizontal, 2)
             }
         }
     }

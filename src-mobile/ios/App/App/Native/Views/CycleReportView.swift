@@ -754,14 +754,14 @@ struct CycleReportReadingView: View {
             ForEach(snapshot.months, id: \.period) { month in
                 VStack(alignment: .leading, spacing: 6) {
                     Text(copy.periodTitle(month.period)).font(.subheadline.weight(.semibold))
-                    Text("\(copy.text.t("recordsWorkedTime")) · \(copy.hours(month.figures.workedMs))")
-                    Text("\(copy.text.t("recordsOvertime")) · \(copy.hours(month.figures.overtimeMs))")
-                    Text("\(copy.text.t("reportRestDays")) · \(copy.days(month.restDayCount))")
+                    Text(verbatim: "\(copy.text.t("recordsWorkedTime")) · \(copy.hours(month.figures.workedMs))")
+                    Text(verbatim: "\(copy.text.t("recordsOvertime")) · \(copy.hours(month.figures.overtimeMs))")
+                    Text(verbatim: "\(copy.text.t("reportRestDays")) · \(copy.days(month.restDayCount))")
                     if month.focusRounds > 0 {
-                        Text("\(copy.text.t("reportFocusRounds")) · \(copy.text.formatCount(month.focusRounds))")
+                        Text(verbatim: "\(copy.text.t("reportFocusRounds")) · \(copy.text.formatCount(month.focusRounds))")
                     }
                     if let income = month.figures.income {
-                        Text("\(copy.text.t("reportIncomeTitle")) · \(copy.money(income))")
+                        Text(verbatim: "\(copy.text.t("reportIncomeTitle")) · \(copy.money(income))")
                     }
                 }
                 .font(.footnote).foregroundStyle(.white.opacity(0.8))

@@ -37,7 +37,9 @@ final class ShiftSessionStore {
     /// once without persisting a permanent suppression flag.
     var lastCelebratedEndAtMs: Double = 0
     private var reviewPromptState = AppReviewPromptState()
-    private var reviewPromptEligibleThisLaunch = false
+    /// Bumped when a celebration the user is watching makes the review
+    /// request due. The root view requests it once that moment settles.
+    private(set) var reviewRequestOffer = 0
     /// The stored preference keeps its pre-report name so synced devices and
     /// backups read it unchanged; it now switches the weekly report.
     var weeklyReportNotificationsAreActive: Bool {
@@ -64,11 +66,6 @@ final class ShiftSessionStore {
         reviewPromptState = defaults.data(forKey: Key.appReviewPrompt)
             .flatMap { try? JSONDecoder().decode(AppReviewPromptState.self, from: $0) }
             ?? AppReviewPromptState()
-        reviewPromptEligibleThisLaunch = reviewPromptState.isEligibleOnLaunch(
-            trackedCompletionAtMs: activeCountdownEndAtMs,
-            nowMs: Date.now.timeIntervalSince1970 * 1_000
-        )
-        persistReviewPromptState()
         defaults.removeObject(forKey: Key.lastCelebratedEndAtMs)
         lastCelebratedEndAtMs = 0
 
@@ -228,23 +225,28 @@ final class ShiftSessionStore {
     }
     func noteCountdownCompleted(endAtMs: Double) {
         let previous = reviewPromptState
-        reviewPromptState.noteCompletion(atMs: endAtMs)
+        reviewPromptState.noteCompletion(dayKey: reviewDayKey(endAtMs))
         if reviewPromptState != previous { persistReviewPromptState() }
     }
 
-    /// Claims the launch opportunity and checks throttling. Returns true if the
-    /// system review should be triggered. Call `recordReviewTriggered()` after
-    /// requesting the system review.
-    func claimReviewPromptIfEligible() -> Bool {
-        guard reviewPromptEligibleThisLaunch,
-              preferences.onboardingComplete,
-              plus.hasSeenIntro
-        else { return false }
-        reviewPromptEligibleThisLaunch = false
-        let nowMs = Date.now.timeIntervalSince1970 * 1_000
-        return reviewPromptState.shouldTriggerSystemReview(
+    /// Called as the clock-off celebration plays on screen: the one pause the
+    /// review request is allowed to follow. Only when the user was here for
+    /// the moment itself — a shift that ended hours ago still celebrates on
+    /// the next launch, and asking then would be asking at launch.
+    func offerReviewAfterCelebration(endAtMs: Double, now: Date = .now) {
+        let nowMs = now.timeIntervalSince1970 * 1_000
+        guard abs(nowMs - endAtMs) <= 2 * 60 * 1_000,
+              reviewPromptState.isDue(currentVersion: Self.appVersion, nowMs: nowMs)
+        else { return }
+        reviewRequestOffer += 1
+    }
+
+    /// Checks throttling once more at the moment of asking; a request the user
+    /// turned off in Settings meanwhile, or one already made, is not repeated.
+    func claimReviewRequest() -> Bool {
+        reviewPromptState.isDue(
             currentVersion: Self.appVersion,
-            nowMs: nowMs
+            nowMs: Date.now.timeIntervalSince1970 * 1_000
         )
     }
 
@@ -257,7 +259,6 @@ final class ShiftSessionStore {
     }
 
     func disableAutomaticReviewPrompt() {
-        reviewPromptEligibleThisLaunch = false
         reviewPromptState.disable()
         persistReviewPromptState()
     }
@@ -268,8 +269,11 @@ final class ShiftSessionStore {
     private func revokeCountdownCompletion(endAtMs: Double?) {
         guard let endAtMs else { return }
         let previous = reviewPromptState
-        reviewPromptState.revokeCompletion(atMs: endAtMs)
+        reviewPromptState.revokeCompletion(dayKey: reviewDayKey(endAtMs))
         if reviewPromptState != previous { persistReviewPromptState() }
+    }
+    private func reviewDayKey(_ endAtMs: Double) -> String {
+        RecordJSON.dayKey(Date(timeIntervalSince1970: endAtMs / 1_000), calendar: preferences.recordsCalendar)
     }
     private func persistReviewPromptState() {
         guard let data = try? JSONEncoder().encode(reviewPromptState) else { return }

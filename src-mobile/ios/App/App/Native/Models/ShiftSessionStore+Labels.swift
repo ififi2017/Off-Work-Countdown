@@ -32,7 +32,7 @@ extension ShiftSessionStore {
         case .classic: text.t("scheduleClassic")
         case .alternating: text.t("scheduleAlternating")
         case .rotation: text.t("scheduleRotation")
-        case .off: text.t("scheduleOff")
+        case .off: text.t("scheduleManualTimer")
         }
     }
 

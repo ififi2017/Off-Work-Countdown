@@ -7,13 +7,31 @@ import Testing
 struct PhoneLandscapePresentationTests {
     @Test func orientationUsesTheSceneWindowShapeAndPhoneIdiom() {
         #expect(PhoneLandscapePresentationPolicy.isLandscapePhone(
-            idiom: .phone, width: 844, height: 390
+            idiom: .phone, verticalSizeClass: .compact, width: 844, height: 390
         ))
         #expect(!PhoneLandscapePresentationPolicy.isLandscapePhone(
-            idiom: .phone, width: 390, height: 844
+            idiom: .phone, verticalSizeClass: .regular, width: 390, height: 844
         ))
         #expect(!PhoneLandscapePresentationPolicy.isLandscapePhone(
-            idiom: .pad, width: 1_024, height: 768
+            idiom: .pad, verticalSizeClass: .regular, width: 1_024, height: 768
+        ))
+    }
+
+    @Test func expandedPhoneKeepsItsAppEvenWhenWiderThanTall() {
+        #expect(AdaptiveDisplayLayout.showsContentColumns(width: 669, hasHorizontalFold: false))
+        #expect(AdaptiveDisplayLayout.showsContentColumns(width: 951, hasHorizontalFold: false))
+        #expect(!AdaptiveDisplayLayout.showsContentColumns(width: 440, hasHorizontalFold: false))
+        #expect(!AdaptiveDisplayLayout.showsContentColumns(width: 951, hasHorizontalFold: true))
+        for heightClass in [UIUserInterfaceSizeClass.regular, .unspecified] {
+            #expect(!PhoneLandscapePresentationPolicy.isLandscapePhone(
+                idiom: .phone, verticalSizeClass: heightClass, width: 960, height: 678
+            ))
+        }
+        #expect(!PhoneLandscapePresentationPolicy.isLandscapePhone(
+            idiom: .phone, verticalSizeClass: .compact, width: 390, height: 844
+        ))
+        #expect(!PhoneLandscapePresentationPolicy.isLandscapePhone(
+            idiom: .pad, verticalSizeClass: .compact, width: 844, height: 390
         ))
     }
 

@@ -32,6 +32,17 @@ final class AppText {
         localizer.strings(key, locale: preferences.languageCode)
     }
 
+    /// Keep the discount convention and its words in the same app language.
+    /// The device region may differ from an in-app language override.
+    func formatOfferSavings(percentOff: Double) -> String {
+        let locale = preferences.locale
+        let chinese = locale.language.languageCode?.identifier == "zh"
+        let number = chinese ? (100 - percentOff) / 10 : percentOff
+        return t("plusOfferSavings", values: [
+            "discount": number.formatted(.number.precision(.fractionLength(0...1)).locale(locale))
+        ])
+    }
+
     func formatTime(_ date: Date) -> String {
         date.formatted(.dateTime.hour().minute().locale(preferences.locale))
     }

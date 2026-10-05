@@ -1,92 +1,78 @@
+import Foundation
 import Testing
 @testable import App
 
 struct AppReviewPromptTests {
-    @Test func completionOnlyArmsTheNextLaunch() {
-        var state = AppReviewPromptState()
-        state.noteCompletion(atMs: 1_000)
+    private static let dayMs = 24.0 * 60 * 60 * 1_000
 
-        #expect(state.phase == .readyForNextLaunch)
-        let eligible = state.isEligibleOnLaunch(trackedCompletionAtMs: nil, nowMs: 1_100)
-        #expect(eligible)
+    private func finished(days: Int) -> AppReviewPromptState {
+        var state = AppReviewPromptState()
+        for day in 1...days { state.noteCompletion(dayKey: "2026-10-0\(day)") }
+        return state
     }
 
-    @Test func aCompletionWhileClosedIsEligibleAtLaunch() {
+    @Test func oneDayIsNotYetAHabit() {
+        let state = finished(days: AppReviewPromptState.minimumCompletedDays - 1)
+        #expect(!state.isDue(currentVersion: "3.2.1", nowMs: 1_000))
+    }
+
+    @Test func enoughDifferentDaysMakeItDue() {
+        let state = finished(days: AppReviewPromptState.minimumCompletedDays)
+        #expect(state.isDue(currentVersion: "3.2.1", nowMs: 1_000))
+    }
+
+    @Test func theSameDayCountsOnce() {
         var state = AppReviewPromptState()
-        let eligible = state.isEligibleOnLaunch(trackedCompletionAtMs: 1_000, nowMs: 2_000)
-        #expect(eligible)
+        for _ in 0..<5 { state.noteCompletion(dayKey: "2026-10-01") }
+        #expect(state.completedDays == 1)
+    }
+
+    @Test func continuingWorkRevokesThatDay() {
+        var state = finished(days: 2)
+        state.revokeCompletion(dayKey: "2026-10-02")
+        #expect(state.completedDays == 1)
+        state.noteCompletion(dayKey: "2026-10-02")
+        #expect(state.completedDays == 2)
     }
 
     @Test func neverCannotBeRearmed() {
         var state = AppReviewPromptState()
         state.disable()
-        state.noteCompletion(atMs: 2_000)
-        let eligible = state.isEligibleOnLaunch(trackedCompletionAtMs: 2_000, nowMs: 3_000)
-        #expect(!eligible)
+        for day in 1...5 { state.noteCompletion(dayKey: "2026-10-0\(day)") }
+        #expect(!state.isDue(currentVersion: "3.2.1", nowMs: 1_000))
     }
 
-    @Test func continuingWorkRevokesThePendingCompletion() {
-        var state = AppReviewPromptState()
-        state.noteCompletion(atMs: 1_000)
-        state.revokeCompletion(atMs: 1_000)
-        #expect(state.phase == .waitingForCompletion)
-    }
-
-    // MARK: - Throttling
-
-    @Test func shouldTriggerWhenNoThrottlingRecorded() {
-        var state = AppReviewPromptState()
-        state.noteCompletion(atMs: 1_000)
-        #expect(state.shouldTriggerSystemReview(currentVersion: "3.2.1", nowMs: 2_000))
-    }
-
-    @Test func shouldNotTriggerWhenNotReadyForLaunch() {
-        let state = AppReviewPromptState()
-        #expect(!state.shouldTriggerSystemReview(currentVersion: "3.2.1", nowMs: 2_000))
-    }
-
-    @Test func shouldNotTriggerForSameVersion() {
-        var state = AppReviewPromptState()
-        state.noteCompletion(atMs: 1_000)
+    @Test func aRequestStartsTheCountAgain() {
+        var state = finished(days: 3)
         state.recordTrigger(version: "3.2.1", atMs: 2_000)
-        state.noteCompletion(atMs: 3_000)
-        #expect(!state.shouldTriggerSystemReview(currentVersion: "3.2.1", nowMs: 4_000))
-    }
-
-    @Test func shouldTriggerForNewVersion() {
-        var state = AppReviewPromptState()
-        state.noteCompletion(atMs: 1_000)
-        state.recordTrigger(version: "3.2.1", atMs: 2_000)
-        state.noteCompletion(atMs: 3_000)
-        let oldEnoughMs = 2_000 + Double(AppReviewPromptState.minimumIntervalDays) * 24 * 60 * 60 * 1_000 + 1_000
-        #expect(state.shouldTriggerSystemReview(currentVersion: "3.2.2", nowMs: oldEnoughMs))
-    }
-
-    @Test func shouldNotTriggerWithinMinimumInterval() {
-        var state = AppReviewPromptState()
-        state.noteCompletion(atMs: 1_000)
-        state.recordTrigger(version: "3.2.1", atMs: 2_000)
-        state.noteCompletion(atMs: 3_000)
-        let tooSoonMs = 2_000 + Double(AppReviewPromptState.minimumIntervalDays - 1) * 24 * 60 * 60 * 1_000
-        #expect(!state.shouldTriggerSystemReview(currentVersion: "3.2.2", nowMs: tooSoonMs))
-    }
-
-    @Test func shouldTriggerAfterMinimumInterval() {
-        var state = AppReviewPromptState()
-        state.noteCompletion(atMs: 1_000)
-        state.recordTrigger(version: "3.2.1", atMs: 2_000)
-        state.noteCompletion(atMs: 3_000)
-        let oldEnoughMs = 2_000 + Double(AppReviewPromptState.minimumIntervalDays) * 24 * 60 * 60 * 1_000 + 1_000
-        #expect(state.shouldTriggerSystemReview(currentVersion: "3.2.2", nowMs: oldEnoughMs))
-    }
-
-    @Test func recordTriggerResetsToWaitingForCompletion() {
-        var state = AppReviewPromptState()
-        state.noteCompletion(atMs: 1_000)
-        #expect(state.phase == .readyForNextLaunch)
-        state.recordTrigger(version: "3.2.1", atMs: 2_000)
-        #expect(state.phase == .waitingForCompletion)
+        #expect(state.completedDays == 0)
         #expect(state.lastTriggeredVersion == "3.2.1")
         #expect(state.lastTriggeredAtMs == 2_000)
+    }
+
+    @Test func notTwiceInOneVersion() {
+        var state = finished(days: 3)
+        state.recordTrigger(version: "3.2.1", atMs: 2_000)
+        for day in 4...6 { state.noteCompletion(dayKey: "2026-10-0\(day)") }
+        let later = 2_000 + Double(AppReviewPromptState.minimumIntervalDays + 1) * Self.dayMs
+        #expect(!state.isDue(currentVersion: "3.2.1", nowMs: later))
+        #expect(state.isDue(currentVersion: "3.2.2", nowMs: later))
+    }
+
+    @Test func notWithinTheMinimumInterval() {
+        var state = finished(days: 3)
+        state.recordTrigger(version: "3.2.1", atMs: 2_000)
+        for day in 4...6 { state.noteCompletion(dayKey: "2026-10-0\(day)") }
+        let tooSoon = 2_000 + Double(AppReviewPromptState.minimumIntervalDays - 1) * Self.dayMs
+        #expect(!state.isDue(currentVersion: "3.2.2", nowMs: tooSoon))
+    }
+
+    /// State saved by 3.2.0 and earlier: a completion armed for the next
+    /// launch. It decodes, and does not prompt on the upgrade's first launch.
+    @Test func legacyLaunchArmedStateDoesNotPromptAfterUpdate() throws {
+        let legacy = #"{"phase":"readyForNextLaunch","readyCompletionAtMs":1000}"#
+        let state = try JSONDecoder().decode(AppReviewPromptState.self, from: Data(legacy.utf8))
+        #expect(state.phase == .readyForNextLaunch)
+        #expect(!state.isDue(currentVersion: "3.2.1", nowMs: 2_000))
     }
 }

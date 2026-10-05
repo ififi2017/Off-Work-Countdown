@@ -77,6 +77,8 @@ struct RecordsDesignView: View {
 
     }
 
+    @Environment(\.usesExpandedPhoneColumns) private var usesPhoneColumns
+
     var body: some View {
         Group {
             if records.archiveBanner == .damaged {
@@ -167,7 +169,7 @@ struct RecordsDesignView: View {
 
     private var regularCanvas: some View {
         Group {
-            if canvasWidth >= Self.twoColumnMinimum && !dynamicTypeSize.isAccessibilitySize {
+            if (usesPhoneColumns || canvasWidth >= Self.twoColumnMinimum) && !dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 14) {
                     if usesCustomRootHeader {
                         recordsRootHeader
@@ -188,7 +190,7 @@ struct RecordsDesignView: View {
                                 conclusionColumn
                                     .padding(.bottom, OWCDesign.detailBottomInset)
                             }
-                            .frame(maxWidth: Self.conclusionColumnWidth)
+                            .frame(maxWidth: usesPhoneColumns ? canvasWidth * 0.42 : Self.conclusionColumnWidth)
                             .accessibilityIdentifier("records.conclusionScroll")
                         }
                     }
@@ -268,7 +270,7 @@ struct RecordsDesignView: View {
             if browsing.scale != .life, !queries.plus.isAuthorized, let freeOvertimeMs {
                 RecordsOvertimeLine(text: text, milliseconds: freeOvertimeMs)
             }
-            if browsing.scale != .life, summary != nil {
+            if browsing.scale != .life, summary != nil || usesPhoneColumns {
                 RecordsHeadlineView(
                     text: text,
                     preferences: preferences,

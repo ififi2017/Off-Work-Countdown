@@ -6,6 +6,34 @@ import UserNotifications
 @MainActor
 @Suite("Service operation ordering", .timeLimit(.minutes(1)))
 struct ServiceConcurrencyTests {
+    @Test("A stopped focus session cannot request permission or add alerts after suspended cleanup")
+    func focusStoppedWhileRemoving() async {
+        let entered = TestSignal()
+        let release = TestSignal()
+        var current = true
+        var checkedAuthorization = false
+        var added = false
+        let center = NotificationService.ShiftCenter(
+            authorization: { checkedAuthorization = true; return .allowed },
+            pendingIDs: { ["owc.focus.old"] }, deliveredIDs: { [] },
+            add: { _ in added = true },
+            removePending: { _ in entered.signal(); await release.wait() },
+            removeDelivered: { _ in }
+        )
+        let operation = Task {
+            await NotificationService.scheduleFocusTimers(
+                id: UUID(), alerts: [.init(slot: .end, at: .now.addingTimeInterval(600), title: "Focus", body: "")],
+                center: center, isCurrent: { current }
+            )
+        }
+        await entered.wait()
+        current = false
+        release.signal()
+        #expect(await operation.value == .superseded)
+        #expect(!checkedAuthorization)
+        #expect(!added)
+    }
+
     @Test("A failed archive save retains existing notifications; retry publishes the committed shift")
     func notificationsWaitForDurability() async throws {
         let suite = "owc.notification.persistence.\(UUID())"

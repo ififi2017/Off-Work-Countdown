@@ -424,28 +424,33 @@ struct SalaryDesignView: View {
                 .owcPlainDivider()
 
                 if shifts.preferences.salaryType == .monthly {
-                    Menu {
-                        ForEach(15...31, id: \.self) { value in
-                            Button("\(value)") { shifts.preferences.applyPreferences { $0.monthlyWorkingDays = Double(value) } }
-                        }
-                    } label: {
-                        HStack {
-                            Text(shifts.text.t("monthlyWorkingDays"))
-                                .font(.body)
-                                .foregroundStyle(OWCDesign.primary)
-                            Spacer()
-                            Text(Int(shifts.preferences.monthlyWorkingDays).formatted())
-                                .font(.body.monospacedDigit())
-                                .foregroundStyle(OWCDesign.secondary)
-                            Image(systemName: "chevron.right")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(OWCDesign.tertiary)
-                        }
-                        .padding(.horizontal, 16)
-                        .frame(height: 56)
-                        .contentShape(Rectangle())
+                    HStack {
+                        Text(shifts.text.t("monthlyWorkingDays"))
+                            .font(.body)
+                            .foregroundStyle(OWCDesign.primary)
+                        Spacer()
+                        Text(Int(shifts.preferences.monthlyWorkingDays).formatted())
+                            .font(.body.monospacedDigit())
+                            .foregroundStyle(OWCDesign.secondary)
+                        // A menu, not a push: the up/down chevron the other
+                        // menu rows use, rather than a disclosure arrow.
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(OWCDesign.tertiary)
                     }
-                    .buttonStyle(OWCRowButtonStyle())
+                    .padding(.horizontal, 16)
+                    .frame(height: 56)
+                    .owcRowMenu(accessibilityLabel: shifts.text.t("monthlyWorkingDays") + ", "
+                                + Int(shifts.preferences.monthlyWorkingDays).formatted()) {
+                        Picker(shifts.text.t("monthlyWorkingDays"), selection: Binding(
+                            get: { Int(shifts.preferences.monthlyWorkingDays) },
+                            set: { value in shifts.preferences.applyPreferences { $0.monthlyWorkingDays = Double(value) } }
+                        )) {
+                            ForEach(15...31, id: \.self) { value in
+                                Text(value.formatted()).tag(value)
+                            }
+                        }
+                    }
                     .owcPlainDivider()
                 }
 

@@ -29,6 +29,10 @@ final class PhoneOrientationObserverView: UIView {
         self.onChange = onChange
         super.init(frame: .zero)
         isUserInteractionEnabled = false
+        registerForTraitChanges([UITraitVerticalSizeClass.self]) {
+            (view: PhoneOrientationObserverView, _: UITraitCollection) in
+            view.reportOrientation()
+        }
     }
 
     required init?(coder: NSCoder) { nil }
@@ -47,6 +51,7 @@ final class PhoneOrientationObserverView: UIView {
         guard let window else { return }
         let value = PhoneLandscapePresentationPolicy.isLandscapePhone(
             idiom: traitCollection.userInterfaceIdiom,
+            verticalSizeClass: traitCollection.verticalSizeClass,
             width: window.bounds.width,
             height: window.bounds.height
         )
@@ -62,8 +67,16 @@ final class PhoneOrientationObserverView: UIView {
 }
 
 enum PhoneLandscapePresentationPolicy {
-    static func isLandscapePhone(idiom: UIUserInterfaceIdiom, width: CGFloat, height: CGFloat) -> Bool {
-        idiom == .phone && width > height
+    static func isLandscapePhone(
+        idiom: UIUserInterfaceIdiom,
+        verticalSizeClass: UIUserInterfaceSizeClass,
+        width: CGFloat,
+        height: CGFloat
+    ) -> Bool {
+        // An opened Duo is still a phone and can be wider than tall. Only a
+        // short, compact-height window opts into the automatic clock; regular
+        // height keeps the existing tabs, navigation and current task visible.
+        idiom == .phone && verticalSizeClass == .compact && width > height
     }
 
     static func shouldPresent(

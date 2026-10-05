@@ -223,6 +223,7 @@ const storeKitConfiguration = JSON.parse(
 );
 const expectedStoreKitProductIds = [
   "com.rainif.offworkcountdown.plus.lifetime",
+  "com.rainif.offworkcountdown.plus.lifetime.offer",
   "com.rainif.offworkcountdown.plus.monthly",
   "com.rainif.offworkcountdown.plus.yearly",
 ];

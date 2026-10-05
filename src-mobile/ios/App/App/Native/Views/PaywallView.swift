@@ -10,24 +10,29 @@ struct PaywallView: View {
     let plus: PlusEntitlement
     let text: AppText
     var reason: PlusPaywallReason = .intro
-    var showsSkip: Bool = false
     /// Off when the presenter already offers a way out — a sheet has Close in
     /// its own toolbar, and a second dismiss inside the page read as a choice.
     var showsDismissButton: Bool = true
     var onDismiss: () -> Void = {}
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var plansVisible = false
 
     var body: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 if !plus.isAuthorized {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(text.t(reason.lockedTitleKey))
+                        if reason == .intro {
+                            OnboardingPlusBadge(text: text)
+                                .padding(.bottom, 2)
+                        }
+                        Text(text.t(reason == .intro ? "onboardingPlusShowcaseTitle" : reason.lockedTitleKey))
                             .font(.title.bold())
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
 
-                        Text(text.t("plusIntroBody"))
+                        Text(text.t("plusStoryBody"))
                             .font(.callout)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineSpacing(3)
@@ -36,15 +41,20 @@ struct PaywallView: View {
                     .transition(.opacity)
                 }
 
+                if !plus.isAuthorized {
+                    PlusFeatureStage(text: text, initialSelection: reason == .focus ? 2 : (reason == .leavePlanning || reason == .shiftAlarms ? 1 : 0))
+                        .padding(.vertical, 8)
+                }
                 PaywallContent(
                     plus: plus,
                     text: text,
-                    showsBenefits: true,
+                    showsBenefits: false,
                     showsIntro: false,
                     loadsProductsOnAppear: true,
                     secondaryTitle: secondaryTitle,
                     secondaryAction: secondaryAction,
-                    authorizedAction: finishAuthorizedFlow
+                    authorizedAction: finishAuthorizedFlow,
+                    onPurchaseVisibilityChange: { plansVisible = $0 }
                 )
             }
             .frame(maxWidth: 560, alignment: .leading)
@@ -59,6 +69,20 @@ struct PaywallView: View {
         .defaultScrollAnchor(.center, for: .alignment)
         .scrollBounceBehavior(.basedOnSize)
         .background(OWCDesign.page)
+        .safeAreaInset(edge: .bottom) {
+            if !plus.isAuthorized, !plansVisible {
+                VStack(spacing: 0) {
+                    Button(text.t("plusSeePlans")) {
+                        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.phase) { proxy.scrollTo("plus-plans", anchor: .top) }
+                    }
+                    .buttonStyle(OWCPrimaryButtonStyle())
+                }
+                .padding(.horizontal, 20).padding(.vertical, 12)
+                .frame(maxWidth: 560).frame(maxWidth: .infinity)
+                .background(.regularMaterial)
+            }
+        }
+        }
     }
 
     private func finishAuthorizedFlow() {
@@ -68,18 +92,11 @@ struct PaywallView: View {
 
     private var secondaryTitle: String? {
         if reason != .intro, showsDismissButton { return text.t("plusContinueReadonly") }
-        if showsSkip { return text.t("plusSkip") }
         return nil
     }
 
     private var secondaryAction: (() -> Void)? {
         if reason != .intro, showsDismissButton { return onDismiss }
-        if showsSkip {
-            return {
-                plus.markIntroSeen()
-                onDismiss()
-            }
-        }
         return nil
     }
 }
@@ -94,6 +111,7 @@ struct PaywallContent: View {
     var secondaryTitle: String?
     var secondaryAction: (() -> Void)?
     var authorizedAction: (() -> Void)?
+    var onPurchaseVisibilityChange: ((Bool) -> Void)?
     @State private var selected = PlusPlanKind.yearly
     @State private var confirmsLifetime = false
     @State private var purchasedFeedback = 0
@@ -111,7 +129,8 @@ struct PaywallContent: View {
         loadsProductsOnAppear: Bool = true,
         secondaryTitle: String? = nil,
         secondaryAction: (() -> Void)? = nil,
-        authorizedAction: (() -> Void)? = nil
+        authorizedAction: (() -> Void)? = nil,
+        onPurchaseVisibilityChange: ((Bool) -> Void)? = nil
     ) {
         self.plus = plus
         self.text = text
@@ -121,6 +140,7 @@ struct PaywallContent: View {
         self.secondaryTitle = secondaryTitle
         self.secondaryAction = secondaryAction
         self.authorizedAction = authorizedAction
+        self.onPurchaseVisibilityChange = onPurchaseVisibilityChange
         _authorizedAtPresentation = State(initialValue: plus.isAuthorized)
     }
 
@@ -148,8 +168,23 @@ struct PaywallContent: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
+                    if plus.hasAvailableLifetimeOffer {
+                        LifetimeOfferCard(plus: plus, text: text)
+                            .id("plus-plans")
+                            .onScrollVisibilityChange(threshold: 0.15) { onPurchaseVisibilityChange?($0) }
+                        DisclosureGroup(text.t("plusSeePlans")) { purchaseSection.padding(.top, 12) }
+                            .font(.callout.weight(.medium))
+                        restoreButton.font(.callout).foregroundStyle(OWCDesign.secondary)
+                    } else {
+                        purchaseSection
+                            .id("plus-plans")
+                            .onScrollVisibilityChange(threshold: 0.15) { onPurchaseVisibilityChange?($0) }
+                    }
                     if showsBenefits { benefits }
-                    purchaseSection
+                    else {
+                        DisclosureGroup(text.t("plusAllBenefits")) { benefits.padding(.top, 12) }
+                            .font(.callout.weight(.medium))
+                    }
                 }
                 .transition(.opacity)
             }
@@ -181,6 +216,7 @@ struct PaywallContent: View {
         }
         .task {
             await Task.yield()
+            await plus.checkCurrentEntitlements()
             if loadsProductsOnAppear, plus.products.isEmpty, !plus.isBusy {
                 await plus.loadProducts()
             }
@@ -226,6 +262,60 @@ struct PaywallContent: View {
         }
     }
 
+    // MARK: - Trial
+
+    private var showsTrialTimeline: Bool {
+        selected == .yearly && plus.yearlyEligibleForTrial && product(for: .yearly) != nil
+    }
+
+    /// What happens when, before the user commits: everything opens today,
+    /// the yearly price starts after seven days, and cancelling before then
+    /// costs nothing. Said plainly so the free week reads as one.
+    private var trialTimeline: some View {
+        let steps: [(icon: String, title: String, body: String)] = [
+            ("lock.open.fill", text.t("plusTrialToday"), text.t("plusTrialTodayBody")),
+            ("calendar", text.t("plusTrialEnd"), text.t("plusTrialEndBody", values: ["price": price(for: .yearly)])),
+            ("xmark", text.t("plusTrialAnytime"), text.t("plusTrialAnytimeBody")),
+        ]
+        return VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(spacing: 0) {
+                        Image(systemName: step.icon)
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(index == 0 ? Color.white : OWCDesign.accent)
+                            .frame(width: 28, height: 28)
+                            .background(
+                                index == 0 ? OWCDesign.accent : OWCDesign.accent.opacity(0.12),
+                                in: Circle()
+                            )
+                        if index < steps.count - 1 {
+                            Rectangle()
+                                .fill(OWCDesign.accent.opacity(0.22))
+                                .frame(width: 2)
+                                .frame(maxHeight: .infinity)
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(step.title)
+                            .font(.subheadline.weight(.semibold))
+                        Text(step.body)
+                            .font(.footnote)
+                            .foregroundStyle(OWCDesign.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.top, 4)
+                    .padding(.bottom, index < steps.count - 1 ? 14 : 0)
+                    Spacer(minLength: 0)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .padding(16)
+        .background(OWCDesign.card, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
+    }
+
     // MARK: - Buying
 
     @ViewBuilder
@@ -253,22 +343,40 @@ struct PaywallContent: View {
             } else {
                 planPicker
 
-                Button {
-                    purchaseSelected()
-                } label: {
-                    HStack(spacing: 8) {
-                        if plus.purchaseInFlight {
-                            ProgressView().tint(.white)
+                if showsTrialTimeline {
+                    trialTimeline
+                        .transition(.opacity)
+                }
+
+                VStack(spacing: 8) {
+                    Button {
+                        purchaseSelected()
+                    } label: {
+                        HStack(spacing: 8) {
+                            if plus.purchaseInFlight {
+                                ProgressView().tint(.white)
+                            }
+                            Text(checkoutTitle)
                         }
-                        Text(checkoutTitle)
+                    }
+                    .buttonStyle(OWCPrimaryButtonStyle())
+                    .disabled(plus.isBusy || product(for: selected) == nil)
+
+                    // The price after the free week, next to the button that
+                    // starts it, not only in the small print below.
+                    if showsTrialTimeline {
+                        Text(text.t("plusTrialThen", values: ["price": price(for: .yearly)]))
+                            .font(.footnote)
+                            .foregroundStyle(OWCDesign.secondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+                            .transition(.opacity)
                     }
                 }
-                .buttonStyle(OWCPrimaryButtonStyle())
-                .disabled(plus.isBusy || product(for: selected) == nil)
             }
 
             VStack(spacing: 0) {
-                restoreButton
+                if !plus.hasAvailableLifetimeOffer { restoreButton }
                 if let secondaryTitle, let secondaryAction {
                     Button(secondaryTitle, action: secondaryAction)
                         .frame(maxWidth: .infinity, minHeight: 44)
@@ -280,10 +388,11 @@ struct PaywallContent: View {
             if case .pendingAskToBuy = plus.authorization {
                 statusNote(text.t("plusWaitingApproval"))
             }
-            if let error = plus.lastProductError, !plus.products.isEmpty {
+            if let error = plus.lastProductError, !plus.products.isEmpty, !plus.hasAvailableLifetimeOffer {
                 statusNote(error)
             }
         }
+        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter, value: showsTrialTimeline)
     }
 
     private var restoreButton: some View {
@@ -380,6 +489,14 @@ struct PaywallContent: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.68)
 
+                if let monthly = monthlyEquivalent(for: plan) {
+                    Text(monthly)
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(OWCDesign.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+
                 if let badge = badge(for: plan) {
                     Text(badge)
                         .font(.footnote.weight(.medium))
@@ -420,8 +537,12 @@ struct PaywallContent: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(text.t(plan.titleKey))
                         .font(.body.weight(.semibold))
-                    if let badge = badge(for: plan) {
-                        Text(badge)
+                    // Rows replace the tiles on narrow screens (an iPhone Duo
+                    // cover screen) and at large text; the monthly figure
+                    // belongs here as much as on the tile.
+                    let details = [badge(for: plan), monthlyEquivalent(for: plan)].compactMap { $0 }
+                    if !details.isEmpty {
+                        Text(details.joined(separator: " · "))
                             .font(.caption.weight(.medium))
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -491,6 +612,14 @@ struct PaywallContent: View {
         product(for: plan)?.displayPrice ?? "—"
     }
 
+    /// The yearly price spread over twelve months, in the store's own currency
+    /// format, so it can be weighed against the monthly plan beside it.
+    private func monthlyEquivalent(for plan: PlusPlanKind) -> String? {
+        guard plan == .yearly, let product = product(for: .yearly) else { return nil }
+        let perMonth = (product.price / 12).formatted(product.priceFormatStyle)
+        return text.t("plusPerMonth", values: ["price": perMonth])
+    }
+
     private func badge(for plan: PlusPlanKind) -> String? {
         switch plan {
         case .yearly:
@@ -501,7 +630,7 @@ struct PaywallContent: View {
     }
 
     private func planAccessibilityLabel(_ plan: PlusPlanKind) -> String {
-        [text.t(plan.titleKey), price(for: plan), badge(for: plan)]
+        [text.t(plan.titleKey), price(for: plan), monthlyEquivalent(for: plan), badge(for: plan)]
             .compactMap { $0 }
             .joined(separator: ", ")
     }
@@ -550,7 +679,7 @@ struct PaywallContent: View {
         VStack(alignment: .leading, spacing: 8) {
             // Lifetime already owns the app. Auto-renew and trial copy
             // belong on the purchase path, not next to "you have Plus for good".
-            if !plus.isLifetime {
+            if !plus.isLifetime && selected != .lifetime {
                 Text(text.t("plusAutoRenew"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
@@ -687,6 +816,7 @@ struct PlusBenefit: Identifiable {
         PlusBenefit(id: "focus", icon: FocusTaskIcon.focus.systemName, titleKey: "plusBenefitFocus"),
         PlusBenefit(id: "leave", icon: "suitcase", titleKey: "plusBenefitLeave"),
         PlusBenefit(id: "alarms", icon: "alarm", titleKey: "plusBenefitShiftAlarms"),
+        PlusBenefit(id: "reports", icon: "chart.bar.xaxis", titleKey: "plusBenefitReports"),
         PlusBenefit(id: "sync", icon: "icloud", titleKey: "plusBenefitSync"),
     ]
 }
@@ -711,10 +841,35 @@ extension PlusPaywallReason {
 struct PlusIntroView: View {
     let plus: PlusEntitlement
     let text: AppText
+    @State private var showsOffer = false
+    @State private var checkingOffer = false
 
     var body: some View {
-        PaywallView(plus: plus, text: text, reason: .intro, showsSkip: true) {
-            plus.markIntroSeen()
+        NavigationStack {
+            PaywallView(plus: plus, text: text, reason: .intro, onDismiss: finish)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(text.t("close"), action: finish).disabled(checkingOffer)
+                    }
+                }
+                .overlay { if checkingOffer { ProgressView().padding(20).background(.regularMaterial, in: .capsule) } }
+        }
+        .sheet(isPresented: $showsOffer, onDismiss: { plus.markIntroSeen() }) {
+            LifetimeOfferSheet(plus: plus, text: text)
+        }
+    }
+
+    private func finish() {
+        guard !checkingOffer, !showsOffer else { return }
+        if plus.isAuthorized { plus.markIntroSeen(); return }
+        checkingOffer = true
+        Task {
+            await plus.checkCurrentEntitlements()
+            if plus.products.isEmpty { await plus.loadProducts() }
+            // A price must exist before revealing/starting the invitation.
+            if plus.revealLifetimeOffer(from: .onboarding) { showsOffer = true }
+            else { plus.markIntroSeen() }
+            checkingOffer = false
         }
     }
 }

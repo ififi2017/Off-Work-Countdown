@@ -923,6 +923,12 @@ func widgetSnapshotKeepsUpcomingPastPresentationWindow() throws {
         $0.kind == "shiftStart" && $0.dateMs == wednesdayStartMs
     })
     #expect(snapshot.upcoming.contains { $0.dateMs > presentationHorizon })
+    let futureBoundaries = snapshot.upcoming.filter {
+        $0.dateMs >= wednesdayStartMs && ($0.kind == "shiftStart" || $0.kind == "shiftEnd")
+    }
+    #expect(!futureBoundaries.isEmpty)
+    #expect(futureBoundaries.allSatisfy { $0.detail.isEmpty })
+
 }
 
 @MainActor
@@ -2967,7 +2973,7 @@ func completeOnboardingKeepsNotificationMode() throws {
 }
 
 @MainActor
-@Test("Onboarding reminder defaults turn lunch and simple clock-off on once")
+@Test("Onboarding reminder defaults leave lunch opt-in and set simple clock-off once")
 func applyOnboardingReminderDefaultsOnce() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
@@ -2977,9 +2983,7 @@ func applyOnboardingReminderDefaultsOnce() throws {
     #expect(store.preferences.notificationMode == .off)
 
     store.preferences.applyOnboardingReminderDefaultsIfNeeded()
-    #expect(store.preferences.lunchEnabled)
-    #expect(store.preferences.lunchStartReminderEnabled)
-    #expect(store.preferences.lunchEndReminderEnabled)
+    #expect(!store.preferences.lunchEnabled)
     #expect(store.preferences.notificationMode == .simple)
 
     store.preferences.applyPreferences { $0.lunchEnabled = false }
@@ -2992,25 +2996,12 @@ func applyOnboardingReminderDefaultsOnce() throws {
 }
 
 @MainActor
-@Test("Onboarding sequence skips confirmation when there is no schedule")
-func onboardingSequenceSkipsAllSetWhenOff() {
-    let scheduled = OnboardingPages.sequence(includesAllSet: true)
-    let unscheduled = OnboardingPages.sequence(includesAllSet: false)
-    #expect(scheduled.contains(OnboardingPages.allSet))
-    #expect(!unscheduled.contains(OnboardingPages.allSet))
-    #expect(
-        OnboardingPages.next(from: OnboardingPages.reminders, includesAllSet: false)
-            == OnboardingPages.privacy
-    )
-    #expect(
-        OnboardingPages.previous(from: OnboardingPages.privacy, includesAllSet: false)
-            == OnboardingPages.reminders
-    )
-    #expect(
-        OnboardingPages.next(from: OnboardingPages.reminders, includesAllSet: true)
-            == OnboardingPages.allSet
-    )
-    #expect(OnboardingPages.previous(from: OnboardingPages.landing, includesAllSet: true) == nil)
+@Test("Onboarding confirms the schedule after reminders, with or without one")
+func onboardingSequenceAlwaysConfirms() {
+    #expect(OnboardingPages.next(from: OnboardingPages.reminders) == OnboardingPages.ready)
+    #expect(OnboardingPages.previous(from: OnboardingPages.ready) == OnboardingPages.reminders)
+    #expect(OnboardingPages.previous(from: OnboardingPages.landing) == nil)
+    #expect(OnboardingPages.next(from: OnboardingPages.plus) == nil)
 }
 
 @MainActor

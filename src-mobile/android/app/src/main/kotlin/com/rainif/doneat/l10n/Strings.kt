@@ -82,6 +82,11 @@ object Strings {
     fun overtimeUntil(res: Resources, time: String): String = res.getString(R.string.overtimeUntil, time)
     fun pausedUntil(res: Resources, time: String): String = res.getString(R.string.pausedUntil, time)
     fun plusAndroidYearlyTrialPrice(res: Resources, price: String): String = res.getString(R.string.plusAndroidYearlyTrialPrice, price)
+    fun plusOfferDeadline(res: Resources, date: String): String = res.getString(R.string.plusOfferDeadline, date)
+    fun plusOfferSavings(res: Resources, discount: String): String = res.getString(R.string.plusOfferSavings, discount)
+    fun plusPerMonth(res: Resources, price: String): String = res.getString(R.string.plusPerMonth, price)
+    fun plusTrialEndBody(res: Resources, price: String): String = res.getString(R.string.plusTrialEndBody, price)
+    fun plusTrialThen(res: Resources, price: String): String = res.getString(R.string.plusTrialThen, price)
     fun recordsAllocationBasis(res: Resources, count: String): String = res.getString(R.string.recordsAllocationBasis, count)
     fun recordsAnnualSummary(res: Resources, year: String): String = res.getString(R.string.recordsAnnualSummary, year)
     fun recordsConflictCount(res: Resources, count: String): String = res.getString(R.string.recordsConflictCount, count)
@@ -131,6 +136,5 @@ object Strings {
     fun watchOvertimeUntil(res: Resources, time: String): String = res.getString(R.string.watchOvertimeUntil, time)
     fun watchTimeLeft(res: Resources, duration: String): String = res.getString(R.string.watchTimeLeft, duration)
     fun weekdayRange(res: Resources, start: String, end: String): String = res.getString(R.string.weekdayRange, start, end)
-    fun whatsNewHolidayBody(res: Resources, schedule: String): String = res.getString(R.string.whatsNewHolidayBody, schedule)
     fun workOnWeekday(res: Resources, day: String): String = res.getString(R.string.workOnWeekday, day)
 }

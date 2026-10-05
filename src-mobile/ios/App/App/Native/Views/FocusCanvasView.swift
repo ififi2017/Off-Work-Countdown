@@ -20,6 +20,8 @@ struct FocusCanvasView: View {
     let hasSeenPlusIntro: Bool
     @Bindable var browsing: FocusSceneState
 
+    @Environment(\.usesExpandedPhoneColumns) private var usesPhoneColumns
+    private var showsColumns: Bool { usesPhoneColumns && !dynamicTypeSize.isAccessibilitySize }
     @State private var now = Date.now
     @State private var scrollPosition = ScrollPosition()
     @State private var bandTop: CGFloat?
@@ -41,6 +43,7 @@ struct FocusCanvasView: View {
         let model = focus.focusDayCanvas(at: now)
         return VStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 14) {
+                if !showsColumns {
                 Picker(focus.t("focusScale"), selection: $browsing.scale) {
                     ForEach(FocusCanvasScale.allCases) { value in
                         Text(focus.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
@@ -48,6 +51,7 @@ struct FocusCanvasView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                }
 
                 FocusNowBand(
                     focus: focus,
@@ -64,47 +68,23 @@ struct FocusCanvasView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 12)
 
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 0) {
+                canvasScroll(model)
+                if showsColumns {
+                    ScrollView {
                         VStack(alignment: .leading, spacing: 14) {
-                            switch browsing.scale {
-                            case .today: todayScale(model)
-                            case .usual: usualScale(model)
-                            }
+                            Text(focus.t("focusScaleUsual")).font(.headline)
+                            usualScale(model)
                         }
-                        // Match Records: only the selected canvas cross-fades.
-                        // The status card and picker keep their position and identity.
-                        .id(browsing.scale)
-                        .transition(.opacity)
-                        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange, value: browsing.scale)
+                        .padding(.horizontal, OWCDesign.pageInset)
+                        .padding(.top, 8)
+                        .padding(.bottom, OWCDesign.detailBottomInset)
                     }
-                    .padding(.horizontal, OWCDesign.pageInset)
-                    .padding(.top, 8)
-                    .padding(.bottom, OWCDesign.detailBottomInset)
-                    .coordinateSpace(.named("focus-content"))
-                }
-                .scrollPosition($scrollPosition)
-                .scrollIndicators(.hidden)
-                .onChange(of: scene.selectedTab, initial: true) { _, tab in
-                    if tab == .focus {
-                        needsCurrentPosition = true
-                        scrollToNow(model, proxy: proxy)
-                    }
-                }
-                .onChange(of: browsing.scale) {
-                    needsCurrentPosition = true
-                    scrollToNow(model, proxy: proxy)
-                }
-                .onChange(of: bandTop) { scrollToNow(model, proxy: proxy) }
-                .onChange(of: now) { scrollToNow(model, proxy: proxy) }
-                .onChange(of: scenePhase) {
-                    if scenePhase == .active, scene.selectedTab == .focus {
-                        needsCurrentPosition = true
-                        scrollToNow(focus.focusDayCanvas(), proxy: proxy)
-                    }
+                    .scrollIndicators(.hidden)
+                    .frame(maxWidth: .infinity)
                 }
             }
+
         }
         .background(OWCDesign.page)
         .navigationTitle(focus.t("focusTitle"))
@@ -210,8 +190,57 @@ struct FocusCanvasView: View {
         .disabled(focus.focusDayCanvasIsLocked)
     }
 
+    private func canvasScroll(_ model: FocusDayCanvasModel) -> some View {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            if showsColumns {
+                                Text(focus.t("focusScaleToday")).font(.headline)
+                                todayScale(model)
+                            } else {
+                            switch browsing.scale {
+                            case .today: todayScale(model)
+                            case .usual: usualScale(model)
+                            }
+                            }
+                        }
+                        // Match Records: only the selected canvas cross-fades.
+                        // The status card and picker keep their position and identity.
+                        .id(browsing.scale)
+                        .transition(.opacity)
+                        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange, value: browsing.scale)
+                    }
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.top, 8)
+                    .padding(.bottom, OWCDesign.detailBottomInset)
+                    .coordinateSpace(.named("focus-content"))
+                }
+                .scrollPosition($scrollPosition)
+                .scrollIndicators(.hidden)
+                .onChange(of: scene.selectedTab, initial: true) { _, tab in
+                    if tab == .focus {
+                        needsCurrentPosition = true
+                        scrollToNow(model, proxy: proxy)
+                    }
+                }
+                .onChange(of: browsing.scale) {
+                    needsCurrentPosition = true
+                    scrollToNow(model, proxy: proxy)
+                }
+                .onChange(of: bandTop) { scrollToNow(model, proxy: proxy) }
+                .onChange(of: now) { scrollToNow(model, proxy: proxy) }
+                .onChange(of: scenePhase) {
+                    if scenePhase == .active, scene.selectedTab == .focus {
+                        needsCurrentPosition = true
+                        scrollToNow(focus.focusDayCanvas(), proxy: proxy)
+                    }
+                }
+            }
+    }
+
     private func scrollToNow(_ model: FocusDayCanvasModel, proxy: ScrollViewProxy) {
-        guard needsCurrentPosition, browsing.scale == .today, !model.isLocked,
+        guard needsCurrentPosition, (showsColumns || browsing.scale == .today), !model.isLocked,
               let nowAtMs = model.nowAtMs, let bandTop else { return }
         // Start at the current block's top so its title and full interval remain visible.
         // Only entry repositions the page;

@@ -1,16 +1,39 @@
 import SwiftUI
 
-/// One stable system tab and navigation tree for every scene size. The native
-/// sidebar-adaptable style supplies a tab bar in compact space and a sidebar
-/// when wider space allows it.
+/// Keep the detail navigation tree stable as the display folds or resizes.
 struct AdaptiveAppShellView: View {
     @Environment(SceneState.self) private var scene
     let runtime: AppRuntime
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     var body: some View {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            tabs(wide: false)
+                .tabViewStyle(.sidebarAdaptable)
+                .tabViewSidebarFooter {
+                    TabletSidebarFooter(shifts: runtime.shifts, text: runtime.text, isActive: true)
+                }
+        } else {
+            phoneShell
+        }
+    }
+
+    private var phoneShell: some View {
+        GeometryReader { geometry in
+            let columns = verticalSizeClass != .compact && AdaptiveDisplayLayout.showsContentColumns(
+                width: geometry.size.width,
+                hasHorizontalFold: AdaptiveDisplayLayout.hasHorizontalFold(in: geometry)
+            )
+            tabs(wide: false)
+                .tabViewStyle(.tabBarOnly)
+                .environment(\.usesExpandedPhoneColumns, columns)
+        }
+    }
+
+    private func tabs(wide: Bool) -> some View {
         TabView(selection: Bindable(scene).selectedTab) {
                 Tab(runtime.text.t("timerTab"), systemImage: "timer", value: AppTab.timer) {
-                    timerStack
+                    timerStack.toolbar(wide ? .hidden : .visible, for: .tabBar)
                 }
                 Tab(runtime.text.t("focusTitle"), systemImage: "stopwatch", value: AppTab.focus) {
                     NavigationStack(path: Bindable(scene).focusPath) {
@@ -27,17 +50,14 @@ struct AdaptiveAppShellView: View {
                                 AppRouteDestination(route: route, runtime: runtime)
                             }
                     }
+                    .toolbar(wide ? .hidden : .visible, for: .tabBar)
                 }
                 Tab(runtime.text.t("recordsTab"), systemImage: "calendar", value: AppTab.records) {
-                    recordsStack
+                    recordsStack.toolbar(wide ? .hidden : .visible, for: .tabBar)
                 }
                 Tab(runtime.text.t("settings"), systemImage: "slider.horizontal.3", value: AppTab.settings) {
-                    settingsStack
+                    settingsStack.toolbar(wide ? .hidden : .visible, for: .tabBar)
                 }
-            }
-            .tabViewStyle(.sidebarAdaptable)
-            .tabViewSidebarFooter {
-                TabletSidebarFooter(shifts: runtime.shifts, text: runtime.text)
             }
             .onChange(of: scene.presentedRoute) { _, route in
                 guard let route else { return }
@@ -121,10 +141,61 @@ private struct TabletTimerRoot: View {
     let shifts: ShiftSessionStore
     let preferences: PreferencesStore
     let text: AppText
+    @Environment(\.usesExpandedPhoneColumns) private var usesColumns
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.tabBarPlacement) private var tabBarPlacement
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        GeometryReader { geometry in
+            if #available(iOS 27.1, *),
+               AdaptiveDisplayLayout.hasHorizontalFold(in: geometry),
+               shifts.session.shouldQuerySnapshot(at: shifts.session.timerDate(from: .now)) {
+                FoldedTimerView(shifts: shifts, isActive: scene.selectedTab == .timer)
+            } else if #available(iOS 27.1, *), usesColumns, !dynamicTypeSize.isAccessibilitySize,
+                      shifts.session.shouldQuerySnapshot(at: shifts.session.timerDate(from: .now)) {
+                FoldedTimerView(shifts: shifts, isActive: scene.selectedTab == .timer, sideBySide: true)
+            } else {
+                standardTimer
+            }
+        }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
+        .toolbar {
+            if tabBarPlacement == .sidebar {
+                ToolbarItem(placement: .principal) {
+                    TimelineView(.periodic(from: .now, by: 60)) { timeline in
+                        Text(
+                            shifts.session.timerDate(from: timeline.date)
+                                .formatted(.dateTime.weekday(.wide).day().month(.wide).locale(preferences.locale))
+                                .uppercased()
+                        )
+                        .font(.footnote.weight(.semibold))
+                        .tracking(0.78)
+                        .foregroundStyle(OWCDesign.secondary)
+                    }
+                }
+            }
+
+            ToolbarItem(placement: .topBarLeading) {
+                LifetimeOfferToolbarButton(plus: shifts.plus, text: text) { scene.showsLifetimeOffer = true }
+            }
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                OWCEarningsVisibilityButton(preferences: preferences, text: text)
+                Button {
+                    withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) {
+                        _ = preferences.toggleQuickTheme()
+                    }
+                } label: {
+                    Image(systemName: preferences.quickThemeIcon)
+                }
+                .accessibilityLabel(text.t("theme"))
+            }
+        }
+    }
+
+    private var standardTimer: some View {
         NarrowPaneFallback { isNarrow in
             // Only expansion of the detail pane replaces the compact timer
             // with the wide layout. Crossfade that replacement; preserve the
@@ -153,37 +224,6 @@ private struct TabletTimerRoot: View {
             }
             .animation(shellAnimation, value: isNarrow)
         }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
-        .toolbar {
-            if tabBarPlacement == .sidebar {
-                ToolbarItem(placement: .principal) {
-                    TimelineView(.periodic(from: .now, by: 60)) { timeline in
-                        Text(
-                            shifts.session.timerDate(from: timeline.date)
-                                .formatted(.dateTime.weekday(.wide).day().month(.wide).locale(preferences.locale))
-                                .uppercased()
-                        )
-                        .font(.footnote.weight(.semibold))
-                        .tracking(0.78)
-                        .foregroundStyle(OWCDesign.secondary)
-                    }
-                }
-            }
-
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                OWCEarningsVisibilityButton(preferences: preferences, text: text)
-                Button {
-                    withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) {
-                        _ = preferences.toggleQuickTheme()
-                    }
-                } label: {
-                    Image(systemName: preferences.quickThemeIcon)
-                }
-                .accessibilityLabel(text.t("theme"))
-            }
-        }
     }
 
     private var shellAnimation: Animation {
@@ -203,6 +243,7 @@ private struct TabletTimerRoot: View {
 private struct TabletSidebarFooter: View {
     let shifts: ShiftSessionStore
     let text: AppText
+    let isActive: Bool
 
     var body: some View {
         compactShiftCountdown
@@ -210,7 +251,7 @@ private struct TabletSidebarFooter: View {
     }
 
     private var compactShiftCountdown: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+        TimelineView(PausableSecondsSchedule(isPaused: !isActive)) { timeline in
             let _ = LaunchTrace.signposter.emitEvent("sidebarTimerUpdate")
             let date = shifts.session.timerDate(from: timeline.date)
             if shifts.session.shouldQuerySnapshot(at: date), let snapshot = shifts.session.snapshot(at: date) {
@@ -719,6 +760,8 @@ private struct AdaptiveSettingsColumns<Content: View>: View {
     let spacing: CGFloat
     @ViewBuilder let content: Content
     @State private var availableWidth: CGFloat = 0
+    @Environment(\.usesExpandedPhoneColumns) private var usesPhoneColumns
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     // The iPad mini portrait content area is about 664 pt with the sidebar
     // hidden. Keep it in one column in both sidebar states so collapsing the
@@ -726,7 +769,7 @@ private struct AdaptiveSettingsColumns<Content: View>: View {
     private static var twoColumnMinimum: CGFloat { 720 }
 
     var body: some View {
-        let layout = availableWidth >= Self.twoColumnMinimum
+        let layout = (usesPhoneColumns || availableWidth >= Self.twoColumnMinimum) && !dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(HStackLayout(alignment: .top, spacing: spacing))
             : AnyLayout(VStackLayout(spacing: spacing))
         layout {

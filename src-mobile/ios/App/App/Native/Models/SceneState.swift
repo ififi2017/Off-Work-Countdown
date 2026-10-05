@@ -93,6 +93,7 @@ final class SceneState {
     var focusPath: [AppRoute] = []
     var recordsPath: [RecordsRoute] = []
     var settingsPath: [AppRoute] = []
+    var showsLifetimeOffer = false
     var paywallSheet: PlusPaywallReason?
     var timerSheet: TimerSheet? {
         didSet { if timerSheet != nil { presentAddFocus = false } }
@@ -346,6 +347,37 @@ final class SceneState {
             get: { self.expandedTimelineContext == context },
             set: { self.expandedTimelineContext = $0 ? context : nil }
         )
+    }
+
+    func setupPreview(at date: Date = .now, using shifts: ShiftSessionStore) -> ShiftPreview? {
+        guard let projection = setupProjection(at: date, using: shifts) else { return nil }
+        return shifts.shiftPreview(for: projection.snapshot, at: date, rulesInput: projection.input)
+    }
+
+    func setupProjection(at date: Date = .now, using shifts: ShiftSessionStore) -> (snapshot: NativeShiftSnapshot, input: NativeRulesInput)? {
+        let preferences = shifts.preferences
+        guard preferences.scheduleMode != .off else { return nil }
+        var change = ScheduleFieldChange(
+            startMinutes: displayedStartMinutes(using: shifts.preferences),
+            endMinutes: displayedEndMinutes(using: shifts.preferences)
+        )
+        if !preferences.onboardingComplete {
+            var content = shifts.session.seededExtendedContent(applying: change, at: date)
+            content.holidayRegionIdentifier = onboardingHolidayRegionIdentifier
+                ?? HolidayCalendar.shared.defaultRegionIdentifier() ?? ""
+            change.extendedScheduleEnabled = true
+            change.extendedContent = content
+        }
+        var input = shifts.session.rulesInput(applying: change, at: date)
+        var snapshot = ScheduleRules.snapshot(input: input)
+        // A rest day's nominal hours are not an upcoming shift. Ask the same
+        // rules for the next working day, without saving the onboarding draft.
+        if !snapshot.isWorkday || date >= snapshot.endDate, let next = snapshot.nextShiftStartDate {
+            input = input.previewing(at: next)
+            snapshot = ScheduleRules.snapshot(input: input)
+        }
+        guard snapshot.isWorkday else { return nil }
+        return (snapshot, input)
     }
 
     func setupSnapshot(at date: Date = .now, using shifts: ShiftSessionStore) -> NativeShiftSnapshot? {

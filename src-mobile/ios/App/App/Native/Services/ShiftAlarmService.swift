@@ -321,8 +321,8 @@ final class ShiftAlarmService {
     /// waiting.
     @discardableResult
     private func setRefreshReminder(_ date: Date?, plan: ShiftAlarmPlan, body: String = "") async -> Bool {
-        notifications.removePending([Self.refreshIdentifier])
-        notifications.removeDelivered([Self.refreshIdentifier])
+        await notifications.removePending([Self.refreshIdentifier])
+        await notifications.removeDelivered([Self.refreshIdentifier])
         guard let date, await notifications.authorization() == .allowed else { return false }
         let content = UNMutableNotificationContent()
         content.title = plan.refreshTitle

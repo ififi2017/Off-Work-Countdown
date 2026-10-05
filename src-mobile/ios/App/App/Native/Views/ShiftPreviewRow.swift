@@ -24,15 +24,18 @@ struct ShiftPreviewRow: View {
     var reservesChevron = true
 
     @ScaledMetric(relativeTo: .body) private var badgeSize: CGFloat = 32
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: symbol)
-                .font(.callout)
-                .foregroundStyle(OWCDesign.secondary)
-                .frame(width: badgeSize, height: badgeSize)
-                .background(OWCDesign.control.opacity(0.7), in: Circle())
-                .accessibilityHidden(true)
+        HStack(alignment: dynamicTypeSize.isAccessibilitySize ? .top : .center, spacing: 12) {
+            if !dynamicTypeSize.isAccessibilitySize {
+                Image(systemName: symbol)
+                    .font(.callout)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .frame(width: badgeSize, height: badgeSize)
+                    .background(OWCDesign.control.opacity(0.7), in: Circle())
+                    .accessibilityHidden(true)
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.title)
@@ -43,27 +46,16 @@ struct ShiftPreviewRow: View {
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
                 }
-            }
-
-            Spacer(minLength: 8)
-
-            if let date = entry.date {
-                // Once the shift has started, "start time" points at the next
-                // working day; without the weekday the row would claim it
-                // happens today.
-                Group {
-                    if Calendar.current.isDate(date, inSameDayAs: now) {
-                        Text(date, format: .dateTime.hour().minute().locale(locale))
-                    } else {
-                        Text(date, format: .dateTime.weekday(.abbreviated).hour().minute().locale(locale))
-                    }
+                if dynamicTypeSize.isAccessibilitySize {
+                    timeLabel.padding(.top, 6)
                 }
-                .font(.body.monospacedDigit())
-                .foregroundStyle(OWCDesign.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-                .environment(\.layoutDirection, .leftToRight)
             }
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : nil, alignment: .leading)
+
+            if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 8) }
+
+            if !dynamicTypeSize.isAccessibilitySize { timeLabel }
 
             // Always laid out, hidden when the row does nothing. Rendering it
             // conditionally let the inert rows push their time a chevron's
@@ -77,17 +69,36 @@ struct ShiftPreviewRow: View {
             }
         }
         .padding(.horizontal, 16)
+        .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? 12 : 0)
         .frame(minHeight: 58)
         .overlay(alignment: .bottomTrailing) {
             if showsSeparator {
                 Rectangle()
                     .fill(OWCDesign.separator)
                     .frame(height: 0.5)
-                    .padding(.leading, badgeSize + 28)
+                    .padding(.leading, dynamicTypeSize.isAccessibilitySize ? 16 : badgeSize + 28)
             }
         }
         .contentShape(.rect)
         .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var timeLabel: some View {
+        if let date = entry.date {
+            Group {
+                if Calendar.current.isDate(date, inSameDayAs: now) {
+                    Text(date, format: .dateTime.hour().minute().locale(locale))
+                } else {
+                    Text(date, format: .dateTime.weekday(.abbreviated).hour().minute().locale(locale))
+                }
+            }
+            .font(.body.monospacedDigit())
+            .foregroundStyle(OWCDesign.secondary)
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+            .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.72)
+            .environment(\.layoutDirection, .leftToRight)
+        }
     }
 
     private var symbol: String {

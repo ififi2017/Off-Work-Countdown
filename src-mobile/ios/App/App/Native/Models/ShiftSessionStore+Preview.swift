@@ -16,12 +16,16 @@ extension ShiftSessionStore {
     /// is sorted by it. Everything switched off is still listed, saying so,
     /// because someone opening the app for the first time cannot turn on a
     /// feature they have never seen.
-    func shiftPreview(for snapshot: NativeShiftSnapshot, at now: Date = .now) -> ShiftPreview {
+    func shiftPreview(
+        for snapshot: NativeShiftSnapshot,
+        at now: Date = .now,
+        rulesInput draftInput: NativeRulesInput? = nil
+    ) -> ShiftPreview {
         var upcoming: [ShiftPreviewEntry] = []
         var disabled: [ShiftPreviewEntry] = []
         let nowMs = now.timeIntervalSince1970 * 1_000
         let reminders = ScheduleRules.reminders(
-            input: self.session.rulesInput(
+            input: draftInput ?? self.session.rulesInput(
                 at: now,
                 startMinutes: self.session.minutes(from: snapshot.startDate, calendar: session.countdownCalendar),
                 endMinutes: self.session.minutes(from: snapshot.endDate, calendar: session.countdownCalendar)
@@ -111,7 +115,8 @@ extension ShiftSessionStore {
                 after: floorMs,
                 in: reminders,
                 nextShiftStart: snapshot.nextShiftStartDate,
-                nextShiftEnd: snapshot.nextShiftEndDate
+                nextShiftEnd: snapshot.nextShiftEndDate,
+                draftInput: draftInput
             )
             upcoming.append(.init(
                 id: "micro-break",
@@ -194,7 +199,9 @@ extension ShiftSessionStore {
                 title: text.t("endTime"),
                 // Same as the start row: "today's shift" is a lie once it is
                 // tomorrow's, and the weekday in the time column says which day.
-                detail: (!endedEarly && snapshot.endDate > now) ? text.t("todaysShift") : nil,
+                detail: (!endedEarly && snapshot.endDate > now
+                    && session.countdownCalendar.isDate(snapshot.startDate, inSameDayAs: now))
+                    ? text.t("todaysShift") : nil,
                 date: endDate,
                 route: nil
             ))
@@ -244,7 +251,8 @@ extension ShiftSessionStore {
         after floorMs: Double,
         in reminders: [NativeReminder],
         nextShiftStart: Date?,
-        nextShiftEnd: Date?
+        nextShiftEnd: Date?,
+        draftInput: NativeRulesInput? = nil
     ) -> Date? {
         if let next = reminders
             .filter({ $0.kind == "microBreak" && $0.atMs > floorMs })
@@ -252,12 +260,13 @@ extension ShiftSessionStore {
             return Date(timeIntervalSince1970: next.atMs / 1_000)
         }
         guard let nextShiftStart, let nextShiftEnd else { return nil }
+        let nextInput = draftInput?.previewing(at: nextShiftStart) ?? self.session.rulesInput(
+            at: nextShiftStart,
+            startMinutes: self.session.minutes(from: nextShiftStart, calendar: session.countdownCalendar),
+            endMinutes: self.session.minutes(from: nextShiftEnd, calendar: session.countdownCalendar)
+        )
         let nextReminders = ScheduleRules.reminders(
-            input: self.session.rulesInput(
-                at: nextShiftStart,
-                startMinutes: self.session.minutes(from: nextShiftStart, calendar: session.countdownCalendar),
-                endMinutes: self.session.minutes(from: nextShiftEnd, calendar: session.countdownCalendar)
-            ),
+            input: nextInput,
             reminderInputs: reminderInputs()
         )
         return nextReminders
@@ -307,5 +316,17 @@ extension ShiftSessionStore {
         }
         let end = start.addingTimeInterval(Double(max(preferences.lunchDurationMinutes, 0)) * 60)
         return (start, end)
+    }
+}
+
+nonisolated extension NativeRulesInput {
+    /// Keep the draft schedule intact while asking the rules about another day.
+    func previewing(at date: Date) -> NativeRulesInput {
+        .init(startTime: startTime, endTime: endTime, nowMs: date.timeIntervalSince1970 * 1_000,
+              workdays: workdays, schedule: schedule, breakStartTime: breakStartTime,
+              breakDurationMinutes: breakDurationMinutes, overtimeEndAtMs: overtimeEndAtMs,
+              salaryAmount: salaryAmount, salaryType: salaryType, monthlyWorkingDays: monthlyWorkingDays,
+              annualBonusMonths: annualBonusMonths, forcedWorkdayStartMs: forcedWorkdayStartMs,
+              timeZoneIdentifier: timeZoneIdentifier, extendedSchedule: extendedSchedule)
     }
 }

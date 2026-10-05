@@ -344,7 +344,7 @@ struct ReportStripArt: View {
                 at: CGPoint(x: base.midX, y: geometry.baseline + 16), anchor: .center
             )
             context.draw(
-                Text("\(dayNumbers[i])").font(.footnote.weight(.bold).monospacedDigit()).foregroundStyle(.white.opacity(0.9 * alpha)),
+                Text(verbatim: "\(dayNumbers[i])").font(.footnote.weight(.bold).monospacedDigit()).foregroundStyle(.white.opacity(0.9 * alpha)),
                 at: CGPoint(x: base.midX, y: geometry.baseline + 34), anchor: .center
             )
         case .month:
@@ -353,7 +353,7 @@ struct ReportStripArt: View {
             let ink = day.kind == .work ? ReportPalette.deep
                 : Color.white.mix(with: ReportPalette.deep, by: lights[i])
             context.draw(
-                Text("\(dayNumbers[i])")
+                Text(verbatim: "\(dayNumbers[i])")
                     .font(.footnote.weight(.bold).monospacedDigit())
                     .foregroundStyle(ink.opacity(alpha * (1 - ReportEase.window(m, 0, 0.12)))),
                 at: CGPoint(x: rect.midX, y: rect.midY), anchor: .center
@@ -567,7 +567,7 @@ struct ReportFocusArt: View {
                         best ? Gradient(colors: [ReportPalette.cream, ReportPalette.gold]) : Gradient(colors: [.white.opacity(0.55), .white.opacity(0.22)]),
                         startPoint: CGPoint(x: 0, y: rect.minY), endPoint: CGPoint(x: 0, y: rect.maxY)))
                     if t > 0.9, slot > 18 {
-                        context.draw(Text("\(count)").font(.footnote.weight(.bold).monospacedDigit()).foregroundStyle(.white.opacity(0.9)),
+                        context.draw(Text(verbatim: "\(count)").font(.footnote.weight(.bold).monospacedDigit()).foregroundStyle(.white.opacity(0.9)),
                                      at: CGPoint(x: rect.midX, y: rect.minY - 12), anchor: .center)
                     }
                 }
