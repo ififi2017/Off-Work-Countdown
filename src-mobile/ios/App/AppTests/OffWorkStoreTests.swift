@@ -535,6 +535,8 @@ func completingSetupArmsScheduledCountdowns() throws {
     store.shifts.finishOnboardingLaunch()
 
     #expect(store.session.countdownStarted)
+    // Arming is not clocking in, so no day gains a "started" record.
+    #expect(!store.records.state.observations.contains { $0.kind == .countdownStarted })
 
     store.shifts.stopCountdown()
     let relaunched = AppRuntime(defaults: defaults)

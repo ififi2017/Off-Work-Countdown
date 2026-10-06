@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 
 struct RecordsDesignView: View {
     @Environment(SceneState.self) private var scene
+    @ScaledMetric(relativeTo: .subheadline) private var entryIconWidth: CGFloat = 22
     let records: RecordCoordinator
     let queries: RecordsQueries
     let actions: RecordsActions
@@ -646,20 +647,28 @@ struct RecordsDesignView: View {
     /// visit without any leave balance sets one up before the page opens.
     private var leavePlanningEntry: some View {
         Button(action: openLeavePlanning) {
-            HStack(spacing: 6) {
-                Image(systemName: "suitcase")
-                Text(text.t("leavePlanAction"))
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(OWCDesign.tertiary)
-            }
-            .font(.subheadline)
-            .foregroundStyle(OWCDesign.accent)
-            .frame(minHeight: 44)
-            .contentShape(Rectangle())
+            entryLabel(icon: "suitcase", titleKey: "leavePlanAction")
         }
         .buttonStyle(.plain)
+    }
+
+    /// Entry rows under the calendar. Symbols differ in width (a suitcase is
+    /// wider than a play circle), so each sits in the same gutter and the
+    /// titles start on one line.
+    private func entryLabel(icon: String, titleKey: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .frame(width: entryIconWidth)
+            Text(text.t(titleKey))
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(OWCDesign.tertiary)
+        }
+        .font(.subheadline)
+        .foregroundStyle(OWCDesign.accent)
+        .frame(minHeight: 44)
+        .contentShape(Rectangle())
     }
 
     /// Plan 020 §4: the week, month or year on screen, played as a report. It opens
@@ -670,18 +679,7 @@ struct RecordsDesignView: View {
                 period: queries.reportPeriod(kind, containing: browsing.anchor)
             ))
         } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "play.circle")
-                Text(text.t(kind.entryKey))
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(OWCDesign.tertiary)
-            }
-            .font(.subheadline)
-            .foregroundStyle(OWCDesign.accent)
-            .frame(minHeight: 44)
-            .contentShape(Rectangle())
+            entryLabel(icon: "play.circle", titleKey: kind.entryKey)
         }
         .buttonStyle(.plain)
     }

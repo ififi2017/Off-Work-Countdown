@@ -322,7 +322,7 @@ final class SceneState {
         }
         return shifts.records.submitCommand { [self] in
             guard timerContext(at: date, using: shifts) == context,
-                  shifts.cancelManualTiming().synchronousResult else { return false }
+                  shifts.cancelManualTiming(at: date).synchronousResult else { return false }
             if timerConfirmation?.id == confirmationID { timerConfirmation = nil }
             return true
         }
