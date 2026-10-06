@@ -324,6 +324,34 @@ func storeForcedWorkdayProjectsCustomSegments() throws {
 }
 
 @MainActor
+@Test("Cancelled rest-day timing leaves the day a rest day in Records")
+func cancelledRestDayTimingLeavesNoRecordedDay() async throws {
+    let (defaults, suite) = try isolatedProjectionDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let saturday = date(2026, 8, 29, 11)
+    let store = scheduledStore(defaults: defaults)
+    store.plus.debugSetAuthorized(true)
+    store.shifts.reconcileRecordSchedule(at: saturday)
+    store.shifts.startCountdown(force: true, at: saturday)
+    let dayKey = try #require(store.session.forcedWorkdayKey)
+    #expect(store.records.state.observations.contains { $0.kind == .countdownStarted })
+    #expect(store.records.state.overrides.contains { $0.dayKey == dayKey && $0.kind != .cleared })
+
+    #expect(store.shifts.cancelManualTiming(at: saturday).synchronousResult)
+    #expect(!store.records.state.overrides.contains { $0.dayKey == dayKey && $0.kind != .cleared })
+
+    // Any start observation stays as a note, but it adds no hours and does
+    // not turn the rest day into "you recorded · 0 minutes".
+    let days = await store.queries.prepareRecordsDisplayDays(from: saturday, through: saturday, now: saturday)
+    let day = try #require(days.first { $0.dayKey == dayKey })
+    #expect(day.layer != .none)
+    let cell = store.queries.recordsDayCell(for: day, now: saturday)
+    #expect(cell.appearance == .rest)
+    #expect(cell.workMs == 0)
+}
+
+@MainActor
 @Test("Unscheduled manual timing projects a session, not a forced workday")
 func storeUnscheduledSessionProjectsCustomSegments() throws {
     let (defaults, suite) = try isolatedProjectionDefaults()

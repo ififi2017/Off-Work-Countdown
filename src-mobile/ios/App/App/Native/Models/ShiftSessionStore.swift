@@ -427,7 +427,8 @@ final class ShiftSessionStore {
 
     @discardableResult
     func startCountdown(
-        force: Bool = false, startMinutes: Int? = nil, endMinutes: Int? = nil, at date: Date = .now
+        force: Bool = false, startMinutes: Int? = nil, endMinutes: Int? = nil, at date: Date = .now,
+        recordObservation: Bool = true
     ) -> RecordCommand<Bool> {
         records.submitCommand { [self] in
             guard !records.blocksWrites else { return false }
@@ -476,7 +477,9 @@ final class ShiftSessionStore {
                     self.session.clearEarlyClockOffRecord()
                 }
                 recordActiveCountdownBoundary(at: date)
-                writeObservation(.countdownStarted, at: date, eventID: UUID())
+                if recordObservation {
+                    writeObservation(.countdownStarted, at: date, eventID: UUID())
+                }
                 persistProjectedDayOverride(at: date)
                 return true
             }
@@ -552,16 +555,22 @@ final class ShiftSessionStore {
     }
     /// Rest-day manual timing only. Does not leave an "I worked" record.
     @discardableResult
-    func cancelManualTiming() -> RecordCommand<Bool> {
+    func cancelManualTiming(at date: Date = .now) -> RecordCommand<Bool> {
         records.submitCommand { [self] in
             guard !records.blocksWrites, session.forcedWorkdayDate != nil else { return false }
-            self.session.forcedWorkdayDate = nil
+            return records.withBatchedWrites {
+                // Starting wrote the planned hours as that day's record. Leaving
+                // it behind kept a cancelled run in Records as a day worked.
+                let startedProjection = self.session.projectedDayOverride(at: date)
+                self.session.forcedWorkdayDate = nil
 
-            self.session.clearEarlyClockOffRecord()
-            self.session.clearEarlyClockInRecord()
-            clearOvertime()
-            recordActiveCountdownBoundary()
-            return true
+                self.session.clearEarlyClockOffRecord()
+                self.session.clearEarlyClockInRecord()
+                clearOvertime()
+                recordActiveCountdownBoundary(at: date)
+                replaceProjectedDayOverride(replacing: startedProjection, at: date)
+                return true
+            }
         }
     }
     /// Live Activity + notifications-off still needs a clock-off ping, but
@@ -770,8 +779,11 @@ final class ShiftSessionStore {
     @discardableResult
     func finishOnboardingLaunch(at date: Date = .now) -> RecordCommand<Void> {
         records.submitCommand { [self] in
+            // Arming the schedule is not the user clocking in. Logging it as
+            // a start put "started the countdown" on whatever day setup ran,
+            // rest days included.
             if preferences.scheduleMode != .off, !self.session.countdownStarted {
-                startCountdown(at: date)
+                startCountdown(at: date, recordObservation: false)
             }
         }
     }

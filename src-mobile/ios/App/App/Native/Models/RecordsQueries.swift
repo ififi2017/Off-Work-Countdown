@@ -571,6 +571,18 @@ final class RecordsQueries {
         observationIndex()[RecordJSON.dayKey(day, calendar: recordsCalendar)] ?? []
     }
 
+    /// The day's notes as a list to read. First-seen is one per day on each
+    /// device, so a second device (or a reinstall) synced in a second
+    /// "opened the timer" line; only the earliest says anything.
+    func displayedObservations(on day: Date) -> [WorkObservation] {
+        var seenFirstOpen = false
+        return observations(on: day).filter { item in
+            guard item.kind == .timerSurfaceFirstSeen else { return true }
+            defer { seenFirstOpen = true }
+            return !seenFirstOpen
+        }
+    }
+
     /// Observations grouped by the records-zone civil day. Chart metrics used
     /// to scan the whole archive once per day of the window.
     func observationIndex() -> [String: [WorkObservation]] {
@@ -805,6 +817,16 @@ final class RecordsQueries {
         }
     }
 
+    /// A start or stop on a day the schedule calls rest adds no hours: only
+    /// an override (rest-day timing, a Records edit) or declared overtime
+    /// puts time on one. Calling it "recorded" printed "0 minutes" with
+    /// nothing the user could undo. A day without a schedule is not known
+    /// to be rest, so its observations still stand.
+    private func isRestWithoutHours(_ resolution: DayResolution) -> Bool {
+        guard resolution.layer != .none, !resolution.isScheduledWorkday else { return false }
+        return !(observationIndex()[resolution.dayKey] ?? []).contains { $0.kind == .overtimeDeclared }
+    }
+
     func recordsDayCell(
         for resolution: DayResolution,
         previous: DayResolution? = nil,
@@ -841,7 +863,7 @@ final class RecordsQueries {
             appearance = resolution.isScheduledWorkday ? .planned : .rest
         } else if corrected {
             appearance = .corrected
-        } else if recorded || (scheduled && resolution.isScheduledWorkday) {
+        } else if (recorded && !isRestWithoutHours(resolution)) || (scheduled && resolution.isScheduledWorkday) {
             appearance = .recorded
         } else if !resolution.isScheduledWorkday {
             appearance = .rest
@@ -1291,7 +1313,7 @@ final class RecordsQueries {
         let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
             ? "recordsSleepFromHealth"
             : "recordsSleepEstimated"
-        let notes = observations(on: resolution.shiftAnchorDate).map { item in
+        let notes = displayedObservations(on: resolution.shiftAnchorDate).map { item in
             let time = formatRecordsTime(item.occurredAt)
             let kind: String
             switch item.kind {
