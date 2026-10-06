@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">已規劃的休假</string>
     <string name="leaveAtLeast">至少 %1$s</string>
     <string name="leaveAvailable">剩 %1$s</string>
+    <string name="leaveAvailableDates">%1$s 個可選日期</string>
     <string name="leaveBalanceAfter">用 %1$s，剩 %2$s</string>
     <string name="leaveBalanceInUse">已採用的方案正在使用這份餘額，撤銷該方案後即可刪除。</string>
     <string name="leaveBalanceNamePlaceholder">名稱，例如婚假</string>
@@ -364,6 +365,7 @@
     <string name="leaveGoalBudget">使用假期</string>
     <string name="leaveGoalRest">連續休息</string>
     <string name="leaveHalfDayInvalid">請填寫整天或半天，例如 3 或 3.5。</string>
+    <string name="leaveHolidayPlans">國定假日</string>
     <string name="leaveKindAnnual">特休</string>
     <string name="leaveKindCompensatory">補休</string>
     <string name="leaveKindCustom">其他</string>
@@ -382,6 +384,7 @@
     <string name="leaveRangeEnd">最晚</string>
     <string name="leaveRangeFooter">在未來一年內尋找：%1$s—%2$s。</string>
     <string name="leaveRangeStart">最早</string>
+    <string name="leaveRegularPlans">平常休息日</string>
     <string name="leaveRequests">需要請的假</string>
     <string name="leaveResultsTitle">方案</string>
     <string name="leaveRoleEarly">提早下班</string>

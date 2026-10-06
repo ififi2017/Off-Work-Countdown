@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">Vacaciones planificadas</string>
     <string name="leaveAtLeast">Al menos %1$s</string>
     <string name="leaveAvailable">Quedan %1$s</string>
+    <string name="leaveAvailableDates">%1$s fechas disponibles</string>
     <string name="leaveBalanceAfter">Usa %1$s, quedan %2$s</string>
     <string name="leaveBalanceInUse">Un plan adoptado usa estos días. Deshaz ese plan para eliminarlos.</string>
     <string name="leaveBalanceNamePlaceholder">Nombre, p. ej. permiso por matrimonio</string>
@@ -366,6 +367,7 @@
     <string name="leaveGoalBudget">Días a usar</string>
     <string name="leaveGoalRest">Días libres seguidos</string>
     <string name="leaveHalfDayInvalid">Indica días completos o medios días, como 3 o 3,5.</string>
+    <string name="leaveHolidayPlans">Festivos</string>
     <string name="leaveKindAnnual">Vacaciones anuales</string>
     <string name="leaveKindCompensatory">Días compensatorios</string>
     <string name="leaveKindCustom">Otro</string>
@@ -384,6 +386,7 @@
     <string name="leaveRangeEnd">Hasta</string>
     <string name="leaveRangeFooter">Busca en el próximo año: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Desde</string>
+    <string name="leaveRegularPlans">Descansos habituales</string>
     <string name="leaveRequests">Días a solicitar</string>
     <string name="leaveResultsTitle">Opciones</string>
     <string name="leaveRoleEarly">Salir antes</string>

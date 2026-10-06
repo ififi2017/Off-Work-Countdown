@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">Planned time off</string>
     <string name="leaveAtLeast">At least %1$s</string>
     <string name="leaveAvailable">%1$s left</string>
+    <string name="leaveAvailableDates">%1$s available dates</string>
     <string name="leaveBalanceAfter">Uses %1$s, %2$s left</string>
     <string name="leaveBalanceInUse">An adopted plan uses this balance. Undo that plan to delete it.</string>
     <string name="leaveBalanceNamePlaceholder">Name, e.g. marriage leave</string>
@@ -365,6 +366,7 @@
     <string name="leaveGoalBudget">Leave to use</string>
     <string name="leaveGoalRest">Days off in a row</string>
     <string name="leaveHalfDayInvalid">Enter whole or half days, such as 3 or 3.5.</string>
+    <string name="leaveHolidayPlans">Public holidays</string>
     <string name="leaveKindAnnual">Annual leave</string>
     <string name="leaveKindCompensatory">Time off in lieu</string>
     <string name="leaveKindCustom">Other</string>
@@ -383,6 +385,7 @@
     <string name="leaveRangeEnd">Latest</string>
     <string name="leaveRangeFooter">Searches the year ahead: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Earliest</string>
+    <string name="leaveRegularPlans">Regular days off</string>
     <string name="leaveRequests">Leave to request</string>
     <string name="leaveResultsTitle">Options</string>
     <string name="leaveRoleEarly">Leave early</string>

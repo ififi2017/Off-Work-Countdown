@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">計画済みの休暇</string>
     <string name="leaveAtLeast">%1$s以上</string>
     <string name="leaveAvailable">残り %1$s</string>
+    <string name="leaveAvailableDates">選べる日程：%1$s件</string>
     <string name="leaveBalanceAfter">%1$s 使用、残り %2$s</string>
     <string name="leaveBalanceInUse">採用したプランでこの休暇を使っています。削除するにはそのプランを取り消してください。</string>
     <string name="leaveBalanceNamePlaceholder">名前（例：慶弔休暇）</string>
@@ -364,6 +365,7 @@
     <string name="leaveGoalBudget">使う休暇</string>
     <string name="leaveGoalRest">連休の長さ</string>
     <string name="leaveHalfDayInvalid">3 や 3.5 のように、1日または半日単位で入力してください。</string>
+    <string name="leaveHolidayPlans">祝日を使う</string>
     <string name="leaveKindAnnual">年次有給休暇</string>
     <string name="leaveKindCompensatory">代休</string>
     <string name="leaveKindCustom">その他</string>
@@ -382,6 +384,7 @@
     <string name="leaveRangeEnd">最も遅い日</string>
     <string name="leaveRangeFooter">今後1年を探します：%1$s～%2$s</string>
     <string name="leaveRangeStart">最も早い日</string>
+    <string name="leaveRegularPlans">通常の休日</string>
     <string name="leaveRequests">申請する休暇</string>
     <string name="leaveResultsTitle">候補</string>
     <string name="leaveRoleEarly">早めに退勤</string>

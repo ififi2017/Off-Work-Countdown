@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">Cuti yang direncanakan</string>
     <string name="leaveAtLeast">Minimal %1$s</string>
     <string name="leaveAvailable">Sisa %1$s</string>
+    <string name="leaveAvailableDates">%1$s pilihan tanggal</string>
     <string name="leaveBalanceAfter">Pakai %1$s, sisa %2$s</string>
     <string name="leaveBalanceInUse">Rencana yang diterapkan memakai saldo ini. Batalkan rencana itu untuk menghapusnya.</string>
     <string name="leaveBalanceNamePlaceholder">Nama, mis. cuti menikah</string>
@@ -364,6 +365,7 @@
     <string name="leaveGoalBudget">Cuti yang dipakai</string>
     <string name="leaveGoalRest">Hari libur berturut-turut</string>
     <string name="leaveHalfDayInvalid">Isi hari penuh atau setengah hari, mis. 3 atau 3,5.</string>
+    <string name="leaveHolidayPlans">Hari libur nasional</string>
     <string name="leaveKindAnnual">Cuti tahunan</string>
     <string name="leaveKindCompensatory">Cuti pengganti</string>
     <string name="leaveKindCustom">Lainnya</string>
@@ -382,6 +384,7 @@
     <string name="leaveRangeEnd">Paling akhir</string>
     <string name="leaveRangeFooter">Mencari dalam setahun ke depan: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Paling awal</string>
+    <string name="leaveRegularPlans">Hari libur rutin</string>
     <string name="leaveRequests">Cuti yang diajukan</string>
     <string name="leaveResultsTitle">Pilihan</string>
     <string name="leaveRoleEarly">Pulang lebih awal</string>

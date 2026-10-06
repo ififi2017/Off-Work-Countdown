@@ -151,6 +151,11 @@ struct LeaveView: View {
         .sheet(item: $viewingPlan) { selection in
             AdoptedLeavePlanSheet(shifts: shifts, actions: actions, planID: selection.id)
         }
+        #if DEBUG
+        .onAppear {
+            if UserDefaults.standard.bool(forKey: "ios.native.qaLeavePlanner") { isPlanning = true }
+        }
+        #endif
     }
 
     private var planSubtitle: String? {
@@ -621,6 +626,16 @@ private struct LeavePlannerSheet: View {
         through = windowDates.upperBound
         selected = Set(budgets.filter { $0.availableHalfDays > 0 }.map(\.id))
         leaveHalfDays = min(max(1, selectedHalfDays), 6)
+        #if DEBUG
+        if UserDefaults.standard.bool(forKey: "ios.native.qaLeavePlanner") {
+            isSearching = true
+            Task {
+                proposals = await Task.detached(priority: .userInitiated) { DebugLeavePlanner.proposals() }.value
+                isSearching = false
+                path = [.results]
+            }
+        }
+        #endif
     }
 
     private func search() {

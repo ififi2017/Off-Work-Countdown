@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">Ferie pianificate</string>
     <string name="leaveAtLeast">Almeno %1$s</string>
     <string name="leaveAvailable">%1$s rimasti</string>
+    <string name="leaveAvailableDates">%1$s periodi disponibili</string>
     <string name="leaveBalanceAfter">Usa %1$s, restano %2$s</string>
     <string name="leaveBalanceInUse">Un piano adottato usa questo saldo. Annulla il piano per eliminarlo.</string>
     <string name="leaveBalanceNamePlaceholder">Nome, es. congedo matrimoniale</string>
@@ -366,6 +367,7 @@
     <string name="leaveGoalBudget">Ferie da usare</string>
     <string name="leaveGoalRest">Giorni liberi di fila</string>
     <string name="leaveHalfDayInvalid">Inserisci giornate intere o mezze, come 3 o 3,5.</string>
+    <string name="leaveHolidayPlans">Festività</string>
     <string name="leaveKindAnnual">Ferie annuali</string>
     <string name="leaveKindCompensatory">Riposo compensativo</string>
     <string name="leaveKindCustom">Altro</string>
@@ -384,6 +386,7 @@
     <string name="leaveRangeEnd">Al</string>
     <string name="leaveRangeFooter">Cerca nell’anno a venire: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Dal</string>
+    <string name="leaveRegularPlans">Riposi abituali</string>
     <string name="leaveRequests">Ferie da richiedere</string>
     <string name="leaveResultsTitle">Proposte</string>
     <string name="leaveRoleEarly">Uscire prima</string>

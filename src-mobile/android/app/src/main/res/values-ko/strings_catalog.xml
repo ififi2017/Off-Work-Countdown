@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">계획한 휴가</string>
     <string name="leaveAtLeast">최소 %1$s</string>
     <string name="leaveAvailable">%1$s 남음</string>
+    <string name="leaveAvailableDates">선택 가능한 일정 %1$s개</string>
     <string name="leaveBalanceAfter">%1$s 사용, %2$s 남음</string>
     <string name="leaveBalanceInUse">채택한 계획에서 이 잔여를 쓰고 있어요. 그 계획을 취소하면 삭제할 수 있어요.</string>
     <string name="leaveBalanceNamePlaceholder">이름(예: 경조휴가)</string>
@@ -364,6 +365,7 @@
     <string name="leaveGoalBudget">쓸 휴가</string>
     <string name="leaveGoalRest">연속 휴일</string>
     <string name="leaveHalfDayInvalid">3 또는 3.5처럼 하루나 반나절 단위로 입력해 주세요.</string>
+    <string name="leaveHolidayPlans">공휴일 활용</string>
     <string name="leaveKindAnnual">연차</string>
     <string name="leaveKindCompensatory">대체휴가</string>
     <string name="leaveKindCustom">기타</string>
@@ -382,6 +384,7 @@
     <string name="leaveRangeEnd">가장 늦은 날</string>
     <string name="leaveRangeFooter">앞으로 1년 안에서 찾아요: %1$s–%2$s</string>
     <string name="leaveRangeStart">가장 이른 날</string>
+    <string name="leaveRegularPlans">평소 휴무일</string>
     <string name="leaveRequests">신청할 휴가</string>
     <string name="leaveResultsTitle">추천 일정</string>
     <string name="leaveRoleEarly">일찍 퇴근</string>
