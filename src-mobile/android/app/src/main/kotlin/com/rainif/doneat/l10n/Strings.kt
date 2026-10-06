@@ -54,6 +54,7 @@ object Strings {
     fun holidayCoverageYearWarning(res: Resources, year: String): String = res.getString(R.string.holidayCoverageYearWarning, year)
     fun leaveAtLeast(res: Resources, days: String): String = res.getString(R.string.leaveAtLeast, days)
     fun leaveAvailable(res: Resources, count: String): String = res.getString(R.string.leaveAvailable, count)
+    fun leaveAvailableDates(res: Resources, count: String): String = res.getString(R.string.leaveAvailableDates, count)
     fun leaveBalanceAfter(res: Resources, used: String, left: String): String = res.getString(R.string.leaveBalanceAfter, used, left)
     fun leaveDaysOff(res: Resources, count: Int): String = res.getQuantityString(R.plurals.leaveDaysOff, count, count)
     fun leaveEstimatedYear(res: Resources, year: String): String = res.getString(R.string.leaveEstimatedYear, year)

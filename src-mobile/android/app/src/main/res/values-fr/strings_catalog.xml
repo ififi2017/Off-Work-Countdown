@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">Congés prévus</string>
     <string name="leaveAtLeast">Au moins %1$s</string>
     <string name="leaveAvailable">%1$s restants</string>
+    <string name="leaveAvailableDates">%1$s périodes possibles</string>
     <string name="leaveBalanceAfter">%1$s utilisés, %2$s restants</string>
     <string name="leaveBalanceInUse">Un plan adopté utilise ce solde. Annulez ce plan pour le supprimer.</string>
     <string name="leaveBalanceNamePlaceholder">Nom, par ex. congé de mariage</string>
@@ -366,6 +367,7 @@
     <string name="leaveGoalBudget">Congés à poser</string>
     <string name="leaveGoalRest">Jours de repos d’affilée</string>
     <string name="leaveHalfDayInvalid">Saisissez des jours entiers ou des demi-journées, comme 3 ou 3,5.</string>
+    <string name="leaveHolidayPlans">Jours fériés</string>
     <string name="leaveKindAnnual">Congés payés</string>
     <string name="leaveKindCompensatory">Récupération</string>
     <string name="leaveKindCustom">Autre</string>
@@ -384,6 +386,7 @@
     <string name="leaveRangeEnd">Au plus tard</string>
     <string name="leaveRangeFooter">Recherche sur l’année à venir : %1$s – %2$s.</string>
     <string name="leaveRangeStart">Au plus tôt</string>
+    <string name="leaveRegularPlans">Repos habituels</string>
     <string name="leaveRequests">Congés à demander</string>
     <string name="leaveResultsTitle">Propositions</string>
     <string name="leaveRoleEarly">Partir plus tôt</string>

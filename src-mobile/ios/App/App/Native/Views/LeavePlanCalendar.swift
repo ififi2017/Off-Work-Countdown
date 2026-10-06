@@ -8,7 +8,7 @@ struct LeavePlanCalendar: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var monthIndex = 0
     @State private var revealed = false
-    @ScaledMetric(relativeTo: .caption) private var cellHeight: CGFloat = 40
+    @ScaledMetric(relativeTo: .caption) private var cellHeight: CGFloat = 38
 
     private var text: AppText { shifts.text }
     private var calendar: Calendar { shifts.preferences.recordsCalendar }
@@ -67,7 +67,8 @@ struct LeavePlanCalendar: View {
                     monthButton(1, titleKey: "extendedNextMonth", symbol: "chevron.forward")
                 }
             }
-            VStack(spacing: 5) {
+            .frame(minHeight: 44)
+            VStack(spacing: 4) {
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { column in
                         Text(weekdaySymbol(column))

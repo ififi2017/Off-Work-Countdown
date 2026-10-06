@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">नियोजित सुट्ट्या</string>
     <string name="leaveAtLeast">किमान %1$s</string>
     <string name="leaveAvailable">%1$s बाकी</string>
+    <string name="leaveAvailableDates">%1$s उपलब्ध तारखा</string>
     <string name="leaveBalanceAfter">%1$s वापर, %2$s बाकी</string>
     <string name="leaveBalanceInUse">स्वीकारलेले एक नियोजन ही शिल्लक वापरत आहे. हटवण्यासाठी ते नियोजन रद्द करा.</string>
     <string name="leaveBalanceNamePlaceholder">नाव, उदा. विवाह रजा</string>
@@ -365,6 +366,7 @@
     <string name="leaveGoalBudget">वापरायची सुट्टी</string>
     <string name="leaveGoalRest">सलग सुट्टीचे दिवस</string>
     <string name="leaveHalfDayInvalid">पूर्ण किंवा अर्धे दिवस लिहा, उदा. 3 किंवा 3.5.</string>
+    <string name="leaveHolidayPlans">सार्वजनिक सुट्ट्या</string>
     <string name="leaveKindAnnual">वार्षिक रजा</string>
     <string name="leaveKindCompensatory">बदली रजा</string>
     <string name="leaveKindCustom">इतर</string>
@@ -383,6 +385,7 @@
     <string name="leaveRangeEnd">सर्वात उशिरा</string>
     <string name="leaveRangeFooter">पुढील एका वर्षात शोधते: %1$s – %2$s.</string>
     <string name="leaveRangeStart">सर्वात आधी</string>
+    <string name="leaveRegularPlans">नेहमीच्या सुट्ट्या</string>
     <string name="leaveRequests">मागायची रजा</string>
     <string name="leaveResultsTitle">पर्याय</string>
     <string name="leaveRoleEarly">लवकर निघा</string>

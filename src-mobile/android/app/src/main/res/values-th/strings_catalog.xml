@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">วันหยุดที่วางแผนไว้</string>
     <string name="leaveAtLeast">อย่างน้อย %1$s</string>
     <string name="leaveAvailable">เหลือ %1$s</string>
+    <string name="leaveAvailableDates">ช่วงวันที่เลือกได้ %1$s ช่วง</string>
     <string name="leaveBalanceAfter">ใช้ %1$s เหลือ %2$s</string>
     <string name="leaveBalanceInUse">แผนที่ใช้อยู่ใช้วันลานี้ ยกเลิกแผนนั้นก่อนจึงจะลบได้</string>
     <string name="leaveBalanceNamePlaceholder">ชื่อ เช่น ลาแต่งงาน</string>
@@ -364,6 +365,7 @@
     <string name="leaveGoalBudget">วันลาที่จะใช้</string>
     <string name="leaveGoalRest">วันหยุดติดกัน</string>
     <string name="leaveHalfDayInvalid">ใส่เป็นวันเต็มหรือครึ่งวัน เช่น 3 หรือ 3.5</string>
+    <string name="leaveHolidayPlans">วันหยุดนักขัตฤกษ์</string>
     <string name="leaveKindAnnual">ลาพักร้อน</string>
     <string name="leaveKindCompensatory">วันหยุดชดเชย</string>
     <string name="leaveKindCustom">อื่นๆ</string>
@@ -382,6 +384,7 @@
     <string name="leaveRangeEnd">ช้าที่สุด</string>
     <string name="leaveRangeFooter">ค้นหาภายในหนึ่งปีข้างหน้า: %1$s – %2$s</string>
     <string name="leaveRangeStart">เร็วที่สุด</string>
+    <string name="leaveRegularPlans">วันหยุดประจำ</string>
     <string name="leaveRequests">วันที่ต้องลา</string>
     <string name="leaveResultsTitle">ตัวเลือก</string>
     <string name="leaveRoleEarly">เลิกงานเร็วขึ้น</string>

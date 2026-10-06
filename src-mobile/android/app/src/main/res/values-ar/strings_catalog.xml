@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">الإجازات المخطط لها</string>
     <string name="leaveAtLeast">%1$s على الأقل</string>
     <string name="leaveAvailable">متبقٍ %1$s</string>
+    <string name="leaveAvailableDates">%1$s من الفترات المتاحة</string>
     <string name="leaveBalanceAfter">يستخدم %1$s، ويتبقى %2$s</string>
     <string name="leaveBalanceInUse">تستخدم خطة معتمدة هذا الرصيد. ألغِ تلك الخطة لحذفه.</string>
     <string name="leaveBalanceNamePlaceholder">الاسم، مثل إجازة الزواج</string>
@@ -369,6 +370,7 @@
     <string name="leaveGoalBudget">الإجازة المستخدمة</string>
     <string name="leaveGoalRest">أيام راحة متتالية</string>
     <string name="leaveHalfDayInvalid">أدخل أيامًا كاملة أو أنصاف أيام، مثل 3 أو 3.5.</string>
+    <string name="leaveHolidayPlans">العطلات الرسمية</string>
     <string name="leaveKindAnnual">الإجازة السنوية</string>
     <string name="leaveKindCompensatory">إجازة تعويضية</string>
     <string name="leaveKindCustom">أخرى</string>
@@ -387,6 +389,7 @@
     <string name="leaveRangeEnd">آخر موعد</string>
     <string name="leaveRangeFooter">يبحث في العام المقبل: %1$s – %2$s.</string>
     <string name="leaveRangeStart">أبكر موعد</string>
+    <string name="leaveRegularPlans">أيام الراحة المعتادة</string>
     <string name="leaveRequests">الإجازة المطلوب طلبها</string>
     <string name="leaveResultsTitle">الخيارات</string>
     <string name="leaveRoleEarly">المغادرة مبكرًا</string>

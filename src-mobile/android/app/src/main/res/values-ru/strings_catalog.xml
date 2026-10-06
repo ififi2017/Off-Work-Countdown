@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">Запланированный отпуск</string>
     <string name="leaveAtLeast">Не меньше %1$s</string>
     <string name="leaveAvailable">Осталось %1$s</string>
+    <string name="leaveAvailableDates">Доступные даты: %1$s</string>
     <string name="leaveBalanceAfter">Использует %1$s, останется %2$s</string>
     <string name="leaveBalanceInUse">Этот остаток использует принятый план. Отмените план, чтобы удалить остаток.</string>
     <string name="leaveBalanceNamePlaceholder">Название, например «свадебный»</string>
@@ -367,6 +368,7 @@
     <string name="leaveGoalBudget">Сколько отпуска взять</string>
     <string name="leaveGoalRest">Дней отдыха подряд</string>
     <string name="leaveHalfDayInvalid">Укажите целые дни или половины, например 3 или 3,5.</string>
+    <string name="leaveHolidayPlans">Праздники</string>
     <string name="leaveKindAnnual">Ежегодный отпуск</string>
     <string name="leaveKindCompensatory">Отгулы</string>
     <string name="leaveKindCustom">Другое</string>
@@ -385,6 +387,7 @@
     <string name="leaveRangeEnd">Не позже</string>
     <string name="leaveRangeFooter">Поиск на год вперёд: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Не раньше</string>
+    <string name="leaveRegularPlans">Обычные выходные</string>
     <string name="leaveRequests">Что нужно оформить</string>
     <string name="leaveResultsTitle">Варианты</string>
     <string name="leaveRoleEarly">Уйти пораньше</string>

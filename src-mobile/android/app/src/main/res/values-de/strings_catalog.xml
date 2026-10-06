@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">Geplanter Urlaub</string>
     <string name="leaveAtLeast">Mindestens %1$s</string>
     <string name="leaveAvailable">%1$s übrig</string>
+    <string name="leaveAvailableDates">%1$s mögliche Zeiträume</string>
     <string name="leaveBalanceAfter">%1$s genutzt, %2$s übrig</string>
     <string name="leaveBalanceInUse">Ein übernommener Plan nutzt dieses Konto. Mach den Plan rückgängig, um es zu löschen.</string>
     <string name="leaveBalanceNamePlaceholder">Name, z. B. Sonderurlaub</string>
@@ -365,6 +366,7 @@
     <string name="leaveGoalBudget">Einzusetzender Urlaub</string>
     <string name="leaveGoalRest">Freie Tage am Stück</string>
     <string name="leaveHalfDayInvalid">Ganze oder halbe Tage eingeben, z. B. 3 oder 3,5.</string>
+    <string name="leaveHolidayPlans">Feiertage</string>
     <string name="leaveKindAnnual">Jahresurlaub</string>
     <string name="leaveKindCompensatory">Freizeitausgleich</string>
     <string name="leaveKindCustom">Andere</string>
@@ -383,6 +385,7 @@
     <string name="leaveRangeEnd">Spätestens</string>
     <string name="leaveRangeFooter">Sucht im kommenden Jahr: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Frühestens</string>
+    <string name="leaveRegularPlans">Reguläre freie Tage</string>
     <string name="leaveRequests">Zu beantragender Urlaub</string>
     <string name="leaveResultsTitle">Vorschläge</string>
     <string name="leaveRoleEarly">Früher gehen</string>

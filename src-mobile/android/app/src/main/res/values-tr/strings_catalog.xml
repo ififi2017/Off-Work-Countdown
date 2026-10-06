@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">Planlanan izinler</string>
     <string name="leaveAtLeast">En az %1$s</string>
     <string name="leaveAvailable">%1$s kaldı</string>
+    <string name="leaveAvailableDates">%1$s uygun tarih aralığı</string>
     <string name="leaveBalanceAfter">%1$s kullanılır, %2$s kalır</string>
     <string name="leaveBalanceInUse">Uygulanan bir plan bu bakiyeyi kullanıyor. Silmek için o planı geri al.</string>
     <string name="leaveBalanceNamePlaceholder">Ad, ör. evlilik izni</string>
@@ -365,6 +366,7 @@
     <string name="leaveGoalBudget">Kullanılacak izin</string>
     <string name="leaveGoalRest">Art arda tatil günü</string>
     <string name="leaveHalfDayInvalid">3 ya da 3,5 gibi tam ya da yarım gün gir.</string>
+    <string name="leaveHolidayPlans">Resmî tatiller</string>
     <string name="leaveKindAnnual">Yıllık izin</string>
     <string name="leaveKindCompensatory">Telafi izni</string>
     <string name="leaveKindCustom">Diğer</string>
@@ -383,6 +385,7 @@
     <string name="leaveRangeEnd">En geç</string>
     <string name="leaveRangeFooter">Önümüzdeki bir yılda arar: %1$s – %2$s.</string>
     <string name="leaveRangeStart">En erken</string>
+    <string name="leaveRegularPlans">Normal izin günleri</string>
     <string name="leaveRequests">Talep edilecek izin</string>
     <string name="leaveResultsTitle">Seçenekler</string>
     <string name="leaveRoleEarly">Erken çık</string>

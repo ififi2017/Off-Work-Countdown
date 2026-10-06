@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">योजना बनी छुट्टियाँ</string>
     <string name="leaveAtLeast">कम से कम %1$s</string>
     <string name="leaveAvailable">%1$s बाकी</string>
+    <string name="leaveAvailableDates">%1$s उपलब्ध तारीख़ें</string>
     <string name="leaveBalanceAfter">%1$s इस्तेमाल, %2$s बाकी</string>
     <string name="leaveBalanceInUse">अपनाई गई एक योजना यह शेष इस्तेमाल कर रही है। हटाने के लिए उस योजना को रद्द करें।</string>
     <string name="leaveBalanceNamePlaceholder">नाम, जैसे विवाह अवकाश</string>
@@ -365,6 +366,7 @@
     <string name="leaveGoalBudget">इस्तेमाल होने वाली छुट्टी</string>
     <string name="leaveGoalRest">लगातार छुट्टी के दिन</string>
     <string name="leaveHalfDayInvalid">पूरे या आधे दिन डालें, जैसे 3 या 3.5।</string>
+    <string name="leaveHolidayPlans">सार्वजनिक छुट्टियाँ</string>
     <string name="leaveKindAnnual">वार्षिक छुट्टी</string>
     <string name="leaveKindCompensatory">प्रतिपूरक छुट्टी</string>
     <string name="leaveKindCustom">अन्य</string>
@@ -383,6 +385,7 @@
     <string name="leaveRangeEnd">सबसे बाद में</string>
     <string name="leaveRangeFooter">आने वाले एक साल में खोजता है: %1$s – %2$s।</string>
     <string name="leaveRangeStart">सबसे पहले</string>
+    <string name="leaveRegularPlans">नियमित छुट्टियाँ</string>
     <string name="leaveRequests">माँगी जाने वाली छुट्टी</string>
     <string name="leaveResultsTitle">विकल्प</string>
     <string name="leaveRoleEarly">जल्दी निकलें</string>

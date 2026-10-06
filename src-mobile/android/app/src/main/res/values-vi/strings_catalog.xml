@@ -339,6 +339,7 @@
     <string name="leaveAdoptedPlans">Kỳ nghỉ đã lên kế hoạch</string>
     <string name="leaveAtLeast">Ít nhất %1$s</string>
     <string name="leaveAvailable">Còn %1$s</string>
+    <string name="leaveAvailableDates">%1$s khoảng ngày có thể chọn</string>
     <string name="leaveBalanceAfter">Dùng %1$s, còn %2$s</string>
     <string name="leaveBalanceInUse">Một kế hoạch đã áp dụng đang dùng số ngày phép này. Huỷ kế hoạch đó để xoá.</string>
     <string name="leaveBalanceNamePlaceholder">Tên, ví dụ: nghỉ cưới</string>
@@ -364,6 +365,7 @@
     <string name="leaveGoalBudget">Số ngày phép dùng</string>
     <string name="leaveGoalRest">Số ngày nghỉ liền</string>
     <string name="leaveHalfDayInvalid">Nhập cả ngày hoặc nửa ngày, ví dụ 3 hoặc 3,5.</string>
+    <string name="leaveHolidayPlans">Ngày lễ</string>
     <string name="leaveKindAnnual">Phép năm</string>
     <string name="leaveKindCompensatory">Nghỉ bù</string>
     <string name="leaveKindCustom">Khác</string>
@@ -382,6 +384,7 @@
     <string name="leaveRangeEnd">Muộn nhất</string>
     <string name="leaveRangeFooter">Tìm trong một năm tới: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Sớm nhất</string>
+    <string name="leaveRegularPlans">Ngày nghỉ thường lệ</string>
     <string name="leaveRequests">Ngày cần xin nghỉ</string>
     <string name="leaveResultsTitle">Phương án</string>
     <string name="leaveRoleEarly">Về sớm</string>

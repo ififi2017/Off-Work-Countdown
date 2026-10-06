@@ -1295,6 +1295,12 @@
         "count"
       ]
     },
+    "leaveAvailableDates": {
+      "resource": "string/leaveAvailableDates",
+      "params": [
+        "count"
+      ]
+    },
     "leaveBalanceAfter": {
       "resource": "string/leaveBalanceAfter",
       "params": [
@@ -1371,6 +1377,9 @@
     "leaveHalfDayInvalid": {
       "resource": "string/leaveHalfDayInvalid"
     },
+    "leaveHolidayPlans": {
+      "resource": "string/leaveHolidayPlans"
+    },
     "leaveKindAnnual": {
       "resource": "string/leaveKindAnnual"
     },
@@ -1435,6 +1444,9 @@
     },
     "leaveRangeStart": {
       "resource": "string/leaveRangeStart"
+    },
+    "leaveRegularPlans": {
+      "resource": "string/leaveRegularPlans"
     },
     "leaveRequests": {
       "resource": "string/leaveRequests"
