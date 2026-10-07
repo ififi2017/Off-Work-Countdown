@@ -22,10 +22,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.CompositionLocalProvider
+import com.rainif.doneat.ui.adaptive.LocalDoneAtWindowPosture
+import com.rainif.doneat.ui.adaptive.rememberWindowPosture
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import com.rainif.doneat.ui.release.ReleaseNotesPolicy
+import com.rainif.doneat.ui.release.WhatsNewScreen
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -49,6 +55,8 @@ import com.rainif.doneat.core.data.RecordPersistenceError
 import com.rainif.doneat.ui.AppShell
 import com.rainif.doneat.ui.SystemBarsFollowTheme
 import com.rainif.doneat.ui.onboarding.SetupFlow
+import com.rainif.doneat.plus.LifetimeOfferCard
+import com.rainif.doneat.plus.LifetimeOfferSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -58,6 +66,12 @@ class MainActivity : FragmentActivity() {
     override fun onResume() {
         super.onResume()
         (application as DoneAtApplication).graph.plus.refresh()
+        (application as DoneAtApplication).graph.plus.observeLifetimeOffer()
+    }
+
+    override fun onPause() {
+        (application as DoneAtApplication).graph.plus.observeLifetimeOffer()
+        super.onPause()
     }
 
     override fun onStart() {
@@ -73,6 +87,7 @@ class MainActivity : FragmentActivity() {
                 graph.widgets.refresh()
                 graph.ongoing.apply()
                 graph.reportNotifications.reconcile()
+                graph.shiftAlarms.refresh()
             }
         }
     }
@@ -88,6 +103,9 @@ class MainActivity : FragmentActivity() {
             val setUp by graph.settings.isSetUp.collectAsStateWithLifecycle()
             val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
             val device by graph.settings.device.collectAsStateWithLifecycle()
+            val releaseNotes by graph.releaseNotes.state.collectAsStateWithLifecycle()
+            val releaseScope = rememberCoroutineScope()
+            var continuingRelease by remember { mutableStateOf(false) }
 
             LaunchedEffect(loaded) { if (loaded) reconcileLanguage(graph) }
 
@@ -113,6 +131,15 @@ class MainActivity : FragmentActivity() {
                             LaunchPlaceholder()
                         } else if (archiveError == RecordPersistenceError.INVALID_ARCHIVE || archiveError == RecordPersistenceError.UNREADABLE_ARCHIVE) {
                             ArchiveRecoveryScreen(graph)
+                        } else if (ReleaseNotesPolicy.shouldPresent(releaseNotes.loaded, setUp, releaseNotes.seenRelease)) {
+                            WhatsNewScreen(graph, continuing = continuingRelease,
+                                errorText = if (releaseNotes.writeFailed) androidx.compose.ui.res.stringResource(R.string.retryAction) else null,
+                                onDismiss = {
+                                    if (!continuingRelease) {
+                                        continuingRelease = true
+                                        releaseScope.launch { try { graph.releaseNotes.markSeen() } finally { continuingRelease = false } }
+                                    }
+                                })
                         } else AnimatedContent(
                             targetState = setUp,
                             transitionSpec = {
@@ -125,7 +152,10 @@ class MainActivity : FragmentActivity() {
                             },
                             label = "setupComplete",
                         ) { complete ->
-                            if (complete) AppShell(graph, onReportStageChanged = { reportStage = it }) else SetupFlow(graph)
+                            if (complete) CompositionLocalProvider(LocalDoneAtWindowPosture provides rememberWindowPosture()) {
+                                AppShell(graph, onReportStageChanged = { reportStage = it })
+                            } else SetupFlow(graph,
+                                offerContent = { active -> OnboardingOffer(graph, active) })
                         }
                     }
                 }
@@ -140,6 +170,11 @@ class MainActivity : FragmentActivity() {
 
     /** A notification names the tab it belongs to: a focus alert opens Focus, as on iOS. */
     private fun openRequestedTab(intent: Intent?) {
+        if (intent?.getBooleanExtra("doneat.shiftAlarmSettings", false) == true) {
+            intent.removeExtra("doneat.shiftAlarmSettings")
+            (application as DoneAtApplication).graph.requestedShiftAlarmSettings.value = true
+            return
+        }
         val report = intent?.data?.toString()?.let(com.rainif.doneat.core.domain.records.CycleReportPeriod::fromUrl)
         val tab = (if (report != null) "records" else intent?.getStringExtra(EXTRA_TAB))?.takeIf { it in setOf("timer", "focus", "records", "settings") } ?: return
         intent?.removeExtra(EXTRA_TAB)
@@ -175,6 +210,15 @@ class MainActivity : FragmentActivity() {
             else -> AppLocale.applyToSystem(this, preferred)
         }
     }
+}
+
+@Composable
+private fun OnboardingOffer(graph: AppGraph, active: Boolean) {
+    val store by graph.plus.state.collectAsStateWithLifecycle()
+    LaunchedEffect(store) {
+        if (graph.plus.canOfferLifetime) graph.plus.inviteLifetimeOffer(LifetimeOfferSource.ONBOARDING)
+    }
+    LifetimeOfferCard(graph.plus, active = active)
 }
 
 /** Same quiet brand row as the iOS launch storyboard, while the archive is loading. */

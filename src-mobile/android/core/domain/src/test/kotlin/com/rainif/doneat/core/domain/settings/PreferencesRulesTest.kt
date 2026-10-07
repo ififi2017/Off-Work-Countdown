@@ -63,8 +63,10 @@ class PreferencesRulesTest {
 
     @Test fun onboardingReminderDefaultsKeepAChosenMode() {
         val applied = PreferencesRules.onboardingReminderDefaults(defaults)
-        assertTrue(applied.lunchEnabled && applied.lunchStartReminderEnabled && applied.lunchEndReminderEnabled)
+        assertFalse(applied.lunchEnabled || applied.lunchStartReminderEnabled || applied.lunchEndReminderEnabled)
         assertEquals("simple", applied.notificationMode)
+        val chosen = defaults.copy(lunchEnabled = true, lunchStartReminderEnabled = false, lunchEndReminderEnabled = true)
+        assertEquals(chosen.copy(notificationMode = "simple"), PreferencesRules.onboardingReminderDefaults(chosen))
         assertEquals("milestones", PreferencesRules.onboardingReminderDefaults(defaults.copy(notificationMode = "milestones")).notificationMode)
         assertEquals(listOf("light", "dark", "auto"), listOf("auto", "light", "dark").map(PreferencesRules::nextQuickTheme))
     }

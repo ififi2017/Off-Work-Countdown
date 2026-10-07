@@ -131,8 +131,68 @@ class LeavePlannerTest {
         assertEquals("2026-10-01", best.firstRestDayKey)
         assertEquals("2026-10-07", best.lastRestDayKey)
         assertEquals(0, best.costHalfDays)
-        // Distinct stretches only: nothing else overlaps the week chosen.
-        assertFalse(result.drop(1).any { it.firstRestDayNumber <= best.lastRestDayNumber && it.lastRestDayNumber >= best.firstRestDayNumber })
+        // A shorter option inside this free week offers no alternative.
+        assertFalse(result.drop(1).any { it.firstRestDayNumber >= best.firstRestDayNumber && it.lastRestDayNumber <= best.lastRestDayNumber })
+    }
+
+    @Test fun `shared weekends preserve every weekly nine-day alternative for both goals`() {
+        for (goal in listOf(LeavePlanner.Goal.RestAtLeast(9), LeavePlanner.Goal.LeaveAtMost(10))) {
+            val result = proposals(
+                weeklyPlan(region = "CN"), goal, "2026-10-05", "2026-12-06",
+                instant("2026-10-05", 8), listOf(budget(halfDays = 10)),
+            )
+            for ((start, end) in listOf(
+                "2026-10-17" to "2026-10-25", "2026-10-24" to "2026-11-01", "2026-10-31" to "2026-11-08",
+                "2026-11-07" to "2026-11-15", "2026-11-14" to "2026-11-22", "2026-11-21" to "2026-11-29",
+                "2026-11-28" to "2026-12-06",
+            )) {
+                val plan = result.single { it.firstRestDayKey == start && it.lastRestDayKey == end }
+                assertEquals(9, plan.fullRestDays)
+                assertEquals(10, plan.costHalfDays)
+                assertEquals(5, plan.items.size)
+            }
+            assertTrue(result.size > 5)
+            assertEquals(result.size, result.map { it.firstRestDayNumber to it.lastRestDayNumber }.toSet().size)
+            val best = result.filter { it.fullRestDays == 9 && it.costHalfDays == 10 }.map { it.firstRestDayNumber }
+            assertEquals(best.sorted(), best)
+        }
+    }
+
+    @Test fun `rolling year groups every date without losing date-specific caveats`() {
+        val first = dayNumber("2026-09-21")
+        val range = first..first + 364
+        val work = officeType.copy(endMinutes = 1020, breakEnabled = false, breakDurationMinutes = 0)
+        val days = LeavePlannerSchedule.days(hours(weeklyPlan(work, "CN")), range, ZoneId.of(SHANGHAI), holidays)
+        val proposals = LeavePlanner.proposals(days, LeavePlanner.Query(
+            LeavePlanner.Goal.LeaveAtMost(10), range.first, range.last, instant("2026-09-21", 0), listOf(budget(halfDays = 10)),
+        ))
+        val groups = LeavePlanGroup.make(proposals)
+        assertTrue(proposals.size > 200)
+        assertTrue(groups.size < proposals.size / 2)
+        assertEquals(proposals.indices.toList(), groups.flatMap { it.proposalIndices }.sorted())
+        val regular = groups.filter { it.category == LeavePlanGroup.Category.REGULAR }
+        assertTrue(regular.isNotEmpty())
+        assertTrue(groups.any { it.category == LeavePlanGroup.Category.HOLIDAY })
+        assertTrue(regular.size < regular.sumOf { it.proposalIndices.size } / 2)
+        for (group in groups) {
+            val reference = proposals[group.proposalIndices.first()]
+            val dates = group.proposalIndices.map { proposals[it].firstRestDayNumber }
+            assertEquals(dates.sorted(), dates)
+            for (index in group.proposalIndices) {
+                val option = proposals[index]
+                assertEquals(group.category == LeavePlanGroup.Category.HOLIDAY, LeavePlanProposal.DayKind.HOLIDAY in option.dayKinds)
+                assertEquals(reference.costHalfDays, option.costHalfDays)
+                assertEquals(reference.fullRestDays, option.fullRestDays)
+            }
+        }
+        assertTrue(regular.any { group ->
+            val exact = group.proposalIndices.map { proposals[it].caveats.isEmpty() }
+            true in exact && false in exact
+        })
+        for (key in listOf("2026-10-17", "2026-10-24", "2026-11-07")) {
+            val index = proposals.indexOfFirst { it.firstRestDayKey == key && it.fullRestDays == 9 }
+            assertTrue(index >= 0 && regular.any { index in it.proposalIndices })
+        }
     }
 
     @Test fun `a spare half day leaves early on the last working afternoon`() {

@@ -7,11 +7,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsWalk
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
@@ -30,6 +35,7 @@ import androidx.compose.material.icons.outlined.RateReview
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -48,6 +54,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -56,6 +64,7 @@ import com.rainif.doneat.R
 import com.rainif.doneat.core.data.DeviceSettings
 import com.rainif.doneat.core.designsystem.CelebratingBrandMark
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
+import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import com.rainif.doneat.core.designsystem.supportsDynamicColor
 import com.rainif.doneat.core.domain.records.RecordState
 import com.rainif.doneat.core.domain.records.SyncedPreferences
@@ -64,6 +73,7 @@ import com.rainif.doneat.core.domain.settings.AppLanguages
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.review.ReviewCoordinator
 import com.rainif.doneat.ui.Route
+import com.rainif.doneat.ui.adaptive.AdaptiveTwoPane
 import com.rainif.doneat.ui.components.ActionRow
 import com.rainif.doneat.ui.components.ChoiceRow
 import com.rainif.doneat.ui.components.DoneAtPage
@@ -98,7 +108,7 @@ object SettingsLabels {
             when (p.scheduleMode) {
                 "alternating" -> R.string.scheduleAlternating
                 "rotation" -> R.string.scheduleRotation
-                "off" -> R.string.scheduleOff
+                "off" -> R.string.scheduleManualTimer
                 else -> R.string.scheduleClassic
             },
         )
@@ -152,52 +162,76 @@ object SettingsLabels {
 
 /** The settings list (iOS `SettingsSection`): shift, reminders, appearance, records & data, about. Plus is a title action. */
 @Composable
-fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: DeviceSettings, setWeekStart: (Int) -> Unit, open: (Route) -> Unit) {
+fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: DeviceSettings, setWeekStart: (Int) -> Unit, open: (Route) -> Unit, alarmsEnabled: Boolean = false) {
     val context = LocalContext.current
     val locale = LocalResources.current.configuration.locales[0]
     val firstDay = device.calendarFirstDay(locale)
     var choosingWeekStart by rememberSaveable { mutableStateOf(false) }
-    DoneAtPage(
-        title = stringResource(R.string.settings),
-        inlineTitle = true,
-        actions = {
-            TextButton(onClick = { open(Route.Plus) }) {
-                Icon(Icons.Outlined.StarOutline, contentDescription = null, modifier = Modifier.padding(end = DoneAtSpacing.xs))
-                // The brand name, not a translated word, as iOS writes it.
-                Text("Plus")
+    @Composable
+    fun shiftAndReminders() {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
+            SettingsGroup(stringResource(R.string.shiftSection)) {
+                NavigationRow(stringResource(R.string.workSchedule), { open(Route.Schedule) }, Icons.Outlined.EditCalendar, SettingsLabels.schedule(p, records))
+                RowDivider()
+                NavigationRow(stringResource(R.string.salarySettings), { open(Route.Salary) }, Icons.Outlined.Payments, SettingsLabels.salary(p))
+                RowDivider()
+                NavigationRow(stringResource(R.string.leaveTitle), { open(Route.Leave()) }, Icons.Outlined.Luggage, SettingsLabels.leave(records))
             }
-        },
-    ) {
-        SettingsGroup(stringResource(R.string.shiftSection)) {
-            NavigationRow(stringResource(R.string.workSchedule), { open(Route.Schedule) }, Icons.Outlined.EditCalendar, SettingsLabels.schedule(p, records))
-            RowDivider()
-            NavigationRow(stringResource(R.string.salarySettings), { open(Route.Salary) }, Icons.Outlined.Payments, SettingsLabels.salary(p))
-            RowDivider()
-            NavigationRow(stringResource(R.string.leaveTitle), { open(Route.Leave()) }, Icons.Outlined.Luggage, SettingsLabels.leave(records))
+            SettingsGroup(stringResource(R.string.remindersSection)) {
+                NavigationRow(stringResource(R.string.shiftReminders), { open(Route.Notifications) }, Icons.Outlined.NotificationsActive, SettingsLabels.notificationMode(p.notificationMode))
+                RowDivider()
+                NavigationRow(stringResource(R.string.shiftAlarmsTitle), { open(Route.ShiftAlarms) }, Icons.Outlined.Alarm,
+                    stringResource(if (alarmsEnabled) R.string.shiftAlarmsOnShort else R.string.disabledShort))
+                RowDivider()
+                NavigationRow(stringResource(R.string.microBreakReminder), { open(Route.Health) }, Icons.AutoMirrored.Outlined.DirectionsWalk, SettingsLabels.health(p))
+            }
         }
-        SettingsGroup(stringResource(R.string.remindersSection)) {
-            NavigationRow(stringResource(R.string.shiftReminders), { open(Route.Notifications) }, Icons.Outlined.NotificationsActive, SettingsLabels.notificationMode(p.notificationMode))
-            RowDivider()
-            NavigationRow(stringResource(R.string.microBreakReminder), { open(Route.Health) }, Icons.AutoMirrored.Outlined.DirectionsWalk, SettingsLabels.health(p))
+    }
+    @Composable
+    fun appearanceDataAndAbout() {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
+            SettingsGroup(stringResource(R.string.appearanceSection)) {
+                NavigationRow(stringResource(R.string.theme), { open(Route.Theme) }, Icons.Outlined.Contrast, SettingsLabels.theme(p.theme))
+                RowDivider()
+                NavigationRow(stringResource(R.string.chooselanguage), { open(Route.Language) }, Icons.Outlined.Language, SettingsLabels.language(p.languageOverride))
+            }
+            SettingsGroup(stringResource(R.string.recordsDataSection)) {
+                NavigationRow(stringResource(R.string.calendarWeekStart), { choosingWeekStart = true }, Icons.Outlined.CalendarToday,
+                    firstDay.getDisplayName(java.time.format.TextStyle.FULL, locale))
+                RowDivider()
+                NavigationRow(stringResource(R.string.recordsDataTitle), { open(Route.RecordsData) }, Icons.Outlined.Storage)
+            }
+            SettingsGroup(stringResource(R.string.aboutSection)) {
+                NavigationRow(stringResource(R.string.aboutProject), { open(Route.About) }, Icons.Outlined.Info)
+                RowDivider()
+                ActionRow(stringResource(R.string.rateAppGooglePlay), {
+                    ReviewCoordinator.get(context).disableAutomatic()
+                    openPlayListing(context)
+                }, Icons.Outlined.RateReview, Icons.AutoMirrored.Outlined.OpenInNew)
+            }
         }
-        SettingsGroup(stringResource(R.string.appearanceSection)) {
-            NavigationRow(stringResource(R.string.theme), { open(Route.Theme) }, Icons.Outlined.Contrast, SettingsLabels.theme(p.theme))
-            RowDivider()
-            NavigationRow(stringResource(R.string.chooselanguage), { open(Route.Language) }, Icons.Outlined.Language, SettingsLabels.language(p.languageOverride))
-        }
-        SettingsGroup(stringResource(R.string.recordsDataSection)) {
-            NavigationRow(stringResource(R.string.calendarWeekStart), { choosingWeekStart = true }, Icons.Outlined.CalendarToday,
-                firstDay.getDisplayName(java.time.format.TextStyle.FULL, locale))
-            RowDivider()
-            NavigationRow(stringResource(R.string.recordsDataTitle), { open(Route.RecordsData) }, Icons.Outlined.Storage)
-        }
-        SettingsGroup(stringResource(R.string.aboutSection)) {
-            NavigationRow(stringResource(R.string.aboutProject), { open(Route.About) }, Icons.Outlined.Info)
-            RowDivider()
-            ActionRow(stringResource(R.string.rateAppGooglePlay), {
-                ReviewCoordinator.get(context).disableAutomatic()
-                openPlayListing(context)
-            }, Icons.Outlined.RateReview, Icons.AutoMirrored.Outlined.OpenInNew)
+    }
+    val bottomPadding = Modifier.padding(bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current)
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+        Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.settings), Modifier.weight(1f).padding(start = DoneAtSpacing.page - DoneAtSpacing.xs).semantics { heading() },
+                    style = MaterialTheme.typography.headlineMedium)
+                TextButton(onClick = { open(Route.Plus) }) {
+                    Icon(Icons.Outlined.StarOutline, null, Modifier.padding(end = DoneAtSpacing.xs))
+                    Text("Plus")
+                }
+            }
+            AdaptiveTwoPane(Modifier.weight(1f).fillMaxWidth(),
+                primary = { Column(bottomPadding) { shiftAndReminders() } },
+                secondary = { Column(bottomPadding) { appearanceDataAndAbout() } },
+                single = {
+                    Column(bottomPadding.widthIn(max = 720.dp).fillMaxWidth().align(Alignment.CenterHorizontally),
+                        verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
+                        shiftAndReminders()
+                        appearanceDataAndAbout()
+                    }
+                })
         }
     }
     if (choosingWeekStart) AlertDialog(

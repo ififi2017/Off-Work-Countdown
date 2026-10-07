@@ -18,6 +18,7 @@ object SessionRecords {
             when (effect) {
                 is SessionRecordEffect.Observation -> recordObservation(s, effect, context)
                 is SessionRecordEffect.UpsertOverride -> RecordEdits.upsertOverride(s, effect.override, context)
+                is SessionRecordEffect.ReplaceProjectedOverride -> ScheduleSave.replacingProjectedOverride(s, effect.previous, effect.current, context)
             }
         }
 

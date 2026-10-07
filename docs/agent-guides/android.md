@@ -146,6 +146,21 @@ locale and validation rules apply.
   user-granted `SCHEDULE_EXACT_ALARM`; never declare `USE_EXACT_ALARM`. The
   alarm registry lives in `noBackupFilesDir`; receivers stay unexported and
   post only what the registry still holds.
+- The 2026-10-07 user approval adds one narrowly scoped exception: native shift
+  alarms may run a `mediaPlayback` foreground service only while actually ringing.
+  They use user-granted `SCHEDULE_EXACT_ALARM` + `setAlarmClock`, a no-backup
+  confirmed-registration ledger, default system alarm audio/vibration, Stop and
+  nine-minute Snooze. `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and a MediaPlayer
+  partial CPU wake lock do not authorize display wake, keyguard changes,
+  full-screen intents or boot-time playback. Notifications must expose the
+  controls; clicking them opens the ringing activity. Ordinary reminders,
+  reports, ongoing and widgets keep their existing non-FGS architecture.
+  Reuse `shiftAlarmAuthorization(now)`: still-valid signed offline exact expiry
+  is allowed; ordinary Play cache without a verified expiry is unavailable.
+  Alarm choices stay device-local outside schema 7 and backup. See
+  `docs/android/shift-alarm-platform.md`. Code/fake-platform tests do not prove
+  ringing, lock-screen, background, permission or reboot behaviour; this task
+  explicitly forbids device alarm/lock-screen tests.
 - First release requests no Google sign-in or OAuth. Salary never appears in
   widgets, notifications, share cards/links, logs or analytics.
 

@@ -86,6 +86,7 @@ import com.rainif.doneat.core.domain.records.RecordsHeadlineSummary
 import com.rainif.doneat.core.domain.records.RecordsScale
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.Route
+import com.rainif.doneat.ui.adaptive.*
 import com.rainif.doneat.ui.timer.EarningsVisibilityButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -121,6 +122,8 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     var expanded by rememberSaveable { mutableStateOf(false) }
     val regularScroll = rememberScrollState()
     val expandedScroll = rememberScrollState()
+    val chartScroll = rememberScrollState()
+    val conclusionScroll = rememberScrollState()
     var page by remember { mutableStateOf<RecordsPage?>(null) }
     val monthHeadlines = remember(page) { mutableMapOf<Int, LoadedMonthHeadline>() }
     val locked = scale.requiresPlus && !context.queries.authorized
@@ -280,7 +283,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
             },
         )
     }
-    val conclusion: @Composable () -> Unit = {
+    val conclusion: @Composable (Boolean) -> Unit = { showsLockedSummary ->
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             // Life's conclusion is behind Plus too: a locked life never prints a projected number.
             if (scale == RecordsScale.LIFE && !locked && profile != null) {
@@ -299,7 +302,9 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
             if (scale != RecordsScale.LIFE && !context.queries.authorized && overtimeMs != null) OvertimeLine(text, overtimeMs)
             // As on iOS, a period without a summary shows none: locked, or nothing recorded yet.
             val headline = current?.headline
-            if (scale != RecordsScale.LIFE && current != null && headline != null) {
+            if (scale != RecordsScale.LIFE && !context.queries.authorized && showsLockedSummary) {
+                LockedPlaceholder(LockedKind.SUMMARY, text) { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsCharts)) }
+            } else if (scale != RecordsScale.LIFE && current != null && headline != null) {
                 val title = if (scale == RecordsScale.YEAR) {
                     Strings.recordsAnnualSummary(androidx.compose.ui.platform.LocalResources.current, current.first.year.toString())
                 } else {
@@ -315,35 +320,43 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
 
     Box(Modifier.fillMaxSize()) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-            BoxWithConstraints(Modifier.safeDrawingPadding()) {
-                val twoColumns = !expanded && maxWidth >= 720.dp
-                Column(Modifier.fillMaxSize()) {
-                    if (!expanded) {
-                        Header(graph, text, onAllRecords = { open(Route.RecordsAll) }) { note -> scope.launch { snackbar.showSnackbar(note) } }
-                    }
-                    if (twoColumns) {
-                        Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                            // A local function reference compares equal despite its captured scale.
-                            // A lambda lets Compose replace the callback when that scale changes.
-                            ScalePicker(text, scale) { setScale(it) }
-                            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current)) { chart() }
-                                Column(Modifier.width(420.dp).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current)) { conclusion() }
+            Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+                if (!expanded) Header(graph, text, onAllRecords = { open(Route.RecordsAll) }) { note -> scope.launch { snackbar.showSnackbar(note) } }
+                AdaptiveLayoutBox(Modifier.weight(1f).fillMaxWidth(), primaryFraction = .58f) { plan ->
+                    val padding = Modifier.padding(start = DoneAtSpacing.page, end = DoneAtSpacing.page,
+                        bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current)
+                    if (expanded) {
+                        // A full chart remains one readable pane even when the physical display has a hinge.
+                        val safe = if (plan.avoidedFold != null && plan.secondary != null) {
+                            if (plan.primary.width * plan.primary.height >= plan.secondary.width * plan.secondary.height) plan.primary else plan.secondary
+                        } else if (plan.avoidedFold != null) plan.primary else AdaptiveBounds(0f, 0f,
+                            maxOf(plan.primary.right, plan.secondary?.right ?: 0f), plan.primary.bottom)
+                        AdaptivePane(safe) {
+                            Column(Modifier.fillMaxSize().verticalScroll(expandedScroll).then(padding).padding(top = DoneAtSpacing.page)) { chart() }
+                        }
+                    } else if (plan.hasHorizontalFold) {
+                        AdaptivePane(plan.primary) {
+                            Column(Modifier.fillMaxSize().verticalScroll(chartScroll).then(padding), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                                ScalePicker(text, scale) { setScale(it) }
+                                chart()
                             }
                         }
-                    } else {
-                        Column(
-                            Modifier.verticalScroll(if (expanded) expandedScroll else regularScroll).padding(
-                                start = DoneAtSpacing.page, end = DoneAtSpacing.page,
-                                top = if (expanded) DoneAtSpacing.page else 0.dp,
-                                bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current,
-                            ),
-                            verticalArrangement = Arrangement.spacedBy(14.dp),
-                        ) {
-                            if (!expanded) ScalePicker(text, scale) { setScale(it) }
-                            // Expansion keeps this chart in the same composition slot on phones.
+                        AdaptivePane(plan.secondary!!, primary = false) {
+                            Column(Modifier.fillMaxSize().verticalScroll(conclusionScroll).then(padding)) { conclusion(true) }
+                        }
+                    } else if (plan.usesContentColumns) {
+                        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Box(Modifier.padding(horizontal = DoneAtSpacing.page)) { ScalePicker(text, scale) { setScale(it) } }
+                            AdaptiveTwoPane(Modifier.weight(1f).fillMaxWidth(), primaryFraction = .58f,
+                                primaryScroll = chartScroll, secondaryScroll = conclusionScroll,
+                                primary = { Column(padding) { chart() } },
+                                secondary = { Column(padding) { conclusion(true) } })
+                        }
+                    } else AdaptivePane(plan.primary) {
+                        Column(Modifier.fillMaxSize().verticalScroll(regularScroll).then(padding), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            ScalePicker(text, scale) { setScale(it) }
                             chart()
-                            if (!expanded) conclusion()
+                            conclusion(false)
                         }
                     }
                 }
@@ -505,7 +518,7 @@ private fun ChartCard(
             } else {
                 when (scale) {
                     RecordsScale.YEAR -> {
-                        if (expanded && page != null) {
+                        if (expanded) {
                             YearMonths(page, selectedMonth, context, monthHeadlines, onSelectMonth, onOpenMonth)
                         } else {
                             YearCanvas(cells, first.year, selectedMonth, showMonthCallout, text, onSelectMonth, onOpenMonth)

@@ -6,6 +6,11 @@ import com.rainif.doneat.core.data.FocusStore
 import com.rainif.doneat.core.data.RecordStore
 import com.rainif.doneat.core.data.SessionStore
 import com.rainif.doneat.core.data.SettingsRepository
+import com.rainif.doneat.core.domain.records.portionsByDay
+import com.rainif.doneat.core.domain.session.SessionEnvironment
+import com.rainif.doneat.core.domain.session.ShiftSession
+import com.rainif.doneat.core.domain.settings.PreferencesRules
+import kotlinx.coroutines.CompletableDeferred
 import com.rainif.doneat.core.domain.records.DayEditDraft
 import com.rainif.doneat.core.domain.records.LifeProfileDraft
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
@@ -44,8 +49,10 @@ class AppGraph(app: Application) {
     val settings = SettingsRepository(records, device, scope, nowMs, systemZone, newId)
     /** A launcher shortcut or notification waits here until setup has finished. */
     val requestedTab = MutableStateFlow<String?>(null)
+    val requestedShiftAlarmSettings = MutableStateFlow(false)
     val requestedReport = MutableStateFlow<com.rainif.doneat.core.domain.records.CycleReportPeriod?>(null)
 
+    private val holidayLoading = CompletableDeferred<Unit>()
     private val _holidays = MutableStateFlow(HolidayCalendar.EMPTY)
     /** The bundled holiday dataset (shared with iOS); read once, off the main thread. */
     val holidays: StateFlow<HolidayCalendar> = _holidays.asStateFlow()
@@ -108,13 +115,29 @@ class AppGraph(app: Application) {
     private val _loaded = MutableStateFlow(false)
     /** False until the archive has been read: until then nothing can tell setup from a restored install. */
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
+    val releaseNotes = com.rainif.doneat.ui.release.DeviceLocalReleaseNotesStore(app)
+    val alarmSettings = com.rainif.doneat.core.data.AlarmSettingsStore(
+        app.noBackupFilesDir.toPath().resolve("shift-alarms/settings.json"))
+    val shiftAlarms = com.rainif.doneat.alarms.ShiftAlarmCoordinator(
+        app, sessions, plus, alarmSettings, scope, loaded, nowMs, sessionProvider = {
+            val archive = records.state.value
+            val environment = SessionEnvironment(
+                PreferencesRules.current(archive, settings.preferences.value),
+                settings.device.value.onboardingComplete || archive.syncedPreferences != null,
+                archive.extendedSchedule, archive.rosterDays, holidays.value, systemZone(),
+                plus.collectsObservations.value, archive.leaveDays.portionsByDay())
+            ShiftSession(sessions.state.value, environment)
+        })
 
     init {
+        shiftAlarms.start()
         scope.launch {
             records.load()
+            holidayLoading.await()
             sessions.load()
             timer.reconcile()
             focusCoordinator.reconcile()
+            releaseNotes.initialize(settings.device.value.onboardingComplete || records.state.value.syncedPreferences != null)
             _loaded.value = true
             reportNotifications.start()
             timer.start()
@@ -124,8 +147,10 @@ class AppGraph(app: Application) {
         }
         scope.launch(Dispatchers.IO) {
             // A damaged or missing dataset only turns holiday assignments off; the schedule still runs.
-            runCatching { app.assets.open("HolidayTemplates.json").use { HolidayCalendar.parse(it.readBytes().decodeToString()) } }
-                .onSuccess { _holidays.value = it }
+            try {
+                runCatching { app.assets.open("HolidayTemplates.json").use { HolidayCalendar.parse(it.readBytes().decodeToString()) } }
+                    .onSuccess { _holidays.value = it }
+            } finally { holidayLoading.complete(Unit) }
         }
     }
 }

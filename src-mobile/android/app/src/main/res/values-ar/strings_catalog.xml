@@ -598,6 +598,7 @@
     <string name="onboardingLunchNotifyHint">سننبهك عند بداية الاستراحة ونهايتها.</string>
     <string name="onboardingOfflineBody">بلا حساب. يعمل دون شبكة.</string>
     <string name="onboardingOfflineTitle">يعمل دون اتصال</string>
+    <string name="onboardingOngoingSurface">إشعار مستمر</string>
     <string name="onboardingPlusFocusBreakBody">المهمة التالية تنتظرك حتى تصبح جاهزًا. لا شيء يبدأ من تلقاء نفسه.</string>
     <string name="onboardingPlusFocusTask">إنهاء المراجعة الأسبوعية</string>
     <string name="onboardingPlusFocusTitle">أعط مهمة واحدة فترة زمنية واضحة</string>
@@ -616,6 +617,7 @@
     <string name="onboardingScheduleBody">اختر نمطًا، أو قرّر كل يوم.</string>
     <string name="onboardingScheduleTitle">ساعاتك المعتادة</string>
     <string name="onboardingSetMyShift">إعداد ورديتي</string>
+    <string name="onboardingSetupSaveFailed">تعذر حفظ إعداداتك. حاول مرة أخرى.</string>
     <string name="onboardingShiftBody">يدعم الأسابيع المتناوبة ودورات العمل والراحة والورديات الليلية واستراحات الغداء.</string>
     <string name="onboardingShiftPreview">معاينة الوردية</string>
     <string name="onboardingStartExperience">ابدأ التجربة</string>
@@ -1018,7 +1020,9 @@
     <string name="shiftAlarmsLeadSection">موعد الرنين</string>
     <string name="shiftAlarmsLifetimeWindow">في كل مرة تفتح فيها DoneAt، تمتد المنبهات إلى سنة قادمة.</string>
     <string name="shiftAlarmsLimitReached">يحدّ جهازك من عدد المنبهات المنتظرة في وقت واحد، لذا ضُبطت أقرب المناوبات أولًا. فتح DoneAt يضبط المزيد.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">تتطلب منبهات المناوبة التحقق من صلاحية الوصول إلى Plus، وكذلك من تاريخ انتهاء الاشتراك إذا كنت مشتركًا.</string>
     <string name="shiftAlarmsNoneUpcoming">لا توجد مناوبات قادمة للإيقاظ</string>
+    <string name="shiftAlarmsNotificationsOff">اسمح بإشعارات المنبهات لتتمكن من فتح المنبه أثناء الرنين أو إيقافه أو تأجيله.</string>
     <string name="shiftAlarmsOnShort">تشغيل</string>
     <string name="shiftAlarmsOpenSettings">فتح الإعدادات</string>
     <string name="shiftAlarmsRefresh">إعادة ضبط المنبهات</string>

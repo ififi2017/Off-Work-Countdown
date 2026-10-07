@@ -718,7 +718,7 @@ object ScheduleSave {
      * Only the timer projection that existed before "change today too" is
      * reconciled; a Records edit with other content stays.
      */
-    private fun replacingProjectedOverride(state: RecordState, previous: DayOverride?, current: DayOverride?, context: RecordEditContext): RecordState {
+    internal fun replacingProjectedOverride(state: RecordState, previous: DayOverride?, current: DayOverride?, context: RecordEditContext): RecordState {
         if (current != null) return RecordEdits.upsertOverride(state, current, context)
         previous ?: return state
         val stored = state.overrides.firstOrNull { it.dayKey == previous.dayKey } ?: return state

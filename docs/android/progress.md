@@ -2,7 +2,7 @@
 
 **这是任务状态的唯一记录。** 交接包 `tasks.json` 只定义依赖、范围和验收，不记录状态。
 
-更新：2026-10-04。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
+更新：2026-10-07。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
 
 ## 任务状态
 
@@ -511,3 +511,45 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 已恢复 Wi-Fi 和移动数据，读回均为原值 `1`、飞行模式仍为 `0`，默认网络重新出现。联网后点击恢复购买回到 Yearly / Monthly / Lifetime 免费方案页，未恢复已过期月订阅。字号、三项动画均为原值 `1.0`，熄屏超时仍为 `2147483647`；设备临时 UI 文件已清理。未创建闹钟、改动真实购买或用户记录。
 - 设备截图：`qa/2026-10-04-billing/115-offline-expiry-before.png`、`115-offline-expiry-after.png`、`115-offline-cold-expired.png`。本轮仅补证据，源码与已通过完整 [Android CI 37190172604](https://github.com/ififi2017/Off-Work-Countdown/actions/runs/37190172604) / [主 CI 37190172586](https://github.com/ififi2017/Off-Work-Countdown/actions/runs/37190172586) 的 `2bcec6ae` 相同；没有重复宣称自动测试就是设备验证。
 - T21 / T26 仍为 IN_PROGRESS：其他商品、pending、退款、宽限/暂停、替换与重复/迟到 RTDN 的完整矩阵、生产冷/热路径 CPU 余量，以及原生起床闹钟平台接入尚未完成。生产全局公钥变量未启用，未调整 Cloudflare 套餐。
+
+
+## 2026-10-07 · Android 同步 iOS 3.2.1
+
+### 授权与固定对照
+
+- 用户明确授权完整同步 3.2.1、先用 iOS 模拟器截图确认 UI/动画，再在 USB Pixel 10 Pro 验证；允许拆 PR、由 agent 决策后集中汇报。用户明确禁止锁屏和设备闹钟测试，本轮未执行这些操作。
+- 独立工作树 `codex/android-ios321-parity` 从 `035420377e4c762ba5556a3cc41fc9a94be4bc6e` 创建，保留原工作区未提交的 iOS 修改。此 SHA 是 agent 固定的 UI 对照点，不是用户指定的 SHA。另核对缓存 `origin/main=ea593050e9eebbaac6a95ec8444f87afe6123bc6` 的版本仍为 3.2.1，将 `170f62a1` / `d2532ab7` 的最终记录修复纳入；不自动跟随之后版本。原冻结源 `9252fdfd` / Plan 020 `18129168` 历史记录保留。收口时只读核对远端 `ecf4af29`（PR #304，仍 3.2.1）：新增 iOS 空优惠 toolbar 删除与到期刷新；Android 已按实际资格显示 toolbar 并在期限刷新，等效契约已包含，没有搬入该 iOS Views 修改。
+- UI 开发前查看真实 iOS 3.2.1 模拟器的请假结果、日期表、首启、Plus、优惠、更新介绍和 Duo 展开/半折叠截图；使用该源构建的 iOS 模拟器，不生成产品 UI。iOS Duo SDK 27.1，Android Pixel 10 Pro / Android 17。物理 Pixel 不具备铰链，宽屏/折叠注入预览仅是视觉验收，不称为真折叠硬件测试。
+
+### 本轮实现
+
+- 请假完整搜索、覆盖方案去重、节假日/普通连休分组、多日期选择，42 格月历及按格弹簧入场；原生中/全高日期抽屉。预览和切日期不扣免费次数，详情按既有事务预留一次。
+- 六步首启与持续计时衔接、品牌指针与分层入场；Plus 三阶段的延时播放、点击/滑动后停止、辅助功能退化；首启节假日草稿随最终设置一次提交。Android 小组件/持续通知替代 iOS 系统专属表面，不创建 Apple UI。
+- 3.2.1 更新介绍、本机 seen 标记及失败重试、真实 Plus 入口；设备本机的一次 24h 终身优惠邀请。只有已验证免费用户符合邀请资格，商品恢复后仍保留未领取邀请；真实有效 Play 价格进入活跃前台视口后才开始期限，重开/时钟回拨不续期，付款前重新查价与资格。写入需显式 sync 与完整回读；无真实商品时不伪造优惠。
+- 评分请求按三个不同完成日、版本与 120 天间隔门槛，并在合适的完成时刻延迟显示，离开/后台取消；不首启即请求评分。
+- WindowManager 姿态与铰链避让、计时左右/上下分区、Focus 双画布、Records 58/42 分栏、Settings 分组两列、大字退单列、RTL 读序、普通手机短横屏原生时钟与返回、Timer 内设置快捷入口。布局复用同一数据和命令，保留各 tab/route/scroll。
+- 未来时间线不误称“今天”；手动计时标签同步；休息日无工时不标 Recorded，保留无排班/加班声明记录；设置 arming 不写开始观察；取消休息日计时仅清理匹配的计时覆盖并写墓碑，保留 Records 独立编辑；导入重复首次打开事件只折叠展示，不删原始档案。
+- 原生起床闹钟接入 AlarmManager 绝对预约、持久登记、通知停止/九分钟贪睡与响铃时的 mediaPlayback 服务；默认关闭，需明确权限与权益。原子登记失败关闭、权限重新授予重建、会话/节假日冷启动顺序和响铃 generation 竞态经架构复核及 fake 测试。没有 full-screen intent/自动唤醒界面。普通提醒仍不是此响铃服务。细节见 [平台契约](shift-alarm-platform.md)。
+- 新增 Android 专用文案全 19 语；schema 7、备份边界、正式包 ID 与 Play 商品不变。
+
+### 自动验证
+
+- 最终隔离 Debug 126 的统一 Gradle gates 全部通过：domain **429**、data **94**、designsystem **12**、app **118**，共 **653** 项，0 failure/error/skip；lintDebug **0 errors / 54 warnings / 3 hints**，Debug 与 R8 Release 构建通过。警告并非清零，保留报告；未把 pure/fake 闹钟测试算作系统投递。
+- Web `npm test` **50 文件 / 547 项 PASS**；ESLint、Android 19 语言生成检查、`check:ios`、`check:version`、Records/extended-schedule Swift fixture `--check` 全部通过。固定 UI 源的 iOS headless simulator build 通过。本轮未更改 Web、iOS 或共享版本。
+- 本机最终日志：`/private/tmp/doneat321-final-126-gradle.log`、`doneat321-final-vitest.log`、`doneat321-final-eslint.log`、`doneat321-final-strings.log`、`doneat321-final-ioscheck.log`、`doneat321-final-version.log`；各模块 XML 已实际汇总，不按新增测试数猜测总数。远端 PR/CI 证据在提交后追加。
+
+### 真机与 UI 证据
+
+- 独立 `com.rainif.doneat.parity321` Debug 包，未覆盖 Play 正式 3.2.1 (115)、未清正式数据、未操作购买。未修改网络、系统时间、熄屏超时；保持屏幕开启。
+- 请假合成样例：35 组节假日、24 组普通连休、48 个日期，与 iOS 对照一致。Pixel 实际选择 Nov 14–22，列表关闭后保留日期；详情才将免费次数由 3 减为 2，返回后仍为 2。未采用方案。
+- 首启 Welcome/Ready/Glance/Plus、完成设置、更新介绍→Explore Plus→Back→Continue、真实 Plus 当前商品不可用状态、自然完成计时已实际检查。真实折扣商品及购买不在本轮测试；独立数据样例优惠只渲染画面，不写邀请或购买。
+- 已保存 [截图与录屏索引](../../qa/2026-10-07-android321/README.md)：Pixel 原生窄屏、200% 阿拉伯语深色／减少动态效果、简中更新介绍；注入宽屏的 Timer/Focus/Records/Settings、水平半折叠深色、垂直铰链 RTL 大字；实际物理横屏时钟和返回。折叠注入与优惠 sample 均明确标记，不能代表真实折叠硬件或 Play 交易。
+- 真机发现并修复：200% 多行分组标签等高；px→dp 的一 ULP 浮点误差曾误拒绝全宽水平铰链，现仅允许四 ULP 边缘舍入并增加真实 Pixel 几何回归；横屏黑底统计采用显式内容色。最终 126 已重新安装并截图确认上下分区、铰链避让及白色统计值。
+- 动效依据包括开发前真实 iOS Ready→Glance 录屏与源代码参数、Pixel 连续计时画面，以及下一方案日历弹簧/逐格入场录屏；已检查帧和完成态。未进行高速摄影或定量帧率/弹簧轨迹拟合，不宣称像素级或时间曲线完全相同。
+- 只临时将 Pixel `user_rotation` 从 0 改为 1 检查实际横屏，两次均恢复并读回 0；`accelerometer_rotation=0` 和熄屏超时 `2147483647` 保持原值。字体、语言、明暗和减少动态效果使用隔离预览的本地参数，未改系统设置。
+
+### 决策与剩余验证
+
+- 按 Android 原生权限与通知呈现接入闹钟，不复制 AlarmKit UI；由于用户禁止，设备响铃、锁屏、精确授权/撤销、重启投递矩阵保持 NOT_RUN。代码完成和 pure/fake 通过不代表系统已接受或实际响铃通过。
+- 云同步、Wear OS 仍遵循既有明确 deferred 边界；本轮不新增账号或上传工作记录。既有完整 Play 生命周期、物理换机、生产验证服务 CPU 余量继续保留，不因 UI 同步宣布完成。
+- 日常实现与 UI/测试协作实际使用 GPT-6.1 Sol / high；架构复核使用 GPT-6 Astra / xhigh，未虚构更高模型调用。

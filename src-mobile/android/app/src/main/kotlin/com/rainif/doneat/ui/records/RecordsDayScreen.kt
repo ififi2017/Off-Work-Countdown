@@ -363,7 +363,7 @@ private fun Segments(model: RecordsDayCanvasModel, text: RecordsText) {
 @Composable
 private fun Observations(context: RecordsContext, dayKey: String) {
     val text = context.text
-    val items = context.queries.observationIndex[dayKey].orEmpty()
+    val items = context.queries.displayedObservations(dayKey)
     val scheme = MaterialTheme.colorScheme
     RecordsCard {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

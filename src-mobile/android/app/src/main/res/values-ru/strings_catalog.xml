@@ -594,6 +594,7 @@
     <string name="onboardingLunchNotifyHint">Мы напомним о начале и конце обеда.</string>
     <string name="onboardingOfflineBody">Без аккаунта. Работает без сети.</string>
     <string name="onboardingOfflineTitle">Работает офлайн</string>
+    <string name="onboardingOngoingSurface">Постоянное уведомление</string>
     <string name="onboardingPlusFocusBreakBody">Следующее задание ждет, пока вы не будете готовы. Ничто не начинается само по себе.</string>
     <string name="onboardingPlusFocusTask">Завершите еженедельный обзор.</string>
     <string name="onboardingPlusFocusTitle">Дайте одной задаче четкий отрезок времени.</string>
@@ -612,6 +613,7 @@
     <string name="onboardingScheduleBody">Выберите ритм — или решайте каждый день.</string>
     <string name="onboardingScheduleTitle">Ваши обычные часы</string>
     <string name="onboardingSetMyShift">Настроить мою смену</string>
+    <string name="onboardingSetupSaveFailed">Не удалось сохранить настройки. Попробуйте ещё раз.</string>
     <string name="onboardingShiftBody">Поддерживаются чередующиеся недели, циклы работы и отдыха, ночные смены и обеденные перерывы.</string>
     <string name="onboardingShiftPreview">Предпросмотр смены</string>
     <string name="onboardingStartExperience">Начать знакомство</string>
@@ -1012,7 +1014,9 @@
     <string name="shiftAlarmsLeadSection">Звонить заранее</string>
     <string name="shiftAlarmsLifetimeWindow">Каждый раз, когда вы открываете DoneAt, будильники продлеваются на год вперёд.</string>
     <string name="shiftAlarmsLimitReached">Устройство ограничивает число ожидающих будильников, поэтому сначала поставлены ближайшие смены. Откройте DoneAt, чтобы поставить ещё.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Для будильников смен нужен подтверждённый доступ к Plus, а при подписке — ещё и подтверждённая дата её окончания.</string>
     <string name="shiftAlarmsNoneUpcoming">Ближайших смен для будильника нет</string>
+    <string name="shiftAlarmsNotificationsOff">Разрешите уведомления будильников, чтобы можно было открыть, остановить или отложить звонящий будильник.</string>
     <string name="shiftAlarmsOnShort">Вкл.</string>
     <string name="shiftAlarmsOpenSettings">Открыть Настройки</string>
     <string name="shiftAlarmsRefresh">Обновить будильники</string>

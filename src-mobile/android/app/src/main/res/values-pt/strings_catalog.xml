@@ -592,6 +592,7 @@
     <string name="onboardingLunchNotifyHint">Você será avisado no início e no fim do almoço.</string>
     <string name="onboardingOfflineBody">Sem conta. Funciona sem rede.</string>
     <string name="onboardingOfflineTitle">Funciona offline</string>
+    <string name="onboardingOngoingSurface">Notificação persistente</string>
     <string name="onboardingPlusFocusBreakBody">A próxima tarefa espera até que você esteja pronto. Nada começa sozinho.</string>
     <string name="onboardingPlusFocusTask">Termine a revisão semanal</string>
     <string name="onboardingPlusFocusTitle">Dê a uma tarefa um período de tempo claro</string>
@@ -610,6 +611,7 @@
     <string name="onboardingScheduleBody">Escolha um padrão, ou decida cada dia.</string>
     <string name="onboardingScheduleTitle">O seu horário habitual</string>
     <string name="onboardingSetMyShift">Configurar meu turno</string>
+    <string name="onboardingSetupSaveFailed">Não foi possível guardar a configuração. Tente novamente.</string>
     <string name="onboardingShiftBody">Semanas alternadas, ciclos de trabalho e descanso, turnos noturnos e intervalos de almoço são compatíveis.</string>
     <string name="onboardingShiftPreview">Prévia do turno</string>
     <string name="onboardingStartExperience">Começar a explorar</string>
@@ -1009,7 +1011,9 @@
     <string name="shiftAlarmsLeadSection">Tocar antes</string>
     <string name="shiftAlarmsLifetimeWindow">Sempre que abre o DoneAt, os alarmes estendem-se até um ano.</string>
     <string name="shiftAlarmsLimitReached">O seu dispositivo limita quantos alarmes podem aguardar ao mesmo tempo, por isso os turnos mais próximos vêm primeiro. Abrir o DoneAt programa mais.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Os alarmes de turno precisam de acesso Plus verificado e, nas subscrições, de uma data de fim verificada.</string>
     <string name="shiftAlarmsNoneUpcoming">Sem turnos próximos para o acordar</string>
+    <string name="shiftAlarmsNotificationsOff">Permita as notificações de alarmes para poder abrir, parar ou adiar um alarme que esteja a tocar.</string>
     <string name="shiftAlarmsOnShort">Ligado</string>
     <string name="shiftAlarmsOpenSettings">Abrir Definições</string>
     <string name="shiftAlarmsRefresh">Atualizar alarmes</string>

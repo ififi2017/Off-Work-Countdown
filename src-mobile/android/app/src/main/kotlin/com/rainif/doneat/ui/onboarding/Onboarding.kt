@@ -61,6 +61,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -87,7 +88,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.rainif.doneat.AppGraph
 import com.rainif.doneat.R
 import com.rainif.doneat.core.data.FirstRunRestore
@@ -117,8 +123,15 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/** The first-run pages, in order (iOS `OnboardingPages`, without the iOS-only showcases; Plus arrives with T20). */
-enum class SetupPage { WELCOME, SCHEDULE, REMINDERS, PRIVACY, FINALE }
+/** Latest 3.2.1 first-run journey, with Android system surfaces. */
+enum class SetupPage { WELCOME, SCHEDULE, REMINDERS, READY, GLANCE, PLUS;
+    companion object {
+        fun restored(value: String?) = when (value) {
+            "PRIVACY", "FINALE" -> READY
+            else -> entries.firstOrNull { it.name == value } ?: WELCOME
+        }
+    }
+}
 
 /**
  * First launch (plan 01 §6.1): set up a schedule, or restore a backup file.
@@ -129,14 +142,59 @@ enum class SetupPage { WELCOME, SCHEDULE, REMINDERS, PRIVACY, FINALE }
  * rest; one that does not keeps its records and continues setup.
  */
 @Composable
-fun SetupFlow(graph: AppGraph) {
+fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = null) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
     val device by graph.settings.device.collectAsStateWithLifecycle()
     // Kept on disk with the draft, so an interruption of any kind resumes on the same page.
-    var page by remember { mutableStateOf(SetupPage.entries.firstOrNull { it.name == graph.settings.device.value.setupPage } ?: SetupPage.WELCOME) }
+    var page by remember { mutableStateOf(SetupPage.restored(graph.settings.device.value.setupPage)) }
     var forward by rememberSaveable { mutableStateOf(true) }
+    var showsPlus by rememberSaveable { mutableStateOf(false) }
+    var showsPrivacy by rememberSaveable { mutableStateOf(false) }
+    var finishing by remember { mutableStateOf(false) }
+    var saveFailed by remember { mutableStateOf(false) }
+    val holidays by graph.holidays.collectAsStateWithLifecycle()
+    val records by graph.records.state.collectAsStateWithLifecycle()
+    val session by graph.sessions.session.collectAsStateWithLifecycle()
+    var now by remember { mutableDoubleStateOf(graph.nowMs()) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (true) {
+                now = graph.nowMs()
+                delay(1000 - now.toLong() % 1000)
+            }
+        }
+    }
+    LaunchedEffect(holidays.datasetVersion) {
+        if (holidays.regionIdentifiers.isNotEmpty() && device.setupHolidayRegionIdentifier == null) {
+            val suggested = android.content.res.Resources.getSystem().configuration.locales[0].country
+                .takeIf { it in holidays.regionIdentifiers }.orEmpty()
+            graph.settings.updateDevice { it.copy(setupHolidayRegionIdentifier = suggested) }
+        }
+    }
+    val environment = remember(prefs, records, holidays, session.env.deviceZone) {
+        com.rainif.doneat.core.domain.session.SessionEnvironment(prefs, false, records.extendedSchedule,
+            records.rosterDays, holidays, session.env.deviceZone, false)
+    }
+    val projection = remember(environment, now, device.setupHolidayRegionIdentifier) {
+        com.rainif.doneat.core.domain.settings.SetupProjection.resolve(environment, now, device.setupHolidayRegionIdentifier)
+    }
+    var rootOrigin by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
+    var clockAnchor by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    val workName = stringResource(R.string.extendedDefaultWorkShift)
+    val restName = stringResource(R.string.extendedDefaultRest)
+    fun finish() {
+        if (finishing) return
+        finishing = true
+        scope.launch {
+            if (!runCatching { graph.settings.completeSetup(holidays, workName, restName) }.getOrDefault(false)) {
+                finishing = false
+                saveFailed = true
+            }
+        }
+    }
     /** iOS applies the reminder page's defaults once per launch, so turning them off and coming back does not undo that. */
     var reminderDefaultsApplied by rememberSaveable { mutableStateOf(false) }
     var restoredWithoutSettings by rememberSaveable { mutableStateOf(false) }
@@ -147,19 +205,21 @@ fun SetupFlow(graph: AppGraph) {
         page = to
         scope.launch { graph.settings.updateDevice { it.copy(setupPage = to.name) } }
     }
-    BackHandler(enabled = page != SetupPage.WELCOME) { go(SetupPage.entries[page.ordinal - 1]) }
+    BackHandler(enabled = page != SetupPage.WELCOME || showsPlus || showsPrivacy) { when { showsPlus -> showsPlus = false; showsPrivacy -> showsPrivacy = false; else -> go(SetupPage.entries[page.ordinal - 1]) } }
 
     val notificationRequest = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         scope.launch { graph.settings.updateDevice { d -> d.copy(notificationPermissionRequested = true, ongoingEnabled = d.ongoingEnabled && granted) } }
-        go(SetupPage.PRIVACY)
+        go(SetupPage.READY)
     }
 
     val motion = LocalDoneAtMotion.current
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).safeDrawingPadding()) {
+    val quietJourney = motion.reduced || onboardingTouchExplorationEnabled()
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).safeDrawingPadding()
+        .onGloballyPositioned { rootOrigin = it.positionInRoot() }) {
         AnimatedContent(
             targetState = page,
             transitionSpec = {
-                if (motion.reduced) {
+                if (quietJourney || (initialState in listOf(SetupPage.READY, SetupPage.GLANCE) && targetState in listOf(SetupPage.READY, SetupPage.GLANCE))) {
                     fadeIn(tween(DoneAtMotion.REDUCED_MS)) togetherWith fadeOut(tween(DoneAtMotion.REDUCED_MS))
                 } else {
                     val sign = if (forward) 1 else -1
@@ -175,7 +235,7 @@ fun SetupFlow(graph: AppGraph) {
                     restoredWithoutSettings = true
                     go(SetupPage.SCHEDULE)
                 })
-                SetupPage.SCHEDULE -> SchedulePage(prefs, edit, restoredWithoutSettings, back) { go(SetupPage.REMINDERS) }
+                SetupPage.SCHEDULE -> SchedulePage(prefs, edit, restoredWithoutSettings, back, holidays, device.setupHolidayRegionIdentifier, { region -> scope.launch { graph.settings.updateDevice { it.copy(setupHolidayRegionIdentifier = region) } } }) { go(SetupPage.REMINDERS) }
                 SetupPage.REMINDERS -> {
                     if (!reminderDefaultsApplied) {
                         reminderDefaultsApplied = true
@@ -186,7 +246,7 @@ fun SetupFlow(graph: AppGraph) {
                     }, back) {
                         // As iOS: asked once, when leaving the page with a reminder on; a refusal is handled in Settings.
                         val wantsNotifications = prefs.notificationMode != "off" || prefs.microBreakEnabled ||
-                            prefs.lunchStartReminderEnabled || prefs.lunchEndReminderEnabled || device.ongoingEnabled
+                            (prefs.lunchEnabled && (prefs.lunchStartReminderEnabled || prefs.lunchEndReminderEnabled)) || device.ongoingEnabled
                         if (wantsNotifications && !device.notificationPermissionRequested && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             notificationRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
                         } else {
@@ -195,14 +255,28 @@ fun SetupFlow(graph: AppGraph) {
                             if (device.ongoingEnabled && !com.rainif.doneat.reminders.Reminders.capability(context).notificationsAllowed) {
                                 scope.launch { graph.settings.updateDevice { it.copy(ongoingEnabled = false) } }
                             }
-                            go(SetupPage.PRIVACY)
+                            go(SetupPage.READY)
                         }
                     }
                 }
-                SetupPage.PRIVACY -> PrivacyPage(back) { go(SetupPage.FINALE) }
-                SetupPage.FINALE -> FinalePage(back) { scope.launch { graph.settings.completeSetup() } }
+                SetupPage.READY -> ReadyJourneyPage(prefs, projection, now, back, finishing, { finish() },
+                    { go(SetupPage.GLANCE) }, { showsPrivacy = true }) { anchor -> if (page == current) clockAnchor = anchor }
+                SetupPage.GLANCE -> GlanceJourneyPage(projection, now, back, finishing, { finish() },
+                    { go(SetupPage.PLUS) }) { anchor -> if (page == current) clockAnchor = anchor }
+                SetupPage.PLUS -> PlusJourneyPage(back, finishing, { finish() }, { showsPlus = true }, offerContent, active = !showsPlus && !showsPrivacy)
+
             }
         }
+        if (page in listOf(SetupPage.READY, SetupPage.GLANCE) && projection != null) {
+            JourneyClockOverlay(projection, now, clockAnchor, rootOrigin)
+        }
+        if (showsPrivacy) PrivacyPage(graph, { showsPrivacy = false }) { showsPrivacy = false }
+        if (showsPlus) com.rainif.doneat.plus.PlusScreen(graph, onBack = { showsPlus = false })
+        if (saveFailed) AlertDialog(
+            onDismissRequest = { saveFailed = false },
+            text = { Text(stringResource(R.string.onboardingSetupSaveFailed)) },
+            confirmButton = { TextButton(onClick = { saveFailed = false }) { Text(stringResource(R.string.close)) } },
+        )
     }
 }
 
@@ -216,6 +290,8 @@ private fun SetupScaffold(
     onContinue: () -> Unit,
     hero: (@Composable () -> Unit)? = null,
     secondaryAction: (@Composable ColumnScope.() -> Unit)? = null,
+    beforeContinueAction: (@Composable ColumnScope.() -> Unit)? = null,
+    arrival: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
@@ -232,14 +308,14 @@ private fun SetupScaffold(
             ) {
                 Column(Modifier.widthIn(max = 560.dp).padding(horizontal = DoneAtSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally) {
                     if (hero != null) {
-                        hero()
+                        Box(Modifier.onboardingArrival(0, arrival)) { hero() }
                         Spacer(Modifier.size(DoneAtSpacing.xl))
                     }
-                    Text(title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
+                    Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.onboardingArrival(1, arrival).semantics { heading() })
                     if (body != null) {
                         Text(
                             body,
-                            modifier = Modifier.padding(top = DoneAtSpacing.m),
+                            modifier = Modifier.padding(top = DoneAtSpacing.m).onboardingArrival(2, arrival),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
@@ -250,10 +326,11 @@ private fun SetupScaffold(
                 Column(Modifier.widthIn(max = 560.dp), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l), content = content)
             }
         }
+        beforeContinueAction?.invoke(this)
         DoneAtPrimaryButton(
             continueLabel,
             onContinue,
-            Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = DoneAtSpacing.xl, vertical = DoneAtSpacing.l).align(Alignment.CenterHorizontally),
+            Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = DoneAtSpacing.xl, vertical = DoneAtSpacing.l).align(Alignment.CenterHorizontally).onboardingArrival(4, arrival),
         )
         secondaryAction?.invoke(this)
     }
@@ -274,22 +351,20 @@ private fun WelcomePage(graph: AppGraph, onStart: () -> Unit, onRestoredWithoutS
     }
 
     SetupScaffold(
-        stringResource(R.string.app_name), stringResource(R.string.landingTagline), null, stringResource(R.string.continue_), onStart,
-        hero = { CelebratingBrandMark(stringResource(R.string.app_name), Modifier.size(112.dp)) },
-    ) {
-        SettingsGroup {
-            Feature(Icons.Outlined.Schedule, stringResource(R.string.landingFeature1Title), stringResource(R.string.onboardingShiftBody))
-            RowDivider()
-            Feature(Icons.Outlined.CloudOff, stringResource(R.string.onboardingOfflineTitle), stringResource(R.string.onboardingOfflineBody))
-            RowDivider()
-            Feature(Icons.Outlined.Widgets, stringResource(R.string.onboardingSystemTitle), stringResource(R.string.onboardingSystemBody))
-        }
-        TextButton(
-            // A backup is a JSON file, but file providers label it inconsistently.
-            onClick = { pick.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = DoneAtSpacing.xl),
-        ) { Text(stringResource(R.string.onboardingRestoreFromFile), textAlign = TextAlign.Center) }
-    }
+        stringResource(R.string.landingTagline), stringResource(R.string.onboardingOfflineBody), null, stringResource(R.string.onboardingSetMyShift), onStart,
+        hero = { Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            OnboardingWelcomeMark(Modifier.size(136.dp))
+            Text(stringResource(R.string.app_name), Modifier.padding(top = DoneAtSpacing.xl), style = MaterialTheme.typography.titleMedium)
+        } },
+        arrival = true,
+        beforeContinueAction = {
+            TextButton(
+                // File providers label JSON archives inconsistently.
+                onClick = { pick.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = DoneAtSpacing.xl).onboardingArrival(3, true),
+            ) { Text(stringResource(R.string.onboardingRestoreFromFile), textAlign = TextAlign.Center) }
+        },
+    ) {}
 
     (preview as? RestorePreview.Ready)?.let { ready ->
         val res = LocalResources.current
@@ -353,7 +428,7 @@ private fun SetupHeroIcon(icon: ImageVector) {
 }
 
 @Composable
-private fun SchedulePage(p: SyncedPreferences, edit: ((SyncedPreferences) -> SyncedPreferences) -> Unit, restored: Boolean, onBack: (() -> Unit)?, onContinue: () -> Unit) {
+private fun SchedulePage(p: SyncedPreferences, edit: ((SyncedPreferences) -> SyncedPreferences) -> Unit, restored: Boolean, onBack: (() -> Unit)?, holidays: com.rainif.doneat.core.domain.schedule.HolidayCalendar, region: String?, onRegion: (String) -> Unit, onContinue: () -> Unit) {
     val pickTime = rememberTimePicker()
     SetupScaffold(stringResource(R.string.onboardingScheduleTitle), stringResource(R.string.onboardingScheduleBody), onBack, stringResource(R.string.continue_), onContinue,
         hero = { SetupHeroIcon(Icons.Outlined.Schedule) }) {
@@ -372,8 +447,9 @@ private fun SchedulePage(p: SyncedPreferences, edit: ((SyncedPreferences) -> Syn
             RowDivider(inset = false)
             ModeRow(p, edit, "rotation", R.string.scheduleRotation, R.string.scheduleRotationDescription)
             RowDivider(inset = false)
-            ModeRow(p, edit, "off", R.string.scheduleOff, R.string.scheduleOffDescription)
+            ModeRow(p, edit, "off", R.string.scheduleManualTimer, R.string.scheduleOffDescription)
         }
+        if (p.scheduleMode != "off") SetupScheduleExtras(p, edit, holidays, region, onRegion)
     }
 }
 
@@ -398,7 +474,7 @@ private fun RemindersPage(p: SyncedPreferences, edit: ((SyncedPreferences) -> Sy
     SetupScaffold(stringResource(R.string.onboardingRemindersTitle), stringResource(R.string.onboardingRemindersBody), onBack, stringResource(R.string.continue_), onContinue,
         hero = { SetupHeroIcon(Icons.Outlined.NotificationsActive) }) {
         SettingsGroup(footer = if (p.lunchEnabled) stringResource(R.string.onboardingLunchNotifyHint) else null) {
-            SwitchRow(stringResource(R.string.lunchBreak), p.lunchEnabled, { on -> edit { it.copy(lunchEnabled = on) } })
+            SwitchRow(stringResource(R.string.lunchBreak), p.lunchEnabled, { on -> edit { it.copy(lunchEnabled = on, lunchStartReminderEnabled = on, lunchEndReminderEnabled = on) } })
             if (p.lunchEnabled) {
                 RowDivider(inset = false)
                 TimeRow(stringResource(R.string.lunchStartTime), p.lunchStartMinutes) { pickTime(p.lunchStartMinutes) { m -> edit { it.copy(lunchStartMinutes = m) } } }
@@ -444,7 +520,8 @@ private fun DurationStepper(p: SyncedPreferences, edit: ((SyncedPreferences) -> 
 }
 
 @Composable
-private fun PrivacyPage(onBack: (() -> Unit)?, onContinue: () -> Unit) {
+private fun PrivacyPage(graph: AppGraph, onBack: (() -> Unit)?, onContinue: () -> Unit) {
+    val device by graph.settings.device.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val motion = LocalDoneAtMotion.current
@@ -495,6 +572,11 @@ private fun PrivacyPage(onBack: (() -> Unit)?, onContinue: () -> Unit) {
                 }
                 Text(Strings.onboardingSalaryLockBody(LocalResources.current, stringResource(R.string.biometrics)), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+        }
+        SettingsGroup {
+            SwitchRow(stringResource(R.string.hideSalary), device.hideEarnings, { hidden ->
+                scope.launch { graph.settings.updateDevice { it.copy(hideEarnings = hidden) } }
+            })
         }
         SettingsFooter(stringResource(R.string.notificationPrivacyNote))
     }
@@ -593,7 +675,7 @@ private fun DoneAtTimePicker(minutes: Int, onDismiss: () -> Unit, onPicked: (Int
 fun appIsDark() = MaterialTheme.colorScheme.surface.luminance() < 0.5f
 
 @Composable
-private fun formatClock(minutes: Int): String {
+internal fun formatClock(minutes: Int): String {
     val locale = LocalConfiguration.current.locales[0]
     return LocalTime.of(minutes / 60, minutes % 60).format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale))
 }

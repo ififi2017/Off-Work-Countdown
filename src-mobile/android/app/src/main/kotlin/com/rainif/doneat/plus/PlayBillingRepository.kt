@@ -97,7 +97,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
         loadCache() // A WorkManager instance may have updated the same no-backup proof file.
         server.load()
         val billing = client ?: return@withLock false
-        _state.value = _state.value.copy(busy = true)
+        _state.value = _state.value.copy(busy = true, currentEntitlementsVerified = false, discountedLifetimeOffer = null)
         if (!connect(billing)) {
             publish(offline = true)
             scheduleRetry()
@@ -145,9 +145,16 @@ internal class PlayBillingRepository(private val context: Context, private val s
         false
     }
 
-    suspend fun purchase(activity: Activity, offer: PlusOffer) {
+    suspend fun purchase(activity: Activity, offer: PlusOffer, lifetimeOfferActive: (() -> Boolean)? = null) {
         if (!purchasing.compareAndSet(false, true)) return
-        try { billingMutex.withLock { performPurchase(activity, offer) } }
+        try {
+            // A lifetime invitation requires a current entitlement query too, never just a cached free state.
+            if (lifetimeOfferActive != null && !refresh()) {
+                purchasing.set(false)
+                return
+            }
+            billingMutex.withLock { performPurchase(activity, offer, lifetimeOfferActive) }
+        }
         catch (error: CancellationException) { purchasing.set(false); throw error }
         catch (error: Exception) {
             purchasing.set(false)
@@ -155,16 +162,24 @@ internal class PlayBillingRepository(private val context: Context, private val s
         }
     }
 
-    private suspend fun performPurchase(activity: Activity, offer: PlusOffer) {
+    private suspend fun performPurchase(activity: Activity, offer: PlusOffer, lifetimeOfferActive: (() -> Boolean)?) {
         _state.value = _state.value.copy(busy = true)
         var launched = false
+        var termsChanged = false
         try {
             val billing = client ?: return
             if (!connect(billing)) { publish(offline = true); return }
             // ProductDetails are short-lived: always refresh before launching Play.
             queryDetails(billing)
             // A trial or price change requires another tap on the newly displayed terms.
-            if (_state.value.offers.none { it == offer }) return
+            if (lifetimeOfferActive == null) {
+                // Discount tokens are reachable only through the explicit invitation purchase path.
+                if (offer.offerId != null || _state.value.offers.none { it == offer }) { termsChanged = true; return }
+            } else if (_state.value.discountedLifetimeOffer != offer ||
+                _state.value.status != PlusStatus.FREE || !_state.value.currentEntitlementsVerified ||
+                _state.value.hasActiveSubscription || _state.value.operationFailed || !lifetimeOfferActive()
+            ) { termsChanged = true; return }
+            if (!offer.isPlayOfferActive(System.currentTimeMillis())) { termsChanged = true; return }
             val plan = offer.plan
             val product = details.firstOrNull { it.productId == if (plan == PlusPlan.LIFETIME) lifetime else subscription } ?: return
             val params = BillingFlowParams.ProductDetailsParams.newBuilder()
@@ -177,7 +192,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
             // A successful launch holds the flight until Play's callback returns.
             if (!launched) {
                 purchasing.set(false)
-                _state.value = _state.value.copy(busy = false, operationFailed = true)
+                _state.value = _state.value.copy(busy = false, operationFailed = !termsChanged)
             }
         }
     }
@@ -204,7 +219,8 @@ internal class PlayBillingRepository(private val context: Context, private val s
             .mapNotNull { receipts[it.token]?.takeIf { receipt -> receipt.activeAt(now) }?.expiresAtMs }.maxOrNull()
         _state.value = _state.value.copy(status = status,
             busy = false, hasPurchasedBefore = hasPurchasedBefore,
-            hasActiveSubscription = activeSub, verifiedSubscriptionExpiresAtMs = expiry)
+            hasActiveSubscription = activeSub, verifiedSubscriptionExpiresAtMs = expiry,
+            currentEntitlementsVerified = !offline && !_state.value.operationFailed)
         // An app kept in the foreground must also stop granting when its signed evidence expires.
         // This is a single in-memory deadline, with no network polling or system alarm.
         expiryCheck?.cancel()
@@ -247,13 +263,19 @@ internal class PlayBillingRepository(private val context: Context, private val s
                 }
             }
         }
+        var discountedLifetime: PlusOffer? = null
+        val now = System.currentTimeMillis()
         val offers = details.flatMap { product ->
             if (product.productId == lifetime) {
-                listOfNotNull(product.oneTimePurchaseOfferDetailsList.orEmpty().firstOrNull {
-                    it.purchaseOptionId == lifetimeOption && it.offerId == null &&
-                        it.rentalDetails == null && it.preorderDetails == null &&
-                        !it.offerToken.isNullOrBlank() && it.formattedPrice.isNotBlank()
-                }?.let { PlusOffer(PlusPlan.LIFETIME, it.formattedPrice, it.offerToken!!) })
+                val selection = selectLifetimeOffers(lifetimeOption, product.oneTimePurchaseOfferDetailsList.orEmpty().map {
+                    PlayLifetimeOption(it.purchaseOptionId, it.offerId, it.offerToken, it.formattedPrice,
+                        it.priceAmountMicros, it.priceCurrencyCode, rental = it.rentalDetails != null,
+                        preorder = it.preorderDetails != null, validFromMs = it.validTimeWindow?.startTimeMillis,
+                        validUntilMs = it.validTimeWindow?.endTimeMillis, fullPriceMicros = it.fullPriceMicros,
+                        remainingQuantity = it.limitedQuantityInfo?.remainingQuantity)
+                }, now)
+                discountedLifetime = selection.discounted
+                listOfNotNull(selection.regular)
             } else {
                 val options = product.subscriptionOfferDetails.orEmpty().map { option ->
                     PlaySubscriptionOption(option.basePlanId, option.offerId, option.offerToken,
@@ -268,7 +290,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
                 )
             }
         }
-        _state.value = _state.value.copy(offers = offers.distinctBy { it.plan })
+        _state.value = _state.value.copy(offers = offers.distinctBy { it.plan }, discountedLifetimeOffer = discountedLifetime)
     }
 
     private suspend fun acknowledge(billing: BillingClient, now: Long): Boolean {

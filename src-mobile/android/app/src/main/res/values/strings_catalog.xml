@@ -590,6 +590,7 @@
     <string name="onboardingLunchNotifyHint">You\'ll be notified when lunch starts and ends.</string>
     <string name="onboardingOfflineBody">No account. Works without a network.</string>
     <string name="onboardingOfflineTitle">Works offline</string>
+    <string name="onboardingOngoingSurface">Ongoing notification</string>
     <string name="onboardingPlusFocusBreakBody">The next task waits until you are ready. Nothing starts on its own.</string>
     <string name="onboardingPlusFocusTask">Finish the weekly review</string>
     <string name="onboardingPlusFocusTitle">Give one task a clear stretch of time</string>
@@ -608,6 +609,7 @@
     <string name="onboardingScheduleBody">Pick a pattern, or decide each day.</string>
     <string name="onboardingScheduleTitle">Your usual hours</string>
     <string name="onboardingSetMyShift">Set up my shift</string>
+    <string name="onboardingSetupSaveFailed">Your setup couldn’t be saved. Try again.</string>
     <string name="onboardingShiftBody">Alternating weeks, work/rest rotations, overnight shifts, and lunch breaks are all supported.</string>
     <string name="onboardingShiftPreview">Shift preview</string>
     <string name="onboardingStartExperience">Start exploring</string>
@@ -1006,7 +1008,9 @@
     <string name="shiftAlarmsLeadSection">Ring before</string>
     <string name="shiftAlarmsLifetimeWindow">Each time you open DoneAt, alarms extend to a year ahead.</string>
     <string name="shiftAlarmsLimitReached">Your device limits how many alarms can wait at once, so the nearest shifts come first. Opening DoneAt sets more.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Shift alarms need verified Plus access and, for subscriptions, a verified end date.</string>
     <string name="shiftAlarmsNoneUpcoming">No shifts coming up to wake you for</string>
+    <string name="shiftAlarmsNotificationsOff">Allow alarm notifications so you can open, stop or snooze a ringing alarm.</string>
     <string name="shiftAlarmsOnShort">On</string>
     <string name="shiftAlarmsOpenSettings">Open Settings</string>
     <string name="shiftAlarmsRefresh">Refresh alarms</string>

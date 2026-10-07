@@ -1,13 +1,18 @@
 package com.rainif.doneat.core.domain.session
 
 import com.rainif.doneat.core.domain.records.DayOverrideKind
+import com.rainif.doneat.core.domain.records.DayResolutionLayer
 import com.rainif.doneat.core.domain.records.RecordEditContext
+import com.rainif.doneat.core.domain.records.RecordEntityType
 import com.rainif.doneat.core.domain.records.RecordState
+import com.rainif.doneat.core.domain.records.RecordsDayAppearance
+import com.rainif.doneat.core.domain.records.RecordsQueries
 import com.rainif.doneat.core.domain.records.SyncedPreferences
 import com.rainif.doneat.core.domain.records.WorkObservationKind
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.settings.PreferencesRules
 import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Base64
 import kotlin.math.abs
@@ -261,10 +266,48 @@ class ShiftSessionTest {
         val h = Harness()
         h.run { start(h.state, at(29, 11), force = true) }
         assertEquals(TimerPhase.RUNNING, h.phase(at(29, 11)))
+        val key = h.state.forcedWorkdayDate!!
+        assertTrue(h.records.overrides.any { it.dayKey == key && it.kind != DayOverrideKind.CLEARED })
         assertTrue(h.run { cancelManualTiming(h.state, at(29, 11)) })
         assertFalse(h.session.isForcedWorkday(h.snapshot(at(29, 11))))
         assertNull(h.state.earlyOffAtMs)
         assertEquals(TimerPhase.REST, h.phase(at(29, 11)))
+        assertFalse(h.records.overrides.any { it.dayKey == key && it.kind != DayOverrideKind.CLEARED })
+        assertTrue(h.records.isErased(RecordEntityType.DAY_OVERRIDE, key))
+        assertTrue("start remains a historical note", h.records.observations.any { it.kind == WorkObservationKind.COUNTDOWN_STARTED })
+        val q = RecordsQueries(h.records, HolidayCalendar.EMPTY, ZoneId.of(h.prefs.recordsTimeZoneIdentifier), authorized = true)
+        val day = q.resolvedDays(LocalDate.parse(key), LocalDate.parse(key)).single()
+        assertTrue(day.layer != DayResolutionLayer.NONE)
+        val cell = q.dayCell(day, null, at(29, 11))
+        assertEquals(RecordsDayAppearance.REST, cell.appearance)
+        assertEquals(0L, cell.workMs)
+    }
+
+    @Test fun `cancelling a rest-day run preserves a different Records edit`() {
+        val h = Harness()
+        h.run { start(h.state, at(29, 11), force = true) }
+        val edited = h.records.overrides.single().copy(note = "Edited in Records")
+        h.records = h.records.copy(overrides = listOf(edited))
+        assertTrue(h.run { cancelManualTiming(h.state, at(29, 11)) })
+        assertEquals(listOf(edited), h.records.overrides)
+        assertFalse(h.records.isErased(RecordEntityType.DAY_OVERRIDE, edited.dayKey))
+    }
+
+    @Test fun `finishing setup arms work and rest days without recording a start`() {
+        for (day in listOf(24, 29)) {
+            val h = Harness()
+            assertTrue(h.run { finishSetup(h.state, at(day, 11)) })
+            assertTrue(h.state.countdownStarted)
+            assertTrue(h.records.observations.isEmpty())
+            assertTrue(h.records.overrides.isEmpty())
+            assertFalse("restoring or repeating setup does not replay arming", h.run { finishSetup(h.state, at(day, 11)) })
+            assertTrue(h.records.observations.isEmpty())
+        }
+        val manual = Harness(scheduleMode = "off")
+        assertFalse(manual.run { finishSetup(manual.state, at(24, 11)) })
+        assertFalse(manual.state.countdownStarted)
+        assertTrue(manual.run { start(manual.state, at(24, 11)) })
+        assertEquals(listOf(WorkObservationKind.COUNTDOWN_STARTED), manual.records.observations.map { it.kind })
     }
 
     @Test fun `unscheduled idle is its own phase, then a session, then midnight resets`() {

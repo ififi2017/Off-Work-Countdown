@@ -588,6 +588,7 @@
     <string name="onboardingLunchNotifyHint">점심 시작과 끝에 알려 드려요.</string>
     <string name="onboardingOfflineBody">계정 없이. 네트워크 없이도 됩니다.</string>
     <string name="onboardingOfflineTitle">오프라인에서도 작동</string>
+    <string name="onboardingOngoingSurface">상시 알림</string>
     <string name="onboardingPlusFocusBreakBody">다음 작업은 준비가 될 때까지 기다립니다. 아무것도 저절로 시작되지 않습니다.</string>
     <string name="onboardingPlusFocusTask">주간 복습을 마무리하세요</string>
     <string name="onboardingPlusFocusTitle">한 가지 일에 명확한 시간을 할당하라</string>
@@ -606,6 +607,7 @@
     <string name="onboardingScheduleBody">고르거나, 일정 없이 매일 결정하세요.</string>
     <string name="onboardingScheduleTitle">평소 출퇴근 시간</string>
     <string name="onboardingSetMyShift">내 근무 시간 설정</string>
+    <string name="onboardingSetupSaveFailed">설정을 저장하지 못했습니다. 다시 시도해 주세요.</string>
     <string name="onboardingShiftBody">격주 근무, 근무·휴무 순환, 야간 근무와 점심시간을 모두 지원합니다.</string>
     <string name="onboardingShiftPreview">근무 미리보기</string>
     <string name="onboardingStartExperience">경험 시작하기</string>
@@ -1003,7 +1005,9 @@
     <string name="shiftAlarmsLeadSection">미리 울리기</string>
     <string name="shiftAlarmsLifetimeWindow">DoneAt을 열 때마다 1년 뒤까지 알람을 이어서 맞춰요.</string>
     <string name="shiftAlarmsLimitReached">기기에서 한 번에 대기할 수 있는 알람 수가 제한돼 가까운 근무부터 맞췄어요. DoneAt을 열면 더 맞춰요.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">근무 알람을 사용하려면 Plus 이용 권한이 확인되어야 해요. 구독 중이라면 만료일도 확인되어야 해요.</string>
     <string name="shiftAlarmsNoneUpcoming">깨워 드릴 다가오는 근무가 없어요</string>
+    <string name="shiftAlarmsNotificationsOff">울리는 알람을 열거나 중단하거나 다시 알림을 설정할 수 있도록 알람 알림을 허용해 주세요.</string>
     <string name="shiftAlarmsOnShort">켬</string>
     <string name="shiftAlarmsOpenSettings">설정 열기</string>
     <string name="shiftAlarmsRefresh">알람 새로 고침</string>

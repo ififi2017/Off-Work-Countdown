@@ -57,6 +57,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Optional isolated QA install; never replaces the owner's Play app/data.
+            applicationIdSuffix = providers.gradleProperty("doneatDebugApplicationIdSuffix").orNull
+        }
         release {
             signingConfig = signingConfigs.findByName("upload")
             isMinifyEnabled = true
@@ -92,6 +96,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.window)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3.navigation.suite)

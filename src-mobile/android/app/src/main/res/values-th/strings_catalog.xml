@@ -588,6 +588,7 @@
     <string name="onboardingLunchNotifyHint">เราจะแจ้งเมื่อพักเริ่มและจบ</string>
     <string name="onboardingOfflineBody">ไม่ต้องมีบัญชี ใช้ได้โดยไม่ต้องต่อเน็ต</string>
     <string name="onboardingOfflineTitle">ใช้งานออฟไลน์ได้</string>
+    <string name="onboardingOngoingSurface">การแจ้งเตือนต่อเนื่อง</string>
     <string name="onboardingPlusFocusBreakBody">งานต่อไปรอจนกว่าคุณจะพร้อม ไม่มีอะไรเริ่มต้นได้ด้วยตัวเอง</string>
     <string name="onboardingPlusFocusTask">จบการทบทวนประจำสัปดาห์</string>
     <string name="onboardingPlusFocusTitle">ให้เวลางานหนึ่งที่ชัดเจน</string>
@@ -606,6 +607,7 @@
     <string name="onboardingScheduleBody">เลือกรูปแบบ หรือตัดสินใจทีละวัน</string>
     <string name="onboardingScheduleTitle">เวลาทำงานตามปกติ</string>
     <string name="onboardingSetMyShift">ตั้งค่ากะของฉัน</string>
+    <string name="onboardingSetupSaveFailed">บันทึกการตั้งค่าไม่ได้ โปรดลองอีกครั้ง</string>
     <string name="onboardingShiftBody">รองรับสัปดาห์สลับ รอบทำงาน/พัก กะข้ามคืน และพักกลางวัน</string>
     <string name="onboardingShiftPreview">ตัวอย่างกะงาน</string>
     <string name="onboardingStartExperience">เริ่มสัมผัสประสบการณ์</string>
@@ -1003,7 +1005,9 @@
     <string name="shiftAlarmsLeadSection">ดังล่วงหน้า</string>
     <string name="shiftAlarmsLifetimeWindow">ทุกครั้งที่เปิด DoneAt นาฬิกาปลุกจะขยายไปถึงหนึ่งปีข้างหน้า</string>
     <string name="shiftAlarmsLimitReached">อุปกรณ์จำกัดจำนวนนาฬิกาปลุกที่รอพร้อมกัน จึงตั้งกะที่ใกล้ที่สุดก่อน เปิด DoneAt เพื่อตั้งเพิ่ม</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">นาฬิกาปลุกตามกะต้องใช้สิทธิ์ Plus ที่ยืนยันแล้ว และหากใช้แบบสมัครสมาชิก ต้องยืนยันวันหมดอายุด้วย</string>
     <string name="shiftAlarmsNoneUpcoming">ยังไม่มีกะที่ต้องปลุก</string>
+    <string name="shiftAlarmsNotificationsOff">อนุญาตการแจ้งเตือนนาฬิกาปลุก เพื่อให้คุณเปิด หยุด หรือเลื่อนปลุกขณะที่นาฬิกาปลุกกำลังดังได้</string>
     <string name="shiftAlarmsOnShort">เปิด</string>
     <string name="shiftAlarmsOpenSettings">เปิดการตั้งค่า</string>
     <string name="shiftAlarmsRefresh">รีเฟรชนาฬิกาปลุก</string>

@@ -4,72 +4,98 @@ import android.content.Context
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.google.android.play.core.review.ReviewManagerFactory
-import com.rainif.doneat.core.domain.schedule.ShiftSnapshot
-import com.rainif.doneat.core.domain.session.ShiftSession
+import com.rainif.doneat.BuildConfig
+import java.time.ZoneId
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /** Device-local request state. The backup include list excludes SharedPreferences. */
 class ReviewCoordinator private constructor(context: Context) {
     private val prefs = context.applicationContext.getSharedPreferences("play_review", Context.MODE_PRIVATE)
     private var state = ReviewPolicy(
-        trackedEndAtMs = prefs.getLong("tracked_end", 0).takeIf { it > 0 },
-        readyEndAtMs = prefs.getLong("ready_end", 0).takeIf { it > 0 },
-        handledEndAtMs = prefs.getLong("handled_end", 0),
+        completedDays = prefs.getInt("completed_days", 0).coerceAtLeast(0),
+        lastCompletedDayKey = prefs.getString("last_completed_day", null),
+        lastRequestVersion = prefs.getString("last_request_version", null),
+        // Preserve old throttling and opt-out, but never promote old tracked/ready ends into completions.
         lastRequestAtMs = prefs.getLong("last_request", 0),
         disabled = prefs.getBoolean("disabled", false),
     )
-    private var eligibleThisLaunch: Boolean
+    private val mutableOffers = MutableStateFlow(0L)
+    val offers = mutableOffers.asStateFlow()
+    private var pendingOffer: ReviewOffer? = null
+    private var requestGeneration = 0L
 
-    init {
-        val (launched, eligible) = state.coldLaunch(System.currentTimeMillis())
-        state = launched
-        eligibleThisLaunch = eligible
-        persist()
+    init { persist() }
+
+    /** Call for a real started shift's completed surface; never infer completion at startup. */
+    @Synchronized
+    fun noteCompletion(endAtMs: Long, recordsZone: ZoneId) =
+        update(state.completed(ReviewPolicy.dayKey(endAtMs, recordsZone)))
+
+    /** Call once as the automatic clock-off celebration starts, never on manual replay. */
+    @Synchronized
+    fun offerAfterCelebration(endAtMs: Long, nowMs: Long = System.currentTimeMillis()) {
+        if (!state.canOffer(endAtMs, BuildConfig.VERSION_NAME, nowMs)) return
+        val id = mutableOffers.value + 1
+        pendingOffer = ReviewOffer(id, nowMs)
+        mutableOffers.value = id
     }
 
-    /** Call while a real started shift is running. A scheduled rest day cannot arm review. */
+    /** An editor, navigation or loss of foreground drops the moment instead of deferring it. */
     @Synchronized
-    fun trackRunningShift(session: ShiftSession, shift: ShiftSnapshot?, nowMs: Long) {
-        if (shift == null || !session.state.countdownStarted || !(shift.isWorkday || session.isForcedWorkday(shift)) ||
-            shift.segments.isEmpty() || shift.startAtMs > nowMs || shift.endAtMs <= nowMs
-        ) return
-        update(state.trackRunning(shift.endAtMs.toLong(), nowMs))
+    fun discardOffer(offerId: Long) {
+        if (mutableOffers.value != offerId) return
+        pendingOffer = null
+        requestGeneration++
     }
-
-    /** A completed shift arms a future cold launch, never this warm session. */
-    @Synchronized
-    fun noteCompletion(endAtMs: Long) = update(state.completed(endAtMs))
 
     /** Undo or extra overtime means the former end was not the final clock-off. */
     @Synchronized
-    fun revokeCompletion(endAtMs: Long) = update(state.revoked(endAtMs))
+    fun revokeCompletion(endAtMs: Long, recordsZone: ZoneId) {
+        clearTrackedCompletion()
+        update(state.revoked(ReviewPolicy.dayKey(endAtMs, recordsZone)))
+    }
 
-    /** Canceling a manual run must not turn its old projected end into a completed shift. */
+    /** Canceling a manual run discards an outstanding request. No projected end is persisted. */
     @Synchronized
-    fun clearTrackedCompletion() = update(state.copy(trackedEndAtMs = null))
+    fun clearTrackedCompletion() {
+        pendingOffer = null
+        requestGeneration++
+    }
 
-    /** The manual Settings link is explicit and remains usable after automatic requests stop. */
+    /** The manual Settings link remains usable after automatic requests stop. */
     @Synchronized
     fun disableAutomatic() {
-        eligibleThisLaunch = false
+        clearTrackedCompletion()
         update(state.disable())
     }
 
-    /** Call only from the resumed root activity, with no editor or modal in front. */
-    fun requestIfEligible(activity: FragmentActivity, canPresent: () -> Boolean) {
+    /** Root waits six seconds after [offers], dropping the offer whenever presentation is blocked. */
+    fun requestIfEligible(activity: FragmentActivity, offerId: Long, canPresent: () -> Boolean) {
         val now = System.currentTimeMillis()
+        val generation: Long
         synchronized(this) {
-            if (!eligibleThisLaunch || state.disabled || !canPresent() ||
-                !activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
-            ) return
-            eligibleThisLaunch = false
-            update(state.requested(now))
+            val offer = pendingOffer?.takeIf { it.id == offerId } ?: return
+            if (!canPresent() || !activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                discardOffer(offerId)
+                return
+            }
+            if (!offer.hasSettled(now)) return
+            pendingOffer = null
+            if (!state.isDue(BuildConfig.VERSION_NAME, now)) return
+            generation = ++requestGeneration
+            update(state.requested(BuildConfig.VERSION_NAME, now))
         }
         // Play may silently suppress the card. A failed request is equally silent and consumed.
         try {
             val manager = ReviewManagerFactory.create(activity)
             manager.requestReviewFlow().addOnCompleteListener(activity) { task ->
-                if (task.isSuccessful && canPresent() && activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                    try { manager.launchReviewFlow(activity, task.result) } catch (_: Exception) { }
+                synchronized(this) {
+                    if (task.isSuccessful && generation == requestGeneration && !state.disabled &&
+                        canPresent() && activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+                    ) {
+                        try { manager.launchReviewFlow(activity, task.result) } catch (_: Exception) { }
+                    }
                 }
             }
         } catch (_: Exception) { }
@@ -83,9 +109,10 @@ class ReviewCoordinator private constructor(context: Context) {
 
     private fun persist() {
         prefs.edit()
-            .putLong("tracked_end", state.trackedEndAtMs ?: 0)
-            .putLong("ready_end", state.readyEndAtMs ?: 0)
-            .putLong("handled_end", state.handledEndAtMs)
+            .remove("tracked_end").remove("ready_end").remove("handled_end")
+            .putInt("completed_days", state.completedDays)
+            .putString("last_completed_day", state.lastCompletedDayKey)
+            .putString("last_request_version", state.lastRequestVersion)
             .putLong("last_request", state.lastRequestAtMs)
             .putBoolean("disabled", state.disabled)
             .commit()

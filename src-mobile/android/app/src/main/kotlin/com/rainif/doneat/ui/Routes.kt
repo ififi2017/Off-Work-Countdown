@@ -18,6 +18,7 @@ sealed interface Route : NavKey {
 
     @Serializable data object Schedule : Route
     @Serializable data object Salary : Route
+    @Serializable data object ShiftAlarms : Route
     @Serializable data object Notifications : Route
     @Serializable data object Health : Route
     @Serializable data object Theme : Route
@@ -74,6 +75,7 @@ sealed interface PlusPendingAction {
     @Serializable data class RecordsDay(val dayKey: String) : PlusPendingAction
     @Serializable data object RecordsLifeEdit : PlusPendingAction
     @Serializable data object RecordsCharts : PlusPendingAction
+    @Serializable data object ShiftAlarms : PlusPendingAction
     @Serializable data object CycleSummary : PlusPendingAction
     /** One of the planner's options, opened once the free views are used up. */
     @Serializable data class LeavePlan(val index: Int) : PlusPendingAction

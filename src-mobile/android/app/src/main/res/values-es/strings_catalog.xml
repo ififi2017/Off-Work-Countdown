@@ -592,6 +592,7 @@
     <string name="onboardingLunchNotifyHint">Te avisaremos al empezar y terminar el almuerzo.</string>
     <string name="onboardingOfflineBody">Sin cuenta. Funciona sin red.</string>
     <string name="onboardingOfflineTitle">Funciona sin conexión</string>
+    <string name="onboardingOngoingSurface">Notificación permanente</string>
     <string name="onboardingPlusFocusBreakBody">La siguiente tarea espera hasta que estés listo. Nada empieza por sí solo.</string>
     <string name="onboardingPlusFocusTask">Termina la revisión semanal</string>
     <string name="onboardingPlusFocusTitle">Dale a una tarea un período de tiempo claro</string>
@@ -610,6 +611,7 @@
     <string name="onboardingScheduleBody">Elige un patrón, o decide cada día.</string>
     <string name="onboardingScheduleTitle">Tus horas habituales</string>
     <string name="onboardingSetMyShift">Configurar mi turno</string>
+    <string name="onboardingSetupSaveFailed">No se pudo guardar la configuración. Inténtalo de nuevo.</string>
     <string name="onboardingShiftBody">Admite semanas alternas, rotaciones de trabajo y descanso, turnos nocturnos y pausas para comer.</string>
     <string name="onboardingShiftPreview">Vista previa del turno</string>
     <string name="onboardingStartExperience">Empezar a explorar</string>
@@ -1009,7 +1011,9 @@
     <string name="shiftAlarmsLeadSection">Sonar antes</string>
     <string name="shiftAlarmsLifetimeWindow">Cada vez que abres DoneAt, las alarmas se amplían hasta un año por delante.</string>
     <string name="shiftAlarmsLimitReached">Tu dispositivo limita cuántas alarmas pueden esperar a la vez, así que primero van los turnos más cercanos. Al abrir DoneAt se programan más.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Las alarmas de turno necesitan acceso a Plus verificado y, si tienes una suscripción, una fecha de vencimiento verificada.</string>
     <string name="shiftAlarmsNoneUpcoming">No hay turnos próximos para despertarte</string>
+    <string name="shiftAlarmsNotificationsOff">Permite las notificaciones de alarmas para poder abrir, detener o posponer una alarma que esté sonando.</string>
     <string name="shiftAlarmsOnShort">Activado</string>
     <string name="shiftAlarmsOpenSettings">Abrir Ajustes</string>
     <string name="shiftAlarmsRefresh">Actualizar alarmas</string>

@@ -590,6 +590,7 @@
     <string name="onboardingLunchNotifyHint">Öğle arasının başında ve sonunda haber verilir.</string>
     <string name="onboardingOfflineBody">Hesap yok. Ağ olmadan çalışır.</string>
     <string name="onboardingOfflineTitle">Çevrimdışı çalışır</string>
+    <string name="onboardingOngoingSurface">Kalıcı bildirim</string>
     <string name="onboardingPlusFocusBreakBody">Bir sonraki görev siz hazır olana kadar bekler. Hiçbir şey kendi kendine başlamaz.</string>
     <string name="onboardingPlusFocusTask">Haftalık incelemeyi bitirin</string>
     <string name="onboardingPlusFocusTitle">Bir göreve net bir süre verin</string>
@@ -608,6 +609,7 @@
     <string name="onboardingScheduleBody">Bir düzen seçin, ya da her gün karar verin.</string>
     <string name="onboardingScheduleTitle">Alışılmış saatleriniz</string>
     <string name="onboardingSetMyShift">Vardiyamı ayarla</string>
+    <string name="onboardingSetupSaveFailed">Ayarların kaydedilemedi. Tekrar dene.</string>
     <string name="onboardingShiftBody">Dönüşümlü haftalar, çalışma/dinlenme döngüleri, gece vardiyaları ve öğle araları desteklenir.</string>
     <string name="onboardingShiftPreview">Vardiya önizlemesi</string>
     <string name="onboardingStartExperience">Deneyime başla</string>
@@ -1006,7 +1008,9 @@
     <string name="shiftAlarmsLeadSection">Önceden çal</string>
     <string name="shiftAlarmsLifetimeWindow">DoneAt’i her açtığında alarmlar bir yıl ilerisine uzar.</string>
     <string name="shiftAlarmsLimitReached">Cihazın aynı anda bekleyebilecek alarm sayısını sınırlıyor, bu yüzden önce en yakın vardiyalar kuruldu. DoneAt’i açınca daha fazlası kurulur.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Vardiya alarmları için doğrulanmış Plus erişimi gerekir. Aboneliklerde bitiş tarihinin de doğrulanmış olması gerekir.</string>
     <string name="shiftAlarmsNoneUpcoming">Uyandırılacak yaklaşan vardiya yok</string>
+    <string name="shiftAlarmsNotificationsOff">Çalan bir alarmı açabilmek, durdurabilmek veya erteleyebilmek için alarm bildirimlerine izin ver.</string>
     <string name="shiftAlarmsOnShort">Açık</string>
     <string name="shiftAlarmsOpenSettings">Ayarları aç</string>
     <string name="shiftAlarmsRefresh">Alarmları yenile</string>
