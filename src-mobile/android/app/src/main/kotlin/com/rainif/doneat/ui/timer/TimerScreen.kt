@@ -1,5 +1,6 @@
 package com.rainif.doneat.ui.timer
 
+import com.rainif.doneat.ui.adaptive.*
 import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.Crossfade
@@ -110,6 +111,7 @@ import com.rainif.doneat.core.domain.session.SessionState
 import com.rainif.doneat.core.domain.session.ShiftSession
 import com.rainif.doneat.core.domain.session.TimelineEvent
 import com.rainif.doneat.core.domain.session.TimelineKind
+import com.rainif.doneat.core.domain.session.TimelineCivilCopy
 import com.rainif.doneat.core.domain.session.TimerPhase
 import com.rainif.doneat.core.domain.session.UpcomingTimeline
 import com.rainif.doneat.core.domain.session.heroRemainingMs
@@ -122,6 +124,7 @@ import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.timer.TimerCoordinator
 import androidx.compose.material.icons.outlined.Timer
 import com.rainif.doneat.ui.Route
+import com.rainif.doneat.plus.LifetimeOfferToolbarButton
 import com.rainif.doneat.ui.onboarding.appIsDark
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -211,18 +214,13 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
         }
     }
     LaunchedEffect(phase) { graph.timer.reconcile() }
-    LaunchedEffect(phase, snapshot?.endAtMs, session.state.countdownStarted) {
-        if (phase == TimerPhase.CLOCK_IN || phase == TimerPhase.RUNNING || phase == TimerPhase.LUNCH || phase == TimerPhase.OVERTIME) {
-            graph.reviews.trackRunningShift(session, snapshot, now.toLong())
-        }
-    }
     val completionToken = snapshot?.let { shift ->
         if (session.isEndedEarly(shift)) session.state.earlyOffAtMs ?: shift.plannedEndAtMs else shift.endAtMs
     }
     LaunchedEffect(phase, completionToken) {
-        if (phase == TimerPhase.COMPLETED && completionToken != null && snapshot != null &&
+        if (phase == TimerPhase.COMPLETED && completionToken != null &&
             session.state.countdownStarted && (snapshot.isWorkday || session.isForcedWorkday(snapshot)) && snapshot.segments.isNotEmpty()
-        ) graph.reviews.noteCompletion(completionToken.toLong())
+        ) graph.reviews.noteCompletion(completionToken.toLong(), session.recordsZone)
     }
 
     val prefs = session.env.preferences
@@ -231,6 +229,8 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
             // Settings-level controls stay small and out of the instrument's way.
             Row(Modifier.fillMaxWidth().padding(horizontal = DoneAtSpacing.xs), horizontalArrangement = Arrangement.End) {
+                LifetimeOfferToolbarButton(graph.plus, onOpen = { open(Route.Plus) })
+                Spacer(Modifier.weight(1f))
                 EarningsVisibilityButton(graph) { note -> scope.launch { snackbar.showSnackbar(note) } }
                 IconButton(onClick = { scope.launch { graph.settings.edit { it.copy(theme = PreferencesRules.nextQuickTheme(it.theme)) } } }) {
                     Icon(
@@ -250,7 +250,7 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
             lastPhase[phase.surfaceIdentity] = phase
             Crossfade(phase.surfaceIdentity, Modifier.weight(1f), animationSpec = LocalDoneAtMotion.current.phase(), label = "timerPhase") { identity ->
                 val phase = lastPhase.getValue(identity)
-                Box(Modifier.fillMaxSize().wrapContentWidth(Alignment.CenterHorizontally).widthIn(max = 680.dp)) {
+                Box(Modifier.fillMaxSize()) {
                     when (phase) {
                         TimerPhase.UNSCHEDULED -> UnscheduledSurface(session, now, text, focusEvents, isArmed(Confirmation.START)) {
                             if (!session.isLunchInsideShift(now)) showInvalidLunch = true
@@ -277,9 +277,14 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                             val token = if (session.isEndedEarly(shift)) session.state.earlyOffAtMs ?: shift.plannedEndAtMs else shift.endAtMs
                             LaunchedEffect(token) {
                                 // Once per completed run in this process; a cold launch may celebrate it again, as on iOS.
-                                if (graph.lastCelebratedEndAtMs != token) {
+                                if (graph.lastCelebratedEndAtMs != token &&
+                                    session.visualPhase(System.currentTimeMillis().toDouble()) == TimerPhase.COMPLETED) {
                                     graph.lastCelebratedEndAtMs = token
                                     celebration++
+                                    if (session.state.countdownStarted && (shift.isWorkday || session.isForcedWorkday(shift)) && shift.segments.isNotEmpty()) {
+                                        graph.reviews.noteCompletion(token.toLong(), session.recordsZone)
+                                        graph.reviews.offerAfterCelebration(token.toLong())
+                                    }
                                 }
                             }
                             CompletedSurface(
@@ -287,7 +292,7 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                                 onReplay = { celebration++ },
                                 onUndo = { perform({
                                     graph.lastCelebratedEndAtMs = 0.0
-                                    graph.reviews.revokeCompletion(token.toLong())
+                                    graph.reviews.revokeCompletion(token.toLong(), session.recordsZone)
                                 }) { undoEarlyClockOff(it, System.currentTimeMillis().toDouble()) } },
                                 onOvertime = { showOvertime = true },
                                 onShare = { open(Route.TimerShare) },
@@ -322,7 +327,7 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                     showOvertime = false
                     // A new completion boundary: the later clock-off celebrates again.
                     graph.lastCelebratedEndAtMs = 0.0
-                    previousEnd?.let { graph.reviews.revokeCompletion(it.toLong()) }
+                    previousEnd?.let { graph.reviews.revokeCompletion(it.toLong(), session.recordsZone) }
                 }) { applyOvertime(it, endAtMs, System.currentTimeMillis().toDouble()) }
             },
         )
@@ -382,7 +387,7 @@ private fun RunningSurface(
             val at = session.state.earlyStartAtMs ?: shift.startAtMs
             Banner(Icons.AutoMirrored.Outlined.DirectionsWalk, Strings.clockedInEarlyNote(LocalResources.current, text.time(at)), stringResource(R.string.undoClockInEarly), false, onUndoClockIn)
         }
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
+        TimerPanes(Modifier.weight(1f), primary = {
             if (overtime) {
                 PhasePill(Icons.Outlined.Schedule, Strings.overtimeUntil(LocalResources.current, text.time(shift.overtimeEndAtMs ?: shift.endAtMs)), overtime = true)
             }
@@ -395,6 +400,7 @@ private fun RunningSurface(
                 paused = onBreak,
                 locale = text.locale,
             )
+        }, summary = {
             Column(Modifier.padding(horizontal = DoneAtSpacing.page).padding(top = DoneAtSpacing.section)) {
                 val follows = session.followsSchedule(now)
                 if (follows) SectionHeader(stringResource(R.string.summaryEstimateNote))
@@ -406,6 +412,9 @@ private fun RunningSurface(
                     }
                     if (follows) SummaryRows(session, now, shift, text)
                 }
+            }
+        }, secondary = {
+            Column(Modifier.padding(horizontal = DoneAtSpacing.page)) {
                 val events = UpcomingTimeline.events(
                     shift, now,
                     ScheduleRules.reminders(session.rulesInput(now), TimerCoordinator.reminderInputs(LocalResources.current, session.env.preferences)),
@@ -414,10 +423,7 @@ private fun RunningSurface(
                 )
                 ComingUp((events + focusEvents).sortedBy { it.atMs }, now, text, session)
             }
-            Spacer(Modifier.heightIn(min = DoneAtSpacing.xl))
-        }
-        // The bar under the instrument: one decision before the start, two once it runs.
-        // One height for both buttons, whichever label wraps under a large font.
+        }, actions = {
         Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(DoneAtSpacing.page), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
             if (beforeStart) {
                 ArmableButton(stringResource(if (clockInArmed) R.string.clockInEarlyConfirm else R.string.clockInEarly), Icons.AutoMirrored.Outlined.ArrowForward, clockInArmed, primary = true, onClick = onClockIn, modifier = Modifier.weight(1f))
@@ -432,6 +438,7 @@ private fun RunningSurface(
                 Icon(Icons.Outlined.Share, stringResource(R.string.shareButton))
             }
         }
+        })
     }
 }
 
@@ -449,7 +456,8 @@ private fun CompletedSurface(
     val res = LocalResources.current
     val endedEarly = session.isEndedEarly(shift)
     val finished = session.clockOffSnapshot(shift)
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.l), horizontalAlignment = Alignment.CenterHorizontally) {
+    val follows = session.followsSchedule(now)
+    TimerPanes(primary = {
         Text(
             stringResource(R.string.offWorkToday),
             modifier = Modifier.padding(top = DoneAtSpacing.xxl).clickable(onClickLabel = stringResource(R.string.replayCelebration), onClick = onReplay).semantics { heading() },
@@ -466,17 +474,19 @@ private fun CompletedSurface(
                 textAlign = TextAlign.Center,
             )
         }
-        Column(Modifier.padding(horizontal = DoneAtSpacing.page).widthIn(max = 560.dp)) {
+        Column(Modifier.padding(horizontal = DoneAtSpacing.page)) {
             if (endedEarly) {
                 session.state.earlyOffAtMs?.let { at ->
                     Spacer(Modifier.size(DoneAtSpacing.l))
                     Banner(Icons.AutoMirrored.Outlined.DirectionsWalk, Strings.clockedOffEarlyNote(res, text.time(at)), stringResource(R.string.undoClockOffEarly), false, onUndo, inset = false)
                 }
             }
+        }
+    }, summary = {
+        Column(Modifier.padding(horizontal = DoneAtSpacing.page)) {
             Spacer(Modifier.size(DoneAtSpacing.xl))
             SectionHeader(stringResource(R.string.todayInFull))
             val lunch = session.takenLunchWindow(finished, now)
-            val follows = session.followsSchedule(now)
             Card {
                 InfoRow(Icons.Outlined.Schedule, stringResource(R.string.worked), text.relativeDuration(if (endedEarly) finished.elapsedMs else shift.durationMs))
                 lunch?.let { (start, end) ->
@@ -490,6 +500,9 @@ private fun CompletedSurface(
                     InfoRow(Icons.Outlined.CalendarMonth, stringResource(R.string.summaryThisWeek), summaryText(session.periodSummary(SummaryRules.Period.WEEK, asOf, finished), session, text), small = true)
                 }
             }
+        }
+    }, secondary = {
+        Column(Modifier.padding(horizontal = DoneAtSpacing.page)) {
             Spacer(Modifier.size(DoneAtSpacing.l))
             if (follows) SectionHeader(stringResource(R.string.summaryEstimateNote))
             Card {
@@ -516,36 +529,35 @@ private fun CompletedSurface(
                 }
             }
         }
-    }
+    })
 }
 
 @Composable
 private fun RestSurface(session: ShiftSession, shift: ShiftSnapshot, now: Double, text: TimerText, focusEvents: List<TimelineEvent>, armed: Boolean, onStart: () -> Unit) {
     val remaining = session.countdownToClockInMs(shift, now)
-    Column(Modifier.fillMaxSize()) {
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
-            PhasePill(Icons.Outlined.Hotel, stringResource(R.string.widgetRestDay))
-            Hero(remaining, null, text, null, muted = true)
-            Box(Modifier.padding(horizontal = DoneAtSpacing.xl).padding(top = DoneAtSpacing.s)) {
-                // Quieter than a working day's meter: it counts rest, not work.
-                DoneAtProgressMeter(session.countdownToClockInProgress(shift), stringResource(R.string.progress), Modifier.alpha(0.72f), locale = text.locale)
-            }
-            Column(Modifier.padding(horizontal = DoneAtSpacing.page).padding(top = DoneAtSpacing.section)) {
-                SectionHeader(stringResource(R.string.summaryEstimateNote))
-                Card { SummaryRows(session, now, shift, text, first = true) }
-                val next = shift.nextShiftStartAtMs?.let { session.snapshot(it) }
-                ComingUp((next?.let { UpcomingTimeline.nextShiftPreview(it) }.orEmpty() + focusEvents).sortedBy { it.atMs }, now, text, session, collapsible = false)
-            }
-            Spacer(Modifier.heightIn(min = DoneAtSpacing.l))
+    TimerPanes(primary = {
+        PhasePill(Icons.Outlined.Hotel, stringResource(R.string.widgetRestDay))
+        Hero(remaining, null, text, null, muted = true)
+        Box(Modifier.padding(horizontal = DoneAtSpacing.xl).padding(top = DoneAtSpacing.s)) {
+            DoneAtProgressMeter(session.countdownToClockInProgress(shift), stringResource(R.string.progress), Modifier.alpha(0.72f), locale = text.locale)
         }
-        StartButton(armed, onStart)
-    }
+    }, summary = {
+        Column(Modifier.padding(horizontal = DoneAtSpacing.page).padding(top = DoneAtSpacing.section)) {
+            SectionHeader(stringResource(R.string.summaryEstimateNote))
+            Card { SummaryRows(session, now, shift, text, first = true) }
+        }
+    }, secondary = {
+        Column(Modifier.padding(horizontal = DoneAtSpacing.page)) {
+            val next = shift.nextShiftStartAtMs?.let { session.snapshot(it) }
+            ComingUp((next?.let { UpcomingTimeline.nextShiftPreview(it) }.orEmpty() + focusEvents).sortedBy { it.atMs }, now, text, session, collapsible = false)
+        }
+    }, actions = { StartButton(armed, onStart) })
 }
 
 @Composable
 private fun UnscheduledSurface(session: ShiftSession, now: Double, text: TimerText, focusEvents: List<TimelineEvent>, armed: Boolean, onStart: () -> Unit) {
-    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = DoneAtSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+    TimerPanes(primary = {
+        Column(Modifier.padding(horizontal = DoneAtSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.size(DoneAtSpacing.xxl))
             CelebratingBrandMark(stringResource(R.string.app_name), Modifier.size(168.dp), showsDepth = true)
             Text(stringResource(R.string.unscheduledTitle), Modifier.padding(top = DoneAtSpacing.xl).semantics { heading() }, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
@@ -556,10 +568,10 @@ private fun UnscheduledSurface(session: ShiftSession, now: Double, text: TimerTe
                 style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            ComingUp(focusEvents, now, text, session)
         }
-        StartButton(armed, onStart)
-    }
+    }, secondary = {
+        Column(Modifier.padding(horizontal = DoneAtSpacing.page)) { ComingUp(focusEvents, now, text, session) }
+    }, actions = { StartButton(armed, onStart) })
 }
 
 @Composable
@@ -719,6 +731,7 @@ private fun ComingUp(events: List<TimelineEvent>, now: Double, text: TimerText, 
     if (events.isEmpty()) return
     val res = LocalResources.current
     var expanded by rememberSaveable { mutableStateOf(false) }
+    val current = session.snapshot(now)
     val limit = if (collapsible) COLLAPSED_ROWS else events.size
     val visible = if (expanded) events else events.take(limit)
     Spacer(Modifier.size(DoneAtSpacing.section))
@@ -727,16 +740,23 @@ private fun ComingUp(events: List<TimelineEvent>, now: Double, text: TimerText, 
         visible.forEachIndexed { index, event ->
             if (index > 0) Divider()
             val (icon, tint) = eventStyle(event.kind)
-            val (title, detail) = timelineWords(event, res, text, session, now, showsShiftDetail = collapsible)
-            Row(Modifier.fillMaxWidth().heightIn(min = 58.dp).padding(horizontal = DoneAtSpacing.l, vertical = DoneAtSpacing.s), verticalAlignment = Alignment.CenterVertically) {
-                Surface(shape = CircleShape, color = tint.copy(alpha = 0.14f), modifier = Modifier.size(32.dp)) {
+            val rosterKey = if (event.kind == TimelineKind.SHIFT_START) TimelineCivilCopy.knownRosterStatusKey(
+                event.atMs, now, session.countdownZone, known = true,
+            ) else null // These events were resolved from the actual current / next shift.
+            val (title, detail) = timelineWords(event, res, text, session, now, showsShiftDetail = collapsible,
+                knownRosterStatusKey = rosterKey, currentSnapshot = current)
+            Row(Modifier.fillMaxWidth().heightIn(min = 58.dp).padding(horizontal = DoneAtSpacing.l, vertical = DoneAtSpacing.s)
+                .semantics(mergeDescendants = true) { }, verticalAlignment = Alignment.CenterVertically) {
+                val largeType = LocalDensity.current.fontScale >= 1.5f
+                if (!largeType) Surface(shape = CircleShape, color = tint.copy(alpha = 0.14f), modifier = Modifier.size(32.dp)) {
                     Box(contentAlignment = Alignment.Center) { Icon(icon, null, Modifier.size(18.dp), tint = tint) }
                 }
                 Column(Modifier.weight(1f).padding(horizontal = DoneAtSpacing.m)) {
                     Text(title, style = MaterialTheme.typography.bodyLarge)
                     if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (largeType) Text(text.eventTime(event.atMs, now), style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Text(text.eventTime(event.atMs, now), style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (!largeType) Text(text.eventTime(event.atMs, now), style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         if (collapsible && events.size > limit) {
@@ -802,5 +822,42 @@ private fun StartButton(armed: Boolean, onClick: () -> Unit) {
         } else {
             DoneAtPrimaryButton(stringResource(R.string.manualTiming), onClick, Modifier.fillMaxWidth())
         }
+    }
+}
+
+/** One set of timer content, arranged around the actual hinge without recreating a session. */
+@Composable
+private fun TimerPanes(
+    modifier: Modifier = Modifier,
+    primary: @Composable () -> Unit,
+    summary: @Composable () -> Unit = {},
+    secondary: @Composable () -> Unit,
+    actions: @Composable () -> Unit = {},
+) {
+    val firstScroll = rememberScrollState()
+    val secondScroll = rememberScrollState()
+    val singleScroll = rememberScrollState()
+    AdaptiveLayoutBox(modifier.fillMaxSize()) { plan ->
+        @Composable
+        fun pane(bounds: AdaptiveBounds, first: Boolean, single: Boolean = false) {
+            AdaptivePane(bounds, primary = first) {
+                Column(Modifier.align(Alignment.TopCenter).widthIn(max = if (single) 680.dp else androidx.compose.ui.unit.Dp.Infinity)
+                    .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(
+                        if (single) singleScroll else if (first) firstScroll else secondScroll),
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (first) {
+                            primary()
+                            if (!plan.hasHorizontalFold) summary()
+                        }
+                        if (!first || single) secondary()
+                        Spacer(Modifier.size(DoneAtSpacing.l))
+                    }
+                    if (!first || single) actions()
+                }
+            }
+        }
+        pane(plan.readingPane(true), true, plan.secondary == null)
+        if (plan.secondary != null) pane(plan.readingPane(false), false)
     }
 }

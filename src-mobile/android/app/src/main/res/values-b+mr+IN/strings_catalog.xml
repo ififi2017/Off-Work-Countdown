@@ -590,6 +590,7 @@
     <string name="onboardingLunchNotifyHint">लंच सुरू आणि संपताना कळवले जाईल.</string>
     <string name="onboardingOfflineBody">खाते नाही. नेटवर्कशिवाय चालते.</string>
     <string name="onboardingOfflineTitle">ऑफलाइनही चालते</string>
+    <string name="onboardingOngoingSurface">कायम दिसणारी सूचना</string>
     <string name="onboardingPlusFocusBreakBody">आपण तयार होईपर्यंत पुढील कार्य प्रतीक्षा करते. काहीही स्वतःपासून सुरू होत नाही.</string>
     <string name="onboardingPlusFocusTask">साप्ताहिक पुनरावलोकन पूर्ण करा</string>
     <string name="onboardingPlusFocusTitle">एका कार्याला स्पष्ट वेळ द्या</string>
@@ -608,6 +609,7 @@
     <string name="onboardingScheduleBody">नमुना निवडा, किंवा दररोज ठरवा.</string>
     <string name="onboardingScheduleTitle">तुमचे नेहमीचे तास</string>
     <string name="onboardingSetMyShift">माझी शिफ्ट ठरवा</string>
+    <string name="onboardingSetupSaveFailed">तुमची सेटिंग जतन करता आली नाही. पुन्हा प्रयत्न करा.</string>
     <string name="onboardingShiftBody">आलटून-पालटून आठवडे, काम/विश्रांती चक्र, रात्रपाळी आणि जेवणाची सुट्टी समर्थित आहेत.</string>
     <string name="onboardingShiftPreview">शिफ्टची झलक</string>
     <string name="onboardingStartExperience">अनुभव सुरू करा</string>
@@ -1006,7 +1008,9 @@
     <string name="shiftAlarmsLeadSection">आधी वाजवा</string>
     <string name="shiftAlarmsLifetimeWindow">प्रत्येक वेळी DoneAt उघडल्यावर अलार्म एक वर्ष पुढेपर्यंत लागतात.</string>
     <string name="shiftAlarmsLimitReached">तुमचे डिव्हाइस एकाच वेळी मर्यादित अलार्म ठेवते, म्हणून जवळच्या शिफ्ट आधी लावल्या. DoneAt उघडल्यावर आणखी लागतील.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">शिफ्ट अलार्मसाठी Plus वापरण्याच्या अधिकाराची पडताळणी आवश्यक आहे. सदस्यता असल्यास तिच्या समाप्तीच्या तारखेचीही पडताळणी आवश्यक आहे.</string>
     <string name="shiftAlarmsNoneUpcoming">उठवण्यासाठी पुढे कोणतीही शिफ्ट नाही</string>
+    <string name="shiftAlarmsNotificationsOff">अलार्मच्या सूचनांना परवानगी द्या, म्हणजे वाजणारा अलार्म उघडता, थांबवता किंवा स्नूझ करता येईल.</string>
     <string name="shiftAlarmsOnShort">सुरू</string>
     <string name="shiftAlarmsOpenSettings">सेटिंग्ज उघडा</string>
     <string name="shiftAlarmsRefresh">अलार्म रिफ्रेश करा</string>

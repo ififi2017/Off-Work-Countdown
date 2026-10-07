@@ -36,6 +36,52 @@ class SettingsRepositoryTest {
         return Triple(records, device, repo)
     }
 
+    @Test fun holidayDraftPersistsAndCompletesInTheSameArchiveWrite() = runTest {
+        val (records, device, repo) = open()
+        records.load()
+        repo.edit { it.copy(endMinutes = 18 * 60, lunchEnabled = true) }
+        repo.updateDevice { it.copy(setupHolidayRegionIdentifier = "CN", setupPage = "GLANCE") }
+        assertEquals("CN", DeviceSettingsStore(deviceFile).settings.value.setupHolidayRegionIdentifier)
+        assertNull(records.state.value.extendedSchedule)
+        assertTrue(repo.completeSetup(com.rainif.doneat.core.domain.schedule.HolidayCalendar.EMPTY, "Day shift", "Rest"))
+        val saved = records.state.value
+        assertEquals("CN", saved.extendedSchedule!!.content.holidayRegionIdentifier)
+        assertEquals(18 * 60, saved.extendedSchedule!!.content.shiftTypes.first { it.kind == com.rainif.doneat.core.domain.schedule.ShiftType.Kind.WORK }.endMinutes)
+        assertTrue(saved.extendedSchedule!!.content.isValid)
+        assertNull(device.settings.value.setupHolidayRegionIdentifier)
+        assertTrue(repo.completeSetup(com.rainif.doneat.core.domain.schedule.HolidayCalendar.EMPTY))
+        assertEquals(saved, records.state.value)
+    }
+
+    @Test fun failedSetupWriteKeepsTheDraftAndTheSeedTogetherForRetry() = runTest {
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        var fails = true
+        var writes = 0
+        val records = RecordStore(archive, { now }, { zone }, dispatcher) { path, bytes ->
+            writes++
+            if (fails) throw java.io.IOException("test failed write")
+            RecordStore.writeAtomically(path, bytes)
+        }
+        val device = DeviceSettingsStore(deviceFile)
+        val repo = SettingsRepository(records, device, CoroutineScope(backgroundScope.coroutineContext + dispatcher),
+            { now }, { zone }, { "00000000-0000-4000-8000-%012d".format(++ids) })
+        records.load()
+        repo.edit { it.copy(endMinutes = 18 * 60) }
+        repo.updateDevice { it.copy(setupHolidayRegionIdentifier = "CN", setupPage = "READY") }
+        assertFalse(repo.completeSetup(com.rainif.doneat.core.domain.schedule.HolidayCalendar.EMPTY))
+        assertNull(records.state.value.syncedPreferences)
+        assertNull(records.state.value.extendedSchedule)
+        assertFalse(device.settings.value.onboardingComplete)
+        assertEquals("CN", device.settings.value.setupHolidayRegionIdentifier)
+        assertEquals(18 * 60, device.settings.value.setupDraft!!.endMinutes)
+        assertFalse(Files.exists(archive))
+        fails = false
+        assertTrue(repo.completeSetup(com.rainif.doneat.core.domain.schedule.HolidayCalendar.EMPTY))
+        assertEquals(2, writes)
+        assertTrue(device.settings.value.onboardingComplete)
+        assertEquals("CN", records.state.value.extendedSchedule!!.content.holidayRegionIdentifier)
+    }
+
     @Test fun reportNotificationMigrationReadsRestoredArchiveBeforeDerivedFlowCatchesUp() = runTest {
         val (records, device, original) = open()
         records.load()

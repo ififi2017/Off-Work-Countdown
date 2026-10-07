@@ -1,11 +1,8 @@
 package com.rainif.doneat.ui.leave
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,13 +10,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Luggage
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.ConfirmationNumber
-import androidx.compose.material.icons.outlined.Contrast
-import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Remove
@@ -48,14 +40,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -71,7 +60,6 @@ import com.rainif.doneat.core.domain.leave.LeavePlanner
 import com.rainif.doneat.core.domain.leave.LeavePlannerCaveat
 import com.rainif.doneat.core.domain.leave.LeavePlannerSchedule
 import com.rainif.doneat.core.domain.leave.LeavePlanning
-import com.rainif.doneat.core.domain.schedule.LeavePortion
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.PlusPendingAction
 import com.rainif.doneat.ui.Route
@@ -87,8 +75,6 @@ import com.rainif.doneat.ui.timer.Haptics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.DayOfWeek
-import java.time.format.TextStyle
 
 // The leave planner (iOS `LeavePlannerSheet`, `LeavePlanResults`, `LeavePlanDetail`).
 
@@ -303,7 +289,7 @@ private fun LeaveTrialBanner(left: Int, text: LeaveText, explainsCost: Boolean =
 
 // Results
 
-/** The options, best first. Each is a break and what it costs. */
+/** Preview groups and their dates freely; only the details action opens the free-view gate. */
 @Composable
 fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
     val text = rememberLeaveText(graph)
@@ -311,7 +297,6 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
     val plus by graph.plus.authorized.collectAsStateWithLifecycle()
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     // Options are not kept across a restart; the form is, one step back.
     var opening by remember { mutableStateOf(false) }
     var trialWriteFailed by remember { mutableStateOf(false) }
@@ -341,9 +326,8 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
         }
     }
 
-    DoneAtPage(text.string(R.string.leaveResultsTitle), onBack, text.string(R.string.leavePlanAction)) {
+    DoneAtPage(text.string(R.string.leaveResultsTitle), onBack, text.string(R.string.leavePlanAction), inlineTitle = true) {
         if (trialWriteFailed) PageFooter(text.string(R.string.leaveTrialSaveFailed))
-        if (!plus && options.isNotEmpty()) LeaveTrialBanner(device.leavePlannerTrialsLeft, text, explainsCost = true)
         if (options.isEmpty()) {
             SettingsGroup {
                 Text(
@@ -352,37 +336,12 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
                 )
             }
         }
-        options.forEachIndexed { index, proposal ->
-            SettingsGroup {
-                Row(
-                    Modifier.fillMaxWidth().clickable(role = Role.Button) { openPlan(index) }.padding(DoneAtSpacing.l),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs)) {
-                        // The answer leads: how long the break is, then when, then what it costs.
-                        Text(
-                            Strings.leaveDaysOff(context.resources, proposal.fullRestDays),
-                            style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            text.range(text.monthDay(proposal.firstRestDayNumber), text.monthDay(proposal.lastRestDayNumber)),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                        Text(
-                            if (proposal.costHalfDays == 0) text.string(R.string.leaveNoLeaveNeeded) else text.uses(proposal.costHalfDays),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = if (proposal.costHalfDays == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (proposal.caveats.isNotEmpty()) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Outlined.Info, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text(text.string(R.string.leaveEstimated), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                    Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
+        if (options.isNotEmpty()) {
+            LeavePlanResultsContent(
+                proposals = options, text = text, firstWeekday = device.calendarFirstDay(text.locale),
+                opening = opening, onDetails = ::openPlan,
+            )
+            if (!plus) LeaveTrialBanner(device.leavePlannerTrialsLeft, text, explainsCost = true)
         }
     }
 }
@@ -390,7 +349,7 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
 // One option
 
 /**
- * One option in full: the weeks around it, the shifts to ask off and when,
+ * One option in full: complete calendar months, the shifts to ask off and when,
  * what each balance has left after it, and the shifts either side.
  * Adopting writes every day or none.
  */
@@ -535,116 +494,4 @@ private fun caveatLabels(proposal: LeavePlanProposal, text: LeaveText, res: andr
             text.string(R.string.leaveCarriedOverCaveat).takeIf { LeavePlannerCaveat.CarriedOverRoster in proposal.caveats },
             text.string(R.string.leaveUnassignedCaveat).takeIf { LeavePlannerCaveat.Unassigned in proposal.caveats },
         )
-}
-
-// The plan's calendar
-
-private enum class LeaveMark { WORK, REST, HOLIDAY, LEAVE, HALF_LEAVE }
-
-/**
- * The weeks around a proposal, each day marked by a symbol as well as a tint,
- * so the plan reads without colour: rest, a public holiday, a day of leave or
- * half a day of it. One working day either side shows where the break begins.
- */
-@Composable
-private fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, firstWeekday: DayOfWeek, modifier: Modifier = Modifier) {
-    val first = minOf(proposal.items.minOfOrNull { it.dayNumber } ?: proposal.firstRestDayNumber, proposal.firstRestDayNumber)
-    val last = maxOf(proposal.items.maxOfOrNull { it.dayNumber } ?: proposal.lastRestDayNumber, proposal.lastRestDayNumber)
-    val leading = Math.floorMod(LeavePlannerSchedule.date(first).dayOfWeek.value - firstWeekday.value, 7)
-    val weeks = remember(proposal, firstWeekday) {
-        generateSequence(first - leading) { it + 7 }.takeWhile { it <= last }.map { start ->
-            (0 until 7).map { offset -> (start + offset).takeIf { it in (first - 1)..(last + 1) } }
-        }.toList()
-    }
-    fun mark(day: Int): LeaveMark {
-        proposal.items.firstOrNull { it.dayNumber == day }?.let { return if (it.portion == LeavePortion.WHOLE) LeaveMark.LEAVE else LeaveMark.HALF_LEAVE }
-        if (day in proposal.firstRestDayNumber..proposal.lastRestDayNumber) {
-            return when (proposal.dayKinds[day - proposal.firstRestDayNumber]) {
-                LeavePlanProposal.DayKind.HOLIDAY -> LeaveMark.HOLIDAY
-                LeavePlanProposal.DayKind.LEAVE -> LeaveMark.LEAVE
-                LeavePlanProposal.DayKind.REST -> LeaveMark.REST
-            }
-        }
-        return LeaveMark.WORK
-    }
-    val used = weeks.flatten().filterNotNull().map(::mark).toSet()
-    val scheme = MaterialTheme.colorScheme
-
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-        Row(Modifier.clearAndSetSemantics {}) {
-            (0 until 7).forEach { column ->
-                Text(
-                    DayOfWeek.of(Math.floorMod(firstWeekday.value - 1 + column, 7) + 1).getDisplayName(TextStyle.NARROW_STANDALONE, text.locale),
-                    Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                )
-            }
-        }
-        weeks.forEach { week ->
-            Row(horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                week.forEach { day ->
-                    Box(Modifier.weight(1f)) { if (day != null) CalendarDay(day, mark(day), text) }
-                }
-            }
-        }
-        FlowRow(
-            Modifier.fillMaxWidth().padding(top = DoneAtSpacing.xs).clearAndSetSemantics {},
-            horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m, Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs),
-        ) {
-            LeaveMark.entries.filter { it != LeaveMark.WORK && it in used }.forEach { mark ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                    MarkIcon(mark, Modifier.size(12.dp))
-                    Text(markLabel(mark, text).orEmpty(), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CalendarDay(day: Int, mark: LeaveMark, text: LeaveText) {
-    val scheme = MaterialTheme.colorScheme
-    val fill = when (mark) {
-        LeaveMark.WORK -> Color.Transparent
-        LeaveMark.REST, LeaveMark.HOLIDAY -> scheme.surfaceContainerHighest
-        LeaveMark.LEAVE, LeaveMark.HALF_LEAVE -> scheme.primary.copy(alpha = 0.16f)
-    }
-    val label = listOfNotNull(text.day(day), markLabel(mark, text)).joinToString(", ")
-    Column(
-        Modifier.fillMaxWidth().heightIn(min = 44.dp).background(fill, MaterialTheme.shapes.small)
-            .clearAndSetSemantics { contentDescription = label }
-            .padding(vertical = DoneAtSpacing.xs),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs),
-    ) {
-        Text(
-            text.wholeNumber(LeavePlannerSchedule.date(day).dayOfMonth),
-            style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
-            fontWeight = if (mark == LeaveMark.WORK) null else FontWeight.SemiBold,
-            color = if (mark == LeaveMark.WORK) scheme.onSurfaceVariant else scheme.onSurface,
-        )
-        Box(Modifier.size(12.dp), contentAlignment = Alignment.Center) { MarkIcon(mark, Modifier.size(12.dp)) }
-    }
-}
-
-@Composable
-private fun MarkIcon(mark: LeaveMark, modifier: Modifier) {
-    val scheme = MaterialTheme.colorScheme
-    val (icon: ImageVector?, tint) = when (mark) {
-        LeaveMark.WORK -> null to Color.Transparent
-        LeaveMark.REST -> Icons.Outlined.Bedtime to scheme.onSurfaceVariant
-        LeaveMark.HOLIDAY -> Icons.Outlined.Flag to scheme.onSurfaceVariant
-        LeaveMark.LEAVE -> Icons.Filled.Luggage to scheme.primary
-        LeaveMark.HALF_LEAVE -> Icons.Outlined.Contrast to scheme.primary
-    }
-    if (icon != null) Icon(icon, null, modifier, tint = tint)
-}
-
-private fun markLabel(mark: LeaveMark, text: LeaveText): String? = when (mark) {
-    LeaveMark.WORK -> null
-    LeaveMark.REST -> text.string(R.string.leaveDayRest)
-    LeaveMark.HOLIDAY -> text.string(R.string.leaveDayHoliday)
-    LeaveMark.LEAVE -> text.string(R.string.leaveDayLeave)
-    LeaveMark.HALF_LEAVE -> text.string(R.string.leaveDayHalf)
 }

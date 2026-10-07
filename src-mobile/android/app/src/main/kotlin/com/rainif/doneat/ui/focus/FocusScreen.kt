@@ -5,6 +5,7 @@ import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -84,6 +85,7 @@ import com.rainif.doneat.core.domain.records.FocusSessionKind
 import com.rainif.doneat.core.domain.records.FocusTaskIcon
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.Route
+import com.rainif.doneat.ui.adaptive.*
 import com.rainif.doneat.ui.records.RecordsCard
 import com.rainif.doneat.ui.timer.Haptics
 import kotlinx.coroutines.delay
@@ -113,6 +115,9 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val scale = FocusScale.of(device.focusScale)
     val scroll = rememberScrollState()
+    val usualScroll = rememberScrollState()
+    val headerScroll = rememberScrollState()
+    var columnsVisible by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     // Entry puts the current block at the top; clock ticks never move the page.
     val positions = remember { object { var viewport: LayoutCoordinates? = null; var band: LayoutCoordinates? = null } }
@@ -122,10 +127,10 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
         needsPosition = true
         onStopOrDispose {}
     }
-    LaunchedEffect(needsPosition, bandPlaced, scale, model.nowAtMs == null) {
-        val viewport = positions.viewport ?: return@LaunchedEffect
+    LaunchedEffect(needsPosition, bandPlaced, scale, columnsVisible, model.nowAtMs == null) {
+        val viewport = positions.viewport?.takeIf { it.isAttached } ?: return@LaunchedEffect
         val band = positions.band?.takeIf { it.isAttached } ?: return@LaunchedEffect
-        if (!needsPosition || scale != FocusScale.TODAY || locked || density.fontScale >= 1.5f) return@LaunchedEffect
+        if (!needsPosition || (!columnsVisible && scale != FocusScale.TODAY) || locked || density.fontScale >= 1.5f) return@LaunchedEffect
         val now = model.nowAtMs ?: return@LaunchedEffect
         val start = model.blocks.firstOrNull { it.startAtMs <= now && now < it.endAtMs }?.startAtMs ?: now
         val top = viewport.localPositionOf(band, androidx.compose.ui.geometry.Offset.Zero).y + scroll.value
@@ -164,88 +169,102 @@ fun FocusScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
         }
     }
 
-    // As on iOS, the title, scale and status card stay put and only the canvas scrolls,
-    // except at very large text, where a pinned card would leave little room for anything else.
-    val pinned = density.fontScale < 1.5f
-    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-        Column(
-            Modifier.fillMaxSize().safeDrawingPadding().then(if (pinned) Modifier else Modifier.verticalScroll(scroll)),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(R.string.focusTitle),
-                    Modifier.weight(1f).padding(start = DoneAtSpacing.page - DoneAtSpacing.xs).semantics { heading() },
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                IconButton(onClick = { create(null) }, enabled = !locked) {
-                    Icon(Icons.Outlined.Add, stringResource(R.string.focusQuickCreate))
-                }
-                IconButton(onClick = { open(Route.FocusTimerSettings) }) {
-                    Icon(Icons.Outlined.Settings, stringResource(R.string.focusTimerSettings), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    @Composable
+    fun scalePicker() {
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            FocusScale.entries.forEachIndexed { index, option ->
+                SegmentedButton(scale == option, { choose(option) }, SegmentedButtonDefaults.itemShape(index, FocusScale.entries.size)) {
+                    Text(stringResource(if (option == FocusScale.TODAY) R.string.focusScaleToday else R.string.focusScaleUsual))
                 }
             }
-            Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    FocusScale.entries.forEachIndexed { index, option ->
-                        SegmentedButton(
-                            selected = scale == option,
-                            onClick = { choose(option) },
-                            shape = SegmentedButtonDefaults.itemShape(index, FocusScale.entries.size),
-                        ) { Text(stringResource(if (option == FocusScale.TODAY) R.string.focusScaleToday else R.string.focusScaleUsual)) }
+        }
+    }
+    @Composable
+    fun header(showsScale: Boolean) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.focusTitle), Modifier.weight(1f).padding(start = DoneAtSpacing.page - DoneAtSpacing.xs).semantics { heading() }, style = MaterialTheme.typography.headlineMedium)
+            IconButton(onClick = { create(null) }, enabled = !locked) { Icon(Icons.Outlined.Add, stringResource(R.string.focusQuickCreate)) }
+            IconButton(onClick = { open(Route.FocusTimerSettings) }) {
+                Icon(Icons.Outlined.Settings, stringResource(R.string.focusTimerSettings), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            if (showsScale) scalePicker()
+            NowBand(graph, context, onStop = { confirmsStop = true }, onExtend = ::extend,
+                onStart = { block ->
+                    val taskID = block.taskID ?: return@NowBand
+                    scope.launch { if (graph.focus.start(taskID, graph.nowMs(), block.startAtMs)) view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
+                }, onAdd = { create(null, currentOrNext = true) }, onSchedule = { openSettings(Route.Schedule) },
+                onUnlock = { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) })
+        }
+    }
+    @Composable
+    fun ColumnScope.today(showsHeading: Boolean = false) {
+        if (showsHeading) Text(stringResource(R.string.focusScaleToday), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+        when {
+            locked -> LockedCanvas(context) { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) }
+            model.isEmpty -> Unit
+            else -> {
+                if (model.isNextShift) {
+                    val day = java.time.Instant.ofEpochMilli(model.shiftStartAtMs).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                    val title = java.time.format.DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(context.text.locale, "EEEMMMd"), context.text.locale).format(day)
+                    Text(Strings.focusBandNextShift(res, title), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                DisposableEffect(Unit) { onDispose { positions.band = null; bandPlaced = false } }
+                Box(Modifier.onGloballyPositioned { positions.band = it; bandPlaced = true }) { FocusBand(context, model, selectedBlock, onPick = ::pick) }
+                TaskLedger(graph, context, onEdit = { open(Route.FocusTaskEdit(it)) }, onExtend = ::extend)
+                if (model.tasks.isNotEmpty() || model.blocks.any { it.hasAssignment }) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(top = 8.dp)) {
+                        if (graph.focus.planning(context.state).appliedTemplate(context.state, context.nowMs) == null && model.blocks.any { it.hasAssignment }) {
+                            OutlinedButton(onClick = { namesTemplate = res.getString(R.string.focusUsualDayDefaultName) }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.focusSaveDayAsTemplate)) }
+                        }
+                        OutlinedButton(onClick = { confirmsClearDay = true }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.focusClearDayTasks), color = MaterialTheme.colorScheme.error) }
                     }
                 }
-                NowBand(
-                    graph, context,
-                    onStop = { confirmsStop = true },
-                    onExtend = ::extend,
-                    onStart = { block ->
-                        val taskID = block.taskID ?: return@NowBand
-                        scope.launch { if (graph.focus.start(taskID, graph.nowMs(), block.startAtMs)) view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
-                    },
-                    onAdd = { create(null, currentOrNext = true) },
-                    onSchedule = { openSettings(Route.Schedule) },
-                    onUnlock = { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) },
-                )
             }
-            Column(
-                Modifier
-                    .then(if (pinned) Modifier.weight(1f).onGloballyPositioned { positions.viewport = it }.verticalScroll(scroll) else Modifier)
-                    .padding(start = DoneAtSpacing.page, end = DoneAtSpacing.page, bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                when {
-                    scale == FocusScale.USUAL && locked -> LockedUsualScale(res) { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) }
-                    scale == FocusScale.USUAL -> UsualScale(graph, context, open)
-                    locked -> LockedCanvas(context) { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) }
-                    model.isEmpty -> Unit // The status card already explains this and links to the schedule.
-                    else -> {
-                        if (model.isNextShift) {
-                            val day = java.time.Instant.ofEpochMilli(model.shiftStartAtMs).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
-                            val title = java.time.format.DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(context.text.locale, "EEEMMMd"), context.text.locale).format(day)
-                            Text(Strings.focusBandNextShift(res, title), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+    @Composable
+    fun ColumnScope.usual(showsHeading: Boolean = false) {
+        if (showsHeading) Text(stringResource(R.string.focusScaleUsual), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+        if (locked) LockedUsualScale(res) { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.FocusHome)) }
+        else UsualScale(graph, context, open)
+    }
+    val pinned = density.fontScale < 1.5f
+    val currentScroll = if (scale == FocusScale.USUAL) usualScroll else scroll
+    val canvasPadding = Modifier.padding(start = DoneAtSpacing.page, end = DoneAtSpacing.page,
+        bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current)
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+        AdaptiveLayoutBox(Modifier.fillMaxSize().safeDrawingPadding()) { plan ->
+            androidx.compose.runtime.SideEffect { columnsVisible = plan.usesContentColumns }
+            if (plan.hasHorizontalFold) {
+                // A tabletop keeps all controls above the hinge; only the selected scale scrolls below it.
+                AdaptivePane(plan.primary) {
+                    Column(Modifier.fillMaxSize().verticalScroll(headerScroll), verticalArrangement = Arrangement.spacedBy(14.dp)) { header(false) }
+                }
+                AdaptivePane(plan.secondary!!, primary = false) {
+                    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Box(Modifier.padding(horizontal = DoneAtSpacing.page)) { scalePicker() }
+                        Column(Modifier.weight(1f).onGloballyPositioned { positions.viewport = it }.verticalScroll(currentScroll).then(canvasPadding),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            if (scale == FocusScale.USUAL) usual() else today()
                         }
-                        DisposableEffect(Unit) {
-                            onDispose {
-                                positions.band = null
-                                bandPlaced = false
-                            }
-                        }
-                        Box(Modifier.onGloballyPositioned { positions.band = it; bandPlaced = true }) {
-                            FocusBand(context, model, selectedBlock, onPick = ::pick)
-                        }
-                        TaskLedger(graph, context, onEdit = { open(Route.FocusTaskEdit(it)) }, onExtend = ::extend)
-                        if (model.tasks.isNotEmpty() || model.blocks.any { it.hasAssignment }) {
-                            Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(top = 8.dp)) {
-                                if (graph.focus.planning(context.state).appliedTemplate(context.state, context.nowMs) == null && model.blocks.any { it.hasAssignment }) {
-                                    OutlinedButton(onClick = { namesTemplate = res.getString(R.string.focusUsualDayDefaultName) }, Modifier.fillMaxWidth()) {
-                                        Text(stringResource(R.string.focusSaveDayAsTemplate))
-                                    }
-                                }
-                                OutlinedButton(onClick = { confirmsClearDay = true }, Modifier.fillMaxWidth()) {
-                                    Text(stringResource(R.string.focusClearDayTasks), color = MaterialTheme.colorScheme.error)
-                                }
-                            }
+                    }
+                }
+            } else {
+                val host = if (plan.usesContentColumns) AdaptiveBounds(0f, 0f,
+                    maxOf(plan.primary.right, plan.secondary!!.right), plan.primary.bottom) else plan.primary
+                AdaptivePane(host) {
+                    Column(Modifier.fillMaxSize().then(if (pinned) Modifier else Modifier.verticalScroll(currentScroll)),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        header(!plan.usesContentColumns)
+                        if (plan.usesContentColumns) AdaptiveTwoPane(Modifier.weight(1f).fillMaxWidth(), primaryScroll = scroll, secondaryScroll = usualScroll,
+                            primaryModifier = Modifier.onGloballyPositioned { positions.viewport = it },
+                            primary = { Column(canvasPadding, verticalArrangement = Arrangement.spacedBy(14.dp)) { today(true) } },
+                            secondary = { Column(canvasPadding, verticalArrangement = Arrangement.spacedBy(14.dp)) { usual(true) } })
+                        else Column(Modifier.then(if (pinned) Modifier.weight(1f).onGloballyPositioned { positions.viewport = it }.verticalScroll(currentScroll) else Modifier).then(canvasPadding),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            if (scale == FocusScale.USUAL) usual() else today()
                         }
                     }
                 }

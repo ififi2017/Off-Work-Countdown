@@ -588,6 +588,7 @@
     <string name="onboardingLunchNotifyHint">Kamu akan diberi tahu saat istirahat mulai dan selesai.</string>
     <string name="onboardingOfflineBody">Tanpa akun. Berjalan tanpa jaringan.</string>
     <string name="onboardingOfflineTitle">Bisa offline</string>
+    <string name="onboardingOngoingSurface">Notifikasi berkelanjutan</string>
     <string name="onboardingPlusFocusBreakBody">Tugas selanjutnya menunggu sampai Anda siap. Tidak ada yang dimulai dengan sendirinya.</string>
     <string name="onboardingPlusFocusTask">Selesaikan review mingguan</string>
     <string name="onboardingPlusFocusTitle">Berikan satu tugas jangka waktu yang jelas</string>
@@ -606,6 +607,7 @@
     <string name="onboardingScheduleBody">Pilih pola, atau putuskan setiap hari.</string>
     <string name="onboardingScheduleTitle">Jam kerja biasanya</string>
     <string name="onboardingSetMyShift">Atur jadwal kerja saya</string>
+    <string name="onboardingSetupSaveFailed">Pengaturan tidak dapat disimpan. Silakan coba lagi.</string>
     <string name="onboardingShiftBody">Mendukung minggu bergantian, rotasi kerja/istirahat, shift malam, dan istirahat makan.</string>
     <string name="onboardingShiftPreview">Pratinjau shift</string>
     <string name="onboardingStartExperience">Mulai menjelajah</string>
@@ -1003,7 +1005,9 @@
     <string name="shiftAlarmsLeadSection">Bunyikan sebelum</string>
     <string name="shiftAlarmsLifetimeWindow">Setiap kali kamu membuka DoneAt, alarm diperpanjang hingga setahun ke depan.</string>
     <string name="shiftAlarmsLimitReached">Perangkatmu membatasi jumlah alarm yang menunggu sekaligus, jadi sif terdekat didahulukan. Membuka DoneAt akan menjadwalkan lebih banyak.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Alarm sif memerlukan akses Plus yang terverifikasi. Jika berlangganan, tanggal berakhirnya langganan juga harus terverifikasi.</string>
     <string name="shiftAlarmsNoneUpcoming">Belum ada sif mendatang untuk dibangunkan</string>
+    <string name="shiftAlarmsNotificationsOff">Izinkan notifikasi alarm agar kamu bisa membuka, menghentikan, atau menunda alarm yang sedang berbunyi.</string>
     <string name="shiftAlarmsOnShort">Aktif</string>
     <string name="shiftAlarmsOpenSettings">Buka Pengaturan</string>
     <string name="shiftAlarmsRefresh">Segarkan alarm</string>

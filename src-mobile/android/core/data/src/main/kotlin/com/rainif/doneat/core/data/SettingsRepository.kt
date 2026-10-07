@@ -2,6 +2,11 @@ package com.rainif.doneat.core.data
 
 import com.rainif.doneat.core.domain.records.SyncedPreferences
 import com.rainif.doneat.core.domain.settings.PreferencesRules
+import com.rainif.doneat.core.domain.settings.SetupProjection
+import com.rainif.doneat.core.domain.session.ScheduleSave
+import com.rainif.doneat.core.domain.schedule.HolidayCalendar
+import com.rainif.doneat.core.domain.session.SessionEnvironment
+import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -51,6 +56,8 @@ data class DeviceSettings(
     val selectedTab: String = "timer",
     /** The first-run page to resume on, with [setupDraft], after any interruption. */
     val setupPage: String? = null,
+    /** First-run holiday opt-in; null means the suggestion has not been chosen. */
+    val setupHolidayRegionIdentifier: String? = null,
     /** Alerts when a focus phase ends; a device choice, as on iOS. */
     val focusNotificationsEnabled: Boolean = true,
     /** The Focus page's scale, "today" or "usual". */
@@ -127,6 +134,8 @@ class DeviceSettingsStore(private val file: Path) {
             accentColor = (o["accentColor"] as? JsonPrimitive)?.intOrNull?.takeIf { it in 0..0xFFFFFF },
             selectedTab = o["selectedTab"]?.jsonPrimitive?.contentOrNull ?: "timer",
             setupPage = o["setupPage"]?.jsonPrimitive?.contentOrNull,
+            setupHolidayRegionIdentifier = o["setupHolidayRegionIdentifier"]?.jsonPrimitive?.contentOrNull
+                ?.takeIf { HolidayCalendar.isValidRegionIdentifier(it) },
             focusNotificationsEnabled = bool("focusNotificationsEnabled", true),
             focusScale = o["focusScale"]?.jsonPrimitive?.contentOrNull ?: "today",
             ongoingEnabled = bool("ongoingEnabled", false),
@@ -153,6 +162,7 @@ class DeviceSettingsStore(private val file: Path) {
             "accentColor" to (s.accentColor?.let(::JsonPrimitive) ?: JsonNull),
             "selectedTab" to JsonPrimitive(s.selectedTab),
             "setupPage" to (s.setupPage?.let(::JsonPrimitive) ?: JsonNull),
+            "setupHolidayRegionIdentifier" to (s.setupHolidayRegionIdentifier?.let(::JsonPrimitive) ?: JsonNull),
             "focusNotificationsEnabled" to JsonPrimitive(s.focusNotificationsEnabled),
             "focusScale" to JsonPrimitive(s.focusScale),
             "ongoingEnabled" to JsonPrimitive(s.ongoingEnabled),
@@ -286,11 +296,28 @@ class SettingsRepository(
     }
 
     /** Commits the first-run choices in one archive write, then marks setup done. */
-    suspend fun completeSetup(): Boolean {
+    suspend fun completeSetup(holidays: HolidayCalendar? = null, workName: String = "Work", restName: String = "Rest"): Boolean {
         val draft = device.value.setupDraft ?: fallback()
-        val result = records.update { state -> PreferencesRules.commit(state, draft, nowMs(), newId()) to Unit }
-        if (result !is WriteResult.Saved) return false
-        deviceStore.update { it.copy(onboardingComplete = true, setupDraft = null, setupPage = null) }
+        val completedAt = nowMs()
+        val region = device.value.setupHolidayRegionIdentifier
+        val result = records.update { state ->
+            // A restored archive with preferences is already set up. Replaying welcome
+            // must not rewrite its settings or replace its live calendar.
+            if (state.syncedPreferences != null) state to true else {
+                val committed = PreferencesRules.commit(state, draft, completedAt, newId())
+                val content = if (holidays != null && draft.scheduleMode != "off") SetupProjection.seedContent(
+                    SessionEnvironment(draft, false, state.extendedSchedule, state.rosterDays, holidays, systemZone(), false),
+                    completedAt, region, { UUID.fromString(newId()) }, workName, restName,
+                ) else null
+                if (content == null) committed to true else {
+                    val combined = ScheduleSave.updateExtendedSchedule(committed, content, true,
+                        draft.recordsTimeZoneIdentifier, completedAt, newId)
+                    if (combined == null) state to false else combined to true
+                }
+            }
+        }
+        if (result !is WriteResult.Saved || !result.value) return false
+        deviceStore.update { it.copy(onboardingComplete = true, setupDraft = null, setupPage = null, setupHolidayRegionIdentifier = null) }
         return true
     }
 
@@ -300,7 +327,7 @@ class SettingsRepository(
      * the draft, and the restored records are kept.
      */
     suspend fun finishRestore(hasSettings: Boolean) {
-        if (hasSettings) deviceStore.update { it.copy(onboardingComplete = true, setupDraft = null, setupPage = null) }
+        if (hasSettings) deviceStore.update { it.copy(onboardingComplete = true, setupDraft = null, setupPage = null, setupHolidayRegionIdentifier = null) }
     }
 
     suspend fun updateDevice(change: (DeviceSettings) -> DeviceSettings) = deviceStore.update(change)

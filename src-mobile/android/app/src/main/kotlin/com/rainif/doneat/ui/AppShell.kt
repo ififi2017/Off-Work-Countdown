@@ -9,6 +9,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.animation.EnterTransition
@@ -38,12 +40,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import com.rainif.doneat.ui.adaptive.LocalDoneAtWindowPosture
+import com.rainif.doneat.ui.timer.LandscapeClock
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
@@ -124,6 +130,7 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
                 select(AppTab.RECORDS)
             }
             PlusPendingAction.RecordsCharts -> select(AppTab.RECORDS)
+            PlusPendingAction.ShiftAlarms -> Unit // The alarm settings stay underneath; enabling remains explicit.
             PlusPendingAction.CycleSummary -> graph.scope.launch {
                 graph.settings.updateDevice { it.copy(weeklyReportEnabled = true) }
             }
@@ -140,6 +147,16 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
             graph.requestedTab.value = null
         }
     }
+    val requestedAlarms by graph.requestedShiftAlarmSettings.collectAsStateWithLifecycle()
+    LaunchedEffect(requestedAlarms) {
+        if (requestedAlarms) {
+            val settings = stacks.getValue(AppTab.SETTINGS)
+            while (settings.size > 1) settings.removeAt(settings.lastIndex)
+            settings.add(Route.ShiftAlarms)
+            select(AppTab.SETTINGS)
+            graph.requestedShiftAlarmSettings.value = false
+        }
+    }
     val requestedReport by graph.requestedReport.collectAsStateWithLifecycle()
     LaunchedEffect(requestedReport) {
         requestedReport?.let { period ->
@@ -151,23 +168,54 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
         }
     }
     val stack = stacks.getValue(selected)
-    LaunchedEffect(selected, stack.lastOrNull()) {
-        reportStageChanged(stack.lastOrNull() is Route.CycleReport)
-    }
     val reviewBlocked by graph.reviewBlocked.collectAsStateWithLifecycle()
+    val windowPixels = LocalWindowInfo.current.containerSize
+    val windowDensity = LocalDensity.current.density
+    val widthDp = windowPixels.width / windowDensity
+    val heightDp = windowPixels.height / windowDensity
+    val posture = LocalDoneAtWindowPosture.current
+    val shortLandscape = widthDp > heightDp && heightDp > 0 &&
+        heightDp < 480 && posture.folds.none { it.needsAvoidance }
+    var clockDismissed by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(shortLandscape) { if (!shortLandscape) clockDismissed = false }
+    val showsClock = shortLandscape && !clockDismissed && selected == AppTab.TIMER &&
+        stack.lastOrNull() == Route.TimerHome && !reviewBlocked
+    LaunchedEffect(selected, stack.lastOrNull(), showsClock) {
+        reportStageChanged(stack.lastOrNull() is Route.CycleReport || showsClock)
+    }
+    BackHandler(showsClock) { clockDismissed = true }
     val context = LocalContext.current
     val activity = remember(context) { context.fragmentActivity() }
-    LaunchedEffect(activity, selected, stack.lastOrNull(), reviewBlocked) {
+    val reviewOffer by graph.reviews.offers.collectAsStateWithLifecycle()
+    DisposableEffect(activity, reviewOffer) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) graph.reviews.discardOffer(reviewOffer)
+        }
+        activity?.lifecycle?.addObserver(observer)
+        onDispose {
+            activity?.lifecycle?.removeObserver(observer)
+            graph.reviews.discardOffer(reviewOffer)
+        }
+    }
+    LaunchedEffect(activity, selected, stack.lastOrNull(), reviewBlocked, reviewOffer, showsClock) {
         val host = activity ?: return@LaunchedEffect
-        if (selected != AppTab.TIMER || stack.lastOrNull() != Route.TimerHome || reviewBlocked) return@LaunchedEffect
-        host.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            // Let the root settle after launch or navigation before asking Play.
-            delay(650)
-            graph.reviews.requestIfEligible(host) {
+        if (reviewOffer == 0L) return@LaunchedEffect
+        if (selected != AppTab.TIMER || stack.lastOrNull() != Route.TimerHome || reviewBlocked || showsClock ||
+            !host.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            graph.reviews.discardOffer(reviewOffer)
+            return@LaunchedEffect
+        }
+        try {
+            // Wait for the real clock-off celebration, never ask on launch.
+            delay(com.rainif.doneat.review.ReviewPolicy.CELEBRATION_SETTLE_MS)
+            graph.reviews.requestIfEligible(host, reviewOffer) {
                 selectedState.value == AppTab.TIMER &&
                     stacks.getValue(AppTab.TIMER).lastOrNull() == Route.TimerHome &&
                     !graph.reviewBlocked.value && graph.requestedTab.value == null
             }
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            graph.reviews.discardOffer(reviewOffer)
+            throw cancelled
         }
     }
 
@@ -213,8 +261,11 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
                     if (route is Route.PlusFor) {
                         // A purchase prompted by a feature returns to that feature on Back.
                         stack.add(route)
+                    } else if (selected == AppTab.TIMER && route != null) {
+                        // A timer shortcut stays on this tab; Back returns to the same instrument.
+                        stack.add(route)
                     } else {
-                        // The timer's shortcuts land in Settings, with the page already open.
+                        // The settings icon without a particular page selects Settings.
                         val settings = stacks.getValue(AppTab.SETTINGS)
                         while (settings.size > 1) settings.removeAt(settings.lastIndex)
                         route?.let(settings::add)
@@ -231,7 +282,12 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
     }
     val reportRoute = stack.lastOrNull() as? Route.CycleReport
     Box(Modifier.fillMaxSize()) {
-    Box(if (reportRoute != null) Modifier.clearAndSetSemantics { } else Modifier) {
+    Box((if (reportRoute != null || showsClock) Modifier.clearAndSetSemantics { } else Modifier)
+        .pointerInput(showsClock, reportRoute) {
+            if (showsClock || reportRoute != null) awaitPointerEventScope {
+                while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+            }
+        }) {
     if (layout == NavigationSuiteType.NavigationBar) {
         DoneAtGlassNavigation(
             items = AppTab.entries.map { DoneAtNavigationItem(stringResource(it.title), it.icon) },
@@ -253,6 +309,7 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
         )
     }
     }
+    if (showsClock) LandscapeClock(graph)
     if (reportRoute != null) {
         // Keep both the source screen and the report alive until the cover has left.
         // Moving NavDisplay between two branches destroyed its transition state.
@@ -358,7 +415,8 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
         is Route.RecordsDayEdit -> com.rainif.doneat.ui.records.RecordsDayEditScreen(graph, key.dayKey, back)
         Route.RecordsLifeEdit -> com.rainif.doneat.ui.records.LifeProfileEditScreen(graph, back)
         Route.SettingsHome -> SettingsHomeScreen(prefs, records, device,
-            setWeekStart = { day -> graph.scope.launch { graph.settings.updateDevice { it.copy(calendarWeekStart = day) } } }, open = open)
+            setWeekStart = { day -> graph.scope.launch { graph.settings.updateDevice { it.copy(calendarWeekStart = day) } } }, open = open,
+            alarmsEnabled = graph.shiftAlarms.settings.collectAsStateWithLifecycle().value.enabled)
         Route.Schedule -> com.rainif.doneat.ui.schedule.ScheduleScreen(graph, open, back)
         Route.ShiftTypes -> com.rainif.doneat.ui.schedule.ShiftTypesScreen(graph, open, back)
         is Route.ShiftTypeEdit -> com.rainif.doneat.ui.schedule.ShiftTypeEditScreen(graph, key.id, key.isNew, back)
@@ -367,6 +425,8 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
         Route.RecordsConflicts -> com.rainif.doneat.ui.settings.RecordsConflictCenter(graph, back)
         Route.Plus -> com.rainif.doneat.plus.PlusScreen(graph, back)
         is Route.PlusFor -> com.rainif.doneat.plus.PlusScreen(graph, back, key.action, continueAfterPlus)
+        Route.ShiftAlarms -> com.rainif.doneat.ui.settings.ShiftAlarmSettingsScreen(
+            graph, back, onRequestPlus = { open(Route.PlusFor(PlusPendingAction.ShiftAlarms)) })
         Route.Notifications -> NotificationsScreen(
             prefs, device.notificationPermissionRequested, edit,
             markPermissionRequested = { scope.launch { graph.settings.updateDevice { it.copy(notificationPermissionRequested = true) } } },

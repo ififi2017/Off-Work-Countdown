@@ -2110,6 +2110,10 @@
       "resource": "string/onboardingOfflineTitle",
       "androidOnly": true
     },
+    "onboardingOngoingSurface": {
+      "resource": "string/onboardingOngoingSurface",
+      "androidOnly": true
+    },
     "onboardingPlusFocusBreakBody": {
       "resource": "string/onboardingPlusFocusBreakBody"
     },
@@ -2170,6 +2174,10 @@
     },
     "onboardingSetMyShift": {
       "resource": "string/onboardingSetMyShift"
+    },
+    "onboardingSetupSaveFailed": {
+      "resource": "string/onboardingSetupSaveFailed",
+      "androidOnly": true
     },
     "onboardingShiftBody": {
       "resource": "string/onboardingShiftBody",
@@ -3521,8 +3529,16 @@
     "shiftAlarmsLimitReached": {
       "resource": "string/shiftAlarmsLimitReached"
     },
+    "shiftAlarmsNeedsVerifiedExpiry": {
+      "resource": "string/shiftAlarmsNeedsVerifiedExpiry",
+      "androidOnly": true
+    },
     "shiftAlarmsNoneUpcoming": {
       "resource": "string/shiftAlarmsNoneUpcoming"
+    },
+    "shiftAlarmsNotificationsOff": {
+      "resource": "string/shiftAlarmsNotificationsOff",
+      "androidOnly": true
     },
     "shiftAlarmsOnShort": {
       "resource": "string/shiftAlarmsOnShort"

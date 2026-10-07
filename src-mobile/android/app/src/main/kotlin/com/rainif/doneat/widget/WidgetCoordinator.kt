@@ -89,6 +89,7 @@ class WidgetCoordinator(
     private fun compose(): WidgetSnapshot {
         val session = sessions.session.value
         val now = nowMs().toLong()
+        val currentSnapshot = session.snapshot(now.toDouble())
         val prefs = session.env.preferences
         // The app's language, not only the system's: before Android 13 an in-app choice lives in Compose alone.
         val tag = AppLocale.tag(AppLanguages.effective(prefs.languageOverride, AppLocale.systemPreferred()))
@@ -109,7 +110,7 @@ class WidgetCoordinator(
                     milestonesEnabled = prefs.notificationMode == "milestones",
                 )
             },
-            words = { event -> timelineWords(event, res, text, session, now.toDouble()).let { (title, detail) -> title to detail.orEmpty() } },
+            words = { event -> timelineWords(event, res, text, session, now.toDouble(), currentSnapshot = currentSnapshot).let { (title, detail) -> title to detail.orEmpty() } },
             focusEvents = focusTimeline.events(state, environment.shift(now.toDouble()), now.toDouble()),
             futureFocus = { shift -> focusTimeline.plannedEvents(state, shift.segments, shift.startAtMs) },
         )

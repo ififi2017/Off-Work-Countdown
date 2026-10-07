@@ -588,6 +588,7 @@
     <string name="onboardingLunchNotifyHint">午休開始同結束都會提醒你。</string>
     <string name="onboardingOfflineBody">唔使開戶口，亦唔依賴網絡。</string>
     <string name="onboardingOfflineTitle">冇網都用得</string>
+    <string name="onboardingOngoingSurface">常駐通知</string>
     <string name="onboardingPlusFocusBreakBody">下一個任務會等到你準備好。冇嘢係自己開始嘅。</string>
     <string name="onboardingPlusFocusTask">完成每週嘅評論</string>
     <string name="onboardingPlusFocusTitle">畀一個任務一段明確嘅時間</string>
@@ -606,6 +607,7 @@
     <string name="onboardingScheduleBody">揀一種排班，或每日再決定。</string>
     <string name="onboardingScheduleTitle">你平時幾點上下班</string>
     <string name="onboardingSetMyShift">設定我的更次</string>
+    <string name="onboardingSetupSaveFailed">設定暫時儲存唔到，請再試。</string>
     <string name="onboardingShiftBody">大小周、輪班輪休、通宵班同午飯時間都支援。</string>
     <string name="onboardingShiftPreview">更次預覽</string>
     <string name="onboardingStartExperience">開始體驗</string>
@@ -1003,7 +1005,9 @@
     <string name="shiftAlarmsLeadSection">提早幾耐響</string>
     <string name="shiftAlarmsLifetimeWindow">每次打開 DoneAt，鬧鐘都會續排到一年後。</string>
     <string name="shiftAlarmsLimitReached">裝置一次可以等候嘅鬧鐘數量有限，已經優先安排最近嘅更。打開 DoneAt 會繼續安排。</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">班次鬧鐘需要已核實的 Plus 權益；訂閱亦需要已核實的到期時間。</string>
     <string name="shiftAlarmsNoneUpcoming">暫時冇需要響鬧鐘嘅更</string>
+    <string name="shiftAlarmsNotificationsOff">允許鬧鐘通知，先可以開啟、停止或稍後提醒正在響鈴的鬧鐘。</string>
     <string name="shiftAlarmsOnShort">開啟</string>
     <string name="shiftAlarmsOpenSettings">打開設定</string>
     <string name="shiftAlarmsRefresh">重新安排</string>

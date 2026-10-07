@@ -53,6 +53,16 @@ class RecordsQueries(
         state.observations.groupBy { it.shiftAnchorDate }.mapValues { (_, list) -> list.sortedBy { it.occurredAtMs } }
     }
 
+    /** Imported devices can each have a first-open note; only the earliest adds information. */
+    fun displayedObservations(dayKey: String): List<WorkObservation> {
+        var seenFirstOpen = false
+        return observationIndex[dayKey].orEmpty().filter { item ->
+            if (item.kind != WorkObservationKind.TIMER_SURFACE_FIRST_SEEN) true
+            else if (seenFirstOpen) false
+            else { seenFirstOpen = true; true }
+        }
+    }
+
     /**
      * Every civil day with a user-authored fact: a work observation, an active
      * correction or a user calendar exception. Broader than workday totals on
@@ -346,6 +356,11 @@ class RecordsQueries(
 
     private fun date(dayKey: String): LocalDate = LocalDate.parse(dayKey)
 
+    /** An observed start/stop adds no hours to known rest; no schedule is not evidence of rest. */
+    private fun isRestWithoutHours(r: DayResolution): Boolean =
+        r.layer != DayResolutionLayer.NONE && !r.isScheduledWorkday &&
+            observationIndex[r.dayKey].orEmpty().none { it.kind == WorkObservationKind.OVERTIME_DECLARED }
+
     fun dayCell(
         resolution: DayResolution,
         previous: DayResolution?,
@@ -367,7 +382,7 @@ class RecordsQueries(
             !revealed -> RecordsDayAppearance.LOCKED
             future && !recorded -> if (resolution.isScheduledWorkday) RecordsDayAppearance.PLANNED else RecordsDayAppearance.REST
             corrected -> RecordsDayAppearance.CORRECTED
-            recorded || (scheduled && resolution.isScheduledWorkday) -> RecordsDayAppearance.RECORDED
+            (recorded && !isRestWithoutHours(resolution)) || (scheduled && resolution.isScheduledWorkday) -> RecordsDayAppearance.RECORDED
             !resolution.isScheduledWorkday -> RecordsDayAppearance.REST
             else -> RecordsDayAppearance.UNRECORDED
         }

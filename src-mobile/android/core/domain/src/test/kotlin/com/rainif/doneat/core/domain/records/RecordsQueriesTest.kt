@@ -276,6 +276,58 @@ class RecordsQueriesTest {
         assertEquals(0L, byDay.getValue("2026-09-15").workMs)
     }
 
+    @Test fun startAndStopNotesWithoutHoursLeaveKnownRestAsRest() {
+        val key = "2026-09-12"
+        val state = seeded().copy(observations = listOf(
+            observation(key, WorkObservationKind.COUNTDOWN_STARTED, 9),
+            observation(key, WorkObservationKind.COUNTDOWN_STOPPED, 11),
+        ))
+        val q = queries(state)
+        val day = q.resolvedDays(LocalDate.parse(key), LocalDate.parse(key)).single()
+        assertEquals(DayResolutionLayer.SCHEDULE, day.layer)
+        val cell = q.dayCell(day, null, now)
+        assertEquals(RecordsDayAppearance.REST, cell.appearance)
+        assertEquals(0L, cell.workMs)
+        assertEquals(2, cell.observationCount)
+        assertTrue("the broad index still finds the user's notes", q.isRecordedDay(key))
+        assertEquals(state, q.state)
+    }
+
+    @Test fun anObservedDayWithoutASavedScheduleIsNotKnownToBeRest() {
+        val key = "2026-09-12"
+        val q = queries(RecordState(observations = listOf(observation(key, WorkObservationKind.COUNTDOWN_STARTED, 9))))
+        val day = q.resolvedDays(LocalDate.parse(key), LocalDate.parse(key)).single()
+        assertEquals(DayResolutionLayer.NONE, day.layer)
+        val cell = q.dayCell(day, null, now)
+        assertEquals(RecordsDayAppearance.RECORDED, cell.appearance)
+        assertEquals(1, cell.observationCount)
+    }
+
+    @Test fun declaredOvertimeStillRecordsAKnownRestDay() {
+        val key = "2026-09-12"
+        val payload = FoundationCompat.base64(SessionCommands.overtimePayload(ms(key, 20), ms(key, 18)).toByteArray(Charsets.UTF_8))
+        val q = queries(seeded().copy(observations = listOf(observation(key, WorkObservationKind.OVERTIME_DECLARED, 18, payload))))
+        val day = q.resolvedDays(LocalDate.parse(key), LocalDate.parse(key)).single()
+        assertFalse(day.isScheduledWorkday)
+        val cell = q.dayCell(day, null, now)
+        assertEquals(RecordsDayAppearance.RECORDED, cell.appearance)
+        assertEquals(2 * 3_600_000L, cell.overtimeMs)
+    }
+
+    @Test fun importedFirstOpenNotesDisplayOnceWithoutDroppingOtherEventsOrArchiveRows() {
+        val key = "2026-09-12"
+        val late = observation(key, WorkObservationKind.TIMER_SURFACE_FIRST_SEEN, 19)
+        val started = observation(key, WorkObservationKind.COUNTDOWN_STARTED, 9)
+        val early = observation(key, WorkObservationKind.TIMER_SURFACE_FIRST_SEEN, 8)
+        val stopped = observation(key, WorkObservationKind.COUNTDOWN_STOPPED, 17)
+        val state = seeded().copy(observations = listOf(late, started, early, stopped))
+        val q = queries(state)
+        assertEquals(listOf(early, started, stopped), q.displayedObservations(key))
+        assertEquals(listOf(early, started, stopped, late), q.observationIndex[key])
+        assertEquals(listOf(late, started, early, stopped), q.state.observations)
+        assertTrue(q.displayedObservations("2026-09-13").isEmpty())
+    }
+
     @Test fun declaredOvertimeStartsAtThePlannedEndNotAtTheDeclaration() {
         var state = seeded()
         val payload = FoundationCompat.base64(

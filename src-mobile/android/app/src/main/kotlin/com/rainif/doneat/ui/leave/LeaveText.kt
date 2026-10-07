@@ -42,6 +42,7 @@ class LeaveText(private val res: Resources, val locale: Locale, val zone: ZoneId
 
     private val weekdayDay = pattern("MMMdEEE")
     private val monthDay = pattern("MMMd")
+    private val month = pattern("yMMMM")
     private val fullDate = pattern("yMMMd")
     private val time = pattern(if (use24Hour) "Hm" else "hm")
     private val numbers = TimerText(res, locale, use24Hour, hideEarnings = false, zone = zone)
@@ -58,6 +59,8 @@ class LeaveText(private val res: Resources, val locale: Locale, val zone: ZoneId
     /** "Mon, Oct 12": one day of a plan. */
     fun day(dayNumber: Int): String = weekdayDay.format(LeavePlannerSchedule.date(dayNumber))
     fun day(dayKey: String): String = ExtendedScheduleResolver.dayNumber(dayKey)?.let(::day) ?: dayKey
+
+    fun month(dayNumber: Int): String = month.format(LeavePlannerSchedule.date(dayNumber))
 
     fun monthDay(dayNumber: Int): String = monthDay.format(LeavePlannerSchedule.date(dayNumber))
     fun monthDay(dayKey: String): String = ExtendedScheduleResolver.dayNumber(dayKey)?.let(::monthDay) ?: dayKey

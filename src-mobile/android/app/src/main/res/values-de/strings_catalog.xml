@@ -590,6 +590,7 @@
     <string name="onboardingLunchNotifyHint">Zu Beginn und Ende der Pause wirst du erinnert.</string>
     <string name="onboardingOfflineBody">Kein Konto. Funktioniert ohne Netz.</string>
     <string name="onboardingOfflineTitle">Funktioniert offline</string>
+    <string name="onboardingOngoingSurface">Dauerhafte Benachrichtigung</string>
     <string name="onboardingPlusFocusBreakBody">Die nächste Aufgabe wartet, bis Sie bereit sind. Nichts beginnt von alleine.</string>
     <string name="onboardingPlusFocusTask">Beenden Sie den wöchentlichen Rückblick</string>
     <string name="onboardingPlusFocusTitle">Geben Sie einer Aufgabe eine klare Zeitspanne</string>
@@ -608,6 +609,7 @@
     <string name="onboardingScheduleBody">Wähle ein Muster, oder entscheide täglich.</string>
     <string name="onboardingScheduleTitle">Deine üblichen Zeiten</string>
     <string name="onboardingSetMyShift">Meine Schicht einrichten</string>
+    <string name="onboardingSetupSaveFailed">Deine Einstellungen konnten nicht gespeichert werden. Versuche es erneut.</string>
     <string name="onboardingShiftBody">Wechselwochen, Arbeits-/Freizeit-Rhythmen, Nachtschichten und Mittagspausen werden unterstützt.</string>
     <string name="onboardingShiftPreview">Schichtvorschau</string>
     <string name="onboardingStartExperience">Jetzt entdecken</string>
@@ -1006,7 +1008,9 @@
     <string name="shiftAlarmsLeadSection">Klingeln vorher</string>
     <string name="shiftAlarmsLifetimeWindow">Jedes Mal, wenn du DoneAt öffnest, reichen die Wecker ein Jahr voraus.</string>
     <string name="shiftAlarmsLimitReached">Dein Gerät begrenzt, wie viele Wecker gleichzeitig warten können, daher kommen die nächsten Schichten zuerst. Wenn du DoneAt öffnest, werden weitere gestellt.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Schichtwecker brauchen einen bestätigten Plus-Zugang. Bei Abos muss auch das Ablaufdatum bestätigt sein.</string>
     <string name="shiftAlarmsNoneUpcoming">Keine anstehenden Schichten zum Wecken</string>
+    <string name="shiftAlarmsNotificationsOff">Erlaube Benachrichtigungen für Wecker, damit du einen klingelnden Wecker öffnen, stoppen oder schlummern lassen kannst.</string>
     <string name="shiftAlarmsOnShort">Ein</string>
     <string name="shiftAlarmsOpenSettings">Einstellungen öffnen</string>
     <string name="shiftAlarmsRefresh">Wecker aktualisieren</string>

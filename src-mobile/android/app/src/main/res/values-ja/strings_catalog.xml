@@ -588,6 +588,7 @@
     <string name="onboardingLunchNotifyHint">休憩の始まりと終わりにお知らせします。</string>
     <string name="onboardingOfflineBody">アカウント不要。ネットなしで使えます。</string>
     <string name="onboardingOfflineTitle">オフラインでも動く</string>
+    <string name="onboardingOngoingSurface">常時表示の通知</string>
     <string name="onboardingPlusFocusBreakBody">次のタスクは、準備が完了するまで待機します。何もそれ自体では始まりません。</string>
     <string name="onboardingPlusFocusTask">週次レビューを終了する</string>
     <string name="onboardingPlusFocusTitle">1つのタスクに明確な時間を与える</string>
@@ -606,6 +607,7 @@
     <string name="onboardingScheduleBody">下から選ぶか、毎日自分で決めます。</string>
     <string name="onboardingScheduleTitle">いつもの勤務時間</string>
     <string name="onboardingSetMyShift">シフトを設定</string>
+    <string name="onboardingSetupSaveFailed">設定を保存できませんでした。もう一度お試しください。</string>
     <string name="onboardingShiftBody">隔週勤務、勤務・休日ローテーション、日をまたぐシフト、昼休みに対応します。</string>
     <string name="onboardingShiftPreview">シフトのプレビュー</string>
     <string name="onboardingStartExperience">体験を始める</string>
@@ -1003,7 +1005,9 @@
     <string name="shiftAlarmsLeadSection">鳴らすタイミング</string>
     <string name="shiftAlarmsLifetimeWindow">DoneAt を開くたびに、1年先までアラームを延長します。</string>
     <string name="shiftAlarmsLimitReached">デバイスで待機できるアラーム数には上限があるため、近いシフトから設定しています。DoneAt を開くと続きを設定します。</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">シフトアラームには確認済みの Plus 利用資格が必要です。サブスクリプションの場合は、有効期限の確認も必要です。</string>
     <string name="shiftAlarmsNoneUpcoming">起こすシフトの予定はありません</string>
+    <string name="shiftAlarmsNotificationsOff">鳴っているアラームを開いたり、停止やスヌーズをしたりできるよう、アラームの通知を許可してください。</string>
     <string name="shiftAlarmsOnShort">オン</string>
     <string name="shiftAlarmsOpenSettings">設定を開く</string>
     <string name="shiftAlarmsRefresh">アラームを更新</string>

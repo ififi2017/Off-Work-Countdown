@@ -26,6 +26,9 @@ sealed interface SessionRecordEffect {
 
     /** The timer's marks on today's row (iOS `persistProjectedDayOverride`). */
     data class UpsertOverride(val override: DayOverride) : SessionRecordEffect
+
+    /** Reconcile only the timer-owned projection; a different Records edit remains intact. */
+    data class ReplaceProjectedOverride(val previous: DayOverride?, val current: DayOverride?) : SessionRecordEffect
 }
 
 /**
@@ -80,7 +83,7 @@ class SessionCommands(private val env: SessionEnvironment, private val newId: ()
      * Starts the countdown: arms the schedule, starts a manual run, or with
      * [force] works a rest day. Repeating an accepted start is a no-op.
      */
-    fun start(state: SessionState, nowMs: Double, force: Boolean = false): SessionResult {
+    fun start(state: SessionState, nowMs: Double, force: Boolean = false, recordObservation: Boolean = true): SessionResult {
         val current = session(state)
         val mode = current.scheduleMode
         val startsManualSession = mode == ScheduleMode.OFF && (state.sessionTimeZone == null || state.earlyOffAtMs != null)
@@ -102,7 +105,10 @@ class SessionCommands(private val env: SessionEnvironment, private val newId: ()
         // The same shift with nudged hours keeps its early clock-off, so settlement stays on this run.
         if (shift == null || !session(s).isEndedEarly(shift)) s = s.clearingEarlyClockOff()
         s = withActiveBoundary(s, nowMs)
-        return SessionResult(true, s, listOfNotNull(observation(s, WorkObservationKind.COUNTDOWN_STARTED, nowMs), projectedOverride(s, nowMs)))
+        return SessionResult(true, s, listOfNotNull(
+            if (recordObservation) observation(s, WorkObservationKind.COUNTDOWN_STARTED, nowMs) else null,
+            projectedOverride(s, nowMs),
+        ))
     }
 
     /** Ends the current shift now. Overtime and a forced rest-day run stay until settlement. */
@@ -146,8 +152,12 @@ class SessionCommands(private val env: SessionEnvironment, private val newId: ()
     /** Rest-day manual timing only; leaves no "I worked" record. */
     fun cancelManualTiming(state: SessionState, nowMs: Double): SessionResult {
         if (state.forcedWorkdayDate == null) return rejected(state)
+        val previous = session(state).projectedDayOverride(nowMs)
         val s = state.copy(forcedWorkdayDate = null, overtimeEndAtMs = null).clearingEarlyClockOff().clearingEarlyClockIn()
-        return SessionResult(true, withActiveBoundary(s, nowMs))
+        val next = withActiveBoundary(s, nowMs)
+        val current = session(next).projectedDayOverride(nowMs)
+        val effects = if (previous != null || current != null) listOf(SessionRecordEffect.ReplaceProjectedOverride(previous, current)) else emptyList()
+        return SessionResult(true, next, effects)
     }
 
     /** Stops a manual run. A followed schedule has no run to stop. */
@@ -186,7 +196,7 @@ class SessionCommands(private val env: SessionEnvironment, private val newId: ()
 
     /** Arms a scheduled countdown once setup is done. */
     fun finishSetup(state: SessionState, nowMs: Double): SessionResult =
-        if (session(state).scheduleMode != ScheduleMode.OFF && !state.countdownStarted) start(state, nowMs) else rejected(state)
+        if (session(state).scheduleMode != ScheduleMode.OFF && !state.countdownStarted) start(state, nowMs, recordObservation = false) else rejected(state)
 
     /**
      * Housekeeping on launch, resume and each shift boundary. A scheduled

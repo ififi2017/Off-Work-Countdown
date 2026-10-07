@@ -1,9 +1,16 @@
 package com.rainif.doneat.plus
 
 import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.CancellationException
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,11 +39,15 @@ import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.AllInclusive
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.Luggage
 import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -49,8 +60,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -58,6 +75,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.expand
+import androidx.compose.ui.semantics.collapse
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -71,12 +90,22 @@ import com.rainif.doneat.core.designsystem.CelebratingBrandMark
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.PlusPendingAction
 import com.rainif.doneat.ui.settings.openUrl
+import com.rainif.doneat.core.designsystem.LocalDoneAtMotion
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
     pendingAction: PlusPendingAction? = null, onAuthorized: (PlusPendingAction) -> Unit = {}) {
+    PlusScreen(graph, onBack, pendingAction, dismissLabel = null, onAuthorized = onAuthorized)
+}
+
+@Composable
+private fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
+    pendingAction: PlusPendingAction? = null, dismissLabel: Int?,
+    onAuthorized: (PlusPendingAction) -> Unit = {}) {
     val authorized by graph.plus.authorized.collectAsStateWithLifecycle()
     val store by graph.plus.state.collectAsStateWithLifecycle()
+    val lifetimeOffer by graph.plus.lifetimeOffer.collectAsStateWithLifecycle()
     val activity = LocalContext.current.activity()
     val authorizedAtPresentation = rememberSaveable { authorized }
     LaunchedEffect(Unit) { graph.plus.refresh() }
@@ -91,12 +120,48 @@ fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
         onOpenUrl = { url -> activity?.let { openUrl(it, url) } },
         playsCelebrationOnAppear = !authorizedAtPresentation,
         onContinue = pendingAction?.let { action -> { onAuthorized(action) } },
-        backLabel = when (pendingAction) {
+        initialFeature = when (pendingAction) {
+            is PlusPendingAction.FocusCreate, PlusPendingAction.FocusHome -> PlusDemoKind.FOCUS
+            is PlusPendingAction.LeavePlan, PlusPendingAction.ShiftAlarms -> PlusDemoKind.REST
+            else -> PlusDemoKind.REPORTS
+        },
+        offerCard = { LifetimeOfferCard(graph.plus) },
+        showsLifetimeOffer = lifetimeOffer != null && graph.plus.hasAvailableLifetimeOffer,
+        backLabel = dismissLabel ?: when (pendingAction) {
             is PlusPendingAction.FocusCreate, PlusPendingAction.FocusHome -> R.string.focusTitle
             is PlusPendingAction.RecordsDay, PlusPendingAction.RecordsLifeEdit, PlusPendingAction.RecordsCharts -> R.string.recordsTab
             PlusPendingAction.CycleSummary, null -> R.string.settings
+            PlusPendingAction.ShiftAlarms -> R.string.shiftAlarmsTitle
             is PlusPendingAction.LeavePlan -> R.string.leaveResultsTitle
         })
+}
+
+/** Only the first introduction offers a new lifetime invitation after closing its regular paywall. */
+@Composable
+fun PlusIntroScreen(graph: AppGraph) {
+    val scope = rememberCoroutineScope()
+    var checkingOffer by remember { mutableStateOf(false) }
+    var showsOffer by rememberSaveable { mutableStateOf(false) }
+    fun finish() {
+        if (checkingOffer || showsOffer) return
+        checkingOffer = true
+        scope.launch {
+            try {
+                if (graph.plus.refreshAndRevealLifetimeOffer(LifetimeOfferSource.ONBOARDING)) showsOffer = true
+                else graph.plus.markIntroSeen()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                graph.plus.markIntroSeen()
+            } finally { checkingOffer = false }
+        }
+    }
+    BackHandler(!showsOffer) { finish() }
+    Box(Modifier.fillMaxSize()) {
+        PlusScreen(graph, onBack = ::finish, dismissLabel = R.string.close)
+        if (checkingOffer) CircularProgressIndicator(Modifier.align(Alignment.Center).size(DoneAtSpacing.xl))
+    }
+    if (showsOffer) LifetimeOfferSheet(graph.plus, onDismiss = { scope.launch { graph.plus.markIntroSeen() } })
 }
 
 /** Shared with the Debug gallery so visual checks exercise the complete purchase page. */
@@ -107,9 +172,18 @@ internal fun PlusPage(
     onRestore: () -> Unit, onRefresh: () -> Unit, onOpenUrl: (String) -> Unit,
     playsCelebrationOnAppear: Boolean = false, onContinue: (() -> Unit)? = null,
     backLabel: Int = R.string.settings,
+    showsLifetimeOffer: Boolean = false,
+    offerCard: (@Composable () -> Unit)? = null,
+    initialFeature: PlusDemoKind = PlusDemoKind.REPORTS,
 ) {
     var selectedPlan by rememberSaveable { mutableStateOf(PlusPlan.YEARLY) }
     val scroll = rememberScrollState()
+    val scope = rememberCoroutineScope()
+    val reduced = LocalDoneAtMotion.current.reduced
+    var viewport by remember { mutableStateOf(Rect.Zero) }
+    var pricingBounds by remember { mutableStateOf(Rect.Zero) }
+    val pricingVisible = viewport.height > 0f && pricingBounds.height > 0f &&
+        (minOf(viewport.bottom, pricingBounds.bottom) - maxOf(viewport.top, pricingBounds.top)) / pricingBounds.height >= .15f
     LaunchedEffect(authorized) { scroll.scrollTo(0) }
     val offers = listOf(PlusPlan.YEARLY, PlusPlan.MONTHLY, PlusPlan.LIFETIME)
         .mapNotNull { plan -> store.offers.firstOrNull { it.plan == plan } }
@@ -118,13 +192,14 @@ internal fun PlusPage(
         Column(Modifier.safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
             Box(Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                 IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(backLabel))
+                    Icon(if (backLabel == R.string.close) Icons.Outlined.Close else Icons.AutoMirrored.Outlined.ArrowBack,
+                        stringResource(backLabel))
                 }
                 Text(stringResource(R.string.plusSettings), Modifier.align(Alignment.Center).padding(horizontal = 48.dp),
                     style = MaterialTheme.typography.titleMedium)
             }
             Column(
-                Modifier.fillMaxSize().weight(1f).verticalScroll(scroll),
+                Modifier.fillMaxSize().weight(1f).onGloballyPositioned { viewport = it.boundsInWindow() }.verticalScroll(scroll),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = if (authorized) Arrangement.Center else Arrangement.Top,
             ) {
@@ -136,67 +211,55 @@ internal fun PlusPage(
                         PlusSubscriberThankYou(store, playsCelebrationOnAppear, onContinue,
                             onManage = { onOpenUrl("https://play.google.com/store/account/subscriptions") })
                     } else Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                        Text(stringResource(R.string.plusIntroTitle),
-                            Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold)
-                        Text(stringResource(R.string.plusAndroidIntroBody),
-                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    if (!authorized) PlusBenefits()
-                    if (!authorized && store.status == PlusStatus.FREE && selected != null) {
-                        BoxWithConstraints(Modifier.fillMaxWidth().selectableGroup()) {
-                            val rows = maxWidth < 352.dp || LocalDensity.current.fontScale >= 1.3f
-                            if (rows) {
-                                Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                                    offers.forEach { offer ->
-                                        PlusPlanCard(offer, selected.plan == offer.plan, !store.busy, Modifier.fillMaxWidth()) {
-                                            selectedPlan = offer.plan
-                                        }
-                                    }
-                                }
-                            } else {
-                                Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                                    offers.forEach { offer ->
-                                        PlusPlanCard(offer, selected.plan == offer.plan, !store.busy,
-                                            Modifier.weight(1f).fillMaxHeight()) { selectedPlan = offer.plan }
-                                    }
-                                }
+                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary.copy(alpha = .12f)) {
+                            Row(Modifier.padding(horizontal = DoneAtSpacing.m, vertical = DoneAtSpacing.xs),
+                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+                                Icon(Icons.Outlined.Star, null, Modifier.size(DoneAtSpacing.l), tint = MaterialTheme.colorScheme.primary)
+                                Text(stringResource(R.string.plusSection), style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                             }
                         }
-                        if (selected.sevenDayTrial) Text(
-                            Strings.plusAndroidYearlyTrialPrice(LocalResources.current, price = selected.price),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        DoneAtPrimaryButton(
-                            stringResource(when {
-                                selected.sevenDayTrial -> R.string.plusStartTrialShort
-                                selected.plan == PlusPlan.LIFETIME -> R.string.plusBuyLifetime
-                                else -> R.string.plusSubscribe
-                            }),
-                            onClick = { onPurchase(selected) }, modifier = Modifier.fillMaxWidth(),
-                            enabled = canPurchase && !store.busy,
-                        )
+                        Text(stringResource(R.string.onboardingPlusShowcaseTitle),
+                            Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.plusStoryBody),
+                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    if (!authorized && (store.status == PlusStatus.LOADING || store.busy)) {
-                        Box(Modifier.fillMaxWidth()) {
-                            CircularProgressIndicator(Modifier.align(Alignment.Center).size(DoneAtSpacing.xl))
+                    if (!authorized) PlusFeatureStage(initialSelection = initialFeature)
+                    if (!authorized) Column(Modifier.fillMaxWidth().onGloballyPositioned { pricingBounds = Rect(it.positionInWindow(), Size(it.size.width.toFloat(), it.size.height.toFloat())) },
+                        verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
+                        if (showsLifetimeOffer) offerCard?.invoke()
+                        val regularPlans: @Composable () -> Unit = {
+                            if (store.status == PlusStatus.FREE && selected != null) {
+                                PlusPurchasePlans(offers, selected, store.busy, canPurchase,
+                                    onSelection = { selectedPlan = it }, onPurchase = onPurchase)
+                            }
+                        }
+                        if (showsLifetimeOffer) PlusDisclosure(R.string.plusSeePlans, regularPlans)
+                        else regularPlans()
+                        if (!authorized && (store.status == PlusStatus.LOADING || store.busy)) {
+                            Box(Modifier.fillMaxWidth()) {
+                                CircularProgressIndicator(Modifier.align(Alignment.Center).size(DoneAtSpacing.xl))
+                            }
+                        }
+                        val message = when {
+                            store.operationFailed -> R.string.plusAndroidRequestFailed
+                            store.status == PlusStatus.UNCONFIGURED -> R.string.plusAndroidStoreUnconfigured
+                            store.status in listOf(PlusStatus.OFFLINE, PlusStatus.ERROR) -> R.string.plusAndroidStoreOffline
+                            store.status == PlusStatus.PENDING -> R.string.plusStatusPending
+                            !authorized && store.status == PlusStatus.FREE && offers.isEmpty() -> R.string.plusAndroidPlansUnavailable
+                            else -> null
+                        }
+                        if (message != null) Text(stringResource(message), style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (store.status in listOf(PlusStatus.OFFLINE, PlusStatus.ERROR) ||
+                            (store.status == PlusStatus.FREE && offers.isEmpty())) {
+                            TextButton(onClick = onRefresh, enabled = !store.busy, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                                Text(stringResource(R.string.retryAction))
+                            }
                         }
                     }
-                    val message = when {
-                        store.operationFailed -> R.string.plusAndroidRequestFailed
-                        store.status == PlusStatus.UNCONFIGURED -> R.string.plusAndroidStoreUnconfigured
-                        store.status in listOf(PlusStatus.OFFLINE, PlusStatus.ERROR) -> R.string.plusAndroidStoreOffline
-                        store.status == PlusStatus.PENDING -> R.string.plusStatusPending
-                        !authorized && store.status == PlusStatus.FREE && offers.isEmpty() -> R.string.plusAndroidPlansUnavailable
-                        else -> null
-                    }
-                    if (message != null) Text(stringResource(message), style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (store.status in listOf(PlusStatus.OFFLINE, PlusStatus.ERROR) ||
-                        (store.status == PlusStatus.FREE && offers.isEmpty())) {
-                        TextButton(onClick = onRefresh, enabled = !store.busy, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                            Text(stringResource(R.string.retryAction))
-                        }
-                    }
+                    if (!authorized) PlusDisclosure(R.string.plusAllBenefits) { PlusBenefits() }
                     if (!authorized && store.status != PlusStatus.UNCONFIGURED) {
                         TextButton(onClick = onRestore, enabled = !store.busy, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                             Text(stringResource(R.string.plusRestore), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -218,7 +281,54 @@ internal fun PlusPage(
                     }
                 }
             }
+            if (!authorized && !pricingVisible) {
+                DoneAtPrimaryButton(stringResource(R.string.plusSeePlans), onClick = {
+                    scope.launch {
+                        val target = (scroll.value + pricingBounds.top - viewport.top).toInt().coerceAtLeast(0)
+                        if (reduced) scroll.scrollTo(target) else scroll.animateScrollTo(target)
+                    }
+                }, modifier = Modifier.fillMaxWidth().padding(horizontal = DoneAtSpacing.page, vertical = DoneAtSpacing.s))
+            }
         }
+    }
+}
+
+@Composable
+private fun PlusPurchasePlans(offers: List<PlusOffer>, selected: PlusOffer, busy: Boolean, canPurchase: Boolean,
+    onSelection: (PlusPlan) -> Unit, onPurchase: (PlusOffer) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
+        BoxWithConstraints(Modifier.fillMaxWidth().selectableGroup()) {
+            val rows = maxWidth < 352.dp || LocalDensity.current.fontScale >= 1.3f
+            if (rows) Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                offers.forEach { offer -> PlusPlanCard(offer, selected.plan == offer.plan, !busy, Modifier.fillMaxWidth()) { onSelection(offer.plan) } }
+            } else Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                offers.forEach { offer -> PlusPlanCard(offer, selected.plan == offer.plan, !busy, Modifier.weight(1f).fillMaxHeight()) { onSelection(offer.plan) } }
+            }
+        }
+        if (selected.sevenDayTrial) Text(Strings.plusAndroidYearlyTrialPrice(LocalResources.current, price = selected.price),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        DoneAtPrimaryButton(stringResource(when {
+            selected.sevenDayTrial -> R.string.plusStartTrialShort
+            selected.plan == PlusPlan.LIFETIME -> R.string.plusBuyLifetime
+            else -> R.string.plusSubscribe
+        }), onClick = { onPurchase(selected) }, modifier = Modifier.fillMaxWidth(), enabled = canPurchase && !busy)
+    }
+}
+
+@Composable
+private fun PlusDisclosure(title: Int, content: @Composable () -> Unit) {
+    var expanded by rememberSaveable(title) { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+        TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth().semantics {
+            if (expanded) collapse { expanded = false; true } else expand { expanded = true; true }
+        }) {
+            Text(stringResource(title), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+            Icon(if (expanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown, null)
+        }
+        val duration = if (LocalDoneAtMotion.current.reduced) com.rainif.doneat.core.designsystem.DoneAtMotion.REDUCED_MS
+            else com.rainif.doneat.core.designsystem.DoneAtMotion.SELECTION_MS
+        AnimatedVisibility(expanded, enter = fadeIn(androidx.compose.animation.core.tween(duration)),
+            exit = fadeOut(androidx.compose.animation.core.tween(duration))) { content() }
     }
 }
 
@@ -321,7 +431,7 @@ private fun PlusPlanCard(offer: PlusOffer, selected: Boolean, enabled: Boolean, 
     }
 }
 
-private fun Context.activity(): Activity? {
+internal fun Context.activity(): Activity? {
     var current: Context = this
     while (current is ContextWrapper) {
         if (current is Activity) return current

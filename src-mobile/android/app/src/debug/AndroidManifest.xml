@@ -7,6 +7,11 @@
             android:name=".gallery.DesignGalleryActivity"
             android:exported="true"
             android:label="DoneAt design gallery" />
+        <!-- Isolated, read-only leave search; refuses the production application ID. -->
+        <activity
+            android:name=".gallery.ParityGalleryActivity"
+            android:exported="true"
+            android:label="DoneAt parity gallery" />
     </application>
 
 </manifest>

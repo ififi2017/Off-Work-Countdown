@@ -588,6 +588,7 @@
     <string name="onboardingLunchNotifyHint">Bạn sẽ được báo khi giờ nghỉ bắt đầu và kết thúc.</string>
     <string name="onboardingOfflineBody">Không cần tài khoản. Dùng được khi mất mạng.</string>
     <string name="onboardingOfflineTitle">Hoạt động ngoại tuyến</string>
+    <string name="onboardingOngoingSurface">Thông báo thường trực</string>
     <string name="onboardingPlusFocusBreakBody">Nhiệm vụ tiếp theo đợi cho đến khi bạn sẵn sàng. Không có gì tự nó bắt đầu.</string>
     <string name="onboardingPlusFocusTask">Kết thúc buổi đánh giá hàng tuần</string>
     <string name="onboardingPlusFocusTitle">Giao cho một nhiệm vụ một khoảng thời gian rõ ràng</string>
@@ -606,6 +607,7 @@
     <string name="onboardingScheduleBody">Chọn nhịp, hoặc mỗi ngày tự quyết.</string>
     <string name="onboardingScheduleTitle">Giờ làm quen thuộc</string>
     <string name="onboardingSetMyShift">Thiết lập ca làm của tôi</string>
+    <string name="onboardingSetupSaveFailed">Không thể lưu thiết lập. Vui lòng thử lại.</string>
     <string name="onboardingShiftBody">Hỗ trợ tuần xen kẽ, chu kỳ làm/nghỉ, ca qua đêm và giờ nghỉ trưa.</string>
     <string name="onboardingShiftPreview">Xem trước ca làm</string>
     <string name="onboardingStartExperience">Bắt đầu trải nghiệm</string>
@@ -1003,7 +1005,9 @@
     <string name="shiftAlarmsLeadSection">Reo trước</string>
     <string name="shiftAlarmsLifetimeWindow">Mỗi lần bạn mở DoneAt, báo thức được kéo dài đến một năm tới.</string>
     <string name="shiftAlarmsLimitReached">Thiết bị giới hạn số báo thức chờ cùng lúc, nên các ca gần nhất được ưu tiên. Mở DoneAt để đặt thêm.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Báo thức theo ca cần quyền sử dụng Plus đã được xác minh. Nếu dùng gói đăng ký, ngày hết hạn cũng cần được xác minh.</string>
     <string name="shiftAlarmsNoneUpcoming">Chưa có ca sắp tới cần báo thức</string>
+    <string name="shiftAlarmsNotificationsOff">Cho phép thông báo báo thức để bạn có thể mở, dừng hoặc báo lại khi báo thức đang reo.</string>
     <string name="shiftAlarmsOnShort">Bật</string>
     <string name="shiftAlarmsOpenSettings">Mở Cài đặt</string>
     <string name="shiftAlarmsRefresh">Làm mới báo thức</string>

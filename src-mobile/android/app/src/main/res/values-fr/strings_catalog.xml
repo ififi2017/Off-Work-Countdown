@@ -592,6 +592,7 @@
     <string name="onboardingLunchNotifyHint">Vous serez prévenu au début et à la fin de la pause.</string>
     <string name="onboardingOfflineBody">Pas de compte. Fonctionne hors ligne.</string>
     <string name="onboardingOfflineTitle">Fonctionne hors ligne</string>
+    <string name="onboardingOngoingSurface">Notification permanente</string>
     <string name="onboardingPlusFocusBreakBody">La tâche suivante attend que vous soyez prêt. Rien ne démarre tout seul.</string>
     <string name="onboardingPlusFocusTask">Terminez la revue hebdomadaire</string>
     <string name="onboardingPlusFocusTitle">Donnez à une tâche une période de temps claire</string>
@@ -610,6 +611,7 @@
     <string name="onboardingScheduleBody">Choisissez un rythme, ou décidez chaque jour.</string>
     <string name="onboardingScheduleTitle">Vos horaires habituels</string>
     <string name="onboardingSetMyShift">Configurer mes horaires</string>
+    <string name="onboardingSetupSaveFailed">Impossible d’enregistrer la configuration. Réessayez.</string>
     <string name="onboardingShiftBody">Semaines alternées, rotations travail/repos, postes de nuit et pauses déjeuner sont pris en charge.</string>
     <string name="onboardingShiftPreview">Aperçu du service</string>
     <string name="onboardingStartExperience">Découvrir l’app</string>
@@ -1009,7 +1011,9 @@
     <string name="shiftAlarmsLeadSection">Sonner avant</string>
     <string name="shiftAlarmsLifetimeWindow">Chaque fois que vous ouvrez DoneAt, les réveils sont prolongés jusqu’à un an.</string>
     <string name="shiftAlarmsLimitReached">Votre appareil limite le nombre de réveils en attente, les services les plus proches passent donc en premier. Ouvrir DoneAt en programme d’autres.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Les réveils de service nécessitent un accès Plus vérifié et, pour les abonnements, une date de fin vérifiée.</string>
     <string name="shiftAlarmsNoneUpcoming">Aucun service à venir pour vous réveiller</string>
+    <string name="shiftAlarmsNotificationsOff">Autorisez les notifications de réveil pour pouvoir ouvrir ou arrêter un réveil qui sonne, ou en reporter la sonnerie.</string>
     <string name="shiftAlarmsOnShort">Activé</string>
     <string name="shiftAlarmsOpenSettings">Ouvrir Réglages</string>
     <string name="shiftAlarmsRefresh">Actualiser les réveils</string>

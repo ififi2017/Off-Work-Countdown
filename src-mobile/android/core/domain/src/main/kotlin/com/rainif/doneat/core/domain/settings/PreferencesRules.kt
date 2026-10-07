@@ -100,12 +100,9 @@ object PreferencesRules {
 
     /**
      * The first-run reminder page's defaults (iOS `applyOnboardingReminderDefaultsIfNeeded`):
-     * lunch with both reminders, and a clock-off reminder if none was chosen.
+     * a clock-off reminder if none was chosen, without changing the lunch choice.
      */
     fun onboardingReminderDefaults(p: SyncedPreferences) = p.copy(
-        lunchEnabled = true,
-        lunchStartReminderEnabled = true,
-        lunchEndReminderEnabled = true,
         notificationMode = if (p.notificationMode == "off") "simple" else p.notificationMode,
     )
 

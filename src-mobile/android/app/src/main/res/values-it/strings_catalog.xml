@@ -592,6 +592,7 @@
     <string name="onboardingLunchNotifyHint">Ti avvisiamo all’inizio e alla fine della pausa.</string>
     <string name="onboardingOfflineBody">Nessun account. Funziona senza rete.</string>
     <string name="onboardingOfflineTitle">Funziona offline</string>
+    <string name="onboardingOngoingSurface">Notifica permanente</string>
     <string name="onboardingPlusFocusBreakBody">Il prossimo compito attende finché non sei pronto. Niente inizia da solo.</string>
     <string name="onboardingPlusFocusTask">Termina la revisione settimanale</string>
     <string name="onboardingPlusFocusTitle">Assegna a un compito un periodo di tempo chiaro</string>
@@ -610,6 +611,7 @@
     <string name="onboardingScheduleBody">Scegli uno schema, o decidi ogni giorno.</string>
     <string name="onboardingScheduleTitle">I tuoi orari abituali</string>
     <string name="onboardingSetMyShift">Imposta il mio turno</string>
+    <string name="onboardingSetupSaveFailed">Impossibile salvare la configurazione. Riprova.</string>
     <string name="onboardingShiftBody">Sono supportati settimane alterne, cicli lavoro/riposo, turni notturni e pause pranzo.</string>
     <string name="onboardingShiftPreview">Anteprima del turno</string>
     <string name="onboardingStartExperience">Inizia a esplorare</string>
@@ -1009,7 +1011,9 @@
     <string name="shiftAlarmsLeadSection">Suona prima</string>
     <string name="shiftAlarmsLifetimeWindow">Ogni volta che apri DoneAt, le sveglie si estendono fino a un anno.</string>
     <string name="shiftAlarmsLimitReached">Il dispositivo limita quante sveglie possono restare in attesa, quindi i turni più vicini hanno la precedenza. Aprendo DoneAt se ne impostano altre.</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">Le sveglie dei turni richiedono un accesso Plus verificato e, per gli abbonamenti, una data di scadenza verificata.</string>
     <string name="shiftAlarmsNoneUpcoming">Nessun turno in arrivo per cui svegliarti</string>
+    <string name="shiftAlarmsNotificationsOff">Consenti le notifiche delle sveglie per poter aprire, interrompere o posticipare una sveglia che sta suonando.</string>
     <string name="shiftAlarmsOnShort">Sì</string>
     <string name="shiftAlarmsOpenSettings">Apri Impostazioni</string>
     <string name="shiftAlarmsRefresh">Aggiorna sveglie</string>

@@ -58,6 +58,7 @@ data class LeavePlannerDay(
 class LeaveShiftHalves(segments: List<ShiftSegment>) {
     val first: List<ShiftSegment>
     val second: List<ShiftSegment>
+    private val whole: List<ShiftSegment>
 
     init {
         val ordered = segments.filter { it.endAtMs > it.startAtMs }.sortedBy { it.startAtMs }
@@ -82,17 +83,18 @@ class LeaveShiftHalves(segments: List<ShiftSegment>) {
         }
         this.first = first
         this.second = second
+        this.whole = first + second
     }
 
     fun removed(portion: LeavePortion): List<ShiftSegment> = when (portion) {
-        LeavePortion.WHOLE -> first + second
+        LeavePortion.WHOLE -> whole
         LeavePortion.FIRST_HALF -> first
         LeavePortion.SECOND_HALF -> second
     }
 
     /** What is still worked once [portion] is taken; everything when null. */
     fun remaining(after: LeavePortion?): List<ShiftSegment> = when (after) {
-        null -> first + second
+        null -> whole
         LeavePortion.WHOLE -> emptyList()
         LeavePortion.FIRST_HALF -> second
         LeavePortion.SECOND_HALF -> first
@@ -163,7 +165,7 @@ object LeavePlanner {
         val nowMs: Double,
         /** The balances the user chose for this plan, in their order. */
         val budgets: List<LeaveBudget>,
-        val maximumProposals: Int = 5,
+        val maximumProposals: Int = Int.MAX_VALUE,
     )
 
     /**
@@ -254,14 +256,17 @@ private class Search private constructor(
                 .sortedWith(compareBy<Candidate> { -(it.last - it.first) }.thenBy { it.cost }.thenBy { it.first })
         }
         val chosen = ArrayList<LeavePlanProposal>()
-        val origin = days[0].dayNumber
+        val chosenCandidates = ArrayList<Candidate>()
         for (candidate in eligible) {
             if (chosen.size == query.maximumProposals) break
-            val overlapsChosen = chosen.any {
-                candidate.first <= it.lastRestDayNumber - origin && candidate.last >= it.firstRestDayNumber - origin
+            // Sharing a weekend does not make two leave requests the same plan.
+            // Discard only a fully covered stretch which costs no less.
+            val isDominated = chosenCandidates.any {
+                it.first <= candidate.first && it.last >= candidate.last && it.cost <= candidate.cost
             }
-            if (overlapsChosen) continue
+            if (isDominated) continue
             chosen += proposal(candidate) ?: continue
+            chosenCandidates += candidate
         }
         return chosen
     }
@@ -275,7 +280,7 @@ private class Search private constructor(
 
         // A spare half day is spent on leaving earlier, then on returning
         // later. Neither adds a full rest day, so neither affects the ranking.
-        if (query.goal is LeavePlanner.Goal.LeaveAtMost) {
+        if (query.goal is LeavePlanner.Goal.LeaveAtMost && candidate.cost < ceiling) {
             val edges = listOf(
                 Triple(adjacentShiftBefore(runStart, leave), LeavePortion.SECOND_HALF, LeavePlanItem.Role.EARLY_DEPARTURE),
                 Triple(adjacentShiftAfter(runEnd, leave), LeavePortion.FIRST_HALF, LeavePlanItem.Role.LATE_RETURN),

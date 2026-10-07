@@ -588,6 +588,7 @@
     <string name="onboardingLunchNotifyHint">午休开始和结束都会提醒你。</string>
     <string name="onboardingOfflineBody">不用账号，也不依赖网络。</string>
     <string name="onboardingOfflineTitle">离线也能用</string>
+    <string name="onboardingOngoingSurface">常驻通知</string>
     <string name="onboardingPlusFocusBreakBody">下一项任务会等你准备好，不会自动开始。</string>
     <string name="onboardingPlusFocusTask">完成本周复盘</string>
     <string name="onboardingPlusFocusTitle">给一件事留出完整的一段时间</string>
@@ -606,6 +607,7 @@
     <string name="onboardingScheduleBody">选一种排班，或每天再决定。</string>
     <string name="onboardingScheduleTitle">你通常几点上下班</string>
     <string name="onboardingSetMyShift">设置我的班次</string>
+    <string name="onboardingSetupSaveFailed">设置暂时没能保存，请重试。</string>
     <string name="onboardingShiftBody">大小周、轮班轮休、跨夜班次和午休都支持。</string>
     <string name="onboardingShiftPreview">班次预览</string>
     <string name="onboardingStartExperience">开始体验</string>
@@ -1003,7 +1005,9 @@
     <string name="shiftAlarmsLeadSection">提前多久响</string>
     <string name="shiftAlarmsLifetimeWindow">每次打开 DoneAt，闹钟都会续排到一年后。</string>
     <string name="shiftAlarmsLimitReached">设备一次能等待的闹钟数量有限，已优先安排最近的班次。打开 DoneAt 会继续安排。</string>
+    <string name="shiftAlarmsNeedsVerifiedExpiry">班次闹钟需要已核验的 Plus 权益；订阅还需要已核验的到期时间。</string>
     <string name="shiftAlarmsNoneUpcoming">暂时没有需要响铃的班次</string>
+    <string name="shiftAlarmsNotificationsOff">允许闹钟通知，才能打开、停止或稍后提醒正在响铃的闹钟。</string>
     <string name="shiftAlarmsOnShort">开启</string>
     <string name="shiftAlarmsOpenSettings">打开设置</string>
     <string name="shiftAlarmsRefresh">重新安排</string>
