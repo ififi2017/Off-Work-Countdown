@@ -87,6 +87,15 @@ struct LeavePlanCalendar: View {
             }
             .id(page.firstDayNumber)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 8)))
+            ForEach(proposal.caveats.compactMap { caveat -> Int? in
+                if case .holidaysEstimated(let year) = caveat { return year }
+                return nil
+            }.sorted(), id: \.self) { year in
+                Text(text.t("leaveEstimatedHolidaysYear", values: ["year": text.formatYear(year)]))
+                    .font(.caption)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 12) { legends }
                 VStack(alignment: .leading, spacing: 6) { legends }

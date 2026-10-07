@@ -472,7 +472,10 @@ function MonthCalendar({ lang, plan, month, today, types, weekdayName, holidays,
           const isToday = key === today;
           const date = dateFormat.format(Date.UTC(year, monthNumber - 1, index + 1));
           const holiday = holidayDay(holidays, key, lang);
-          const holidayLabel = holiday && `${holiday.name} · ${t(holiday.isWorkday ? "holidayMakeupWorkday" : "holidayRestDay")}`;
+          const holidayLabel = holiday && [holiday.name,
+            t(holiday.isWorkday ? "holidayMakeupWorkday" : "holidayRestDay"),
+            holidays?.estimatedYears?.includes(year) ? t("holidayEstimatedLabel") : null,
+          ].filter(Boolean).join(" · ");
           const label = [date, type?.name ?? t("extendedUnassigned"), holidayLabel, isToday ? t("extendedToday") : null].filter(Boolean).join(", ");
           const content = <>
             <span className={`text-sm tabular-nums leading-5 ${isToday ? "font-semibold text-orange-600 dark:text-orange-400" : "text-gray-900 dark:text-gray-100"}`}>{numberFormat.format(index + 1)}</span>

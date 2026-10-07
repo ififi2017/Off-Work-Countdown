@@ -56,6 +56,15 @@ struct LeavePlanResults: View {
                         .background(OWCDesign.card, in: .rect(cornerRadius: OWCDesign.cardRadius))
                         .owcRevealed(arrived, index: 0, reduceMotion: reduceMotion)
 
+                    ForEach(estimatedYears(selected), id: \.self) { year in
+                        Label(text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(year)]),
+                              systemImage: "exclamationmark.triangle")
+                            .font(.caption)
+                            .foregroundStyle(OWCDesign.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
                     VStack(spacing: 8) {
                         categoryPicker
                         navigation
@@ -169,6 +178,11 @@ struct LeavePlanResults: View {
                         .foregroundStyle(OWCDesign.secondary)
                         .opacity(proposal.caveats.isEmpty ? 0 : 1)
                         .accessibilityHidden(proposal.caveats.isEmpty)
+                    ForEach(estimatedYears(proposal), id: \.self) { year in
+                        Text(text.t("leaveEstimatedHolidaysYear", values: ["year": text.formatYear(year)]))
+                            .font(.caption)
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
                 }
                 .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
@@ -217,5 +231,12 @@ struct LeavePlanResults: View {
         withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) {
             groupID = visibleGroups[index].id
         }
+    }
+
+    private func estimatedYears(_ proposal: LeavePlanProposal) -> [Int] {
+        proposal.caveats.compactMap { caveat in
+            if case .holidaysEstimated(let year) = caveat { return year }
+            return nil
+        }.sorted()
     }
 }

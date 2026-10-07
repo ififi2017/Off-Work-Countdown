@@ -1241,6 +1241,15 @@
         "year"
       ]
     },
+    "holidayEstimatedLabel": {
+      "resource": "string/holidayEstimatedLabel"
+    },
+    "holidayEstimatedYearWarning": {
+      "resource": "string/holidayEstimatedYearWarning",
+      "params": [
+        "year"
+      ]
+    },
     "holidayMakeupWorkday": {
       "resource": "string/holidayMakeupWorkday"
     },
@@ -1355,6 +1364,12 @@
     },
     "leaveEstimated": {
       "resource": "string/leaveEstimated"
+    },
+    "leaveEstimatedHolidaysYear": {
+      "resource": "string/leaveEstimatedHolidaysYear",
+      "params": [
+        "year"
+      ]
     },
     "leaveEstimatedYear": {
       "resource": "string/leaveEstimatedYear",

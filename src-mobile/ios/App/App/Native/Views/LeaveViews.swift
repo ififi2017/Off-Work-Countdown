@@ -523,6 +523,10 @@ private struct LeavePlannerSheet: View {
                             Label(text.t("leaveMainlandHolidaysMissing", values: ["year": String(year)]),
                                   systemImage: "info.circle")
                         }
+                        ForEach(estimatedYears, id: \.self) { year in
+                            Label(text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(year)]),
+                                  systemImage: "exclamationmark.triangle")
+                        }
                     }
                 }
                 .environment(\.calendar, calendar)
@@ -613,6 +617,11 @@ private struct LeavePlannerSheet: View {
     private var missingYears: [Int] {
         guard let request else { return [] }
         return shifts.missingMainlandHolidayYears(in: request.fromDayNumber...request.throughDayNumber)
+    }
+
+    private var estimatedYears: [Int] {
+        guard let request else { return [] }
+        return shifts.estimatedMainlandHolidayYears(in: request.fromDayNumber...request.throughDayNumber)
     }
 
     private func date(_ dayNumber: Int) -> Date? {
@@ -743,12 +752,14 @@ private struct LeavePlanDetail: View {
 
     private enum Caveat: Hashable {
         case missingHolidays(Int)
+        case predictedHolidays(Int)
         case carriedOver
         case unassigned
 
         func label(_ text: AppText) -> String {
             switch self {
             case .missingHolidays(let year): text.t("leaveEstimatedYear", values: ["year": String(year)])
+            case .predictedHolidays(let year): text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(year)])
             case .carriedOver: text.t("leaveCarriedOverCaveat")
             case .unassigned: text.t("leaveUnassignedCaveat")
             }
@@ -759,6 +770,7 @@ private struct LeavePlanDetail: View {
         proposal.caveats.map { caveat -> Caveat in
             switch caveat {
             case .holidaysNotIncluded(let year): .missingHolidays(year)
+            case .holidaysEstimated(let year): .predictedHolidays(year)
             case .carriedOverRoster: .carriedOver
             case .unassigned: .unassigned
             }

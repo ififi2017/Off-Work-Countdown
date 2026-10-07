@@ -499,7 +499,9 @@ private fun MonthCalendar(
             }
             if (region != null) {
                 val warning = when {
+                    holidays.isEstimated(year, region) -> Strings.holidayEstimatedYearWarning(LocalResources.current, year.toString())
                     !holidays.covers(year, region) -> Strings.holidayCoverageYearWarning(LocalResources.current, year.toString())
+                    monthValue == 12 && holidays.isEstimated(year + 1, region) -> Strings.holidayEstimatedYearWarning(LocalResources.current, (year + 1).toString())
                     monthValue == 12 && !holidays.covers(year + 1, region) -> Strings.holidayCoverageNextYearWarning(LocalResources.current, (year + 1).toString())
                     else -> null
                 }
@@ -778,7 +780,14 @@ private fun SelectedDay(
             Column(Modifier.weight(1f).padding(start = DoneAtSpacing.xs)) {
                 Text(DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMMMdEEEE"), locale).format(LocalDate.parse(selected)), style = MaterialTheme.typography.titleSmall)
                 holiday?.let {
-                    Text("${holidayName(it, locale)} · ${stringResource(if (it.isWorkday) R.string.holidayMakeupWorkday else R.string.holidayRestDay)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    val predicted = holidays.isEstimated(LocalDate.parse(selected).year, region)
+                    Text(
+                        listOfNotNull(holidayName(it, locale),
+                            stringResource(if (it.isWorkday) R.string.holidayMakeupWorkday else R.string.holidayRestDay),
+                            stringResource(R.string.holidayEstimatedLabel).takeIf { predicted },
+                        ).joinToString(" · "),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 Text(
                     stringResource(

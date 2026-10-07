@@ -17,21 +17,26 @@ export function desktopHolidayFiles() {
   const attributions = JSON.parse(readFileSync(attributionsSource, "utf8"));
   const files = new Map();
   const regions = {};
+  const estimatedYears = {};
   for (const [id, region] of Object.entries(data.regions).sort(([a], [b]) => a.localeCompare(b))) {
     // Each region keeps only the names it uses, renumbered from zero.
     const used = [...new Set(region.days.map(([, , name]) => name))];
     const local = new Map(used.map((name, index) => [name, index]));
     const days = Object.fromEntries(region.days.map(([date, work, name]) => [String(date), [work, local.get(name)]]));
     regions[id] = [region.coveredFromYear, region.coveredThroughYear];
+    if (region.estimatedYears?.length) estimatedYears[id] = region.estimatedYears;
     files.set(`${id}.json`, JSON.stringify({
-      datasetVersion: data.datasetVersion,
+      datasetVersion: id === "CN" ? data.datasetVersion : (data.baseDatasetVersion ?? data.datasetVersion),
       coveredFromYear: region.coveredFromYear,
       coveredThroughYear: region.coveredThroughYear,
       names: used.map((name) => data.names[name]),
       days,
+      ...(region.estimatedYears?.length ? { estimatedYears: region.estimatedYears } : {}),
     }) + "\n");
   }
-  files.set("index.json", JSON.stringify({ datasetVersion: data.datasetVersion, regions, sources: attributions }) + "\n");
+  files.set("index.json", JSON.stringify({ datasetVersion: data.datasetVersion, regions, sources: attributions,
+    ...(Object.keys(estimatedYears).length ? { estimatedYears } : {}),
+  }) + "\n");
   return files;
 }
 
@@ -56,8 +61,11 @@ if (!isMain) {
   }
   console.log(`public/holidays matches the iOS holiday dataset (${files.size} files).`);
 } else {
-  rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
-  for (const [name, text] of files) writeFileSync(join(outDir, name), text);
-  console.log(`Wrote ${files.size} files to public/holidays.`);
+  const stale = staleDesktopHolidayFiles(files);
+  for (const name of stale) {
+    if (files.has(name)) writeFileSync(join(outDir, name), files.get(name));
+    else rmSync(join(outDir, name), { force: true });
+  }
+  console.log(`Updated ${stale.length} files in public/holidays (${files.size} total).`);
 }

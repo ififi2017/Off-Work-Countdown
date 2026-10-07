@@ -9,6 +9,7 @@ import json
 import sys
 import tempfile
 import zipfile
+from datetime import date
 from pathlib import Path
 
 
@@ -93,30 +94,64 @@ def load_global_regions(holidays) -> dict[str, list[tuple[int, int, dict[str, st
     return regions
 
 
-def load_china(source: Path) -> list[tuple[int, int, dict[str, str]]]:
+def load_predictions(lock: dict) -> dict:
+    predictions = {}
+    for entry in lock.get("chinaPredictions", []):
+        path = ROOT / entry["path"]
+        if sha256(path) != entry["sha256"]:
+            raise ValueError(f"China prediction {path} does not match source lock")
+        payload = json.loads(path.read_text())
+        year = entry["year"]
+        if (payload.get("year") != year or payload.get("version") != entry["version"]
+                or payload.get("status") != "user-approved-prediction"
+                or entry.get("status") != payload["status"] or not payload.get("days")):
+            raise ValueError(f"China prediction {year} metadata is invalid")
+        if year in predictions:
+            raise ValueError(f"duplicate China prediction for {year}")
+        predictions[year] = payload
+    return predictions
+
+
+def load_china(source: Path, predictions: dict | None = None) -> tuple[list, list[int]]:
+    """Official announcements take precedence over pinned local estimates.
+
+    Sources are reviewed and hash-locked by the caller; this never fetches data
+    or changes a selected year based on the current date.
+    """
+    predictions = predictions or {}
     rows = []
+    estimated_years = []
     for year in CN_YEARS:
         payload = json.loads((source / f"{year}.json").read_text())
-        if year == 2027:
-            if payload["papers"] or payload["days"]:
-                raise ValueError("2027 China data is no longer empty; review and update coverage")
-            continue
-        if not payload["papers"] or not payload["days"]:
-            raise ValueError(f"China {year} has no announcement data")
-        for day in payload["days"]:
-            date_value = int(day["date"].replace("-", ""))
-            if not 20070101 <= date_value <= 20261231:
+        if not payload["papers"] and not payload["days"]:
+            if year not in predictions:
                 continue
+            payload = predictions[year]
+            estimated_years.append(year)
+        elif not payload["papers"] or not payload["days"]:
+            raise ValueError(f"China {year} has incomplete announcement data")
+        for day in payload["days"]:
+            civil_date = date.fromisoformat(day["date"])
+            if year in estimated_years and civil_date.year != year:
+                raise ValueError(f"China {year} prediction has a date outside its source year")
+            # New Year notices can include the preceding December. Retain the
+            # existing covered-window policy without inventing an extra year.
+            if civil_date.year < min(CN_YEARS) or civil_date.year > max(CN_YEARS):
+                continue
+            if type(day["isOffDay"]) is not bool or not day["name"]:
+                raise ValueError(f"China {year} has an invalid day")
+            date_value = int(civil_date.strftime("%Y%m%d"))
             source_name = day["name"]
             rows.append((
                 date_value,
                 0 if day["isOffDay"] else 1,
                 {language: source_name for language in LANGUAGES},
             ))
-    return sorted(rows)
+    return sorted(rows), estimated_years
 
 
-def compact(regions, dataset_version: str) -> dict:
+def compact(regions, dataset_version: str, estimated_years: dict | None = None,
+            base_dataset_version: str | None = None) -> dict:
     names = []
     name_indexes = {}
     output_regions = {}
@@ -134,18 +169,27 @@ def compact(regions, dataset_version: str) -> dict:
             compact_rows.append([date, workday, name_indexes[key]])
         years = [date // 10000 for date in seen_dates]
         output_regions[code] = {
-            "coveredFromYear": 2007 if code == "CN" else 2020,
-            "coveredThroughYear": 2026 if code == "CN" else 2035,
+            "coveredFromYear": min(years) if code == "CN" else 2020,
+            "coveredThroughYear": max(years) if code == "CN" else 2035,
             "days": compact_rows,
         }
+        if estimated_years and estimated_years.get(code):
+            output_regions[code]["estimatedYears"] = sorted(estimated_years[code])
+        if code == "CN" and set(years) != set(range(min(years), max(years) + 1)):
+            raise ValueError("China coverage contains an unavailable year")
         if code != "CN" and years and (min(years) < 2020 or max(years) > 2035):
             raise ValueError(f"{code} produced a date outside 2020-2035")
-    return {
+    payload = {
         "schemaVersion": 1,
         "datasetVersion": dataset_version,
         "names": names,
         "regions": output_regions,
     }
+    # Retain the unchanged upstream revision on exported non-China calendars.
+    # The bundle/index revision identifies the combined official + local inputs.
+    if base_dataset_version:
+        payload["baseDatasetVersion"] = base_dataset_version
+    return payload
 
 
 def main() -> None:
@@ -159,6 +203,7 @@ def main() -> None:
         raise ValueError("vacanza/holidays wheel does not match source lock")
     if holiday_cn_hash(args.holiday_cn) != lock["holidayCn"]["dataSha256"]:
         raise ValueError("holiday-cn inputs do not match source lock")
+    predictions = load_predictions(lock)
 
     with tempfile.TemporaryDirectory() as package_directory:
         with zipfile.ZipFile(args.holidays_wheel) as wheel:
@@ -169,8 +214,9 @@ def main() -> None:
         if holidays.__version__ != lock["vacanzaHolidays"]["version"]:
             raise ValueError("vacanza/holidays package version does not match source lock")
         regions = load_global_regions(holidays)
-        regions["CN"] = load_china(args.holiday_cn)
-        payload = compact(regions, lock["datasetVersion"])
+        regions["CN"], estimated_years = load_china(args.holiday_cn, predictions)
+        payload = compact(regions, lock["datasetVersion"], {"CN": estimated_years},
+                          lock.get("baseDatasetVersion"))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n")
     print(f"Wrote {len(payload['regions'])} regions and {len(payload['names'])} names to {args.output}")

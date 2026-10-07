@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">सुझाव: %1$s</string>
     <string name="holidayCoverageNextYearWarning">%1$s का डेटा अभी नहीं है। सामान्य शेड्यूल उपयोग होगा। ऐप अपडेट जाँचें।</string>
     <string name="holidayCoverageYearWarning">%1$s का डेटा नहीं है। सामान्य शेड्यूल उपयोग होगा। ऐप अपडेट जाँचें।</string>
+    <string name="holidayEstimatedLabel">अनुमानित</string>
+    <string name="holidayEstimatedYearWarning">चीन के मुख्य भूभाग के लिए %1$s की छुट्टियों और बदले में काम के दिनों का यह अनुमान है। इसे केवल संदर्भ के लिए देखें; इसे पक्की छुट्टी की जानकारी न मानें। वर्ष के अंत में जारी चीन की राज्य परिषद की आधिकारिक सूचना को ही मानें। अगले वर्ष की छुट्टियों की व्यवस्था घोषित होने के बाद DoneAt जल्द से जल्द डेटा अपडेट करेगा; कृपया ऐप अपडेट रखें।</string>
     <string name="holidayMakeupWorkday">प्रतिपूरक कार्यदिवस</string>
     <string name="holidayRestDay">अवकाश</string>
     <string name="holidaySource">अवकाश कैलेंडर</string>
@@ -360,6 +362,7 @@
     <string name="leaveEditBalance">छुट्टी शेष</string>
     <string name="leaveEntitled">कुल</string>
     <string name="leaveEstimated">आंशिक रूप से आपके शेड्यूल से अनुमानित</string>
+    <string name="leaveEstimatedHolidaysYear">%1$s की अनुमानित छुट्टियाँ उपयोग करता है</string>
     <string name="leaveEstimatedYear">%1$s आपके सामान्य शेड्यूल से चलता है; इस वर्ज़न में अभी उसकी छुट्टियाँ नहीं हैं।</string>
     <string name="leaveFind">खोजें</string>
     <string name="leaveFirstHalf">पहला आधा</string>

@@ -21,6 +21,8 @@ nonisolated enum LeavePlannerCaveat: Hashable, Sendable {
     /// The holiday region is on, but this build carries no data for `year`,
     /// so the day follows the ordinary schedule without predicted holidays.
     case holidaysNotIncluded(year: Int)
+    /// This year's holidays and makeup days are explicitly marked predictions.
+    case holidaysEstimated(year: Int)
     /// The roster repeats an earlier month the user filled in.
     case carriedOverRoster
     /// Nothing assigns the day, so it is taken as rest.

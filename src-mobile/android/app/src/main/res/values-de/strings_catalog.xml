@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">Vorschlag: %1$s</string>
     <string name="holidayCoverageNextYearWarning">Daten für %1$s fehlen noch. Der normale Plan gilt. Suche nach App-Updates.</string>
     <string name="holidayCoverageYearWarning">Keine Daten für %1$s. Der normale Plan gilt. Suche nach App-Updates.</string>
+    <string name="holidayEstimatedLabel">Prognose</string>
+    <string name="holidayEstimatedYearWarning">Die Feiertage und Ausgleichsarbeitstage auf dem chinesischen Festland für %1$s sind eine Prognose. Sie dienen nur zur Orientierung und sind keine bestätigten Feiertagsangaben. Maßgeblich ist die offizielle Mitteilung des chinesischen Staatsrats zum Jahresende. DoneAt aktualisiert die Daten so bald wie möglich nach Bekanntgabe der Regelung für das Folgejahr. Bitte halte die App aktuell.</string>
     <string name="holidayMakeupWorkday">Ersatzarbeitstag</string>
     <string name="holidayRestDay">Feiertag</string>
     <string name="holidaySource">Feiertagskalender</string>
@@ -360,6 +362,7 @@
     <string name="leaveEditBalance">Urlaubskonto</string>
     <string name="leaveEntitled">Anspruch</string>
     <string name="leaveEstimated">Teilweise aus deinem Dienstplan geschätzt</string>
+    <string name="leaveEstimatedHolidaysYear">Nutzt die prognostizierten Feiertage für %1$s</string>
     <string name="leaveEstimatedYear">%1$s folgt deinem üblichen Dienstplan; diese Version enthält noch keine Feiertage dafür.</string>
     <string name="leaveFind">Suchen</string>
     <string name="leaveFirstHalf">Erste Hälfte</string>

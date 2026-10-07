@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">Disarankan: %1$s</string>
     <string name="holidayCoverageNextYearWarning">Data %1$s belum tersedia. Jadwal biasa akan digunakan. Periksa pembaruan aplikasi.</string>
     <string name="holidayCoverageYearWarning">Tidak ada data %1$s. Jadwal biasa akan digunakan. Periksa pembaruan aplikasi.</string>
+    <string name="holidayEstimatedLabel">Perkiraan</string>
+    <string name="holidayEstimatedYearWarning">Hari libur dan hari kerja pengganti di Tiongkok daratan untuk %1$s merupakan perkiraan. Informasi ini hanya sebagai referensi dan jangan dianggap sebagai informasi hari libur yang resmi. Ikuti pengumuman resmi Dewan Negara Tiongkok yang diterbitkan menjelang akhir tahun. DoneAt akan memperbarui data secepatnya setelah jadwal tahun berikutnya diumumkan; harap selalu perbarui aplikasi.</string>
     <string name="holidayMakeupWorkday">Hari kerja pengganti</string>
     <string name="holidayRestDay">Hari libur</string>
     <string name="holidaySource">Kalender hari libur</string>
@@ -359,6 +361,7 @@
     <string name="leaveEditBalance">Saldo cuti</string>
     <string name="leaveEntitled">Jatah</string>
     <string name="leaveEstimated">Sebagian diperkirakan dari jadwalmu</string>
+    <string name="leaveEstimatedHolidaysYear">Menggunakan perkiraan hari libur tahun %1$s</string>
     <string name="leaveEstimatedYear">%1$s mengikuti jadwal biasamu; versi ini belum memuat hari liburnya.</string>
     <string name="leaveFind">Cari</string>
     <string name="leaveFirstHalf">Paruh pertama</string>

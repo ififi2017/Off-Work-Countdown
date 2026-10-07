@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">제안: %1$s</string>
     <string name="holidayCoverageNextYearWarning">%1$s년 데이터가 아직 없습니다. 평소 일정이 적용됩니다. 앱 업데이트를 확인하세요.</string>
     <string name="holidayCoverageYearWarning">%1$s년 데이터가 없습니다. 평소 일정이 적용됩니다. 앱 업데이트를 확인하세요.</string>
+    <string name="holidayEstimatedLabel">예측</string>
+    <string name="holidayEstimatedYearWarning">중국 본토의 %1$s년 공휴일과 대체 근무일은 예측 정보입니다. 참고용으로만 확인하고 확정된 휴일 정보로 여기지 마세요. 연말에 발표되는 중국 국무원의 공식 공고를 기준으로 삼아 주세요. DoneAt은 다음 해 공휴일 일정이 발표된 뒤 가능한 한 빨리 데이터를 업데이트합니다. 앱을 최신 상태로 유지해 주세요.</string>
     <string name="holidayMakeupWorkday">대체 근무일</string>
     <string name="holidayRestDay">공휴일</string>
     <string name="holidaySource">공휴일 달력</string>
@@ -359,6 +361,7 @@
     <string name="leaveEditBalance">휴가 잔여</string>
     <string name="leaveEntitled">총 일수</string>
     <string name="leaveEstimated">일부는 현재 일정으로 추정</string>
+    <string name="leaveEstimatedHolidaysYear">%1$s년 예측 공휴일 사용</string>
     <string name="leaveEstimatedYear">%1$s년은 평소 일정으로 계산했어요. 이 버전에는 아직 그해 공휴일이 없어요.</string>
     <string name="leaveFind">찾기</string>
     <string name="leaveFirstHalf">전반 반차</string>

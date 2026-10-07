@@ -8,12 +8,15 @@ export interface HolidayIndex {
   datasetVersion: string;
   /** Region code → [first covered year, last covered year]. */
   regions: Record<string, [number, number]>;
+  estimatedYears?: Record<string, number[]>;
 }
 
 export interface HolidayRegion {
   datasetVersion: string;
   coveredFromYear: number;
   coveredThroughYear: number;
+  /** Explicitly predicted years; absence preserves legacy/source calendars. */
+  estimatedYears?: number[];
   /** Localized names, keyed like public/locales. */
   names: Record<string, string>[];
   /** YYYYMMDD → [1 for a makeup workday / 0 for a day off, name index]. */
@@ -58,13 +61,15 @@ export function holidayDay(region: HolidayRegion | null, dayKey: string, lang: s
 
 /** The coverage note iOS shows under a month, if any. */
 export function holidayCoverageWarning(
-  region: Pick<HolidayRegion, "coveredFromYear" | "coveredThroughYear"> | null,
+  region: Pick<HolidayRegion, "coveredFromYear" | "coveredThroughYear" | "estimatedYears"> | null,
   year: number,
   month: number,
-): { key: "holidayCoverageYearWarning" | "holidayCoverageNextYearWarning"; year: number } | null {
+): { key: "holidayCoverageYearWarning" | "holidayCoverageNextYearWarning" | "holidayEstimatedYearWarning"; year: number } | null {
   if (!region) return null;
   const covers = (y: number) => y >= region.coveredFromYear && y <= region.coveredThroughYear;
   if (!covers(year)) return { key: "holidayCoverageYearWarning", year };
+  if (region.estimatedYears?.includes(year)) return { key: "holidayEstimatedYearWarning", year };
+  if (month === 12 && region.estimatedYears?.includes(year + 1)) return { key: "holidayEstimatedYearWarning", year: year + 1 };
   if (month === 12 && !covers(year + 1)) return { key: "holidayCoverageNextYearWarning", year: year + 1 };
   return null;
 }

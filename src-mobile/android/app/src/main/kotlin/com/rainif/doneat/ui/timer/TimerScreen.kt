@@ -775,6 +775,20 @@ private fun ComingUp(events: List<TimelineEvent>, now: Double, text: TimerText, 
             }
         }
     }
+    val region = session.env.extendedSchedule?.content?.holidayRegionIdentifier
+        ?.takeIf { session.env.isExtendedScheduleEnabled }
+    if (region != null) {
+        val estimatedYears = visible.filter { it.kind != TimelineKind.FOCUS && it.kind != TimelineKind.FOCUS_BREAK }
+            .map { java.time.Instant.ofEpochMilli(it.atMs.toLong()).atZone(session.recordsZone).year }
+            .distinct().sorted().filter { session.env.holidays.isEstimated(it, region) }
+        estimatedYears.forEach {
+            Text(
+                Strings.holidayEstimatedYearWarning(res, it.toString()),
+                Modifier.padding(top = DoneAtSpacing.s),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 private const val COLLAPSED_ROWS = 3
