@@ -53,3 +53,13 @@
 本轮未发布、未上传商店，保留工作区中已有的其他任务改动。iOS 未进行手动界面或截图验收；依据仓库规则仅执行无界面构建及自动测试。
 
 协作分为数据生成、Android 实现和翻译，主代理审查并集成 Swift / TypeScript 与文档。数据子代理使用工具支持的 GPT-6.1 Sol / High 配置；其他子代理继承完整会话上下文，工具未提供可独立核对的实际底层模型标识，不能声称已核实与模型偏好表完全一致。
+
+## PR 整合验证（2026-10-08）
+
+草稿 PR [#306](https://github.com/ififi2017/Off-Work-Countdown/pull/306) 基于最新 `main` 的 `653b7dc8`，功能提交为 `7d61519d`。在独立临时检出中仅整理 85 个相关文件，保留主干 PR #305 的 Android 分组结果页、日历及明细试用计数，并在其新结果组件中补齐预测标识。原工作区、商店素材、版本及其他任务的改动未被提交。
+
+- `npm test -- --maxWorkers=1`：50 个文件、552 项全部通过，exit 0，无未处理错误。整合后首次双 worker 运行虽全部断言通过，仍报两次 worker RPC timeout；单 worker 完整复跑后消除，未通过调整测试或忽略错误规避。
+- lint、`check:ios`、`check:ios-strings`、`check:android-strings`、`check:holiday-templates` 及差异空白检查通过。
+- Android 整合后重新执行四模块单测、`compileDebugKotlin`、`lintDebug` 和 `assembleDebug`：`BUILD SUCCESSFUL in 6m 44s`，105 项任务实际执行；domain 435 / data 94 / design-system 12 / app 128，共 669 项通过。主代理逐一核对测试 XML，failures / errors / skipped 均为 0。Lint 为 0 error、56 warning、4 hint。证据：`/private/tmp/doneat-cn2027-pr-android-validation.log`。Release 的此前验证属于上节原实现记录，本轮临时检出未重复运行 Release。
+- 当前功能提交的 iOS 无界面 arm64 Simulator 构建通过，`BUILD SUCCEEDED`，日志 `/private/tmp/doneat-holiday-pr-ios-build.log`。上节 iOS XCTest 模拟器连接阻塞和人工界面验收限制仍未解除，未将构建当作测试通过。
+- GitHub Actions 已启动 CI 与 Android 两个工作流；推送本记录时尚在运行，最终结果以 PR 检查页为准。没有合并或发布。
