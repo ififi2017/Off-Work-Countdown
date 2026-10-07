@@ -76,3 +76,5 @@ Android 合理替代 API 是 Jetpack folding features 的 bounds/isSeparating/po
 此次授权 copy 修正的验证：`git diff --check` 通过；`JAVA_HOME='/Volumes/BACKUP/Applications/Android Studio.app/Contents/jbr/Contents/Home' ./gradlew :core:domain:test --tests com.rainif.doneat.core.domain.session.TimelineCivilCopyTest --offline` 五项通过；`:app:compileDebugKotlin --offline -PdoneatDebugApplicationIdSuffix=.parity321` 通过。编译仍报告主 agent 正在编辑的 TimerScreen.kt:219 条件恒真警告；没有设备/UI 完成声明。
 
 收口补充（主 agent）：本地最终统一 gates 为 653 项 Android 与 547 项 Web 全通过，实际 Pixel/iOS 证据见 progress。只读核对远端 `ecf4af29` / PR #304 的 iOS 空优惠 toolbar 与期限刷新改动，Android 本轮的资格条件和 expiry ticker 已覆盖对应契约；未改变上述固定截图源或纳入未提交的 iOS 工作。
+
+PR 集成阶段：主 agent 后续 fetch 并无冲突合入 `ecf4af29`；上文“没有 fetch”描述初始审计时点。规定 model/shared drift 仍为 52 条。最终 source/version/生成字符串与 CI 证据以 progress/PR #305 为准。

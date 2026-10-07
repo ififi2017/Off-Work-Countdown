@@ -518,7 +518,7 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 ### 授权与固定对照
 
 - 用户明确授权完整同步 3.2.1、先用 iOS 模拟器截图确认 UI/动画，再在 USB Pixel 10 Pro 验证；允许拆 PR、由 agent 决策后集中汇报。用户明确禁止锁屏和设备闹钟测试，本轮未执行这些操作。
-- 独立工作树 `codex/android-ios321-parity` 从 `035420377e4c762ba5556a3cc41fc9a94be4bc6e` 创建，保留原工作区未提交的 iOS 修改。此 SHA 是 agent 固定的 UI 对照点，不是用户指定的 SHA。另核对缓存 `origin/main=ea593050e9eebbaac6a95ec8444f87afe6123bc6` 的版本仍为 3.2.1，将 `170f62a1` / `d2532ab7` 的最终记录修复纳入；不自动跟随之后版本。原冻结源 `9252fdfd` / Plan 020 `18129168` 历史记录保留。收口时只读核对远端 `ecf4af29`（PR #304，仍 3.2.1）：新增 iOS 空优惠 toolbar 删除与到期刷新；Android 已按实际资格显示 toolbar 并在期限刷新，等效契约已包含，没有搬入该 iOS Views 修改。
+- 独立工作树 `codex/android-ios321-parity` 从 `035420377e4c762ba5556a3cc41fc9a94be4bc6e` 创建，保留原工作区未提交的 iOS 修改。此 SHA 是 agent 固定的 UI 对照点，不是用户指定的 SHA。另核对缓存 `origin/main=ea593050e9eebbaac6a95ec8444f87afe6123bc6` 的版本仍为 3.2.1，将 `170f62a1` / `d2532ab7` 的最终记录修复纳入；不自动跟随之后版本。原冻结源 `9252fdfd` / Plan 020 `18129168` 历史记录保留。提交后为消除 PR 基线分歧，已将实际 `origin/main=ecf4af29` 无冲突合入独立树；规定 model/shared drift 命令仍为 **52** 条，Android 同步代码未因合并变化，生成字符串与版本检查再次通过。收口时只读核对远端 `ecf4af29`（PR #304，仍 3.2.1）：新增 iOS 空优惠 toolbar 删除与到期刷新；Android 已按实际资格显示 toolbar 并在期限刷新，等效契约已包含，没有搬入该 iOS Views 修改。
 - UI 开发前查看真实 iOS 3.2.1 模拟器的请假结果、日期表、首启、Plus、优惠、更新介绍和 Duo 展开/半折叠截图；使用该源构建的 iOS 模拟器，不生成产品 UI。iOS Duo SDK 27.1，Android Pixel 10 Pro / Android 17。物理 Pixel 不具备铰链，宽屏/折叠注入预览仅是视觉验收，不称为真折叠硬件测试。
 
 ### 本轮实现
@@ -536,7 +536,7 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 
 - 最终隔离 Debug 126 的统一 Gradle gates 全部通过：domain **429**、data **94**、designsystem **12**、app **118**，共 **653** 项，0 failure/error/skip；lintDebug **0 errors / 54 warnings / 3 hints**，Debug 与 R8 Release 构建通过。警告并非清零，保留报告；未把 pure/fake 闹钟测试算作系统投递。
 - Web `npm test` **50 文件 / 547 项 PASS**；ESLint、Android 19 语言生成检查、`check:ios`、`check:version`、Records/extended-schedule Swift fixture `--check` 全部通过。固定 UI 源的 iOS headless simulator build 通过。本轮未更改 Web、iOS 或共享版本。
-- 本机最终日志：`/private/tmp/doneat321-final-126-gradle.log`、`doneat321-final-vitest.log`、`doneat321-final-eslint.log`、`doneat321-final-strings.log`、`doneat321-final-ioscheck.log`、`doneat321-final-version.log`；各模块 XML 已实际汇总，不按新增测试数猜测总数。远端 PR/CI 证据在提交后追加。
+- 本机最终日志：`/private/tmp/doneat321-final-126-gradle.log`、`doneat321-final-vitest.log`、`doneat321-final-eslint.log`、`doneat321-final-strings.log`、`doneat321-final-ioscheck.log`、`doneat321-final-version.log`；各模块 XML 已实际汇总，不按新增测试数猜测总数。远端检查见 [PR #305](https://github.com/ififi2017/Off-Work-Countdown/pull/305) 的 Checks；通过后更新 PR 描述，不以本地结果代替 CI。
 
 ### 真机与 UI 证据
 
@@ -546,10 +546,12 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 已保存 [截图与录屏索引](../../qa/2026-10-07-android321/README.md)：Pixel 原生窄屏、200% 阿拉伯语深色／减少动态效果、简中更新介绍；注入宽屏的 Timer/Focus/Records/Settings、水平半折叠深色、垂直铰链 RTL 大字；实际物理横屏时钟和返回。折叠注入与优惠 sample 均明确标记，不能代表真实折叠硬件或 Play 交易。
 - 真机发现并修复：200% 多行分组标签等高；px→dp 的一 ULP 浮点误差曾误拒绝全宽水平铰链，现仅允许四 ULP 边缘舍入并增加真实 Pixel 几何回归；横屏黑底统计采用显式内容色。最终 126 已重新安装并截图确认上下分区、铰链避让及白色统计值。
 - 动效依据包括开发前真实 iOS Ready→Glance 录屏与源代码参数、Pixel 连续计时画面，以及下一方案日历弹簧/逐格入场录屏；已检查帧和完成态。未进行高速摄影或定量帧率/弹簧轨迹拟合，不宣称像素级或时间曲线完全相同。
-- 只临时将 Pixel `user_rotation` 从 0 改为 1 检查实际横屏，两次均恢复并读回 0；`accelerometer_rotation=0` 和熄屏超时 `2147483647` 保持原值。字体、语言、明暗和减少动态效果使用隔离预览的本地参数，未改系统设置。
+- 只临时将 Pixel `user_rotation` 从 0 改为 1 检查实际横屏，两次均恢复并读回 0；`accelerometer_rotation=0` 和熄屏超时 `2147483647` 保持原值。字体、语言、明暗和减少动态效果使用隔离预览的本地参数，未改系统设置。收尾读回 `font_scale=1.0`、三项动画倍率均 `1.0`；设备临时 UI XML/录屏已移除，最终隔离 126 留在主页供用户查看，未卸载或操作正式应用。
 
 ### 决策与剩余验证
 
 - 按 Android 原生权限与通知呈现接入闹钟，不复制 AlarmKit UI；由于用户禁止，设备响铃、锁屏、精确授权/撤销、重启投递矩阵保持 NOT_RUN。代码完成和 pure/fake 通过不代表系统已接受或实际响铃通过。
 - 云同步、Wear OS 仍遵循既有明确 deferred 边界；本轮不新增账号或上传工作记录。既有完整 Play 生命周期、物理换机、生产验证服务 CPU 余量继续保留，不因 UI 同步宣布完成。
 - 日常实现与 UI/测试协作实际使用 GPT-6.1 Sol / high；架构复核使用 GPT-6 Astra / xhigh，未虚构更高模型调用。
+
+- 本轮实现与 QA 已提交 [草稿 PR #305](https://github.com/ififi2017/Off-Work-Countdown/pull/305)。保留草稿供所有者集中确认；没有合并 main、触发正式发布或上传 Play。
