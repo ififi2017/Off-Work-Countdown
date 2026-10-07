@@ -55,8 +55,8 @@ import com.rainif.doneat.core.data.RecordPersistenceError
 import com.rainif.doneat.ui.AppShell
 import com.rainif.doneat.ui.SystemBarsFollowTheme
 import com.rainif.doneat.ui.onboarding.SetupFlow
-import com.rainif.doneat.plus.LifetimeOfferCard
-import com.rainif.doneat.plus.LifetimeOfferSource
+import com.rainif.doneat.plus.PlusIntroScreen
+import com.rainif.doneat.plus.PlusIntroPolicy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -104,10 +104,17 @@ class MainActivity : FragmentActivity() {
             val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
             val device by graph.settings.device.collectAsStateWithLifecycle()
             val releaseNotes by graph.releaseNotes.state.collectAsStateWithLifecycle()
+            val intro by graph.plus.introState.collectAsStateWithLifecycle()
+            val plusAuthorized by graph.plus.authorized.collectAsStateWithLifecycle()
             val releaseScope = rememberCoroutineScope()
             var continuingRelease by remember { mutableStateOf(false) }
 
-            LaunchedEffect(loaded) { if (loaded) reconcileLanguage(graph) }
+            LaunchedEffect(loaded) {
+                if (loaded) {
+                    graph.plus.initializeIntro(device.onboardingComplete || graph.records.state.value.syncedPreferences != null)
+                    reconcileLanguage(graph)
+                }
+            }
 
             val mode = when (prefs.theme) {
                 "light" -> ThemeMode.LIGHT
@@ -127,7 +134,7 @@ class MainActivity : FragmentActivity() {
                     val motion = LocalDoneAtMotion.current
                     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
                         // Until the archive is read nothing can tell a first launch from a restored one.
-                        if (!loaded) {
+                        if (!loaded || !intro.loaded) {
                             LaunchPlaceholder()
                         } else if (archiveError == RecordPersistenceError.INVALID_ARCHIVE || archiveError == RecordPersistenceError.UNREADABLE_ARCHIVE) {
                             ArchiveRecoveryScreen(graph)
@@ -137,9 +144,14 @@ class MainActivity : FragmentActivity() {
                                 onDismiss = {
                                     if (!continuingRelease) {
                                         continuingRelease = true
-                                        releaseScope.launch { try { graph.releaseNotes.markSeen() } finally { continuingRelease = false } }
+                                        releaseScope.launch { try {
+                                            graph.plus.markIntroSeen()
+                                            graph.releaseNotes.markSeen()
+                                        } finally { continuingRelease = false } }
                                     }
                                 })
+                        } else if (PlusIntroPolicy.shouldPresent(intro, setUp && device.onboardingComplete, plusAuthorized)) {
+                            CompositionLocalProvider(LocalDoneAtWindowPosture provides rememberWindowPosture()) { PlusIntroScreen(graph) }
                         } else AnimatedContent(
                             targetState = setUp,
                             transitionSpec = {
@@ -154,8 +166,7 @@ class MainActivity : FragmentActivity() {
                         ) { complete ->
                             if (complete) CompositionLocalProvider(LocalDoneAtWindowPosture provides rememberWindowPosture()) {
                                 AppShell(graph, onReportStageChanged = { reportStage = it })
-                            } else SetupFlow(graph,
-                                offerContent = { active -> OnboardingOffer(graph, active) })
+                            } else SetupFlow(graph)
                         }
                     }
                 }
@@ -210,15 +221,6 @@ class MainActivity : FragmentActivity() {
             else -> AppLocale.applyToSystem(this, preferred)
         }
     }
-}
-
-@Composable
-private fun OnboardingOffer(graph: AppGraph, active: Boolean) {
-    val store by graph.plus.state.collectAsStateWithLifecycle()
-    LaunchedEffect(store) {
-        if (graph.plus.canOfferLifetime) graph.plus.inviteLifetimeOffer(LifetimeOfferSource.ONBOARDING)
-    }
-    LifetimeOfferCard(graph.plus, active = active)
 }
 
 /** Same quiet brand row as the iOS launch storyboard, while the archive is loading. */

@@ -94,6 +94,8 @@ import com.rainif.doneat.ui.leave.LeavePlanDetailScreen
 import com.rainif.doneat.ui.leave.LeavePlanResultsScreen
 import com.rainif.doneat.ui.onboarding.SetupFlow
 import com.rainif.doneat.ui.onboarding.SetupPage
+import androidx.activity.compose.LocalActivityResultRegistryOwner
+import com.rainif.doneat.ui.onboarding.SetupWeekdaySelector
 import com.rainif.doneat.ui.release.WhatsNewScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -130,7 +132,7 @@ class ParityGalleryActivity : ComponentActivity() {
         enableEdgeToEdge()
         val graph = (application as DoneAtApplication).graph
         val initialScreen = intent.getStringExtra("screen")?.takeIf {
-            it in setOf("results", "shell", "plus", "release", "offer", "onboarding")
+            it in setOf("results", "shell", "plus", "release", "offer", "onboarding", "weekdays")
         } ?: "results"
         val mode = when (intent.getStringExtra("theme")) {
             "light" -> ThemeMode.LIGHT
@@ -211,11 +213,17 @@ class ParityGalleryActivity : ComponentActivity() {
                                         "shell" -> AppShell(graph)
                                         "release" -> WhatsNewScreen(graph, onDismiss = ::back)
                                         "onboarding" -> if (onboardingAvailable) {
-                                            ReadOnlyOnboarding { SetupFlow(graph) }
+                                            CompositionLocalProvider(LocalActivityResultRegistryOwner provides this@ParityGalleryActivity) {
+                                                ReadOnlyOnboarding { SetupFlow(graph) }
+                                            }
                                         } else Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                             Text("Read-only onboarding needs a fresh isolated setup. Existing settings were preserved.", Modifier.padding(DoneAtSpacing.xl))
                                         }
                                         "offer" -> SampleOfferPreview()
+                                        "weekdays" -> Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+                                            Text("Read-only weekday layout preview", Modifier.padding(DoneAtSpacing.l))
+                                            SetupWeekdaySelector(prefs.workdays, androidx.compose.ui.platform.LocalResources.current.configuration.locales[0]) {}
+                                        }
                                         "plus" -> PlusScreen(graph, ::back)
                                         "detail" -> holder.SaveableStateProvider("detail:$planIndex") {
                                             LeavePlanDetailScreen(graph, planIndex, ::back, onAdopted = { screen = "results" })

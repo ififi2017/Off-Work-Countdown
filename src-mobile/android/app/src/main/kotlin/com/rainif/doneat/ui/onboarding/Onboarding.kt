@@ -10,6 +10,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -56,6 +59,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
@@ -72,13 +76,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -182,7 +191,9 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
         com.rainif.doneat.core.domain.settings.SetupProjection.resolve(environment, now, device.setupHolidayRegionIdentifier)
     }
     var rootOrigin by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
+    var rootWidth by remember { mutableStateOf(0f) }
     var clockAnchor by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    var clockPreviewEndAtMs by remember { mutableStateOf<Double?>(null) }
     val workName = stringResource(R.string.extendedDefaultWorkShift)
     val restName = stringResource(R.string.extendedDefaultRest)
     fun finish() {
@@ -201,6 +212,10 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
     val edit: ((SyncedPreferences) -> SyncedPreferences) -> Unit = { change -> scope.launch { graph.settings.edit(change) } }
 
     fun go(to: SetupPage) {
+        // A fresh arrival must measure its own incoming slot. Ready/Glance
+        // retain the same clock and anchor for their continuous hand-off.
+        if (page !in listOf(SetupPage.READY, SetupPage.GLANCE) && to in listOf(SetupPage.READY, SetupPage.GLANCE)) clockAnchor = null
+        if (to != SetupPage.GLANCE) clockPreviewEndAtMs = null
         forward = to.ordinal > page.ordinal
         page = to
         scope.launch { graph.settings.updateDevice { it.copy(setupPage = to.name) } }
@@ -214,64 +229,104 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
 
     val motion = LocalDoneAtMotion.current
     val quietJourney = motion.reduced || onboardingTouchExplorationEnabled()
+    val pageTransition = updateTransition(page, label = "setupJourney")
+    val clockOpacity by pageTransition.animateFloat(transitionSpec = {
+        when {
+            quietJourney -> tween(DoneAtMotion.REDUCED_MS)
+            targetState in listOf(SetupPage.READY, SetupPage.GLANCE) -> tween(DoneAtMotion.STATE_ENTER_MS, easing = motion.emphasizedDecelerate)
+            else -> tween(DoneAtMotion.STATE_EXIT_MS, easing = motion.emphasizedDecelerate)
+        }
+    }, label = "journeyClockArrival") { if (it in listOf(SetupPage.READY, SetupPage.GLANCE)) 1f else 0f }
+    val clockEntrance by pageTransition.animateFloat(transitionSpec = {
+        if (quietJourney) snap() else motion.phase()
+    }, label = "journeyClockSlide") { if (it in listOf(SetupPage.READY, SetupPage.GLANCE)) 0f else 1f }
+    val overlayVisible = showsPrivacy || showsPlus
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).safeDrawingPadding()
-        .onGloballyPositioned { rootOrigin = it.positionInRoot() }) {
-        AnimatedContent(
-            targetState = page,
-            transitionSpec = {
-                if (quietJourney || (initialState in listOf(SetupPage.READY, SetupPage.GLANCE) && targetState in listOf(SetupPage.READY, SetupPage.GLANCE))) {
-                    fadeIn(tween(DoneAtMotion.REDUCED_MS)) togetherWith fadeOut(tween(DoneAtMotion.REDUCED_MS))
-                } else {
-                    val sign = if (forward) 1 else -1
-                    (fadeIn(tween(DoneAtMotion.STATE_ENTER_MS, easing = motion.emphasizedDecelerate)) + slideInHorizontally(motion.phase()) { sign * it / 12 }) togetherWith
-                        (fadeOut(tween(DoneAtMotion.STATE_EXIT_MS, easing = motion.emphasizedDecelerate)) + slideOutHorizontally(motion.phase()) { -sign * it / 12 })
+        .onGloballyPositioned { rootOrigin = it.positionInRoot(); rootWidth = it.size.width.toFloat() }) {
+        // Keep the journey composed so dismissing a cover restores its scroll
+        // and clock state, but expose neither its pixels nor its controls.
+        val coveredJourney = if (overlayVisible) Modifier.graphicsLayer { alpha = 0f }
+            .clearAndSetSemantics {}
+            .onPreviewKeyEvent { true }
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
                 }
-            },
-            label = "setupPage",
-        ) { current ->
-            val back = if (current == SetupPage.WELCOME) null else { { go(SetupPage.entries[current.ordinal - 1]) } }
-            when (current) {
-                SetupPage.WELCOME -> WelcomePage(graph, onStart = { go(SetupPage.SCHEDULE) }, onRestoredWithoutSettings = {
-                    restoredWithoutSettings = true
-                    go(SetupPage.SCHEDULE)
-                })
-                SetupPage.SCHEDULE -> SchedulePage(prefs, edit, restoredWithoutSettings, back, holidays, device.setupHolidayRegionIdentifier, { region -> scope.launch { graph.settings.updateDevice { it.copy(setupHolidayRegionIdentifier = region) } } }) { go(SetupPage.REMINDERS) }
-                SetupPage.REMINDERS -> {
-                    if (!reminderDefaultsApplied) {
-                        reminderDefaultsApplied = true
-                        edit(PreferencesRules::onboardingReminderDefaults)
+            } else Modifier
+        Box(Modifier.fillMaxSize().then(coveredJourney)) {
+            pageTransition.AnimatedContent(
+                transitionSpec = {
+                    if (quietJourney || (initialState in listOf(SetupPage.READY, SetupPage.GLANCE) && targetState in listOf(SetupPage.READY, SetupPage.GLANCE))) {
+                        fadeIn(tween(DoneAtMotion.REDUCED_MS)) togetherWith fadeOut(tween(DoneAtMotion.REDUCED_MS))
+                    } else {
+                        val sign = if (forward) 1 else -1
+                        (fadeIn(tween(DoneAtMotion.STATE_ENTER_MS, easing = motion.emphasizedDecelerate)) + slideInHorizontally(motion.phase()) { sign * it / 12 }) togetherWith
+                            (fadeOut(tween(DoneAtMotion.STATE_EXIT_MS, easing = motion.emphasizedDecelerate)) + slideOutHorizontally(motion.phase()) { -sign * it / 12 })
                     }
-                    RemindersPage(prefs, edit, device.ongoingEnabled, { enabled ->
-                        scope.launch { graph.settings.updateDevice { it.copy(ongoingEnabled = enabled) } }
-                    }, back) {
-                        // As iOS: asked once, when leaving the page with a reminder on; a refusal is handled in Settings.
-                        val wantsNotifications = prefs.notificationMode != "off" || prefs.microBreakEnabled ||
-                            (prefs.lunchEnabled && (prefs.lunchStartReminderEnabled || prefs.lunchEndReminderEnabled)) || device.ongoingEnabled
-                        if (wantsNotifications && !device.notificationPermissionRequested && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notificationRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        } else {
-                            // A previous refusal survives revisiting this page. Never
-                            // finish setup with the ongoing toggle claiming access.
-                            if (device.ongoingEnabled && !com.rainif.doneat.reminders.Reminders.capability(context).notificationsAllowed) {
-                                scope.launch { graph.settings.updateDevice { it.copy(ongoingEnabled = false) } }
+                },
+            ) { current ->
+                val back = if (current == SetupPage.WELCOME) null else { { go(SetupPage.entries[current.ordinal - 1]) } }
+                var contentOrigin by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
+                val anchor: (androidx.compose.ui.geometry.Rect) -> Unit = { measured ->
+                    if (page == current) clockAnchor = measured.translate(rootOrigin - contentOrigin)
+                }
+                // Normalize the slot into page-local geometry before the shared
+                // entrance offset is applied to the independent persistent clock.
+                Box(Modifier.fillMaxSize().onGloballyPositioned { contentOrigin = it.positionInRoot() }) {
+                    when (current) {
+                        SetupPage.WELCOME -> WelcomePage(graph, onStart = { go(SetupPage.SCHEDULE) }, onRestoredWithoutSettings = {
+                            restoredWithoutSettings = true
+                            go(SetupPage.SCHEDULE)
+                        })
+                        SetupPage.SCHEDULE -> SchedulePage(prefs, edit, restoredWithoutSettings, back, holidays, device.setupHolidayRegionIdentifier, { region -> scope.launch { graph.settings.updateDevice { it.copy(setupHolidayRegionIdentifier = region) } } }) { go(SetupPage.REMINDERS) }
+                        SetupPage.REMINDERS -> {
+                            if (!reminderDefaultsApplied) {
+                                reminderDefaultsApplied = true
+                                edit(PreferencesRules::onboardingReminderDefaults)
                             }
-                            go(SetupPage.READY)
+                            RemindersPage(prefs, edit, device.ongoingEnabled, { enabled ->
+                                scope.launch { graph.settings.updateDevice { it.copy(ongoingEnabled = enabled) } }
+                            }, back) {
+                                // As iOS: asked once, when leaving the page with a reminder on; a refusal is handled in Settings.
+                                val wantsNotifications = prefs.notificationMode != "off" || prefs.microBreakEnabled ||
+                                    (prefs.lunchEnabled && (prefs.lunchStartReminderEnabled || prefs.lunchEndReminderEnabled)) || device.ongoingEnabled
+                                if (wantsNotifications && !device.notificationPermissionRequested && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    notificationRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                } else {
+                                    // A previous refusal survives revisiting this page. Never
+                                    // finish setup with the ongoing toggle claiming access.
+                                    if (device.ongoingEnabled && !com.rainif.doneat.reminders.Reminders.capability(context).notificationsAllowed) {
+                                        scope.launch { graph.settings.updateDevice { it.copy(ongoingEnabled = false) } }
+                                    }
+                                    go(SetupPage.READY)
+                                }
+                            }
                         }
+                        SetupPage.READY -> ReadyJourneyPage(prefs, projection, now, back, finishing, { finish() },
+                            { go(SetupPage.GLANCE) }, { showsPrivacy = true }, anchor)
+                        SetupPage.GLANCE -> GlanceJourneyPage(projection, now, back, finishing, { finish() },
+                            { go(SetupPage.PLUS) }, onClockTargetChanged = { target ->
+                                if (page == current) clockPreviewEndAtMs = target
+                            }, anchor = anchor)
+                        SetupPage.PLUS -> PlusJourneyPage(back, finishing, { finish() }, { showsPlus = true }, offerContent, active = !showsPlus && !showsPrivacy)
+
                     }
                 }
-                SetupPage.READY -> ReadyJourneyPage(prefs, projection, now, back, finishing, { finish() },
-                    { go(SetupPage.GLANCE) }, { showsPrivacy = true }) { anchor -> if (page == current) clockAnchor = anchor }
-                SetupPage.GLANCE -> GlanceJourneyPage(projection, now, back, finishing, { finish() },
-                    { go(SetupPage.PLUS) }) { anchor -> if (page == current) clockAnchor = anchor }
-                SetupPage.PLUS -> PlusJourneyPage(back, finishing, { finish() }, { showsPlus = true }, offerContent, active = !showsPlus && !showsPrivacy)
-
+            }
+            if ((page in listOf(SetupPage.READY, SetupPage.GLANCE) || pageTransition.currentState in listOf(SetupPage.READY, SetupPage.GLANCE)) && projection != null) {
+                JourneyClockOverlay(projection, now, clockAnchor, rootOrigin, clockOpacity,
+                    entranceX = if (quietJourney) 0f else clockEntrance * (rootWidth.toInt() / 12) *
+                        (if (forward) 1f else -1f) * (if (page in listOf(SetupPage.READY, SetupPage.GLANCE)) 1f else -1f),
+                    continuity = pageTransition.currentState in listOf(SetupPage.READY, SetupPage.GLANCE) && page in listOf(SetupPage.READY, SetupPage.GLANCE),
+                    previewEndAtMs = clockPreviewEndAtMs)
             }
         }
-        if (page in listOf(SetupPage.READY, SetupPage.GLANCE) && projection != null) {
-            JourneyClockOverlay(projection, now, clockAnchor, rootOrigin)
+        if (showsPrivacy) Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+            PrivacyPage(graph, { showsPrivacy = false }) { showsPrivacy = false }
         }
-        if (showsPrivacy) PrivacyPage(graph, { showsPrivacy = false }) { showsPrivacy = false }
-        if (showsPlus) com.rainif.doneat.plus.PlusScreen(graph, onBack = { showsPlus = false })
+        if (showsPlus) Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+            com.rainif.doneat.plus.PlusScreen(graph, onBack = { showsPlus = false })
+        }
         if (saveFailed) AlertDialog(
             onDismissRequest = { saveFailed = false },
             text = { Text(stringResource(R.string.onboardingSetupSaveFailed)) },
@@ -385,6 +440,7 @@ private fun WelcomePage(graph: AppGraph, onStart: () -> Unit, onRestoredWithoutS
                             failed = true
                             return@launch
                         }
+                        if (ready.hasSettings) graph.plus.markIntroSeen()
                         graph.settings.finishRestore(ready.hasSettings)
                         if (!ready.hasSettings) onRestoredWithoutSettings()
                     }

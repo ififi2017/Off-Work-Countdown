@@ -1,6 +1,9 @@
 package com.rainif.doneat.plus
 
 import com.rainif.doneat.core.designsystem.LocalDoneAtBottomBarPadding
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.CancellationException
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -36,6 +39,7 @@ import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.AllInclusive
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
@@ -58,7 +62,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInWindow
@@ -93,6 +96,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
     pendingAction: PlusPendingAction? = null, onAuthorized: (PlusPendingAction) -> Unit = {}) {
+    PlusScreen(graph, onBack, pendingAction, dismissLabel = null, onAuthorized = onAuthorized)
+}
+
+@Composable
+private fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
+    pendingAction: PlusPendingAction? = null, dismissLabel: Int?,
+    onAuthorized: (PlusPendingAction) -> Unit = {}) {
     val authorized by graph.plus.authorized.collectAsStateWithLifecycle()
     val store by graph.plus.state.collectAsStateWithLifecycle()
     val lifetimeOffer by graph.plus.lifetimeOffer.collectAsStateWithLifecycle()
@@ -117,13 +127,41 @@ fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
         },
         offerCard = { LifetimeOfferCard(graph.plus) },
         showsLifetimeOffer = lifetimeOffer != null && graph.plus.hasAvailableLifetimeOffer,
-        backLabel = when (pendingAction) {
+        backLabel = dismissLabel ?: when (pendingAction) {
             is PlusPendingAction.FocusCreate, PlusPendingAction.FocusHome -> R.string.focusTitle
             is PlusPendingAction.RecordsDay, PlusPendingAction.RecordsLifeEdit, PlusPendingAction.RecordsCharts -> R.string.recordsTab
             PlusPendingAction.CycleSummary, null -> R.string.settings
             PlusPendingAction.ShiftAlarms -> R.string.shiftAlarmsTitle
             is PlusPendingAction.LeavePlan -> R.string.leaveResultsTitle
         })
+}
+
+/** Only the first introduction offers a new lifetime invitation after closing its regular paywall. */
+@Composable
+fun PlusIntroScreen(graph: AppGraph) {
+    val scope = rememberCoroutineScope()
+    var checkingOffer by remember { mutableStateOf(false) }
+    var showsOffer by rememberSaveable { mutableStateOf(false) }
+    fun finish() {
+        if (checkingOffer || showsOffer) return
+        checkingOffer = true
+        scope.launch {
+            try {
+                if (graph.plus.refreshAndRevealLifetimeOffer(LifetimeOfferSource.ONBOARDING)) showsOffer = true
+                else graph.plus.markIntroSeen()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                graph.plus.markIntroSeen()
+            } finally { checkingOffer = false }
+        }
+    }
+    BackHandler(!showsOffer) { finish() }
+    Box(Modifier.fillMaxSize()) {
+        PlusScreen(graph, onBack = ::finish, dismissLabel = R.string.close)
+        if (checkingOffer) CircularProgressIndicator(Modifier.align(Alignment.Center).size(DoneAtSpacing.xl))
+    }
+    if (showsOffer) LifetimeOfferSheet(graph.plus, onDismiss = { scope.launch { graph.plus.markIntroSeen() } })
 }
 
 /** Shared with the Debug gallery so visual checks exercise the complete purchase page. */
@@ -154,7 +192,8 @@ internal fun PlusPage(
         Column(Modifier.safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
             Box(Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                 IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(backLabel))
+                    Icon(if (backLabel == R.string.close) Icons.Outlined.Close else Icons.AutoMirrored.Outlined.ArrowBack,
+                        stringResource(backLabel))
                 }
                 Text(stringResource(R.string.plusSettings), Modifier.align(Alignment.Center).padding(horizontal = 48.dp),
                     style = MaterialTheme.typography.titleMedium)

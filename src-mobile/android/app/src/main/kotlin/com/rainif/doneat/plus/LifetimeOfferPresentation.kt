@@ -11,6 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -91,6 +99,29 @@ fun LifetimeOfferCard(plus: PlusAccess, modifier: Modifier = Modifier, active: B
         onClaim = { plus.claimLifetimeOffer() },
         onPurchase = { activity?.let { plus.purchaseLifetimeOffer(it, price) } },
         modifier = modifier, onPriceVisible = { priceVisible = true })
+}
+
+/** Native large offer sheet; only an explicit button can launch Play's purchase flow. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LifetimeOfferSheet(plus: PlusAccess, onDismiss: () -> Unit) {
+    val store by plus.state.collectAsStateWithLifecycle()
+    val invitation by plus.lifetimeOffer.collectAsStateWithLifecycle()
+    val authorized by plus.authorized.collectAsStateWithLifecycle()
+    LaunchedEffect(authorized) { if (authorized) onDismiss() }
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.fillMaxHeight().verticalScroll(rememberScrollState()).widthIn(max = 560.dp)
+            .fillMaxWidth().align(Alignment.CenterHorizontally).padding(DoneAtSpacing.page),
+            verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l), horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
+            }
+            OfferGiftIcon(size = DoneAtOfferTokens.invitationGiftSize)
+            if (invitation != null && plus.hasAvailableLifetimeOffer) LifetimeOfferCard(plus)
+            else Text(stringResource(R.string.plusOfferUnavailable), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TextButton(onClick = plus::restore, enabled = !store.busy) { Text(stringResource(R.string.plusRestore)) }
+        }
+    }
 }
 
 /** Data-only rendering for the debug gallery. Its callbacks never acquire billing or entitlement access. */

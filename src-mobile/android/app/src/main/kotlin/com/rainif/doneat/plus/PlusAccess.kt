@@ -47,6 +47,8 @@ class PlusAccess(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val repository = PlayBillingRepository(context.applicationContext, scope)
     private val offerStore = LifetimeOfferStore(context.applicationContext)
+    private val introStore = DeviceLocalPlusIntroStore(context.applicationContext.noBackupFilesDir.toPath().resolve("plus-intro-321"))
+    val introState: StateFlow<PlusIntroState> = introStore.state
     private val _lifetimeOffer = MutableStateFlow(offerStore.load())
     val lifetimeOffer: StateFlow<LifetimeOffer?> = _lifetimeOffer.asStateFlow()
     private var offerExpiry: Job? = null
@@ -71,13 +73,28 @@ class PlusAccess(private val context: Context) {
         scope.launch { repository.state.collect {
             val granted = it.authorized || PlusDebugOverride.read(context)
             _authorized.value = granted
+            if (granted && introState.value.loaded && (!introState.value.seen || introState.value.writeFailed)) introStore.markSeen()
             _collectsObservations.value = granted || !it.hasPurchasedBefore
         } }
         if (BuildConfig.PLAY_BILLING_PUBLIC_KEY.isNotBlank()) scope.launch { repository.refresh() }
     }
 
+    /** Seed once after the initial archive read; later completing a fresh setup must retain unseen. */
+    suspend fun initializeIntro(existingSetup: Boolean) {
+        introStore.initialize(existingSetup)
+        if (_authorized.value) introStore.markSeen()
+    }
+    suspend fun markIntroSeen() = introStore.markSeen()
+
     fun refresh() { scope.launch { repository.refresh() } }
     fun restore() { scope.launch { repository.refresh() } }
+
+    /** Intro cancellation waits for current Play entitlements and real eligible prices before any reveal. */
+    suspend fun refreshAndRevealLifetimeOffer(source: LifetimeOfferSource): Boolean {
+        if (_authorized.value || !offerStore.isUsable) return false
+        repository.refresh()
+        return revealLifetimeOffer(source)
+    }
     fun purchase(activity: Activity, offer: PlusOffer) { scope.launch { repository.purchase(activity, offer) } }
 
     /** What's New may offer an unopened gift without consuming its 24-hour window. */

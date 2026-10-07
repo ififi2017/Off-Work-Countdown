@@ -555,3 +555,13 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 日常实现与 UI/测试协作实际使用 GPT-6.1 Sol / high；架构复核使用 GPT-6 Astra / xhigh，未虚构更高模型调用。
 
 - 本轮实现与 QA 已提交 [草稿 PR #305](https://github.com/ififi2017/Off-Work-Countdown/pull/305)。保留草稿供所有者集中确认；没有合并 main、触发正式发布或上传 Play。
+
+### 2026-10-07 首启反馈回归（候选 127–128）
+
+- 修复星期 Chip 自然宽度造成的 Mon–Sat / Sun 分行，按 iOS 实际截图采用七个等宽控件；大字与窄视口采用 4+3 / 3+2+2 平衡行，保留完整读屏名称。
+- Reminders→Ready 的持续计时使用同一页面 transition 的 alpha/位移，初次测量不再套用 Ready↔Glance 的 500ms 几何衔接。隐私/购买覆盖页采用不透明 Surface，并隔离底页像素、语义、键盘与触摸；返回保留滚动和计时状态。
+- Glance 使用分别对应实际 Android 小组件、持续通知的原生布局；小组件显示状态/进度，通知倒计时至绝对班次结束，不再只是改变同一张卡的宽度。零进度移除 Material 默认终点圆点。
+- 补齐遗漏的 post-onboarding PlusIntro→取消→等待新 Play 权益/商品检查→合资格才揭示优惠 sheet→关闭 mark seen 流程，移除首启阶段提前展示的 OnboardingOffer。普通 Plus 返回不创建新邀请。已有设置、带设置恢复、What's New 完成和已购买用户跳过额外介绍；noBackup 标记支持中断与失败退路，独立于档案、更新介绍和购买证明。
+- 最终统一 gates：domain 429 / data 94 / designsystem 12 / app 127，共 **662 项，0 failure/error/skip**；Lint **0 errors / 54 warnings / 4 hints**，Debug/R8 Release PASS；`check:version`、Android strings、`check:ios` 与本地 iOS headless simulator build PASS。日志 `doneat321-followup-128-build.log`、`doneat321-followup-ios-build.log` 位于 `/private/tmp/`。首轮 Lint 发现的新 API 读取已改为 minSdk 支持的字节读取，最终重跑全部 gates；只读首启预览宿主缺失也已修复并真机复验。
+- USB Pixel 实测七天同排、提醒到完成录屏、隐私打开/返回、不同系统表面、最终 200% RTL 控件、浅/深零进度、首启实际进入 Plus、取消以及冷启动不循环。回归后恢复用户 QA 备份，settings/records 逐字节一致，128 留在主页；正式 Play 包未动。设备中途锁屏由用户恢复，agent 未锁屏/解锁或测试闹钟。
+- [补充截图和录屏](../../qa/2026-10-07-android321/followup/README.md) 已记录版本与环境。隔离 QA 的真实商品不可用；实价优惠 sheet/购买仍 **NOT_RUN**，需注册 Play 包与许可测试账号查询，不能因代码/样例或测试通过声称真价可用。
