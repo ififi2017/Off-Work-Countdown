@@ -108,6 +108,16 @@ private fun draftCoverage(graph: AppGraph, content: ExtendedScheduleContent): Ma
     }
 }
 
+@Composable
+private fun PredictedCoverageNote(graph: AppGraph, content: ExtendedScheduleContent) {
+    val session by graph.sessions.session.collectAsStateWithLifecycle()
+    val now = remember { System.currentTimeMillis().toDouble() }
+    val years = estimatedCoverageYears(session.env.holidays, content.holidayRegionIdentifier, session.extendedTodayKey(now))
+    years.forEach { year ->
+        SettingsFooter(Strings.holidayEstimatedYearWarning(LocalResources.current, year.toString()))
+    }
+}
+
 /** Puts [content] into the page's draft, as the calendar does. */
 private fun AppGraph.updateDraftContent(content: ExtendedScheduleContent) {
     val session = sessions.session.value
@@ -154,6 +164,7 @@ fun ShiftTypesScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit)
                 Text(stringResource(R.string.extendedAddShiftType), Modifier.padding(start = DoneAtSpacing.m), color = MaterialTheme.colorScheme.primary)
             }
         }
+        Column(Modifier.padding(horizontal = DoneAtSpacing.page)) { PredictedCoverageNote(graph, content) }
     }
 }
 
@@ -213,9 +224,12 @@ fun ShiftTypeEditScreen(graph: AppGraph, id: String, isNew: Boolean, onBack: () 
                     }
                     if (draft.kind == ShiftType.Kind.REST) SettingsFooter(stringResource(R.string.extendedRestKindNote))
                 }
-                if (!isNew) SettingsGroup(title = stringResource(R.string.extendedUpcomingYear)) {
-                    Text(coverageLabel(res, locale, coverage), Modifier.fillMaxWidth().padding(DoneAtSpacing.l),
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (!isNew) Column {
+                    SettingsGroup(title = stringResource(R.string.extendedUpcomingYear)) {
+                        Text(coverageLabel(res, locale, coverage), Modifier.fillMaxWidth().padding(DoneAtSpacing.l),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Column(Modifier.padding(horizontal = DoneAtSpacing.page)) { PredictedCoverageNote(graph, content) }
                 }
                 if (draft.kind == ShiftType.Kind.WORK) {
                     SettingsGroup(footer = stringResource(R.string.extendedAnnualRangeDescription)) {

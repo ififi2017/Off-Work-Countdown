@@ -29,6 +29,9 @@ sealed interface LeavePlannerCaveat {
     /** The holiday region is on, but this build carries no data for [year], so the day follows the ordinary schedule. */
     data class HolidaysNotIncluded(val year: Int) : LeavePlannerCaveat
 
+    /** The selected calendar carries explicitly predicted, rather than announced, holidays. */
+    data class HolidaysEstimated(val year: Int) : LeavePlannerCaveat
+
     /** The roster repeats an earlier month the user filled in. */
     data object CarriedOverRoster : LeavePlannerCaveat
 

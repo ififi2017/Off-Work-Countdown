@@ -111,6 +111,8 @@ class AppGraph(app: Application) {
 
     /** The leave planner's last options, which its results and plan pages read by index. */
     val leaveProposals = MutableStateFlow<List<com.rainif.doneat.core.domain.leave.LeavePlanProposal>?>(null)
+    /** The searched range can use predictions even if it produces no proposals. Device-local UI context only. */
+    val leaveEstimatedHolidayYears = MutableStateFlow<List<Int>>(emptyList())
 
     private val _loaded = MutableStateFlow(false)
     /** False until the archive has been read: until then nothing can tell setup from a restored install. */

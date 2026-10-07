@@ -92,6 +92,7 @@ import com.rainif.doneat.core.designsystem.DoneAtPrimaryButton
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.designsystem.LocalDoneAtMotion
 import com.rainif.doneat.core.domain.leave.LeavePlanGroup
+import com.rainif.doneat.core.domain.leave.LeavePlannerCaveat
 import com.rainif.doneat.core.domain.leave.LeavePlanProposal
 import com.rainif.doneat.core.domain.leave.LeavePlannerSchedule
 import com.rainif.doneat.l10n.Strings
@@ -212,20 +213,27 @@ private fun OptionSummary(proposal: LeavePlanProposal, text: LeaveText) {
             Text(Strings.leaveDaysOff(resources, proposal.fullRestDays), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
             Text(if (proposal.costHalfDays == 0) text.string(R.string.leaveNoLeaveNeeded) else text.uses(proposal.costHalfDays), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             // Keep the same small caveat slot as iOS, so certainty changes do not move the dates button.
-            EstimatedLabel(proposal.caveats.isNotEmpty(), text)
+            EstimatedLabel(proposal, text)
         }
         Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)
     }
 }
 
 @Composable
-private fun EstimatedLabel(visible: Boolean, text: LeaveText) {
+private fun EstimatedLabel(proposal: LeavePlanProposal, text: LeaveText) {
+    val visible = proposal.caveats.isNotEmpty()
+    val predictedYears = proposal.caveats.filterIsInstance<LeavePlannerCaveat.HolidaysEstimated>().map { it.year }.sorted()
+    val resources = LocalResources.current
     Row(
         Modifier.graphicsLayer { alpha = if (visible) 1f else 0f }.then(if (visible) Modifier else Modifier.clearAndSetSemantics {}),
         horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(Icons.Outlined.Info, null, Modifier.size(DoneAtSpacing.m), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(text.string(R.string.leaveEstimated), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            if (predictedYears.isEmpty()) text.string(R.string.leaveEstimated)
+            else predictedYears.joinToString(" · ") { Strings.leaveEstimatedHolidaysYear(resources, it.toString()) },
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -407,7 +415,7 @@ private fun LeavePlanDateSheet(proposals: List<LeavePlanProposal>, indices: List
                                     Row(Modifier.fillMaxWidth().heightIn(min = DoneAtSpacing.minTouch).clickable(role = Role.Button) { finish { select(row.index) } }.semantics { selected = row.index == selection }.padding(DoneAtSpacing.l), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
                                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
                                             Text(text.range(text.day(proposal.firstRestDayNumber), text.day(proposal.lastRestDayNumber)), style = MaterialTheme.typography.bodyLarge)
-                                            if (proposal.caveats.isNotEmpty()) EstimatedLabel(true, text)
+                                            if (proposal.caveats.isNotEmpty()) EstimatedLabel(proposal, text)
                                         }
                                         if (row.index == selection) Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary)
                                     }

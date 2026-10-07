@@ -632,6 +632,399 @@
         }
       }
     },
+    "holidayEstimatedYearWarning": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "العطلات الرسمية وأيام العمل التعويضية في البر الرئيسي للصين لعام {{year}} هي توقعات. للاسترشاد فقط، ولا ينبغي اعتبارها معلومات مؤكدة عن العطلات. يُرجى اعتماد الإشعار الرسمي لمجلس الدولة الصيني الصادر قرب نهاية العام. سيحدّث DoneAt البيانات في أقرب وقت ممكن بعد إعلان ترتيبات العام التالي؛ يُرجى إبقاء التطبيق محدّثًا."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Feiertage und Ausgleichsarbeitstage auf dem chinesischen Festland für {{year}} sind eine Prognose. Sie dienen nur zur Orientierung und sind keine bestätigten Feiertagsangaben. Maßgeblich ist die offizielle Mitteilung des chinesischen Staatsrats zum Jahresende. DoneAt aktualisiert die Daten so bald wie möglich nach Bekanntgabe der Regelung für das Folgejahr. Bitte halte die App aktuell."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mainland China holidays and makeup workdays for {{year}} are predicted. For reference only; do not treat them as confirmed holiday information. Follow the State Council’s official notice published toward year-end. DoneAt will update the data as soon as possible after next year’s arrangements are announced; please keep the app updated."
+          }
+        },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mainland China public holidays and makeup workdays for {{year}} are a forecast. For guidance only; do not treat them as confirmed holiday information. Follow the State Council’s official notice published towards the end of the year. DoneAt will update the data as soon as possible after next year’s arrangements are announced; please keep the app up to date."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los festivos y días laborables de compensación de China continental para {{year}} son una previsión. Sirven solo como referencia; no los consideres información confirmada sobre los festivos. Consulta el aviso oficial del Consejo de Estado, que se publica hacia finales de año. DoneAt actualizará los datos lo antes posible después de que se anuncien los festivos del año siguiente; mantén la app actualizada."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los días festivos y de trabajo compensatorio en China continental para {{year}} son una predicción. Úsalos solo como referencia; no los consideres información oficial confirmada. Toma como referencia el aviso oficial del Consejo de Estado, publicado a finales de año. DoneAt actualizará los datos lo antes posible después de que se anuncie el calendario del año siguiente; mantén la app actualizada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les jours fériés et les jours travaillés de compensation en Chine continentale pour {{year}} sont prévisionnels. Ils sont fournis à titre indicatif et ne doivent pas être considérés comme des informations confirmées. Référez-vous à l’avis officiel du Conseil des affaires d’État publié vers la fin de l’année. DoneAt mettra les données à jour dès que possible après l’annonce des dates de l’année suivante ; veuillez garder l’application à jour."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "चीन के मुख्य भूभाग के लिए {{year}} की छुट्टियों और बदले में काम के दिनों का यह अनुमान है। इसे केवल संदर्भ के लिए देखें; इसे पक्की छुट्टी की जानकारी न मानें। वर्ष के अंत में जारी चीन की राज्य परिषद की आधिकारिक सूचना को ही मानें। अगले वर्ष की छुट्टियों की व्यवस्था घोषित होने के बाद DoneAt जल्द से जल्द डेटा अपडेट करेगा; कृपया ऐप अपडेट रखें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hari libur dan hari kerja pengganti di Tiongkok daratan untuk {{year}} merupakan perkiraan. Informasi ini hanya sebagai referensi dan jangan dianggap sebagai informasi hari libur yang resmi. Ikuti pengumuman resmi Dewan Negara Tiongkok yang diterbitkan menjelang akhir tahun. DoneAt akan memperbarui data secepatnya setelah jadwal tahun berikutnya diumumkan; harap selalu perbarui aplikasi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le festività e i giorni lavorativi di recupero della Cina continentale per il {{year}} sono una previsione. Sono solo indicativi: non considerarli informazioni ufficiali sulle festività. Fai riferimento all’avviso ufficiale del Consiglio di Stato cinese pubblicato verso la fine dell’anno. DoneAt aggiornerà i dati il prima possibile dopo l’annuncio del calendario dell’anno successivo; tieni aggiornata l’app."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中国本土の{{year}}年の祝日と振替出勤日は予測です。参考情報としてご利用ください。確定した祝日情報として扱わないでください。年末に中国国務院が発表する正式通知を基準にしてください。DoneAtは翌年の休暇日程が発表され次第、できるだけ早くデータを更新します。アプリを最新の状態に保ってください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "중국 본토의 {{year}}년 공휴일과 대체 근무일은 예측 정보입니다. 참고용으로만 확인하고 확정된 휴일 정보로 여기지 마세요. 연말에 발표되는 중국 국무원의 공식 공고를 기준으로 삼아 주세요. DoneAt은 다음 해 공휴일 일정이 발표된 뒤 가능한 한 빨리 데이터를 업데이트합니다. 앱을 최신 상태로 유지해 주세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मुख्य भूमी चीनमधील {{year}} च्या सार्वजनिक सुट्ट्या आणि सुट्टीच्या बदल्यात कामाचे दिवस अंदाजित आहेत. ही माहिती फक्त संदर्भासाठी आहे; याला निश्चित सुट्टीची माहिती समजू नका. वर्षअखेरीस प्रसिद्ध होणारी चीनच्या राज्य परिषदेची अधिकृत सूचना ग्राह्य धरा. पुढील वर्षाच्या सुट्टीचे वेळापत्रक जाहीर झाल्यानंतर DoneAt शक्य तितक्या लवकर डेटा अपडेट करेल; कृपया अॅप अपडेट ठेवा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os feriados e dias de trabalho compensatório na China continental para {{year}} são uma previsão. Servem apenas como referência; não os consideres informação confirmada sobre feriados. Segue o aviso oficial do Conselho de Estado, publicado por volta do fim do ano. A DoneAt atualizará os dados assim que possível depois de serem anunciadas as datas do ano seguinte; mantém a aplicação atualizada."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Даты праздников и рабочих дней в счёт переноса выходных в материковом Китае на {{year}} год являются прогнозом. Используйте их только для справки и не считайте подтверждённой информацией о выходных. Ориентируйтесь на официальное уведомление Госсовета Китая, которое публикуется ближе к концу года. DoneAt обновит данные как можно скорее после объявления расписания выходных на следующий год; пожалуйста, обновите приложение."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันหยุดและวันทำงานชดเชยในจีนแผ่นดินใหญ่สำหรับปี {{year}} เป็นข้อมูลคาดการณ์ ใช้เพื่ออ้างอิงเท่านั้น โปรดอย่าถือเป็นข้อมูลวันหยุดที่ยืนยันแล้ว ให้ยึดประกาศอย่างเป็นทางการของสภาแห่งรัฐจีนซึ่งเผยแพร่ช่วงปลายปีเป็นหลัก DoneAt จะอัปเดตข้อมูลโดยเร็วที่สุดหลังประกาศกำหนดวันหยุดของปีถัดไป โปรดอัปเดตแอปให้เป็นเวอร์ชันล่าสุด"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çin ana karasındaki {{year}} yılı resmî tatilleri ve telafi çalışma günleri tahmindir. Yalnızca fikir vermesi içindir; kesinleşmiş tatil bilgisi olarak kabul etmeyin. Yıl sonuna doğru yayımlanan Çin Devlet Konseyi’nin resmî duyurusunu esas alın. DoneAt, sonraki yılın tatil takvimi açıklandıktan sonra verileri mümkün olan en kısa sürede güncelleyecek; lütfen uygulamayı güncel tutun."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngày nghỉ lễ và ngày làm bù tại Trung Quốc đại lục trong năm {{year}} là dữ liệu dự đoán. Chỉ dùng để tham khảo, không xem là thông tin nghỉ lễ đã được xác nhận. Hãy căn cứ vào thông báo chính thức của Quốc vụ viện Trung Quốc được công bố vào cuối năm. DoneAt sẽ cập nhật dữ liệu sớm nhất có thể sau khi lịch nghỉ của năm tiếp theo được công bố; vui lòng cập nhật ứng dụng."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{year}} 年中国大陆节假日与调休安排为推测，仅供参考，请勿作为真实假期信息。请以国务院年底发布的正式通知为准；DoneAt 将在下一年度安排公布后尽快更新，请及时更新软件。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中國內地 {{year}} 年嘅公眾假期同補班安排都係推測，只供參考，請勿當作已確認嘅假期資料。請以國務院喺年底公布嘅正式通知為準；DoneAt 會喺下一年度安排公布後盡快更新資料，記得更新 App。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中國大陸 {{year}} 年的節假日與補班安排為推測，僅供參考，請勿視為已確認的假期資訊。請以國務院於年底發布的正式通知為準；DoneAt 會在下一年度安排公布後盡快更新資料，請記得更新 App。"
+          }
+        }
+      }
+    },
+    "holidayEstimatedLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقديري"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prognose"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Predicted"
+          }
+        },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forecast"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsto"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronóstico"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prévision"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अनुमानित"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perkiraan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsione"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "予測"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예측"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अंदाजित"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsão"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Прогноз"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คาดการณ์"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tahmin"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dự kiến"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "推测"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "推測"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "推測"
+          }
+        }
+      }
+    },
+    "leaveEstimatedHolidaysYear": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يستخدم عطلات {{year}} المتوقعة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nutzt die prognostizierten Feiertage für {{year}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses predicted {{year}} holidays"
+          }
+        },
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses forecast holidays for {{year}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa los festivos previstos para {{year}}"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa el pronóstico de días festivos de {{year}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utilise les jours fériés prévisionnels de {{year}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{year}} की अनुमानित छुट्टियाँ उपयोग करता है"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menggunakan perkiraan hari libur tahun {{year}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa le festività previste per il {{year}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{year}}年の予測祝日を使用"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{year}}년 예측 공휴일 사용"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{year}} च्या अंदाजित सुट्ट्या वापरते"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa os feriados previstos de {{year}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Используются прогнозные выходные на {{year}} год"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้วันหยุดคาดการณ์ปี {{year}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{year}} yılı için tahmini tatilleri kullanır"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dùng ngày nghỉ dự kiến năm {{year}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 {{year}} 年推测假期"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 {{year}} 年推測假期"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 {{year}} 年推測假期"
+          }
+        }
+      }
+    },
     "holidayCalendar": {
       "extractionState": "manual",
       "localizations": {

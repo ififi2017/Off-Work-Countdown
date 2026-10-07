@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">Đề xuất: %1$s</string>
     <string name="holidayCoverageNextYearWarning">Chưa có dữ liệu năm %1$s. Lịch thường sẽ được dùng. Hãy kiểm tra bản cập nhật ứng dụng.</string>
     <string name="holidayCoverageYearWarning">Không có dữ liệu năm %1$s. Lịch thường sẽ được dùng. Hãy kiểm tra bản cập nhật ứng dụng.</string>
+    <string name="holidayEstimatedLabel">Dự kiến</string>
+    <string name="holidayEstimatedYearWarning">Ngày nghỉ lễ và ngày làm bù tại Trung Quốc đại lục trong năm %1$s là dữ liệu dự đoán. Chỉ dùng để tham khảo, không xem là thông tin nghỉ lễ đã được xác nhận. Hãy căn cứ vào thông báo chính thức của Quốc vụ viện Trung Quốc được công bố vào cuối năm. DoneAt sẽ cập nhật dữ liệu sớm nhất có thể sau khi lịch nghỉ của năm tiếp theo được công bố; vui lòng cập nhật ứng dụng.</string>
     <string name="holidayMakeupWorkday">Ngày làm bù</string>
     <string name="holidayRestDay">Ngày lễ</string>
     <string name="holidaySource">Lịch ngày lễ</string>
@@ -359,6 +361,7 @@
     <string name="leaveEditBalance">Số ngày phép</string>
     <string name="leaveEntitled">Tổng số</string>
     <string name="leaveEstimated">Một phần ước tính theo lịch làm việc</string>
+    <string name="leaveEstimatedHolidaysYear">Dùng ngày nghỉ dự kiến năm %1$s</string>
     <string name="leaveEstimatedYear">Năm %1$s tính theo lịch thường ngày; phiên bản này chưa có ngày lễ của năm đó.</string>
     <string name="leaveFind">Tìm</string>
     <string name="leaveFirstHalf">Nửa đầu ca</string>

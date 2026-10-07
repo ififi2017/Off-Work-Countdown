@@ -482,5 +482,8 @@
   "holidaySource": "公眾假期安排",
   "holidayCoverageYearWarning": "暫無 {{year}} 年資料，將按日常排班執行。請檢查 App 更新。",
   "holidayCoverageNextYearWarning": "{{year}} 年資料暫未提供，將按日常排班執行。請檢查 App 更新。",
+  "holidayEstimatedYearWarning": "中國內地 {{year}} 年嘅公眾假期同補班安排都係推測，只供參考，請勿當作已確認嘅假期資料。請以國務院喺年底公布嘅正式通知為準；DoneAt 會喺下一年度安排公布後盡快更新資料，記得更新 App。",
+  "holidayEstimatedLabel": "推測",
+  "leaveEstimatedHolidaysYear": "使用 {{year}} 年推測假期",
   "extendedSourceAnnualRange": "每年日期範圍"
 }

@@ -61,6 +61,15 @@ extension ShiftSessionStore {
         return (first...last).filter { !HolidayCalendar.shared.covers(year: $0, regionIdentifier: "CN") }
     }
 
+    func estimatedMainlandHolidayYears(in range: ClosedRange<Int>) -> [Int] {
+        guard preferences.isExtendedScheduleEnabled,
+              preferences.extendedScheduleContent?.holidayRegionIdentifier == "CN"
+        else { return [] }
+        let first = CivilZone.civilDate(dayNumber: range.lowerBound).year
+        let last = CivilZone.civilDate(dayNumber: range.upperBound).year
+        return (first...last).filter { HolidayCalendar.shared.isEstimated(year: $0, regionIdentifier: "CN") }
+    }
+
     /// Searches a full year's alternative leave windows off the main actor,
     /// keeping the planning sheet responsive while results are prepared.
     func findLeavePlans(_ request: LeavePlanRequest, at date: Date = .now) async -> [LeavePlanProposal] {

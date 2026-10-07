@@ -482,5 +482,8 @@
   "holidaySource": "Calendrier des jours fériés",
   "holidayCoverageYearWarning": "Aucune donnée pour {{year}}. Le planning habituel sera utilisé. Recherchez une mise à jour de l’app.",
   "holidayCoverageNextYearWarning": "Les données de {{year}} ne sont pas encore disponibles. Le planning habituel sera utilisé. Recherchez une mise à jour de l’app.",
+  "holidayEstimatedYearWarning": "Les jours fériés et les jours travaillés de compensation en Chine continentale pour {{year}} sont prévisionnels. Ils sont fournis à titre indicatif et ne doivent pas être considérés comme des informations confirmées. Référez-vous à l’avis officiel du Conseil des affaires d’État publié vers la fin de l’année. DoneAt mettra les données à jour dès que possible après l’annonce des dates de l’année suivante ; veuillez garder l’application à jour.",
+  "holidayEstimatedLabel": "Prévision",
+  "leaveEstimatedHolidaysYear": "Utilise les jours fériés prévisionnels de {{year}}",
   "extendedSourceAnnualRange": "Période annuelle"
 }

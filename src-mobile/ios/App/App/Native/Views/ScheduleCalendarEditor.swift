@@ -512,7 +512,8 @@ struct ScheduleCalendarEditor: View {
                         .font(.subheadline.weight(.semibold))
                     if let holiday = holidayDay(selected) {
                         Text(holiday.name(language: shifts.preferences.languageCode) + " · "
-                             + text.t(holiday.isWorkday ? "holidayMakeupWorkday" : "holidayRestDay"))
+                             + text.t(holiday.isWorkday ? "holidayMakeupWorkday" : "holidayRestDay")
+                             + (isEstimatedHoliday(selected) ? " · " + text.t("holidayEstimatedLabel") : ""))
                             .font(.caption).foregroundStyle(OWCDesign.secondary)
                     }
                     Text(text.t(sourceKey(result?.source)))
@@ -722,6 +723,7 @@ struct ScheduleCalendarEditor: View {
                 type?.name,
                 holiday.map { $0.name(language: shifts.preferences.languageCode) },
                 holiday.map { text.t($0.isWorkday ? "holidayMakeupWorkday" : "holidayRestDay") },
+                holiday != nil && isEstimatedHoliday(key) ? text.t("holidayEstimatedLabel") : nil,
                 isToday ? text.t("extendedToday") : nil].compactMap { $0 }.joined(separator: ", ")
     }
 
@@ -730,10 +732,22 @@ struct ScheduleCalendarEditor: View {
         return HolidayCalendar.shared.day(dayKey: key, regionIdentifier: region)
     }
 
+    private func isEstimatedHoliday(_ key: String) -> Bool {
+        guard let region = content.holidayRegionIdentifier,
+              let parts = ExtendedScheduleResolver.parse(dayKey: key) else { return false }
+        return HolidayCalendar.shared.isEstimated(year: parts.year, regionIdentifier: region)
+    }
+
     private func holidayCoverageWarning(for month: (year: Int, month: Int)) -> String? {
         guard let region = content.holidayRegionIdentifier, !region.isEmpty else { return nil }
         if !HolidayCalendar.shared.covers(year: month.year, regionIdentifier: region) {
             return text.t("holidayCoverageYearWarning", values: ["year": text.formatYear(month.year)])
+        }
+        if HolidayCalendar.shared.isEstimated(year: month.year, regionIdentifier: region) {
+            return text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(month.year)])
+        }
+        if month.month == 12, HolidayCalendar.shared.isEstimated(year: month.year + 1, regionIdentifier: region) {
+            return text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(month.year + 1)])
         }
         if month.month == 12, !HolidayCalendar.shared.covers(year: month.year + 1, regionIdentifier: region) {
             return text.t("holidayCoverageNextYearWarning", values: ["year": text.formatYear(month.year + 1)])
@@ -908,29 +922,35 @@ struct HolidayCoverageNoticeView: View {
     let text: AppText
 
     var body: some View {
-        if let notice {
-            Label(notice, systemImage: "exclamationmark.triangle")
-                .font(.caption)
-                .foregroundStyle(OWCDesign.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(notices, id: \.self) { notice in
+                Label(notice, systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
-    private var notice: String? {
-        guard let regionIdentifier, !regionIdentifier.isEmpty else { return nil }
+    private var notices: [String] {
+        guard let regionIdentifier, !regionIdentifier.isEmpty else { return [] }
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timeZone
         let components = dates.map { calendar.dateComponents([.year, .month], from: $0) }
         let years = Set(components.compactMap(\.year)).sorted()
+        let estimateYears = Set(years + components.filter { $0.month == 12 }.compactMap { $0.year.map { $0 + 1 } })
+        var notices = estimateYears.sorted().filter {
+            HolidayCalendar.shared.isEstimated(year: $0, regionIdentifier: regionIdentifier)
+        }.map { text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear($0)]) }
         if let uncovered = years.first(where: {
             !HolidayCalendar.shared.covers(year: $0, regionIdentifier: regionIdentifier)
         }) {
-            return text.t("holidayCoverageYearWarning", values: ["year": text.formatYear(uncovered)])
+            notices.append(text.t("holidayCoverageYearWarning", values: ["year": text.formatYear(uncovered)]))
         }
         if let december = components.first(where: { $0.month == 12 })?.year,
            !HolidayCalendar.shared.covers(year: december + 1, regionIdentifier: regionIdentifier) {
-            return text.t("holidayCoverageNextYearWarning", values: ["year": text.formatYear(december + 1)])
+            notices.append(text.t("holidayCoverageNextYearWarning", values: ["year": text.formatYear(december + 1)]))
         }
-        return nil
+        return notices
     }
 }

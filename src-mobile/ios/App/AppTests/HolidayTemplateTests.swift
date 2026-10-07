@@ -31,8 +31,11 @@ struct HolidayTemplateTests {
     func bundledCalendar() throws {
         let calendar = HolidayCalendar.shared
         #expect(calendar.covers(year: 2026, regionIdentifier: "CN"))
-        #expect(!calendar.covers(year: 2027, regionIdentifier: "CN"))
-        #expect(calendar.day(dayKey: "2027-01-01", regionIdentifier: "CN") == nil)
+        #expect(calendar.covers(year: 2027, regionIdentifier: "CN"))
+        #expect(calendar.isEstimated(year: 2027, regionIdentifier: "CN"))
+        #expect(!calendar.isEstimated(year: 2026, regionIdentifier: "CN"))
+        #expect(!calendar.covers(year: 2028, regionIdentifier: "CN"))
+        #expect(calendar.day(dayKey: "2027-01-01", regionIdentifier: "CN")?.isWorkday == false)
 
         let cnRest = try #require(calendar.day(dayKey: "2026-01-01", regionIdentifier: "CN"))
         let cnMakeup = try #require(calendar.day(dayKey: "2026-01-04", regionIdentifier: "CN"))
@@ -68,6 +71,40 @@ struct HolidayTemplateTests {
         let calendar = try HolidayCalendar(data: Data(json.utf8))
         let day = try #require(calendar.day(dayKey: "2026-01-02", regionIdentifier: "US"))
         #expect(day.name(language: "fr") == "Founders Day")
+    }
+
+    @Test("Predicted holidays and makeup days resolve through the same schedule as official data")
+    func predictedCalendar() throws {
+        let plan = ExtendedSchedulePlan(
+            shiftTypes: [Self.workType, Self.restType],
+            rule: ShiftCycleRule(preset: .rotation, anchorDayKey: "2027-01-01", days: [Self.work]),
+            handSetDays: [:], holidayRegionIdentifier: "CN"
+        )
+        let resolver = ExtendedScheduleResolver(plan: plan)
+        for key in ["2027-01-01", "2027-02-05", "2027-02-13", "2027-04-05", "2027-05-05",
+                    "2027-06-09", "2027-09-15", "2027-10-07"] {
+            let day = resolver.day(dayNumber: try #require(ExtendedScheduleResolver.dayNumber(dayKey: key)))
+            #expect(day.source == .holiday)
+            #expect(!day.isWorkday)
+        }
+        for key in ["2027-01-31", "2027-02-14", "2027-05-08", "2027-09-26", "2027-10-09"] {
+            #expect(HolidayCalendar.shared.day(dayKey: key, regionIdentifier: "CN")?.isWorkday == true)
+        }
+        #expect(HolidayCalendar.shared.day(dayKey: "2027-10-08", regionIdentifier: "CN") == nil)
+    }
+
+    @Test("Reviewed official replacement and legacy bundles have no prediction flag")
+    func predictionMetadataReplacement() throws {
+        let base = #"{"schemaVersion":1,"datasetVersion":"test","names":[{"en":"New Year"}],"regions":{"CN":{"coveredFromYear":2027,"coveredThroughYear":2027,"days":[[20270101,0,0]]}}}"#
+        let official = try HolidayCalendar(data: Data(base.utf8))
+        #expect(official.covers(year: 2027, regionIdentifier: "CN"))
+        #expect(!official.isEstimated(year: 2027, regionIdentifier: "CN"))
+        let predicted = base.replacingOccurrences(of: #""days":"#, with: #""estimatedYears":[2027],"days":"#)
+        #expect(try HolidayCalendar(data: Data(predicted.utf8)).isEstimated(year: 2027, regionIdentifier: "CN"))
+        for years in ["[2028]", "[2027,2027]"] {
+            let invalid = base.replacingOccurrences(of: #""days":"#, with: "\"estimatedYears\":\(years),\"days\":")
+            #expect(throws: HolidayCalendar.LoadError.self) { try HolidayCalendar(data: Data(invalid.utf8)) }
+        }
     }
 
     @Test("Disabled and legacy plans retain the old resolution path")

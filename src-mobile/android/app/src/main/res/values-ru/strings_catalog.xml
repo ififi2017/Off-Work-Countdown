@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">Рекомендуется: %1$s</string>
     <string name="holidayCoverageNextYearWarning">Данных за %1$s пока нет. Будет использоваться обычное расписание. Проверьте обновления приложения.</string>
     <string name="holidayCoverageYearWarning">Нет данных за %1$s. Будет использоваться обычное расписание. Проверьте обновления приложения.</string>
+    <string name="holidayEstimatedLabel">Прогноз</string>
+    <string name="holidayEstimatedYearWarning">Даты праздников и рабочих дней в счёт переноса выходных в материковом Китае на %1$s год являются прогнозом. Используйте их только для справки и не считайте подтверждённой информацией о выходных. Ориентируйтесь на официальное уведомление Госсовета Китая, которое публикуется ближе к концу года. DoneAt обновит данные как можно скорее после объявления расписания выходных на следующий год; пожалуйста, обновите приложение.</string>
     <string name="holidayMakeupWorkday">Перенесённый рабочий день</string>
     <string name="holidayRestDay">Праздник</string>
     <string name="holidaySource">Календарь праздников</string>
@@ -362,6 +364,7 @@
     <string name="leaveEditBalance">Остаток отпуска</string>
     <string name="leaveEntitled">Всего</string>
     <string name="leaveEstimated">Частично по текущему графику</string>
+    <string name="leaveEstimatedHolidaysYear">Используются прогнозные выходные на %1$s год</string>
     <string name="leaveEstimatedYear">%1$s год считается по обычному графику: в этой версии ещё нет его праздников.</string>
     <string name="leaveFind">Найти</string>
     <string name="leaveFirstHalf">Первая половина</string>

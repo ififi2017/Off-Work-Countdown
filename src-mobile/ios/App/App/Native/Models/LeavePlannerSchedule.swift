@@ -41,6 +41,9 @@ nonisolated enum LeavePlannerSchedule {
         timeZone: TimeZone,
         holidayCoverage: (_ year: Int, _ region: String) -> Bool = {
             HolidayCalendar.shared.covers(year: $0, regionIdentifier: $1)
+        },
+        holidayEstimation: (_ year: Int, _ region: String) -> Bool = {
+            HolidayCalendar.shared.isEstimated(year: $0, regionIdentifier: $1)
         }
     ) -> [LeavePlannerDay] {
         let zone = CivilZone(timeZone: timeZone)
@@ -70,9 +73,12 @@ nonisolated enum LeavePlannerSchedule {
             case .unassigned where plan?.fallsBackToBaseSchedule != true: caveats.insert(.unassigned)
             default: break
             }
-            if let region, source != .handSet {
+            if let region {
                 let year = CivilZone.civilDate(dayNumber: dayNumber).year
-                if !holidayCoverage(year, region) { caveats.insert(.holidaysNotIncluded(year: year)) }
+                if holidayEstimation(year, region) { caveats.insert(.holidaysEstimated(year: year)) }
+                else if source != .handSet, !holidayCoverage(year, region) {
+                    caveats.insert(.holidaysNotIncluded(year: year))
+                }
             }
             return LeavePlannerDay(
                 dayNumber: dayNumber,

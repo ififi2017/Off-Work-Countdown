@@ -25,6 +25,8 @@
     <string name="holidayCalendar">Calendario de feriados</string>
     <string name="holidayCoverageNextYearWarning">Los datos de %1$s aún no están disponibles. Se usará el rol de turnos habitual. Busca actualizaciones de la app.</string>
     <string name="holidayCoverageYearWarning">No hay datos de %1$s. Se usará el rol de turnos habitual. Busca actualizaciones de la app.</string>
+    <string name="holidayEstimatedLabel">Pronóstico</string>
+    <string name="holidayEstimatedYearWarning">Los días festivos y de trabajo compensatorio en China continental para %1$s son una predicción. Úsalos solo como referencia; no los consideres información oficial confirmada. Toma como referencia el aviso oficial del Consejo de Estado, publicado a finales de año. DoneAt actualizará los datos lo antes posible después de que se anuncie el calendario del año siguiente; mantén la app actualizada.</string>
     <string name="holidayRestDay">Feriado</string>
     <string name="holidaySource">Calendario de feriados</string>
     <string name="invalidLunchMessage">La pausa para comer debe estar completamente dentro de la jornada para iniciar la cuenta regresiva.</string>
@@ -34,6 +36,7 @@
     <string name="leaveCancelDayConfirm">Este día vuelve a tu rol de turnos y sus días vuelven a tus disponibles. El resto del plan se mantiene.</string>
     <string name="leaveDayHoliday">Feriado</string>
     <string name="leaveEstimated">En parte estimado según tu rol de turnos</string>
+    <string name="leaveEstimatedHolidaysYear">Usa el pronóstico de días festivos de %1$s</string>
     <string name="leaveEstimatedYear">%1$s sigue tu rol de turnos habitual; esta versión aún no tiene sus feriados.</string>
     <string name="leaveMainlandHolidaysMissing">Esta versión aún no incluye los feriados de %1$s de China continental, así que %1$s sigue tu rol de turnos habitual. Cuando se añadan, actualiza DoneAt para tenerlos en cuenta.</string>
     <string name="leaveNoResults">Todavía nada encaja con esta configuración. Un periodo más amplio o más días pueden ayudar.</string>

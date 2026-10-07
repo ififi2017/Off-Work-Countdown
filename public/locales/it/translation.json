@@ -482,5 +482,8 @@
   "holidaySource": "Calendario delle festività",
   "holidayCoverageYearWarning": "Nessun dato per il {{year}}. Verrà usato l’orario abituale. Controlla gli aggiornamenti dell’app.",
   "holidayCoverageNextYearWarning": "I dati per il {{year}} non sono ancora disponibili. Verrà usato l’orario abituale. Controlla gli aggiornamenti dell’app.",
+  "holidayEstimatedYearWarning": "Le festività e i giorni lavorativi di recupero della Cina continentale per il {{year}} sono una previsione. Sono solo indicativi: non considerarli informazioni ufficiali sulle festività. Fai riferimento all’avviso ufficiale del Consiglio di Stato cinese pubblicato verso la fine dell’anno. DoneAt aggiornerà i dati il prima possibile dopo l’annuncio del calendario dell’anno successivo; tieni aggiornata l’app.",
+  "holidayEstimatedLabel": "Previsione",
+  "leaveEstimatedHolidaysYear": "Usa le festività previste per il {{year}}",
   "extendedSourceAnnualRange": "Intervallo annuale"
 }

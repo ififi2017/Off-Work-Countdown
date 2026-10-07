@@ -1,6 +1,7 @@
 import Foundation
 
-/// Versioned, bundled national calendars. No runtime network or date prediction.
+/// Versioned, bundled national calendars. Predictions carry explicit year metadata;
+/// no runtime network or date prediction.
 nonisolated struct HolidayCalendar: Sendable {
     struct Day: Sendable {
         let isWorkday: Bool
@@ -23,11 +24,13 @@ nonisolated struct HolidayCalendar: Sendable {
     private struct RegionPayload: Decodable {
         let coveredFromYear: Int
         let coveredThroughYear: Int
+        let estimatedYears: [Int]?
         let days: [[Int]]
     }
 
     private struct Region: Sendable {
         let years: ClosedRange<Int>
+        let estimatedYears: Set<Int>
         let days: [Int: Day]
     }
 
@@ -59,6 +62,10 @@ nonisolated struct HolidayCalendar: Sendable {
         for (identifier, source) in payload.regions {
             guard Self.isValidRegionIdentifier(identifier), !identifier.isEmpty,
                   source.coveredFromYear <= source.coveredThroughYear else { throw LoadError.invalidDataset }
+            let estimatedYears = source.estimatedYears ?? []
+            guard Set(estimatedYears).count == estimatedYears.count,
+                  estimatedYears.allSatisfy({ (source.coveredFromYear...source.coveredThroughYear).contains($0) })
+            else { throw LoadError.invalidDataset }
             var days: [Int: Day] = [:]
             for row in source.days {
                 guard row.count == 3, (0...1).contains(row[1]),
@@ -68,7 +75,8 @@ nonisolated struct HolidayCalendar: Sendable {
                 else { throw LoadError.invalidDataset }
                 days[row[0]] = Day(isWorkday: row[1] == 1, names: payload.names[row[2]])
             }
-            parsed[identifier] = Region(years: source.coveredFromYear...source.coveredThroughYear, days: days)
+            parsed[identifier] = Region(years: source.coveredFromYear...source.coveredThroughYear,
+                                        estimatedYears: Set(estimatedYears), days: days)
         }
         datasetVersion = payload.datasetVersion
         regions = parsed
@@ -116,6 +124,12 @@ nonisolated struct HolidayCalendar: Sendable {
 
     func covers(year: Int, regionIdentifier: String) -> Bool {
         regions[regionIdentifier]?.years.contains(year) == true
+    }
+
+    /// Missing metadata means confirmed/source data, preserving older bundles.
+    /// Replacing a predicted year with reviewed official data removes this flag.
+    func isEstimated(year: Int, regionIdentifier: String) -> Bool {
+        regions[regionIdentifier]?.estimatedYears.contains(year) == true
     }
 
     func day(dayKey: String, regionIdentifier: String) -> Day? {

@@ -482,5 +482,8 @@
   "holidaySource": "Tatil takvimi",
   "holidayCoverageYearWarning": "{{year}} verisi yok. Normal program kullanılacak. Uygulama güncellemelerini kontrol edin.",
   "holidayCoverageNextYearWarning": "{{year}} verisi henüz yok. Normal program kullanılacak. Uygulama güncellemelerini kontrol edin.",
+  "holidayEstimatedYearWarning": "Çin ana karasındaki {{year}} yılı resmî tatilleri ve telafi çalışma günleri tahmindir. Yalnızca fikir vermesi içindir; kesinleşmiş tatil bilgisi olarak kabul etmeyin. Yıl sonuna doğru yayımlanan Çin Devlet Konseyi’nin resmî duyurusunu esas alın. DoneAt, sonraki yılın tatil takvimi açıklandıktan sonra verileri mümkün olan en kısa sürede güncelleyecek; lütfen uygulamayı güncel tutun.",
+  "holidayEstimatedLabel": "Tahmin",
+  "leaveEstimatedHolidaysYear": "{{year}} yılı için tahmini tatilleri kullanır",
   "extendedSourceAnnualRange": "Yıllık tarih aralığı"
 }

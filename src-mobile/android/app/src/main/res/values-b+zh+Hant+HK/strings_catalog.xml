@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">建議：%1$s</string>
     <string name="holidayCoverageNextYearWarning">%1$s 年資料暫未提供，將按日常排班執行。請檢查 App 更新。</string>
     <string name="holidayCoverageYearWarning">暫無 %1$s 年資料，將按日常排班執行。請檢查 App 更新。</string>
+    <string name="holidayEstimatedLabel">推測</string>
+    <string name="holidayEstimatedYearWarning">中國內地 %1$s 年嘅公眾假期同補班安排都係推測，只供參考，請勿當作已確認嘅假期資料。請以國務院喺年底公布嘅正式通知為準；DoneAt 會喺下一年度安排公布後盡快更新資料，記得更新 App。</string>
     <string name="holidayMakeupWorkday">補班日</string>
     <string name="holidayRestDay">假期</string>
     <string name="holidaySource">公眾假期安排</string>
@@ -359,6 +361,7 @@
     <string name="leaveEditBalance">假期餘額</string>
     <string name="leaveEntitled">總共</string>
     <string name="leaveEstimated">部分按而家嘅排班估計</string>
+    <string name="leaveEstimatedHolidaysYear">使用 %1$s 年推測假期</string>
     <string name="leaveEstimatedYear">%1$s 年暫時按你平時嘅排班計，呢個版本仲未收錄嗰年嘅節假日。</string>
     <string name="leaveFind">搵</string>
     <string name="leaveFirstHalf">前半更</string>

@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">Önerilen: %1$s</string>
     <string name="holidayCoverageNextYearWarning">%1$s verisi henüz yok. Normal program kullanılacak. Uygulama güncellemelerini kontrol edin.</string>
     <string name="holidayCoverageYearWarning">%1$s verisi yok. Normal program kullanılacak. Uygulama güncellemelerini kontrol edin.</string>
+    <string name="holidayEstimatedLabel">Tahmin</string>
+    <string name="holidayEstimatedYearWarning">Çin ana karasındaki %1$s yılı resmî tatilleri ve telafi çalışma günleri tahmindir. Yalnızca fikir vermesi içindir; kesinleşmiş tatil bilgisi olarak kabul etmeyin. Yıl sonuna doğru yayımlanan Çin Devlet Konseyi’nin resmî duyurusunu esas alın. DoneAt, sonraki yılın tatil takvimi açıklandıktan sonra verileri mümkün olan en kısa sürede güncelleyecek; lütfen uygulamayı güncel tutun.</string>
     <string name="holidayMakeupWorkday">Telafi iş günü</string>
     <string name="holidayRestDay">Tatil</string>
     <string name="holidaySource">Tatil takvimi</string>
@@ -360,6 +362,7 @@
     <string name="leaveEditBalance">İzin bakiyesi</string>
     <string name="leaveEntitled">Hak</string>
     <string name="leaveEstimated">Kısmen vardiyana göre tahmin</string>
+    <string name="leaveEstimatedHolidaysYear">%1$s yılı için tahmini tatilleri kullanır</string>
     <string name="leaveEstimatedYear">%1$s her zamanki vardiyana göre; bu sürümde o yılın tatilleri henüz yok.</string>
     <string name="leaveFind">Bul</string>
     <string name="leaveFirstHalf">İlk yarı</string>

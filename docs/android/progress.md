@@ -565,3 +565,11 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 最终统一 gates：domain 429 / data 94 / designsystem 12 / app 127，共 **662 项，0 failure/error/skip**；Lint **0 errors / 54 warnings / 4 hints**，Debug/R8 Release PASS；`check:version`、Android strings、`check:ios` 与本地 iOS headless simulator build PASS。日志 `doneat321-followup-128-build.log`、`doneat321-followup-ios-build.log` 位于 `/private/tmp/`。首轮 Lint 发现的新 API 读取已改为 minSdk 支持的字节读取，最终重跑全部 gates；只读首启预览宿主缺失也已修复并真机复验。
 - USB Pixel 实测七天同排、提醒到完成录屏、隐私打开/返回、不同系统表面、最终 200% RTL 控件、浅/深零进度、首启实际进入 Plus、取消以及冷启动不循环。回归后恢复用户 QA 备份，settings/records 逐字节一致，128 留在主页；正式 Play 包未动。设备中途锁屏由用户恢复，agent 未锁屏/解锁或测试闹钟。
 - [补充截图和录屏](../../qa/2026-10-07-android321/followup/README.md) 已记录版本与环境。隔离 QA 的真实商品不可用；实价优惠 sheet/购买仍 **NOT_RUN**，需注册 Play 包与许可测试账号查询，不能因代码/样例或测试通过声称真价可用。
+
+### 2026-10-07 · 中国大陆 2027 年预测假期（自动检查至 10-08）
+
+- 用户批准在正式数据随新版更新前使用指定的 2027 年安排。与 Swift / Desktop 共用模板中的 `estimatedYears: [2027]`；月历、前一年 12 月、假期和补班详情、班型预览、Coming up、休假规划输入/结果/详情均显示推测提示，搜索无结果时仍保留完整说明。告知不能作为真实假期信息，以国务院年底正式通知为准，DoneAt 将尽快更新。
+- 预测经现有地区节假日规则生效，手动排班优先；未知的 2028 年仍按覆盖警告处理。正式数据替换并移除年份元信息后提示撤下，没有运行时抓取或按时间自动转正。日期和后续更新步骤见[本轮记录](../reviews/2026-10-07-cn-2027-predictions.md)。
+- 按规定核对共享规则路径 `9252fdfd..origin/main`，共 52 条提交（最新 `d2532ab7`、最早 `a6a6c382`）；冻结来源 `9252fdfd` 和 Plan 020 已授权增量 `18129168` 不变。本轮只移植用户明确批准的预测数据及其提示，没有自动跟随其他主干规则增量。
+- 最终完整本地 Gradle 命令通过：四模块单测、`lintDebug`、Debug / Release assemble，`BUILD SUCCESSFUL in 24m 29s`，188 tasks（25 executed / 163 up-to-date）。domain 411 / data 89 / design-system 12 / app 50 共 562 项，0 failures / errors / skipped；主代理核对 XML。Lint 为 0 error、49 warning、3 hint。生成翻译与跨端 fixtures、552 项 JavaScript 测试、Web/Desktop 构建与产物检查、iOS headless arm64 构建通过。
+- 没有发布、上传商店或替换设备应用，未启动 Android 模拟器或进行真机视觉验收。iOS 指定测试 suite 受现有模拟器设备服务连接超时阻塞，未记为通过；未做 iOS 手动视觉检查。其他购买/闹钟阶段的 IN_PROGRESS 状态不由此变更。

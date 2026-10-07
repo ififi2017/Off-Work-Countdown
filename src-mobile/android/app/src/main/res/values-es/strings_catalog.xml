@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">Sugerencia: %1$s</string>
     <string name="holidayCoverageNextYearWarning">Los datos de %1$s aún no están disponibles. Se usará el horario habitual. Busca actualizaciones de la app.</string>
     <string name="holidayCoverageYearWarning">No hay datos de %1$s. Se usará el horario habitual. Busca actualizaciones de la app.</string>
+    <string name="holidayEstimatedLabel">Previsto</string>
+    <string name="holidayEstimatedYearWarning">Los festivos y días laborables de compensación de China continental para %1$s son una previsión. Sirven solo como referencia; no los consideres información confirmada sobre los festivos. Consulta el aviso oficial del Consejo de Estado, que se publica hacia finales de año. DoneAt actualizará los datos lo antes posible después de que se anuncien los festivos del año siguiente; mantén la app actualizada.</string>
     <string name="holidayMakeupWorkday">Día laborable compensatorio</string>
     <string name="holidayRestDay">Festivo</string>
     <string name="holidaySource">Calendario de festivos</string>
@@ -361,6 +363,7 @@
     <string name="leaveEditBalance">Días disponibles</string>
     <string name="leaveEntitled">Total</string>
     <string name="leaveEstimated">En parte estimado según tu horario</string>
+    <string name="leaveEstimatedHolidaysYear">Usa los festivos previstos para %1$s</string>
     <string name="leaveEstimatedYear">%1$s sigue tu horario habitual; esta versión aún no tiene sus festivos.</string>
     <string name="leaveFind">Buscar</string>
     <string name="leaveFirstHalf">Primera mitad</string>

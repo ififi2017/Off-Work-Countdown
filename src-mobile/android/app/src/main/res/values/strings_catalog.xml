@@ -323,6 +323,8 @@
     <string name="holidayCalendarSystemDefault">Suggested: %1$s</string>
     <string name="holidayCoverageNextYearWarning">Data for %1$s isn’t available yet. Your regular schedule will be used. Check for app updates.</string>
     <string name="holidayCoverageYearWarning">No data for %1$s. Your regular schedule will be used. Check for app updates.</string>
+    <string name="holidayEstimatedLabel">Predicted</string>
+    <string name="holidayEstimatedYearWarning">Mainland China holidays and makeup workdays for %1$s are predicted. For reference only; do not treat them as confirmed holiday information. Follow the State Council’s official notice published toward year-end. DoneAt will update the data as soon as possible after next year’s arrangements are announced; please keep the app updated.</string>
     <string name="holidayMakeupWorkday">Makeup workday</string>
     <string name="holidayRestDay">Holiday</string>
     <string name="holidaySource">Holiday calendar</string>
@@ -360,6 +362,7 @@
     <string name="leaveEditBalance">Leave balance</string>
     <string name="leaveEntitled">Allowance</string>
     <string name="leaveEstimated">Partly estimated from your schedule</string>
+    <string name="leaveEstimatedHolidaysYear">Uses predicted %1$s holidays</string>
     <string name="leaveEstimatedYear">%1$s follows your usual schedule; this version has no holidays for it yet.</string>
     <string name="leaveFind">Find</string>
     <string name="leaveFirstHalf">First half</string>

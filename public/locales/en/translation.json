@@ -482,5 +482,8 @@
   "holidaySource": "Holiday calendar",
   "holidayCoverageYearWarning": "No data for {{year}}. Your regular schedule will be used. Check for app updates.",
   "holidayCoverageNextYearWarning": "Data for {{year}} isn’t available yet. Your regular schedule will be used. Check for app updates.",
+  "holidayEstimatedYearWarning": "Mainland China holidays and makeup workdays for {{year}} are predicted. For reference only; do not treat them as confirmed holiday information. Follow the State Council’s official notice published toward year-end. DoneAt will update the data as soon as possible after next year’s arrangements are announced; please keep the app updated.",
+  "holidayEstimatedLabel": "Predicted",
+  "leaveEstimatedHolidaysYear": "Uses predicted {{year}} holidays",
   "extendedSourceAnnualRange": "Annual range"
 }
