@@ -177,8 +177,13 @@ private struct TabletTimerRoot: View {
                 }
             }
 
-            ToolbarItem(placement: .topBarLeading) {
-                LifetimeOfferToolbarButton(plus: shifts.plus, text: text) { scene.showsLifetimeOffer = true }
+            // Empty view content still leaves the system's toolbar glass behind.
+            // Omit the item itself until a claimed offer is actually active.
+            if shifts.plus.canOfferLifetime,
+               let offer = shifts.plus.lifetimeOffer, offer.isActive(at: .now) {
+                ToolbarItem(placement: .topBarLeading) {
+                    LifetimeOfferToolbarButton(plus: shifts.plus, text: text) { scene.showsLifetimeOffer = true }
+                }
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 OWCEarningsVisibilityButton(preferences: preferences, text: text)

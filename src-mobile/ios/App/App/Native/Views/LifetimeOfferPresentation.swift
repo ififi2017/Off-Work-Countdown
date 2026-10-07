@@ -30,6 +30,16 @@ struct LifetimeOfferToolbarButton: View {
             }
             .onChange(of: scenePhase) { _, _ in plus.observeLifetimeOffer() }
             .onDisappear { plus.observeLifetimeOffer() }
+            .task(id: deadline) {
+                let remaining = deadline.timeIntervalSince(max(.now, offer.latestObservedAt))
+                if remaining > 0 {
+                    do { try await Task.sleep(for: .seconds(remaining)) }
+                    catch { return }
+                }
+                // Refresh the parent toolbar so expiry removes the entire item,
+                // rather than leaving an empty Liquid Glass button behind.
+                plus.observeLifetimeOffer()
+            }
         }
     }
 }
