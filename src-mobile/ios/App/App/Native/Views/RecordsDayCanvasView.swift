@@ -217,7 +217,7 @@ struct RecordsDayCanvasView: View {
 
     @ViewBuilder
     private func observations(_ model: RecordsDayCanvasModel) -> some View {
-        let items = queries.observations(on: model.dayStart)
+        let items = queries.displayedObservations(on: model.dayStart)
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 8) {
                 Text(text.t("recordsObservations"))

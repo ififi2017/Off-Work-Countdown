@@ -71,7 +71,7 @@ export function NativeShowcase({ lang }: { lang: string }) {
   }, [active, held, reduceMotion, visible]);
 
   return (
-    <section aria-labelledby="native-showcase-title" className="mt-20">
+    <section id="apps" aria-labelledby="native-showcase-title" className="mt-20 scroll-mt-8">
       <div className="mx-auto max-w-2xl text-center">
         <h2
           id="native-showcase-title"

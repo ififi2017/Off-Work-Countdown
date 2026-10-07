@@ -2867,9 +2867,9 @@ export function OffWorkCountdown({
       <section
         className={
           isWebPage
-            ? // 手机上居中会在卡片上方空出一大截，窄屏改为靠上；仍占满一屏，
-              // 说明与下载照样在首屏以下。
-              "relative mx-auto flex min-h-[100svh] w-full max-w-md flex-col justify-start pb-16 pt-4 sm:justify-center sm:py-8"
+            ? // 手机与电脑一样居中。底部 pb-20 给「获取 App」入口留位置，
+              // 卡片因此略高于几何中心，看起来反而更稳。说明与下载在首屏以下。
+              "relative mx-auto flex min-h-[100svh] w-full max-w-md flex-col justify-center pb-20 pt-6 sm:pt-8"
             : "contents"
         }
       >
@@ -4279,8 +4279,8 @@ export function OffWorkCountdown({
       </Card>
       {isWebPage && !showCountdown && (
         <HeroScrollButton
-          targetId="about"
-          moreLabel={t("scrollToDetails")}
+          targetId="apps"
+          moreLabel={t("getApp")}
           backLabel={t("backToTimer")}
         />
       )}
