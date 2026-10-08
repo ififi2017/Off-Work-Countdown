@@ -674,14 +674,18 @@ struct RecordsMonthGrid: View {
                                         }
                                     }
                                     .frame(height: captionHeight)
-                                    RecordsMiniWorkBar(
-                                        workMs: cell.workMs,
-                                        overtimeMs: cell.overtimeMs,
-                                        maxWidth: 24,
-                                        height: barHeight
-                                    )
-                                    .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
-                                        estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
+                                    // The bar may be EmptyView on rest days;
+                                    // keep its slot so every date shares a baseline.
+                                    ZStack {
+                                        RecordsMiniWorkBar(
+                                            workMs: cell.workMs,
+                                            overtimeMs: cell.overtimeMs,
+                                            maxWidth: 24,
+                                            height: barHeight
+                                        )
+                                        .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
+                                            estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
+                                    }
                                     .frame(height: barHeight)
                                 }
                                 .padding(.horizontal, 1)

@@ -324,7 +324,7 @@
     <string name="holidayCoverageNextYearWarning">Data %1$s belum tersedia. Jadwal biasa akan digunakan. Periksa pembaruan aplikasi.</string>
     <string name="holidayCoverageYearWarning">Tidak ada data %1$s. Jadwal biasa akan digunakan. Periksa pembaruan aplikasi.</string>
     <string name="holidayEstimatedLabel">Perkiraan</string>
-    <string name="holidayEstimatedYearWarning">Hari libur dan hari kerja pengganti di Tiongkok daratan untuk %1$s merupakan perkiraan. Informasi ini hanya sebagai referensi dan jangan dianggap sebagai informasi hari libur yang resmi. Ikuti pengumuman resmi Dewan Negara Tiongkok yang diterbitkan menjelang akhir tahun. DoneAt akan memperbarui data secepatnya setelah jadwal tahun berikutnya diumumkan; harap selalu perbarui aplikasi.</string>
+    <string name="holidayEstimatedYearWarning">Hari libur dan hari kerja pengganti di Tiongkok daratan untuk %1$s masih berupa perkiraan, bukan tanggal resmi.\nIkuti pengumuman akhir tahun Dewan Negara. DoneAt akan segera memperbarui data setelah pengumuman terbit.</string>
     <string name="holidayMakeupShort">Kerja pengganti</string>
     <string name="holidayMakeupWorkday">Hari kerja pengganti</string>
     <string name="holidayRestDay">Hari libur</string>

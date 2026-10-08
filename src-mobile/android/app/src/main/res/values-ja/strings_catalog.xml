@@ -324,7 +324,7 @@
     <string name="holidayCoverageNextYearWarning">%1$s年のデータはまだありません。通常の予定が使われます。アプリのアップデートを確認してください。</string>
     <string name="holidayCoverageYearWarning">%1$s年のデータはありません。通常の予定が使われます。アプリのアップデートを確認してください。</string>
     <string name="holidayEstimatedLabel">予測</string>
-    <string name="holidayEstimatedYearWarning">中国本土の%1$s年の祝日と振替出勤日は予測です。参考情報としてご利用ください。確定した祝日情報として扱わないでください。年末に中国国務院が発表する正式通知を基準にしてください。DoneAtは翌年の休暇日程が発表され次第、できるだけ早くデータを更新します。アプリを最新の状態に保ってください。</string>
+    <string name="holidayEstimatedYearWarning">中国本土の%1$s年の祝日と振替出勤日は予測で、正式な日程ではありません。\n年末に発表される国務院の正式通知をご確認ください。DoneAtは発表後、速やかに更新します。</string>
     <string name="holidayMakeupShort">振替出勤</string>
     <string name="holidayMakeupWorkday">振替出勤日</string>
     <string name="holidayRestDay">祝日</string>

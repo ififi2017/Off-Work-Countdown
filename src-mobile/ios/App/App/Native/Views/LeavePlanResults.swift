@@ -138,23 +138,29 @@ struct LeavePlanResults: View {
     }
 
     private func summary(_ proposal: LeavePlanProposal) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
             proposalSummary(proposal)
                 .accessibilityIdentifier("leave-plan-option-\(selection)")
-            Divider()
-            Button { category = nil; showsPlans = true } label: {
-                selectionLink(text.t("leaveAllPlans", values: ["count": text.formatCount(groups.count)]))
-            }
-            .accessibilityIdentifier("leave-plan-all-plans")
-            if let group, group.proposalIndices.count > 1 {
-                Button { showsDates = true } label: {
-                    selectionLink(text.t("leaveAvailableDates", values: ["count": text.formatCount(group.proposalIndices.count)]))
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
+            Divider().padding(.horizontal, 16)
+            VStack(alignment: .leading, spacing: 0) {
+                Button { category = nil; showsPlans = true } label: {
+                    selectionLink(text.t("leaveAllPlans", values: ["count": text.formatCount(groups.count)]))
                 }
-                .accessibilityIdentifier("leave-plan-dates")
+                .accessibilityIdentifier("leave-plan-all-plans")
+                if let group, group.proposalIndices.count > 1 {
+                    Button { showsDates = true } label: {
+                        selectionLink(text.t("leaveAvailableDates", values: ["count": text.formatCount(group.proposalIndices.count)]))
+                    }
+                    .accessibilityIdentifier("leave-plan-dates")
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 4)
         }
         .buttonStyle(.plain)
-        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(OWCDesign.card, in: .rect(cornerRadius: OWCDesign.cardRadius))
     }

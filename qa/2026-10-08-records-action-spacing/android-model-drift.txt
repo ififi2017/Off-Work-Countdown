@@ -1,0 +1,55 @@
+1ff56361 fix(leave): separate plan filters and preserve result sets
+d46d09d9 fix(calendar): clarify holidays and simplify leave planning
+7d61519d feat(holidays): add explicit 2027 mainland China predictions
+d2532ab7 fix(ios): keep observed days without a schedule recorded
+170f62a1 fix(ios): keep rest days without hours out of recorded days
+03542037 fix(ios): group recurring leave dates and stabilize plan cards
+ea606d2a fix(ios): preserve leave alternatives and add calendar previews
+09c77a5e merge: integrate main and preserve regional onboarding copy
+43596972 feat(ios): refine onboarding, lifetime offers and Duo layouts
+20d5455e chore(license): adopt MPL-2.0 and clarify DoneAt brand rights
+c0eddc64 revert(holidays): remove Easter Monday and the Summer bank holiday from GB
+c5182d71 Merge main into claude/project-thread-axidyh
+310f8890 feat(ios): introduce 3.2.1 leave planning, shift alarms and reports in What's New
+1db33515 fix(holidays): add England and Wales bank holidays to GB
+71d151aa feat(web): expand preset pages to all 19 supported languages
+2f867539 refactor(ios): replace custom review prompt with direct system review API
+a10ffc7c fix(ios): reveal report chapters when navigating while paused
+1152f263 feat(ios): add annual reports and clarify historical playback
+47efcb4e fix(ios): polish cycle report transitions and playback
+9c81b815 Merge origin/main into feat/cycle-reports-v2
+932d0c7a feat(ios): turn the cycle reports into interpretations, not lists of numbers
+ffbfde1c fix(android): polish time off after the device walkthrough
+4b791cac feat(ios): give the cycle reports a full-bleed, clock-driven animation
+319adde5 feat(ios): replace the static cycle summary with weekly and monthly reports
+efb8ccd7 chore(analytics): remove dead desktop_download_* events from whitelist
+2f238372 feat(analytics): add ?from=web to download page links for cross-site attribution
+9ec381da feat(desktop): add iOS schedule patterns to the desktop app
+86354e54 feat(desktop): bundle the iOS national holiday calendars per region
+b5322bb4 feat(rules): resolve iOS extended rosters in the shared TypeScript rules
+3b4e2c37 Merge remote-tracking branch 'origin/main' into feat/overtime-summary
+b32de002 Merge pull request #253 from ififi2017/fix/orphaned-roster-days
+2107473d feat(ios): silence leave days and introduce shift alarms beside time off
+c9e93e71 feat(ios): remind auto-renewing subscribers to continue shift alarms
+46f08edb feat(ios): wake-up alarms before each shift with AlarmKit
+cad5b344 Merge remote-tracking branch 'origin/main' into feat/overtime-summary
+7e50fd42 Merge remote-tracking branch 'origin/main' into fix/orphaned-roster-days
+0a1fbc53 feat(ios): show recorded overtime to free users as one line
+6efdbb51 fix(ios): keep future workdays when old roster days name a missing shift type
+61c0d0cb feat(ios): mark leave on the schedule calendar, cancel single days, project leave in Life
+ca870bec feat(ios): introduce leave planning in onboarding, paywall and records
+58db472b feat(ios): count a free leave plan per opened plan and keep the count in view
+a2dbd7eb feat(ios): add the time off page and leave planner (plan 020 P3)
+b5129bbc feat(ios): adopt and undo leave plans (plan 020 P2c)
+a3a38210 feat(ios): lay adopted leave over the live schedule (plan 020 P2b)
+25e3b448 feat(ios): store leave balances and leave days (plan 020 P2a)
+d083fb50 feat(ios): add the leave planner engine
+94fefaa9 feat(ios): add calendar painting and annual shift ranges
+f0ddbdb2 Merge pull request #241 from ififi2017/perf/ios-transitions
+76d248e0 perf(ios): stop recomputing the timer's per-second rows
+56817311 perf(ios): build the schedule calendar's roster plans once
+9f09fb43 chore(ios): add signposts for transition profiling
+63a05de1 fix(salary): reject invalid edits without changing their value
+e2d874cf fix(records): preserve saved employment history boundaries
+47fef18e fix(timer): tick just after each second so the countdown never skips one
+a6a6c382 feat(web): add a work hours calculator and sharpen search signals

@@ -567,8 +567,10 @@ struct RecordsDesignView: View {
                     )
                     holidayCoverageNotice(renderedCells)
                     markLegend
-                    leavePlanningEntry
-                    reportEntry(.month)
+                    VStack(alignment: .leading, spacing: 0) {
+                        leavePlanningEntry
+                        reportEntry(.month)
+                    }
                 case .week:
                     RecordsWeekStrips(
                         queries: queries,

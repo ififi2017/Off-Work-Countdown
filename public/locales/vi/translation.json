@@ -482,7 +482,7 @@
   "holidaySource": "Lịch ngày lễ",
   "holidayCoverageYearWarning": "Không có dữ liệu năm {{year}}. Lịch thường sẽ được dùng. Hãy kiểm tra bản cập nhật ứng dụng.",
   "holidayCoverageNextYearWarning": "Chưa có dữ liệu năm {{year}}. Lịch thường sẽ được dùng. Hãy kiểm tra bản cập nhật ứng dụng.",
-  "holidayEstimatedYearWarning": "Ngày nghỉ lễ và ngày làm bù tại Trung Quốc đại lục trong năm {{year}} là dữ liệu dự đoán. Chỉ dùng để tham khảo, không xem là thông tin nghỉ lễ đã được xác nhận. Hãy căn cứ vào thông báo chính thức của Quốc vụ viện Trung Quốc được công bố vào cuối năm. DoneAt sẽ cập nhật dữ liệu sớm nhất có thể sau khi lịch nghỉ của năm tiếp theo được công bố; vui lòng cập nhật ứng dụng.",
+  "holidayEstimatedYearWarning": "Ngày nghỉ lễ và ngày làm bù tại Trung Quốc đại lục trong năm {{year}} chỉ là dự đoán, chưa phải lịch chính thức.\nHãy theo thông báo cuối năm của Quốc vụ viện Trung Quốc. DoneAt sẽ cập nhật dữ liệu sớm sau khi thông báo được công bố.",
   "holidayEstimatedLabel": "Dự kiến",
   "leaveEstimatedHolidaysYear": "Dùng ngày nghỉ dự kiến năm {{year}}",
   "extendedSourceAnnualRange": "Khoảng ngày hằng năm"

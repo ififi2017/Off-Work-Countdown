@@ -482,7 +482,7 @@
   "holidaySource": "Calendário de feriados",
   "holidayCoverageYearWarning": "Sem dados de {{year}}. Será usado o horário habitual. Verifique se há atualizações do app.",
   "holidayCoverageNextYearWarning": "Os dados de {{year}} ainda não estão disponíveis. Será usado o horário habitual. Verifique se há atualizações do app.",
-  "holidayEstimatedYearWarning": "Os feriados e dias de trabalho compensatório na China continental para {{year}} são uma previsão. Servem apenas como referência; não os consideres informação confirmada sobre feriados. Segue o aviso oficial do Conselho de Estado, publicado por volta do fim do ano. A DoneAt atualizará os dados assim que possível depois de serem anunciadas as datas do ano seguinte; mantém a aplicação atualizada.",
+  "holidayEstimatedYearWarning": "Os feriados e dias de trabalho compensatório na China continental para {{year}} são estimativas, não datas oficiais.\nSegue o aviso de fim de ano do Conselho de Estado. A DoneAt atualizará os dados logo após a sua publicação.",
   "holidayEstimatedLabel": "Previsão",
   "leaveEstimatedHolidaysYear": "Usa os feriados previstos de {{year}}",
   "extendedSourceAnnualRange": "Intervalo anual"

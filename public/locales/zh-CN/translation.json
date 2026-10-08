@@ -482,7 +482,7 @@
   "holidaySource": "节假日安排",
   "holidayCoverageYearWarning": "暂无 {{year}} 年数据，将按日常排班执行。请检查应用更新。",
   "holidayCoverageNextYearWarning": "{{year}} 年数据暂未提供，将按日常排班执行。请检查应用更新。",
-  "holidayEstimatedYearWarning": "{{year}} 年中国大陆节假日与调休安排为推测，仅供参考，请勿作为真实假期信息。请以国务院年底发布的正式通知为准；DoneAt 将在下一年度安排公布后尽快更新，请及时更新软件。",
+  "holidayEstimatedYearWarning": "{{year}} 年中国大陆假期及调休为推测，非正式安排。\n以国务院年底公布的正式通知为准。公布后 DoneAt 将尽快更新。",
   "holidayEstimatedLabel": "推测",
   "leaveEstimatedHolidaysYear": "使用 {{year}} 年推测假期",
   "extendedSourceAnnualRange": "每年日期范围"
