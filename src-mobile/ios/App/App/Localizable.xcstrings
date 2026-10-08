@@ -99104,19 +99104,19 @@
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "免费查看方案的次数已用完，开通 Plus 后可继续生成方案。"
+            "value": "免费查询次数已用完，开通 Plus 后可继续生成方案。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "免費睇方案嘅次數用晒，開通 Plus 後可以繼續生成方案。"
+            "value": "免費查詢次數用晒，開通 Plus 後可以繼續生成方案。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "免費查看方案的次數已用完，訂閱 Plus 後可繼續生成方案。"
+            "value": "免費查詢次數已用完，訂閱 Plus 後可繼續生成方案。"
           }
         }
       }

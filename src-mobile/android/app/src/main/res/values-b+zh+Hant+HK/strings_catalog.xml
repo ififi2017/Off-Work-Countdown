@@ -410,7 +410,7 @@
     <plurals name="leaveTrialsLeft">
         <item quantity="other">仲可以免費查 %d 次</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">免費睇方案嘅次數用晒，開通 Plus 後可以繼續生成方案。</string>
+    <string name="leaveTrialsUsedUp">免費查詢次數用晒，開通 Plus 後可以繼續生成方案。</string>
     <string name="leaveUnassignedCaveat">有啲日子未排班，當休息計。</string>
     <string name="leaveUndoConfirm">呢個計劃嘅假會喺排班度移走，再退返去假期餘額。</string>
     <string name="leaveUndoPlan">撤銷計劃</string>
