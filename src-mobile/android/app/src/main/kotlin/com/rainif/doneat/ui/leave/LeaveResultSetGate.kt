@@ -18,13 +18,15 @@ internal class LeaveResultSetGate {
 
     suspend fun <T> generate(
         isPlus: () -> Boolean, trialsLeft: () -> Int,
-        find: suspend () -> List<T>, consume: suspend () -> Boolean,
+        find: suspend () -> List<T>, consume: suspend () -> Boolean, canOpen: () -> Boolean = { true },
     ): LeaveResultSetOutcome<T> {
         if (!running.compareAndSet(false, true)) return LeaveResultSetOutcome.Busy
         try {
+            if (!canOpen()) throw CancellationException("Leave query route was closed")
             if (!isPlus() && trialsLeft() <= 0) return LeaveResultSetOutcome.Paywall
             val proposals = find()
             currentCoroutineContext().ensureActive()
+            if (!canOpen()) throw CancellationException("Leave query route was closed")
             if (proposals.isNotEmpty() && !isPlus() && !consume()) return LeaveResultSetOutcome.Paywall
             return LeaveResultSetOutcome.Results(proposals)
         } catch (cancelled: CancellationException) {

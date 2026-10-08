@@ -1285,6 +1285,9 @@
     "leaveAddBalance": {
       "resource": "string/leaveAddBalance"
     },
+    "leaveAdjustConditions": {
+      "resource": "string/leaveAdjustConditions"
+    },
     "leaveAdopt": {
       "resource": "string/leaveAdopt"
     },
@@ -1293,6 +1296,9 @@
     },
     "leaveAdoptedPlans": {
       "resource": "string/leaveAdoptedPlans"
+    },
+    "leaveAllPlanTypes": {
+      "resource": "string/leaveAllPlanTypes"
     },
     "leaveAllPlans": {
       "resource": "string/leaveAllPlans",
@@ -1310,6 +1316,12 @@
       "resource": "string/leaveAvailable",
       "params": [
         "count"
+      ]
+    },
+    "leaveAvailableBudget": {
+      "resource": "string/leaveAvailableBudget",
+      "params": [
+        "days"
       ]
     },
     "leaveAvailableDates": {
@@ -1345,6 +1357,18 @@
     },
     "leaveCarriedOverCaveat": {
       "resource": "string/leaveCarriedOverCaveat"
+    },
+    "leaveCurrentGoalBudget": {
+      "resource": "string/leaveCurrentGoalBudget",
+      "params": [
+        "days"
+      ]
+    },
+    "leaveCurrentGoalRest": {
+      "resource": "string/leaveCurrentGoalRest",
+      "params": [
+        "days"
+      ]
     },
     "leaveDayHalf": {
       "resource": "string/leaveDayHalf"
@@ -1387,6 +1411,19 @@
       "params": [
         "year"
       ]
+    },
+    "leaveFilterCount": {
+      "resource": "string/leaveFilterCount",
+      "params": [
+        "category",
+        "count"
+      ]
+    },
+    "leaveFilterNoResults": {
+      "resource": "string/leaveFilterNoResults"
+    },
+    "leaveFilterNoResultsHint": {
+      "resource": "string/leaveFilterNoResultsHint"
     },
     "leaveFind": {
       "resource": "string/leaveFind"
@@ -1457,9 +1494,6 @@
     },
     "leaveRangeStart": {
       "resource": "string/leaveRangeStart"
-    },
-    "leaveRecommendedPlans": {
-      "resource": "string/leaveRecommendedPlans"
     },
     "leaveRegularPlans": {
       "resource": "string/leaveRegularPlans"
@@ -1545,6 +1579,9 @@
       "params": [
         "date"
       ]
+    },
+    "leaveViewAllPlans": {
+      "resource": "string/leaveViewAllPlans"
     },
     "leaveViewDetails": {
       "resource": "string/leaveViewDetails"

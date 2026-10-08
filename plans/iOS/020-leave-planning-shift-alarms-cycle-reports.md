@@ -369,6 +369,14 @@
 - [x] Android 七项 Gradle gates 通过：domain 437 / data 95 / design-system 12 / app 141，共 685 项；lint 0 errors / 54 warnings / 4 hints。JavaScript 50 个文件、552 项单 worker 测试通过，0 worker errors。`check:ios`、`check:ios-strings`、`check:android-strings` 均 exit 0；Android 685 项 XML 由主代理独立核对。
 - [x] Astra（GPT-6 Astra / XHigh）最终补审七张实际 iOS 截图及关键源码通过，无阻塞问题；按用户最新的一组结果计次规则复核。主摘要最新截图已替换为周一开头、连休 13 天请 3 天的方案；早期审核截图保留捕获时间标记，不视为当前最终画面。Android 无设备视觉验收；未合并、发布或变更冻结基线（仍为 53 commits）。证据和未测边界见[补充记录](../../docs/reviews/2026-10-08-holiday-calendar-recommendations.md)。
 
+### P3g · 列表分类与零结果解释（2026-10-08）
+
+- [x] 用户授权实施前与 Astra 讨论：预览不再分类；全部方案列表用原生菜单显示三类及数量，零结果类别不隐藏，常规休息日适配轮班与手动休息。
+- [x] 筛选与选中解耦，空分类返回不重置月历；新打开列表默认全部，保持原排序和最省假依据。
+- [x] 空类别显示本次请求快照与调整入口；取消、失败或空调整查找保留原结果。仅新成功非空结果计次，最后一次额度后的当前结果仍可查看。
+- [x] iOS 28 项回归及最新构建、Android 690 项及七项 gates、JavaScript 552 项、原生目录与生成检查通过。用户授权单台 iPhone 模拟器实际点按，截图见[回归记录](../../docs/reviews/2026-10-08-leave-filters.md)。
+- [x] Astra 完成后复审实际 iOS 截图及两端关键源码通过；Android 标题与最终中文截图按反馈收尾后再次确认无阻塞项。不将本轮验证扩大为 Android 设备视觉或全设备矩阵。
+
 ### P3b · 介绍与入口（2026-10-01，分支 `feat/leave-records`）
 
 - 付费墙：副标题（19 种语言）与权益列表加入休假规划，排在专注之后。

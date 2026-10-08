@@ -5,9 +5,10 @@ import SwiftUI
 struct LeavePlanResults: View {
     let shifts: ShiftSessionStore
     let proposals: [LeavePlanProposal]
+    let searchContext: LeavePlanSearchContext?
+    let adjustConditions: () -> Void
     let open: (Int) -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     private let groups: [LeavePlanGroup]
     @State private var category: LeavePlanGroup.Category?
     @State private var groupID: Int
@@ -16,9 +17,12 @@ struct LeavePlanResults: View {
     @State private var showsDates = false
     @State private var arrived = false
 
-    init(shifts: ShiftSessionStore, proposals: [LeavePlanProposal], open: @escaping (Int) -> Void) {
+    init(shifts: ShiftSessionStore, proposals: [LeavePlanProposal], searchContext: LeavePlanSearchContext?,
+         adjustConditions: @escaping () -> Void, open: @escaping (Int) -> Void) {
         self.shifts = shifts
         self.proposals = proposals
+        self.searchContext = searchContext
+        self.adjustConditions = adjustConditions
         self.open = open
         let groups = LeavePlanGroup.make(from: proposals)
         self.groups = groups
@@ -40,7 +44,7 @@ struct LeavePlanResults: View {
 
     private var text: AppText { shifts.text }
     private var visibleGroups: [LeavePlanGroup] { groups.filter { category == nil || $0.category == category } }
-    private var group: LeavePlanGroup? { visibleGroups.first { $0.id == groupID } ?? visibleGroups.first }
+    private var group: LeavePlanGroup? { groups.first { $0.id == groupID } ?? groups.first }
     private var selection: Int { group.flatMap { dates[$0.id] ?? $0.id } ?? 0 }
     private var selected: LeavePlanProposal? {
         proposals.indices.contains(selection) ? proposals[selection] : nil
@@ -51,7 +55,6 @@ struct LeavePlanResults: View {
         ScrollView {
             VStack(spacing: 12) {
                 if let selected {
-                    categoryPicker
                     summary(selected)
                         .owcRevealed(arrived, index: 0, reduceMotion: reduceMotion)
                     ForEach(estimatedYears(selected), id: \.self) { year in
@@ -97,42 +100,36 @@ struct LeavePlanResults: View {
         }
     }
 
-    @ViewBuilder
+    private func filterTitle(_ value: LeavePlanGroup.Category?) -> String {
+        let count = groups.filter { value == nil || $0.category == value }.count
+        return text.t("leaveFilterCount", values: [
+            "category": text.t(value?.titleKey ?? "leaveAllPlanTypes"),
+            "count": text.formatCount(count),
+        ])
+    }
+
     private var categoryPicker: some View {
-        if dynamicTypeSize.isAccessibilitySize || availableCategories.count > 1 {
-            Menu {
-                filterPicker.pickerStyle(.inline)
-            } label: {
-                HStack {
-                    Text(text.t(category?.titleKey ?? "leaveRecommendedPlans"))
-                    Spacer(minLength: 12)
-                    Image(systemName: "chevron.up.chevron.down").font(.caption.weight(.semibold))
-                }
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(OWCDesign.accent)
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        } else {
-            filterPicker.pickerStyle(.segmented)
-        }
-    }
-
-    private var availableCategories: [LeavePlanGroup.Category] {
-        LeavePlanGroup.Category.allCases.filter { category in groups.contains { $0.category == category } }
-    }
-
-    private var filterPicker: some View {
-        Picker(text.t("leaveResultsTitle"), selection: $category) {
-            Text(text.t("leaveRecommendedPlans")).tag(Optional<LeavePlanGroup.Category>.none)
-            ForEach(LeavePlanGroup.Category.allCases, id: \.self) { category in
-                if groups.contains(where: { $0.category == category }) {
-                    Text(text.t(category.titleKey)).tag(Optional(category))
+        Menu {
+            Picker(text.t("leaveResultsTitle"), selection: $category) {
+                Text(filterTitle(nil)).tag(Optional<LeavePlanGroup.Category>.none)
+                ForEach(LeavePlanGroup.Category.allCases, id: \.self) { value in
+                    Text(filterTitle(value)).tag(Optional(value))
                 }
             }
+            .pickerStyle(.inline)
+        } label: {
+            HStack(spacing: 12) {
+                Text(filterTitle(category)).fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.up.chevron.down").font(.caption.weight(.semibold))
+            }
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(OWCDesign.accent)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
         }
-        .onChange(of: category) { _, _ in groupID = visibleGroups.first?.id ?? 0 }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("leave-plan-filter")
     }
 
     private func summary(_ proposal: LeavePlanProposal) -> some View {
@@ -140,8 +137,8 @@ struct LeavePlanResults: View {
             proposalSummary(proposal)
                 .accessibilityIdentifier("leave-plan-option-\(selection)")
             Divider()
-            Button { showsPlans = true } label: {
-                selectionLink(text.t("leaveAllPlans", values: ["count": text.formatCount(visibleGroups.count)]))
+            Button { category = nil; showsPlans = true } label: {
+                selectionLink(text.t("leaveAllPlans", values: ["count": text.formatCount(groups.count)]))
             }
             .accessibilityIdentifier("leave-plan-all-plans")
             if let group, group.proposalIndices.count > 1 {
@@ -234,6 +231,10 @@ struct LeavePlanResults: View {
     private var planList: some View {
         ScrollViewReader { proxy in
             List {
+                Section { categoryPicker }
+                if visibleGroups.isEmpty {
+                    emptyFilter
+                }
                 ForEach(visibleGroups) { candidate in
                     let index = dates[candidate.id] ?? candidate.id
                     if proposals.indices.contains(index) {
@@ -260,9 +261,48 @@ struct LeavePlanResults: View {
                 }
             }
             .onAppear { proxy.scrollTo(groupID, anchor: .center) }
+            .onChange(of: category) { _, _ in
+                if visibleGroups.contains(where: { $0.id == groupID }) { proxy.scrollTo(groupID, anchor: .center) }
+            }
         }
-        .navigationTitle(text.t("leaveAllPlans", values: ["count": text.formatCount(visibleGroups.count)]))
+        .navigationTitle(text.t("leaveAllPlans", values: ["count": text.formatCount(groups.count)]))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var emptyFilter: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(text.t("leaveFilterNoResults")).font(.headline)
+                if let searchContext {
+                    VStack(alignment: .leading, spacing: 6) {
+                        switch searchContext.goal {
+                        case .restAtLeast(let days):
+                            Text(text.t("leaveCurrentGoalRest", values: ["days": text.formatCount(days)]))
+                        case .leaveAtMost(let halfDays):
+                            Text(text.t("leaveCurrentGoalBudget", values: ["days": halfDaysNumber(halfDays)]))
+                        }
+                        Text(text.t("leaveAvailableBudget", values: ["days": halfDaysNumber(searchContext.availableHalfDays)]))
+                        Text(OWCText.ltrRange(
+                            shifts.leaveDayLabel(searchContext.fromDayNumber, template: "yMMMd"),
+                            shifts.leaveDayLabel(searchContext.throughDayNumber, template: "yMMMd")
+                        ))
+                    }
+                    .font(.subheadline).foregroundStyle(OWCDesign.secondary)
+                }
+                Text(text.t("leaveFilterNoResultsHint"))
+                    .font(.subheadline).foregroundStyle(OWCDesign.secondary)
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.vertical, 8)
+            Button(text.t("leaveAdjustConditions"), action: adjustConditions)
+                .accessibilityIdentifier("leave-plan-adjust-conditions")
+            Button(text.t("leaveViewAllPlans")) { category = nil }
+        }
+    }
+
+    // These complete sentences own the unit; insert only the localized number.
+    private func halfDaysNumber(_ halfDays: Int) -> String {
+        (Double(halfDays) / 2).formatted(.number.precision(.fractionLength(0...1)).locale(shifts.preferences.locale))
     }
 
     private func estimatedYears(_ proposal: LeavePlanProposal) -> [Int] {

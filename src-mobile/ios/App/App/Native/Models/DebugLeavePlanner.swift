@@ -5,6 +5,12 @@ import Foundation
 /// bundled 2026 holidays and explicit 2027 predictions. Never saves a roster
 /// or balance. Launch with -ios.native.qaRoute leave -ios.native.qaLeavePlanner YES.
 nonisolated enum DebugLeavePlanner {
+    static func searchContext(restDays: Int? = nil) -> LeavePlanSearchContext {
+        let first = CivilZone.dayNumber(year: 2026, month: 9, day: 21)
+        return .init(goal: restDays.map { .restAtLeast(days: $0) } ?? .leaveAtMost(halfDays: 10),
+                     availableHalfDays: 10, fromDayNumber: first, throughDayNumber: first + 364)
+    }
+
     static func proposals(restDays: Int? = nil, region: String = "CN") -> [LeavePlanProposal] {
         let work = UUID(uuidString: "00000000-0000-0000-0000-000000000201")!
         let rest = UUID(uuidString: "00000000-0000-0000-0000-000000000202")!
@@ -26,12 +32,13 @@ nonisolated enum DebugLeavePlanner {
                                         rotationWorkDays: nil, rotationRestDays: nil),
             breakStartTime: nil, breakDurationMinutes: 0, extendedSchedule: plan
         )
-        let first = CivilZone.dayNumber(year: 2026, month: 9, day: 21)
-        let last = first + 364
+        let context = searchContext(restDays: restDays)
+        let first = context.fromDayNumber
+        let last = context.throughDayNumber
         let zone = TimeZone(identifier: "Asia/Shanghai")!
         let days = LeavePlannerSchedule.days(configuration: configuration, range: first...last, timeZone: zone)
         return LeavePlanner.proposals(days: days, query: .init(
-            goal: restDays.map { .restAtLeast(days: $0) } ?? .leaveAtMost(halfDays: 10), fromDayNumber: first, throughDayNumber: last,
+            goal: context.goal, fromDayNumber: first, throughDayNumber: last,
             nowMs: CivilZone(timeZone: zone).utcMs(dayNumber: first, Clock(hour: 0, minute: 0)),
             budgets: [.init(id: UUID(), availableHalfDays: 10, validFromDayNumber: nil, validThroughDayNumber: nil)]
         ))

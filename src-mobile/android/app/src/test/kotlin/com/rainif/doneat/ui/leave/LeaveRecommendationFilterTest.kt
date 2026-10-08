@@ -31,7 +31,7 @@ class LeaveRecommendationFilterTest {
             LeavePlanGroup(3, LeavePlanGroup.Category.HOLIDAY, listOf(3)),
             LeavePlanGroup(4, LeavePlanGroup.Category.REGULAR, listOf(4)),
         )
-        val recommended = leaveGroupsForFilter(groups, LeaveResultFilter.RECOMMENDED)
+        val recommended = leaveGroupsForFilter(groups, LeaveResultFilter.ALL)
         assertEquals(listOf(0, 1, 3, 4), recommended.map { it.id })
         assertEquals(listOf(2, 0), recommended.first().proposalIndices)
         assertEquals(0, leaveGroupSelection(recommended.first(), null))
@@ -40,4 +40,15 @@ class LeaveRecommendationFilterTest {
         assertEquals(listOf(1, 3), leaveGroupsForFilter(groups, LeaveResultFilter.HOLIDAY).map { it.id })
         assertEquals(listOf(0, 4), leaveGroupsForFilter(groups, LeaveResultFilter.REGULAR).map { it.id })
     }
+    @Test fun `a zero-count category stays selectable and cannot replace the current group or date`() {
+        val groups = listOf(LeavePlanGroup(0, LeavePlanGroup.Category.HOLIDAY, listOf(2, 0)))
+        assertEquals(3, LeaveResultFilter.entries.size)
+        assertEquals(emptyList<LeavePlanGroup>(), leaveGroupsForFilter(groups, LeaveResultFilter.REGULAR))
+        val stillSelected = leaveSelectedGroup(groups, 0)
+        assertEquals(0, stillSelected.id)
+        assertEquals(2, leaveGroupSelection(stillSelected, 2))
+        assertEquals(groups, leaveGroupsForFilter(groups, LeaveResultFilter.ALL))
+        assertEquals(LeaveResultFilter.ALL, leaveFilterFromSaved("RECOMMENDED"))
+    }
+
 }

@@ -63,6 +63,7 @@ sealed interface Route : NavKey {
     @Serializable data class Leave(val fromRecords: Boolean = false) : Route
     @Serializable data class LeaveBalanceEdit(val balanceID: String?, val guided: Boolean = false) : Route
     @Serializable data object LeavePlanner : Route
+    @Serializable data object LeavePlannerAdjustment : Route
     @Serializable data object LeavePlanResults : Route
     @Serializable data class LeavePlanDetail(val index: Int) : Route
     @Serializable data class LeaveAdoptedPlan(val planID: String) : Route

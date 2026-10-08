@@ -1,5 +1,6 @@
 package com.rainif.doneat.ui.leave
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
@@ -64,4 +65,35 @@ class LeaveResultSetGateTest {
         val result = LeaveResultSetGate().generate({ plus }, { 1 }, { plus = true; listOf("A") }, { error("Plus cannot be charged") })
         assertEquals(LeaveResultSetOutcome.Results(listOf("A")), result)
     }
+    @Test fun `closed adjustment route cancels before reserving even while its outgoing UI remains composed`() = runTest {
+        var routePresent = true
+        var used = 1
+        var opened = listOf("original")
+        val gate = LeaveResultSetGate()
+        val result = runCatching {
+            gate.generate({ false }, { 3 - used }, { routePresent = false; listOf("replacement") },
+                { used++; true }, { routePresent })
+        }
+        result.getOrNull()?.let { if (it is LeaveResultSetOutcome.Results) opened = it.proposals }
+        assertTrue(result.exceptionOrNull() is CancellationException)
+        assertEquals(listOf("original"), opened)
+        assertEquals(1, used)
+    }
+
+    @Test fun `empty adjustment leaves its opened set untouched and a later successful adjustment consumes once`() = runTest {
+        var opened = listOf("original")
+        var used = 1
+        val gate = LeaveResultSetGate()
+        suspend fun accept(found: List<String>) {
+            val result = gate.generate({ false }, { 3 - used }, { found }, { used++; true })
+            if (result is LeaveResultSetOutcome.Results && shouldPublishLeaveResults(opened.isNotEmpty(), result.proposals.isNotEmpty(), true)) opened = result.proposals
+        }
+        accept(emptyList())
+        assertEquals(listOf("original"), opened)
+        assertEquals(1, used)
+        accept(listOf("replacement", "another choice"))
+        assertEquals(listOf("replacement", "another choice"), opened)
+        assertEquals(2, used)
+    }
+
 }

@@ -72,6 +72,7 @@ import com.rainif.doneat.ui.components.SwitchRow
 import com.rainif.doneat.ui.components.ValueRow
 import com.rainif.doneat.ui.onboarding.appIsDark
 import com.rainif.doneat.ui.timer.Haptics
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -84,7 +85,9 @@ import kotlinx.coroutines.withContext
  * One successful results set uses one free view; every option inside stays available.
  */
 @Composable
-fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
+fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit,
+    adjusting: Boolean = false, isRoutePresent: () -> Boolean = { true }, onResultsReady: () -> Unit = { open(Route.LeavePlanResults) },
+) {
     val text = rememberLeaveText(graph)
     val records by graph.records.state.collectAsStateWithLifecycle()
     val plus by graph.plus.authorized.collectAsStateWithLifecycle()
@@ -97,18 +100,24 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
     val window = remember { LeavePlannerSchedule.rollingYear(graph.leaveToday()) }
     val budgets = remember(records.leaveBalances, records.leaveDays) { LeaveAdoption.budgets(records.leaveBalances, records.leaveDays) }
 
-    var goalIsRest by rememberSaveable { mutableStateOf(true) }
-    var restDays by rememberSaveable { mutableIntStateOf(7) }
-    var from by rememberSaveable { mutableIntStateOf(window?.first ?: 0) }
-    var through by rememberSaveable { mutableIntStateOf(window?.last ?: 0) }
+    val initialQuery = remember { graph.leaveQuerySnapshot.value?.request.takeIf { adjusting } }
+    var goalIsRest by rememberSaveable { mutableStateOf(initialQuery?.goal !is LeavePlanner.Goal.LeaveAtMost) }
+    var restDays by rememberSaveable { mutableIntStateOf((initialQuery?.goal as? LeavePlanner.Goal.RestAtLeast)?.days ?: 7) }
+    var from by rememberSaveable { mutableIntStateOf(initialQuery?.fromDayNumber ?: window?.first ?: 0) }
+    var through by rememberSaveable { mutableIntStateOf(initialQuery?.throughDayNumber ?: window?.last ?: 0) }
     // Ids joined by commas, so the choice survives the process like the rest of the form.
-    var selectedRaw by rememberSaveable { mutableStateOf(budgets.filter { it.availableHalfDays > 0 }.joinToString(",") { it.id }) }
+    var selectedRaw by rememberSaveable { mutableStateOf(initialQuery?.budgetIDs?.joinToString(",") ?: budgets.filter { it.availableHalfDays > 0 }.joinToString(",") { it.id }) }
     val selected = selectedRaw.split(',').filter { it.isNotEmpty() }.toSet()
     val selectedHalfDays = budgets.filter { it.id in selected }.sumOf { it.availableHalfDays }
-    var leaveHalfDays by rememberSaveable { mutableIntStateOf(selectedHalfDays.coerceIn(1, 6)) }
+    var leaveHalfDays by rememberSaveable { mutableIntStateOf((initialQuery?.goal as? LeavePlanner.Goal.LeaveAtMost)?.halfDays ?: selectedHalfDays.coerceIn(1, 6)) }
     var searching by remember { mutableStateOf(false) }
     var searchFailed by remember { mutableStateOf(false) }
+    var searchEmpty by remember { mutableStateOf(false) }
     val resultSetGate = remember { LeaveResultSetGate() }
+    var searchJob by remember { mutableStateOf<Job?>(null) }
+    val routePresent = isRoutePresent()
+    LaunchedEffect(routePresent) { if (!routePresent) searchJob?.cancel() }
+    val cancelAndBack = { searchJob?.cancel(); onBack() }
 
     val request = window?.let {
         val first = maxOf(from, it.first)
@@ -132,25 +141,32 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
         if (searching) return
         searching = true
         searchFailed = false
-        scope.launch {
+        searchEmpty = false
+        searchJob = scope.launch {
             try {
+                var submitted: LeaveQuerySnapshot? = null
                 val result = resultSetGate.generate(
                     isPlus = { graph.plus.authorized.value },
                     trialsLeft = { graph.settings.device.value.leavePlannerTrialsLeft },
                     find = {
                         val state = graph.records.state.value
+                        submitted = LeaveQuerySnapshot.capture(query, state)
                         val now = graph.nowMs()
                         withContext(Dispatchers.Default) { LeavePlanning.find(session, state, query, now, holidays) }
                     },
                     // This atomic write returns on the UI coroutine, immediately followed by publication.
                     // Avoid a dispatcher return cancellation losing navigation after spending the trial.
-                    consume = { graph.settings.consumeLeavePlannerTrial() },
+                    consume = { graph.settings.consumeLeavePlannerTrial() }, canOpen = isRoutePresent,
                 )
                 when (result) {
                     is LeaveResultSetOutcome.Results -> {
-                        graph.leaveEstimatedHolidayYears.value = estimatedYears
-                        graph.leaveProposals.value = result.proposals
-                        open(Route.LeavePlanResults)
+                        if (shouldPublishLeaveResults(!graph.leaveProposals.value.isNullOrEmpty(), result.proposals.isNotEmpty(), adjusting)) {
+                            graph.leaveQuerySnapshot.value = submitted
+                            graph.leaveEstimatedHolidayYears.value = estimatedYears
+                            graph.leaveProposals.value = result.proposals
+                            if (result.proposals.isNotEmpty()) graph.leaveResultsRevision.value += 1
+                            onResultsReady()
+                        } else searchEmpty = true
                     }
                     LeaveResultSetOutcome.Paywall -> open(Route.Plus)
                     LeaveResultSetOutcome.Failed -> searchFailed = true
@@ -163,7 +179,7 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
     }
 
     DoneAtPage(
-        text.string(R.string.leavePlanAction), onBack, text.string(R.string.leaveTitle),
+        text.string(if (adjusting) R.string.leaveAdjustConditions else R.string.leavePlanAction), cancelAndBack, text.string(if (adjusting) R.string.leaveResultsTitle else R.string.leaveTitle),
         actions = {
             if (searching) {
                 CircularProgressIndicator(Modifier.padding(end = DoneAtSpacing.l).size(DoneAtSpacing.xl), strokeWidth = 2.dp)
@@ -176,6 +192,7 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
     ) {
         if (!plus) LeaveTrialBanner(device.leavePlannerTrialsLeft, text, explainsCost = true)
         if (searchFailed) PageFooter(text.string(R.string.leaveTrialSaveFailed))
+        if (searchEmpty) PageFooter(text.string(R.string.leaveNoResults))
 
         Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
             val goals = listOf(true to R.string.leaveGoalRest, false to R.string.leaveGoalBudget)
@@ -330,7 +347,9 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
     val context = LocalContext.current
     val plus by graph.plus.authorized.collectAsStateWithLifecycle()
     val device by graph.settings.device.collectAsStateWithLifecycle()
-    var resultsPage by rememberSaveable { mutableStateOf(LeaveResultsPage.SUMMARY) }
+    val snapshot by graph.leaveQuerySnapshot.collectAsStateWithLifecycle()
+    val revision by graph.leaveResultsRevision.collectAsStateWithLifecycle()
+    var resultsPage by rememberSaveable(revision) { mutableStateOf(LeaveResultsPage.SUMMARY) }
     LaunchedEffect(proposals == null) { if (proposals == null) onBack() }
     val options = proposals.orEmpty()
     val back = {
@@ -344,7 +363,8 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
             proposals = options, text = text, firstWeekday = device.calendarFirstDay(text.locale),
             onDetails = { index -> if (index in options.indices) open(Route.LeavePlanDetail(index)) },
             page = resultsPage, onPageChange = { resultsPage = it }, title = title, onBack = back, backLabel = backLabel,
-            plus = plus, trialsLeft = device.leavePlannerTrialsLeft,
+            plus = plus, trialsLeft = device.leavePlannerTrialsLeft, snapshot = snapshot, revision = revision,
+            onAdjustConditions = { open(Route.LeavePlannerAdjustment) },
             holidays = holidays, holidayRegion = records.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier,
         )
     } else {
@@ -358,6 +378,7 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
                 Text(text.string(R.string.leaveNoResults), Modifier.padding(DoneAtSpacing.l),
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            DoneAtPrimaryButton(text.string(R.string.leaveAdjustConditions), { open(Route.LeavePlannerAdjustment) }, Modifier.fillMaxWidth().padding(horizontal = DoneAtSpacing.page))
         }
     }
 }

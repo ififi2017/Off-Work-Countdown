@@ -113,6 +113,10 @@ class AppGraph(app: Application) {
     val leaveProposals = MutableStateFlow<List<com.rainif.doneat.core.domain.leave.LeavePlanProposal>?>(null)
     /** The searched range can use predictions even if it produces no proposals. Device-local UI context only. */
     val leaveEstimatedHolidayYears = MutableStateFlow<List<Int>>(emptyList())
+    /** The submitted goal/range and actual available budgets, never recomputed from later archive edits. */
+    internal val leaveQuerySnapshot = MutableStateFlow<com.rainif.doneat.ui.leave.LeaveQuerySnapshot?>(null)
+    /** Successful new sets reset their preview selection even if the proposals happen to be identical. */
+    internal val leaveResultsRevision = MutableStateFlow(0)
 
     private val _loaded = MutableStateFlow(false)
     /** False until the archive has been read: until then nothing can tell setup from a restored install. */

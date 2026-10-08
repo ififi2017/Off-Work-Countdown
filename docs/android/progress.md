@@ -583,3 +583,10 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 最终七项 Gradle gates 通过：domain 437 / data 95 / design-system 12 / app 141，共 **685 项，0 failure/error/skip**，主代理独立核对 XML；lint **0 errors / 54 warnings / 4 hints**，Debug / R8 Release 通过。日志 `/private/tmp/doneat-holiday-android-result-set-verified-gradle.log`。
 - iOS 72 项、8 suites 通过，WeekStart 最终 4 declarations / 11 参数实例另行通过；设置支持周日/周一、默认应用语言 locale，作用于各月历与周报通知。实际查找次数 3→2，打开详情返回仍为 2。
 - JavaScript **552 项 / 50 文件**单 worker 通过；三项 iOS／翻译检查、lint 与 diff 检查通过。Astra（GPT-6 Astra / XHigh）最终七张 iOS 截图及关键源码审核通过。本轮没有 Android 设备视觉验收，没有合并或发布。完整日志、截图与范围见[回归记录](../reviews/2026-10-08-holiday-calendar-recommendations.md)。
+
+### 2026-10-08 补充 · 列表分类与调整条件
+
+- 用户批准先讨论、后实施、再交 Astra 审核。分类移到全部方案列表，三项始终保留数量（含 0），预览不重复分类；筛选只改变行，保留已选组与日期，目标排序不变。
+- 空类展示本次查询快照，不推导缺几天。单层 Adjustment route 恢复提交条件，重复进入有守卫；取消／空／失败不清旧结果，退出路由取消待完成查询。非空成功才计次并用 revision 重置推荐；当前组仍可自由查看详情。
+- 最终七项 gates PASS：690 项（domain 437 / data 95 / design-system 12 / app 146），主代理独立核对 XML 零失败／错误／跳过；lint 0 errors / 54 warnings / 4 hints，Debug / R8 Release 成功。日志 `/private/tmp/doneat-holiday-android-all-plans-title-final-gradle.log`。
+- iOS 28 项及最新构建、552 项 JavaScript 与目录／生成检查通过。Astra 最终后审通过：实际 iOS 截图与两端关键源码无待修阻塞项，Android 全部方案标题用完整组数。Android 无设备视觉，未发布，既有冻结基线与授权增量不变。完整边界见[本轮记录](../reviews/2026-10-08-leave-filters.md)。
