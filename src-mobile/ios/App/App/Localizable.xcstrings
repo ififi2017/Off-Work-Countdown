@@ -98940,13 +98940,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "还可免费查看方案 %lld 次"
+                  "value": "还可免费查 %lld 次"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "还可免费查看方案 %lld 次"
+                  "value": "还可免费查 %lld 次"
                 }
               }
             }
@@ -98958,13 +98958,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "仲可以免費睇方案 %lld 次"
+                  "value": "仲可以免費查 %lld 次"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "仲可以免費睇方案 %lld 次"
+                  "value": "仲可以免費查 %lld 次"
                 }
               }
             }
@@ -98976,13 +98976,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "還可免費查看方案 %lld 次"
+                  "value": "還可免費查 %lld 次"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "還可免費查看方案 %lld 次"
+                  "value": "還可免費查 %lld 次"
                 }
               }
             }

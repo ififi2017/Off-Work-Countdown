@@ -408,7 +408,7 @@
     <string name="leaveTrialNotice">每次成功搵到並打開一組方案會用一次免費機會；無結果唔扣，組內切換方案、日期或月份同睇詳情都唔會再扣。</string>
     <string name="leaveTrialSaveFailed">睇唔到方案，請再試。</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">仲可以免費睇方案 %d 次</item>
+        <item quantity="other">仲可以免費查 %d 次</item>
     </plurals>
     <string name="leaveTrialsUsedUp">免費睇方案嘅次數用晒，開通 Plus 後可以繼續生成方案。</string>
     <string name="leaveUnassignedCaveat">有啲日子未排班，當休息計。</string>
