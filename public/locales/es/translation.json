@@ -482,7 +482,7 @@
   "holidaySource": "Calendario de festivos",
   "holidayCoverageYearWarning": "No hay datos de {{year}}. Se usará el horario habitual. Busca actualizaciones de la app.",
   "holidayCoverageNextYearWarning": "Los datos de {{year}} aún no están disponibles. Se usará el horario habitual. Busca actualizaciones de la app.",
-  "holidayEstimatedYearWarning": "Los festivos y días laborables de compensación de China continental para {{year}} son una previsión. Sirven solo como referencia; no los consideres información confirmada sobre los festivos. Consulta el aviso oficial del Consejo de Estado, que se publica hacia finales de año. DoneAt actualizará los datos lo antes posible después de que se anuncien los festivos del año siguiente; mantén la app actualizada.",
+  "holidayEstimatedYearWarning": "Los festivos y días laborables compensatorios de China continental para {{year}} son estimaciones, no fechas oficiales.\nConsulta el aviso de fin de año del Consejo de Estado. DoneAt actualizará los datos en cuanto se publique.",
   "holidayEstimatedLabel": "Previsto",
   "leaveEstimatedHolidaysYear": "Usa los festivos previstos para {{year}}",
   "extendedSourceAnnualRange": "Intervalo anual"

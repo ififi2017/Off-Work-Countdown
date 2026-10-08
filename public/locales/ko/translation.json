@@ -482,7 +482,7 @@
   "holidaySource": "공휴일 달력",
   "holidayCoverageYearWarning": "{{year}}년 데이터가 없습니다. 평소 일정이 적용됩니다. 앱 업데이트를 확인하세요.",
   "holidayCoverageNextYearWarning": "{{year}}년 데이터가 아직 없습니다. 평소 일정이 적용됩니다. 앱 업데이트를 확인하세요.",
-  "holidayEstimatedYearWarning": "중국 본토의 {{year}}년 공휴일과 대체 근무일은 예측 정보입니다. 참고용으로만 확인하고 확정된 휴일 정보로 여기지 마세요. 연말에 발표되는 중국 국무원의 공식 공고를 기준으로 삼아 주세요. DoneAt은 다음 해 공휴일 일정이 발표된 뒤 가능한 한 빨리 데이터를 업데이트합니다. 앱을 최신 상태로 유지해 주세요.",
+  "holidayEstimatedYearWarning": "중국 본토의 {{year}}년 공휴일과 대체 근무일은 예상치이며 공식 일정이 아닙니다.\n연말에 발표되는 국무원의 공식 공고를 확인해 주세요. DoneAt은 발표 후 신속히 업데이트합니다.",
   "holidayEstimatedLabel": "예측",
   "leaveEstimatedHolidaysYear": "{{year}}년 예측 공휴일 사용",
   "extendedSourceAnnualRange": "매년 적용 기간"

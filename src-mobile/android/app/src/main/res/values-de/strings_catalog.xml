@@ -324,7 +324,7 @@
     <string name="holidayCoverageNextYearWarning">Daten für %1$s fehlen noch. Der normale Plan gilt. Suche nach App-Updates.</string>
     <string name="holidayCoverageYearWarning">Keine Daten für %1$s. Der normale Plan gilt. Suche nach App-Updates.</string>
     <string name="holidayEstimatedLabel">Prognose</string>
-    <string name="holidayEstimatedYearWarning">Die Feiertage und Ausgleichsarbeitstage auf dem chinesischen Festland für %1$s sind eine Prognose. Sie dienen nur zur Orientierung und sind keine bestätigten Feiertagsangaben. Maßgeblich ist die offizielle Mitteilung des chinesischen Staatsrats zum Jahresende. DoneAt aktualisiert die Daten so bald wie möglich nach Bekanntgabe der Regelung für das Folgejahr. Bitte halte die App aktuell.</string>
+    <string name="holidayEstimatedYearWarning">Feiertage und Ausgleichsarbeitstage auf dem chinesischen Festland für %1$s sind Schätzungen, keine offiziellen Termine.\nMaßgeblich ist die Mitteilung des chinesischen Staatsrats zum Jahresende. DoneAt aktualisiert die Daten zeitnah nach ihrer Veröffentlichung.</string>
     <string name="holidayMakeupShort">Ausgleichsarbeit</string>
     <string name="holidayMakeupWorkday">Ersatzarbeitstag</string>
     <string name="holidayRestDay">Feiertag</string>

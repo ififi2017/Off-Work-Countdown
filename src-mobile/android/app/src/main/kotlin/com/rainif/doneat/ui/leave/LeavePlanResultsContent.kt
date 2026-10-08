@@ -154,15 +154,18 @@ internal fun LeavePlanResultsContent(
             when (page) {
                 LeaveResultsPage.SUMMARY -> {
                     Surface(modifier = arrival(0), shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {
-                        Column(Modifier.padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                            PlanSummary(proposal, text, proposal.costHalfDays == minimumCost)
-                            ResultsListEntry(Strings.leaveAllPlans(resources, text.wholeNumber(groups.size)), true) {
-                                categoryName = LeaveResultFilter.ALL.name
-                                onPageChange(LeaveResultsPage.ALL_PLANS)
-                            }
-                            if (group.proposalIndices.size > 1) {
-                                ResultsListEntry(Strings.leaveAvailableDates(resources, text.wholeNumber(group.proposalIndices.size)), true) {
-                                    onPageChange(LeaveResultsPage.DATES)
+                        Column {
+                            PlanSummary(proposal, text, proposal.costHalfDays == minimumCost, Modifier.padding(DoneAtSpacing.l))
+                            RowDivider(inset = false)
+                            Column(Modifier.padding(horizontal = DoneAtSpacing.l).padding(bottom = DoneAtSpacing.xs)) {
+                                ResultsListEntry(Strings.leaveAllPlans(resources, text.wholeNumber(groups.size)), true) {
+                                    categoryName = LeaveResultFilter.ALL.name
+                                    onPageChange(LeaveResultsPage.ALL_PLANS)
+                                }
+                                if (group.proposalIndices.size > 1) {
+                                    ResultsListEntry(Strings.leaveAvailableDates(resources, text.wholeNumber(group.proposalIndices.size)), true) {
+                                        onPageChange(LeaveResultsPage.DATES)
+                                    }
                                 }
                             }
                         }

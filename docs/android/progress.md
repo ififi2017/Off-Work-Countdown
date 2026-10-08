@@ -596,3 +596,9 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 对齐用户 iOS 真机反馈：请假日期／节名统一缩放槽，数字不因请假角标偏移，图例只反映当前月份真正绘出的符号；预测提醒图标居中并接同一入场状态。
 - 记录月历三槽等间隔，普通字号接近方格，月历本身采用实际字体密度，大字号允许增高，不改变周／年图表的字体上限。无规则、数据、计次或文案改动。
 - 最终七项门禁 690 项通过，lint 0 errors / 54 warnings / 4 hints，Debug / R8 Release 成功；Astra 审核要求补齐请假格按列宽扩展后，全部门禁补跑通过（`/private/tmp/doneat-calendar-square-leave-android-final-gradle.log`），主代理再次独立核对 690 项 XML 零失败／错误／跳过。Astra 最终复审及 iOS 实际视觉通过，Android 仅源码与自动检查，冻结基线和授权增量未推进；规定 model/shared 漂移命令在最新 main `d462fdaf` 为 55 条（较旧 53 条增加已授权的 PR #307 两项提交），仅采用本轮明确的 UI 修正。见[本轮记录](../reviews/2026-10-08-calendar-cell-alignment.md)。
+
+### 2026-10-08 · 紧凑入口与预测短文案
+
+- 记录月历两入口零额外 gap 分组；请假摘要的全部方案／可选日期减少额外上下留白，48dp 点击区域与现有动作保持。预测警告缩短为两段真实换行，生成目录与 iOS／公共 19 语同步。
+- 七项 gates 最终通过，690 项（domain 437 / data 95 / design-system 12 / app 146）零 failure/error/skip，主代理独立核对 XML。lint 0 errors / 54 existing warnings / 4 hints，Debug / R8 Release 成功；日志 `/private/tmp/doneat-records-action-spacing-android-final-gradle.log`。
+- iOS 新增空工作横条容器修正日期基线；Android 已有固定 Box 槽，无需重复修改。Astra 最终修后实图和源码审核通过。仅实际 iOS 模拟器视觉，Android 源码及自动检查；冻结源 9252fdfd、授权增量 18129168 不变，origin/main c599ad45 model/shared 漂移仍 55 条。完整范围见[本轮记录](../reviews/2026-10-08-records-action-spacing.md)。

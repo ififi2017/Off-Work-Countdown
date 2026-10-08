@@ -482,7 +482,7 @@
   "holidaySource": "Feiertagskalender",
   "holidayCoverageYearWarning": "Keine Daten für {{year}}. Der normale Plan gilt. Suche nach App-Updates.",
   "holidayCoverageNextYearWarning": "Daten für {{year}} fehlen noch. Der normale Plan gilt. Suche nach App-Updates.",
-  "holidayEstimatedYearWarning": "Die Feiertage und Ausgleichsarbeitstage auf dem chinesischen Festland für {{year}} sind eine Prognose. Sie dienen nur zur Orientierung und sind keine bestätigten Feiertagsangaben. Maßgeblich ist die offizielle Mitteilung des chinesischen Staatsrats zum Jahresende. DoneAt aktualisiert die Daten so bald wie möglich nach Bekanntgabe der Regelung für das Folgejahr. Bitte halte die App aktuell.",
+  "holidayEstimatedYearWarning": "Feiertage und Ausgleichsarbeitstage auf dem chinesischen Festland für {{year}} sind Schätzungen, keine offiziellen Termine.\nMaßgeblich ist die Mitteilung des chinesischen Staatsrats zum Jahresende. DoneAt aktualisiert die Daten zeitnah nach ihrer Veröffentlichung.",
   "holidayEstimatedLabel": "Prognose",
   "leaveEstimatedHolidaysYear": "Nutzt die prognostizierten Feiertage für {{year}}",
   "extendedSourceAnnualRange": "Jährlicher Zeitraum"

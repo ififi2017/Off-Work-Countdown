@@ -482,7 +482,7 @@
   "holidaySource": "Kalender hari libur",
   "holidayCoverageYearWarning": "Tidak ada data {{year}}. Jadwal biasa akan digunakan. Periksa pembaruan aplikasi.",
   "holidayCoverageNextYearWarning": "Data {{year}} belum tersedia. Jadwal biasa akan digunakan. Periksa pembaruan aplikasi.",
-  "holidayEstimatedYearWarning": "Hari libur dan hari kerja pengganti di Tiongkok daratan untuk {{year}} merupakan perkiraan. Informasi ini hanya sebagai referensi dan jangan dianggap sebagai informasi hari libur yang resmi. Ikuti pengumuman resmi Dewan Negara Tiongkok yang diterbitkan menjelang akhir tahun. DoneAt akan memperbarui data secepatnya setelah jadwal tahun berikutnya diumumkan; harap selalu perbarui aplikasi.",
+  "holidayEstimatedYearWarning": "Hari libur dan hari kerja pengganti di Tiongkok daratan untuk {{year}} masih berupa perkiraan, bukan tanggal resmi.\nIkuti pengumuman akhir tahun Dewan Negara. DoneAt akan segera memperbarui data setelah pengumuman terbit.",
   "holidayEstimatedLabel": "Perkiraan",
   "leaveEstimatedHolidaysYear": "Menggunakan perkiraan hari libur tahun {{year}}",
   "extendedSourceAnnualRange": "Rentang tahunan"

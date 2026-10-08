@@ -26,7 +26,7 @@
     <string name="holidayCoverageNextYearWarning">Los datos de %1$s aún no están disponibles. Se usará el rol de turnos habitual. Busca actualizaciones de la app.</string>
     <string name="holidayCoverageYearWarning">No hay datos de %1$s. Se usará el rol de turnos habitual. Busca actualizaciones de la app.</string>
     <string name="holidayEstimatedLabel">Pronóstico</string>
-    <string name="holidayEstimatedYearWarning">Los días festivos y de trabajo compensatorio en China continental para %1$s son una predicción. Úsalos solo como referencia; no los consideres información oficial confirmada. Toma como referencia el aviso oficial del Consejo de Estado, publicado a finales de año. DoneAt actualizará los datos lo antes posible después de que se anuncie el calendario del año siguiente; mantén la app actualizada.</string>
+    <string name="holidayEstimatedYearWarning">Los días festivos y de trabajo compensatorio de China continental para %1$s son estimaciones, no fechas oficiales.\nConsulta el aviso de fin de año del Consejo de Estado. DoneAt actualizará los datos en cuanto se publique.</string>
     <string name="holidayRestDay">Feriado</string>
     <string name="holidaySource">Calendario de feriados</string>
     <string name="invalidLunchMessage">La pausa para comer debe estar completamente dentro de la jornada para iniciar la cuenta regresiva.</string>

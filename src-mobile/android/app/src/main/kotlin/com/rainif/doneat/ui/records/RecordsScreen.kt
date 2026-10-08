@@ -555,8 +555,12 @@ private fun ChartCard(
                 }
             }
             MarkLegend(includesLock = !context.queries.authorized, text = text)
-            if (scale == RecordsScale.MONTH) RecordsActionEntry(text.string(R.string.leavePlanAction), Icons.Outlined.Luggage, onPlanLeave)
-            ReportEntry(scale, text, onOpenReport)
+            if (scale == RecordsScale.MONTH) {
+                Column {
+                    RecordsActionEntry(text.string(R.string.leavePlanAction), Icons.Outlined.Luggage, onPlanLeave)
+                    ReportEntry(scale, text, onOpenReport)
+                }
+            } else ReportEntry(scale, text, onOpenReport)
         }
     }
 }

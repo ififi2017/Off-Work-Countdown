@@ -324,7 +324,7 @@
     <string name="holidayCoverageNextYearWarning">%1$s का डेटा अभी नहीं है। सामान्य शेड्यूल उपयोग होगा। ऐप अपडेट जाँचें।</string>
     <string name="holidayCoverageYearWarning">%1$s का डेटा नहीं है। सामान्य शेड्यूल उपयोग होगा। ऐप अपडेट जाँचें।</string>
     <string name="holidayEstimatedLabel">अनुमानित</string>
-    <string name="holidayEstimatedYearWarning">चीन के मुख्य भूभाग के लिए %1$s की छुट्टियों और बदले में काम के दिनों का यह अनुमान है। इसे केवल संदर्भ के लिए देखें; इसे पक्की छुट्टी की जानकारी न मानें। वर्ष के अंत में जारी चीन की राज्य परिषद की आधिकारिक सूचना को ही मानें। अगले वर्ष की छुट्टियों की व्यवस्था घोषित होने के बाद DoneAt जल्द से जल्द डेटा अपडेट करेगा; कृपया ऐप अपडेट रखें।</string>
+    <string name="holidayEstimatedYearWarning">मुख्यभूमि चीन में %1$s की छुट्टियाँ और बदले में काम के दिन अनुमानित हैं, आधिकारिक तारीखें नहीं।\nवर्ष के अंत में राज्य परिषद की आधिकारिक सूचना देखें। जारी होने के बाद DoneAt जल्द अपडेट करेगा।</string>
     <string name="holidayMakeupShort">प्रतिपूरक काम</string>
     <string name="holidayMakeupWorkday">प्रतिपूरक कार्यदिवस</string>
     <string name="holidayRestDay">अवकाश</string>
