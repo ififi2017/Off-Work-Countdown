@@ -623,7 +623,11 @@ struct RecordsMonthGrid: View {
     var onSelect: (RecordsDayCell) -> Void
     var onOpen: (RecordsDayCell) -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @ScaledMetric(relativeTo: .caption) private var dayHeight: CGFloat = 48
+    @State private var gridWidth: CGFloat = 0
+    @ScaledMetric(relativeTo: .callout) private var numberHeight: CGFloat = 20
+    @ScaledMetric(relativeTo: .caption2) private var captionHeight: CGFloat = 14
+
+    private var dayHeight: CGFloat { max((gridWidth - 30) / 7, numberHeight + captionHeight + barHeight + 4) }
 
     var body: some View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 5), count: 7)
@@ -661,25 +665,26 @@ struct RecordsMonthGrid: View {
                                     Text(text.formatCount(preferences.recordsCalendar.component(.day, from: cell.date)))
                                         .font(.callout.weight(cell.isToday || cell.dayKey == selectedDayKey ? .semibold : .regular).monospacedDigit())
                                         .foregroundStyle(label(cell))
-                                    if let holiday = RecordsDayMarks.holiday(cell, preferences: preferences) {
-                                        HolidayDayCaption(annotation: holiday, text: text)
+                                        .frame(height: numberHeight)
+                                    Group {
+                                        if let holiday = RecordsDayMarks.holiday(cell, preferences: preferences) {
+                                            HolidayDayCaption(annotation: holiday, text: text)
+                                        } else {
+                                            Color.clear
+                                        }
                                     }
+                                    .frame(height: captionHeight)
+                                    RecordsMiniWorkBar(
+                                        workMs: cell.workMs,
+                                        overtimeMs: cell.overtimeMs,
+                                        maxWidth: 24,
+                                        height: barHeight
+                                    )
+                                    .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
+                                        estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
+                                    .frame(height: barHeight)
                                 }
-                                .frame(maxHeight: .infinity, alignment: .top)
                                 .padding(.horizontal, 1)
-                                .padding(.top, 6)
-                                .padding(.bottom, 5)
-                            }
-                            .overlay(alignment: .bottom) {
-                                RecordsMiniWorkBar(
-                                    workMs: cell.workMs,
-                                    overtimeMs: cell.overtimeMs,
-                                    maxWidth: 24,
-                                    height: barHeight
-                                )
-                                .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
-                                    estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
-                                .padding(.bottom, 4)
                             }
                             .overlay(alignment: .topTrailing) {
                                 stateMarker(cell)
@@ -695,9 +700,8 @@ struct RecordsMonthGrid: View {
                             .padding(3)
                             .contentShape(Rectangle())
                     }
-                    // Seven columns in a phone's width leave about 42 points a
-                    // wide. The target reaches into the gutter while the taller
-                    // cell leaves room for the holiday name beneath the date.
+                    // Square at ordinary sizes; scaled text can increase the
+                    // height. The tap target still reaches into the gutter.
                     .padding(-3)
                     .buttonStyle(.plain)
                     .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, queries: queries, text: text, holiday: RecordsDayMarks.holiday(cell, preferences: preferences)))
@@ -708,6 +712,7 @@ struct RecordsMonthGrid: View {
                 }
             }
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { gridWidth = $0 }
         // A seven-column calendar cannot reflow without ceasing to be a
         // calendar. Cap only its dense labels while VoiceOver retains the full
         // localized date and status for every 44-point button.
@@ -719,9 +724,8 @@ struct RecordsMonthGrid: View {
         })
     }
 
-    /// 48 points cannot hold a readable date, a bar and a status glyph at the
-    /// largest sizes. The date never shrinks; the bar gives way first, and the
-    /// status glyph after it — both remain in the VoiceOver value.
+    /// Keep dense bars modest at larger text sizes; the three content slots
+    /// grow together without forcing the date into a narrow square.
     private var barHeight: CGFloat {
         dynamicTypeSize >= .accessibility1 ? 2 : (dynamicTypeSize >= .xxLarge ? 2.5 : 3)
     }

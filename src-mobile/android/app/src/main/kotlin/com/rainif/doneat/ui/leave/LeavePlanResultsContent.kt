@@ -169,9 +169,12 @@ internal fun LeavePlanResultsContent(
                     }
                     // One full warning before the calendar; each summary only carries the short prediction label.
                     leaveSelectedEstimatedYears(proposal).forEach {
-                        Text(Strings.holidayEstimatedYearWarning(resources, it.toString()), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(arrival(1), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.Info, null, Modifier.size(DoneAtSpacing.m), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(Strings.holidayEstimatedYearWarning(resources, it.toString()), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
-                    Surface(modifier = arrival(1), shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                    Surface(modifier = arrival(2), shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {
                         LeavePlanCalendar(proposal, text, firstWeekday, Modifier.padding(DoneAtSpacing.l), holidays, holidayRegion)
                     }
                 }

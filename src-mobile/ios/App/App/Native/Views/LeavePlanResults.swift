@@ -58,17 +58,22 @@ struct LeavePlanResults: View {
                     summary(selected)
                         .owcRevealed(arrived, index: 0, reduceMotion: reduceMotion)
                     ForEach(estimatedYears(selected), id: \.self) { year in
-                        Label(text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(year)]),
-                              systemImage: "exclamationmark.triangle")
-                            .font(.caption)
-                            .foregroundStyle(OWCDesign.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .fixedSize(horizontal: false, vertical: true)
+                        HStack(alignment: .center, spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .accessibilityHidden(true)
+                            Text(text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(year)]))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .owcRevealed(arrived, index: 1, reduceMotion: reduceMotion)
                     }
                     LeavePlanCalendar(shifts: shifts, proposal: selected, showsEstimatedLabel: false)
                         .padding(16)
                         .background(OWCDesign.card, in: .rect(cornerRadius: OWCDesign.cardRadius))
-                        .owcRevealed(arrived, index: 1, reduceMotion: reduceMotion)
+                        .owcRevealed(arrived, index: estimatedYears(selected).isEmpty ? 1 : 2, reduceMotion: reduceMotion)
                 } else {
                     ContentUnavailableView {
                         Label(text.t("leaveResultsTitle"), systemImage: "calendar")
