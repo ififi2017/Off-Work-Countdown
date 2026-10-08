@@ -10,9 +10,12 @@ struct LeavePlanCalendar: View {
     @State private var monthIndex = 0
     @State private var revealed = false
     @State private var holidayDetails: SelectedHoliday?
+    @State private var gridWidth: CGFloat = 0
     @ScaledMetric(relativeTo: .caption) private var cellHeight: CGFloat = 44
-    @ScaledMetric(relativeTo: .caption2) private var captionHeight: CGFloat = 12
+    @ScaledMetric(relativeTo: .subheadline) private var numberHeight: CGFloat = 20
+    @ScaledMetric(relativeTo: .caption2) private var captionHeight: CGFloat = 14
 
+    private var cellSide: CGFloat { max(cellHeight, numberHeight + captionHeight + 6, gridWidth / 7) }
     private var text: AppText { shifts.text }
     private var calendar: Calendar { shifts.preferences.recordsCalendar }
     private var months: [Int] { LeavePlanCalendarPage.months(for: proposal) }
@@ -95,6 +98,7 @@ struct LeavePlanCalendar: View {
                     }
                 }
             }
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { gridWidth = $0 }
             .id(page.firstDayNumber)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 8)))
             ForEach((showsEstimatedLabel ? proposal.caveats : []).compactMap { caveat -> Int? in
@@ -191,9 +195,7 @@ struct LeavePlanCalendar: View {
 
     private func cell(_ day: Int, region: String?) -> some View {
         let mark = mark(day)
-        let holiday = HolidayDayAnnotation.make(dayKey: ExtendedScheduleEditing.dayKey(dayNumber: day),
-            region: region,
-            language: shifts.preferences.languageCode)
+        let holiday = annotation(day, region: region)
         let inMonth = page.contains(day)
         let inBreak = (proposal.firstRestDayNumber...proposal.lastRestDayNumber).contains(day)
         let first = day == proposal.firstRestDayNumber
@@ -203,6 +205,7 @@ struct LeavePlanCalendar: View {
             Text(text.formatCount(CivilZone.civilDate(dayNumber: day).day))
                 .font(.subheadline.monospacedDigit().weight(mark == nil ? .regular : .semibold))
                 .foregroundStyle(mark != nil || inMonth ? OWCDesign.primary : OWCDesign.tertiary)
+                .frame(height: numberHeight)
             Group {
                 if let holiday {
                     HolidayDayCaption(annotation: holiday, text: text)
@@ -216,9 +219,10 @@ struct LeavePlanCalendar: View {
                 }
             }
             .font(.caption2)
-            .frame(minHeight: captionHeight)
+            .frame(height: captionHeight)
         }
-        .frame(maxWidth: .infinity, minHeight: cellHeight)
+        .frame(maxWidth: .infinity)
+        .frame(height: cellSide)
         .background {
             if inBreak {
                 UnevenRoundedRectangle(
@@ -256,9 +260,16 @@ struct LeavePlanCalendar: View {
         }
     }
 
+    private func annotation(_ day: Int, region: String?) -> HolidayDayAnnotation? {
+        HolidayDayAnnotation.make(dayKey: ExtendedScheduleEditing.dayKey(dayNumber: day),
+                                 region: region, language: shifts.preferences.languageCode)
+    }
+
     @ViewBuilder private var legends: some View {
         ForEach(Mark.allCases.filter { kind in
-            LeavePlanCalendarPage.coverage(of: proposal).contains { mark($0) == kind }
+            page.days.contains {
+                mark($0) == kind && (kind.isLeave || annotation($0, region: holidayRegion) == nil)
+            }
         }, id: \.self) { kind in
             Label(text.t(kind.titleKey), systemImage: kind.symbol)
                 .foregroundStyle(kind.isLeave ? OWCDesign.accent : OWCDesign.secondary)

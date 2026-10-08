@@ -590,3 +590,9 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 空类展示本次查询快照，不推导缺几天。单层 Adjustment route 恢复提交条件，重复进入有守卫；取消／空／失败不清旧结果，退出路由取消待完成查询。非空成功才计次并用 revision 重置推荐；当前组仍可自由查看详情。
 - 最终七项 gates PASS：690 项（domain 437 / data 95 / design-system 12 / app 146），主代理独立核对 XML 零失败／错误／跳过；lint 0 errors / 54 warnings / 4 hints，Debug / R8 Release 成功。日志 `/private/tmp/doneat-holiday-android-all-plans-title-final-gradle.log`。
 - iOS 28 项及最新构建、552 项 JavaScript 与目录／生成检查通过。Astra 最终后审通过：实际 iOS 截图与两端关键源码无待修阻塞项，Android 全部方案标题用完整组数。Android 无设备视觉，未发布，既有冻结基线与授权增量不变。完整边界见[本轮记录](../reviews/2026-10-08-leave-filters.md)。
+
+### 2026-10-08 · 月历格与预测提醒补充
+
+- 对齐用户 iOS 真机反馈：请假日期／节名统一缩放槽，数字不因请假角标偏移，图例只反映当前月份真正绘出的符号；预测提醒图标居中并接同一入场状态。
+- 记录月历三槽等间隔，普通字号接近方格，月历本身采用实际字体密度，大字号允许增高，不改变周／年图表的字体上限。无规则、数据、计次或文案改动。
+- 最终七项门禁 690 项通过，lint 0 errors / 54 warnings / 4 hints，Debug / R8 Release 成功；Astra 审核要求补齐请假格按列宽扩展后，全部门禁补跑通过（`/private/tmp/doneat-calendar-square-leave-android-final-gradle.log`），主代理再次独立核对 690 项 XML 零失败／错误／跳过。Astra 最终复审及 iOS 实际视觉通过，Android 仅源码与自动检查，冻结基线和授权增量未推进；规定 model/shared 漂移命令在最新 main `d462fdaf` 为 55 条（较旧 53 条增加已授权的 PR #307 两项提交），仅采用本轮明确的 UI 修正。见[本轮记录](../reviews/2026-10-08-calendar-cell-alignment.md)。

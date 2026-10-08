@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -175,65 +174,71 @@ internal fun MonthGrid(
 ) {
     val colors = LocalDoneAtRecordsColors.current
     val scheme = MaterialTheme.colorScheme
-    CappedFontScale {
-        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            Row(Modifier.fillMaxWidth().clearAndSetSemantics {}, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                weekdayLabels.forEach {
-                    Text(it, Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = scheme.outline, textAlign = TextAlign.Center)
-                }
+    val dateHeight = with(LocalDensity.current) { MaterialTheme.typography.bodyMedium.fontSize.toDp() }
+    val captionHeight = with(LocalDensity.current) { MaterialTheme.typography.labelSmall.fontSize.toDp() }
+    // Square at ordinary text sizes; larger text may grow vertically rather than clipping the three slots.
+    val minimumHeight = dateHeight + captionHeight + 3.dp + DoneAtSpacing.xxs * 6
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Row(Modifier.fillMaxWidth().clearAndSetSemantics {}, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            weekdayLabels.forEach {
+                Text(it, Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = scheme.outline, textAlign = TextAlign.Center)
             }
-            val slots: List<RecordsDayCell?> = List(leadingBlanks) { null } + cells
-            slots.chunked(7).forEach { week ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                    for (index in 0 until 7) {
-                        val cell = week.getOrNull(index)
+        }
+        val slots: List<RecordsDayCell?> = List(leadingBlanks) { null } + cells
+        slots.chunked(7).forEach { week ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                for (index in 0 until 7) {
+                    val cell = week.getOrNull(index)
+                    BoxWithConstraints(Modifier.weight(1f)) {
+                        val cellHeight = maxOf(maxWidth, minimumHeight)
                         if (cell == null) {
-                            Spacer(Modifier.weight(1f).aspectRatio(1f))
-                            continue
-                        }
-                        val selected = cell.dayKey == selectedDayKey
-                        val holiday = holidays[cell.dayKey]
-                        val estimated = cell.isFuture || RecordsDayMarks.isEstimated(cell)
-                        val fill = when (cell.appearance) {
-                            RecordsDayAppearance.LOCKED -> scheme.surfaceContainerHighest.copy(alpha = 0.45f)
-                            RecordsDayAppearance.UNRECORDED, RecordsDayAppearance.PLANNED -> Color.Transparent
-                            RecordsDayAppearance.REST -> scheme.surfaceContainerHighest.copy(alpha = 0.6f)
-                            RecordsDayAppearance.RECORDED, RecordsDayAppearance.CORRECTED ->
-                                colors.work.copy(alpha = (0.4 * RecordsWorkIntensity.opacity(cell.overtimeMs, estimated)).toFloat())
-                        }
-                        val shape = RoundedCornerShape(8.dp)
-                        Box(
-                            Modifier
-                                .weight(1f)
-                                .aspectRatio(1f)
-                                .then(if (selected) modifier else Modifier)
-                                .clip(shape)
-                                .background(fill)
-                                .estimatedHatch(RecordsDayMarks.isEstimated(cell), scheme.onSurfaceVariant.copy(alpha = DoneAtRecordsStyle.calendarEstimateTintOpacity), spacing = 6.dp)
-                                .border(2.dp, if (selected) scheme.primary else Color.Transparent, shape)
-                                .clickable { onSelect(cell) }
-                                .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }, holiday),
-                        ) {
-                            Column(Modifier.align(Alignment.Center).fillMaxWidth().padding(horizontal = DoneAtSpacing.xxs).padding(bottom = DoneAtSpacing.s), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text.count(cell.date.dayOfMonth),
-                                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = MaterialTheme.typography.bodyMedium.fontSize),
-                                    fontWeight = if (cell.isToday || selected) FontWeight.SemiBold else FontWeight.Normal,
-                                    color = when {
-                                        cell.appearance == RecordsDayAppearance.LOCKED -> scheme.outline
-                                        cell.isToday || selected -> scheme.primary
-                                        else -> scheme.onSurface
-                                    },
-                                )
-                                if (holiday != null) HolidayDayCaption(holiday)
-                                else Spacer(Modifier.height(with(LocalDensity.current) { MaterialTheme.typography.labelSmall.fontSize.toDp() }))
+                            Spacer(Modifier.fillMaxWidth().height(cellHeight))
+                        } else {
+                            val selected = cell.dayKey == selectedDayKey
+                            val holiday = holidays[cell.dayKey]
+                            val estimated = cell.isFuture || RecordsDayMarks.isEstimated(cell)
+                            val fill = when (cell.appearance) {
+                                RecordsDayAppearance.LOCKED -> scheme.surfaceContainerHighest.copy(alpha = 0.45f)
+                                RecordsDayAppearance.UNRECORDED, RecordsDayAppearance.PLANNED -> Color.Transparent
+                                RecordsDayAppearance.REST -> scheme.surfaceContainerHighest.copy(alpha = 0.6f)
+                                RecordsDayAppearance.RECORDED, RecordsDayAppearance.CORRECTED ->
+                                    colors.work.copy(alpha = (0.4 * RecordsWorkIntensity.opacity(cell.overtimeMs, estimated)).toFloat())
                             }
-                            MiniWorkBar(
-                                cell.workMs, cell.overtimeMs,
-                                Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp)
-                                    .graphicsLayer { alpha = RecordsWorkIntensity.opacity(cell.overtimeMs, estimated).toFloat() },
-                            )
-                            StateMarker(cell, Modifier.align(Alignment.TopEnd).padding(4.dp))
+                            val shape = RoundedCornerShape(8.dp)
+                            Box(
+                                Modifier.fillMaxWidth().height(cellHeight)
+                                    .then(if (selected) modifier else Modifier)
+                                    .clip(shape)
+                                    .background(fill)
+                                    .estimatedHatch(RecordsDayMarks.isEstimated(cell), scheme.onSurfaceVariant.copy(alpha = DoneAtRecordsStyle.calendarEstimateTintOpacity), spacing = 6.dp)
+                                    .border(2.dp, if (selected) scheme.primary else Color.Transparent, shape)
+                                    .clickable { onSelect(cell) }
+                                    .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }, holiday),
+                            ) {
+                                Column(Modifier.matchParentSize().padding(DoneAtSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly) {
+                                    Box(Modifier.fillMaxWidth().heightIn(min = dateHeight), contentAlignment = Alignment.Center) {
+                                        Text(
+                                            text.count(cell.date.dayOfMonth),
+                                            style = MaterialTheme.typography.bodyMedium.copy(lineHeight = MaterialTheme.typography.bodyMedium.fontSize),
+                                            fontWeight = if (cell.isToday || selected) FontWeight.SemiBold else FontWeight.Normal,
+                                            color = when {
+                                                cell.appearance == RecordsDayAppearance.LOCKED -> scheme.outline
+                                                cell.isToday || selected -> scheme.primary
+                                                else -> scheme.onSurface
+                                            },
+                                        )
+                                    }
+                                    Box(Modifier.fillMaxWidth().heightIn(min = captionHeight), contentAlignment = Alignment.Center) {
+                                        if (holiday != null) HolidayDayCaption(holiday)
+                                    }
+                                    Box(Modifier.fillMaxWidth().height(3.dp), contentAlignment = Alignment.Center) {
+                                        MiniWorkBar(cell.workMs, cell.overtimeMs, Modifier.graphicsLayer {
+                                            alpha = RecordsWorkIntensity.opacity(cell.overtimeMs, estimated).toFloat()
+                                        })
+                                    }
+                                }
+                                StateMarker(cell, Modifier.align(Alignment.TopEnd).padding(4.dp))
+                            }
                         }
                     }
                 }

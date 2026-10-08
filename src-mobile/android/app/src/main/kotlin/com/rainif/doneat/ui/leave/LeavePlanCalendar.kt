@@ -10,6 +10,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -49,6 +53,7 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalResources
 import com.rainif.doneat.l10n.Strings
@@ -80,7 +85,12 @@ internal fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, fir
     val reduced = LocalDoneAtMotion.current.reduced
     val travel = with(LocalDensity.current) { DoneAtLeaveTokens.monthTravel.roundToPx() }
     val marks = remember(proposal) { LeavePlanCalendarPage.coverage(proposal).associateWith { mark(proposal, it) } }
-    val used = marks.values.filterNotNull().toSet()
+    // A caption replaces the symbol; only explain icons actually rendered in this month.
+    val used = page.days.mapNotNull { day ->
+        val kind = marks[day] ?: return@mapNotNull null
+        val annotation = holidayDayAnnotation(holidays, holidayRegion, LeavePlannerSchedule.date(day), text.locale)
+        kind.takeIf { annotation == null || kind == LeaveMark.LEAVE || kind == LeaveMark.HALF_LEAVE }
+    }.toSet()
     var selectedHoliday by remember(proposal) { mutableStateOf<Pair<Int, HolidayDayAnnotation>?>(null) }
     val resources = LocalResources.current
 
@@ -104,29 +114,37 @@ internal fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, fir
                     fadeOut(DoneAtLeaveTokens.navigation(reduced))).using(null)
             },
         ) { shown ->
-            Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                Row(Modifier.clearAndSetSemantics {}) {
-                    (0 until 7).forEach { column ->
-                        Text(
-                            DayOfWeek.of(Math.floorMod(firstWeekday.value - 1 + column, 7) + 1).getDisplayName(TextStyle.NARROW_STANDALONE, text.locale),
-                            Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                        )
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val density = LocalDensity.current
+                val dateHeight = with(density) { MaterialTheme.typography.bodyMedium.lineHeight.toDp() }
+                val captionHeight = maxOf(DoneAtLeaveTokens.markSize * density.fontScale,
+                    with(density) { MaterialTheme.typography.labelSmall.fontSize.toDp() })
+                val textHeight = dateHeight + captionHeight + DoneAtSpacing.xxs * 3
+                val minimumDayHeight = maxOf(maxWidth / 7, DoneAtLeaveTokens.cellHeight * density.fontScale, textHeight)
+                Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+                    Row(Modifier.clearAndSetSemantics {}) {
+                        (0 until 7).forEach { column ->
+                            Text(
+                                DayOfWeek.of(Math.floorMod(firstWeekday.value - 1 + column, 7) + 1).getDisplayName(TextStyle.NARROW_STANDALONE, text.locale),
+                                Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
                     }
-                }
-                shown.days.chunked(7).forEach { week ->
-                    Row {
-                        week.forEach { day ->
-                            val annotation = holidayDayAnnotation(holidays, holidayRegion, LeavePlannerSchedule.date(day), text.locale)
-                            CalendarDay(day, shown, proposal, marks[day], text, Modifier.weight(1f), annotation) {
-                                annotation?.let { selectedHoliday = day to it }
+                    shown.days.chunked(7).forEach { week ->
+                        Row(Modifier.height(IntrinsicSize.Min)) {
+                            week.forEach { day ->
+                                val annotation = holidayDayAnnotation(holidays, holidayRegion, LeavePlannerSchedule.date(day), text.locale)
+                                CalendarDay(day, shown, proposal, marks[day], text, Modifier.weight(1f).fillMaxHeight(), annotation, minimumDayHeight) {
+                                    annotation?.let { selectedHoliday = day to it }
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        FlowRow(
+        if (used.isNotEmpty()) FlowRow(
             Modifier.fillMaxWidth().padding(top = DoneAtSpacing.xs).clearAndSetSemantics {},
             horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs),
         ) {
@@ -170,7 +188,7 @@ private fun mark(proposal: LeavePlanProposal, day: Int): LeaveMark? {
 }
 
 @Composable
-private fun CalendarDay(day: Int, page: LeavePlanCalendarPage, proposal: LeavePlanProposal, kind: LeaveMark?, text: LeaveText, modifier: Modifier, holiday: HolidayDayAnnotation?, onHoliday: () -> Unit) {
+private fun CalendarDay(day: Int, page: LeavePlanCalendarPage, proposal: LeavePlanProposal, kind: LeaveMark?, text: LeaveText, modifier: Modifier, holiday: HolidayDayAnnotation?, minimumHeight: Dp, onHoliday: () -> Unit) {
     val reduced = LocalDoneAtMotion.current.reduced
     var revealed by remember(page.firstDayNumber, proposal) { mutableStateOf(false) }
     LaunchedEffect(page.firstDayNumber, proposal, reduced) {
@@ -186,10 +204,12 @@ private fun CalendarDay(day: Int, page: LeavePlanCalendarPage, proposal: LeavePl
     val first = day == proposal.firstRestDayNumber
     val last = day == proposal.lastRestDayNumber
     val isLeave = kind == LeaveMark.LEAVE || kind == LeaveMark.HALF_LEAVE
-    val cellHeight = DoneAtLeaveTokens.cellHeight * LocalDensity.current.fontScale
+    val density = LocalDensity.current
+    val dateSlotHeight = with(density) { MaterialTheme.typography.bodyMedium.lineHeight.toDp() }
+    val captionSlotHeight = DoneAtLeaveTokens.markSize * density.fontScale
     val label = listOfNotNull(text.day(day), holiday?.description(text.string(R.string.holidayMakeupWorkday), text.string(R.string.holidayEstimatedLabel)), kind?.let { markLabel(it, text) }).joinToString(", ")
     val action = if (holiday != null) Modifier.clickable(role = Role.Button, onClick = onHoliday) else Modifier
-    Box(modifier.heightIn(min = cellHeight).then(action).clearAndSetSemantics {
+    Box(modifier.heightIn(min = minimumHeight).then(action).clearAndSetSemantics {
         contentDescription = label
         if (holiday != null) {
             role = Role.Button
@@ -206,16 +226,18 @@ private fun CalendarDay(day: Int, page: LeavePlanCalendarPage, proposal: LeavePl
             Modifier.matchParentSize().padding(DoneAtSpacing.xxs).graphicsLayer { scaleX = tileScale; scaleY = tileScale }
                 .background(scheme.primary.copy(alpha = alpha * DoneAtLeaveTokens.leaveAlpha), MaterialTheme.shapes.small),
         )
-        if (holiday != null && isLeave) MarkIcon(kind, Modifier.align(Alignment.TopEnd).padding(DoneAtSpacing.xxs).size(DoneAtLeaveTokens.markSize))
+        if (holiday != null && isLeave) MarkIcon(kind, Modifier.align(Alignment.TopEnd).padding(DoneAtSpacing.xxs).size(DoneAtLeaveTokens.markSize)
+            .graphicsLayer { this.alpha = alpha; scaleX = iconScale; scaleY = iconScale })
         Column(Modifier.fillMaxWidth().padding(vertical = DoneAtSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs)) {
-            Text(
-                text.wholeNumber(LeavePlannerSchedule.date(day).dayOfMonth),
-                Modifier.padding(end = if (holiday != null && isLeave) DoneAtLeaveTokens.markSize else 0.dp),
-                style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
-                fontWeight = if (kind == null) FontWeight.Normal else FontWeight.SemiBold,
-                color = if (kind != null || page.contains(day)) scheme.onSurface else scheme.onSurface.copy(alpha = DoneAtLeaveTokens.inactiveAlpha),
-            )
-            Box(Modifier.fillMaxWidth().heightIn(min = DoneAtLeaveTokens.markSize).graphicsLayer { this.alpha = alpha; scaleX = iconScale; scaleY = iconScale }, contentAlignment = Alignment.Center) {
+            Box(Modifier.fillMaxWidth().heightIn(min = dateSlotHeight), contentAlignment = Alignment.Center) {
+                Text(
+                    text.wholeNumber(LeavePlannerSchedule.date(day).dayOfMonth),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum", lineHeight = MaterialTheme.typography.bodyMedium.fontSize),
+                    fontWeight = if (kind == null) FontWeight.Normal else FontWeight.SemiBold,
+                    color = if (kind != null || page.contains(day)) scheme.onSurface else scheme.onSurface.copy(alpha = DoneAtLeaveTokens.inactiveAlpha),
+                )
+            }
+            Box(Modifier.fillMaxWidth().heightIn(min = captionSlotHeight).graphicsLayer { this.alpha = alpha; scaleX = iconScale; scaleY = iconScale }, contentAlignment = Alignment.Center) {
                 if (holiday != null) HolidayDayCaption(holiday)
                 else if (kind != null) MarkIcon(kind, Modifier.size(DoneAtLeaveTokens.markSize))
             }
