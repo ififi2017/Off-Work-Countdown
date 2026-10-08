@@ -5,10 +5,13 @@ import SwiftUI
 struct LeavePlanCalendar: View {
     let shifts: ShiftSessionStore
     let proposal: LeavePlanProposal
+    var showsEstimatedLabel = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var monthIndex = 0
     @State private var revealed = false
-    @ScaledMetric(relativeTo: .caption) private var cellHeight: CGFloat = 38
+    @State private var holidayDetails: SelectedHoliday?
+    @ScaledMetric(relativeTo: .caption) private var cellHeight: CGFloat = 44
+    @ScaledMetric(relativeTo: .caption2) private var captionHeight: CGFloat = 12
 
     private var text: AppText { shifts.text }
     private var calendar: Calendar { shifts.preferences.recordsCalendar }
@@ -19,6 +22,12 @@ struct LeavePlanCalendar: View {
     }
     private var proposalID: String { "\(proposal.firstRestDayNumber):\(proposal.lastRestDayNumber)" }
     private var revealID: String { "\(proposalID):\(page.firstDayNumber)" }
+
+    private struct SelectedHoliday: Identifiable {
+        let day: Int
+        let annotation: HolidayDayAnnotation
+        var id: Int { day }
+    }
 
     private enum Mark: CaseIterable {
         case rest, holiday, leave, halfLeave
@@ -56,6 +65,7 @@ struct LeavePlanCalendar: View {
     }
 
     var body: some View {
+        let region = holidayRegion
         VStack(spacing: 10) {
             HStack {
                 Text(shifts.leaveDayLabel(page.firstDayNumber, template: "yMMMM"))
@@ -80,14 +90,14 @@ struct LeavePlanCalendar: View {
                 ForEach(0..<6, id: \.self) { row in
                     HStack(spacing: 0) {
                         ForEach(0..<7, id: \.self) { column in
-                            cell(page.days[row * 7 + column])
+                            cell(page.days[row * 7 + column], region: region)
                         }
                     }
                 }
             }
             .id(page.firstDayNumber)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 8)))
-            ForEach(proposal.caveats.compactMap { caveat -> Int? in
+            ForEach((showsEstimatedLabel ? proposal.caveats : []).compactMap { caveat -> Int? in
                 if case .holidaysEstimated(let year) = caveat { return year }
                 return nil
             }.sorted(), id: \.self) { year in
@@ -104,6 +114,37 @@ struct LeavePlanCalendar: View {
             .foregroundStyle(OWCDesign.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .sheet(item: $holidayDetails) { selection in
+            NavigationStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(selection.annotation.name.isEmpty ? text.t("holidayRestDay") : selection.annotation.name)
+                            .font(.title2.weight(.semibold))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                        Text(text.t(selection.annotation.isMakeupWorkday ? "holidayMakeupWorkday" : "holidayRestDay"))
+                            .foregroundStyle(OWCDesign.secondary)
+                        if selection.annotation.isEstimated {
+                            let year = CivilZone.civilDate(dayNumber: selection.day).year
+                            Text(text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(year)]))
+                                .font(.subheadline).foregroundStyle(OWCDesign.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(OWCDesign.pageInset)
+                }
+                .navigationTitle(shifts.leaveDayLabel(selection.day, template: "yMMMd"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(text.t("close")) { holidayDetails = nil }
+                    }
+                }
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
         .onChange(of: proposalID) { monthIndex = 0 }
         .task(id: revealID) {
             var transaction = Transaction()
@@ -117,6 +158,15 @@ struct LeavePlanCalendar: View {
             guard !Task.isCancelled else { return }
             revealed = true
         }
+    }
+
+    private var holidayRegion: String? {
+        #if DEBUG
+        if UserDefaults.standard.bool(forKey: "ios.native.qaLeavePlanner") {
+            return UserDefaults.standard.string(forKey: "ios.native.qaLeaveRegion") ?? "CN"
+        }
+        #endif
+        return shifts.leavePlannerConfiguration().extendedSchedule?.holidayRegionIdentifier
     }
 
     private func monthButton(_ delta: Int, titleKey: String, symbol: String) -> some View {
@@ -139,19 +189,24 @@ struct LeavePlanCalendar: View {
         return localized.veryShortStandaloneWeekdaySymbols[(column + calendar.firstWeekday - 1) % 7]
     }
 
-    private func cell(_ day: Int) -> some View {
+    private func cell(_ day: Int, region: String?) -> some View {
         let mark = mark(day)
+        let holiday = HolidayDayAnnotation.make(dayKey: ExtendedScheduleEditing.dayKey(dayNumber: day),
+            region: region,
+            language: shifts.preferences.languageCode)
         let inMonth = page.contains(day)
         let inBreak = (proposal.firstRestDayNumber...proposal.lastRestDayNumber).contains(day)
         let first = day == proposal.firstRestDayNumber
         let last = day == proposal.lastRestDayNumber
         let delayIndex = max(0, day - LeavePlanCalendarPage.coverage(of: proposal).lowerBound)
-        return VStack(spacing: 2) {
+        let content = VStack(spacing: 2) {
             Text(text.formatCount(CivilZone.civilDate(dayNumber: day).day))
                 .font(.subheadline.monospacedDigit().weight(mark == nil ? .regular : .semibold))
                 .foregroundStyle(mark != nil || inMonth ? OWCDesign.primary : OWCDesign.tertiary)
             Group {
-                if let mark {
+                if let holiday {
+                    HolidayDayCaption(annotation: holiday, text: text)
+                } else if let mark {
                     Image(systemName: mark.symbol)
                         .foregroundStyle(mark.isLeave ? OWCDesign.accent : OWCDesign.secondary)
                         .scaleEffect(revealed || reduceMotion ? 1 : 0.72)
@@ -161,7 +216,7 @@ struct LeavePlanCalendar: View {
                 }
             }
             .font(.caption2)
-            .frame(height: 12)
+            .frame(minHeight: captionHeight)
         }
         .frame(maxWidth: .infinity, minHeight: cellHeight)
         .background {
@@ -179,9 +234,26 @@ struct LeavePlanCalendar: View {
                     .scaleEffect(revealed || reduceMotion ? 1 : 0.86)
             }
         }
+        .overlay(alignment: .topTrailing) {
+            if holiday != nil, let mark, mark.isLeave {
+                Image(systemName: mark.symbol).font(.system(size: 8))
+                    .foregroundStyle(OWCDesign.accent).padding(2)
+            }
+        }
         .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.leaveCalendarDay(delayIndex), value: revealed)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel([shifts.leaveDayLabel(day), mark.map { text.t($0.titleKey) }].compactMap { $0 }.joined(separator: ", "))
+        .accessibilityLabel([shifts.leaveDayLabel(day), holiday?.accessibilityLabel(text: text), mark.map { text.t($0.titleKey) }].compactMap { $0 }.joined(separator: ", "))
+        return Group {
+            if let holiday {
+                Button { holidayDetails = SelectedHoliday(day: day, annotation: holiday) } label: {
+                    content.contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("leave-holiday-\(day)")
+            } else {
+                content
+            }
+        }
     }
 
     @ViewBuilder private var legends: some View {

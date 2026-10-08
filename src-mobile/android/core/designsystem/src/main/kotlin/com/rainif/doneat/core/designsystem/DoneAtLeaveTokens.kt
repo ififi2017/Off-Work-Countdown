@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 
 /** Pinned iOS 3.2.1 leave preview geometry and OWCMotion's bounded day cascade. */
 object DoneAtLeaveTokens {
-    val cellHeight = 38.dp
+    val cellHeight = 44.dp
     val markSize = 12.dp
     val rangeCorner = 10.dp
     val selectionStroke = 1.5.dp

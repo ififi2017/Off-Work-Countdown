@@ -182,27 +182,44 @@ struct LeaveAdoptionTests {
     }
 }
 
-/// Plan 020 P3: searching is free; each time a free user opens a plan's
-/// details, one of three free views is used, the same plan again included.
+/// Plan 020: each successful new result set consumes one free search;
+/// its option previews and details do not reserve another trial.
 @MainActor
 @Suite("Leave planner free plans")
 struct LeavePlannerTrialTests {
-    @Test("Every opened plan uses a view, repeats included, and the count stays on this device")
+    @Test("Each new result set spends one trial and the count stays on this device")
     func trialCount() throws {
         let suite = "LeavePlannerTrial.\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         let preferences = PreferencesStore(defaults: defaults, records: RecordCoordinator.inMemory())
         #expect(preferences.leavePlannerTrialsLeft == 3)
-        #expect(preferences.consumeLeavePlannerTrial())
-        #expect(preferences.consumeLeavePlannerTrial())  // the same plan opened again
+        #expect(preferences.authorizeLeavePlannerResults(hasResults: true, isPlus: false))
+        #expect(preferences.authorizeLeavePlannerResults(hasResults: true, isPlus: false))  // a new search with the same inputs
         #expect(preferences.leavePlannerTrialsLeft == 1)
-        #expect(preferences.consumeLeavePlannerTrial())
-        #expect(!preferences.consumeLeavePlannerTrial())
+        #expect(preferences.authorizeLeavePlannerResults(hasResults: true, isPlus: false))
+        #expect(!preferences.authorizeLeavePlannerResults(hasResults: true, isPlus: false))
         #expect(preferences.leavePlannerTrialsLeft == 0)
         #expect(preferences.leavePlannerTrialsUsed == 3)
 
         let reopened = PreferencesStore(defaults: defaults, records: RecordCoordinator.inMemory())
         #expect(reopened.leavePlannerTrialsLeft == 0)
     }
+}
+
+@MainActor
+@Test("Empty result sets and Plus searches do not spend free leave trials")
+func leavePlannerUnchargedResults() throws {
+    let suite = "LeavePlannerFreeResults.\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let preferences = PreferencesStore(defaults: defaults, records: RecordCoordinator.inMemory())
+    #expect(preferences.authorizeLeavePlannerResults(hasResults: false, isPlus: false))
+    #expect(preferences.authorizeLeavePlannerResults(hasResults: true, isPlus: true))
+    #expect(preferences.leavePlannerTrialsUsed == 0)
+    for _ in 0..<3 { #expect(preferences.authorizeLeavePlannerResults(hasResults: true, isPlus: false)) }
+    #expect(!preferences.authorizeLeavePlannerResults(hasResults: true, isPlus: false))
+    #expect(preferences.authorizeLeavePlannerResults(hasResults: false, isPlus: false))
+    #expect(preferences.authorizeLeavePlannerResults(hasResults: true, isPlus: true))
+    #expect(preferences.leavePlannerTrialsUsed == 3)
 }

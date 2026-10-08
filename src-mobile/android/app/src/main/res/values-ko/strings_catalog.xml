@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">%1$s년 데이터가 없습니다. 평소 일정이 적용됩니다. 앱 업데이트를 확인하세요.</string>
     <string name="holidayEstimatedLabel">예측</string>
     <string name="holidayEstimatedYearWarning">중국 본토의 %1$s년 공휴일과 대체 근무일은 예측 정보입니다. 참고용으로만 확인하고 확정된 휴일 정보로 여기지 마세요. 연말에 발표되는 중국 국무원의 공식 공고를 기준으로 삼아 주세요. DoneAt은 다음 해 공휴일 일정이 발표된 뒤 가능한 한 빨리 데이터를 업데이트합니다. 앱을 최신 상태로 유지해 주세요.</string>
+    <string name="holidayMakeupShort">대체 근무</string>
     <string name="holidayMakeupWorkday">대체 근무일</string>
     <string name="holidayRestDay">공휴일</string>
     <string name="holidaySource">공휴일 달력</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">일정에 추가</string>
     <string name="leaveAdoptFailed">계획을 만든 뒤 일정이나 휴가가 바뀌었어요. 다시 찾으면 지금 맞는 일정을 볼 수 있어요.</string>
     <string name="leaveAdoptedPlans">계획한 휴가</string>
+    <string name="leaveAllPlans">전체 %1$s개 계획</string>
     <string name="leaveAtLeast">최소 %1$s</string>
     <string name="leaveAvailable">%1$s 남음</string>
     <string name="leaveAvailableDates">선택 가능한 일정 %1$s개</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">채택한 계획에서 이 잔여를 쓰고 있어요. 그 계획을 취소하면 삭제할 수 있어요.</string>
     <string name="leaveBalanceNamePlaceholder">이름(예: 경조휴가)</string>
     <string name="leaveBalancesSection">휴가 잔여</string>
+    <string name="leaveBestValue">휴가를 가장 적게 사용</string>
     <string name="leaveCancelDay">이날 휴가 취소</string>
     <string name="leaveCancelDayConfirm">이날은 원래 일정으로 돌아가고 쓴 휴가는 잔여로 돌아가요. 계획의 다른 날은 그대로예요.</string>
     <string name="leaveCarriedOverCaveat">일부 날짜는 이전 달 일정을 반복해요.</string>
@@ -376,19 +379,18 @@
     <string name="leaveMainlandHolidaysMissing">이 버전에는 아직 중국 본토의 %1$s년 공휴일이 없어서 %1$s년은 평소 일정으로 계산해요. 추가된 뒤 DoneAt을 업데이트하면 반영돼요.</string>
     <string name="leaveManage">휴가 관리</string>
     <string name="leaveNewBalance">새 휴가 잔여</string>
-    <string name="leaveNextPlan">다음 일정</string>
     <string name="leaveNextShiftStarts">복귀</string>
     <string name="leaveNoBalancesHint">휴가 잔여를 추가하면 계획에 쓸 수 있어요. 휴가가 필요 없는 연휴도 보여 드려요.</string>
     <string name="leaveNoLeaveNeeded">휴가 필요 없음</string>
     <string name="leaveNoResults">이 조건에 맞는 연휴가 아직 없어요. 기간을 넓히거나 휴가를 늘리면 찾을 수도 있어요.</string>
     <string name="leavePlanAction">휴가 계획하기</string>
-    <string name="leavePlanPosition">%2$s개 중 %1$s번째</string>
-    <string name="leavePreviousPlan">이전 일정</string>
     <string name="leaveRangeEnd">가장 늦은 날</string>
     <string name="leaveRangeFooter">앞으로 1년 안에서 찾아요: %1$s–%2$s</string>
     <string name="leaveRangeStart">가장 이른 날</string>
+    <string name="leaveRecommendedPlans">추천 계획</string>
     <string name="leaveRegularPlans">평소 휴무일</string>
     <string name="leaveRequests">신청할 휴가</string>
+    <string name="leaveResultsBrowsingFree">이번 결과에서는 계획을 자유롭게 바꾸고 자세히 볼 수 있어요.</string>
     <string name="leaveResultsTitle">추천 일정</string>
     <string name="leaveRoleEarly">일찍 퇴근</string>
     <string name="leaveRoleLate">늦게 출근</string>
@@ -396,12 +398,12 @@
     <string name="leaveSetupIntro">가진 휴가를 입력하면 계획마다 얼마나 쓰는지 알 수 있어요.</string>
     <string name="leaveSetupTitle">먼저 휴가 설정하기</string>
     <string name="leaveTitle">휴가</string>
-    <string name="leaveTrialNotice">계획을 열 때마다 1번씩 차감돼요. 같은 계획을 다시 열어도 차감돼요.</string>
-    <string name="leaveTrialSaveFailed">이 계획을 열 수 없습니다. 다시 시도해 주세요.</string>
+    <string name="leaveTrialNotice">검색 결과로 계획 묶음이 표시되면 무료 검색 1회를 사용해요. 결과가 없으면 차감되지 않고, 계획·날짜·월을 바꾸거나 상세 내용을 봐도 추가 차감되지 않아요.</string>
+    <string name="leaveTrialSaveFailed">계획을 표시할 수 없습니다. 다시 시도해 주세요.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">무료로 계획을 %d번 더 볼 수 있어요</item>
+        <item quantity="other">무료 휴가 계획 검색 %d회 남음</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">무료 보기를 모두 사용했어요. Plus로 모든 계획을 볼 수 있어요</string>
+    <string name="leaveTrialsUsedUp">무료 휴가 계획 검색 횟수를 모두 사용했어요. Plus를 구독하면 계속 생성할 수 있어요.</string>
     <string name="leaveUnassignedCaveat">일부 날짜는 근무가 없어 휴일로 계산해요.</string>
     <string name="leaveUndoConfirm">이 계획의 휴가가 일정에서 빠지고 잔여로 돌아가요.</string>
     <string name="leaveUndoPlan">계획 취소</string>

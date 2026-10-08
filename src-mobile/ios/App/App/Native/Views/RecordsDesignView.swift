@@ -489,6 +489,14 @@ struct RecordsDesignView: View {
         }
     }
 
+    private func holidayCoverageNotice(_ cells: [RecordsDayCell]) -> some View {
+        HolidayCoverageNoticeView(
+            regionIdentifier: preferences.isExtendedScheduleEnabled
+                ? preferences.extendedScheduleContent?.holidayRegionIdentifier : nil,
+            dates: cells.map(\.date), timeZone: preferences.recordsTimeZone, text: text
+        )
+    }
+
     // Reconciliation and CloudKit can change the revision several times at
     // launch. Keep the last calendar visible while its replacement is prepared.
     // Life renders directly from the profile and deliberately keeps cells empty.
@@ -557,6 +565,7 @@ struct RecordsDesignView: View {
                         onSelect: selectFromTap,
                         onOpen: openDay
                     )
+                    holidayCoverageNotice(renderedCells)
                     markLegend
                     leavePlanningEntry
                     reportEntry(.month)
@@ -570,6 +579,7 @@ struct RecordsDesignView: View {
                         onSelect: selectFromTap,
                         onOpen: openDay
                     )
+                    holidayCoverageNotice(renderedCells)
                     markLegend
                     reportEntry(.week)
                 case .year:

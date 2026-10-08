@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">Không có dữ liệu năm %1$s. Lịch thường sẽ được dùng. Hãy kiểm tra bản cập nhật ứng dụng.</string>
     <string name="holidayEstimatedLabel">Dự kiến</string>
     <string name="holidayEstimatedYearWarning">Ngày nghỉ lễ và ngày làm bù tại Trung Quốc đại lục trong năm %1$s là dữ liệu dự đoán. Chỉ dùng để tham khảo, không xem là thông tin nghỉ lễ đã được xác nhận. Hãy căn cứ vào thông báo chính thức của Quốc vụ viện Trung Quốc được công bố vào cuối năm. DoneAt sẽ cập nhật dữ liệu sớm nhất có thể sau khi lịch nghỉ của năm tiếp theo được công bố; vui lòng cập nhật ứng dụng.</string>
+    <string name="holidayMakeupShort">Làm bù</string>
     <string name="holidayMakeupWorkday">Ngày làm bù</string>
     <string name="holidayRestDay">Ngày lễ</string>
     <string name="holidaySource">Lịch ngày lễ</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">Thêm vào lịch của tôi</string>
     <string name="leaveAdoptFailed">Lịch làm việc hoặc ngày phép đã thay đổi kể từ khi lập kế hoạch. Tìm lại để xem phương án phù hợp hiện nay.</string>
     <string name="leaveAdoptedPlans">Kỳ nghỉ đã lên kế hoạch</string>
+    <string name="leaveAllPlans">Tất cả %1$s kế hoạch</string>
     <string name="leaveAtLeast">Ít nhất %1$s</string>
     <string name="leaveAvailable">Còn %1$s</string>
     <string name="leaveAvailableDates">%1$s khoảng ngày có thể chọn</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">Một kế hoạch đã áp dụng đang dùng số ngày phép này. Huỷ kế hoạch đó để xoá.</string>
     <string name="leaveBalanceNamePlaceholder">Tên, ví dụ: nghỉ cưới</string>
     <string name="leaveBalancesSection">Số ngày phép</string>
+    <string name="leaveBestValue">Ít ngày phép nhất</string>
     <string name="leaveCancelDay">Huỷ phép ngày này</string>
     <string name="leaveCancelDayConfirm">Ngày này trở lại lịch làm việc và phép được trả lại. Các ngày khác của kế hoạch giữ nguyên.</string>
     <string name="leaveCarriedOverCaveat">Một số ngày lặp lại lịch của tháng trước.</string>
@@ -376,19 +379,18 @@
     <string name="leaveMainlandHolidaysMissing">Phiên bản này chưa có lịch nghỉ lễ %1$s của Trung Quốc đại lục, nên năm %1$s được tính theo lịch làm việc thường ngày của bạn. Khi lịch được bổ sung, hãy cập nhật DoneAt để đưa vào.</string>
     <string name="leaveManage">Quản lý ngày nghỉ</string>
     <string name="leaveNewBalance">Số ngày phép mới</string>
-    <string name="leaveNextPlan">Phương án tiếp theo</string>
     <string name="leaveNextShiftStarts">Đi làm lại</string>
     <string name="leaveNoBalancesHint">Thêm số ngày phép để lên kế hoạch. Các kỳ nghỉ không cần xin phép vẫn được hiển thị.</string>
     <string name="leaveNoLeaveNeeded">Không cần xin phép</string>
     <string name="leaveNoResults">Chưa có phương án phù hợp. Mở rộng khoảng ngày hoặc thêm ngày phép có thể giúp ích.</string>
     <string name="leavePlanAction">Lên kế hoạch nghỉ</string>
-    <string name="leavePlanPosition">%1$s trên %2$s</string>
-    <string name="leavePreviousPlan">Phương án trước</string>
     <string name="leaveRangeEnd">Muộn nhất</string>
     <string name="leaveRangeFooter">Tìm trong một năm tới: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Sớm nhất</string>
+    <string name="leaveRecommendedPlans">Kế hoạch gợi ý</string>
     <string name="leaveRegularPlans">Ngày nghỉ thường lệ</string>
     <string name="leaveRequests">Ngày cần xin nghỉ</string>
+    <string name="leaveResultsBrowsingFree">Bạn có thể tự do xem các phương án này và thông tin chi tiết.</string>
     <string name="leaveResultsTitle">Phương án</string>
     <string name="leaveRoleEarly">Về sớm</string>
     <string name="leaveRoleLate">Vào làm muộn hơn</string>
@@ -396,12 +398,12 @@
     <string name="leaveSetupIntro">Nhập số ngày phép bạn có, mỗi kế hoạch sẽ cho biết dùng bao nhiêu.</string>
     <string name="leaveSetupTitle">Thiết lập ngày phép</string>
     <string name="leaveTitle">Nghỉ phép</string>
-    <string name="leaveTrialNotice">Mỗi lần mở một kế hoạch tính một lượt, kể cả mở lại cùng kế hoạch.</string>
-    <string name="leaveTrialSaveFailed">Không thể mở kế hoạch này. Vui lòng thử lại.</string>
+    <string name="leaveTrialNotice">Một lần tìm thành công hiển thị một nhóm kế hoạch sẽ dùng một lượt miễn phí. Không có kết quả thì không bị trừ; đổi kế hoạch, ngày, tháng hoặc xem chi tiết cũng không dùng thêm lượt.</string>
+    <string name="leaveTrialSaveFailed">Không thể hiển thị các kế hoạch. Vui lòng thử lại.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">Còn %d lần xem kế hoạch miễn phí</item>
+        <item quantity="other">Còn %d lượt tìm kế hoạch nghỉ miễn phí</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Đã dùng hết lượt xem miễn phí. Xem mọi kế hoạch với Plus.</string>
+    <string name="leaveTrialsUsedUp">Bạn đã dùng hết lượt tìm kế hoạch nghỉ miễn phí. Đăng ký Plus để tiếp tục tạo kế hoạch.</string>
     <string name="leaveUnassignedCaveat">Một số ngày chưa có ca và được tính là nghỉ.</string>
     <string name="leaveUndoConfirm">Ngày phép của kế hoạch sẽ được gỡ khỏi lịch và trả lại số ngày phép.</string>
     <string name="leaveUndoPlan">Huỷ kế hoạch</string>

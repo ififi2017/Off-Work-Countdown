@@ -296,8 +296,7 @@
       "resource": "string/breakReminder"
     },
     "calendarWeekStart": {
-      "resource": "string/calendarWeekStart",
-      "androidOnly": true
+      "resource": "string/calendarWeekStart"
     },
     "cancel": {
       "resource": "string/cancel"
@@ -1250,6 +1249,9 @@
         "year"
       ]
     },
+    "holidayMakeupShort": {
+      "resource": "string/holidayMakeupShort"
+    },
     "holidayMakeupWorkday": {
       "resource": "string/holidayMakeupWorkday"
     },
@@ -1292,6 +1294,12 @@
     "leaveAdoptedPlans": {
       "resource": "string/leaveAdoptedPlans"
     },
+    "leaveAllPlans": {
+      "resource": "string/leaveAllPlans",
+      "params": [
+        "count"
+      ]
+    },
     "leaveAtLeast": {
       "resource": "string/leaveAtLeast",
       "params": [
@@ -1325,6 +1333,9 @@
     },
     "leaveBalancesSection": {
       "resource": "string/leaveBalancesSection"
+    },
+    "leaveBestValue": {
+      "resource": "string/leaveBestValue"
     },
     "leaveCancelDay": {
       "resource": "string/leaveCancelDay"
@@ -1419,9 +1430,6 @@
     "leaveNewBalance": {
       "resource": "string/leaveNewBalance"
     },
-    "leaveNextPlan": {
-      "resource": "string/leaveNextPlan"
-    },
     "leaveNextShiftStarts": {
       "resource": "string/leaveNextShiftStarts"
     },
@@ -1437,16 +1445,6 @@
     "leavePlanAction": {
       "resource": "string/leavePlanAction"
     },
-    "leavePlanPosition": {
-      "resource": "string/leavePlanPosition",
-      "params": [
-        "current",
-        "total"
-      ]
-    },
-    "leavePreviousPlan": {
-      "resource": "string/leavePreviousPlan"
-    },
     "leaveRangeEnd": {
       "resource": "string/leaveRangeEnd"
     },
@@ -1460,11 +1458,17 @@
     "leaveRangeStart": {
       "resource": "string/leaveRangeStart"
     },
+    "leaveRecommendedPlans": {
+      "resource": "string/leaveRecommendedPlans"
+    },
     "leaveRegularPlans": {
       "resource": "string/leaveRegularPlans"
     },
     "leaveRequests": {
       "resource": "string/leaveRequests"
+    },
+    "leaveResultsBrowsingFree": {
+      "resource": "string/leaveResultsBrowsingFree"
     },
     "leaveResultsTitle": {
       "resource": "string/leaveResultsTitle"

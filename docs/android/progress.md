@@ -2,7 +2,7 @@
 
 **这是任务状态的唯一记录。** 交接包 `tasks.json` 只定义依赖、范围和验收，不记录状态。
 
-更新：2026-10-07。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
+更新：2026-10-08。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
 
 ## 任务状态
 
@@ -573,3 +573,13 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 按规定核对共享规则路径 `9252fdfd..origin/main`，共 52 条提交（最新 `d2532ab7`、最早 `a6a6c382`）；冻结来源 `9252fdfd` 和 Plan 020 已授权增量 `18129168` 不变。本轮只移植用户明确批准的预测数据及其提示，没有自动跟随其他主干规则增量。
 - 最终完整本地 Gradle 命令通过：四模块单测、`lintDebug`、Debug / Release assemble，`BUILD SUCCESSFUL in 24m 29s`，188 tasks（25 executed / 163 up-to-date）。domain 411 / data 89 / design-system 12 / app 50 共 562 项，0 failures / errors / skipped；主代理核对 XML。Lint 为 0 error、49 warning、3 hint。生成翻译与跨端 fixtures、552 项 JavaScript 测试、Web/Desktop 构建与产物检查、iOS headless arm64 构建通过。
 - 没有发布、上传商店或替换设备应用，未启动 Android 模拟器或进行真机视觉验收。iOS 指定测试 suite 受现有模拟器设备服务连接超时阻塞，未记为通过；未做 iOS 手动视觉检查。其他购买/闹钟阶段的 IN_PROGRESS 状态不由此变更。
+
+### 2026-10-08 · 日历单行标注与休假单摘要
+
+- 记录、排班及请假日历节名一行，长名称尾部省略，点选日期显示完整名称；补班格仅“调休”。节日事实独立于实际手动班次，记录锁定继续原规则。
+- 默认推荐保留全局最省假排序，结果只显示当前摘要；全部方案和同类日期进入页内列表，选中返回。三分类或大字体使用菜单，预测完整提醒只跟当前方案出现一次；详情 CTA 固定在底部安全区。
+- 用户最新规则覆盖旧的详情计次：免费额度仍为 3 次，成功生成并打开一组结果扣 1 次；组内切方案、日期、月历或详情免费。Plus、空结果、失败和取消不扣。扣至 0 后当前组仍可浏览，之后新搜索进入 Plus；旧计数保留。新增原子生成 gate 及取消、失败、重入和额度持久化回归。
+- 冻结 `9252fdfd` 及授权增量 `18129168` 不变。只读核对共享路径漂移为 **53 条**，新增预测提交 `7d61519d`，未推进基线。
+- 最终七项 Gradle gates 通过：domain 437 / data 95 / design-system 12 / app 141，共 **685 项，0 failure/error/skip**，主代理独立核对 XML；lint **0 errors / 54 warnings / 4 hints**，Debug / R8 Release 通过。日志 `/private/tmp/doneat-holiday-android-result-set-verified-gradle.log`。
+- iOS 72 项、8 suites 通过，WeekStart 最终 4 declarations / 11 参数实例另行通过；设置支持周日/周一、默认应用语言 locale，作用于各月历与周报通知。实际查找次数 3→2，打开详情返回仍为 2。
+- JavaScript **552 项 / 50 文件**单 worker 通过；三项 iOS／翻译检查、lint 与 diff 检查通过。Astra（GPT-6 Astra / XHigh）最终七张 iOS 截图及关键源码审核通过。本轮没有 Android 设备视觉验收，没有合并或发布。完整日志、截图与范围见[回归记录](../reviews/2026-10-08-holiday-calendar-recommendations.md)。

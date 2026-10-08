@@ -450,6 +450,7 @@ private struct LeavePlannerSheet: View {
     @State private var through = Date.now
     @State private var selected: Set<UUID> = []
     @State private var isSearching = false
+    @State private var searchTask: Task<Void, Never>?
     @State private var proposals: [LeavePlanProposal] = []
     @State private var didLoad = false
     @State private var showsPaywall = false
@@ -480,7 +481,7 @@ private struct LeavePlannerSheet: View {
         NavigationStack(path: $path) {
             Form {
                 if !shifts.plus.isAuthorized {
-                    Section { LeaveTrialBanner(shifts: shifts) }
+                    Section { LeaveTrialBanner(shifts: shifts, explainsCost: true) }
                 }
                 Section {
                     Picker(text.t("leavePlanAction"), selection: $goalIsRest) {
@@ -581,6 +582,7 @@ private struct LeavePlannerSheet: View {
         }
         .presentationDragIndicator(.visible)
         .onAppear(perform: load)
+        .onDisappear { searchTask?.cancel() }
         .sheet(isPresented: $showsPaywall) {
             NavigationStack {
                 PaywallView(plus: shifts.plus, text: text, reason: .leavePlanning, showsDismissButton: false) {
@@ -596,14 +598,11 @@ private struct LeavePlannerSheet: View {
         }
     }
 
-    /// Searching is free; each time a free user opens a plan, one free view
-    /// is used, the same plan again included.
+    /// The result set was authorized when the search completed. Browsing
+    /// any of its options or details never consumes another trial.
     private func openPlan(_ index: Int) {
-        if shifts.plus.isAuthorized || shifts.preferences.consumeLeavePlannerTrial() {
-            path.append(.detail(index))
-        } else {
-            showsPaywall = true
-        }
+        guard proposals.indices.contains(index) else { return }
+        path.append(.detail(index))
     }
 
     private var windowDates: ClosedRange<Date> {
@@ -638,8 +637,13 @@ private struct LeavePlannerSheet: View {
         #if DEBUG
         if UserDefaults.standard.bool(forKey: "ios.native.qaLeavePlanner") {
             isSearching = true
+            let restDays = UserDefaults.standard.object(forKey: "ios.native.qaLeaveRestDays") == nil
+                ? nil : UserDefaults.standard.integer(forKey: "ios.native.qaLeaveRestDays")
+            let region = UserDefaults.standard.string(forKey: "ios.native.qaLeaveRegion") ?? "CN"
             Task {
-                proposals = await Task.detached(priority: .userInitiated) { DebugLeavePlanner.proposals() }.value
+                proposals = await Task.detached(priority: .userInitiated) {
+                    DebugLeavePlanner.proposals(restDays: restDays, region: region)
+                }.value
                 isSearching = false
                 path = [.results]
             }
@@ -648,14 +652,27 @@ private struct LeavePlannerSheet: View {
     }
 
     private func search() {
-        guard let request else { return }
+        guard !isSearching, let request else { return }
+        guard shifts.plus.isAuthorized || shifts.preferences.leavePlannerTrialsLeft > 0 else {
+            showsPaywall = true
+            return
+        }
         isSearching = true
-        Task {
-            proposals = await shifts.findLeavePlans(request)
-            isSearching = false
+        searchTask = Task {
+            defer { isSearching = false }
+            let found = await shifts.findLeavePlans(request)
+            guard !Task.isCancelled else { return }
+            guard shifts.preferences.authorizeLeavePlannerResults(
+                hasResults: !found.isEmpty, isPlus: shifts.plus.isAuthorized
+            ) else {
+                showsPaywall = true
+                return
+            }
+            proposals = found
             path = [.results]
         }
     }
+
 }
 
 private enum LeavePlannerStep: Hashable {
@@ -812,8 +829,8 @@ private struct LeavePlanDetail: View {
     }
 }
 
-/// How many free plan views are left, kept in plain sight wherever a free
-/// user plans: the form, the options and each plan they open.
+/// How many successful result-set searches remain on this device.
+/// Options and details of an authorized set do not spend another trial.
 struct LeaveTrialBanner: View {
     let shifts: ShiftSessionStore
     var explainsCost = false

@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">ไม่มีข้อมูลปี %1$s ระบบจะใช้ตารางปกติ โปรดตรวจสอบอัปเดตแอป</string>
     <string name="holidayEstimatedLabel">คาดการณ์</string>
     <string name="holidayEstimatedYearWarning">วันหยุดและวันทำงานชดเชยในจีนแผ่นดินใหญ่สำหรับปี %1$s เป็นข้อมูลคาดการณ์ ใช้เพื่ออ้างอิงเท่านั้น โปรดอย่าถือเป็นข้อมูลวันหยุดที่ยืนยันแล้ว ให้ยึดประกาศอย่างเป็นทางการของสภาแห่งรัฐจีนซึ่งเผยแพร่ช่วงปลายปีเป็นหลัก DoneAt จะอัปเดตข้อมูลโดยเร็วที่สุดหลังประกาศกำหนดวันหยุดของปีถัดไป โปรดอัปเดตแอปให้เป็นเวอร์ชันล่าสุด</string>
+    <string name="holidayMakeupShort">ทำงานชดเชย</string>
     <string name="holidayMakeupWorkday">วันทำงานชดเชย</string>
     <string name="holidayRestDay">วันหยุด</string>
     <string name="holidaySource">ปฏิทินวันหยุด</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">เพิ่มลงตารางงาน</string>
     <string name="leaveAdoptFailed">ตารางงานหรือวันลาเปลี่ยนไปหลังสร้างแผนนี้ ค้นหาอีกครั้งเพื่อดูแผนที่เหมาะตอนนี้</string>
     <string name="leaveAdoptedPlans">วันหยุดที่วางแผนไว้</string>
+    <string name="leaveAllPlans">ทั้งหมด %1$s แผน</string>
     <string name="leaveAtLeast">อย่างน้อย %1$s</string>
     <string name="leaveAvailable">เหลือ %1$s</string>
     <string name="leaveAvailableDates">ช่วงวันที่เลือกได้ %1$s ช่วง</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">แผนที่ใช้อยู่ใช้วันลานี้ ยกเลิกแผนนั้นก่อนจึงจะลบได้</string>
     <string name="leaveBalanceNamePlaceholder">ชื่อ เช่น ลาแต่งงาน</string>
     <string name="leaveBalancesSection">วันลาคงเหลือ</string>
+    <string name="leaveBestValue">ใช้วันลาน้อยที่สุด</string>
     <string name="leaveCancelDay">ยกเลิกการลาวันนี้</string>
     <string name="leaveCancelDayConfirm">วันนี้จะกลับไปเป็นตามตารางงานเดิม และวันลาจะคืนกลับวันลาคงเหลือ วันอื่นในแผนยังอยู่เหมือนเดิม</string>
     <string name="leaveCarriedOverCaveat">บางวันใช้ตารางงานของเดือนก่อนหน้าซ้ำ</string>
@@ -376,19 +379,18 @@
     <string name="leaveMainlandHolidaysMissing">เวอร์ชันนี้ยังไม่มีวันหยุดของจีนแผ่นดินใหญ่ปี %1$s ปี %1$s จึงคิดตามตารางงานปกติของคุณ เมื่อมีการเพิ่มแล้ว อัปเดต DoneAt เพื่อรวมไว้</string>
     <string name="leaveManage">จัดการวันลา</string>
     <string name="leaveNewBalance">วันลาคงเหลือใหม่</string>
-    <string name="leaveNextPlan">ตัวเลือกถัดไป</string>
     <string name="leaveNextShiftStarts">กลับมาทำงาน</string>
     <string name="leaveNoBalancesHint">เพิ่มวันลาคงเหลือเพื่อใช้วางแผน วันหยุดยาวที่ไม่ต้องลาก็ยังแสดงอยู่</string>
     <string name="leaveNoLeaveNeeded">ไม่ต้องลา</string>
     <string name="leaveNoResults">ยังไม่มีแผนที่ตรงกับเงื่อนไขนี้ ลองขยายช่วงวันที่หรือเพิ่มวันลา</string>
     <string name="leavePlanAction">วางแผนวันหยุด</string>
-    <string name="leavePlanPosition">%1$s จาก %2$s</string>
-    <string name="leavePreviousPlan">ตัวเลือกก่อนหน้า</string>
     <string name="leaveRangeEnd">ช้าที่สุด</string>
     <string name="leaveRangeFooter">ค้นหาภายในหนึ่งปีข้างหน้า: %1$s – %2$s</string>
     <string name="leaveRangeStart">เร็วที่สุด</string>
+    <string name="leaveRecommendedPlans">แผนที่แนะนำ</string>
     <string name="leaveRegularPlans">วันหยุดประจำ</string>
     <string name="leaveRequests">วันที่ต้องลา</string>
+    <string name="leaveResultsBrowsingFree">คุณเลือกดูแผนเหล่านี้และรายละเอียดได้อย่างอิสระ</string>
     <string name="leaveResultsTitle">ตัวเลือก</string>
     <string name="leaveRoleEarly">เลิกงานเร็วขึ้น</string>
     <string name="leaveRoleLate">เริ่มงานช้าลง</string>
@@ -396,12 +398,12 @@
     <string name="leaveSetupIntro">ใส่จำนวนวันลาที่มี แล้วแต่ละแผนจะบอกว่าใช้ไปเท่าไร</string>
     <string name="leaveSetupTitle">ตั้งค่าวันลาก่อน</string>
     <string name="leaveTitle">วันหยุดพักผ่อน</string>
-    <string name="leaveTrialNotice">เปิดแผนแต่ละครั้งนับ 1 ครั้ง แม้เปิดแผนเดิมซ้ำ</string>
-    <string name="leaveTrialSaveFailed">เปิดแผนนี้ไม่ได้ โปรดลองอีกครั้ง</string>
+    <string name="leaveTrialNotice">ค้นหาสำเร็จและพบกลุ่มแผนจะใช้สิทธิ์ฟรี 1 ครั้ง หากไม่พบผลลัพธ์จะไม่หักสิทธิ์ การเปลี่ยนแผน วันที่ หรือเดือน และดูรายละเอียดจะไม่ใช้สิทธิ์เพิ่ม</string>
+    <string name="leaveTrialSaveFailed">แสดงแผนไม่ได้ โปรดลองอีกครั้ง</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">ดูแผนฟรีได้อีก %d ครั้ง</item>
+        <item quantity="other">ค้นหาแผนวันลาได้ฟรีอีก %d ครั้ง</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">ใช้สิทธิ์ดูฟรีครบแล้ว ดูแผนทั้งหมดได้ด้วย Plus</string>
+    <string name="leaveTrialsUsedUp">ใช้สิทธิ์ค้นหาแผนวันลาฟรีครบแล้ว สมัคร Plus เพื่อสร้างแผนต่อ</string>
     <string name="leaveUnassignedCaveat">บางวันไม่มีกะ จึงนับเป็นวันหยุด</string>
     <string name="leaveUndoConfirm">วันลาของแผนนี้จะถูกเอาออกจากตารางงานและคืนกลับวันลาคงเหลือ</string>
     <string name="leaveUndoPlan">ยกเลิกแผน</string>

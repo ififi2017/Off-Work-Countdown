@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">Aucune donnée pour %1$s. Le planning habituel sera utilisé. Recherchez une mise à jour de l’app.</string>
     <string name="holidayEstimatedLabel">Prévision</string>
     <string name="holidayEstimatedYearWarning">Les jours fériés et les jours travaillés de compensation en Chine continentale pour %1$s sont prévisionnels. Ils sont fournis à titre indicatif et ne doivent pas être considérés comme des informations confirmées. Référez-vous à l’avis officiel du Conseil des affaires d’État publié vers la fin de l’année. DoneAt mettra les données à jour dès que possible après l’annonce des dates de l’année suivante ; veuillez garder l’application à jour.</string>
+    <string name="holidayMakeupShort">Travail compensatoire</string>
     <string name="holidayMakeupWorkday">Jour travaillé de rattrapage</string>
     <string name="holidayRestDay">Jour férié</string>
     <string name="holidaySource">Calendrier des jours fériés</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">Ajouter à mon planning</string>
     <string name="leaveAdoptFailed">Votre planning ou vos congés ont changé depuis ce plan. Relancez la recherche pour voir ce qui convient maintenant.</string>
     <string name="leaveAdoptedPlans">Congés prévus</string>
+    <string name="leaveAllPlans">Tous les %1$s plans</string>
     <string name="leaveAtLeast">Au moins %1$s</string>
     <string name="leaveAvailable">%1$s restants</string>
     <string name="leaveAvailableDates">%1$s périodes possibles</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">Un plan adopté utilise ce solde. Annulez ce plan pour le supprimer.</string>
     <string name="leaveBalanceNamePlaceholder">Nom, par ex. congé de mariage</string>
     <string name="leaveBalancesSection">Soldes de congés</string>
+    <string name="leaveBestValue">Moins de congés</string>
     <string name="leaveCancelDay">Annuler le congé de ce jour</string>
     <string name="leaveCancelDayConfirm">Ce jour revient à votre planning et son congé retourne à vos soldes. Le reste du plan ne change pas.</string>
     <string name="leaveCarriedOverCaveat">Certains jours reprennent un mois précédent de votre planning.</string>
@@ -378,19 +381,18 @@
     <string name="leaveMainlandHolidaysMissing">Cette version n’inclut pas encore les jours fériés %1$s de Chine continentale : %1$s suit donc votre planning habituel. Mettez à jour DoneAt une fois qu’ils seront ajoutés pour les prendre en compte.</string>
     <string name="leaveManage">Gérer les congés</string>
     <string name="leaveNewBalance">Nouveau solde de congés</string>
-    <string name="leaveNextPlan">Proposition suivante</string>
     <string name="leaveNextShiftStarts">Reprise</string>
     <string name="leaveNoBalancesHint">Ajoutez un solde de congés pour planifier avec. Les pauses sans congé s’affichent quand même.</string>
     <string name="leaveNoLeaveNeeded">Sans congé</string>
     <string name="leaveNoResults">Rien ne correspond encore à ces réglages. Une période plus large ou plus de congés peut aider.</string>
     <string name="leavePlanAction">Planifier des congés</string>
-    <string name="leavePlanPosition">%1$s sur %2$s</string>
-    <string name="leavePreviousPlan">Proposition précédente</string>
     <string name="leaveRangeEnd">Au plus tard</string>
     <string name="leaveRangeFooter">Recherche sur l’année à venir : %1$s – %2$s.</string>
     <string name="leaveRangeStart">Au plus tôt</string>
+    <string name="leaveRecommendedPlans">Plans recommandés</string>
     <string name="leaveRegularPlans">Repos habituels</string>
     <string name="leaveRequests">Congés à demander</string>
+    <string name="leaveResultsBrowsingFree">Vous pouvez parcourir librement ces plans et leurs détails.</string>
     <string name="leaveResultsTitle">Propositions</string>
     <string name="leaveRoleEarly">Partir plus tôt</string>
     <string name="leaveRoleLate">Commencer plus tard</string>
@@ -398,14 +400,14 @@
     <string name="leaveSetupIntro">Indiquez vos congés disponibles : chaque plan montrera ce qu’il en utilise.</string>
     <string name="leaveSetupTitle">Configurer vos congés</string>
     <string name="leaveTitle">Congés</string>
-    <string name="leaveTrialNotice">Chaque ouverture d’un plan compte une fois, même pour le même plan.</string>
-    <string name="leaveTrialSaveFailed">Impossible d’ouvrir ce plan. Réessayez.</string>
+    <string name="leaveTrialNotice">Une recherche réussie qui affiche un groupe de plans consomme une recherche gratuite. Sans résultat, rien n’est décompté ; changer de plan, de date ou de mois et consulter les détails n’en consomme pas d’autre.</string>
+    <string name="leaveTrialSaveFailed">Impossible d’afficher les plans. Réessayez.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">Encore %d consultation gratuite</item>
-        <item quantity="many">Encore %d consultations gratuites</item>
-        <item quantity="other">Encore %d consultations gratuites</item>
+        <item quantity="one">Encore %d recherche gratuite de plans de congés</item>
+        <item quantity="many">Encore %d recherches gratuites de plans de congés</item>
+        <item quantity="other">Encore %d recherches gratuites de plans de congés</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Consultations gratuites épuisées. Plus ouvre tous les plans.</string>
+    <string name="leaveTrialsUsedUp">Vous avez épuisé vos recherches gratuites de plans de congés. Abonnez-vous à Plus pour continuer à générer des plans.</string>
     <string name="leaveUnassignedCaveat">Certains jours n’ont pas de service et comptent comme repos.</string>
     <string name="leaveUndoConfirm">Ses congés sont retirés du planning et rendus à vos soldes.</string>
     <string name="leaveUndoPlan">Annuler le plan</string>

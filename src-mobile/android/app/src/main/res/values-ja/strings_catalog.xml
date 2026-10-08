@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">%1$s年のデータはありません。通常の予定が使われます。アプリのアップデートを確認してください。</string>
     <string name="holidayEstimatedLabel">予測</string>
     <string name="holidayEstimatedYearWarning">中国本土の%1$s年の祝日と振替出勤日は予測です。参考情報としてご利用ください。確定した祝日情報として扱わないでください。年末に中国国務院が発表する正式通知を基準にしてください。DoneAtは翌年の休暇日程が発表され次第、できるだけ早くデータを更新します。アプリを最新の状態に保ってください。</string>
+    <string name="holidayMakeupShort">振替出勤</string>
     <string name="holidayMakeupWorkday">振替出勤日</string>
     <string name="holidayRestDay">祝日</string>
     <string name="holidaySource">祝日カレンダー</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">シフトに追加</string>
     <string name="leaveAdoptFailed">プラン作成後にシフトや休暇が変わりました。もう一度探すと今に合う候補が見つかります。</string>
     <string name="leaveAdoptedPlans">計画済みの休暇</string>
+    <string name="leaveAllPlans">全%1$s件のプラン</string>
     <string name="leaveAtLeast">%1$s以上</string>
     <string name="leaveAvailable">残り %1$s</string>
     <string name="leaveAvailableDates">選べる日程：%1$s件</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">採用したプランでこの休暇を使っています。削除するにはそのプランを取り消してください。</string>
     <string name="leaveBalanceNamePlaceholder">名前（例：慶弔休暇）</string>
     <string name="leaveBalancesSection">休暇の残り</string>
+    <string name="leaveBestValue">休暇が最少</string>
     <string name="leaveCancelDay">この日の休暇を取り消す</string>
     <string name="leaveCancelDayConfirm">この日は元のシフトに戻り、使った休暇は残りに戻ります。プランの他の日はそのままです。</string>
     <string name="leaveCarriedOverCaveat">一部の日は前の月のシフトを繰り返しています。</string>
@@ -376,19 +379,18 @@
     <string name="leaveMainlandHolidaysMissing">このバージョンには中国本土の %1$s 年の祝日がまだ含まれていないため、%1$s 年は通常のシフトで計算します。収録後に DoneAt をアップデートすると反映されます。</string>
     <string name="leaveManage">休暇を管理</string>
     <string name="leaveNewBalance">新しい休暇</string>
-    <string name="leaveNextPlan">次の候補</string>
     <string name="leaveNextShiftStarts">仕事再開</string>
     <string name="leaveNoBalancesHint">休暇を追加すると計画に使えます。休暇を使わない連休も表示されます。</string>
     <string name="leaveNoLeaveNeeded">休暇不要</string>
     <string name="leaveNoResults">この条件に合う連休はまだありません。期間を広げるか、使える休暇を増やすと見つかるかもしれません。</string>
     <string name="leavePlanAction">休暇を計画</string>
-    <string name="leavePlanPosition">%2$s 件中 %1$s 件目</string>
-    <string name="leavePreviousPlan">前の候補</string>
     <string name="leaveRangeEnd">最も遅い日</string>
     <string name="leaveRangeFooter">今後1年を探します：%1$s～%2$s</string>
     <string name="leaveRangeStart">最も早い日</string>
+    <string name="leaveRecommendedPlans">おすすめプラン</string>
     <string name="leaveRegularPlans">通常の休日</string>
     <string name="leaveRequests">申請する休暇</string>
+    <string name="leaveResultsBrowsingFree">今回のプランは自由に切り替えられ、詳細も確認できます。</string>
     <string name="leaveResultsTitle">候補</string>
     <string name="leaveRoleEarly">早めに退勤</string>
     <string name="leaveRoleLate">遅めに出勤</string>
@@ -396,12 +398,12 @@
     <string name="leaveSetupIntro">持っている休暇を入力すると、各プランで使う日数がわかります。</string>
     <string name="leaveSetupTitle">まず休暇を設定</string>
     <string name="leaveTitle">休暇</string>
-    <string name="leaveTrialNotice">プランを開くたびに1回使います。同じプランを開き直した場合も含みます。</string>
-    <string name="leaveTrialSaveFailed">このプランを開けませんでした。もう一度お試しください。</string>
+    <string name="leaveTrialNotice">検索に成功してプランの一覧が表示されると、無料枠を1回使います。結果がなければ消費せず、プラン・日付・月の切り替えや詳細表示でも追加消費しません。</string>
+    <string name="leaveTrialSaveFailed">プランを表示できませんでした。もう一度お試しください。</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">あと %d 回、無料でプランを見られます</item>
+        <item quantity="other">休暇プランを無料で検索できる回数：あと%d回</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">無料の閲覧回数を使い切りました。Plus ならすべてのプランを見られます</string>
+    <string name="leaveTrialsUsedUp">無料で休暇プランを検索できる回数を使い切りました。Plusに登録すると引き続き生成できます。</string>
     <string name="leaveUnassignedCaveat">一部の日はシフト未設定のため休みとして扱います。</string>
     <string name="leaveUndoConfirm">このプランの休暇はシフトから外れ、残りに戻ります。</string>
     <string name="leaveUndoPlan">プランを取り消す</string>

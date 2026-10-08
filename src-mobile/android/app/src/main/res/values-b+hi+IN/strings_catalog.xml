@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">%1$s का डेटा नहीं है। सामान्य शेड्यूल उपयोग होगा। ऐप अपडेट जाँचें।</string>
     <string name="holidayEstimatedLabel">अनुमानित</string>
     <string name="holidayEstimatedYearWarning">चीन के मुख्य भूभाग के लिए %1$s की छुट्टियों और बदले में काम के दिनों का यह अनुमान है। इसे केवल संदर्भ के लिए देखें; इसे पक्की छुट्टी की जानकारी न मानें। वर्ष के अंत में जारी चीन की राज्य परिषद की आधिकारिक सूचना को ही मानें। अगले वर्ष की छुट्टियों की व्यवस्था घोषित होने के बाद DoneAt जल्द से जल्द डेटा अपडेट करेगा; कृपया ऐप अपडेट रखें।</string>
+    <string name="holidayMakeupShort">प्रतिपूरक काम</string>
     <string name="holidayMakeupWorkday">प्रतिपूरक कार्यदिवस</string>
     <string name="holidayRestDay">अवकाश</string>
     <string name="holidaySource">अवकाश कैलेंडर</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">मेरे शेड्यूल में जोड़ें</string>
     <string name="leaveAdoptFailed">यह योजना बनने के बाद आपका शेड्यूल या छुट्टी बदल गई है। अभी के लिए सही विकल्प देखने हेतु फिर खोजें।</string>
     <string name="leaveAdoptedPlans">योजना बनी छुट्टियाँ</string>
+    <string name="leaveAllPlans">सभी %1$s योजनाएँ</string>
     <string name="leaveAtLeast">कम से कम %1$s</string>
     <string name="leaveAvailable">%1$s बाकी</string>
     <string name="leaveAvailableDates">%1$s उपलब्ध तारीख़ें</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">अपनाई गई एक योजना यह शेष इस्तेमाल कर रही है। हटाने के लिए उस योजना को रद्द करें।</string>
     <string name="leaveBalanceNamePlaceholder">नाम, जैसे विवाह अवकाश</string>
     <string name="leaveBalancesSection">छुट्टी शेष</string>
+    <string name="leaveBestValue">सबसे कम छुट्टी</string>
     <string name="leaveCancelDay">इस दिन की छुट्टी रद्द करें</string>
     <string name="leaveCancelDayConfirm">यह दिन आपके शेड्यूल में लौट आएगा और छुट्टी शेष में लौट जाएगी। योजना के बाकी दिन वैसे ही रहेंगे।</string>
     <string name="leaveCarriedOverCaveat">कुछ दिन आपके पिछले किसी महीने के रोस्टर को दोहराते हैं।</string>
@@ -377,19 +380,18 @@
     <string name="leaveMainlandHolidaysMissing">इस वर्ज़न में अभी मुख्यभूमि चीन की %1$s की छुट्टियाँ शामिल नहीं हैं, इसलिए %1$s आपके सामान्य शेड्यूल से चलता है। जुड़ने के बाद उन्हें शामिल करने के लिए DoneAt अपडेट करें।</string>
     <string name="leaveManage">छुट्टी प्रबंधित करें</string>
     <string name="leaveNewBalance">नई छुट्टी शेष</string>
-    <string name="leaveNextPlan">अगला विकल्प</string>
     <string name="leaveNextShiftStarts">काम पर वापसी</string>
     <string name="leaveNoBalancesHint">योजना में इस्तेमाल के लिए छुट्टी शेष जोड़ें। बिना छुट्टी वाले लंबे ब्रेक भी दिखते हैं।</string>
     <string name="leaveNoLeaveNeeded">छुट्टी की ज़रूरत नहीं</string>
     <string name="leaveNoResults">इन सेटिंग्स से अभी कुछ नहीं मिला। बड़ी तारीख सीमा या ज़्यादा छुट्टी से मदद मिल सकती है।</string>
     <string name="leavePlanAction">छुट्टी की योजना बनाएँ</string>
-    <string name="leavePlanPosition">%2$s में से %1$s</string>
-    <string name="leavePreviousPlan">पिछला विकल्प</string>
     <string name="leaveRangeEnd">सबसे बाद में</string>
     <string name="leaveRangeFooter">आने वाले एक साल में खोजता है: %1$s – %2$s।</string>
     <string name="leaveRangeStart">सबसे पहले</string>
+    <string name="leaveRecommendedPlans">सुझाई गई योजनाएँ</string>
     <string name="leaveRegularPlans">नियमित छुट्टियाँ</string>
     <string name="leaveRequests">माँगी जाने वाली छुट्टी</string>
+    <string name="leaveResultsBrowsingFree">आप इन योजनाओं को देख सकते हैं और उनका विवरण भी बिना रोक-टोक देख सकते हैं।</string>
     <string name="leaveResultsTitle">विकल्प</string>
     <string name="leaveRoleEarly">जल्दी निकलें</string>
     <string name="leaveRoleLate">देर से शुरू करें</string>
@@ -397,13 +399,13 @@
     <string name="leaveSetupIntro">आपके पास कितनी छुट्टी है, जोड़ें। फिर हर योजना बताएगी कि उसमें कितनी लगेगी।</string>
     <string name="leaveSetupTitle">पहले छुट्टी सेट करें</string>
     <string name="leaveTitle">छुट्टियाँ</string>
-    <string name="leaveTrialNotice">हर बार योजना खोलने पर एक मौका लगता है, वही योजना दोबारा खोलने पर भी।</string>
-    <string name="leaveTrialSaveFailed">यह योजना नहीं खुल सकी। कृपया फिर कोशिश करें।</string>
+    <string name="leaveTrialNotice">सफल खोज में योजनाओं का समूह मिलने पर एक मुफ़्त मौका इस्तेमाल होता है। नतीजे न मिलने पर मौका नहीं कटता; योजना, तारीख या महीना बदलने और विवरण देखने पर दोबारा नहीं कटता।</string>
+    <string name="leaveTrialSaveFailed">योजनाएँ दिखाई नहीं जा सकीं। कृपया फिर कोशिश करें।</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">%d मुफ़्त योजना देखना बाकी</item>
-        <item quantity="other">%d मुफ़्त योजनाएँ देखना बाकी</item>
+        <item quantity="one">छुट्टी की योजनाएँ मुफ़्त खोजने का %d मौका बाकी है</item>
+        <item quantity="other">छुट्टी की योजनाएँ मुफ़्त खोजने के %d मौके बाकी हैं</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">मुफ़्त देखने के मौके खत्म हो गए। Plus के साथ सभी योजनाएँ देखें।</string>
+    <string name="leaveTrialsUsedUp">मुफ़्त में छुट्टी की योजनाएँ खोजने के मौके खत्म हो गए हैं। योजनाएँ बनाते रहने के लिए Plus लें।</string>
     <string name="leaveUnassignedCaveat">कुछ दिनों में कोई शिफ़्ट तय नहीं है, उन्हें छुट्टी माना गया है।</string>
     <string name="leaveUndoConfirm">इसकी छुट्टी आपके शेड्यूल से हटकर आपके शेष में लौट जाएगी।</string>
     <string name="leaveUndoPlan">योजना रद्द करें</string>

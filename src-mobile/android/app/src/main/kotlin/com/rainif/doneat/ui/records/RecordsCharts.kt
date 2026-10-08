@@ -69,6 +69,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.rainif.doneat.ui.schedule.HolidayDayAnnotation
+import com.rainif.doneat.ui.schedule.HolidayDayCaption
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.designsystem.DoneAtRecordsStyle
@@ -146,9 +148,9 @@ fun MiniWorkBar(workMs: Long, overtimeMs: Long, modifier: Modifier = Modifier, m
     }
 }
 
-private fun Modifier.daySemantics(cell: RecordsDayCell, text: RecordsText, selected: Boolean, onSelect: () -> Unit, onOpen: () -> Unit) =
+private fun Modifier.daySemantics(cell: RecordsDayCell, text: RecordsText, selected: Boolean, onSelect: () -> Unit, onOpen: () -> Unit, holiday: HolidayDayAnnotation? = null) =
     clearAndSetSemantics {
-        contentDescription = text.cellDescription(cell)
+        contentDescription = listOfNotNull(text.cellDescription(cell), holiday?.description(text.string(R.string.holidayMakeupWorkday), text.string(R.string.holidayEstimatedLabel))).joinToString(", ")
         role = Role.Button
         this.selected = selected
         onClick { onSelect(); true }
@@ -160,7 +162,7 @@ private fun Modifier.daySemantics(cell: RecordsDayCell, text: RecordsText, selec
  * duration and proportion; selection is a ring, today only tints its number.
  */
 @Composable
-fun MonthGrid(
+internal fun MonthGrid(
     cells: List<RecordsDayCell>,
     leadingBlanks: Int,
     weekdayLabels: List<String>,
@@ -168,7 +170,8 @@ fun MonthGrid(
     text: RecordsText,
     onSelect: (RecordsDayCell) -> Unit,
     onOpen: (RecordsDayCell) -> Unit,
-    selectionAnchor: Modifier = Modifier,
+    modifier: Modifier = Modifier,
+    holidays: Map<String, HolidayDayAnnotation> = emptyMap(),
 ) {
     val colors = LocalDoneAtRecordsColors.current
     val scheme = MaterialTheme.colorScheme
@@ -189,6 +192,7 @@ fun MonthGrid(
                             continue
                         }
                         val selected = cell.dayKey == selectedDayKey
+                        val holiday = holidays[cell.dayKey]
                         val estimated = cell.isFuture || RecordsDayMarks.isEstimated(cell)
                         val fill = when (cell.appearance) {
                             RecordsDayAppearance.LOCKED -> scheme.surfaceContainerHighest.copy(alpha = 0.45f)
@@ -202,25 +206,28 @@ fun MonthGrid(
                             Modifier
                                 .weight(1f)
                                 .aspectRatio(1f)
-                                .then(if (selected) selectionAnchor else Modifier)
+                                .then(if (selected) modifier else Modifier)
                                 .clip(shape)
                                 .background(fill)
                                 .estimatedHatch(RecordsDayMarks.isEstimated(cell), scheme.onSurfaceVariant.copy(alpha = DoneAtRecordsStyle.calendarEstimateTintOpacity), spacing = 6.dp)
                                 .border(2.dp, if (selected) scheme.primary else Color.Transparent, shape)
                                 .clickable { onSelect(cell) }
-                                .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }),
+                                .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }, holiday),
                         ) {
-                            Text(
-                                text.count(cell.date.dayOfMonth),
-                                Modifier.align(Alignment.Center),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = if (cell.isToday || selected) FontWeight.SemiBold else FontWeight.Normal,
-                                color = when {
-                                    cell.appearance == RecordsDayAppearance.LOCKED -> scheme.outline
-                                    cell.isToday || selected -> scheme.primary
-                                    else -> scheme.onSurface
-                                },
-                            )
+                            Column(Modifier.align(Alignment.Center).fillMaxWidth().padding(horizontal = DoneAtSpacing.xxs).padding(bottom = DoneAtSpacing.s), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text.count(cell.date.dayOfMonth),
+                                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = MaterialTheme.typography.bodyMedium.fontSize),
+                                    fontWeight = if (cell.isToday || selected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = when {
+                                        cell.appearance == RecordsDayAppearance.LOCKED -> scheme.outline
+                                        cell.isToday || selected -> scheme.primary
+                                        else -> scheme.onSurface
+                                    },
+                                )
+                                if (holiday != null) HolidayDayCaption(holiday)
+                                else Spacer(Modifier.height(with(LocalDensity.current) { MaterialTheme.typography.labelSmall.fontSize.toDp() }))
+                            }
                             MiniWorkBar(
                                 cell.workMs, cell.overtimeMs,
                                 Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp)
@@ -249,13 +256,14 @@ private fun StateMarker(cell: RecordsDayCell, modifier: Modifier) {
  * stacked on the end of regular work rather than recolouring the column.
  */
 @Composable
-fun WeekStrips(
+internal fun WeekStrips(
     cells: List<RecordsDayCell>,
     selectedDayKey: String?,
     text: RecordsText,
     onSelect: (RecordsDayCell) -> Unit,
     onOpen: (RecordsDayCell) -> Unit,
-    selectionAnchor: Modifier = Modifier,
+    modifier: Modifier = Modifier,
+    holidays: Map<String, HolidayDayAnnotation> = emptyMap(),
 ) {
     val colors = LocalDoneAtRecordsColors.current
     val scheme = MaterialTheme.colorScheme
@@ -265,14 +273,15 @@ fun WeekStrips(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Bottom) {
             cells.forEach { cell ->
                 val selected = cell.dayKey == selectedDayKey
+                val holiday = holidays[cell.dayKey]
                 val estimated = cell.isFuture || RecordsDayMarks.isEstimated(cell)
                 Column(
                     Modifier
                         .weight(1f)
-                        .then(if (selected) selectionAnchor else Modifier)
+                        .then(if (selected) modifier else Modifier)
                         .clip(RoundedCornerShape(10.dp))
                         .clickable { onSelect(cell) }
-                        .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }),
+                        .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }, holiday),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(7.dp),
                 ) {
@@ -318,7 +327,8 @@ fun WeekStrips(
                             text.count(cell.date.dayOfMonth), style = MaterialTheme.typography.bodyMedium, color = tint,
                             fontWeight = if (selected || cell.isToday) FontWeight.SemiBold else FontWeight.Normal,
                         )
-                        Text(text.weekdayNarrow(cell.date), style = MaterialTheme.typography.labelSmall, color = tint)
+                        if (holiday != null) HolidayDayCaption(holiday, onSelectedColor = selected)
+                        else Text(text.weekdayNarrow(cell.date), style = MaterialTheme.typography.labelSmall, color = tint)
                     }
                 }
             }

@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">%1$s verisi yok. Normal program kullanılacak. Uygulama güncellemelerini kontrol edin.</string>
     <string name="holidayEstimatedLabel">Tahmin</string>
     <string name="holidayEstimatedYearWarning">Çin ana karasındaki %1$s yılı resmî tatilleri ve telafi çalışma günleri tahmindir. Yalnızca fikir vermesi içindir; kesinleşmiş tatil bilgisi olarak kabul etmeyin. Yıl sonuna doğru yayımlanan Çin Devlet Konseyi’nin resmî duyurusunu esas alın. DoneAt, sonraki yılın tatil takvimi açıklandıktan sonra verileri mümkün olan en kısa sürede güncelleyecek; lütfen uygulamayı güncel tutun.</string>
+    <string name="holidayMakeupShort">Telafi mesaisi</string>
     <string name="holidayMakeupWorkday">Telafi iş günü</string>
     <string name="holidayRestDay">Tatil</string>
     <string name="holidaySource">Tatil takvimi</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">Vardiyama ekle</string>
     <string name="leaveAdoptFailed">Bu plan oluşturulduktan sonra vardiyan ya da iznin değişti. Şimdi neyin uyduğunu görmek için yeniden ara.</string>
     <string name="leaveAdoptedPlans">Planlanan izinler</string>
+    <string name="leaveAllPlans">Tüm %1$s plan</string>
     <string name="leaveAtLeast">En az %1$s</string>
     <string name="leaveAvailable">%1$s kaldı</string>
     <string name="leaveAvailableDates">%1$s uygun tarih aralığı</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">Uygulanan bir plan bu bakiyeyi kullanıyor. Silmek için o planı geri al.</string>
     <string name="leaveBalanceNamePlaceholder">Ad, ör. evlilik izni</string>
     <string name="leaveBalancesSection">İzin bakiyeleri</string>
+    <string name="leaveBestValue">En az izin</string>
     <string name="leaveCancelDay">Bu günün iznini iptal et</string>
     <string name="leaveCancelDayConfirm">Bu gün vardiyana geri döner ve izni bakiyene iade edilir. Planın geri kalanı aynı kalır.</string>
     <string name="leaveCarriedOverCaveat">Bazı günler vardiya planının önceki bir ayını tekrarlıyor.</string>
@@ -377,19 +380,18 @@
     <string name="leaveMainlandHolidaysMissing">Bu sürüm Çin anakarasının %1$s tatillerini henüz içermiyor; bu yüzden %1$s her zamanki vardiyana göre hesaplanıyor. Eklendiğinde DoneAt’i güncelleyerek dahil edebilirsin.</string>
     <string name="leaveManage">İzinleri yönet</string>
     <string name="leaveNewBalance">Yeni izin bakiyesi</string>
-    <string name="leaveNextPlan">Sonraki seçenek</string>
     <string name="leaveNextShiftStarts">İşe dönüş</string>
     <string name="leaveNoBalancesHint">Planlamak için bir izin bakiyesi ekle. İzin gerektirmeyen tatiller yine de gösterilir.</string>
     <string name="leaveNoLeaveNeeded">İzin gerekmez</string>
     <string name="leaveNoResults">Bu ayarlara uyan bir şey henüz yok. Daha geniş bir tarih aralığı ya da daha fazla izin yardımcı olabilir.</string>
     <string name="leavePlanAction">İzin planla</string>
-    <string name="leavePlanPosition">%1$s / %2$s</string>
-    <string name="leavePreviousPlan">Önceki seçenek</string>
     <string name="leaveRangeEnd">En geç</string>
     <string name="leaveRangeFooter">Önümüzdeki bir yılda arar: %1$s – %2$s.</string>
     <string name="leaveRangeStart">En erken</string>
+    <string name="leaveRecommendedPlans">Önerilen planlar</string>
     <string name="leaveRegularPlans">Normal izin günleri</string>
     <string name="leaveRequests">Talep edilecek izin</string>
+    <string name="leaveResultsBrowsingFree">Bu planları ve ayrıntılarını özgürce inceleyebilirsiniz.</string>
     <string name="leaveResultsTitle">Seçenekler</string>
     <string name="leaveRoleEarly">Erken çık</string>
     <string name="leaveRoleLate">Daha geç başla</string>
@@ -397,13 +399,13 @@
     <string name="leaveSetupIntro">Ne kadar iznin olduğunu ekle; her plan ondan ne kadar kullandığını gösterir.</string>
     <string name="leaveSetupTitle">Önce iznini ayarla</string>
     <string name="leaveTitle">İzin</string>
-    <string name="leaveTrialNotice">Her plan açılışı bir hak kullanır; aynı planı yeniden açmak da sayılır.</string>
-    <string name="leaveTrialSaveFailed">Bu plan açılamadı. Lütfen tekrar deneyin.</string>
+    <string name="leaveTrialNotice">Sonuç veren başarılı bir arama bir ücretsiz arama hakkı kullanır. Sonuç yoksa hak düşmez; planı, tarihi veya ayı değiştirmek ve ayrıntıları görüntülemek yeni hak kullanmaz.</string>
+    <string name="leaveTrialSaveFailed">Planlar gösterilemedi. Lütfen tekrar deneyin.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">%d ücretsiz plan görüntüleme kaldı</item>
-        <item quantity="other">%d ücretsiz plan görüntüleme kaldı</item>
+        <item quantity="one">%d ücretsiz izin planı araması kaldı</item>
+        <item quantity="other">%d ücretsiz izin planı araması kaldı</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Ücretsiz görüntülemeler bitti. Plus ile tüm planları gör.</string>
+    <string name="leaveTrialsUsedUp">Ücretsiz izin planı aramaların bitti. Plan oluşturmaya devam etmek için Plus’a abone ol.</string>
     <string name="leaveUnassignedCaveat">Bazı günlerde vardiya yok; dinlenme sayılıyor.</string>
     <string name="leaveUndoConfirm">İzni vardiyandan çıkar ve bakiyelerine geri döner.</string>
     <string name="leaveUndoPlan">Planı geri al</string>

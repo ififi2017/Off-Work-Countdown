@@ -83,7 +83,8 @@ struct LeavePlannerTests {
         through: String,
         now: Double,
         budgets: [LeaveBudget],
-        zone: String = shanghai
+        zone: String = shanghai,
+        maximumProposals: Int = .max
     ) throws -> [LeavePlanProposal] {
         let range = try dayNumber(from)...dayNumber(through)
         let days = LeavePlannerSchedule.days(
@@ -93,7 +94,7 @@ struct LeavePlannerTests {
         )
         return LeavePlanner.proposals(days: days, query: .init(
             goal: goal, fromDayNumber: range.lowerBound, throughDayNumber: range.upperBound,
-            nowMs: now, budgets: budgets
+            nowMs: now, budgets: budgets, maximumProposals: maximumProposals
         ))
     }
 
@@ -150,6 +151,50 @@ struct LeavePlannerTests {
         #expect(best.nextShiftStartAtMs == (try Self.instant("2026-10-08", hour: 9)))
         #expect(best.uses == [LeaveBudgetUse(budgetID: Self.annual, halfDays: 6)])
         #expect(best.caveats.isEmpty)
+    }
+
+    @Test("Twelve and thirteen day goals recommend several plans with the least leave first", arguments: [12, 13])
+    func longBreakRecommendations(target: Int) throws {
+        let now = try Self.instant("2026-09-20", hour: 10)
+        let budgets = [try Self.budget(halfDays: 20)]
+        let result = try Self.proposals(
+            plan: Self.weeklyPlan(region: "CN"), goal: .restAtLeast(days: target),
+            from: "2026-09-21", through: "2026-10-31", now: now, budgets: budgets
+        )
+        let best = try #require(result.first)
+        #expect(best.fullRestDays == 13)
+        #expect(best.costHalfDays == 6)
+        #expect(result.count >= 3)
+        #expect(result.allSatisfy { $0.fullRestDays >= target && $0.items.allSatisfy { $0.role == .bridge } })
+        let costs = result.map(\.costHalfDays)
+        #expect(costs == costs.sorted())
+        #expect(result.dropFirst().contains { $0.costHalfDays > best.costHalfDays })
+        for (lhs, rhs) in zip(result, result.dropFirst()) where lhs.costHalfDays == rhs.costHalfDays {
+            #expect(lhs.fullRestDays >= rhs.fullRestDays)
+            if lhs.fullRestDays == rhs.fullRestDays {
+                #expect(lhs.firstRestDayNumber < rhs.firstRestDayNumber)
+            }
+        }
+        let limited = try Self.proposals(
+            plan: Self.weeklyPlan(region: "CN"), goal: .restAtLeast(days: target),
+            from: "2026-09-21", through: "2026-10-31", now: now, budgets: budgets,
+            maximumProposals: 3
+        )
+        #expect(limited == Array(result.prefix(3)))
+    }
+
+    @Test("Long-break recommendations charge a manually assigned holiday shift", arguments: [12, 13])
+    func longBreakWithManualHolidayShift(target: Int) throws {
+        let result = try Self.proposals(
+            plan: Self.weeklyPlan(region: "CN", handSet: ["2026-10-03": Self.office]),
+            goal: .restAtLeast(days: target), from: "2026-09-21", through: "2026-10-31",
+            now: try Self.instant("2026-09-20", hour: 10), budgets: [try Self.budget(halfDays: 20)]
+        )
+        let best = try #require(result.first)
+        #expect(best.fullRestDays == 13)
+        #expect(best.costHalfDays == 8)
+        #expect(best.items.map(\.dayKey) == ["2026-09-28", "2026-09-29", "2026-09-30", "2026-10-03"])
+        #expect(result.map(\.costHalfDays) == result.map(\.costHalfDays).sorted())
     }
 
     @Test("Seven days off during National Day costs nothing")

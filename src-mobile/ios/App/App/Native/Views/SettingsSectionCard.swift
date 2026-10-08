@@ -36,6 +36,7 @@ struct SettingsSectionCard: View {
             link(.language, icon: "globe", title: shifts.text.t("chooselanguage"), value: shifts.text.languageLabel, isLast: true)
 
         case .recordsData:
+            CalendarWeekStartSetting(preferences: shifts.preferences, text: shifts.text)
             link(.recordsData, icon: "externaldrive", title: shifts.text.t("recordsDataTitle"), value: recovery.recordsDataStatusLabel(using: shifts.text), isLast: true)
 
         case .about:

@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">暂无 %1$s 年数据，将按日常排班执行。请检查应用更新。</string>
     <string name="holidayEstimatedLabel">推测</string>
     <string name="holidayEstimatedYearWarning">%1$s 年中国大陆节假日与调休安排为推测，仅供参考，请勿作为真实假期信息。请以国务院年底发布的正式通知为准；DoneAt 将在下一年度安排公布后尽快更新，请及时更新软件。</string>
+    <string name="holidayMakeupShort">调休</string>
     <string name="holidayMakeupWorkday">调休上班</string>
     <string name="holidayRestDay">放假</string>
     <string name="holidaySource">节假日安排</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">加入排班</string>
     <string name="leaveAdoptFailed">方案生成后排班或假期有了变化。重新查找即可看到现在合适的方案。</string>
     <string name="leaveAdoptedPlans">已规划的休假</string>
+    <string name="leaveAllPlans">全部 %1$s 个方案</string>
     <string name="leaveAtLeast">至少 %1$s</string>
     <string name="leaveAvailable">剩 %1$s</string>
     <string name="leaveAvailableDates">%1$s 个可选日期</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">已采用的方案正在使用这份余额，撤销该方案后即可删除。</string>
     <string name="leaveBalanceNamePlaceholder">名称，例如婚假</string>
     <string name="leaveBalancesSection">假期余额</string>
+    <string name="leaveBestValue">最省假</string>
     <string name="leaveCancelDay">取消这天的请假</string>
     <string name="leaveCancelDayConfirm">这天会恢复为原来的排班，用掉的假期退回余额，方案的其他日子不变。</string>
     <string name="leaveCarriedOverCaveat">部分日子沿用之前月份的排班。</string>
@@ -376,19 +379,18 @@
     <string name="leaveMainlandHolidaysMissing">当前版本尚未收录 %1$s 年中国大陆节假日安排，%1$s 年暂按你的日常排班计算。相关安排收录到新版后，更新 App 即可纳入规划。</string>
     <string name="leaveManage">管理休假</string>
     <string name="leaveNewBalance">新建假期余额</string>
-    <string name="leaveNextPlan">下一个方案</string>
     <string name="leaveNextShiftStarts">回到工作</string>
     <string name="leaveNoBalancesHint">添加假期余额后即可用于规划。无需请假的连休也会列出。</string>
     <string name="leaveNoLeaveNeeded">无需请假</string>
     <string name="leaveNoResults">当前条件下暂无合适的连休。放宽日期范围或增加可用假期也许会有。</string>
     <string name="leavePlanAction">规划休假</string>
-    <string name="leavePlanPosition">第 %1$s / %2$s 个方案</string>
-    <string name="leavePreviousPlan">上一个方案</string>
     <string name="leaveRangeEnd">最晚</string>
     <string name="leaveRangeFooter">在今后一年内查找：%1$s—%2$s。</string>
     <string name="leaveRangeStart">最早</string>
+    <string name="leaveRecommendedPlans">推荐方案</string>
     <string name="leaveRegularPlans">日常休息日</string>
     <string name="leaveRequests">需要请的假</string>
+    <string name="leaveResultsBrowsingFree">本次结果可自由切换方案和查看详情。</string>
     <string name="leaveResultsTitle">方案</string>
     <string name="leaveRoleEarly">提前下班</string>
     <string name="leaveRoleLate">晚些上班</string>
@@ -396,12 +398,12 @@
     <string name="leaveSetupIntro">先填写你有多少假期，规划时就能算出每个方案要用掉多少。</string>
     <string name="leaveSetupTitle">先设置假期</string>
     <string name="leaveTitle">休假</string>
-    <string name="leaveTrialNotice">每打开一个方案会用掉 1 次，重复打开同一方案也会计算。</string>
-    <string name="leaveTrialSaveFailed">无法打开此方案，请重试。</string>
+    <string name="leaveTrialNotice">每次成功生成并打开一组方案会使用 1 次免费机会；无结果不扣次数，组内切换方案、日期或月历及查看详情都不重复计次。</string>
+    <string name="leaveTrialSaveFailed">无法查看方案，请重试。</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="other">还可免费查看 %d 次方案</item>
+        <item quantity="other">还可免费查看方案 %d 次</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">免费查看次数已用完，开通 Plus 即可查看全部方案</string>
+    <string name="leaveTrialsUsedUp">免费查看方案的次数已用完，开通 Plus 后可继续生成方案。</string>
     <string name="leaveUnassignedCaveat">部分日子未排班，按休息计算。</string>
     <string name="leaveUndoConfirm">该方案的请假会从排班中移除，并退回到假期余额。</string>
     <string name="leaveUndoPlan">撤销方案</string>

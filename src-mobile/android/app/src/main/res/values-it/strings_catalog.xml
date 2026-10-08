@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">Nessun dato per il %1$s. Verrà usato l’orario abituale. Controlla gli aggiornamenti dell’app.</string>
     <string name="holidayEstimatedLabel">Previsione</string>
     <string name="holidayEstimatedYearWarning">Le festività e i giorni lavorativi di recupero della Cina continentale per il %1$s sono una previsione. Sono solo indicativi: non considerarli informazioni ufficiali sulle festività. Fai riferimento all’avviso ufficiale del Consiglio di Stato cinese pubblicato verso la fine dell’anno. DoneAt aggiornerà i dati il prima possibile dopo l’annuncio del calendario dell’anno successivo; tieni aggiornata l’app.</string>
+    <string name="holidayMakeupShort">Lavoro compensativo</string>
     <string name="holidayMakeupWorkday">Giorno lavorativo di recupero</string>
     <string name="holidayRestDay">Festività</string>
     <string name="holidaySource">Calendario delle festività</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">Aggiungi ai miei turni</string>
     <string name="leaveAdoptFailed">Turni o ferie sono cambiati da quando hai creato il piano. Cerca di nuovo per vedere cosa va bene ora.</string>
     <string name="leaveAdoptedPlans">Ferie pianificate</string>
+    <string name="leaveAllPlans">Tutti i %1$s piani</string>
     <string name="leaveAtLeast">Almeno %1$s</string>
     <string name="leaveAvailable">%1$s rimasti</string>
     <string name="leaveAvailableDates">%1$s periodi disponibili</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">Un piano adottato usa questo saldo. Annulla il piano per eliminarlo.</string>
     <string name="leaveBalanceNamePlaceholder">Nome, es. congedo matrimoniale</string>
     <string name="leaveBalancesSection">Saldi ferie</string>
+    <string name="leaveBestValue">Meno ferie</string>
     <string name="leaveCancelDay">Annulla le ferie di questo giorno</string>
     <string name="leaveCancelDayConfirm">Il giorno torna nei tuoi turni e le ferie tornano ai saldi. Il resto del piano resta.</string>
     <string name="leaveCarriedOverCaveat">Alcuni giorni ripetono un mese precedente dei tuoi turni.</string>
@@ -378,19 +381,18 @@
     <string name="leaveMainlandHolidaysMissing">Questa versione non include ancora le festività %1$s della Cina continentale, quindi il %1$s segue i tuoi turni abituali. Quando saranno aggiunte, aggiorna DoneAt per includerle.</string>
     <string name="leaveManage">Gestisci ferie</string>
     <string name="leaveNewBalance">Nuovo saldo ferie</string>
-    <string name="leaveNextPlan">Proposta successiva</string>
     <string name="leaveNextShiftStarts">Rientro</string>
     <string name="leaveNoBalancesHint">Aggiungi un saldo ferie per pianificare. Le pause senza ferie compaiono comunque.</string>
     <string name="leaveNoLeaveNeeded">Senza ferie</string>
     <string name="leaveNoResults">Per ora nulla corrisponde. Un periodo più ampio o più ferie possono aiutare.</string>
     <string name="leavePlanAction">Pianifica le ferie</string>
-    <string name="leavePlanPosition">%1$s di %2$s</string>
-    <string name="leavePreviousPlan">Proposta precedente</string>
     <string name="leaveRangeEnd">Al</string>
     <string name="leaveRangeFooter">Cerca nell’anno a venire: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Dal</string>
+    <string name="leaveRecommendedPlans">Piani consigliati</string>
     <string name="leaveRegularPlans">Riposi abituali</string>
     <string name="leaveRequests">Ferie da richiedere</string>
+    <string name="leaveResultsBrowsingFree">Puoi consultare liberamente questi piani e i relativi dettagli.</string>
     <string name="leaveResultsTitle">Proposte</string>
     <string name="leaveRoleEarly">Uscire prima</string>
     <string name="leaveRoleLate">Iniziare più tardi</string>
@@ -398,14 +400,14 @@
     <string name="leaveSetupIntro">Indica quante ferie hai: ogni piano mostrerà quante ne usa.</string>
     <string name="leaveSetupTitle">Imposta le ferie</string>
     <string name="leaveTitle">Ferie</string>
-    <string name="leaveTrialNotice">Ogni apertura di un piano conta una volta, anche se è lo stesso.</string>
-    <string name="leaveTrialSaveFailed">Impossibile aprire questo piano. Riprova.</string>
+    <string name="leaveTrialNotice">Una ricerca riuscita che mostra un gruppo di piani consuma una ricerca gratuita. Senza risultati non viene scalata; cambiare piano, data o mese e vedere i dettagli non ne consuma un’altra.</string>
+    <string name="leaveTrialSaveFailed">Impossibile mostrare i piani. Riprova.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">Puoi aprire ancora %d piano gratis</item>
-        <item quantity="many">Puoi aprire ancora %d piani gratis</item>
-        <item quantity="other">Puoi aprire ancora %d piani gratis</item>
+        <item quantity="one">Ti resta %d ricerca gratuita di piani per le ferie</item>
+        <item quantity="many">Ti restano %d ricerche gratuite di piani per le ferie</item>
+        <item quantity="other">Ti restano %d ricerche gratuite di piani per le ferie</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Hai usato le visualizzazioni gratuite. Con Plus vedi tutti i piani.</string>
+    <string name="leaveTrialsUsedUp">Hai esaurito le ricerche gratuite di piani per le ferie. Abbonati a Plus per continuare a generarli.</string>
     <string name="leaveUnassignedCaveat">Alcuni giorni non hanno turni e contano come riposo.</string>
     <string name="leaveUndoConfirm">Le sue ferie escono dai turni e tornano ai tuoi saldi.</string>
     <string name="leaveUndoPlan">Annulla piano</string>

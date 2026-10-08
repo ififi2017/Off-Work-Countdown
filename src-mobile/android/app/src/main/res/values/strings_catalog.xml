@@ -325,6 +325,7 @@
     <string name="holidayCoverageYearWarning">No data for %1$s. Your regular schedule will be used. Check for app updates.</string>
     <string name="holidayEstimatedLabel">Predicted</string>
     <string name="holidayEstimatedYearWarning">Mainland China holidays and makeup workdays for %1$s are predicted. For reference only; do not treat them as confirmed holiday information. Follow the State Council’s official notice published toward year-end. DoneAt will update the data as soon as possible after next year’s arrangements are announced; please keep the app updated.</string>
+    <string name="holidayMakeupShort">Makeup</string>
     <string name="holidayMakeupWorkday">Makeup workday</string>
     <string name="holidayRestDay">Holiday</string>
     <string name="holidaySource">Holiday calendar</string>
@@ -339,6 +340,7 @@
     <string name="leaveAdopt">Add to my schedule</string>
     <string name="leaveAdoptFailed">Your schedule or leave changed since this plan was made. Find options again to see what fits now.</string>
     <string name="leaveAdoptedPlans">Planned time off</string>
+    <string name="leaveAllPlans">All %1$s plans</string>
     <string name="leaveAtLeast">At least %1$s</string>
     <string name="leaveAvailable">%1$s left</string>
     <string name="leaveAvailableDates">%1$s available dates</string>
@@ -346,6 +348,7 @@
     <string name="leaveBalanceInUse">An adopted plan uses this balance. Undo that plan to delete it.</string>
     <string name="leaveBalanceNamePlaceholder">Name, e.g. marriage leave</string>
     <string name="leaveBalancesSection">Leave balances</string>
+    <string name="leaveBestValue">Least leave</string>
     <string name="leaveCancelDay">Cancel this day’s leave</string>
     <string name="leaveCancelDayConfirm">This day goes back on your schedule and its leave returns to your balances. The rest of the plan stays.</string>
     <string name="leaveCarriedOverCaveat">Some days repeat an earlier month of your roster.</string>
@@ -377,19 +380,18 @@
     <string name="leaveMainlandHolidaysMissing">This version doesn’t include mainland China’s %1$s holidays yet, so %1$s follows your usual schedule. Once they’re added, update DoneAt to include them.</string>
     <string name="leaveManage">Manage time off</string>
     <string name="leaveNewBalance">New leave balance</string>
-    <string name="leaveNextPlan">Next plan</string>
     <string name="leaveNextShiftStarts">Back at work</string>
     <string name="leaveNoBalancesHint">Add a leave balance to plan with it. Breaks that need no leave still show up.</string>
     <string name="leaveNoLeaveNeeded">No leave needed</string>
     <string name="leaveNoResults">Nothing fits these settings yet. A wider date range or more leave may help.</string>
     <string name="leavePlanAction">Plan time off</string>
-    <string name="leavePlanPosition">%1$s of %2$s</string>
-    <string name="leavePreviousPlan">Previous plan</string>
     <string name="leaveRangeEnd">Latest</string>
     <string name="leaveRangeFooter">Searches the year ahead: %1$s – %2$s.</string>
     <string name="leaveRangeStart">Earliest</string>
+    <string name="leaveRecommendedPlans">Recommended plans</string>
     <string name="leaveRegularPlans">Regular days off</string>
     <string name="leaveRequests">Leave to request</string>
+    <string name="leaveResultsBrowsingFree">You can browse these plans and their details freely.</string>
     <string name="leaveResultsTitle">Options</string>
     <string name="leaveRoleEarly">Leave early</string>
     <string name="leaveRoleLate">Start later</string>
@@ -397,13 +399,13 @@
     <string name="leaveSetupIntro">Add how much leave you have. Plans then show exactly what each break takes from it.</string>
     <string name="leaveSetupTitle">Set up your leave</string>
     <string name="leaveTitle">Time off</string>
-    <string name="leaveTrialNotice">Opening a plan uses one free view, even the same plan again.</string>
-    <string name="leaveTrialSaveFailed">Couldn’t open this plan. Please try again.</string>
+    <string name="leaveTrialNotice">A successful search that returns a set of plans uses one free search. No results use none; switching plans, dates or months, and viewing details don’t use another.</string>
+    <string name="leaveTrialSaveFailed">Couldn’t show the plans. Please try again.</string>
     <plurals name="leaveTrialsLeft">
-        <item quantity="one">You can open %d more plan for free</item>
-        <item quantity="other">You can open %d more plans for free</item>
+        <item quantity="one">%d free plan search remaining</item>
+        <item quantity="other">%d free plan searches remaining</item>
     </plurals>
-    <string name="leaveTrialsUsedUp">Free plan views are used up. Plus opens every plan.</string>
+    <string name="leaveTrialsUsedUp">You’ve used all your free plan searches. Subscribe to Plus to keep generating plans.</string>
     <string name="leaveUnassignedCaveat">Some days have no shift set and count as rest.</string>
     <string name="leaveUndoConfirm">Its leave comes off your schedule and goes back to your balances.</string>
     <string name="leaveUndoPlan">Undo plan</string>

@@ -107,7 +107,7 @@ class DeviceSettingsStore(private val file: Path) {
         _settings.value = next
     }
 
-    /** Reserve a detail view under the same lock as all device edits, before navigation. */
+    /** Reserve a successful result set under the same lock as all device edits, before navigation. */
     suspend fun consumeLeavePlannerTrial(): Boolean = mutex.withLock {
         val current = _settings.value
         if (current.leavePlannerTrialsLeft == 0) return@withLock false

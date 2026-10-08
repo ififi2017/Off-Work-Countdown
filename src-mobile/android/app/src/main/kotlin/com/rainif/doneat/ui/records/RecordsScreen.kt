@@ -74,6 +74,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rainif.doneat.AppGraph
+import com.rainif.doneat.ui.schedule.HolidayCoverageNotice
+import com.rainif.doneat.ui.schedule.HolidayDayAnnotation
+import com.rainif.doneat.ui.schedule.holidayDayAnnotation
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.domain.records.LifeDates
@@ -527,20 +530,27 @@ private fun ChartCard(
                         return@Column
                     }
                     else -> {
+                        val holidays = cells.filter { it.appearance != RecordsDayAppearance.LOCKED }.mapNotNull { cell ->
+                            holidayDayAnnotation(context.lifeInputs.holidays, context.lifeInputs.archive.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier, cell.date, text.locale)?.let { cell.dayKey to it }
+                        }.toMap()
                         val selected = cells.firstOrNull { it.dayKey == selectedDayKey }
                         RecordsDaySelection(selected?.dayKey, callout = {
-                            selected?.let { SelectedDay(it, text) { onOpen(it) } }
+                            selected?.let { SelectedDay(it, text, holidays[it.dayKey]) { onOpen(it) } }
                         }) { selectionAnchor ->
                             if (scale == RecordsScale.WEEK) {
-                                WeekStrips(cells, selectedDayKey, text, onSelect, onOpen, selectionAnchor)
+                                WeekStrips(cells, selectedDayKey, text, onSelect, onOpen, selectionAnchor, holidays)
                             } else {
                                 MonthGrid(
                                     cells, context.queries.gridLeadingBlanks(first),
                                     weekdayLabels(text, context.queries.window(RecordsScale.WEEK, first).first),
                                     selectedDayKey, text, onSelect, onOpen, selectionAnchor,
+                                    holidays = holidays,
                                 )
                             }
                         }
+                        HolidayCoverageNotice(context.lifeInputs.holidays,
+                            context.lifeInputs.archive.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier,
+                            first, last)
                     }
                 }
             }
@@ -579,13 +589,14 @@ private fun RecordsActionEntry(title: String, icon: ImageVector, onClick: () -> 
 
 /** The selected day, and the way into its page (iOS `RecordsDayCellCallout`). */
 @Composable
-private fun SelectedDay(cell: RecordsDayCell, text: RecordsText, onOpen: () -> Unit) {
+private fun SelectedDay(cell: RecordsDayCell, text: RecordsText, holiday: HolidayDayAnnotation?, onOpen: () -> Unit) {
     val locked = cell.appearance == RecordsDayAppearance.LOCKED
     RecordsSelectionPill(
         icon = if (locked) Icons.Outlined.Lock else Icons.Outlined.CalendarToday,
         title = if (locked) text.string(R.string.recordsLockedDay) else text.dayTitle(cell.date),
         subtitle = if (locked) null else
-            "${text.cellSource(cell)} · ${text.recordsDuration((cell.workMs + cell.overtimeMs).toDouble())}",
+            listOfNotNull(holiday?.description(text.string(R.string.holidayMakeupWorkday), text.string(R.string.holidayEstimatedLabel)),
+                text.cellSource(cell), text.recordsDuration((cell.workMs + cell.overtimeMs).toDouble())).joinToString(" · "),
         action = text.string(if (locked) R.string.plusSeePlans else R.string.recordsSeeThisDay),
         onClick = onOpen,
     )
