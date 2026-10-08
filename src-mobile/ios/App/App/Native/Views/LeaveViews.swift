@@ -450,7 +450,12 @@ private struct LeavePlannerSheet: View {
     @State private var through = Date.now
     @State private var selected: Set<UUID> = []
     @State private var isSearching = false
+    @State private var searchTask: Task<Void, Never>?
     @State private var proposals: [LeavePlanProposal] = []
+    @State private var searchContext: LeavePlanSearchContext?
+    @State private var submittedRequest: ShiftSessionStore.LeavePlanRequest?
+    @State private var resultsID = UUID()
+    @State private var searchFoundNothing = false
     @State private var didLoad = false
     @State private var showsPaywall = false
 
@@ -478,102 +483,18 @@ private struct LeavePlannerSheet: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Form {
-                if !shifts.plus.isAuthorized {
-                    Section { LeaveTrialBanner(shifts: shifts) }
-                }
-                Section {
-                    Picker(text.t("leavePlanAction"), selection: $goalIsRest) {
-                        Text(text.t("leaveGoalRest")).tag(true)
-                        Text(text.t("leaveGoalBudget")).tag(false)
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    if goalIsRest {
-                        Stepper(value: $restDays, in: 2...60) {
-                            LabeledContent(text.t("leaveGoalRest")) {
-                                Text(text.t("leaveAtLeast", values: ["days": text.formatDays(Double(restDays))]))
-                                    .monospacedDigit()
-                            }
-                        }
-                    } else {
-                        Stepper(value: $leaveHalfDays, in: 1...max(1, selectedHalfDays)) {
-                            LabeledContent(text.t("leaveGoalBudget")) {
-                                Text(text.t("leaveUpTo", values: ["days": text.formatDays(Double(leaveHalfDays) / 2)]))
-                                    .monospacedDigit()
-                            }
-                        }
-                        .disabled(selectedHalfDays == 0)
-                    }
-                }
-
-                Section {
-                    DatePicker(text.t("leaveRangeStart"), selection: $from, in: windowDates, displayedComponents: .date)
-                    DatePicker(text.t("leaveRangeEnd"), selection: $through, in: max(from, windowDates.lowerBound)...windowDates.upperBound,
-                               displayedComponents: .date)
-                } footer: {
-                    VStack(alignment: .leading, spacing: 6) {
-                        if let window {
-                            Text(text.t("leaveRangeFooter", values: [
-                                "start": shifts.leaveDayLabel(window.lowerBound, template: "yMMMd"),
-                                "end": shifts.leaveDayLabel(window.upperBound, template: "yMMMd"),
-                            ]))
-                        }
-                        ForEach(missingYears, id: \.self) { year in
-                            Label(text.t("leaveMainlandHolidaysMissing", values: ["year": String(year)]),
-                                  systemImage: "info.circle")
-                        }
-                        ForEach(estimatedYears, id: \.self) { year in
-                            Label(text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(year)]),
-                                  systemImage: "exclamationmark.triangle")
-                        }
-                    }
-                }
-                .environment(\.calendar, calendar)
-                .environment(\.timeZone, calendar.timeZone)
-
-                Section {
-                    if shifts.records.state.leaveBalances.isEmpty {
-                        Text(text.t("leaveNoBalancesHint"))
-                            .foregroundStyle(OWCDesign.secondary)
-                    }
-                    ForEach(shifts.records.state.leaveBalances) { balance in
-                        let available = shifts.availableLeaveHalfDays(for: balance)
-                        Toggle(isOn: Binding(
-                            get: { selected.contains(balance.id) },
-                            set: { if $0 { selected.insert(balance.id) } else { selected.remove(balance.id) } }
-                        )) {
-                            LabeledContent(shifts.leaveBalanceName(balance)) {
-                                Text(text.t("leaveAvailable", values: ["count": text.formatDays(Double(available) / 2)]))
-                                    .monospacedDigit()
-                            }
-                        }
-                        .tint(OWCDesign.accent)
-                        .disabled(available == 0)
-                    }
-                } header: {
-                    Text(text.t("leaveUseBalances"))
-                }
-            }
-            .navigationTitle(text.t("leavePlanAction"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(text.t("cancelAction"), role: .cancel) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if isSearching {
-                        ProgressView()
-                    } else {
-                        Button(text.t("leaveFind"), action: search)
-                            .disabled(request == nil)
-                    }
-                }
-            }
+            plannerForm(isAdjusting: false)
             .navigationDestination(for: LeavePlannerStep.self) { step in
                 switch step {
                 case .results:
-                    LeavePlanResults(shifts: shifts, proposals: proposals, open: openPlan)
+                    LeavePlanResults(shifts: shifts, proposals: proposals, searchContext: searchContext,
+                                     adjustConditions: prepareAdjustment, open: openPlan)
+                        .id(resultsID)
+                case .conditions:
+                    plannerForm(isAdjusting: true)
+                        .onDisappear {
+                            if !path.contains(.conditions) { searchTask?.cancel() }
+                        }
                 case .detail(let index):
                     LeavePlanDetail(shifts: shifts, actions: actions, proposal: proposals[index]) { dismiss() }
                 }
@@ -581,6 +502,10 @@ private struct LeavePlannerSheet: View {
         }
         .presentationDragIndicator(.visible)
         .onAppear(perform: load)
+        .onDisappear { searchTask?.cancel() }
+        .onChange(of: path.contains(.conditions)) { wasEditing, isEditing in
+            if wasEditing && !isEditing { searchTask?.cancel() }
+        }
         .sheet(isPresented: $showsPaywall) {
             NavigationStack {
                 PaywallView(plus: shifts.plus, text: text, reason: .leavePlanning, showsDismissButton: false) {
@@ -596,14 +521,126 @@ private struct LeavePlannerSheet: View {
         }
     }
 
-    /// Searching is free; each time a free user opens a plan, one free view
-    /// is used, the same plan again included.
-    private func openPlan(_ index: Int) {
-        if shifts.plus.isAuthorized || shifts.preferences.consumeLeavePlannerTrial() {
-            path.append(.detail(index))
-        } else {
-            showsPaywall = true
+    private func plannerForm(isAdjusting: Bool) -> some View {
+        Form {
+            if searchFoundNothing {
+                Section { Text(text.t("leaveNoResults")).foregroundStyle(OWCDesign.secondary) }
+            }
+            if !shifts.plus.isAuthorized {
+                Section { LeaveTrialBanner(shifts: shifts, explainsCost: true) }
+            }
+            Section {
+                Picker(text.t("leavePlanAction"), selection: $goalIsRest) {
+                    Text(text.t("leaveGoalRest")).tag(true)
+                    Text(text.t("leaveGoalBudget")).tag(false)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                if goalIsRest {
+                    Stepper(value: $restDays, in: 2...60) {
+                        LabeledContent(text.t("leaveGoalRest")) {
+                            Text(text.t("leaveAtLeast", values: ["days": text.formatDays(Double(restDays))]))
+                                .monospacedDigit()
+                        }
+                    }
+                } else {
+                    Stepper(value: $leaveHalfDays, in: 1...max(1, selectedHalfDays)) {
+                        LabeledContent(text.t("leaveGoalBudget")) {
+                            Text(text.t("leaveUpTo", values: ["days": text.formatDays(Double(leaveHalfDays) / 2)]))
+                                .monospacedDigit()
+                        }
+                    }
+                    .disabled(selectedHalfDays == 0)
+                }
+            }
+
+            Section {
+                DatePicker(text.t("leaveRangeStart"), selection: $from, in: windowDates, displayedComponents: .date)
+                DatePicker(text.t("leaveRangeEnd"), selection: $through, in: max(from, windowDates.lowerBound)...windowDates.upperBound,
+                           displayedComponents: .date)
+            } footer: {
+                VStack(alignment: .leading, spacing: 6) {
+                    if let window {
+                        Text(text.t("leaveRangeFooter", values: [
+                            "start": shifts.leaveDayLabel(window.lowerBound, template: "yMMMd"),
+                            "end": shifts.leaveDayLabel(window.upperBound, template: "yMMMd"),
+                        ]))
+                    }
+                    ForEach(missingYears, id: \.self) { year in
+                        Label(text.t("leaveMainlandHolidaysMissing", values: ["year": String(year)]),
+                              systemImage: "info.circle")
+                    }
+                    ForEach(estimatedYears, id: \.self) { year in
+                        Label(text.t("holidayEstimatedYearWarning", values: ["year": text.formatYear(year)]),
+                              systemImage: "exclamationmark.triangle")
+                    }
+                }
+            }
+            .environment(\.calendar, calendar)
+            .environment(\.timeZone, calendar.timeZone)
+
+            Section {
+                if shifts.records.state.leaveBalances.isEmpty {
+                    Text(text.t("leaveNoBalancesHint"))
+                        .foregroundStyle(OWCDesign.secondary)
+                }
+                ForEach(shifts.records.state.leaveBalances) { balance in
+                    let available = shifts.availableLeaveHalfDays(for: balance)
+                    Toggle(isOn: Binding(
+                        get: { selected.contains(balance.id) },
+                        set: { if $0 { selected.insert(balance.id) } else { selected.remove(balance.id) } }
+                    )) {
+                        LabeledContent(shifts.leaveBalanceName(balance)) {
+                            Text(text.t("leaveAvailable", values: ["count": text.formatDays(Double(available) / 2)]))
+                                .monospacedDigit()
+                        }
+                    }
+                    .tint(OWCDesign.accent)
+                    .disabled(available == 0)
+                }
+            } header: {
+                Text(text.t("leaveUseBalances"))
+            }
         }
+        .navigationTitle(text.t("leavePlanAction"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(text.t("cancelAction"), role: .cancel) {
+                    searchTask?.cancel()
+                    if isAdjusting { path.removeLast() } else { dismiss() }
+                }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                if isSearching {
+                    ProgressView()
+                } else {
+                    Button(text.t("leaveFind"), action: search)
+                        .disabled(request == nil)
+                }
+            }
+        }
+    }
+
+    /// The result set was authorized when the search completed. Browsing
+    /// any of its options or details never consumes another trial.
+    private func openPlan(_ index: Int) {
+        guard proposals.indices.contains(index) else { return }
+        path.append(.detail(index))
+    }
+
+    private func prepareAdjustment() {
+        if let submittedRequest {
+            switch submittedRequest.goal {
+            case .restAtLeast(let days): goalIsRest = true; restDays = days
+            case .leaveAtMost(let halfDays): goalIsRest = false; leaveHalfDays = halfDays
+            }
+            if let value = date(submittedRequest.fromDayNumber) { from = value }
+            if let value = date(submittedRequest.throughDayNumber) { through = value }
+            selected = Set(submittedRequest.budgetIDs)
+        }
+        searchFoundNothing = false
+        path.append(.conditions)
     }
 
     private var windowDates: ClosedRange<Date> {
@@ -638,8 +675,16 @@ private struct LeavePlannerSheet: View {
         #if DEBUG
         if UserDefaults.standard.bool(forKey: "ios.native.qaLeavePlanner") {
             isSearching = true
+            let restDays = UserDefaults.standard.object(forKey: "ios.native.qaLeaveRestDays") == nil
+                ? nil : UserDefaults.standard.integer(forKey: "ios.native.qaLeaveRestDays")
+            let region = UserDefaults.standard.string(forKey: "ios.native.qaLeaveRegion") ?? "CN"
+            if let restDays { self.restDays = restDays; goalIsRest = true }
+            else { goalIsRest = false; leaveHalfDays = 10 }
+            searchContext = DebugLeavePlanner.searchContext(restDays: restDays)
             Task {
-                proposals = await Task.detached(priority: .userInitiated) { DebugLeavePlanner.proposals() }.value
+                proposals = await Task.detached(priority: .userInitiated) {
+                    DebugLeavePlanner.proposals(restDays: restDays, region: region)
+                }.value
                 isSearching = false
                 path = [.results]
             }
@@ -648,17 +693,42 @@ private struct LeavePlannerSheet: View {
     }
 
     private func search() {
-        guard let request else { return }
+        guard !isSearching, let request else { return }
+        guard shifts.plus.isAuthorized || shifts.preferences.leavePlannerTrialsLeft > 0 else {
+            showsPaywall = true
+            return
+        }
+        let context = LeavePlanSearchContext(goal: request.goal, availableHalfDays: selectedHalfDays,
+                                             fromDayNumber: request.fromDayNumber, throughDayNumber: request.throughDayNumber)
+        searchFoundNothing = false
         isSearching = true
-        Task {
-            proposals = await shifts.findLeavePlans(request)
-            isSearching = false
+        searchTask = Task {
+            defer { isSearching = false }
+            let found = await shifts.findLeavePlans(request)
+            guard !Task.isCancelled else { return }
+            // Editing an authorized set never discards it for an empty search.
+            if found.isEmpty && !proposals.isEmpty {
+                searchFoundNothing = true
+                return
+            }
+            guard shifts.preferences.authorizeLeavePlannerResults(
+                hasResults: !found.isEmpty, isPlus: shifts.plus.isAuthorized
+            ) else {
+                showsPaywall = true
+                return
+            }
+            proposals = found
+            searchContext = context
+            submittedRequest = request
+            resultsID = UUID()
             path = [.results]
         }
     }
+
 }
 
 private enum LeavePlannerStep: Hashable {
+    case conditions
     case results
     case detail(Int)
 }
@@ -812,8 +882,8 @@ private struct LeavePlanDetail: View {
     }
 }
 
-/// How many free plan views are left, kept in plain sight wherever a free
-/// user plans: the form, the options and each plan they open.
+/// How many successful result-set searches remain on this device.
+/// Options and details of an authorized set do not spend another trial.
 struct LeaveTrialBanner: View {
     let shifts: ShiftSessionStore
     var explainsCost = false

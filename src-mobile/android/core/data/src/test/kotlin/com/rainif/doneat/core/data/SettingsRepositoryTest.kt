@@ -245,7 +245,7 @@ class SettingsRepositoryTest {
         assertTrue(DeviceSettingsStore(deviceFile).settings.value.hideEarnings)
     }
 
-    @Test fun detailViewsReserveExactlyThreeTrialsAndPersistBeforeReturning() = runTest {
+    @Test fun resultSetsReserveExactlyThreeTrialsAndPersistBeforeReturning() = runTest {
         val (records, _, repo) = open()
         records.load()
         val before = records.state.value
@@ -257,6 +257,16 @@ class SettingsRepositoryTest {
         assertEquals(3, restarted.settings.value.leavePlannerTrialsUsed)
         assertFalse(restarted.consumeLeavePlannerTrial())
         assertEquals("trial views never write business records", before, records.state.value)
+    }
+
+    @Test fun existingTwoUsedTrialsKeepOneResultSetAfterRestart() = runTest {
+        val (_, _, repo) = open()
+        repo.updateDevice { it.copy(leavePlannerTrialsUsed = 2) }
+        val restarted = DeviceSettingsStore(deviceFile)
+        assertEquals(1, restarted.settings.value.leavePlannerTrialsLeft)
+        assertTrue(restarted.consumeLeavePlannerTrial())
+        assertEquals(3, restarted.settings.value.leavePlannerTrialsUsed)
+        assertEquals(0, DeviceSettingsStore(deviceFile).settings.value.leavePlannerTrialsLeft)
     }
 
     @Test fun failedTrialPersistenceDoesNotConsumeAView() = runTest {

@@ -392,7 +392,10 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val records by graph.records.state.collectAsStateWithLifecycle()
     val plus by graph.plus.authorized.collectAsStateWithLifecycle()
-    val open: (Route) -> Unit = { stack.add(it) }
+    val open: (Route) -> Unit = { route ->
+        // A quick double tap must not put a second condition editor above the retained results.
+        if (route != Route.LeavePlannerAdjustment || Route.LeavePlannerAdjustment !in stack) stack.add(route)
+    }
     val back: () -> Unit = { if (stack.size > 1 && stack.lastOrNull() == key) stack.removeAt(stack.lastIndex) }
     val edit: ((com.rainif.doneat.core.domain.records.SyncedPreferences) -> com.rainif.doneat.core.domain.records.SyncedPreferences) -> Unit =
         { change -> scope.launch { graph.settings.edit(change) } }
@@ -460,11 +463,12 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
                 stack.add(Route.Leave(fromRecords = true))
             } else back()
         }
-        Route.LeavePlanner -> com.rainif.doneat.ui.leave.LeavePlannerScreen(graph, open, back)
+        Route.LeavePlanner -> com.rainif.doneat.ui.leave.LeavePlannerScreen(graph, open, back, isRoutePresent = { key in stack })
+        Route.LeavePlannerAdjustment -> com.rainif.doneat.ui.leave.LeavePlannerScreen(graph, open, back, adjusting = true, isRoutePresent = { key in stack }, onResultsReady = back)
         Route.LeavePlanResults -> com.rainif.doneat.ui.leave.LeavePlanResultsScreen(graph, open, back)
         is Route.LeavePlanDetail -> com.rainif.doneat.ui.leave.LeavePlanDetailScreen(graph, key.index, back) {
             // Adopted: back to the page the planner was opened from.
-            while (stack.size > 1 && stack.last().let { it is Route.LeavePlanner || it is Route.LeavePlanResults || it is Route.LeavePlanDetail }) {
+            while (stack.size > 1 && stack.last().let { it is Route.LeavePlanner || it is Route.LeavePlannerAdjustment || it is Route.LeavePlanResults || it is Route.LeavePlanDetail }) {
                 stack.removeAt(stack.lastIndex)
             }
         }

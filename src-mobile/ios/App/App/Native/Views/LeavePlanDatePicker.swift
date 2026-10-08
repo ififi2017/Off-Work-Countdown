@@ -25,58 +25,50 @@ struct LeavePlanDatePicker: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollViewReader { proxy in
-                List {
-                    ForEach(months, id: \.self) { month in
-                        Section(shifts.leaveDayLabel(proposals[month[0]].firstRestDayNumber, template: "yMMMM")) {
-                            ForEach(month, id: \.self) { index in
-                                let proposal = proposals[index]
-                                Button {
-                                    select(index)
-                                    dismiss()
-                                } label: {
-                                    HStack(spacing: 12) {
-                                        VStack(alignment: .leading, spacing: 6) {
-                                            Text(OWCText.ltrRange(
-                                                shifts.leaveDayLabel(proposal.firstRestDayNumber, template: "MMMdEEE"),
-                                                shifts.leaveDayLabel(proposal.lastRestDayNumber, template: "MMMdEEE")
-                                            ))
-                                            .foregroundStyle(OWCDesign.primary)
-                                            if !proposal.caveats.isEmpty {
-                                                Label(shifts.text.t("leaveEstimated"), systemImage: "info.circle")
-                                                    .font(.caption)
-                                                    .foregroundStyle(OWCDesign.secondary)
-                                            }
-                                        }
-                                        Spacer(minLength: 0)
-                                        if index == selection {
-                                            Image(systemName: "checkmark")
-                                                .foregroundStyle(OWCDesign.accent)
+        ScrollViewReader { proxy in
+            List {
+                ForEach(months, id: \.self) { month in
+                    Section(shifts.leaveDayLabel(proposals[month[0]].firstRestDayNumber, template: "yMMMM")) {
+                        ForEach(month, id: \.self) { index in
+                            let proposal = proposals[index]
+                            Button {
+                                select(index)
+                                dismiss()
+                            } label: {
+                                HStack(spacing: 12) {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text(OWCText.ltrRange(
+                                            shifts.leaveDayLabel(proposal.firstRestDayNumber, template: "yMMMdEEE"),
+                                            shifts.leaveDayLabel(proposal.lastRestDayNumber, template: "yMMMdEEE")
+                                        ))
+                                        .foregroundStyle(OWCDesign.primary)
+                                        if !proposal.caveats.isEmpty {
+                                            Label(shifts.text.t("leaveEstimated"), systemImage: "info.circle")
+                                                .font(.caption)
+                                                .foregroundStyle(OWCDesign.secondary)
                                         }
                                     }
-                                    .padding(.vertical, 4)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .contentShape(Rectangle())
+                                    Spacer(minLength: 0)
+                                    if index == selection {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(OWCDesign.accent)
+                                    }
                                 }
-                                .buttonStyle(.plain)
-                                .accessibilityAddTraits(index == selection ? .isSelected : [])
-                                .accessibilityIdentifier("leave-plan-date-\(index)")
-                                .id(index)
+                                .padding(.vertical, 4)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
                             }
+                            .buttonStyle(.plain)
+                            .accessibilityAddTraits(index == selection ? .isSelected : [])
+                            .accessibilityIdentifier("leave-plan-date-\(index)")
+                            .id(index)
                         }
                     }
                 }
-                .onAppear { proxy.scrollTo(selection, anchor: .center) }
             }
-            .navigationTitle(shifts.text.t("leaveAvailableDates", values: ["count": shifts.text.formatCount(indices.count)]))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(shifts.text.t("close")) { dismiss() }
-                }
-            }
+            .onAppear { proxy.scrollTo(selection, anchor: .center) }
         }
-        .presentationDragIndicator(.visible)
+        .navigationTitle(shifts.text.t("leaveAvailableDates", values: ["count": shifts.text.formatCount(indices.count)]))
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

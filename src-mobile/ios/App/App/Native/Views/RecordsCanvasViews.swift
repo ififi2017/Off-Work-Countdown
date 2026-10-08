@@ -623,6 +623,7 @@ struct RecordsMonthGrid: View {
     var onSelect: (RecordsDayCell) -> Void
     var onOpen: (RecordsDayCell) -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .caption) private var dayHeight: CGFloat = 48
 
     var body: some View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 5), count: 7)
@@ -640,7 +641,7 @@ struct RecordsMonthGrid: View {
 
             LazyVGrid(columns: columns, spacing: 5) {
                 ForEach(Array(0..<blanks), id: \.self) { _ in
-                    Color.clear.aspectRatio(1, contentMode: .fit)
+                    Color.clear.frame(height: dayHeight)
                 }
                 ForEach(cells) { cell in
                     Button {
@@ -648,7 +649,7 @@ struct RecordsMonthGrid: View {
                     } label: {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(fill(cell))
-                            .aspectRatio(1, contentMode: .fit)
+                            .frame(height: dayHeight)
                             .owcEstimated(
                                 RecordsDayMarks.isEstimated(cell),
                                 tint: OWCDesign.secondary.opacity(0.55),
@@ -656,9 +657,18 @@ struct RecordsMonthGrid: View {
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .overlay {
-                                Text(text.formatCount(preferences.recordsCalendar.component(.day, from: cell.date)))
-                                    .font(.callout.weight(cell.isToday || cell.dayKey == selectedDayKey ? .semibold : .regular).monospacedDigit())
-                                    .foregroundStyle(label(cell))
+                                VStack(spacing: 2) {
+                                    Text(text.formatCount(preferences.recordsCalendar.component(.day, from: cell.date)))
+                                        .font(.callout.weight(cell.isToday || cell.dayKey == selectedDayKey ? .semibold : .regular).monospacedDigit())
+                                        .foregroundStyle(label(cell))
+                                    if let holiday = RecordsDayMarks.holiday(cell, preferences: preferences) {
+                                        HolidayDayCaption(annotation: holiday, text: text)
+                                    }
+                                }
+                                .frame(maxHeight: .infinity, alignment: .top)
+                                .padding(.horizontal, 1)
+                                .padding(.top, 6)
+                                .padding(.bottom, 5)
                             }
                             .overlay(alignment: .bottom) {
                                 RecordsMiniWorkBar(
@@ -686,13 +696,11 @@ struct RecordsMonthGrid: View {
                             .contentShape(Rectangle())
                     }
                     // Seven columns in a phone's width leave about 42 points a
-                    // side, and no amount of spacing arithmetic gets a square
-                    // cell to 44 without the grid ceasing to be a calendar. The
-                    // touch target reaches into the gutter instead; the drawn
-                    // cell and the layout are untouched.
+                    // wide. The target reaches into the gutter while the taller
+                    // cell leaves room for the holiday name beneath the date.
                     .padding(-3)
                     .buttonStyle(.plain)
-                    .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, queries: queries, text: text))
+                    .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, queries: queries, text: text, holiday: RecordsDayMarks.holiday(cell, preferences: preferences)))
                     .accessibilityAction(named: Text(text.t("recordsSeeThisDay"))) {
                         onOpen(cell)
                     }
@@ -706,7 +714,7 @@ struct RecordsMonthGrid: View {
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .modifier(RecordsSelectionCallout(selectedID: selectedDayKey) {
             if let cell = cells.first(where: { $0.dayKey == selectedDayKey }) {
-                RecordsDayCellCallout(queries: queries, text: text, cell: cell) { onOpen(cell) }
+                RecordsDayCellCallout(queries: queries, text: text, cell: cell, holiday: RecordsDayMarks.holiday(cell, preferences: preferences)) { onOpen(cell) }
             }
         })
     }
@@ -823,11 +831,18 @@ enum RecordsDayMarks {
         }
     }
 
+    static func holiday(_ cell: RecordsDayCell, preferences: PreferencesStore) -> HolidayDayAnnotation? {
+        guard cell.appearance != .locked, preferences.isExtendedScheduleEnabled else { return nil }
+        return HolidayDayAnnotation.make(dayKey: cell.dayKey,
+            region: preferences.extendedScheduleContent?.holidayRegionIdentifier, language: preferences.languageCode)
+    }
+
     /// A locked day says only that it is locked — no date arithmetic, no
     /// hours, nothing a screen reader could read out from behind the lock.
-    static func accessibilityLabel(_ cell: RecordsDayCell, queries: RecordsQueries, text: AppText) -> String {
+    static func accessibilityLabel(_ cell: RecordsDayCell, queries: RecordsQueries, text: AppText, holiday: HolidayDayAnnotation? = nil) -> String {
         if cell.appearance == .locked { return text.t("recordsLockedDay") }
         var parts = [queries.formatRecordsDayTitle(cell.date), text.t(sourceKey(cell))]
+        if let holiday { parts.append(holiday.accessibilityLabel(text: text)) }
         if cell.workMs > 0 {
             parts.append(text.formatRecordsDuration(Double(cell.workMs)))
         }
@@ -860,8 +875,12 @@ struct RecordsWeekStrips: View {
                         VStack(spacing: 2) {
                             Text(text.formatCount(preferences.recordsCalendar.component(.day, from: cell.date)))
                                 .font(.callout.weight(cell.dayKey == selectedDayKey || cell.isToday ? .semibold : .regular).monospacedDigit())
-                            Text(queries.formatRecordsWeekdayNarrow(cell.date))
-                                .font(.caption2.weight(.medium))
+                            if let holiday = RecordsDayMarks.holiday(cell, preferences: preferences) {
+                                HolidayDayCaption(annotation: holiday, text: text, foreground: cell.dayKey == selectedDayKey ? .white : nil)
+                            } else {
+                                Text(queries.formatRecordsWeekdayNarrow(cell.date))
+                                    .font(.caption2.weight(.medium))
+                            }
                         }
                         .foregroundStyle(cell.dayKey == selectedDayKey ? .white : cell.isToday ? OWCDesign.accent : OWCDesign.secondary)
                         .frame(maxWidth: .infinity, minHeight: 44)
@@ -873,7 +892,7 @@ struct RecordsWeekStrips: View {
                 }
                 .padding(.horizontal, -3)
                 .buttonStyle(.plain)
-                .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, queries: queries, text: text))
+                .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, queries: queries, text: text, holiday: RecordsDayMarks.holiday(cell, preferences: preferences)))
                 .accessibilityAction(named: Text(text.t("recordsSeeThisDay"))) {
                     onOpen(cell)
                 }
@@ -886,7 +905,7 @@ struct RecordsWeekStrips: View {
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .modifier(RecordsSelectionCallout(selectedID: selectedDayKey) {
             if let cell = cells.first(where: { $0.dayKey == selectedDayKey }) {
-                RecordsDayCellCallout(queries: queries, text: text, cell: cell) { onOpen(cell) }
+                RecordsDayCellCallout(queries: queries, text: text, cell: cell, holiday: RecordsDayMarks.holiday(cell, preferences: preferences)) { onOpen(cell) }
             }
         })
     }
@@ -969,6 +988,7 @@ private struct RecordsDayCellCallout: View {
     let queries: RecordsQueries
     let text: AppText
     let cell: RecordsDayCell
+    var holiday: HolidayDayAnnotation? = nil
     let onOpen: () -> Void
 
     var body: some View {
@@ -978,8 +998,8 @@ private struct RecordsDayCellCallout: View {
                 title: queries.formatRecordsDayTitle(cell.date),
                 subtitle: cell.appearance == .locked
                     ? text.t("recordsLockedDay")
-                    : [text.t(RecordsDayMarks.sourceKey(cell)),
-                       text.formatRecordsDuration(Double(cell.workMs + cell.overtimeMs))].joined(separator: " · "),
+                    : [holiday?.accessibilityLabel(text: text), text.t(RecordsDayMarks.sourceKey(cell)),
+                       text.formatRecordsDuration(Double(cell.workMs + cell.overtimeMs))].compactMap { $0 }.joined(separator: " · "),
                 actionTitle: text.t(cell.appearance == .locked ? "plusSeePlans" : "recordsSeeThisDay")
             )
         }

@@ -131,7 +131,8 @@ final class AppRuntime {
             isCounting: { session.countdownStarted },
             salaryIsVisible: { session.presentationSalaryEnabled },
             salaryType: { preferences.salaryType },
-            language: { preferences.languageCode }
+            language: { preferences.languageCode },
+            gridFirstWeekday: { preferences.recordsCalendar.firstWeekday }
         ))
     }()
 

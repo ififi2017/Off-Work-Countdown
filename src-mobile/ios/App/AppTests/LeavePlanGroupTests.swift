@@ -4,6 +4,26 @@ import Testing
 
 @Suite("Leave plan grouping")
 struct LeavePlanGroupTests {
+    @Test("Long-break searches can have an empty regular category without losing the holiday results", arguments: [12, 13])
+    func emptyRegularCategory(target: Int) {
+        let context = DebugLeavePlanner.searchContext(restDays: target)
+        let proposals = DebugLeavePlanner.proposals(restDays: target)
+        let groups = LeavePlanGroup.make(from: proposals)
+        #expect(!groups.isEmpty)
+        #expect(context.goal == .restAtLeast(days: target))
+        #expect(context.availableHalfDays == 10)
+        #expect(groups.allSatisfy { $0.category == .holiday })
+        #expect(groups.flatMap(\.proposalIndices).sorted() == Array(proposals.indices))
+        #expect(proposals.allSatisfy {
+            $0.fullRestDays >= target && $0.costHalfDays <= context.availableHalfDays
+            && $0.firstRestDayNumber >= context.fromDayNumber
+            && $0.lastRestDayNumber <= context.throughDayNumber
+        })
+        // A shorter target brings regular dates back under the same balance.
+        #expect(LeavePlanGroup.make(from: DebugLeavePlanner.proposals(restDays: 9))
+            .contains { $0.category == .regular })
+    }
+
     @Test("A rolling year keeps every date but consolidates ordinary weekends")
     func rollingYear() throws {
         let proposals = DebugLeavePlanner.proposals()

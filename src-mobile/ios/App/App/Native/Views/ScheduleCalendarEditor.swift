@@ -354,10 +354,6 @@ struct ScheduleCalendarEditor: View {
                     .font(.callout.monospacedDigit().weight(chosen || isToday ? .semibold : .regular))
                     .foregroundStyle(chosen || isToday ? OWCDesign.accent : OWCDesign.primary)
                 HStack(spacing: 2) {
-                    if holiday != nil {
-                        Circle().fill(holiday?.isWorkday == true ? OWCDesign.accent : OWCDesign.secondary)
-                            .frame(width: 3, height: 3)
-                    }
                     // Adopted leave sits over the plan this page edits, so the
                     // day keeps its shift and gains a mark, not a new colour.
                     if let leave {
@@ -365,8 +361,12 @@ struct ScheduleCalendarEditor: View {
                             .imageScale(.small)
                             .foregroundStyle(OWCDesign.accent)
                     }
-                    Text(type.map { shortName($0) } ?? "–")
-                        .lineLimit(1)
+                    if let annotation = HolidayDayAnnotation.make(dayKey: key,
+                        region: content.holidayRegionIdentifier, language: shifts.preferences.languageCode) {
+                        HolidayDayCaption(annotation: annotation, text: text)
+                    } else {
+                        Text(type.map { shortName($0) } ?? "–").lineLimit(1)
+                    }
                 }
                 .font(.caption2)
                 .foregroundStyle(OWCDesign.secondary)

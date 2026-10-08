@@ -85,10 +85,11 @@ class LeavePlannerTest {
             now: Double,
             budgets: List<LeaveBudget>,
             zone: String = SHANGHAI,
+            maximumProposals: Int = Int.MAX_VALUE,
         ): List<LeavePlanProposal> {
             val range = dayNumber(from)..dayNumber(through)
             val days = LeavePlannerSchedule.days(hours(plan), range, ZoneId.of(zone), holidays)
-            return LeavePlanner.proposals(days, LeavePlanner.Query(goal, range.first, range.last, now, budgets))
+            return LeavePlanner.proposals(days, LeavePlanner.Query(goal, range.first, range.last, now, budgets, maximumProposals))
         }
 
         fun budget(id: String = annual, halfDays: Int, from: String? = null, through: String? = null) =
@@ -129,6 +130,48 @@ class LeavePlannerTest {
         assertEquals(instant("2026-10-08", 9), best.nextShiftStartAtMs)
         assertEquals(listOf(LeaveBalanceUse(annual, 6)), best.uses)
         assertTrue(best.caveats.isEmpty())
+    }
+
+    @Test fun `twelve and thirteen day goals recommend several plans with the least leave first`() {
+        for (target in listOf(12, 13)) {
+            val now = instant("2026-09-20", 10)
+            val budgets = listOf(budget(halfDays = 20))
+            val result = proposals(
+                weeklyPlan(region = "CN"), LeavePlanner.Goal.RestAtLeast(target), "2026-09-21", "2026-10-31",
+                now, budgets,
+            )
+            val best = result.first()
+            assertEquals(13, best.fullRestDays)
+            assertEquals(6, best.costHalfDays)
+            assertTrue(result.size >= 3)
+            assertTrue(result.all { it.fullRestDays >= target && it.items.all { item -> item.role == LeavePlanItem.Role.BRIDGE } })
+            val costs = result.map { it.costHalfDays }
+            assertEquals(costs.sorted(), costs)
+            assertTrue(result.drop(1).any { it.costHalfDays > best.costHalfDays })
+            for ((lhs, rhs) in result.zipWithNext().filter { (lhs, rhs) -> lhs.costHalfDays == rhs.costHalfDays }) {
+                assertTrue(lhs.fullRestDays >= rhs.fullRestDays)
+                if (lhs.fullRestDays == rhs.fullRestDays) assertTrue(lhs.firstRestDayNumber < rhs.firstRestDayNumber)
+            }
+            val limited = proposals(
+                weeklyPlan(region = "CN"), LeavePlanner.Goal.RestAtLeast(target), "2026-09-21", "2026-10-31",
+                now, budgets, maximumProposals = 3,
+            )
+            assertEquals(result.take(3), limited)
+        }
+    }
+
+    @Test fun `long-break recommendations charge a manually assigned holiday shift`() {
+        for (target in listOf(12, 13)) {
+            val result = proposals(
+                weeklyPlan(region = "CN", handSet = mapOf("2026-10-03" to office)), LeavePlanner.Goal.RestAtLeast(target),
+                "2026-09-21", "2026-10-31", instant("2026-09-20", 10), listOf(budget(halfDays = 20)),
+            )
+            val best = result.first()
+            assertEquals(13, best.fullRestDays)
+            assertEquals(8, best.costHalfDays)
+            assertEquals(listOf("2026-09-28", "2026-09-29", "2026-09-30", "2026-10-03"), best.items.map { it.dayKey })
+            assertEquals(result.map { it.costHalfDays }.sorted(), result.map { it.costHalfDays })
+        }
     }
 
     @Test fun `seven days off during National Day costs nothing`() {

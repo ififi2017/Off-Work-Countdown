@@ -490,7 +490,7 @@ private fun MonthCalendar(
                                         if (brushID != null) handSet[key] == brushID else key == selected,
                                         key == today, holiday, locale, onSelect,
                                         Modifier.onGloballyPositioned { frames[key] = it.boundsInRoot() },
-                                        touchEnabled = brushID == null, leave = leave[key])
+                                        touchEnabled = brushID == null, leave = leave[key], estimatedHoliday = region?.let { holidays.isEstimated(LocalDate.parse(key).year, it) } == true)
                                 }
                             }
                         }
@@ -519,7 +519,7 @@ private fun MonthCalendar(
 private fun dateCode(key: String): Int = ExtendedScheduleResolver.parse(key)!!.let { (y, m, d) -> y * 10_000 + m * 100 + d }
 
 @Composable
-private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, isToday: Boolean, holiday: HolidayCalendar.Day?, locale: Locale, onSelect: (String) -> Unit, modifier: Modifier = Modifier, touchEnabled: Boolean = true, leave: LeavePortion? = null) {
+private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, isToday: Boolean, holiday: HolidayCalendar.Day?, locale: Locale, onSelect: (String) -> Unit, modifier: Modifier = Modifier, touchEnabled: Boolean = true, leave: LeavePortion? = null, estimatedHoliday: Boolean = false) {
     val scheme = MaterialTheme.colorScheme
     // This page edits plans: one uniform work colour, never an intensity that implies recorded hours.
     val fill = when (type?.kind) {
@@ -527,9 +527,10 @@ private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, is
         ShiftType.Kind.REST -> scheme.surfaceContainerHighest.copy(alpha = 0.5f)
         null -> Color.Transparent
     }
+    val annotation = holiday?.let { HolidayDayAnnotation(localizedHolidayName(it, locale), it.isWorkday, estimatedHoliday) }
     val label = listOfNotNull(
         DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMMMdEEEE"), locale).format(LocalDate.parse(key)),
-        type?.name, holiday?.let { holidayName(it, locale) },
+        type?.name, annotation?.description(stringResource(R.string.holidayMakeupWorkday), stringResource(R.string.holidayEstimatedLabel)),
         if (isToday) stringResource(R.string.extendedToday) else null,
         leave?.let { leaveLabel(it) },
     ).joinToString(", ")
@@ -555,10 +556,8 @@ private fun DayCell(day: Int, key: String, type: ShiftType?, chosen: Boolean, is
             // Beside the date, so the shift's name below keeps its full width.
             if (leave != null) Icon(leaveIcon(leave), null, Modifier.padding(start = 2.dp).size(10.dp), tint = scheme.primary)
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (holiday != null) Box(Modifier.padding(end = 2.dp).size(3.dp).background(if (holiday.isWorkday) scheme.primary else scheme.onSurfaceVariant, CircleShape))
-            Text(type?.name ?: "–", style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Clip)
-        }
+        if (annotation != null) HolidayDayCaption(annotation)
+        else Text(type?.name ?: "–", style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Clip)
     }
 }
 
@@ -702,8 +701,7 @@ fun regionName(code: String, locale: Locale): String {
 }
 
 private fun holidayName(day: HolidayCalendar.Day, locale: Locale): String {
-    val tag = locale.toLanguageTag()
-    return day.names[tag] ?: day.names[locale.language] ?: day.names["en"] ?: day.names.toSortedMap().values.firstOrNull().orEmpty()
+    return localizedHolidayName(day, locale)
 }
 
 @Composable

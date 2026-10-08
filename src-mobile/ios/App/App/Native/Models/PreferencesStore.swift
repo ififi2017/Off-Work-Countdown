@@ -63,6 +63,7 @@ final class PreferencesStore {
         static let microBreakEnabled = "ios.native.microBreakEnabled"
         static let microBreakInterval = "ios.native.microBreakInterval"
         static let recordsTimeZone = "ios.native.recordsTimeZone"
+        static let calendarFirstWeekday = "ios.native.calendarFirstWeekday"
         static let lifeSetupPromptDismissed = "ios.native.lifeSetupPromptDismissed"
         static let leavePlannerTrialsUsed = "ios.native.leavePlannerTrialsUsed"
         static let shiftAlarms = "ios.native.shiftAlarms"
@@ -104,9 +105,18 @@ final class PreferencesStore {
     }
 #endif
     var hideEarnings: Bool { didSet { defaults.set(hideEarnings, forKey: Key.hideEarnings) } }
-    /// Plan 020's free leave plans: searching is free, and each time a free
-    /// user opens a plan's details one of three is used, the same plan again
-    /// included. Device-local by design: never synced and never in a backup,
+    /// Calendar layout is local to this device. Nil follows the app locale;
+    /// choosing Sunday or Monday never edits a roster or synced preferences.
+    private(set) var calendarFirstWeekday: Int?
+
+    func setCalendarFirstWeekday(_ weekday: Int) {
+        guard weekday == 1 || weekday == 2 else { return }
+        calendarFirstWeekday = weekday
+        defaults.set(weekday, forKey: Key.calendarFirstWeekday)
+    }
+    /// Plan 020's free searches: opening one successfully generated result
+    /// set uses one of three trials. Its previews and details stay accessible.
+    /// Device-local by design: never synced and never in a backup,
     /// so reinstalling starts over and devices count on their own; no
     /// identifier tracks it further.
     private(set) var leavePlannerTrialsUsed: Int {
@@ -121,6 +131,12 @@ final class PreferencesStore {
         guard leavePlannerTrialsLeft > 0 else { return false }
         leavePlannerTrialsUsed += 1
         return true
+    }
+
+    /// Reserve once before exposing a newly generated set. Empty/failed
+    /// searches and Plus never consume a trial; browsing does not call this.
+    func authorizeLeavePlannerResults(hasResults: Bool, isPlus: Bool) -> Bool {
+        !hasResults || isPlus || consumeLeavePlannerTrial()
     }
 
     var lifeSetupPromptDismissed: Bool {
@@ -163,7 +179,11 @@ final class PreferencesStore {
     /// Calendar used for records and schedule civil math. It remains anchored
     /// to the persisted records zone rather than the device's travel zone.
     var recordsCalendar: Calendar {
-        civilCalendars.recordsCalendar(timeZoneIdentifier: recordsTimeZoneIdentifier)
+        var calendar = civilCalendars.gridCalendar(
+            timeZoneIdentifier: recordsTimeZoneIdentifier, localeIdentifier: languageCode
+        )
+        if let calendarFirstWeekday { calendar.firstWeekday = calendarFirstWeekday }
+        return calendar
     }
     var systemTimeZoneDiffersFromRecords: Bool {
         systemTimeZoneIdentifier != recordsTimeZoneIdentifier
@@ -300,6 +320,8 @@ final class PreferencesStore {
         let storedBonusMonths = defaults.object(forKey: Key.annualBonusMonths) == nil ? 1 : defaults.double(forKey: Key.annualBonusMonths)
         annualBonusMonths = max(0, storedBonusMonths)
         hideEarnings = defaults.bool(forKey: Key.hideEarnings)
+        let storedFirstWeekday = defaults.integer(forKey: Key.calendarFirstWeekday)
+        calendarFirstWeekday = [1, 2].contains(storedFirstWeekday) ? storedFirstWeekday : nil
         lifeSetupPromptDismissed = defaults.bool(forKey: Key.lifeSetupPromptDismissed)
         leavePlannerTrialsUsed = max(0, defaults.integer(forKey: Key.leavePlannerTrialsUsed))
         theme = AppTheme(rawValue: defaults.string(forKey: Key.theme) ?? "auto") ?? .auto

@@ -296,8 +296,7 @@
       "resource": "string/breakReminder"
     },
     "calendarWeekStart": {
-      "resource": "string/calendarWeekStart",
-      "androidOnly": true
+      "resource": "string/calendarWeekStart"
     },
     "cancel": {
       "resource": "string/cancel"
@@ -1250,6 +1249,9 @@
         "year"
       ]
     },
+    "holidayMakeupShort": {
+      "resource": "string/holidayMakeupShort"
+    },
     "holidayMakeupWorkday": {
       "resource": "string/holidayMakeupWorkday"
     },
@@ -1283,6 +1285,9 @@
     "leaveAddBalance": {
       "resource": "string/leaveAddBalance"
     },
+    "leaveAdjustConditions": {
+      "resource": "string/leaveAdjustConditions"
+    },
     "leaveAdopt": {
       "resource": "string/leaveAdopt"
     },
@@ -1291,6 +1296,15 @@
     },
     "leaveAdoptedPlans": {
       "resource": "string/leaveAdoptedPlans"
+    },
+    "leaveAllPlanTypes": {
+      "resource": "string/leaveAllPlanTypes"
+    },
+    "leaveAllPlans": {
+      "resource": "string/leaveAllPlans",
+      "params": [
+        "count"
+      ]
     },
     "leaveAtLeast": {
       "resource": "string/leaveAtLeast",
@@ -1302,6 +1316,12 @@
       "resource": "string/leaveAvailable",
       "params": [
         "count"
+      ]
+    },
+    "leaveAvailableBudget": {
+      "resource": "string/leaveAvailableBudget",
+      "params": [
+        "days"
       ]
     },
     "leaveAvailableDates": {
@@ -1326,6 +1346,9 @@
     "leaveBalancesSection": {
       "resource": "string/leaveBalancesSection"
     },
+    "leaveBestValue": {
+      "resource": "string/leaveBestValue"
+    },
     "leaveCancelDay": {
       "resource": "string/leaveCancelDay"
     },
@@ -1334,6 +1357,18 @@
     },
     "leaveCarriedOverCaveat": {
       "resource": "string/leaveCarriedOverCaveat"
+    },
+    "leaveCurrentGoalBudget": {
+      "resource": "string/leaveCurrentGoalBudget",
+      "params": [
+        "days"
+      ]
+    },
+    "leaveCurrentGoalRest": {
+      "resource": "string/leaveCurrentGoalRest",
+      "params": [
+        "days"
+      ]
     },
     "leaveDayHalf": {
       "resource": "string/leaveDayHalf"
@@ -1377,6 +1412,19 @@
         "year"
       ]
     },
+    "leaveFilterCount": {
+      "resource": "string/leaveFilterCount",
+      "params": [
+        "category",
+        "count"
+      ]
+    },
+    "leaveFilterNoResults": {
+      "resource": "string/leaveFilterNoResults"
+    },
+    "leaveFilterNoResultsHint": {
+      "resource": "string/leaveFilterNoResultsHint"
+    },
     "leaveFind": {
       "resource": "string/leaveFind"
     },
@@ -1419,9 +1467,6 @@
     "leaveNewBalance": {
       "resource": "string/leaveNewBalance"
     },
-    "leaveNextPlan": {
-      "resource": "string/leaveNextPlan"
-    },
     "leaveNextShiftStarts": {
       "resource": "string/leaveNextShiftStarts"
     },
@@ -1436,16 +1481,6 @@
     },
     "leavePlanAction": {
       "resource": "string/leavePlanAction"
-    },
-    "leavePlanPosition": {
-      "resource": "string/leavePlanPosition",
-      "params": [
-        "current",
-        "total"
-      ]
-    },
-    "leavePreviousPlan": {
-      "resource": "string/leavePreviousPlan"
     },
     "leaveRangeEnd": {
       "resource": "string/leaveRangeEnd"
@@ -1465,6 +1500,9 @@
     },
     "leaveRequests": {
       "resource": "string/leaveRequests"
+    },
+    "leaveResultsBrowsingFree": {
+      "resource": "string/leaveResultsBrowsingFree"
     },
     "leaveResultsTitle": {
       "resource": "string/leaveResultsTitle"
@@ -1541,6 +1579,9 @@
       "params": [
         "date"
       ]
+    },
+    "leaveViewAllPlans": {
+      "resource": "string/leaveViewAllPlans"
     },
     "leaveViewDetails": {
       "resource": "string/leaveViewDetails"

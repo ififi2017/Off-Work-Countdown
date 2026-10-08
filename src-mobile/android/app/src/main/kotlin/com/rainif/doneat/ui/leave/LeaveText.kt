@@ -26,6 +26,7 @@ import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
 import com.rainif.doneat.core.domain.schedule.LeavePortion
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.timer.TimerText
+import java.text.NumberFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -55,6 +56,10 @@ class LeaveText(private val res: Resources, val locale: Locale, val zone: ZoneId
     fun wholeDays(count: Int): String = numbers.days(count.toDouble())
 
     fun wholeNumber(value: Int): String = numbers.count(value)
+
+    /** Numeric value for templates that already provide their localized day unit. */
+    fun halfDaysNumber(count: Int): String = NumberFormat.getNumberInstance(locale)
+        .apply { maximumFractionDigits = 1 }.format(count / 2.0)
 
     /** "Mon, Oct 12": one day of a plan. */
     fun day(dayNumber: Int): String = weekdayDay.format(LeavePlannerSchedule.date(dayNumber))

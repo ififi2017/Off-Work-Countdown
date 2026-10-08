@@ -18,12 +18,14 @@
     <string name="holidayCoverageYearWarning">No data for %1$s. Your regular rota will be used. Check for app updates.</string>
     <string name="holidayEstimatedLabel">Forecast</string>
     <string name="holidayEstimatedYearWarning">Mainland China public holidays and makeup workdays for %1$s are a forecast. For guidance only; do not treat them as confirmed holiday information. Follow the State Council’s official notice published towards the end of the year. DoneAt will update the data as soon as possible after next year’s arrangements are announced; please keep the app up to date.</string>
+    <string name="holidayMakeupShort">Make-up</string>
     <string name="holidayRestDay">Bank holiday</string>
     <string name="holidaySource">Bank holiday calendar</string>
     <string name="keepAtLeastOneWorkday">Keep one weekday, or pick no rota.</string>
     <string name="languageFooter">This changes the language inside the app. The name on your Home Screen and the system\'s own dialogues still follow your device language.</string>
     <string name="leaveAdopt">Add to my rota</string>
     <string name="leaveAdoptFailed">Your rota or leave changed since this plan was made. Find options again to see what fits now.</string>
+    <string name="leaveBestValue">Uses least leave</string>
     <string name="leaveCancelDayConfirm">This day goes back on your rota and its leave returns to your balances. The rest of the plan stays.</string>
     <string name="leaveCarriedOverCaveat">Some days repeat an earlier month of your rota.</string>
     <string name="leaveDayHoliday">Bank holiday</string>

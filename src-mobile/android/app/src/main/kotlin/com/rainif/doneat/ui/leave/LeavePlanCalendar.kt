@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.filled.Luggage
 import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,9 +44,18 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalResources
+import com.rainif.doneat.l10n.Strings
+import com.rainif.doneat.ui.schedule.HolidayDayAnnotation
+import com.rainif.doneat.ui.schedule.HolidayDayCaption
+import com.rainif.doneat.ui.schedule.holidayDayAnnotation
+import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtLeaveTokens
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
@@ -60,7 +72,7 @@ private enum class LeaveMark { REST, HOLIDAY, LEAVE, HALF_LEAVE }
 
 /** Complete six-row months. Only the proposal supplies marks; adjacent dates stay neutral. */
 @Composable
-internal fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, firstWeekday: DayOfWeek, modifier: Modifier = Modifier) {
+internal fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, firstWeekday: DayOfWeek, modifier: Modifier = Modifier, holidays: HolidayCalendar = HolidayCalendar.EMPTY, holidayRegion: String? = null) {
     val months = remember(proposal) { LeavePlanCalendarPage.months(proposal) }
     var monthIndex by remember(proposal.firstRestDayNumber, proposal.lastRestDayNumber) { mutableIntStateOf(0) }
     val activeMonth = monthIndex.coerceIn(months.indices)
@@ -69,6 +81,8 @@ internal fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, fir
     val travel = with(LocalDensity.current) { DoneAtLeaveTokens.monthTravel.roundToPx() }
     val marks = remember(proposal) { LeavePlanCalendarPage.coverage(proposal).associateWith { mark(proposal, it) } }
     val used = marks.values.filterNotNull().toSet()
+    var selectedHoliday by remember(proposal) { mutableStateOf<Pair<Int, HolidayDayAnnotation>?>(null) }
+    val resources = LocalResources.current
 
     Column(modifier, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
         Row(Modifier.fillMaxWidth().heightIn(min = DoneAtSpacing.minTouch), verticalAlignment = Alignment.CenterVertically) {
@@ -103,7 +117,10 @@ internal fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, fir
                 shown.days.chunked(7).forEach { week ->
                     Row {
                         week.forEach { day ->
-                            CalendarDay(day, shown, proposal, marks[day], text, Modifier.weight(1f))
+                            val annotation = holidayDayAnnotation(holidays, holidayRegion, LeavePlannerSchedule.date(day), text.locale)
+                            CalendarDay(day, shown, proposal, marks[day], text, Modifier.weight(1f), annotation) {
+                                annotation?.let { selectedHoliday = day to it }
+                            }
                         }
                     }
                 }
@@ -120,6 +137,20 @@ internal fun LeavePlanCalendar(proposal: LeavePlanProposal, text: LeaveText, fir
                 }
             }
         }
+    }
+    selectedHoliday?.let { (day, annotation) ->
+        AlertDialog(
+            onDismissRequest = { selectedHoliday = null },
+            title = { Text(annotation.name) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                    Text(text.fullDate(day))
+                    Text(text.string(if (annotation.isMakeupWorkday) R.string.holidayMakeupWorkday else R.string.holidayRestDay))
+                    if (annotation.isEstimated) Text(Strings.holidayEstimatedYearWarning(resources, LeavePlannerSchedule.date(day).year.toString()))
+                }
+            },
+            confirmButton = { TextButton(onClick = { selectedHoliday = null }) { Text(text.string(R.string.close)) } },
+        )
     }
 }
 
@@ -139,7 +170,7 @@ private fun mark(proposal: LeavePlanProposal, day: Int): LeaveMark? {
 }
 
 @Composable
-private fun CalendarDay(day: Int, page: LeavePlanCalendarPage, proposal: LeavePlanProposal, kind: LeaveMark?, text: LeaveText, modifier: Modifier) {
+private fun CalendarDay(day: Int, page: LeavePlanCalendarPage, proposal: LeavePlanProposal, kind: LeaveMark?, text: LeaveText, modifier: Modifier, holiday: HolidayDayAnnotation?, onHoliday: () -> Unit) {
     val reduced = LocalDoneAtMotion.current.reduced
     var revealed by remember(page.firstDayNumber, proposal) { mutableStateOf(false) }
     LaunchedEffect(page.firstDayNumber, proposal, reduced) {
@@ -156,8 +187,15 @@ private fun CalendarDay(day: Int, page: LeavePlanCalendarPage, proposal: LeavePl
     val last = day == proposal.lastRestDayNumber
     val isLeave = kind == LeaveMark.LEAVE || kind == LeaveMark.HALF_LEAVE
     val cellHeight = DoneAtLeaveTokens.cellHeight * LocalDensity.current.fontScale
-    val label = listOfNotNull(text.day(day), kind?.let { markLabel(it, text) }).joinToString(", ")
-    Box(modifier.heightIn(min = cellHeight).clearAndSetSemantics { contentDescription = label }, contentAlignment = Alignment.Center) {
+    val label = listOfNotNull(text.day(day), holiday?.description(text.string(R.string.holidayMakeupWorkday), text.string(R.string.holidayEstimatedLabel)), kind?.let { markLabel(it, text) }).joinToString(", ")
+    val action = if (holiday != null) Modifier.clickable(role = Role.Button, onClick = onHoliday) else Modifier
+    Box(modifier.heightIn(min = cellHeight).then(action).clearAndSetSemantics {
+        contentDescription = label
+        if (holiday != null) {
+            role = Role.Button
+            onClick { onHoliday(); true }
+        }
+    }, contentAlignment = Alignment.Center) {
         if (inBreak) Box(
             Modifier.matchParentSize().background(scheme.primary.copy(alpha = alpha * DoneAtLeaveTokens.rangeAlpha), RoundedCornerShape(
                 topStart = if (first) DoneAtLeaveTokens.rangeCorner else 0.dp, bottomStart = if (first) DoneAtLeaveTokens.rangeCorner else 0.dp,
@@ -168,15 +206,18 @@ private fun CalendarDay(day: Int, page: LeavePlanCalendarPage, proposal: LeavePl
             Modifier.matchParentSize().padding(DoneAtSpacing.xxs).graphicsLayer { scaleX = tileScale; scaleY = tileScale }
                 .background(scheme.primary.copy(alpha = alpha * DoneAtLeaveTokens.leaveAlpha), MaterialTheme.shapes.small),
         )
+        if (holiday != null && isLeave) MarkIcon(kind, Modifier.align(Alignment.TopEnd).padding(DoneAtSpacing.xxs).size(DoneAtLeaveTokens.markSize))
         Column(Modifier.fillMaxWidth().padding(vertical = DoneAtSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs)) {
             Text(
                 text.wholeNumber(LeavePlannerSchedule.date(day).dayOfMonth),
+                Modifier.padding(end = if (holiday != null && isLeave) DoneAtLeaveTokens.markSize else 0.dp),
                 style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
                 fontWeight = if (kind == null) FontWeight.Normal else FontWeight.SemiBold,
                 color = if (kind != null || page.contains(day)) scheme.onSurface else scheme.onSurface.copy(alpha = DoneAtLeaveTokens.inactiveAlpha),
             )
-            Box(Modifier.size(DoneAtLeaveTokens.markSize).graphicsLayer { this.alpha = alpha; scaleX = iconScale; scaleY = iconScale }) {
-                if (kind != null) MarkIcon(kind, Modifier.size(DoneAtLeaveTokens.markSize))
+            Box(Modifier.fillMaxWidth().heightIn(min = DoneAtLeaveTokens.markSize).graphicsLayer { this.alpha = alpha; scaleX = iconScale; scaleY = iconScale }, contentAlignment = Alignment.Center) {
+                if (holiday != null) HolidayDayCaption(holiday)
+                else if (kind != null) MarkIcon(kind, Modifier.size(DoneAtLeaveTokens.markSize))
             }
         }
     }

@@ -30,6 +30,7 @@ final class RecordsQueries {
         var salaryIsVisible: () -> Bool
         var salaryType: () -> SalaryType?
         var language: () -> String
+        var gridFirstWeekday: (() -> Int)? = nil
     }
 
     let records: RecordCoordinator
@@ -1657,11 +1658,13 @@ final class RecordsQueries {
         return (weekday - calendar.firstWeekday + 7) % 7
     }
 
-    /// Records time zone for the dates, app language for where the week starts.
-    /// A German reader expects a month grid that begins on Monday, and
-    /// `Calendar(identifier:)` alone always starts on Sunday.
+    /// Records time zone for the dates, app language for symbols, and the
+    /// device's selected week start when supplied. Independent queries retain
+    /// their locale default.
     var recordsGridCalendar: Calendar {
-        civilCalendars.gridCalendar(timeZoneIdentifier: recordsTimeZoneIdentifier, localeIdentifier: languageCode)
+        var calendar = civilCalendars.gridCalendar(timeZoneIdentifier: recordsTimeZoneIdentifier, localeIdentifier: languageCode)
+        if let firstWeekday = sources.gridFirstWeekday?() { calendar.firstWeekday = firstWeekday }
+        return calendar
     }
 
     private func recordsDateString(_ date: Date, template: String) -> String {
