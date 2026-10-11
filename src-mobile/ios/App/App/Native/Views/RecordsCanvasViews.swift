@@ -478,21 +478,22 @@ struct RecordsTimeSegmentPopover: View {
 struct RecordsOvertimeLine: View {
     let text: AppText
     let milliseconds: Double
+    var titleKey = "recordsOvertimeRecorded"
 
     var body: some View {
         OWCGroupCard {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(text.t("recordsOvertimeRecorded"))
+                Text(text.t(titleKey))
                     .font(.subheadline)
-                    .foregroundStyle(OWCDesign.secondary)
+                    .foregroundStyle(OWCDesign.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(text.formatRelativeDuration(milliseconds))
-                    .font(.body.weight(.medium).monospacedDigit())
-                    .foregroundStyle(OWCDesign.primary)
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(OWCDesign.recordsOvertime)
                     .multilineTextAlignment(.trailing)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
             .accessibilityElement(children: .combine)
         }
     }
