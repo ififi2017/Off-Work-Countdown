@@ -478,6 +478,7 @@
   "holidayCalendarSearch": "Поиск страны или региона",
   "holidayCalendarSystemDefault": "Рекомендуется: {{region}}",
   "holidayRestDay": "Праздник",
+  "holidayMakeupShort": "Работа",
   "holidayMakeupWorkday": "Перенесённый рабочий день",
   "holidaySource": "Календарь праздников",
   "holidayCoverageYearWarning": "Нет данных за {{year}}. Будет использоваться обычное расписание. Проверьте обновления приложения.",

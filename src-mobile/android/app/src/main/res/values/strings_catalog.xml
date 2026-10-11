@@ -325,8 +325,8 @@
     <string name="holidayCoverageYearWarning">No data for %1$s. Your regular schedule will be used. Check for app updates.</string>
     <string name="holidayEstimatedLabel">Predicted</string>
     <string name="holidayEstimatedYearWarning">Mainland China holidays and makeup workdays for %1$s are estimates, not official dates.\nFollow the State Council’s year-end notice. DoneAt will update promptly after release.</string>
-    <string name="holidayMakeupShort">Makeup</string>
-    <string name="holidayMakeupWorkday">Makeup workday</string>
+    <string name="holidayMakeupShort">Work</string>
+    <string name="holidayMakeupWorkday">Make-up workday</string>
     <string name="holidayRestDay">Holiday</string>
     <string name="holidaySource">Holiday calendar</string>
     <string name="invalidLunchMessage">Lunch must fall completely inside the shift before the countdown can start.</string>

@@ -17,7 +17,6 @@
     <string name="holidayCoverageNextYearWarning">Data for %1$s isn’t available yet. Your regular rota will be used. Check for app updates.</string>
     <string name="holidayCoverageYearWarning">No data for %1$s. Your regular rota will be used. Check for app updates.</string>
     <string name="holidayEstimatedLabel">Forecast</string>
-    <string name="holidayMakeupShort">Make-up</string>
     <string name="holidayRestDay">Bank holiday</string>
     <string name="holidaySource">Bank holiday calendar</string>
     <string name="keepAtLeastOneWorkday">Keep one weekday, or pick no rota.</string>

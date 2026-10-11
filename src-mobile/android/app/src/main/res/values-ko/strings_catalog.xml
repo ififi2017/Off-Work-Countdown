@@ -325,7 +325,7 @@
     <string name="holidayCoverageYearWarning">%1$s년 데이터가 없습니다. 평소 일정이 적용됩니다. 앱 업데이트를 확인하세요.</string>
     <string name="holidayEstimatedLabel">예측</string>
     <string name="holidayEstimatedYearWarning">중국 본토의 %1$s년 공휴일과 대체 근무일은 예상치이며 공식 일정이 아닙니다.\n연말에 발표되는 국무원의 공식 공고를 확인해 주세요. DoneAt은 발표 후 신속히 업데이트합니다.</string>
-    <string name="holidayMakeupShort">대체 근무</string>
+    <string name="holidayMakeupShort">근무</string>
     <string name="holidayMakeupWorkday">대체 근무일</string>
     <string name="holidayRestDay">공휴일</string>
     <string name="holidaySource">공휴일 달력</string>

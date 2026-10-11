@@ -478,6 +478,7 @@
   "holidayCalendarSearch": "国または地域を検索",
   "holidayCalendarSystemDefault": "おすすめ：{{region}}",
   "holidayRestDay": "祝日",
+  "holidayMakeupShort": "出勤",
   "holidayMakeupWorkday": "振替出勤日",
   "holidaySource": "祝日カレンダー",
   "holidayCoverageYearWarning": "{{year}}年のデータはありません。通常の予定が使われます。アプリのアップデートを確認してください。",

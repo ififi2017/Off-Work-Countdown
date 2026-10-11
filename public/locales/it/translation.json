@@ -478,6 +478,7 @@
   "holidayCalendarSearch": "Cerca paesi o aree geografiche",
   "holidayCalendarSystemDefault": "Suggerimento: {{region}}",
   "holidayRestDay": "Festività",
+  "holidayMakeupShort": "Lavoro",
   "holidayMakeupWorkday": "Giorno lavorativo di recupero",
   "holidaySource": "Calendario delle festività",
   "holidayCoverageYearWarning": "Nessun dato per il {{year}}. Verrà usato l’orario abituale. Controlla gli aggiornamenti dell’app.",

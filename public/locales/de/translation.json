@@ -478,6 +478,7 @@
   "holidayCalendarSearch": "Land oder Region suchen",
   "holidayCalendarSystemDefault": "Vorschlag: {{region}}",
   "holidayRestDay": "Feiertag",
+  "holidayMakeupShort": "Arbeit",
   "holidayMakeupWorkday": "Ersatzarbeitstag",
   "holidaySource": "Feiertagskalender",
   "holidayCoverageYearWarning": "Keine Daten für {{year}}. Der normale Plan gilt. Suche nach App-Updates.",

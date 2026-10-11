@@ -325,7 +325,7 @@
     <string name="holidayCoverageYearWarning">لا تتوفر بيانات %1$s؛ سيُستخدم الجدول المعتاد. تحقّق من تحديثات التطبيق.</string>
     <string name="holidayEstimatedLabel">تقديري</string>
     <string name="holidayEstimatedYearWarning">العطلات وأيام العمل التعويضية في بر الصين الرئيسي لعام %1$s تقديرية وليست مواعيد رسمية.\nيُرجى الرجوع إلى إعلان مجلس الدولة في نهاية العام. سيحدّث DoneAt البيانات سريعًا بعد صدوره.</string>
-    <string name="holidayMakeupShort">عمل تعويضي</string>
+    <string name="holidayMakeupShort">عمل</string>
     <string name="holidayMakeupWorkday">يوم عمل تعويضي</string>
     <string name="holidayRestDay">عطلة</string>
     <string name="holidaySource">تقويم العطلات</string>

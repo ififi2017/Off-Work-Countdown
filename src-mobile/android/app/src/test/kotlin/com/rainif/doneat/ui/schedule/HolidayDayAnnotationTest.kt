@@ -21,17 +21,17 @@ class HolidayDayAnnotationTest {
         assertEquals("春节", annotation.name)
         assertTrue(annotation.isMakeupWorkday)
         assertTrue(annotation.isEstimated)
-        assertEquals("春节 · 调休上班 · 推测", annotation.description("调休上班", "推测"))
+        assertEquals("春节 · 补班日 · 推测", annotation.description("补班日", "推测"))
     }
 
     @Test fun `holiday facts stay distinct from workday and certainty labels`() {
         val confirmed = holidayDayAnnotation(calendar, "CN", LocalDate.of(2026, 2, 17), Locale.ENGLISH)!!
-        assertEquals("Spring Festival", confirmed.description("Makeup workday", "Estimated"))
+        assertEquals("Spring Festival", confirmed.description("Make-up workday", "Estimated"))
         val predicted = holidayDayAnnotation(calendar, "CN", LocalDate.of(2027, 2, 5), Locale.ENGLISH)!!
-        assertEquals("Spring Festival · Estimated", predicted.description("Makeup workday", "Estimated"))
+        assertEquals("Spring Festival · Estimated", predicted.description("Make-up workday", "Estimated"))
         assertFalse(predicted.isMakeupWorkday)
         val us = holidayDayAnnotation(calendar, "US", LocalDate.of(2027, 1, 1), Locale.ENGLISH)!!
-        assertEquals("New Year's Day", us.description("Makeup workday", "Estimated"))
+        assertEquals("New Year's Day", us.description("Make-up workday", "Estimated"))
     }
 
     @Test fun `script qualified Chinese locales keep their regional names`() {

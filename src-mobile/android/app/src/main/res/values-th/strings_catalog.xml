@@ -325,7 +325,7 @@
     <string name="holidayCoverageYearWarning">ไม่มีข้อมูลปี %1$s ระบบจะใช้ตารางปกติ โปรดตรวจสอบอัปเดตแอป</string>
     <string name="holidayEstimatedLabel">คาดการณ์</string>
     <string name="holidayEstimatedYearWarning">วันหยุดและวันทำงานชดเชยในจีนแผ่นดินใหญ่ปี %1$s เป็นข้อมูลคาดการณ์ ไม่ใช่กำหนดการอย่างเป็นทางการ\nโปรดอ้างอิงประกาศของคณะรัฐมนตรีจีนช่วงปลายปี DoneAt จะอัปเดตข้อมูลโดยเร็วหลังประกาศ</string>
-    <string name="holidayMakeupShort">ทำงานชดเชย</string>
+    <string name="holidayMakeupShort">ทำงาน</string>
     <string name="holidayMakeupWorkday">วันทำงานชดเชย</string>
     <string name="holidayRestDay">วันหยุด</string>
     <string name="holidaySource">ปฏิทินวันหยุด</string>

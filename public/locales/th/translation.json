@@ -478,6 +478,7 @@
   "holidayCalendarSearch": "ค้นหาประเทศหรือภูมิภาค",
   "holidayCalendarSystemDefault": "แนะนำ: {{region}}",
   "holidayRestDay": "วันหยุด",
+  "holidayMakeupShort": "ทำงาน",
   "holidayMakeupWorkday": "วันทำงานชดเชย",
   "holidaySource": "ปฏิทินวันหยุด",
   "holidayCoverageYearWarning": "ไม่มีข้อมูลปี {{year}} ระบบจะใช้ตารางปกติ โปรดตรวจสอบอัปเดตแอป",

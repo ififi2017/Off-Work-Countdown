@@ -325,7 +325,7 @@
     <string name="holidayCoverageYearWarning">No hay datos de %1$s. Se usará el horario habitual. Busca actualizaciones de la app.</string>
     <string name="holidayEstimatedLabel">Previsto</string>
     <string name="holidayEstimatedYearWarning">Los festivos y días laborables compensatorios de China continental para %1$s son estimaciones, no fechas oficiales.\nConsulta el aviso de fin de año del Consejo de Estado. DoneAt actualizará los datos en cuanto se publique.</string>
-    <string name="holidayMakeupShort">Trabajo compensatorio</string>
+    <string name="holidayMakeupShort">Trabajo</string>
     <string name="holidayMakeupWorkday">Día laborable compensatorio</string>
     <string name="holidayRestDay">Festivo</string>
     <string name="holidaySource">Calendario de festivos</string>

@@ -665,14 +665,26 @@ struct RecordsMonthGrid: View {
                                     Text(text.formatCount(preferences.recordsCalendar.component(.day, from: cell.date)))
                                         .font(.callout.weight(cell.isToday || cell.dayKey == selectedDayKey ? .semibold : .regular).monospacedDigit())
                                         .foregroundStyle(label(cell))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                        .frame(maxWidth: .infinity)
                                         .frame(height: numberHeight)
                                     Group {
-                                        if let holiday = RecordsDayMarks.holiday(cell, preferences: preferences) {
+                                        // A locked day replaces the festival / make-up line with
+                                        // the lock. Those facts stay behind Plus, so the two
+                                        // never share the row and cannot cover the date.
+                                        if cell.appearance == .locked {
+                                            Image(systemName: "lock.fill")
+                                                .font(.system(size: 9, weight: .semibold))
+                                                .foregroundStyle(OWCDesign.tertiary)
+                                                .accessibilityHidden(true)
+                                        } else if let holiday = RecordsDayMarks.holiday(cell, preferences: preferences) {
                                             HolidayDayCaption(annotation: holiday, text: text)
                                         } else {
                                             Color.clear
                                         }
                                     }
+                                    .frame(maxWidth: .infinity)
                                     .frame(height: captionHeight)
                                     // The bar may be EmptyView on rest days;
                                     // keep its slot so every date shares a baseline.
@@ -774,10 +786,6 @@ struct RecordsMonthGrid: View {
                 Image(systemName: "pencil")
                     .font(.system(size: 8, weight: .bold))
                     .foregroundStyle(OWCDesign.secondary)
-            } else if cell.appearance == .locked {
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 7, weight: .semibold))
-                    .foregroundStyle(OWCDesign.tertiary)
             }
         }
     }

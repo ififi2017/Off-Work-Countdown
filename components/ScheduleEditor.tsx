@@ -478,11 +478,17 @@ function MonthCalendar({ lang, plan, month, today, types, weekdayName, holidays,
           ].filter(Boolean).join(" · ");
           const label = [date, type?.name ?? t("extendedUnassigned"), holidayLabel, isToday ? t("extendedToday") : null].filter(Boolean).join(", ");
           const content = <>
-            <span className={`text-sm tabular-nums leading-5 ${isToday ? "font-semibold text-orange-600 dark:text-orange-400" : "text-gray-900 dark:text-gray-100"}`}>{numberFormat.format(index + 1)}</span>
-            <span className="flex max-w-full items-center gap-0.5 text-[10px] leading-4 text-gray-500 dark:text-gray-400">
-              {/* 与 iOS 一致：节假日在班次名前加一个小点，调休上班用强调色。 */}
-              {holiday && <span className={`h-[3px] w-[3px] shrink-0 rounded-full ${holiday.isWorkday ? "bg-orange-500" : "bg-gray-400 dark:bg-gray-500"}`} />}
-              <span className="truncate">{type?.name ?? "–"}</span>
+            <span className={`max-w-full truncate text-sm tabular-nums leading-5 ${isToday ? "font-semibold text-orange-600 dark:text-orange-400" : "text-gray-900 dark:text-gray-100"}`}>{numberFormat.format(index + 1)}</span>
+            <span className="flex max-w-full items-center justify-center gap-0.5 text-[10px] leading-4 text-gray-500 dark:text-gray-400">
+              {/* 补班日在格子里只放短标签；完整说法留在下方菜单和无障碍标签。 */}
+              {holiday?.isWorkday ? (
+                <span className="max-w-full truncate text-orange-600 dark:text-orange-400">{t("holidayMakeupShort")}</span>
+              ) : (
+                <>
+                  {holiday && <span className="h-[3px] w-[3px] shrink-0 rounded-full bg-gray-400 dark:bg-gray-500" />}
+                  <span className="truncate">{type?.name ?? "–"}</span>
+                </>
+              )}
             </span>
           </>;
           if (brush) {

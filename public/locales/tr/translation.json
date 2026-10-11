@@ -478,6 +478,7 @@
   "holidayCalendarSearch": "Ülke veya bölge ara",
   "holidayCalendarSystemDefault": "Önerilen: {{region}}",
   "holidayRestDay": "Tatil",
+  "holidayMakeupShort": "Mesai",
   "holidayMakeupWorkday": "Telafi iş günü",
   "holidaySource": "Tatil takvimi",
   "holidayCoverageYearWarning": "{{year}} verisi yok. Normal program kullanılacak. Uygulama güncellemelerini kontrol edin.",
