@@ -804,9 +804,13 @@
     <string name="recordsIncomeProgress">Kazanılan %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Saatleri kendin gir</string>
     <string name="recordsLegendCorrected">Kalem — sen değiştirdin</string>
+    <string name="recordsLegendCorrectedShort">Düzenlendi</string>
     <string name="recordsLegendEstimated">Taralı — tahmin veya plan</string>
+    <string name="recordsLegendEstimatedShort">Tahmin / plan</string>
     <string name="recordsLegendLocked">Kilit — Plus gerekir</string>
+    <string name="recordsLegendLockedShort">Plus gerekir</string>
     <string name="recordsLegendRecorded">Dolu — kayıtlı</string>
+    <string name="recordsLegendRecordedShort">Kayıtlı</string>
     <string name="recordsLegendTitle">İşaretlerin anlamı</string>
     <string name="recordsLifeProfileReady">Kuruldu</string>
     <string name="recordsLifeProfileRow">Yaşam profili</string>
@@ -902,6 +906,7 @@
     <string name="reportCompareWeek">Bir önceki haftayla karşılaştırma</string>
     <string name="reportEmpty">Bu dönem için henüz kayıt yok.</string>
     <string name="reportEntryMonth">Aylık raporu oynat</string>
+    <string name="reportEntryShort">Raporlar</string>
     <string name="reportEntryTitle">Haftalık, aylık ve yıllık raporlar</string>
     <string name="reportEntryWeek">Haftalık raporu oynat</string>
     <string name="reportEntryYear">Yıllık raporu oynat</string>

@@ -806,9 +806,13 @@
     <string name="recordsIncomeProgress">Già guadagnato: %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Imposta l’orario</string>
     <string name="recordsLegendCorrected">Matita: l’hai modificato tu</string>
+    <string name="recordsLegendCorrectedShort">Modificato</string>
     <string name="recordsLegendEstimated">Tratteggiato: stimato o pianificato</string>
+    <string name="recordsLegendEstimatedShort">Stimato / previsto</string>
     <string name="recordsLegendLocked">Lucchetto: serve Plus</string>
+    <string name="recordsLegendLockedShort">Serve Plus</string>
     <string name="recordsLegendRecorded">Pieno: registrato</string>
+    <string name="recordsLegendRecordedShort">Registrato</string>
     <string name="recordsLegendTitle">Cosa significano i segni</string>
     <string name="recordsLifeProfileReady">Impostato</string>
     <string name="recordsLifeProfileRow">Profilo vita</string>
@@ -905,6 +909,7 @@
     <string name="reportCompareWeek">Rispetto alla settimana precedente</string>
     <string name="reportEmpty">Per questo periodo non c’è ancora nulla di registrato.</string>
     <string name="reportEntryMonth">Riproduci il report mensile</string>
+    <string name="reportEntryShort">Resoconti</string>
     <string name="reportEntryTitle">Report settimanali, mensili e annuali</string>
     <string name="reportEntryWeek">Riproduci il report settimanale</string>
     <string name="reportEntryYear">Riproduci il report annuale</string>

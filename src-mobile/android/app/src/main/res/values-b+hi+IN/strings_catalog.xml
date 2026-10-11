@@ -804,9 +804,13 @@
     <string name="recordsIncomeProgress">अब तक कमाए %1$s · %2$s</string>
     <string name="recordsKindCustomHours">घंटे ख़ुद तय करें</string>
     <string name="recordsLegendCorrected">पेंसिल — आपने बदला</string>
+    <string name="recordsLegendCorrectedShort">बदला गया</string>
     <string name="recordsLegendEstimated">धारीदार — अनुमान या योजना</string>
+    <string name="recordsLegendEstimatedShort">अनुमान / योजना</string>
     <string name="recordsLegendLocked">ताला — Plus चाहिए</string>
+    <string name="recordsLegendLockedShort">Plus चाहिए</string>
     <string name="recordsLegendRecorded">भरा — दर्ज</string>
+    <string name="recordsLegendRecordedShort">दर्ज</string>
     <string name="recordsLegendTitle">निशानों का मतलब</string>
     <string name="recordsLifeProfileReady">सेट है</string>
     <string name="recordsLifeProfileRow">जीवन प्रोफ़ाइल</string>
@@ -902,6 +906,7 @@
     <string name="reportCompareWeek">पिछले सप्ताह की तुलना में</string>
     <string name="reportEmpty">इस अवधि के लिए अभी कुछ दर्ज नहीं है।</string>
     <string name="reportEntryMonth">मासिक रिपोर्ट चलाएँ</string>
+    <string name="reportEntryShort">रिपोर्ट</string>
     <string name="reportEntryTitle">साप्ताहिक, मासिक और वार्षिक रिपोर्ट</string>
     <string name="reportEntryWeek">साप्ताहिक रिपोर्ट चलाएँ</string>
     <string name="reportEntryYear">वार्षिक रिपोर्ट चलाएँ</string>

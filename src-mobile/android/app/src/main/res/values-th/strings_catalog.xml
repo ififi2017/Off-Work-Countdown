@@ -802,9 +802,13 @@
     <string name="recordsIncomeProgress">ได้รับแล้ว %1$s · %2$s</string>
     <string name="recordsKindCustomHours">กำหนดเวลาเอง</string>
     <string name="recordsLegendCorrected">ดินสอ — คุณแก้เอง</string>
+    <string name="recordsLegendCorrectedShort">แก้ไขแล้ว</string>
     <string name="recordsLegendEstimated">ลายเฉียง — ประมาณหรือตามแผน</string>
+    <string name="recordsLegendEstimatedShort">ประมาณ / วางแผน</string>
     <string name="recordsLegendLocked">แม่กุญแจ — ต้องมี Plus</string>
+    <string name="recordsLegendLockedShort">ต้องมี Plus</string>
     <string name="recordsLegendRecorded">ทึบ — บันทึกแล้ว</string>
+    <string name="recordsLegendRecordedShort">บันทึกแล้ว</string>
     <string name="recordsLegendTitle">ความหมายของสัญลักษณ์</string>
     <string name="recordsLifeProfileReady">ตั้งแล้ว</string>
     <string name="recordsLifeProfileRow">โปรไฟล์ชีวิต</string>
@@ -899,6 +903,7 @@
     <string name="reportCompareWeek">เทียบกับสัปดาห์ก่อนหน้า</string>
     <string name="reportEmpty">ช่วงนี้ยังไม่มีการบันทึก</string>
     <string name="reportEntryMonth">เล่นรายงานรายเดือน</string>
+    <string name="reportEntryShort">รายงาน</string>
     <string name="reportEntryTitle">รายงานรายสัปดาห์ รายเดือน และรายปี</string>
     <string name="reportEntryWeek">เล่นรายงานรายสัปดาห์</string>
     <string name="reportEntryYear">เล่นรายงานรายปี</string>

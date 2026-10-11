@@ -804,9 +804,13 @@
     <string name="recordsIncomeProgress">Earned %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Set the hours</string>
     <string name="recordsLegendCorrected">Pencil — you changed it</string>
+    <string name="recordsLegendCorrectedShort">Edited</string>
     <string name="recordsLegendEstimated">Hatched — estimated or planned</string>
+    <string name="recordsLegendEstimatedShort">Estimated / planned</string>
     <string name="recordsLegendLocked">Lock — Plus needed</string>
+    <string name="recordsLegendLockedShort">Needs Plus</string>
     <string name="recordsLegendRecorded">Solid — recorded</string>
+    <string name="recordsLegendRecordedShort">Recorded</string>
     <string name="recordsLegendTitle">What the marks mean</string>
     <string name="recordsLifeProfileReady">Set up</string>
     <string name="recordsLifeProfileRow">Life profile</string>
@@ -902,6 +906,7 @@
     <string name="reportCompareWeek">Compared with the week before</string>
     <string name="reportEmpty">Nothing recorded for this period yet.</string>
     <string name="reportEntryMonth">Play monthly report</string>
+    <string name="reportEntryShort">Reports</string>
     <string name="reportEntryTitle">Weekly, monthly &amp; yearly reports</string>
     <string name="reportEntryWeek">Play weekly report</string>
     <string name="reportEntryYear">Play yearly report</string>

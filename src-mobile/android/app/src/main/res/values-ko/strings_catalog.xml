@@ -802,9 +802,13 @@
     <string name="recordsIncomeProgress">지금까지 번 금액 %1$s · %2$s</string>
     <string name="recordsKindCustomHours">시간 직접 지정</string>
     <string name="recordsLegendCorrected">연필 — 직접 수정함</string>
+    <string name="recordsLegendCorrectedShort">수정됨</string>
     <string name="recordsLegendEstimated">빗금 — 추정 또는 예정</string>
+    <string name="recordsLegendEstimatedShort">예상 / 계획</string>
     <string name="recordsLegendLocked">자물쇠 — Plus 필요</string>
+    <string name="recordsLegendLockedShort">Plus 필요</string>
     <string name="recordsLegendRecorded">채움 — 기록됨</string>
+    <string name="recordsLegendRecordedShort">기록됨</string>
     <string name="recordsLegendTitle">표시의 뜻</string>
     <string name="recordsLifeProfileReady">설정됨</string>
     <string name="recordsLifeProfileRow">인생 프로필</string>
@@ -899,6 +903,7 @@
     <string name="reportCompareWeek">지난주와 비교</string>
     <string name="reportEmpty">이 기간에는 아직 기록이 없어요.</string>
     <string name="reportEntryMonth">월간 리포트 재생</string>
+    <string name="reportEntryShort">리포트</string>
     <string name="reportEntryTitle">주간·월간·연간 리포트</string>
     <string name="reportEntryWeek">주간 리포트 재생</string>
     <string name="reportEntryYear">연간 리포트 재생</string>

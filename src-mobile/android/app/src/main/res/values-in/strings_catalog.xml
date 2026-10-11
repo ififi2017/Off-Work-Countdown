@@ -802,9 +802,13 @@
     <string name="recordsIncomeProgress">Sudah diperoleh %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Atur jamnya sendiri</string>
     <string name="recordsLegendCorrected">Pensil — kamu yang mengubah</string>
+    <string name="recordsLegendCorrectedShort">Diedit</string>
     <string name="recordsLegendEstimated">Arsir — perkiraan atau rencana</string>
+    <string name="recordsLegendEstimatedShort">Perkiraan / rencana</string>
     <string name="recordsLegendLocked">Gembok — perlu Plus</string>
+    <string name="recordsLegendLockedShort">Perlu Plus</string>
     <string name="recordsLegendRecorded">Padat — tercatat</string>
+    <string name="recordsLegendRecordedShort">Tercatat</string>
     <string name="recordsLegendTitle">Arti tandanya</string>
     <string name="recordsLifeProfileReady">Sudah diatur</string>
     <string name="recordsLifeProfileRow">Profil hidup</string>
@@ -899,6 +903,7 @@
     <string name="reportCompareWeek">Dibandingkan minggu sebelumnya</string>
     <string name="reportEmpty">Belum ada yang tercatat untuk periode ini.</string>
     <string name="reportEntryMonth">Putar laporan bulanan</string>
+    <string name="reportEntryShort">Laporan</string>
     <string name="reportEntryTitle">Laporan mingguan, bulanan &amp; tahunan</string>
     <string name="reportEntryWeek">Putar laporan mingguan</string>
     <string name="reportEntryYear">Putar laporan tahunan</string>

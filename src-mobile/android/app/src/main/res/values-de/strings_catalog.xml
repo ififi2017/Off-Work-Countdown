@@ -804,9 +804,13 @@
     <string name="recordsIncomeProgress">Bisher verdient: %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Zeiten selbst setzen</string>
     <string name="recordsLegendCorrected">Stift — von dir geändert</string>
+    <string name="recordsLegendCorrectedShort">Bearbeitet</string>
     <string name="recordsLegendEstimated">Schraffiert — geschätzt oder geplant</string>
+    <string name="recordsLegendEstimatedShort">Geschätzt / geplant</string>
     <string name="recordsLegendLocked">Schloss — Plus nötig</string>
+    <string name="recordsLegendLockedShort">Plus nötig</string>
     <string name="recordsLegendRecorded">Gefüllt — erfasst</string>
+    <string name="recordsLegendRecordedShort">Erfasst</string>
     <string name="recordsLegendTitle">Was die Markierungen bedeuten</string>
     <string name="recordsLifeProfileReady">Eingerichtet</string>
     <string name="recordsLifeProfileRow">Lebensprofil</string>
@@ -902,6 +906,7 @@
     <string name="reportCompareWeek">Im Vergleich zur Vorwoche</string>
     <string name="reportEmpty">Für diesen Zeitraum ist noch nichts erfasst.</string>
     <string name="reportEntryMonth">Monatsbericht abspielen</string>
+    <string name="reportEntryShort">Berichte</string>
     <string name="reportEntryTitle">Wochen-, Monats- und Jahresberichte</string>
     <string name="reportEntryWeek">Wochenbericht abspielen</string>
     <string name="reportEntryYear">Jahresbericht abspielen</string>

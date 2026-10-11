@@ -2852,14 +2852,26 @@
     "recordsLegendCorrected": {
       "resource": "string/recordsLegendCorrected"
     },
+    "recordsLegendCorrectedShort": {
+      "resource": "string/recordsLegendCorrectedShort"
+    },
     "recordsLegendEstimated": {
       "resource": "string/recordsLegendEstimated"
+    },
+    "recordsLegendEstimatedShort": {
+      "resource": "string/recordsLegendEstimatedShort"
     },
     "recordsLegendLocked": {
       "resource": "string/recordsLegendLocked"
     },
+    "recordsLegendLockedShort": {
+      "resource": "string/recordsLegendLockedShort"
+    },
     "recordsLegendRecorded": {
       "resource": "string/recordsLegendRecorded"
+    },
+    "recordsLegendRecordedShort": {
+      "resource": "string/recordsLegendRecordedShort"
     },
     "recordsLegendTitle": {
       "resource": "string/recordsLegendTitle"
@@ -3159,6 +3171,9 @@
     },
     "reportEntryMonth": {
       "resource": "string/reportEntryMonth"
+    },
+    "reportEntryShort": {
+      "resource": "string/reportEntryShort"
     },
     "reportEntryTitle": {
       "resource": "string/reportEntryTitle"

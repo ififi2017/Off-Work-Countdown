@@ -806,9 +806,13 @@
     <string name="recordsIncomeProgress">Déjà gagné : %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Définir les horaires</string>
     <string name="recordsLegendCorrected">Crayon : modifié par vous</string>
+    <string name="recordsLegendCorrectedShort">Modifié</string>
     <string name="recordsLegendEstimated">Hachuré : estimé ou prévu</string>
+    <string name="recordsLegendEstimatedShort">Estimé / prévu</string>
     <string name="recordsLegendLocked">Cadenas : Plus requis</string>
+    <string name="recordsLegendLockedShort">Plus requis</string>
     <string name="recordsLegendRecorded">Plein : relevé</string>
+    <string name="recordsLegendRecordedShort">Enregistré</string>
     <string name="recordsLegendTitle">Ce que veulent dire les repères</string>
     <string name="recordsLifeProfileReady">Configuré</string>
     <string name="recordsLifeProfileRow">Profil de vie</string>
@@ -905,6 +909,7 @@
     <string name="reportCompareWeek">Par rapport à la semaine précédente</string>
     <string name="reportEmpty">Rien n’est encore enregistré pour cette période.</string>
     <string name="reportEntryMonth">Lancer le bilan du mois</string>
+    <string name="reportEntryShort">Rapports</string>
     <string name="reportEntryTitle">Bilans de la semaine, du mois et de l’année</string>
     <string name="reportEntryWeek">Lancer le bilan de la semaine</string>
     <string name="reportEntryYear">Lancer le bilan de l’année</string>

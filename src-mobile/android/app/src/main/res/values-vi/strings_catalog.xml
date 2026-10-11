@@ -802,9 +802,13 @@
     <string name="recordsIncomeProgress">Đã kiếm được %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Tự đặt giờ</string>
     <string name="recordsLegendCorrected">Bút chì — bạn đã sửa</string>
+    <string name="recordsLegendCorrectedShort">Đã sửa</string>
     <string name="recordsLegendEstimated">Gạch chéo — ước tính hoặc dự kiến</string>
+    <string name="recordsLegendEstimatedShort">Ước tính / dự kiến</string>
     <string name="recordsLegendLocked">Khoá — cần Plus</string>
+    <string name="recordsLegendLockedShort">Cần Plus</string>
     <string name="recordsLegendRecorded">Đặc — đã ghi</string>
+    <string name="recordsLegendRecordedShort">Đã ghi</string>
     <string name="recordsLegendTitle">Các ký hiệu nghĩa là gì</string>
     <string name="recordsLifeProfileReady">Đã đặt</string>
     <string name="recordsLifeProfileRow">Hồ sơ đời</string>
@@ -899,6 +903,7 @@
     <string name="reportCompareWeek">So với tuần trước</string>
     <string name="reportEmpty">Chưa có ghi chép nào cho khoảng thời gian này.</string>
     <string name="reportEntryMonth">Phát báo cáo tháng</string>
+    <string name="reportEntryShort">Báo cáo</string>
     <string name="reportEntryTitle">Báo cáo tuần, tháng và năm</string>
     <string name="reportEntryWeek">Phát báo cáo tuần</string>
     <string name="reportEntryYear">Phát báo cáo năm</string>

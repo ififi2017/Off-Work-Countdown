@@ -802,9 +802,13 @@
     <string name="recordsIncomeProgress">已賺 %1$s · %2$s</string>
     <string name="recordsKindCustomHours">自己填時間</string>
     <string name="recordsLegendCorrected">鉛筆 = 你改過</string>
+    <string name="recordsLegendCorrectedShort">已修改</string>
     <string name="recordsLegendEstimated">斜紋 = 推算或計劃</string>
+    <string name="recordsLegendEstimatedShort">估算 / 計畫</string>
     <string name="recordsLegendLocked">鎖 = 需要 Plus</string>
+    <string name="recordsLegendLockedShort">需要 Plus</string>
     <string name="recordsLegendRecorded">實心 = 已紀錄</string>
+    <string name="recordsLegendRecordedShort">已紀錄</string>
     <string name="recordsLegendTitle">圖例說明</string>
     <string name="recordsLifeProfileReady">已設定</string>
     <string name="recordsLifeProfileRow">人生檔案</string>
@@ -899,6 +903,7 @@
     <string name="reportCompareWeek">與上一週相比</string>
     <string name="reportEmpty">這段時間還沒有紀錄。</string>
     <string name="reportEntryMonth">播放月報</string>
+    <string name="reportEntryShort">報告</string>
     <string name="reportEntryTitle">週報、月報與年報</string>
     <string name="reportEntryWeek">播放週報</string>
     <string name="reportEntryYear">播放年報</string>

@@ -804,9 +804,13 @@
     <string name="recordsIncomeProgress">आतापर्यंत कमावले %1$s · %2$s</string>
     <string name="recordsKindCustomHours">तास स्वतः ठरवा</string>
     <string name="recordsLegendCorrected">पेन्सिल — तुम्ही बदलले</string>
+    <string name="recordsLegendCorrectedShort">बदललेले</string>
     <string name="recordsLegendEstimated">तिरप्या रेषा — अंदाज किंवा नियोजित</string>
+    <string name="recordsLegendEstimatedShort">अंदाज / नियोजन</string>
     <string name="recordsLegendLocked">कुलूप — Plus हवे</string>
+    <string name="recordsLegendLockedShort">Plus आवश्यक</string>
     <string name="recordsLegendRecorded">भरलेले — नोंदलेले</string>
+    <string name="recordsLegendRecordedShort">नोंदलेले</string>
     <string name="recordsLegendTitle">खुणांचा अर्थ</string>
     <string name="recordsLifeProfileReady">सेट आहे</string>
     <string name="recordsLifeProfileRow">आयुष्य प्रोफाइल</string>
@@ -902,6 +906,7 @@
     <string name="reportCompareWeek">मागील आठवड्याच्या तुलनेत</string>
     <string name="reportEmpty">या कालावधीसाठी अजून काही नोंदवलेले नाही.</string>
     <string name="reportEntryMonth">मासिक अहवाल चालवा</string>
+    <string name="reportEntryShort">अहवाल</string>
     <string name="reportEntryTitle">साप्ताहिक, मासिक आणि वार्षिक अहवाल</string>
     <string name="reportEntryWeek">साप्ताहिक अहवाल चालवा</string>
     <string name="reportEntryYear">वार्षिक अहवाल चालवा</string>

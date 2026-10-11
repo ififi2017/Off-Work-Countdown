@@ -808,9 +808,13 @@
     <string name="recordsIncomeProgress">Заработано %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Задать часы</string>
     <string name="recordsLegendCorrected">Карандаш — вы изменили</string>
+    <string name="recordsLegendCorrectedShort">Изменено</string>
     <string name="recordsLegendEstimated">Штриховка — оценка или план</string>
+    <string name="recordsLegendEstimatedShort">Оценка / план</string>
     <string name="recordsLegendLocked">Замок — нужен Plus</string>
+    <string name="recordsLegendLockedShort">Нужен Plus</string>
     <string name="recordsLegendRecorded">Сплошная — записано</string>
+    <string name="recordsLegendRecordedShort">Записано</string>
     <string name="recordsLegendTitle">Что означают обозначения</string>
     <string name="recordsLifeProfileReady">Настроено</string>
     <string name="recordsLifeProfileRow">Профиль жизни</string>
@@ -908,6 +912,7 @@
     <string name="reportCompareWeek">По сравнению с прошлой неделей</string>
     <string name="reportEmpty">За этот период пока ничего не записано.</string>
     <string name="reportEntryMonth">Воспроизвести месячный отчёт</string>
+    <string name="reportEntryShort">Отчёты</string>
     <string name="reportEntryTitle">Недельные, месячные и годовые отчёты</string>
     <string name="reportEntryWeek">Воспроизвести недельный отчёт</string>
     <string name="reportEntryYear">Воспроизвести годовой отчёт</string>

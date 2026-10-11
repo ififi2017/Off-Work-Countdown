@@ -678,27 +678,26 @@ struct RecordsMonthGrid: View {
                                                 .font(.system(size: 9, weight: .semibold))
                                                 .foregroundStyle(OWCDesign.tertiary)
                                                 .accessibilityHidden(true)
-                                        } else if let holiday = RecordsDayMarks.holiday(cell, preferences: preferences) {
-                                            HolidayDayCaption(annotation: holiday, text: text)
                                         } else {
-                                            Color.clear
+                                            VStack(spacing: 1) {
+                                                if let holiday = RecordsDayMarks.holiday(cell, preferences: preferences) {
+                                                    HolidayDayCaption(annotation: holiday, text: text)
+                                                }
+                                                RecordsMiniWorkBar(
+                                                    workMs: cell.workMs,
+                                                    overtimeMs: cell.overtimeMs,
+                                                    maxWidth: 24,
+                                                    height: barHeight
+                                                )
+                                                .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
+                                                    estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
+                                            }
                                         }
                                     }
                                     .frame(maxWidth: .infinity)
-                                    .frame(height: captionHeight)
-                                    // The bar may be EmptyView on rest days;
-                                    // keep its slot so every date shares a baseline.
-                                    ZStack {
-                                        RecordsMiniWorkBar(
-                                            workMs: cell.workMs,
-                                            overtimeMs: cell.overtimeMs,
-                                            maxWidth: 24,
-                                            height: barHeight
-                                        )
-                                        .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
-                                            estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
-                                    }
-                                    .frame(height: barHeight)
+                                    // Centre the marks together under the date. An empty
+                                    // holiday row must not push the work bar to the edge.
+                                    .frame(height: captionHeight + barHeight + 1)
                                 }
                                 .padding(.horizontal, 1)
                             }
@@ -1771,11 +1770,7 @@ private struct RecordsDayDetailHeader: View {
     }
 }
 
-/// What solid, hatched, pencil and lock mean, next to the grid that uses them.
-///
-/// A legend shown once and then removed forever is a legend nobody can check.
-/// It stays reachable: a wrapping row while it fits, an info button and a
-/// popover once the text or the type size no longer allows the row.
+/// Compact marks stay beside the calendar; their full explanation is always reachable.
 struct RecordsMarkLegend: View {
     let text: AppText
     var includesLock: Bool
@@ -1793,65 +1788,100 @@ struct RecordsMarkLegend: View {
     }
 
     var body: some View {
-        if dynamicTypeSize.isAccessibilitySize {
+        HStack(alignment: .center, spacing: 4) {
+            if !dynamicTypeSize.isAccessibilitySize {
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) {
+                        ForEach(items, id: \.key) { item in
+                            row(item, compact: true).fixedSize()
+                        }
+                    }
+                    Grid(alignment: .leading, horizontalSpacing: 18, verticalSpacing: 6) {
+                        GridRow(alignment: .firstTextBaseline) {
+                            row(items[0], compact: true)
+                            row(items[1], compact: true)
+                        }
+                        GridRow(alignment: .firstTextBaseline) {
+                            row(items[2], compact: true)
+                            if includesLock {
+                                row(items[3], compact: true)
+                            }
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
             Button {
                 showsPopover = true
             } label: {
                 Image(systemName: "info.circle")
-                    .font(.footnote.weight(.semibold))
-                    .frame(width: 44, height: 44)
+                    .font(.footnote)
+                    .frame(width: 44, height: 44, alignment: .trailing)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .foregroundStyle(OWCDesign.tertiary)
+            .foregroundStyle(OWCDesign.secondary)
             .accessibilityLabel(text.t("recordsLegendTitle"))
-            .popover(isPresented: $showsPopover) {
-                VStack(alignment: .leading, spacing: 10) {
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .popover(isPresented: $showsPopover) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
                     Text(text.t("recordsLegendTitle"))
                         .font(.headline)
                     ForEach(items, id: \.key) { item in
-                        row(item)
+                        row(item, compact: false)
                     }
+                    Divider()
+                    Text(text.t("recordsHeatScale"))
+                        .font(.footnote)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .frame(idealWidth: 300, alignment: .leading)
-                .padding(18)
-                .presentationCompactAdaptation(.popover)
+                .padding(20)
             }
-        } else {
-            // One row while the four fit; two columns once a language needs
-            // the width. Truncating a legend defeats the point of having one.
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 14) {
-                    ForEach(items, id: \.key) { item in
-                        row(item).fixedSize()
-                    }
-                }
-                LazyVGrid(
-                    columns: [GridItem(.flexible(), alignment: .center), GridItem(.flexible(), alignment: .center)],
-                    alignment: .center,
-                    spacing: 4
-                ) {
-                    ForEach(items, id: \.key) { item in
-                        row(item)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel(text.t("recordsLegendTitle"))
+            .frame(idealWidth: 320, idealHeight: 300)
+            .presentationCompactAdaptation(dynamicTypeSize.isAccessibilitySize ? .sheet : .popover)
         }
     }
 
-    private func row(_ item: (symbol: String, key: String)) -> some View {
-        HStack(spacing: 5) {
-            Image(systemName: item.symbol)
-                .font(.system(size: 9, weight: .semibold))
-            Text(text.t(item.key))
-                .font(.caption2)
-                .lineLimit(2)
+    private func row(_ item: (symbol: String, key: String), compact: Bool) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            mark(item.symbol)
+                .frame(width: 12, height: 12)
+                .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.bottom] - 2 }
+                .accessibilityHidden(true)
+            Text(text.t(compact ? compactKey(for: item.key) : item.key))
+                .font(compact ? .caption2 : .footnote)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .foregroundStyle(OWCDesign.secondary)
+        .frame(maxWidth: compact ? nil : .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(text.t(item.key))
+    }
+
+    private func compactKey(for key: String) -> String {
+        switch key {
+        case "recordsLegendRecorded": "recordsLegendRecordedShort"
+        case "recordsLegendEstimated": "recordsLegendEstimatedShort"
+        case "recordsLegendCorrected": "recordsLegendCorrectedShort"
+        default: "recordsLegendLockedShort"
+        }
+    }
+
+    @ViewBuilder
+    private func mark(_ symbol: String) -> some View {
+        if symbol == "square.lefthalf.filled" {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(OWCDesign.secondary.opacity(0.12))
+                .owcEstimated(true, spacing: 3, lineWidth: 0.8)
+                .clipShape(RoundedRectangle(cornerRadius: 2))
+                .frame(width: 10, height: 10)
+        } else {
+            Image(systemName: symbol)
+                .font(.system(size: 10, weight: .medium))
+        }
     }
 }
 

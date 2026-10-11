@@ -806,9 +806,13 @@
     <string name="recordsIncomeProgress">Já ganho: %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Definir o horário</string>
     <string name="recordsLegendCorrected">Lápis: alteraste tu</string>
+    <string name="recordsLegendCorrectedShort">Editado</string>
     <string name="recordsLegendEstimated">Tracejado: estimado ou planeado</string>
+    <string name="recordsLegendEstimatedShort">Estimado / previsto</string>
     <string name="recordsLegendLocked">Cadeado: é preciso Plus</string>
+    <string name="recordsLegendLockedShort">Precisa de Plus</string>
     <string name="recordsLegendRecorded">Preenchido: registado</string>
+    <string name="recordsLegendRecordedShort">Registado</string>
     <string name="recordsLegendTitle">O que significam as marcas</string>
     <string name="recordsLifeProfileReady">Configurado</string>
     <string name="recordsLifeProfileRow">Perfil de vida</string>
@@ -905,6 +909,7 @@
     <string name="reportCompareWeek">Em comparação com a semana anterior</string>
     <string name="reportEmpty">Ainda não há nada registado neste período.</string>
     <string name="reportEntryMonth">Reproduzir relatório mensal</string>
+    <string name="reportEntryShort">Relatórios</string>
     <string name="reportEntryTitle">Relatórios semanais, mensais e anuais</string>
     <string name="reportEntryWeek">Reproduzir relatório semanal</string>
     <string name="reportEntryYear">Reproduzir relatório anual</string>

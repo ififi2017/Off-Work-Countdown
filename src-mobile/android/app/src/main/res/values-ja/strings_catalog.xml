@@ -802,9 +802,13 @@
     <string name="recordsIncomeProgress">獲得済み %1$s · %2$s</string>
     <string name="recordsKindCustomHours">時間を自分で決める</string>
     <string name="recordsLegendCorrected">鉛筆＝自分で直した</string>
+    <string name="recordsLegendCorrectedShort">編集済み</string>
     <string name="recordsLegendEstimated">斜線＝推定または予定</string>
+    <string name="recordsLegendEstimatedShort">推定・予定</string>
     <string name="recordsLegendLocked">鍵＝Plus が必要</string>
+    <string name="recordsLegendLockedShort">Plus が必要</string>
     <string name="recordsLegendRecorded">塗りつぶし＝記録済み</string>
+    <string name="recordsLegendRecordedShort">記録済み</string>
     <string name="recordsLegendTitle">記号の意味</string>
     <string name="recordsLifeProfileReady">設定済み</string>
     <string name="recordsLifeProfileRow">人生プロフィール</string>
@@ -899,6 +903,7 @@
     <string name="reportCompareWeek">前の週との比較</string>
     <string name="reportEmpty">この期間の記録はまだありません。</string>
     <string name="reportEntryMonth">月のレポートを再生</string>
+    <string name="reportEntryShort">レポート</string>
     <string name="reportEntryTitle">週・月・年のレポート</string>
     <string name="reportEntryWeek">週のレポートを再生</string>
     <string name="reportEntryYear">年のレポートを再生</string>

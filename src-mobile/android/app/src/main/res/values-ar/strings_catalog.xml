@@ -812,9 +812,13 @@
     <string name="recordsIncomeProgress">تم كسب %1$s · %2$s</string>
     <string name="recordsKindCustomHours">تحديد الساعات</string>
     <string name="recordsLegendCorrected">قلم — عدّلته أنت</string>
+    <string name="recordsLegendCorrectedShort">معدّل</string>
     <string name="recordsLegendEstimated">مخطّط — تقديري أو مخطط له</string>
+    <string name="recordsLegendEstimatedShort">تقديري / مخطّط</string>
     <string name="recordsLegendLocked">قفل — يلزم Plus</string>
+    <string name="recordsLegendLockedShort">يتطلب Plus</string>
     <string name="recordsLegendRecorded">معبّأ — مسجّل</string>
+    <string name="recordsLegendRecordedShort">مسجّل</string>
     <string name="recordsLegendTitle">ما تعنيه العلامات</string>
     <string name="recordsLifeProfileReady">مضبوط</string>
     <string name="recordsLifeProfileRow">ملف العمر</string>
@@ -914,6 +918,7 @@
     <string name="reportCompareWeek">مقارنةً بالأسبوع السابق</string>
     <string name="reportEmpty">لا توجد سجلات لهذه الفترة بعد.</string>
     <string name="reportEntryMonth">شغّل التقرير الشهري</string>
+    <string name="reportEntryShort">التقارير</string>
     <string name="reportEntryTitle">التقارير الأسبوعية والشهرية والسنوية</string>
     <string name="reportEntryWeek">شغّل التقرير الأسبوعي</string>
     <string name="reportEntryYear">شغّل التقرير السنوي</string>
