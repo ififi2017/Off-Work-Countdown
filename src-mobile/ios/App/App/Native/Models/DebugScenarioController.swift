@@ -110,6 +110,13 @@ final class DebugScenarioController {
             id: DebugRecordSeed.id(830), kind: .annual, name: nil,
             entitledHalfDays: 20, usedHalfDays: 6, validFromDayKey: nil, validThroughDayKey: nil
         ))
+        // A second, expiring balance: the time off page leads with it.
+        let year = calendar.component(.year, from: today)
+        records.upsertLeaveBalance(.init(
+            id: DebugRecordSeed.id(831), kind: .compensatory, name: nil,
+            entitledHalfDays: 4, usedHalfDays: 0, validFromDayKey: nil,
+            validThroughDayKey: String(format: "%04d-12-31", year)
+        ))
     }
 
     private func seedSampleWorkday(

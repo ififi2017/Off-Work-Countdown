@@ -39,9 +39,8 @@ struct RecordsDesignView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var isExpanded: Bool { browsing.expanded[browsing.scale] == true }
-    /// 3.2.2: every scale fits the page, so nothing expands any more.
-    private var canExpand: Bool { false }
+    /// 3.2.2: every scale fits the page, so the chart no longer expands.
+    private let isExpanded = false
     /// iPad keeps its custom root chrome so switching split-view tabs cannot
     /// resize the detail pane under a cross-fade. Phones use the system bar.
     private var usesCustomRootHeader: Bool { usesOwnHeader }
@@ -85,8 +84,6 @@ struct RecordsDesignView: View {
         Group {
             if records.archiveBanner == .damaged {
                 damagedState
-            } else if isExpanded {
-                immersiveCanvas
             } else {
                 regularCanvas
             }
@@ -271,14 +268,7 @@ struct RecordsDesignView: View {
                 if let summary {
                     periodConclusion(summary)
                 } else if !chartIsLoading {
-                    RecordsHeadlineView(
-                        text: text,
-                        preferences: preferences,
-                        isAuthorized: true,
-                        title: periodTitle,
-                        summary: nil,
-                        onUnlock: {}
-                    )
+                    RecordsEmptyPeriodCard(text: text, title: periodTitle)
                 }
             }
         }
@@ -319,11 +309,7 @@ struct RecordsDesignView: View {
                     unit: .years
                 )
             } else {
-                RecordsLifeAllocationCard(
-                    text: text, preferences: preferences,
-                    incomeDecline: records.state.lifeProfile?.futureIncomeDecline,
-                    model: model
-                )
+                RecordsLifeAllocationPlaceholder(text: text)
             }
             if let income = model.income {
                 RecordsLifetimeIncomeCard(
@@ -334,11 +320,7 @@ struct RecordsDesignView: View {
                 )
             }
         } else {
-            RecordsLifeAllocationCard(
-                text: text, preferences: preferences,
-                incomeDecline: records.state.lifeProfile?.futureIncomeDecline,
-                model: nil, isLoading: true
-            )
+            RecordsLifeAllocationPlaceholder(text: text, isLoading: true)
         }
     }
 
@@ -365,7 +347,10 @@ struct RecordsDesignView: View {
         let overtimeText = text.formatRelativeDuration(overtimeMs)
         let looks = cells.map { RecordsDayLook($0, preferences: preferences) }
         let recordedDays = browsing.scale == .week ? looks.filter(\.hasSolidHours).count : summary.workdays
-        var chips = [RecordsInsightChip(mark: .work, title: text.t("recordsWorkdayCount", values: ["count": text.formatCount(recordedDays)]))]
+        var chips: [RecordsInsightChip] = []
+        if recordedDays > 0 {
+            chips.append(.init(mark: .work, title: text.t("recordsWorkdayCount", values: ["count": text.formatCount(recordedDays)])))
+        }
         if overtimeMs > 0 {
             chips.append(.init(mark: .overtime, title: text.t("recordsOvertimeAmount", values: ["duration": overtimeText])))
         }
@@ -377,8 +362,9 @@ struct RecordsDesignView: View {
             // The calendar above counts what has happened; this sentence
             // counts the same days, so the two never disagree.
             let recorded = looks.filter(\.hasSolidHours)
-            var sentences = [text.t("recordsInsightWeekBody", values: [
-                "worked": text.formatCount(max(summary.completedScheduledWorkdays, recorded.count)),
+            let worked = max(summary.completedScheduledWorkdays, recorded.count)
+            var sentences = worked == 0 ? [] : [text.t("recordsInsightWeekBody", values: [
+                "worked": text.formatCount(worked),
                 "recorded": text.formatCount(recorded.count),
                 "hours": text.formatRelativeDuration(Double(recorded.reduce(Int64(0)) { $0 + $1.totalMs })),
             ])]
@@ -391,7 +377,7 @@ struct RecordsDesignView: View {
                 hero: overtimeMs > 0
                     ? text.t("recordsOvertimeAmount", values: ["duration": overtimeText])
                     : text.t("recordsNoOvertime"),
-                body: RecordsInsight.joinSentences(sentences),
+                body: sentences.isEmpty ? nil : RecordsInsight.joinSentences(sentences),
                 actionTitle: empty == nil ? nil : text.t("recordsInsightFillDay"),
                 action: empty.map { look in { openDay(look.cell) } },
                 chips: chips
@@ -434,25 +420,6 @@ struct RecordsDesignView: View {
                 chips: chips
             )
         }
-    }
-
-    /// A separate layout branch keeps expansion from being a taller version
-    /// of the page. It deliberately has no outer scroll view, title, scale
-    /// picker, summary, or swipe-to-dismiss gesture. The only persistent
-    /// control is the explicit collapse button; scrolling the canvas can never
-    /// accidentally close it.
-    private var immersiveCanvas: some View {
-        ZStack(alignment: .topTrailing) {
-            OWCDesign.page.ignoresSafeArea()
-
-            visualization(expandedPresentation: true)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-
-
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ToolbarContentBuilder
@@ -557,17 +524,6 @@ struct RecordsDesignView: View {
                         .background(OWCDesign.control, in: Circle())
                 }
                 .accessibilityLabel(text.t("recordsNextPeriod"))
-            }
-            if canExpand {
-                Button {
-                    setExpanded(!isExpanded)
-                } label: {
-                    Image(systemName: isExpanded
-                        ? "arrow.down.right.and.arrow.up.left"
-                        : "arrow.up.left.and.arrow.down.right")
-                        .frame(width: 44, height: 44)
-                }
-                .accessibilityLabel(text.t(isExpanded ? "recordsCollapseChart" : "recordsExpandChart"))
             }
         }
         .buttonStyle(.plain)
@@ -1005,13 +961,6 @@ struct RecordsDesignView: View {
         }
     }
 
-    private func setExpanded(_ value: Bool) {
-        guard canExpand else { return }
-        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsExpansion) {
-            browsing.expanded[browsing.scale] = value
-        }
-    }
-
     private var lifeSetupCard: some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 8) {
@@ -1361,165 +1310,5 @@ struct RecordsDesignView: View {
             browsing.selectedDayKey = nil
         }
         loadedSignature = signature
-    }
-}
-
-private struct LifeStageSheetItem: Identifiable {
-    var id: LifeStageKind { stage.kind }
-    var stage: LifeStageSpan
-}
-
-private struct LifeStageDetailSheet: View {
-    let records: RecordCoordinator
-    let preferences: PreferencesStore
-    let text: AppText
-    let stage: LifeStageSpan
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    HStack(spacing: 14) {
-                        Image(systemName: stage.kind.iconName)
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 48, height: 48)
-                            .background(OWCDesign.orangeDeep, in: Circle())
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(text.t(stage.kind.titleKey))
-                                .font(.title2.weight(.semibold))
-                            Text(rangeLabel)
-                                .font(.body)
-                                .foregroundStyle(OWCDesign.secondary)
-                        }
-                    }
-
-                    if let start = stage.start {
-                        let end = stage.end ?? .now
-                        let days = max(0, preferences.recordsCalendar.dateComponents([.day], from: start, to: end).day ?? 0)
-                        let elapsedDays = max(0, min(days, preferences.recordsCalendar.dateComponents([.day], from: start, to: .now).day ?? 0))
-                        let remainingDays = stage.end == nil ? nil : max(0, days - elapsedDays)
-                        let progress = LifeStageCalculator.progress(from: start, to: end, at: .now)
-
-                        OWCGroupCard {
-                            LazyVGrid(
-                                columns: [GridItem(.flexible()), GridItem(.flexible())],
-                                alignment: .leading,
-                                spacing: 10
-                            ) {
-                                detailMetric(
-                                    text.t("lifeStageDurationTitle"),
-                                    text.t("lifeStageDuration", values: [
-                                        "years": text.formatCount(days / 365),
-                                        "days": text.formatCount(days),
-                                    ])
-                                )
-                                detailMetric(text.t("lifeStageAgeRange"), ageRange(from: start, to: end))
-                                detailMetric(text.t("lifeStageElapsed"), text.formatDays(Double(elapsedDays)))
-                                detailMetric(
-                                    text.t("lifeStageRemaining"),
-                                    remainingDays.map { text.formatDays(Double($0)) } ?? "—"
-                                )
-                            }
-                            .padding(14)
-                        }
-
-                        if stage.end != nil {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Text(text.t("progress"))
-                                        .font(.footnote.weight(.semibold))
-                                        .foregroundStyle(OWCDesign.secondary)
-                                    Spacer()
-                                    Text(text.formatPercent(progress * 100, fractionDigits: 2))
-                                        .font(.footnote.weight(.semibold).monospacedDigit())
-                                        .foregroundStyle(OWCDesign.orangeDeep)
-                                }
-                                ProgressView(value: progress)
-                                    .tint(OWCDesign.orangeDeep)
-                            }
-                        }
-
-                        Text(text.t("lifeWeeksUnit", values: ["count": text.formatCount(days / 7)]))
-                            .font(.body.weight(.medium))
-
-                        if let stageEnd = stage.end, let bounds = timelineBounds {
-                            let span = bounds.1.timeIntervalSince(bounds.0)
-                            if span > 0 {
-                                let share = stageEnd.timeIntervalSince(start) / span * 100
-                                Text(text.t("lifeStageShare", values: ["percent": text.formatPercent(share)]))
-                                    .font(.body)
-                            }
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        if stage.startPrecision != nil {
-                            Text(text.t(stage.startPrecision == .year ? "lifePrecisionYear" : "lifePrecisionDay"))
-                        }
-                        if stage.endPrecision != nil, stage.endPrecision != stage.startPrecision {
-                            Text(text.t(stage.endPrecision == .year ? "lifePrecisionYear" : "lifePrecisionDay"))
-                        }
-                    }
-                    .font(.footnote)
-                    .foregroundStyle(OWCDesign.tertiary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(20)
-            }
-            .background(OWCDesign.page)
-            .navigationTitle(text.t(stage.kind.titleKey))
-            .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-
-    private var timelineBounds: (Date, Date)? {
-        guard let profile = records.state.lifeProfile else { return nil }
-        return LifeStageCalculator.timelineBounds(
-            stages: LifeStageCalculator.stages(profile: profile, calendar: preferences.recordsCalendar),
-            now: .now
-        )
-    }
-
-    private func ageRange(from start: Date, to end: Date) -> String {
-        guard let profile = records.state.lifeProfile else { return "—" }
-        var resolved = profile
-        resolved.migrateLegacyFields(calendar: preferences.recordsCalendar)
-        guard let birth = resolved.bornOn?.calculationAnchor(in: preferences.recordsCalendar) else { return "—" }
-        let startAge = max(0, preferences.recordsCalendar.dateComponents([.year], from: birth, to: start).year ?? 0)
-        let endAge = max(startAge, preferences.recordsCalendar.dateComponents([.year], from: birth, to: end).year ?? startAge)
-        return "\(text.formatCount(startAge))–\(text.formatCount(endAge))"
-    }
-
-    private func detailMetric(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(value)
-                .font(.body.weight(.semibold).monospacedDigit())
-                .foregroundStyle(OWCDesign.primary)
-                .lineLimit(2)
-                .minimumScaleFactor(0.75)
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(OWCDesign.secondary)
-        }
-        .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
-        .padding(12)
-        .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
-    }
-
-    private var rangeLabel: String {
-        let calendar = preferences.recordsCalendar
-        let startYear = stage.start.map { text.formatYear(calendar.component(.year, from: $0)) }
-        let endYear = stage.end.map { text.formatYear(calendar.component(.year, from: $0)) }
-        switch (startYear, endYear) {
-        case (nil, nil):
-            return text.t("lifeUnset")
-        case (let start?, let end?):
-            return text.t("weekdayRange", values: ["start": start, "end": end])
-        case (let start?, nil):
-            return start
-        case (nil, let end?):
-            return end
-        }
     }
 }

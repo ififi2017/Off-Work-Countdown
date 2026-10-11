@@ -55,7 +55,11 @@ export const SAME_AS_ENGLISH_ON_PURPOSE = {
   weekdayRange: ["ar", "de", "es", "fr", "hi-IN", "id", "it", "ko", "mr-IN", "pt", "ru", "th", "tr", "vi"],
   daysShort: ["es", "pt"],
   focusPomodoroSummary: ["es", "fr", "it", "pt"],
+  // Records 3.2.2: a list separator and a bare year read like English here
+  recordsListJoin: ["de", "es", "fr", "hi-IN", "id", "it", "ko", "mr-IN", "pt", "ru", "tr", "vi"],
+  recordsYearLabel: ["ar", "de", "es", "fr", "hi-IN", "id", "it", "mr-IN", "pt", "th", "tr", "vi"],
   // English words these languages use as they are
+  leaveLegendWeekend: ["it"],
   focusTitle: ["fr", "it"],
   focusStart: ["de"],
   reportPause: ["fr"],

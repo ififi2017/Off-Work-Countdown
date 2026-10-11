@@ -1306,6 +1306,12 @@
         "count"
       ]
     },
+    "leaveAskFor": {
+      "resource": "string/leaveAskFor",
+      "params": [
+        "days"
+      ]
+    },
     "leaveAtLeast": {
       "resource": "string/leaveAtLeast",
       "params": [
@@ -1342,6 +1348,9 @@
     },
     "leaveBalanceNamePlaceholder": {
       "resource": "string/leaveBalanceNamePlaceholder"
+    },
+    "leaveBalancesFooter": {
+      "resource": "string/leaveBalancesFooter"
     },
     "leaveBalancesSection": {
       "resource": "string/leaveBalancesSection"
@@ -1380,13 +1389,20 @@
       "resource": "string/leaveDayLeave"
     },
     "leaveDayRest": {
-      "resource": "string/leaveDayRest"
+      "resource": "string/leaveDayRest",
+      "androidOnly": true
     },
     "leaveDaysOff": {
       "resource": "plurals/leaveDaysOff"
     },
     "leaveDaysUnit": {
       "resource": "string/leaveDaysUnit"
+    },
+    "leaveDeductFrom": {
+      "resource": "string/leaveDeductFrom"
+    },
+    "leaveDeductOrder": {
+      "resource": "string/leaveDeductOrder"
     },
     "leaveDeleteBalance": {
       "resource": "string/leaveDeleteBalance"
@@ -1400,6 +1416,9 @@
     "leaveEstimated": {
       "resource": "string/leaveEstimated"
     },
+    "leaveEstimatedHolidaysShort": {
+      "resource": "string/leaveEstimatedHolidaysShort"
+    },
     "leaveEstimatedHolidaysYear": {
       "resource": "string/leaveEstimatedHolidaysYear",
       "params": [
@@ -1410,6 +1429,14 @@
       "resource": "string/leaveEstimatedYear",
       "params": [
         "year"
+      ]
+    },
+    "leaveExpiringFirst": {
+      "resource": "string/leaveExpiringFirst",
+      "params": [
+        "days",
+        "name",
+        "date"
       ]
     },
     "leaveFilterCount": {
@@ -1434,8 +1461,14 @@
     "leaveGoalBudget": {
       "resource": "string/leaveGoalBudget"
     },
+    "leaveGoalBudgetHint": {
+      "resource": "string/leaveGoalBudgetHint"
+    },
     "leaveGoalRest": {
       "resource": "string/leaveGoalRest"
+    },
+    "leaveGoalRestHint": {
+      "resource": "string/leaveGoalRestHint"
     },
     "leaveHalfDayInvalid": {
       "resource": "string/leaveHalfDayInvalid"
@@ -1454,6 +1487,24 @@
     },
     "leaveLastShiftEnds": {
       "resource": "string/leaveLastShiftEnds"
+    },
+    "leaveLegendBreak": {
+      "resource": "string/leaveLegendBreak"
+    },
+    "leaveLegendLeft": {
+      "resource": "string/leaveLegendLeft"
+    },
+    "leaveLegendPlanned": {
+      "resource": "string/leaveLegendPlanned"
+    },
+    "leaveLegendTaken": {
+      "resource": "string/leaveLegendTaken"
+    },
+    "leaveLegendWeekend": {
+      "resource": "string/leaveLegendWeekend"
+    },
+    "leaveLegendWork": {
+      "resource": "string/leaveLegendWork"
     },
     "leaveMainlandHolidaysMissing": {
       "resource": "string/leaveMainlandHolidaysMissing",
@@ -1498,6 +1549,9 @@
     "leaveRegularPlans": {
       "resource": "string/leaveRegularPlans"
     },
+    "leaveRemainingTitle": {
+      "resource": "string/leaveRemainingTitle"
+    },
     "leaveRequests": {
       "resource": "string/leaveRequests"
     },
@@ -1513,6 +1567,9 @@
     "leaveRoleLate": {
       "resource": "string/leaveRoleLate"
     },
+    "leaveSamePatternHint": {
+      "resource": "string/leaveSamePatternHint"
+    },
     "leaveSecondHalf": {
       "resource": "string/leaveSecondHalf"
     },
@@ -1522,8 +1579,24 @@
     "leaveSetupTitle": {
       "resource": "string/leaveSetupTitle"
     },
+    "leaveSortedByLeast": {
+      "resource": "string/leaveSortedByLeast"
+    },
     "leaveTitle": {
       "resource": "string/leaveTitle"
+    },
+    "leaveTotal": {
+      "resource": "string/leaveTotal",
+      "params": [
+        "total"
+      ]
+    },
+    "leaveTotalAndTaken": {
+      "resource": "string/leaveTotalAndTaken",
+      "params": [
+        "total",
+        "used"
+      ]
     },
     "leaveTrialNotice": {
       "resource": "string/leaveTrialNotice"
@@ -1589,6 +1662,12 @@
     "leaveWhole": {
       "resource": "string/leaveWhole"
     },
+    "lifeAboutYears": {
+      "resource": "string/lifeAboutYears",
+      "params": [
+        "years"
+      ]
+    },
     "lifeAddEmployment": {
       "resource": "string/lifeAddEmployment"
     },
@@ -1601,8 +1680,27 @@
         "years"
       ]
     },
+    "lifeApproxYearsBare": {
+      "resource": "string/lifeApproxYearsBare",
+      "params": [
+        "years"
+      ]
+    },
+    "lifeApproxYearsShort": {
+      "resource": "string/lifeApproxYearsShort",
+      "params": [
+        "years"
+      ]
+    },
     "lifeBirthYear": {
       "resource": "string/lifeBirthYear"
+    },
+    "lifeCareerElapsed": {
+      "resource": "string/lifeCareerElapsed",
+      "params": [
+        "elapsed",
+        "remaining"
+      ]
     },
     "lifeCurrentSalary": {
       "resource": "string/lifeCurrentSalary"
@@ -1649,6 +1747,12 @@
     "lifeHideAges": {
       "resource": "string/lifeHideAges"
     },
+    "lifeIncomeBeforeToday": {
+      "resource": "string/lifeIncomeBeforeToday",
+      "params": [
+        "amount"
+      ]
+    },
     "lifeIncomeDeclinePreview": {
       "resource": "string/lifeIncomeDeclinePreview",
       "params": [
@@ -1684,6 +1788,12 @@
     "lifeIncomeTotal": {
       "resource": "string/lifeIncomeTotal"
     },
+    "lifeIncomeUntilRetirement": {
+      "resource": "string/lifeIncomeUntilRetirement",
+      "params": [
+        "amount"
+      ]
+    },
     "lifeLegendChildhood": {
       "resource": "string/lifeLegendChildhood"
     },
@@ -1705,14 +1815,21 @@
     "lifeOutsideZone": {
       "resource": "string/lifeOutsideZone"
     },
+    "lifeOwnBody": {
+      "resource": "string/lifeOwnBody",
+      "params": [
+        "work",
+        "sleep"
+      ]
+    },
     "lifeOwnShare": {
       "resource": "string/lifeOwnShare"
     },
-    "lifePrecisionDay": {
-      "resource": "string/lifePrecisionDay"
-    },
-    "lifePrecisionYear": {
-      "resource": "string/lifePrecisionYear"
+    "lifeOwnYears": {
+      "resource": "string/lifeOwnYears",
+      "params": [
+        "years"
+      ]
     },
     "lifeProfileFooter": {
       "resource": "string/lifeProfileFooter"
@@ -1779,39 +1896,17 @@
     "lifeSleepHours": {
       "resource": "string/lifeSleepHours"
     },
-    "lifeStageAgeRange": {
-      "resource": "string/lifeStageAgeRange"
-    },
     "lifeStageChildhood": {
       "resource": "string/lifeStageChildhood"
-    },
-    "lifeStageDuration": {
-      "resource": "string/lifeStageDuration",
-      "params": [
-        "years",
-        "days"
-      ]
     },
     "lifeStageDurationTitle": {
       "resource": "string/lifeStageDurationTitle"
     },
-    "lifeStageElapsed": {
-      "resource": "string/lifeStageElapsed"
-    },
     "lifeStagePresent": {
       "resource": "string/lifeStagePresent"
     },
-    "lifeStageRemaining": {
-      "resource": "string/lifeStageRemaining"
-    },
     "lifeStageRetirement": {
       "resource": "string/lifeStageRetirement"
-    },
-    "lifeStageShare": {
-      "resource": "string/lifeStageShare",
-      "params": [
-        "percent"
-      ]
     },
     "lifeStageStudy": {
       "resource": "string/lifeStageStudy"
@@ -1859,7 +1954,8 @@
       "resource": "string/lifeWorkHistoryRough"
     },
     "lifeWorkPeriodBasis": {
-      "resource": "string/lifeWorkPeriodBasis"
+      "resource": "string/lifeWorkPeriodBasis",
+      "androidOnly": true
     },
     "lifeWorkShare": {
       "resource": "string/lifeWorkShare"
@@ -1867,11 +1963,28 @@
     "lifeWorkStarted": {
       "resource": "string/lifeWorkStarted"
     },
+    "lifeWorkYearNumber": {
+      "resource": "string/lifeWorkYearNumber",
+      "params": [
+        "count"
+      ]
+    },
+    "lifeYearAgeTitle": {
+      "resource": "string/lifeYearAgeTitle",
+      "params": [
+        "year",
+        "age"
+      ]
+    },
     "lifeYearApproximate": {
       "resource": "string/lifeYearApproximate",
       "params": [
         "year"
-      ]
+      ],
+      "androidOnly": true
+    },
+    "lifeYearPast": {
+      "resource": "string/lifeYearPast"
     },
     "lifeYouChanged": {
       "resource": "string/lifeYouChanged"
@@ -2607,13 +2720,27 @@
       "resource": "string/recordsAllocationBasis",
       "params": [
         "count"
+      ],
+      "androidOnly": true
+    },
+    "recordsAllocationFootnoteHealth": {
+      "resource": "string/recordsAllocationFootnoteHealth"
+    },
+    "recordsAllocationFootnoteSettings": {
+      "resource": "string/recordsAllocationFootnoteSettings"
+    },
+    "recordsAllocationTotal": {
+      "resource": "string/recordsAllocationTotal",
+      "params": [
+        "duration"
       ]
     },
     "recordsAnnualSummary": {
       "resource": "string/recordsAnnualSummary",
       "params": [
         "year"
-      ]
+      ],
+      "androidOnly": true
     },
     "recordsArchiveDamagedBody": {
       "resource": "string/recordsArchiveDamagedBody"
@@ -2652,7 +2779,8 @@
       "resource": "string/recordsClearDayTitle"
     },
     "recordsCollapseChart": {
-      "resource": "string/recordsCollapseChart"
+      "resource": "string/recordsCollapseChart",
+      "androidOnly": true
     },
     "recordsConfirmScheduled": {
       "resource": "string/recordsConfirmScheduled"
@@ -2724,8 +2852,43 @@
     "recordsDataTitle": {
       "resource": "string/recordsDataTitle"
     },
+    "recordsDayHoursWithOvertime": {
+      "resource": "string/recordsDayHoursWithOvertime",
+      "params": [
+        "hours",
+        "overtime"
+      ]
+    },
+    "recordsDayPlannedHours": {
+      "resource": "string/recordsDayPlannedHours",
+      "params": [
+        "hours"
+      ]
+    },
+    "recordsDayProjectedHours": {
+      "resource": "string/recordsDayProjectedHours",
+      "params": [
+        "hours"
+      ]
+    },
     "recordsDaySegments": {
       "resource": "string/recordsDaySegments"
+    },
+    "recordsDayUnrecordedWorkday": {
+      "resource": "string/recordsDayUnrecordedWorkday"
+    },
+    "recordsDaysOff": {
+      "resource": "string/recordsDaysOff",
+      "params": [
+        "count"
+      ]
+    },
+    "recordsDaysRecordedTotal": {
+      "resource": "string/recordsDaysRecordedTotal",
+      "params": [
+        "count",
+        "hours"
+      ]
     },
     "recordsDeleteAll": {
       "resource": "string/recordsDeleteAll"
@@ -2753,7 +2916,8 @@
       "resource": "string/recordsEmptyTitle"
     },
     "recordsExpandChart": {
-      "resource": "string/recordsExpandChart"
+      "resource": "string/recordsExpandChart",
+      "androidOnly": true
     },
     "recordsExport": {
       "resource": "string/recordsExport"
@@ -2769,10 +2933,12 @@
       "resource": "string/recordsExportWithoutLife"
     },
     "recordsForecastHours": {
-      "resource": "string/recordsForecastHours"
+      "resource": "string/recordsForecastHours",
+      "androidOnly": true
     },
     "recordsForecastIncome": {
-      "resource": "string/recordsForecastIncome"
+      "resource": "string/recordsForecastIncome",
+      "androidOnly": true
     },
     "recordsFreeAwake": {
       "resource": "string/recordsFreeAwake"
@@ -2783,11 +2949,22 @@
     "recordsFreeAwakeShort": {
       "resource": "string/recordsFreeAwakeShort"
     },
-    "recordsHeatScale": {
-      "resource": "string/recordsHeatScale"
+    "recordsFreeWindowAction": {
+      "resource": "string/recordsFreeWindowAction"
     },
-    "recordsHeatWithoutColor": {
-      "resource": "string/recordsHeatWithoutColor"
+    "recordsFreeWindowNote": {
+      "resource": "string/recordsFreeWindowNote"
+    },
+    "recordsHeatScale": {
+      "resource": "string/recordsHeatScale",
+      "androidOnly": true
+    },
+    "recordsHolidayDaysOff": {
+      "resource": "string/recordsHolidayDaysOff",
+      "params": [
+        "name",
+        "count"
+      ]
     },
     "recordsImport": {
       "resource": "string/recordsImport"
@@ -2846,35 +3023,82 @@
         "percent"
       ]
     },
+    "recordsInsightEmptyDay": {
+      "resource": "string/recordsInsightEmptyDay",
+      "params": [
+        "date"
+      ]
+    },
+    "recordsInsightExtraDays": {
+      "resource": "string/recordsInsightExtraDays",
+      "params": [
+        "days"
+      ]
+    },
+    "recordsInsightFillDay": {
+      "resource": "string/recordsInsightFillDay"
+    },
+    "recordsInsightHolidayOff": {
+      "resource": "string/recordsInsightHolidayOff",
+      "params": [
+        "name",
+        "count"
+      ]
+    },
+    "recordsInsightMonthWorked": {
+      "resource": "string/recordsInsightMonthWorked",
+      "params": [
+        "month"
+      ]
+    },
+    "recordsInsightPlannedAhead": {
+      "resource": "string/recordsInsightPlannedAhead",
+      "params": [
+        "count",
+        "hours"
+      ]
+    },
+    "recordsInsightWeekBody": {
+      "resource": "string/recordsInsightWeekBody",
+      "params": [
+        "worked",
+        "recorded",
+        "hours"
+      ]
+    },
+    "recordsInsightYearOvertime": {
+      "resource": "string/recordsInsightYearOvertime",
+      "params": [
+        "year"
+      ]
+    },
+    "recordsInsightYearWorked": {
+      "resource": "string/recordsInsightYearWorked",
+      "params": [
+        "hours"
+      ]
+    },
     "recordsKindCustomHours": {
       "resource": "string/recordsKindCustomHours"
     },
     "recordsLegendCorrected": {
-      "resource": "string/recordsLegendCorrected"
-    },
-    "recordsLegendCorrectedShort": {
-      "resource": "string/recordsLegendCorrectedShort"
+      "resource": "string/recordsLegendCorrected",
+      "androidOnly": true
     },
     "recordsLegendEstimated": {
-      "resource": "string/recordsLegendEstimated"
-    },
-    "recordsLegendEstimatedShort": {
-      "resource": "string/recordsLegendEstimatedShort"
+      "resource": "string/recordsLegendEstimated",
+      "androidOnly": true
     },
     "recordsLegendLocked": {
-      "resource": "string/recordsLegendLocked"
-    },
-    "recordsLegendLockedShort": {
-      "resource": "string/recordsLegendLockedShort"
+      "resource": "string/recordsLegendLocked",
+      "androidOnly": true
     },
     "recordsLegendRecorded": {
-      "resource": "string/recordsLegendRecorded"
+      "resource": "string/recordsLegendRecorded",
+      "androidOnly": true
     },
     "recordsLegendRecordedShort": {
       "resource": "string/recordsLegendRecordedShort"
-    },
-    "recordsLegendTitle": {
-      "resource": "string/recordsLegendTitle"
     },
     "recordsLifeProfileReady": {
       "resource": "string/recordsLifeProfileReady"
@@ -2897,8 +3121,18 @@
     "recordsLifeSetupTitle": {
       "resource": "string/recordsLifeSetupTitle"
     },
+    "recordsListJoin": {
+      "resource": "string/recordsListJoin",
+      "params": [
+        "first",
+        "second"
+      ]
+    },
     "recordsLockedDay": {
       "resource": "string/recordsLockedDay"
+    },
+    "recordsLockedDayDetail": {
+      "resource": "string/recordsLockedDayDetail"
     },
     "recordsLockedKeepsSaving": {
       "resource": "string/recordsLockedKeepsSaving"
@@ -2926,6 +3160,9 @@
     },
     "recordsNoObservations": {
       "resource": "string/recordsNoObservations"
+    },
+    "recordsNoOvertime": {
+      "resource": "string/recordsNoOvertime"
     },
     "recordsObservations": {
       "resource": "string/recordsObservations"
@@ -2975,17 +3212,50 @@
     "recordsOvertime": {
       "resource": "string/recordsOvertime"
     },
+    "recordsOvertimeAmount": {
+      "resource": "string/recordsOvertimeAmount",
+      "params": [
+        "duration"
+      ]
+    },
     "recordsOvertimeRecorded": {
       "resource": "string/recordsOvertimeRecorded"
+    },
+    "recordsOvertimeRecordedLife": {
+      "resource": "string/recordsOvertimeRecordedLife"
     },
     "recordsOwnerAuthReason": {
       "resource": "string/recordsOwnerAuthReason"
     },
+    "recordsPayTitle": {
+      "resource": "string/recordsPayTitle",
+      "params": [
+        "period"
+      ]
+    },
     "recordsPlanned": {
       "resource": "string/recordsPlanned"
     },
+    "recordsPlannedWorkdays": {
+      "resource": "string/recordsPlannedWorkdays",
+      "params": [
+        "count"
+      ]
+    },
+    "recordsPlannedWorkdaysLeft": {
+      "resource": "string/recordsPlannedWorkdaysLeft",
+      "params": [
+        "count"
+      ]
+    },
     "recordsPreviousPeriod": {
       "resource": "string/recordsPreviousPeriod"
+    },
+    "recordsProjectedWorkdays": {
+      "resource": "string/recordsProjectedWorkdays",
+      "params": [
+        "count"
+      ]
     },
     "recordsReplaceHoursConfirm": {
       "resource": "string/recordsReplaceHoursConfirm"
@@ -3057,7 +3327,8 @@
       "resource": "string/recordsSourceSchedule"
     },
     "recordsSummaryHelp": {
-      "resource": "string/recordsSummaryHelp"
+      "resource": "string/recordsSummaryHelp",
+      "androidOnly": true
     },
     "recordsTab": {
       "resource": "string/recordsTab"
@@ -3107,8 +3378,20 @@
         "count"
       ]
     },
+    "recordsWorkdaysRecorded": {
+      "resource": "string/recordsWorkdaysRecorded",
+      "params": [
+        "count"
+      ]
+    },
     "recordsWorkedTime": {
       "resource": "string/recordsWorkedTime"
+    },
+    "recordsYearLabel": {
+      "resource": "string/recordsYearLabel",
+      "params": [
+        "year"
+      ]
     },
     "remindersMayBeLate": {
       "resource": "string/remindersMayBeLate",

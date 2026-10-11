@@ -85,59 +85,70 @@ struct LeaveView: View {
 
     var body: some View {
         OWCContentSizedScrollView {
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 12) {
+                if !shifts.records.state.leaveBalances.isEmpty {
+                    remainingCard
+                }
                 OWCGroupCard {
                     Button { isPlanning = true } label: {
-                        OWCRow(icon: "calendar.badge.plus", title: text.t("leavePlanAction"),
-                               subtitle: planSubtitle, isLast: true, centersVertically: true) {
-                            OWCDetailAccessory(text: nil)
-                        }
-                    }
-                    .buttonStyle(OWCRowButtonStyle())
-                }
-                .padding(.top, 14)
-
-                OWCSectionHeader(title: text.t("leaveBalancesSection"))
-                    .padding(.top, OWCDesign.sectionGap)
-                OWCGroupCard {
-                    ForEach(shifts.records.state.leaveBalances) { balance in
-                        Button { editing = .init(balance: balance, isNew: false) } label: {
-                            OWCRow(icon: balance.kind.symbol, title: shifts.leaveBalanceName(balance),
-                                   subtitle: validityLabel(balance), centersVertically: true) {
-                                Text(text.t("leaveAvailable", values: [
-                                    "count": text.formatDays(Double(shifts.availableLeaveHalfDays(for: balance)) / 2),
-                                ]))
-                                .font(.body.monospacedDigit())
-                                .foregroundStyle(OWCDesign.secondary)
+                        HStack(spacing: 8) {
+                            Image(systemName: "suitcase")
+                                .frame(width: 22)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(text.t("leavePlanAction"))
+                                if let planSubtitle {
+                                    Text(planSubtitle)
+                                        .font(.footnote)
+                                        .foregroundStyle(OWCDesign.secondary)
+                                }
                             }
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.forward")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(OWCDesign.tertiary)
                         }
-                        .buttonStyle(OWCRowButtonStyle())
-                    }
-                    Button { editing = .init(balance: Self.newBalance(), isNew: true) } label: {
-                        OWCRow(icon: "plus", title: text.t("leaveAddBalance"), isLast: true) { EmptyView() }
+                        .font(.subheadline)
+                        .foregroundStyle(OWCDesign.accent)
+                        .padding(.horizontal, 18)
+                        .frame(minHeight: 52)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(OWCRowButtonStyle())
                 }
+
+                balancesCard
 
                 let plans = shifts.adoptedLeavePlans
                 if !plans.isEmpty {
-                    OWCSectionHeader(title: text.t("leaveAdoptedPlans"))
-                        .padding(.top, OWCDesign.sectionGap)
-                    OWCGroupCard {
+                    LeaveCard(title: text.t("leaveAdoptedPlans"), note: text.formatCount(plans.count)) {
                         ForEach(Array(plans.enumerated()), id: \.element.id) { index, plan in
+                            if index > 0 { Divider() }
                             Button { viewingPlan = .init(id: plan.id) } label: {
-                                OWCRow(icon: "airplane", title: shifts.leavePlanTitle(plan.days),
-                                       subtitle: text.t("leaveUses", values: ["days": shifts.leavePlanCost(plan.days)]),
-                                       isLast: index == plans.count - 1, centersVertically: true) {
-                                    OWCDetailAccessory(text: nil)
+                                HStack(spacing: 10) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(shifts.leavePlanTitle(plan.days))
+                                            .font(.subheadline.weight(.medium))
+                                            .foregroundStyle(OWCDesign.primary)
+                                        Text(text.t("leaveUses", values: ["days": shifts.leavePlanCost(plan.days)]))
+                                            .font(.footnote)
+                                            .foregroundStyle(OWCDesign.secondary)
+                                    }
+                                    Spacer(minLength: 0)
+                                    Image(systemName: "chevron.forward")
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundStyle(OWCDesign.tertiary)
                                 }
+                                .frame(minHeight: 52)
+                                .contentShape(Rectangle())
                             }
-                            .buttonStyle(OWCRowButtonStyle())
+                            .buttonStyle(.plain)
                         }
                     }
                 }
             }
             .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.top, 14)
+            .padding(.bottom, OWCDesign.detailBottomInset)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(OWCDesign.page)
@@ -156,6 +167,124 @@ struct LeaveView: View {
             if UserDefaults.standard.bool(forKey: "ios.native.qaLeavePlanner") { isPlanning = true }
         }
         #endif
+    }
+
+    private var balances: [LeaveBalance] { shifts.records.state.leaveBalances }
+
+    private func plannedHalfDays(_ balance: LeaveBalance) -> Int {
+        max(0, balance.entitledHalfDays - balance.usedHalfDays - shifts.availableLeaveHalfDays(for: balance))
+    }
+
+    /// What is left, then the one balance worth using first.
+    private var remainingCard: some View {
+        let total = balances.reduce(0) { $0 + shifts.availableLeaveHalfDays(for: $1) }
+        let days = Double(total) / 2
+        let expiring = balances
+            .filter { shifts.availableLeaveHalfDays(for: $0) > 0 && $0.validThroughDayKey != nil }
+            .min { ($0.validThroughDayKey ?? "") < ($1.validThroughDayKey ?? "") }
+        return LeaveCard {
+            Text(text.t("leaveRemainingTitle"))
+                .font(LeaveStyle.title)
+                .padding(.bottom, 4)
+            LeaveHeroNumber(full: text.formatDays(days), number: text.formatDecimal(days))
+            if let expiring, let key = expiring.validThroughDayKey {
+                Text(text.t("leaveExpiringFirst", values: [
+                    "days": text.formatDays(Double(shifts.availableLeaveHalfDays(for: expiring)) / 2),
+                    "name": shifts.leaveBalanceName(expiring),
+                    "date": shifts.leaveDayLabel(dayKey: key, template: "MMMd"),
+                ]))
+                .font(.subheadline)
+                .foregroundStyle(OWCDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 6)
+            }
+            OWCFlowLayout(spacing: 6) {
+                ForEach(balances.filter { shifts.availableLeaveHalfDays(for: $0) > 0 }) { balance in
+                    HStack(spacing: 5) {
+                        Circle().fill(balance.id == expiring?.id ? OWCDesign.accent.opacity(0.55) : OWCDesign.accent)
+                            .frame(width: 7, height: 7)
+                        Text("\(shifts.leaveBalanceName(balance)) \(text.t("leaveAvailable", values: ["count": text.formatDecimal(Double(shifts.availableLeaveHalfDays(for: balance)) / 2)]))")
+                            .font(.footnote.weight(.medium))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(OWCDesign.control, in: Capsule())
+                }
+            }
+            .padding(.top, 12)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var balancesCard: some View {
+        LeaveCard(title: text.t("leaveBalancesSection")) {
+            ForEach(Array(balances.enumerated()), id: \.element.id) { index, balance in
+                Divider()
+                Button { editing = .init(balance: balance, isNew: false) } label: {
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(shifts.leaveBalanceName(balance))
+                                .font(.subheadline.weight(.medium))
+                            Spacer(minLength: 8)
+                            Text(text.t("leaveAvailable", values: [
+                                "count": text.formatDays(Double(shifts.availableLeaveHalfDays(for: balance)) / 2),
+                            ]))
+                            .font(.subheadline.weight(.semibold).monospacedDigit())
+                        }
+                        .foregroundStyle(OWCDesign.primary)
+                        LeaveBalanceBar(totalHalfDays: balance.entitledHalfDays,
+                                        usedHalfDays: balance.usedHalfDays,
+                                        plannedHalfDays: plannedHalfDays(balance))
+                            .padding(.top, 8)
+                            .padding(.bottom, 6)
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(balance.usedHalfDays > 0
+                                 ? text.t("leaveTotalAndTaken", values: [
+                                    "total": text.formatDays(Double(balance.entitledHalfDays) / 2),
+                                    "used": text.formatDays(Double(balance.usedHalfDays) / 2),
+                                 ])
+                                 : text.t("leaveTotal", values: ["total": text.formatDays(Double(balance.entitledHalfDays) / 2)]))
+                            Spacer(minLength: 8)
+                            if let validity = validityLabel(balance) { Text(validity) }
+                        }
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(OWCDesign.secondary)
+                    }
+                    .padding(.vertical, 10)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .combine)
+            }
+            Divider()
+            Button { editing = .init(balance: Self.newBalance(), isNew: true) } label: {
+                Label(text.t("leaveAddBalance"), systemImage: "plus")
+                    .font(.subheadline)
+                    .foregroundStyle(OWCDesign.accent)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if !balances.isEmpty {
+                HStack(spacing: 14) {
+                    legendItem(Color(uiColor: .systemGray3), "leaveLegendTaken")
+                    legendItem(OWCDesign.accent, "leaveLegendPlanned")
+                    legendItem(OWCDesign.control, "leaveLegendLeft")
+                }
+                .font(.caption2)
+                .foregroundStyle(OWCDesign.secondary)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 6)
+                .accessibilityHidden(true)
+            }
+        }
+    }
+
+    private func legendItem(_ color: Color, _ key: String) -> some View {
+        HStack(spacing: 5) {
+            Capsule().fill(color).frame(width: 12, height: 5)
+            Text(text.t(key))
+        }
     }
 
     private var planSubtitle: String? {
@@ -536,22 +665,38 @@ private struct LeavePlannerSheet: View {
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
-                if goalIsRest {
-                    Stepper(value: $restDays, in: 2...60) {
-                        LabeledContent(text.t("leaveGoalRest")) {
-                            Text(text.t("leaveAtLeast", values: ["days": text.formatDays(Double(restDays))]))
-                                .monospacedDigit()
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(text.t(goalIsRest ? "leaveGoalRest" : "leaveGoalBudget"))
+                        .font(LeaveStyle.title)
+                    HStack(alignment: .center, spacing: 12) {
+                        if goalIsRest {
+                            LeaveHeroNumber(
+                                full: text.t("leaveAtLeast", values: ["days": text.formatDays(Double(restDays))]),
+                                number: text.formatCount(restDays)
+                            )
+                            .contentTransition(.numericText())
+                            Spacer(minLength: 0)
+                            Stepper(text.t("leaveGoalRest"), value: $restDays, in: 2...60)
+                                .labelsHidden()
+                        } else {
+                            LeaveHeroNumber(
+                                full: text.t("leaveUpTo", values: ["days": text.formatDays(Double(leaveHalfDays) / 2)]),
+                                number: text.formatDecimal(Double(leaveHalfDays) / 2)
+                            )
+                            .contentTransition(.numericText())
+                            Spacer(minLength: 0)
+                            Stepper(text.t("leaveGoalBudget"), value: $leaveHalfDays, in: 1...max(1, selectedHalfDays))
+                                .labelsHidden()
+                                .disabled(selectedHalfDays == 0)
                         }
                     }
-                } else {
-                    Stepper(value: $leaveHalfDays, in: 1...max(1, selectedHalfDays)) {
-                        LabeledContent(text.t("leaveGoalBudget")) {
-                            Text(text.t("leaveUpTo", values: ["days": text.formatDays(Double(leaveHalfDays) / 2)]))
-                                .monospacedDigit()
-                        }
-                    }
-                    .disabled(selectedHalfDays == 0)
+                    .accessibilityElement(children: .combine)
+                    Text(text.t(goalIsRest ? "leaveGoalRestHint" : "leaveGoalBudgetHint"))
+                        .font(.footnote)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .padding(.vertical, 4)
             }
 
             Section {
@@ -590,17 +735,37 @@ private struct LeavePlannerSheet: View {
                         get: { selected.contains(balance.id) },
                         set: { if $0 { selected.insert(balance.id) } else { selected.remove(balance.id) } }
                     )) {
-                        LabeledContent(shifts.leaveBalanceName(balance)) {
-                            Text(text.t("leaveAvailable", values: ["count": text.formatDays(Double(available) / 2)]))
-                                .monospacedDigit()
-                        }
+                        (Text(shifts.leaveBalanceName(balance)) + Text("  ")
+                            + Text([text.t("leaveAvailable", values: ["count": text.formatDays(Double(available) / 2)]),
+                                    balance.validThroughDayKey.map {
+                                        text.t("leaveValidUntilDate", values: ["date": shifts.leaveDayLabel(dayKey: $0, template: "MMMd")])
+                                    }].compactMap { $0 }.joined(separator: " · "))
+                                .foregroundStyle(OWCDesign.secondary))
+                            .monospacedDigit()
                     }
                     .tint(OWCDesign.accent)
                     .disabled(available == 0)
                 }
             } header: {
                 Text(text.t("leaveUseBalances"))
+            } footer: {
+                if !shifts.records.state.leaveBalances.isEmpty {
+                    Text(text.t("leaveBalancesFooter"))
+                }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Button(action: search) {
+                Group {
+                    if isSearching { ProgressView().tint(.white) } else { Text(text.t("leaveFind")) }
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(OWCPrimaryButtonStyle())
+            .disabled(request == nil || isSearching)
+            .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.vertical, 12)
+            .background(OWCDesign.page)
         }
         .navigationTitle(text.t("leavePlanAction"))
         .navigationBarTitleDisplayMode(.inline)
@@ -673,7 +838,8 @@ private struct LeavePlannerSheet: View {
         selected = Set(budgets.filter { $0.availableHalfDays > 0 }.map(\.id))
         leaveHalfDays = min(max(1, selectedHalfDays), 6)
         #if DEBUG
-        if UserDefaults.standard.bool(forKey: "ios.native.qaLeavePlanner") {
+        if UserDefaults.standard.bool(forKey: "ios.native.qaLeavePlanner"),
+           UserDefaults.standard.string(forKey: "ios.native.qaLeaveScreen") != "setup" {
             isSearching = true
             let restDays = UserDefaults.standard.object(forKey: "ios.native.qaLeaveRestDays") == nil
                 ? nil : UserDefaults.standard.integer(forKey: "ios.native.qaLeaveRestDays")
@@ -744,69 +910,100 @@ private struct LeavePlanDetail: View {
     private var text: AppText { shifts.text }
 
     var body: some View {
-        Form {
-            if !shifts.plus.isAuthorized {
-                Section { LeaveTrialBanner(shifts: shifts) }
-            }
-            Section {
-                LeavePlanCalendar(shifts: shifts, proposal: proposal)
-                    .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
-            } header: {
-                Text(text.t("leaveDaysOff", count: proposal.fullRestDays))
-            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                if !shifts.plus.isAuthorized {
+                    LeaveCard { LeaveTrialBanner(shifts: shifts) }
+                }
+                LeaveCard { LeaveBridgeCard(shifts: shifts, proposal: proposal) }
 
-            if !proposal.items.isEmpty {
-                Section(text.t("leaveRequests")) {
-                    ForEach(proposal.items, id: \.dayKey) { item in
-                        LabeledContent {
-                            Text(itemTime(item)).monospacedDigit()
-                        } label: {
-                            Text(shifts.leaveDayLabel(item.dayNumber))
-                            Text(itemDetail(item))
+                if !proposal.items.isEmpty {
+                    LeaveCard(title: text.t("leaveRequests"),
+                              note: text.t("recordsAllocationTotal", values: ["duration": text.formatDays(Double(proposal.costHalfDays) / 2)])) {
+                        ForEach(Array(proposal.items.enumerated()), id: \.element.dayKey) { index, item in
+                            Divider()
+                            HStack(spacing: 10) {
+                                Image(systemName: item.portion == .whole ? "suitcase.fill" : "circle.lefthalf.filled")
+                                    .font(.title3)
+                                    .foregroundStyle(OWCDesign.accent)
+                                    .frame(width: 26)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(shifts.leaveDayLabel(item.dayNumber))
+                                        .font(.subheadline.weight(.medium))
+                                    Text(itemDetail(item))
+                                        .font(.footnote.monospacedDigit())
+                                        .foregroundStyle(OWCDesign.secondary)
+                                }
+                                Spacer(minLength: 8)
+                                Text(text.formatDays(Double(item.portion.halfDays) / 2))
+                                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                            }
+                            .frame(minHeight: 52)
+                            .accessibilityElement(children: .combine)
                         }
                     }
-                }
-                Section(text.t("leaveUseBalances")) {
-                    ForEach(proposal.uses, id: \.budgetID) { use in
-                        if let balance = shifts.records.state.leaveBalances.first(where: { $0.id == use.budgetID }) {
-                            let left = shifts.availableLeaveHalfDays(for: balance) - use.halfDays
-                            LabeledContent(shifts.leaveBalanceName(balance)) {
-                                Text(text.t("leaveBalanceAfter", values: [
-                                    "used": text.formatDays(Double(use.halfDays) / 2),
-                                    "left": text.formatDays(Double(max(0, left)) / 2),
-                                ]))
-                                .monospacedDigit()
+                    let balanceIDs = Set(shifts.records.state.leaveBalances.map(\.id))
+                    if proposal.uses.contains(where: { balanceIDs.contains($0.budgetID) }) {
+                    LeaveCard(title: text.t("leaveDeductFrom"), note: text.t("leaveDeductOrder")) {
+                        ForEach(proposal.uses, id: \.budgetID) { use in
+                            if let balance = shifts.records.state.leaveBalances.first(where: { $0.id == use.budgetID }) {
+                                let available = shifts.availableLeaveHalfDays(for: balance)
+                                let left = available - use.halfDays
+                                Divider()
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack(alignment: .firstTextBaseline) {
+                                        Text(shifts.leaveBalanceName(balance))
+                                            .font(.subheadline.weight(.medium))
+                                        Spacer(minLength: 8)
+                                        Text(text.t("leaveBalanceAfter", values: [
+                                            "used": text.formatDays(Double(use.halfDays) / 2),
+                                            "left": text.formatDays(Double(max(0, left)) / 2),
+                                        ]))
+                                        .font(.subheadline.weight(.semibold).monospacedDigit())
+                                    }
+                                    LeaveBalanceBar(
+                                        totalHalfDays: balance.entitledHalfDays,
+                                        usedHalfDays: balance.entitledHalfDays - available,
+                                        plannedHalfDays: use.halfDays
+                                    )
+                                }
+                                .padding(.vertical, 10)
+                                .accessibilityElement(children: .combine)
                             }
                         }
                     }
-                }
-            }
-
-            Section {
-                if let end = proposal.lastShiftEndAtMs {
-                    LabeledContent(text.t("leaveLastShiftEnds"), value: timeLabel(end))
-                }
-                if let start = proposal.nextShiftStartAtMs {
-                    LabeledContent(text.t("leaveNextShiftStarts"), value: timeLabel(start))
-                }
-            } footer: {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(caveatKeys, id: \.self) { key in
-                        Label(key.label(text), systemImage: "info.circle")
                     }
                 }
-            }
 
+                if !caveatKeys.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(caveatKeys, id: \.self) { key in
+                            Label(key.label(text), systemImage: "exclamationmark.triangle")
+                        }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 4)
+                }
+            }
+            .padding(OWCDesign.pageInset)
+            .frame(maxWidth: 620)
+            .frame(maxWidth: .infinity)
+        }
+        .background(OWCDesign.page)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             if !proposal.items.isEmpty {
-                Section {
-                    Button(action: adopt) {
-                        Text(text.t("leaveAdopt"))
-                    }
-                    .buttonStyle(OWCPrimaryButtonStyle())
-                    .disabled(isAdopting)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
+                Button(action: adopt) {
+                    Text(text.t("leaveAdopt")).frame(maxWidth: .infinity)
                 }
+                .buttonStyle(OWCPrimaryButtonStyle())
+                .disabled(isAdopting)
+                .padding(.horizontal, OWCDesign.pageInset)
+                .padding(.vertical, 12)
+                .frame(maxWidth: 620)
+                .frame(maxWidth: .infinity)
+                .background(OWCDesign.page)
             }
         }
         .navigationTitle(OWCText.ltrRange(
@@ -858,12 +1055,15 @@ private struct LeavePlanDetail: View {
         return OWCText.ltrRange(shifts.leaveTime(first.startAtMs), shifts.leaveTime(last.endAtMs))
     }
 
+    /// "Second half 14:00–18:00 · Leave early".
     private func itemDetail(_ item: LeavePlanItem) -> String {
+        var parts = ["\(text.t(item.portion.titleKey)) \(itemTime(item))"]
         switch item.role {
-        case .bridge: text.t(item.portion.titleKey)
-        case .earlyDeparture: text.t("leaveRoleEarly")
-        case .lateReturn: text.t("leaveRoleLate")
+        case .bridge: break
+        case .earlyDeparture: parts.append(text.t("leaveRoleEarly"))
+        case .lateReturn: parts.append(text.t("leaveRoleLate"))
         }
+        return parts.joined(separator: " · ")
     }
 
     private func adopt() {

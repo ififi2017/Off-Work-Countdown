@@ -373,7 +373,7 @@ struct RecordsWeekChart: View {
     }
 
     private func scaleMs(_ looks: [RecordsDayLook]) -> Double {
-        max(12 * 3_600_000, Double(looks.map(\.totalMs).max() ?? 0))
+        Double(RecordsWeekAxis.ceiling(for: looks.map(\.cell)))
     }
 
     private func guideLine(_ ms: Int64) -> some View {

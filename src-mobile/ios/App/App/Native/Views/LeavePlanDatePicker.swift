@@ -27,6 +27,28 @@ struct LeavePlanDatePicker: View {
     var body: some View {
         ScrollViewReader { proxy in
             List {
+                if let first = indices.first.map({ proposals[$0] }) {
+                    Section {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(shifts.text.t("leaveDaysOff", count: first.fullRestDays))
+                                    .font(.headline)
+                                Text(shifts.leaveCost(first))
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(OWCDesign.accent)
+                            }
+                            LeaveDayStrip(kinds: LeaveDayStrip.kinds(first), cellWidth: 18)
+                                .padding(.top, 10)
+                            Text(shifts.text.t("leaveSamePatternHint"))
+                                .font(.footnote)
+                                .foregroundStyle(OWCDesign.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.top, 10)
+                        }
+                        .padding(.vertical, 6)
+                        .accessibilityElement(children: .combine)
+                    }
+                }
                 ForEach(months, id: \.self) { month in
                     Section(shifts.leaveDayLabel(proposals[month[0]].firstRestDayNumber, template: "yMMMM")) {
                         ForEach(month, id: \.self) { index in
@@ -38,12 +60,13 @@ struct LeavePlanDatePicker: View {
                                 HStack(spacing: 12) {
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text(OWCText.ltrRange(
-                                            shifts.leaveDayLabel(proposal.firstRestDayNumber, template: "yMMMdEEE"),
-                                            shifts.leaveDayLabel(proposal.lastRestDayNumber, template: "yMMMdEEE")
+                                            shifts.leaveDayLabel(proposal.firstRestDayNumber, template: "MMMdEEE"),
+                                            shifts.leaveDayLabel(proposal.lastRestDayNumber, template: "MMMdEEE")
                                         ))
+                                        .monospacedDigit()
                                         .foregroundStyle(OWCDesign.primary)
                                         if !proposal.caveats.isEmpty {
-                                            Label(shifts.text.t("leaveEstimated"), systemImage: "info.circle")
+                                            Text(shifts.text.t("leaveEstimated"))
                                                 .font(.caption)
                                                 .foregroundStyle(OWCDesign.secondary)
                                         }
