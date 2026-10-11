@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<title>休假面板</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.board{font-family:-apple-system,"SF Pro Text","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#1c1c1e}
+.board button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit}
+.theme-light{--page:#F2F2F7;--card:#FFFFFF;--label:#000000;--sec:rgba(60,60,67,.62);--ter:rgba(60,60,67,.32);--ctl:rgba(118,118,128,.12);--sep:rgba(60,60,67,.18);--segOn:#FFFFFF;--work:#5856D6;--accent:#E8590C;--off:#248A3D;--offBand:rgba(52,199,89,.14);--offWk:rgba(52,199,89,.38)}
+.theme-dark{--page:#000000;--card:#1C1C1E;--label:#FFFFFF;--sec:rgba(235,235,245,.62);--ter:rgba(235,235,245,.3);--ctl:rgba(118,118,128,.24);--sep:rgba(84,84,88,.65);--segOn:#636366;--work:#5E5CE6;--accent:#FF872E;--off:#30D158;--offBand:rgba(48,209,88,.16);--offWk:rgba(48,209,88,.40)}
+.rowlabel{font-size:15px;font-weight:600;color:#8a8a8e;margin:0 0 12px 6px;letter-spacing:.04em}
+.phones{display:flex;gap:40px}
+.phone{position:relative;width:390px;height:1120px;border-radius:48px;background:var(--page);box-shadow:0 0 0 1px rgba(0,0,0,.07),0 24px 60px rgba(0,0,0,.10);overflow:hidden;padding:18px 16px 0;box-sizing:border-box;color:var(--label)}
+.theme-dark .phone{box-shadow:0 0 0 1px rgba(255,255,255,.10),0 24px 60px rgba(0,0,0,.30)}
+.nav{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;height:44px;margin-top:26px;font-size:17px}
+.nav .back{color:var(--accent);display:flex;align-items:center;gap:2px}
+.nav .back svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.nav b{font-weight:600;text-align:center}
+.nav>:last-child{justify-self:end}
+.nav .act{color:var(--accent);font-weight:600}
+.lt{font-size:34px;font-weight:700;margin:4px 4px 12px}
+.screen{font-size:12px;font-weight:600;color:var(--ter);letter-spacing:.06em;margin:0 4px 8px}
+.sc{background:var(--card);border-radius:22px;padding:18px;margin-top:12px}
+.eb{font-size:15px;font-weight:700;margin-bottom:4px}
+.num{font-size:30px;line-height:34px;font-weight:600;letter-spacing:.01em;font-family:ui-rounded,'SF Pro Rounded',-apple-system,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.num small{font-size:17px;font-weight:600;margin-left:3px;font-family:-apple-system,system-ui,sans-serif}
+.sub{font-size:15px;line-height:1.45;color:var(--sec);margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;padding:5px 10px;border-radius:14px;background:var(--ctl)}
+.chip i{width:7px;height:7px;border-radius:4px}
+.ctitle{display:flex;align-items:baseline;justify-content:space-between;font-size:13px;color:var(--sec);margin-bottom:10px}
+.ctitle b{font-size:15px;color:var(--label)}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.chev{width:14px;height:14px;fill:none;stroke:var(--ter);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.entry{display:flex;align-items:center;gap:8px;min-height:44px;color:var(--accent);font-size:15px}
+.entry span{flex:1}
+.bal{padding:10px 0;border-top:.5px solid var(--sep)}
+.bal:first-of-type{border-top:0;padding-top:0}
+.bal .top{display:flex;align-items:baseline;gap:8px;font-size:15px}
+.bal .top span{flex:1;font-weight:500}
+.bal .top em{font-style:normal;font-weight:600;font-variant-numeric:tabular-nums}
+.bar{display:flex;gap:2px;height:8px;border-radius:4px;overflow:hidden;margin:8px 0 6px;background:var(--ctl)}
+.bar span{display:block}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sec);font-variant-numeric:tabular-nums}
+.plan{display:flex;align-items:center;gap:10px;min-height:52px;border-top:.5px solid var(--sep)}
+.plan:first-of-type{border-top:0}
+.plan .px{flex:1}
+.plan .pt{font-size:15px;font-weight:500}
+.plan .ps{font-size:13px;color:var(--sec);margin-top:2px}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--ctl);border-radius:10px;padding:2px}
+.seg .sg{display:block!important;width:100%!important;min-width:0;height:28px!important;text-align:center!important;font-size:13px!important;font-weight:500;line-height:28px!important;border-radius:8px!important;white-space:nowrap;background:transparent!important}
+.seg .sg.on{background:var(--segOn)!important;font-weight:600!important;box-shadow:0 3px 8px rgba(0,0,0,.12)!important}
+.stepper{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.stepper .sb{display:flex;background:var(--ctl);border-radius:10px;overflow:hidden}
+.stepper .sb button{width:46px;height:32px;display:flex!important;align-items:center;justify-content:center;font-size:20px;font-weight:500}
+.stepper .sb i{width:.5px;background:var(--sep);margin:6px 0}
+.lrow{display:flex;align-items:center;justify-content:space-between;min-height:44px;font-size:15px;border-top:.5px solid var(--sep)}
+.lrow:first-of-type{border-top:0}
+.lrow .v{color:var(--sec);font-variant-numeric:tabular-nums}
+.pill{width:160px;box-sizing:border-box;text-align:center;white-space:nowrap;font-size:15px;padding:6px 11px;border-radius:8px;background:var(--ctl);font-variant-numeric:tabular-nums}
+.tog{width:51px;height:31px;border-radius:16px;background:#34C759;position:relative;flex:none}
+.tog::after{content:"";position:absolute;top:2px;left:22px;width:27px;height:27px;border-radius:14px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.tog.off{background:var(--ctl)}
+.tog.off::after{left:2px}
+.foot{font-size:12px;color:var(--sec);margin:8px 4px 0;line-height:1.45}
+.trial{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sec)}
+.trial svg{width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linejoin:round;flex:none}
+.trial b{display:block;color:var(--label);font-size:15px;font-weight:600}
+.cta{position:absolute;left:16px;right:16px;bottom:30px;height:50px;border-radius:14px;background:var(--accent);color:#fff;font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.ctanote{position:absolute;left:16px;right:16px;bottom:88px;text-align:center;font-size:12px;color:var(--sec)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--accent)}
+.warn{display:flex;gap:6px;font-size:12px;color:var(--sec);margin-top:8px;line-height:1.4}
+.warn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;flex:none;margin-top:1px}
+.wds{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));font-size:12px;font-weight:500;color:var(--ter);text-align:center;margin-bottom:4px}
+.wk{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:66px}
+.band{position:absolute;top:50px;height:13px;border-radius:4px;background:color-mix(in srgb,var(--off) 14%,transparent);overflow:hidden}
+.band span{display:block;padding:0 4px;font-size:9.5px;line-height:13px;font-weight:600;color:var(--off);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell{position:relative;display:flex;flex-direction:column;align-items:center;padding-top:6px}
+.dn{width:30px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:16px;font-variant-numeric:tabular-nums}
+.mk{height:12px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.mk svg{width:12px;height:12px}
+.hb{height:4px;width:16px;border-radius:2px;box-shadow:inset 0 0 0 1.25px var(--work);opacity:.6}
+.mlabel{font-size:12px;font-weight:600;color:var(--sec);margin:8px 0 2px 4px}
+.key{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:11px;color:var(--sec);margin-top:10px}
+.ki{display:inline-flex;align-items:center;gap:5px}
+.ki svg{width:11px;height:11px}
+.req{display:flex;align-items:center;gap:10px;min-height:52px;border-top:.5px solid var(--sep)}
+.req:first-of-type{border-top:0}
+.req svg{width:22px;height:22px;flex:none}
+.req .rx{flex:1}
+.req .rt{font-size:15px;font-weight:500}
+.req .rs{font-size:13px;color:var(--sec);margin-top:2px}
+.req em{font-style:normal;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.bridge{display:flex;align-items:stretch;gap:10px}
+.bridge .end{flex:1;padding:12px;border-radius:14px;background:var(--ctl)}
+.bridge .end span{display:block;font-size:12px;color:var(--sec)}
+.bridge .end b{display:block;font-size:17px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.bridge .end small{display:block;font-size:12px;color:var(--sec);margin-top:2px}
+.bridge .mid{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--off);font-size:12px;font-weight:600;width:56px;text-align:center}
+.bridge .mid svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.fseg{margin:6px 0 4px;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.fseg .sg{font-size:12px!important}
+.prow{display:flex!important;width:100%!important;align-items:flex-start;gap:10px;padding:14px 0!important;border-top:.5px solid var(--sep)!important;text-align:left!important}
+.plist .prow:first-child{border-top:0!important}
+.prow .px{flex:1;min-width:0}
+.ph{display:flex;align-items:baseline;gap:8px}
+.ph b{font-size:17px;font-weight:600}
+.ph em{font-style:normal;font-size:15px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.pd{font-size:13px;color:var(--sec);margin-top:2px}
+.strip{display:flex;gap:2px;margin-top:10px}
+.strip.dense{gap:1px}
+.strip i{width:22px;height:8px;border-radius:2.5px;flex:none}
+.tags{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;color:var(--sec)}
+.tags .best{color:var(--accent);font-weight:600}
+.tags .more{color:var(--accent);font-weight:500;display:inline-flex;align-items:center;gap:2px}
+.tags .more svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.ck{width:22px;height:22px;flex:none;margin-top:1px}
+.sech{font-size:13px;color:var(--sec);margin:18px 4px 6px}
+.drow{display:flex!important;width:100%!important;align-items:center;gap:10px;min-height:48px;border-top:.5px solid var(--sep)!important;text-align:left!important}
+.dl .drow:first-child{border-top:0!important}
+.drow .px{flex:1;font-size:15px;font-variant-numeric:tabular-nums}
+.drow .px small{display:block;font-size:12px;color:var(--sec);margin-top:2px}
+.drow .tick{width:18px;height:18px;flex:none;fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</helmet>
+<div class="board" style="width: 2620px; height: 2520px; box-sizing: border-box; padding: 40px; display: flex; flex-direction: column; gap: 48px; background: #E9E9EE">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="rowlabel">{{t.label}}</div>
+<div class="phones">
+
+<!-- 1 · 休假首页 -->
+<div class="phone">
+<div class="nav"><span class="back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg>记录</span><span></span></div>
+<div class="lt">休假</div>
+<div class="sc">
+<div class="eb">还能休</div>
+<div class="num">9<small>天</small></div>
+<div class="sub">2 天调休假 12 月 31 日到期，记得先安排上。</div>
+<div class="chips"><span class="chip"><i style="background: var(--accent)"></i>年假 剩 7</span><span class="chip"><i style="background: var(--accent); opacity: .5"></i>调休假 剩 2</span></div>
+</div>
+<div class="sc" style="padding: 4px 18px">
+<div class="entry"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="7.5" width="18" height="12.5" rx="3"></rect><path d="M9 7.5V5.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5.5v2M3 13h18"></path></svg><span>规划休假</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+</div>
+<div class="sc">
+<div class="ctitle"><b>假期余额</b><span>按天</span></div>
+<sc-for list="{{t.balances}}" as="b" hint-placeholder-count="2">
+<div class="bal">
+<div class="top"><span>{{b.name}}</span><em>剩 {{b.left}}</em></div>
+<div class="bar"><span style="flex: {{b.used}}; background: var(--sec); opacity: .45"></span><span style="flex: {{b.planned}}; background: var(--accent)"></span><span style="flex: {{b.free}}; background: transparent"></span></div>
+<div class="meta"><span>{{b.metaL}}</span><span>{{b.metaR}}</span></div>
+</div>
+</sc-for>
+<div class="entry" style="border-top: .5px solid var(--sep); margin-top: 4px"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>添加假期余额</span></div>
+<div class="key"><span class="ki"><span style="width: 12px; height: 6px; border-radius: 3px; background: var(--sec); opacity: .45"></span>已休</span><span class="ki"><span style="width: 12px; height: 6px; border-radius: 3px; background: var(--accent)"></span>已规划</span><span class="ki"><span style="width: 12px; height: 6px; border-radius: 3px; background: var(--ctl)"></span>还能休</span></div>
+</div>
+<div class="sc">
+<div class="ctitle"><b>已规划的休假</b><span>1 个</span></div>
+<div class="plan"><div class="px"><div class="pt">12月25日 – 1月3日 · 连休 9 天</div><div class="ps">需请假 4.5 天 · 含元旦</div></div><svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+</div>
+</div>
+
+<!-- 2 · 规划条件 -->
+<div class="phone">
+<div class="nav"><span class="back">取消</span><b>规划休假</b><span class="act">查找</span></div>
+<sc-if value="{{t.free}}" hint-placeholder-val="{{ false }}">
+<div class="sc"><div class="trial"><svg viewBox="0 0 24 24"><path d="M3 8.5V6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.5a2.5 2.5 0 0 0 0 5V16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2.5a2.5 2.5 0 0 0 0-5zM15 5v12" style="stroke-dasharray: none"></path></svg><div><b>还可免费查 2 次</b>查到方案才算一次，切换和查看详情不扣次数。</div></div></div>
+</sc-if>
+<div class="sc">
+<div class="seg"><button class="{{t.goalRestCls}}" onClick="{{t.pickRest}}">连续休息</button><button class="{{t.goalBudgetCls}}" onClick="{{t.pickBudget}}">使用假期</button></div>
+<div class="stepper">
+<div><div class="eb" style="margin: 0">{{t.goalLabel}}</div><div class="num" style="margin-top: 2px">{{t.goalPre}}{{t.goalVal}}<small>天</small></div></div>
+<div class="sb"><button onClick="{{t.dec}}" aria-label="减少">−</button><i></i><button onClick="{{t.inc}}" aria-label="增加">+</button></div>
+</div>
+<div class="sub" style="font-size: 13px">{{t.goalHint}}</div>
+</div>
+<div class="sc" style="padding: 4px 18px">
+<div class="lrow"><span>最早</span><span class="pill">2026年10月12日</span></div>
+<div class="lrow"><span>最晚</span><span class="pill">2027年10月11日</span></div>
+</div>
+<div class="foot">在今后一年内查找。2027 年的节假日是推测的，以国务院公布为准。</div>
+<div class="sc" style="padding: 4px 18px">
+<div class="lrow"><span>年假<span class="v" style="margin-left: 8px">剩 7 天</span></span><span class="tog"></span></div>
+<div class="lrow"><span>调休假<span class="v" style="margin-left: 8px">剩 2 天 · 12月31日到期</span></span><span class="tog"></span></div>
+</div>
+<div class="foot">可使用的假期。不需要请假的连休也会列出来。</div>
+<div class="cta">查找</div>
+</div>
+
+<!-- 3 · 方案 -->
+<div class="phone">
+<div class="nav"><span class="back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg>条件</span><b>方案</b><span></span></div>
+<div class="sc">
+<div class="eb" style="margin: 0">请 4.5 天假</div>
+<div class="num" style="margin-top: 4px; color: var(--off)">连休 9<small>天</small></div>
+<div class="sub">12月26日 – 1月3日，元旦接周末。周五下午就能走。</div>
+<div class="warn"><svg viewBox="0 0 24 24"><path d="M12 3l9.5 17H2.5zM12 10v4M12 17v.5"></path></svg><span>使用 2027 年推测假期</span></div>
+</div>
+<div class="sc" style="padding: 14px 12px 12px">
+<div class="wds"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+<sc-for list="{{t.weeks}}" as="w" hint-placeholder-count="3">
+<div class="mlabel" style="display: block; {{w.labelCss}}">{{w.label}}</div>
+<div class="wk">
+<sc-for list="{{w.bands}}" as="bd" hint-placeholder-count="1">
+<div class="band" style="left: calc({{bd.left}} + 2px); width: calc({{bd.width}} - 4px)"><span>{{bd.text}}</span></div>
+</sc-for>
+<sc-for list="{{w.days}}" as="d" hint-placeholder-count="7">
+<div class="cell">
+<span class="dn" style="color: var(--label); {{d.numCss}}">{{d.n}}</span>
+<span class="mk">
+<span class="hb" style="display: block; {{d.workCss}}"></span>
+<svg viewBox="0 0 24 24" style="display: block; color: var(--accent); {{d.leaveCss}}"><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V6h4.5A1.5 1.5 0 0 1 21 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-11A1.5 1.5 0 0 1 4.5 6zm1.8 0h2.4V4.8h-2.4z" style="fill: currentColor"></path></svg>
+<svg viewBox="0 0 24 24" style="display: block; color: var(--accent); {{d.halfCss}}"><circle cx="12" cy="12" r="8.5" style="fill: none; stroke: currentColor; stroke-width: 2"></circle><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" style="fill: currentColor"></path></svg>
+<svg viewBox="0 0 24 24" style="display: block; color: var(--off); {{d.holCss}}"><circle cx="12" cy="12" r="4.5" style="fill: currentColor"></circle><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" style="fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round"></path></svg>
+</span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+<div class="key"><span class="ki"><svg viewBox="0 0 24 24" style="color: var(--accent)"><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V6h4.5A1.5 1.5 0 0 1 21 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-11A1.5 1.5 0 0 1 4.5 6zm1.8 0h2.4V4.8h-2.4z" style="fill: currentColor"></path></svg>请假</span><span class="ki"><svg viewBox="0 0 24 24" style="color: var(--accent)"><circle cx="12" cy="12" r="8.5" style="fill: none; stroke: currentColor; stroke-width: 2"></circle><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" style="fill: currentColor"></path></svg>半天</span><span class="ki"><svg viewBox="0 0 24 24" style="color: var(--off)"><circle cx="12" cy="12" r="4.5" style="fill: currentColor"></circle><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" style="fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round"></path></svg>节假日</span><span class="ki"><span style="width: 14px; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--off) 14%, transparent)"></span>连休</span></div>
+</div>
+<div class="sc" style="padding: 4px 18px">
+<div class="entry"><span>全部 6 个方案</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+</div>
+<sc-if value="{{t.free}}" hint-placeholder-val="{{ false }}">
+<div class="ctanote">还可免费查 1 次 · 本次结果可随意切换和查看</div>
+</sc-if>
+<div class="cta">查看详情</div>
+</div>
+
+<!-- 4 · 全部方案 -->
+<div class="phone">
+<div class="nav"><span class="back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg>方案</span><b>{{t.allTitle}}</b><span></span></div>
+<div class="seg fseg"><sc-for list="{{t.cats}}" as="f" hint-placeholder-count="3"><button class="{{f.cls}}" onClick="{{f.pick}}">{{f.label}}</button></sc-for></div>
+<sc-if value="{{t.none}}" hint-placeholder-val="{{ false }}">
+<div class="sc"><div class="eb">{{t.noneTitle}}</div><div class="sub" style="font-size: 13px">{{t.noneHint}}</div><div class="entry" style="margin-top: 6px"><span>{{t.noneAction}}</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div></div>
+</sc-if>
+<div class="sc" style="padding: 0 16px; {{t.listCss}}"><div class="plist">
+<sc-for list="{{t.plans}}" as="p" hint-placeholder-count="6">
+<button class="prow" onClick="{{p.pick}}" aria-label="{{p.aria}}">
+<div class="px">
+<div class="ph"><b>{{p.rest}}</b><em>{{p.cost}}</em></div>
+<div class="pd">{{p.dates}}</div>
+<div class="{{p.stripCls}}"><sc-for list="{{p.cells}}" as="c" hint-placeholder-count="11"><i style="background: {{c.bg}}; width: {{c.w}}"></i></sc-for></div>
+<div class="tags"><span class="best" style="display: inline; {{p.bestCss}}">最省假</span><span style="display: inline; {{p.estCss}}">推测假期</span><span class="more" style="display: inline-flex; {{p.moreCss}}">{{p.more}}<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></span></div>
+</div>
+<svg viewBox="0 0 24 24" class="ck" style="display: block; {{p.ckCss}}"><circle cx="12" cy="12" r="10" style="fill: var(--accent)"></circle><path d="M7.5 12.3l3 3 6-6.3" style="fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round"></path></svg>
+</button>
+</sc-for>
+</div></div>
+<div class="key" style="justify-content: flex-start; margin: 10px 4px 0"><span class="ki"><i style="display: inline-block; width: 12px; height: 7px; border-radius: 2px; background: var(--accent)"></i>请假</span><span class="ki"><i style="display: inline-block; width: 12px; height: 7px; border-radius: 2px; background: var(--off)"></i>节假日</span><span class="ki"><i style="display: inline-block; width: 12px; height: 7px; border-radius: 2px; background: var(--offWk)"></i>周末</span><span class="ki"><i style="display: inline-block; width: 12px; height: 7px; border-radius: 2px; background: var(--ctl)"></i>上班</span></div>
+<div class="foot">按要请的假从少到多排。2027 年的节假日是推测的，以国务院正式通知为准。</div>
+</div>
+
+<!-- 5 · 可选日期 -->
+<div class="phone">
+<div class="nav"><span class="back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg>方案</span><b>42 个可选日期</b><span></span></div>
+<div class="sc">
+<div class="ph"><b>连休 9 天</b><em>请 5 天</em></div>
+<div class="strip"><sc-for list="{{t.reg.cells}}" as="c" hint-placeholder-count="11"><i style="background: {{c.bg}}"></i></sc-for></div>
+<div class="sub" style="font-size: 13px; margin-top: 10px">周一到周五请 5 天假，连上前后两个周末。同样的请法，换个日期也行。</div>
+</div>
+<sc-for list="{{t.months}}" as="m" hint-placeholder-count="4">
+<div class="sech">{{m.label}}</div>
+<div class="sc dl" style="padding: 0 16px; margin-top: 0">
+<sc-for list="{{m.rows}}" as="r" hint-placeholder-count="2">
+<button class="drow" onClick="{{r.pick}}" aria-label="{{r.text}}"><span class="px">{{r.text}}<small style="display: block; {{r.noteCss}}">部分按当前排班估算</small></span><svg class="tick" viewBox="0 0 24 24" style="display: block; {{r.ckCss}}"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></button>
+</sc-for>
+</div>
+</sc-for>
+</div>
+
+<!-- 6 · 详情 -->
+<div class="phone">
+<div class="nav"><span class="back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg>方案</span><b>12月25日 – 1月3日</b><span></span></div>
+<div class="sc">
+<div class="bridge">
+<div class="end"><span>最后一班结束</span><b>14:00</b><small>12月25日 周五</small></div>
+<div class="mid"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"></path></svg>9 天</div>
+<div class="end"><span>回到工作</span><b>09:00</b><small>1月4日 周一</small></div>
+</div>
+</div>
+<div class="sc" style="padding-bottom: 6px">
+<div class="ctitle"><b>需要请的假</b><span>共 4.5 天</span></div>
+<sc-for list="{{t.reqs}}" as="r" hint-placeholder-count="5">
+<div class="req">
+<svg viewBox="0 0 24 24" style="display: block; color: var(--accent); {{r.wholeCss}}"><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V6h4.5A1.5 1.5 0 0 1 21 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-11A1.5 1.5 0 0 1 4.5 6zm1.8 0h2.4V4.8h-2.4z" style="fill: currentColor"></path></svg>
+<svg viewBox="0 0 24 24" style="display: block; color: var(--accent); {{r.halfCss}}"><circle cx="12" cy="12" r="8.5" style="fill: none; stroke: currentColor; stroke-width: 2"></circle><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" style="fill: currentColor"></path></svg>
+<div class="rx"><div class="rt">{{r.date}}</div><div class="rs">{{r.sub}}</div></div><em>{{r.amount}}</em>
+</div>
+</sc-for>
+</div>
+<div class="sc">
+<div class="ctitle"><b>从哪份假里扣</b><span>先扣快到期的</span></div>
+<sc-for list="{{t.after}}" as="b" hint-placeholder-count="2">
+<div class="bal">
+<div class="top"><span>{{b.name}}</span><em>用 {{b.use}}，剩 {{b.left}}</em></div>
+<div class="bar"><span style="flex: {{b.used}}; background: var(--sec); opacity: .45"></span><span style="flex: {{b.planned}}; background: var(--accent)"></span><span style="flex: {{b.free}}; background: transparent"></span></div>
+</div>
+</sc-for>
+</div>
+<div class="warn" style="margin: 10px 4px 0"><svg viewBox="0 0 24 24"><path d="M12 3l9.5 17H2.5zM12 10v4M12 17v.5"></path></svg><span>2027 年中国大陆假期及调休为推测，非正式安排。以国务院年底公布的正式通知为准。</span></div>
+<div class="cta">加入排班</div>
+</div>
+
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"plus":{"editor":"boolean","default":true},"$preview":{"width":2620,"height":2520}}'>
+// Demo plan: 2027 New Year's Day (estimated) Jan 1–3 joined to the weekend.
+// Leave: Dec 25 second half (leave early) + Dec 28–31 whole shifts = 4.5 days; rest Dec 26 – Jan 3 = 9 days.
+const LEAVE = { '12-28': 1, '12-29': 1, '12-30': 1, '12-31': 1 };
+const HALF = { '12-25': 1 };
+const HOL = { '1-1': 1, '1-2': 1, '1-3': 1 };
+function dateAt(i) { const d = new Date(Date.UTC(2026, 11, 20 + i)); return { m: d.getUTCMonth() + 1, d: d.getUTCDate(), w: d.getUTCDay() }; }
+const HIDE = 'display: none';
+const PLANS = [
+  { id: 0, cat: 'hol', rest: '连休 9 天', cost: '无需请假', dates: '2月6日 – 2月14日 · 春节', code: 'wHHHHHHHHHw', est: true, best: true },
+  { id: 1, cat: 'hol', rest: '连休 10 天', cost: '请 1 天', dates: '10月1日 – 10月10日 · 国庆节', code: 'wHHHHHHHLSSw', est: true },
+  { id: 2, cat: 'hol', rest: '连休 9 天', cost: '请 2 天', dates: '5月1日 – 5月9日 · 劳动节', code: 'wHHHHHLLSSw', est: true },
+  { id: 3, cat: 'hol', rest: '连休 9 天', cost: '请 4 天', dates: '4月3日 – 4月11日 · 清明节', code: 'wHHHLLLLSSw', est: true },
+  { id: 4, cat: 'hol', rest: '连休 9 天', cost: '请 4.5 天', dates: '12月26日 – 1月3日 · 元旦', code: 'hSSLLLLHHHw', est: true },
+  { id: 5, cat: 'reg', rest: '连休 9 天', cost: '请 5 天', dates: '10月17日 – 10月25日', code: 'wSSLLLLLSSw', more: '42 个可选日期' }
+];
+const CELL = { w: 'var(--ctl)', L: 'var(--accent)', H: 'var(--off)', S: 'var(--offWk)', h: 'linear-gradient(90deg, var(--ctl) 50%, var(--accent) 50%)' };
+function cells(code, w) { return code.split('').map(ch => ({ bg: CELL[ch], w: (w || 22) + 'px' })); }
+// Longer goals: extend from each holiday (or a Saturday) day by day until the stretch is long enough,
+// then keep any free days that follow. Plans beyond the available leave or the search range are dropped.
+const HOLS27 = [['元旦', 0, 1, 3], ['春节', 1, 6, 9], ['清明节', 3, 3, 3], ['劳动节', 4, 1, 5], ['国庆节', 9, 1, 7]];
+const AVAILABLE = 9, RANGE_END = Date.UTC(2027, 9, 11);
+function md(t) { const d = new Date(t); return (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日'; }
+function longPlans(goal) {
+  const holiday = {};
+  HOLS27.forEach(([, m, d, n]) => { for (let i = 0; i < n; i++) holiday[Date.UTC(2027, m, d + i)] = 1; });
+  const kind = t => holiday[t] ? 'H' : ([0, 6].includes(new Date(t).getUTCDay()) ? 'S' : 'L');
+  const make = (start, name, cat) => {
+    let code = 'w', len = 0, cost = 0, t = start;
+    while (len < goal || kind(t) !== 'L') { const k = kind(t); code += k; len++; if (k === 'L') cost++; t += 864e5; }
+    if (t - 864e5 > RANGE_END || cost > AVAILABLE) return null;
+    return { cat: cat, len: len, cost: cost, code: code + 'w', name: name, start: start, end: t - 864e5, est: true };
+  };
+  const out = [];
+  HOLS27.forEach(([name, m, d]) => { const p = make(Date.UTC(2027, m, d), name, 'hol'); if (p) out.push(p); });
+  const reg = make(Date.UTC(2026, 9, 17), '', 'reg');
+  if (reg) { reg.est = false; reg.more = '40 个可选日期'; out.push(reg); }
+  out.sort((a, b) => a.cost - b.cost || b.len - a.len);
+  return out.map((p, i) => ({ id: 100 + i, cat: p.cat, rest: '连休 ' + p.len + ' 天', cost: p.cost ? '请 ' + p.cost + ' 天' : '无需请假',
+    dates: md(p.start) + ' – ' + md(p.end) + (p.name ? ' · ' + p.name : ''), code: p.code, est: p.est, more: p.more, best: p.cost === out[0].cost }));
+}
+const MONTHS = [
+  { label: '2026年10月', rows: ['10月17日 周六 – 10月25日 周日', '10月24日 周六 – 11月1日 周日'] },
+  { label: '2026年11月', rows: ['11月7日 周六 – 11月15日 周日', '11月14日 周六 – 11月22日 周日', '11月21日 周六 – 11月29日 周日', '11月28日 周六 – 12月6日 周日'] },
+  { label: '2026年12月', rows: ['12月5日 周六 – 12月13日 周日', '12月12日 周六 – 12月20日 周日'] },
+  { label: '2027年1月', rows: ['1月9日 周六 – 1月17日 周日'], note: true }
+];
+const CATS = [['all', '全部'], ['hol', '结合节假日'], ['reg', '不结合节假日']];
+
+class Component extends DCLogic {
+  renderVals() {
+    const plus = this.props.plus ?? true;
+    const goalRest = this.state.goalRest ?? true;
+    const rest = this.state.rest ?? 7;
+    const budget = this.state.budget ?? 5;
+    const cat = this.state.cat ?? 'all';
+    const sel = this.state.sel ?? 4;
+    const dsel = this.state.dsel ?? 0;
+    const source = goalRest && rest >= 10 ? longPlans(rest) : PLANS;
+    const shown = source.filter(p => cat === 'all' || p.cat === cat);
+    // Strips share one scale per list so lengths stay comparable; long stretches shrink every cell.
+    const maxCells = Math.max(11, ...shown.map(p => p.code.length));
+    const dense = maxCells > 13;
+    const cellW = Math.min(22, (294 - (maxCells - 1) * (dense ? 1 : 2)) / maxCells);
+    const selId = source.some(p => p.id === sel) ? sel : (source[0] || {}).id;
+    const plans = shown.map(p => ({
+      rest: p.rest, cost: p.cost, dates: p.dates, cells: cells(p.code, cellW), stripCls: dense ? 'strip dense' : 'strip',
+      aria: p.rest + '，' + p.cost + '，' + p.dates,
+      bestCss: p.best ? '' : HIDE, estCss: p.est ? '' : HIDE, moreCss: p.more ? '' : HIDE, more: p.more || '',
+      ckCss: p.id === selId ? '' : 'visibility: hidden',
+      pick: () => this.setState({ sel: p.id })
+    }));
+    const cats = CATS.map(([id, label]) => ({ label: label + '（' + source.filter(p => id === 'all' || p.cat === id).length + '）', cls: id === cat ? 'sg on' : 'sg', pick: () => this.setState({ cat: id }) }));
+    let n = 0;
+    const months = MONTHS.map(m => ({ label: m.label, rows: m.rows.map(text => {
+      const i = n++;
+      return { text: text, noteCss: m.note ? '' : HIDE, ckCss: i === dsel ? '' : 'visibility: hidden', pick: () => this.setState({ dsel: i }) };
+    }) }));
+    const weeks = [];
+    for (let r = 0; r < 3; r++) {
+      const days = [];
+      for (let c = 0; c < 7; c++) {
+        const o = dateAt(r * 7 + c), k = o.m + '-' + o.d;
+        const weekend = o.w === 0 || o.w === 6;
+        const inRest = (o.m === 12 && o.d >= 26) || (o.m === 1 && o.d <= 3);
+        const work = !weekend && !LEAVE[k] && !HOL[k] && !HALF[k];
+        days.push({
+          n: String(o.d),
+          numCss: inRest ? 'font-weight: 600' : (weekend ? 'color: var(--sec)' : ''),
+          workCss: work ? '' : HIDE,
+          leaveCss: LEAVE[k] ? '' : HIDE,
+          halfCss: HALF[k] ? '' : HIDE,
+          holCss: HOL[k] ? '' : HIDE
+        });
+      }
+      const pct = 100 / 7;
+      const bands = r === 0 ? [{ left: (6 * pct) + '%', width: pct + '%', text: '' }]
+        : r === 1 ? [{ left: '0%', width: '100%', text: '连休 9 天' }]
+        : [{ left: '0%', width: pct + '%', text: '' }];
+      weeks.push({ days: days, bands: bands, label: r === 0 ? '2026年12月' : r === 1 ? '' : '2027年1月', labelCss: r === 1 ? 'display: none' : '' });
+    }
+    const balances = [
+      { name: '年假', left: '7 天', used: 3, planned: 2.5, free: 4.5, metaL: '共 10 天 · 已休 3 天', metaR: '2027年3月31日到期' },
+      { name: '调休假', left: '2 天', used: 0, planned: 2, free: 0, metaL: '共 2 天', metaR: '12月31日到期' }
+    ];
+    const after = [
+      { name: '调休假', use: '2 天', left: '0', used: 0, planned: 2, free: 0 },
+      { name: '年假', use: '2.5 天', left: '4.5 天', used: 3, planned: 2.5, free: 4.5 }
+    ];
+    const reqs = [
+      { date: '12月25日 周五', sub: '后半班 14:00–18:00 · 提前下班', amount: '0.5 天', wholeCss: HIDE, halfCss: '' },
+      { date: '12月28日 周一', sub: '整班 09:00–18:00', amount: '1 天', wholeCss: '', halfCss: HIDE },
+      { date: '12月29日 周二', sub: '整班 09:00–18:00', amount: '1 天', wholeCss: '', halfCss: HIDE },
+      { date: '12月30日 周三', sub: '整班 09:00–18:00', amount: '1 天', wholeCss: '', halfCss: HIDE },
+      { date: '12月31日 周四', sub: '整班 09:00–18:00', amount: '1 天', wholeCss: '', halfCss: HIDE }
+    ];
+    const data = {
+      free: !plus, weeks: weeks, plans: plans, cats: cats, months: months, reg: { cells: cells(PLANS[5].code) }, allTitle: source.length ? '全部 ' + source.length + ' 个方案' : '方案', none: plans.length === 0, listCss: plans.length ? '' : 'display: none', noneTitle: source.length ? '本次结果中没有这类方案' : '没有找到方案', noneAction: source.length ? '查看全部方案' : '调整条件', noneHint: source.length ? '这次的方案都和节假日连在一起。' : '连休 ' + rest + ' 天需要的假比你剩的 9 天多。可以缩短连休天数、多加一份假期，或放宽日期范围。', balances: balances, after: after, reqs: reqs,
+      goalRestCls: goalRest ? 'sg on' : 'sg', goalBudgetCls: goalRest ? 'sg' : 'sg on',
+      goalLabel: goalRest ? '连续休息' : '使用假期', goalPre: goalRest ? '至少 ' : '最多 ',
+      goalVal: String(goalRest ? rest : budget),
+      goalHint: goalRest ? '找能连着休这么多天、请假最少的日子。' : '在这么多天假以内，找能连休最久的日子。',
+      pickRest: () => this.setState({ goalRest: true }),
+      pickBudget: () => this.setState({ goalRest: false }),
+      dec: () => goalRest ? this.setState({ rest: Math.max(2, rest - 1) }) : this.setState({ budget: Math.max(0.5, budget - 0.5) }),
+      inc: () => goalRest ? this.setState({ rest: Math.min(60, rest + 1) }) : this.setState({ budget: Math.min(9, budget + 0.5) })
+    };
+    return {
+      themes: [
+        Object.assign({ cls: 'theme-light', label: '浅色' }, data),
+        Object.assign({ cls: 'theme-dark', label: '深色' }, data)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

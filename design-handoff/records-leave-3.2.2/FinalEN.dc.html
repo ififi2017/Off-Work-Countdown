@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Picked, English</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#F25A0A}a:hover{color:#c2470a}
+.board{font-family:-apple-system,"SF Pro Text","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#1c1c1e}
+.board button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit}
+.theme-light{--page:#F2F2F7;--card:#FFFFFF;--label:#000000;--sec:rgba(60,60,67,.62);--ter:rgba(60,60,67,.32);--ctl:rgba(118,118,128,.12);--sep:rgba(60,60,67,.18);--segOn:#FFFFFF;--work:#5856D6;--ot:#FF9500;--accent:#E8590C;--child:#E8A33D;--study:#30B0C7;--lwork:#5856D6;--retire:#34C759;--off:#248A3D;--brk:rgba(88,86,214,.38);--slp:#D1D1D6;--free:#34C759}
+.theme-dark{--page:#000000;--card:#1C1C1E;--label:#FFFFFF;--sec:rgba(235,235,245,.62);--ter:rgba(235,235,245,.3);--ctl:rgba(118,118,128,.24);--sep:rgba(84,84,88,.65);--segOn:#636366;--work:#5E5CE6;--ot:#FF9F0A;--accent:#FF872E;--child:#F5B94F;--study:#40C8E0;--lwork:#5E5CE6;--retire:#30D158;--off:#30D158;--brk:rgba(94,92,230,.45);--slp:#48484A;--free:#30D158}
+.card{position:relative}
+.badge{position:absolute;top:3px;right:3px;line-height:0}
+.bi{width:9px;height:9px;fill:currentColor}
+.mcap{font-size:9px;line-height:11px;height:11px;margin-top:1px;white-space:nowrap}
+.lockc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px}
+.lockcard{background:var(--card);border-radius:20px;padding:20px 18px;text-align:center;max-width:250px;box-shadow:0 0 0 .5px var(--sep),0 12px 32px rgba(0,0,0,.14)}
+.lockcard svg{width:22px;height:22px;fill:var(--accent)}
+.lockcard b{display:block;font-size:15px;margin-top:8px}
+.lockcard p{font-size:13px;color:var(--sec);margin:6px 0 10px;line-height:1.4}
+.lockcard span{font-size:13px;font-weight:600;color:var(--accent)}
+.rowlabel{font-size:15px;font-weight:600;color:#8a8a8e;margin:0 0 12px 6px;letter-spacing:.04em}
+.phones{display:flex;gap:40px}
+.phone{width:390px;height:1520px;border-radius:48px;background:var(--page);box-shadow:0 0 0 1px rgba(0,0,0,.07),0 24px 60px rgba(0,0,0,.10);overflow:hidden;padding:18px 16px 0;box-sizing:border-box;color:var(--label)}
+.theme-dark .phone{box-shadow:0 0 0 1px rgba(255,255,255,.10),0 24px 60px rgba(0,0,0,.30)}
+.lt{font-size:34px;font-weight:700;margin:26px 4px 12px}
+.seg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--ctl);border-radius:10px;padding:2px;margin-bottom:16px}
+.sg{text-align:center;font-size:13px;font-weight:500;line-height:28px;border-radius:8px}
+.sg.on{background:var(--segOn);font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.12)}
+.card{background:var(--card);border-radius:22px;padding:14px 16px 10px}
+.ph{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:.5px solid var(--sep);margin-bottom:12px}
+.pt{font-size:17px;font-weight:600}
+.chev{width:44px;height:44px;border-radius:22px;background:var(--ctl)!important;display:inline-flex!important;align-items:center;justify-content:center;color:var(--sec)!important}
+.chev svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.wds{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));font-size:12px;font-weight:500;color:var(--ter);text-align:center;margin-bottom:4px}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));row-gap:2px}
+.mcell{position:relative;height:60px;display:flex!important;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:3px!important}
+.mnum{width:32px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:17px;font-variant-numeric:tabular-nums}
+.mmark{height:8px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.bar{height:4px;border-radius:2px}
+.edot{width:4px;height:4px;border-radius:2px;background:var(--sec);margin-left:3px}
+.call{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--ctl);margin-top:10px;width:100%;box-sizing:border-box}
+.call .ct{font-size:15px;font-weight:600}
+.call .cs{font-size:13px;color:var(--sec);margin-top:2px}
+.call .cx{flex:1;min-width:0}
+.call svg{width:14px;height:14px;fill:none;stroke:var(--ter);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.key{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:11px;color:var(--sec);margin-top:12px}
+.ki{display:inline-flex;align-items:center;gap:5px}
+.unlock{display:flex!important;align-items:center;gap:8px;width:100%;margin-top:10px!important;padding:10px 12px!important;border-radius:12px;background:var(--ctl)!important;color:var(--sec)!important;font-size:13px;box-sizing:border-box}
+.unlock b{color:var(--accent);font-weight:600}
+.unlock svg{width:13px;height:13px;fill:currentColor;flex:none}
+.entry{display:flex;align-items:center;gap:8px;min-height:44px;color:var(--accent);font-size:15px;border-top:.5px solid var(--sep)}
+.entry span{flex:1}
+.entry svg.ic{width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.entry svg{width:14px;height:14px;fill:none;stroke:var(--ter);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.big{display:flex;align-items:baseline;gap:4px}
+.bn{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.bu{font-size:15px;font-weight:600;color:var(--sec)}
+.bs{font-size:13px;color:var(--sec);margin:2px 0 14px}
+.wchart{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.guide{position:absolute;left:0;right:0;top:66px;border-top:1px dashed var(--sep);pointer-events:none}
+.guide span{position:absolute;right:0;top:-15px;font-size:10px;color:var(--ter)}
+.wcol{display:flex!important;flex-direction:column;align-items:center}
+.wh{height:16px;font-size:11px;color:var(--sec);font-variant-numeric:tabular-nums}
+.wbars{height:148px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.wb{width:16px;border-radius:5px}
+.wd{font-size:11px;line-height:14px;height:14px;color:var(--ter);margin-top:8px}
+.wn{width:30px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:15px;margin-top:2px;font-variant-numeric:tabular-nums}
+.ygrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 8px}
+.ym{border-radius:12px;padding:6px 6px 8px!important;display:block!important}
+.ymn{font-size:13px;margin:0 0 4px 2px}
+.ydots{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));row-gap:3px}
+.yd{height:8px;display:flex;align-items:center;justify-content:center}
+.yd span{display:block}
+.lrow{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.lage{white-space:nowrap;width:34px;font-size:11px;color:var(--ter);text-align:right;padding-right:4px;font-variant-numeric:tabular-nums}
+.lcells{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;flex:1}
+.lb{height:18px;border-radius:5px;display:block!important}
+.prog{height:6px;border-radius:3px;background:var(--ctl);overflow:hidden;margin:6px 0 4px}
+.prog span{display:block;height:6px;background:var(--accent);border-radius:3px}
+.stg{display:flex;align-items:center;gap:10px;min-height:36px;font-size:15px;border-top:.5px solid var(--sep)}
+.stg i{width:10px;height:10px;border-radius:5px;flex:none}
+.stg span{flex:1}
+.stg em{font-style:normal;font-size:13px;color:var(--sec);font-variant-numeric:tabular-nums}
+.sc{background:var(--card);border-radius:22px;padding:18px;margin-top:12px}
+.hero h2{margin:0;font-size:24px;line-height:1.25;font-weight:700;letter-spacing:-.01em}
+.hero .eb{font-size:15px;font-weight:700;color:var(--label);margin-bottom:4px}
+.hero h2 span{color:var(--work);white-space:nowrap}
+.hero p{margin:8px 0 0;font-size:15px;line-height:1.45;color:var(--sec)}
+.lnk{color:var(--accent);font-weight:500;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;padding:5px 10px;border-radius:14px;background:var(--ctl)}
+.chip i{width:7px;height:7px;border-radius:4px}
+.ctitle{display:flex;align-items:baseline;justify-content:space-between;font-size:13px;color:var(--sec);margin-bottom:12px}
+.ctitle b{font-size:15px;color:var(--label)}
+.cup{display:flex;gap:18px;align-items:stretch}
+.glass{width:86px;height:230px;border-radius:22px;overflow:hidden;display:flex;flex-direction:column-reverse;gap:2px;box-shadow:inset 0 0 0 1px var(--sep);flex:none;background:var(--ctl)}
+.glass span{display:block;min-height:3px}
+.layers{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:4px 0}
+.layer{display:flex;align-items:flex-start;gap:8px;font-size:15px;line-height:20px}
+.layer i{width:8px;height:8px;border-radius:4px;flex:none;margin-top:6px}
+.layer span{flex:1;min-width:0}
+.layer em{font-style:normal;font-variant-numeric:tabular-nums;font-weight:600;text-align:right;white-space:nowrap}
+.layer small{display:block;font-size:11px;line-height:14px;color:var(--sec);font-weight:400}
+.foot{font-size:12px;color:var(--ter);margin-top:12px;line-height:1.4}
+.pay{display:flex;align-items:center;gap:8px}
+.pc{padding:14px 18px 16px}
+.pay{height:32px}
+.pay .eye{height:32px!important}
+.pc .liq{margin-top:8px}
+.pay .ptl{flex:1;font-size:15px;font-weight:700;color:var(--label)}
+.pay .pv b{display:block;font-size:44px;line-height:1.1;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:2px}
+.pay .pv span{font-size:15px;font-weight:700;color:var(--label)}
+.liq{height:8px;border-radius:4px;background:var(--ctl);overflow:hidden;margin-top:10px}
+.liq span{display:block;height:8px;border-radius:4px;background:var(--accent)}
+.psub{font-size:12px;color:var(--sec);margin-top:6px;font-variant-numeric:tabular-nums}
+.eye{width:44px;height:44px;display:inline-flex!important;align-items:center;justify-content:center;color:var(--ter)!important;margin-right:-10px!important}
+.eye svg{width:18px;height:18px;fill:currentColor}
+.otline{display:flex;align-items:center;gap:10px;font-size:15px}
+.otline span{flex:1}
+.otline em{font-style:normal;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ot)}
+.steps{display:flex;gap:2px;height:12px;border-radius:6px;overflow:hidden;margin:12px 0 8px}
+.steps span{display:block}
+</style>
+</helmet>
+<div class="board" style="width: 1720px; height: 3260px; box-sizing: border-box; padding: 40px; display: flex; flex-direction: column; gap: 48px; background: #E9E9EE">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="rowlabel">{{t.label}}</div>
+<div class="phones">
+
+<div class="phone">
+<div class="lt">Records</div>
+<div class="seg"><span class="sg on">Week</span><span class="sg">Month</span><span class="sg">Year</span><span class="sg">Life</span></div>
+<div class="card">
+<div class="ph"><button class="chev" aria-label="Previous week"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg></button><span class="pt">Oct 4 – 10</span><button class="chev" aria-label="Next week"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></button></div>
+<sc-if value="{{t.plus}}" hint-placeholder-val="{{ false }}">
+<div class="big"><span class="bn">17</span><span class="bu">hours</span></div>
+<div class="bs">2 workdays recorded, 1 h overtime · 4 days off for National Day</div>
+</sc-if>
+<sc-if value="{{t.free}}" hint-placeholder-val="{{ true }}">
+<div class="bs" style="margin-top: 0; font-size: 15px; color: var(--label)">Overtime this week <b>1 h</b></div>
+</sc-if>
+<div class="wchart">
+<div class="guide"><span>8 h</span></div>
+<sc-for list="{{t.week}}" as="c" hint-placeholder-count="7">
+<button class="wcol" onClick="{{c.pick}}" aria-label="{{c.aria}}">
+<span class="wh">{{c.hours}}</span>
+<span class="wbars"><span class="wb" style="display: block; {{c.otCss}}"></span><span class="wb" style="display: block; {{c.workCss}}"></span></span>
+<span class="wd" style="white-space: nowrap; {{c.wdCss}}"><svg class="bi" viewBox="0 0 24 24" style="display: inline-block; vertical-align: -1px; margin-right: 2px; color: var(--sec); {{c.bagCss}}"><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V6h4.5A1.5 1.5 0 0 1 21 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-11A1.5 1.5 0 0 1 4.5 6zm1.8 0h2.4V4.8h-2.4z"></path></svg>{{c.wd}}</span>
+<span class="wn" style="color: var(--label); {{c.numCss}}">{{c.label}}</span>
+</button>
+</sc-for>
+</div>
+<div class="call"><div class="cx"><div class="ct">{{t.call.title}}</div><div class="cs">{{t.call.sub}}</div></div><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+<div class="key"><span class="ki"><span class="bar" style="width: 14px; background: var(--work)"></span>Recorded</span><span class="ki"><span class="bar" style="width: 14px; box-shadow: inset 0 0 0 1.25px var(--work); opacity: .65"></span>Planned</span><span class="ki"><span class="bar" style="width: 10px; background: var(--work)"></span><span class="bar" style="width: 5px; margin-left: -3.5px; background: var(--ot)"></span>Overtime</span></div>
+<sc-if value="{{t.free}}" hint-placeholder-val="{{ true }}">
+<button class="unlock"><svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"></path></svg><span>The last 7 days are always here. Earlier days stay saved; <b>see them with Plus</b></span></button>
+</sc-if>
+<div class="entry" style="margin-top: 8px"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.5v7l5.5-3.5z" style="fill: currentColor; stroke: none"></path></svg><span>Play this week’s report</span><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+</div>
+<sc-if value="{{t.plus}}" hint-placeholder-val="{{ true }}">
+<div class="sc hero">
+<div class="eb">{{t.sw.pre}}</div><h2><span>{{t.sw.num}}</span></h2>
+<p>{{t.sw.sub}} <span class="lnk">{{t.sw.link}} ›</span></p>
+<div class="chips"><span class="chip"><i style="background: var(--work)"></i>{{t.sw.days}}</span><span class="chip"><i style="background: var(--ot)"></i>Overtime {{t.sw.ot}}</span><span class="chip" style="display: inline-flex; {{t.sw.planCss}}"><i style="box-shadow: inset 0 0 0 1.25px var(--work); opacity: .8"></i>{{t.sw.plan}}</span></div>
+</div>
+<div class="sc">
+<div class="ctitle"><b>Time breakdown</b><span>{{t.sw.cupTitle}}</span></div>
+<div class="cup">
+<div class="glass"><sc-for list="{{t.sw.alloc}}" as="a" hint-placeholder-count="5"><span style="flex: {{a.v}}; background: {{a.c}}"></span></sc-for></div>
+<div class="layers"><sc-for list="{{t.sw.allocTop}}" as="a" hint-placeholder-count="5"><div class="layer"><i style="background: {{a.c}}"></i><span>{{a.n}}</span><em>{{a.val}}<small>{{a.pct}}</small></em></div></sc-for></div>
+</div>
+<div class="foot">Sleep and free time are estimates.</div>
+</div>
+<div class="sc pc">
+<div class="pay"><span class="ptl">{{t.sw.payTitle}}</span>
+<button class="eye" onClick="{{t.toggleHide}}" aria-label="{{t.eyeLabel}}">
+<sc-if value="{{t.hidden}}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"></path></svg></sc-if>
+<sc-if value="{{t.shown}}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM3.3 2.3l18.4 18.4-1.4 1.4L1.9 3.7z"></path></svg></sc-if>
+</button></div>
+<b class="amt" style="display: block; margin-top: 2px; font-size: 30px; line-height: 34px; font-weight: 600; letter-spacing: .01em; font-family: ui-rounded, 'SF Pro Rounded', -apple-system, system-ui, sans-serif; font-variant-numeric: tabular-nums">{{t.sw.pay}}</b>
+<div class="liq"><span style="width: {{t.sw.payPct}}%"></span></div>
+<div class="psub">{{t.sw.earned}}</div>
+</div>
+</sc-if>
+</div>
+
+<div class="phone">
+<div class="lt">Records</div>
+<div class="seg"><span class="sg">Week</span><span class="sg on">Month</span><span class="sg">Year</span><span class="sg">Life</span></div>
+<div class="card">
+<div class="ph"><button class="chev" aria-label="Previous month"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg></button><span class="pt">October 2026</span><button class="chev" aria-label="Next month"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></button></div>
+<div class="wds"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+<div class="mgrid">
+<sc-for list="{{t.month}}" as="c" hint-placeholder-count="35">
+<sc-if value="{{c.blank}}" hint-placeholder-val="{{ false }}"><span></span></sc-if>
+<sc-if value="{{c.isDay}}" hint-placeholder-val="{{ true }}">
+<button class="mcell" onClick="{{c.pick}}" aria-label="{{c.aria}}">
+<span class="badge" style="display: block; {{c.badgeCss}}"><svg class="bi" viewBox="0 0 24 24" style="display: block; {{c.sunCss}}"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" style="fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round"></path></svg><svg class="bi" viewBox="0 0 24 24" style="display: block; {{c.bagCss}}"><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V6h4.5A1.5 1.5 0 0 1 21 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-11A1.5 1.5 0 0 1 4.5 6zm1.8 0h2.4V4.8h-2.4z"></path></svg></span>
+<span class="mnum" style="color: var(--label); {{c.numCss}}">{{c.label}}</span>
+<span class="mcap" style="color: var(--sec); {{c.capCss}}">{{c.cap}}</span>
+<span class="mmark"><span class="bar" style="display: block; {{c.workCss}}"></span><span class="bar" style="display: block; {{c.otCss}}"></span><span class="edot" style="display: block; {{c.dotCss}}"></span></span>
+</button>
+</sc-if>
+</sc-for>
+</div>
+<div class="call"><div class="cx"><div class="ct">{{t.call.title}}</div><div class="cs">{{t.call.sub}}</div></div><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+<div class="key"><span class="ki"><span class="bar" style="width: 14px; background: var(--work)"></span>Recorded</span><span class="ki"><span class="bar" style="width: 14px; box-shadow: inset 0 0 0 1.25px var(--work); opacity: .65"></span>Planned</span><span class="ki"><span class="bar" style="width: 10px; background: var(--work)"></span><span class="bar" style="width: 5px; margin-left: -3.5px; background: var(--ot)"></span>Overtime</span></div><div class="key" style="margin-top: 6px"><span class="ki" style="color: var(--off)"><svg class="bi" width="10" height="10" viewBox="0 0 24 24" style="display: block;"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" style="fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round"></path></svg><span style="color: var(--sec)">Holiday</span></span><span class="ki" style="color: var(--sec)"><svg class="bi" width="10" height="10" viewBox="0 0 24 24" style="display: block;"><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V6h4.5A1.5 1.5 0 0 1 21 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-11A1.5 1.5 0 0 1 4.5 6zm1.8 0h2.4V4.8h-2.4z"></path></svg>Makeup workday</span></div>
+<sc-if value="{{t.free}}" hint-placeholder-val="{{ true }}">
+<button class="unlock"><svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"></path></svg><span>The last 7 days are always here. Other days stay saved; <b>see them with Plus</b></span></button>
+</sc-if>
+<div class="entry" style="margin-top: 8px"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="7.5" width="18" height="12.5" rx="3"></rect><path d="M9 7.5V5.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5.5v2M3 13h18"></path></svg><span>Plan time off</span><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+<div class="entry"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.5v7l5.5-3.5z" style="fill: currentColor; stroke: none"></path></svg><span>Play this month’s report</span><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+</div>
+<sc-if value="{{t.plus}}" hint-placeholder-val="{{ true }}">
+<div class="sc hero">
+<div class="eb">{{t.sm.pre}}</div><h2><span>{{t.sm.num}}</span></h2>
+<p>{{t.sm.sub}} <span class="lnk">{{t.sm.link}} ›</span></p>
+<div class="chips"><span class="chip"><i style="background: var(--work)"></i>{{t.sm.days}}</span><span class="chip"><i style="background: var(--ot)"></i>Overtime {{t.sm.ot}}</span><span class="chip" style="display: inline-flex; {{t.sm.planCss}}"><i style="box-shadow: inset 0 0 0 1.25px var(--work); opacity: .8"></i>{{t.sm.plan}}</span></div>
+</div>
+<div class="sc">
+<div class="ctitle"><b>Time breakdown</b><span>{{t.sm.cupTitle}}</span></div>
+<div class="cup">
+<div class="glass"><sc-for list="{{t.sm.alloc}}" as="a" hint-placeholder-count="5"><span style="flex: {{a.v}}; background: {{a.c}}"></span></sc-for></div>
+<div class="layers"><sc-for list="{{t.sm.allocTop}}" as="a" hint-placeholder-count="5"><div class="layer"><i style="background: {{a.c}}"></i><span>{{a.n}}</span><em>{{a.val}}<small>{{a.pct}}</small></em></div></sc-for></div>
+</div>
+<div class="foot">Sleep and free time are estimates.</div>
+</div>
+<div class="sc pc">
+<div class="pay"><span class="ptl">{{t.sm.payTitle}}</span>
+<button class="eye" onClick="{{t.toggleHide}}" aria-label="{{t.eyeLabel}}">
+<sc-if value="{{t.hidden}}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"></path></svg></sc-if>
+<sc-if value="{{t.shown}}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM3.3 2.3l18.4 18.4-1.4 1.4L1.9 3.7z"></path></svg></sc-if>
+</button></div>
+<b class="amt" style="display: block; margin-top: 2px; font-size: 30px; line-height: 34px; font-weight: 600; letter-spacing: .01em; font-family: ui-rounded, 'SF Pro Rounded', -apple-system, system-ui, sans-serif; font-variant-numeric: tabular-nums">{{t.sm.pay}}</b>
+<div class="liq"><span style="width: {{t.sm.payPct}}%"></span></div>
+<div class="psub">{{t.sm.earned}}</div>
+</div>
+</sc-if>
+<sc-if value="{{t.free}}" hint-placeholder-val="{{ false }}">
+<div class="sc"><div class="otline"><span>{{t.sm.freeOtTitle}}</span><em>{{t.sm.ot}}</em></div></div>
+</sc-if>
+</div>
+
+<div class="phone">
+<div class="lt">Records</div>
+<div class="seg"><span class="sg">Week</span><span class="sg">Month</span><span class="sg on">Year</span><span class="sg">Life</span></div>
+<div class="card">
+<div class="ph"><button class="chev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg></button><span class="pt">2026</span><button class="chev" aria-label="Next year"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></button></div>
+<div style="display: block; {{t.veil}}">
+<div class="ygrid">
+<sc-for list="{{t.year}}" as="mo" hint-placeholder-count="12">
+<button class="ym" style="background: transparent; {{mo.wrapCss}}" onClick="{{mo.pick}}" aria-label="{{mo.aria}}">
+<div class="ymn" style="color: var(--label); {{mo.nameCss}}">{{mo.name}}</div>
+<div class="ydots">
+<sc-for list="{{mo.cells}}" as="c" hint-placeholder-count="35">
+<span class="yd"><span style="width: 6px; height: 6px; border-radius: 3px; {{c.css}}"></span></span>
+</sc-for>
+</div>
+</button>
+</sc-for>
+</div>
+<div class="call"><div class="cx"><div class="ct">{{t.ycall.title}}</div><div class="cs">{{t.ycall.sub}}</div></div><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+<div class="key"><span class="ki"><span style="width: 6px; height: 6px; border-radius: 3px; background: var(--work)"></span>Recorded</span><span class="ki"><span style="width: 6px; height: 6px; border-radius: 3px; background: var(--ot)"></span>Overtime</span><span class="ki"><span style="width: 6px; height: 6px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--work); opacity: .6"></span>Planned</span><span class="ki"><span style="width: 5px; height: 5px; border-radius: 3px; background: var(--off)"></span>Public holiday</span></div>
+<div class="entry" style="margin-top: 8px"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.5v7l5.5-3.5z" style="fill: currentColor; stroke: none"></path></svg><span>Play this year’s report</span><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></div>
+</div>
+<sc-if value="{{t.free}}" hint-placeholder-val="{{ true }}">
+<div class="lockc"><div class="lockcard"><svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"></path></svg><b>Plus is needed to see this view</b><p>DoneAt keeps saving on this device. Unlock to see the whole record.</p><span>See Plus</span></div></div>
+</sc-if>
+</div>
+<sc-if value="{{t.plus}}" hint-placeholder-val="{{ true }}">
+<div class="sc hero">
+<div class="eb">{{t.sy.pre}}</div><h2><span>{{t.sy.num}}</span></h2>
+<p>{{t.sy.sub}} <span class="lnk">{{t.sy.link}} ›</span></p>
+<div class="chips"><span class="chip"><i style="background: var(--work)"></i>{{t.sy.days}}</span><span class="chip"><i style="background: var(--ot)"></i>Overtime {{t.sy.ot}}</span><span class="chip" style="display: inline-flex; {{t.sy.planCss}}"><i style="box-shadow: inset 0 0 0 1.25px var(--work); opacity: .8"></i>{{t.sy.plan}}</span></div>
+</div>
+<div class="sc">
+<div class="ctitle"><b>Time breakdown</b><span>{{t.sy.cupTitle}}</span></div>
+<div class="cup">
+<div class="glass"><sc-for list="{{t.sy.alloc}}" as="a" hint-placeholder-count="5"><span style="flex: {{a.v}}; background: {{a.c}}"></span></sc-for></div>
+<div class="layers"><sc-for list="{{t.sy.allocTop}}" as="a" hint-placeholder-count="5"><div class="layer"><i style="background: {{a.c}}"></i><span>{{a.n}}</span><em>{{a.val}}<small>{{a.pct}}</small></em></div></sc-for></div>
+</div>
+<div class="foot">Sleep and free time are estimates.</div>
+</div>
+<div class="sc pc">
+<div class="pay"><span class="ptl">{{t.sy.payTitle}}</span>
+<button class="eye" onClick="{{t.toggleHide}}" aria-label="{{t.eyeLabel}}">
+<sc-if value="{{t.hidden}}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"></path></svg></sc-if>
+<sc-if value="{{t.shown}}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM3.3 2.3l18.4 18.4-1.4 1.4L1.9 3.7z"></path></svg></sc-if>
+</button></div>
+<b class="amt" style="display: block; margin-top: 2px; font-size: 30px; line-height: 34px; font-weight: 600; letter-spacing: .01em; font-family: ui-rounded, 'SF Pro Rounded', -apple-system, system-ui, sans-serif; font-variant-numeric: tabular-nums">{{t.sy.pay}}</b>
+<div class="liq"><span style="width: {{t.sy.payPct}}%"></span></div>
+<div class="psub">{{t.sy.earned}}</div>
+</div>
+</sc-if>
+<sc-if value="{{t.free}}" hint-placeholder-val="{{ false }}">
+<div class="sc"><div class="otline"><span>{{t.sy.freeOtTitle}}</span><em>{{t.sy.ot}}</em></div></div>
+</sc-if>
+</div>
+
+<div class="phone">
+<div class="lt">Records</div>
+<div class="seg"><span class="sg">Week</span><span class="sg">Month</span><span class="sg">Year</span><span class="sg on">Life</span></div>
+<div class="card">
+<div style="display: block; {{t.veil}}">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><span style="font-size: 13px; font-weight: 600; color: var(--sec)">Progress to retirement</span><span style="font-size: 15px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums">49%</span></div>
+<div class="prog"><span style="width: 49%"></span></div>
+<div style="font-size: 13px; color: var(--sec); margin-bottom: 14px">10 years of work behind you, 33 to go.</div>
+<div class="lrow" style="margin-bottom: 2px"><span class="lage">Age</span></div>
+<sc-for list="{{t.life}}" as="r" hint-placeholder-count="8">
+<div class="lrow"><span class="lage">{{r.label}}</span><div class="lcells">
+<sc-for list="{{r.cells}}" as="c" hint-placeholder-count="10">
+<button class="lb" style="background: transparent; {{c.css}}" onClick="{{c.pick}}" aria-label="{{c.aria}}"></button>
+</sc-for>
+</div></div>
+</sc-for>
+<div class="call" style="margin-bottom: 8px"><div class="cx"><div class="ct">{{t.lcall.title}}</div><div class="cs">{{t.lcall.sub}}</div></div></div>
+<sc-for list="{{t.stages}}" as="s" hint-placeholder-count="4">
+<div class="stg"><i style="background: {{s.color}}"></i><span>{{s.name}}</span><em>{{s.range}}</em></div>
+</sc-for>
+</div>
+<sc-if value="{{t.free}}" hint-placeholder-val="{{ true }}">
+<div class="lockc"><div class="lockcard"><svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"></path></svg><b>Plus is needed to see this view</b><p>DoneAt keeps saving on this device. Unlock to see the whole record.</p><span>See Plus</span></div></div>
+</sc-if>
+</div>
+<sc-if value="{{t.plus}}" hint-placeholder-val="{{ true }}">
+<div class="sc hero">
+<div class="eb">Of about 80 years</div><h2><span>42 years</span> are yours</h2>
+<p>About 9.8 at work, 26.7 asleep.</p>
+</div>
+<div class="sc">
+<div class="ctitle"><b>Where a lifetime goes</b><span>about 80 years</span></div>
+<div class="cup">
+<div class="glass"><sc-for list="{{t.ls.alloc}}" as="a" hint-placeholder-count="4"><span style="flex: {{a.v}}; background: {{a.c}}"></span></sc-for></div>
+<div class="layers"><sc-for list="{{t.ls.allocTop}}" as="a" hint-placeholder-count="4"><div class="layer"><i style="background: {{a.c}}"></i><span>{{a.n}}</span><em>{{a.val}}<small>{{a.pct}}</small></em></div></sc-for></div>
+</div>
+</div>
+<div class="sc pc">
+<div class="pay"><span class="ptl">Projected lifetime gross income</span>
+<button class="eye" onClick="{{t.toggleHide}}" aria-label="{{t.eyeLabel}}">
+<sc-if value="{{t.hidden}}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"></path></svg></sc-if>
+<sc-if value="{{t.shown}}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM3.3 2.3l18.4 18.4-1.4 1.4L1.9 3.7z"></path></svg></sc-if>
+</button></div>
+<b class="amt" style="display: block; margin-top: 2px; font-size: 30px; line-height: 34px; font-weight: 600; letter-spacing: .01em; font-family: ui-rounded, 'SF Pro Rounded', -apple-system, system-ui, sans-serif; font-variant-numeric: tabular-nums">{{t.ls.total}}</b>
+<div class="steps"><span style="flex: 2370; background: var(--accent)"></span><span style="flex: 14930; background: var(--accent); opacity: .2"></span></div>
+<div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--sec); font-variant-numeric: tabular-nums"><span>So far {{t.ls.past}}</span><span>Until retirement {{t.ls.future}}</span></div>
+</div>
+</sc-if>
+<div class="sc"><div class="otline"><span>Lifetime overtime recorded</span><em>77 h</em></div></div>
+</div>
+
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"plus":{"editor":"boolean","default":true},"$preview":{"width":1720,"height":3260}}'>
+const WK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const TODAY = 1011;
+const AGE = 32;
+// 2026 mainland China calendar, as bundled in HolidayTemplates.json.
+const HOL = {};
+[[101, 103, 'New Year'], [215, 223, 'Spring Festival'], [404, 406, 'Qingming'], [501, 505, 'Labor Day'], [619, 621, 'Dragon Boat'], [925, 927, 'Mid-Autumn'], [1001, 1007, 'National Day']]
+  .forEach(function (r) { for (let k = r[0]; k <= r[1]; k++) HOL[k] = r[2]; });
+const MAKEUP = { 104: 'New Year', 214: 'Spring Festival', 228: 'Spring Festival', 509: 'Labor Day', 920: 'National Day', 1010: 'National Day' };
+const OCT = { 8: [8, 1], 10: [8, 0] };
+const STAGES = [
+  { name: 'Childhood', v: '--child', from: 0, to: 6, range: '1994 – 2000' },
+  { name: 'Study', v: '--study', from: 6, to: 22, range: '2000 – 2016' },
+  { name: 'Work', v: '--lwork', from: 22, to: 65, range: '2016 – 2059' },
+  { name: 'After work', v: '--retire', from: 65, to: 80, range: '2059 –' }
+];
+const LOCK_BAR = 'display: none';
+function dow(m, d) { return new Date(Date.UTC(2026, m - 1, d)).getUTCDay(); }
+function dim(m) { return new Date(Date.UTC(2026, m, 0)).getUTCDate(); }
+function day(m, d) {
+  const w = dow(m, d), key = m * 100 + d;
+  const o = { m: m, d: d, w: w, kind: 'rest', work: 0, ot: 0, edited: false, schedule: false, hol: HOL[key] || '', makeup: MAKEUP[key] || '', today: key === TODAY };
+  const workday = o.makeup ? true : (!o.hol && w !== 0 && w !== 6);
+  if (!workday) return o;
+  if (key > TODAY) { o.kind = 'plan'; o.work = 8; return o; }
+  if (key < 302) { o.kind = 'proj'; o.work = 8; return o; }
+  if (m === 10) {
+    const t = OCT[d];
+    if (!t) { o.kind = 'unrec'; return o; }
+    o.kind = 'rec'; o.work = t[0]; o.ot = t[1]; o.edited = d === 8; o.schedule = d === 10;
+    return o;
+  }
+  const h = (m * 31 + d * 17) % 23;
+  o.kind = 'rec'; o.work = 8; o.ot = h < 3 ? 2 : h < 7 ? 1 : h < 9 ? 0.5 : 0;
+  o.edited = (m * 7 + d) % 19 === 0;
+  return o;
+}
+function hrs(x) { return (Math.round(x * 10) / 10) + ' h'; }
+function title(o) { return WK[o.w] + ', ' + MON[o.m - 1] + ' ' + o.d; }
+function lockedFor(o, plus) { return !plus && !(o.m === 10 && o.d >= 5 && o.d <= 11); }
+function est(o) { return o.kind === 'plan' || o.kind === 'proj'; }
+function detail(o, locked) {
+  if (locked) return 'This day stays saved. See it with Plus';
+  const parts = [];
+  if (o.today) parts.push('Today');
+  if (o.hol) parts.push(o.hol + ' · Holiday');
+  if (o.makeup) parts.push(o.makeup + ' · Makeup workday');
+  if (o.kind === 'rec') {
+    parts.push(hrs(o.work + o.ot) + (o.ot ? ', incl. ' + o.ot + ' h overtime' : ''));
+    parts.push(o.edited ? 'You changed this day' : o.schedule ? 'From your schedule' : 'You recorded it');
+  } else if (o.kind === 'plan') parts.push('Planned 8 h');
+  else if (o.kind === 'proj') parts.push('About 8 h · Estimated from your life settings');
+  else if (o.kind === 'unrec') parts.push('Workday · Not recorded');
+  else if (!o.hol) parts.push('Day off');
+  return parts.join(' · ');
+}
+function monthSummary(m) {
+  let rec = 0, h = 0, ot = 0, plan = 0, proj = 0, off = 0;
+  for (let d = 1; d <= dim(m); d++) {
+    const o = day(m, d);
+    if (o.kind === 'rec') { rec++; h += o.work + o.ot; ot += o.ot; }
+    if (o.kind === 'plan') plan++;
+    if (o.kind === 'proj') proj++;
+    if (o.hol) off++;
+  }
+  const parts = [];
+  if (rec) parts.push(rec + ' days recorded, ' + hrs(h));
+  if (proj) parts.push(proj + ' workdays estimated before you started');
+  if (ot) parts.push(hrs(ot) + ' overtime');
+  if (plan) parts.push(plan + ' workdays ahead');
+  if (off) parts.push(off + ' days off');
+  return parts.join(' · ');
+}
+function holMark(o, locked) {
+  if (locked || (!o.hol && !o.makeup)) return { badge: '', badgeCss: 'display: none', sunCss: 'display: none', bagCss: 'display: none', cap: '', capCss: '' };
+  return o.makeup
+    ? { badge: '', badgeCss: 'color: var(--sec)', sunCss: 'display: none', bagCss: '', cap: '', capCss: '' }
+    : { badge: '', badgeCss: 'color: var(--off)', sunCss: '', bagCss: 'display: none', cap: o.hol, capCss: 'color: var(--off)' };
+}
+// A holiday name is written once per run and spans the run's cells in that row, like an all-day event in Calendar.
+// Names longer than the span end in an ellipsis; tapping a day shows the full name.
+function holSpan(o, locked, plus) {
+  const hm = holMark(o, locked);
+  if (!hm.cap || !o.hol) return hm;
+  const prev = o.d > 1 ? day(o.m, o.d - 1) : null;
+  if (prev && prev.hol === o.hol && o.w !== 0 && !lockedFor(prev, plus)) return Object.assign({}, hm, { cap: '', capCss: 'visibility: hidden' });
+  let len = 1;
+  while (o.d + len <= dim(o.m) && day(o.m, o.d + len).hol === o.hol && !lockedFor(day(o.m, o.d + len), plus) && o.w + len <= 6) len++;
+  return Object.assign({}, hm, { capCss: hm.capCss + '; position: relative; z-index: 1; align-self: flex-start; box-sizing: border-box; width: calc(' + (len * 100) + '% - 4px); margin-left: 2px; padding: 0 4px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; text-align: left; background: color-mix(in srgb, var(--off) 14%, transparent)' });
+}
+function stageAt(a) { return STAGES.find(function (s) { return a >= s.from && a < s.to; }); }
+function numCss(o, locked, isSel) {
+  if (o.today) return 'color: #fff; background: var(--accent); font-weight: 600';
+  if (isSel) return 'color: var(--card); background: var(--label); font-weight: 600';
+  if (locked) return 'color: var(--ter)';
+  if (o.hol || ((o.w === 0 || o.w === 6) && !o.makeup)) return 'color: var(--sec)';
+  return 'color: var(--label)';
+}
+function bar(o, locked) {
+  if (locked || (o.kind !== 'rec' && !est(o))) return { work: LOCK_BAR, ot: LOCK_BAR };
+  const total = o.work + o.ot;
+  const width = Math.min(24, 6 + total * 1.8);
+  const otW = o.ot ? Math.max(3, width * o.ot / total) : 0;
+  const workW = width - otW;
+  const work = est(o)
+    ?'width: ' + workW + 'px; box-shadow: inset 0 0 0 1.25px var(--work); opacity: .65'
+    : 'width: ' + workW + 'px; background: var(--work)';
+  const ot = otW ? 'width: ' + otW + 'px; margin-left: 1.5px; background: var(--ot)' : LOCK_BAR;
+  return { work: work, ot: ot };
+}
+function yearDot(o) {
+  if (o.today) return 'background: var(--accent); box-shadow: 0 0 0 1.5px var(--card), 0 0 0 3px var(--accent)';
+  if (o.kind === 'rec') return o.ot ? 'background: var(--ot)' : 'background: var(--work)';
+  if (o.hol) return 'width: 5px; height: 5px; background: var(--off)';
+  if (est(o)) return 'box-shadow: inset 0 0 0 1px var(--work); opacity: .55';
+  return 'width: 3px; height: 3px; background: var(--ter); opacity: .7';
+}
+
+const KINDS = [['Sleep', 'var(--slp)'], ['Regular work', 'var(--work)'], ['Overtime', 'var(--ot)'], ['Breaks at work', 'var(--brk)'], ['Free time', 'var(--free)']];
+const SUMS = {
+  sw: { pre: 'Back from the holiday', num: '1 h overtime', sub: 'Oct 9 isn’t recorded yet.', link: 'Fill it in', plan: '', planCss: 'display: none',
+    days: '2 workdays', ot: '1 h', cupTitle: '168 h', alloc: [56, 16, 1, 2, 93],
+    payTitle: 'Forecast pay this week', pay: 6775, earnedAmt: 6775, earnedPct: 100, freeOtTitle: 'Overtime recorded this week' },
+  sm: { pre: 'October so far', num: '17 h', sub: 'About 120 h planned ahead.', link: 'Plan time off', plan: '15 planned', planCss: '',
+    days: '2 workdays', ot: '1 h', cupTitle: '744 h', alloc: [248, 136, 1, 17, 342],
+    payTitle: 'Forecast pay for October', pay: 30000, earnedAmt: 10645, earnedPct: 35.5, freeOtTitle: 'Overtime recorded this month' },
+  sy: { pre: 'Overtime this year', num: '77 h', sub: 'About 9.6 extra workdays.', link: 'See October', plan: '59 planned', planCss: '',
+    days: '151 workdays', ot: '77 h', cupTitle: '8,760 h', alloc: [2920, 1976, 77, 248, 3539],
+    payTitle: 'Forecast pay for 2026', pay: 360000, earnedAmt: 280000, earnedPct: 77.8, freeOtTitle: 'Overtime recorded this year' }
+};
+// Bottom-up order: work family first (normal, break, overtime), then your own time, then sleep.
+function pick(list, order) { return order.map(function (i) { return list[i]; }); }
+function money(n) { return n.toLocaleString('en-US'); }
+function layers(values, kinds, unit, total) {
+  return values.map(function (v, i) {
+    return { n: kinds[i][0], c: kinds[i][1], v: v, val: unit === 'yr' ? 'about ' + v + ' yr' : v.toLocaleString('en-US') + ' h', pct: (v / total * 100).toFixed(1) + '%' };
+  });
+}
+
+class Component extends DCLogic {
+  renderVals() {
+    const plus = this.props.plus ?? false;
+    const sel = this.state.sel ?? 8;
+    const ym = this.state.ym ?? 10;
+    const ly = this.state.ly ?? AGE;
+    const pickDay = (d) => () => this.setState({ sel: d });
+
+    const month = [];
+    for (let i = 0; i < dow(10, 1); i++) month.push({ blank: true, isDay: false });
+    for (let d = 1; d <= 31; d++) {
+      const o = day(10, d), locked = lockedFor(o, plus), b = bar(o, locked), hm = holSpan(o, locked, plus);
+      month.push({
+        blank: false, isDay: true, label: String(d),
+        badge: hm.badge, badgeCss: hm.badgeCss, sunCss: hm.sunCss, bagCss: hm.bagCss, cap: hm.cap, capCss: hm.capCss,
+        numCss: numCss(o, locked, d === sel),
+        workCss: b.work, otCss: b.ot,
+        dotCss: o.edited && !locked ? 'opacity: 1' : 'display: none',
+        pick: pickDay(d), aria: title(o) + ', ' + detail(o, locked)
+      });
+    }
+
+    const H = 148, AX = 12;
+    const week = [];
+    for (let d = 4; d <= 10; d++) {
+      const o = day(10, d), locked = lockedFor(o, plus);
+      const show = !locked && (o.kind === 'rec' || est(o));
+      const hm = holSpan(o, locked, plus);
+      week.push({
+        label: String(d), wd: o.hol && !locked ? hm.cap : (hm.cap || WK[o.w]), wdCss: o.hol && !locked ? hm.capCss : (hm.cap ? hm.capCss : ''),
+        badge: hm.badge, badgeCss: hm.badgeCss, bagCss: hm.bagCss,
+        hours: show ? String(o.work + o.ot) : (!locked && o.kind === 'unrec' ? 'None' : ''),
+        workCss: show ? 'height: ' + (o.work / AX * H) + 'px; ' + (est(o) ?'box-shadow: inset 0 0 0 1.5px var(--work); opacity: .65' : 'background: var(--work)') : LOCK_BAR,
+        otCss: show && o.ot ? 'height: ' + (o.ot / AX * H) + 'px; background: var(--ot); margin-bottom: 2px' : LOCK_BAR,
+        numCss: numCss(o, locked, d === sel),
+        pick: pickDay(d), aria: title(o) + ', ' + detail(o, locked)
+      });
+    }
+    const selDay = day(10, sel);
+    const call = { title: title(selDay), sub: detail(selDay, lockedFor(selDay, plus)) };
+
+    const year = [];
+    for (let m = 1; m <= 12; m++) {
+      const cells = [];
+      for (let i = 0; i < dow(m, 1); i++) cells.push({ css: 'opacity: 0' });
+      for (let d = 1; d <= dim(m); d++) cells.push({ css: yearDot(day(m, d)) });
+      year.push({
+        name: MON[m - 1], cells: cells,
+        nameCss: m === ym ? 'color: var(--accent); font-weight: 600' : (m === 10 ? 'font-weight: 600' : ''),
+        wrapCss: m === ym ? 'background: var(--ctl)' : '',
+        pick: () => this.setState({ ym: m }), aria: MONTHS[m - 1] + ', ' + monthSummary(m)
+      });
+    }
+    const ycall = { title: MONTHS[ym - 1] + ' 2026', sub: monthSummary(ym) };
+
+    const life = [];
+    for (let r = 0; r < 8; r++) {
+      const cells = [];
+      for (let k = 0; k < 10; k++) {
+        const a = r * 10 + k, s = stageAt(a), c = 'var(' + s.v + ')';
+        let css;
+        if (a < AGE) css = 'background: ' + c;
+        else if (a === AGE) css = 'background: ' + c + '; box-shadow: 0 0 0 2px var(--card), 0 0 0 3.5px var(--accent)';
+        else css = 'box-shadow: inset 0 0 0 1.25px ' + c + '; opacity: .6';
+        if (a === ly && a !== AGE) css += '; outline: 2px solid var(--label); outline-offset: 1px';
+        cells.push({ css: css, pick: () => this.setState({ ly: a }), aria: (1994 + a) + ', age ' + a + ', ' + s.name });
+      }
+      life.push({ label: String(r * 10), cells: cells });
+    }
+    const ls = stageAt(ly);
+    let lsub = ls.name + (ly === AGE ? ' · Now' : ly < AGE ? ' · Behind you' : ' · Ahead');
+    if (ls.name === 'Work') lsub += ' · Year ' + (ly - 21) + ' of work';
+    const lcall = { title: (1994 + ly) + ' · Age ' + ly, sub: lsub };
+    const stages = STAGES.map(function (s) { return { name: s.name, range: s.range, color: 'var(' + s.v + ')' }; });
+
+    const veil = plus ? '' : 'filter: blur(8px); opacity: .4; pointer-events: none';
+    const hidden = this.state.hidden ?? false;
+    const m = (n) => hidden ? '••••' : money(n);
+    const sums = {};
+    Object.keys(SUMS).forEach(function (k) {
+      const s = SUMS[k], total = s.alloc.reduce(function (a, b) { return a + b; }, 0), alloc = pick(layers(s.alloc, KINDS, 'h', total), [1, 3, 2, 4, 0]);
+      sums[k] = Object.assign({}, s, { alloc: alloc, allocTop: alloc.slice().reverse(), pay: m(s.pay), payPct: s.earnedPct, earned: 'Earned ' + m(s.earnedAmt) + ' · ' + s.earnedPct + '%' });
+    });
+    const lifeAlloc = pick(layers([26.7, 9.8, 1.2, 42.3], [KINDS[0], KINDS[1], KINDS[3], KINDS[4]], 'yr', 80), [1, 2, 3, 0]);
+    const lsum = { alloc: lifeAlloc, allocTop: lifeAlloc.slice().reverse(), past: m(2370000), future: m(14930000), total: m(17300000) };
+    const data = { week: week, month: month, year: year, life: life, call: call, ycall: ycall, lcall: lcall, stages: stages, free: !plus, plus: plus, veil: veil,
+      sw: sums.sw, sm: sums.sm, sy: sums.sy, ls: lsum, hidden: hidden, shown: !hidden, eyeLabel: hidden ? 'Show amounts' : 'Hide amounts',
+      toggleHide: () => this.setState({ hidden: !hidden }) };
+    return {
+      themes: [
+        Object.assign({ cls: 'theme-light', label: 'Light · English' }, data),
+        Object.assign({ cls: 'theme-dark', label: 'Dark · English' }, data)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
