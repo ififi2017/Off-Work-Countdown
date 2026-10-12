@@ -1,5 +1,6 @@
 // Native recordings for the 3.2.2 App Store search-results video.
-// Four iPhone scenes per language: timer, widgets, records, leave. Records and
+// Scenes per language: timer, widgets, focus, records, report, leave and life
+// on iPhone, plus the Apple Watch app's review fixture. Records and
 // Time off were redesigned in 3.2.2, so every scene is recaptured from one
 // Debug build. Demo data is identical across languages: no holiday region,
 // so no localized holiday names (or truncated ones) differ between videos.
@@ -18,12 +19,12 @@ import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {setTimeout as sleep} from 'node:timers/promises';
 import {COPY} from './creative-copy.mjs';
-import {sim,stop,archivePath,decode,encode,launch,regularSeed} from './creative-seed-3.2.1.mjs';
+import {sim,stop,archivePath,decode,encode,launch,regularSeed,focusSeed,daytime} from './creative-seed-3.2.1.mjs';
 
 const dir=fileURLToPath(new URL('.',import.meta.url)),raw=join(dir,'raw/3.2.2/search');mkdirSync(raw,{recursive:true});
 const id=process.env.IOS_SHOTS_SIMULATOR||'3C9FDCBC-0FA4-4E18-BFF4-2A8C36877966';
 const app=process.env.IOS_SHOTS_APP||'/private/tmp/owc-322-creative-build/Build/Products/Debug-iphonesimulator/App.app';
-const SCENES=['timer','widgets','records','leave'];
+const SCENES=['timer','widgets','focus','records','report','leave','life','watch'];
 const scenes=process.env.IOS_SHOTS_SCENES?.split(',')||SCENES;
 const langs=(process.env.IOS_SHOTS_LANGUAGE||Object.keys(COPY).join(',')).split(',');
 const hash=p=>createHash('sha256').update(readFileSync(p)).digest('hex');
@@ -79,6 +80,10 @@ function sceneArgs(scene,lang){
  switch(scene){
   // 3.2.2 Records: the redesigned month calendar.
   case 'records':recordsSeed();return{extra:[...WEEK,'-ios.native.selectedTab','records','-ios.native.qaRecordsScale','month']};
+  // Focus runs in a daytime zone so its planned blocks sit in working hours.
+  case 'focus':return{time:focusSeed(id,lang),zone:daytime().zone,extra:['-ios.native.selectedTab','focus','-ios.native.qaRoute','focus']};
+  case 'report':return{extra:['-ios.native.qaCycleReport','month','-ios.native.qaCycleReportAutoplay','YES']};
+  case 'life':return{extra:['-ios.native.selectedTab','records','-ios.native.qaRecordsScale','life']};
   // 3.2.2 Time off: the plan screen. An empty region plans around weekends only.
   case 'leave':return{extra:['-ios.native.selectedTab','settings','-ios.native.qaRoute','leave','-ios.native.qaLeavePlanner','YES','-ios.native.qaLeaveRegion','',...WEEK]};
   // Onboarding picks the holiday template from the locale's region, and the
@@ -88,18 +93,40 @@ function sceneArgs(scene,lang){
   default:return{extra:['-ios.native.qaDebugScenario','working']};
  }
 }
-const settle={leave:22,records:12};
+const settle={leave:22,records:12,report:20,life:12};
 // The timer and widget tick for the whole six-second beat.
-const seconds={timer:9,widgets:9,records:5,leave:5};
+const seconds={timer:9,widgets:9,focus:8,records:5,report:16,leave:5,life:5};
+
+// Apple Watch: the Watch app's Debug review fixture (no phone pairing, no
+// salary). The fixture ends the shift 3½ hours from now, so a time zone where
+// it is early afternoon puts "off at" near 5 PM, like the iPhone scenes.
+const WATCH_ID=process.env.IOS_SHOTS_WATCH||'BCE439EB-0B3F-4317-BFA4-A40DC5CEFBFD';
+const WATCH_APP=join(app,'..','..','Debug-watchsimulator','DoneAt Watch App.app'),WATCH_BUNDLE='com.rainif.offworkcountdown.macappstore.watchkitapp';
+async function captureWatch(lang){
+ const prefix=`${lang}-watch`,png=join(raw,prefix+'.png'),mov=join(raw,prefix+'.mov');
+ const offset=13-new Date().getUTCHours(),zone=offset===0?'Etc/UTC':`Etc/GMT${offset>0?'-':'+'}${Math.abs(offset)}`;
+ const local=new Date(Date.now()+offset*36e5),clock=`${String(local.getUTCHours()).padStart(2,'0')}:${String(local.getUTCMinutes()).padStart(2,'0')}`;
+ const watchBooted=Object.values(JSON.parse(sim(['list','devices','booted','-j'])).devices).flat().some(x=>x.udid===WATCH_ID);
+ if(!watchBooted){sim(['boot',WATCH_ID]);sim(['bootstatus',WATCH_ID,'-b']);}
+ sim(['install',WATCH_ID,WATCH_APP]);sim(['status_bar',WATCH_ID,'override','--time',clock],true);
+ sim(['launch','--terminate-running-process',WATCH_ID,WATCH_BUNDLE,'-owcWatchReviewState','working','-owcWatchReviewLocale',lang,'-owcWatchReviewTimeZone',zone,'-AppleLanguages',`(${lang==='zh-CN'?'zh-Hans':lang})`]);
+ await sleep(6000);sim(['io',WATCH_ID,'screenshot','--type=png',png]);
+ const p=spawn('xcrun',['simctl','io',WATCH_ID,'recordVideo','--codec=h264','--force',mov],{stdio:'ignore'});const done=new Promise(r=>p.on('close',r));
+ await sleep(9000);p.kill('SIGINT');await done;
+ sim(['terminate',WATCH_ID,WATCH_BUNDLE],true);
+ const item={locale:lang,ascLocale:COPY[lang].asc,scene:'watch',build:{watchAppSHA256:hash(join(WATCH_APP,'DoneAt Watch App'))},device:WATCH_ID,fixture:'working',timeZone:zone,file:prefix+'.png',sha256:hash(png),video:{file:prefix+'.mov',sha256:hash(mov),duration:9},demoData:true,capturedAt:new Date().toISOString()};
+ manifest.items=manifest.items.filter(x=>!(x.locale===lang&&x.scene==='watch'));manifest.items.push(item);save();console.log('captured '+prefix);
+}
 
 try{
- for(const lang of langs)for(const scene of scenes){
+ for(const lang of langs)if(scenes.includes('watch'))await captureWatch(lang);
+ for(const lang of langs)for(const scene of scenes.filter(x=>x!=='watch')){
   const prefix=`${lang}-${scene}`,png=join(raw,prefix+'.png'),mov=join(raw,prefix+'.mov');
   const old=manifest.items.find(x=>x.locale===lang&&x.scene===scene);
   if(old&&old.build?.executableSHA256===build.executableSHA256&&old.build?.debugLibrarySHA256===build.debugLibrarySHA256&&existsSync(png)&&hash(png)===old.sha256&&existsSync(mov)&&hash(mov)===old.video.sha256)continue;
   stop(id);copyFileSync(backup,archivePath(id));regularSeed(id,lang);
   const[e,a]=decode(id);if(e.sync)e.sync.syncEnabled=false;encode(id,e,a);
-  const {extra}=sceneArgs(scene,lang),time='14:22';
+  delete process.env.IOS_SHOTS_TIME_ZONE;const {extra,time='14:22',zone}=sceneArgs(scene,lang);if(zone)process.env.IOS_SHOTS_TIME_ZONE=zone;
   sim(['status_bar',id,'override','--time',time,'--batteryState','charged','--batteryLevel','100','--wifiMode','active','--wifiBars','3','--cellularMode','active','--cellularBars','4']);
   launch(id,lang,extra);await sleep((settle[scene]??7)*1000);
   for(let attempt=0;;attempt++){
@@ -108,8 +135,10 @@ try{
    if(attempt===11)throw Error('Capture remained on launch screen: '+prefix);
    if(attempt===4||attempt===8){launch(id,lang,extra);await sleep(10000);}else await sleep(3000);
   }
+  // The report plays once; relaunch so the recording starts at its opening.
+  if(scene==='report'){launch(id,lang,extra);await sleep(2500);}
   const duration=seconds[scene]??7;await record(mov,duration);
   const item={locale:lang,ascLocale:COPY[lang].asc,scene,build,file:prefix+'.png',sha256:hash(png),video:{file:prefix+'.mov',sha256:hash(mov),duration},demoData:true,capturedAt:new Date().toISOString()};
   manifest.items=manifest.items.filter(x=>!(x.locale===lang&&x.scene===scene));manifest.items.push(item);save();console.log('captured '+prefix);
  }
-}finally{stop(id);copyFileSync(backup,archivePath(id));manifest.archiveRestored=true;save();}
+}finally{stop(id);copyFileSync(backup,archivePath(id));manifest.archiveRestored=true;save();if(scenes.includes('watch'))sim(['shutdown',WATCH_ID],true);}

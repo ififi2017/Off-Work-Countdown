@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-10-12T08:44:06.314Z",
+  "createdAt": "2026-10-12T09:34:54.637Z",
   "uploaded": false,
   "items": [
     {
@@ -12,13 +12,17 @@
       "duration": 24,
       "frames": 720,
       "audio": false,
-      "sha256": "511fd752963ad270e29f184929ec37c33f08b815e676514a2a5a5ccc0694da79",
-      "validatedFrames": 737,
+      "sha256": "939e93d2ae699e38923a17dd3fe260f22171e8d88706f4c94f1d44bc2a936f34",
+      "validatedFrames": 733,
       "headlineScale": [
         1,
         1,
         1,
-        0.92
+        1,
+        1,
+        0.92,
+        0.886,
+        0.966
       ],
       "shrinkFlagged": [],
       "safeArea": {
@@ -48,12 +52,22 @@
           "issues": []
         },
         {
-          "time": 1.5,
+          "time": 1,
           "minHeadline": 88,
           "issues": []
         },
         {
-          "time": 3,
+          "time": 2.5,
+          "minHeadline": 88,
+          "issues": []
+        },
+        {
+          "time": 2.95,
+          "minHeadline": 88,
+          "issues": []
+        },
+        {
+          "time": 3.05,
           "minHeadline": 88,
           "issues": []
         },
@@ -63,68 +77,38 @@
           "issues": []
         },
         {
-          "time": 5.75,
+          "time": 7.5,
           "minHeadline": 88,
           "issues": []
         },
         {
-          "time": 6,
-          "minHeadline": null,
-          "issues": []
-        },
-        {
-          "time": 6.25,
+          "time": 10.5,
           "minHeadline": 88,
           "issues": []
         },
         {
-          "time": 8,
+          "time": 13.5,
           "minHeadline": 88,
           "issues": []
         },
         {
-          "time": 10,
-          "minHeadline": 88,
-          "issues": []
-        },
-        {
-          "time": 12,
-          "minHeadline": null,
-          "issues": []
-        },
-        {
-          "time": 14,
-          "minHeadline": 88,
-          "issues": []
-        },
-        {
-          "time": 16,
-          "minHeadline": 88,
-          "issues": []
-        },
-        {
-          "time": 18,
-          "minHeadline": null,
-          "issues": []
-        },
-        {
-          "time": 20,
+          "time": 16.5,
           "minHeadline": 81,
           "issues": []
         },
         {
-          "time": 22,
-          "minHeadline": 81,
+          "time": 19.5,
+          "minHeadline": 78,
           "issues": []
         },
         {
-          "time": 23.5,
-          "minHeadline": null,
+          "time": 22.5,
+          "minHeadline": 85,
           "issues": []
         },
         {
-          "time": 23.9,
-          "minHeadline": 88,
+          "time": 23.8,
+          "minHeadline": 85,
           "issues": []
         }
       ],
@@ -148,22 +132,19 @@
           "nativeDuration": 8.823333
         },
         {
+          "scene": "focus",
+          "capture": "en-focus.png",
+          "captureSHA256": "e2cd207a4a2b73f25f02a47f03e6410bad49c0a0b4821081141ae3234ea05fdf",
+          "recording": "en-focus.mov",
+          "recordingSHA256": "2c044c2bd183ffa7d2f1cdd65ccbf56539a987d40b7403200cbeaf0f0a23cdea",
+          "inPoint": 0.2,
+          "nativeDuration": 7.768333
+        },
+        {
           "scene": "records",
           "capture": "en-records.png",
           "captureSHA256": "6349b1830481ba1d10fee151caac91c8ca63dec684f2cbeb0b7f26e8e3918d65",
           "reveal": [
-            [
-              573,
-              1105,
-              174,
-              50
-            ],
-            [
-              747,
-              1105,
-              173,
-              50
-            ],
             [
               53,
               1290,
@@ -189,6 +170,15 @@
               50
             ]
           ]
+        },
+        {
+          "scene": "report",
+          "capture": "en-report.png",
+          "captureSHA256": "e02378177c28ff4a3e9b6f996524dd274b7877905b94981654094fcee6161944",
+          "recording": "en-report.mov",
+          "recordingSHA256": "e6b301733b6c2b32c4178d6c11aeaed544ee70484bad89e772d99bf346e46cad",
+          "inPoint": 5.6,
+          "nativeDuration": 15.736667
         },
         {
           "scene": "leave",
@@ -256,6 +246,20 @@
               100
             ]
           ]
+        },
+        {
+          "scene": "watch",
+          "capture": "en-watch.png",
+          "captureSHA256": "a3c9984652006678277abf9df03b2ea7ad2187a80e370e765f19fbc8ea852ed9",
+          "recording": "en-watch.mov",
+          "recordingSHA256": "35d60a7c7bc183ffc4cfbcd8f47daafa46510dbffbaf63e038918d1fb93bcf53",
+          "inPoint": 0.5,
+          "nativeDuration": 8.421667
+        },
+        {
+          "scene": "life",
+          "capture": "en-life.png",
+          "captureSHA256": "f0b2de8e134a875fc73a8659b4ab7661bbda58505a380b03ab85eda32b11571b"
         }
       ],
       "status": "local-not-uploaded"
@@ -270,13 +274,17 @@
       "duration": 24,
       "frames": 720,
       "audio": false,
-      "sha256": "8a71325314c6840a7eb8ff2a93da8c83275867469fd6f519f6c310d1644fe4fe",
-      "validatedFrames": 737,
+      "sha256": "923594c8e6d0eb9b5583e8566163d1b4c91774b0bfe85c1f4aa97488367aacb6",
+      "validatedFrames": 733,
       "headlineScale": [
         0.981,
         0.981,
+        0.981,
         0.894,
-        0.894
+        0.894,
+        0.894,
+        1,
+        0.981
       ],
       "shrinkFlagged": [],
       "safeArea": {
@@ -306,12 +314,22 @@
           "issues": []
         },
         {
-          "time": 1.5,
+          "time": 1,
           "minHeadline": 102,
           "issues": []
         },
         {
-          "time": 3,
+          "time": 2.5,
+          "minHeadline": 102,
+          "issues": []
+        },
+        {
+          "time": 2.95,
+          "minHeadline": 102,
+          "issues": []
+        },
+        {
+          "time": 3.05,
           "minHeadline": 102,
           "issues": []
         },
@@ -321,68 +339,38 @@
           "issues": []
         },
         {
-          "time": 5.75,
+          "time": 7.5,
           "minHeadline": 102,
           "issues": []
         },
         {
-          "time": 6,
+          "time": 10.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 13.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 16.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 19.5,
+          "minHeadline": 104,
+          "issues": []
+        },
+        {
+          "time": 22.5,
           "minHeadline": 102,
           "issues": []
         },
         {
-          "time": 6.25,
+          "time": 23.8,
           "minHeadline": 102,
-          "issues": []
-        },
-        {
-          "time": 8,
-          "minHeadline": 102,
-          "issues": []
-        },
-        {
-          "time": 10,
-          "minHeadline": 102,
-          "issues": []
-        },
-        {
-          "time": 12,
-          "minHeadline": 93,
-          "issues": []
-        },
-        {
-          "time": 14,
-          "minHeadline": 93,
-          "issues": []
-        },
-        {
-          "time": 16,
-          "minHeadline": 93,
-          "issues": []
-        },
-        {
-          "time": 18,
-          "minHeadline": 93,
-          "issues": []
-        },
-        {
-          "time": 20,
-          "minHeadline": 93,
-          "issues": []
-        },
-        {
-          "time": 22,
-          "minHeadline": 93,
-          "issues": []
-        },
-        {
-          "time": 23.5,
-          "minHeadline": 93,
-          "issues": []
-        },
-        {
-          "time": 23.9,
-          "minHeadline": 93,
           "issues": []
         }
       ],
@@ -406,22 +394,19 @@
           "nativeDuration": 8.818333
         },
         {
+          "scene": "focus",
+          "capture": "zh-CN-focus.png",
+          "captureSHA256": "5e26f23c95c9782296d94a54599d33efbdc1fcdd9545b8289787ea74e11582e9",
+          "recording": "zh-CN-focus.mov",
+          "recordingSHA256": "c7a7f51e9c33b1c2d7aa68da21c63df8f2b0d9d4d2bf2aad7c591ff280ca20cd",
+          "inPoint": 0.2,
+          "nativeDuration": 7.831667
+        },
+        {
           "scene": "records",
           "capture": "zh-CN-records.png",
           "captureSHA256": "c49e976366e34057627c15fbb557211444c624904483175c0c67f46db548fd63",
           "reveal": [
-            [
-              573,
-              1105,
-              174,
-              50
-            ],
-            [
-              747,
-              1105,
-              173,
-              50
-            ],
             [
               53,
               1290,
@@ -447,6 +432,15 @@
               50
             ]
           ]
+        },
+        {
+          "scene": "report",
+          "capture": "zh-CN-report.png",
+          "captureSHA256": "3432841c78c3059f4be4c8f85db6b7900bee29b4af5555fcfb9640ce601ad97a",
+          "recording": "zh-CN-report.mov",
+          "recordingSHA256": "10539e237c71c8047f1f7eeecc111381a937646d64ea87a0142eb9a5d0bf3db8",
+          "inPoint": 5.6,
+          "nativeDuration": 15.776667
         },
         {
           "scene": "leave",
@@ -514,6 +508,20 @@
               100
             ]
           ]
+        },
+        {
+          "scene": "watch",
+          "capture": "zh-CN-watch.png",
+          "captureSHA256": "821fc934f06a933611c8557a1b43c587603df97d7498c2886e94a62e1976f7f0",
+          "recording": "zh-CN-watch.mov",
+          "recordingSHA256": "4e47a80e6319f88bca3a77a3cdedf680a83e84c8c7f39cedff95b606df4dd412",
+          "inPoint": 0.5,
+          "nativeDuration": 8.828333
+        },
+        {
+          "scene": "life",
+          "capture": "zh-CN-life.png",
+          "captureSHA256": "187c92c886034b67f8b1877960e423aae234937b854c643ee9a70ac801fdc27b"
         }
       ],
       "status": "local-not-uploaded"

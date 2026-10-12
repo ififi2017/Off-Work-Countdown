@@ -6,35 +6,40 @@ for 3.2.2 because Records and Time off were redesigned.
 
 ## What changed from 3.2.1 V4
 
-- Four beats of six seconds: countdown → widget → records → time off. Focus
-  and the cycle report are dropped; each beat is one line of copy (from the
-  reviewed V4 lines) and one native hero. No wordmark, eyebrow, subline or
-  progress dots; "Illustrative data" appears once, small, in the corner.
+- Eight beats of three seconds, cut in 0.3 s, so a viewer gets about three
+  seconds of each before the next: countdown → widget → focus → records →
+  cycle report → time off → Apple Watch → life. The countdown is on screen,
+  ticking, from the first frame.
+- Each beat is one headline and one native hero. No wordmark, eyebrow,
+  subline or progress dots; "Illustrative data" sits small in the corner, with
+  "DoneAt Plus" added on the focus and cycle-report beats.
+- Headlines reuse the reviewed V4 tour lines. Written for this video (other
+  16 locales need translations before they render; a missing line fails):
+  en countdown "Know when you're done." and en report "Your month, in
+  review." (the V4 lines shrank to ~70 %), Watch (en "On your wrist. Closer
+  to done.", zh from the 3.2.1 Watch page) and life ("Work, in the bigger
+  picture." / 把工作，放回人生里。, from the 3.1.9 App Preview). Any headline
+  below 85 % of full size is logged and stored as `shrinkFlagged`.
 - Recaptured from one 3.2.2 Debug build (`origin/main` 963c4922 plus the
-  Debug-only `qaLeaveFrom` hook in `DebugLeavePlanner.swift`).
+  Debug-only `qaLeaveFrom` hook). Apple Watch is recorded fresh from the Watch
+  app's Debug review fixture (`-owcWatchReviewState working`) on a Watch
+  simulator, in a time zone that puts "off at" near 5 PM like the iPhone
+  beats; it is cropped below the status bar, whose clock cannot be overridden.
 - Layout follows the Art Safe Area of Apple's search template
   (`apple-creative-template-guides.json`, 1920-scale `418,382.5,1084×515`).
-  Headline and hero stay inside it; the native surface around the hero (timer
-  screen, wallpaper, calendar) bleeds past it so the full 3:2 frame reads as
-  full. V4 spread everything across the canvas and was cropped on devices;
-  the unfinished 3.2.1 V5 shrank V4 into the safe area and the UI got too small.
-- Heroes are native pixels at or below capture resolution (no upscaling):
-  live ticking countdown and widget recordings, the 3.2.2 month calendar
-  (month header plus the two previous weeks: regular days, overtime on two
-  days, a day of leave and weekend rest; recorded days fill in order) and the
-  3.2.2 plan screen (cost and result, then both calendar rows of the 9-day
-  run; its label and each day light up in order).
-- Demo data is identical in every language: no holiday region, so there are
-  no localized or truncated holiday names ("Colum…"), and Monday-first weeks
-  (the app's week-start setting) keep the Saturday–Sunday run on two rows,
-  where its "9 days off in a row" label has room.
-- English countdown line is "Know when you're done." for this video; the V4
-  line was too long to set near the Chinese size. Other locales keep their
-  reviewed copy. Any headline that shrinks below 85 % of full size is logged
-  and recorded in the manifest (`shrinkFlagged`) for the other 16 languages.
-- Transitions: copy leaves before the next line arrives; the hero fades out,
-  the next fades in (no ghosted digits); a slow 2 % push carries each beat.
-  The countdown keeps ticking across the loop point.
+  Headline and hero stay inside it; the native surface around each hero
+  bleeds past it so the full 3:2 frame reads as full. Heroes are native
+  pixels at or below capture resolution; Records, Leave, Focus and the report
+  fill the safe-area width, the Watch shows at its native 1:1.
+- Records: month header joined to last week (regular days, overtime on two
+  days, a day of leave shown as a day off, weekend rest); recorded days fill
+  in order. Time off: both rows of the nine-day run with its label; each day
+  lights up in order. Report: the month's hours counting up live.
+- Demo data is identical in every language: no holiday region (so no
+  truncated holiday names) and Monday-first weeks (the app's week-start
+  setting), which keep the Saturday–Sunday run on two rows.
+- Shift alarms was tried for the last beat and dropped: without a configured
+  alarm the screen is a single "off" toggle and does not read in three seconds.
 
 ## Spec
 
@@ -42,6 +47,9 @@ for 3.2.2 because Records and Time off were redesigned.
 Every frame is audited in the renderer: headline glyphs and hero inside the
 safe area, no clipped text, settled copy clear of every visible surface,
 headline ≥ 56 px. A violation stops the render.
+
+The countdown, widget, focus, report and Watch clips are recorded live and
+wrap across the loop point, so the digits keep counting from 23.9 s into 0 s.
 
 ## Reproduce
 

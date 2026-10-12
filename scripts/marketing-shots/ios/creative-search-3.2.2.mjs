@@ -2,19 +2,21 @@
 //
 //   IOS_SHOTS_LANGUAGE=en,zh-CN node scripts/marketing-shots/ios/creative-search-3.2.2.mjs [--stills]
 //
-// Four beats of six seconds: countdown → widget → records → time off. Each
-// beat is one line of copy and one native hero, shown at or below its
-// capture resolution so nothing is upscaled. The hero and the headline sit
-// inside the Art Safe Area of Apple's search-results template; the rest of
-// the native surface the hero lives on (the timer screen, the wallpaper, the
-// calendar) bleeds past it towards the frame edge, so the full 3:2 frame
-// reads as full while any device crop keeps the message.
+// Eight beats of three seconds, cut in 0.3 s: countdown → widget → focus →
+// records → cycle report → time off → Apple Watch → life. Search results
+// autoplay muted at thumbnail size, so each beat lands its one line and one
+// native hero within the first second and moves on.
 //
-// Motion comes from the app: the countdown and widget tick live, recorded
-// days fill in order, and the leave run lights up day by day. A slow push
-// carries each beat. Every frame is audited: headline glyphs and hero must
-// stay inside the safe area, nothing may be clipped, and settled frames may
-// not overlap copy and hero. A violation stops the render.
+// Heroes are native pixels at or below capture resolution (never upscaled).
+// Headline and hero sit inside the Art Safe Area of Apple's search-results
+// template; the native surface around the hero bleeds past it so the full
+// 3:2 frame reads as full while a device crop keeps the message.
+//
+// Motion comes from the app: the countdown, widget, focus timer, Watch and
+// report count live; recorded days fill in order and the leave run lights up
+// day by day. A slow push carries each beat. Every frame is audited: glyphs
+// and hero inside the safe area, nothing clipped, settled copy clear of every
+// surface. A violation stops the render.
 import {spawn,execFileSync} from 'node:child_process';
 import {readFileSync,writeFileSync,mkdirSync,existsSync,renameSync} from 'node:fs';
 import {fileURLToPath,pathToFileURL} from 'node:url';
@@ -34,37 +36,63 @@ const M=16,L=Math.ceil(SAFE.x+M),T=Math.ceil(SAFE.y+M),R=Math.floor(SAFE.x+SAFE.
 const sha=p=>createHash('sha256').update(readFileSync(p)).digest('hex');
 const run=(cmd,args)=>new Promise((resolve,reject)=>{const c=spawn(cmd,args,{stdio:'inherit'});c.on('error',reject);c.on('close',n=>n===0?resolve():reject(Error(cmd+': '+n)))});
 
-// Native coordinates on the 1320×2868 capture. `key` is the part that must
-// stay in the safe area; `show` is the surface drawn around it (bleed).
-// Copy comes from the reviewed V4 tour lines: [countdown, widgets, records, leave].
-const SCENES=[
- {key:'timer',copy:0,layout:'stack',video:true,inPoint:0.2,bg:'#f2f2f7',
-  pieces:[{key:[0,372,1320,448],show:[0,372,1320,2496],radius:56}]},
- // The widget, centred, with its Home Screen wallpaper bleeding out sideways.
- {key:'widgets',copy:1,layout:'stack',align:'center',video:true,inPoint:0.2,bg:'#3a2a3f',
-  pieces:[{key:[330,930,662,536],show:[140,930,1040,852],radius:66}]},
- // Month header, weekdays and the two weeks before this one: regular days,
- // overtime (Oct 6, 8), a day of leave (Oct 9) and weekend rest. Marked cells
- // are found in the capture (creative-marks.py) and fill in reading order.
- {key:'records',copy:3,layout:'stack',bg:'#ffffff',
-  pieces:[{key:[53,725,1214,620],show:[53,725,1214,1000],radius:44}],
-  reveal:{strips:[[1105,1155],[1290,1340]],start:1.2,step:.32}},
- // The plan's cost and result, then the two calendar rows the whole run
- // spans (Monday-first weeks), with its "9 days off in a row" label. The
- // run's days light up in order.
- {key:'leave',copy:5,layout:'stack',bg:'#ffffff',
-  pieces:[{key:[53,515,1214,165],show:[53,500,1214,190],radius:44},{key:[53,1020,1214,375],show:[53,1020,1214,770],radius:44,gap:36}],
-  reveal:{strips:[[1140,1192],[1290,1390]],start:1.2,step:.26}},
-];
-const CENTERS=[6,12,18,23.5],HALF=0.5;
-const languages=(process.env.IOS_SHOTS_LANGUAGE||'en,zh-CN').split(',');
+// Headlines: a reviewed V4 tour line by index, or lines written for this video.
+// The other 16 locales still need `watch` and `life` translations (and `en`
+// keeps its own countdown line), so a missing line fails loudly.
+const LINES={
+ countdown:{en:['Know when','you’re done.']},
+ // The V4 English report line shrinks to 73 % on one line.
+ report:{en:['Your month,','in review.']},
+ // The V4 Watch line repeats the widget's "A glance." in English.
+ watch:{en:['On your wrist.','Closer to done.'],'zh-CN':['抬腕，','离下班更近。']},
+ // From the 3.1.9 App Preview: "Work, in the bigger picture" / 把工作放回人生里.
+ life:{en:['Work,','in the bigger picture.'],'zh-CN':['把工作，','放回人生里。']},
+};
 const NOTE={'zh-CN':'界面为演示数据',en:'Illustrative data'};
-// Headlines that replace a reviewed V4 line for this video only. The V4 English
-// countdown line was too long to set near the Chinese size on one line.
-const LINES={en:{0:['Know when','you’re done.']}};
+
+// Native coordinates on each capture (iPhone 1320×2868, Watch 416×496).
+// `key` must stay in the safe area; `show` is the surface around it (bleed).
+// `radius` is one value or [top-left, top-right, bottom-right, bottom-left].
+const SCENES=[
+ {key:'timer',copy:0,lines:'countdown',video:true,inPoint:0.2,bg:'#f2f2f7',
+  pieces:[{key:[0,372,1320,448],show:[0,372,1320,2496],radius:56}]},
+ {key:'widgets',copy:1,align:'center',video:true,inPoint:0.2,bg:'#3a2a3f',
+  pieces:[{key:[330,930,662,536],show:[140,930,1040,852],radius:66}]},
+ // The running focus block; the day's planned blocks bleed below.
+ {key:'focus',copy:2,plus:true,video:true,inPoint:0.2,bg:'#f2f2f7',
+  pieces:[{key:[40,512,1240,390],show:[40,512,1240,1350],radius:44}]},
+ // Month header joined to last week: regular days, overtime (two days), a
+ // day of leave and weekend rest. Marked cells fill in reading order.
+ {key:'records',copy:3,bg:'#ffffff',
+  pieces:[{key:[53,725,1214,105],show:[53,725,1214,105],radius:[44,44,0,0]},{key:[53,1170,1214,185],show:[53,1170,1214,700],radius:[0,0,44,44]}],
+  reveal:{strips:[[1290,1340]],start:.45,step:.2}},
+ // The month's hours counting up; the bars bleed below.
+ {key:'report',copy:4,lines:'report',plus:true,video:true,inPoint:5.6,bg:'#2a1c2e',
+  pieces:[{key:[0,470,1320,330],show:[0,470,1320,2000],radius:56}]},
+ // Both calendar rows of the nine-day run (Monday-first weeks), its label,
+ // then each day lights up in order.
+ {key:'leave',copy:5,bg:'#ffffff',
+  pieces:[{key:[53,1020,1214,375],show:[53,1020,1214,770],radius:44}],
+  reveal:{strips:[[1140,1192],[1290,1390]],start:.35,step:.13}},
+ // The Watch app's own review fixture, below its status bar.
+ {key:'watch',lines:'watch',align:'center',video:true,inPoint:0.5,bg:'#000000',native:[416,496],
+  pieces:[{key:[0,118,416,290],show:[0,118,416,378],radius:64}]},
+ // The life grid itself: lived years filled, the years ahead still open.
+ {key:'life',lines:'life',align:'center',bg:'#ffffff',
+  pieces:[{key:[53,895,1214,580],show:[53,895,1214,800],radius:44}]},
+];
+const BEAT=3,HALF=.15,CENTERS=SCENES.map((_,i)=>i<SCENES.length-1?(i+1)*BEAT:DURATION-HALF);
+if(CENTERS.at(-2)>=DURATION-2*HALF)throw Error('Scenes do not fit the loop');
+const languages=(process.env.IOS_SHOTS_LANGUAGE||'en,zh-CN').split(',');
 // A headline that has to shrink below this share of full size is flagged in
 // the manifest and the log, so long translations are caught before review.
 const SHRINK_FLAG=.85;
+
+function headline(s,lang){
+ const own=s.lines&&LINES[s.lines]?.[lang];if(own)return own;
+ if(s.copy==null)throw Error(`No ${s.lines} headline for ${lang}; add one to LINES`);
+ const l=COPY[lang].tour[s.copy].lines;return l.length>2?[l.slice(0,-1).join(' '),l.at(-1)]:l;
+}
 
 async function prepare(lang){
  const sources=[];
@@ -72,13 +100,13 @@ async function prepare(lang){
   const png=join(raw,`${lang}-${s.key}.png`),mov=join(raw,`${lang}-${s.key}.mov`);
   const entry={scene:s.key,capture:`${lang}-${s.key}.png`,captureSHA256:sha(png)};
   if(s.video){
-   // Full-frame clip at capture resolution, long enough for the beat and both
-   // transitions, so the digits keep ticking the whole time it is on screen.
+   // Full-frame clip at capture resolution, long enough for the beat plus both
+   // cuts and the loop, so the numbers keep counting the whole time.
    const nativeDuration=Number(execFileSync('ffprobe',['-v','error','-show_entries','format=duration','-of','csv=p=0',mov],{encoding:'utf8'}));
-   if(nativeDuration<s.inPoint+7.2)throw Error(`${mov} is ${nativeDuration}s; the beat needs 7.4s of live footage`);
-   const clip=join(out,`${lang}-${s.key}-clip.mp4`),recipe=JSON.stringify({sha:sha(mov),inPoint:s.inPoint,v:2});
+   if(nativeDuration<s.inPoint+4)throw Error(`${mov} is ${nativeDuration}s; the beat needs ${s.inPoint+4}s`);
+   const clip=join(out,`${lang}-${s.key}-clip.mp4`),recipe=JSON.stringify({sha:sha(mov),inPoint:s.inPoint,v:3});
    if(!existsSync(clip)||!existsSync(clip+'.json')||readFileSync(clip+'.json','utf8')!==recipe){
-    await run('ffmpeg',['-y','-loglevel','error','-i',mov,'-ss',String(s.inPoint),'-t','7.2','-an','-vf',`fps=${FPS},setsar=1`,'-c:v','libx264','-preset','slow','-crf','10','-pix_fmt','yuv420p',clip]);
+    await run('ffmpeg',['-y','-loglevel','error','-i',mov,'-ss',String(s.inPoint),'-t','4','-an','-vf',`fps=${FPS},setsar=1`,'-c:v','libx264','-preset','slow','-crf','10','-pix_fmt','yuv420p',clip]);
     writeFileSync(clip+'.json',recipe);
    }
    Object.assign(entry,{recording:`${lang}-${s.key}.mov`,recordingSHA256:sha(mov),inPoint:s.inPoint,nativeDuration});
@@ -90,14 +118,13 @@ async function prepare(lang){
 }
 
 function html(lang,sources){
- const font=posterFonts(lang),c=COPY[lang].tour,tall=['ar','th','hi-IN','mr-IN'].includes(lang),cjk=['zh-CN','zh-TW','ja','ko'].includes(lang);
+ const font=posterFonts(lang),tall=['ar','th','hi-IN','mr-IN'].includes(lang),cjk=['zh-CN','zh-TW','ja','ko'].includes(lang);
+ const note=NOTE[lang]??COPY[lang].note;
  const scenes=SCENES.map((s,i)=>{
-  const [a,b]=LINES[lang]?.[i]??(c[s.copy].lines.length>2?[c[s.copy].lines.slice(0,-1).join(' '),c[s.copy].lines.at(-1)]:c[s.copy].lines);
-  const ink=s.layout==='stack'?`<div class="line"><div class="ink">${a} <span class="accent">${b}</span></div></div>`
-   :`<div class="line"><div class="ink">${a}</div></div><div class="line"><div class="ink accent">${b}</div></div>`;
+  const [a,b]=headline(s,lang),[nw,nh]=s.native||[1320,2868];
   const src=s.video?`<video muted playsinline preload="auto" src="${pathToFileURL(join(out,`${lang}-${s.key}-clip.mp4`)).href}"></video>`:`<img src="${pathToFileURL(join(raw,`${lang}-${s.key}.png`)).href}">`;
-  const pieces=s.pieces.map((p,j)=>`<div class="piece" style="background:${s.bg}"><div class="native">${src}${(sources[i].reveal||[]).map((r,q)=>r[1]>=p.show[1]&&r[1]<p.show[1]+p.show[3]?`<i class="mask" data-q="${q}" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px"></i>`:'').join('')}</div></div>`).join('');
-  return `<section id="s${i}" class="scene ${s.layout}"><h1>${ink}</h1><div class="hero">${pieces}<div class="key"></div></div></section>`;
+  const pieces=s.pieces.map(p=>`<div class="piece" style="background:${s.bg}"><div class="native" style="width:${nw}px;height:${nh}px">${src}${(sources[i].reveal||[]).map((r,q)=>r[1]>=p.show[1]&&r[1]<p.show[1]+p.show[3]?`<i class="mask" data-q="${q}" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px"></i>`:'').join('')}</div></div>`).join('');
+  return `<section id="s${i}" class="scene"><h1><div class="line"><div class="ink">${a} <span class="accent">${b}</span></div></div></h1><div class="hero">${pieces}<div class="key"></div></div><div class="note">${s.plus?'DoneAt Plus · ':''}${note}</div></section>`;
  }).join('');
  return `<!doctype html><meta charset="utf-8"><style>${font.css}
 *{box-sizing:border-box}html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden}
@@ -108,85 +135,79 @@ h1{position:absolute;margin:0;font-family:${font.serif};font-weight:700;line-hei
 .line{overflow:hidden;white-space:nowrap;word-break:keep-all}.ink{will-change:transform;display:inline-block}.accent{color:#f45a1e}
 .hero{position:absolute;transform-origin:50% 50%}
 .piece{position:absolute;overflow:hidden;box-shadow:0 18px 40px #30202c1f,0 2px 6px #30202c12}
-.native{position:absolute;left:0;top:0;width:1320px;height:2868px;transform-origin:0 0}
+.native{position:absolute;left:0;top:0;transform-origin:0 0}
 .native img,.native video{position:absolute;inset:0;width:100%;height:100%}
 .mask{position:absolute;background:#fff}
 .key{position:absolute;pointer-events:none}
 .note{position:absolute;right:28px;bottom:22px;font-size:15px;color:#a39686;letter-spacing:.2px}
-</style><div class="glow"></div>${scenes}<div class="note">${NOTE[lang]??COPY[lang].note}</div><script>
-const REVEAL=${JSON.stringify(sources.map(x=>x.reveal||[]))},SAFE=${JSON.stringify(SAFE)},AREA=${JSON.stringify({L,T,R,B})},SCENES=${JSON.stringify(SCENES)},CENTERS=${JSON.stringify(CENTERS)},HALF=${HALF},MAX=${JSON.stringify({stack:cjk?104:88,side:cjk?100:84})};
+</style><div class="glow"></div>${scenes}<script>
+const REVEAL=${JSON.stringify(sources.map(x=>x.reveal||[]))},SAFE=${JSON.stringify(SAFE)},AREA=${JSON.stringify({L,T,R,B})},SCENES=${JSON.stringify(SCENES)},CENTERS=${JSON.stringify(CENTERS)},HALF=${HALF},DURATION=${DURATION},MAX=${cjk?104:88};
 const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10)};
-function fit(h1,width,max){let n=max;h1.style.fontSize=n+'px';const lines=[...h1.querySelectorAll('.ink')];while(lines.some(e=>e.getBoundingClientRect().width>width)&&n>30){n-=1;h1.style.fontSize=n+'px';}return n;}
-// Lay out once: headline at the top of the safe area (stack) or left of the
-// hero (side); hero scaled to the room left, never above native resolution.
+function fit(h1,width,max){let n=max;h1.style.fontSize=n+'px';const e=h1.querySelector('.ink');while(e.getBoundingClientRect().width>width&&n>30){n-=1;h1.style.fontSize=n+'px';}return n;}
+// Lay out once: headline at the top of the safe area, hero below it, scaled
+// to the room left and never above native resolution.
 window.shrink=[];window.layoutReady=document.fonts.ready.then(()=>{
  const G=28;
  SCENES.forEach((s,i)=>{
   const sec=document.getElementById('s'+i),h1=sec.querySelector('h1'),hero=sec.querySelector('.hero');sec.style.visibility='visible';
-  let oy=0;const rects=s.pieces.map(p=>{oy+=(p.gap||0);const r={y:oy};oy+=p.key[3];return r;});
+  let oy=0;const rows=s.pieces.map(p=>{oy+=(p.gap||0);const y=oy;oy+=p.key[3];return y;});
   const kx0=Math.min(...s.pieces.map(p=>p.key[0])),kw=Math.max(...s.pieces.map(p=>p.key[0]+p.key[2]))-kx0,kh=oy;
-  let scale,left,top;
-  if(s.layout==='stack'){
-   window.shrink[i]=fit(h1,AREA.R-AREA.L,MAX.stack)/MAX.stack;Object.assign(h1.style,{left:AREA.L+'px',top:AREA.T+'px'});
-   top=Math.ceil(h1.getBoundingClientRect().bottom+G);
-   scale=Math.min(1,(AREA.R-AREA.L)/kw,(AREA.B-top)/kh);left=s.align==='center'?(AREA.L+AREA.R-kw*scale)/2:AREA.L;
-  }else{
-   scale=Math.min(1,(AREA.B-AREA.T)/kh);left=AREA.R-kw*scale;top=AREA.T;
-   window.shrink[i]=fit(h1,left-G*2-AREA.L,MAX.side)/MAX.side;const hh=h1.getBoundingClientRect().height;Object.assign(h1.style,{left:AREA.L+'px',top:Math.round((AREA.T+AREA.B-hh)/2)+'px'});
-  }
+  window.shrink[i]=fit(h1,AREA.R-AREA.L,MAX)/MAX;Object.assign(h1.style,{left:AREA.L+'px',top:AREA.T+'px'});
+  const top=Math.ceil(h1.getBoundingClientRect().bottom+G),scale=Math.min(1,(AREA.R-AREA.L)/kw,(AREA.B-top)/kh);
+  const left=s.align==='center'?(AREA.L+AREA.R-kw*scale)/2:AREA.L;
   Object.assign(hero.style,{left:left+'px',top:top+'px',width:kw*scale+'px',height:kh*scale+'px'});
   Object.assign(hero.querySelector('.key').style,{left:0,top:0,width:kw*scale+'px',height:kh*scale+'px'});
-  // Each piece shows its surface around the key; the native layer is offset so
-  // key pixels land exactly on the key rectangle.
+  // Each piece shows its surface around the key; the native layer is offset
+  // so key pixels land exactly on the key rectangle.
   s.pieces.forEach((p,j)=>{
-   const el=hero.querySelectorAll('.piece')[j],[sx,sy,sw,sh]=p.show;
-   Object.assign(el.style,{left:(sx-kx0)*scale+'px',top:(rects[j].y+(sy-p.key[1]))*scale+'px',width:sw*scale+'px',height:sh*scale+'px',borderRadius:p.radius*scale+'px'});
-   const n=el.querySelector('.native');n.style.transform='scale('+scale+') translate('+(-sx)+'px,'+(-sy)+'px)';
+   const el=hero.querySelectorAll('.piece')[j],[sx,sy,sw,sh]=p.show,r=[].concat(p.radius);
+   Object.assign(el.style,{left:(sx-kx0)*scale+'px',top:(rows[j]+(sy-p.key[1]))*scale+'px',width:sw*scale+'px',height:sh*scale+'px',borderRadius:(r.length===1?[r[0],r[0],r[0],r[0]]:r).map(v=>v*scale+'px').join(' ')});
+   el.querySelector('.native').style.transform='scale('+scale+') translate('+(-sx)+'px,'+(-sy)+'px)';
   });
   sec.style.visibility='';
  });
 });
 async function seek(v,t){t=Math.min(t,Math.max(0,v.duration-.04));if(Math.abs(v.currentTime-t)<.0001)return;await new Promise((ok,no)=>{const timer=setTimeout(()=>no(Error('seek timeout')),5000);v.addEventListener('seeked',()=>{clearTimeout(timer);ok()},{once:true});v.currentTime=t})}
-// Local time of scene i from the start of its entrance. The countdown wraps
-// across the loop point so its digits keep ticking from 23.99 s into 0 s.
-const local=(i,t)=>i===0?(t>=CENTERS[3]-HALF?t-(CENTERS[3]-HALF):t+2*HALF):t-(CENTERS[i-1]-HALF);
+// Local time from the start of each scene's entrance. The countdown enters
+// at the end of the loop, so its digits keep counting across 24 s → 0 s.
+const entry=i=>i===0?DURATION-2*HALF:CENTERS[i-1]-HALF;
+const local=(i,t)=>((t-entry(i))%DURATION+DURATION)%DURATION;
 window.render=async t=>{
- t=((t%${DURATION})+${DURATION})%${DURATION};
- let from=0,to=0,u=0;
- for(let k=0;k<4;k++){const b=CENTERS[k]-HALF,e=CENTERS[k]+HALF;if(t>=e){from=to=(k+1)%4;continue;}if(t>=b){from=k;to=(k+1)%4;u=(t-b)/(e-b);}break;}
+ t=((t%DURATION)+DURATION)%DURATION;
+ const n=SCENES.length;let from=0,to=0,u=0;
+ for(let k=0;k<n;k++){const b=CENTERS[k]-HALF,e=CENTERS[k]+HALF;if(t>=e){from=to=(k+1)%n;continue;}if(t>=b){from=k;to=(k+1)%n;u=(t-b)/(e-b);}break;}
  window.settled=from===to;const jobs=[];
  SCENES.forEach((s,i)=>{
   const sec=document.getElementById('s'+i),on=i===from||i===to;sec.style.visibility=on?'visible':'hidden';if(!on)return;
   const tl=local(i,t),out=i===from&&from!==to,inn=i===to&&from!==to;
-  // Copy: the outgoing line leaves before the incoming one arrives.
-  const q=out?ease(u/.45):inn?ease((u-.5)/.45):1;
-  sec.querySelectorAll('.ink').forEach(e=>{e.style.transform='translateY('+(out?-110*q:inn?110*(1-q):0)+'%)';});
-  // Hero: fades out, then the next fades in (no ghosted digits), then a slow
-  // push. It grows from 98.5 % so it never leaves the safe area while moving.
-  const hero=sec.querySelector('.hero'),o=out?1-ease(u/.5):inn?ease((u-.4)/.6):1,push=.985+.035*ease(clamp(tl/7));
-  hero.style.opacity=o;hero.style.transform='scale('+push+')';
+  // A short cut: the outgoing line and hero leave, then the next arrive.
+  const q=out?ease(u/.5):inn?ease((u-.5)/.5):1;
+  sec.querySelector('.ink').style.transform='translateY('+(out?-110*q:inn?110*(1-q):0)+'%)';
+  sec.querySelector('.note').style.opacity=out?1-q:inn?q:1;
+  // The push grows from 98.5 % so the hero never leaves the safe area.
+  const hero=sec.querySelector('.hero');hero.style.opacity=out?1-ease(u/.5):inn?ease((u-.4)/.6):1;
+  hero.style.transform='scale('+(.985+.02*ease(clamp(tl/(BEAT+2*HALF))))+')';
   sec.style.zIndex=inn?2:1;
   // Marked cells uncover left to right, one after another, in reading order.
-  if(s.reveal)sec.querySelectorAll('.mask').forEach(m=>{const q=+m.dataset.q,p=ease((tl-s.reveal.start-q*s.reveal.step)/.24),[x,,w]=REVEAL[i][q];m.style.left=(x+w*p)+'px';m.style.width=(w*(1-p))+'px';});
+  if(s.reveal)sec.querySelectorAll('.mask').forEach(m=>{const q2=+m.dataset.q,p=ease((tl-s.reveal.start-q2*s.reveal.step)/.2),[x,,w]=REVEAL[i][q2];m.style.left=(x+w*p)+'px';m.style.width=(w*(1-p))+'px';});
   sec.querySelectorAll('video').forEach(v=>jobs.push(seek(v,tl)));
  });
  const g=(1-Math.cos(t*Math.PI/12))/2;document.querySelector('.glow').style.transform='translate('+(-70*g)+'px,'+(-30*g)+'px)';
  await Promise.all(jobs);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
  const audit=layoutAudit();if(audit.issues.length)throw Error(JSON.stringify({time:t,issues:audit.issues}));window.validatedFrames=(window.validatedFrames||0)+1;
 };
+const BEAT=${BEAT};
 window.layoutAudit=()=>{
  const issues=[];let minHeadline=Infinity;
  const inside=(name,b)=>{if(b.left<SAFE.x-.5||b.top<SAFE.y-.5||b.right>SAFE.x+SAFE.width+.5||b.bottom>SAFE.y+SAFE.height+.5)issues.push({issue:'outside Apple search safe area',name,box:[b.left,b.top,b.right,b.bottom].map(Math.round)});};
  for(const sec of document.querySelectorAll('.scene'))if(sec.style.visibility==='visible'){
   const key=sec.querySelector('.key').getBoundingClientRect();inside('hero '+sec.id,key);
-  for(const e of sec.querySelectorAll('.ink')){
-   const line=e.parentElement.getBoundingClientRect(),r=document.createRange();r.selectNodeContents(e);const b=r.getBoundingClientRect();
-   if(b.width>line.width+1)issues.push({issue:'text clipped',text:e.textContent});
-   const v={left:Math.max(b.left,line.left),right:Math.min(b.right,line.right),top:Math.max(b.top,line.top),bottom:Math.min(b.bottom,line.bottom)};
-   if(v.bottom<=v.top)continue;inside(e.textContent,v);
+  const e=sec.querySelector('.ink'),line=e.parentElement.getBoundingClientRect(),r=document.createRange();r.selectNodeContents(e);const b=r.getBoundingClientRect();
+  if(b.width>line.width+1)issues.push({issue:'text clipped',text:e.textContent});
+  const v={left:Math.max(b.left,line.left),right:Math.min(b.right,line.right),top:Math.max(b.top,line.top),bottom:Math.min(b.bottom,line.bottom)};
+  if(v.bottom>v.top){inside(e.textContent,v);
    if(window.settled)for(const p of [key,...[...sec.querySelectorAll('.piece')].map(x=>x.getBoundingClientRect())])if(v.right>p.left-12&&v.left<p.right+12&&v.bottom>p.top-12&&v.top<p.bottom+12){issues.push({issue:'copy overlaps hero',text:e.textContent});break;}
-   minHeadline=Math.min(minHeadline,parseFloat(getComputedStyle(e.closest('h1')).fontSize));
-  }
+   minHeadline=Math.min(minHeadline,parseFloat(getComputedStyle(e.closest('h1')).fontSize));}
  }
  if(minHeadline<56)issues.push({issue:'headline too small',minHeadline});
  return{safeArea:SAFE,minHeadline,issues};
@@ -194,7 +215,7 @@ window.layoutAudit=()=>{
 </script>`;
 }
 
-const STILLS=[0,1.5,3,4.5,5.75,6,6.25,8,10,12,14,16,18,20,22,23.5,23.9];
+const STILLS=[0,1,2.5,2.95,3.05,4.5,7.5,10.5,13.5,16.5,19.5,22.5,23.8];
 const manifestPath=join(out,'video-manifest.json');
 let items=existsSync(manifestPath)?JSON.parse(readFileSync(manifestPath,'utf8')).items:[];
 const r=await renderer();
@@ -215,7 +236,8 @@ try{for(const lang of languages){
  const v=probe.streams.find(s=>s.codec_type==='video');
  if(probe.streams.length!==1||v.width!==W||v.height!==H||v.r_frame_rate!==`${FPS}/1`||Number(v.nb_frames)!==DURATION*FPS||v.pix_fmt!=='yuv420p')throw Error('spec mismatch '+JSON.stringify(probe));
  const item={locale:lang,ascLocale:COPY[lang].asc,file:name+'.mp4',width:W,height:H,fps:FPS,duration:DURATION,frames:DURATION*FPS,audio:false,sha256:sha(file),
-  validatedFrames:await r.evaluate('window.validatedFrames'),headlineScale:shrink.map(v=>+v.toFixed(3)),shrinkFlagged:flagged,safeArea:SAFE,template:TEMPLATE,stillAudits:audits.map(a=>({time:a.time,minHeadline:a.minHeadline,issues:a.issues})),sources,status:'local-not-uploaded'};
+  validatedFrames:await r.evaluate('window.validatedFrames'),headlineScale:shrink.map(v=>+v.toFixed(3)),shrinkFlagged:flagged,safeArea:SAFE,template:TEMPLATE,
+  stillAudits:audits.map(a=>({time:a.time,minHeadline:a.minHeadline,issues:a.issues})),sources,status:'local-not-uploaded'};
  items=items.filter(x=>x.locale!==lang);items.push(item);
  writeFileSync(manifestPath,JSON.stringify({createdAt:new Date().toISOString(),uploaded:false,items},null,2)+'\n');console.log('Completed '+name);
 }}finally{await r.close();}
