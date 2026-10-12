@@ -2,17 +2,19 @@
 //
 //   IOS_SHOTS_LANGUAGE=en,zh-CN node scripts/marketing-shots/ios/creative-search-3.2.2.mjs [--stills]
 //
-// Same six-feature tour as the 3.2.1 V4 (countdown, widgets, focus, records,
-// cycle report, time off) recaptured from the 3.2.2 build, re-composed so every
-// essential element sits inside the Art Safe Area of Apple's search-results
-// template. 3.2.1 V4 spread its brand, copy and phone across the full canvas and
-// was cropped on real devices; shrinking that layout into the safe area (V5)
-// left the UI too small to read. Here the phone frame is dropped and each scene
-// shows a native crop of the screen region that carries the feature, so the
-// subject fills most of the safe area. Only the background extends beyond it.
+// Four beats of six seconds: countdown → widget → records → time off. Each
+// beat is one line of copy and one native hero, shown at or below its
+// capture resolution so nothing is upscaled. The hero and the headline sit
+// inside the Art Safe Area of Apple's search-results template; the rest of
+// the native surface the hero lives on (the timer screen, the wallpaper, the
+// calendar) bleeds past it towards the frame edge, so the full 3:2 frame
+// reads as full while any device crop keeps the message.
 //
-// Every rendered frame is audited against the safe area and for clipped text;
-// a violation stops the render rather than producing a file.
+// Motion comes from the app: the countdown and widget tick live, recorded
+// days fill in order, and the leave run lights up day by day. A slow push
+// carries each beat. Every frame is audited: headline glyphs and hero must
+// stay inside the safe area, nothing may be clipped, and settled frames may
+// not overlap copy and hero. A violation stops the render.
 import {spawn,execFileSync} from 'node:child_process';
 import {readFileSync,writeFileSync,mkdirSync,existsSync,renameSync} from 'node:fs';
 import {fileURLToPath,pathToFileURL} from 'node:url';
@@ -28,134 +30,164 @@ const raw=join(dir,'raw/3.2.2/search'),out=join(dir,'out/creative-3.2.2/search')
 const TEMPLATE=JSON.parse(readFileSync(join(dir,'../../../app-store-connect/ios/3.2.2/apple-creative-template-guides.json'),'utf8')).templates.find(t=>t.scene==='search-3x2');
 const W=1920,H=1280,FPS=30,DURATION=24,k=W/TEMPLATE.width;
 const SAFE={x:TEMPLATE.safeArea.x*k,y:TEMPLATE.safeArea.y*k,width:TEMPLATE.safeArea.width*k,height:TEMPLATE.safeArea.height*k};
-// Working area: the safe area less a 16 px margin, so shadows stay inside too.
 const M=16,L=Math.ceil(SAFE.x+M),T=Math.ceil(SAFE.y+M),R=Math.floor(SAFE.x+SAFE.width-M),B=Math.floor(SAFE.y+SAFE.height-M);
 const sha=p=>createHash('sha256').update(readFileSync(p)).digest('hex');
 const run=(cmd,args)=>new Promise((resolve,reject)=>{const c=spawn(cmd,args,{stdio:'inherit'});c.on('error',reject);c.on('close',n=>n===0?resolve():reject(Error(cmd+': '+n)))});
 
-// Native crop [x,y,w,h] on the 1320×2868 capture and where it lands. Crops keep
-// the card's aspect exactly, so nothing is stretched or letterboxed.
-const card=(cropW,cropH,h=B-T)=>{const w=Math.round(h*cropW/cropH);return[R-w,T,w,h];};
+// Native coordinates on the 1320×2868 capture. `key` is the part that must
+// stay in the safe area; `show` is the surface drawn around it (bleed).
+// Copy comes from the reviewed V4 tour lines: [countdown, widgets, records, leave].
 const SCENES=[
- // The countdown is the hook: a wide card under a single centred headline.
- {key:'timer',crop:[0,330,1320,500],inPoint:0.2,box:(()=>{const h=280,w=Math.round(h*1320/500);return[Math.round((L+R-w)/2),B-22-h,w,h];})(),radius:34},
- {key:'widgets',crop:null,inPoint:0.2,box:card(1050,960),radius:30},
- {key:'focus',crop:[40,520,1240,1140],inPoint:0.2,box:card(1240,1140),radius:30},
- {key:'records',crop:[40,570,1240,1330],inPoint:0.2,box:card(1240,1330),radius:30},
- // The report counts its hours up while the month's bars fill.
- {key:'report',crop:[0,380,1320,2060],inPoint:5.0,box:card(1320,2060),radius:30,dark:true},
- {key:'leave',crop:[0,440,1320,1500],inPoint:0.2,box:card(1320,1500),radius:30},
+ {key:'timer',copy:0,layout:'stack',video:true,inPoint:0.2,bg:'#f2f2f7',
+  pieces:[{key:[0,400,1320,420],show:[0,400,1320,2468],radius:56}]},
+ {key:'widgets',copy:1,layout:'side',video:true,inPoint:0.2,bg:'#3a2a3f',
+  pieces:[{key:[296,906,730,594],show:[296,822,884,960],radius:66}]},
+ {key:'records',copy:3,layout:'stack',bg:'#ffffff',
+  pieces:[{key:[53,905,1214,440],show:[53,905,1214,1060],radius:44}],
+  // Solid "recorded" bars under Oct 1–2 and Oct 5–9, filled in order.
+  fill:[[793,1127,56,12],[954,1127,56,12],[310,1313,56,12],[471,1313,56,12],[632,1313,56,12],[793,1313,56,12],[954,1313,56,12]]},
+ {key:'leave',copy:5,layout:'stack',bg:'#ffffff',
+  // The plan's cost and result, then the week the run spans. The run row is
+  // cut below the "9 days…" pill, which truncates in English.
+  pieces:[{key:[53,500,1214,262],show:[53,490,1214,290],radius:44},{key:[53,1196,1214,214],show:[53,1196,1214,560],radius:44,gap:44}],
+  // The run's days light up one by one: Sep 27–Oct 3, then Oct 4 on the next row.
+  light:[...Array.from({length:7},(_,d)=>d?[100+d*160,1292,160,100]:[60,1292,200,100]),[60,1600,240,75]]},
 ];
-const transitions=[4,8,12,16,20,23.45];
+const CENTERS=[6,12,18,23.5],HALF=0.5;
 const languages=(process.env.IOS_SHOTS_LANGUAGE||'en,zh-CN').split(',');
-
-function copyFor(lang){
- const c=COPY[lang];
- return c.tour.map((p,i)=>{const lines=p.lines.length>2?[p.lines.slice(0,-1).join(' '),p.lines.at(-1)]:p.lines;
-  return{label:p.label,lines,sub:p.sub.join(' '),note:(i===2||i===4?'DoneAt Plus · ':i===5?c.trials+' · ':'')+c.note};});
-}
+const NOTE={'zh-CN':'界面为演示数据',en:'Illustrative data'};
 
 async function prepare(lang){
  const sources=[];
  for(const s of SCENES){
-  const source=join(raw,`${lang}-${s.key}.mov`),png=join(raw,`${lang}-${s.key}.png`);
-  const crop=s.crop||(()=>{const c=JSON.parse(execFileSync('python3',[join(dir,'creative-widget-crop.py'),png],{encoding:'utf8'}));return[c.x,c.y,c.w,c.h];})();
-  const nativeDuration=Number(execFileSync('ffprobe',['-v','error','-show_entries','format=duration','-of','csv=p=0',source],{encoding:'utf8'}));
-  // simctl only writes a frame when the screen changes, so a settled screen can
-  // be a single frame long. Hold the last native frame rather than invent one.
-  const inPoint=nativeDuration>s.inPoint+4.8?s.inPoint:Math.max(0,Math.min(s.inPoint,nativeDuration-0.05));
-  const [,, bw,bh]=s.box,scale=[Math.min(crop[2],bw*2),Math.round(Math.min(crop[2],bw*2)*bh/bw/2)*2];
-  const filter=`tpad=stop_mode=clone:stop_duration=6,crop=${crop[2]}:${crop[3]}:${crop[0]}:${crop[1]},fps=${FPS},scale=${scale[0]}:${scale[1]}:flags=lanczos,setsar=1`;
-  const prepared=join(out,`${lang}-${s.key}-clip.mp4`),recipe=JSON.stringify({sha:sha(source),inPoint,filter});
-  if(!existsSync(prepared)||!existsSync(prepared+'.json')||readFileSync(prepared+'.json','utf8')!==recipe){
-   await run('ffmpeg',['-y','-loglevel','error','-i',source,'-ss',String(inPoint),'-t','4.8','-an','-vf',filter,'-c:v','libx264','-preset','fast','-crf','14','-pix_fmt','yuv420p',prepared]);
-   writeFileSync(prepared+'.json',recipe);
+  const png=join(raw,`${lang}-${s.key}.png`),mov=join(raw,`${lang}-${s.key}.mov`);
+  const entry={scene:s.key,capture:`${lang}-${s.key}.png`,captureSHA256:sha(png)};
+  if(s.video){
+   // Full-frame clip at capture resolution, long enough for the beat and both
+   // transitions, so the digits keep ticking the whole time it is on screen.
+   const nativeDuration=Number(execFileSync('ffprobe',['-v','error','-show_entries','format=duration','-of','csv=p=0',mov],{encoding:'utf8'}));
+   if(nativeDuration<s.inPoint+7.2)throw Error(`${mov} is ${nativeDuration}s; the beat needs 7.4s of live footage`);
+   const clip=join(out,`${lang}-${s.key}-clip.mp4`),recipe=JSON.stringify({sha:sha(mov),inPoint:s.inPoint,v:2});
+   if(!existsSync(clip)||!existsSync(clip+'.json')||readFileSync(clip+'.json','utf8')!==recipe){
+    await run('ffmpeg',['-y','-loglevel','error','-i',mov,'-ss',String(s.inPoint),'-t','7.2','-an','-vf',`fps=${FPS},setsar=1`,'-c:v','libx264','-preset','slow','-crf','10','-pix_fmt','yuv420p',clip]);
+    writeFileSync(clip+'.json',recipe);
+   }
+   Object.assign(entry,{recording:`${lang}-${s.key}.mov`,recordingSHA256:sha(mov),inPoint:s.inPoint,nativeDuration});
   }
-  sources.push({scene:s.key,file:`${lang}-${s.key}.mov`,sha256:sha(source),capture:`${lang}-${s.key}.png`,captureSHA256:sha(png),inPoint,crop,nativeDuration});
+  sources.push(entry);
  }
  return sources;
 }
 
 function html(lang){
- const font=posterFonts(lang),c=copyFor(lang),rtl=lang==='ar',tall=['ar','th','hi-IN','mr-IN'].includes(lang),cjk=['zh-CN','zh-TW','ja','ko'].includes(lang);
- const line=(text,cls='')=>`<div class="line ${cls}"><div class="ink">${text}</div></div>`;
- const sections=SCENES.map((s,i)=>{
-  const [bx]=s.box,width=s.key==='timer'?R-L:bx-48-L;
-  const style=s.key==='timer'?`left:${L}px;top:${T+14}px;width:${width}px`:`left:${L}px;width:${width}px`;
-  return `<section id="s${i}" class="scene ${s.key}"><div class="copy" style="${style}">${line(c[i].label,'label')}<h1>${s.key==='timer'?line(`${c[i].lines[0]} <span class="accent">${c[i].lines[1]||''}</span>`):line(c[i].lines[0])+line(c[i].lines[1]||'','accent')}</h1>${line(c[i].sub,'sub')}${s.key==='timer'?'':line(c[i].note,'note')}</div></section>`;
+ const font=posterFonts(lang),c=COPY[lang].tour,tall=['ar','th','hi-IN','mr-IN'].includes(lang),cjk=['zh-CN','zh-TW','ja','ko'].includes(lang);
+ const scenes=SCENES.map((s,i)=>{
+  const [a,b]=c[s.copy].lines.length>2?[c[s.copy].lines.slice(0,-1).join(' '),c[s.copy].lines.at(-1)]:c[s.copy].lines;
+  const ink=s.layout==='stack'?`<div class="line"><div class="ink">${a} <span class="accent">${b}</span></div></div>`
+   :`<div class="line"><div class="ink">${a}</div></div><div class="line"><div class="ink accent">${b}</div></div>`;
+  const src=s.video?`<video muted playsinline preload="auto" src="${pathToFileURL(join(out,`${lang}-${s.key}-clip.mp4`)).href}"></video>`:`<img src="${pathToFileURL(join(raw,`${lang}-${s.key}.png`)).href}">`;
+  const pieces=s.pieces.map((p,j)=>`<div class="piece" style="background:${s.bg}"><div class="native">${src}${j===0?(s.fill||[]).map(()=>'<i class="mask fill"></i>').join(''):''}${s.light&&j===1?s.light.map(()=>'<i class="mask light"></i>').join(''):''}</div></div>`).join('');
+  return `<section id="s${i}" class="scene ${s.layout}"><h1>${ink}</h1><div class="hero">${pieces}<div class="key"></div></div></section>`;
  }).join('');
- const media=SCENES.map((s,i)=>`<video id="v${i}" muted playsinline preload="auto" src="${pathToFileURL(join(out,`${lang}-${s.key}-clip.mp4`)).href}"></video>`).join('');
  return `<!doctype html><meta charset="utf-8"><style>${font.css}
 *{box-sizing:border-box}html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden}
-body{background:#fcf7ef;color:#25231f;font-family:${font.sans};font-synthesis:none}
-.glow{position:absolute;width:1500px;height:1100px;left:620px;top:220px;background:radial-gradient(ellipse,#ffbf8050,transparent 66%)}
-.wordmark{position:absolute;left:${L}px;top:${T-6}px;font-size:30px;font-weight:750;letter-spacing:-1px;line-height:1.2}
+body{background:#fbf6ee;color:#25231f;font-family:${font.sans};font-synthesis:none}
+.glow{position:absolute;width:1700px;height:1300px;left:420px;top:120px;background:radial-gradient(ellipse,#ffc48a4a,transparent 64%)}
 .scene{position:absolute;inset:0;visibility:hidden}
-.copy{position:absolute;direction:${rtl?'rtl':'ltr'}}
-.line{overflow:hidden;white-space:nowrap;word-break:keep-all;hyphens:none}.ink{will-change:transform}
-.label{color:#776e63;font-size:19px;font-weight:650;letter-spacing:${tall||cjk?0:1.2}px;line-height:1.5}
-h1{margin:14px 0 0;font-family:${font.serif};font-size:${cjk?66:58}px;line-height:${tall?1.55:1.2};letter-spacing:${tall?0:-1}px;font-weight:700}
-.accent{color:#f45a1e}
-.sub{font-size:21px;color:#6f665c;line-height:1.45;margin-top:22px}
-.note{font-size:15px;color:#958a7d;line-height:1.4;margin-top:12px}
-.timer .copy{text-align:center}.timer h1{margin-top:6px;font-size:${cjk?60:52}px}.timer .sub{margin-top:10px}
-.surface{position:absolute;overflow:hidden;background:#f1f0f6;box-shadow:0 6px 10px #30202c1c,0 1px 3px #30202c14}
-.surface video{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;visibility:hidden}
-.rail{position:absolute;left:${L}px;top:${B-8}px;height:8px;display:flex;gap:10px}.rail i{display:block;width:22px;height:6px;border-radius:6px;background:#30202c20}
-</style><div class="glow"></div><div class="wordmark">DoneAt</div>${sections}<div class="surface">${media}</div><div class="rail">${SCENES.map(()=>'<i></i>').join('')}</div><script>
-const SAFE=${JSON.stringify(SAFE)},boxes=${JSON.stringify(SCENES.map(s=>[...s.box,s.radius]))},darks=${JSON.stringify(SCENES.map(s=>!!s.dark))},transitions=${JSON.stringify(transitions)};
-// Fit each line to its column, then centre the copy block in the space left of the card.
+h1{position:absolute;margin:0;font-family:${font.serif};font-weight:700;line-height:${tall?1.5:1.18};letter-spacing:${tall||cjk?0:-1.5}px;direction:${lang==='ar'?'rtl':'ltr'}}
+.line{overflow:hidden;white-space:nowrap;word-break:keep-all}.ink{will-change:transform;display:inline-block}.accent{color:#f45a1e}
+.hero{position:absolute;transform-origin:50% 50%}
+.piece{position:absolute;overflow:hidden;box-shadow:0 18px 40px #30202c1f,0 2px 6px #30202c12}
+.native{position:absolute;left:0;top:0;width:1320px;height:2868px;transform-origin:0 0}
+.native img,.native video{position:absolute;inset:0;width:100%;height:100%}
+.mask{position:absolute;background:#fff}
+.key{position:absolute;pointer-events:none}
+.note{position:absolute;right:28px;bottom:22px;font-size:15px;color:#a39686;letter-spacing:.2px}
+</style><div class="glow"></div>${scenes}<div class="note">${NOTE[lang]??COPY[lang].note}</div><script>
+const SAFE=${JSON.stringify(SAFE)},AREA=${JSON.stringify({L,T,R,B})},SCENES=${JSON.stringify(SCENES)},CENTERS=${JSON.stringify(CENTERS)},HALF=${HALF},MAX=${JSON.stringify({stack:cjk?104:88,side:cjk?100:84})};
+const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10)};
+function fit(h1,width,max){let n=max;h1.style.fontSize=n+'px';const lines=[...h1.querySelectorAll('.ink')];while(lines.some(e=>e.getBoundingClientRect().width>width)&&n>30){n-=1;h1.style.fontSize=n+'px';}return n;}
+// Lay out once: headline at the top of the safe area (stack) or left of the
+// hero (side); hero scaled to the room left, never above native resolution.
 window.layoutReady=document.fonts.ready.then(()=>{
- for(const e of document.querySelectorAll('.ink')){let n=parseFloat(getComputedStyle(e).fontSize);const r=document.createRange();r.selectNodeContents(e);while(r.getBoundingClientRect().width>e.parentElement.getBoundingClientRect().width-1&&n>14){n-=.5;e.style.fontSize=n+'px';}}
- for(const h of document.querySelectorAll('h1')){const es=[...h.querySelectorAll('.ink')],n=Math.min(...es.map(e=>parseFloat(getComputedStyle(e).fontSize)));for(const e of es)e.style.fontSize=n+'px';}
- for(const s of document.querySelectorAll('.scene:not(.timer) .copy')){s.parentElement.style.visibility='visible';const h=s.getBoundingClientRect().height;s.parentElement.style.visibility='';s.style.top=Math.round(${T+40}+(${B-24-T-40}-h)/2)+'px';}
+ const G=28;
+ SCENES.forEach((s,i)=>{
+  const sec=document.getElementById('s'+i),h1=sec.querySelector('h1'),hero=sec.querySelector('.hero');sec.style.visibility='visible';
+  let oy=0;const rects=s.pieces.map(p=>{oy+=(p.gap||0);const r={y:oy};oy+=p.key[3];return r;});
+  const kx0=Math.min(...s.pieces.map(p=>p.key[0])),kw=Math.max(...s.pieces.map(p=>p.key[0]+p.key[2]))-kx0,kh=oy;
+  let scale,left,top;
+  if(s.layout==='stack'){
+   fit(h1,AREA.R-AREA.L,MAX.stack);Object.assign(h1.style,{left:AREA.L+'px',top:AREA.T+'px'});
+   top=Math.ceil(h1.getBoundingClientRect().bottom+G);
+   scale=Math.min(1,(AREA.R-AREA.L)/kw,(AREA.B-top)/kh);left=AREA.L;
+  }else{
+   scale=Math.min(1,(AREA.B-AREA.T)/kh);left=AREA.R-kw*scale;top=AREA.T;
+   fit(h1,left-G*2-AREA.L,MAX.side);const hh=h1.getBoundingClientRect().height;Object.assign(h1.style,{left:AREA.L+'px',top:Math.round((AREA.T+AREA.B-hh)/2)+'px'});
+  }
+  Object.assign(hero.style,{left:left+'px',top:top+'px',width:kw*scale+'px',height:kh*scale+'px'});
+  Object.assign(hero.querySelector('.key').style,{left:0,top:0,width:kw*scale+'px',height:kh*scale+'px'});
+  // Each piece shows its surface around the key; the native layer is offset so
+  // key pixels land exactly on the key rectangle.
+  s.pieces.forEach((p,j)=>{
+   const el=hero.querySelectorAll('.piece')[j],[sx,sy,sw,sh]=p.show;
+   Object.assign(el.style,{left:(sx-kx0)*scale+'px',top:(rects[j].y+(sy-p.key[1]))*scale+'px',width:sw*scale+'px',height:sh*scale+'px',borderRadius:p.radius*scale+'px'});
+   const n=el.querySelector('.native');n.style.transform='scale('+scale+') translate('+(-sx)+'px,'+(-sy)+'px)';
+   n.querySelectorAll('.fill').forEach((m,q)=>{const[x,y,w,h]=s.fill[q];Object.assign(m.style,{left:x-6+'px',top:y-6+'px',width:w+12+'px',height:h+12+'px'});});
+   n.querySelectorAll('.light').forEach((l,q)=>{const[x,y,w,h]=s.light[q];Object.assign(l.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});});
+  });
+  sec.style.visibility='';
+ });
 });
-const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10)},lerp=(a,b,p)=>a+(b-a)*p;
-async function seek(v,t){t=Math.min(t,Math.max(0,v.duration-.04));if(Math.abs(v.currentTime-t)<.0001)return;await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('seek timeout')),5000);v.addEventListener('seeked',()=>{clearTimeout(timer);resolve()},{once:true});v.currentTime=t})}
+async function seek(v,t){t=Math.min(t,Math.max(0,v.duration-.04));if(Math.abs(v.currentTime-t)<.0001)return;await new Promise((ok,no)=>{const timer=setTimeout(()=>no(Error('seek timeout')),5000);v.addEventListener('seeked',()=>{clearTimeout(timer);ok()},{once:true});v.currentTime=t})}
+// Local time of scene i from the start of its entrance. The countdown wraps
+// across the loop point so its digits keep ticking from 23.99 s into 0 s.
+const local=(i,t)=>i===0?(t>=CENTERS[3]-HALF?t-(CENTERS[3]-HALF):t+2*HALF):t-(CENTERS[i-1]-HALF);
 window.render=async t=>{
- t=t%${DURATION};let from=0,to=0,u=0;
- for(let k=0;k<6;k++){const begin=transitions[k]-.5,end=transitions[k]+.5;if(t>=end){from=(k+1)%6;to=from;u=0;continue;}if(t>=begin){from=k;to=(k+1)%6;u=(t-begin)/(end-begin);}break;}
- window.settled=from===to;const p=ease(u),active=from!==to,box=boxes[from].map((v,i)=>lerp(v,boxes[to][i],p)),surface=document.querySelector('.surface');
- Object.assign(surface.style,{left:box[0]+'px',top:box[1]+'px',width:box[2]+'px',height:box[3]+'px',borderRadius:box[4]+'px',background:darks[active&&p>.5?to:from]?'#2a1c2e':'#f1f0f6'});
- const jobs=[];
- for(let i=0;i<6;i++){
-  const visible=i===from||i===to,s=document.querySelector('#s'+i),v=document.querySelector('#v'+i);
-  s.style.visibility=visible?'visible':'hidden';v.style.visibility=visible?'visible':'hidden';if(!visible)continue;
-  // Copy blocks sit at different heights, so the outgoing lines leave in the
-  // first half and the incoming ones arrive in the second; never both at once.
-  s.querySelectorAll('.ink').forEach((node,n)=>{const q=active?ease((u-(i===from?0:.5)-n*.03)/.4):0;node.style.transform='translateY('+(active?(i===from?-105*q:105*(1-q)):0)+'%)';});
-  // The incoming screen wipes up over the outgoing one; no fade through empty.
-  v.style.zIndex=active&&i===to?2:1;v.style.clipPath=active&&i===to?'inset('+(100*(1-ease((u-.16)/.68)))+'% 0 0 0)':'none';
-  const start=i===0?0:transitions[i-1]-.5;jobs.push(seek(v,i===0&&t>22?0:Math.min(4.7,Math.max(0,t-start))));
- }
- const weights=Array(6).fill(0);weights[from]=1-p;weights[to]+=p;
- document.querySelectorAll('.rail i').forEach((n,i)=>{n.style.width=(22+22*weights[i])+'px';n.style.background='color-mix(in srgb,#f45a1e '+(weights[i]*100)+'%,#30202c20)';});
- const g=(1-Math.cos(t*Math.PI/12))/2;document.querySelector('.glow').style.transform='translate('+(-90*g)+'px,'+(-40*g)+'px) scale('+(1+.08*g)+')';
+ t=((t%${DURATION})+${DURATION})%${DURATION};
+ let from=0,to=0,u=0;
+ for(let k=0;k<4;k++){const b=CENTERS[k]-HALF,e=CENTERS[k]+HALF;if(t>=e){from=to=(k+1)%4;continue;}if(t>=b){from=k;to=(k+1)%4;u=(t-b)/(e-b);}break;}
+ window.settled=from===to;const jobs=[];
+ SCENES.forEach((s,i)=>{
+  const sec=document.getElementById('s'+i),on=i===from||i===to;sec.style.visibility=on?'visible':'hidden';if(!on)return;
+  const tl=local(i,t),out=i===from&&from!==to,inn=i===to&&from!==to;
+  // Copy: the outgoing line leaves before the incoming one arrives.
+  const q=out?ease(u/.45):inn?ease((u-.5)/.45):1;
+  sec.querySelectorAll('.ink').forEach(e=>{e.style.transform='translateY('+(out?-110*q:inn?110*(1-q):0)+'%)';});
+  // Hero: fades out, then the next fades in (no ghosted digits), then a slow
+  // push. It grows from 98.5 % so it never leaves the safe area while moving.
+  const hero=sec.querySelector('.hero'),o=out?1-ease(u/.5):inn?ease((u-.4)/.6):1,push=.985+.035*ease(clamp(tl/7));
+  hero.style.opacity=o;hero.style.transform='scale('+push+')';
+  sec.style.zIndex=inn?2:1;
+  sec.querySelectorAll('.fill').forEach((m,q2)=>{const p=ease((tl-1.3-q2*.3)/.45),[x,,w]=s.fill[q2];m.style.left=(x-6+(w+12)*p)+'px';m.style.width=((w+12)*(1-p))+'px';});
+  // Each day of the run lights up in turn with a quick wipe.
+  sec.querySelectorAll('.light').forEach((l,q)=>{const[x,,w]=s.light[q],p=ease((tl-1.4-q*.32)/.22);l.style.left=(x+w*p)+'px';l.style.width=(w*(1-p))+'px';});
+  sec.querySelectorAll('video').forEach(v=>jobs.push(seek(v,tl)));
+ });
+ const g=(1-Math.cos(t*Math.PI/12))/2;document.querySelector('.glow').style.transform='translate('+(-70*g)+'px,'+(-30*g)+'px)';
  await Promise.all(jobs);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
  const audit=layoutAudit();if(audit.issues.length)throw Error(JSON.stringify({time:t,issues:audit.issues}));window.validatedFrames=(window.validatedFrames||0)+1;
 };
-// Essential content: brand, card (with shadow), rail and every visible glyph.
 window.layoutAudit=()=>{
- const issues=[],bounds=[];let minHeadline=Infinity;
- const check=(name,b,pad=0)=>{if(b.right<=b.left||b.bottom<=b.top)return;bounds.push({name,x:b.left,y:b.top,width:b.right-b.left,height:b.bottom-b.top});
-  if(b.left-pad<SAFE.x-.5||b.top-pad<SAFE.y-.5||b.right+pad>SAFE.x+SAFE.width+.5||b.bottom+pad*2>SAFE.y+SAFE.height+.5)issues.push({issue:'outside Apple search safe area',name});};
- const card=document.querySelector('.surface').getBoundingClientRect();check('native card',card,8);
- check('brand',document.querySelector('.wordmark').getBoundingClientRect());check('rail',document.querySelector('.rail').getBoundingClientRect());
- for(const s of document.querySelectorAll('.scene'))if(s.style.visibility==='visible')for(const e of s.querySelectorAll('.ink')){
-  if(!e.textContent)continue;const r=document.createRange();r.selectNodeContents(e);const b=r.getBoundingClientRect(),line=e.parentElement.getBoundingClientRect();
-  if(b.width>line.width+1)issues.push({issue:'text clipped',text:e.textContent});
-  const v={left:Math.max(b.left,line.left),right:Math.min(b.right,line.right),top:Math.max(b.top,line.top),bottom:Math.min(b.bottom,line.bottom)};
-  if(v.bottom<=v.top)continue;check(e.textContent,v);
-  if(window.settled!==false&&v.right>card.left-8&&v.left<card.right+8&&v.bottom>card.top-8&&v.top<card.bottom+8)issues.push({issue:'copy overlaps the native card',text:e.textContent});
-  if(e.closest('h1'))minHeadline=Math.min(minHeadline,parseFloat(getComputedStyle(e).fontSize));
+ const issues=[];let minHeadline=Infinity;
+ const inside=(name,b)=>{if(b.left<SAFE.x-.5||b.top<SAFE.y-.5||b.right>SAFE.x+SAFE.width+.5||b.bottom>SAFE.y+SAFE.height+.5)issues.push({issue:'outside Apple search safe area',name,box:[b.left,b.top,b.right,b.bottom].map(Math.round)});};
+ for(const sec of document.querySelectorAll('.scene'))if(sec.style.visibility==='visible'){
+  const key=sec.querySelector('.key').getBoundingClientRect();inside('hero '+sec.id,key);
+  for(const e of sec.querySelectorAll('.ink')){
+   const line=e.parentElement.getBoundingClientRect(),r=document.createRange();r.selectNodeContents(e);const b=r.getBoundingClientRect();
+   if(b.width>line.width+1)issues.push({issue:'text clipped',text:e.textContent});
+   const v={left:Math.max(b.left,line.left),right:Math.min(b.right,line.right),top:Math.max(b.top,line.top),bottom:Math.min(b.bottom,line.bottom)};
+   if(v.bottom<=v.top)continue;inside(e.textContent,v);
+   if(window.settled)for(const p of [key,...[...sec.querySelectorAll('.piece')].map(x=>x.getBoundingClientRect())])if(v.right>p.left-12&&v.left<p.right+12&&v.bottom>p.top-12&&v.top<p.bottom+12){issues.push({issue:'copy overlaps hero',text:e.textContent});break;}
+   minHeadline=Math.min(minHeadline,parseFloat(getComputedStyle(e.closest('h1')).fontSize));
+  }
  }
- if(minHeadline<34)issues.push({issue:'headline too small',minHeadline});
- return{safeArea:SAFE,bounds,minHeadline,issues};
+ if(minHeadline<56)issues.push({issue:'headline too small',minHeadline});
+ return{safeArea:SAFE,minHeadline,issues};
 };
 </script>`;
 }
 
-const STILLS=[0,2,3.75,4.25,6,8,10,12,14,16,18,20,22,23.75];
+const STILLS=[0,1.5,3,4.5,5.75,6,6.25,8,10,12,14,16,18,20,22,23.5,23.9];
 const manifestPath=join(out,'video-manifest.json');
 let items=existsSync(manifestPath)?JSON.parse(readFileSync(manifestPath,'utf8')).items:[];
 const r=await renderer();

@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-10-12T07:40:36.785Z",
+  "createdAt": "2026-10-12T08:24:19.615Z",
   "uploaded": false,
   "items": [
     {
@@ -12,8 +12,8 @@
       "duration": 24,
       "frames": 720,
       "audio": false,
-      "sha256": "3ecd9367077240972be0b578f4cda300a6010b68793b7e759e987b2baeea8387",
-      "validatedFrames": 734,
+      "sha256": "2b543ce6043ac3478ac2809344171bfeef63b85488c4bf049eb1bdde13251207",
+      "validatedFrames": 737,
       "safeArea": {
         "x": 418,
         "y": 382.5,
@@ -37,37 +37,47 @@
       "stillAudits": [
         {
           "time": 0,
-          "minHeadline": 52,
+          "minHeadline": 69,
           "issues": []
         },
         {
-          "time": 2,
-          "minHeadline": 52,
+          "time": 1.5,
+          "minHeadline": 69,
           "issues": []
         },
         {
-          "time": 3.75,
-          "minHeadline": 52,
+          "time": 3,
+          "minHeadline": 69,
           "issues": []
         },
         {
-          "time": 4.25,
-          "minHeadline": 58,
+          "time": 4.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 5.75,
+          "minHeadline": 69,
           "issues": []
         },
         {
           "time": 6,
-          "minHeadline": 58,
-          "issues": []
-        },
-        {
-          "time": 8,
           "minHeadline": null,
           "issues": []
         },
         {
+          "time": 6.25,
+          "minHeadline": 61,
+          "issues": []
+        },
+        {
+          "time": 8,
+          "minHeadline": 61,
+          "issues": []
+        },
+        {
           "time": 10,
-          "minHeadline": 58,
+          "minHeadline": 61,
           "issues": []
         },
         {
@@ -77,125 +87,68 @@
         },
         {
           "time": 14,
-          "minHeadline": 58,
+          "minHeadline": 88,
           "issues": []
         },
         {
           "time": 16,
-          "minHeadline": null,
+          "minHeadline": 88,
           "issues": []
         },
         {
           "time": 18,
-          "minHeadline": 58,
-          "issues": []
-        },
-        {
-          "time": 20,
           "minHeadline": null,
           "issues": []
         },
         {
-          "time": 22,
-          "minHeadline": 58,
+          "time": 20,
+          "minHeadline": 81,
           "issues": []
         },
         {
-          "time": 23.75,
-          "minHeadline": 52,
+          "time": 22,
+          "minHeadline": 81,
+          "issues": []
+        },
+        {
+          "time": 23.5,
+          "minHeadline": null,
+          "issues": []
+        },
+        {
+          "time": 23.9,
+          "minHeadline": 69,
           "issues": []
         }
       ],
       "sources": [
         {
           "scene": "timer",
-          "file": "en-timer.mov",
-          "sha256": "9ac9e71422eec42eaf293f8edd78d838ffb3ac36f3d83985aafe3af5f1c1078d",
           "capture": "en-timer.png",
-          "captureSHA256": "5044a130f50b7bc9022dcc5dc1c3d32d5afaf2c42c6c22f054c694155d159133",
+          "captureSHA256": "2cd927e3e6df268a2a2cad3d18e76b442ddc2f027cf7a5ebc43c49bdd2db3876",
+          "recording": "en-timer.mov",
+          "recordingSHA256": "49332f7c59aece5d90e1c26bec4229f75b1f59663b9d4e1be615fb3055ad9085",
           "inPoint": 0.2,
-          "crop": [
-            0,
-            330,
-            1320,
-            500
-          ],
-          "nativeDuration": 6.803333
+          "nativeDuration": 8.748333
         },
         {
           "scene": "widgets",
-          "file": "en-widgets.mov",
-          "sha256": "3c26146450e619def72661dc571d3eebaf13cf6e4a19d5498aec7ed77603e49c",
           "capture": "en-widgets.png",
-          "captureSHA256": "063e611c610e26cba89df6b0553815d094432cf70c51a1174ccf80fd0c88dd72",
+          "captureSHA256": "0f18061a9f41670f4becf50237cf66962c83ebd7b282d012acc66e0a1b2ae160",
+          "recording": "en-widgets.mov",
+          "recordingSHA256": "c0dc4a5f0ec7787daeb12698f5460a60c494d08b4831ad3795471c63b22063cc",
           "inPoint": 0.2,
-          "crop": [
-            135,
-            821,
-            1050,
-            960
-          ],
-          "nativeDuration": 6.826667
-        },
-        {
-          "scene": "focus",
-          "file": "en-focus.mov",
-          "sha256": "7a061fbf0e308ba35ccf1c7db2b45a6132172a414739cb3355efc6e2c963b8a3",
-          "capture": "en-focus.png",
-          "captureSHA256": "cbcc9ca79477efebedc68d273f637bf30901110e0db6af1655910b8eba4f75b2",
-          "inPoint": 0.2,
-          "crop": [
-            40,
-            520,
-            1240,
-            1140
-          ],
-          "nativeDuration": 6.748333
+          "nativeDuration": 8.823333
         },
         {
           "scene": "records",
-          "file": "en-records.mov",
-          "sha256": "be9ce07165598aafa6c21030440a56ae3099d859892c386e2ff547cf0fdc15f8",
           "capture": "en-records.png",
-          "captureSHA256": "75f4a43b508fbdde7d846d182689288ff919b98f5091cb6dbc10c2ab16710fb1",
-          "inPoint": 0.016667,
-          "crop": [
-            40,
-            570,
-            1240,
-            1330
-          ],
-          "nativeDuration": 0.066667
-        },
-        {
-          "scene": "report",
-          "file": "en-report.mov",
-          "sha256": "f3c3651b32f76f3b916c81fa80f193bf997113adecd4a7ac565b55c5bacf96c2",
-          "capture": "en-report.png",
-          "captureSHA256": "ef6779019ad6dabe92e0448e08abfee5f7fe9b23ce3864f9c3b210145f0ff137",
-          "inPoint": 5,
-          "crop": [
-            0,
-            380,
-            1320,
-            2060
-          ],
-          "nativeDuration": 19.776667
+          "captureSHA256": "71ede60b4cd49b785070043b4acedc9426856c7d568bf7092847fdc5c581cb74"
         },
         {
           "scene": "leave",
-          "file": "en-leave.mov",
-          "sha256": "8ed582f809e84aa3c326fdca305747d087940aac0b67952f46db9fe5190ee349",
           "capture": "en-leave.png",
-          "captureSHA256": "fd9be073222323ded9ee433490de69f9cc39cf6f9545c49e155ebdeb8f504f35",
-          "inPoint": 0.016667,
-          "crop": [
-            0,
-            440,
-            1320,
-            1500
-          ],
-          "nativeDuration": 0.066667
+          "captureSHA256": "7e05abe2411583c303c6b413ce0871c0cef5ac7fdcf4e3ce7df97ecf628b3d0e"
         }
       ],
       "status": "local-not-uploaded"
@@ -210,8 +163,8 @@
       "duration": 24,
       "frames": 720,
       "audio": false,
-      "sha256": "d1f1105ed9a7bb7cad95ad94970b2a2206b0e44c928bacb7b68293d8a8d61e35",
-      "validatedFrames": 734,
+      "sha256": "110c0e09688dfc1ac17ce57be0e0b97bfa7eda8f687eaa856d0ba41b576aae36",
+      "validatedFrames": 737,
       "safeArea": {
         "x": 418,
         "y": 382.5,
@@ -235,165 +188,118 @@
       "stillAudits": [
         {
           "time": 0,
-          "minHeadline": 60,
+          "minHeadline": 102,
           "issues": []
         },
         {
-          "time": 2,
-          "minHeadline": 60,
+          "time": 1.5,
+          "minHeadline": 102,
           "issues": []
         },
         {
-          "time": 3.75,
-          "minHeadline": 60,
+          "time": 3,
+          "minHeadline": 102,
           "issues": []
         },
         {
-          "time": 4.25,
-          "minHeadline": 60,
+          "time": 4.5,
+          "minHeadline": 102,
+          "issues": []
+        },
+        {
+          "time": 5.75,
+          "minHeadline": 80,
           "issues": []
         },
         {
           "time": 6,
-          "minHeadline": 66,
+          "minHeadline": 80,
+          "issues": []
+        },
+        {
+          "time": 6.25,
+          "minHeadline": 80,
           "issues": []
         },
         {
           "time": 8,
-          "minHeadline": 66,
+          "minHeadline": 80,
           "issues": []
         },
         {
           "time": 10,
-          "minHeadline": 66,
+          "minHeadline": 80,
           "issues": []
         },
         {
           "time": 12,
-          "minHeadline": 66,
+          "minHeadline": 80,
           "issues": []
         },
         {
           "time": 14,
-          "minHeadline": 66,
+          "minHeadline": 93,
           "issues": []
         },
         {
           "time": 16,
-          "minHeadline": 66,
+          "minHeadline": 93,
           "issues": []
         },
         {
           "time": 18,
-          "minHeadline": 66,
+          "minHeadline": 93,
           "issues": []
         },
         {
           "time": 20,
-          "minHeadline": 66,
+          "minHeadline": 93,
           "issues": []
         },
         {
           "time": 22,
-          "minHeadline": 66,
+          "minHeadline": 93,
           "issues": []
         },
         {
-          "time": 23.75,
-          "minHeadline": 60,
+          "time": 23.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 23.9,
+          "minHeadline": 93,
           "issues": []
         }
       ],
       "sources": [
         {
           "scene": "timer",
-          "file": "zh-CN-timer.mov",
-          "sha256": "dbb32dfbaf0ec1d9a7256cc355335d848d628cdb102cd0c6ab5e100a2ef3b72b",
           "capture": "zh-CN-timer.png",
-          "captureSHA256": "d238ccc9ab938fd9354d1a7aebffc09528be1bb1bc3c3c2fc8e51169714e087b",
+          "captureSHA256": "369e7d59324d75f5486e0ed6421d40fd2feae8d1e6a637b9ff5acf74e3beea7d",
+          "recording": "zh-CN-timer.mov",
+          "recordingSHA256": "0736e43d6301912fa6b8d127dc4d103a4eeb5e830850bc85895cff3f651e0d82",
           "inPoint": 0.2,
-          "crop": [
-            0,
-            330,
-            1320,
-            500
-          ],
-          "nativeDuration": 6.818333
+          "nativeDuration": 8.815
         },
         {
           "scene": "widgets",
-          "file": "zh-CN-widgets.mov",
-          "sha256": "9053fe78063aa48dd917ce25c80c30ae0305e156559422cf2adb82d0cc5945b1",
           "capture": "zh-CN-widgets.png",
-          "captureSHA256": "3b842f06c8a4cdb487d7e24217c341469d7b661f1f289d0dc35be9277f999fda",
+          "captureSHA256": "c008f154abcfcc534eec76c074ae1add0d91d47be0251650b46f424f1290f779",
+          "recording": "zh-CN-widgets.mov",
+          "recordingSHA256": "7e2c1b69a9868be537fe256e4e4c55cd207d1affb450915d142dba352710af16",
           "inPoint": 0.2,
-          "crop": [
-            135,
-            821,
-            1050,
-            960
-          ],
-          "nativeDuration": 6.825
-        },
-        {
-          "scene": "focus",
-          "file": "zh-CN-focus.mov",
-          "sha256": "24cc71fb5b429ee361d4b567265e28988add8501ad0587f567b311624713bfb9",
-          "capture": "zh-CN-focus.png",
-          "captureSHA256": "37881610dfedf081d4d5adeef027c8e505444fe1d2b2b59845fa302ef47a933d",
-          "inPoint": 0.2,
-          "crop": [
-            40,
-            520,
-            1240,
-            1140
-          ],
-          "nativeDuration": 6.796667
+          "nativeDuration": 8.818333
         },
         {
           "scene": "records",
-          "file": "zh-CN-records.mov",
-          "sha256": "a7bbd6488931046b98c7048bc071ed5f12e52b18e346876f8d1fb94da505d99e",
           "capture": "zh-CN-records.png",
-          "captureSHA256": "a3088a21820d9bff3c904d6c6df0a779c5af7d205fe7686c9caaef21d33c8613",
-          "inPoint": 0.016667,
-          "crop": [
-            40,
-            570,
-            1240,
-            1330
-          ],
-          "nativeDuration": 0.066667
-        },
-        {
-          "scene": "report",
-          "file": "zh-CN-report.mov",
-          "sha256": "bfb4ec958aefa8e3936ef017082c46e11d31248d08f21a0b06b5c00bc943f6d7",
-          "capture": "zh-CN-report.png",
-          "captureSHA256": "fb349a84dd55754c6f1f043ec003530bec076bbb2b042a0942f034695da39046",
-          "inPoint": 5,
-          "crop": [
-            0,
-            380,
-            1320,
-            2060
-          ],
-          "nativeDuration": 19.713333
+          "captureSHA256": "1d69ad64ded7e5211bb85d1ddda58a71922bc0054bf23107867b802672f6cf83"
         },
         {
           "scene": "leave",
-          "file": "zh-CN-leave.mov",
-          "sha256": "5043609f8e0ef220fbacd114fc7536184b6ca2fd285153c297702ae8feeee290",
           "capture": "zh-CN-leave.png",
-          "captureSHA256": "3eba26dbd6e77ab13398316b68e4873dbb373b3d8fe1dc47e361b3753531cade",
-          "inPoint": 0.016667,
-          "crop": [
-            0,
-            440,
-            1320,
-            1500
-          ],
-          "nativeDuration": 0.066667
+          "captureSHA256": "c72b0bd73f02e47deabeab07e512ed5ac00e8bb995e4ed38c3931e1d38679f00"
         }
       ],
       "status": "local-not-uploaded"

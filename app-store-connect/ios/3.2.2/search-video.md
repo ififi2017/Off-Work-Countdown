@@ -6,25 +6,34 @@ for 3.2.2 because Records and Time off were redesigned.
 
 ## What changed from 3.2.1 V4
 
-- Every scene is recaptured from one 3.2.2 Debug build (`origin/main` 963c4922
-  plus the Debug-only `qaLeaveFrom` hook in `DebugLeavePlanner.swift`).
-  Records shows the new month calendar; Time off shows the new plan screen.
+- Four beats of six seconds: countdown → widget → records → time off. Focus
+  and the cycle report are dropped; each beat is one line of copy (from the
+  reviewed V4 lines) and one native hero. No wordmark, eyebrow, subline or
+  progress dots; "Illustrative data" appears once, small, in the corner.
+- Recaptured from one 3.2.2 Debug build (`origin/main` 963c4922 plus the
+  Debug-only `qaLeaveFrom` hook in `DebugLeavePlanner.swift`).
 - Layout follows the Art Safe Area of Apple's search template
   (`apple-creative-template-guides.json`, 1920-scale `418,382.5,1084×515`).
-  V4 placed brand, copy and the phone across the whole canvas, which real
-  devices crop. V5 (unfinished, 3.2.1) shrank V4 into the safe area, which made
-  the UI too small. 3.2.2 drops the phone frame and shows a native crop of the
-  region that carries each feature, so the subject fills most of the safe area.
-  Only the background extends beyond it.
-- Copy is unchanged from V4 (`creative-copy-3.2.1.mjs`). Outgoing lines leave
-  before incoming ones arrive, since the copy blocks no longer share a height.
+  Headline and hero stay inside it; the native surface around the hero (timer
+  screen, wallpaper, calendar) bleeds past it so the full 3:2 frame reads as
+  full. V4 spread everything across the canvas and was cropped on devices;
+  the unfinished 3.2.1 V5 shrank V4 into the safe area and the UI got too small.
+- Heroes are native pixels at or below capture resolution (no upscaling):
+  live ticking countdown and widget recordings, the 3.2.2 month calendar
+  (two weeks, recorded days fill in order) and the 3.2.2 plan screen (plan
+  result, then the run's days light up one by one).
+- Demo data is identical in every language: no holiday region, so there are
+  no localized or truncated holiday names ("Colum…", "9 days…").
+- Transitions: copy leaves before the next line arrives; the hero fades out,
+  the next fades in (no ghosted digits); a slow 2 % push carries each beat.
+  The countdown keeps ticking across the loop point.
 
 ## Spec
 
 1920×1280, 24 s, 30 fps (720 frames), H.264 yuv420p BT.709, no audio, loops.
-Every frame is audited in the renderer: brand, rail, card (with shadow) and
-each visible glyph must sit inside the safe area; settled frames must not
-overlap the card; headline ≥ 34 px. A violation stops the render.
+Every frame is audited in the renderer: headline glyphs and hero inside the
+safe area, no clipped text, settled copy clear of every visible surface,
+headline ≥ 56 px. A violation stops the render.
 
 ## Reproduce
 
@@ -47,6 +56,9 @@ Capture notes:
   public holiday (Columbus Day, the capture day) the en widget preview read
   "Next shift in". The en widget scene uses `en_001` so it counts down the
   live shift; every other scene keeps `en_US`.
+- Records and leave screens are static once settled, so their animation is
+  composed from native pixels: masks over the recorded bars and the run's
+  leave days are removed in order. Coordinates are in `SCENES`.
 
 ## Status (2026-10-12)
 
