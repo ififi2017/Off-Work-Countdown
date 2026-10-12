@@ -1,7 +1,10 @@
 import SwiftUI
 
-/// Dense calendars keep the holiday name under the date; VoiceOver and the
-/// selected-day callout retain the full name and workday/prediction status.
+/// Dense calendars keep one short line under the date: the festival name, or
+/// `holidayMakeupShort` ("补班" / "Work") on a make-up workday. The full
+/// "Make-up workday" wording stays in VoiceOver and the selected-day callout.
+/// The line scales down before it truncates, so a narrow Duo column does not
+/// push into the date number above it.
 struct HolidayDayCaption: View {
     let annotation: HolidayDayAnnotation
     let text: AppText
@@ -12,6 +15,7 @@ struct HolidayDayCaption: View {
              : annotation.name.isEmpty ? text.t("holidayRestDay") : annotation.name)
             .font(.caption2)
             .lineLimit(1)
+            .minimumScaleFactor(0.6)
             .truncationMode(.tail)
             .foregroundStyle(foreground ?? (annotation.isMakeupWorkday ? OWCDesign.accent : OWCDesign.secondary))
             .frame(maxWidth: .infinity)

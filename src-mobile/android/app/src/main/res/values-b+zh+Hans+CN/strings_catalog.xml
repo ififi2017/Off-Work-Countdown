@@ -325,8 +325,8 @@
     <string name="holidayCoverageYearWarning">暂无 %1$s 年数据，将按日常排班执行。请检查应用更新。</string>
     <string name="holidayEstimatedLabel">推测</string>
     <string name="holidayEstimatedYearWarning">%1$s 年中国大陆假期及调休为推测，非正式安排。\n以国务院年底公布的正式通知为准。公布后 DoneAt 将尽快更新。</string>
-    <string name="holidayMakeupShort">调休</string>
-    <string name="holidayMakeupWorkday">调休上班</string>
+    <string name="holidayMakeupShort">补班</string>
+    <string name="holidayMakeupWorkday">补班日</string>
     <string name="holidayRestDay">放假</string>
     <string name="holidaySource">节假日安排</string>
     <string name="invalidLunchMessage">开始倒计时前，午休必须完整落在上班时间内。</string>

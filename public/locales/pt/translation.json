@@ -478,6 +478,7 @@
   "holidayCalendarSearch": "Buscar países ou regiões",
   "holidayCalendarSystemDefault": "Sugerido: {{region}}",
   "holidayRestDay": "Feriado",
+  "holidayMakeupShort": "Trabalho",
   "holidayMakeupWorkday": "Dia de trabalho compensatório",
   "holidaySource": "Calendário de feriados",
   "holidayCoverageYearWarning": "Sem dados de {{year}}. Será usado o horário habitual. Verifique se há atualizações do app.",

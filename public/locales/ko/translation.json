@@ -478,6 +478,7 @@
   "holidayCalendarSearch": "국가 또는 지역 검색",
   "holidayCalendarSystemDefault": "제안: {{region}}",
   "holidayRestDay": "공휴일",
+  "holidayMakeupShort": "근무",
   "holidayMakeupWorkday": "대체 근무일",
   "holidaySource": "공휴일 달력",
   "holidayCoverageYearWarning": "{{year}}년 데이터가 없습니다. 평소 일정이 적용됩니다. 앱 업데이트를 확인하세요.",

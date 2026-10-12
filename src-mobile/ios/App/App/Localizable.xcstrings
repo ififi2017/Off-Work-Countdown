@@ -1782,103 +1782,103 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "عمل تعويضي"
+            "value": "عمل"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ausgleichsarbeit"
+            "value": "Arbeit"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Makeup"
+            "value": "Work"
           }
         },
         "en-GB": {
           "stringUnit": {
             "state": "translated",
-            "value": "Make-up"
+            "value": "Work"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Trabajo compensatorio"
+            "value": "Trabajo"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Trabajo compensatorio"
+            "value": "Trabajo"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Travail compensatoire"
+            "value": "Travail"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "प्रतिपूरक काम"
+            "value": "काम"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kerja pengganti"
+            "value": "Kerja"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lavoro compensativo"
+            "value": "Lavoro"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "振替出勤"
+            "value": "出勤"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "대체 근무"
+            "value": "근무"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "बदली काम"
+            "value": "काम"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Trabalho compensatório"
+            "value": "Trabalho"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Рабочий взамен выходного"
+            "value": "Работа"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ทำงานชดเชย"
+            "value": "ทำงาน"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Telafi mesaisi"
+            "value": "Mesai"
           }
         },
         "vi": {
@@ -1890,7 +1890,7 @@
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "调休"
+            "value": "补班"
           }
         },
         "zh-HK": {
@@ -1925,7 +1925,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Makeup workday"
+            "value": "Make-up workday"
           }
         },
         "es": {
@@ -2009,7 +2009,7 @@
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "调休上班"
+            "value": "补班日"
           }
         },
         "zh-HK": {

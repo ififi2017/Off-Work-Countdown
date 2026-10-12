@@ -325,7 +325,7 @@
     <string name="holidayCoverageYearWarning">%1$s चा डेटा नाही. नेहमीचे वेळापत्रक वापरले जाईल. ॲप अपडेट तपासा.</string>
     <string name="holidayEstimatedLabel">अंदाजित</string>
     <string name="holidayEstimatedYearWarning">मुख्यभूमी चीनमधील %1$s च्या सुट्ट्या आणि भरपाईचे कामाचे दिवस अंदाजित आहेत, अधिकृत तारखा नाहीत.\nवर्षअखेरीस प्रसिद्ध होणारी राज्य परिषदेची सूचना ग्राह्य धरा. ती प्रसिद्ध झाल्यावर DoneAt लवकरच माहिती अपडेट करेल.</string>
-    <string name="holidayMakeupShort">बदली काम</string>
+    <string name="holidayMakeupShort">काम</string>
     <string name="holidayMakeupWorkday">बदली कामाचा दिवस</string>
     <string name="holidayRestDay">सुट्टी</string>
     <string name="holidaySource">सुट्टीचे कॅलेंडर</string>

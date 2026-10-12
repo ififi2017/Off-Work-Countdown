@@ -478,6 +478,7 @@
   "holidayCalendarSearch": "البحث عن بلد أو منطقة",
   "holidayCalendarSystemDefault": "مقترح: {{region}}",
   "holidayRestDay": "عطلة",
+  "holidayMakeupShort": "عمل",
   "holidayMakeupWorkday": "يوم عمل تعويضي",
   "holidaySource": "تقويم العطلات",
   "holidayCoverageYearWarning": "لا تتوفر بيانات {{year}}؛ سيُستخدم الجدول المعتاد. تحقّق من تحديثات التطبيق.",

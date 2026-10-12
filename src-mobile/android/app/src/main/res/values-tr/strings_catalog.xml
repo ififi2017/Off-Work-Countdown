@@ -325,7 +325,7 @@
     <string name="holidayCoverageYearWarning">%1$s verisi yok. Normal program kullanılacak. Uygulama güncellemelerini kontrol edin.</string>
     <string name="holidayEstimatedLabel">Tahmin</string>
     <string name="holidayEstimatedYearWarning">Çin ana karasındaki %1$s resmî tatilleri ve telafi çalışma günleri tahmindir, resmî tarihler değildir.\nÇin Devlet Konseyi’nin yıl sonu duyurusunu esas alın. DoneAt, duyuru yayımlandıktan sonra verileri kısa sürede güncelleyecek.</string>
-    <string name="holidayMakeupShort">Telafi mesaisi</string>
+    <string name="holidayMakeupShort">Mesai</string>
     <string name="holidayMakeupWorkday">Telafi iş günü</string>
     <string name="holidayRestDay">Tatil</string>
     <string name="holidaySource">Tatil takvimi</string>

@@ -226,10 +226,18 @@ internal fun MonthGrid(
                                                 cell.isToday || selected -> scheme.primary
                                                 else -> scheme.onSurface
                                             },
+                                            maxLines = 1,
+                                            softWrap = false,
                                         )
                                     }
                                     Box(Modifier.fillMaxWidth().heightIn(min = captionHeight), contentAlignment = Alignment.Center) {
-                                        if (holiday != null) HolidayDayCaption(holiday)
+                                        // Locked days replace the festival / make-up line. The
+                                        // caption and the lock never share the row.
+                                        if (cell.appearance == RecordsDayAppearance.LOCKED) {
+                                            Icon(Icons.Filled.Lock, null, Modifier.size(9.dp), tint = scheme.outline)
+                                        } else if (holiday != null) {
+                                            HolidayDayCaption(holiday)
+                                        }
                                     }
                                     Box(Modifier.fillMaxWidth().height(3.dp), contentAlignment = Alignment.Center) {
                                         MiniWorkBar(cell.workMs, cell.overtimeMs, Modifier.graphicsLayer {
@@ -237,22 +245,15 @@ internal fun MonthGrid(
                                         })
                                     }
                                 }
-                                StateMarker(cell, Modifier.align(Alignment.TopEnd).padding(4.dp))
+                                if (cell.appearance == RecordsDayAppearance.CORRECTED) {
+                                    Icon(Icons.Filled.Edit, null, Modifier.align(Alignment.TopEnd).padding(4.dp).size(9.dp), tint = scheme.onSurfaceVariant)
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun StateMarker(cell: RecordsDayCell, modifier: Modifier) {
-    when (cell.appearance) {
-        RecordsDayAppearance.CORRECTED -> Icon(Icons.Filled.Edit, null, modifier.size(9.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        RecordsDayAppearance.LOCKED -> Icon(Icons.Filled.Lock, null, modifier.size(8.dp), tint = MaterialTheme.colorScheme.outline)
-        else -> Unit
     }
 }
 
