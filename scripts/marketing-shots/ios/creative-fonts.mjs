@@ -7,6 +7,7 @@ const scripts={
  ja:['Noto Serif JP','Noto Sans JP'],ko:['Noto Serif KR','Noto Sans KR'],
  ar:['Noto Naskh Arabic','Noto Sans Arabic'],
  'hi-IN':['Noto Serif Devanagari','Noto Sans Devanagari'],
+ 'mr-IN':['Noto Serif Devanagari','Noto Sans Devanagari'],
  th:['Noto Serif Thai','Noto Sans Thai'],
 };
 const dir=new URL('./fonts/',import.meta.url);

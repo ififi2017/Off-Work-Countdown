@@ -1,0 +1,50 @@
+{
+  "checkedOn": "2026-10-06",
+  "method": "Read the named layer bounds from official 16-bit Photoshop templates; coordinates are x/y/width/height in pixels.",
+  "templates": [
+    {
+      "scene": "header-21x9",
+      "width": 3840,
+      "height": 1646,
+      "safeArea": {
+        "x": 1097,
+        "y": 493,
+        "width": 1646,
+        "height": 661
+      },
+      "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-product_page_header_template-static.psd",
+      "sha256": "4200f416adcf3affb70d5847c1d0554fc39b7405110ec527bdea92bfb82f93b0",
+      "layer": "Art Safe Area",
+      "reverifiedOn": "2026-10-11",
+      "reverification": "Fresh download SHA-256 matches; Art Safe Area named layer bounds independently re-read with psd-tools."
+    },
+    {
+      "scene": "universal-16x9",
+      "width": 5244,
+      "height": 2950,
+      "safeArea": {
+        "x": 1921,
+        "y": 660,
+        "width": 1402,
+        "height": 962
+      },
+      "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-universal_asset_template-static.psd",
+      "sha256": "72e3f5e67a4be0df463e509cd0df5645e97123c40a897eeba8064339cac0535c",
+      "layer": "Art Safe Area"
+    },
+    {
+      "scene": "search-3x2",
+      "width": 3840,
+      "height": 2560,
+      "safeArea": {
+        "x": 836,
+        "y": 765,
+        "width": 2168,
+        "height": 1030
+      },
+      "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-search_results_template-static.psd",
+      "sha256": "7bb57a3c33cc4402d1c82e85a0211cf0f2f2b1c05cf7f36e4710092226dea056",
+      "layer": "Art Safe Area"
+    }
+  ]
+}

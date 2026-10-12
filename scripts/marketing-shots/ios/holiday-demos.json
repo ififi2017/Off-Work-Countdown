@@ -171,7 +171,7 @@
         "it": "Republic Day",
         "ja": "Republic Day",
         "ko": "Republic Day",
-        "mr-IN": "Republic Day",
+        "mr-IN": "प्रजासत्ताक दिन",
         "pt": "Republic Day",
         "ru": "Republic Day",
         "th": "Republic Day",
@@ -499,6 +499,35 @@
         "zh-CN": "端午节",
         "zh-HK": "Dragon Boat Festival",
         "zh-TW": "端午節"
+      },
+      "status": "selected-not-captured"
+    },
+    {
+      "ascLocale": "mr-IN",
+      "regionIdentifier": "IN",
+      "month": "2026-01",
+      "selectedDate": "2026-01-26",
+      "reviewLabel": "共和国日",
+      "datasetName": {
+        "ar": "Republic Day",
+        "de": "Republic Day",
+        "en": "Republic Day",
+        "es": "Republic Day",
+        "fr": "Republic Day",
+        "hi-IN": "गणतंत्र दिवस",
+        "id": "Republic Day",
+        "it": "Republic Day",
+        "ja": "Republic Day",
+        "ko": "Republic Day",
+        "mr-IN": "प्रजासत्ताक दिन",
+        "pt": "Republic Day",
+        "ru": "Republic Day",
+        "th": "Republic Day",
+        "tr": "Republic Day",
+        "vi": "Republic Day",
+        "zh-CN": "Republic Day",
+        "zh-HK": "Republic Day",
+        "zh-TW": "Republic Day"
       },
       "status": "selected-not-captured"
     }
