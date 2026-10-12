@@ -90,10 +90,10 @@ struct RecordsInsightCard: View {
         return value
     }
 
-    /// The sentence, then its next step in medium accent with a chevron.
+    /// The sentence, then its next step in medium accent.
     private func bodyWithAction(_ actionTitle: String) -> AttributedString {
         var value = AttributedString(insight.body.map { $0 + " " } ?? "")
-        var action = AttributedString(actionTitle + " ›")
+        var action = AttributedString(actionTitle)
         action.foregroundColor = OWCDesign.accent
         action.font = .subheadline.weight(.medium)
         value.append(action)
@@ -104,7 +104,8 @@ struct RecordsInsightCard: View {
     private var bodyText: some View {
         if let actionTitle = insight.actionTitle, insight.action != nil {
             Button { insight.action?() } label: {
-                Text(bodyWithAction(actionTitle))
+                // Interpolation keeps the chevron inline with the sentence.
+                Text("\(Text(bodyWithAction(actionTitle))) \(Text(Image(systemName: "chevron.forward")).font(.footnote.weight(.semibold)).foregroundStyle(OWCDesign.accent))")
                     .multilineTextAlignment(.leading)
             }
             .buttonStyle(.plain)
