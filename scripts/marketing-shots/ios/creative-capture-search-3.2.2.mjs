@@ -63,11 +63,16 @@ function recordsSeed(){
  const from=key(new Date(monday-14*864e5));a.workObservations=a.workObservations.filter(o=>o.shiftAnchorDate<from);
  const obs=(day,kind,ms,value)=>{const id=randomUUID().toUpperCase();a.workObservations.push({editCount:1,editTieBreaker:id,editedAtMs:ms,eventID:id,kind,occurredAtMs:ms,scheduleSnapshotID:snapshot,schemaVersion:2,shiftAnchorDate:key(day),timeZoneIdentifier:zone,...(value?{valueData:Buffer.from(JSON.stringify(value)).toString('base64')}:{})});};
  a.leaveDays=[];
+ // Follow the archive's working week (Sunday–Thursday for Arabic): last
+ // week's 2nd and 4th workdays run over, its 5th is leave; the rest are
+ // regular. Mon–Fri gives Oct 6 and 8 overtime and Oct 9 leave.
+ const workdays=new Set(a.syncedPreferences.workdays??[1,2,3,4,5]);let lastWeek=0;
  for(let n=14;n>=1;n--){
-  const day=new Date(monday-n*864e5),weekday=(day.getUTCDay()+6)%7;if(weekday>4)continue;
-  if(n===3){a.leaveDays.push({dayKey:key(day),portion:'whole',uses:[],planID:null,timeZoneIdentifier:zone,editedAtMs:Date.now(),editCount:1,editTieBreaker:randomUUID().toUpperCase()});continue;}
+  const day=new Date(monday-n*864e5);if(!workdays.has(day.getUTCDay()))continue;
+  const nth=n<=7?++lastWeek:0;
+  if(nth===5){a.leaveDays.push({dayKey:key(day),portion:'whole',uses:[],planID:null,timeZoneIdentifier:zone,editedAtMs:Date.now(),editCount:1,editTieBreaker:randomUUID().toUpperCase()});continue;}
   obs(day,'countdownStarted',at(day,9));
-  if(n===6||n===4){obs(day,'overtimeDeclared',at(day,17),{overtimeEndAtMs:at(day,19,30),plannedEndAtMs:at(day,17)});obs(day,'countdownStopped',at(day,19,30));}
+  if(nth===2||nth===4){obs(day,'overtimeDeclared',at(day,17),{overtimeEndAtMs:at(day,19,30),plannedEndAtMs:at(day,17)});obs(day,'countdownStopped',at(day,19,30));}
   else obs(day,'countdownStopped',at(day,17));
  }
  encode(id,e,a);
@@ -86,35 +91,50 @@ function sceneArgs(scene,lang){
   case 'life':return{extra:['-ios.native.selectedTab','records','-ios.native.qaRecordsScale','life']};
   // 3.2.2 Time off: the plan screen. An empty region plans around weekends only.
   case 'leave':return{extra:['-ios.native.selectedTab','settings','-ios.native.qaRoute','leave','-ios.native.qaLeavePlanner','YES','-ios.native.qaLeaveRegion','',...WEEK]};
-  // Onboarding picks the holiday template from the locale's region, and the
-  // US one makes some capture days (Columbus Day) read "next shift". English
-  // without a region keeps the preview counting down the live shift.
-  case 'widgets':return{extra:['-ios.native.debugAlwaysOnboarding','YES','-ios.native.qaOnboardingPage','4',...(lang==='en'?['-AppleLocale','en_001']:[])]};
+  // Onboarding picks the holiday template from the locale's region, and 12
+  // October is a holiday in the US, Spain and Brazil, which turns the preview
+  // into "next shift". Those languages drop the region for this scene only.
+  // Mid-afternoon in the capture zone (device clock and the seeded schedule
+  // together), so the preview counts down a live shift at any hour.
+  case 'widgets':{const zone=daytime().zone,[e,a]=decode(id);a.timeZoneIdentifier=zone;a.syncedPreferences.recordsTimeZoneIdentifier=zone;a.careerPeriods.forEach(p=>p.timeZoneIdentifier=zone);encode(id,e,a);return{zone,extra:['-ios.native.debugAlwaysOnboarding','YES','-ios.native.qaOnboardingPage','4',...(['en','es','pt'].includes(lang)?['-AppleLocale',`${lang}_001`]:[])]};}
   default:return{extra:['-ios.native.qaDebugScenario','working']};
  }
 }
 const settle={leave:22,records:12,report:20,life:12};
 // The timer and widget tick for the whole six-second beat.
-const seconds={timer:9,widgets:9,focus:8,records:5,report:16,leave:5,life:5};
+// The report sometimes takes several seconds to open; record long enough to
+// keep four seconds of its hours chapter whatever the delay.
+const seconds={timer:9,widgets:9,focus:8,records:5,report:26,leave:5,life:5};
 
 // Apple Watch: the Watch app's Debug review fixture (no phone pairing, no
-// salary). The fixture ends the shift 3½ hours from now, so a time zone where
-// it is early afternoon puts "off at" near 5 PM, like the iPhone scenes.
+// salary) in its `workday` state, the same 09:00–12:00 / 13:00–17:00 shift as
+// the iPhone review day. The review time zone is offset to the minute so it is
+// 14:22 there at launch, like the iPhone status bar: 2:37 left, 62.4 %, off at
+// 17:00.
 const WATCH_ID=process.env.IOS_SHOTS_WATCH||'BCE439EB-0B3F-4317-BFA4-A40DC5CEFBFD';
 const WATCH_APP=join(app,'..','..','Debug-watchsimulator','DoneAt Watch App.app'),WATCH_BUNDLE='com.rainif.offworkcountdown.macappstore.watchkitapp';
 async function captureWatch(lang){
  const prefix=`${lang}-watch`,png=join(raw,prefix+'.png'),mov=join(raw,prefix+'.mov');
- const offset=13-new Date().getUTCHours(),zone=offset===0?'Etc/UTC':`Etc/GMT${offset>0?'-':'+'}${Math.abs(offset)}`;
- const local=new Date(Date.now()+offset*36e5),clock=`${String(local.getUTCHours()).padStart(2,'0')}:${String(local.getUTCMinutes()).padStart(2,'0')}`;
+ if(manifest.items.some(x=>x.locale===lang&&x.scene==='watch'&&x.fixture==='workday'&&x.workingLabel&&existsSync(png)&&existsSync(mov)&&hash(png)===x.sha256))return;
+ const clock='14:22';
  const watchBooted=Object.values(JSON.parse(sim(['list','devices','booted','-j'])).devices).flat().some(x=>x.udid===WATCH_ID);
  if(!watchBooted){sim(['boot',WATCH_ID]);sim(['bootstatus',WATCH_ID,'-b']);}
  sim(['install',WATCH_ID,WATCH_APP]);sim(['status_bar',WATCH_ID,'override','--time',clock],true);
- sim(['launch','--terminate-running-process',WATCH_ID,WATCH_BUNDLE,'-owcWatchReviewState','working','-owcWatchReviewLocale',lang,'-owcWatchReviewTimeZone',zone,'-AppleLanguages',`(${lang==='zh-CN'?'zh-Hans':lang})`]);
+ // Launch on a minute boundary, in a zone where that minute is 14:22, so the
+ // recording opens at 2:37:5x like the iPhone countdown.
+ await sleep((60-new Date().getUTCSeconds())%60*1000+300);
+ const now=new Date(),utc=now.getUTCHours()*60+now.getUTCMinutes();let minutes=((14*60+22-utc)%1440+1440)%1440;if(minutes>14*60)minutes-=1440;
+ const zone=`GMT${minutes<0?'-':'+'}${String(Math.floor(Math.abs(minutes)/60)).padStart(2,'0')}${String(Math.abs(minutes)%60).padStart(2,'0')}`;
+ // The phone sends its own `widgetWorking` string as the Watch's state label.
+ const working=JSON.parse(readFileSync(join(dir,'../../../src-mobile/ios/App/App/Localizable.xcstrings'),'utf8')).strings.widgetWorking.localizations[lang].stringUnit.value;
+ sim(['launch','--terminate-running-process',WATCH_ID,WATCH_BUNDLE,'-owcWatchReviewState','workday','-owcWatchReviewLocale',lang,'-owcWatchReviewTimeZone',zone,'-owcWatchReviewWorkingLabel',working,'-AppleLanguages',`(${lang==='zh-CN'?'zh-Hans':lang})`]);
  await sleep(6000);sim(['io',WATCH_ID,'screenshot','--type=png',png]);
  const p=spawn('xcrun',['simctl','io',WATCH_ID,'recordVideo','--codec=h264','--force',mov],{stdio:'ignore'});const done=new Promise(r=>p.on('close',r));
- await sleep(9000);p.kill('SIGINT');await done;
+ await sleep(9000);p.kill('SIGINT');
+ // simctl occasionally ignores the first interrupt on watchOS; ask again.
+ const retry=setTimeout(()=>p.kill('SIGINT'),15000);await done;clearTimeout(retry);
  sim(['terminate',WATCH_ID,WATCH_BUNDLE],true);
- const item={locale:lang,ascLocale:COPY[lang].asc,scene:'watch',build:{watchAppSHA256:hash(join(WATCH_APP,'DoneAt Watch App'))},device:WATCH_ID,fixture:'working',timeZone:zone,file:prefix+'.png',sha256:hash(png),video:{file:prefix+'.mov',sha256:hash(mov),duration:9},demoData:true,capturedAt:new Date().toISOString()};
+ const item={locale:lang,ascLocale:COPY[lang].asc,scene:'watch',build:{watchAppSHA256:hash(join(WATCH_APP,'DoneAt Watch App'))},device:WATCH_ID,fixture:'workday',workingLabel:working,timeZone:zone,file:prefix+'.png',sha256:hash(png),video:{file:prefix+'.mov',sha256:hash(mov),duration:9},demoData:true,capturedAt:new Date().toISOString()};
  manifest.items=manifest.items.filter(x=>!(x.locale===lang&&x.scene==='watch'));manifest.items.push(item);save();console.log('captured '+prefix);
 }
 
