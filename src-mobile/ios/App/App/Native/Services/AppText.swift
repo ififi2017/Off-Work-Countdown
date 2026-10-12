@@ -133,6 +133,20 @@ final class AppText {
         preferences.hideEarnings ? "••••" : formatMoney(value)
     }
 
+    /// A headline amount: whole units, no currency symbol (the app never asks
+    /// which currency a salary is in). Masked like every other amount.
+    func moneyWholeText(_ value: Double?) -> String {
+        guard !preferences.hideEarnings else { return "••••" }
+        guard let value else { return "—" }
+        return value.formatted(.number.precision(.fractionLength(0)).locale(preferences.locale))
+    }
+
+    var locale: Locale { preferences.locale }
+
+    func formatDecimal(_ value: Double, fractionDigits: ClosedRange<Int> = 0...1) -> String {
+        value.formatted(.number.precision(.fractionLength(fractionDigits)).locale(preferences.locale))
+    }
+
     func formatPercent(_ value: Double, fractionDigits: Int = 1) -> String {
         (value / 100).formatted(
             .percent.precision(.fractionLength(fractionDigits)).locale(preferences.locale)

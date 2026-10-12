@@ -1,5 +1,9 @@
 # Apple 移动端与 Watch 开发计划
 
+2026-10-12 版本更新：用户确认全平台升级到 **3.2.2**（记录页与休假页按新设计改版）。
+主应用、Widget、Watch App 与 Watch Widget 均使用 3.2.2；Web/Desktop/Mac Widget/
+Microsoft Store 与 Android `versionName` 同步。构建号与 Android `versionCode` 在下次上传前另行递增。
+
 2026-09-26 版本更新：用户确认 iOS 3.2.0 已发版，后续修复进入 **3.2.1**。
 主应用、Widget、Watch App 与 Watch Widget 均使用 3.2.1；按仓库版本约定，
 Web/Desktop/Mac Widget 的产品元数据同步。构建号在下次上传前另行递增。

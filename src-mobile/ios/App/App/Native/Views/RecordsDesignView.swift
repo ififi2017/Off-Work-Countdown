@@ -39,8 +39,8 @@ struct RecordsDesignView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var isExpanded: Bool { browsing.expanded[browsing.scale] == true }
-    private var canExpand: Bool { browsing.scale == .year || browsing.scale == .life }
+    /// 3.2.2: every scale fits the page, so the chart no longer expands.
+    private let isExpanded = false
     /// iPad keeps its custom root chrome so switching split-view tabs cannot
     /// resize the detail pane under a cross-fade. Phones use the system bar.
     private var usesCustomRootHeader: Bool { usesOwnHeader }
@@ -84,8 +84,6 @@ struct RecordsDesignView: View {
         Group {
             if records.archiveBanner == .damaged {
                 damagedState
-            } else if isExpanded {
-                immersiveCanvas
             } else {
                 regularCanvas
             }
@@ -245,82 +243,183 @@ struct RecordsDesignView: View {
     /// Everything that answers the question, as opposed to drawing it.
     @ViewBuilder
     private var conclusionColumn: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             // The life scale is behind Plus, so this conclusion is too. A
             // locked life view must not print a projected number under a
             // locked canvas.
             if browsing.scale == .life, queries.plus.isAuthorized, records.state.lifeProfile != nil {
-                RecordsLifeAllocationCard(
-                    text: text,
-                    preferences: preferences,
-                    incomeDecline: records.state.lifeProfile?.futureIncomeDecline,
-                    model: life.cachedLifeViewModel,
-                    isLoading: life.cachedLifeViewModel == nil
-                )
+                lifeConclusion
             }
             // Life only totals overtime actually recorded, for everyone; the
             // projected career never adds to it.
             if browsing.scale == .life, let lifetimeOvertimeMs {
-                RecordsOvertimeLine(text: text, milliseconds: lifetimeOvertimeMs)
+                RecordsOvertimeLine(text: text, milliseconds: lifetimeOvertimeMs, titleKey: "recordsOvertimeRecordedLife")
             }
             if shouldOfferLifeSetup {
                 lifeSetupCard
             }
-            // Plus reads the same number inside its summary; a free user gets
-            // just this line, under the canvas or its locked placeholder.
-            if browsing.scale != .life, !queries.plus.isAuthorized, let freeOvertimeMs {
+            // Plus reads the same number inside its summary. A free user gets
+            // just this line; the week already prints it on the calendar.
+            if browsing.scale == .month || browsing.scale == .year,
+               !queries.plus.isAuthorized, let freeOvertimeMs {
                 RecordsOvertimeLine(text: text, milliseconds: freeOvertimeMs)
             }
-            if browsing.scale != .life, summary != nil || usesPhoneColumns {
-                RecordsHeadlineView(
-                    text: text,
-                    preferences: preferences,
-                    isAuthorized: queries.plus.isAuthorized,
-                    title: browsing.scale == .year
-                        ? text.t("recordsAnnualSummary", values: ["year": text.formatYear(preferences.recordsCalendar.component(.year, from: browsing.anchor))])
-                        : periodTitle,
-                    summary: summary,
-                    onUnlock: { scene.paywallSheet = .charts }
-                )
-            }
-            if browsing.scale == .year, let selectedMonth = browsing.selectedYearMonth {
-                Button(action: openSelectedMonth) {
-                    HStack(spacing: 6) {
-                        Text(
-                            text.t(
-                                "recordsOpenSelectedMonth",
-                                values: ["month": selectedMonthTitle(selectedMonth)]
-                            )
-                        )
-                        Image(systemName: "chevron.forward")
-                            .font(.footnote.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .contentShape(Rectangle())
+            if browsing.scale != .life, queries.plus.isAuthorized {
+                if let summary {
+                    periodConclusion(summary)
+                } else if !chartIsLoading {
+                    RecordsEmptyPeriodCard(text: text, title: periodTitle)
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(OWCDesign.accent)
             }
         }
     }
 
-    /// A separate layout branch keeps expansion from being a taller version
-    /// of the page. It deliberately has no outer scroll view, title, scale
-    /// picker, summary, or swipe-to-dismiss gesture. The only persistent
-    /// control is the explicit collapse button; scrolling the canvas can never
-    /// accidentally close it.
-    private var immersiveCanvas: some View {
-        ZStack(alignment: .topTrailing) {
-            OWCDesign.page.ignoresSafeArea()
-
-            visualization(expandedPresentation: true)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-
-
+    @ViewBuilder
+    private func periodConclusion(_ summary: RecordsHeadlineSummary) -> some View {
+        RecordsInsightCard(insight: insight(for: summary))
+        if summary.allocationDays > 0 {
+            RecordsAllocationCard(
+                text: text,
+                title: text.t("recordsTimeBreakdown"),
+                share: summary.allocation,
+                footnote: text.t(summary.sleepSourceKey == "recordsSleepFromHealth"
+                    ? "recordsAllocationFootnoteHealth" : "recordsAllocationFootnoteSettings")
+            )
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        if let income = summary.actualForecast?.total.earnings ?? summary.estimatedIncome {
+            RecordsPayCard(
+                text: text,
+                preferences: preferences,
+                title: text.t("recordsPayTitle", values: ["period": payPeriodLabel]),
+                total: income,
+                earned: summary.actualForecast?.actual.earnings
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var lifeConclusion: some View {
+        if let model = life.cachedLifeViewModel {
+            if model.allocation.dayLengthMs > 0, model.allocation.workMs > 0 {
+                RecordsLifeOwnTimeCard(text: text, share: model.allocation)
+                RecordsAllocationCard(
+                    text: text,
+                    title: text.t("lifeWhereTimeGoes"),
+                    share: model.allocation,
+                    unit: .years
+                )
+            } else {
+                RecordsLifeAllocationPlaceholder(text: text)
+            }
+            if let income = model.income {
+                RecordsLifetimeIncomeCard(
+                    text: text,
+                    preferences: preferences,
+                    income: income,
+                    method: text.lifeIncomeMethodText(decline: records.state.lifeProfile?.futureIncomeDecline)
+                )
+            }
+        } else {
+            RecordsLifeAllocationPlaceholder(text: text, isLoading: true)
+        }
+    }
+
+    private var payPeriodLabel: String {
+        let window = queries.recordsWindow(for: browsing.scale, anchor: browsing.anchor)
+        switch browsing.scale {
+        case .week: return periodTitle
+        case .month: return queries.formatRecordsMonthShort(window.0)
+        case .year, .life:
+            return text.t("recordsYearLabel", values: [
+                "year": text.formatYear(preferences.recordsCalendar.component(.year, from: window.0)),
+            ])
+        }
+    }
+
+    /// One conclusion per scale, then the numbers that back it.
+    private func insight(for summary: RecordsHeadlineSummary) -> RecordsInsight {
+        let forecast = summary.actualForecast
+        let workedMs = forecast.map { $0.actual.hours * 3_600_000 }
+            ?? Double(summary.regularWorkMs + summary.overtimeMs)
+        let overtimeMs = forecast.map { $0.actualOvertimeHours * 3_600_000 } ?? Double(summary.overtimeMs)
+        let plannedDays = Int((forecast?.forecast.days ?? 0).rounded())
+        let plannedMs = (forecast?.forecast.hours ?? 0) * 3_600_000
+        let overtimeText = text.formatRelativeDuration(overtimeMs)
+        let looks = cells.map { RecordsDayLook($0, preferences: preferences) }
+        let recordedDays = browsing.scale == .week ? looks.filter(\.hasSolidHours).count : summary.workdays
+        var chips: [RecordsInsightChip] = []
+        if recordedDays > 0 {
+            chips.append(.init(mark: .work, title: text.t("recordsWorkdayCount", values: ["count": text.formatCount(recordedDays)])))
+        }
+        if overtimeMs > 0 {
+            chips.append(.init(mark: .overtime, title: text.t("recordsOvertimeAmount", values: ["duration": overtimeText])))
+        }
+        if plannedDays > 0, browsing.scale != .week {
+            chips.append(.init(mark: .planned, title: text.t("recordsPlannedWorkdays", values: ["count": text.formatCount(plannedDays)])))
+        }
+        switch browsing.scale {
+        case .week, .life:
+            // The calendar above counts what has happened; this sentence
+            // counts the same days, so the two never disagree.
+            let recorded = looks.filter(\.hasSolidHours)
+            let worked = max(summary.completedScheduledWorkdays, recorded.count)
+            var sentences = worked == 0 ? [] : [text.t("recordsInsightWeekBody", values: [
+                "worked": text.formatCount(worked),
+                "recorded": text.formatCount(recorded.count),
+                "hours": text.formatRelativeDuration(Double(recorded.reduce(Int64(0)) { $0 + $1.totalMs })),
+            ])]
+            let empty = looks.first { $0.isUnrecordedWorkday && !$0.cell.isToday }
+            if let empty {
+                sentences.append(text.t("recordsInsightEmptyDay", values: ["date": queries.formatRecordsMonthDay(empty.cell.date)]))
+            }
+            return RecordsInsight(
+                eyebrow: periodTitle,
+                hero: overtimeMs > 0
+                    ? text.t("recordsOvertimeAmount", values: ["duration": overtimeText])
+                    : text.t("recordsNoOvertime"),
+                body: sentences.isEmpty ? nil : RecordsInsight.joinSentences(sentences),
+                actionTitle: empty == nil ? nil : text.t("recordsInsightFillDay"),
+                action: empty.map { look in { openDay(look.cell) } },
+                chips: chips
+            )
+        case .month:
+            var sentences = RecordsHolidaySummary.counts(looks).map { name, count in
+                text.t("recordsInsightHolidayOff", values: ["name": name, "count": text.formatCount(count)])
+            }
+            if plannedDays > 0 {
+                sentences.append(text.t("recordsInsightPlannedAhead", values: [
+                    "count": text.formatCount(plannedDays),
+                    "hours": text.formatRelativeDuration(plannedMs),
+                ]))
+            }
+            return RecordsInsight(
+                eyebrow: text.t("recordsInsightMonthWorked", values: ["month": payPeriodLabel]),
+                hero: text.formatRelativeDuration(workedMs),
+                body: sentences.isEmpty ? nil : RecordsInsight.joinSentences(sentences),
+                actionTitle: text.t("leavePlanAction"),
+                action: openLeavePlanning,
+                chips: chips
+            )
+        case .year:
+            let averageDay = summary.workdays > 0 ? Double(summary.regularWorkMs) / Double(summary.workdays) : 8 * 3_600_000
+            let extraDays = averageDay > 0 ? overtimeMs / averageDay : 0
+            let month = browsing.selectedYearMonth ?? preferences.recordsCalendar.component(.month, from: .now)
+            return RecordsInsight(
+                eyebrow: text.t("recordsInsightYearOvertime", values: ["year": payPeriodLabel]),
+                hero: overtimeMs > 0 ? overtimeText : text.t("recordsNoOvertime"),
+                body: [
+                    overtimeMs > 0 ? text.t("recordsInsightExtraDays", values: ["days": text.formatDecimal(extraDays)]) : nil,
+                    text.t("recordsInsightYearWorked", values: ["hours": text.formatRelativeDuration(workedMs)]),
+                ].compactMap { $0 }.joinedSentences,
+                actionTitle: text.t("recordsOpenSelectedMonth", values: ["month": queries.formatRecordsMonth(
+                    preferences.recordsCalendar.date(from: DateComponents(
+                        year: preferences.recordsCalendar.component(.year, from: browsing.anchor), month: month, day: 1
+                    )) ?? browsing.anchor
+                )]),
+                action: { openMonth(month) },
+                chips: chips
+            )
+        }
     }
 
     @ToolbarContentBuilder
@@ -336,7 +435,6 @@ struct RecordsDesignView: View {
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {
-                OWCEarningsVisibilityButton(preferences: preferences, text: text)
                 NavigationLink(value: RecordsRoute.allRecords) {
                     Label(text.t("recordsAllRecords"), systemImage: "list.bullet.rectangle")
                 }
@@ -380,8 +478,6 @@ struct RecordsDesignView: View {
 
     private var recordsTrailingControls: some View {
         HStack(spacing: 8) {
-            OWCEarningsVisibilityButton(preferences: preferences, text: text)
-                .owcTabletGlassAction()
             NavigationLink(value: RecordsRoute.allRecords) {
                 Label(text.t("recordsAllRecords"), systemImage: "list.bullet.rectangle")
             }
@@ -429,17 +525,6 @@ struct RecordsDesignView: View {
                 }
                 .accessibilityLabel(text.t("recordsNextPeriod"))
             }
-            if canExpand {
-                Button {
-                    setExpanded(!isExpanded)
-                } label: {
-                    Image(systemName: isExpanded
-                        ? "arrow.down.right.and.arrow.up.left"
-                        : "arrow.up.left.and.arrow.down.right")
-                        .frame(width: 44, height: 44)
-                }
-                .accessibilityLabel(text.t(isExpanded ? "recordsCollapseChart" : "recordsExpandChart"))
-            }
         }
         .buttonStyle(.plain)
         .foregroundStyle(OWCDesign.secondary)
@@ -469,7 +554,9 @@ struct RecordsDesignView: View {
         let lockedScale = browsing.scale.requiresPlus && !queries.plus.isAuthorized
         OWCGroupCard {
             visualizationContent(lockedScale: lockedScale, expandedPresentation: expandedPresentation)
-                .padding(18)
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 10)
                 .frame(
                     maxWidth: .infinity,
                     maxHeight: expandedPresentation ? .infinity : nil,
@@ -527,101 +614,70 @@ struct RecordsDesignView: View {
     @ViewBuilder
     private func visualizationContent(lockedScale: Bool, expandedPresentation: Bool) -> some View {
         let renderedCells = chartIsLoading ? placeholderCells : cells
-        VStack(alignment: .leading, spacing: 14) {
-            if expandedPresentation {
-                HStack {
-                    Text(periodTitle)
-                        .font(.headline)
-                        .foregroundStyle(OWCDesign.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .accessibilityAddTraits(.isHeader)
-                    Button { setExpanded(false) } label: {
-                        Image(systemName: "arrow.down.right.and.arrow.up.left")
-                            .frame(width: 44, height: 44)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(OWCDesign.secondary)
-                    .accessibilityLabel(text.t("recordsCollapseChart"))
-                }
-            } else {
+        VStack(alignment: .leading, spacing: 0) {
+            if browsing.scale != .life {
                 periodHeader
+                    .padding(.bottom, 12)
                 Divider()
+                    .padding(.bottom, 12)
             }
 
             if lockedScale {
-                RecordsLockedPlaceholder(text: text, kind: .scale) {
-                    scene.paywallSheet = browsing.scale == .life ? .life : .charts
-                }
+                lockedScalePreview
             } else {
                 Group {
-                switch browsing.scale {
-                case .month:
-                    RecordsMonthGrid(
-                        queries: queries,
-                        preferences: preferences,
-                        text: text,
-                        cells: renderedCells,
-                        selectedDayKey: browsing.selectedDayKey,
-                        onSelect: selectFromTap,
-                        onOpen: openDay
-                    )
-                    holidayCoverageNotice(renderedCells)
-                    markLegend
-                    VStack(alignment: .leading, spacing: 0) {
-                        leavePlanningEntry
-                        reportEntry(.month)
-                    }
-                case .week:
-                    RecordsWeekStrips(
-                        queries: queries,
-                        preferences: preferences,
-                        text: text,
-                        cells: renderedCells,
-                        selectedDayKey: browsing.selectedDayKey,
-                        onSelect: selectFromTap,
-                        onOpen: openDay
-                    )
-                    holidayCoverageNotice(renderedCells)
-                    markLegend
-                    reportEntry(.week)
-                case .year:
-                    // Expansion reads a selected month with the same metrics
-                    // and allocation as the month screen, without another axis.
-                    if expandedPresentation {
-                        RecordsYearMonthsView(
+                    switch browsing.scale {
+                    case .week:
+                        RecordsWeekChart(
                             queries: queries,
                             preferences: preferences,
                             text: text,
-                            recordsRevision: records.contentRevision,
                             cells: renderedCells,
-                            days: days,
-                            selectedMonth: browsing.selectedYearMonth,
-                            onOpenMonth: openMonth
-                        ) { month in
-                            if browsing.selectedYearMonth != month { selectionFeedback += 1 }
-                            browsing.selectedYearMonth = month
-                            browsing.yearCalloutMonth = month
-                            browsing.yearSelectionDate = nil
-                        }
-                    } else {
-                        RecordsYearCanvas(
+                            selectedDayKey: selectedDayLook(renderedCells)?.cell.dayKey,
+                            isAuthorized: queries.plus.isAuthorized,
+                            overtimeMs: freeOvertimeMs,
+                            onSelect: selectFromTap,
+                            onOpen: openDay
+                        )
+                        holidayCoverageNotice(renderedCells)
+                        daySelectionRow(renderedCells)
+                        RecordsCalendarLegend(text: text)
+                        freeWindowNote(renderedCells)
+                        entries([reportEntry(.week)])
+                    case .month:
+                        RecordsMonthCalendar(
+                            queries: queries,
+                            preferences: preferences,
+                            text: text,
+                            cells: renderedCells,
+                            selectedDayKey: selectedDayLook(renderedCells)?.cell.dayKey,
+                            onSelect: selectFromTap,
+                            onOpen: openDay
+                        )
+                        holidayCoverageNotice(renderedCells)
+                        daySelectionRow(renderedCells)
+                        calendarLegend(renderedCells, style: .bars)
+                        freeWindowNote(renderedCells)
+                        entries([AnyView(leavePlanningEntry), reportEntry(.month)])
+                    case .year:
+                        RecordsYearCalendar(
                             queries: queries,
                             preferences: preferences,
                             text: text,
                             cells: renderedCells,
                             selectedMonth: browsing.selectedYearMonth,
-                            calloutMonth: $browsing.yearCalloutMonth,
-                            selectedDate: $browsing.yearSelectionDate,
+                            onSelectMonth: { month in
+                                if browsing.selectedYearMonth != month { selectionFeedback += 1 }
+                                browsing.selectedYearMonth = month
+                            },
                             onOpenMonth: openMonth
-                        ) { month in
-                            if browsing.selectedYearMonth != month { selectionFeedback += 1 }
-                            browsing.selectedYearMonth = month
-                        }
+                        )
+                        monthSelectionRow(renderedCells)
+                        calendarLegend(renderedCells, style: .dots)
+                        entries([reportEntry(.year)])
+                    case .life:
+                        lifeCanvas(expandedPresentation: expandedPresentation)
                     }
-                    reportEntry(.year)
-                case .life:
-                    lifeCanvas(expandedPresentation: expandedPresentation)
-                }
                 }
                 .redacted(reason: chartIsLoading ? .placeholder : [])
                 .opacity(chartIsLoading ? 0.35 : 1)
@@ -655,6 +711,79 @@ struct RecordsDesignView: View {
         )
     }
 
+    /// The selected day, or today when nothing is selected and today is on screen.
+    private func selectedDayLook(_ cells: [RecordsDayCell]) -> RecordsDayLook? {
+        let cell = browsing.selectedDayKey.flatMap { key in cells.first { $0.dayKey == key } }
+            ?? cells.first(where: \.isToday)
+        return cell.map { RecordsDayLook($0, preferences: preferences) }
+    }
+
+    @ViewBuilder
+    private func daySelectionRow(_ cells: [RecordsDayCell]) -> some View {
+        if let look = selectedDayLook(cells) {
+            RecordsSelectionRow(
+                title: queries.formatRecordsDayTitle(look.cell.date),
+                subtitle: RecordsDayDescription.subtitle(look, text: text)
+            ) { openDay(look.cell) }
+        }
+    }
+
+    @ViewBuilder
+    private func monthSelectionRow(_ cells: [RecordsDayCell]) -> some View {
+        if let month = browsing.selectedYearMonth {
+            let monthCells = cells.filter { preferences.recordsCalendar.component(.month, from: $0.date) == month }
+            RecordsSelectionRow(
+                title: selectedMonthTitle(month),
+                subtitle: RecordsDayDescription.periodSubtitle(monthCells, preferences: preferences, text: text)
+            ) { openMonth(month) }
+        }
+    }
+
+    private func calendarLegend(_ cells: [RecordsDayCell], style: RecordsCalendarLegend.Style) -> some View {
+        let looks = cells.map { RecordsDayLook($0, preferences: preferences) }
+        return RecordsCalendarLegend(
+            text: text,
+            style: style,
+            showsHolidays: looks.contains(where: \.isHoliday),
+            showsMakeup: looks.contains(where: \.isMakeupWorkday)
+        )
+    }
+
+    @ViewBuilder
+    private func freeWindowNote(_ cells: [RecordsDayCell]) -> some View {
+        if !queries.plus.isAuthorized, cells.contains(where: { $0.appearance == .locked }) {
+            RecordsFreeWindowNote(text: text) { scene.paywallSheet = .charts }
+        }
+    }
+
+    /// Entry rows under the calendar, each on its own hairline.
+    private func entries(_ rows: [AnyView]) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                Divider()
+                row
+            }
+        }
+        .padding(.top, 12)
+    }
+
+    /// Year and Life for a free user: a blurred impression of the view and
+    /// one card that says what Plus adds.
+    private var lockedScalePreview: some View {
+        ZStack {
+            RecordsLockedPreviewArt(scale: browsing.scale)
+                .blur(radius: 8)
+                .opacity(0.4)
+                .accessibilityHidden(true)
+                .allowsHitTesting(false)
+            RecordsLockedCard(text: text) {
+                scene.paywallSheet = browsing.scale == .life ? .life : .charts
+            }
+            .padding(24)
+        }
+        .frame(minHeight: browsing.scale == .life ? 420 : 520)
+    }
+
     /// Plan 020: time off from the month a user is looking at. The first
     /// visit without any leave balance sets one up before the page opens.
     private var leavePlanningEntry: some View {
@@ -668,7 +797,7 @@ struct RecordsDesignView: View {
     /// wider than a play circle), so each sits in the same gutter and the
     /// titles start on one line.
     private func entryLabel(icon: String, titleKey: String) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             Image(systemName: icon)
                 .frame(width: entryIconWidth)
             Text(text.t(titleKey))
@@ -685,15 +814,15 @@ struct RecordsDesignView: View {
 
     /// Plan 020 §4: the week, month or year on screen, played as a report. It opens
     /// from here whether or not notifications are on.
-    private func reportEntry(_ kind: CycleReportKind) -> some View {
-        Button {
+    private func reportEntry(_ kind: CycleReportKind) -> AnyView {
+        AnyView(Button {
             scene.openCycleReport(CycleReportRequest(
                 period: queries.reportPeriod(kind, containing: browsing.anchor)
             ))
         } label: {
             entryLabel(icon: "play.circle", titleKey: kind.entryKey)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plain))
     }
 
     private func openLeavePlanning() {
@@ -702,18 +831,6 @@ struct RecordsDesignView: View {
         } else {
             scene.recordsPath.append(.leave)
         }
-    }
-
-    private var markLegend: some View {
-        VStack(alignment: .center, spacing: 4) {
-            RecordsMarkLegend(text: text, includesLock: !queries.plus.isAuthorized)
-            Text(text.t("recordsHeatScale"))
-                .font(.caption2)
-                .foregroundStyle(OWCDesign.secondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder
@@ -727,37 +844,120 @@ struct RecordsDesignView: View {
                 calendar: preferences.recordsCalendar,
                 now: now
             )
-            let stages = LifeStageCalculator.canvasStages(profileStages, now: now)
             if let bounds = LifeStageCalculator.timelineBounds(stages: profileStages, now: now) {
-                RecordsLifeCanvas(
+                lifeProgress(stages: profileStages, bounds: bounds, now: now)
+                    .padding(.bottom, 14)
+                RecordsLifeYears(
                     preferences: preferences,
                     text: text,
-                    stages: stages,
+                    stages: profileStages,
                     bounds: bounds,
-                    selectedStageID: browsing.selectedLifeStageID,
                     referenceDate: now,
-                    selectedDate: $browsing.lifeSelectionDate,
-                    showsStageLegend: !expandedPresentation
-                ) { stage in
-                    browsing.selectedLifeStageID = stage.id
-                    selectionFeedback += 1
-                }
+                    selectedDate: $browsing.lifeSelectionDate
+                )
+                lifeSelectionRow(stages: profileStages, bounds: bounds, now: now)
+                lifeStageList(profileStages)
+                    .padding(.top, 12)
             } else {
                 lifeSetupCard
             }
             if profile.retirementOn == nil, !expandedPresentation {
                 Button(text.t("lifeSetRetirement"), action: openLifeProfile)
                     .font(.footnote.weight(.semibold))
+                    .frame(minHeight: 44)
             }
         } else {
             lifeSetupCard
         }
     }
 
-    private func setExpanded(_ value: Bool) {
-        guard canExpand else { return }
-        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsExpansion) {
-            browsing.expanded[browsing.scale] = value
+    @ViewBuilder
+    private func lifeProgress(stages: [LifeStageSpan], bounds: (Date, Date), now: Date) -> some View {
+        let calendar = preferences.recordsCalendar
+        let work = stages.first { $0.kind == .work }
+        let retirement = stages.first { $0.kind == .retirement }?.start
+        if let retirement {
+            let progress = LifeStageCalculator.progress(from: bounds.0, to: retirement, at: now)
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(text.t("lifeProgressTitle"))
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(OWCDesign.secondary)
+                    Spacer()
+                    Text(text.formatPercent(progress * 100, fractionDigits: 0))
+                        .font(.subheadline.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(OWCDesign.accent)
+                }
+                OWCProgressCapsule(fraction: progress, color: OWCDesign.accent, height: 6)
+                    .padding(.top, 6)
+                if let start = work?.start {
+                    let elapsed = max(0, calendar.dateComponents([.year], from: start, to: now).year ?? 0)
+                    let remaining = max(0, calendar.dateComponents([.year], from: now, to: retirement).year ?? 0)
+                    Text(text.t("lifeCareerElapsed", values: [
+                        "elapsed": text.formatCount(elapsed), "remaining": text.formatCount(remaining),
+                    ]))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .padding(.top, 4)
+                }
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    private func lifeSelectionRow(stages: [LifeStageSpan], bounds: (Date, Date), now: Date) -> some View {
+        let calendar = preferences.recordsCalendar
+        let date = browsing.lifeSelectionDate ?? now
+        let age = max(0, calendar.dateComponents([.year], from: bounds.0, to: date).year ?? 0)
+        let currentAge = max(0, calendar.dateComponents([.year], from: bounds.0, to: now).year ?? 0)
+        let stage = LifeStageCalculator.stage(at: date, stages: stages)
+        var parts = [stage.map { text.t($0.kind.titleKey) } ?? text.t("lifeStageUnset")]
+        parts.append(text.t(age == currentAge ? "lifeStagePresent" : age < currentAge ? "lifeYearPast" : "lifeLegendProjected"))
+        if stage?.kind == .work, let start = stage?.start {
+            let number = (calendar.dateComponents([.year], from: start, to: date).year ?? 0) + 1
+            parts.append(text.t("lifeWorkYearNumber", values: ["count": text.formatCount(max(1, number))]))
+        }
+        return RecordsSelectionRow(
+            title: text.t("lifeYearAgeTitle", values: [
+                "year": text.formatYear(calendar.component(.year, from: date)),
+                "age": text.formatCount(age),
+            ]),
+            subtitle: parts.joined(separator: " · ")
+        )
+    }
+
+    private func lifeStageList(_ stages: [LifeStageSpan]) -> some View {
+        var seen = Set<LifeStageKind>()
+        let unique = stages.filter { $0.kind != .unset && seen.insert($0.kind).inserted }
+        return VStack(spacing: 0) {
+            ForEach(unique) { stage in
+                HStack(spacing: 10) {
+                    Circle().fill(stage.kind.owcColor).frame(width: 10, height: 10)
+                    Text(text.t(stage.kind.titleKey))
+                        .font(.subheadline)
+                        .foregroundStyle(OWCDesign.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(stageRange(stage, all: stages))
+                        .font(.footnote.monospacedDigit())
+                        .foregroundStyle(OWCDesign.secondary)
+                }
+                .frame(minHeight: 36)
+                .overlay(alignment: .top) { Divider() }
+                .accessibilityElement(children: .combine)
+            }
+        }
+    }
+
+    private func stageRange(_ stage: LifeStageSpan, all: [LifeStageSpan]) -> String {
+        let calendar = preferences.recordsCalendar
+        let end = all.last { $0.kind == stage.kind }?.end
+        let startYear = stage.start.map { text.formatYear(calendar.component(.year, from: $0)) }
+        let endYear = end.map { text.formatYear(calendar.component(.year, from: $0)) }
+        switch (startYear, endYear) {
+        case let (start?, end?): return OWCText.ltrRange(start, end)
+        case let (start?, nil): return "\(start) –"
+        case let (nil, end?): return "– \(end)"
+        default: return text.t("lifeUnset")
         }
     }
 
@@ -1110,165 +1310,5 @@ struct RecordsDesignView: View {
             browsing.selectedDayKey = nil
         }
         loadedSignature = signature
-    }
-}
-
-private struct LifeStageSheetItem: Identifiable {
-    var id: LifeStageKind { stage.kind }
-    var stage: LifeStageSpan
-}
-
-private struct LifeStageDetailSheet: View {
-    let records: RecordCoordinator
-    let preferences: PreferencesStore
-    let text: AppText
-    let stage: LifeStageSpan
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    HStack(spacing: 14) {
-                        Image(systemName: stage.kind.iconName)
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 48, height: 48)
-                            .background(OWCDesign.orangeDeep, in: Circle())
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(text.t(stage.kind.titleKey))
-                                .font(.title2.weight(.semibold))
-                            Text(rangeLabel)
-                                .font(.body)
-                                .foregroundStyle(OWCDesign.secondary)
-                        }
-                    }
-
-                    if let start = stage.start {
-                        let end = stage.end ?? .now
-                        let days = max(0, preferences.recordsCalendar.dateComponents([.day], from: start, to: end).day ?? 0)
-                        let elapsedDays = max(0, min(days, preferences.recordsCalendar.dateComponents([.day], from: start, to: .now).day ?? 0))
-                        let remainingDays = stage.end == nil ? nil : max(0, days - elapsedDays)
-                        let progress = LifeStageCalculator.progress(from: start, to: end, at: .now)
-
-                        OWCGroupCard {
-                            LazyVGrid(
-                                columns: [GridItem(.flexible()), GridItem(.flexible())],
-                                alignment: .leading,
-                                spacing: 10
-                            ) {
-                                detailMetric(
-                                    text.t("lifeStageDurationTitle"),
-                                    text.t("lifeStageDuration", values: [
-                                        "years": text.formatCount(days / 365),
-                                        "days": text.formatCount(days),
-                                    ])
-                                )
-                                detailMetric(text.t("lifeStageAgeRange"), ageRange(from: start, to: end))
-                                detailMetric(text.t("lifeStageElapsed"), text.formatDays(Double(elapsedDays)))
-                                detailMetric(
-                                    text.t("lifeStageRemaining"),
-                                    remainingDays.map { text.formatDays(Double($0)) } ?? "—"
-                                )
-                            }
-                            .padding(14)
-                        }
-
-                        if stage.end != nil {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Text(text.t("progress"))
-                                        .font(.footnote.weight(.semibold))
-                                        .foregroundStyle(OWCDesign.secondary)
-                                    Spacer()
-                                    Text(text.formatPercent(progress * 100, fractionDigits: 2))
-                                        .font(.footnote.weight(.semibold).monospacedDigit())
-                                        .foregroundStyle(OWCDesign.orangeDeep)
-                                }
-                                ProgressView(value: progress)
-                                    .tint(OWCDesign.orangeDeep)
-                            }
-                        }
-
-                        Text(text.t("lifeWeeksUnit", values: ["count": text.formatCount(days / 7)]))
-                            .font(.body.weight(.medium))
-
-                        if let stageEnd = stage.end, let bounds = timelineBounds {
-                            let span = bounds.1.timeIntervalSince(bounds.0)
-                            if span > 0 {
-                                let share = stageEnd.timeIntervalSince(start) / span * 100
-                                Text(text.t("lifeStageShare", values: ["percent": text.formatPercent(share)]))
-                                    .font(.body)
-                            }
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        if stage.startPrecision != nil {
-                            Text(text.t(stage.startPrecision == .year ? "lifePrecisionYear" : "lifePrecisionDay"))
-                        }
-                        if stage.endPrecision != nil, stage.endPrecision != stage.startPrecision {
-                            Text(text.t(stage.endPrecision == .year ? "lifePrecisionYear" : "lifePrecisionDay"))
-                        }
-                    }
-                    .font(.footnote)
-                    .foregroundStyle(OWCDesign.tertiary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(20)
-            }
-            .background(OWCDesign.page)
-            .navigationTitle(text.t(stage.kind.titleKey))
-            .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-
-    private var timelineBounds: (Date, Date)? {
-        guard let profile = records.state.lifeProfile else { return nil }
-        return LifeStageCalculator.timelineBounds(
-            stages: LifeStageCalculator.stages(profile: profile, calendar: preferences.recordsCalendar),
-            now: .now
-        )
-    }
-
-    private func ageRange(from start: Date, to end: Date) -> String {
-        guard let profile = records.state.lifeProfile else { return "—" }
-        var resolved = profile
-        resolved.migrateLegacyFields(calendar: preferences.recordsCalendar)
-        guard let birth = resolved.bornOn?.calculationAnchor(in: preferences.recordsCalendar) else { return "—" }
-        let startAge = max(0, preferences.recordsCalendar.dateComponents([.year], from: birth, to: start).year ?? 0)
-        let endAge = max(startAge, preferences.recordsCalendar.dateComponents([.year], from: birth, to: end).year ?? startAge)
-        return "\(text.formatCount(startAge))–\(text.formatCount(endAge))"
-    }
-
-    private func detailMetric(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(value)
-                .font(.body.weight(.semibold).monospacedDigit())
-                .foregroundStyle(OWCDesign.primary)
-                .lineLimit(2)
-                .minimumScaleFactor(0.75)
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(OWCDesign.secondary)
-        }
-        .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
-        .padding(12)
-        .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
-    }
-
-    private var rangeLabel: String {
-        let calendar = preferences.recordsCalendar
-        let startYear = stage.start.map { text.formatYear(calendar.component(.year, from: $0)) }
-        let endYear = stage.end.map { text.formatYear(calendar.component(.year, from: $0)) }
-        switch (startYear, endYear) {
-        case (nil, nil):
-            return text.t("lifeUnset")
-        case (let start?, let end?):
-            return text.t("weekdayRange", values: ["start": start, "end": end])
-        case (let start?, nil):
-            return start
-        case (nil, let end?):
-            return end
-        }
     }
 }

@@ -25,34 +25,42 @@ enum OWCDesign {
     })
     static let warning = Color(uiColor: .systemOrange)
 
+    // Life stages: warm childhood, cyan school, indigo work (the same indigo
+    // as work hours everywhere in Records) and green after retirement.
     static let lifeChildhood = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.62, green: 0.72, blue: 0.86, alpha: 1)
-            : UIColor(red: 0.45, green: 0.58, blue: 0.76, alpha: 1)
+            ? UIColor(red: 0.96, green: 0.73, blue: 0.31, alpha: 1)
+            : UIColor(red: 0.91, green: 0.64, blue: 0.24, alpha: 1)
     })
     static let lifeStudy = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.55, green: 0.78, blue: 0.68, alpha: 1)
-            : UIColor(red: 0.32, green: 0.58, blue: 0.50, alpha: 1)
+            ? UIColor(red: 0.25, green: 0.78, blue: 0.88, alpha: 1)
+            : UIColor(red: 0.19, green: 0.69, blue: 0.78, alpha: 1)
     })
-    static let lifeWork = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.86, green: 0.64, blue: 0.38, alpha: 1)
-            : UIColor(red: 0.72, green: 0.48, blue: 0.20, alpha: 1)
-    })
-    static let lifeRetirement = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.70, green: 0.68, blue: 0.78, alpha: 1)
-            : UIColor(red: 0.52, green: 0.50, blue: 0.62, alpha: 1)
-    })
+    static let lifeWork = Color(uiColor: .systemIndigo)
+    static let lifeRetirement = Color(uiColor: .systemGreen)
     static let lifeUnset = Color(uiColor: .tertiarySystemFill)
 
     static let recordsWork = Color(uiColor: .systemIndigo)
     static let recordsOvertime = Color(uiColor: .systemOrange)
-    static let recordsBreak = Color(uiColor: .systemTeal)
-    static let recordsSleep = Color(uiColor: .systemBlue)
-    static let recordsFree = Color(uiColor: .systemPurple)
+    static let recordsBreak = Color(uiColor: UIColor { traits in
+        UIColor.systemIndigo.resolvedColor(with: traits)
+            .withAlphaComponent(traits.userInterfaceStyle == .dark ? 0.45 : 0.38)
+    })
+    static let recordsSleep = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.28, green: 0.28, blue: 0.29, alpha: 1)
+            : UIColor(red: 0.82, green: 0.82, blue: 0.84, alpha: 1)
+    })
+    static let recordsFree = Color(uiColor: .systemGreen)
     static let recordsUnclassified = Color(uiColor: .systemGray2)
+    /// A public holiday's rest days. Text-weight green in light mode so a
+    /// 9 pt holiday name stays readable on white.
+    static let recordsHoliday = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.19, green: 0.82, blue: 0.35, alpha: 1)
+            : UIColor(red: 0.14, green: 0.54, blue: 0.24, alpha: 1)
+    })
 
     static let cardRadius: CGFloat = 22
     static let controlRadius: CGFloat = 14

@@ -18,7 +18,7 @@ struct PlusFeatureStage: View {
     var body: some View {
         VStack(spacing: 16) {
             (dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))) {
-                tab(0, "chart.bar.xaxis", "reportEntryTitle")
+                tab(0, "chart.bar.xaxis", "reportEntryShort")
                 tab(1, "sun.horizon", "leavePlanAction")
                 if showsFocus { tab(2, "timer", "plusBenefitFocus") }
             }
@@ -65,6 +65,7 @@ struct PlusFeatureStage: View {
                 in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(text.t(value == 0 ? "reportEntryTitle" : titleKey))
         .accessibilityAddTraits(selection == value ? .isSelected : [])
     }
 }

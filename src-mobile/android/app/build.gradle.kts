@@ -15,7 +15,7 @@ android {
         targetSdk = 36
         // Play uploads need a higher code each time; the release workflow passes one in.
         versionCode = providers.gradleProperty("doneatVersionCode").orNull?.toInt() ?: 5
-        versionName = "3.2.1"
+        versionName = "3.2.2"
         // Public Play configuration only. Empty values keep the store unavailable.
         val plusProduct = providers.gradleProperty("doneatPlusSubscriptionProduct").orElse("").get()
         val lifetimeProduct = providers.gradleProperty("doneatPlusLifetimeProduct").orElse("").get()

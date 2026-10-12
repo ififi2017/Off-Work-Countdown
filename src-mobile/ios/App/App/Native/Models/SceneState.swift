@@ -807,6 +807,7 @@ extension RecordsRoute {
         switch (parts.first, parts.count > 1 ? parts[1] : nil) {
         case ("allRecords", _): return .allRecords
         case ("conflicts", _): return .conflictCenter
+        case ("leave", _): return .leave
         case ("day", let key?): return .day(key)
         default: return nil
         }

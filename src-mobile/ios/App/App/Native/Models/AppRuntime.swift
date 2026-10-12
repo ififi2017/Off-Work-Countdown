@@ -255,6 +255,29 @@ final class AppRuntime {
         if debugRecordsScale != nil {
             _ = debug.debugSeedSampleRecords()
         }
+        // Holiday marks only show with an extended schedule and a region.
+        // `-ios.native.qaHolidayRegion CN` turns on a Monday–Friday plan that
+        // follows that region's public holidays.
+        if let region = defaults.string(forKey: "ios.native.qaHolidayRegion"), !region.isEmpty,
+           self.records.state.extendedSchedule?.content.holidayRegionIdentifier != region {
+            let work = UUID(uuidString: "00000000-0000-0000-0000-000000000301")!
+            let rest = UUID(uuidString: "00000000-0000-0000-0000-000000000302")!
+            let types = [(work, ShiftType.Kind.work), (rest, ShiftType.Kind.rest)].map { id, kind in
+                ShiftType(id: id, name: kind == .work ? "Office" : "Rest", kind: kind,
+                          startMinutes: 540, endMinutes: 1080, breakEnabled: true,
+                          breakStartMinutes: 720, breakDurationMinutes: 60, colorHex: "#5856D6", isArchived: false)
+            }
+            _ = self.records.updateExtendedSchedule(
+                content: ExtendedScheduleContent(
+                    shiftTypes: types,
+                    rule: ShiftCycleRule(preset: .weekly, anchorDayKey: "2026-01-05",
+                                         days: [work, work, work, work, work, rest, rest]),
+                    holidayRegionIdentifier: region
+                ),
+                enabled: true,
+                timeZoneIdentifier: preferences.recordsTimeZone.identifier
+            )
+        }
         if let debugScenario {
             debug.activateDebugTimerScenario(debugScenario)
         }
