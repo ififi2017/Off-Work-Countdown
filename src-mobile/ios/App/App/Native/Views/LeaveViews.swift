@@ -735,12 +735,7 @@ private struct LeavePlannerSheet: View {
                         get: { selected.contains(balance.id) },
                         set: { if $0 { selected.insert(balance.id) } else { selected.remove(balance.id) } }
                     )) {
-                        (Text(shifts.leaveBalanceName(balance)) + Text("  ")
-                            + Text([text.t("leaveAvailable", values: ["count": text.formatDays(Double(available) / 2)]),
-                                    balance.validThroughDayKey.map {
-                                        text.t("leaveValidUntilDate", values: ["date": shifts.leaveDayLabel(dayKey: $0, template: "MMMd")])
-                                    }].compactMap { $0 }.joined(separator: " · "))
-                                .foregroundStyle(OWCDesign.secondary))
+                        Text(balanceToggleLabel(balance, available: available))
                             .monospacedDigit()
                     }
                     .tint(OWCDesign.accent)
@@ -785,6 +780,20 @@ private struct LeavePlannerSheet: View {
                 }
             }
         }
+    }
+
+    /// "Annual leave  7 days left · Expires Dec 31", the details in secondary.
+    private func balanceToggleLabel(_ balance: LeaveBalance, available: Int) -> AttributedString {
+        var label = AttributedString(shifts.leaveBalanceName(balance) + "  ")
+        var details = AttributedString([
+            text.t("leaveAvailable", values: ["count": text.formatDays(Double(available) / 2)]),
+            balance.validThroughDayKey.map {
+                text.t("leaveValidUntilDate", values: ["date": shifts.leaveDayLabel(dayKey: $0, template: "MMMd")])
+            },
+        ].compactMap { $0 }.joined(separator: " · "))
+        details.foregroundColor = OWCDesign.secondary
+        label.append(details)
+        return label
     }
 
     /// The result set was authorized when the search completed. Browsing

@@ -865,13 +865,22 @@ struct RecordsFreeWindowNote: View {
     let text: AppText
     var onUnlock: () -> Void
 
+    /// The note in the secondary colour, its action in semibold accent.
+    private var message: AttributedString {
+        var note = AttributedString(text.t("recordsFreeWindowNote") + " ")
+        var action = AttributedString(text.t("recordsFreeWindowAction"))
+        action.font = .footnote.weight(.semibold)
+        action.foregroundColor = OWCDesign.accent
+        note.append(action)
+        return note
+    }
+
     var body: some View {
         Button(action: onUnlock) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Image(systemName: "lock.fill")
                     .font(.caption2)
-                (Text(text.t("recordsFreeWindowNote")) + Text(" ")
-                    + Text(text.t("recordsFreeWindowAction")).fontWeight(.semibold).foregroundStyle(OWCDesign.accent))
+                Text(message)
                     .font(.footnote)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
