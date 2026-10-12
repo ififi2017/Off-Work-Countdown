@@ -39,23 +39,32 @@ const run=(cmd,args)=>new Promise((resolve,reject)=>{const c=spawn(cmd,args,{std
 // Copy comes from the reviewed V4 tour lines: [countdown, widgets, records, leave].
 const SCENES=[
  {key:'timer',copy:0,layout:'stack',video:true,inPoint:0.2,bg:'#f2f2f7',
-  pieces:[{key:[0,400,1320,420],show:[0,400,1320,2468],radius:56}]},
- {key:'widgets',copy:1,layout:'side',video:true,inPoint:0.2,bg:'#3a2a3f',
-  pieces:[{key:[296,906,730,594],show:[296,822,884,960],radius:66}]},
+  pieces:[{key:[0,372,1320,448],show:[0,372,1320,2496],radius:56}]},
+ // The widget, centred, with its Home Screen wallpaper bleeding out sideways.
+ {key:'widgets',copy:1,layout:'stack',align:'center',video:true,inPoint:0.2,bg:'#3a2a3f',
+  pieces:[{key:[330,930,662,536],show:[140,930,1040,852],radius:66}]},
+ // Month header, weekdays and the two weeks before this one: regular days,
+ // overtime (Oct 6, 8), a day of leave (Oct 9) and weekend rest. Marked cells
+ // are found in the capture (creative-marks.py) and fill in reading order.
  {key:'records',copy:3,layout:'stack',bg:'#ffffff',
-  pieces:[{key:[53,905,1214,440],show:[53,905,1214,1060],radius:44}],
-  // Solid "recorded" bars under Oct 1–2 and Oct 5–9, filled in order.
-  fill:[[793,1127,56,12],[954,1127,56,12],[310,1313,56,12],[471,1313,56,12],[632,1313,56,12],[793,1313,56,12],[954,1313,56,12]]},
+  pieces:[{key:[53,725,1214,620],show:[53,725,1214,1000],radius:44}],
+  reveal:{strips:[[1105,1155],[1290,1340]],start:1.2,step:.32}},
+ // The plan's cost and result, then the two calendar rows the whole run
+ // spans (Monday-first weeks), with its "9 days off in a row" label. The
+ // run's days light up in order.
  {key:'leave',copy:5,layout:'stack',bg:'#ffffff',
-  // The plan's cost and result, then the week the run spans. The run row is
-  // cut below the "9 days…" pill, which truncates in English.
-  pieces:[{key:[53,500,1214,262],show:[53,490,1214,290],radius:44},{key:[53,1196,1214,214],show:[53,1196,1214,560],radius:44,gap:44}],
-  // The run's days light up one by one: Sep 27–Oct 3, then Oct 4 on the next row.
-  light:[...Array.from({length:7},(_,d)=>d?[100+d*160,1292,160,100]:[60,1292,200,100]),[60,1600,240,75]]},
+  pieces:[{key:[53,515,1214,165],show:[53,500,1214,190],radius:44},{key:[53,1020,1214,375],show:[53,1020,1214,770],radius:44,gap:36}],
+  reveal:{strips:[[1140,1192],[1290,1390]],start:1.2,step:.26}},
 ];
 const CENTERS=[6,12,18,23.5],HALF=0.5;
 const languages=(process.env.IOS_SHOTS_LANGUAGE||'en,zh-CN').split(',');
 const NOTE={'zh-CN':'界面为演示数据',en:'Illustrative data'};
+// Headlines that replace a reviewed V4 line for this video only. The V4 English
+// countdown line was too long to set near the Chinese size on one line.
+const LINES={en:{0:['Know when','you’re done.']}};
+// A headline that has to shrink below this share of full size is flagged in
+// the manifest and the log, so long translations are caught before review.
+const SHRINK_FLAG=.85;
 
 async function prepare(lang){
  const sources=[];
@@ -74,19 +83,20 @@ async function prepare(lang){
    }
    Object.assign(entry,{recording:`${lang}-${s.key}.mov`,recordingSHA256:sha(mov),inPoint:s.inPoint,nativeDuration});
   }
+  if(s.reveal)entry.reveal=JSON.parse(execFileSync('python3',[join(dir,'creative-marks.py'),png,JSON.stringify({x:53,width:1214,strips:s.reveal.strips})],{encoding:'utf8'}));
   sources.push(entry);
  }
  return sources;
 }
 
-function html(lang){
+function html(lang,sources){
  const font=posterFonts(lang),c=COPY[lang].tour,tall=['ar','th','hi-IN','mr-IN'].includes(lang),cjk=['zh-CN','zh-TW','ja','ko'].includes(lang);
  const scenes=SCENES.map((s,i)=>{
-  const [a,b]=c[s.copy].lines.length>2?[c[s.copy].lines.slice(0,-1).join(' '),c[s.copy].lines.at(-1)]:c[s.copy].lines;
+  const [a,b]=LINES[lang]?.[i]??(c[s.copy].lines.length>2?[c[s.copy].lines.slice(0,-1).join(' '),c[s.copy].lines.at(-1)]:c[s.copy].lines);
   const ink=s.layout==='stack'?`<div class="line"><div class="ink">${a} <span class="accent">${b}</span></div></div>`
    :`<div class="line"><div class="ink">${a}</div></div><div class="line"><div class="ink accent">${b}</div></div>`;
   const src=s.video?`<video muted playsinline preload="auto" src="${pathToFileURL(join(out,`${lang}-${s.key}-clip.mp4`)).href}"></video>`:`<img src="${pathToFileURL(join(raw,`${lang}-${s.key}.png`)).href}">`;
-  const pieces=s.pieces.map((p,j)=>`<div class="piece" style="background:${s.bg}"><div class="native">${src}${j===0?(s.fill||[]).map(()=>'<i class="mask fill"></i>').join(''):''}${s.light&&j===1?s.light.map(()=>'<i class="mask light"></i>').join(''):''}</div></div>`).join('');
+  const pieces=s.pieces.map((p,j)=>`<div class="piece" style="background:${s.bg}"><div class="native">${src}${(sources[i].reveal||[]).map((r,q)=>r[1]>=p.show[1]&&r[1]<p.show[1]+p.show[3]?`<i class="mask" data-q="${q}" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px"></i>`:'').join('')}</div></div>`).join('');
   return `<section id="s${i}" class="scene ${s.layout}"><h1>${ink}</h1><div class="hero">${pieces}<div class="key"></div></div></section>`;
  }).join('');
  return `<!doctype html><meta charset="utf-8"><style>${font.css}
@@ -104,12 +114,12 @@ h1{position:absolute;margin:0;font-family:${font.serif};font-weight:700;line-hei
 .key{position:absolute;pointer-events:none}
 .note{position:absolute;right:28px;bottom:22px;font-size:15px;color:#a39686;letter-spacing:.2px}
 </style><div class="glow"></div>${scenes}<div class="note">${NOTE[lang]??COPY[lang].note}</div><script>
-const SAFE=${JSON.stringify(SAFE)},AREA=${JSON.stringify({L,T,R,B})},SCENES=${JSON.stringify(SCENES)},CENTERS=${JSON.stringify(CENTERS)},HALF=${HALF},MAX=${JSON.stringify({stack:cjk?104:88,side:cjk?100:84})};
+const REVEAL=${JSON.stringify(sources.map(x=>x.reveal||[]))},SAFE=${JSON.stringify(SAFE)},AREA=${JSON.stringify({L,T,R,B})},SCENES=${JSON.stringify(SCENES)},CENTERS=${JSON.stringify(CENTERS)},HALF=${HALF},MAX=${JSON.stringify({stack:cjk?104:88,side:cjk?100:84})};
 const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10)};
 function fit(h1,width,max){let n=max;h1.style.fontSize=n+'px';const lines=[...h1.querySelectorAll('.ink')];while(lines.some(e=>e.getBoundingClientRect().width>width)&&n>30){n-=1;h1.style.fontSize=n+'px';}return n;}
 // Lay out once: headline at the top of the safe area (stack) or left of the
 // hero (side); hero scaled to the room left, never above native resolution.
-window.layoutReady=document.fonts.ready.then(()=>{
+window.shrink=[];window.layoutReady=document.fonts.ready.then(()=>{
  const G=28;
  SCENES.forEach((s,i)=>{
   const sec=document.getElementById('s'+i),h1=sec.querySelector('h1'),hero=sec.querySelector('.hero');sec.style.visibility='visible';
@@ -117,12 +127,12 @@ window.layoutReady=document.fonts.ready.then(()=>{
   const kx0=Math.min(...s.pieces.map(p=>p.key[0])),kw=Math.max(...s.pieces.map(p=>p.key[0]+p.key[2]))-kx0,kh=oy;
   let scale,left,top;
   if(s.layout==='stack'){
-   fit(h1,AREA.R-AREA.L,MAX.stack);Object.assign(h1.style,{left:AREA.L+'px',top:AREA.T+'px'});
+   window.shrink[i]=fit(h1,AREA.R-AREA.L,MAX.stack)/MAX.stack;Object.assign(h1.style,{left:AREA.L+'px',top:AREA.T+'px'});
    top=Math.ceil(h1.getBoundingClientRect().bottom+G);
-   scale=Math.min(1,(AREA.R-AREA.L)/kw,(AREA.B-top)/kh);left=AREA.L;
+   scale=Math.min(1,(AREA.R-AREA.L)/kw,(AREA.B-top)/kh);left=s.align==='center'?(AREA.L+AREA.R-kw*scale)/2:AREA.L;
   }else{
    scale=Math.min(1,(AREA.B-AREA.T)/kh);left=AREA.R-kw*scale;top=AREA.T;
-   fit(h1,left-G*2-AREA.L,MAX.side);const hh=h1.getBoundingClientRect().height;Object.assign(h1.style,{left:AREA.L+'px',top:Math.round((AREA.T+AREA.B-hh)/2)+'px'});
+   window.shrink[i]=fit(h1,left-G*2-AREA.L,MAX.side)/MAX.side;const hh=h1.getBoundingClientRect().height;Object.assign(h1.style,{left:AREA.L+'px',top:Math.round((AREA.T+AREA.B-hh)/2)+'px'});
   }
   Object.assign(hero.style,{left:left+'px',top:top+'px',width:kw*scale+'px',height:kh*scale+'px'});
   Object.assign(hero.querySelector('.key').style,{left:0,top:0,width:kw*scale+'px',height:kh*scale+'px'});
@@ -132,8 +142,6 @@ window.layoutReady=document.fonts.ready.then(()=>{
    const el=hero.querySelectorAll('.piece')[j],[sx,sy,sw,sh]=p.show;
    Object.assign(el.style,{left:(sx-kx0)*scale+'px',top:(rects[j].y+(sy-p.key[1]))*scale+'px',width:sw*scale+'px',height:sh*scale+'px',borderRadius:p.radius*scale+'px'});
    const n=el.querySelector('.native');n.style.transform='scale('+scale+') translate('+(-sx)+'px,'+(-sy)+'px)';
-   n.querySelectorAll('.fill').forEach((m,q)=>{const[x,y,w,h]=s.fill[q];Object.assign(m.style,{left:x-6+'px',top:y-6+'px',width:w+12+'px',height:h+12+'px'});});
-   n.querySelectorAll('.light').forEach((l,q)=>{const[x,y,w,h]=s.light[q];Object.assign(l.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});});
   });
   sec.style.visibility='';
  });
@@ -158,9 +166,8 @@ window.render=async t=>{
   const hero=sec.querySelector('.hero'),o=out?1-ease(u/.5):inn?ease((u-.4)/.6):1,push=.985+.035*ease(clamp(tl/7));
   hero.style.opacity=o;hero.style.transform='scale('+push+')';
   sec.style.zIndex=inn?2:1;
-  sec.querySelectorAll('.fill').forEach((m,q2)=>{const p=ease((tl-1.3-q2*.3)/.45),[x,,w]=s.fill[q2];m.style.left=(x-6+(w+12)*p)+'px';m.style.width=((w+12)*(1-p))+'px';});
-  // Each day of the run lights up in turn with a quick wipe.
-  sec.querySelectorAll('.light').forEach((l,q)=>{const[x,,w]=s.light[q],p=ease((tl-1.4-q*.32)/.22);l.style.left=(x+w*p)+'px';l.style.width=(w*(1-p))+'px';});
+  // Marked cells uncover left to right, one after another, in reading order.
+  if(s.reveal)sec.querySelectorAll('.mask').forEach(m=>{const q=+m.dataset.q,p=ease((tl-s.reveal.start-q*s.reveal.step)/.24),[x,,w]=REVEAL[i][q];m.style.left=(x+w*p)+'px';m.style.width=(w*(1-p))+'px';});
   sec.querySelectorAll('video').forEach(v=>jobs.push(seek(v,tl)));
  });
  const g=(1-Math.cos(t*Math.PI/12))/2;document.querySelector('.glow').style.transform='translate('+(-70*g)+'px,'+(-30*g)+'px)';
@@ -193,8 +200,10 @@ let items=existsSync(manifestPath)?JSON.parse(readFileSync(manifestPath,'utf8'))
 const r=await renderer();
 try{for(const lang of languages){
  const sources=await prepare(lang),name=`${lang}-search-video-3.2.2`,htmlPath=join(out,name+'.html'),file=join(out,name+'.mp4');
- writeFileSync(htmlPath,html(lang));await r.load(htmlPath,W,H);
+ writeFileSync(htmlPath,html(lang,sources));await r.load(htmlPath,W,H);
  await r.evaluate(`window.layoutReady.then(()=>Promise.all([...document.querySelectorAll('video')].map(v=>v.readyState>=2?0:new Promise((ok,no)=>{v.addEventListener('loadeddata',ok,{once:true});v.addEventListener('error',()=>no(Error('decode failed: '+v.src)),{once:true});}))))`);
+ const shrink=await r.evaluate('window.shrink'),flagged=shrink.map((v,i)=>({scene:SCENES[i].key,headlineScale:+v.toFixed(3)})).filter(x=>x.headlineScale<SHRINK_FLAG);
+ if(flagged.length)console.warn(`${lang}: headline shrinks below ${SHRINK_FLAG*100}% in ${flagged.map(x=>`${x.scene} (${Math.round(x.headlineScale*100)}%)`).join(', ')}; consider a shorter line`);
  const audits=[];
  for(const t of STILLS){await r.evaluate(`render(${t})`);audits.push({time:t,...await r.evaluate('layoutAudit()')});writeFileSync(join(out,`${name}-${t.toFixed(2)}.png`),await r.grab());}
  if(process.argv.includes('--stills')){console.log('stills '+name);continue;}
@@ -206,7 +215,7 @@ try{for(const lang of languages){
  const v=probe.streams.find(s=>s.codec_type==='video');
  if(probe.streams.length!==1||v.width!==W||v.height!==H||v.r_frame_rate!==`${FPS}/1`||Number(v.nb_frames)!==DURATION*FPS||v.pix_fmt!=='yuv420p')throw Error('spec mismatch '+JSON.stringify(probe));
  const item={locale:lang,ascLocale:COPY[lang].asc,file:name+'.mp4',width:W,height:H,fps:FPS,duration:DURATION,frames:DURATION*FPS,audio:false,sha256:sha(file),
-  validatedFrames:await r.evaluate('window.validatedFrames'),safeArea:SAFE,template:TEMPLATE,stillAudits:audits.map(a=>({time:a.time,minHeadline:a.minHeadline,issues:a.issues})),sources,status:'local-not-uploaded'};
+  validatedFrames:await r.evaluate('window.validatedFrames'),headlineScale:shrink.map(v=>+v.toFixed(3)),shrinkFlagged:flagged,safeArea:SAFE,template:TEMPLATE,stillAudits:audits.map(a=>({time:a.time,minHeadline:a.minHeadline,issues:a.issues})),sources,status:'local-not-uploaded'};
  items=items.filter(x=>x.locale!==lang);items.push(item);
  writeFileSync(manifestPath,JSON.stringify({createdAt:new Date().toISOString(),uploaded:false,items},null,2)+'\n');console.log('Completed '+name);
 }}finally{await r.close();}

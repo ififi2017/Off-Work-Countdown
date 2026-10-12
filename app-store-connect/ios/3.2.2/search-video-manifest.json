@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-10-12T08:24:19.615Z",
+  "createdAt": "2026-10-12T08:44:06.314Z",
   "uploaded": false,
   "items": [
     {
@@ -12,8 +12,15 @@
       "duration": 24,
       "frames": 720,
       "audio": false,
-      "sha256": "2b543ce6043ac3478ac2809344171bfeef63b85488c4bf049eb1bdde13251207",
+      "sha256": "511fd752963ad270e29f184929ec37c33f08b815e676514a2a5a5ccc0694da79",
       "validatedFrames": 737,
+      "headlineScale": [
+        1,
+        1,
+        1,
+        0.92
+      ],
+      "shrinkFlagged": [],
       "safeArea": {
         "x": 418,
         "y": 382.5,
@@ -37,27 +44,27 @@
       "stillAudits": [
         {
           "time": 0,
-          "minHeadline": 69,
+          "minHeadline": 88,
           "issues": []
         },
         {
           "time": 1.5,
-          "minHeadline": 69,
+          "minHeadline": 88,
           "issues": []
         },
         {
           "time": 3,
-          "minHeadline": 69,
+          "minHeadline": 88,
           "issues": []
         },
         {
           "time": 4.5,
-          "minHeadline": 69,
+          "minHeadline": 88,
           "issues": []
         },
         {
           "time": 5.75,
-          "minHeadline": 69,
+          "minHeadline": 88,
           "issues": []
         },
         {
@@ -67,17 +74,17 @@
         },
         {
           "time": 6.25,
-          "minHeadline": 61,
+          "minHeadline": 88,
           "issues": []
         },
         {
           "time": 8,
-          "minHeadline": 61,
+          "minHeadline": 88,
           "issues": []
         },
         {
           "time": 10,
-          "minHeadline": 61,
+          "minHeadline": 88,
           "issues": []
         },
         {
@@ -117,7 +124,7 @@
         },
         {
           "time": 23.9,
-          "minHeadline": 69,
+          "minHeadline": 88,
           "issues": []
         }
       ],
@@ -143,12 +150,112 @@
         {
           "scene": "records",
           "capture": "en-records.png",
-          "captureSHA256": "71ede60b4cd49b785070043b4acedc9426856c7d568bf7092847fdc5c581cb74"
+          "captureSHA256": "6349b1830481ba1d10fee151caac91c8ca63dec684f2cbeb0b7f26e8e3918d65",
+          "reveal": [
+            [
+              573,
+              1105,
+              174,
+              50
+            ],
+            [
+              747,
+              1105,
+              173,
+              50
+            ],
+            [
+              53,
+              1290,
+              173,
+              50
+            ],
+            [
+              226,
+              1290,
+              174,
+              50
+            ],
+            [
+              400,
+              1290,
+              173,
+              50
+            ],
+            [
+              573,
+              1290,
+              174,
+              50
+            ]
+          ]
         },
         {
           "scene": "leave",
           "capture": "en-leave.png",
-          "captureSHA256": "7e05abe2411583c303c6b413ce0871c0cef5ac7fdcf4e3ce7df97ecf628b3d0e"
+          "captureSHA256": "cda458d2da8a1abc8fbf28fed8176ec40438ee3759b37862a833aedf20025c23",
+          "reveal": [
+            [
+              747,
+              1140,
+              173,
+              52
+            ],
+            [
+              920,
+              1140,
+              174,
+              52
+            ],
+            [
+              1094,
+              1140,
+              173,
+              52
+            ],
+            [
+              53,
+              1290,
+              173,
+              100
+            ],
+            [
+              226,
+              1290,
+              174,
+              100
+            ],
+            [
+              400,
+              1290,
+              173,
+              100
+            ],
+            [
+              573,
+              1290,
+              174,
+              100
+            ],
+            [
+              747,
+              1290,
+              173,
+              100
+            ],
+            [
+              920,
+              1290,
+              174,
+              100
+            ],
+            [
+              1094,
+              1290,
+              173,
+              100
+            ]
+          ]
         }
       ],
       "status": "local-not-uploaded"
@@ -163,8 +270,15 @@
       "duration": 24,
       "frames": 720,
       "audio": false,
-      "sha256": "110c0e09688dfc1ac17ce57be0e0b97bfa7eda8f687eaa856d0ba41b576aae36",
+      "sha256": "8a71325314c6840a7eb8ff2a93da8c83275867469fd6f519f6c310d1644fe4fe",
       "validatedFrames": 737,
+      "headlineScale": [
+        0.981,
+        0.981,
+        0.894,
+        0.894
+      ],
+      "shrinkFlagged": [],
       "safeArea": {
         "x": 418,
         "y": 382.5,
@@ -208,32 +322,32 @@
         },
         {
           "time": 5.75,
-          "minHeadline": 80,
+          "minHeadline": 102,
           "issues": []
         },
         {
           "time": 6,
-          "minHeadline": 80,
+          "minHeadline": 102,
           "issues": []
         },
         {
           "time": 6.25,
-          "minHeadline": 80,
+          "minHeadline": 102,
           "issues": []
         },
         {
           "time": 8,
-          "minHeadline": 80,
+          "minHeadline": 102,
           "issues": []
         },
         {
           "time": 10,
-          "minHeadline": 80,
+          "minHeadline": 102,
           "issues": []
         },
         {
           "time": 12,
-          "minHeadline": 80,
+          "minHeadline": 93,
           "issues": []
         },
         {
@@ -294,12 +408,112 @@
         {
           "scene": "records",
           "capture": "zh-CN-records.png",
-          "captureSHA256": "1d69ad64ded7e5211bb85d1ddda58a71922bc0054bf23107867b802672f6cf83"
+          "captureSHA256": "c49e976366e34057627c15fbb557211444c624904483175c0c67f46db548fd63",
+          "reveal": [
+            [
+              573,
+              1105,
+              174,
+              50
+            ],
+            [
+              747,
+              1105,
+              173,
+              50
+            ],
+            [
+              53,
+              1290,
+              173,
+              50
+            ],
+            [
+              226,
+              1290,
+              174,
+              50
+            ],
+            [
+              400,
+              1290,
+              173,
+              50
+            ],
+            [
+              573,
+              1290,
+              174,
+              50
+            ]
+          ]
         },
         {
           "scene": "leave",
           "capture": "zh-CN-leave.png",
-          "captureSHA256": "c72b0bd73f02e47deabeab07e512ed5ac00e8bb995e4ed38c3931e1d38679f00"
+          "captureSHA256": "2d015f4f1143533abd1682886dd94616aca36c1c1939436866613871f1a1b754",
+          "reveal": [
+            [
+              747,
+              1140,
+              173,
+              52
+            ],
+            [
+              920,
+              1140,
+              174,
+              52
+            ],
+            [
+              1094,
+              1140,
+              173,
+              52
+            ],
+            [
+              53,
+              1290,
+              173,
+              100
+            ],
+            [
+              226,
+              1290,
+              174,
+              100
+            ],
+            [
+              400,
+              1290,
+              173,
+              100
+            ],
+            [
+              573,
+              1290,
+              174,
+              100
+            ],
+            [
+              747,
+              1290,
+              173,
+              100
+            ],
+            [
+              920,
+              1290,
+              174,
+              100
+            ],
+            [
+              1094,
+              1290,
+              173,
+              100
+            ]
+          ]
         }
       ],
       "status": "local-not-uploaded"

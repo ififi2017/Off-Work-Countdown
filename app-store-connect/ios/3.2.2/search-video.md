@@ -20,10 +20,18 @@ for 3.2.2 because Records and Time off were redesigned.
   the unfinished 3.2.1 V5 shrank V4 into the safe area and the UI got too small.
 - Heroes are native pixels at or below capture resolution (no upscaling):
   live ticking countdown and widget recordings, the 3.2.2 month calendar
-  (two weeks, recorded days fill in order) and the 3.2.2 plan screen (plan
-  result, then the run's days light up one by one).
+  (month header plus the two previous weeks: regular days, overtime on two
+  days, a day of leave and weekend rest; recorded days fill in order) and the
+  3.2.2 plan screen (cost and result, then both calendar rows of the 9-day
+  run; its label and each day light up in order).
 - Demo data is identical in every language: no holiday region, so there are
-  no localized or truncated holiday names ("Colum…", "9 days…").
+  no localized or truncated holiday names ("Colum…"), and Monday-first weeks
+  (the app's week-start setting) keep the Saturday–Sunday run on two rows,
+  where its "9 days off in a row" label has room.
+- English countdown line is "Know when you're done." for this video; the V4
+  line was too long to set near the Chinese size. Other locales keep their
+  reviewed copy. Any headline that shrinks below 85 % of full size is logged
+  and recorded in the manifest (`shrinkFlagged`) for the other 16 languages.
 - Transitions: copy leaves before the next line arrives; the hero fades out,
   the next fades in (no ghosted digits); a slow 2 % push carries each beat.
   The countdown keeps ticking across the loop point.
@@ -57,8 +65,12 @@ Capture notes:
   "Next shift in". The en widget scene uses `en_001` so it counts down the
   live shift; every other scene keeps `en_US`.
 - Records and leave screens are static once settled, so their animation is
-  composed from native pixels: masks over the recorded bars and the run's
-  leave days are removed in order. Coordinates are in `SCENES`.
+  composed from native pixels: `creative-marks.py` finds the calendar cells
+  that carry marks in the capture, and masks over them are removed in reading
+  order. Row bands are in `SCENES`.
+- Records are seeded relative to the capture week (the two weeks before it),
+  so the visible dates follow the capture day; capture every language on the
+  same day.
 
 ## Status (2026-10-12)
 

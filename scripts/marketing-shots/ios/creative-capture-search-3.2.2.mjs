@@ -12,6 +12,7 @@
 // restored afterwards; other booted simulators are left alone.
 import {spawn,spawnSync} from 'node:child_process';
 import {readFileSync,writeFileSync,mkdirSync,existsSync,copyFileSync} from 'node:fs';
+import {randomUUID} from 'node:crypto';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
@@ -51,12 +52,35 @@ async function record(path,seconds){
  await sleep(seconds*1000);p.kill('SIGINT');await done;
 }
 
+// Records: the two weeks before this one get every state the 3.2.2 month
+// calendar draws: regular days, overtime, a day of leave and weekend rest.
+// Same rows in every language.
+function recordsSeed(){
+ const [e,a]=decode(id),zone='Asia/Shanghai',snapshot=a.workObservations[0]?.scheduleSnapshotID;
+ const today=new Date(new Date().toLocaleDateString('sv-SE',{timeZone:zone})+'T00:00:00Z'),monday=new Date(today-((today.getUTCDay()+6)%7)*864e5);
+ const key=d=>d.toISOString().slice(0,10),at=(d,h,m=0)=>Date.parse(`${key(d)}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00+08:00`);
+ const from=key(new Date(monday-14*864e5));a.workObservations=a.workObservations.filter(o=>o.shiftAnchorDate<from);
+ const obs=(day,kind,ms,value)=>{const id=randomUUID().toUpperCase();a.workObservations.push({editCount:1,editTieBreaker:id,editedAtMs:ms,eventID:id,kind,occurredAtMs:ms,scheduleSnapshotID:snapshot,schemaVersion:2,shiftAnchorDate:key(day),timeZoneIdentifier:zone,...(value?{valueData:Buffer.from(JSON.stringify(value)).toString('base64')}:{})});};
+ a.leaveDays=[];
+ for(let n=14;n>=1;n--){
+  const day=new Date(monday-n*864e5),weekday=(day.getUTCDay()+6)%7;if(weekday>4)continue;
+  if(n===3){a.leaveDays.push({dayKey:key(day),portion:'whole',uses:[],planID:null,timeZoneIdentifier:zone,editedAtMs:Date.now(),editCount:1,editTieBreaker:randomUUID().toUpperCase()});continue;}
+  obs(day,'countdownStarted',at(day,9));
+  if(n===6||n===4){obs(day,'overtimeDeclared',at(day,17),{overtimeEndAtMs:at(day,19,30),plannedEndAtMs:at(day,17)});obs(day,'countdownStopped',at(day,19,30));}
+  else obs(day,'countdownStopped',at(day,17));
+ }
+ encode(id,e,a);
+}
+
+// Monday-first weeks (a user setting) keep a Saturday-to-Sunday leave run in
+// two calendar rows instead of three. Applied to every scene and language.
+const WEEK=['-ios.native.calendarFirstWeekday','2'];
 function sceneArgs(scene,lang){
  switch(scene){
   // 3.2.2 Records: the redesigned month calendar.
-  case 'records':return{extra:['-ios.native.selectedTab','records','-ios.native.qaRecordsScale','month']};
+  case 'records':recordsSeed();return{extra:[...WEEK,'-ios.native.selectedTab','records','-ios.native.qaRecordsScale','month']};
   // 3.2.2 Time off: the plan screen. An empty region plans around weekends only.
-  case 'leave':return{extra:['-ios.native.selectedTab','settings','-ios.native.qaRoute','leave','-ios.native.qaLeavePlanner','YES','-ios.native.qaLeaveRegion','']};
+  case 'leave':return{extra:['-ios.native.selectedTab','settings','-ios.native.qaRoute','leave','-ios.native.qaLeavePlanner','YES','-ios.native.qaLeaveRegion','',...WEEK]};
   // Onboarding picks the holiday template from the locale's region, and the
   // US one makes some capture days (Columbus Day) read "next shift". English
   // without a region keeps the preview counting down the live shift.
