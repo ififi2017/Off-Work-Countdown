@@ -160,7 +160,7 @@ opened too late, and show the same September 2026 report.
 | pt | pt-BR | 70 | 5.8 s | 0, 0 | -74 | 733 | `a6b1a324a833` |
 | ru | ru | 65 | 5.6 s | 0, 0 | -156 | 733 | `84e013890c2a` |
 | th | th | 77 | 6.2 s | 22, 60 | 51 | 733 | `cdfcb5b02e82` |
-| tr | tr | 65 | 5.6 s | 0, 0 | 0 | 733 | `1bd2b5f87779` |
+| tr | tr | 65 | 5.6 s | 0, 0 | 0 | 733 | `0c1264fefc42` |
 | vi | vi | 75 | 6 s | 17, 36 | -89 | 733 | `937dcc174318` |
 | zh-CN | zh-Hans | 93 | 5.6 s | 0, 0 | 0 | 733 | `f28615ce33eb` |
 | zh-TW | zh-Hant | 85 | 10.1 s | 0, 0 | 0 | 733 | `a64f1f12ccf8` |

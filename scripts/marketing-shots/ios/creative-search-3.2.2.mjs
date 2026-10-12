@@ -18,7 +18,7 @@
 // and hero inside the safe area, nothing clipped, settled copy clear of every
 // surface. A violation stops the render.
 import {spawn,execFileSync} from 'node:child_process';
-import {readFileSync,writeFileSync,mkdirSync,existsSync,renameSync} from 'node:fs';
+import {readFileSync,writeFileSync,mkdirSync,existsSync,renameSync,readdirSync} from 'node:fs';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -221,7 +221,7 @@ window.layoutAudit=()=>{
 }
 
 const STILLS=[0,1,2.5,2.95,3.05,4.5,7.5,10.5,13.5,16.5,19.5,22.5,23.8];
-const manifestPath=join(out,'video-manifest.json');
+const manifestPath=join(out,'video-manifest.json'),itemsDir=join(out,'manifest-items');
 let items;
 const r=await renderer();
 try{for(const lang of languages){
@@ -245,7 +245,9 @@ try{for(const lang of languages){
  const item={locale:lang,ascLocale:COPY[lang].asc,file:name+'.mp4',width:W,height:H,fps:FPS,duration:DURATION,frames:DURATION*FPS,audio:false,sha256:sha(file),
   validatedFrames:await r.evaluate('window.validatedFrames'),headlineSize:size,headlineFits:Object.fromEntries(fits.map((v,i)=>[SCENES[i].key,v])),shrinkFlagged:flagged,safeArea:SAFE,template:TEMPLATE,
   stillAudits:audits.map(a=>({time:a.time,minHeadline:a.minHeadline,issues:a.issues})),sources,status:'local-not-uploaded'};
- // Parallel workers share the manifest: re-read it right before writing.
- items=existsSync(manifestPath)?JSON.parse(readFileSync(manifestPath,'utf8')).items:[];items=items.filter(x=>x.locale!==lang);items.push(item);
+ // Parallel workers each own one entry file; the manifest is rebuilt from all
+ // of them, so no worker can overwrite another's entry.
+ mkdirSync(itemsDir,{recursive:true});writeFileSync(join(itemsDir,lang+'.json'),JSON.stringify(item,null,2)+'\n');
+ items=readdirSync(itemsDir).filter(f=>f.endsWith('.json')).sort().map(f=>JSON.parse(readFileSync(join(itemsDir,f),'utf8')));
  writeFileSync(manifestPath,JSON.stringify({createdAt:new Date().toISOString(),uploaded:false,items},null,2)+'\n');console.log('Completed '+name);
 }}finally{await r.close();}
