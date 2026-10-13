@@ -202,7 +202,10 @@ struct RecordsDesignView: View {
         }
         .scrollIndicators(.hidden)
         .coordinateSpace(.named("recordsRootScroll"))
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { canvasWidth = $0 }
+        // This width also sizes the conclusion column. Fractional text
+        // measurements can cycle by less than one point as that column
+        // responds, continuously invalidating the whole records canvas.
+        .onGeometryChange(for: CGFloat.self) { $0.size.width.rounded() } action: { canvasWidth = $0 }
     }
 
     private var singleColumnCanvas: some View {
