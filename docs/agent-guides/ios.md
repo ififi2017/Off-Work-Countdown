@@ -42,6 +42,11 @@ rules apply.
 
 ## Rendering and automated checks
 
+- **Only one simulator may run at a time (user requirement, 2026-10-06).**
+  Before booting or switching devices, inspect `xcrun simctl list devices booted`
+  and shut down the previous device first. This includes automated tests and
+  screenshot workflows; disable parallel simulator destinations/workers so
+  they cannot start additional instances. Memory cannot support two or more.
 - `ImageRenderer` views have no parent environment. Pass everything they draw
   explicitly; an `@Environment(SomeObservable.self)` lookup can crash when the
   share sheet opens. Cover the exact button render path as

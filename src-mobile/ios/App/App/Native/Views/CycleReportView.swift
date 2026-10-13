@@ -248,7 +248,8 @@ struct CycleReportView: View {
         }
         // `-ios.native.qaCycleReportFrame 2:0.6` plays the report parked on
         // chapter 2 at 60% of its build.
-        if let frame = UserDefaults.standard.string(forKey: "ios.native.qaCycleReportFrame"), snapshot.hasData {
+        if let frame = UserDefaults.standard.string(forKey: "ios.native.qaCycleReportFrame"),
+           !frame.isEmpty, snapshot.hasData {
             let parts = frame.split(separator: ":").compactMap { Double($0) }
             if parts.count == 2 {
                 play()
