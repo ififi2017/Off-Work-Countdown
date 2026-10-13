@@ -6,7 +6,12 @@ import Foundation
 /// or balance. Launch with -ios.native.qaRoute leave -ios.native.qaLeavePlanner YES.
 nonisolated enum DebugLeavePlanner {
     static func searchContext(restDays: Int? = nil) -> LeavePlanSearchContext {
-        let first = CivilZone.dayNumber(year: 2026, month: 9, day: 21)
+        // Marketing captures start the search in the storefront's holiday month.
+        let date = (UserDefaults.standard.string(forKey: "ios.native.qaLeaveFrom") ?? "")
+            .split(separator: "-").compactMap { Int($0) }
+        let first = date.count == 3
+            ? CivilZone.dayNumber(year: date[0], month: date[1], day: date[2])
+            : CivilZone.dayNumber(year: 2026, month: 9, day: 21)
         return .init(goal: restDays.map { .restAtLeast(days: $0) } ?? .leaveAtMost(halfDays: 10),
                      availableHalfDays: 10, fromDayNumber: first, throughDayNumber: first + 364)
     }
@@ -22,7 +27,9 @@ nonisolated enum DebugLeavePlanner {
         let plan = ExtendedSchedulePlan(
             shiftTypes: types,
             rule: ShiftCycleRule(preset: .weekly, anchorDayKey: "2026-09-21",
-                                 days: [work, work, work, work, work, rest, rest]),
+                                 days: region == "SA"
+                                    ? [work, work, work, work, rest, rest, work]
+                                    : [work, work, work, work, work, rest, rest]),
             handSetDays: [:], holidayRegionIdentifier: region
         )
         let configuration = ScheduleHoursConfiguration(

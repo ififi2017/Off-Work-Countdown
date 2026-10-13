@@ -111,6 +111,8 @@ struct LunchBreakDesignView: View {
 
                         Spacer(minLength: 22)
                     }
+                    // Keep the measured timeline top independent of its row count.
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(minHeight: proxy.size.height, alignment: .top)
                     .coordinateSpace(.named(TimerContentSpace.name))
                 }
@@ -245,6 +247,8 @@ struct OvertimeDesignView: View {
 
                         Spacer(minLength: 22)
                     }
+                    // Keep the measured timeline top independent of its row count.
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(minHeight: proxy.size.height, alignment: .top)
                     .coordinateSpace(.named(TimerContentSpace.name))
                 }

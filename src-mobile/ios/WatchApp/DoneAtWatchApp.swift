@@ -195,8 +195,8 @@ struct WatchRootView: View {
 #if DEBUG
 /// Simulator review states, so every screen can be captured without editing
 /// real data: launch with `-owcWatchReviewState <state>` where state is one of
-/// working, lunch, overtime, finished, rest, unconfigured, locked, confirm,
-/// expired or waiting; optionally `-owcWatchReviewLocale zh-CN` and
+/// working, workday, lunch, overtime, finished, rest, unconfigured, locked,
+/// confirm, expired or waiting; optionally `-owcWatchReviewLocale zh-CN` and
 /// `-owcWatchReviewAlwaysOn`. Debug builds only; the receiver never starts.
 private struct WatchReviewFixture {
     let package: WatchSnapshotPackageV1?
@@ -232,6 +232,13 @@ private struct WatchReviewFixture {
         switch state {
         case "working":
             package = Self.package(now: now, content: scheduled(twoPart((now - 3 * hour)...(now - hour), (now - 10 * minute)...(now + 3 * hour + 30 * minute))))
+        case "workday":
+            // The iPhone review day, 09:00–12:00 and 13:00–17:00 in the review
+            // time zone, so marketing captures show the same shift on both.
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = reviewTimeZone
+            let day = Int64(calendar.startOfDay(for: .now).timeIntervalSince1970 * 1_000)
+            package = Self.package(now: now, content: scheduled(twoPart((day + 9 * hour)...(day + 12 * hour), (day + 13 * hour)...(day + 17 * hour))))
         case "lunch":
             package = Self.package(now: now, content: scheduled(twoPart((now - 3 * hour)...(now - 15 * minute), (now + 45 * minute)...(now + 4 * hour + 30 * minute))))
         case "overtime":

@@ -175,6 +175,7 @@ struct LeaveBreakCalendar: View {
             .padding(.bottom, 4)
             .accessibilityHidden(true)
             let rows = weeks
+            let labelRow = labelRowIndex(rows)
             ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
                 if index == 0 || month(row[0]) != month(rows[index - 1][0]) {
                     Text(shifts.leaveDayLabel(index == 0 ? row[0] : row[0], template: "yMMMM"))
@@ -188,7 +189,7 @@ struct LeaveBreakCalendar: View {
                     HStack(spacing: 0) {
                         ForEach(row, id: \.self) { day in cell(day) }
                     }
-                    band(row)
+                    band(row, showsLabel: index == labelRow)
                 }
                 .frame(height: 66)
             }
@@ -239,14 +240,29 @@ struct LeaveBreakCalendar: View {
         ].compactMap { $0 }.joined(separator: ", "))
     }
 
+    private func breakColumns(_ row: [Int]) -> [Int] {
+        row.indices.filter { (proposal.firstRestDayNumber...proposal.lastRestDayNumber).contains(row[$0]) }
+    }
+
+    /// The break's length is written on its widest week (the first, on a
+    /// tie), so a break that starts on the last day of a week is not left
+    /// with a one-day band too short for the label.
+    private func labelRowIndex(_ rows: [[Int]]) -> Int? {
+        var best: (index: Int, width: Int)?
+        for (index, row) in rows.enumerated() {
+            let width = breakColumns(row).count
+            if width > (best?.width ?? 0) { best = (index, width) }
+        }
+        return best?.index
+    }
+
     @ViewBuilder
-    private func band(_ row: [Int]) -> some View {
-        let inside = row.indices.filter { (proposal.firstRestDayNumber...proposal.lastRestDayNumber).contains(row[$0]) }
+    private func band(_ row: [Int], showsLabel: Bool) -> some View {
+        let inside = breakColumns(row)
         if let first = inside.first, let last = inside.last {
             GeometryReader { proxy in
                 let column = proxy.size.width / 7
-                Text(row.contains(proposal.firstRestDayNumber)
-                     ? text.t("leaveDaysOff", count: proposal.fullRestDays) : "")
+                Text(showsLabel ? text.t("leaveDaysOff", count: proposal.fullRestDays) : "")
                     .font(.system(size: 9.5, weight: .semibold))
                     .lineLimit(1)
                     .foregroundStyle(OWCDesign.recordsHoliday)

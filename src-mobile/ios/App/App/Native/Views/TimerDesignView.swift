@@ -286,6 +286,11 @@ private struct RunningTimerDesignView: View {
 
                         Spacer(minLength: 22)
                     }
+                    // The timeline's row count depends on the height above it.
+                    // Keep that content at its natural height: compressing a
+                    // wrapped caption to fit the viewport can alternate the
+                    // row count and its measured top forever.
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(minHeight: proxy.size.height, alignment: .top)
                     .coordinateSpace(.named(TimerContentSpace.name))
                 }
