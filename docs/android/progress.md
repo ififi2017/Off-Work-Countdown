@@ -818,3 +818,8 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 所有者要求修正高、中优先级发现并在 Pixel 上对照 iOS 验证。已修：记录配色、人生视图（退休进度/年格/选中行/阶段列表，按 iOS 3.2.2 移除展开按钮）、日历下常驻选中行、休假详情结构、锁定日与休息日变暗、休假日期改为月日、锁定提示、时间分配与周视图数字格式、记录图表淡入与 `DoneAtRollingText` 数字滚动。逐项与证据见 `qa/2026-10-16-play322/ios-parity/README.md` 的“修正结果”和 `after/`。
 - Android 7 门禁通过：domain 448、data 96、designsystem 12、app 167，零失败/跳过；lintDebug、Debug、R8 Release 通过，lint 60→57。Pixel 隔离 Debug 32213 实测英文浅色各尺度、免费月视图、休假表单与详情、阿拉伯语深色月视图。没有 Kotlin 共享规则、`lib/` 或 iOS 源变更；字符串沿用已有键，没有新增翻译。
 - 候选 133/134 不含这些修正，送审前需要新签名候选。
+
+### Alpha 草稿 135（2026-10-17）
+
+- 所有者要求用 iOS 对照修正构建新签名候选，替换 Alpha 草稿 134，不送审。run 38932865718（126173f3，upload=true、alpha、draft）成功，生成 3.2.2(135) 并打 tag android-v3.2.2-135。下载产物复核：AAB SHA-256 0eb4ce8d…6548，mapping b9280f7a…1303；上传证书与 128/132–134 相同，jarsigner/bundletool 通过，非 debuggable、无画廊、16K 对齐，dex 含完整审核/购买公开 key、api.doneat.app 与商品；R8 mapping 含 DoneAtRollingText、RecordsSelectionRow、LifeProgress、LeaveCardTitle 等本次新增代码。Console 显示 Alpha 草稿已是 3.2.2(135)，134 不再作为发布版本，128 仍向测试人员发布。证据 `artifact/*-135.*`。
+- 注意：`release-android.yml` 在影响 Android 的提交合并进 main 后会自动构建并上传 Alpha，状态为 completed（直接发给测试人员并进入审核），使用新的 versionCode。因此合并 PR313 本身就是 Alpha 发布，需要所有者确认；135 草稿只用于合并前的 Play 安装检查。
