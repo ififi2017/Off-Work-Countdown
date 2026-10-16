@@ -10,7 +10,7 @@
   "observability": { "enabled": false },
   "triggers": { "crons": ["17 3 * * *"] },
   "vars": {
-    "REVIEW_ACCESS_ENABLED": "false",
+    "REVIEW_ACCESS_ENABLED": "true",
     "REVIEW_SIGNING_KEY_ID": "review-2026-01",
     "PACKAGE_NAME": "com.rainif.doneat",
     "SUBSCRIPTION_PRODUCT": "doneat_plus",

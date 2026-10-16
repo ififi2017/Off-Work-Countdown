@@ -795,3 +795,10 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 修正英文200%底栏 “Record / s”“Setting / s” 单词内断行：底栏标签改用按应用语言的整词自适应字号（`WholeWordAutoSize`，ICU 词边界判断），只在某个词会被拆开时逐步缩小，下限为该标签在默认字号下的大小，不低于用户 100% 阅读尺寸；正常字号不变。GPT 草稿中的 `Hyphens.Auto` 不再使用（会产生连字符拆词）；首版 `BoxWithConstraints` 因底栏需要固有尺寸测量而崩溃，已改为 Compose `TextAutoSize`。
 - Pixel 隔离 Debug 32211（parity322）画廊注入 200%、深色实际查看：英文 Timer/Focus/Records/Settings、德文 Einstellungen、俄文 Настройки、印地语均整词单行，无崩溃。只是画廊注入字号，系统 fontScale 未改；未做真实 TalkBack。顺带发现德文 200% 设置列表 “Gesundheitserinnerungen” 行标题同样在词内断开，属既有列表行，未在本批修改。
 - Android 7 门禁通过：domain 448、data 96、designsystem 12、app 167，共 723 项零失败/跳过；lintDebug、Debug、R8 Release 通过。该修正改变包内容，候选 132 不再是最终送审包，需要新签名候选。
+
+### R4/R5 正式审核访问开启与候选133（2026-10-16）
+
+- 所有者明确选择“开启并实测”。用运维工具 `--remote` 生成正式可复用审核码，原码只在本机 0600 受保护文件，D1 仅存摘要；`wrangler.jsonc` 将 `REVIEW_ACCESS_ENABLED` 改为 true，经交互终端部署版本 a2218948-cb27-462d-9868-df05d22ec301，无 DNS 冲突。部署后 review challenge 空请求为 400（不再是 503），原 verify 空 JSON 仍为 400。
+- 为避免把正式码放进命令行，Pixel 实测使用单独生成的一次性测试码（同样只在受保护文件，经进程参数直接输入、未打印）。隔离 Debug 32212（parity322，带审核/购买公开 key）在普通 MainActivity 设置→关于→审核访问实际验证：激活成功并显示 24 小时到期、刷新成功、记录人生视图解锁；退出后 D1 安装记录为 0；再次激活后在服务端撤销测试码，刷新即回到未激活，人生视图重新锁定并显示 Plus 入口，档案保留。D1 现有有效凭证 1（正式码）、安装 0。未测离线、时钟回拨、重启和 Play 正式包上的激活。
+- 候选 133：run 38922766058（fcc7462e，upload=false）成功。AAB SHA-256 8d9c1130…579da、mapping 9b810dea…d3dd；上传证书与 128/132 相同，jarsigner 与 bundletool 1.18.3 校验通过，manifest com.rainif.doneat 3.2.2(133)、非 debuggable、无调试画廊，16K 对齐，dex 含完整审核与购买公开 key、api.doneat.app 及商品。证据见 `qa/2026-10-16-play322/artifact/*-133.*`。132 被底栏修正取代。
+- 仍待：Play 安装 133 后的正式包冷路径与审核激活、App access 填写正式码与英文说明、Data safety 与新版本一起送审、真实 TalkBack。生产发布另行确认。
