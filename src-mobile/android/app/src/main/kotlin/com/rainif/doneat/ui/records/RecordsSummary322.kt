@@ -1,5 +1,7 @@
 package com.rainif.doneat.ui.records
 
+import androidx.compose.ui.text.style.TextAlign
+import com.rainif.doneat.core.designsystem.DoneAtRollingText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -111,7 +113,8 @@ internal fun RecordsAllocationCard(text: RecordsText, title: String, share: Time
     val total = share.dayLengthMs.coerceAtLeast(1).toDouble()
     val order = listOf(TimeAllocationKind.WORK, TimeAllocationKind.WORK_BREAK, TimeAllocationKind.OVERTIME, TimeAllocationKind.UNCLASSIFIED, TimeAllocationKind.FREE, TimeAllocationKind.SLEEP)
     val rows = order.filter { share.duration(it) > (if (years) .05 * 365.2425 * 86_400_000 else 0.0) || (!years && it != TimeAllocationKind.UNCLASSIFIED && it != TimeAllocationKind.OVERTIME) }.reversed()
-    fun value(ms: Long) = if (years) Strings.lifeApproxYearsShort(res, text.decimal(ms / (365.2425 * 86_400_000))) else text.duration(ms.toDouble())
+    // iOS: whole hours ("233h") for a period, approximate years for a life.
+    fun value(ms: Long) = if (years) Strings.lifeApproxYearsShort(res, text.decimal(ms / (365.2425 * 86_400_000))) else text.hours(Math.rint(ms / 3_600_000.0))
     RecordsCard {
         Column(Modifier.padding(S.l + S.xxs), verticalArrangement = Arrangement.spacedBy(S.m)) {
             val totalLabel = if (years) value(share.dayLengthMs) else Strings.recordsAllocationTotal(res, value(share.dayLengthMs))
@@ -120,7 +123,7 @@ internal fun RecordsAllocationCard(text: RecordsText, title: String, share: Time
                     Text(title, modifier.semantics { heading() }, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                 }
                 val totalText: @Composable (Modifier) -> Unit = { modifier ->
-                    Text(totalLabel, modifier, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(totalLabel, modifier, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
                 }
                 if (recordsAllocationHeaderStacks(maxWidth.value, LocalDensity.current.fontScale)) {
                     Column(verticalArrangement = Arrangement.spacedBy(S.xs)) {
@@ -140,9 +143,10 @@ internal fun RecordsAllocationCard(text: RecordsText, title: String, share: Time
                     rows.forEach { kind ->
                         Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(S.s)) {
                             Box(Modifier.size(S.s).clip(CircleShape).background(kindColor(kind)))
-                            Column(Modifier.weight(1f)) {
-                                Text(text.kindTitle(kind), style = MaterialTheme.typography.bodyMedium)
-                                Text(value(share.duration(kind)) + " · " + text.percent(share.duration(kind) / total * 100), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(text.kindTitle(kind), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(value(share.duration(kind)), style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"), fontWeight = FontWeight.SemiBold, maxLines = 1)
+                                Text(text.percent(share.duration(kind) / total * 100), style = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -161,7 +165,7 @@ internal fun RecordsPayCard(graph: AppGraph, text: RecordsText, title: String, t
                 Text(title, Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                 EarningsVisibilityButton(graph) {}
             }
-            Text(text.money(total), style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+            DoneAtRollingText(text.money(total), style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
             if (earned != null && total > 0) {
                 val fraction = (earned / total).coerceIn(0.0, 1.0)
                 LinearProgressIndicator(progress = { fraction.toFloat() }, modifier = Modifier.fillMaxWidth().clearAndSetSemantics {})

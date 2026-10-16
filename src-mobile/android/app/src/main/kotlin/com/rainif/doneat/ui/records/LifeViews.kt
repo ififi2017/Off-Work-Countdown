@@ -8,6 +8,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.text.style.TextAlign
+import com.rainif.doneat.core.domain.records.LifeStageCalculator
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -67,41 +74,18 @@ fun stageColor(kind: LifeStageKind): Color {
     }
 }
 
-fun stageTitle(stage: LifeStageSpan, text: RecordsText): String = text.string(
-    when (stage.workPeriod) {
-        LifeWorkPeriod.ELAPSED -> R.string.lifeStageWorkElapsed
-        LifeWorkPeriod.FUTURE -> R.string.lifeStageWorkFuture
-        null -> when (stage.kind) {
-            LifeStageKind.CHILDHOOD -> R.string.lifeStageChildhood
-            LifeStageKind.STUDY -> R.string.lifeStageStudy
-            LifeStageKind.WORK -> R.string.lifeStageWork
-            LifeStageKind.RETIREMENT -> R.string.lifeStageRetirement
-            LifeStageKind.UNSET -> R.string.lifeStageUnset
-        }
-    },
-)
-
-/** "1990 – about 2050"; the live career split says "present" where it meets now. */
-fun stageRange(stage: LifeStageSpan, text: RecordsText, referenceMs: Double): String {
-    fun label(ms: Double, precision: CivilDatePrecision?) =
-        text.lifeYear(Instant.ofEpochMilli(ms.toLong()).atZone(text.zone).year, precision == CivilDatePrecision.YEAR)
-    val start = stage.startMs
-    val end = stage.endMs
-    return when {
-        start == null && end == null -> text.string(R.string.lifeUnset)
-        start != null && end != null -> {
-            val from = if (stage.workPeriod == LifeWorkPeriod.FUTURE && start == referenceMs) text.string(R.string.lifeStagePresent) else label(start, stage.startPrecision)
-            val to = if (stage.workPeriod == LifeWorkPeriod.ELAPSED && end == referenceMs) text.string(R.string.lifeStagePresent) else label(end, stage.endPrecision)
-            "$from – $to"
-        }
-        start != null -> label(start, stage.startPrecision)
-        else -> label(end!!, stage.endPrecision)
-    }
+private fun stageKindTitle(kind: LifeStageKind): Int = when (kind) {
+    LifeStageKind.CHILDHOOD -> R.string.lifeStageChildhood
+    LifeStageKind.STUDY -> R.string.lifeStageStudy
+    LifeStageKind.WORK -> R.string.lifeStageWork
+    LifeStageKind.RETIREMENT -> R.string.lifeStageRetirement
+    LifeStageKind.UNSET -> R.string.lifeStageUnset
 }
 
 /**
- * One year per square, grouped by decade; the current year has an orange ring.
- * Selection is owned by RecordsScreen so changing scale or layout preserves it.
+ * The iOS 3.2.2 Life card: progress to retirement, one year per square grouped by
+ * decade (the current year ringed in orange), the selected year, then each stage once
+ * with its years. Selection is owned by RecordsScreen so changing scale preserves it.
  */
 @Composable
 fun LifeCanvas(
@@ -115,46 +99,107 @@ fun LifeCanvas(
     val scheme = MaterialTheme.colorScheme
     val years = remember(stages, bounds, referenceMs, text.zone) { com.rainif.doneat.core.domain.records.recordsLifeYears(stages, bounds, referenceMs, text.zone) }
     val selected = years.firstOrNull { it.age == selectedAge } ?: years.firstOrNull { it.isCurrent }
+    val current = years.firstOrNull { it.isCurrent }
     val res = LocalResources.current
-    Column(verticalArrangement = Arrangement.spacedBy(S.m)) {
+    fun date(ms: Double) = Instant.ofEpochMilli(ms.toLong()).atZone(text.zone).toLocalDate()
+    fun wholeYears(fromMs: Double, toMs: Double) = maxOf(0, java.time.Period.between(date(fromMs), date(toMs)).years)
+    Column {
+        LifeProgress(stages, bounds, referenceMs, text, ::wholeYears)
         CappedFontScale {
             Column(verticalArrangement = Arrangement.spacedBy(S.xs + S.xxs)) {
                 years.chunked(10).forEach { decade ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(S.xs), verticalAlignment = Alignment.CenterVertically) {
-                        Text(text.count(decade.first().age), Modifier.width(S.xxl).clearAndSetSemantics {}, style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
-                        decade.forEach { year ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(S.xs + S.xxs), verticalAlignment = Alignment.CenterVertically) {
+                        Text(text.count(decade.first().age), Modifier.width(28.dp).clearAndSetSemantics {}, style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSurface.copy(alpha = .3f), textAlign = TextAlign.End)
+                        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(S.xs)) { decade.forEach { year ->
                             val tint = stageColor(year.stage?.kind ?: LifeStageKind.UNSET)
-                            val shape = MaterialTheme.shapes.extraSmall
+                            val shape = RoundedCornerShape(5.dp)
                             val label = Strings.lifeYearAgeTitle(res, year.year.toString(), text.count(year.age))
+                            val isSelected = selected?.age == year.age && !year.isCurrent
                             Box(Modifier.weight(1f).height(T.lifeYearHeight)
-                                .clip(shape)
-                                .then(if (year.isPast || year.isCurrent) Modifier.background(tint) else Modifier.border(T.outline, tint.copy(alpha = .6f), shape))
-                                .then(if (year.isCurrent || selected?.age == year.age) Modifier.border(T.selectedOutline, if (year.isCurrent) scheme.primary else scheme.onSurface, shape) else Modifier)
-                                .clickable {
-                                    onSelect(year)
-                                }.semantics {
-                                    contentDescription = listOfNotNull(label, year.stage?.let { stageTitle(it, text) }).joinToString(", ")
+                                .then(if (isSelected) Modifier.border(T.selectedOutline, scheme.onSurface, shape) else Modifier)
+                                .clickable { onSelect(year) }
+                                .semantics {
+                                    contentDescription = listOfNotNull(label, year.stage?.let { text.string(stageKindTitle(it.kind)) }).joinToString(", ")
                                     role = Role.Button
                                     this.selected = selected?.age == year.age
-                                })
-                        }
+                                }
+                                .padding(if (isSelected) T.selectedOutline else 0.dp)) {
+                                when {
+                                    year.isCurrent -> Box(Modifier.matchParentSize().border(1.5.dp, scheme.primary, shape).padding(2.dp).clip(shape).background(tint))
+                                    year.isPast -> Box(Modifier.matchParentSize().clip(shape).background(tint))
+                                    else -> Box(Modifier.matchParentSize().border(T.outline, tint.copy(alpha = .6f), shape))
+                                }
+                            }
+                        } }
                     }
                 }
             }
         }
         if (selected != null) {
-            Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(S.xs)) {
-                Text(Strings.lifeYearAgeTitle(res, selected.year.toString(), text.count(selected.age)), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                selected.stage?.let { stage -> Text(stageTitle(stage, text) + " · " + stageRange(stage, text, referenceMs), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
+            val stage = selected.stage
+            val parts = buildList {
+                add(text.string(stage?.let { stageKindTitle(it.kind) } ?: R.string.lifeStageUnset))
+                val currentAge = current?.age ?: selected.age
+                add(text.string(when {
+                    selected.age == currentAge -> R.string.lifeStagePresent
+                    selected.age < currentAge -> R.string.lifeYearPast
+                    else -> R.string.lifeLegendProjected
+                }))
+                // The career's whole span, not the elapsed or future half the canvas splits it into.
+                val careerStart = stages.filter { it.kind == LifeStageKind.WORK }.mapNotNull { it.startMs }.minOrNull()
+                if (stage?.kind == LifeStageKind.WORK && careerStart != null) add(Strings.lifeWorkYearNumber(res, text.count(maxOf(1, wholeYears(careerStart, selected.middleMs) + 1))))
+            }
+            RecordsSelectionRow(Strings.lifeYearAgeTitle(res, selected.year.toString(), text.count(selected.age)), parts.joinToString(" · "), onClick = null)
+        }
+        LifeStageList(stages, text, Modifier.padding(top = S.m - S.xxs))
+    }
+}
+
+/** iOS `lifeProgress`: how far from birth to retirement today is. Absent until retirement is set. */
+@Composable
+private fun LifeProgress(stages: List<LifeStageSpan>, bounds: Pair<Double, Double>, referenceMs: Double, text: RecordsText, wholeYears: (Double, Double) -> Int) {
+    val retirement = stages.firstOrNull { it.kind == LifeStageKind.RETIREMENT }?.startMs ?: return
+    val scheme = MaterialTheme.colorScheme
+    val progress = LifeStageCalculator.progress(bounds.first, retirement, referenceMs)
+    val workStart = stages.filter { it.kind == LifeStageKind.WORK }.mapNotNull { it.startMs }.minOrNull()
+    Column(Modifier.fillMaxWidth().padding(bottom = S.m - S.xxs).semantics(mergeDescendants = true) {}) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(text.string(R.string.lifeProgressTitle), Modifier.weight(1f), style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold, color = scheme.onSurfaceVariant)
+            Text(text.percent(progress * 100, 0), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = scheme.primary)
+        }
+        Box(Modifier.padding(top = 6.dp).fillMaxWidth().height(6.dp).clip(RoundedCornerShape(50)).background(scheme.surfaceContainerHighest)) {
+            Box(Modifier.fillMaxWidth(progress.toFloat()).fillMaxHeight().clip(RoundedCornerShape(50)).background(scheme.primary))
+        }
+        if (workStart != null) Text(Strings.lifeCareerElapsed(LocalResources.current, text.count(wholeYears(workStart, referenceMs)), text.count(wholeYears(referenceMs, retirement))),
+            Modifier.padding(top = S.xxs), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+    }
+}
+
+/** iOS `lifeStageList`: each stage once, with the years from its first start to its last end. */
+@Composable
+private fun LifeStageList(stages: List<LifeStageSpan>, text: RecordsText, modifier: Modifier = Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    Column(modifier) {
+        stages.filter { it.kind != LifeStageKind.UNSET }.distinctBy { it.kind }.forEach { stage ->
+            fun year(ms: Double?) = ms?.let { text.lifeYear(Instant.ofEpochMilli(it.toLong()).atZone(text.zone).year, false) }
+            val start = year(stage.startMs)
+            val end = year(stages.lastOrNull { it.kind == stage.kind }?.endMs)
+            val range = when {
+                start != null && end != null -> "\u2068$start\u2069 – \u2068$end\u2069"
+                start != null -> "$start –"
+                end != null -> "– $end"
+                else -> text.string(R.string.lifeUnset)
+            }
+            HorizontalDivider(color = scheme.outlineVariant)
+            Row(Modifier.fillMaxWidth().heightIn(min = 36.dp).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(S.s + S.xxs)) {
+                Box(Modifier.size(10.dp).clip(CircleShape).background(stageColor(stage.kind)))
+                Text(text.string(stageKindTitle(stage.kind)), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                Text(range, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         }
-        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(S.m), verticalArrangement = Arrangement.spacedBy(S.xs)) {
-            stages.distinctBy { it.kind }.forEach { stage -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(S.xs)) {
-                Box(Modifier.size(S.s).clip(MaterialTheme.shapes.extraSmall).background(stageColor(stage.kind)))
-                Text(stageTitle(stage, text), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
-            } }
-        }
-        if (stages.any { it.workPeriod != null }) Text(text.string(R.string.lifeWorkPeriodBasis), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }
 }
 

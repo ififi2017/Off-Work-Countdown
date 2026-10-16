@@ -373,7 +373,7 @@ private fun PlanSummary(proposal: LeavePlanProposal, text: LeaveText, bestValue:
                 Text(if (proposal.costHalfDays == 0) text.string(R.string.leaveNoLeaveNeeded) else Strings.leaveAskFor(resources, text.halfDays(proposal.costHalfDays)),
                     style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
             }
-            Text(listOfNotNull(text.range(text.fullDate(proposal.firstRestDayNumber), text.fullDate(proposal.lastRestDayNumber)), holidayName).joinToString(" · "),
+            Text(listOfNotNull(text.range(text.monthDay(proposal.firstRestDayNumber), text.monthDay(proposal.lastRestDayNumber)), holidayName).joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else LeaveProposalHeadline(proposal, text, holidayName = holidayName)
         if (bestValue && proposal.costHalfDays > 0) Text(text.string(R.string.leaveBestValue), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)

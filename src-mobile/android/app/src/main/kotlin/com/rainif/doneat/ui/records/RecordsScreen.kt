@@ -46,6 +46,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import com.rainif.doneat.core.designsystem.LocalDoneAtMotion
+import com.rainif.doneat.core.designsystem.DoneAtMotion
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
@@ -77,6 +84,7 @@ import com.rainif.doneat.ui.schedule.HolidayCoverageNotice
 import com.rainif.doneat.ui.schedule.HolidayDayAnnotation
 import com.rainif.doneat.ui.schedule.holidayDayAnnotation
 import com.rainif.doneat.R
+import com.rainif.doneat.core.designsystem.DoneAtRollingText
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.domain.records.LifeDates
 import com.rainif.doneat.core.domain.records.LifeStageCalculator
@@ -116,7 +124,6 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     val anchor = LocalDate.parse(anchorKey)
     var selectedDayKey by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedMonth by rememberSaveable { mutableStateOf<Int?>(null) }
-    var calloutMonth by rememberSaveable { mutableStateOf<Int?>(null) }
     var selectedLifeAge by rememberSaveable { mutableStateOf<Int?>(null) }
     var expanded by rememberSaveable { mutableStateOf(false) }
     val regularScroll = rememberScrollState()
@@ -177,6 +184,19 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         }
     }
     fun tick() = view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+    // iOS: the chart cross-fades when the question changes (to or from Year and Life) and when
+    // it jumps back to today; Week and Month inspect the same days, so they swap in place.
+    val motion = LocalDoneAtMotion.current
+    val chartAlpha = remember { Animatable(1f) }
+    var chartFade by remember { mutableStateOf<Int?>(null) }
+    var chartFadeCount by remember { mutableIntStateOf(0) }
+    LaunchedEffect(chartFadeCount) {
+        val duration = chartFade ?: return@LaunchedEffect
+        if (motion.reduced) return@LaunchedEffect
+        chartAlpha.snapTo(0f)
+        chartAlpha.animateTo(1f, tween(duration, easing = if (duration == DoneAtMotion.RECORDS_TODAY_MS) FastOutSlowInEasing else motion.emphasizedDecelerate))
+    }
+    fun fadeChart(duration: Int) { chartFade = duration; chartFadeCount++ }
     fun editLife() = if (context.queries.authorized) beginLifeEdit(graph, context, open)
         else openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsLifeEdit))
     fun dismissLifeSetup() {
@@ -184,10 +204,10 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     }
     fun setScale(next: RecordsScale) {
         if (next == scale) return
+        if (scale == RecordsScale.YEAR || scale == RecordsScale.LIFE || next == RecordsScale.YEAR || next == RecordsScale.LIFE) fadeChart(DoneAtMotion.RECORDS_SCALE_CHANGE_MS)
         expanded = false
         selectedDayKey?.takeIf { next == RecordsScale.WEEK || next == RecordsScale.MONTH }?.let { key -> anchorKey = key }
         if (next == RecordsScale.YEAR && selectedMonth == null) selectedMonth = anchor.monthValue
-        calloutMonth = null
         switchRecordsScale(next, { scaleRaw = it }, graph.scope) { selected ->
             graph.settings.updateDevice { it.copy(recordsScale = selected) }
         }
@@ -196,7 +216,6 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     fun shift(by: Long) {
         anchorKey = context.queries.shiftAnchor(anchor, scale, by).toString()
         selectedDayKey = null
-        calloutMonth = null
     }
     fun openDay(cell: RecordsDayCell) {
         if (cell.appearance != RecordsDayAppearance.LOCKED) open(Route.RecordsDay(cell.dayKey))
@@ -204,15 +223,14 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     fun openMonth(month: Int) {
         selectedDayKey = null
         anchorKey = LocalDate.of(anchor.year, month, 1).toString()
-        calloutMonth = null
         setScale(RecordsScale.MONTH)
     }
     fun selectMonth(month: Int) {
         if (selectedMonth != month) tick()
         selectedMonth = month
-        calloutMonth = month
     }
     fun returnToToday() {
+        fadeChart(DoneAtMotion.RECORDS_TODAY_MS)
         anchorKey = context.today.toString()
         if (scale == RecordsScale.YEAR) selectedMonth = context.today.monthValue
         tick()
@@ -256,9 +274,9 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
             }
         }
     }
-    val chart: @Composable () -> Unit = {
+    val chart: @Composable () -> Unit = { Box(Modifier.graphicsLayer { alpha = chartAlpha.value }) {
         ChartCard(
-            context, scale, anchor, current, selectedDayKey, month, calloutMonth == month, locked, expanded,
+            context, scale, anchor, current, selectedDayKey, month, locked, expanded,
             { shift(it) }, { returnToToday() }, { select(it) }, { openDay(it) },
             { selectMonth(it) }, { openMonth(it) },
             onUnlock = { openSettings(Route.PlusFor(com.rainif.doneat.ui.PlusPendingAction.RecordsCharts)) }, life = life,
@@ -282,7 +300,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                 } else if (zoom < 0.82f) setScale(scale.zoomedOut)
             },
         )
-    }
+    } }
     val conclusion: @Composable (Boolean) -> Unit = { showsLockedSummary ->
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             // Life's conclusion is behind Plus too: a locked life never prints a projected number.
@@ -445,7 +463,6 @@ private fun ChartCard(
     page: RecordsPage?,
     selectedDayKey: String?,
     selectedMonth: Int,
-    showMonthCallout: Boolean,
     locked: Boolean,
     expanded: Boolean,
     shift: (Long) -> Unit,
@@ -479,7 +496,8 @@ private fun ChartCard(
                 if (zoom > 1.22f || zoom < 0.82f) onPinch(zoom)
             }
         }), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            CappedFontScale {
+            // iOS 3.2.2: Life has no period to page through, so its card opens on the progress itself.
+            if (!isLife) CappedFontScale {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (expanded) {
                         Text(title, Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleMedium)
@@ -504,7 +522,7 @@ private fun ChartCard(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            DoneAtRollingText(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                             if (showsToday) Icon(Icons.Outlined.MyLocation, null, Modifier.padding(start = 6.dp).size(14.dp), tint = scheme.primary)
                         }
                         if (!isLife) {
@@ -513,15 +531,9 @@ private fun ChartCard(
                             }
                         }
                     }
-                    if (scale == RecordsScale.YEAR || isLife) {
-                        IconButton(onClick = onExpand) {
-                            Icon(if (expanded) Icons.Outlined.CloseFullscreen else Icons.Outlined.OpenInFull,
-                                text.string(if (expanded) R.string.recordsCollapseChart else R.string.recordsExpandChart))
-                        }
-                    }
                 }
             }
-            HorizontalDivider(color = scheme.outlineVariant)
+            if (!isLife) HorizontalDivider(color = scheme.outlineVariant)
             val cells = page?.takeIf { it.first == first }?.cells
             if (locked) {
                 RecordsLockedCalendar(scale, text)
@@ -541,21 +553,28 @@ private fun ChartCard(
                     holidayDayAnnotation(context.lifeInputs.holidays, context.lifeInputs.archive.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier, cell.date, text.locale)?.let { cell.dayKey to it }
                 }.toMap()
                 if (scale == RecordsScale.YEAR) {
-                    YearCanvas(cells, first.year, selectedMonth, showMonthCallout, text, onSelectMonth, onOpenMonth, holidays,
+                    YearCanvas(cells, first.year, selectedMonth, false, text, onSelectMonth, onOpenMonth, holidays,
                         leadingBlanks = { context.queries.gridLeadingBlanks(it) })
-                    if (showMonthCallout) RecordsSelectionPill(Icons.Outlined.CalendarToday, text.monthYear(LocalDate.of(first.year, selectedMonth, 1)),
-                        subtitle = recordsMonthDescription(cells.filter { it.date.monthValue == selectedMonth }, holidays, text), action = text.string(R.string.recordsSeeThisMonth), onClick = { onOpenMonth(selectedMonth) })
+                    // iOS 3.2.2: the selected month always reads out under the calendar.
+                    RecordsSelectionRow(text.monthYear(LocalDate.of(first.year, selectedMonth, 1)),
+                        recordsMonthDescription(cells.filter { it.date.monthValue == selectedMonth }, holidays, text)) { onOpenMonth(selectedMonth) }
                 } else {
-                    val selected = cells.firstOrNull { it.dayKey == selectedDayKey }
-                    if (scale == RecordsScale.WEEK) WeekStrips(cells, selectedDayKey, text, onSelect, onOpen, holidays = holidays,
+                    // iOS `selectedDayLook`: the tapped day, otherwise today when it is in view.
+                    val selected = cells.firstOrNull { it.dayKey == selectedDayKey } ?: cells.firstOrNull { it.isToday }
+                    if (scale == RecordsScale.WEEK) WeekStrips(cells, selected?.dayKey, text, onSelect, onOpen, holidays = holidays,
                         authorized = context.queries.authorized, overtimeMs = page?.recordedOvertimeMs)
                     else MonthGrid(cells, context.queries.gridLeadingBlanks(first),
-                        weekdayLabels(text, context.queries.window(RecordsScale.WEEK, first).first), selectedDayKey, text, onSelect, onOpen, holidays = holidays)
-                    // Locked selection contains only its appearance; the one Plus action stays below the calendar.
-                    if (selected != null && selected.appearance != RecordsDayAppearance.LOCKED) SelectedDay(selected, text, holidays[selected.dayKey]) { onOpen(selected) }
+                        weekdayLabels(text, context.queries.window(RecordsScale.WEEK, first).first), selected?.dayKey, text, onSelect, onOpen, holidays = holidays)
                 }
                 HolidayCoverageNotice(context.lifeInputs.holidays,
                     context.lifeInputs.archive.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier, first, last)
+                if (scale != RecordsScale.YEAR) {
+                    val selected = cells.firstOrNull { it.dayKey == selectedDayKey } ?: cells.firstOrNull { it.isToday }
+                    // A locked day leads to the one Plus entry, as on iOS.
+                    if (selected != null) RecordsSelectionRow(text.dayTitle(selected.date), recordsDayDescription(selected, holidays[selected.dayKey], text)) {
+                        if (selected.appearance == RecordsDayAppearance.LOCKED) onUnlock() else onOpen(selected)
+                    }
+                }
                 MarkLegend(includesLock = false, text = text, dots = scale == RecordsScale.YEAR,
                     showsHolidays = holidays.values.any { !it.isMakeupWorkday }, showsMakeup = holidays.values.any { it.isMakeupWorkday })
                 if (!context.queries.authorized) RecordsFreeWindowNote(text, onUnlock)
@@ -594,21 +613,6 @@ private fun RecordsActionEntry(title: String, icon: ImageVector, onClick: () -> 
         Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = accent)
         Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
-}
-
-/** The selected day, and the way into its page (iOS `RecordsDayCellCallout`). */
-@Composable
-private fun SelectedDay(cell: RecordsDayCell, text: RecordsText, holiday: HolidayDayAnnotation?, onOpen: () -> Unit) {
-    val locked = cell.appearance == RecordsDayAppearance.LOCKED
-    RecordsSelectionPill(
-        icon = if (locked) Icons.Outlined.Lock else Icons.Outlined.CalendarToday,
-        title = if (locked) text.string(R.string.recordsLockedDay) else text.dayTitle(cell.date),
-        subtitle = if (locked) null else
-            listOfNotNull(holiday?.description(text.string(R.string.holidayMakeupWorkday), text.string(R.string.holidayEstimatedLabel)),
-                text.cellSource(cell), text.recordsDuration((cell.workMs + cell.overtimeMs).toDouble())).joinToString(" · "),
-        action = text.string(if (locked) R.string.plusSeePlans else R.string.recordsSeeThisDay),
-        onClick = onOpen,
-    )
 }
 
 /** One loaded overtime total, kept with the revision and window it answers. */

@@ -62,6 +62,9 @@ class RecordsText(
     /** Each end isolated, so an AM/PM marker stays with its own digits in either direction. */
     fun timeRange(startMs: Double, endMs: Double) = "${TimerText.isolate(time(startMs))} – ${TimerText.isolate(time(endMs))}"
 
+    /** iOS `formatHours`: "233h", one decimal only when it has one. */
+    fun hours(value: Double): String = timer.hours(value)
+
     fun decimal(value: Double): String = NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 1 }.format(value)
 
     fun count(value: Int): String = NumberFormat.getIntegerInstance(locale).format(value)

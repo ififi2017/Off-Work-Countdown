@@ -1,5 +1,7 @@
 package com.rainif.doneat.ui.leave
 
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +36,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtLeave322Tokens
+import com.rainif.doneat.core.designsystem.DoneAtRollingText
+import com.rainif.doneat.core.designsystem.DoneAtRecords322
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.domain.leave.LeavePlanProposal
 import com.rainif.doneat.core.domain.leave.LeavePresentation
@@ -47,9 +51,19 @@ internal fun leaveRestColor(): Color = if (appIsDark()) DoneAtLeave322Tokens.res
 internal fun leaveRestTextColor(): Color = if (appIsDark()) DoneAtLeave322Tokens.restTextDark else DoneAtLeave322Tokens.restTextLight
 
 @Composable
-internal fun LeaveHeroNumber(full: String, number: String, modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.onSurface) {
+internal fun LeaveHeroNumber(full: String, number: String, modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.onSurface, rolls: Boolean = false) {
     val position = full.indexOf(number)
     val headline = MaterialTheme.typography.headlineLarge
+    if (rolls && position >= 0) {
+        // iOS `.numericText()` on the goal stepper: the figure rolls, its words stay put.
+        val words = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum")
+        Row(modifier.clearAndSetSemantics { contentDescription = full }, verticalAlignment = Alignment.Bottom) {
+            if (position > 0) Text(full.substring(0, position), Modifier.padding(bottom = 3.dp), style = words, color = color, maxLines = 1)
+            DoneAtRollingText(number, style = words.copy(fontSize = headline.fontSize, fontWeight = FontWeight.SemiBold), color = color)
+            if (position + number.length < full.length) Text(full.substring(position + number.length), Modifier.padding(bottom = 3.dp), style = words, color = color, maxLines = 1)
+        }
+        return
+    }
     val value = buildAnnotatedString {
         if (position < 0) append(full) else {
             append(full.substring(0, position))
@@ -77,7 +91,8 @@ internal fun LeaveBalanceBar(bar: LeavePresentation.BalanceBar, modifier: Modifi
 @Composable
 internal fun leaveStripTint(kind: LeavePresentation.DayKind): Color = when (kind) {
     LeavePresentation.DayKind.LEAVE, LeavePresentation.DayKind.HALF_LEAVE -> MaterialTheme.colorScheme.primary
-    LeavePresentation.DayKind.HOLIDAY -> leaveRestColor()
+    // iOS LeaveStyle: a holiday is the Records holiday green, ordinary rest a lighter system green.
+    LeavePresentation.DayKind.HOLIDAY -> if (appIsDark()) DoneAtRecords322.holidayDark else DoneAtRecords322.holidayLight
     LeavePresentation.DayKind.REST -> leaveRestColor().copy(alpha = DoneAtLeave322Tokens.weekendAlpha)
     LeavePresentation.DayKind.WORK -> MaterialTheme.colorScheme.surfaceContainerHighest
 }
@@ -127,7 +142,7 @@ internal fun LeaveProposalHeadline(proposal: LeavePlanProposal, text: LeaveText,
             style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
         LeaveHeroNumber(Strings.leaveDaysOff(resources, proposal.fullRestDays), text.wholeNumber(proposal.fullRestDays),
             Modifier.semantics { heading() }, leaveRestTextColor())
-        Text(listOfNotNull(text.range(text.fullDate(proposal.firstRestDayNumber), text.fullDate(proposal.lastRestDayNumber)), holidayName).joinToString(" · "),
+        Text(listOfNotNull(text.range(text.monthDay(proposal.firstRestDayNumber), text.monthDay(proposal.lastRestDayNumber)), holidayName).joinToString(" · "),
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
@@ -140,7 +155,8 @@ internal fun LeaveBridgeCard(proposal: LeavePlanProposal, text: LeaveText) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs),
             modifier = Modifier.semantics(mergeDescendants = true) {}) {
             Icon(Icons.Outlined.WbSunny, null, tint = rest)
-            Text(Strings.leaveDaysOff(resources, proposal.fullRestDays), style = MaterialTheme.typography.labelMedium, color = leaveRestTextColor())
+            // iOS: the compact "15 d" between the two endpoints; the headline already says the rest.
+            Text(text.halfDays(proposal.fullRestDays * 2), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = leaveRestTextColor(), maxLines = 1)
         }
     }
     BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -162,7 +178,7 @@ internal fun LeaveBridgeCard(proposal: LeavePlanProposal, text: LeaveText) {
 
 @Composable
 private fun LeaveBridgeEndpoint(label: Int, instant: Double?, text: LeaveText, modifier: Modifier = Modifier) {
-    Column(modifier.background(MaterialTheme.colorScheme.surfaceContainerLow, MaterialTheme.shapes.medium)
+    Column(modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest, MaterialTheme.shapes.medium)
         .padding(DoneAtSpacing.m).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
         Text(text.string(label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(instant?.let(text::time) ?: "—", style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum"))

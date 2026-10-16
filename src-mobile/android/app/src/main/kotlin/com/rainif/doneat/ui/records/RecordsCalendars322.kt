@@ -6,7 +6,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material.icons.outlined.WbSunny
@@ -19,7 +22,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,11 +54,19 @@ private fun Modifier.calendarDaySemantics(cell: RecordsDayCell, text: RecordsTex
     if (unlocked) customActions = listOf(CustomAccessibilityAction(text.string(R.string.recordsSeeThisDay)) { onOpen(); true })
 }
 
+/** iOS tertiary label: 30% of the primary text colour. */
+private const val LOCKED_DAY_ALPHA = .3f
+
 @Composable
-private fun DayNumber(look: RecordsDayLook, selected: Boolean, text: RecordsText) {
+private fun DayNumber(look: RecordsDayLook, selected: Boolean, text: RecordsText, holiday: HolidayDayAnnotation?) {
     val scheme = MaterialTheme.colorScheme
+    // iOS RecordsDayNumber: locked days are tertiary, rest days and holidays secondary.
+    val quiet = !look.isLocked && (look.cell.appearance == RecordsDayAppearance.REST || holiday?.isMakeupWorkday == false)
     val fill = when { look.cell.isToday && !look.isLocked -> scheme.primary; selected -> scheme.onSurface; else -> Color.Transparent }
-    val ink = when { look.cell.isToday && !look.isLocked -> scheme.onPrimary; selected -> scheme.surface; look.isLocked -> scheme.outline; else -> scheme.onSurface }
+    val ink = when {
+        look.cell.isToday && !look.isLocked -> scheme.onPrimary; selected -> scheme.surface
+        look.isLocked -> scheme.onSurface.copy(alpha = LOCKED_DAY_ALPHA); quiet -> scheme.onSurfaceVariant; else -> scheme.onSurface
+    }
     Box(Modifier.size(T.dateSize).clip(CircleShape).background(fill), contentAlignment = Alignment.Center) {
         Text(text.count(look.cell.date.dayOfMonth), color = ink, style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (look.cell.isToday || selected) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
@@ -117,7 +131,7 @@ internal fun MonthGrid(cells: List<RecordsDayCell>, leadingBlanks: Int, weekdayL
                             Box(Modifier.weight(1f).fillMaxHeight().then(if (selected) modifier else Modifier).clickable { onSelect(cell) }
                                 .calendarDaySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }, holidays[cell.dayKey])) {
                                 Column(Modifier.fillMaxSize().padding(top = DoneAtSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally) {
-                                    DayNumber(look, selected, text)
+                                    DayNumber(look, selected, text, holidays[cell.dayKey])
                                     Spacer(Modifier.height(T.holidayHeight + DoneAtSpacing.xxs))
                                     DayBar(look)
                                 }
@@ -144,7 +158,7 @@ internal fun WeekStrips(cells: List<RecordsDayCell>, selectedDayKey: String?, te
     CappedFontScale {
         Column {
             if (authorized) {
-                Text(text.duration(looks.filter { it.hasSolidHours }.sumOf { it.totalMs }.toDouble()), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                RecordsHeroDuration(text, looks.filter { it.hasSolidHours }.sumOf { it.totalMs }.toDouble())
                 Text(Strings.recordsWorkdaysRecorded(LocalResources.current, text.count(looks.count { it.hasSolidHours })), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             } else Text(overtimeMs?.let { text.string(R.string.recordsOvertimeRecorded) + " " + text.duration(it) } ?: text.string(R.string.recordsNoOvertime), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(DoneAtSpacing.m))
@@ -179,7 +193,7 @@ internal fun WeekStrips(cells: List<RecordsDayCell>, selectedDayKey: String?, te
             Row(Modifier.fillMaxWidth()) { looks.forEach { look ->
                 Box(Modifier.weight(1f).heightIn(min = DoneAtSpacing.minTouch).clickable { onSelect(look.cell) }
                     .calendarDaySemantics(look.cell, text, look.cell.dayKey == selectedDayKey, { onSelect(look.cell) }, { onOpen(look.cell) }, holidays[look.cell.dayKey]), contentAlignment = Alignment.Center) {
-                    DayNumber(look, look.cell.dayKey == selectedDayKey, text)
+                    DayNumber(look, look.cell.dayKey == selectedDayKey, text, holidays[look.cell.dayKey])
                     DayBadge(look, holidays[look.cell.dayKey], Modifier.align(Alignment.TopEnd))
                 }
             } }
@@ -261,8 +275,20 @@ internal fun YearCanvas(cells: List<RecordsDayCell>, year: Int, selectedMonth: I
 /** Only one Plus entry below every free calendar, including locked scales. */
 @Composable
 internal fun RecordsFreeWindowNote(text: RecordsText, onUnlock: () -> Unit) {
-    TextButton(onClick = onUnlock, modifier = Modifier.fillMaxWidth()) {
-        Text(text.string(R.string.recordsFreeWindowNote) + " " + text.string(R.string.recordsFreeWindowAction), style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Start)
+    // iOS: the note in the secondary colour, only its action in semibold accent, on the control fill.
+    val scheme = MaterialTheme.colorScheme
+    val message = buildAnnotatedString {
+        append(text.string(R.string.recordsFreeWindowNote) + " ")
+        withStyle(SpanStyle(color = scheme.primary, fontWeight = FontWeight.SemiBold)) { append(text.string(R.string.recordsFreeWindowAction)) }
+    }
+    Row(
+        Modifier.padding(top = DoneAtSpacing.s + DoneAtSpacing.xxs).fillMaxWidth().clip(RoundedCornerShape(12.dp))
+            .background(scheme.surfaceContainerHighest).clickable(role = Role.Button, onClick = onUnlock)
+            .padding(horizontal = DoneAtSpacing.m - DoneAtSpacing.xxs, vertical = DoneAtSpacing.s + DoneAtSpacing.xxs),
+        horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s),
+    ) {
+        Icon(Icons.Filled.Lock, null, Modifier.padding(top = 3.dp).size(11.dp), tint = scheme.onSurfaceVariant)
+        Text(message, Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }
 }
 
@@ -285,4 +311,67 @@ internal fun recordsMonthDescription(cells: List<RecordsDayCell>, holidays: Map<
         if (daysOff > 0) add(Strings.recordsDaysOff(res, text.count(daysOff)))
     }
     return parts.takeIf { it.isNotEmpty() }?.joinToString(" · ") ?: text.string(R.string.recordsUnrecorded)
+}
+
+/** iOS `RecordsSelectionRow`: the selected day or month under the calendar, and the way into it. */
+@Composable
+internal fun RecordsSelectionRow(title: String, subtitle: String, onClick: (() -> Unit)?) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        Modifier.padding(top = DoneAtSpacing.s + DoneAtSpacing.xxs).fillMaxWidth().clip(MaterialTheme.shapes.medium)
+            .background(scheme.surfaceContainerHighest)
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = DoneAtSpacing.m - DoneAtSpacing.xxs, vertical = DoneAtSpacing.s + DoneAtSpacing.xxs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s + DoneAtSpacing.xxs),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+        }
+        if (onClick != null) Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(18.dp), tint = scheme.onSurface.copy(alpha = LOCKED_DAY_ALPHA))
+    }
+}
+
+/** iOS `RecordsDayDescription.subtitle`, from the same cell projection the calendar drew. */
+@Composable
+internal fun recordsDayDescription(cell: RecordsDayCell, holiday: HolidayDayAnnotation?, text: RecordsText): String {
+    val res = LocalResources.current
+    val look = RecordsDayLook(cell)
+    if (look.isLocked) return text.string(R.string.recordsLockedDayDetail)
+    val holidayName = holiday?.takeIf { !it.isMakeupWorkday }?.name
+    val parts = buildList {
+        if (cell.isToday) add(text.string(R.string.focusToday))
+        if (holidayName != null) add(listOf(holidayName, text.string(R.string.holidayRestDay)).filter { it.isNotEmpty() }.joinToString(" · "))
+        if (holiday?.isMakeupWorkday == true) add(listOf(holiday.name, text.string(R.string.holidayMakeupWorkday)).filter { it.isNotEmpty() }.joinToString(" · "))
+        val hours = text.duration(look.totalMs.toDouble())
+        when {
+            look.hasSolidHours -> {
+                add(if (cell.overtimeMs > 0) Strings.recordsDayHoursWithOvertime(res, hours, text.duration(cell.overtimeMs.toDouble())) else hours)
+                add(text.cellSource(cell))
+            }
+            look.hasHours -> add(if (cell.isProjection) Strings.recordsDayProjectedHours(res, hours) else Strings.recordsDayPlannedHours(res, hours))
+            look.isUnrecordedWorkday -> add(text.string(R.string.recordsDayUnrecordedWorkday))
+            holidayName == null -> add(text.string(R.string.recordsRestDay))
+        }
+        if (look.hasConflict) add(text.string(R.string.recordsConflictCopy))
+    }
+    return parts.joinToString(" · ")
+}
+
+/** iOS `RecordsHeroDuration`: the hours large and bold, their unit small and secondary. */
+@Composable
+internal fun RecordsHeroDuration(text: RecordsText, milliseconds: Double) {
+    val scheme = MaterialTheme.colorScheme
+    val rounded = Math.rint(milliseconds / 360_000.0) / 10
+    val full = text.hours(rounded)
+    val number = text.decimal(rounded)
+    val start = full.indexOf(number)
+    val value = buildAnnotatedString {
+        append(full)
+        addStyle(SpanStyle(fontSize = MaterialTheme.typography.titleSmall.fontSize, fontWeight = FontWeight.SemiBold, color = scheme.onSurfaceVariant), 0, full.length)
+        if (start >= 0) addStyle(SpanStyle(fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold, color = scheme.onSurface), start, start + number.length)
+    }
+    Text(value, style = MaterialTheme.typography.headlineLarge.copy(fontFeatureSettings = "tnum"))
 }
