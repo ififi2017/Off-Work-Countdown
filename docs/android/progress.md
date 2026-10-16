@@ -2,7 +2,7 @@
 
 **这是任务状态的唯一记录。** 交接包 `tasks.json` 只定义依赖、范围和验收，不记录状态。
 
-更新：2026-10-08。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
+更新：2026-10-16。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
 
 ## 任务状态
 
@@ -47,7 +47,7 @@
 | 自动化 | 自定义强调色整合后的四模块 448 项测试通过（domain 337、data 76、design 12、app 23），0 failure / error / skip；lint 0 error / 34 warning / 1 hint，Debug / R8 Release 通过。历史 AAB、测试与构建证据均保留在各自记录中。 |
 | 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture、数字输入、Web/Desktop 构建及 iOS headless build 已有通过证据。本轮基于最新 main 再验证仓库与 Android 门禁。 |
 | 设备 | 保留已有 Auto Backup、业务档案原子恢复及 Pixel 前后台验证；玻璃底栏及自定义强调色已在独立 Pixel Preview 包验收。真实云端换机、购买生命周期与完整无障碍矩阵仍待完成。 |
-| Play Console | 用户于 2026-09-28 确认可上传，商家账号与商品配置完成，并提供许可公钥。许可测试购买和应用审核仍待完成；代理未操作 Console。 |
+| Play Console | 用户于 2026-09-28 确认可上传，商家账号与商品配置完成，并提供许可公钥。所有者于2026-10-16确认正式权限与付费验收完成；代理已只读核对正式权限和空草稿，最终候选仍须核对。 |
 
 ## 下一任务
 
@@ -602,3 +602,78 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 记录月历两入口零额外 gap 分组；请假摘要的全部方案／可选日期减少额外上下留白，48dp 点击区域与现有动作保持。预测警告缩短为两段真实换行，生成目录与 iOS／公共 19 语同步。
 - 七项 gates 最终通过，690 项（domain 437 / data 95 / design-system 12 / app 146）零 failure/error/skip，主代理独立核对 XML。lint 0 errors / 54 existing warnings / 4 hints，Debug / R8 Release 成功；日志 `/private/tmp/doneat-records-action-spacing-android-final-gradle.log`。
 - iOS 新增空工作横条容器修正日期基线；Android 已有固定 Box 槽，无需重复修改。Astra 最终修后实图和源码审核通过。仅实际 iOS 模拟器视觉，Android 源码及自动检查；冻结源 9252fdfd、授权增量 18129168 不变，origin/main c599ad45 model/shared 漂移仍 55 条。完整范围见[本轮记录](../reviews/2026-10-08-records-action-spacing.md)。
+
+
+## 2026-10-16 · Play 3.2.2 最后开发与核对
+
+计划：[3.2.2-release-readiness.md](3.2.2-release-readiness.md)。此处为本轮唯一状态记录，每完成一批工作立即更新命令、实际数量与结果、构建/设备、证据、遗留及下一步；计划与 tasks.json 不复制状态。
+
+### 基准与所有者确认
+
+- 隔离工作树 `/private/tmp/doneat-play-322`，分支 `codex/android-play-322`，起点 `ea3144896caf6595509a8a6fef932d1ac835409a`；iOS 固定参照同一提交，Android 上次 Play 候选 3.2.2 (128) 来源 `963c4922e1`。原产品工作区未提交工作保持原样。
+- 规定 model/shared 漂移命令输出 **58 条**；只采用本计划明确的 UI 和发布配置范围，原冻结源/历史增量保留，不自动移植其它规则。
+- 所有者在本聊天确认：Play 正式发布权限已取得；闹钟已实测；付费已在 Play 测试账号验收。记为 OWNER_CONFIRMED，不冒充本轮代理重跑，也不以历史文档 NOT_RUN 推翻当前确认。尚需本轮改动相关回归及最终产物核对。
+- 所有者允许直接使用 USB Pixel 10 Pro 实机测试/UI 检查，允许开启 iOS 模拟器比对；同一时刻只运行一台模拟器。正式应用数据、真实购买保留，开发使用隔离测试包/合成数据。
+
+### 批次状态
+
+| 批次 | 状态 | 交付/下一步 |
+|---|---|---|
+| B0 文档/基准/设备 | VERIFIED | 计划、58 条漂移、JDK/SDK、USB Pixel 与单一已启动模拟器均核对；继续 B1–B3。 |
+| B1 记录重设计 | IMPLEMENTED | 已实现并交叉源码审查，待统一 Gradle/Pixel 对照。 |
+| B2 休假重设计 | IMPLEMENTED | 已实现并交叉审查，首轮编译问题已修，重跑门禁中。 |
+| B3 欢迎与付费墙 | IMPLEMENTED | 已实现，待统一 Gradle 和 Pixel/iOS 对照。 |
+| B4 更新介绍/翻译 | IMPLEMENTED | 3.2.2 介绍及 19 语已生成，待统一验证。 |
+| B5 发布配置/商店 | IN_PROGRESS | 公钥校验及 4 项 Vitest 已通过，继续实际服务及资料核对。 |
+| B6 最终集成/候选 | IN_PROGRESS | 统一 gates、iOS 对照、Pixel UI/配置相关回归、最终 Play 包。 |
+
+### B0 当前证据
+
+- 原目录 git status 与 worktree 列表已只读核对；独立工作树从 origin/main 创建。当前聊天是官网仓库，托管 create_worktree 无产品仓参数，因此使用产品仓 git worktree，不误建官网工作树。
+- 已完整保存用户批准计划（含后补欢迎/付费墙和设备授权），`git diff --check` PASS。尚未运行新代码测试、安装测试包或操作 Play Console。
+
+- B0 完成：USB `59171FDCH0112D` 已核实 Pixel 10 Pro；无线条目 offline 不使用。JBR 实际位置 `/Volumes/BACKUP/Applications/Android Studio.app/Contents/jbr/Contents/Home`，SDK `/Users/zhengyuxuan/Library/Android/sdk`。XcodeBuildMCP 确认仅 iPhone 18 Pro Max / iOS 27.0 已启动；复用该台，不新增模拟器。初次沙箱 ADB/模拟器连接受限，改用已授权本机访问后读取成功。
+- 按项目模型分工，B1/B2/B3 分别委派 GPT-6.1 Sol / High；主代理统一审查、资源生成、构建、进度和设备操作，各代理不并行启动 Gradle 或模拟器。
+
+### B3/B4 实现交接和 B5 第一组检查
+
+- B3 代理完成专用欢迎、上下文付费墙、真实资格试用时间线、短报告标签和新版预览，4 项新测试待统一执行。保留购买、恢复、草稿和优惠元数据。
+- B4 CURRENT=3.2.2；旧用户可看新介绍，新版本不重新邀请 UPDATE_321 优惠；新增 5 个 Android-only key 全 19 语，生成 24 文件并 --check PASS。
+- B5 公钥校验脚本检查部署 kid、RSA/SPKI/至少 2048 bit；4 项 Vitest PASS，拒绝空值、无效 JSON、缺当前 kid、私钥及弱密钥。
+- 固定 iOS 源构建成功（60.6 秒），实际观察记录月历和中文 Plus；模拟器商品是 StoreKit 演示，不作为 Play 价格证据。
+- Pixel USB 只读确认 Android17、Play 正式 3.2.2(128)、installer=com.android.vending；font_scale=1.0、user_rotation=0，未覆盖或清理正式应用。
+- B1/B2 编辑完成前不并发跑 Gradle；全树 diff 发现 B1 编辑中尾部空行，待完成后修正，不提前宣布全部检查通过。
+
+### B1/B2 实现批次及交叉审查
+
+- B1 替换周/月/年/人生绘制，新增纯展示投影及 5 项 domain/1 项 app 测试，拆分结论/分配/收入；锁定数据不构造、取消旧上下文画面，保存人生选中年龄。B2 新增 5 项展示测试，余额/最早到期/目标/方案/日历/日期/桥接完整替换，搜索、采纳、计次路径未改。
+- 各批交叉只读审查：B1 检查 B2 的 quota/日期选择/时区/边界/RTL 无新增问题；B3 检查 B1 的实际/计划/人生/授权撤回/隐藏薪资无新增问题。B2 发现 Plus 休假演示仍用旧圆点，已要求复用真实新日历，继续修正，未记完成验收。
+- 首轮 Gradle 编译失败的 5 处全部在休假组件，已修捕获外层 maxWidth 和 bridge token，正在重跑完整 gates。JavaScript 51 文件/556 项 PASS；版本/Android strings/iOS 项目检查 PASS。
+- 当前 Worker 查询已通过刷新现有 Wrangler 会话完成：usage_model=standard；24h 聚合 22 requests/0 errors/0 subrequests，CPU p50=0.441ms、p99=0.991ms。该窗口没有 Google 子请求，不能作为真实购买/签名冷路径容量通过证据。curl 空验证返回400 invalid_request；Python 默认 UA 被边缘规则403拒绝，未修改 Cloudflare 规则。
+
+### B1–B4 第一轮完整门禁与 Pixel 初查
+
+- 修复休假组件后，七项 Gradle gates 全部 PASS（2m49s，188 tasks）。主代理实际汇总 XML：domain447/data95/design12/app151，共 **705** 项，零 failure/error/skip；lint0 errors/54 warnings/4 hints；Debug/R8 Release 均成功。日志 `/private/tmp/doneat-play322-gradle.log`。
+- 交叉审查后 Plus 演示复用真实只读新休假日历，已追加 Debug build PASS（10s），验证包 versionCode32202；该后续改动将在最终门禁重跑，不混用前一份全量结果。
+- Pixel 安装独立 parity322，真实 MainActivity 欢迎、班次、提醒、通知拒绝与 Ready 路径已观察；正式 com.rainif.doneat 及其数据未替换。欢迎与 iOS 实际截图比对后，标题回到正文色、指示点限定四个设置步骤。
+- 实际休假结果已确认15天连续色带、最宽周标签、全部181组与详情日历/逐日年假来源；发现摘要卡按内容收窄，已补 fillMaxWidth，等待下一版复核。详情和结果截图位于 `qa/2026-10-16-play322/pixel/`；iOS欢迎/付费墙/休假对照在同目录 ios/。
+- B5：已配置 GitHub Variable DONEAT_BILLING_API_PUBLIC_KEYS，并读回通过公开key校验，未输出内容；没有触发构建、上传或生产发布。
+- Console只读确认正式权限获批，178国家/地区，现有正式草稿为空（尚无AAB、名称/版本说明），没有修改/提交草稿。商店英中草稿已更新3.2.2功能和购买验证说明，英文全文2741字符、短说明64、标题28。
+
+- B5 当前公开key已设置且读回校验 PASS；ESLint PASS。Store Listing 英中已准备但未写入 Console。线上24h低 CPU窗口不含Google子请求，继续保留签名/冷路径容量核对，不能由空请求成功替代。
+
+### B6 首启与复审批次
+
+- Pixel 19语欢迎页完成态逐图已检查（4张contact sheet）；此前过快采集的加载画面已重采，不计通过。真实 MainActivity 走通 Welcome→班次→提醒→Ready→系统表面→Plus介绍→进程中断恢复原介绍→完成设置进入计时页。隔离 gallery 的 Debug Plus 曾保留到 Main，已显式撤回；感谢页仅为 Debug 权益画面，绝不记作真实付费。
+- 引入仓内 v7 合成档案到 parity322，关闭样例通知，不读取正式应用记录。记录月历已显示实际/计划、今天、统一入口与隐藏收入；正在19语扫查。
+- 第二轮源码复审发现并修复：余额超用标签应显示原始值（绘图仍截断）；绿色文字用独立深色token（浅色最低5.07:1）；日期页返回读屏名称匹配全部方案。另在修人生整十年龄边界、宽窄重排阅读位置和大字号摘要头。后续改动仍需最终完整gates。
+- Console 应用内容显示11项已处理、无待注意，但实际 Data safety 仍为“不收集”。按官方规则（https://support.google.com/googleplay/android-developer/answer/10787469）购买历史必须披露；正准备可选购买历史/功能与防欺诈、HTTPS、无账号、非短暂保留草稿，未提交审核。当前线上隐私页 curl 直取确认更新时间2026-10-04，包含Android/Cloudflare/购买token与hash保留；搜索缓存仍是9月旧页，未采用缓存作事实。
+
+### B5 Console草稿与 B6 稳定门禁
+
+- Data safety 已保存为未送审草稿，页面明确“更改已保存。请在发布概览中送审”：仅购买历史/交易记录、可选、应用功能及防欺诈、非短暂保留、HTTPS、无账号、无第三方分享（受托服务提供方豁免），未提交任何审核或生产发布；证据 `qa/2026-10-16-play322/play-data-safety-draft.jpg`。
+- FGS现有声明最后更新10月9日，类型“其他”，说明用户主动设定后的系统闹钟声音、Stop/Snooze、仅响铃期间运行并自动结束，已有YouTube视频；未修改。
+- App access实际存在矛盾：声明付费内容完整可访问，但说明仅“Plus通过Play购买，无demo账号或代码”，Console明确审核员不会自行购买/参加试用。保留原表单；必须明确无收费审核访问路径后才可称可提交审核，不能伪造完整访问。
+- Cloudflare Dashboard Workers计划确认当前免费档（10ms CPU/请求）。OAuth只读API默认usage=standard并不代表付费档；订阅API403，未扩大权限，改通过现有Dashboard读到确定结果。历史12.286/14.293ms尾部风险尚未关闭，没有升级套餐。
+- 所有复审修正后的稳定源码完整gates PASS（2m54s/188tasks）：domain448/data95/design12/app157，共 **712**，零failure/error/skip；lint0 errors/54 warnings/4 hints；Debug/R8 Release成功。日志 `/private/tmp/doneat-play322-final-stable-gradle.log`。前一轮lint运行中源码更新导致长时间PSI遍历，已停止该客户端，不将被中止运行计为通过。
+- releaseRuntimeClasspath未发现Compose/Material3 alpha/beta/rc。实现已保存为 `838b6c11`；下一步仅签名AAB干跑 upload=false，仍不上传Play。Pixel最终隔离32204开始重新全语言完成态采集，启用局部减少动态效果并等待UI就绪；过渡/加载帧不作通过证据。

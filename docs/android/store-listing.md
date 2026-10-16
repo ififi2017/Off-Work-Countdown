@@ -4,65 +4,96 @@ These are editable drafts for the first Android release. The app name, final pac
 
 Google Play currently limits app names to 30 characters, short descriptions to 80, and full descriptions to 4,000 ([Play Console setup](https://support.google.com/googleplay/android-developer/answer/9859152)). Counts below are Unicode characters, including spaces and punctuation.
 
-## English
+## Play 3.2.2 final candidate copy
 
-Adapted from the English ASC 3.2.0 metadata in `app-store-connect/ios/3.2.0.json`. Android-specific surfaces, backup and billing replace the Apple-only features.
+Prepared 2026-10-16. App UI and final Play ProductDetails must match before applying to Console. Existing listing languages only; historical media below are not proof of the redesigned candidate.
 
-**Title (28):** DoneAt: Work Shift Countdown
+### English
 
-**Short description (74):** Your shift countdown, schedule, widgets and estimated earnings at a glance
+**Title:** DoneAt: Work Shift Countdown
 
-**Full description (2,358)**
+**Short description:** Your shift countdown, schedule, time off and records at a glance
+
+**Full description**
 
 How long until you clock out? How much have you earned today?
-DoneAt puts your shift countdown, schedule and estimated earnings in one place. Spend less time doing the math and see where you are in your workday. The core countdown is free.
+DoneAt brings your shift countdown, schedule and estimated earnings together. Set your hours and breaks, and see the effective work time left. The core countdown is free.
 
-YOUR SCHEDULE, ON ANDROID
-• Count down to work before your shift, see effective work time remaining during it, and keep the next shift in sight on days off.
-• Set fixed weekdays, alternating weeks or work/rest rotations, including night shifts that cross midnight.
-• Exclude your custom lunch break from working time.
-• Start early, leave early, add overtime or time an unscheduled day without rebuilding your schedule.
-• Optionally see estimated earnings for today, with weekly and yearly earnings summaries.
-• Get shift, lunch and movement reminders.
+YOUR SCHEDULE
+• Fixed weekdays, alternating weeks, rotations and night shifts.
+• Paint shifts onto a free schedule with a tap or a swipe.
+• Set different shift hours for recurring date ranges, such as summer and winter.
+• Start early, leave early, add overtime or time an unscheduled day.
+• Optional estimated earnings and shift, lunch and movement reminders.
 
-YOUR DAY AT A GLANCE
-Check your countdown with an Android home-screen widget or ongoing notification. Use layouts designed for phones and tablets. Share your countdown as an image or link. DoneAt supports 19 languages and follows your system language.
+RECORDS AND TIME OFF
+Week, Month, Year and Life use clear marks for recorded and planned time. Summaries start with a conclusion, then show hours and estimated income. Add leave balances, see what expires first, compare breaks on a calendar and add your chosen plan to the schedule.
+
+AT A GLANCE
+Check time with Android home-screen widgets or an ongoing notification. Use phone, landscape and large-screen layouts. Share your countdown as an image or link. DoneAt supports 19 languages.
 
 FREE FEATURES AND DONEAT PLUS
-The core countdown is free. View records from the latest seven days in Week and Month views; older days remain locked in those views. Import, export and delete are also free.
+The core countdown and recent seven days of records are free. View recorded overtime totals, import, export and delete your data for free. Time off includes three successful searches; browse every plan and date in a result set without using another search. Empty results do not count. Applying or undoing a plan is free.
 
-DoneAt Plus unlocks:
-• Older records, the Year view and editing past days.
-• Life view: add life milestones and career salary periods to explore past estimates, your current work stage and projected gross lifetime income.
-• Focus: plan tasks in focus and break blocks that respect lunch and shift-end boundaries.
-• Optional cycle-end summaries to look back on your work.
+DoneAt Plus adds:
+• Older records, Year and Life views, and record editing.
+• Career salary history and estimated gross lifetime income.
+• Focus tasks and breaks that respect lunch and shift end.
+• Unlimited time-off searches.
+• Optional shift wake-up alarms that follow your schedule and adopted leave.
+• Weekly, monthly and yearly reports, as an animation or readable summary.
 
-Monthly and yearly subscriptions renew automatically until canceled. Eligible new subscribers can start the yearly plan with a 7-day free trial. Unless canceled before the trial ends, the yearly subscription begins at the price shown by Google Play. Lifetime access is a one-time purchase. Manage subscriptions in Google Play.
+Choose monthly, yearly or one-time lifetime access. Subscriptions renew automatically until canceled. Google Play shows the local price and terms before purchase. An eligible yearly plan may include seven free days, followed by the displayed yearly price unless canceled before the trial ends. Manage subscriptions in Google Play. Buying lifetime access does not cancel an existing subscription.
 
-YOUR DATA, YOUR CHOICE
-No DoneAt account is required. Data stays on your device by default. If Android backup or device transfer is enabled, your records and settings, including salary data, may be backed up or transferred by Android. You can also export and import your own backup files. Salary stays out of widgets, notifications, shared images and links.
+YOUR DATA
+No DoneAt account or ads. Records and salary stay on your device by default. Android backup or device transfer can include records and settings, including salary. You can export and import your own files; automatic Google Drive sync is not included. Purchases are verified with Google Play and DoneAt’s verification service. Work records and salary are not sent to that service. Salary is excluded from widgets, notifications and shared images or links.
 
-Privacy Policy: https://doneat.app/en/privacy
+Privacy: https://doneat.app/en/privacy
+Support: hello@doneat.app
 
-## 简体中文
+### 简体中文
 
-**标题（14）：** DoneAt · 下班倒计时
+**标题：** DoneAt · 下班倒计时
 
-**简短说明（26）：** 看清本班剩余工作时间，记录每一天，安排接下来的工作。
+**简短说明：** 看清本班剩余时间，安排班次与休假，回看工时和预计收入。
 
 **完整说明**
 
-看清这一班还剩多少有效工作时间。DoneAt 会按你安排的工作时段和休息时间倒计时，同时显示进度和预计收入。
+几点下班，心里有数。
+DoneAt 按实际工作时段倒计时，自动扣除午休，并可显示预计收入。基础倒计时永久免费。
 
-设置平时的工时或轮班安排，就能查看当前班次、接下来的工作与提醒。每天的记录留在应用中；桌面小组件可快速查看时间信息，不显示薪资。不用创建账号、购买 Plus 或授权通知，也能开始使用。
+安排你的班次
+• 固定工作日、大小周、轮班、跨夜班和自由排班。
+• 自由排班选好班次，轻点或滑过日期即可填入。
+• 班次可按每年固定日期范围切换时间，适合夏季、冬季作息。
+• 提前上班、提前下班、加班和临时计时只调整当天。
+• 可选收入估算、上下班、午休和起身活动提醒。
 
-免费功能包括计时、排班、收入估算、最近七个自然日的记录，以及基础小组件信息。导入、导出和删除自己的记录也不需要 Plus。
+记录与休假
+周、月、年和人生视图用统一标记区分已发生与计划时间；汇总先讲结论，再列工时、时间分配和预计收入。记录年假、调休假等余额，看清哪些先到期，在日历上比较连休方案，再把选中的方案加入排班。
 
-DoneAt Plus 可查看更长时间范围的记录和图表，使用“人生”视图、编辑记录、安排专注任务，并选择开启周期结束总结。可选择月订阅、年订阅或一次性购买终身版。付款前，Google Play 会显示本地价格与续费条款；订阅取消也在 Google Play 中管理。购买终身版不会自动取消已有订阅。
+不用打开应用也能看时间
+支持 Android 桌面小组件与持续通知，以及手机横屏和大屏布局。可把倒计时分享为图片或链接。支持 19 种语言。
 
-班次、薪资和记录默认保存在设备上。启用 Android 系统备份或设备转移时，记录档案和本机设置（包括未完成的初始设置草稿）可由系统复制、恢复；这些文件可能包含薪资。你也可以自行导入或导出 RecordJSON 文件。本版本没有自动 Google Drive 同步，也不会自动在 iPhone 和 Android 之间同步。购买权益需另外通过 Google Play 恢复。
+免费与 DoneAt Plus
+基础计时、排班、收入估算、近七天记录、已记录加班总时长，以及导入、导出和删除数据均可免费使用。休假规划有三次成功搜索额度，同一组结果里的所有方案、日期和详情均可自由浏览；空结果不计次，采纳与撤销不收费。
 
-收入和长期数字用于规划参考，不是工资结算结果。提醒的实际送达时间受 Android 权限和设备设置影响。
+DoneAt Plus 包括：
+• 更早的记录、年与人生视图，以及记录编辑。
+• 职业收入经历和一生税前收入估算。
+• 不占午休、不越过下班时间的专注任务与休息安排。
+• 不限次数的休假方案搜索。
+• 随排班、节假日和已采纳休假调整的班次起床闹钟。
+• 可播放或阅读的周报、月报和年报。
+
+可选月订阅、年订阅或一次性购买终身版。Google Play 在付款前显示当地价格与续费条款；符合条件的年订阅可享七天试用，试用结束后按显示年费续订，提前取消则不收费。订阅在 Google Play 中管理；购买终身版不会自动取消已有订阅。
+
+数据由你掌握
+无需 DoneAt 账号，无广告。班次、薪资和记录默认保存在设备上；启用 Android 系统备份或设备转移时，记录和设置可由系统复制，其中可能包含薪资。支持自行导入、导出文件，不包含自动 Google Drive 同步。购买通过 Google Play 和 DoneAt 验证服务核实，工作记录与薪资不会发送到该服务。小组件、通知和分享图片、链接不含薪资。
+
+收入数字用于规划参考；提醒与闹钟受系统权限及设备设置影响。
+隐私：https://doneat.app/zh-CN/privacy
+支持：hello@doneat.app
 
 ## Verified contact fields
 
