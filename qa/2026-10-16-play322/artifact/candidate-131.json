@@ -1,0 +1,71 @@
+{
+  "versionName": "3.2.2",
+  "versionCode": 131,
+  "status": "SIGNED_CANDIDATE; Play upgrade and service cold-path gates still open",
+  "sourceCommit": "b43880ff989ad38f05a097b0f253f99d71f403b8",
+  "run": "https://github.com/ififi2017/Off-Work-Countdown/actions/runs/38872260649",
+  "upload": false,
+  "package": "com.rainif.doneat",
+  "aabSHA256": "f147c368651dc1c9d65c72b6da799d066dfcee015610aa07192b863b6f329add",
+  "mappingSHA256": "33d954f29b9e4c48d222782ae13eb60f14b89612260f539b5c91d8c013dd934a",
+  "uploadCertificateSHA256": "0E:13:D5:66:9A:75:4B:1E:66:26:69:53:E0:95:47:3A:74:11:D3:0E:53:FE:79:F0:B2:AC:67:AA:2B:82:74:70",
+  "sameCertificateAs128": true,
+  "receiptKeyId": "billing-2026-01",
+  "receiptKeySPKISHA256": "d78727d9874e2db1491342d02542637934c1564fc758063a879c81aaa5c928f8",
+  "receiptKeyIncludedInDex": true,
+  "apiHost": "https://api.doneat.app",
+  "products": [
+    "doneat_plus",
+    "doneat_plus_lifetime"
+  ],
+  "debuggable": false,
+  "debugGalleryPresent": false,
+  "languageSplits": false,
+  "bundleNativeAlignment": "PAGE_ALIGNMENT_16K",
+  "nativeElf": [
+    {
+      "file": "base/lib/arm64-v8a/libandroidx.graphics.path.so",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "41e9a793c43a0f4fddb19e33f346bace464f30f888ba7b9eaf96294ea115bfb6"
+    },
+    {
+      "file": "base/lib/armeabi-v7a/libandroidx.graphics.path.so",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "41399eba6fc2a60f6f14642375c1824f3cf25eb8fec7397d753730a3ceda3e2b"
+    },
+    {
+      "file": "base/lib/x86/libandroidx.graphics.path.so",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "eb0570b41fd3bff25d8204a967c03bd7550719e768b791f680cc40cbe35f29af"
+    },
+    {
+      "file": "base/lib/x86_64/libandroidx.graphics.path.so",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "4e56c996f13670e70082658de7880c4020eabf4f25e43387f88ed78a713fc9f0"
+    }
+  ],
+  "bundletoolVersion": "1.18.3",
+  "bundletoolValidation": "PASS",
+  "jarSignatureValidation": "PASS",
+  "playUploaded": false,
+  "playInstalled": false,
+  "sourceTag": "android-play-3.2.2-rc131",
+  "localReleaseZipalign16K": "PASS",
+  "automatedCodeChecks": "All PR checks passed on b43880ff"
+}

@@ -1,0 +1,350 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="37" android:compileSdkVersionCodename="17" android:versionCode="131" android:versionName="3.2.2" package="com.rainif.doneat" platformBuildVersionCode="37" platformBuildVersionName="17">
+      
+  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36"/>
+      
+    
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+      
+    
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+      
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+      
+    
+  <uses-permission android:name="android.permission.INTERNET"/>
+      
+    
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+      
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+      
+  <uses-permission android:name="android.permission.VIBRATE"/>
+      
+  <uses-permission android:name="android.permission.WAKE_LOCK"/>
+      
+  <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+   
+    
+  <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+      
+  <uses-permission android:name="com.android.vending.BILLING"/>
+      
+  <queries>
+            
+    <intent>
+                  
+      <action android:name="com.android.vending.billing.InAppBillingService.BIND"/>
+              
+    </intent>
+            
+    <intent>
+                  
+      <action android:name="com.google.android.apps.play.billingtestcompanion.BillingOverrideService.BIND"/>
+              
+    </intent>
+        
+  </queries>
+      
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+      
+  <permission android:name="com.rainif.doneat.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="0x00000002"/>
+      
+  <uses-permission android:name="com.rainif.doneat.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"/>
+      
+  <application android:allowBackup="true" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:dataExtractionRules="@xml/data_extraction_rules" android:extractNativeLibs="false" android:fullBackupContent="@xml/backup_rules" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:localeConfig="@xml/locales_config" android:name="com.rainif.doneat.DoneAtApplication" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:usesCleartextTraffic="false">
+            
+    <activity android:enableOnBackInvokedCallback="true" android:exported="true" android:launchMode="1" android:name="com.rainif.doneat.MainActivity" android:theme="@style/Theme.DoneAt.Starting">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.intent.action.MAIN"/>
+                        
+        <category android:name="android.intent.category.LAUNCHER"/>
+                    
+      </intent-filter>
+                  
+      <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+              
+    </activity>
+            
+        
+    <service android:exported="false" android:foregroundServiceType="0x00000002" android:name="com.rainif.doneat.alarms.ShiftAlarmRingingService"/>
+            
+    <activity android:enableOnBackInvokedCallback="true" android:exported="false" android:name="com.rainif.doneat.alarms.ShiftAlarmRingActivity"/>
+            
+    <receiver android:exported="false" android:name="com.rainif.doneat.alarms.ShiftAlarmReceiver"/>
+            
+    <receiver android:exported="false" android:name="com.rainif.doneat.alarms.ShiftAlarmSystemEventReceiver">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                        
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                        
+        <action android:name="android.intent.action.TIME_SET"/>
+                        
+        <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+                        
+        <action android:name="android.intent.action.LOCALE_CHANGED"/>
+                        
+        <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+        
+    <receiver android:exported="false" android:name="com.rainif.doneat.reminders.ReminderReceiver"/>
+            
+        
+    <receiver android:exported="false" android:name="com.rainif.doneat.reminders.ReminderSystemEventReceiver">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                        
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                        
+        <action android:name="android.intent.action.TIME_SET"/>
+                        
+        <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+                        
+        <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+        
+    <receiver android:exported="true" android:label="@string/widgetPickerSmall" android:name="com.rainif.doneat.widget.DoneAtWidgetReceiver">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                    
+      </intent-filter>
+                  
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_info"/>
+              
+    </receiver>
+            
+    <receiver android:exported="true" android:label="@string/widgetPickerMedium" android:name="com.rainif.doneat.widget.DoneAtWidgetMediumReceiver">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                    
+      </intent-filter>
+                  
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_info_medium"/>
+              
+    </receiver>
+            
+    <receiver android:exported="true" android:label="@string/widgetPickerLarge" android:name="com.rainif.doneat.widget.DoneAtWidgetLargeReceiver">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                    
+      </intent-filter>
+                  
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_info_large"/>
+              
+    </receiver>
+            
+        
+    <receiver android:exported="false" android:name="com.rainif.doneat.widget.WidgetRefreshReceiver"/>
+            
+        
+    <receiver android:exported="false" android:name="com.rainif.doneat.ongoing.OngoingReceiver"/>
+            
+        
+    <provider android:authorities="com.rainif.doneat.share" android:exported="false" android:grantUriPermissions="true" android:name="androidx.core.content.FileProvider">
+                  
+      <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/share_paths"/>
+              
+    </provider>
+            
+    <meta-data android:name="com.google.android.play.billingclient.version" android:value="9.1.0"/>
+            
+    <activity android:configChanges="0x000005b0" android:exported="false" android:name="com.android.billingclient.api.ProxyBillingActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+            
+    <activity android:configChanges="0x000005b0" android:exported="false" android:name="com.android.billingclient.api.ProxyBillingActivityV2" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+            
+    <activity android:exported="false" android:name="com.google.android.gms.common.api.GoogleApiActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+            
+    <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
+            
+        
+    <activity android:enabled="true" android:excludeFromRecents="true" android:exported="false" android:name="androidx.glance.appwidget.action.ActionTrampolineActivity" android:theme="@android:style/Theme.NoDisplay"/>
+            
+    <activity android:enabled="true" android:exported="false" android:launchMode="3" android:name="androidx.glance.appwidget.action.InvisibleActionTrampolineActivity" android:noHistory="true" android:taskAffinity="androidx.glance.appwidget.ListAdapterCallbackTrampoline" android:theme="@style/Widget.Glance.AppWidget.CallbackTrampoline"/>
+            
+    <receiver android:enabled="true" android:exported="false" android:name="androidx.glance.appwidget.action.ActionCallbackBroadcastReceiver"/>
+            
+    <receiver android:enabled="true" android:exported="false" android:name="androidx.glance.appwidget.UnmanagedSessionReceiver"/>
+            
+    <receiver android:enabled="true" android:exported="false" android:name="androidx.glance.appwidget.MyPackageReplacedReceiver">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+    <service android:exported="true" android:name="androidx.glance.appwidget.GlanceRemoteViewsService" android:permission="android.permission.BIND_REMOTEVIEWS"/>
+            
+    <provider android:authorities="com.rainif.doneat.androidx-startup" android:exported="false" android:name="androidx.startup.InitializationProvider">
+                  
+      <meta-data android:name="androidx.work.WorkManagerInitializer" android:value="androidx.startup"/>
+                  
+      <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer" android:value="androidx.startup"/>
+                  
+      <meta-data android:name="androidx.lifecycle.ProcessLifecycleInitializer" android:value="androidx.startup"/>
+                  
+      <meta-data android:name="androidx.profileinstaller.ProfileInstallerInitializer" android:value="androidx.startup"/>
+              
+    </provider>
+            
+    <service android:directBootAware="false" android:enabled="@bool/enable_system_alarm_service_default" android:exported="false" android:name="androidx.work.impl.background.systemalarm.SystemAlarmService"/>
+            
+    <service android:directBootAware="false" android:enabled="@bool/enable_system_job_service_default" android:exported="true" android:name="androidx.work.impl.background.systemjob.SystemJobService" android:permission="android.permission.BIND_JOB_SERVICE"/>
+            
+    <receiver android:directBootAware="false" android:enabled="true" android:exported="false" android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"/>
+            
+    <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
+                        
+        <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+    <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.intent.action.BATTERY_OKAY"/>
+                        
+        <action android:name="android.intent.action.BATTERY_LOW"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+    <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.intent.action.DEVICE_STORAGE_LOW"/>
+                        
+        <action android:name="android.intent.action.DEVICE_STORAGE_OK"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+    <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+    <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver">
+                  
+      <intent-filter>
+                        
+        <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                        
+        <action android:name="android.intent.action.TIME_SET"/>
+                        
+        <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+    <receiver android:directBootAware="false" android:enabled="@bool/enable_system_alarm_service_default" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver">
+                  
+      <intent-filter>
+                        
+        <action android:name="androidx.work.impl.background.systemalarm.UpdateProxies"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+    <receiver android:directBootAware="false" android:enabled="true" android:exported="true" android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver" android:permission="android.permission.DUMP">
+                  
+      <intent-filter>
+                        
+        <action android:name="androidx.work.diagnostics.REQUEST_DIAGNOSTICS"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+    <uses-library android:name="androidx.window.extensions" android:required="false"/>
+            
+    <uses-library android:name="androidx.window.sidecar" android:required="false"/>
+            
+    <service android:name="androidx.core.widget.RemoteViewsCompatService" android:permission="android.permission.BIND_REMOTEVIEWS"/>
+            
+    <receiver android:directBootAware="false" android:enabled="true" android:exported="true" android:name="androidx.profileinstaller.ProfileInstallReceiver" android:permission="android.permission.DUMP">
+                  
+      <intent-filter>
+                        
+        <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE"/>
+                    
+      </intent-filter>
+                  
+      <intent-filter>
+                        
+        <action android:name="androidx.profileinstaller.action.SKIP_FILE"/>
+                    
+      </intent-filter>
+                  
+      <intent-filter>
+                        
+        <action android:name="androidx.profileinstaller.action.SAVE_PROFILE"/>
+                    
+      </intent-filter>
+                  
+      <intent-filter>
+                        
+        <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION"/>
+                    
+      </intent-filter>
+              
+    </receiver>
+            
+    <service android:directBootAware="true" android:exported="false" android:name="androidx.room.MultiInstanceInvalidationService"/>
+            
+    <service android:exported="false" android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery">
+                  
+      <meta-data android:name="backend:com.google.android.datatransport.cct.CctBackendFactory" android:value="cct"/>
+              
+    </service>
+            
+    <service android:exported="false" android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService" android:permission="android.permission.BIND_JOB_SERVICE">
+        </service>
+            
+    <receiver android:exported="false" android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"/>
+     
+        
+    <activity android:exported="false" android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity" android:stateNotNeeded="true" android:theme="@style/Theme.PlayCore.Transparent"/>
+        
+  </application>
+  
+</manifest>

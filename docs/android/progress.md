@@ -620,12 +620,12 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 | 批次 | 状态 | 交付/下一步 |
 |---|---|---|
 | B0 文档/基准/设备 | VERIFIED | 计划、58 条漂移、JDK/SDK、USB Pixel 与单一已启动模拟器均核对；继续 B1–B3。 |
-| B1 记录重设计 | IMPLEMENTED | 已实现并交叉源码审查，待统一 Gradle/Pixel 对照。 |
-| B2 休假重设计 | IMPLEMENTED | 已实现并交叉审查，首轮编译问题已修，重跑门禁中。 |
-| B3 欢迎与付费墙 | IMPLEMENTED | 已实现，待统一 Gradle 和 Pixel/iOS 对照。 |
-| B4 更新介绍/翻译 | IMPLEMENTED | 3.2.2 介绍及 19 语已生成，待统一验证。 |
-| B5 发布配置/商店 | IN_PROGRESS | 公钥校验及 4 项 Vitest 已通过，继续实际服务及资料核对。 |
-| B6 最终集成/候选 | IN_PROGRESS | 统一 gates、iOS 对照、Pixel UI/配置相关回归、最终 Play 包。 |
+| B1 记录重设计 | VERIFIED | 周/月/年/人生、锁定隔离、隐藏收入、真实横竖屏及切标签阅读位置通过；最终Play包归B6。 |
+| B2 休假重设计 | VERIFIED | 新展示、19语、真实搜索/组内浏览/日期/采纳撤销与计次通过；最终候选与综合无障碍留在B6。 |
+| B3 欢迎与付费墙 | IMPLEMENTED | 19语/200%/iOS对照/实际恢复通过；新Play包真实商品资格及TalkBack在B6待补。 |
+| B4 更新介绍/翻译 | VERIFIED | 3.2.2内容、19语生成/视觉与持久化测试通过；未重置旧优惠元数据。 |
+| B5 发布配置/商店 | IN_PROGRESS | 公钥/服务部署/签名131/商店草稿已完成；审核访问、成功签名冷CPU与最终Play升级未关闭。 |
+| B6 最终集成/候选 | IN_PROGRESS | 本地718测试、Pixel32209及签名131通过；Play覆盖升级/真实回执/TalkBack实读待补。 |
 
 ### B0 当前证据
 
@@ -677,3 +677,62 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - Cloudflare Dashboard Workers计划确认当前免费档（10ms CPU/请求）。OAuth只读API默认usage=standard并不代表付费档；订阅API403，未扩大权限，改通过现有Dashboard读到确定结果。历史12.286/14.293ms尾部风险尚未关闭，没有升级套餐。
 - 所有复审修正后的稳定源码完整gates PASS（2m54s/188tasks）：domain448/data95/design12/app157，共 **712**，零failure/error/skip；lint0 errors/54 warnings/4 hints；Debug/R8 Release成功。日志 `/private/tmp/doneat-play322-final-stable-gradle.log`。前一轮lint运行中源码更新导致长时间PSI遍历，已停止该客户端，不将被中止运行计为通过。
 - releaseRuntimeClasspath未发现Compose/Material3 alpha/beta/rc。实现已保存为 `838b6c11`；下一步仅签名AAB干跑 upload=false，仍不上传Play。Pixel最终隔离32204开始重新全语言完成态采集，启用局部减少动态效果并等待UI就绪；过渡/加载帧不作通过证据。
+
+### B5 商店与审核访问核对
+
+- 当前Console仅有en-US，英文短说明64/全文2741字符已经保存未送审草稿，页面“已保存您所做的更改”；未新增商店语言，简中保留仓内候选。证据 `qa/2026-10-16-play322/play-listing-draft.jpg`。当前第4张Records图仍为旧设计，待新图替换。
+- 所有者确认此前没有审核专用访问方式，依据来自网上“可以不留也过审”。已核对Google官方明确条款：即使无登录，有订阅墙也要提供免费完整访问说明/方式（https://support.google.com/googleplay/android-developer/answer/15748846，末条）。原声明未改、不擅加通用解锁码，审核访问门禁继续开放。
+- 草稿PR #313：https://github.com/ififi2017/Off-Work-Countdown/pull/313，已附当前任务。签名干跑 https://github.com/ififi2017/Off-Work-Countdown/actions/runs/38835403691 源码838b6c11802d946967be2e34d832d5cc4d3cc298，upload=false。签名key校验已在CI通过，构建进行中，不冒充已上传/安装。
+- 本地R8 Release四ABI的libandroidx.graphics.path.so PT_LOAD均16KiB，`zipalign -c -P 16 -v 4` PASS；包名com.rainif.doneat/versionName3.2.2，正式配置/签名仍须审查CI AAB，不用本地未签名32204替代正式候选。
+
+### B5 服务优化部署与 B6 候选修订
+
+- 服务优化提交 d4f062c9 已部署至既有 Worker，当前版本 `16d5408d-f98e-49d2-b854-fa860d9dac37`；46/46 服务测试、typecheck、dry-run build PASS。未改变套餐、DNS、绑定或 secrets。回滚版本 `3b64349d-9456-4816-b3d8-3013a95b5397` 已记录（artifact/billing-rollback.json）。2ms startup 不是请求 CPU。
+- 部署后两次明确无效的合成购买 token（冷/热）都返回422 purchase_unavailable；窄窗口统计2请求/0 Worker errors/3子请求，CPU p50 2.970ms、p99 9.073ms。该拒绝路径不含成功签名，不能关闭免费档10ms容量门禁，也不替代真实Play签名回执验收。
+- 19语记录/月历、休假结果、3.2.2介绍、不可购买付费墙逐图完成态采集与语义标题检查通过；Debug32204/32205，Pixel Android17，局部减少动态效果。Plus预览样例价不作为Play价格。年/人生与德文200%摘要、阿语200%锁定隔离另有截图；真实旋转/隐藏收入完整阅读位置尚待修复后复测。
+- 实机发现人生页点击隐藏收入时摘要短暂清空、滚动回顶；已实现计算快照与格式化分离，新增4项测试，正在完整Gradle与实机复测。签名129虽已完成签名/公钥/manifest/16KiB核对，**已标为SUPERSEDED，不是最终候选**。干跑 upload=false，无Play上传、无通知发送。
+- 商店6张图片已保存未送审草稿，顺序倒计时/详情/排班/新记录/专注/微休息；只有第4张用新Pixel实际UI，其余保留既有来源。证据 play-media-draft.jpg 与 store/manifest.json。未送审任何草稿，未发布生产。
+
+### B3 恢复与 B6 修复门禁
+
+- 首次恢复实际走通系统文件选择器→预览→取消，确认 syncedPreferences 仍为null。预置已有合成记录的首次提交被保护拒绝，现有记录未覆盖（测试前置条件问题，不作产品缺陷）。随后在空隔离档案重测：带设置的合成备份直接进入应用；不带设置备份导入记录后进入SCHEDULE，onboardingComplete=false，未提前提交设置。原隔离测试档案与设备设置已恢复，Download临时JSON已删除。
+- Records隐藏收入修复全量7项Gradle gates PASS（3m39s/188tasks），四模块XML共716项，零failure/error/skip。后续仅Plus预览时间区间局部强制LTR，避免阿拉伯语数字倒序；增量app test/lint/Debug/R8 Release PASS（2m14s/178tasks）。未改规则/档案或整页RTL方向。
+- 修复提交56182432d06f6cf7054fdfe822e3774c1dadfde7已推送；新签名干跑run38870282250（run_number30→versionCode130），upload=false，尚在运行。Pixel已安装隔离Debug32207，正在验证隐藏收入及旋转阅读位置。
+
+- Pixel32207隐藏收入实测 PASS：已滚动到人生分配/收入，点击顶部眼睛，两个摘要标题bounds逐字节相同；三个实际可见金额全部替换为••••，读屏树不再含原值（fix-life-before-mask / after-mask）。临时解锁前置只用于合成数据，未绕过正式应用身份确认。
+- 同次真实旋转仍暴露重建丢阅读位置：横屏仍SINGLE，加载占位使旧ScrollState被clamp；已要求保存真实内容上的section/fraction并在ready后一次恢复。user_rotation已恢复0。候选130干跑已主动取消，未上传Play，待修复后新候选。
+- RTDN已从Google Cloud现有会话只读核对：订阅有效，10月15日15:59至16日15:59（UTC+8）oldest_unacked_message_age min/max/latest均0；区域未确认/交付指标该窗无数据，不冒充近期有成功通知。证据artifact/rtdn-audit.json，未改订阅/权限。
+
+### B2 实机搜索、采纳与撤销
+
+- Pixel隔离32207真实免费流程：原8天余额/3次搜索，生成非空7天连休结果后剩2次。全部2类方案按4.5天、5天排序，选择54个日期中的另一组，月分组、详情日历、逐日余额和22:00–06:00跨夜班次、最后一班/返岗均已观察。
+- 同次组内浏览/换日期/看详情不加扣：device JSON leavePlannerTrialsUsed一直为1。采纳4.5天方案后余额3.5天、已计划5天；管理页撤销确认后余额恢复8天、已计划0.5天，既有Aug26合成计划保留，次数仍为1。对应leave-*-final截图与XML。
+- B4介绍/翻译及B2实现本轮证据已收齐，表内更新VERIFIED；最终Play候选、综合200%/宽屏/TalkBack以及服务精确到期仍由B5/B6负责，不代表整体放行。
+
+### B1 旋转根因关闭与最终本地门禁
+
+- 32208恢复器已能在返回竖屏时精确恢复，但首次横屏仍回顶；真实MainActivity同样复现，排除gallery特性。根因是AppShell底栏/侧栏两分支给NavDisplay产生不同的saveable键路径。已统一稳定movableContentOf子树，并通过rememberUpdatedState读取最新内容/回调；未改路由或返回行为。
+- 最终32209实际MainActivity：从人生摘要直接横屏，停留同一分配段（标题[546,486]）；回竖屏分配/收入标题分别恢复[102,654]、[96,1626]，与旋转前完全一致。切Focus再回Records也保持这两个位置。nav-*.png/xml为最终证据，早先fix/main/final-rotation失败图仅作缺陷历史，不作通过。
+- 最终完整7项Gradle门禁 PASS（2m10s/188tasks）：domain448、data95、design12、app163，共718，零failure/error/skip；lint、Debug与R8 Release通过。上一版Records恢复器独立完整门禁也PASS（2m6s）。日志 doneat-play322-nav-final-gradle.log。
+- 阿语200%休假结果、阿语200%非试用方案（三项竖排/恢复/主按钮）、德/印地/阿语200%欢迎逐图检查。宽1000×900dp双列与垂直折叠注入逐图检查，仅记布局预览，非折叠真机证据。多次force-stop后leavePlannerTrialsUsed仍1（剩2次）。真实TalkBack朗读仍未执行。
+- 58行共享路径漂移复查不变，origin/main仍ea3144896caf6595509a8a6fef932d1ac835409a；固定源不移动。签名候选新run38872260649，源码b43880ff，upload=false，构建进行中；130已cancelled，未上传。
+
+- 导航闭包回归补证：32209旋转后切Focus→Records、打开全部记录→Back，人生分配/收入标题仍分别[102,654]/[96,1626]，与原值完全相同。无过期selected/stack回调。nav-focus / nav-all-records / nav-back 对应最终截图。
+- Console内部测试实际是“未启用/无效”状态，保留既有 `3.2.0 (1) - Internal Test` 草稿；新建版本按钮因此禁用。已只读发现并保留，未覆盖旧草稿/改测试人员/上传AAB。已询问Pixel当前许可测试账号，以准备最终Play覆盖升级；没有猜测设备Google账号。此前问题中的“没有内部测试轨道”应读作尚未启用，实际遗留草稿如上。
+
+### 签名候选131与本轮交付边界
+
+- 签名干跑 https://github.com/ififi2017/Off-Work-Countdown/actions/runs/38872260649 SUCCESS，源码 `b43880ff989ad38f05a097b0f253f99d71f403b8`，标记 `android-play-3.2.2-rc131`。131只是本轮签名候选，尚未上传/安装Play，不能记为最终正式放行。129弃用、130取消。
+- 主代理已下载实际AAB独立验证：bundletool1.18.3 validate PASS；JAR签名验证PASS，与128上传证书SHA256一致；com.rainif.doneat/3.2.2/131，非debuggable，无Debug gallery；DEX含线上kid及相同SPKI公钥、API host和两个商品；不拆语言；Bundle PAGE_ALIGNMENT_16K，四ABI ELF PT_LOAD均16384；最终本地R8 APK zipalign -P16 PASS。
+- AAB SHA256 `f147c368651dc1c9d65c72b6da799d066dfcee015610aa07192b863b6f329add`；mapping SHA256 `33d954f29b9e4c48d222782ae13eb60f14b89612260f539b5c91d8c013dd934a`。详细公开配置/签名/manifest见qa/2026-10-16-play322/artifact/candidate-131.json；AAB与mapping保留CI artifact和本机/private/tmp，不提交二进制安装包。
+- 源码b43880ff的PR全部检查通过：Android6m37s、root build4m31s、Rust macOS3m23s/Windows2m2s、check21s；预览 https://vercel.com/ififi2017s-projects/off-work-30/9rhceLq5uvGRwnV3y356YdP3W1mQ 。本轮未改Web/官网。根JS此前51文件/556项、ESLint、version/strings/fixtures/iOS检查及固定源headless iOS build均通过；服务46项单独通过。
+- 结束前再次读取正式包仍3.2.2(128)、installer=com.android.vending；系统font_scale1.0、rotation0、accelerometer_rotation0、三项动画1.0，均与原值一致。清除Debug权益后阿语200%锁定语义不含受保护生日/年龄/金额；恢复隔离应用原合成records/device文件，删除本轮设备临时JSON/XML，临时服务依赖symlink已移除。未运行闹钟/真实付款/退款或清理正式数据。
+
+**当前结论：尚不满足正式送审放行。** 已授权的代码与候选准备已完成，以下事项仍开放：
+
+1. 审核员免费完整访问Plus：所有者确认没有现有方式；原App access矛盾仍原样保留，没有伪造访问说明或植入通用解锁码。已询问是另行设计受限审核访问（设计确认后实施），还是先保留候选暂不送审。
+2. 最终Play覆盖升级：需要确认Pixel当前许可测试Google账号，并决定如何处理未启用内部轨道里既有3.2.0(1)草稿；未经指示未覆盖旧草稿、修改测试人员、上传/投放131。正式生产草稿与已有地区变更未触动。
+3. 新包配置相关许可测试：从Play安装同一最终AAB后验证在线签名回执/精确到期/可恢复状态，并度量成功购买签名冷、热CPU。免费档10ms风险尚不能以2次无效token路径9.073ms关闭；付费套餐未升级，需另行决定。已有所有者闹钟/付费验收确认继续有效，不重复整套旧矩阵。
+4. 真实TalkBack遍历/朗读，以及新Play版本真实年付有无试用资格的UI核对尚未执行；uiautomator语义与Debug样例价不代替它们。
+
+PR #313继续保持draft；未合并、未发布生产。现有main自动alpha上传/提审并发送Lark通知，本轮没有触发该路径，也没有发送消息。

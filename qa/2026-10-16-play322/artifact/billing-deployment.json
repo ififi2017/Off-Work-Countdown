@@ -1,0 +1,16 @@
+{
+  "version": "16d5408d-f98e-49d2-b854-fa860d9dac37",
+  "sourceCommit": "d4f062c9",
+  "service": "doneat-billing-api",
+  "deploymentDate": "2026-10-16",
+  "changes": "cache signing-key imports; isolate OAuth cache and guard refresh/invalidation races; hash each purchase token once",
+  "tests": {
+    "files": 2,
+    "tests": 46,
+    "failures": 0
+  },
+  "startupTimeMs": 2,
+  "plan": "Workers Free; no plan or secret changes",
+  "successfulReceiptColdPathVerified": false,
+  "rollbackVersion": "3b64349d-9456-4816-b3d8-3013a95b5397"
+}

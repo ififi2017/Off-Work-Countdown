@@ -1,0 +1,30 @@
+{
+  "queriedAt": "2026-10-16T07:49:54.460603+00:00",
+  "windowStart": "2026-10-16T07:43:00Z",
+  "windowEnd": "2026-10-16T07:43:10Z",
+  "kind": "two deliberately invalid synthetic tokens; not successful receipt signing",
+  "metrics": {
+    "data": {
+      "viewer": {
+        "accounts": [
+          {
+            "workersInvocationsAdaptive": [
+              {
+                "quantiles": {
+                  "cpuTimeP50": 2970,
+                  "cpuTimeP99": 9073
+                },
+                "sum": {
+                  "errors": 0,
+                  "requests": 2,
+                  "subrequests": 3
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "errors": null
+  }
+}
