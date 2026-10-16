@@ -227,6 +227,18 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     }
 
     val current = page?.takeIf { !locked && it.matches(context.calculation, scale, context.queries.window(scale, anchor).first) }
+    // Stable across Activity recreation, but invalidated by navigation/business/access changes.
+    // Only presentation coordinates are saved; the archive and amounts never enter saved UI state.
+    val readingContentKey = remember(scale, anchor, context.lifeInputs.archive, context.lifeInputs.preferences,
+        context.lifeInputs.session.state, context.lifeInputs.today, context.queries.authorized) {
+        listOf(scale.raw, anchor.toString(), context.lifeInputs.archive.hashCode(), context.lifeInputs.preferences.hashCode(),
+            context.lifeInputs.session.state.hashCode(), context.lifeInputs.today.toString(), context.queries.authorized).joinToString(":")
+    }
+    val readingContentReady = when {
+        locked -> true
+        scale == RecordsScale.LIFE -> profile == null || lifeModel?.matches(context.lifeInputs, context.queries.authorized) == true
+        else -> current != null
+    }
     val month = selectedMonth ?: context.today.monthValue
     val life: @Composable () -> Unit = {
         val stages = lifeStages
@@ -319,7 +331,8 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                     }
                     val density = LocalDensity.current
                     RestoreRecordsScroll(scrollLayout, scrollRestoration, regularScroll, chartScroll, conclusionScroll, expandedScroll,
-                        gap = with(density) { 14.dp.roundToPx() }, expandedInset = with(density) { DoneAtSpacing.page.roundToPx() })
+                        gap = with(density) { 14.dp.roundToPx() }, expandedInset = with(density) { DoneAtSpacing.page.roundToPx() },
+                        contentKey = readingContentKey, contentReady = readingContentReady)
                     val measuredPicker: @Composable () -> Unit = {
                         Box(Modifier.fillMaxWidth().onSizeChanged { scrollRestoration.measure(scrollLayout, picker = it.height) }) {
                             ScalePicker(text, scale) { setScale(it) }
