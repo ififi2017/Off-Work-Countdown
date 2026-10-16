@@ -802,3 +802,9 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 为避免把正式码放进命令行，Pixel 实测使用单独生成的一次性测试码（同样只在受保护文件，经进程参数直接输入、未打印）。隔离 Debug 32212（parity322，带审核/购买公开 key）在普通 MainActivity 设置→关于→审核访问实际验证：激活成功并显示 24 小时到期、刷新成功、记录人生视图解锁；退出后 D1 安装记录为 0；再次激活后在服务端撤销测试码，刷新即回到未激活，人生视图重新锁定并显示 Plus 入口，档案保留。D1 现有有效凭证 1（正式码）、安装 0。未测离线、时钟回拨、重启和 Play 正式包上的激活。
 - 候选 133：run 38922766058（fcc7462e，upload=false）成功。AAB SHA-256 8d9c1130…579da、mapping 9b810dea…d3dd；上传证书与 128/132 相同，jarsigner 与 bundletool 1.18.3 校验通过，manifest com.rainif.doneat 3.2.2(133)、非 debuggable、无调试画廊，16K 对齐，dex 含完整审核与购买公开 key、api.doneat.app 及商品。证据见 `qa/2026-10-16-play322/artifact/*-133.*`。132 被底栏修正取代。
 - 仍待：Play 安装 133 后的正式包冷路径与审核激活、App access 填写正式码与英文说明、Data safety 与新版本一起送审、真实 TalkBack。生产发布另行确认。
+
+### Alpha 草稿 134 与 App access（2026-10-16）
+
+- 所有者要求“上传到 Alpha 草稿、填写 App access、暂不送审”。经验证的 133 AAB 为 11.2MB，超过浏览器上传工具 10MB 上限，故用仓库发布工作流从同一应用代码（878360dd，相对 fcc7462e 仅文档/服务配置变化）上传：run 38924592844，upload=true、track=alpha、status=draft，生成 3.2.2(134) 并打 tag android-v3.2.2-134。下载该运行的产物复核：AAB SHA-256 9d1ba850…5945，mapping 与 133 字节一致（9b810dea…d3dd），上传证书相同，jarsigner/bundletool 通过，非 debuggable、无画廊、16K 对齐，dex 含完整审核/购买公开 key 与 api.doneat.app。Console“最新版本和 app bundle”显示 Alpha 3.2.2(134) 为草稿，128 仍向测试人员发布。证据 `artifact/*-134.*`；133 未上传，作为同代码的预检记录保留。
+- App access：既有条目改名为 “Review access code (no account or payment needed)”，英文说明改为激活步骤（498/500 字符），“包含全部付费内容”保持勾选；用户名留空，正式审核码由所有者本人粘贴到密码栏后点“添加”“保存”（代理不在网页表单输入凭证）。
+- 发布概览“正在审核中的更改”另有正式版国家/地区（177 个及其他）和数据安全两项，非本轮操作，未改动；送审与生产发布仍需所有者另行决定。
