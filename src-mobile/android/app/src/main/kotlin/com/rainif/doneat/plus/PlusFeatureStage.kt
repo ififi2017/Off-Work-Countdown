@@ -228,7 +228,8 @@ private fun TimelineExample(title: Int, time: String, planned: Boolean, progress
     Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
         FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(title), style = MaterialTheme.typography.labelMedium)
-            Text(time, style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(time, style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum",
+                textDirection = androidx.compose.ui.text.style.TextDirection.Ltr), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Canvas(Modifier.fillMaxWidth().height(DoneAtOfferTokens.timelineHeight).clearAndSetSemantics {}) {
             val gap = size.width * .08f

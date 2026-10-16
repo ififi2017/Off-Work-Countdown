@@ -19,6 +19,7 @@ import com.rainif.doneat.core.domain.records.DayResolution
 import com.rainif.doneat.core.domain.records.FoundationCompat
 import com.rainif.doneat.core.domain.records.RecordsDayCell
 import com.rainif.doneat.core.domain.records.RecordsHeadlineSummary
+import com.rainif.doneat.core.domain.records.LifeViewModel
 import com.rainif.doneat.core.domain.records.RecordsQueries
 import com.rainif.doneat.core.domain.records.RecordsScale
 import com.rainif.doneat.core.domain.records.RecordState
@@ -39,6 +40,14 @@ import java.time.LocalDate
 @Immutable
 class RecordsContext(val queries: RecordsQueries, val text: RecordsText, val nowMs: Double, val lifeInputs: LifeInputs) {
     val today: LocalDate get() = queries.today(nowMs)
+    // Formatting (including the earnings mask) can change without invalidating any resolved data.
+    val calculation = RecordsCalculationSnapshot(queries, nowMs)
+}
+
+/** Query identity includes authorization/archive/schedule changes; presentation text is deliberately absent. */
+@Immutable
+data class RecordsCalculationSnapshot(val queries: RecordsQueries, val nowMs: Double) {
+    fun matches(other: RecordsCalculationSnapshot) = queries === other.queries && nowMs == other.nowMs
 }
 
 /** Inputs that can change Life's income or schedule without changing the archive. */
@@ -47,9 +56,13 @@ data class LifeInputs(
     val preferences: SyncedPreferences,
     val holidays: HolidayCalendar,
     val session: ShiftSession,
-    val hideEarnings: Boolean,
     val today: LocalDate,
 )
+
+/** A raw Life result; current renderers supply the current RecordsText, never a captured formatter. */
+data class RecordsLifeSnapshot(val inputs: LifeInputs, val model: LifeViewModel?) {
+    fun matches(inputs: LifeInputs, authorized: Boolean) = authorized && this.inputs == inputs
+}
 
 @Composable
 fun rememberRecordsContext(graph: AppGraph): RecordsContext {
@@ -85,7 +98,7 @@ fun rememberRecordsContext(graph: AppGraph): RecordsContext {
     val text = remember(resources, locale, zone, use24Hour, device.hideEarnings) {
         RecordsText(resources, locale, zone, use24Hour, TimerText(resources, locale, use24Hour, device.hideEarnings))
     }
-    val lifeInputs = LifeInputs(archive, prefs, holidays, session, device.hideEarnings, queries.today(nowMs))
+    val lifeInputs = LifeInputs(archive, prefs, holidays, session, queries.today(nowMs))
     return remember(queries, text, nowMs, lifeInputs) { RecordsContext(queries, text, nowMs, lifeInputs) }
 }
 
@@ -119,7 +132,7 @@ internal fun switchRecordsScale(next: RecordsScale, show: (String) -> Unit, appS
 /** One loaded window: its days (with one lead-in day), cells and summary. */
 @Immutable
 data class RecordsPage(
-    val context: RecordsContext,
+    val calculation: RecordsCalculationSnapshot,
     val scale: RecordsScale,
     val first: LocalDate,
     val last: LocalDate,
@@ -127,19 +140,23 @@ data class RecordsPage(
     val cells: List<RecordsDayCell>,
     val headline: RecordsHeadlineSummary?,
     val recordedOvertimeMs: Double?,
-)
+) {
+    /** A mask/locale formatter update keeps this exact page; a new query (especially revoked Plus) never does. */
+    fun matches(calculation: RecordsCalculationSnapshot, scale: RecordsScale, first: LocalDate) =
+        this.calculation.matches(calculation) && this.scale == scale && this.first == first
+}
 
 /**
  * The window around [anchor]. One lead-in day is resolved because a shift
  * ending at 06:00 on the first began the night before; it is never drawn.
  */
-fun loadPage(context: RecordsContext, scale: RecordsScale, anchor: LocalDate): RecordsPage {
-    val q = context.queries
+fun loadPage(calculation: RecordsCalculationSnapshot, scale: RecordsScale, anchor: LocalDate): RecordsPage {
+    val q = calculation.queries
     val (first, last) = q.window(scale, anchor)
-    val days = q.displayDays(first.minusDays(1), last, context.nowMs)
-    val cells = q.cells(days, first, context.nowMs)
+    val days = q.displayDays(first.minusDays(1), last, calculation.nowMs)
+    val cells = q.cells(days, first, calculation.nowMs)
     return RecordsPage(
-        context, scale, first, last, days, cells, q.headline(cells, days, context.nowMs),
-        if (q.authorized) null else q.recordedOvertimeMs(days, cells.map { it.dayKey }.toSet(), context.nowMs),
+        calculation, scale, first, last, days, cells, q.headline(cells, days, calculation.nowMs),
+        if (q.authorized) null else q.recordedOvertimeMs(days, cells.map { it.dayKey }.toSet(), calculation.nowMs),
     )
 }

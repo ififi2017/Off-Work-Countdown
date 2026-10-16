@@ -81,7 +81,6 @@ import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.domain.records.LifeDates
 import com.rainif.doneat.core.domain.records.LifeStageCalculator
 import com.rainif.doneat.core.domain.records.LifeStageKind
-import com.rainif.doneat.core.domain.records.LifeViewModel
 import com.rainif.doneat.core.domain.records.RecordsDayAppearance
 import com.rainif.doneat.core.domain.records.RecordsDayCell
 import com.rainif.doneat.core.domain.records.RecordsScale
@@ -129,10 +128,10 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     val locked = scale.requiresPlus && !context.queries.authorized
     val profile = context.queries.state.lifeProfile
 
-    LaunchedEffect(context, scale, anchor, locked) {
+    LaunchedEffect(context.calculation, scale, anchor, locked) {
         // A locked scale is never computed: there is nothing it may show. Life draws from the profile instead.
         if (locked || scale == RecordsScale.LIFE) return@LaunchedEffect
-        val loaded = withContext(Dispatchers.Default) { loadPage(context, scale, anchor) }
+        val loaded = withContext(Dispatchers.Default) { loadPage(context.calculation, scale, anchor) }
         page = loaded
         if (selectedDayKey != null && loaded.cells.none { it.dayKey == selectedDayKey }) selectedDayKey = null
     }
@@ -140,7 +139,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     // Plan 020 §5: recorded overtime is open to free users as one number. Plus
     // reads it inside its summary, so only Life and free periods load it here.
     var overtime by remember { mutableStateOf<RecordedOvertime?>(null) }
-    LaunchedEffect(context, scale, anchor, page) {
+    LaunchedEffect(context.calculation, scale, anchor, page) {
         val q = context.queries
         if (scale != RecordsScale.LIFE && q.authorized) return@LaunchedEffect
         val first = q.window(scale, anchor).first
@@ -150,7 +149,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
             } else if (!locked) {
                 // The page already resolved this window. Await its snapshot rather
                 // than expanding the same schedule twice for free week/month views.
-                val loaded = page?.takeIf { it.context === context && it.scale == scale && it.first == first }
+                val loaded = page?.takeIf { it.matches(context.calculation, scale, first) }
                     ?: return@withContext null
                 loaded.recordedOvertimeMs
             } else {
@@ -159,16 +158,16 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                 q.recordedOvertimeMs(days, days.map { it.dayKey }.filter { it >= first.toString() }.toSet(), context.nowMs)
             }
         }
-        overtime = RecordedOvertime(context, scale, first, ms)
+        overtime = RecordedOvertime(context.calculation, scale, first, ms)
     }
 
     // Life's allocation walks a whole career, so it is built once per revision and only while Life is shown.
-    var lifeModel by remember { mutableStateOf<Pair<LifeInputs, LifeViewModel?>?>(null) }
-    LaunchedEffect(context, scale, locked) {
+    var lifeModel by remember { mutableStateOf<RecordsLifeSnapshot?>(null) }
+    LaunchedEffect(context.calculation, scale, locked) {
         if (scale != RecordsScale.LIFE || locked || context.queries.state.lifeProfile == null) return@LaunchedEffect
-        if (lifeModel?.first == context.lifeInputs) return@LaunchedEffect
+        if (lifeModel?.matches(context.lifeInputs, context.queries.authorized) == true) return@LaunchedEffect
         val monthly = configuredMonthlySalary(graph)
-        lifeModel = context.lifeInputs to withContext(Dispatchers.Default) { context.queries.lifeModel(context.nowMs, monthly) }
+        lifeModel = RecordsLifeSnapshot(context.lifeInputs, withContext(Dispatchers.Default) { context.queries.lifeModel(context.nowMs, monthly) })
     }
     val lifeStages = remember(profile, context.today, context.queries.zone) {
         profile?.let {
@@ -227,7 +226,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         }
     }
 
-    val current = page?.takeIf { it.context === context && it.scale == scale && it.first == context.queries.window(scale, anchor).first && !locked }
+    val current = page?.takeIf { !locked && it.matches(context.calculation, scale, context.queries.window(scale, anchor).first) }
     val month = selectedMonth ?: context.today.monthValue
     val life: @Composable () -> Unit = {
         val stages = lifeStages
@@ -276,11 +275,11 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             // Life's conclusion is behind Plus too: a locked life never prints a projected number.
             if (scale == RecordsScale.LIFE && !locked && profile != null) {
-                val loaded = lifeModel?.takeIf { it.first == context.lifeInputs }
-                LifeAllocationCard(loaded?.second, loading = loaded == null, decline = profile.futureIncomeDecline, text = text, graph = graph)
+                val loaded = lifeModel?.takeIf { it.matches(context.lifeInputs, context.queries.authorized) }
+                LifeAllocationCard(loaded?.model, loading = loaded == null, decline = profile.futureIncomeDecline, text = text, graph = graph)
             }
             val overtimeMs = overtime?.takeIf {
-                it.context == context && it.scale == scale && it.first == context.queries.window(scale, anchor).first
+                it.calculation.matches(context.calculation) && it.scale == scale && it.first == context.queries.window(scale, anchor).first
             }?.milliseconds
             // Life totals only overtime actually recorded, for everyone; the projected career never adds to it.
             if (scale == RecordsScale.LIFE && overtimeMs != null) OvertimeLine(text, overtimeMs)
@@ -600,7 +599,7 @@ private fun SelectedDay(cell: RecordsDayCell, text: RecordsText, holiday: Holida
 }
 
 /** One loaded overtime total, kept with the revision and window it answers. */
-private data class RecordedOvertime(val context: RecordsContext, val scale: RecordsScale, val first: LocalDate, val milliseconds: Double?)
+private data class RecordedOvertime(val calculation: RecordsCalculationSnapshot, val scale: RecordsScale, val first: LocalDate, val milliseconds: Double?)
 
 /**
  * Recorded overtime for the period as one line (iOS `RecordsOvertimeLine`).
