@@ -2283,6 +2283,14 @@
       "resource": "string/onboardingOngoingSurface",
       "androidOnly": true
     },
+    "onboardingPagePosition": {
+      "resource": "string/onboardingPagePosition",
+      "params": [
+        "current",
+        "total"
+      ],
+      "androidOnly": true
+    },
     "onboardingPlusFocusBreakBody": {
       "resource": "string/onboardingPlusFocusBreakBody"
     },
@@ -2451,6 +2459,10 @@
     },
     "plusAndroidStoreUnconfigured": {
       "resource": "string/plusAndroidStoreUnconfigured",
+      "androidOnly": true
+    },
+    "plusAndroidTrialCancelBody": {
+      "resource": "string/plusAndroidTrialCancelBody",
       "androidOnly": true
     },
     "plusAndroidYearlyTrialPrice": {
@@ -3392,6 +3404,18 @@
       "params": [
         "year"
       ]
+    },
+    "release322LeaveBody": {
+      "resource": "string/release322LeaveBody",
+      "androidOnly": true
+    },
+    "release322RecordsBody": {
+      "resource": "string/release322RecordsBody",
+      "androidOnly": true
+    },
+    "release322WelcomeBody": {
+      "resource": "string/release322WelcomeBody",
+      "androidOnly": true
     },
     "remindersMayBeLate": {
       "resource": "string/remindersMayBeLate",

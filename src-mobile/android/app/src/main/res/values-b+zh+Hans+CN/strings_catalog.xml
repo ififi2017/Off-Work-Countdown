@@ -625,6 +625,7 @@
     <string name="onboardingOfflineBody">不用账号，也不依赖网络。</string>
     <string name="onboardingOfflineTitle">离线也能用</string>
     <string name="onboardingOngoingSurface">常驻通知</string>
+    <string name="onboardingPagePosition">第 %1$s 页，共 %2$s 页</string>
     <string name="onboardingPlusFocusBreakBody">下一项任务会等你准备好，不会自动开始。</string>
     <string name="onboardingPlusFocusTask">完成本周复盘</string>
     <string name="onboardingPlusFocusTitle">给一件事留出完整的一段时间</string>
@@ -673,6 +674,7 @@
     <string name="plusAndroidRequestFailed">Google Play 暂时无法完成操作。请稍后重试。</string>
     <string name="plusAndroidStoreOffline">暂时无法确认你的 Plus 权益。请重试或恢复购买。</string>
     <string name="plusAndroidStoreUnconfigured">这台设备暂时无法购买 Plus。计时器和近期记录仍可使用。</string>
+    <string name="plusAndroidTrialCancelBody">在试用结束前通过 Google Play 取消，即不会收费。</string>
     <string name="plusAndroidYearlyTrialPrice">免费试用 7 天，之后每年 %1$s。在试用结束前取消即可避免扣费。</string>
     <string name="plusAutoRenew">订阅会自动续期，直到你取消。年订可含 7 天试用，试用结束后按年价计费。终身是一次性买断，不会自动取消已有订阅。</string>
     <string name="plusBenefitCharts">完整年度和工作人生视图</string>
@@ -937,6 +939,9 @@
     <string name="recordsWorkdaysRecorded">记录 %1$s 个工作日</string>
     <string name="recordsWorkedTime">已工作</string>
     <string name="recordsYearLabel">%1$s 年</string>
+    <string name="release322LeaveBody">看清剩余假期，在日历上比较连休，找到更省假的方案。</string>
+    <string name="release322RecordsBody">周、月、年和人生视图焕新，分清已记录与计划时间，先看结论，再看工时和预计收入。</string>
+    <string name="release322WelcomeBody">欢迎页重新设计，Plus 方案更清晰，选择前即可了解试用安排。</string>
     <string name="remindersMayBeLate">提醒可能会晚几分钟送达。允许精确提醒即可准时收到。</string>
     <string name="remindersSection">提醒</string>
     <string name="replayCelebration">点按重放庆祝动画</string>

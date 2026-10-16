@@ -635,6 +635,7 @@
     <string name="onboardingOfflineBody">بلا حساب. يعمل دون شبكة.</string>
     <string name="onboardingOfflineTitle">يعمل دون اتصال</string>
     <string name="onboardingOngoingSurface">إشعار مستمر</string>
+    <string name="onboardingPagePosition">الصفحة %1$s من %2$s</string>
     <string name="onboardingPlusFocusBreakBody">المهمة التالية تنتظرك حتى تصبح جاهزًا. لا شيء يبدأ من تلقاء نفسه.</string>
     <string name="onboardingPlusFocusTask">إنهاء المراجعة الأسبوعية</string>
     <string name="onboardingPlusFocusTitle">أعط مهمة واحدة فترة زمنية واضحة</string>
@@ -683,6 +684,7 @@
     <string name="plusAndroidRequestFailed">تعذّر على Google Play إكمال الطلب. حاول مرة أخرى بعد قليل.</string>
     <string name="plusAndroidStoreOffline">تعذّر تأكيد صلاحية وصولك الحالية إلى Plus. حاول مجددًا أو استعد مشترياتك.</string>
     <string name="plusAndroidStoreUnconfigured">شراء Plus غير متاح على هذا الجهاز حاليًا. لا يزال بإمكانك استخدام المؤقت والسجلات الأخيرة.</string>
+    <string name="plusAndroidTrialCancelBody">ألغِ في Google Play قبل نهاية الفترة التجريبية ولن تُفرض عليك رسوم.</string>
     <string name="plusAndroidYearlyTrialPrice">7 أيام مجانًا، ثم %1$s سنويًا. ألغِ الاشتراك قبل انتهاء الفترة التجريبية لتجنّب تحصيل الرسوم.</string>
     <string name="plusAutoRenew">تتجدد الاشتراكات تلقائيًا حتى تُلغيها. قد تتضمن الخطة السنوية 7 أيام مجانية، ثم يُحتسب السعر السنوي. الشراء بدفعة واحدة دفعة واحدة فقط ولا يُلغي تلقائيًا اشتراكًا ساريًا.</string>
     <string name="plusBenefitCharts">عرض السنة كاملة وحياة العمل</string>
@@ -952,6 +954,9 @@
     <string name="recordsWorkdaysRecorded">أيام العمل المسجلة: %1$s</string>
     <string name="recordsWorkedTime">وقت العمل المنقضي</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">اطّلع على رصيد إجازتك وقارن فترات الراحة على التقويم لتجد الخطة التي تستهلك أقل عدد من الأيام.</string>
+    <string name="release322RecordsBody">تصميم جديد للأسبوع والشهر والسنة والعمر، مع تمييز الوقت المسجل عن المخطط وعرض الخلاصة والدخل التقديري.</string>
+    <string name="release322WelcomeBody">شاشة ترحيب جديدة وخطط Plus أوضح، مع تفاصيل التجربة قبل الاختيار.</string>
     <string name="remindersMayBeLate">قد تصل التذكيرات متأخرة ببضع دقائق. اسمح بالتذكيرات الدقيقة لتصلك في موعدها.</string>
     <string name="remindersSection">التذكيرات</string>
     <string name="replayCelebration">اضغط لإعادة تشغيل الاحتفال</string>

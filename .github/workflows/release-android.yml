@@ -70,8 +70,8 @@ jobs:
       ORG_GRADLE_PROJECT_doneatPlusLifetimeProduct: ${{ vars.DONEAT_PLUS_LIFETIME_PRODUCT }}
       ORG_GRADLE_PROJECT_doneatPlusLifetimePurchaseOption: ${{ vars.DONEAT_PLUS_LIFETIME_PURCHASE_OPTION }}
       ORG_GRADLE_PROJECT_doneatPlayBillingPublicKey: ${{ vars.DONEAT_PLAY_BILLING_PUBLIC_KEY }}
-      # A manual test build can verify the deployed service before enabling it for every release.
-      # Public keys only; the repository default stays empty until license-test acceptance.
+      # Required for exact subscription expiry, including subscription-backed shift alarms.
+      # Public keys only; both manual and automatic release builds validate the deployed identity.
       ORG_GRADLE_PROJECT_doneatBillingApiPublicKeys: ${{ inputs.billing_api_public_keys || vars.DONEAT_BILLING_API_PUBLIC_KEYS }}
       # push 没有 inputs：合并触发的固定为上传到 alpha 并提审。
       # 签名属性和 keystore 路径要在同一处出现：Gradle 配置阶段会在每个任务里读它们，
@@ -120,6 +120,9 @@ jobs:
             echo "::error::Missing repository variables for: ${missing[*]}"
             exit 1
           fi
+
+      - name: Require signed receipt verification
+        run: node scripts/check-android-billing-config.mjs
 
       # keystore 只落在 runner 的临时目录，任务结束即销毁。
       - name: Restore upload keystore

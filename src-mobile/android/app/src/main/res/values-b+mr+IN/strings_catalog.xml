@@ -627,6 +627,7 @@
     <string name="onboardingOfflineBody">खाते नाही. नेटवर्कशिवाय चालते.</string>
     <string name="onboardingOfflineTitle">ऑफलाइनही चालते</string>
     <string name="onboardingOngoingSurface">कायम दिसणारी सूचना</string>
+    <string name="onboardingPagePosition">%2$s पैकी पान %1$s</string>
     <string name="onboardingPlusFocusBreakBody">आपण तयार होईपर्यंत पुढील कार्य प्रतीक्षा करते. काहीही स्वतःपासून सुरू होत नाही.</string>
     <string name="onboardingPlusFocusTask">साप्ताहिक पुनरावलोकन पूर्ण करा</string>
     <string name="onboardingPlusFocusTitle">एका कार्याला स्पष्ट वेळ द्या</string>
@@ -675,6 +676,7 @@
     <string name="plusAndroidRequestFailed">Google Play विनंती पूर्ण करू शकले नाही. थोड्या वेळाने पुन्हा प्रयत्न करा.</string>
     <string name="plusAndroidStoreOffline">तुमचा सध्याचा Plus प्रवेश निश्चित करता आला नाही. पुन्हा प्रयत्न करा किंवा खरेदी पुनर्संचयित करा.</string>
     <string name="plusAndroidStoreUnconfigured">या डिव्हाइसवर Plus खरेदी अद्याप उपलब्ध नाही. टाइमर आणि अलीकडील नोंदी वापरता येतील.</string>
+    <string name="plusAndroidTrialCancelBody">चाचणी संपण्यापूर्वी Google Play मध्ये रद्द केल्यास शुल्क आकारले जाणार नाही.</string>
     <string name="plusAndroidYearlyTrialPrice">7 दिवस मोफत, त्यानंतर दरवर्षी %1$s. शुल्क टाळण्यासाठी चाचणी संपण्यापूर्वी रद्द करा.</string>
     <string name="plusAutoRenew">तुम्ही रद्द करेपर्यंत सदस्यता आपोआप सुरू राहते. वार्षिक योजनेत 7 दिवस मोफत असू शकतात, त्यानंतर वार्षिक दर लागतो. एकदाच घेण्याची खरेदी एकच पेमेंट आहे आणि सुरू असलेली सदस्यता आपोआप रद्द करत नाही.</string>
     <string name="plusBenefitCharts">पूर्ण वर्ष आणि कामाच्या आयुष्याची दृश्ये</string>
@@ -940,6 +942,9 @@
     <string name="recordsWorkdaysRecorded">नोंदवलेले कामाचे दिवस: %1$s</string>
     <string name="recordsWorkedTime">काम केलेला वेळ</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">उरलेली रजा पाहा, दिनदर्शिकेवर सुट्ट्यांची तुलना करा आणि कमी रजा लागणारे नियोजन शोधा.</string>
+    <string name="release322RecordsBody">आठवडा, महिना, वर्ष आणि जीवन यांना नवे रूप: नोंदवलेला व नियोजित वेळ स्पष्टपणे वेगळा, सारांश आणि अंदाजित उत्पन्नासह.</string>
+    <string name="release322WelcomeBody">नवे स्वागत पान आणि अधिक स्पष्ट Plus योजना, निवडण्यापूर्वी चाचणीच्या माहितीसह.</string>
     <string name="remindersMayBeLate">स्मरणपत्रे काही मिनिटे उशिरा येऊ शकतात. वेळेवर मिळवण्यासाठी अचूक स्मरणपत्रांना परवानगी द्या.</string>
     <string name="remindersSection">स्मरणपत्रे</string>
     <string name="replayCelebration">उत्सव पुन्हा पाहण्यासाठी टॅप करा</string>

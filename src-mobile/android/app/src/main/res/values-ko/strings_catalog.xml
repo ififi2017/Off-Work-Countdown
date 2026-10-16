@@ -625,6 +625,7 @@
     <string name="onboardingOfflineBody">계정 없이. 네트워크 없이도 됩니다.</string>
     <string name="onboardingOfflineTitle">오프라인에서도 작동</string>
     <string name="onboardingOngoingSurface">상시 알림</string>
+    <string name="onboardingPagePosition">%2$s페이지 중 %1$s페이지</string>
     <string name="onboardingPlusFocusBreakBody">다음 작업은 준비가 될 때까지 기다립니다. 아무것도 저절로 시작되지 않습니다.</string>
     <string name="onboardingPlusFocusTask">주간 복습을 마무리하세요</string>
     <string name="onboardingPlusFocusTitle">한 가지 일에 명확한 시간을 할당하라</string>
@@ -673,6 +674,7 @@
     <string name="plusAndroidRequestFailed">Google Play에서 요청을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.</string>
     <string name="plusAndroidStoreOffline">현재 Plus 이용 권한을 확인할 수 없습니다. 다시 시도하거나 구매를 복원해 주세요.</string>
     <string name="plusAndroidStoreUnconfigured">이 기기에서는 아직 Plus를 구매할 수 없습니다. 타이머와 최근 기록은 계속 사용할 수 있습니다.</string>
+    <string name="plusAndroidTrialCancelBody">체험이 끝나기 전에 Google Play에서 취소하면 요금이 청구되지 않습니다.</string>
     <string name="plusAndroidYearlyTrialPrice">7일 무료 체험 후 연간 %1$s가 청구됩니다. 요금이 청구되지 않도록 체험 종료 전에 취소하세요.</string>
     <string name="plusAutoRenew">구독은 취소할 때까지 자동으로 갱신됩니다. 연간 요금제에는 7일 무료 기간이 포함될 수 있고, 끝나면 연 요금이 청구됩니다. 평생은 한 번만 결제하며, 이미 있는 구독을 자동으로 취소하지는 않습니다.</string>
     <string name="plusBenefitCharts">연간 전체와 직장 생활 보기</string>
@@ -937,6 +939,9 @@
     <string name="recordsWorkdaysRecorded">기록한 근무일 %1$s일</string>
     <string name="recordsWorkedTime">일한 시간</string>
     <string name="recordsYearLabel">%1$s년</string>
+    <string name="release322LeaveBody">남은 휴가를 확인하고 달력에서 연휴를 비교해 휴가를 적게 쓰는 계획을 찾아보세요.</string>
+    <string name="release322RecordsBody">주·월·연·인생 보기를 새롭게 정리했어요. 기록과 계획을 구분하고 핵심 내용, 근무 시간, 예상 수입을 확인하세요.</string>
+    <string name="release322WelcomeBody">새로운 환영 화면과 더 명확한 Plus 요금제에서 선택 전에 체험 일정을 확인하세요.</string>
     <string name="remindersMayBeLate">알림이 몇 분 늦게 도착할 수 있습니다. 정확한 알림을 허용하면 제시간에 받을 수 있습니다.</string>
     <string name="remindersSection">알림</string>
     <string name="replayCelebration">탭하면 축하 효과를 다시 재생</string>

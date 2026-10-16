@@ -2,6 +2,7 @@ package com.rainif.doneat.ui.leave
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,22 +29,21 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,6 +54,7 @@ import com.rainif.doneat.R
 import com.rainif.doneat.core.data.WriteResult
 import com.rainif.doneat.core.designsystem.DoneAtPrimaryButton
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
+import com.rainif.doneat.core.domain.leave.LeavePresentation
 import com.rainif.doneat.core.domain.leave.LeaveAdoption
 import com.rainif.doneat.core.domain.leave.LeavePlanItem
 import com.rainif.doneat.core.domain.leave.LeavePlanProposal
@@ -69,7 +70,6 @@ import com.rainif.doneat.ui.components.RowDivider
 import com.rainif.doneat.ui.components.SettingsFooter
 import com.rainif.doneat.ui.components.SettingsGroup
 import com.rainif.doneat.ui.components.SwitchRow
-import com.rainif.doneat.ui.components.ValueRow
 import com.rainif.doneat.ui.onboarding.appIsDark
 import com.rainif.doneat.ui.timer.Haptics
 import kotlinx.coroutines.Job
@@ -208,6 +208,7 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
             if (goalIsRest) {
                 StepperRow(
                     text.string(R.string.leaveGoalRest), Strings.leaveAtLeast(context.resources, text.wholeDays(restDays)),
+                    number = text.wholeNumber(restDays), hint = text.string(R.string.leaveGoalRestHint),
                     canDecrease = restDays > 2, canIncrease = restDays < 60,
                     onDecrease = { restDays -= 1 }, onIncrease = { restDays += 1 },
                 )
@@ -216,6 +217,7 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
                 val value = leaveHalfDays.coerceIn(1, ceiling)
                 StepperRow(
                     text.string(R.string.leaveGoalBudget), Strings.leaveUpTo(context.resources, text.halfDays(value)),
+                    number = text.halfDaysNumber(value), hint = text.string(R.string.leaveGoalBudgetHint),
                     canDecrease = selectedHalfDays > 0 && value > 1, canIncrease = selectedHalfDays > 0 && value < ceiling,
                     onDecrease = { leaveHalfDays = value - 1 }, onIncrease = { leaveHalfDays = value + 1 },
                 )
@@ -268,22 +270,22 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
 }
 
 @Composable
-private fun StepperRow(title: String, value: String, canDecrease: Boolean, canIncrease: Boolean, onDecrease: () -> Unit, onIncrease: () -> Unit) {
+private fun StepperRow(title: String, value: String, number: String, hint: String, canDecrease: Boolean, canIncrease: Boolean, onDecrease: () -> Unit, onIncrease: () -> Unit) {
     val view = LocalView.current
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = DoneAtSpacing.l, end = DoneAtSpacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.primary)
+    Column(Modifier.fillMaxWidth().padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+            LeaveHeroNumber(value, number, Modifier.align(Alignment.CenterVertically))
+            Row {
+                IconButton(onClick = { onDecrease(); view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) }, enabled = canDecrease) {
+                    Icon(Icons.Outlined.Remove, "$title −")
+                }
+                IconButton(onClick = { onIncrease(); view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) }, enabled = canIncrease) {
+                    Icon(Icons.Outlined.Add, "$title +")
+                }
+            }
         }
-        IconButton(onClick = { onDecrease(); view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) }, enabled = canDecrease) {
-            Icon(Icons.Outlined.Remove, "$title −")
-        }
-        IconButton(onClick = { onIncrease(); view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) }, enabled = canIncrease) {
-            Icon(Icons.Outlined.Add, "$title +")
-        }
+        Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -435,20 +437,9 @@ fun LeavePlanDetailScreen(graph: AppGraph, index: Int, onBack: () -> Unit, onAdo
     DoneAtPage(title, onBack, text.string(R.string.leaveResultsTitle)) {
         if (!plus) LeaveTrialBanner(device.leavePlannerTrialsLeft, text)
 
-        // The headline: how long the break is and what it costs, before any detail.
-        Column(
-            Modifier.padding(horizontal = DoneAtSpacing.page + DoneAtSpacing.xs).semantics(mergeDescendants = true) {},
-            verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs),
-        ) {
-            Text(
-                Strings.leaveDaysOff(context.resources, proposal.fullRestDays),
-                Modifier.semantics { heading() },
-                style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
-            )
-            Text(
-                if (proposal.costHalfDays == 0) text.string(R.string.leaveNoLeaveNeeded) else text.uses(proposal.costHalfDays),
-                style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary,
-            )
+        SettingsGroup {
+            LeaveProposalHeadline(proposal, text, Modifier.padding(DoneAtSpacing.l),
+                leaveHolidayName(proposal, holidays, records.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier, text))
         }
         SettingsGroup {
             LeavePlanCalendar(proposal, text, device.calendarFirstDay(text.locale), Modifier.padding(DoneAtSpacing.m), holidays, records.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier)
@@ -460,12 +451,12 @@ fun LeavePlanDetailScreen(graph: AppGraph, index: Int, onBack: () -> Unit, onAdo
                     if (i > 0) RowDivider(inset = false)
                     ListItem(
                         headlineContent = { Text(text.day(item.dayNumber)) },
-                        supportingContent = { Text(listOfNotNull(itemDetail(item, text),
+                        supportingContent = { Text(listOfNotNull(itemDetail(item, text), itemTime(item, text),
+                            item.uses.mapNotNull { use -> records.leaveBalances.firstOrNull { it.id == use.balanceID }?.let {
+                                "${text.balanceName(it)} ${text.halfDays(use.halfDays)}"
+                            } }.joinToString(" · ").takeIf { it.isNotEmpty() },
                             holidayDayAnnotation(holidays, records.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier,
                                 LeavePlannerSchedule.date(item.dayNumber), text.locale)?.description(text.string(R.string.holidayMakeupWorkday), text.string(R.string.holidayEstimatedLabel))).joinToString(" · ")) },
-                        trailingContent = {
-                            Text(itemTime(item, text), style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
-                        },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
                 }
@@ -475,10 +466,12 @@ fun LeavePlanDetailScreen(graph: AppGraph, index: Int, onBack: () -> Unit, onAdo
                 rows.forEachIndexed { i, (balance, use) ->
                     if (i > 0) RowDivider(inset = false)
                     val left = records.availableLeaveHalfDays(balance) - use.halfDays
-                    ValueRow(
-                        text.balanceName(balance),
-                        Strings.leaveBalanceAfter(context.resources, text.halfDays(use.halfDays), text.halfDays(maxOf(0, left))),
-                    )
+                    Column(Modifier.padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                        Text(text.balanceName(balance), style = MaterialTheme.typography.titleSmall)
+                        LeaveBalanceBar(LeavePresentation.balanceBar(balance.entitledHalfDays, balance.usedHalfDays, maxOf(0, left)))
+                        Text(Strings.leaveBalanceAfter(context.resources, text.halfDays(use.halfDays), text.halfDays(maxOf(0, left))),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
         }
@@ -487,11 +480,7 @@ fun LeavePlanDetailScreen(graph: AppGraph, index: Int, onBack: () -> Unit, onAdo
         if (proposal.lastShiftEndAtMs != null || proposal.nextShiftStartAtMs != null || caveats.isNotEmpty()) {
             Column {
                 if (proposal.lastShiftEndAtMs != null || proposal.nextShiftStartAtMs != null) {
-                    SettingsGroup {
-                        proposal.lastShiftEndAtMs?.let { ValueRow(text.string(R.string.leaveLastShiftEnds), text.moment(it)) }
-                        if (proposal.lastShiftEndAtMs != null && proposal.nextShiftStartAtMs != null) RowDivider(inset = false)
-                        proposal.nextShiftStartAtMs?.let { ValueRow(text.string(R.string.leaveNextShiftStarts), text.moment(it)) }
-                    }
+                    Column(Modifier.padding(horizontal = DoneAtSpacing.page)) { LeaveBridgeCard(proposal, text) }
                 }
                 Column(Modifier.padding(horizontal = DoneAtSpacing.page)) { caveats.forEach { Note(it) } }
             }

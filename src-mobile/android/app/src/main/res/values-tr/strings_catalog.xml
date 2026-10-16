@@ -627,6 +627,7 @@
     <string name="onboardingOfflineBody">Hesap yok. Ağ olmadan çalışır.</string>
     <string name="onboardingOfflineTitle">Çevrimdışı çalışır</string>
     <string name="onboardingOngoingSurface">Kalıcı bildirim</string>
+    <string name="onboardingPagePosition">%2$s sayfadan %1$s. sayfa</string>
     <string name="onboardingPlusFocusBreakBody">Bir sonraki görev siz hazır olana kadar bekler. Hiçbir şey kendi kendine başlamaz.</string>
     <string name="onboardingPlusFocusTask">Haftalık incelemeyi bitirin</string>
     <string name="onboardingPlusFocusTitle">Bir göreve net bir süre verin</string>
@@ -675,6 +676,7 @@
     <string name="plusAndroidRequestFailed">Google Play isteği tamamlayamadı. Kısa süre sonra tekrar dene.</string>
     <string name="plusAndroidStoreOffline">Mevcut Plus erişimin doğrulanamadı. Tekrar dene veya satın alımları geri yükle.</string>
     <string name="plusAndroidStoreUnconfigured">Plus satın alımları bu cihazda henüz kullanılamıyor. Zamanlayıcıyı ve son kayıtlarını kullanmaya devam edebilirsin.</string>
+    <string name="plusAndroidTrialCancelBody">Deneme bitmeden Google Play’den iptal edersen ücret alınmaz.</string>
     <string name="plusAndroidYearlyTrialPrice">7 gün ücretsiz, ardından yıllık %1$s. Ücret alınmaması için deneme süresi bitmeden iptal et.</string>
     <string name="plusAutoRenew">Abonelikler sen iptal edene kadar kendiliğinden yenilenir. Yıllık planda 7 gün ücretsiz olabilir; sonrasında yıllık fiyat üzerinden ücret alınır. Tek seferlik satın alma bir kez ödenir ve süren aboneliği kendiliğinden iptal etmez.</string>
     <string name="plusBenefitCharts">Tüm yıl ve çalışma hayatı görünümleri</string>
@@ -940,6 +942,9 @@
     <string name="recordsWorkdaysRecorded">Kaydedilen iş günü: %1$s</string>
     <string name="recordsWorkedTime">Çalışılan süre</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">Kalan iznini gör, takvimde tatilleri karşılaştır ve en az izin kullanan planı bul.</string>
+    <string name="release322RecordsBody">Hafta, Ay, Yıl ve Yaşam için yeni görünüm: kaydedilen ve planlanan zaman, özetler ve tahmini gelir açıkça ayrılır.</string>
+    <string name="release322WelcomeBody">Yenilenen karşılama ekranı ve seçimden önce deneme ayrıntılarını gösteren daha anlaşılır Plus planları.</string>
     <string name="remindersMayBeLate">Hatırlatıcılar birkaç dakika gecikebilir. Zamanında almak için tam zamanlı hatırlatıcılara izin ver.</string>
     <string name="remindersSection">Hatırlatıcılar</string>
     <string name="replayCelebration">Kutlamayı yeniden oynatmak için dokunun</string>

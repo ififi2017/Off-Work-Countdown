@@ -627,6 +627,7 @@
     <string name="onboardingOfflineBody">No account. Works without a network.</string>
     <string name="onboardingOfflineTitle">Works offline</string>
     <string name="onboardingOngoingSurface">Ongoing notification</string>
+    <string name="onboardingPagePosition">Page %1$s of %2$s</string>
     <string name="onboardingPlusFocusBreakBody">The next task waits until you are ready. Nothing starts on its own.</string>
     <string name="onboardingPlusFocusTask">Finish the weekly review</string>
     <string name="onboardingPlusFocusTitle">Give one task a clear stretch of time</string>
@@ -675,6 +676,7 @@
     <string name="plusAndroidRequestFailed">Google Play could not complete that request. Try again in a moment.</string>
     <string name="plusAndroidStoreOffline">We couldn’t confirm your current Plus access. Try again or restore purchases.</string>
     <string name="plusAndroidStoreUnconfigured">Plus purchases are not available on this device yet. Your timer and recent records are ready to use.</string>
+    <string name="plusAndroidTrialCancelBody">Cancel in Google Play before the trial ends and you won’t be charged.</string>
     <string name="plusAndroidYearlyTrialPrice">7 days free, then %1$s per year. Cancel before the trial ends to avoid being charged.</string>
     <string name="plusAutoRenew">Subscriptions renew automatically until you cancel. The yearly plan can include a 7-day trial. After the trial, the yearly price applies. Lifetime is a one-time purchase and does not cancel an active subscription.</string>
     <string name="plusBenefitCharts">Full-year and working-life views</string>
@@ -940,6 +942,9 @@
     <string name="recordsWorkdaysRecorded">Workdays recorded: %1$s</string>
     <string name="recordsWorkedTime">Time worked</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">See your remaining leave, compare breaks on the calendar and find the plan that uses the fewest days.</string>
+    <string name="release322RecordsBody">A new look for Week, Month, Year and Life, with clearer marks for recorded and planned time, conclusions and income estimates.</string>
+    <string name="release322WelcomeBody">A refreshed welcome and clearer Plus plans, with trial details shown before you choose.</string>
     <string name="remindersMayBeLate">Reminders may arrive a few minutes late. Allow exact reminders to get them on time.</string>
     <string name="remindersSection">Reminders</string>
     <string name="replayCelebration">Tap to replay the celebration</string>

@@ -84,6 +84,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -97,6 +98,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -132,7 +134,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/** Latest 3.2.1 first-run journey, with Android system surfaces. */
+/** First-run journey with Android system surfaces and the 3.2.2 welcome. */
 enum class SetupPage { WELCOME, SCHEDULE, REMINDERS, READY, GLANCE, PLUS;
     companion object {
         fun restored(value: String?) = when (value) {
@@ -159,6 +161,7 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
     // Kept on disk with the draft, so an interruption of any kind resumes on the same page.
     var page by remember { mutableStateOf(SetupPage.restored(graph.settings.device.value.setupPage)) }
     var forward by rememberSaveable { mutableStateOf(true) }
+    var welcomeVisited by rememberSaveable { mutableStateOf(page != SetupPage.WELCOME) }
     var showsPlus by rememberSaveable { mutableStateOf(false) }
     var showsPrivacy by rememberSaveable { mutableStateOf(false) }
     var finishing by remember { mutableStateOf(false) }
@@ -216,6 +219,7 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
         // retain the same clock and anchor for their continuous hand-off.
         if (page !in listOf(SetupPage.READY, SetupPage.GLANCE) && to in listOf(SetupPage.READY, SetupPage.GLANCE)) clockAnchor = null
         if (to != SetupPage.GLANCE) clockPreviewEndAtMs = null
+        if (page == SetupPage.WELCOME) welcomeVisited = true
         forward = to.ordinal > page.ordinal
         page = to
         scope.launch { graph.settings.updateDevice { it.copy(setupPage = to.name) } }
@@ -229,6 +233,7 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
 
     val motion = LocalDoneAtMotion.current
     val quietJourney = motion.reduced || onboardingTouchExplorationEnabled()
+    val direction = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
     val pageTransition = updateTransition(page, label = "setupJourney")
     val clockOpacity by pageTransition.animateFloat(transitionSpec = {
         when {
@@ -259,7 +264,7 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
                     if (quietJourney || (initialState in listOf(SetupPage.READY, SetupPage.GLANCE) && targetState in listOf(SetupPage.READY, SetupPage.GLANCE))) {
                         fadeIn(tween(DoneAtMotion.REDUCED_MS)) togetherWith fadeOut(tween(DoneAtMotion.REDUCED_MS))
                     } else {
-                        val sign = if (forward) 1 else -1
+                        val sign = (if (forward) 1 else -1) * direction
                         (fadeIn(tween(DoneAtMotion.STATE_ENTER_MS, easing = motion.emphasizedDecelerate)) + slideInHorizontally(motion.phase()) { sign * it / 12 }) togetherWith
                             (fadeOut(tween(DoneAtMotion.STATE_EXIT_MS, easing = motion.emphasizedDecelerate)) + slideOutHorizontally(motion.phase()) { -sign * it / 12 })
                     }
@@ -274,7 +279,7 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
                 // entrance offset is applied to the independent persistent clock.
                 Box(Modifier.fillMaxSize().onGloballyPositioned { contentOrigin = it.positionInRoot() }) {
                     when (current) {
-                        SetupPage.WELCOME -> WelcomePage(graph, onStart = { go(SetupPage.SCHEDULE) }, onRestoredWithoutSettings = {
+                        SetupPage.WELCOME -> WelcomePage(graph, animatesEntrance = !welcomeVisited, onStart = { go(SetupPage.SCHEDULE) }, onRestoredWithoutSettings = {
                             restoredWithoutSettings = true
                             go(SetupPage.SCHEDULE)
                         })
@@ -316,7 +321,7 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
             if ((page in listOf(SetupPage.READY, SetupPage.GLANCE) || pageTransition.currentState in listOf(SetupPage.READY, SetupPage.GLANCE)) && projection != null) {
                 JourneyClockOverlay(projection, now, clockAnchor, rootOrigin, clockOpacity,
                     entranceX = if (quietJourney) 0f else clockEntrance * (rootWidth.toInt() / 12) *
-                        (if (forward) 1f else -1f) * (if (page in listOf(SetupPage.READY, SetupPage.GLANCE)) 1f else -1f),
+                        (if (forward) 1f else -1f) * direction * (if (page in listOf(SetupPage.READY, SetupPage.GLANCE)) 1f else -1f),
                     continuity = pageTransition.currentState in listOf(SetupPage.READY, SetupPage.GLANCE) && page in listOf(SetupPage.READY, SetupPage.GLANCE),
                     previewEndAtMs = clockPreviewEndAtMs)
             }
@@ -392,7 +397,7 @@ private fun SetupScaffold(
 }
 
 @Composable
-private fun WelcomePage(graph: AppGraph, onStart: () -> Unit, onRestoredWithoutSettings: () -> Unit) {
+private fun WelcomePage(graph: AppGraph, animatesEntrance: Boolean, onStart: () -> Unit, onRestoredWithoutSettings: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var preview by remember { mutableStateOf<RestorePreview?>(null) }
@@ -405,21 +410,10 @@ private fun WelcomePage(graph: AppGraph, onStart: () -> Unit, onRestoredWithoutS
         }
     }
 
-    SetupScaffold(
-        stringResource(R.string.landingTagline), stringResource(R.string.onboardingOfflineBody), null, stringResource(R.string.onboardingSetMyShift), onStart,
-        hero = { Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            OnboardingWelcomeMark(Modifier.size(136.dp))
-            Text(stringResource(R.string.app_name), Modifier.padding(top = DoneAtSpacing.xl), style = MaterialTheme.typography.titleMedium)
-        } },
-        arrival = true,
-        beforeContinueAction = {
-            TextButton(
-                // File providers label JSON archives inconsistently.
-                onClick = { pick.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = DoneAtSpacing.xl).onboardingArrival(3, true),
-            ) { Text(stringResource(R.string.onboardingRestoreFromFile), textAlign = TextAlign.Center) }
-        },
-    ) {}
+    Welcome322Page(animatesEntrance, onStart, onRecover = {
+        // File providers label JSON archives inconsistently.
+        pick.launch(arrayOf("application/json", "application/octet-stream", "text/plain"))
+    })
 
     (preview as? RestorePreview.Ready)?.let { ready ->
         val res = LocalResources.current

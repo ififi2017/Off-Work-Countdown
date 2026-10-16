@@ -625,6 +625,7 @@
     <string name="onboardingOfflineBody">Không cần tài khoản. Dùng được khi mất mạng.</string>
     <string name="onboardingOfflineTitle">Hoạt động ngoại tuyến</string>
     <string name="onboardingOngoingSurface">Thông báo thường trực</string>
+    <string name="onboardingPagePosition">Trang %1$s trên %2$s</string>
     <string name="onboardingPlusFocusBreakBody">Nhiệm vụ tiếp theo đợi cho đến khi bạn sẵn sàng. Không có gì tự nó bắt đầu.</string>
     <string name="onboardingPlusFocusTask">Kết thúc buổi đánh giá hàng tuần</string>
     <string name="onboardingPlusFocusTitle">Giao cho một nhiệm vụ một khoảng thời gian rõ ràng</string>
@@ -673,6 +674,7 @@
     <string name="plusAndroidRequestFailed">Google Play không thể hoàn tất yêu cầu này. Hãy thử lại sau ít phút.</string>
     <string name="plusAndroidStoreOffline">Chưa thể xác nhận quyền truy cập Plus hiện tại của bạn. Hãy thử lại hoặc khôi phục giao dịch mua.</string>
     <string name="plusAndroidStoreUnconfigured">Chưa thể mua Plus trên thiết bị này. Bạn vẫn có thể dùng bộ đếm giờ và xem các bản ghi gần đây.</string>
+    <string name="plusAndroidTrialCancelBody">Hủy trong Google Play trước khi hết thời gian dùng thử để không bị tính phí.</string>
     <string name="plusAndroidYearlyTrialPrice">Miễn phí 7 ngày, sau đó %1$s mỗi năm. Hủy trước khi hết thời gian dùng thử để tránh bị tính phí.</string>
     <string name="plusAutoRenew">Đăng ký tự gia hạn cho tới khi bạn hủy. Gói năm có thể kèm 7 ngày miễn phí, sau đó tính theo giá năm. Bản trả một lần chỉ thanh toán một lần và không tự hủy đăng ký đang chạy.</string>
     <string name="plusBenefitCharts">Khung cả năm và đời làm việc</string>
@@ -937,6 +939,9 @@
     <string name="recordsWorkdaysRecorded">Đã ghi %1$s ngày làm</string>
     <string name="recordsWorkedTime">Thời gian đã làm việc</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">Xem số ngày phép còn lại, so sánh kỳ nghỉ trên lịch và tìm phương án dùng ít ngày phép nhất.</string>
+    <string name="release322RecordsBody">Giao diện mới cho Tuần, Tháng, Năm và Cuộc đời: phân biệt thời gian đã ghi nhận với dự kiến, kèm tổng kết và thu nhập ước tính.</string>
+    <string name="release322WelcomeBody">Trang chào mừng mới và các gói Plus rõ ràng hơn, có thông tin dùng thử trước khi chọn.</string>
     <string name="remindersMayBeLate">Lời nhắc có thể đến trễ vài phút. Hãy cho phép lời nhắc chính xác để nhận đúng giờ.</string>
     <string name="remindersSection">Nhắc nhở</string>
     <string name="replayCelebration">Chạm để phát lại hiệu ứng</string>

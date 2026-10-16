@@ -629,6 +629,7 @@
     <string name="onboardingOfflineBody">Sem conta. Funciona sem rede.</string>
     <string name="onboardingOfflineTitle">Funciona offline</string>
     <string name="onboardingOngoingSurface">Notificação persistente</string>
+    <string name="onboardingPagePosition">Página %1$s de %2$s</string>
     <string name="onboardingPlusFocusBreakBody">A próxima tarefa espera até que você esteja pronto. Nada começa sozinho.</string>
     <string name="onboardingPlusFocusTask">Termine a revisão semanal</string>
     <string name="onboardingPlusFocusTitle">Dê a uma tarefa um período de tempo claro</string>
@@ -677,6 +678,7 @@
     <string name="plusAndroidRequestFailed">O Google Play não conseguiu concluir o pedido. Tente novamente dentro de momentos.</string>
     <string name="plusAndroidStoreOffline">Não foi possível confirmar o seu acesso atual ao Plus. Tente novamente ou restaure as compras.</string>
     <string name="plusAndroidStoreUnconfigured">As compras do Plus ainda não estão disponíveis neste dispositivo. Pode continuar a usar o temporizador e os registos recentes.</string>
+    <string name="plusAndroidTrialCancelBody">Cancele no Google Play antes de terminar o período de teste e não será cobrado.</string>
     <string name="plusAndroidYearlyTrialPrice">7 dias grátis, depois %1$s por ano. Cancela antes do fim do período experimental para evitar a cobrança.</string>
     <string name="plusAutoRenew">As subscrições renovam-se automaticamente até serem canceladas. O plano anual pode incluir 7 dias grátis; depois aplica-se o preço anual. O vitalício é um pagamento único e não cancela uma subscrição ativa.</string>
     <string name="plusBenefitCharts">Vistas do ano completo e da vida profissional</string>
@@ -943,6 +945,9 @@
     <string name="recordsWorkdaysRecorded">Dias registrados: %1$s</string>
     <string name="recordsWorkedTime">Tempo trabalhado</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">Veja as férias restantes, compare pausas no calendário e encontre o plano que usa menos dias.</string>
+    <string name="release322RecordsBody">Semana, Mês, Ano e Vida com um novo visual: tempo registado e planeado bem distintos, conclusões e rendimentos estimados.</string>
+    <string name="release322WelcomeBody">Boas-vindas renovadas e planos Plus mais claros, com os detalhes do teste antes de escolher.</string>
     <string name="remindersMayBeLate">Os lembretes podem chegar com alguns minutos de atraso. Permita lembretes exatos para recebê-los na hora certa.</string>
     <string name="remindersSection">Lembretes</string>
     <string name="replayCelebration">Toque para repetir a comemoração</string>

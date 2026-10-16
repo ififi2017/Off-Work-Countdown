@@ -1,58 +1,41 @@
 package com.rainif.doneat.ui.records
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ChildCare
-import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.WbTwilight
 import androidx.compose.material.icons.outlined.Work
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -60,18 +43,17 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rainif.doneat.R
+import com.rainif.doneat.core.designsystem.DoneAtSpacing as S
+import com.rainif.doneat.core.designsystem.DoneAtRecords322 as T
 import com.rainif.doneat.core.designsystem.LocalDoneAtRecordsColors
 import com.rainif.doneat.core.domain.records.CivilDatePrecision
 import com.rainif.doneat.core.domain.records.LifeIncomeDecline
-import com.rainif.doneat.core.domain.records.LifeStageCalculator
 import com.rainif.doneat.core.domain.records.LifeStageKind
 import com.rainif.doneat.core.domain.records.LifeStageSpan
 import com.rainif.doneat.core.domain.records.LifeViewModel
 import com.rainif.doneat.core.domain.records.LifeWorkPeriod
-import com.rainif.doneat.core.domain.records.RecordsCanvasGrid
 import com.rainif.doneat.l10n.Strings
 import java.time.Instant
-import kotlin.math.min
 
 @Composable
 fun stageColor(kind: LifeStageKind): Color {
@@ -84,15 +66,6 @@ fun stageColor(kind: LifeStageKind): Color {
         LifeStageKind.UNSET -> colors.lifeUnset
     }
 }
-
-private val LifeStageKind.icon: ImageVector
-    get() = when (this) {
-        LifeStageKind.CHILDHOOD -> Icons.Outlined.ChildCare
-        LifeStageKind.STUDY -> Icons.Outlined.School
-        LifeStageKind.WORK -> Icons.Outlined.Work
-        LifeStageKind.RETIREMENT -> Icons.Outlined.WbTwilight
-        LifeStageKind.UNSET -> Icons.AutoMirrored.Outlined.HelpOutline
-    }
 
 fun stageTitle(stage: LifeStageSpan, text: RecordsText): String = text.string(
     when (stage.workPeriod) {
@@ -127,146 +100,61 @@ fun stageRange(stage: LifeStageSpan, text: RecordsText, referenceMs: Double): St
 }
 
 /**
- * A life, birth to retirement (iOS `RecordsLifeCanvas`): progress toward
- * retirement, a grid in which every cell is a slice of the span, and the
- * stages as a list, which is also what the screen reader walks.
+ * One year per square, grouped by decade; the current year has an orange ring.
+ * Selection is owned by RecordsScreen so changing scale or layout preserves it.
  */
 @Composable
 fun LifeCanvas(
     stages: List<LifeStageSpan>,
     bounds: Pair<Double, Double>,
     referenceMs: Double,
-    selectedStageID: String?,
-    showCallout: Boolean,
+    selectedAge: Int?,
     text: RecordsText,
-    onSelect: (LifeStageSpan) -> Unit,
+    onSelect: (com.rainif.doneat.core.domain.records.RecordsLifeYear) -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val density = LocalDensity.current
-    var tappedBucket by remember(bounds) { mutableStateOf<Int?>(null) }
-    val selectStage by rememberUpdatedState(onSelect)
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        stages.firstOrNull { it.kind == LifeStageKind.RETIREMENT }?.startMs?.let { retirement ->
-            val progress = LifeStageCalculator.progress(bounds.first, retirement, referenceMs)
-            Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(text.string(R.string.lifeProgressTitle), Modifier.weight(1f), style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant)
-                    Text(text.percent(progress * 100), style = MaterialTheme.typography.titleSmall, color = scheme.primary)
-                }
-                LinearProgressIndicator(progress = { progress.toFloat() }, Modifier.fillMaxWidth())
-            }
-        }
-        BoxWithConstraints(Modifier.fillMaxWidth().height(240.dp)) {
-            val grid = with(density) {
-                RecordsCanvasGrid(maxWidth.toPx(), maxHeight.toPx(), 11.dp.toPx(), 3.dp.toPx(), minimumColumns = 18, minimumRows = 10)
-            }
-            val buckets = remember(stages, bounds, grid.count, referenceMs) {
-                LifeStageCalculator.buckets(stages, bounds.first, bounds.second, grid.count, referenceMs)
-            }
-            val palette = LifeStageKind.entries.associateWith { stageColor(it) }
-            val corner = with(density) { min(3.dp.toPx(), grid.cell / 3) }
-            val line = with(density) { 0.9.dp.toPx() }
-            val current = scheme.primary
-            val card = scheme.surfaceContainerLow
-            Canvas(
-                Modifier.fillMaxSize().clearAndSetSemantics {}.pointerInput(buckets, stages, grid) {
-                    detectTapGestures { point ->
-                        val bucket = grid.index(point.x, point.y)?.let(buckets::getOrNull) ?: return@detectTapGestures
-                        val stage = stages.firstOrNull { it.id == bucket.stageID }
-                        if (stage != null && stage.kind != LifeStageKind.RETIREMENT) {
-                            tappedBucket = bucket.index
-                            selectStage(stage)
+    val years = remember(stages, bounds, referenceMs, text.zone) { com.rainif.doneat.core.domain.records.recordsLifeYears(stages, bounds, referenceMs, text.zone) }
+    val selected = years.firstOrNull { it.age == selectedAge } ?: years.firstOrNull { it.isCurrent }
+    val res = LocalResources.current
+    Column(verticalArrangement = Arrangement.spacedBy(S.m)) {
+        CappedFontScale {
+            Column(verticalArrangement = Arrangement.spacedBy(S.xs + S.xxs)) {
+                years.chunked(10).forEach { decade ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(S.xs), verticalAlignment = Alignment.CenterVertically) {
+                        Text(text.count(decade.first().age), Modifier.width(S.xxl).clearAndSetSemantics {}, style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                        decade.forEach { year ->
+                            val tint = stageColor(year.stage?.kind ?: LifeStageKind.UNSET)
+                            val shape = MaterialTheme.shapes.extraSmall
+                            val label = Strings.lifeYearAgeTitle(res, year.year.toString(), text.count(year.age))
+                            Box(Modifier.weight(1f).height(T.lifeYearHeight)
+                                .clip(shape)
+                                .then(if (year.isPast || year.isCurrent) Modifier.background(tint) else Modifier.border(T.outline, tint.copy(alpha = .6f), shape))
+                                .then(if (year.isCurrent || selected?.age == year.age) Modifier.border(T.selectedOutline, if (year.isCurrent) scheme.primary else scheme.onSurface, shape) else Modifier)
+                                .clickable {
+                                    onSelect(year)
+                                }.semantics {
+                                    contentDescription = listOfNotNull(label, year.stage?.let { stageTitle(it, text) }).joinToString(", ")
+                                    role = Role.Button
+                                    this.selected = selected?.age == year.age
+                                })
                         }
                     }
-                },
-            ) {
-                buckets.forEach { bucket ->
-                    val (x, y) = grid.origin(bucket.index)
-                    val size = Size(grid.cell, grid.cell)
-                    val base = palette.getValue(bucket.kind)
-                    val dimmed = selectedStageID != null && bucket.stageID != selectedStageID
-                    val futureWork = bucket.kind == LifeStageKind.WORK && bucket.isFuture
-                    val alpha = if (bucket.isFuture) (if (dimmed) 0.14f else if (futureWork) 0.20f else 0.28f) else (if (dimmed) 0.42f else 0.82f)
-                    drawRoundRect(base.copy(alpha = base.alpha * alpha), Offset(x, y), size, CornerRadius(corner))
-                    if (bucket.isFuture) {
-                        drawRoundRect(
-                            base.copy(alpha = base.alpha * if (futureWork) 0.62f else 0.42f),
-                            Offset(x + 0.75.dp.toPx(), y + 0.75.dp.toPx()), Size(grid.cell - 1.5.dp.toPx(), grid.cell - 1.5.dp.toPx()),
-                            CornerRadius(corner), style = Stroke(line),
-                        )
-                        if (futureWork) {
-                            drawLine(base.copy(alpha = base.alpha * 0.42f), Offset(x + 2.dp.toPx(), y + grid.cell - 2.dp.toPx()), Offset(x + grid.cell - 2.dp.toPx(), y + 2.dp.toPx()), 0.75.dp.toPx())
-                        }
-                    }
-                    if (bucket.isCurrent) {
-                        // A light overlay marks the present while its category stays readable.
-                        drawRoundRect(current.copy(alpha = 0.18f), Offset(x, y), size, CornerRadius(corner))
-                        drawRoundRect(scheme.onSurface, Offset(x - 1.dp.toPx(), y - 1.dp.toPx()), Size(grid.cell + 2.dp.toPx(), grid.cell + 2.dp.toPx()), CornerRadius(corner + 1.dp.toPx()), style = Stroke(1.8.dp.toPx()))
-                        drawRoundRect(card, Offset(x + 1.5.dp.toPx(), y + 1.5.dp.toPx()), Size(grid.cell - 3.dp.toPx(), grid.cell - 3.dp.toPx()), CornerRadius(maxOf(1f, corner - 1.dp.toPx())), style = Stroke(1.2.dp.toPx()))
-                    }
-                }
-            }
-            if (showCallout) {
-                val stage = stages.firstOrNull { it.id == selectedStageID && it.kind != LifeStageKind.RETIREMENT }
-                val bucket = tappedBucket?.let(buckets::getOrNull)?.takeIf { it.stageID == selectedStageID }
-                    ?: buckets.firstOrNull { it.stageID == selectedStageID }
-                if (stage != null && bucket != null) {
-                    val (x, y) = grid.origin(bucket.index)
-                    RecordsCallout(Rect(x, y, x + grid.cell, y + grid.cell), Modifier.matchParentSize()) {
-                        RecordsSelectionPill(
-                            icon = stage.kind.icon,
-                            title = stageTitle(stage, text),
-                            subtitle = stageRange(stage, text, referenceMs),
-                        )
-                    }
                 }
             }
         }
-        Column {
-            stages.forEachIndexed { index, stage ->
-                if (index > 0) HorizontalDivider(Modifier.padding(start = 44.dp), color = scheme.outlineVariant)
-                StageRow(stage, stage.id == selectedStageID, text, referenceMs) { tappedBucket = null; onSelect(stage) }
+        if (selected != null) {
+            Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(S.xs)) {
+                Text(Strings.lifeYearAgeTitle(res, selected.year.toString(), text.count(selected.age)), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                selected.stage?.let { stage -> Text(stageTitle(stage, text) + " · " + stageRange(stage, text, referenceMs), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
             }
         }
-        if (stages.any { it.workPeriod != null }) {
-            Text(text.string(R.string.lifeWorkPeriodBasis), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(S.m), verticalArrangement = Arrangement.spacedBy(S.xs)) {
+            stages.distinctBy { it.kind }.forEach { stage -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(S.xs)) {
+                Box(Modifier.size(S.s).clip(MaterialTheme.shapes.extraSmall).background(stageColor(stage.kind)))
+                Text(stageTitle(stage, text), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+            } }
         }
-    }
-}
-
-@Composable
-private fun StageRow(stage: LifeStageSpan, selected: Boolean, text: RecordsText, referenceMs: Double, onSelect: () -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    val retired = stage.kind == LifeStageKind.RETIREMENT
-    val title = stageTitle(stage, text)
-    val range = stageRange(stage, text, referenceMs)
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (selected) scheme.primary.copy(alpha = 0.08f) else Color.Transparent)
-            .then(if (retired) Modifier.alpha(0.58f) else Modifier.clickable(role = Role.Button, onClick = onSelect))
-            .semantics(mergeDescendants = true) {
-                contentDescription = "$title, $range"
-                if (!retired) this.selected = selected
-            }
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(stage.kind.icon, null, Modifier.size(22.dp), tint = scheme.onSurfaceVariant)
-        Column(Modifier.weight(1f).clearAndSetSemantics {}) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(range, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-        }
-        if (!retired) {
-            Icon(
-                if (selected) Icons.Outlined.CheckCircle else Icons.Outlined.Circle, null,
-                Modifier.width(24.dp).clearAndSetSemantics {},
-                tint = if (selected) scheme.primary else stageColor(stage.kind),
-            )
-        }
+        if (stages.any { it.workPeriod != null }) Text(text.string(R.string.lifeWorkPeriodBasis), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }
 }
 
@@ -276,48 +164,36 @@ private fun StageRow(stage: LifeStageSpan, selected: Boolean, text: RecordsText,
  * building a percentage from the parts that exist.
  */
 @Composable
-fun LifeAllocationCard(model: LifeViewModel?, loading: Boolean, decline: LifeIncomeDecline?, text: RecordsText) {
-    val scheme = MaterialTheme.colorScheme
+fun LifeAllocationCard(model: LifeViewModel?, loading: Boolean, decline: LifeIncomeDecline?, text: RecordsText, graph: com.rainif.doneat.AppGraph) {
     val res = LocalResources.current
-    RecordsCard {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(text.string(R.string.lifeWhereTimeGoes), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text(text.string(R.string.recordsSourceProjection), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
-            }
-            val allocation = model?.allocation?.takeIf { it.dayLengthMs > 0 && it.workMs > 0 }
-            when {
-                loading -> Column(Modifier.heightIn(min = 100.dp).clearAndSetSemantics {}, verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    listOf(18.dp to 1f, 10.dp to 1f, 14.dp to 0.5f).forEach { (height, width) ->
-                        Box(Modifier.fillMaxWidth(width).height(height).clip(RoundedCornerShape(4.dp)).background(scheme.surfaceContainerHighest))
-                    }
+    val allocation = model?.allocation?.takeIf { it.dayLengthMs > 0 && it.workMs > 0 }
+    if (loading || allocation == null) {
+        RecordsCard { Column(Modifier.padding(S.l)) {
+            Text(text.string(R.string.lifeWhereTimeGoes), style = MaterialTheme.typography.titleSmall)
+            if (loading) androidx.compose.material3.CircularProgressIndicator(Modifier.padding(S.m))
+            else Text(text.string(R.string.lifeAllocationMissing), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } }
+    } else {
+        fun years(ms: Long) = text.decimal(ms / (365.2425 * 86_400_000))
+        InsightCard(Strings.lifeAboutYears(res, years(allocation.dayLengthMs)), Strings.lifeOwnYears(res, years(allocation.wakingFreeMs)),
+            Strings.lifeOwnBody(res, years(allocation.workMs + allocation.overtimeMs), years(allocation.sleepMs)))
+        RecordsAllocationCard(text, text.string(R.string.lifeWhereTimeGoes), allocation, years = true)
+    }
+    model?.income?.let { income ->
+        RecordsCard {
+            Column(Modifier.padding(S.l), verticalArrangement = Arrangement.spacedBy(S.s)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text.string(R.string.lifeIncomeTitle), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    com.rainif.doneat.ui.timer.EarningsVisibilityButton(graph) {}
                 }
-                allocation != null -> AllocationBar(allocation, text, showsApproximateYears = true)
-                else -> Text(text.string(R.string.lifeAllocationMissing), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
-            }
-            val income = model?.income
-            if (!loading && income != null) {
-                HorizontalDivider(color = scheme.outlineVariant)
-                Text(text.string(R.string.lifeIncomeTitle), style = MaterialTheme.typography.titleSmall)
-                IncomeRow(text.string(R.string.lifeIncomeHistory), text.money(income.historicalGross))
-                IncomeRow(text.string(R.string.lifeIncomeFuture), text.money(income.projectedGross))
-                IncomeRow(text.string(R.string.lifeIncomeTotal), text.money(income.totalGross))
-                Text(
-                    decline?.let { Strings.lifeIncomeMethodDecline(res, text.count(it.startsAtAge), text.percent(it.retirementRatio * 100, 0)) }
-                        ?: text.string(R.string.lifeIncomeMethod),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                )
+                Text(text.money(income.totalGross), style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                val total = maxOf(1.0, income.historicalGross + income.projectedGross)
+                LinearProgressIndicator(progress = { (income.historicalGross / total).coerceIn(0.0, 1.0).toFloat() }, modifier = Modifier.fillMaxWidth().clearAndSetSemantics {})
+                Text(Strings.lifeIncomeBeforeToday(res, text.money(income.historicalGross)), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(Strings.lifeIncomeUntilRetirement(res, text.money(income.projectedGross)), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(decline?.let { Strings.lifeIncomeMethodDecline(res, text.count(it.startsAtAge), text.percent(it.retirementRatio * 100, 0)) } ?: text.string(R.string.lifeIncomeMethod), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-    }
-}
-
-@Composable
-private fun IncomeRow(title: String, value: String) {
-    Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
     }
 }
 

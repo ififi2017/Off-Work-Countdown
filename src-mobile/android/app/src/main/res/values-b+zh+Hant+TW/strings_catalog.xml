@@ -625,6 +625,7 @@
     <string name="onboardingOfflineBody">不用帳號，也不依賴網路。</string>
     <string name="onboardingOfflineTitle">離線也能用</string>
     <string name="onboardingOngoingSurface">常駐通知</string>
+    <string name="onboardingPagePosition">第 %1$s 頁，共 %2$s 頁</string>
     <string name="onboardingPlusFocusBreakBody">下一個任務會等到您準備好為止。沒有什麼是自行開始的。</string>
     <string name="onboardingPlusFocusTask">完成每週回顧</string>
     <string name="onboardingPlusFocusTitle">給一項任務一段明確的時間</string>
@@ -673,6 +674,7 @@
     <string name="plusAndroidRequestFailed">Google Play 暫時無法完成操作。請稍後再試。</string>
     <string name="plusAndroidStoreOffline">暫時無法確認你的 Plus 權益。請重試或恢復購買。</string>
     <string name="plusAndroidStoreUnconfigured">這台裝置暫時無法購買 Plus。計時器和近期記錄仍可使用。</string>
+    <string name="plusAndroidTrialCancelBody">在試用結束前透過 Google Play 取消，即不會收費。</string>
     <string name="plusAndroidYearlyTrialPrice">免費試用 7 天，之後每年 %1$s。在試用結束前取消即可避免扣款。</string>
     <string name="plusAutoRenew">訂閱會自動續訂，直到你取消。年訂可含 7 天試用，試用結束後按年價計費。終身是一次性買斷，不會自動取消已有訂閱。</string>
     <string name="plusBenefitCharts">完整年度和工作人生檢視</string>
@@ -937,6 +939,9 @@
     <string name="recordsWorkdaysRecorded">紀錄 %1$s 個工作日</string>
     <string name="recordsWorkedTime">已工作</string>
     <string name="recordsYearLabel">%1$s 年</string>
+    <string name="release322LeaveBody">看清剩餘假期，在月曆上比較連休，找出更省假的方案。</string>
+    <string name="release322RecordsBody">週、月、年與人生檢視更新，分清已記錄與計畫時間，先看結論，再看工時與預估收入。</string>
+    <string name="release322WelcomeBody">全新歡迎頁與更清楚的 Plus 方案，選擇前就能了解試用安排。</string>
     <string name="remindersMayBeLate">提醒可能會晚幾分鐘送達。允許精確提醒即可準時收到。</string>
     <string name="remindersSection">提醒</string>
     <string name="replayCelebration">點按重播慶祝動畫</string>

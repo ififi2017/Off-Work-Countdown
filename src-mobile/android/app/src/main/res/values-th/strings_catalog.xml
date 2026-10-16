@@ -625,6 +625,7 @@
     <string name="onboardingOfflineBody">ไม่ต้องมีบัญชี ใช้ได้โดยไม่ต้องต่อเน็ต</string>
     <string name="onboardingOfflineTitle">ใช้งานออฟไลน์ได้</string>
     <string name="onboardingOngoingSurface">การแจ้งเตือนต่อเนื่อง</string>
+    <string name="onboardingPagePosition">หน้า %1$s จาก %2$s</string>
     <string name="onboardingPlusFocusBreakBody">งานต่อไปรอจนกว่าคุณจะพร้อม ไม่มีอะไรเริ่มต้นได้ด้วยตัวเอง</string>
     <string name="onboardingPlusFocusTask">จบการทบทวนประจำสัปดาห์</string>
     <string name="onboardingPlusFocusTitle">ให้เวลางานหนึ่งที่ชัดเจน</string>
@@ -673,6 +674,7 @@
     <string name="plusAndroidRequestFailed">Google Play ไม่สามารถทำรายการนี้ได้ ลองอีกครั้งในอีกสักครู่</string>
     <string name="plusAndroidStoreOffline">ไม่สามารถยืนยันสิทธิ์ Plus ปัจจุบันของคุณได้ โปรดลองอีกครั้งหรือกู้คืนการซื้อ</string>
     <string name="plusAndroidStoreUnconfigured">ยังซื้อ Plus บนอุปกรณ์นี้ไม่ได้ คุณยังใช้ตัวจับเวลาและดูบันทึกล่าสุดได้</string>
+    <string name="plusAndroidTrialCancelBody">ยกเลิกใน Google Play ก่อนสิ้นสุดช่วงทดลองใช้ แล้วจะไม่มีการเรียกเก็บเงิน</string>
     <string name="plusAndroidYearlyTrialPrice">ทดลองใช้ฟรี 7 วัน จากนั้น %1$s ต่อปี ยกเลิกก่อนสิ้นสุดช่วงทดลองใช้เพื่อหลีกเลี่ยงการเรียกเก็บเงิน</string>
     <string name="plusAutoRenew">การสมัครจะต่ออายุเองจนกว่าคุณจะยกเลิก แผนรายปีอาจมีช่วงฟรี 7 วัน หลังจากนั้นคิดตามราคาต่อปี แบบจ่ายครั้งเดียวชำระครั้งเดียวและไม่ยกเลิกการสมัครที่กำลังใช้อยู่ให้อัตโนมัติ</string>
     <string name="plusBenefitCharts">มุมมองทั้งปีและชีวิตการทำงาน</string>
@@ -937,6 +939,9 @@
     <string name="recordsWorkdaysRecorded">บันทึก %1$s วันทำงาน</string>
     <string name="recordsWorkedTime">เวลาที่ทำงานแล้ว</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">ดูวันลาคงเหลือ เปรียบเทียบช่วงหยุดในปฏิทิน และหาแผนที่ใช้วันลาน้อยที่สุด</string>
+    <string name="release322RecordsBody">โฉมใหม่ของสัปดาห์ เดือน ปี และชีวิต แยกเวลาที่บันทึกกับเวลาที่วางแผนไว้อย่างชัดเจน พร้อมสรุปและรายได้โดยประมาณ</string>
+    <string name="release322WelcomeBody">หน้าต้อนรับใหม่และแผน Plus ที่ชัดเจนขึ้น พร้อมรายละเอียดการทดลองใช้ก่อนเลือก</string>
     <string name="remindersMayBeLate">การแจ้งเตือนอาจมาช้าไม่กี่นาที อนุญาตการแจ้งเตือนแบบตรงเวลาเพื่อให้ได้รับตามเวลา</string>
     <string name="remindersSection">การแจ้งเตือน</string>
     <string name="replayCelebration">แตะเพื่อเล่นเอฟเฟกต์ฉลองอีกครั้ง</string>

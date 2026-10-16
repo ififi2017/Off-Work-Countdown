@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -42,6 +43,9 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.LockOpen
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.Luggage
 import androidx.compose.material.icons.outlined.Timer
@@ -86,6 +90,7 @@ import com.rainif.doneat.AppGraph
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtPrimaryButton
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
+import com.rainif.doneat.core.designsystem.DoneAtWelcome322Tokens
 import com.rainif.doneat.core.designsystem.CelebratingBrandMark
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.PlusPendingAction
@@ -120,6 +125,7 @@ private fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
         onOpenUrl = { url -> activity?.let { openUrl(it, url) } },
         playsCelebrationOnAppear = !authorizedAtPresentation,
         onContinue = pendingAction?.let { action -> { onAuthorized(action) } },
+        title = plusPaywallTitle(pendingAction),
         initialFeature = when (pendingAction) {
             is PlusPendingAction.FocusCreate, PlusPendingAction.FocusHome -> PlusDemoKind.FOCUS
             is PlusPendingAction.LeavePlan, PlusPendingAction.ShiftAlarms -> PlusDemoKind.REST
@@ -175,6 +181,7 @@ internal fun PlusPage(
     showsLifetimeOffer: Boolean = false,
     offerCard: (@Composable () -> Unit)? = null,
     initialFeature: PlusDemoKind = PlusDemoKind.REPORTS,
+    title: Int = R.string.onboardingPlusShowcaseTitle,
 ) {
     var selectedPlan by rememberSaveable { mutableStateOf(PlusPlan.YEARLY) }
     val scroll = rememberScrollState()
@@ -187,7 +194,8 @@ internal fun PlusPage(
     LaunchedEffect(authorized) { scroll.scrollTo(0) }
     val offers = listOf(PlusPlan.YEARLY, PlusPlan.MONTHLY, PlusPlan.LIFETIME)
         .mapNotNull { plan -> store.offers.firstOrNull { it.plan == plan } }
-    val selected = offers.firstOrNull { it.plan == selectedPlan } ?: offers.firstOrNull()
+    val selected = selectVisiblePlusOffer(offers, selectedPlan)
+    LaunchedEffect(selected?.plan) { selected?.let { selectedPlan = it.plan } }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(Modifier.safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
             Box(Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
@@ -219,7 +227,7 @@ internal fun PlusPage(
                                     color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                             }
                         }
-                        Text(stringResource(R.string.onboardingPlusShowcaseTitle),
+                        Text(stringResource(title),
                             Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold)
                         Text(stringResource(R.string.plusStoryBody),
@@ -305,13 +313,66 @@ private fun PlusPurchasePlans(offers: List<PlusOffer>, selected: PlusOffer, busy
                 offers.forEach { offer -> PlusPlanCard(offer, selected.plan == offer.plan, !busy, Modifier.weight(1f).fillMaxHeight()) { onSelection(offer.plan) } }
             }
         }
-        if (selected.sevenDayTrial) Text(Strings.plusAndroidYearlyTrialPrice(LocalResources.current, price = selected.price),
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (showsPlusTrialTimeline(selected)) PlusTrialTimeline(selected.price)
         DoneAtPrimaryButton(stringResource(when {
-            selected.sevenDayTrial -> R.string.plusStartTrialShort
+            showsPlusTrialTimeline(selected) -> R.string.plusStartTrialShort
             selected.plan == PlusPlan.LIFETIME -> R.string.plusBuyLifetime
             else -> R.string.plusSubscribe
         }), onClick = { onPurchase(selected) }, modifier = Modifier.fillMaxWidth(), enabled = canPurchase && !busy)
+        if (showsPlusTrialTimeline(selected)) Text(Strings.plusTrialThen(LocalResources.current, price = selected.price),
+            Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodySmall,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** UI projection only: trial eligibility and prices come from the selected Play offer. */
+internal fun showsPlusTrialTimeline(offer: PlusOffer): Boolean =
+    offer.plan == PlusPlan.YEARLY && offer.sevenDayTrial
+
+internal fun selectVisiblePlusOffer(offers: List<PlusOffer>, selectedPlan: PlusPlan): PlusOffer? =
+    offers.firstOrNull { it.plan == selectedPlan } ?: offers.firstOrNull { it.plan == PlusPlan.YEARLY } ?: offers.firstOrNull()
+
+internal fun plusPaywallTitle(action: PlusPendingAction?): Int = when (action) {
+    is PlusPendingAction.FocusCreate, PlusPendingAction.FocusHome -> R.string.plusFocusLocked
+    is PlusPendingAction.RecordsDay -> R.string.plusEditLocked
+    PlusPendingAction.RecordsLifeEdit -> R.string.plusLifeLocked
+    PlusPendingAction.RecordsCharts -> R.string.plusChartsLocked
+    PlusPendingAction.CycleSummary -> R.string.plusReportsLocked
+    PlusPendingAction.ShiftAlarms -> R.string.plusShiftAlarmsLocked
+    is PlusPendingAction.LeavePlan -> R.string.plusLeaveLocked
+    null -> R.string.onboardingPlusShowcaseTitle
+}
+
+@Composable
+private fun PlusTrialTimeline(price: String) {
+    val tokens = DoneAtWelcome322Tokens
+    val steps = listOf(
+        Triple(Icons.Outlined.LockOpen, stringResource(R.string.plusTrialToday), stringResource(R.string.plusTrialTodayBody)),
+        Triple(Icons.Outlined.CalendarMonth, stringResource(R.string.plusTrialEnd), Strings.plusTrialEndBody(LocalResources.current, price)),
+        Triple(Icons.Outlined.Close, stringResource(R.string.plusTrialAnytime), stringResource(R.string.plusAndroidTrialCancelBody)),
+    )
+    Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerLow) {
+        Column(Modifier.fillMaxWidth().padding(DoneAtSpacing.l)) {
+            steps.forEachIndexed { index, (icon, title, body) ->
+                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).semantics(mergeDescendants = true) {},
+                    horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
+                    Column(Modifier.fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Surface(Modifier.size(tokens.timelineIcon), shape = CircleShape,
+                            color = if (index == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer) {
+                            Box(contentAlignment = Alignment.Center) { Icon(icon, null, Modifier.size(DoneAtSpacing.l),
+                                tint = if (index == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary) }
+                        }
+                        if (index < steps.lastIndex) Box(Modifier.width(tokens.timelineLine).weight(1f)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = .22f)))
+                    }
+                    Column(Modifier.weight(1f).padding(top = DoneAtSpacing.xs,
+                        bottom = if (index < steps.lastIndex) DoneAtSpacing.l else 0.dp), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs)) {
+                        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -383,6 +444,8 @@ private fun PlusBenefits() {
         Icons.Outlined.Edit to R.string.plusBenefitEdit,
         Icons.Outlined.Timer to R.string.plusBenefitFocus,
         Icons.Outlined.Luggage to R.string.plusBenefitLeave,
+        Icons.Outlined.Alarm to R.string.plusBenefitShiftAlarms,
+        Icons.Outlined.BarChart to R.string.plusBenefitReports,
     )
     Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {
         Column {
@@ -425,7 +488,7 @@ private fun PlusPlanCard(offer: PlusOffer, selected: Boolean, enabled: Boolean, 
                     Modifier.size(DoneAtSpacing.l), tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Text(offer.price, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-            if (offer.sevenDayTrial) Text(stringResource(R.string.plusTrialBadge), style = MaterialTheme.typography.labelMedium,
+            if (showsPlusTrialTimeline(offer)) Text(stringResource(R.string.plusTrialBadge), style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary)
         }
     }

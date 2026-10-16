@@ -627,6 +627,7 @@
     <string name="onboardingOfflineBody">Kein Konto. Funktioniert ohne Netz.</string>
     <string name="onboardingOfflineTitle">Funktioniert offline</string>
     <string name="onboardingOngoingSurface">Dauerhafte Benachrichtigung</string>
+    <string name="onboardingPagePosition">Seite %1$s von %2$s</string>
     <string name="onboardingPlusFocusBreakBody">Die nächste Aufgabe wartet, bis Sie bereit sind. Nichts beginnt von alleine.</string>
     <string name="onboardingPlusFocusTask">Beenden Sie den wöchentlichen Rückblick</string>
     <string name="onboardingPlusFocusTitle">Geben Sie einer Aufgabe eine klare Zeitspanne</string>
@@ -675,6 +676,7 @@
     <string name="plusAndroidRequestFailed">Google Play konnte die Anfrage nicht abschließen. Versuche es gleich noch einmal.</string>
     <string name="plusAndroidStoreOffline">Dein aktueller Plus-Zugang konnte nicht bestätigt werden. Versuche es erneut oder stelle deine Käufe wieder her.</string>
     <string name="plusAndroidStoreUnconfigured">Plus kann auf diesem Gerät derzeit nicht gekauft werden. Timer und aktuelle Einträge sind weiterhin verfügbar.</string>
+    <string name="plusAndroidTrialCancelBody">Kündige vor Ende der Testphase bei Google Play, dann entstehen keine Kosten.</string>
     <string name="plusAndroidYearlyTrialPrice">7 Tage kostenlos, danach %1$s pro Jahr. Kündige vor Ende des Testzeitraums, um eine Abbuchung zu vermeiden.</string>
     <string name="plusAutoRenew">Abos verlängern sich automatisch, bis du kündigst. Das Jahresabo kann 7 Tage kostenlos enthalten; danach gilt der Jahrespreis. Der Einmalkauf ist eine einzelne Zahlung und kündigt kein laufendes Abo.</string>
     <string name="plusBenefitCharts">Ganzjahres- und Arbeitslebensansicht</string>
@@ -940,6 +942,9 @@
     <string name="recordsWorkdaysRecorded">Erfasste Arbeitstage: %1$s</string>
     <string name="recordsWorkedTime">Bisher gearbeitet</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">Resturlaub sehen, freie Zeit im Kalender vergleichen und den Plan mit dem geringsten Urlaubsverbrauch finden.</string>
+    <string name="release322RecordsBody">Woche, Monat, Jahr und Leben im neuen Design: erfasste und geplante Zeit klar erkennen, mit Fazit und geschätztem Einkommen.</string>
+    <string name="release322WelcomeBody">Ein neuer Willkommenbildschirm und klarere Plus-Tarife zeigen dir den Testablauf vor der Auswahl.</string>
     <string name="remindersMayBeLate">Erinnerungen können ein paar Minuten später eintreffen. Erlaube exakte Erinnerungen, damit sie pünktlich kommen.</string>
     <string name="remindersSection">Erinnerungen</string>
     <string name="replayCelebration">Zum Wiederholen der Feier tippen</string>

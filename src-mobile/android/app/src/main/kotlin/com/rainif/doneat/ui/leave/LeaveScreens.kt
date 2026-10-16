@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,17 +27,18 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,6 +55,8 @@ import com.rainif.doneat.AppGraph
 import com.rainif.doneat.R
 import com.rainif.doneat.core.data.WriteResult
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
+import com.rainif.doneat.core.domain.leave.LeavePresentation
+import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.core.domain.leave.LeaveAdoption
 import com.rainif.doneat.core.domain.leave.LeavePlannerSchedule
 import com.rainif.doneat.core.domain.records.LeaveBalance
@@ -83,6 +87,30 @@ fun LeaveScreen(graph: AppGraph, fromRecords: Boolean, open: (Route) -> Unit, on
     val plus by graph.plus.authorized.collectAsStateWithLifecycle()
     val plans = remember(records.leaveDays) { LeaveAdoption.adoptedPlans(records.leaveDays) }
     DoneAtPage(text.string(R.string.leaveTitle), onBack, text.string(if (fromRecords) R.string.recordsTitle else R.string.settings)) {
+        if (records.leaveBalances.isNotEmpty()) {
+            val remaining = records.leaveBalances.sumOf { records.availableLeaveHalfDays(it) }
+            val expiring = records.leaveBalances.filter { records.availableLeaveHalfDays(it) > 0 && it.validThroughDayKey != null }
+                .minByOrNull { it.validThroughDayKey.orEmpty() }
+            SettingsGroup {
+                Column(Modifier.padding(DoneAtSpacing.l).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                    Text(text.string(R.string.leaveRemainingTitle), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    LeaveHeroNumber(text.halfDays(remaining), text.halfDaysNumber(remaining))
+                    expiring?.let { balance ->
+                        Text(Strings.leaveExpiringFirst(androidx.compose.ui.platform.LocalResources.current,
+                            text.halfDays(records.availableLeaveHalfDays(balance)), text.balanceName(balance), text.monthDay(balance.validThroughDayKey!!)),
+                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+                        records.leaveBalances.filter { records.availableLeaveHalfDays(it) > 0 }.forEach { balance ->
+                            Surface(shape = MaterialTheme.shapes.extraLarge, color = MaterialTheme.colorScheme.surfaceContainerHighest) {
+                                Text("${text.balanceName(balance)} ${text.available(records.availableLeaveHalfDays(balance))}",
+                                    Modifier.padding(horizontal = DoneAtSpacing.m, vertical = DoneAtSpacing.xs), style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                    }
+                }
+            }
+        }
         SettingsGroup {
             NavigationRow(
                 text.string(R.string.leavePlanAction), { open(Route.LeavePlanner) }, Icons.Outlined.EventAvailable,
@@ -91,12 +119,27 @@ fun LeaveScreen(graph: AppGraph, fromRecords: Boolean, open: (Route) -> Unit, on
         }
         SettingsGroup(text.string(R.string.leaveBalancesSection)) {
             records.leaveBalances.forEach { balance ->
-                NavigationRow(
-                    text.balanceName(balance), { open(Route.LeaveBalanceEdit(balance.id)) }, LeaveText.kindIcon(balance.kind),
-                    value = text.available(records.availableLeaveHalfDays(balance)),
-                    supporting = balance.validThroughDayKey?.let(text::validUntil),
-                )
-                RowDivider()
+                val available = records.availableLeaveHalfDays(balance)
+                val bar = LeavePresentation.balanceBar(balance.entitledHalfDays, balance.usedHalfDays, available)
+                Column(Modifier.fillMaxWidth().clickable(role = Role.Button) { open(Route.LeaveBalanceEdit(balance.id)) }
+                    .padding(DoneAtSpacing.l).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                        Text(text.balanceName(balance), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                        Text(text.available(available), style = MaterialTheme.typography.titleSmall)
+                    }
+                    LeaveBalanceBar(bar)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+                        listOf(R.string.leaveLegendTaken to balance.usedHalfDays, R.string.leaveLegendPlanned to bar.planned, R.string.leaveLegendLeft to bar.left).forEach { (label, amount) ->
+                            Text("${text.string(label)} ${text.halfDays(amount)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    Text(if (balance.usedHalfDays > 0) Strings.leaveTotalAndTaken(androidx.compose.ui.platform.LocalResources.current,
+                        text.halfDays(balance.entitledHalfDays), text.halfDays(balance.usedHalfDays))
+                        else Strings.leaveTotal(androidx.compose.ui.platform.LocalResources.current, text.halfDays(balance.entitledHalfDays)),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    balance.validThroughDayKey?.let { Text(text.validUntil(it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                }
+                RowDivider(inset = false)
             }
             ActionRow(text.string(R.string.leaveAddBalance), { open(Route.LeaveBalanceEdit(null)) }, Icons.Outlined.Add)
         }

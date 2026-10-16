@@ -627,6 +627,7 @@
     <string name="onboardingOfflineBody">अकाउंट नहीं। बिना नेटवर्क चलता है।</string>
     <string name="onboardingOfflineTitle">ऑफ़लाइन भी चलता है</string>
     <string name="onboardingOngoingSurface">लगातार दिखने वाली सूचना</string>
+    <string name="onboardingPagePosition">%2$s में से पेज %1$s</string>
     <string name="onboardingPlusFocusBreakBody">अगला कार्य आपके तैयार होने तक प्रतीक्षा करता है। कोई भी चीज़ अपने आप शुरू नहीं होती.</string>
     <string name="onboardingPlusFocusTask">साप्ताहिक समीक्षा समाप्त करें</string>
     <string name="onboardingPlusFocusTitle">एक कार्य को स्पष्ट रूप से समय दें</string>
@@ -675,6 +676,7 @@
     <string name="plusAndroidRequestFailed">Google Play अनुरोध पूरा नहीं कर सका। थोड़ी देर बाद फिर कोशिश करें।</string>
     <string name="plusAndroidStoreOffline">आपके मौजूदा Plus एक्सेस की पुष्टि नहीं हो सकी। फिर कोशिश करें या खरीदारी बहाल करें।</string>
     <string name="plusAndroidStoreUnconfigured">इस डिवाइस पर Plus खरीद अभी उपलब्ध नहीं है। टाइमर और हाल के रिकॉर्ड का उपयोग जारी रख सकते हैं।</string>
+    <string name="plusAndroidTrialCancelBody">परीक्षण समाप्त होने से पहले Google Play में रद्द करें, तो कोई शुल्क नहीं लगेगा।</string>
     <string name="plusAndroidYearlyTrialPrice">7 दिन मुफ़्त, फिर हर साल %1$s। शुल्क से बचने के लिए ट्रायल समाप्त होने से पहले रद्द करें।</string>
     <string name="plusAutoRenew">सदस्यता आपके रद्द करने तक ख़ुद रिन्यू होती रहती है। सालाना प्लान में 7 दिन मुफ़्त हो सकते हैं, उसके बाद सालाना कीमत लगती है। एक बार की ख़रीद सिर्फ़ एक भुगतान है और चल रही सदस्यता को ख़ुद रद्द नहीं करती।</string>
     <string name="plusBenefitCharts">पूरे वर्ष और कामकाजी जीवन के दृश्य</string>
@@ -940,6 +942,9 @@
     <string name="recordsWorkdaysRecorded">दर्ज कार्यदिवस: %1$s</string>
     <string name="recordsWorkedTime">किया गया काम</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">बची छुट्टी देखें, कैलेंडर पर छुट्टियों की तुलना करें और कम दिन खर्च करने वाली योजना खोजें।</string>
+    <string name="release322RecordsBody">सप्ताह, महीना, वर्ष और जीवन का नया रूप: दर्ज और नियोजित समय की साफ पहचान, सार और अनुमानित आय।</string>
+    <string name="release322WelcomeBody">नया स्वागत पेज और अधिक स्पष्ट Plus योजनाएँ, चुनने से पहले परीक्षण की जानकारी के साथ।</string>
     <string name="remindersMayBeLate">रिमाइंडर कुछ मिनट देर से आ सकते हैं। समय पर पाने के लिए सटीक रिमाइंडर की अनुमति दें।</string>
     <string name="remindersSection">रिमाइंडर</string>
     <string name="replayCelebration">जश्न फिर से देखने के लिए टैप करें</string>

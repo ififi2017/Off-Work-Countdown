@@ -629,6 +629,7 @@
     <string name="onboardingOfflineBody">Nessun account. Funziona senza rete.</string>
     <string name="onboardingOfflineTitle">Funziona offline</string>
     <string name="onboardingOngoingSurface">Notifica permanente</string>
+    <string name="onboardingPagePosition">Pagina %1$s di %2$s</string>
     <string name="onboardingPlusFocusBreakBody">Il prossimo compito attende finché non sei pronto. Niente inizia da solo.</string>
     <string name="onboardingPlusFocusTask">Termina la revisione settimanale</string>
     <string name="onboardingPlusFocusTitle">Assegna a un compito un periodo di tempo chiaro</string>
@@ -677,6 +678,7 @@
     <string name="plusAndroidRequestFailed">Google Play non è riuscito a completare la richiesta. Riprova tra poco.</string>
     <string name="plusAndroidStoreOffline">Non è stato possibile confermare il tuo accesso attuale a Plus. Riprova o ripristina gli acquisti.</string>
     <string name="plusAndroidStoreUnconfigured">Gli acquisti Plus non sono ancora disponibili su questo dispositivo. Puoi continuare a usare il timer e i dati recenti.</string>
+    <string name="plusAndroidTrialCancelBody">Annulla su Google Play prima della fine della prova e non ti verrà addebitato nulla.</string>
     <string name="plusAndroidYearlyTrialPrice">7 giorni gratis, poi %1$s all’anno. Annulla prima della fine della prova per evitare addebiti.</string>
     <string name="plusAutoRenew">Gli abbonamenti si rinnovano automaticamente finché non li annulli. Il piano annuale può includere 7 giorni gratuiti; poi si applica il prezzo annuale. L’acquisto per sempre è un pagamento unico e non annulla un abbonamento in corso.</string>
     <string name="plusBenefitCharts">Viste dell’anno completo e della vita lavorativa</string>
@@ -943,6 +945,9 @@
     <string name="recordsWorkdaysRecorded">Giorni registrati: %1$s</string>
     <string name="recordsWorkedTime">Tempo lavorato</string>
     <string name="recordsYearLabel">%1$s</string>
+    <string name="release322LeaveBody">Controlla le ferie rimaste, confronta i periodi liberi sul calendario e trova il piano che usa meno giorni.</string>
+    <string name="release322RecordsBody">Nuovo aspetto per Settimana, Mese, Anno e Vita: tempo registrato e previsto ben distinti, con riepiloghi e guadagni stimati.</string>
+    <string name="release322WelcomeBody">Nuova schermata di benvenuto e piani Plus più chiari, con i dettagli della prova prima di scegliere.</string>
     <string name="remindersMayBeLate">I promemoria potrebbero arrivare con qualche minuto di ritardo. Consenti i promemoria esatti per riceverli puntuali.</string>
     <string name="remindersSection">Promemoria</string>
     <string name="replayCelebration">Tocca per rivedere l\'animazione</string>

@@ -1,15 +1,5 @@
 package com.rainif.doneat.ui.records
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
-import com.rainif.doneat.core.domain.records.RecordsCanvasGrid
-import com.rainif.doneat.core.domain.records.RecordsYearSampler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,20 +8,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,42 +29,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.rainif.doneat.ui.schedule.HolidayDayAnnotation
-import com.rainif.doneat.ui.schedule.HolidayDayCaption
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.designsystem.DoneAtRecordsStyle
 import com.rainif.doneat.core.designsystem.LocalDoneAtRecordsColors
-import com.rainif.doneat.core.domain.records.RecordsDayAppearance
-import com.rainif.doneat.core.domain.records.RecordsDayCell
-import com.rainif.doneat.core.domain.records.RecordsDayMarks
-import com.rainif.doneat.core.domain.records.RecordsWeekAxis
-import com.rainif.doneat.core.domain.records.RecordsWorkIntensity
 import com.rainif.doneat.core.domain.records.TimeAllocationKind
 import com.rainif.doneat.core.domain.records.TimeAllocationShare
 import java.time.LocalDate
@@ -144,242 +117,6 @@ fun MiniWorkBar(workMs: Long, overtimeMs: Long, modifier: Modifier = Modifier, m
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(if (overtimeWidth > 0) 1.dp else 0.dp)) {
         if (workMs > 0) Box(Modifier.size(max(2.0, width - overtimeWidth).dp, height).clip(CircleShape).background(colors.work))
         if (overtimeWidth > 0) Box(Modifier.size(overtimeWidth.dp, height).clip(CircleShape).background(colors.overtime))
-    }
-}
-
-private fun Modifier.daySemantics(cell: RecordsDayCell, text: RecordsText, selected: Boolean, onSelect: () -> Unit, onOpen: () -> Unit, holiday: HolidayDayAnnotation? = null) =
-    clearAndSetSemantics {
-        contentDescription = listOfNotNull(text.cellDescription(cell), holiday?.description(text.string(R.string.holidayMakeupWorkday), text.string(R.string.holidayEstimatedLabel))).joinToString(", ")
-        role = Role.Button
-        this.selected = selected
-        onClick { onSelect(); true }
-        customActions = listOf(CustomAccessibilityAction(text.string(R.string.recordsSeeThisDay)) { onOpen(); true })
-    }
-
-/**
- * The month (iOS `RecordsMonthGrid`). Fill depth is overtime, the small bar is
- * duration and proportion; selection is a ring, today only tints its number.
- */
-@Composable
-internal fun MonthGrid(
-    cells: List<RecordsDayCell>,
-    leadingBlanks: Int,
-    weekdayLabels: List<String>,
-    selectedDayKey: String?,
-    text: RecordsText,
-    onSelect: (RecordsDayCell) -> Unit,
-    onOpen: (RecordsDayCell) -> Unit,
-    modifier: Modifier = Modifier,
-    holidays: Map<String, HolidayDayAnnotation> = emptyMap(),
-) {
-    val colors = LocalDoneAtRecordsColors.current
-    val scheme = MaterialTheme.colorScheme
-    val dateHeight = with(LocalDensity.current) { MaterialTheme.typography.bodyMedium.fontSize.toDp() }
-    val captionHeight = with(LocalDensity.current) { MaterialTheme.typography.labelSmall.fontSize.toDp() }
-    // Square at ordinary text sizes; larger text may grow vertically rather than clipping the three slots.
-    val minimumHeight = dateHeight + captionHeight + 3.dp + DoneAtSpacing.xxs * 6
-    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-        Row(Modifier.fillMaxWidth().clearAndSetSemantics {}, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-            weekdayLabels.forEach {
-                Text(it, Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = scheme.outline, textAlign = TextAlign.Center)
-            }
-        }
-        val slots: List<RecordsDayCell?> = List(leadingBlanks) { null } + cells
-        slots.chunked(7).forEach { week ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                for (index in 0 until 7) {
-                    val cell = week.getOrNull(index)
-                    BoxWithConstraints(Modifier.weight(1f)) {
-                        val cellHeight = maxOf(maxWidth, minimumHeight)
-                        if (cell == null) {
-                            Spacer(Modifier.fillMaxWidth().height(cellHeight))
-                        } else {
-                            val selected = cell.dayKey == selectedDayKey
-                            val holiday = holidays[cell.dayKey]
-                            val estimated = cell.isFuture || RecordsDayMarks.isEstimated(cell)
-                            val fill = when (cell.appearance) {
-                                RecordsDayAppearance.LOCKED -> scheme.surfaceContainerHighest.copy(alpha = 0.45f)
-                                RecordsDayAppearance.UNRECORDED, RecordsDayAppearance.PLANNED -> Color.Transparent
-                                RecordsDayAppearance.REST -> scheme.surfaceContainerHighest.copy(alpha = 0.6f)
-                                RecordsDayAppearance.RECORDED, RecordsDayAppearance.CORRECTED ->
-                                    colors.work.copy(alpha = (0.4 * RecordsWorkIntensity.opacity(cell.overtimeMs, estimated)).toFloat())
-                            }
-                            val shape = RoundedCornerShape(8.dp)
-                            Box(
-                                Modifier.fillMaxWidth().height(cellHeight)
-                                    .then(if (selected) modifier else Modifier)
-                                    .clip(shape)
-                                    .background(fill)
-                                    .estimatedHatch(RecordsDayMarks.isEstimated(cell), scheme.onSurfaceVariant.copy(alpha = DoneAtRecordsStyle.calendarEstimateTintOpacity), spacing = 6.dp)
-                                    .border(2.dp, if (selected) scheme.primary else Color.Transparent, shape)
-                                    .clickable { onSelect(cell) }
-                                    .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }, holiday),
-                            ) {
-                                Column(Modifier.matchParentSize().padding(DoneAtSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly) {
-                                    Box(Modifier.fillMaxWidth().heightIn(min = dateHeight), contentAlignment = Alignment.Center) {
-                                        Text(
-                                            text.count(cell.date.dayOfMonth),
-                                            style = MaterialTheme.typography.bodyMedium.copy(lineHeight = MaterialTheme.typography.bodyMedium.fontSize),
-                                            fontWeight = if (cell.isToday || selected) FontWeight.SemiBold else FontWeight.Normal,
-                                            color = when {
-                                                cell.appearance == RecordsDayAppearance.LOCKED -> scheme.outline
-                                                cell.isToday || selected -> scheme.primary
-                                                else -> scheme.onSurface
-                                            },
-                                            maxLines = 1,
-                                            softWrap = false,
-                                        )
-                                    }
-                                    Box(Modifier.fillMaxWidth().heightIn(min = captionHeight), contentAlignment = Alignment.Center) {
-                                        // Locked days replace the festival / make-up line. The
-                                        // caption and the lock never share the row.
-                                        if (cell.appearance == RecordsDayAppearance.LOCKED) {
-                                            Icon(Icons.Filled.Lock, null, Modifier.size(9.dp), tint = scheme.outline)
-                                        } else if (holiday != null) {
-                                            HolidayDayCaption(holiday)
-                                        }
-                                    }
-                                    Box(Modifier.fillMaxWidth().height(3.dp), contentAlignment = Alignment.Center) {
-                                        MiniWorkBar(cell.workMs, cell.overtimeMs, Modifier.graphicsLayer {
-                                            alpha = RecordsWorkIntensity.opacity(cell.overtimeMs, estimated).toFloat()
-                                        })
-                                    }
-                                }
-                                if (cell.appearance == RecordsDayAppearance.CORRECTED) {
-                                    Icon(Icons.Filled.Edit, null, Modifier.align(Alignment.TopEnd).padding(4.dp).size(9.dp), tint = scheme.onSurfaceVariant)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * The week (iOS `RecordsWeekStrips`): one shared axis so days compare, overtime
- * stacked on the end of regular work rather than recolouring the column.
- */
-@Composable
-internal fun WeekStrips(
-    cells: List<RecordsDayCell>,
-    selectedDayKey: String?,
-    text: RecordsText,
-    onSelect: (RecordsDayCell) -> Unit,
-    onOpen: (RecordsDayCell) -> Unit,
-    modifier: Modifier = Modifier,
-    holidays: Map<String, HolidayDayAnnotation> = emptyMap(),
-) {
-    val colors = LocalDoneAtRecordsColors.current
-    val scheme = MaterialTheme.colorScheme
-    val ceiling = RecordsWeekAxis.ceiling(cells).toDouble()
-    val track = 116.dp
-    CappedFontScale {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Bottom) {
-            cells.forEach { cell ->
-                val selected = cell.dayKey == selectedDayKey
-                val holiday = holidays[cell.dayKey]
-                val estimated = cell.isFuture || RecordsDayMarks.isEstimated(cell)
-                Column(
-                    Modifier
-                        .weight(1f)
-                        .then(if (selected) modifier else Modifier)
-                        .clip(RoundedCornerShape(10.dp))
-                        .clickable { onSelect(cell) }
-                        .daySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }, holiday),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(7.dp),
-                ) {
-                    Box(Modifier.height(track + 8.dp), contentAlignment = Alignment.BottomCenter) {
-                        if (cell.appearance == RecordsDayAppearance.LOCKED) {
-                            Box(Modifier.size(18.dp, track).clip(CircleShape).background(scheme.surfaceContainerHighest.copy(alpha = 0.6f)), contentAlignment = Alignment.Center) {
-                                Icon(Icons.Filled.Lock, null, Modifier.size(11.dp), tint = scheme.outline)
-                            }
-                        } else {
-                            val work = min(1.0, cell.workMs / ceiling)
-                            val overtime = min(1 - work, cell.overtimeMs / ceiling)
-                            Box(Modifier.size(18.dp, track).clip(CircleShape).background(scheme.surfaceContainerHighest), contentAlignment = Alignment.BottomCenter) {
-                                // The minimum height only makes a real short interval visible; zero stays empty.
-                                Column(
-                                    Modifier.fillMaxWidth().clip(CircleShape)
-                                        .estimatedHatch(RecordsDayMarks.isEstimated(cell), Color.White, spacing = 4.dp)
-                                        .graphicsLayer { alpha = RecordsWorkIntensity.opacity(cell.overtimeMs, estimated).toFloat() },
-                                ) {
-                                    if (overtime > 0) Box(Modifier.fillMaxWidth().height(max(4.0, track.value * overtime).dp).background(colors.overtime))
-                                    if (work > 0) Box(Modifier.fillMaxWidth().height(max(4.0, track.value * work).dp).background(colors.work))
-                                }
-                            }
-                            if (cell.observationCount > 0) {
-                                Box(Modifier.offset(y = 4.dp).size(9.dp).clip(CircleShape).background(scheme.surfaceContainerLow).padding(2.dp).clip(CircleShape).background(scheme.onSurfaceVariant))
-                            }
-                            if (cell.appearance == RecordsDayAppearance.CORRECTED) {
-                                Icon(Icons.Filled.Edit, null, Modifier.align(Alignment.TopCenter).size(10.dp), tint = scheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                    Column(
-                        Modifier.fillMaxWidth().heightIn(min = 44.dp).clip(RoundedCornerShape(10.dp))
-                            .background(if (selected) scheme.primary else Color.Transparent).padding(vertical = 4.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        val tint = when {
-                            selected -> scheme.onPrimary
-                            cell.isToday -> scheme.primary
-                            else -> scheme.onSurfaceVariant
-                        }
-                        Text(
-                            text.count(cell.date.dayOfMonth), style = MaterialTheme.typography.bodyMedium, color = tint,
-                            fontWeight = if (selected || cell.isToday) FontWeight.SemiBold else FontWeight.Normal,
-                        )
-                        if (holiday != null) HolidayDayCaption(holiday, onSelectedColor = selected)
-                        else Text(text.weekdayNarrow(cell.date), style = MaterialTheme.typography.labelSmall, color = tint)
-                    }
-                }
-            }
-        }
-    }
-}
-
-/** The small legend swatches: solid, hatched, corrected, locked. */
-@Composable
-private fun LegendSwatch(hatched: Boolean) {
-    val color = MaterialTheme.colorScheme.onSurfaceVariant
-    Box(
-        Modifier.size(9.dp).clip(RoundedCornerShape(2.dp))
-            .background(if (hatched) Color.Transparent else color)
-            .border(1.dp, color, RoundedCornerShape(2.dp))
-            .estimatedHatch(hatched, color, spacing = 3.dp),
-    )
-}
-
-/**
- * What solid, hatched, pencil and lock mean, beside the grid that uses them
- * (iOS `RecordsMarkLegend`). It wraps rather than truncates.
- */
-@Composable
-fun MarkLegend(includesLock: Boolean, text: RecordsText) {
-    val color = MaterialTheme.colorScheme.onSurfaceVariant
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        FlowRow(
-            Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
-            horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            @Composable
-            fun item(label: Int, mark: @Composable () -> Unit) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                    mark()
-                    Text(text.string(label), style = MaterialTheme.typography.labelSmall, color = color)
-                }
-            }
-            item(R.string.recordsLegendRecorded) { LegendSwatch(hatched = false) }
-            item(R.string.recordsLegendEstimated) { LegendSwatch(hatched = true) }
-            item(R.string.recordsLegendCorrected) { Icon(Icons.Filled.Edit, null, Modifier.size(10.dp), tint = color) }
-            if (includesLock) item(R.string.recordsLegendLocked) { Icon(Icons.Filled.Lock, null, Modifier.size(10.dp), tint = color) }
-        }
-        Text(text.string(R.string.recordsHeatScale), style = MaterialTheme.typography.labelSmall, color = color, textAlign = TextAlign.Center)
     }
 }
 
@@ -487,149 +224,3 @@ fun LockedPlaceholder(kind: LockedKind, text: RecordsText, onUnlock: () -> Unit)
 
 /** A narrow weekday label per grid column, in the week's order. */
 fun weekdayLabels(text: RecordsText, weekStart: LocalDate) = (0L until 7L).map { text.weekdayNarrow(weekStart.plusDays(it)) }
-
-/**
- * The collapsed year (iOS `RecordsYearCanvas`): depth says when it was heavy,
- * hatching marks estimated work, and the selected month is one outline. The
- * month buttons under it carry the same choices for the screen reader.
- */
-@Composable
-fun YearCanvas(
-    cells: List<RecordsDayCell>,
-    year: Int,
-    selectedMonth: Int?,
-    showCallout: Boolean,
-    text: RecordsText,
-    onSelectMonth: (Int) -> Unit,
-    onOpenMonth: (Int) -> Unit,
-) {
-    val colors = LocalDoneAtRecordsColors.current
-    val scheme = MaterialTheme.colorScheme
-    val density = LocalDensity.current
-    var tappedBucket by remember(cells) { mutableStateOf<Int?>(null) }
-    val selectMonth by rememberUpdatedState(onSelectMonth)
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        BoxWithConstraints(Modifier.fillMaxWidth().height(220.dp)) {
-            val first = cells.firstOrNull()?.date ?: return@BoxWithConstraints
-            val end = (cells.lastOrNull()?.date ?: first).plusDays(1)
-            val grid = with(density) {
-                RecordsCanvasGrid(maxWidth.toPx(), maxHeight.toPx(), 12.dp.toPx(), 3.dp.toPx(), minimumColumns = 16, minimumRows = 8)
-            }
-            val buckets = remember(cells, grid.count) { RecordsYearSampler.buckets(first, end, grid.count, cells) }
-            val corner = with(density) { min(3.dp.toPx(), grid.cell / 3) }
-            val line = with(density) { 1.dp.toPx() }
-            Canvas(
-                Modifier.fillMaxSize().clearAndSetSemantics {}.pointerInput(buckets, grid) {
-                    detectTapGestures(
-                        onTap = { point ->
-                            grid.index(point.x, point.y)?.let(buckets::getOrNull)?.let { bucket ->
-                                tappedBucket = bucket.index
-                                selectMonth(bucket.month)
-                            }
-                        },
-                    )
-                },
-            ) {
-                buckets.forEach { bucket ->
-                    val (x, y) = grid.origin(bucket.index)
-                    val fill = when (bucket.kind) {
-                        RecordsDayAppearance.LOCKED -> scheme.surfaceContainerHighest.copy(alpha = 0.86f)
-                        RecordsDayAppearance.UNRECORDED, RecordsDayAppearance.REST -> scheme.surfaceContainerHighest.copy(alpha = 0.65f)
-                        RecordsDayAppearance.PLANNED -> colors.work.copy(alpha = RecordsWorkIntensity.opacity(0, estimated = true).toFloat())
-                        RecordsDayAppearance.RECORDED, RecordsDayAppearance.CORRECTED ->
-                            colors.work.copy(alpha = RecordsWorkIntensity.opacity(bucket.peakOvertimeMs, bucket.isFuture).toFloat())
-                    }
-                    val size = Size(grid.cell, grid.cell)
-                    drawRoundRect(fill, Offset(x, y), size, CornerRadius(corner))
-                    if (bucket.hasEstimatedWork) {
-                        clipRect(x, y, x + grid.cell, y + grid.cell) {
-                            var lineX = x - grid.cell
-                            while (lineX <= x + grid.cell) {
-                                drawLine(colors.work.copy(alpha = 0.28f), Offset(lineX, y), Offset(lineX + grid.cell, y + grid.cell), line)
-                                lineX += 4.dp.toPx()
-                            }
-                        }
-                    }
-                    if (bucket.kind == RecordsDayAppearance.CORRECTED) {
-                        drawRoundRect(scheme.onSurface.copy(alpha = 0.72f), Offset(x + line / 2, y + line / 2), Size(grid.cell - line, grid.cell - line), CornerRadius(corner), style = Stroke(line))
-                    }
-                }
-                if (selectedMonth != null) {
-                    grid.selectionRows(buckets.filter { it.month == selectedMonth }.map { it.index }).forEach { (from, to) ->
-                        val (left, top) = grid.origin(from)
-                        val (right, _) = grid.origin(to)
-                        drawRoundRect(
-                            scheme.primary.copy(alpha = 0.8f),
-                            Offset(left - grid.gap / 2, top - grid.gap / 2),
-                            Size(right + grid.cell - left + grid.gap, grid.cell + grid.gap),
-                            CornerRadius(corner),
-                            style = Stroke(1.25.dp.toPx()),
-                        )
-                    }
-                }
-            }
-            if (showCallout && selectedMonth != null) {
-                val bucket = tappedBucket?.let(buckets::getOrNull)?.takeIf { it.month == selectedMonth }
-                    ?: buckets.firstOrNull { it.month == selectedMonth }
-                if (bucket != null) {
-                    val (x, y) = grid.origin(bucket.index)
-                    RecordsCallout(Rect(x, y, x + grid.cell, y + grid.cell), Modifier.matchParentSize()) {
-                        RecordsSelectionPill(
-                            icon = Icons.Outlined.CalendarToday,
-                            title = text.month(LocalDate.of(year, selectedMonth, 1)),
-                            subtitle = year.toString(),
-                            action = text.string(R.string.recordsSeeThisMonth),
-                            onClick = { onOpenMonth(selectedMonth) },
-                        )
-                    }
-                }
-            }
-        }
-        CappedFontScale {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                (1..12).chunked(4).forEach { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        row.forEach { month ->
-                            val selected = month == selectedMonth
-                            val date = LocalDate.of(year, month, 1)
-                            Box(
-                                Modifier
-                                    .weight(1f)
-                                    .heightIn(min = 44.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (selected) scheme.primary.copy(alpha = 0.16f) else scheme.surfaceContainerHighest)
-                                    .border(if (selected) 1.25.dp else 0.dp, if (selected) scheme.primary else Color.Transparent, RoundedCornerShape(10.dp))
-                                    .clickable { tappedBucket = null; onSelectMonth(month) }
-                                    .semantics {
-                                        contentDescription = text.monthYear(date)
-                                        role = Role.Button
-                                        this.selected = selected
-                                        onClick { tappedBucket = null; onSelectMonth(month); true }
-                                        customActions = listOf(CustomAccessibilityAction(text.string(R.string.recordsSeeThisMonth)) { onOpenMonth(month); true })
-                                    },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text.month(date),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                                    color = if (selected) scheme.primary else scheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    modifier = Modifier.padding(horizontal = 4.dp).clearAndSetSemantics {},
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Text(
-            text.string(R.string.recordsHeatScale),
-            Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.labelSmall,
-            color = scheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-    }
-}

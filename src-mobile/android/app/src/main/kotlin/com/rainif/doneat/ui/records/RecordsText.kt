@@ -62,6 +62,8 @@ class RecordsText(
     /** Each end isolated, so an AM/PM marker stays with its own digits in either direction. */
     fun timeRange(startMs: Double, endMs: Double) = "${TimerText.isolate(time(startMs))} – ${TimerText.isolate(time(endMs))}"
 
+    fun decimal(value: Double): String = NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 1 }.format(value)
+
     fun count(value: Int): String = NumberFormat.getIntegerInstance(locale).format(value)
 
     /** "8 h 30 m"; hours and minutes only. */
@@ -130,6 +132,7 @@ class RecordsText(
     fun cellSource(cell: RecordsDayCell): String = res.getString(
         when {
             cell.appearance == RecordsDayAppearance.LOCKED -> R.string.recordsLockedDay
+            cell.isToday && cell.isFromSavedSchedule && cell.workMs + cell.overtimeMs > 0 -> R.string.recordsPlanned
             cell.isProjection -> R.string.recordsSourceProjection
             else -> when (cell.appearance) {
                 RecordsDayAppearance.UNRECORDED -> R.string.recordsUnrecorded
@@ -147,6 +150,7 @@ class RecordsText(
         if (cell.appearance == RecordsDayAppearance.LOCKED) return res.getString(R.string.recordsLockedDay)
         val parts = mutableListOf(dayTitle(cell.date), cellSource(cell))
         if (cell.workMs > 0) parts += recordsDuration(cell.workMs.toDouble())
+        if (cell.hasConflict) parts += res.getString(R.string.recordsConflictCopy)
         if (cell.overtimeMs > 0) parts += "${res.getString(R.string.recordsOvertime)} ${recordsDuration(cell.overtimeMs.toDouble())}"
         return parts.joinToString(", ")
     }

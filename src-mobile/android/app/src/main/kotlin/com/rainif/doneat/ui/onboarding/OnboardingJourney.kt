@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -69,6 +70,64 @@ import java.time.format.TextStyle
 import java.util.Locale
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
+
+/** Dedicated welcome; only the content scrolls, keeping the next action reachable. */
+@Composable
+internal fun Welcome322Page(animatesEntrance: Boolean, onContinue: () -> Unit, onRecover: () -> Unit) {
+    val largeText = LocalDensity.current.fontScale >= 1.5f
+    val tokens = DoneAtWelcome322Tokens
+    val resources = LocalResources.current
+    val number = java.text.NumberFormat.getIntegerInstance(resources.configuration.locales[0])
+    val setupSteps = SetupPage.entries.take(4)
+    val pagePosition = Strings.onboardingPagePosition(resources, current = number.format(1), total = number.format(setupSteps.size))
+    @Composable fun recovery(modifier: Modifier = Modifier) {
+        TextButton(onClick = onRecover, modifier = modifier.fillMaxWidth().heightIn(min = DoneAtSpacing.minTouch)) {
+            Text(stringResource(R.string.onboardingRestoreFromFile), textAlign = TextAlign.Center,
+                fontWeight = FontWeight.SemiBold)
+        }
+    }
+    Column(Modifier.fillMaxSize()) {
+        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+            val compact = maxHeight < tokens.compactHeight
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(min = maxHeight)
+                .padding(horizontal = tokens.horizontalInset),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                Column(Modifier.widthIn(max = tokens.contentWidth).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(Modifier.height(tokens.topSpace))
+                    Box(Modifier.onboardingArrival(0, animatesEntrance)) {
+                        OnboardingWelcomeMark(Modifier.size(if (compact) tokens.compactMark else tokens.regularMark), animatesEntrance)
+                    }
+                    Text(stringResource(R.string.app_name),
+                        Modifier.padding(top = if (compact) tokens.compactBrandGap else tokens.regularBrandGap).onboardingArrival(1, animatesEntrance),
+                        style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                    Text(stringResource(R.string.landingTagline),
+                        Modifier.padding(top = tokens.topSpace).onboardingArrival(2, animatesEntrance).semantics { heading() },
+                        style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.Center)
+                    Text(stringResource(R.string.onboardingOfflineBody),
+                        Modifier.padding(top = if (compact) tokens.compactBodyGap else tokens.regularBodyGap).onboardingArrival(3, animatesEntrance),
+                        style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center)
+                    if (largeText) recovery(Modifier.padding(top = DoneAtSpacing.l))
+                    Spacer(Modifier.height(tokens.bottomSpace))
+                }
+            }
+        }
+        Column(Modifier.widthIn(max = tokens.contentWidth).fillMaxWidth().align(Alignment.CenterHorizontally)
+            .padding(horizontal = tokens.horizontalInset, vertical = DoneAtSpacing.s), horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+            if (!largeText) recovery()
+            Row(Modifier.semantics { contentDescription = pagePosition }, horizontalArrangement = Arrangement.spacedBy(tokens.dotGap)) {
+                setupSteps.forEach { page ->
+                    Box(Modifier.size(tokens.dotSize).background(
+                        if (page == SetupPage.WELCOME) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = .3f),
+                        androidx.compose.foundation.shape.CircleShape))
+                }
+            }
+            DoneAtPrimaryButton(stringResource(R.string.onboardingSetMyShift), onContinue, Modifier.fillMaxWidth())
+        }
+    }
+}
 
 /** Content scrolls independently of the persistent next/finish controls. */
 @Composable
@@ -458,8 +517,8 @@ private fun SetupCounter(title: String, value: Int, change: (Int) -> Unit) {
 }
 
 @Composable
-internal fun OnboardingWelcomeMark(modifier: Modifier) {
-    val reduced = LocalDoneAtMotion.current.reduced || onboardingTouchExplorationEnabled()
+internal fun OnboardingWelcomeMark(modifier: Modifier, animatesEntrance: Boolean = true) {
+    val reduced = LocalDoneAtMotion.current.reduced || onboardingTouchExplorationEnabled() || !animatesEntrance
     val hand = remember { Animatable(if (reduced) 0f else -120f) }
     var settled by remember { mutableStateOf(reduced) }
     LaunchedEffect(reduced) {
