@@ -829,3 +829,9 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 核对：Play 年付 `yearly-trial-7d` 已有效（175 国家/地区，新客户获取、从未订阅过 doneat_plus、7 天免费），与 iOS 年付介绍性优惠一致。关闭付费墙后出现的优惠版终身会员（iOS `plus.lifetime.offer` 18.99 / 常规 24.99）此前在 Play 没有对应优惠；Android 取同一 `lifetime` 购买选项下任意更便宜、同币种、在有效期内的折扣优惠，Worker 只校验购买选项 `lifetime`，因此只缺商品配置。
 - 所有者要求后在 Console 创建 `doneat_plus_lifetime` → `lifetime` → 折扣优惠 `lifetime-offer`：Play 一次性商品折扣只提供“百分比/绝对折扣”，没有固定价，故用 24%（美国 USD 24.99 → 18.99，其余 174 国家/地区按各自常规价打同一折扣）；无结束日期、未设购买次数上限（每人一次的邀请由应用控制）。已保存并启用，状态“已安排”，2026-10-17 00:00 UTC 开始生效。尚未在 Play 安装包上实测折扣价显示与购买。
 - Worker 免费档每请求 10 ms CPU 仍未关闭：成功购买的冷路径会做两次 RSA-2048 私钥导入与签名（Google OAuth 断言、收据），且只在单个实例内缓存。建议付费档（$5/月）；或在免费档跨实例共享 OAuth 令牌、收据改 ES256 新 kid，并用 `wrangler tail` 实测成功购买冷路径。等待所有者选择，未改代码与套餐。
+
+### Workers Paid 与成功购买验证（2026-10-17）
+
+- PR313 合并进 main 后，push 触发 run 36，生成 3.2.2(136)，以 completed 状态发布到 Alpha；所有者已在 Pixel 从 Play 安装 136（installer=com.android.vending）。隔离 Debug 包 parity322 已卸载。
+- 所有者将 Cloudflare 账户升级到 Workers Paid。Dashboard「Workers 计划」显示付费档为当前套餐（每请求最多 5 分钟 CPU，默认 30 秒，本 Worker 未设 cpu_ms 上限），免费档每请求 10 ms 的限制不再适用。
+- 用 `wrangler tail` 实时观察（只用 jq 留下时间、结果、CPU、墙钟、路径、状态，不保存 IP 或请求头，结束后停止）。所有者用许可测试账号在 136 上购买月订阅：Google RTDN 通知 `/notifications` CPU **19 ms**、墙钟 793 ms、204（冷实例：Google 推送 JWT 校验、OAuth 断言签名、Play API、D1 写入）；应用 `/verify` CPU 7 ms、墙钟 37 ms、200。D1 新增 doneat_plus 订阅 active、test_purchase=1，到期 22:59:52 UTC（许可测试月期为 5 分钟）。应用 Plus 页显示“感谢你支持 DoneAt / 你的 Plus 方案”。19 ms 证明冷路径在免费档会超过 10 ms；付费档下首次成功购买的服务端验证与应用签名回执链路实测通过。
