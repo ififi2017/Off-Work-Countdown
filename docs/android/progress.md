@@ -823,3 +823,9 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 
 - 所有者要求用 iOS 对照修正构建新签名候选，替换 Alpha 草稿 134，不送审。run 38932865718（126173f3，upload=true、alpha、draft）成功，生成 3.2.2(135) 并打 tag android-v3.2.2-135。下载产物复核：AAB SHA-256 0eb4ce8d…6548，mapping b9280f7a…1303；上传证书与 128/132–134 相同，jarsigner/bundletool 通过，非 debuggable、无画廊、16K 对齐，dex 含完整审核/购买公开 key、api.doneat.app 与商品；R8 mapping 含 DoneAtRollingText、RecordsSelectionRow、LifeProgress、LeaveCardTitle 等本次新增代码。Console 显示 Alpha 草稿已是 3.2.2(135)，134 不再作为发布版本，128 仍向测试人员发布。证据 `artifact/*-135.*`。
 - 注意：`release-android.yml` 在影响 Android 的提交合并进 main 后会自动构建并上传 Alpha，状态为 completed（直接发给测试人员并进入审核），使用新的 versionCode。因此合并 PR313 本身就是 Alpha 发布，需要所有者确认；135 草稿只用于合并前的 Play 安装检查。
+
+### 终身优惠商品与 Worker CPU 评估（2026-10-17）
+
+- 核对：Play 年付 `yearly-trial-7d` 已有效（175 国家/地区，新客户获取、从未订阅过 doneat_plus、7 天免费），与 iOS 年付介绍性优惠一致。关闭付费墙后出现的优惠版终身会员（iOS `plus.lifetime.offer` 18.99 / 常规 24.99）此前在 Play 没有对应优惠；Android 取同一 `lifetime` 购买选项下任意更便宜、同币种、在有效期内的折扣优惠，Worker 只校验购买选项 `lifetime`，因此只缺商品配置。
+- 所有者要求后在 Console 创建 `doneat_plus_lifetime` → `lifetime` → 折扣优惠 `lifetime-offer`：Play 一次性商品折扣只提供“百分比/绝对折扣”，没有固定价，故用 24%（美国 USD 24.99 → 18.99，其余 174 国家/地区按各自常规价打同一折扣）；无结束日期、未设购买次数上限（每人一次的邀请由应用控制）。已保存并启用，状态“已安排”，2026-10-17 00:00 UTC 开始生效。尚未在 Play 安装包上实测折扣价显示与购买。
+- Worker 免费档每请求 10 ms CPU 仍未关闭：成功购买的冷路径会做两次 RSA-2048 私钥导入与签名（Google OAuth 断言、收据），且只在单个实例内缓存。建议付费档（$5/月）；或在免费档跨实例共享 OAuth 令牌、收据改 ES256 新 kid，并用 `wrangler tail` 实测成功购买冷路径。等待所有者选择，未改代码与套餐。
