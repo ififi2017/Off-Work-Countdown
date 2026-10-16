@@ -1,0 +1,134 @@
+[
+  {
+    "locale": "en",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "zh-CN",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "zh-TW",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "zh-HK",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "ja",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "ko",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "de",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "es",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "fr",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "it",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "pt",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "ru",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "ar",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "hi-IN",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "mr-IN",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "id",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "th",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "vi",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "tr",
+    "fontScale": 1.0,
+    "theme": "light",
+    "titlePresent": true
+  },
+  {
+    "locale": "en",
+    "fontScale": 2.0,
+    "theme": "dark",
+    "titlePresent": true
+  },
+  {
+    "locale": "ar",
+    "fontScale": 2.0,
+    "theme": "dark",
+    "titlePresent": true
+  },
+  {
+    "locale": "zh-CN",
+    "fontScale": 2.0,
+    "theme": "light",
+    "titlePresent": true
+  }
+]

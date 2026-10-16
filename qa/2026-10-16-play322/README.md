@@ -8,6 +8,9 @@
 
 | 证据 | 来源及覆盖 |
 |---|---|
+| `pixel/review-entry-*`、`review-about`、`review-access-inactive`、`review-disabled-*`、`review-service-disabled` | Debug32210正常MainActivity真实导航、未激活、格式错误与503关闭服务；只使用32A假码，不含真实凭证。`review-disabled-attempt`是ADB焦点时序少一字符的历史捕获，不当服务拒绝证据；最终`review-service-disabled`为确认32字符后真正503。 |
+| `pixel/review-ui-{locale}-1-light`与`review-ui-{en,ar,zh-CN}-2-*` | 同一APK既有只读画廊，19语标题语义与截图；三种200%字号只局部注入，系统fontScale1.0/主题auto保持。主代理直接观察正常英文、阿语、俄语以及英/阿/简中200%截图；不声称19语母语审阅或真实TalkBack朗读。英文200%底栏既有标签出现单字母尾行，待确认最小排版修正。 |
+| `play-review-data-safety-draft.png` | 新增Device or other IDs可选、非临时、功能/安全用途；Console显示保存待送审。没有填写有效App access凭证、提交或发布。 |
 | `pixel/onboarding-{locale}`，`welcome-sheet-*` | 19语欢迎完成态，首轮隔离Debug32202；gallery只读遮罩不是产品层 |
 | `pixel/records-{locale}`，`results-{locale}`，`release-{locale}`，`plus-{locale}` 与对应 `*-sheet-*` | 19语、浅色、局部减少动态效果；隔离Debug32204（英文记录重新采自32205）。分别是月视图、休假样例结果、新介绍、真实不可购买状态；每张标题匹配后逐图审查 |
 | `pixel/records-year-en`、`records-life-en`、`records-week-final` | Pixel真实新年/人生/周绘制；Debug权益仅供视觉，不是购买验收 |

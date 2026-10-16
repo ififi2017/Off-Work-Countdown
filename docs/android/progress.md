@@ -768,3 +768,30 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 带独立审核/购买公开key配置的最终Android7门禁1m49通过，仍为723项零失败/跳过；Release R8与lint通过。审核到期后仍可刷新或退出已有安装会话，输入不保存；实际签名jose固定向量/清理故障注入均通过。58行共享路径漂移不变，未移动iOS固定源。
 - 官网草稿PR33 https://github.com/ififi2017/doneat.app/pull/33 已创建并附到本任务；Vercel Preview成功，浏览器实际打开新增英文补充且保存截图。已就该PR的官网生产发布单独询问所有者，等待决定；Android生产发布仍不包含。
 - Pixel隔离包32210已覆盖更新，正式包未操作；初次进入仍为原合成档案/免费锁定状态，正在检查关于→审核访问、输入清除和关闭服务错误。尚未进行成功激活/真实租约设备验收。
+
+### R3代码保存与签名候选132（2026-10-16）
+
+- 核心实现已提交并推送d50fed0cbfa609b0f992c219281ac5ad0379f42a（PR313）；签名干跑run38914924604，3.2.2(132)，upload=false，进行中；不能称已生成最终包。旧131标签不动。
+- 根ESLint通过；新公钥严格独立配置，发布检查拒绝购买/审核相同key或kid，新增测试已包含于557项。Pixel公开入口/未激活屏、密码遮罩、无效长度输入报错和提交清空已实际验证。32个A假码的首次ADB输入因焦点时序少1字符，仅证明本地格式拒绝；正在以确认焦点后的32字符假码核对503，不把前者误记服务拒绝。
+
+- Pixel正式包只读复核仍3.2.2(128)、installer=com.android.vending；系统fontScale1.0、night auto保持。正常MainActivity真实导航已核对公开审核入口。有效格式32A假码实际触发503“temporarily unavailable”，输入清空、授权仍inactive；第一次31字符则本地拒绝，两个来源已明确区分。Keystore P256初始化路径实际走通，但未声称服务端成功租约。
+- 正在使用既有只读画廊（无真实购买Activity）扫新增审核页19语及英/阿/简中200%字号。该画廊只注入语言/主题/字号，不改系统字体主题；验收记录明确区分普通MainActivity与画廊注入。
+
+- 只读核实可复用的现有封闭测试Alpha轨道有效，当前128已于10月12日面向测试人员发布，178地区；其Google群组为doneat测试群，而非内部测试未选中的邮件名单。本轮不改群组、不发送邀请、不碰旧internal草稿；后续可优先评估沿现有Alpha升级测试，避免覆盖旧草稿。反馈邮箱当前拼作doneat.com，未擅改与本次无关字段。
+- 自动审批拒绝上传独立审核签名私钥到既有Cloudflare REVIEW_PRIVATE_KEY secret，理由为此前设计确认未明确授权这份私钥和目标；命令未执行。已向所有者发出精确私钥/Worker/用途的许可问题。与官网发布决定一起等待答复；审核仍关闭，未生成正式审核码。
+
+### R4新增界面与Data safety（2026-10-16）
+
+- Pixel新增审核页19语标题语义核对/截图完成；英/阿/简中200%局部字号截图完成并直接观察，系统字体1.0、night auto不变；普通MainActivity入口及错误路径与注入画廊明确分开。正文和输入可滚动访问，但英文200%既有底栏出现单字母尾行，已请求最小排版建议，未计整体验收完成。真实TalkBack仍未执行。
+- Play Data safety保留原Purchase history，新增Device or other IDs：collected、not shared（服务提供方处理）、non-ephemeral、optional、App functionality/Fraud prevention security compliance；没有选择分析/广告/账号管理。保存后Console明确“更改已保存，请在发布概览中送审”；选择以后再说，未送审。删除数据的既有总声明未改，不用审核7天清理误代购买记录保留。截图已保存QA；App access仍原状，不提交占位码。
+
+### 审核私钥上传与官网披露发布（2026-10-16）
+
+- 所有者明确许可后，独立审核签名私钥 review-2026-01 已从本机受保护文件上传至既有 doneat-billing-api 的 REVIEW_PRIVATE_KEY secret；未输出私钥内容。secret 名单现为 ENTITLEMENT_PRIVATE_KEY、GOOGLE_PRIVATE_KEY、REVIEW_PRIVATE_KEY，购买密钥未改动。上传后实测 review challenge 仍为 503 review_access_disabled，原 verify 空 JSON 仍为 400 invalid_request；审核开关保持 false，尚未生成正式审核码。
+- 所有者明确许可后，官网 PR33 与 main 的 PLAN.md 冲突已合并解决（保留国内分站与审核披露两节），check 通过、Vercel Preview 通过后合并为 3ec81c4。生产部署成功；线上 en/zh-CN privacy、en about 和 ar 短提示均已含审核访问补充（HTTP 200）。Android 生产发布仍不包含。
+
+### R4 底栏大字号断词修正（2026-10-16）
+
+- 修正英文200%底栏 “Record / s”“Setting / s” 单词内断行：底栏标签改用按应用语言的整词自适应字号（`WholeWordAutoSize`，ICU 词边界判断），只在某个词会被拆开时逐步缩小，下限为该标签在默认字号下的大小，不低于用户 100% 阅读尺寸；正常字号不变。GPT 草稿中的 `Hyphens.Auto` 不再使用（会产生连字符拆词）；首版 `BoxWithConstraints` 因底栏需要固有尺寸测量而崩溃，已改为 Compose `TextAutoSize`。
+- Pixel 隔离 Debug 32211（parity322）画廊注入 200%、深色实际查看：英文 Timer/Focus/Records/Settings、德文 Einstellungen、俄文 Настройки、印地语均整词单行，无崩溃。只是画廊注入字号，系统 fontScale 未改；未做真实 TalkBack。顺带发现德文 200% 设置列表 “Gesundheitserinnerungen” 行标题同样在词内断开，属既有列表行，未在本批修改。
+- Android 7 门禁通过：domain 448、data 96、designsystem 12、app 167，共 723 项零失败/跳过；lintDebug、Debug、R8 Release 通过。该修正改变包内容，候选 132 不再是最终送审包，需要新签名候选。
