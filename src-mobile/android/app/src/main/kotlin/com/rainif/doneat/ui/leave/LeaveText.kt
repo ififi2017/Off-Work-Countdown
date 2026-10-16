@@ -80,10 +80,9 @@ class LeaveText(private val res: Resources, val locale: Locale, val zone: ZoneId
     fun time(atMs: Double): String = time.format(Instant.ofEpochMilli(atMs.toLong()).atZone(zone))
 
     /** "Fri, Oct 9 18:00": when the last shift before a break ends. */
-    fun moment(atMs: Double): String {
-        val date = Instant.ofEpochMilli(atMs.toLong()).atZone(zone).toLocalDate()
-        return "${day(LeavePlannerSchedule.dayNumber(date))} ${time(atMs)}"
-    }
+    fun moment(atMs: Double): String = "${momentDay(atMs)} ${time(atMs)}"
+
+    fun momentDay(atMs: Double): String = day(LeavePlannerSchedule.dayNumber(Instant.ofEpochMilli(atMs.toLong()).atZone(zone).toLocalDate()))
 
     fun balanceName(balance: LeaveBalance): String =
         balance.name?.trim()?.takeIf { it.isNotEmpty() } ?: string(kindTitle(balance.kind))
@@ -149,3 +148,12 @@ fun AppGraph.leaveToday(): LocalDate {
     val zone = FoundationCompat.javaZone(settings.preferences.value.recordsTimeZoneIdentifier)
     return Instant.ofEpochMilli(nowMs().toLong()).atZone(zone).toLocalDate()
 }
+
+/** The public holiday this already-resolved rest interval is built around. */
+internal fun leaveHolidayName(proposal: com.rainif.doneat.core.domain.leave.LeavePlanProposal,
+    holidays: com.rainif.doneat.core.domain.schedule.HolidayCalendar, region: String?, text: LeaveText,
+): String? = proposal.dayKinds.indices.asSequence()
+    .filter { proposal.dayKinds[it] == com.rainif.doneat.core.domain.leave.LeavePlanProposal.DayKind.HOLIDAY }
+    .mapNotNull { offset -> com.rainif.doneat.ui.schedule.holidayDayAnnotation(holidays, region,
+        LeavePlannerSchedule.date(proposal.firstRestDayNumber + offset), text.locale) }
+    .firstOrNull { !it.isMakeupWorkday && it.name.isNotBlank() }?.name

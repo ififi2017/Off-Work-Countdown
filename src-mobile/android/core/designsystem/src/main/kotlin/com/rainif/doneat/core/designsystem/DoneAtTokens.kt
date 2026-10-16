@@ -96,6 +96,10 @@ class DoneAtMotion(val reduced: Boolean) {
         const val STATE_EXIT_MS = 100
         const val STATE_ENTER_MS = 180
         const val PHASE_MS = 280
+        /** iOS `recordsScaleChange`: a chart replacing another under the scale picker. */
+        const val RECORDS_SCALE_CHANGE_MS = 200
+        /** iOS easeOut 0.2 s when Records returns to today. */
+        const val RECORDS_TODAY_MS = 200
         const val ONBOARDING_PRIVACY_DEMO_MS = 700
         const val SPATIAL_DAMPING = 0.8f
     }

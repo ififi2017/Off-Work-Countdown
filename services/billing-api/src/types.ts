@@ -1,5 +1,10 @@
 export interface Env {
   DB: D1Database;
+  REVIEW_ACCESS_ENABLED?: string;
+  REVIEW_PRIVATE_KEY?: string;
+  REVIEW_SIGNING_KEY_ID?: string;
+  REVIEW_AUTH_LIMIT?: RateLimit;
+  REVIEW_INSTALL_LIMIT?: RateLimit;
   VERIFY_IP_LIMIT: RateLimit;
   VERIFY_TOKEN_LIMIT: RateLimit;
   PACKAGE_NAME: string;

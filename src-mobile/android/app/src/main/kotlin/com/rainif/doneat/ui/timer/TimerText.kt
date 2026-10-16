@@ -109,7 +109,8 @@ class TimerText(
     fun hours(value: Double): String {
         val rounded = (value * 10).roundToLong() / 10.0
         val format = MeasureFormat.getInstance(
-            locale, MeasureFormat.FormatWidth.SHORT,
+            // iOS MeasurementFormatter `.short` reads "41h"; ICU's SHORT says "41 hr", its NARROW matches.
+            locale, MeasureFormat.FormatWidth.NARROW,
             android.icu.text.NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = if (value == Math.rint(value)) 0 else 1 },
         )
         return format.format(Measure(rounded, MeasureUnit.HOUR))

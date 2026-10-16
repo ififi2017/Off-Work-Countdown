@@ -89,3 +89,62 @@ Android 应用没有加入 DoneAt 使用统计服务。应用会在检查或购�
 ## 发布前一致性检查
 
 2026-10-04 用户授权启用购买验证服务。上述文案须与实际上线构建及服务一致；不得继续声称购买状态从不发送给 DoneAt 服务端。Play Data safety 需按购买历史/购买标识的实际处理、服务提供方与保留方式核对，不能仅因只存哈希就声明无数据收集。官网 About 若有 Android 完全无联网的表述，应同步修正。本文件保留文案来源；后续修改以官网当前正文为准，发布与验收状态只记录在 progress.md。
+
+## 2026-10-16 review-access supplement — implementation draft
+
+The owner approved the R1 design and this disclosure scope on 2026-10-16. The
+following copy describes the intended implementation, not evidence of deployment
+or an already active service. Do not publish it or enable real review credentials
+until retention, exit, revocation, backup exclusion and the final artifact have
+been verified. Keep the website's English/Simplified Chinese About/Privacy copy
+in sync. The other 17 existing privacy pages receive only a short localized notice
+linking to this full supplement; this does not create new long-form translations.
+No homepage, DNS or domain binding changes are authorized here.
+
+### Website English copy
+
+## Optional Android review access
+
+In Android versions with review access enabled, an authorized reviewer can choose to enter a reusable review code to temporarily access Plus features. Activation and renewal use HTTPS to the existing `api.doneat.app` service on Cloudflare. This is separate from Google Play purchases: it requires no DoneAt account, Google sign-in, purchase or trial, and does not create or change an order or subscription. Ordinary use does not require review access.
+
+For this optional authentication and abuse prevention, the service processes the review code, a random installation public key and its hash, proof of possession, a renewal secret and short-lived challenges. Its database stores the credential hash and status, installation public key and hash, renewal-secret hash, authorization revision, last issue/renewal time and revocation status (expiry follows the 24-hour lease), and challenge hashes and expiry times. A random or hashed identifier is still information collected by this service. These identifiers are not used for analytics or advertising and are not linked to Play orders. Review access does not collect Gmail, hardware identifiers, salary, schedules, work records, Focus content or backups. Raw codes, installation private keys, renewal secrets and signed authorization bodies are not stored in the service database or application logs. The private key stays in Android Keystore; local authorization material is excluded from backups and device transfer.
+
+Each verified authorization lasts at most 24 hours. Activation and automatic renewal require a network connection. Revocation is applied when the app next checks online; a disconnected installation may retain the remaining authorized time, up to 24 hours. Expired challenges are rejected immediately, and a daily cleanup removes them and installation sessions whose last renewal was at least seven days ago. Reusable credential hashes remain until the owner rotates or revokes the credential; the seven-day installation cleanup does not itself invalidate the reusable code.
+
+Choosing Exit review access clears local authorization immediately and attempts to delete that installation’s server session. If offline, the server session remains until cleanup. Reinstalling or returning after session cleanup requires activation again with a valid code. Exiting, expiry or revocation does not delete your local records or cancel a real Play purchase. For questions or server-record deletion requests, contact [hello@doneat.app](mailto:hello@doneat.app). Cloudflare processes network traffic under its own policies.
+
+### 官网简体中文文案
+
+## 可选的 Android 审核访问
+
+在启用审核访问的 Android 版本中，获授权的审核人员可以自行输入可重复使用的审核码，临时访问 Plus 功能。激活和续期通过 HTTPS 访问 Cloudflare 上既有的 `api.doneat.app` 服务。这与 Google Play 购买分开：不需要 DoneAt 账号、Google 登录、购买或参加试用，也不会创建或更改订单、订阅。日常使用不需要开启审核访问。
+
+为完成这项可选认证和防滥用，服务会处理审核码、随机生成的安装公钥及其哈希、私钥持有证明、续期密钥和短期挑战。数据库保存凭证哈希及状态、安装公钥及哈希、续期密钥哈希、授权修订号、最近签发／续期时间与撤销状态（到期时间按 24 小时租约确定），以及挑战哈希和期限。随机或经过哈希的标识仍是本服务收集的信息。这些标识不用于统计或广告，不关联 Play 订单。审核访问不收集 Gmail、硬件标识、薪资、排班、工作记录、专注内容或备份。原始审核码、安装私钥、续期密钥原文和签名授权正文不写入服务数据库或应用日志。私钥留在 Android Keystore；本机授权材料不进入备份或设备转移。
+
+每次已验证授权最长有效 24 小时，激活和自动续期需要联网。撤销会在应用下次联网核对时生效；未联网的安装可能保留剩余授权时间，最长 24 小时。过期挑战会立即被拒绝，每日清理会删除过期挑战，以及距最后续期已满七天的安装会话。可重复使用的凭证哈希保留至所有者轮换或撤销凭证；七天安装清理本身不会让该审核码失效。
+
+选择退出审核访问，会立即清除本机授权，并尝试删除该安装的服务端会话。离线退出时，服务端会话保留至清理。重装或会话清理后再次使用，需要用有效审核码重新激活。退出、到期或撤销不会删除本地记录，也不会取消真实 Play 购买。如需咨询或申请删除服务端记录，请联系 [hello@doneat.app](mailto:hello@doneat.app)。Cloudflare 依其政策处理网络流量。
+
+### Play Data safety draft — not submitted
+
+核对来源：[Google Play Data safety guidance](https://support.google.com/googleplay/android-developer/answer/10787469?hl=en)
+（2026-10-16 查阅）。以下是本增量的填写建议，必须与最终 APK/AAB、服务和已有购买/SDK
+申报一起核对，不覆盖既有表单，也不表示已经提交或已获 Google 认可。
+
+| 新增处理 | 建议分类与填写 | 核对依据 |
+| --- | --- | --- |
+| 随机安装公钥/摘要、续期及挑战关联的安装标识 | Device or other IDs；Collected=Yes；Optional；非 ephemeral | 随机生成仍识别一个应用安装，服务端保留安装会话 |
+| 审核凭证/挑战/授权元数据 | 与认证安装标识一起盘点，不另发明“无收集”豁免 | 输入凭证和证明会离开设备；仅哈希保存不免除披露 |
+| 用途 | App functionality；Fraud prevention, security, and compliance | 仅可选审核认证、防重放与防滥用 |
+| 共享 | 按 Cloudflare 实际服务提供方关系核对 service-provider exception | 不把服务托管自动等同广告共享，也不能跳过关系核实 |
+| 加密与删除 | HTTPS 传输；退出尝试删安装；7 天清理；邮箱删除请求 | 需服务端清理、离线退出与最终客户端实测证据 |
+
+一般计时无需开启审核访问；可选指用户能不提供这类信息而使用普通应用。
+长效审核码摘要不是 Gmail/产品账号，也不关联 Play 订单；不要声明收集 Gmail、硬件 ID
+或上传薪资/排班/记录。授权最长 24 小时不等于服务器只保留 24 小时：安装会话最后续期
+7 天清理，凭证摘要保留至所有者轮换/撤销。只在内存使用的字段仍需逐项核对官方临时处理
+定义，不能因随机、哈希、短效或不落日志而把整项填写为“不收集”。
+
+发布前必须对照真实启用构建逐项确认字段、保留/清理时点、日志脱敏、TLS、删除入口和
+Cloudflare 处理范围；公开政策、应用入口和 Console 答案一致后才允许正式审核访问启用。
+这份草稿不批准生产部署、正式凭证签发、Console 提交、合并或发布。实际状态仅记 progress.md。

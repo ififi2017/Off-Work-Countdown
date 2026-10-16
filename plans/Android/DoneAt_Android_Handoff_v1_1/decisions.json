@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package_version": "1.2",
-  "updated_at": "2026-10-04",
+  "updated_at": "2026-10-16",
   "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
   "approval_evidence": {
     "source": "current_conversation_user_message",
@@ -312,6 +312,32 @@
         "T19"
       ],
       "remaining_configurations": []
+    },
+    {
+      "id": "D-14",
+      "conversation_item": null,
+      "status": "APPROVED",
+      "decision": "2026-10-16 用户确认 R1 独立审核访问：普通设置入口输入可重复审核凭证；既有 api.doneat.app Worker/D1 验证随机安装公钥持有证明，签发独立审核 key/type/audience 的最多 24 小时 Plus 授权。PlusAccess 合并有效访问来源但 PlayBillingRepository/PlusStoreState 继续只表达真实购买；退出、撤销和到期不改变真实 Play 权益或删除业务数据。",
+      "approval_scope": "R1 设计及新增可选凭证/安装标识/挑战/授权元数据隐私边界；实施、隔离测试与官网 About/Privacy、Play Data safety 草稿同步。未授权生产部署、正式凭证签发、Console 提交、合并或发布；不改变 D-08 购买服务与真实订单。",
+      "approved_at": "2026-10-16",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "tasks": [
+        "T20",
+        "T21",
+        "T25"
+      ],
+      "remaining_configurations": [
+        "CFG-BACKEND"
+      ],
+      "data_boundary": "D1 保存可撤销长效凭证摘要/状态、随机安装公钥及摘要、续期摘要、授权 revision/时间/撤销状态和一次性挑战摘要/期限。原码、私钥、续期原密钥和授权正文不入库/日志。不收 Gmail、Google 登录、硬件 ID、薪资、排班、记录，不关联 Play 订单，不用于分析或广告。安装最后续期 7 天后由每日清理删除，挑战到期即拒绝并清理；主动退出尝试删除本安装，离线先清本地。长效码摘要保留至所有者轮换/撤销，不受安装 7 天清理影响。",
+      "approval_evidence": {
+        "source": "current_conversation_user_confirmation",
+        "date": "2026-10-16",
+        "scope": "所有者在 R1 方案提出后明确确认按该方案实施；确认包含新增数据边界与官网/Console 披露草稿。完整范围见 docs/android/3.2.2-release-readiness.md 的 R1。"
+      }
     }
   ],
   "configurations": [

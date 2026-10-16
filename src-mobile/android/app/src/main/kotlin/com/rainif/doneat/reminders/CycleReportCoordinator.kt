@@ -81,7 +81,7 @@ class CycleReportCoordinator(
                 CycleReportKind.YEAR -> R.string.reportNotificationYearTitle to R.string.reportNotificationYearBody
             }
             PlannedReminder(period.notificationIdentifier, period.notificationAtMs, ReminderChannel.REPORT,
-                resources.getString(title), resources.getString(body), reportUrl = period.url)
+                resources.getString(title), resources.getString(body), reportUrl = period.url, reviewAccessRequired = !storeState.value.authorized)
         }
         ReminderNotifier.ensureChannels(context, mapOf(ReminderChannel.REPORT to resources.getString(R.string.reportEntryTitle)))
         val enabled = if (!entitlement) emptySet() else configuredKinds

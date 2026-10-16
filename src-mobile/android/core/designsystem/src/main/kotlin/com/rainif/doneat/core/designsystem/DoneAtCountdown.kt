@@ -11,16 +11,21 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -96,6 +101,54 @@ private fun RollingDigit(digit: Char, style: TextStyle, color: Color, countsDown
             maxLines = 1,
         )
     }
+}
+
+/**
+ * iOS `.contentTransition(.numericText())` for a figure that changes in place (a period
+ * title, an amount, a goal): only digits roll, every other run of text is drawn whole so
+ * scripts that join letters keep their shape. A run of digits is always laid out left to
+ * right; the runs themselves follow the layout direction. TalkBack reads [text] once.
+ */
+@Composable
+fun DoneAtRollingText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle = LocalTextStyle.current,
+    color: Color = Color.Unspecified,
+    countsDown: Boolean = false,
+) {
+    val motion = LocalDoneAtMotion.current
+    val ink = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
+    if (motion.reduced) {
+        Text(text, modifier, style = style, color = ink, maxLines = 1)
+        return
+    }
+    val runs = remember(text) { text.digitRuns() }
+    Row(modifier.clearAndSetSemantics { contentDescription = text }, verticalAlignment = Alignment.Bottom) {
+        runs.forEachIndexed { index, run ->
+            key(index) {
+                if (run.first().isDigit()) {
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        Row { run.forEach { RollingDigit(it, style, ink, countsDown, motion) } }
+                    }
+                } else {
+                    Text(run, style = style, color = ink, maxLines = 1)
+                }
+            }
+        }
+    }
+}
+
+private fun String.digitRuns(): List<String> {
+    val runs = mutableListOf<String>()
+    var start = 0
+    for (i in 1..length) {
+        if (i == length || this[i].isDigit() != this[start].isDigit()) {
+            runs += substring(start, i)
+            start = i
+        }
+    }
+    return runs
 }
 
 /** Match the Web clock's 0.3 em travel; the longer tick leaves time to see the blur resolve. */

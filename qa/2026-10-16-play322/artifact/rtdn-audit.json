@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-16T15:59:30+08:00",
+  "source": "Google Cloud Console, existing authorized account, read-only Pub/Sub subscription metrics",
+  "subscription": "projects/august-edge-217210/subscriptions/doneat-play-rtdn-push",
+  "status": "active",
+  "windowStart": "2026-10-15T15:59:30+08:00",
+  "windowEnd": "2026-10-16T15:59:30+08:00",
+  "oldestUnacknowledgedMessageAgeSeconds": {
+    "min": 0,
+    "max": 0,
+    "latest": 0
+  },
+  "regionalUnackedAndDeliveryMetrics": "no data in selected window; do not infer a successful RTDN delivery",
+  "settingsChanged": false
+}

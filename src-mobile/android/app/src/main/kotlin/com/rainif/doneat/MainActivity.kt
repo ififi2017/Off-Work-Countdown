@@ -65,11 +65,13 @@ import kotlinx.coroutines.launch
 class MainActivity : FragmentActivity() {
     override fun onResume() {
         super.onResume()
+        (application as DoneAtApplication).graph.plus.onForeground(true)
         (application as DoneAtApplication).graph.plus.refresh()
         (application as DoneAtApplication).graph.plus.observeLifetimeOffer()
     }
 
     override fun onPause() {
+        (application as DoneAtApplication).graph.plus.onForeground(false)
         (application as DoneAtApplication).graph.plus.observeLifetimeOffer()
         super.onPause()
     }

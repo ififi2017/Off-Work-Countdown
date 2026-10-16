@@ -29,6 +29,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -45,6 +47,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.*
+import com.rainif.doneat.core.domain.leave.LeavePlanItem
+import com.rainif.doneat.core.domain.leave.LeavePlanProposal
+import com.rainif.doneat.core.domain.leave.LeavePlannerSchedule
+import com.rainif.doneat.core.domain.schedule.LeavePortion
+import com.rainif.doneat.ui.leave.LeavePlanCalendar
+import com.rainif.doneat.ui.leave.LeaveText
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.timer.TimerText
 import java.time.DayOfWeek
@@ -67,11 +75,19 @@ fun PlusFeatureStage(modifier: Modifier = Modifier, initialSelection: PlusDemoKi
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
         @Composable
         fun tab(kind: PlusDemoKind, modifier: Modifier) {
-            TextButton(onClick = { selected = kind }, modifier = modifier.semantics { this.selected = selected == kind }) {
+            val fullLabel = stringResource(when (kind) {
+                PlusDemoKind.REST -> R.string.leavePlanAction
+                PlusDemoKind.FOCUS -> R.string.plusBenefitFocus
+                else -> R.string.reportEntryTitle
+            })
+            TextButton(onClick = { selected = kind }, modifier = modifier.semantics {
+                this.selected = selected == kind
+                contentDescription = fullLabel
+            }) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
                     Icon(when (kind) { PlusDemoKind.REST -> Icons.Outlined.WbTwilight; PlusDemoKind.FOCUS -> Icons.Outlined.Timer; else -> Icons.Outlined.BarChart }, null, tint = if (selected == kind) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(stringResource(when (kind) { PlusDemoKind.REST -> R.string.leavePlanAction; PlusDemoKind.FOCUS -> R.string.plusBenefitFocus; else -> R.string.reportEntryTitle }),
-                        style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
+                    Text(stringResource(when (kind) { PlusDemoKind.REST -> R.string.leavePlanAction; PlusDemoKind.FOCUS -> R.string.plusBenefitFocus; else -> R.string.reportEntryShort }),
+                        modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
                         color = if (selected == kind) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -169,17 +185,29 @@ private fun RecordsFeatureDemo(p: Float, modifier: Modifier) {
             translationY = DoneAtOfferTokens.showcaseOffset.toPx() * (1 - entrance)
         }) {
             DemoLabel(R.string.lifeProfileTitle, Icons.Outlined.AccountCircle)
-            Canvas(Modifier.fillMaxWidth().height(DoneAtOfferTokens.lifeHeight).clearAndSetSemantics {}) {
-                val gap = DoneAtSpacing.xxs.toPx() * 1.5f
-                val usable = (size.width - gap * 3).coerceAtLeast(0f)
-                val parts = listOf(.18f to colors.childhood, .16f to colors.study, .42f to colors.lifeWork, .24f to colors.retirement)
-                var x = 0f
-                parts.forEach { (width, color) ->
-                    drawRoundRect(color, Offset(x, 0f), Size(usable * width, size.height), CornerRadius(size.height / 2))
-                    x += usable * width + gap
+            // Final Life grammar: each year is a dot, solid for lived years
+            // and outlined for future years, grouped into visible age rows.
+            Canvas(Modifier.fillMaxWidth().height(DoneAtWelcome322Tokens.previewDotHeight).clearAndSetSemantics {}) {
+                val columns = 20
+                val rows = 4
+                val cellWidth = size.width / columns
+                val cellHeight = size.height / rows
+                val radius = minOf(cellWidth, cellHeight) * .24f
+                val current = 18 + (27 * DoneAtOfferTokens.fraction(p, 400)).toInt()
+                for (year in 0 until columns * rows) {
+                    val color = when {
+                        year < 18 -> colors.childhood
+                        year < 26 -> colors.study
+                        year < 65 -> colors.lifeWork
+                        else -> colors.retirement
+                    }
+                    val center = Offset((year % columns + .5f) * cellWidth, (year / columns + .5f) * cellHeight)
+                    if (year <= current) drawCircle(color, radius, center)
+                    else drawCircle(color.copy(alpha = DoneAtRecordsStyle.estimateStrokeOpacity), radius, center,
+                        style = Stroke(DoneAtSpacing.xxs.toPx() / 2))
+                    if (year == current) drawCircle(marker, radius + DoneAtSpacing.xxs.toPx(), center,
+                        style = Stroke(DoneAtSpacing.xxs.toPx() / 2))
                 }
-                val position = .18f + .38f * DoneAtOfferTokens.fraction(p, 400)
-                drawRoundRect(marker, Offset(size.width * position, 0f), Size(DoneAtOfferTokens.lifeMarkerWidth.toPx(), size.height), CornerRadius(1.dp.toPx()))
             }
             if (stacked) Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
                 listOf(R.string.lifeStageChildhood, R.string.lifeStagePresent, R.string.lifeStageRetirement).forEach {
@@ -200,25 +228,26 @@ private fun TimelineExample(title: Int, time: String, planned: Boolean, progress
     Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
         FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(title), style = MaterialTheme.typography.labelMedium)
-            Text(time, style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(time, style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum",
+                textDirection = androidx.compose.ui.text.style.TextDirection.Ltr), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Canvas(Modifier.fillMaxWidth().height(DoneAtOfferTokens.timelineHeight).clearAndSetSemantics {}) {
             val gap = size.width * .08f
             val first = size.width * .41f * progress
             val second = size.width * (if (planned) .43f else .39f) * progress
-            val color = colors.work.copy(alpha = if (planned) .24f else 1f)
-            drawRoundRect(color, Offset.Zero, Size(first, size.height), CornerRadius(size.height / 2))
-            drawRoundRect(color, Offset(size.width * .41f + gap, 0f), Size(second, size.height), CornerRadius(size.height / 2))
-            if (planned) {
-                // Planned time is hatched as on the real records surface; actual time is solid.
-                val step = DoneAtSpacing.xs.toPx()
-                for (x in 0..(size.width / step).toInt()) {
-                    val start = x * step
-                    if (start < first || start > size.width * .49f && start < size.width * .92f) {
-                        drawLine(colors.work.copy(alpha = .7f), Offset(start, size.height), Offset(start + step, 0f), 1.dp.toPx())
-                    }
-                }
-            } else drawRoundRect(colors.overtime, Offset(size.width * .88f, 0f), Size(size.width * .12f * progress, size.height), CornerRadius(size.height / 2))
+            val stroke = Stroke(DoneAtSpacing.xxs.toPx() / 2)
+            val inset = stroke.width / 2
+            fun segment(x: Float, width: Float) {
+                if (width <= stroke.width) return
+                if (planned) drawRoundRect(colors.work.copy(alpha = DoneAtRecordsStyle.estimateStrokeOpacity),
+                    Offset(x + inset, inset), Size(width - stroke.width, size.height - stroke.width),
+                    CornerRadius(size.height / 2), style = stroke)
+                else drawRoundRect(colors.work, Offset(x, 0f), Size(width, size.height), CornerRadius(size.height / 2))
+            }
+            segment(0f, first)
+            segment(size.width * .41f + gap, second)
+            if (!planned) drawRoundRect(colors.overtime, Offset(size.width * .88f, 0f),
+                Size(size.width * .12f * progress, size.height), CornerRadius(size.height / 2))
         }
     }
 }
@@ -304,29 +333,23 @@ private fun RestFeatureDemo(p: Float, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     val text = demoText()
     val zone = ZoneId.systemDefault()
-    val sampleDay = LocalDate.of(2026, 1, 5)
+    val sampleDay = LocalDate.of(2026, 9, 25)
+    val resources = LocalResources.current
+    val use24Hour = DateFormat.is24HourFormat(LocalContext.current)
+    val leaveText = remember(resources, text.locale, zone, use24Hour) { LeaveText(resources, text.locale, zone, use24Hour) }
+    val proposal = remember { restDemoProposal() }
+    val firstWeekday = java.time.temporal.WeekFields.of(text.locale).firstDayOfWeek
     fun clock(hour: Int) = text.time(sampleDay.atTime(hour, 0).atZone(zone).toInstant().toEpochMilli().toDouble())
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
         DemoCard {
             DemoLabel(R.string.leaveTitle, Icons.Outlined.Luggage)
-            Row(Modifier.fillMaxWidth().clearAndSetSemantics {}, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                for (day in 0..8) {
-                    val leave = day in 3..5
-                    val reveal = if (leave) DoneAtOfferTokens.fraction(p, 250 + (day - 3) * 120, 500) else 1f
-                    Surface(Modifier.weight(1f).height(DoneAtOfferTokens.timeOffCellHeight).graphicsLayer {
-                        scaleX = .86f + .14f * reveal; scaleY = scaleX
-                    }, shape = MaterialTheme.shapes.small,
-                        color = if (leave) scheme.primary.copy(alpha = .16f * reveal) else scheme.surfaceContainerHighest) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(if (leave) Icons.Outlined.Luggage else Icons.Outlined.Flag, null,
-                                Modifier.size(DoneAtOfferTokens.timeOffIconSize), tint = if (leave) scheme.primary else scheme.onSurfaceVariant)
-                        }
-                    }
-                }
-            }
+            // Render the same read-only calendar as a real result: date,
+            // suitcase/half-day/sun mark, then the continuous green break band.
+            // The shared projection chooses the first widest week for its label.
+            LeavePlanCalendar(proposal, leaveText, firstWeekday)
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                Text(Strings.leaveDaysOff(LocalResources.current, 9), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                Text(Strings.leaveUses(LocalResources.current, text.days(3.0)), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                Text(Strings.leaveDaysOff(LocalResources.current, proposal.fullRestDays), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(Strings.leaveUses(LocalResources.current, leaveText.halfDays(proposal.costHalfDays)), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
             }
         }
 
@@ -342,4 +365,25 @@ private fun RestFeatureDemo(p: Float, modifier: Modifier) {
         }
 
     }
+}
+
+/** An illustrative nine-day break plus an early half day; no user schedule is read or changed. */
+private fun restDemoProposal(): LeavePlanProposal {
+    val first = LocalDate.of(2026, 9, 26)
+    val last = first.plusDays(8)
+    fun item(date: LocalDate, portion: LeavePortion, role: LeavePlanItem.Role) = LeavePlanItem(
+        LeavePlannerSchedule.dayNumber(date), date.toString(), portion, emptyList(), emptyList(), role,
+    )
+    val items = listOf(item(first.minusDays(1), LeavePortion.SECOND_HALF, LeavePlanItem.Role.EARLY_DEPARTURE)) +
+        (2L..4L).map { offset -> item(first.plusDays(offset), LeavePortion.WHOLE, LeavePlanItem.Role.BRIDGE) }
+    return LeavePlanProposal(
+        firstRestDayNumber = LeavePlannerSchedule.dayNumber(first), lastRestDayNumber = LeavePlannerSchedule.dayNumber(last),
+        firstRestDayKey = first.toString(), lastRestDayKey = last.toString(), items = items, uses = emptyList(),
+        lastShiftEndAtMs = null, nextShiftStartAtMs = null,
+        dayKinds = listOf(LeavePlanProposal.DayKind.REST, LeavePlanProposal.DayKind.REST,
+            LeavePlanProposal.DayKind.LEAVE, LeavePlanProposal.DayKind.LEAVE, LeavePlanProposal.DayKind.LEAVE,
+            LeavePlanProposal.DayKind.HOLIDAY, LeavePlanProposal.DayKind.HOLIDAY,
+            LeavePlanProposal.DayKind.REST, LeavePlanProposal.DayKind.REST),
+        caveats = emptySet(),
+    )
 }

@@ -5,8 +5,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
- * The six time categories every records surface draws (iOS `OWCDesign.records*`,
- * which are system colours), and the Life stages. The same hues on both platforms keep a shared
+ * The six time categories every records surface draws (iOS 3.2.2 `OWCDesign.records*`:
+ * indigo work, translucent indigo breaks, grey sleep, green own time), and the Life stages
+ * (warm childhood, cyan school, the same indigo work, green after retirement). The same hues on both platforms keep a shared
  * backup reading the same way; each has a dark variant for contrast.
  */
 @Immutable
@@ -28,27 +29,27 @@ data class DoneAtRecordsColors(
         val light = DoneAtRecordsColors(
             work = Color(0xFF5856D6),
             overtime = Color(0xFFFF9500),
-            workBreak = Color(0xFF30B0C7),
-            sleep = Color(0xFF007AFF),
-            free = Color(0xFFAF52DE),
+            workBreak = Color(0x615856D6),
+            sleep = Color(0xFFD1D1D6),
+            free = Color(0xFF34C759),
             unclassified = Color(0xFFAEAEB2),
-            childhood = Color(0xFF7394C2),
-            study = Color(0xFF529480),
-            lifeWork = Color(0xFFB87A33),
-            retirement = Color(0xFF85809E),
+            childhood = Color(0xFFE8A33D),
+            study = Color(0xFF30B0C7),
+            lifeWork = Color(0xFF5856D6),
+            retirement = Color(0xFF34C759),
             lifeUnset = Color(0x1F767680),
         )
         val dark = DoneAtRecordsColors(
             work = Color(0xFF5E5CE6),
             overtime = Color(0xFFFF9F0A),
-            workBreak = Color(0xFF40C8E0),
-            sleep = Color(0xFF0A84FF),
-            free = Color(0xFFBF5AF2),
+            workBreak = Color(0x735E5CE6),
+            sleep = Color(0xFF47474A),
+            free = Color(0xFF30D158),
             unclassified = Color(0xFF636366),
-            childhood = Color(0xFF9EB8DB),
-            study = Color(0xFF8CC7AD),
-            lifeWork = Color(0xFFDBA361),
-            retirement = Color(0xFFB3ADC7),
+            childhood = Color(0xFFF5BA4F),
+            study = Color(0xFF40C7E0),
+            lifeWork = Color(0xFF5E5CE6),
+            retirement = Color(0xFF30D158),
             lifeUnset = Color(0x3D767680),
         )
     }

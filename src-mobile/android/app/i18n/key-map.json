@@ -2283,6 +2283,14 @@
       "resource": "string/onboardingOngoingSurface",
       "androidOnly": true
     },
+    "onboardingPagePosition": {
+      "resource": "string/onboardingPagePosition",
+      "params": [
+        "current",
+        "total"
+      ],
+      "androidOnly": true
+    },
     "onboardingPlusFocusBreakBody": {
       "resource": "string/onboardingPlusFocusBreakBody"
     },
@@ -2451,6 +2459,10 @@
     },
     "plusAndroidStoreUnconfigured": {
       "resource": "string/plusAndroidStoreUnconfigured",
+      "androidOnly": true
+    },
+    "plusAndroidTrialCancelBody": {
+      "resource": "string/plusAndroidTrialCancelBody",
       "androidOnly": true
     },
     "plusAndroidYearlyTrialPrice": {
@@ -3393,6 +3405,18 @@
         "year"
       ]
     },
+    "release322LeaveBody": {
+      "resource": "string/release322LeaveBody",
+      "androidOnly": true
+    },
+    "release322RecordsBody": {
+      "resource": "string/release322RecordsBody",
+      "androidOnly": true
+    },
+    "release322WelcomeBody": {
+      "resource": "string/release322WelcomeBody",
+      "androidOnly": true
+    },
     "remindersMayBeLate": {
       "resource": "string/remindersMayBeLate",
       "androidOnly": true
@@ -3675,6 +3699,77 @@
     },
     "return": {
       "resource": "string/return_"
+    },
+    "reviewAccessActivate": {
+      "resource": "string/reviewAccessActivate",
+      "androidOnly": true
+    },
+    "reviewAccessActive": {
+      "resource": "string/reviewAccessActive",
+      "androidOnly": true
+    },
+    "reviewAccessCode": {
+      "resource": "string/reviewAccessCode",
+      "androidOnly": true
+    },
+    "reviewAccessConnection": {
+      "resource": "string/reviewAccessConnection",
+      "androidOnly": true
+    },
+    "reviewAccessExit": {
+      "resource": "string/reviewAccessExit",
+      "androidOnly": true
+    },
+    "reviewAccessExitNote": {
+      "resource": "string/reviewAccessExitNote",
+      "androidOnly": true
+    },
+    "reviewAccessExpires": {
+      "resource": "string/reviewAccessExpires",
+      "params": [
+        "time"
+      ],
+      "androidOnly": true
+    },
+    "reviewAccessInactive": {
+      "resource": "string/reviewAccessInactive",
+      "androidOnly": true
+    },
+    "reviewAccessInvalidCode": {
+      "resource": "string/reviewAccessInvalidCode",
+      "androidOnly": true
+    },
+    "reviewAccessNetwork": {
+      "resource": "string/reviewAccessNetwork",
+      "androidOnly": true
+    },
+    "reviewAccessNotConfigured": {
+      "resource": "string/reviewAccessNotConfigured",
+      "androidOnly": true
+    },
+    "reviewAccessPurpose": {
+      "resource": "string/reviewAccessPurpose",
+      "androidOnly": true
+    },
+    "reviewAccessRefresh": {
+      "resource": "string/reviewAccessRefresh",
+      "androidOnly": true
+    },
+    "reviewAccessRevoked": {
+      "resource": "string/reviewAccessRevoked",
+      "androidOnly": true
+    },
+    "reviewAccessStorage": {
+      "resource": "string/reviewAccessStorage",
+      "androidOnly": true
+    },
+    "reviewAccessTitle": {
+      "resource": "string/reviewAccessTitle",
+      "androidOnly": true
+    },
+    "reviewAccessUnavailable": {
+      "resource": "string/reviewAccessUnavailable",
+      "androidOnly": true
     },
     "rotationRestDays": {
       "resource": "string/rotationRestDays"

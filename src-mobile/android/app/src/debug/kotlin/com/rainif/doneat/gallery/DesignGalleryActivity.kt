@@ -81,6 +81,7 @@ import com.rainif.doneat.plus.PlusPlan
 import com.rainif.doneat.plus.PlusPage
 import com.rainif.doneat.plus.PlusStatus
 import com.rainif.doneat.plus.PlusStoreState
+import com.rainif.doneat.ui.AppLanguageScope
 import kotlinx.coroutines.delay
 
 /**
@@ -171,18 +172,24 @@ class DesignGalleryActivity : ComponentActivity() {
                         hasActiveSubscription = previewStatus == PlusStatus.SUBSCRIBED || intent.getStringExtra("store") == "both")
                     val simulatePurchase = intent.getBooleanExtra("completePurchase", false)
                     var checkout by rememberSaveable { mutableStateOf("") }
-                    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-                        Column(Modifier.safeDrawingPadding()) {
-                            Text("Preview · sample prices · no purchases" + checkout,
-                                Modifier.padding(horizontal = DoneAtSpacing.page), style = MaterialTheme.typography.bodySmall)
-                            PlusPage(state, state.authorized, true, onBack = { finish() },
-                                onPurchase = {
-                                    checkout = " · Checkout: ${it.plan}"
-                                    if (simulatePurchase) previewStatus = if (it.plan == PlusPlan.LIFETIME) PlusStatus.LIFETIME else PlusStatus.SUBSCRIBED
-                                },
-                                onRestore = {}, onRefresh = {}, onOpenUrl = { checkout = " · Manage plan opened" },
-                                playsCelebrationOnAppear = simulatePurchase,
-                                onContinue = if (simulatePurchase) ({ checkout = " · Continued with Plus" }) else null)
+                    val density = LocalDensity.current
+                    AppLanguageScope(intent.getStringExtra("locale")) {
+                        CompositionLocalProvider(LocalDensity provides Density(density.density,
+                                intent.getFloatExtra("fontScale", density.fontScale))) {
+                            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+                                Column(Modifier.safeDrawingPadding()) {
+                                    Text("Preview · sample prices · no purchases" + checkout,
+                                        Modifier.padding(horizontal = DoneAtSpacing.page), style = MaterialTheme.typography.bodySmall)
+                                    PlusPage(state, state.authorized, true, onBack = { finish() },
+                                        onPurchase = {
+                                            checkout = " · Checkout: ${it.plan}"
+                                            if (simulatePurchase) previewStatus = if (it.plan == PlusPlan.LIFETIME) PlusStatus.LIFETIME else PlusStatus.SUBSCRIBED
+                                        },
+                                        onRestore = {}, onRefresh = {}, onOpenUrl = { checkout = " · Manage plan opened" },
+                                        playsCelebrationOnAppear = simulatePurchase,
+                                        onContinue = if (simulatePurchase) ({ checkout = " · Continued with Plus" }) else null)
+                                }
+                            }
                         }
                     }
                     return@DoneAtTheme

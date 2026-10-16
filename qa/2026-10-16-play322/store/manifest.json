@@ -1,0 +1,70 @@
+{
+  "createdAt": "2026-10-16T01:42:49.154Z",
+  "locale": "en-US",
+  "template": "ASC 3.2.0 creative",
+  "captures": "Five existing unchanged synthetic API36.1 screenshots deduplicated by Play; Records replaced with physical Pixel 10 Pro Android17, parity322 Debug32205, synthetic v7 archive, debug Plus only, no purchases.",
+  "items": [
+    {
+      "order": 1,
+      "file": "en-US-01-countdown.png",
+      "source": "en-timer.png",
+      "sourceSHA256": "3db18e64c9b20d3d2b878518e76d2fa7784a7e743c89d48ec18cc15ce3c9dbd7",
+      "pngSHA256": "cfac2a586427074fd2153bfc63b948a4657546e7ab5eb62c4fa391e073370af0",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 178478
+    },
+    {
+      "order": 2,
+      "file": "en-US-02-countdown-detail.png",
+      "source": "en-timer.png",
+      "sourceSHA256": "3db18e64c9b20d3d2b878518e76d2fa7784a7e743c89d48ec18cc15ce3c9dbd7",
+      "pngSHA256": "b08187be69b38d36ed65ad61652976459f30369625f5be87457cca3f8af9149a",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 281149
+    },
+    {
+      "order": 3,
+      "file": "en-US-03-calendar.png",
+      "source": "en-calendar.png",
+      "sourceSHA256": "39d565a3520b8bc83555a8cbd0d3a7d6072cf4f06e910bde270fae0cde05b348",
+      "pngSHA256": "98157ee8457d70f854c2df205cc506b8cc34320f2d824f8362d3b804c7c41ff2",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 417264
+    },
+    {
+      "order": 4,
+      "file": "en-US-04-records.png",
+      "source": "en-records.png",
+      "sourceSHA256": "da0c73c58d3065b7f40d9711f715244dbb9cb3950544c73c496ce5da3805a066",
+      "pngSHA256": "5ee0d6762c996c1c731a86e24f06e7a7f7424f4908566f309bbc1811fdf1ad4d",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 391291
+    },
+    {
+      "order": 5,
+      "file": "en-US-05-focus.png",
+      "source": "en-focus.png",
+      "sourceSHA256": "8dab3f7c0c697fc9982759493721dab0230f9feac9ee32f7eb50342e2d00b83c",
+      "pngSHA256": "b280c0c28f790c783565e0a1100f1509964aca4b00685177ee796a2e0f95cc58",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 359052
+    },
+    {
+      "order": 6,
+      "file": "en-US-06-breaks.png",
+      "source": "en-breaks.png",
+      "sourceSHA256": "ae04af1d797957f5d9204cd44d40e06a56812f011748ab5a61b3196c14783328",
+      "pngSHA256": "4e0518118165bb06184f5e64cbdc589bb58d553a5f8e9fab50b5c7904153fee7",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 336114
+    }
+  ],
+  "recordsSource": "qa/2026-10-16-play322/pixel/records-year-en.png",
+  "recordsProcessing": "1280x2856 -> center crop y=6,height=2844 -> uniform resize1080x2400; native UI not redrawn"
+}

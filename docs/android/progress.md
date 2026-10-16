@@ -2,7 +2,7 @@
 
 **这是任务状态的唯一记录。** 交接包 `tasks.json` 只定义依赖、范围和验收，不记录状态。
 
-更新：2026-10-08。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
+更新：2026-10-16。交接包 1.2。原冻结源 SHA `9252fdfdc66aab88b4acb7493684f11991fd773d`。
 
 ## 任务状态
 
@@ -47,7 +47,7 @@
 | 自动化 | 自定义强调色整合后的四模块 448 项测试通过（domain 337、data 76、design 12、app 23），0 failure / error / skip；lint 0 error / 34 warning / 1 hint，Debug / R8 Release 通过。历史 AAB、测试与构建证据均保留在各自记录中。 |
 | 跨端与仓库 | 真实 iOS→Kotlin→iOS v6 往返保留 12 类实体；Swift fixture、数字输入、Web/Desktop 构建及 iOS headless build 已有通过证据。本轮基于最新 main 再验证仓库与 Android 门禁。 |
 | 设备 | 保留已有 Auto Backup、业务档案原子恢复及 Pixel 前后台验证；玻璃底栏及自定义强调色已在独立 Pixel Preview 包验收。真实云端换机、购买生命周期与完整无障碍矩阵仍待完成。 |
-| Play Console | 用户于 2026-09-28 确认可上传，商家账号与商品配置完成，并提供许可公钥。许可测试购买和应用审核仍待完成；代理未操作 Console。 |
+| Play Console | 用户于 2026-09-28 确认可上传，商家账号与商品配置完成，并提供许可公钥。所有者于2026-10-16确认正式权限与付费验收完成；代理已只读核对正式权限和空草稿，最终候选仍须核对。 |
 
 ## 下一任务
 
@@ -602,3 +602,224 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 记录月历两入口零额外 gap 分组；请假摘要的全部方案／可选日期减少额外上下留白，48dp 点击区域与现有动作保持。预测警告缩短为两段真实换行，生成目录与 iOS／公共 19 语同步。
 - 七项 gates 最终通过，690 项（domain 437 / data 95 / design-system 12 / app 146）零 failure/error/skip，主代理独立核对 XML。lint 0 errors / 54 existing warnings / 4 hints，Debug / R8 Release 成功；日志 `/private/tmp/doneat-records-action-spacing-android-final-gradle.log`。
 - iOS 新增空工作横条容器修正日期基线；Android 已有固定 Box 槽，无需重复修改。Astra 最终修后实图和源码审核通过。仅实际 iOS 模拟器视觉，Android 源码及自动检查；冻结源 9252fdfd、授权增量 18129168 不变，origin/main c599ad45 model/shared 漂移仍 55 条。完整范围见[本轮记录](../reviews/2026-10-08-records-action-spacing.md)。
+
+
+## 2026-10-16 · Play 3.2.2 最后开发与核对
+
+计划：[3.2.2-release-readiness.md](3.2.2-release-readiness.md)。此处为本轮唯一状态记录，每完成一批工作立即更新命令、实际数量与结果、构建/设备、证据、遗留及下一步；计划与 tasks.json 不复制状态。
+
+### 基准与所有者确认
+
+- 隔离工作树 `/private/tmp/doneat-play-322`，分支 `codex/android-play-322`，起点 `ea3144896caf6595509a8a6fef932d1ac835409a`；iOS 固定参照同一提交，Android 上次 Play 候选 3.2.2 (128) 来源 `963c4922e1`。原产品工作区未提交工作保持原样。
+- 规定 model/shared 漂移命令输出 **58 条**；只采用本计划明确的 UI 和发布配置范围，原冻结源/历史增量保留，不自动移植其它规则。
+- 所有者在本聊天确认：Play 正式发布权限已取得；闹钟已实测；付费已在 Play 测试账号验收。记为 OWNER_CONFIRMED，不冒充本轮代理重跑，也不以历史文档 NOT_RUN 推翻当前确认。尚需本轮改动相关回归及最终产物核对。
+- 所有者允许直接使用 USB Pixel 10 Pro 实机测试/UI 检查，允许开启 iOS 模拟器比对；同一时刻只运行一台模拟器。正式应用数据、真实购买保留，开发使用隔离测试包/合成数据。
+
+### 批次状态
+
+| 批次 | 状态 | 交付/下一步 |
+|---|---|---|
+| B0 文档/基准/设备 | VERIFIED | 计划、58 条漂移、JDK/SDK、USB Pixel 与单一已启动模拟器均核对；继续 B1–B3。 |
+| B1 记录重设计 | VERIFIED | 周/月/年/人生、锁定隔离、隐藏收入、真实横竖屏及切标签阅读位置通过；最终Play包归B6。 |
+| B2 休假重设计 | VERIFIED | 新展示、19语、真实搜索/组内浏览/日期/采纳撤销与计次通过；最终候选与综合无障碍留在B6。 |
+| B3 欢迎与付费墙 | IMPLEMENTED | 19语/200%/iOS对照/实际恢复通过；新Play包真实商品资格及TalkBack在B6待补。 |
+| B4 更新介绍/翻译 | VERIFIED | 3.2.2内容、19语生成/视觉与持久化测试通过；未重置旧优惠元数据。 |
+| B5 发布配置/商店 | IN_PROGRESS | 公钥/服务部署/签名131/商店草稿已完成；审核访问、成功签名冷CPU与最终Play升级未关闭。 |
+| B6 最终集成/候选 | IN_PROGRESS | 本地718测试、Pixel32209及签名131通过；Play覆盖升级/真实回执/TalkBack实读待补。 |
+
+### B0 当前证据
+
+- 原目录 git status 与 worktree 列表已只读核对；独立工作树从 origin/main 创建。当前聊天是官网仓库，托管 create_worktree 无产品仓参数，因此使用产品仓 git worktree，不误建官网工作树。
+- 已完整保存用户批准计划（含后补欢迎/付费墙和设备授权），`git diff --check` PASS。尚未运行新代码测试、安装测试包或操作 Play Console。
+
+- B0 完成：USB `59171FDCH0112D` 已核实 Pixel 10 Pro；无线条目 offline 不使用。JBR 实际位置 `/Volumes/BACKUP/Applications/Android Studio.app/Contents/jbr/Contents/Home`，SDK `/Users/zhengyuxuan/Library/Android/sdk`。XcodeBuildMCP 确认仅 iPhone 18 Pro Max / iOS 27.0 已启动；复用该台，不新增模拟器。初次沙箱 ADB/模拟器连接受限，改用已授权本机访问后读取成功。
+- 按项目模型分工，B1/B2/B3 分别委派 GPT-6.1 Sol / High；主代理统一审查、资源生成、构建、进度和设备操作，各代理不并行启动 Gradle 或模拟器。
+
+### B3/B4 实现交接和 B5 第一组检查
+
+- B3 代理完成专用欢迎、上下文付费墙、真实资格试用时间线、短报告标签和新版预览，4 项新测试待统一执行。保留购买、恢复、草稿和优惠元数据。
+- B4 CURRENT=3.2.2；旧用户可看新介绍，新版本不重新邀请 UPDATE_321 优惠；新增 5 个 Android-only key 全 19 语，生成 24 文件并 --check PASS。
+- B5 公钥校验脚本检查部署 kid、RSA/SPKI/至少 2048 bit；4 项 Vitest PASS，拒绝空值、无效 JSON、缺当前 kid、私钥及弱密钥。
+- 固定 iOS 源构建成功（60.6 秒），实际观察记录月历和中文 Plus；模拟器商品是 StoreKit 演示，不作为 Play 价格证据。
+- Pixel USB 只读确认 Android17、Play 正式 3.2.2(128)、installer=com.android.vending；font_scale=1.0、user_rotation=0，未覆盖或清理正式应用。
+- B1/B2 编辑完成前不并发跑 Gradle；全树 diff 发现 B1 编辑中尾部空行，待完成后修正，不提前宣布全部检查通过。
+
+### B1/B2 实现批次及交叉审查
+
+- B1 替换周/月/年/人生绘制，新增纯展示投影及 5 项 domain/1 项 app 测试，拆分结论/分配/收入；锁定数据不构造、取消旧上下文画面，保存人生选中年龄。B2 新增 5 项展示测试，余额/最早到期/目标/方案/日历/日期/桥接完整替换，搜索、采纳、计次路径未改。
+- 各批交叉只读审查：B1 检查 B2 的 quota/日期选择/时区/边界/RTL 无新增问题；B3 检查 B1 的实际/计划/人生/授权撤回/隐藏薪资无新增问题。B2 发现 Plus 休假演示仍用旧圆点，已要求复用真实新日历，继续修正，未记完成验收。
+- 首轮 Gradle 编译失败的 5 处全部在休假组件，已修捕获外层 maxWidth 和 bridge token，正在重跑完整 gates。JavaScript 51 文件/556 项 PASS；版本/Android strings/iOS 项目检查 PASS。
+- 当前 Worker 查询已通过刷新现有 Wrangler 会话完成：usage_model=standard；24h 聚合 22 requests/0 errors/0 subrequests，CPU p50=0.441ms、p99=0.991ms。该窗口没有 Google 子请求，不能作为真实购买/签名冷路径容量通过证据。curl 空验证返回400 invalid_request；Python 默认 UA 被边缘规则403拒绝，未修改 Cloudflare 规则。
+
+### B1–B4 第一轮完整门禁与 Pixel 初查
+
+- 修复休假组件后，七项 Gradle gates 全部 PASS（2m49s，188 tasks）。主代理实际汇总 XML：domain447/data95/design12/app151，共 **705** 项，零 failure/error/skip；lint0 errors/54 warnings/4 hints；Debug/R8 Release 均成功。日志 `/private/tmp/doneat-play322-gradle.log`。
+- 交叉审查后 Plus 演示复用真实只读新休假日历，已追加 Debug build PASS（10s），验证包 versionCode32202；该后续改动将在最终门禁重跑，不混用前一份全量结果。
+- Pixel 安装独立 parity322，真实 MainActivity 欢迎、班次、提醒、通知拒绝与 Ready 路径已观察；正式 com.rainif.doneat 及其数据未替换。欢迎与 iOS 实际截图比对后，标题回到正文色、指示点限定四个设置步骤。
+- 实际休假结果已确认15天连续色带、最宽周标签、全部181组与详情日历/逐日年假来源；发现摘要卡按内容收窄，已补 fillMaxWidth，等待下一版复核。详情和结果截图位于 `qa/2026-10-16-play322/pixel/`；iOS欢迎/付费墙/休假对照在同目录 ios/。
+- B5：已配置 GitHub Variable DONEAT_BILLING_API_PUBLIC_KEYS，并读回通过公开key校验，未输出内容；没有触发构建、上传或生产发布。
+- Console只读确认正式权限获批，178国家/地区，现有正式草稿为空（尚无AAB、名称/版本说明），没有修改/提交草稿。商店英中草稿已更新3.2.2功能和购买验证说明，英文全文2741字符、短说明64、标题28。
+
+- B5 当前公开key已设置且读回校验 PASS；ESLint PASS。Store Listing 英中已准备但未写入 Console。线上24h低 CPU窗口不含Google子请求，继续保留签名/冷路径容量核对，不能由空请求成功替代。
+
+### B6 首启与复审批次
+
+- Pixel 19语欢迎页完成态逐图已检查（4张contact sheet）；此前过快采集的加载画面已重采，不计通过。真实 MainActivity 走通 Welcome→班次→提醒→Ready→系统表面→Plus介绍→进程中断恢复原介绍→完成设置进入计时页。隔离 gallery 的 Debug Plus 曾保留到 Main，已显式撤回；感谢页仅为 Debug 权益画面，绝不记作真实付费。
+- 引入仓内 v7 合成档案到 parity322，关闭样例通知，不读取正式应用记录。记录月历已显示实际/计划、今天、统一入口与隐藏收入；正在19语扫查。
+- 第二轮源码复审发现并修复：余额超用标签应显示原始值（绘图仍截断）；绿色文字用独立深色token（浅色最低5.07:1）；日期页返回读屏名称匹配全部方案。另在修人生整十年龄边界、宽窄重排阅读位置和大字号摘要头。后续改动仍需最终完整gates。
+- Console 应用内容显示11项已处理、无待注意，但实际 Data safety 仍为“不收集”。按官方规则（https://support.google.com/googleplay/android-developer/answer/10787469）购买历史必须披露；正准备可选购买历史/功能与防欺诈、HTTPS、无账号、非短暂保留草稿，未提交审核。当前线上隐私页 curl 直取确认更新时间2026-10-04，包含Android/Cloudflare/购买token与hash保留；搜索缓存仍是9月旧页，未采用缓存作事实。
+
+### B5 Console草稿与 B6 稳定门禁
+
+- Data safety 已保存为未送审草稿，页面明确“更改已保存。请在发布概览中送审”：仅购买历史/交易记录、可选、应用功能及防欺诈、非短暂保留、HTTPS、无账号、无第三方分享（受托服务提供方豁免），未提交任何审核或生产发布；证据 `qa/2026-10-16-play322/play-data-safety-draft.jpg`。
+- FGS现有声明最后更新10月9日，类型“其他”，说明用户主动设定后的系统闹钟声音、Stop/Snooze、仅响铃期间运行并自动结束，已有YouTube视频；未修改。
+- App access实际存在矛盾：声明付费内容完整可访问，但说明仅“Plus通过Play购买，无demo账号或代码”，Console明确审核员不会自行购买/参加试用。保留原表单；必须明确无收费审核访问路径后才可称可提交审核，不能伪造完整访问。
+- Cloudflare Dashboard Workers计划确认当前免费档（10ms CPU/请求）。OAuth只读API默认usage=standard并不代表付费档；订阅API403，未扩大权限，改通过现有Dashboard读到确定结果。历史12.286/14.293ms尾部风险尚未关闭，没有升级套餐。
+- 所有复审修正后的稳定源码完整gates PASS（2m54s/188tasks）：domain448/data95/design12/app157，共 **712**，零failure/error/skip；lint0 errors/54 warnings/4 hints；Debug/R8 Release成功。日志 `/private/tmp/doneat-play322-final-stable-gradle.log`。前一轮lint运行中源码更新导致长时间PSI遍历，已停止该客户端，不将被中止运行计为通过。
+- releaseRuntimeClasspath未发现Compose/Material3 alpha/beta/rc。实现已保存为 `838b6c11`；下一步仅签名AAB干跑 upload=false，仍不上传Play。Pixel最终隔离32204开始重新全语言完成态采集，启用局部减少动态效果并等待UI就绪；过渡/加载帧不作通过证据。
+
+### B5 商店与审核访问核对
+
+- 当前Console仅有en-US，英文短说明64/全文2741字符已经保存未送审草稿，页面“已保存您所做的更改”；未新增商店语言，简中保留仓内候选。证据 `qa/2026-10-16-play322/play-listing-draft.jpg`。当前第4张Records图仍为旧设计，待新图替换。
+- 所有者确认此前没有审核专用访问方式，依据来自网上“可以不留也过审”。已核对Google官方明确条款：即使无登录，有订阅墙也要提供免费完整访问说明/方式（https://support.google.com/googleplay/android-developer/answer/15748846，末条）。原声明未改、不擅加通用解锁码，审核访问门禁继续开放。
+- 草稿PR #313：https://github.com/ififi2017/Off-Work-Countdown/pull/313，已附当前任务。签名干跑 https://github.com/ififi2017/Off-Work-Countdown/actions/runs/38835403691 源码838b6c11802d946967be2e34d832d5cc4d3cc298，upload=false。签名key校验已在CI通过，构建进行中，不冒充已上传/安装。
+- 本地R8 Release四ABI的libandroidx.graphics.path.so PT_LOAD均16KiB，`zipalign -c -P 16 -v 4` PASS；包名com.rainif.doneat/versionName3.2.2，正式配置/签名仍须审查CI AAB，不用本地未签名32204替代正式候选。
+
+### B5 服务优化部署与 B6 候选修订
+
+- 服务优化提交 d4f062c9 已部署至既有 Worker，当前版本 `16d5408d-f98e-49d2-b854-fa860d9dac37`；46/46 服务测试、typecheck、dry-run build PASS。未改变套餐、DNS、绑定或 secrets。回滚版本 `3b64349d-9456-4816-b3d8-3013a95b5397` 已记录（artifact/billing-rollback.json）。2ms startup 不是请求 CPU。
+- 部署后两次明确无效的合成购买 token（冷/热）都返回422 purchase_unavailable；窄窗口统计2请求/0 Worker errors/3子请求，CPU p50 2.970ms、p99 9.073ms。该拒绝路径不含成功签名，不能关闭免费档10ms容量门禁，也不替代真实Play签名回执验收。
+- 19语记录/月历、休假结果、3.2.2介绍、不可购买付费墙逐图完成态采集与语义标题检查通过；Debug32204/32205，Pixel Android17，局部减少动态效果。Plus预览样例价不作为Play价格。年/人生与德文200%摘要、阿语200%锁定隔离另有截图；真实旋转/隐藏收入完整阅读位置尚待修复后复测。
+- 实机发现人生页点击隐藏收入时摘要短暂清空、滚动回顶；已实现计算快照与格式化分离，新增4项测试，正在完整Gradle与实机复测。签名129虽已完成签名/公钥/manifest/16KiB核对，**已标为SUPERSEDED，不是最终候选**。干跑 upload=false，无Play上传、无通知发送。
+- 商店6张图片已保存未送审草稿，顺序倒计时/详情/排班/新记录/专注/微休息；只有第4张用新Pixel实际UI，其余保留既有来源。证据 play-media-draft.jpg 与 store/manifest.json。未送审任何草稿，未发布生产。
+
+### B3 恢复与 B6 修复门禁
+
+- 首次恢复实际走通系统文件选择器→预览→取消，确认 syncedPreferences 仍为null。预置已有合成记录的首次提交被保护拒绝，现有记录未覆盖（测试前置条件问题，不作产品缺陷）。随后在空隔离档案重测：带设置的合成备份直接进入应用；不带设置备份导入记录后进入SCHEDULE，onboardingComplete=false，未提前提交设置。原隔离测试档案与设备设置已恢复，Download临时JSON已删除。
+- Records隐藏收入修复全量7项Gradle gates PASS（3m39s/188tasks），四模块XML共716项，零failure/error/skip。后续仅Plus预览时间区间局部强制LTR，避免阿拉伯语数字倒序；增量app test/lint/Debug/R8 Release PASS（2m14s/178tasks）。未改规则/档案或整页RTL方向。
+- 修复提交56182432d06f6cf7054fdfe822e3774c1dadfde7已推送；新签名干跑run38870282250（run_number30→versionCode130），upload=false，尚在运行。Pixel已安装隔离Debug32207，正在验证隐藏收入及旋转阅读位置。
+
+- Pixel32207隐藏收入实测 PASS：已滚动到人生分配/收入，点击顶部眼睛，两个摘要标题bounds逐字节相同；三个实际可见金额全部替换为••••，读屏树不再含原值（fix-life-before-mask / after-mask）。临时解锁前置只用于合成数据，未绕过正式应用身份确认。
+- 同次真实旋转仍暴露重建丢阅读位置：横屏仍SINGLE，加载占位使旧ScrollState被clamp；已要求保存真实内容上的section/fraction并在ready后一次恢复。user_rotation已恢复0。候选130干跑已主动取消，未上传Play，待修复后新候选。
+- RTDN已从Google Cloud现有会话只读核对：订阅有效，10月15日15:59至16日15:59（UTC+8）oldest_unacked_message_age min/max/latest均0；区域未确认/交付指标该窗无数据，不冒充近期有成功通知。证据artifact/rtdn-audit.json，未改订阅/权限。
+
+### B2 实机搜索、采纳与撤销
+
+- Pixel隔离32207真实免费流程：原8天余额/3次搜索，生成非空7天连休结果后剩2次。全部2类方案按4.5天、5天排序，选择54个日期中的另一组，月分组、详情日历、逐日余额和22:00–06:00跨夜班次、最后一班/返岗均已观察。
+- 同次组内浏览/换日期/看详情不加扣：device JSON leavePlannerTrialsUsed一直为1。采纳4.5天方案后余额3.5天、已计划5天；管理页撤销确认后余额恢复8天、已计划0.5天，既有Aug26合成计划保留，次数仍为1。对应leave-*-final截图与XML。
+- B4介绍/翻译及B2实现本轮证据已收齐，表内更新VERIFIED；最终Play候选、综合200%/宽屏/TalkBack以及服务精确到期仍由B5/B6负责，不代表整体放行。
+
+### B1 旋转根因关闭与最终本地门禁
+
+- 32208恢复器已能在返回竖屏时精确恢复，但首次横屏仍回顶；真实MainActivity同样复现，排除gallery特性。根因是AppShell底栏/侧栏两分支给NavDisplay产生不同的saveable键路径。已统一稳定movableContentOf子树，并通过rememberUpdatedState读取最新内容/回调；未改路由或返回行为。
+- 最终32209实际MainActivity：从人生摘要直接横屏，停留同一分配段（标题[546,486]）；回竖屏分配/收入标题分别恢复[102,654]、[96,1626]，与旋转前完全一致。切Focus再回Records也保持这两个位置。nav-*.png/xml为最终证据，早先fix/main/final-rotation失败图仅作缺陷历史，不作通过。
+- 最终完整7项Gradle门禁 PASS（2m10s/188tasks）：domain448、data95、design12、app163，共718，零failure/error/skip；lint、Debug与R8 Release通过。上一版Records恢复器独立完整门禁也PASS（2m6s）。日志 doneat-play322-nav-final-gradle.log。
+- 阿语200%休假结果、阿语200%非试用方案（三项竖排/恢复/主按钮）、德/印地/阿语200%欢迎逐图检查。宽1000×900dp双列与垂直折叠注入逐图检查，仅记布局预览，非折叠真机证据。多次force-stop后leavePlannerTrialsUsed仍1（剩2次）。真实TalkBack朗读仍未执行。
+- 58行共享路径漂移复查不变，origin/main仍ea3144896caf6595509a8a6fef932d1ac835409a；固定源不移动。签名候选新run38872260649，源码b43880ff，upload=false，构建进行中；130已cancelled，未上传。
+
+- 导航闭包回归补证：32209旋转后切Focus→Records、打开全部记录→Back，人生分配/收入标题仍分别[102,654]/[96,1626]，与原值完全相同。无过期selected/stack回调。nav-focus / nav-all-records / nav-back 对应最终截图。
+- Console内部测试实际是“未启用/无效”状态，保留既有 `3.2.0 (1) - Internal Test` 草稿；新建版本按钮因此禁用。已只读发现并保留，未覆盖旧草稿/改测试人员/上传AAB。已询问Pixel当前许可测试账号，以准备最终Play覆盖升级；没有猜测设备Google账号。此前问题中的“没有内部测试轨道”应读作尚未启用，实际遗留草稿如上。
+
+### 签名候选131与本轮交付边界
+
+- 签名干跑 https://github.com/ififi2017/Off-Work-Countdown/actions/runs/38872260649 SUCCESS，源码 `b43880ff989ad38f05a097b0f253f99d71f403b8`，标记 `android-play-3.2.2-rc131`。131只是本轮签名候选，尚未上传/安装Play，不能记为最终正式放行。129弃用、130取消。
+- 主代理已下载实际AAB独立验证：bundletool1.18.3 validate PASS；JAR签名验证PASS，与128上传证书SHA256一致；com.rainif.doneat/3.2.2/131，非debuggable，无Debug gallery；DEX含线上kid及相同SPKI公钥、API host和两个商品；不拆语言；Bundle PAGE_ALIGNMENT_16K，四ABI ELF PT_LOAD均16384；最终本地R8 APK zipalign -P16 PASS。
+- AAB SHA256 `f147c368651dc1c9d65c72b6da799d066dfcee015610aa07192b863b6f329add`；mapping SHA256 `33d954f29b9e4c48d222782ae13eb60f14b89612260f539b5c91d8c013dd934a`。详细公开配置/签名/manifest见qa/2026-10-16-play322/artifact/candidate-131.json；AAB与mapping保留CI artifact和本机/private/tmp，不提交二进制安装包。
+- 源码b43880ff的PR全部检查通过：Android6m37s、root build4m31s、Rust macOS3m23s/Windows2m2s、check21s；预览 https://vercel.com/ififi2017s-projects/off-work-30/9rhceLq5uvGRwnV3y356YdP3W1mQ 。本轮未改Web/官网。根JS此前51文件/556项、ESLint、version/strings/fixtures/iOS检查及固定源headless iOS build均通过；服务46项单独通过。
+- 结束前再次读取正式包仍3.2.2(128)、installer=com.android.vending；系统font_scale1.0、rotation0、accelerometer_rotation0、三项动画1.0，均与原值一致。清除Debug权益后阿语200%锁定语义不含受保护生日/年龄/金额；恢复隔离应用原合成records/device文件，删除本轮设备临时JSON/XML，临时服务依赖symlink已移除。未运行闹钟/真实付款/退款或清理正式数据。
+
+**当前结论：尚不满足正式送审放行。** 已授权的代码与候选准备已完成，以下事项仍开放：
+
+1. 审核员免费完整访问Plus：所有者确认没有现有方式；原App access矛盾仍原样保留，没有伪造访问说明或植入通用解锁码。已询问是另行设计受限审核访问（设计确认后实施），还是先保留候选暂不送审。
+2. 最终Play覆盖升级：需要确认Pixel当前许可测试Google账号，并决定如何处理未启用内部轨道里既有3.2.0(1)草稿；未经指示未覆盖旧草稿、修改测试人员、上传/投放131。正式生产草稿与已有地区变更未触动。
+3. 新包配置相关许可测试：从Play安装同一最终AAB后验证在线签名回执/精确到期/可恢复状态，并度量成功购买签名冷、热CPU。免费档10ms风险尚不能以2次无效token路径9.073ms关闭；付费套餐未升级，需另行决定。已有所有者闹钟/付费验收确认继续有效，不重复整套旧矩阵。
+4. 真实TalkBack遍历/朗读，以及新Play版本真实年付有无试用资格的UI核对尚未执行；uiautomator语义与Debug样例价不代替它们。
+
+PR #313继续保持draft；未合并、未发布生产。现有main自动alpha上传/提审并发送Lark通知，本轮没有触发该路径，也没有发送消息。
+
+### R1 审核访问设计准备（2026-10-16）
+
+- 所有者选择“补充受限审核访问方案，确认设计后实施”；现仅设计，未新增客户端权限、服务端接口/凭证、部署或修改App access。
+- 所有者已确认Pixel许可测试账号。邮箱只保存在本机0600私有操作记录并用于Console；不进入公开仓库/构建变量/审核凭证。
+- 官方复核要求凭证持续可用/可复用/无地区限制，因此方案采用可撤销长效凭证＋每安装24小时签名租约，而非一次性/短期失效共享码。新增隐私数据边界、独立购买/审核类型、完整Plus消费者（含闹钟/报告后台）及离线撤销延迟写进计划R1节，等待设计审查与所有者确认。
+
+- 主代理设计复核补充：审核签名key与购买key分离；7天清理安装会话后可用原凭证重新激活；撤销无推送，准确标明未校验/离线最长24小时；challenge过期在读取时拒绝而不依赖每日清理；原子挑战响应丢失不消耗长效凭证，禁止绕过原正常购买。未运行runtime测试（仅文档）。
+- 原Chrome连接已断开，按故障文档连接恢复后的Chrome；曾停在Google通行密钥重新验证页，随后浏览器已回到已登录Console。只读核实现有Test email名单已包含所有者提供的Pixel账号，但名单未被选用于轨道；内部测试仍无效并保留3.2.0(1)旧草稿。未保存名单、修改草稿、上传AAB或提交审核。
+- 子代理设计只读复核因使用额度限制未完成；没有计作独立审核通过，本节由主代理完成源码与官方要求复核。
+
+### R2–R3 审核访问实施批次开始（2026-10-16）
+
+- 所有者明确确认计划R1及新增数据/官网隐私/Play Data safety范围，开始实施；不包含生产发布。主代理负责客户端签名/单调时钟/Keystore与完整Plus消费者，子代理分别负责服务端安全协议、入口及19语、隐私文档；3个子代理实际均使用GPT-6.1 Sol High。
+- 协议固定为独立RS256审核JWT，P-256安装持有证明、60秒一次挑战、24小时租约、可复用160bit审核码与每安装独立续期密钥；正式签发默认关闭。
+- 主代理发现购买页直接使用合并权限会误显示购买感谢，已在实现中分开真实购买呈现；新增报告通知来源标记并在投递时重新核对审核租约，避免进程死亡或退出后仍使用历史注册。代码/测试正在集成，尚不计验收通过。
+
+### R2服务与R3首轮集成验证（2026-10-16）
+
+- 服务测试实际通过63项Worker/D1及6项管理脚本；TypeScript与84.24KiB dry build通过。Java SunEC DER安装证明→WebCrypto、jose JWT→Android公开固定向量互通已纳入测试。独立审核表/签名/限流、60秒原子挑战、24小时租约、7天清理，撤销凭证通过级联删除关联安装/挑战；关闭签发不影响购买secret/路由。
+- 根npm test 51文件/557项、字符串生成检查、版本检查通过；本轮iOS generic Simulator headless build通过，未额外启动模拟器。Android首轮7门禁4m02通过：domain448、data96、design12、app167，共723项，零失败/跳过；后续小组件刷新/到期后退出入口完善后仍需重跑。
+- 独立源码复审发现并修补3项：Keystore删除失败时旧授权可重启恢复（持久失效标记＋独立双清理和故障测试）、专注提醒未标记审核来源、Main delay在深睡后可能晚撤权（receiver/后台消费者使用当下单调时钟核验，持续通知期限受租约约束）。小组件已增加付费专注行读取过滤与租约边界刷新；未声称这些设备场景已实测。
+- 生成审核独立签名key，保护于产品仓既有.secrets子目录；本机核对与购买公开key完全隔离，GitHub公开构建Variable已配置。没有输出私钥/审核码，尚未生成正式审核码。
+- 官网披露从已合并旧分支迁到受管理独立树 /Users/zhengyuxuan/.codex/worktrees/review-access-privacy/doneat-site（codex/review-access-privacy，基于origin/main1830d4a）。新树check/build121页/SEO通过；旧树清理迁移副本被自动审批拒绝，因可能批量丢失未提交工作，故原副本和原AGENTS/PLAN修改全部保留。
+- 仅增量披露：英/简中完整About/Privacy，其他17语短提示链接；实际存储最近签发/续期时间，24小时到期由此确定，文案已对应修正。正式访问启用前仍须匹配已发布声明与Play草稿。
+
+### R2闭合部署与最终配置验证（2026-10-16）
+
+- 远端D1仅应用0002_review_access.sql（6条DDL，1.37ms）；现有购买表未迁移。闭合部署版本075d3fd7-75e2-48da-8429-a4fb69c4e5f5，审核开关false，原购买secret/域名/路由保持；新增每日03:17UTC清理仅访问审核表。curl实际review challenge=503 review_access_disabled，原verify空JSON=400 invalid_request。Python urllib首次被Cloudflare1010拒绝，不当作应用/服务失败；未修改保护规则。
+- 带独立审核/购买公开key配置的最终Android7门禁1m49通过，仍为723项零失败/跳过；Release R8与lint通过。审核到期后仍可刷新或退出已有安装会话，输入不保存；实际签名jose固定向量/清理故障注入均通过。58行共享路径漂移不变，未移动iOS固定源。
+- 官网草稿PR33 https://github.com/ififi2017/doneat.app/pull/33 已创建并附到本任务；Vercel Preview成功，浏览器实际打开新增英文补充且保存截图。已就该PR的官网生产发布单独询问所有者，等待决定；Android生产发布仍不包含。
+- Pixel隔离包32210已覆盖更新，正式包未操作；初次进入仍为原合成档案/免费锁定状态，正在检查关于→审核访问、输入清除和关闭服务错误。尚未进行成功激活/真实租约设备验收。
+
+### R3代码保存与签名候选132（2026-10-16）
+
+- 核心实现已提交并推送d50fed0cbfa609b0f992c219281ac5ad0379f42a（PR313）；签名干跑run38914924604，3.2.2(132)，upload=false，进行中；不能称已生成最终包。旧131标签不动。
+- 根ESLint通过；新公钥严格独立配置，发布检查拒绝购买/审核相同key或kid，新增测试已包含于557项。Pixel公开入口/未激活屏、密码遮罩、无效长度输入报错和提交清空已实际验证。32个A假码的首次ADB输入因焦点时序少1字符，仅证明本地格式拒绝；正在以确认焦点后的32字符假码核对503，不把前者误记服务拒绝。
+
+- Pixel正式包只读复核仍3.2.2(128)、installer=com.android.vending；系统fontScale1.0、night auto保持。正常MainActivity真实导航已核对公开审核入口。有效格式32A假码实际触发503“temporarily unavailable”，输入清空、授权仍inactive；第一次31字符则本地拒绝，两个来源已明确区分。Keystore P256初始化路径实际走通，但未声称服务端成功租约。
+- 正在使用既有只读画廊（无真实购买Activity）扫新增审核页19语及英/阿/简中200%字号。该画廊只注入语言/主题/字号，不改系统字体主题；验收记录明确区分普通MainActivity与画廊注入。
+
+- 只读核实可复用的现有封闭测试Alpha轨道有效，当前128已于10月12日面向测试人员发布，178地区；其Google群组为doneat测试群，而非内部测试未选中的邮件名单。本轮不改群组、不发送邀请、不碰旧internal草稿；后续可优先评估沿现有Alpha升级测试，避免覆盖旧草稿。反馈邮箱当前拼作doneat.com，未擅改与本次无关字段。
+- 自动审批拒绝上传独立审核签名私钥到既有Cloudflare REVIEW_PRIVATE_KEY secret，理由为此前设计确认未明确授权这份私钥和目标；命令未执行。已向所有者发出精确私钥/Worker/用途的许可问题。与官网发布决定一起等待答复；审核仍关闭，未生成正式审核码。
+
+### R4新增界面与Data safety（2026-10-16）
+
+- Pixel新增审核页19语标题语义核对/截图完成；英/阿/简中200%局部字号截图完成并直接观察，系统字体1.0、night auto不变；普通MainActivity入口及错误路径与注入画廊明确分开。正文和输入可滚动访问，但英文200%既有底栏出现单字母尾行，已请求最小排版建议，未计整体验收完成。真实TalkBack仍未执行。
+- Play Data safety保留原Purchase history，新增Device or other IDs：collected、not shared（服务提供方处理）、non-ephemeral、optional、App functionality/Fraud prevention security compliance；没有选择分析/广告/账号管理。保存后Console明确“更改已保存，请在发布概览中送审”；选择以后再说，未送审。删除数据的既有总声明未改，不用审核7天清理误代购买记录保留。截图已保存QA；App access仍原状，不提交占位码。
+
+### 审核私钥上传与官网披露发布（2026-10-16）
+
+- 所有者明确许可后，独立审核签名私钥 review-2026-01 已从本机受保护文件上传至既有 doneat-billing-api 的 REVIEW_PRIVATE_KEY secret；未输出私钥内容。secret 名单现为 ENTITLEMENT_PRIVATE_KEY、GOOGLE_PRIVATE_KEY、REVIEW_PRIVATE_KEY，购买密钥未改动。上传后实测 review challenge 仍为 503 review_access_disabled，原 verify 空 JSON 仍为 400 invalid_request；审核开关保持 false，尚未生成正式审核码。
+- 所有者明确许可后，官网 PR33 与 main 的 PLAN.md 冲突已合并解决（保留国内分站与审核披露两节），check 通过、Vercel Preview 通过后合并为 3ec81c4。生产部署成功；线上 en/zh-CN privacy、en about 和 ar 短提示均已含审核访问补充（HTTP 200）。Android 生产发布仍不包含。
+
+### R4 底栏大字号断词修正（2026-10-16）
+
+- 修正英文200%底栏 “Record / s”“Setting / s” 单词内断行：底栏标签改用按应用语言的整词自适应字号（`WholeWordAutoSize`，ICU 词边界判断），只在某个词会被拆开时逐步缩小，下限为该标签在默认字号下的大小，不低于用户 100% 阅读尺寸；正常字号不变。GPT 草稿中的 `Hyphens.Auto` 不再使用（会产生连字符拆词）；首版 `BoxWithConstraints` 因底栏需要固有尺寸测量而崩溃，已改为 Compose `TextAutoSize`。
+- Pixel 隔离 Debug 32211（parity322）画廊注入 200%、深色实际查看：英文 Timer/Focus/Records/Settings、德文 Einstellungen、俄文 Настройки、印地语均整词单行，无崩溃。只是画廊注入字号，系统 fontScale 未改；未做真实 TalkBack。顺带发现德文 200% 设置列表 “Gesundheitserinnerungen” 行标题同样在词内断开，属既有列表行，未在本批修改。
+- Android 7 门禁通过：domain 448、data 96、designsystem 12、app 167，共 723 项零失败/跳过；lintDebug、Debug、R8 Release 通过。该修正改变包内容，候选 132 不再是最终送审包，需要新签名候选。
+
+### R4/R5 正式审核访问开启与候选133（2026-10-16）
+
+- 所有者明确选择“开启并实测”。用运维工具 `--remote` 生成正式可复用审核码，原码只在本机 0600 受保护文件，D1 仅存摘要；`wrangler.jsonc` 将 `REVIEW_ACCESS_ENABLED` 改为 true，经交互终端部署版本 a2218948-cb27-462d-9868-df05d22ec301，无 DNS 冲突。部署后 review challenge 空请求为 400（不再是 503），原 verify 空 JSON 仍为 400。
+- 为避免把正式码放进命令行，Pixel 实测使用单独生成的一次性测试码（同样只在受保护文件，经进程参数直接输入、未打印）。隔离 Debug 32212（parity322，带审核/购买公开 key）在普通 MainActivity 设置→关于→审核访问实际验证：激活成功并显示 24 小时到期、刷新成功、记录人生视图解锁；退出后 D1 安装记录为 0；再次激活后在服务端撤销测试码，刷新即回到未激活，人生视图重新锁定并显示 Plus 入口，档案保留。D1 现有有效凭证 1（正式码）、安装 0。未测离线、时钟回拨、重启和 Play 正式包上的激活。
+- 候选 133：run 38922766058（fcc7462e，upload=false）成功。AAB SHA-256 8d9c1130…579da、mapping 9b810dea…d3dd；上传证书与 128/132 相同，jarsigner 与 bundletool 1.18.3 校验通过，manifest com.rainif.doneat 3.2.2(133)、非 debuggable、无调试画廊，16K 对齐，dex 含完整审核与购买公开 key、api.doneat.app 及商品。证据见 `qa/2026-10-16-play322/artifact/*-133.*`。132 被底栏修正取代。
+- 仍待：Play 安装 133 后的正式包冷路径与审核激活、App access 填写正式码与英文说明、Data safety 与新版本一起送审、真实 TalkBack。生产发布另行确认。
+
+### Alpha 草稿 134 与 App access（2026-10-16）
+
+- 所有者要求“上传到 Alpha 草稿、填写 App access、暂不送审”。经验证的 133 AAB 为 11.2MB，超过浏览器上传工具 10MB 上限，故用仓库发布工作流从同一应用代码（878360dd，相对 fcc7462e 仅文档/服务配置变化）上传：run 38924592844，upload=true、track=alpha、status=draft，生成 3.2.2(134) 并打 tag android-v3.2.2-134。下载该运行的产物复核：AAB SHA-256 9d1ba850…5945，mapping 与 133 字节一致（9b810dea…d3dd），上传证书相同，jarsigner/bundletool 通过，非 debuggable、无画廊、16K 对齐，dex 含完整审核/购买公开 key 与 api.doneat.app。Console“最新版本和 app bundle”显示 Alpha 3.2.2(134) 为草稿，128 仍向测试人员发布。证据 `artifact/*-134.*`；133 未上传，作为同代码的预检记录保留。
+- App access：既有条目改名为 “Review access code (no account or payment needed)”，英文说明改为激活步骤（498/500 字符），“包含全部付费内容”保持勾选；用户名留空，正式审核码由所有者本人粘贴到密码栏后点“添加”“保存”（代理不在网页表单输入凭证）。
+- 发布概览“正在审核中的更改”另有正式版国家/地区（177 个及其他）和数据安全两项，非本轮操作，未改动；送审与生产发布仍需所有者另行决定。
+
+### iOS 3.2.2 对照验收（2026-10-16）
+
+- 所有者要求对照 iOS 3.2.2 更新、UI 与动效验收移植成果。iOS 固定源 Debug 构建跑在单台 iPhone 18 Pro Max 模拟器上，Android 用 Pixel 隔离 Debug 32212，英文浅色逐页对照，动效靠源码对照。结论与 15 项发现见 `qa/2026-10-16-play322/ios-parity/README.md`，左右对比图在同一目录。高优先级：记录分类配色仍是旧版、人生视图未重做、日历下的选中日/月卡片缺失、休假详情结构不同。中优先级：记录切换/展开/回到今天和数字滚动动效缺失、非工作日/锁定日未变暗、日期行缺节日名、锁定提示样式、汇总数字格式。候选 133/134 不含这些修正，修完后需要新候选。
+
+### iOS 3.2.2 对照修正（2026-10-17）
+
+- 所有者要求修正高、中优先级发现并在 Pixel 上对照 iOS 验证。已修：记录配色、人生视图（退休进度/年格/选中行/阶段列表，按 iOS 3.2.2 移除展开按钮）、日历下常驻选中行、休假详情结构、锁定日与休息日变暗、休假日期改为月日、锁定提示、时间分配与周视图数字格式、记录图表淡入与 `DoneAtRollingText` 数字滚动。逐项与证据见 `qa/2026-10-16-play322/ios-parity/README.md` 的“修正结果”和 `after/`。
+- Android 7 门禁通过：domain 448、data 96、designsystem 12、app 167，零失败/跳过；lintDebug、Debug、R8 Release 通过，lint 60→57。Pixel 隔离 Debug 32213 实测英文浅色各尺度、免费月视图、休假表单与详情、阿拉伯语深色月视图。没有 Kotlin 共享规则、`lib/` 或 iOS 源变更；字符串沿用已有键，没有新增翻译。
+- 候选 133/134 不含这些修正，送审前需要新签名候选。
+
+### Alpha 草稿 135（2026-10-17）
+
+- 所有者要求用 iOS 对照修正构建新签名候选，替换 Alpha 草稿 134，不送审。run 38932865718（126173f3，upload=true、alpha、draft）成功，生成 3.2.2(135) 并打 tag android-v3.2.2-135。下载产物复核：AAB SHA-256 0eb4ce8d…6548，mapping b9280f7a…1303；上传证书与 128/132–134 相同，jarsigner/bundletool 通过，非 debuggable、无画廊、16K 对齐，dex 含完整审核/购买公开 key、api.doneat.app 与商品；R8 mapping 含 DoneAtRollingText、RecordsSelectionRow、LifeProgress、LeaveCardTitle 等本次新增代码。Console 显示 Alpha 草稿已是 3.2.2(135)，134 不再作为发布版本，128 仍向测试人员发布。证据 `artifact/*-135.*`。
+- 注意：`release-android.yml` 在影响 Android 的提交合并进 main 后会自动构建并上传 Alpha，状态为 completed（直接发给测试人员并进入审核），使用新的 versionCode。因此合并 PR313 本身就是 Alpha 发布，需要所有者确认；135 草稿只用于合并前的 Play 安装检查。

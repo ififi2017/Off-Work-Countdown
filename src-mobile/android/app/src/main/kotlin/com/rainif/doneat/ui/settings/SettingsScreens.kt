@@ -368,6 +368,8 @@ fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Compos
         }
         SettingsGroup {
             NavigationRow(stringResource(R.string.acknowledgements), { open(Route.Acknowledgements) }, Icons.AutoMirrored.Outlined.MenuBook)
+            RowDivider(inset = false)
+            NavigationRow(stringResource(R.string.reviewAccessTitle), { open(Route.ReviewAccess) }, Icons.Outlined.RateReview)
         }
         SettingsGroup {
             ActionRow(stringResource(R.string.privacyPolicy), { openUrl(context, "https://doneat.app/privacy") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)

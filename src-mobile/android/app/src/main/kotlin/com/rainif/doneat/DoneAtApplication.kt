@@ -74,7 +74,7 @@ class AppGraph(app: Application) {
     val focusNotice = MutableStateFlow<String?>(null)
     /** The usual-day editor's working copy, shared with the task page it opens. */
     val focusTemplateDraft = MutableStateFlow<com.rainif.doneat.ui.focus.FocusTemplateDraft?>(null)
-    val focusCoordinator = FocusCoordinator(app, focus, records, sessions, settings, plus.authorized, scope, nowMs)
+    val focusCoordinator = FocusCoordinator(app, focus, records, sessions, settings, plus, scope, nowMs)
 
     val timer = TimerCoordinator(
         app, sessions, settings, scope, nowMs,
@@ -86,10 +86,10 @@ class AppGraph(app: Application) {
     val reportNotifications = com.rainif.doneat.reminders.CycleReportCoordinator(app, settings, plus.authorized, scope, nowMs, plus.state)
 
     /** The countdown notification before clock-off and during focus phases. */
-    val ongoing = com.rainif.doneat.ongoing.OngoingCoordinator(app, sessions, records, settings, focus, plus.authorized, scope, nowMs)
+    val ongoing = com.rainif.doneat.ongoing.OngoingCoordinator(app, sessions, records, settings, focus, plus, scope, nowMs)
 
     /** The home-screen widget's snapshot: rebuilt with the session, never with money in it. */
-    val widgets = com.rainif.doneat.widget.WidgetCoordinator(app, sessions, records, focus, plus.authorized, scope, nowMs)
+    val widgets = com.rainif.doneat.widget.WidgetCoordinator(app, sessions, records, focus, plus, scope, nowMs)
 
     /**
      * The completed run already celebrated in this process. Kept in memory only:

@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -276,6 +277,10 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
         )
         }
     }
+    // Bar/rail wrappers have different positional saveable keys. Move one NavDisplay subtree
+    // between them so rotation preserves each route's state; read the latest tab/stack callbacks.
+    val currentContent by rememberUpdatedState(content)
+    val stableContent = remember { movableContentOf { currentContent() } }
     fun selectOrReturnToRoot(tab: AppTab) {
         if (tab == selected) stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) }
         else select(tab)
@@ -293,7 +298,7 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
             items = AppTab.entries.map { DoneAtNavigationItem(stringResource(it.title), it.icon) },
             selectedIndex = selected.ordinal,
             onSelect = { selectOrReturnToRoot(AppTab.entries[it]) },
-            content = content,
+            content = stableContent,
         )
     } else {
         NavigationSuiteScaffold(
@@ -305,7 +310,7 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
                         label = { Text(stringResource(tab.title)) })
                 }
             },
-            content = content,
+            content = stableContent,
         )
     }
     }
@@ -453,6 +458,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
                 }
             }, back)
         }
+        Route.ReviewAccess -> com.rainif.doneat.plus.ReviewAccessScreen(graph.plus.reviewAccess, back)
         Route.About -> AboutScreen(open, back) { com.rainif.doneat.plus.PlusDebugSection(graph.plus) }
         Route.Acknowledgements -> AcknowledgementsScreen(back)
         is Route.Leave -> com.rainif.doneat.ui.leave.LeaveScreen(graph, key.fromRecords, open, back)

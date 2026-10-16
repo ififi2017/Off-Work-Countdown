@@ -1,7 +1,14 @@
 package com.rainif.doneat.ui.leave
 
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.Luggage
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,22 +35,21 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,8 +60,10 @@ import com.rainif.doneat.R
 import com.rainif.doneat.core.data.WriteResult
 import com.rainif.doneat.core.designsystem.DoneAtPrimaryButton
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
+import com.rainif.doneat.core.domain.leave.LeavePresentation
 import com.rainif.doneat.core.domain.leave.LeaveAdoption
 import com.rainif.doneat.core.domain.leave.LeavePlanItem
+import com.rainif.doneat.core.domain.schedule.LeavePortion
 import com.rainif.doneat.core.domain.leave.LeavePlanProposal
 import com.rainif.doneat.core.domain.leave.LeavePlanner
 import com.rainif.doneat.core.domain.leave.LeavePlannerCaveat
@@ -69,7 +77,6 @@ import com.rainif.doneat.ui.components.RowDivider
 import com.rainif.doneat.ui.components.SettingsFooter
 import com.rainif.doneat.ui.components.SettingsGroup
 import com.rainif.doneat.ui.components.SwitchRow
-import com.rainif.doneat.ui.components.ValueRow
 import com.rainif.doneat.ui.onboarding.appIsDark
 import com.rainif.doneat.ui.timer.Haptics
 import kotlinx.coroutines.Job
@@ -208,6 +215,7 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
             if (goalIsRest) {
                 StepperRow(
                     text.string(R.string.leaveGoalRest), Strings.leaveAtLeast(context.resources, text.wholeDays(restDays)),
+                    number = text.wholeNumber(restDays), hint = text.string(R.string.leaveGoalRestHint),
                     canDecrease = restDays > 2, canIncrease = restDays < 60,
                     onDecrease = { restDays -= 1 }, onIncrease = { restDays += 1 },
                 )
@@ -216,6 +224,7 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
                 val value = leaveHalfDays.coerceIn(1, ceiling)
                 StepperRow(
                     text.string(R.string.leaveGoalBudget), Strings.leaveUpTo(context.resources, text.halfDays(value)),
+                    number = text.halfDaysNumber(value), hint = text.string(R.string.leaveGoalBudgetHint),
                     canDecrease = selectedHalfDays > 0 && value > 1, canIncrease = selectedHalfDays > 0 && value < ceiling,
                     onDecrease = { leaveHalfDays = value - 1 }, onIncrease = { leaveHalfDays = value + 1 },
                 )
@@ -268,22 +277,22 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
 }
 
 @Composable
-private fun StepperRow(title: String, value: String, canDecrease: Boolean, canIncrease: Boolean, onDecrease: () -> Unit, onIncrease: () -> Unit) {
+private fun StepperRow(title: String, value: String, number: String, hint: String, canDecrease: Boolean, canIncrease: Boolean, onDecrease: () -> Unit, onIncrease: () -> Unit) {
     val view = LocalView.current
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = DoneAtSpacing.l, end = DoneAtSpacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.primary)
+    Column(Modifier.fillMaxWidth().padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+            LeaveHeroNumber(value, number, Modifier.align(Alignment.CenterVertically), rolls = true)
+            Row {
+                IconButton(onClick = { onDecrease(); view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) }, enabled = canDecrease) {
+                    Icon(Icons.Outlined.Remove, "$title −")
+                }
+                IconButton(onClick = { onIncrease(); view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) }, enabled = canIncrease) {
+                    Icon(Icons.Outlined.Add, "$title +")
+                }
+            }
         }
-        IconButton(onClick = { onDecrease(); view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) }, enabled = canDecrease) {
-            Icon(Icons.Outlined.Remove, "$title −")
-        }
-        IconButton(onClick = { onIncrease(); view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK) }, enabled = canIncrease) {
-            Icon(Icons.Outlined.Add, "$title +")
-        }
+        Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -435,67 +444,52 @@ fun LeavePlanDetailScreen(graph: AppGraph, index: Int, onBack: () -> Unit, onAdo
     DoneAtPage(title, onBack, text.string(R.string.leaveResultsTitle)) {
         if (!plus) LeaveTrialBanner(device.leavePlannerTrialsLeft, text)
 
-        // The headline: how long the break is and what it costs, before any detail.
-        Column(
-            Modifier.padding(horizontal = DoneAtSpacing.page + DoneAtSpacing.xs).semantics(mergeDescendants = true) {},
-            verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs),
-        ) {
-            Text(
-                Strings.leaveDaysOff(context.resources, proposal.fullRestDays),
-                Modifier.semantics { heading() },
-                style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
-            )
-            Text(
-                if (proposal.costHalfDays == 0) text.string(R.string.leaveNoLeaveNeeded) else text.uses(proposal.costHalfDays),
-                style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary,
-            )
-        }
-        SettingsGroup {
-            LeavePlanCalendar(proposal, text, device.calendarFirstDay(text.locale), Modifier.padding(DoneAtSpacing.m), holidays, records.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier)
+        // iOS LeavePlanDetail order: when you stop and come back, what to request, what it uses.
+        if (proposal.lastShiftEndAtMs != null || proposal.nextShiftStartAtMs != null) {
+            SettingsGroup { Box(Modifier.padding(DoneAtSpacing.m)) { LeaveBridgeCard(proposal, text) } }
         }
 
         if (proposal.items.isNotEmpty()) {
-            SettingsGroup(text.string(R.string.leaveRequests)) {
-                proposal.items.forEachIndexed { i, item ->
-                    if (i > 0) RowDivider(inset = false)
-                    ListItem(
-                        headlineContent = { Text(text.day(item.dayNumber)) },
-                        supportingContent = { Text(listOfNotNull(itemDetail(item, text),
-                            holidayDayAnnotation(holidays, records.extendedSchedule?.takeIf { it.isEnabled }?.content?.holidayRegionIdentifier,
-                                LeavePlannerSchedule.date(item.dayNumber), text.locale)?.description(text.string(R.string.holidayMakeupWorkday), text.string(R.string.holidayEstimatedLabel))).joinToString(" · ")) },
-                        trailingContent = {
-                            Text(itemTime(item, text), style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
-                        },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    )
+            SettingsGroup {
+                LeaveCardTitle(text.string(R.string.leaveRequests),
+                    Strings.recordsAllocationTotal(LocalResources.current, text.halfDays(proposal.costHalfDays)))
+                proposal.items.forEach { item ->
+                    RowDivider(inset = false)
+                    Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(horizontal = DoneAtSpacing.l, vertical = DoneAtSpacing.s)
+                        .semantics(mergeDescendants = true) {},
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s + DoneAtSpacing.xxs)) {
+                        Icon(if (item.portion == LeavePortion.WHOLE) Icons.Filled.Luggage else Icons.Filled.Contrast, null,
+                            Modifier.size(26.dp), tint = MaterialTheme.colorScheme.primary)
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(text.day(item.dayNumber), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                            Text(itemDetail(item, text), style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text(text.halfDays(item.portion.halfDays), style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"), fontWeight = FontWeight.SemiBold)
+                    }
                 }
             }
-            SettingsGroup(text.string(R.string.leaveUseBalances)) {
-                val rows = proposal.uses.mapNotNull { use -> records.leaveBalances.firstOrNull { it.id == use.balanceID }?.let { it to use } }
-                rows.forEachIndexed { i, (balance, use) ->
-                    if (i > 0) RowDivider(inset = false)
+            val rows = proposal.uses.mapNotNull { use -> records.leaveBalances.firstOrNull { it.id == use.balanceID }?.let { it to use } }
+            if (rows.isNotEmpty()) SettingsGroup {
+                LeaveCardTitle(text.string(R.string.leaveDeductFrom), text.string(R.string.leaveDeductOrder))
+                rows.forEach { (balance, use) ->
+                    RowDivider(inset = false)
                     val left = records.availableLeaveHalfDays(balance) - use.halfDays
-                    ValueRow(
-                        text.balanceName(balance),
-                        Strings.leaveBalanceAfter(context.resources, text.halfDays(use.halfDays), text.halfDays(maxOf(0, left))),
-                    )
+                    Column(Modifier.padding(horizontal = DoneAtSpacing.l, vertical = DoneAtSpacing.s + DoneAtSpacing.xxs).semantics(mergeDescendants = true) {},
+                        verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(text.balanceName(balance), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                            Text(Strings.leaveBalanceAfter(LocalResources.current, text.halfDays(use.halfDays), text.halfDays(maxOf(0, left))),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"), fontWeight = FontWeight.SemiBold)
+                        }
+                        LeaveBalanceBar(LeavePresentation.balanceBar(balance.entitledHalfDays, balance.usedHalfDays, maxOf(0, left)))
+                    }
                 }
             }
         }
 
-        val caveats = caveatLabels(proposal, text, context.resources)
-        if (proposal.lastShiftEndAtMs != null || proposal.nextShiftStartAtMs != null || caveats.isNotEmpty()) {
-            Column {
-                if (proposal.lastShiftEndAtMs != null || proposal.nextShiftStartAtMs != null) {
-                    SettingsGroup {
-                        proposal.lastShiftEndAtMs?.let { ValueRow(text.string(R.string.leaveLastShiftEnds), text.moment(it)) }
-                        if (proposal.lastShiftEndAtMs != null && proposal.nextShiftStartAtMs != null) RowDivider(inset = false)
-                        proposal.nextShiftStartAtMs?.let { ValueRow(text.string(R.string.leaveNextShiftStarts), text.moment(it)) }
-                    }
-                }
-                Column(Modifier.padding(horizontal = DoneAtSpacing.page)) { caveats.forEach { Note(it) } }
-            }
-        }
+        val caveats = caveatLabels(proposal, text, LocalResources.current)
+        if (caveats.isNotEmpty()) Column(Modifier.padding(horizontal = DoneAtSpacing.page)) { caveats.forEach { Note(it) } }
 
         if (proposal.items.isNotEmpty()) {
             DoneAtPrimaryButton(
@@ -520,10 +514,24 @@ private fun itemTime(item: LeavePlanItem, text: LeaveText): String {
     return text.range(text.time(first.startAtMs), text.time(item.segments.last().endAtMs))
 }
 
-private fun itemDetail(item: LeavePlanItem, text: LeaveText): String = when (item.role) {
-    LeavePlanItem.Role.BRIDGE -> text.portion(item.portion)
-    LeavePlanItem.Role.EARLY_DEPARTURE -> text.string(R.string.leaveRoleEarly)
-    LeavePlanItem.Role.LATE_RETURN -> text.string(R.string.leaveRoleLate)
+/** iOS `itemDetail`: "Second half 14:00 – 18:00 · Leave early". */
+private fun itemDetail(item: LeavePlanItem, text: LeaveText): String = listOfNotNull(
+    listOf(text.portion(item.portion), itemTime(item, text)).filter { it.isNotEmpty() }.joinToString(" "),
+    when (item.role) {
+        LeavePlanItem.Role.BRIDGE -> null
+        LeavePlanItem.Role.EARLY_DEPARTURE -> text.string(R.string.leaveRoleEarly)
+        LeavePlanItem.Role.LATE_RETURN -> text.string(R.string.leaveRoleLate)
+    },
+).joinToString(" · ")
+
+/** iOS `LeaveCard(title:note:)`: the card's own heading, with a quiet note at the trailing edge. */
+@Composable
+private fun LeaveCardTitle(title: String, note: String) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = DoneAtSpacing.l, vertical = DoneAtSpacing.m).semantics(mergeDescendants = true) { heading() },
+        verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+        Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
+    }
 }
 
 /** Each caveat once, with predicted holidays distinguished from missing data. */

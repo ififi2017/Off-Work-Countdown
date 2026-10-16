@@ -30,15 +30,27 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.intl.LocaleList
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import java.text.BreakIterator
+import java.util.Locale
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kyant.backdrop.Backdrop
@@ -247,6 +259,11 @@ private fun TabLabels(
     modifier: Modifier, lensLayer: Boolean, selectedInLens: Boolean, scale: () -> Float,
 ) {
     val colors = MaterialTheme.colorScheme
+    // Both the real row and its decorative lens use exactly this style.
+    val labelStyle = MaterialTheme.typography.labelMedium.copy(
+        localeList = LocaleList(LocalConfiguration.current.locales.toLanguageTags()),
+        lineBreak = LineBreak.Heading,
+    )
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         items.forEachIndexed { index, item ->
             val foreground = if (lensLayer || (!selectedInLens && index == selectedIndex)) colors.primary else colors.onSurface
@@ -258,9 +275,40 @@ private fun TabLabels(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs, Alignment.CenterVertically)) {
                 Icon(item.icon, null, Modifier.size(GlassNavigation.iconSize), tint = foreground)
-                Text(item.title, color = foreground, style = MaterialTheme.typography.labelMedium,
-                    textAlign = TextAlign.Center, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                TabLabelText(item.title, foreground, labelStyle)
             }
         }
+    }
+}
+
+/**
+ * Large text may wrap between words but never inside one ("Record / s"): the label shrinks just
+ * enough for each word to stay on one line, never below the size it has at the default text scale. Word boundaries come from the label's locale, so
+ * scripts without spaces keep their dictionary words together too.
+ */
+@Composable
+private fun TabLabelText(title: String, color: Color, style: TextStyle) {
+    val autoSize = remember(style.fontSize, style.localeList) {
+        WholeWordAutoSize(style.fontSize, style.localeList?.firstOrNull()?.platformLocale ?: Locale.getDefault())
+    }
+    Text(title, color = color, style = style, autoSize = autoSize,
+        textAlign = TextAlign.Center, maxLines = 3, overflow = TextOverflow.Ellipsis)
+}
+
+private data class WholeWordAutoSize(val maxFontSize: TextUnit, val locale: Locale) : TextAutoSize {
+    override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
+        val words = BreakIterator.getWordInstance(locale).apply { setText(text.text) }
+        val minimum = maxFontSize.value / fontScale.coerceAtLeast(1f)
+        var size = maxFontSize.value
+        while (size > minimum + 0.01f) {
+            val layout = performLayout(constraints, text, size.sp)
+            val splitsWord = (0 until layout.lineCount - 1).any { line ->
+                val end = layout.getLineEnd(line)
+                end in 1 until text.length && !text[end - 1].isWhitespace() && !words.isBoundary(end)
+            }
+            if (!splitsWord && !layout.didOverflowHeight && !layout.didOverflowWidth) return size.sp
+            size -= 0.5f
+        }
+        return minimum.sp
     }
 }

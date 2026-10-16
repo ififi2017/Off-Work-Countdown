@@ -1,3 +1,4 @@
+import { cleanupReviewAccess, handleReviewAccess, requireReviewConfiguration, REVIEW_PREFIX } from './review-access';
 import { interpretPurchase } from './entitlement';
 import { getPurchase } from './google';
 import { authenticatePubSub, signReceipt } from './receipt';
@@ -28,8 +29,8 @@ async function readBody(request: Request): Promise<Record<string, unknown>> {
   catch { throw new ApiError(400, 'invalid_request'); }
 }
 
-async function verify(env: Env, token: string, productId: string, force: boolean): Promise<StoredEntitlement> {
-  const hash = await sha256(token);
+/** hash is computed from the validated token by our callers, never accepted from request JSON. */
+async function verify(env: Env, token: string, hash: string, productId: string, force: boolean): Promise<StoredEntitlement> {
   const now = Date.now();
   if (!force) {
     const cached = await readPurchase(env.DB, hash);
@@ -66,8 +67,9 @@ async function handleVerify(request: Request, env: Env): Promise<Response> {
   const nonce = boundedString(body.nonce, 128);
   if (!/^[A-Za-z0-9_-]{16,128}$/.test(nonce)) throw new ApiError(400, 'invalid_request');
   if (![env.SUBSCRIPTION_PRODUCT, env.LIFETIME_PRODUCT].includes(productId)) throw new ApiError(400, 'invalid_product');
-  if (!(await env.VERIFY_TOKEN_LIMIT.limit({ key: await sha256(token) })).success) throw new ApiError(429, 'rate_limited');
-  const grant = await verify(env, token, productId, false);
+  const tokenHash = await sha256(token);
+  if (!(await env.VERIFY_TOKEN_LIMIT.limit({ key: tokenHash })).success) throw new ApiError(429, 'rate_limited');
+  const grant = await verify(env, token, tokenHash, productId, false);
   return Response.json({ receipt: await signReceipt(env, grant, nonce, Date.now()) }, { headers });
 }
 
@@ -98,7 +100,7 @@ async function handleNotification(request: Request, env: Env): Promise<Response>
       product = notice.productType === 1 ? env.SUBSCRIPTION_PRODUCT : env.LIFETIME_PRODUCT;
     }
     if (![env.SUBSCRIPTION_PRODUCT, env.LIFETIME_PRODUCT].includes(product)) throw new ApiError(400, 'invalid_product');
-    try { await verify(env, token, product, true); }
+    try { await verify(env, token, await sha256(token), product, true); }
     catch (error) {
       // An inaccessible Google purchase is retried; no receipt or revocation is manufactured.
       if (error instanceof ApiError && error.status === 422) throw new ApiError(503, 'verification_unavailable');
@@ -110,12 +112,20 @@ async function handleNotification(request: Request, env: Env): Promise<Response>
 }
 
 export default {
+  async scheduled(_event: ScheduledController, env: Env): Promise<void> { await cleanupReviewAccess(env.DB); },
   async fetch(request: Request, env: Env): Promise<Response> {
     try {
       const url = new URL(request.url);
-      if (![VERIFY, NOTIFICATIONS].includes(url.pathname)) throw new ApiError(404, 'not_found');
+      const reviewRoute = url.pathname.startsWith(REVIEW_PREFIX) ? url.pathname.slice(REVIEW_PREFIX.length) : undefined;
+      if (![VERIFY, NOTIFICATIONS].includes(url.pathname) && !['challenge', 'activate', 'renew', 'exit'].includes(reviewRoute ?? '')) throw new ApiError(404, 'not_found');
       if (request.method !== 'POST') return Response.json({ error: 'method_not_allowed' }, { status: 405, headers: { ...headers, Allow: 'POST' } });
       if (url.search) throw new ApiError(400, 'query_not_allowed');
+      if (reviewRoute !== undefined) {
+        if (url.protocol !== 'https:') throw new ApiError(400, 'https_required');
+        if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') ?? '')) throw new ApiError(415, 'json_required');
+        await requireReviewConfiguration(env);
+        return Response.json(await handleReviewAccess(await readBody(request), reviewRoute, env), { headers });
+      }
       requireConfiguration(env);
       return url.pathname === VERIFY ? await handleVerify(request, env) : await handleNotification(request, env);
     } catch (error) {

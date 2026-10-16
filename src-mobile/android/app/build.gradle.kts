@@ -35,6 +35,9 @@ android {
         val receiptKeys = providers.gradleProperty("doneatBillingApiPublicKeys").orElse("").get()
         val escapedReceiptKeys = receiptKeys.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")
         buildConfigField("String", "BILLING_API_PUBLIC_KEYS", "\"$escapedReceiptKeys\"")
+        val reviewKeys = providers.gradleProperty("doneatReviewAccessPublicKeys").orElse("").get()
+        val escapedReviewKeys = reviewKeys.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")
+        buildConfigField("String", "REVIEW_ACCESS_PUBLIC_KEYS", "\"$escapedReviewKeys\"")
     }
 
     // Play upload key, supplied by the release workflow or an untracked local gradle.properties.

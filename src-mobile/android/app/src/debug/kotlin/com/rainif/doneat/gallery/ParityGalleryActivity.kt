@@ -125,7 +125,7 @@ import kotlin.math.roundToInt
 class ParityGalleryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!BuildConfig.DEBUG || packageName != "com.rainif.doneat.parity321") {
+        if (!BuildConfig.DEBUG || packageName !in setOf("com.rainif.doneat.parity321", "com.rainif.doneat.parity322")) {
             finish()
             return
         }

@@ -45,10 +45,11 @@ class FocusCoordinator(
     private val records: RecordStore,
     private val sessions: SessionStore,
     private val settings: SettingsRepository,
-    private val authorized: StateFlow<Boolean>,
+    private val plus: com.rainif.doneat.plus.PlusAccess,
     private val scope: CoroutineScope,
     private val nowMs: () -> Double,
 ) {
+    private val authorized get() = plus.authorized
     @OptIn(FlowPreview::class)
     fun start() {
         scope.launch {
@@ -57,10 +58,11 @@ class FocusCoordinator(
                 .collectLatest { (state, notificationsEnabled) ->
                     val now = nowMs()
                     val active = focus.activeSession(state)
-                    val alarms = if (active == null || !notificationsEnabled) {
+                    val alarms = if (active == null || !notificationsEnabled || !plus.isAuthorizedNow()) {
                         emptyList()
                     } else {
                         ReminderPlanner.focusAlarms(active.id, reminders(state).alerts(state, active), now)
+                            .map { it.copy(reviewAccessRequired = !plus.state.value.authorized) }
                     }
                     Reminders.schedule(context, alarms, ReminderPlanner.FOCUS_PREFIX, TimerCoordinator.channelNames(context.resources))
                     // Then wait for the next thing that happens by itself, and let it happen.

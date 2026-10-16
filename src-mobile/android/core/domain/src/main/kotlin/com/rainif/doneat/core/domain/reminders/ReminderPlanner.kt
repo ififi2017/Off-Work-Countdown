@@ -22,6 +22,8 @@ data class PlannedReminder(
     val expiresAtMs: Long? = null,
     /** Salary-free frozen civil report route, persisted with the alarm. */
     val reportUrl: String? = null,
+    /** Review-created reports must re-check the signed lease at delivery, including after process death. */
+    val reviewAccessRequired: Boolean = false,
 ) {
     fun isDeliverable(nowMs: Long) = expiresAtMs == null || nowMs < expiresAtMs
 }

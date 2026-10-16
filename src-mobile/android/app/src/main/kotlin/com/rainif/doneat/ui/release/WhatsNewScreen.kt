@@ -98,9 +98,9 @@ fun WhatsNewScreen(graph: AppGraph, onDismiss: () -> Unit, continuing: Boolean =
                 }
                 PlusFeatureStage(initialSelection = PlusDemoKind.REST, showsFocus = false)
                 Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.m + DoneAtSpacing.s)) {
-                    ReleaseFeature(Icons.Outlined.Luggage, R.string.leavePlanAction, R.string.whatsNewLeaveBody, largeText)
-                    ReleaseFeature(Icons.Outlined.Alarm, R.string.shiftAlarmsTitle, R.string.whatsNewAlarmsBody, largeText)
-                    ReleaseFeature(Icons.Outlined.BarChart, R.string.reportEntryTitle, R.string.whatsNewReportsBody, largeText)
+                    ReleaseFeature(Icons.Outlined.Luggage, R.string.leavePlanAction, R.string.release322LeaveBody, largeText)
+                    ReleaseFeature(Icons.Outlined.BarChart, R.string.recordsTitle, R.string.release322RecordsBody, largeText)
+                    ReleaseFeature(Icons.Outlined.Star, R.string.plusSection, R.string.release322WelcomeBody, largeText)
                 }
                 if (showsInvitation) {
                     Surface(Modifier.fillMaxWidth().clickable(role = Role.Button) { showsGift = true }, shape = MaterialTheme.shapes.large,
