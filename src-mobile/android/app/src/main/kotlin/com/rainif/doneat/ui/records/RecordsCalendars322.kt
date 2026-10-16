@@ -29,6 +29,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.LocalDensity
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtRecords322 as T
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
@@ -96,16 +100,18 @@ private fun DayBar(look: RecordsDayLook) {
 }
 
 @Composable
-private fun HolidayRuns(row: List<RecordsDayCell?>, holidays: Map<String, HolidayDayAnnotation>, modifier: Modifier = Modifier) {
+private fun HolidayRuns(row: List<RecordsDayCell?>, holidays: Map<String, HolidayDayAnnotation>, modifier: Modifier = Modifier,
+    height: Dp = T.holidayHeight, textSize: TextUnit = TextUnit.Unspecified) {
     val runs = recordsHolidayRuns(row.map { cell -> cell?.takeUnless { it.appearance == RecordsDayAppearance.LOCKED }?.let { holidays[it.dayKey]?.takeUnless { it.isMakeupWorkday }?.name } })
     val green = recordsHolidayColor()
-    Row(modifier.fillMaxWidth().height(T.holidayHeight).clearAndSetSemantics {}) {
+    Row(modifier.fillMaxWidth().height(height).clearAndSetSemantics {}) {
         var index = 0
         while (index < 7) {
             val run = runs.firstOrNull { it.start == index }
             if (run == null) { Spacer(Modifier.weight(1f)); index++ } else {
                 Box(Modifier.weight(run.length.toFloat()).padding(horizontal = DoneAtSpacing.xxs).clip(MaterialTheme.shapes.extraSmall).background(green.copy(alpha = .14f))) {
-                    Text(run.name, Modifier.padding(horizontal = DoneAtSpacing.xs), style = MaterialTheme.typography.labelSmall, color = green, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(run.name, Modifier.padding(horizontal = DoneAtSpacing.xs), style = MaterialTheme.typography.labelSmall.let { if (textSize.isSpecified) it.copy(fontSize = textSize, lineHeight = textSize * 1.2f) else it },
+                        color = green, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 index += run.length
             }
@@ -121,9 +127,13 @@ internal fun MonthGrid(cells: List<RecordsDayCell>, leadingBlanks: Int, weekdayL
         Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs)) {
             Row(Modifier.fillMaxWidth().clearAndSetSemantics {}) { weekdayLabels.forEach { Text(it, Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) } }
             val slots: List<RecordsDayCell?> = List(leadingBlanks) { null } + cells
+            val density = LocalDensity.current
+            val rowHeight = with(density) { T.monthRowHeight.toDp() }
+            val gap = with(density) { T.monthDateBarGap.toDp() }
+            val holidayHeight = with(density) { T.monthHolidayHeight.toDp() }
             slots.chunked(7).forEach { week ->
                 val row = week + List(7 - week.size) { null }
-                Box(Modifier.fillMaxWidth().height(T.monthRowHeight)) {
+                Box(Modifier.fillMaxWidth().height(rowHeight)) {
                     Row(Modifier.fillMaxSize()) { row.forEach { cell ->
                         if (cell == null) Spacer(Modifier.weight(1f)) else {
                             val look = RecordsDayLook(cell)
@@ -132,14 +142,15 @@ internal fun MonthGrid(cells: List<RecordsDayCell>, leadingBlanks: Int, weekdayL
                                 .calendarDaySemantics(cell, text, selected, { onSelect(cell) }, { onOpen(cell) }, holidays[cell.dayKey])) {
                                 Column(Modifier.fillMaxSize().padding(top = DoneAtSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally) {
                                     DayNumber(look, selected, text, holidays[cell.dayKey])
-                                    Spacer(Modifier.height(T.holidayHeight + DoneAtSpacing.xxs))
-                                    DayBar(look)
+                                    Spacer(Modifier.height(gap))
+                                    Box(Modifier.height(T.monthBarSlot), contentAlignment = Alignment.Center) { DayBar(look) }
                                 }
                                 DayBadge(look, holidays[cell.dayKey], Modifier.align(Alignment.TopEnd).padding(DoneAtSpacing.xxs))
                             }
                         }
                     } }
-                    HolidayRuns(row, holidays, Modifier.padding(top = T.dateSize + DoneAtSpacing.xxs))
+                    // iOS: the strip starts 1 pt under the date and sits inside the date–bar gap.
+                    HolidayRuns(row, holidays, Modifier.padding(top = DoneAtSpacing.xxs + T.dateSize + 1.dp), holidayHeight, T.monthHolidayText)
                 }
             }
         }
