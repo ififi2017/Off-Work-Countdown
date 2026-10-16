@@ -89,6 +89,13 @@ describe('verified entitlement API', () => {
     expect(saved).not.toContain('a-real-purchase-token');
     expect(saved).not.toContain('server-access-token');
   });
+  it('hashes the validated purchase token once for both rate limiting and verification', async () => {
+    const digest = vi.spyOn(crypto.subtle, 'digest');
+    const response = await verify('hash-once');
+    expect(response.status).toBe(200);
+    // The other SHA-256 is the independently required IP rate-limit bucket.
+    expect(digest.mock.calls).toHaveLength(2);
+  });
   it('reuses a recent Google result without manufacturing a later verification time', async () => {
     const first = await receipt(await verify());
     const second = await receipt(await verify());
@@ -168,6 +175,7 @@ describe('HTTP boundaries', () => {
     expect((await verify('token', 'unapproved')).status).toBe(400);
     expect((await worker.fetch(request({ purchaseToken: 'token', productId: 'doneat_plus', nonce: 'short' }), config)).status).toBe(400);
     expect((await worker.fetch(request({ purchaseToken: 'token', productId: 'doneat_plus', nonce, salary: 1000 }), config)).status).toBe(400);
+    expect((await worker.fetch(request({ purchaseToken: 'token', productId: 'doneat_plus', nonce, tokenHash: 'caller-supplied' }), config)).status).toBe(400);
     expect((await worker.fetch(request({ purchaseToken: 'x'.repeat(20_000) }), config)).status).toBe(413);
     expect(googleCalls).toBe(0);
   });
