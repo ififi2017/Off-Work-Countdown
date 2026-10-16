@@ -12,6 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 enum class PlusPlan { MONTHLY, YEARLY, LIFETIME }
@@ -46,6 +47,7 @@ data class PlusStoreState(val status: PlusStatus = PlusStatus.LOADING, val offer
 class PlusAccess(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val repository = PlayBillingRepository(context.applicationContext, scope)
+    val reviewAccess = ReviewAccessRepository(context.applicationContext, scope)
     private val offerStore = LifetimeOfferStore(context.applicationContext)
     private val introStore = DeviceLocalPlusIntroStore(context.applicationContext.noBackupFilesDir.toPath().resolve("plus-intro-321"))
     val introState: StateFlow<PlusIntroState> = introStore.state
@@ -70,10 +72,10 @@ class PlusAccess(private val context: Context) {
     init {
         observeLifetimeOffer()
         scheduleOfferExpiry()
-        scope.launch { repository.state.collect {
-            val granted = it.authorized || PlusDebugOverride.read(context)
+        scope.launch { combine(repository.state, reviewAccess.state) { store, _ -> store }.collect {
+            val granted = it.authorized || reviewAccess.verifiedExpiry(System.currentTimeMillis()) != null || PlusDebugOverride.read(context)
             _authorized.value = granted
-            if (granted && introState.value.loaded && (!introState.value.seen || introState.value.writeFailed)) introStore.markSeen()
+            if ((it.authorized || PlusDebugOverride.read(context)) && introState.value.loaded && (!introState.value.seen || introState.value.writeFailed)) introStore.markSeen()
             _collectsObservations.value = granted || !it.hasPurchasedBefore
         } }
         if (BuildConfig.PLAY_BILLING_PUBLIC_KEY.isNotBlank()) scope.launch { repository.refresh() }
@@ -82,11 +84,22 @@ class PlusAccess(private val context: Context) {
     /** Seed once after the initial archive read; later completing a fresh setup must retain unseen. */
     suspend fun initializeIntro(existingSetup: Boolean) {
         introStore.initialize(existingSetup)
-        if (_authorized.value) introStore.markSeen()
+        if (state.value.authorized || PlusDebugOverride.read(context)) introStore.markSeen()
     }
     suspend fun markIntroSeen() = introStore.markSeen()
 
-    fun refresh() { scope.launch { repository.refresh() } }
+    fun isAuthorizedNow(): Boolean = state.value.authorized || reviewAccess.verifiedExpiry(System.currentTimeMillis()) != null || PlusDebugOverride.read(context)
+    fun revalidateLocalAccess() {
+        _authorized.value = isAuthorizedNow()
+        _collectsObservations.value = _authorized.value || !state.value.hasPurchasedBefore
+    }
+    fun onForeground(value: Boolean) = reviewAccess.onForeground(value)
+    fun shiftAlarmAuthorization(nowMs: Long): ShiftAlarmAuthorization {
+        val paid = state.value.shiftAlarmAuthorization(nowMs)
+        if (paid != ShiftAlarmAuthorization.Unavailable) return paid
+        return reviewAccess.verifiedExpiry(nowMs)?.let(ShiftAlarmAuthorization::VerifiedUntil) ?: ShiftAlarmAuthorization.Unavailable
+    }
+    fun refresh() { reviewAccess.refresh(); scope.launch { repository.refresh() } }
     fun restore() { scope.launch { repository.refresh() } }
 
     /** Intro cancellation waits for current Play entitlements and real eligible prices before any reveal. */
@@ -163,7 +176,7 @@ class PlusAccess(private val context: Context) {
     fun setDebugAuthorized(value: Boolean) {
         if (!PlusDebugOverride.AVAILABLE) return
         PlusDebugOverride.write(context, value)
-        _authorized.value = value || state.value.authorized
+        _authorized.value = value || state.value.authorized || reviewAccess.verifiedExpiry(System.currentTimeMillis()) != null
         _collectsObservations.value = _authorized.value || !state.value.hasPurchasedBefore
     }
 

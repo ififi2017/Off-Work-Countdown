@@ -161,6 +161,7 @@ object Strings {
     fun reportUsualBasisWeek(res: Resources, count: String): String = res.getString(R.string.reportUsualBasisWeek, count)
     fun reportUsualLess(res: Resources, duration: String): String = res.getString(R.string.reportUsualLess, duration)
     fun reportUsualMore(res: Resources, duration: String): String = res.getString(R.string.reportUsualMore, duration)
+    fun reviewAccessExpires(res: Resources, time: String): String = res.getString(R.string.reviewAccessExpires, time)
     fun rotationRestdayOption(res: Resources, day: String): String = res.getString(R.string.rotationRestdayOption, day)
     fun rotationStartDay(res: Resources, day: String): String = res.getString(R.string.rotationStartDay, day)
     fun rotationWorkdayOption(res: Resources, day: String): String = res.getString(R.string.rotationWorkdayOption, day)

@@ -73,6 +73,7 @@ jobs:
       # Required for exact subscription expiry, including subscription-backed shift alarms.
       # Public keys only; both manual and automatic release builds validate the deployed identity.
       ORG_GRADLE_PROJECT_doneatBillingApiPublicKeys: ${{ inputs.billing_api_public_keys || vars.DONEAT_BILLING_API_PUBLIC_KEYS }}
+      ORG_GRADLE_PROJECT_doneatReviewAccessPublicKeys: ${{ vars.DONEAT_REVIEW_ACCESS_PUBLIC_KEYS }}
       # push 没有 inputs：合并触发的固定为上传到 alpha 并提审。
       # 签名属性和 keystore 路径要在同一处出现：Gradle 配置阶段会在每个任务里读它们，
       # 只给打包那一步会让前面的测试步骤拿到一半的签名配置。

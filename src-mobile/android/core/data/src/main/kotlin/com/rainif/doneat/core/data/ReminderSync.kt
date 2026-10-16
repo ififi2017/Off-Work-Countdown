@@ -13,6 +13,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -173,6 +174,7 @@ class ReminderSync(private val file: Path, private val alarms: AlarmPort) {
         mapOf(
             "id" to JsonPrimitive(id), "atMs" to JsonPrimitive(atMs), "channel" to JsonPrimitive(channel.name),
             "reportUrl" to (reportUrl?.let(::JsonPrimitive) ?: JsonNull),
+            "reviewAccessRequired" to JsonPrimitive(reviewAccessRequired),
             "title" to JsonPrimitive(title), "body" to JsonPrimitive(body), "expiresAtMs" to (expiresAtMs?.let(::JsonPrimitive) ?: JsonNull),
         ),
     )
@@ -184,6 +186,7 @@ class ReminderSync(private val file: Path, private val alarms: AlarmPort) {
         title = getValue("title").jsonPrimitive.content,
         body = getValue("body").jsonPrimitive.content,
         expiresAtMs = get("expiresAtMs")?.jsonPrimitive?.longOrNull,
+        reviewAccessRequired = get("reviewAccessRequired")?.jsonPrimitive?.booleanOrNull ?: false,
         reportUrl = get("reportUrl")?.jsonPrimitive?.contentOrNull?.takeIf { com.rainif.doneat.core.domain.records.CycleReportPeriod.fromUrl(it) != null },
     )
 }

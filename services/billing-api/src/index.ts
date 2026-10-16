@@ -1,3 +1,4 @@
+import { cleanupReviewAccess, handleReviewAccess, requireReviewConfiguration, REVIEW_PREFIX } from './review-access';
 import { interpretPurchase } from './entitlement';
 import { getPurchase } from './google';
 import { authenticatePubSub, signReceipt } from './receipt';
@@ -111,12 +112,20 @@ async function handleNotification(request: Request, env: Env): Promise<Response>
 }
 
 export default {
+  async scheduled(_event: ScheduledController, env: Env): Promise<void> { await cleanupReviewAccess(env.DB); },
   async fetch(request: Request, env: Env): Promise<Response> {
     try {
       const url = new URL(request.url);
-      if (![VERIFY, NOTIFICATIONS].includes(url.pathname)) throw new ApiError(404, 'not_found');
+      const reviewRoute = url.pathname.startsWith(REVIEW_PREFIX) ? url.pathname.slice(REVIEW_PREFIX.length) : undefined;
+      if (![VERIFY, NOTIFICATIONS].includes(url.pathname) && !['challenge', 'activate', 'renew', 'exit'].includes(reviewRoute ?? '')) throw new ApiError(404, 'not_found');
       if (request.method !== 'POST') return Response.json({ error: 'method_not_allowed' }, { status: 405, headers: { ...headers, Allow: 'POST' } });
       if (url.search) throw new ApiError(400, 'query_not_allowed');
+      if (reviewRoute !== undefined) {
+        if (url.protocol !== 'https:') throw new ApiError(400, 'https_required');
+        if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') ?? '')) throw new ApiError(415, 'json_required');
+        await requireReviewConfiguration(env);
+        return Response.json(await handleReviewAccess(await readBody(request), reviewRoute, env), { headers });
+      }
       requireConfiguration(env);
       return url.pathname === VERIFY ? await handleVerify(request, env) : await handleNotification(request, env);
     } catch (error) {

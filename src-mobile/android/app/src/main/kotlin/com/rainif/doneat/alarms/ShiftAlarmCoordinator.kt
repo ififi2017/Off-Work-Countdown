@@ -50,7 +50,7 @@ class ShiftAlarmCoordinator(
         started = true
         scope.launch {
             ready.first { it }
-            combine(sessions.session, settings, plus.state) { _, _, _ -> Unit }.collectLatest { reconcile() }
+            combine(sessions.session, settings, plus.state, plus.reviewAccess.state) { _, _, _, _ -> Unit }.collectLatest { reconcile() }
         }
     }
 
@@ -70,7 +70,7 @@ class ShiftAlarmCoordinator(
         } }
         reconcile()
     } }
-    fun authorization(): ShiftAlarmAuthorization = plus.state.value.shiftAlarmAuthorization(nowMs().toLong())
+    fun authorization(): ShiftAlarmAuthorization = plus.shiftAlarmAuthorization(nowMs().toLong())
 
     suspend fun onSystemEvent(rebuildRegistrations: Boolean) {
         ready.first { it }

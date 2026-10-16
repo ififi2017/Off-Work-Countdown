@@ -3700,6 +3700,77 @@
     "return": {
       "resource": "string/return_"
     },
+    "reviewAccessActivate": {
+      "resource": "string/reviewAccessActivate",
+      "androidOnly": true
+    },
+    "reviewAccessActive": {
+      "resource": "string/reviewAccessActive",
+      "androidOnly": true
+    },
+    "reviewAccessCode": {
+      "resource": "string/reviewAccessCode",
+      "androidOnly": true
+    },
+    "reviewAccessConnection": {
+      "resource": "string/reviewAccessConnection",
+      "androidOnly": true
+    },
+    "reviewAccessExit": {
+      "resource": "string/reviewAccessExit",
+      "androidOnly": true
+    },
+    "reviewAccessExitNote": {
+      "resource": "string/reviewAccessExitNote",
+      "androidOnly": true
+    },
+    "reviewAccessExpires": {
+      "resource": "string/reviewAccessExpires",
+      "params": [
+        "time"
+      ],
+      "androidOnly": true
+    },
+    "reviewAccessInactive": {
+      "resource": "string/reviewAccessInactive",
+      "androidOnly": true
+    },
+    "reviewAccessInvalidCode": {
+      "resource": "string/reviewAccessInvalidCode",
+      "androidOnly": true
+    },
+    "reviewAccessNetwork": {
+      "resource": "string/reviewAccessNetwork",
+      "androidOnly": true
+    },
+    "reviewAccessNotConfigured": {
+      "resource": "string/reviewAccessNotConfigured",
+      "androidOnly": true
+    },
+    "reviewAccessPurpose": {
+      "resource": "string/reviewAccessPurpose",
+      "androidOnly": true
+    },
+    "reviewAccessRefresh": {
+      "resource": "string/reviewAccessRefresh",
+      "androidOnly": true
+    },
+    "reviewAccessRevoked": {
+      "resource": "string/reviewAccessRevoked",
+      "androidOnly": true
+    },
+    "reviewAccessStorage": {
+      "resource": "string/reviewAccessStorage",
+      "androidOnly": true
+    },
+    "reviewAccessTitle": {
+      "resource": "string/reviewAccessTitle",
+      "androidOnly": true
+    },
+    "reviewAccessUnavailable": {
+      "resource": "string/reviewAccessUnavailable",
+      "androidOnly": true
+    },
     "rotationRestDays": {
       "resource": "string/rotationRestDays"
     },

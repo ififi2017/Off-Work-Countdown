@@ -110,16 +110,17 @@ private fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
     onAuthorized: (PlusPendingAction) -> Unit = {}) {
     val authorized by graph.plus.authorized.collectAsStateWithLifecycle()
     val store by graph.plus.state.collectAsStateWithLifecycle()
+    val reviewAccess by graph.plus.reviewAccess.state.collectAsStateWithLifecycle()
     val lifetimeOffer by graph.plus.lifetimeOffer.collectAsStateWithLifecycle()
     val activity = LocalContext.current.activity()
     val authorizedAtPresentation = rememberSaveable { authorized }
     LaunchedEffect(Unit) { graph.plus.refresh() }
-    LaunchedEffect(authorized, pendingAction) {
+    LaunchedEffect(authorized, reviewAccess.active, pendingAction) {
         // An existing member can proceed immediately. A new grant first shows
         // the thank-you page; Continue resumes the action they were buying for.
-        if (authorizedAtPresentation && authorized && pendingAction != null) onAuthorized(pendingAction)
+        if ((authorizedAtPresentation || reviewAccess.active) && authorized && pendingAction != null) onAuthorized(pendingAction)
     }
-    PlusPage(store, authorized, activity != null, onBack,
+    PlusPage(store, store.authorized || (authorized && !reviewAccess.active), activity != null, onBack,
         onPurchase = { offer -> activity?.let { graph.plus.purchase(it, offer) } },
         onRestore = graph.plus::restore, onRefresh = graph.plus::refresh,
         onOpenUrl = { url -> activity?.let { openUrl(it, url) } },

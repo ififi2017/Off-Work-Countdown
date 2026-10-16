@@ -52,6 +52,14 @@ class ReminderSyncTest {
     private val reportKinds get() = setOf(com.rainif.doneat.core.domain.records.CycleReportKind.MONTH)
     private val reportPrefix get() = com.rainif.doneat.core.domain.records.CycleReportPeriod.PREFIX
 
+    @Test fun reviewReportKeepsDeliveryRevalidationAcrossProcessDeath() = runTest {
+        val review = report("2026-09-01").copy(reviewAccessRequired = true)
+        sync.sync(listOf(review), reportPrefix)
+        val freshProcess = ReminderSync(file, alarms)
+        assertTrue(freshProcess.registered().single().reviewAccessRequired)
+        assertTrue(freshProcess.take(review.id, review.atMs)!!.reviewAccessRequired)
+    }
+
     @Test fun coldReportReconcileBeforeReceiverKeepsDeliveryAndDoesNotRearmDue() = runTest {
         val due = report("2026-09-01")
         val next = report("2026-10-01")

@@ -458,6 +458,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
                 }
             }, back)
         }
+        Route.ReviewAccess -> com.rainif.doneat.plus.ReviewAccessScreen(graph.plus.reviewAccess, back)
         Route.About -> AboutScreen(open, back) { com.rainif.doneat.plus.PlusDebugSection(graph.plus) }
         Route.Acknowledgements -> AcknowledgementsScreen(back)
         is Route.Leave -> com.rainif.doneat.ui.leave.LeaveScreen(graph, key.fromRecords, open, back)

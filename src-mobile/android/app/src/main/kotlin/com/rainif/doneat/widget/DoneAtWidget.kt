@@ -229,6 +229,9 @@ class WidgetRefreshReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(Dispatchers.Default).launch {
             try {
+                val graph = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph
+                graph.plus.reviewAccess.awaitLoaded()
+                graph.plus.revalidateLocalAccess()
                 WidgetSignals.redraw(context)
             } finally {
                 pending.finish()
@@ -255,7 +258,10 @@ internal object WidgetRefresh {
         val manager = context.getSystemService(AlarmManager::class.java)
         entry ?: return manager.cancel(intent(context))
         val moving = entry.phase == WidgetPhase.WORKING || entry.phase == WidgetPhase.BEFORE
-        val at = if (moving) minOf(entry.validUntilMs, nowMs + PROGRESS_STEP_MS) else entry.validUntilMs
+        val ordinaryAt = if (moving) minOf(entry.validUntilMs, nowMs + PROGRESS_STEP_MS) else entry.validUntilMs
+        val plus = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph.plus
+        val reviewUntil = if (!plus.state.value.authorized) plus.reviewAccess.verifiedExpiry(nowMs) else null
+        val at = minOf(ordinaryAt, reviewUntil ?: ordinaryAt)
         val exact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || manager.canScheduleExactAlarms()
         if (exact) manager.setExact(AlarmManager.RTC, at, intent(context))
         else manager.setWindow(AlarmManager.RTC, at, 60_000, intent(context))

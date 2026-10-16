@@ -360,6 +360,11 @@ Android 3.2.1 的 Plan 020 增量固定读取 iOS `18129168acd23edc3a872cca3633a
 2026-10-04 用户授权同仓库独立 Cloudflare Worker + D1（`services/billing-api`，
 `api.doneat.app`）获取 Google 已验证精确到期，Android 校验签名后供 PlusAccess 使用；
 生产接入需完成部署与许可测试。原生响铃生命周期仍需单独实现与设备验收。
+2026-10-16 用户另行批准 D-14 审核访问：使用既有 Worker/D1 的独立凭证/安装公钥
+认证和最多 24 小时签名授权；不改变 Play 购买状态、商店权益或业务档案 schema。
+随机安装标识仍属于新增收集，仅用于可选审核认证/防滥用，不关联订单。
+挑战到期即失效，安装会话最后续期 7 天后每日清理，长效凭证摘要保留至轮换/撤销。
+隔离测试与匹配的官网隐私及 Data safety 披露是生产启用前提；本次批准不等于发布。
 规则对应与平台差异见 [Android 规则说明](android/rule-parity.md)。
 
 任务状态仅维护在 [Android 进度](android/progress.md)，架构与检查见

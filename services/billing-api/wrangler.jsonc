@@ -8,7 +8,10 @@
   "preview_urls": false,
   "routes": [{ "pattern": "api.doneat.app", "custom_domain": true }],
   "observability": { "enabled": false },
+  "triggers": { "crons": ["17 3 * * *"] },
   "vars": {
+    "REVIEW_ACCESS_ENABLED": "false",
+    "REVIEW_SIGNING_KEY_ID": "review-2026-01",
     "PACKAGE_NAME": "com.rainif.doneat",
     "SUBSCRIPTION_PRODUCT": "doneat_plus",
     "SUBSCRIPTION_BASE_PLANS": "monthly,yearly",
@@ -28,6 +31,8 @@
     "migrations_dir": "migrations"
   }],
   "ratelimits": [
+    { "name": "REVIEW_AUTH_LIMIT", "namespace_id": "32103", "simple": { "limit": 600, "period": 60 } },
+    { "name": "REVIEW_INSTALL_LIMIT", "namespace_id": "32104", "simple": { "limit": 30, "period": 60 } },
     { "name": "VERIFY_IP_LIMIT", "namespace_id": "32101", "simple": { "limit": 300, "period": 60 } },
     { "name": "VERIFY_TOKEN_LIMIT", "namespace_id": "32102", "simple": { "limit": 12, "period": 60 } }
   ]

@@ -40,6 +40,20 @@ release gates. No rule, plan or script may depend on locally installed skills.
   schedules, records or product accounts. Keep secrets out of Git/APKs and
   signed receipts out of backups. Activation requires the service runbook
   and matching published privacy disclosures.
+- The approved 2026-10-16 review-access exception separately permits an
+  optional reusable review credential, a random installation public key and its
+  hash, renewal-secret hash, challenge proof and grant timing/revision/revocation
+  metadata at the existing `api.doneat.app` Worker/D1 service. Use these only
+  for review authentication and abuse prevention, never analytics, advertising
+  or linkage to Play orders. No Google sign-in, Gmail, hardware IDs, salary,
+  schedules, records or product accounts. Keep raw credentials, private keys,
+  renewal secrets and grant bodies out of database/logs/backups. Signed grants
+  last at most 24 hours; daily cleanup removes expired challenges and installation
+  sessions seven days after their last renewal. Reusable credential hashes remain
+  until owner rotation/revocation; the seven-day limit does not expire the code.
+  Review authorization is distinct from Play purchases. Production activation
+  requires isolated validation and matching published privacy/Data safety
+  disclosures; design approval does not authorize deployment or publication.
 - Share URLs encode only start/end times. Analytics are anonymous aggregate
   event counters: no cookies, identifiers, IP/User-Agent storage or histories.
 - Desktop networking is limited to updates, external links and user-triggered

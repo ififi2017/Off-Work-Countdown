@@ -45,10 +45,11 @@ class WidgetCoordinator(
     private val sessions: SessionStore,
     private val records: RecordStore,
     private val focus: FocusStore,
-    private val authorized: StateFlow<Boolean>,
+    private val plus: com.rainif.doneat.plus.PlusAccess,
     private val scope: CoroutineScope,
     private val nowMs: () -> Double,
 ) {
+    private val authorized get() = plus.authorized
     private val mutex = Mutex()
     private var published: String? = null
 
@@ -111,8 +112,8 @@ class WidgetCoordinator(
                 )
             },
             words = { event -> timelineWords(event, res, text, session, now.toDouble(), currentSnapshot = currentSnapshot).let { (title, detail) -> title to detail.orEmpty() } },
-            focusEvents = focusTimeline.events(state, environment.shift(now.toDouble()), now.toDouble()),
-            futureFocus = { shift -> focusTimeline.plannedEvents(state, shift.segments, shift.startAtMs) },
+            focusEvents = if (plus.isAuthorizedNow()) focusTimeline.events(state, environment.shift(now.toDouble()), now.toDouble()) else emptyList(),
+            futureFocus = { shift -> if (plus.isAuthorizedNow()) focusTimeline.plannedEvents(state, shift.segments, shift.startAtMs) else emptyList() },
         )
         val future = WidgetSnapshotComposer.futureShifts(session, now)
         return WidgetSnapshotComposer.compose(session, now, tag, future, upcoming)
@@ -122,7 +123,11 @@ class WidgetCoordinator(
         fun file(context: Context): File = File(context.noBackupFilesDir, "widget/snapshot.json")
 
         fun read(context: Context): WidgetSnapshot? =
-            runCatching { WidgetSnapshot.decode(file(context).readText()) }.getOrNull()
+            runCatching {
+                val snapshot = WidgetSnapshot.decode(file(context).readText()) ?: return@runCatching null
+                val graph = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph
+                if (graph.plus.isAuthorizedNow()) snapshot else snapshot.copy(upcoming = snapshot.upcoming.filterNot { it.kind in setOf("focus", "focusBreak") })
+            }.getOrNull()
 
         private fun write(context: Context, text: String) {
             val target = file(context)

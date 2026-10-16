@@ -49,12 +49,14 @@ class OngoingCoordinator(
     private val records: RecordStore,
     private val settings: SettingsRepository,
     private val focus: FocusStore,
-    private val authorized: StateFlow<Boolean>,
+    private val plus: com.rainif.doneat.plus.PlusAccess,
     private val scope: CoroutineScope,
     private val nowMs: () -> Double,
 ) {
+    private val authorized get() = plus.authorized
     private val mutex = Mutex()
     private var shown: OngoingDecision? = null
+    private var shownReviewUntil: Long? = null
 
     @OptIn(FlowPreview::class)
     fun start() {
@@ -71,24 +73,26 @@ class OngoingCoordinator(
         val device = settings.device.value
         val state = records.state.value
         val session = sessions.session.value
-        val phase = if (device.focusOngoingEnabled && authorized.value) focus.activeSession(state) else null
+        val phase = if (device.focusOngoingEnabled && plus.isAuthorizedNow()) focus.activeSession(state) else null
         // A day with planned focus belongs to focus: no separate clock-off countdown to pre-empt it (iOS).
-        val focusPlanned = device.focusOngoingEnabled && authorized.value && focus.queue.value.isNotEmpty()
+        val focusPlanned = device.focusOngoingEnabled && plus.isAuthorizedNow() && focus.queue.value.isNotEmpty()
         val work = if (device.ongoingEnabled && !focusPlanned) OngoingPlan.workWindow(session, now, device.ongoingLeadMinutes) else null
         val decision = OngoingPlan.choose(work, phase, now)
+        val reviewUntil = if (decision?.surface != OngoingSurface.WORK && !plus.state.value.authorized) plus.reviewAccess.verifiedExpiry(now.toLong()) else null
         if (decision == null || !ReminderNotifier.canPost(context)) {
             NotificationManagerCompat.from(context).cancel(TAG, ID)
             shown = null
-        } else if (decision != shown || !isShowing()) {
-            post(decision, state, now)
+        } else if (decision != shown || reviewUntil != shownReviewUntil || !isShowing()) {
+            post(decision, state, now, reviewUntil)
             shown = decision
+            shownReviewUntil = reviewUntil
         }
-        schedule(OngoingPlan.nextChangeAtMs(work, phase, now))
+        schedule(listOfNotNull(OngoingPlan.nextChangeAtMs(work, phase, now), reviewUntil?.toDouble()).minOrNull())
     }
 
     private fun isShowing() = context.getSystemService(NotificationManager::class.java).activeNotifications.any { it.tag == TAG && it.id == ID }
 
-    private fun post(decision: OngoingDecision, state: RecordState, now: Double) {
+    private fun post(decision: OngoingDecision, state: RecordState, now: Double, reviewUntil: Long?) {
         val res = context.resources
         ensureChannel(context)
         val text = TimerText(res, res.configuration.locales[0], DateFormat.is24HourFormat(context), hideEarnings = true)
@@ -120,7 +124,7 @@ class OngoingCoordinator(
             .setUsesChronometer(true)
             .setChronometerCountDown(true)
             // Gone by itself at the end, whether or not the app runs then.
-            .setTimeoutAfter((end - now).toLong().coerceAtLeast(1))
+            .setTimeoutAfter((minOf(end, reviewUntil?.toDouble() ?: end) - now).toLong().coerceAtLeast(1))
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)
@@ -170,6 +174,8 @@ class OngoingReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(Dispatchers.Default).launch {
             try {
+                graph.plus.reviewAccess.awaitLoaded()
+                graph.plus.revalidateLocalAccess()
                 // A cold process applies on launch once the archive is read.
                 if (graph.loaded.value) graph.ongoing.apply()
             } finally {

@@ -132,9 +132,14 @@ class ReminderReceiver : BroadcastReceiver() {
         val id = intent.data?.takeIf { it.scheme == "doneat" && it.authority == "reminder" }?.lastPathSegment ?: return
         runAsync {
             Reminders.sync(context).take(id, System.currentTimeMillis())?.let { reminder ->
+                val graph = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph
+                graph.plus.reviewAccess.awaitLoaded()
+                graph.plus.revalidateLocalAccess()
+                if (reminder.reviewAccessRequired) {
+                    if (!graph.plus.state.value.authorized && graph.plus.reviewAccess.verifiedExpiry(System.currentTimeMillis()) == null) return@let
+                }
                 ReminderNotifier.post(context, reminder)
                 if (reminder.channel == ReminderChannel.REPORT) {
-                    val graph = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph
                     graph.loaded.first { it }
                     graph.reportNotifications.reconcile()
                 }
@@ -155,6 +160,8 @@ class ReminderSystemEventReceiver : BroadcastReceiver() {
             Reminders.sync(context).restore(System.currentTimeMillis())
             // A new clock or zone moves every widget boundary; a cold process rebuilds the snapshot on launch anyway.
             val graph = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph
+            graph.plus.reviewAccess.awaitLoaded()
+            graph.plus.revalidateLocalAccess()
             if (graph.loaded.value) {
                 graph.widgets.refresh()
                 graph.ongoing.apply()

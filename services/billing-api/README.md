@@ -1,6 +1,6 @@
 # DoneAt Play purchase verification
 
-One Cloudflare Worker, one D1 database, two POST endpoints at `api.doneat.app`.
+One Cloudflare Worker and one D1 database at `api.doneat.app`. Purchase verification uses two POST endpoints. Optional review access uses isolated tables, routes and keys; see [Review access operations and protocol](REVIEW-ACCESS.md). Review issuance defaults off.
 This directory has its own npm lockfile, deployment and tests. It does not run
 inside the Next.js site or the Android process. Task status and test evidence
 live only in [Android progress](../../docs/android/progress.md).
@@ -30,8 +30,8 @@ live only in [Android progress](../../docs/android/progress.md).
   contain a refund token, not a purchase token: delivery is acknowledged with
   no entitlement change. Automatic refund review/evidence submission is outside
   this service; manage any such requests through Google's available process.
-- There are no DoneAt accounts, salary/records APIs, analytics, polling jobs,
-  queues or scheduled tasks. This change provides verified alarm boundaries;
+- There are no DoneAt accounts, salary/records APIs, analytics, polling jobs or
+  queues. A daily review-only retention task does not touch purchase tables. This change provides verified alarm boundaries;
   it does not implement the Android wake-up alarm/ringing service.
 
 ### Signed receipt v1

@@ -28,6 +28,7 @@ sealed interface Route : NavKey {
     @Serializable data object Plus : Route
     /** Keeps the interrupted action in the saveable navigation stack until Plus is granted. */
     @Serializable data class PlusFor(val action: PlusPendingAction) : Route
+    @Serializable data object ReviewAccess : Route
     @Serializable data object About : Route
     @Serializable data object Acknowledgements : Route
 
