@@ -1,34 +1,50 @@
 # Google Play screenshots
 
-English Play screenshots reuse the ASC 3.2.0 copy, fonts, colors and opening two-image composition. The app content is captured from Android; the frame is a simple neutral outline. Apple Watch, Dynamic Island and iCloud are omitted.
+Play screenshots follow the ASC 3.2.1/3.2.2 iPhone set: the same captions (`../ios/creative-copy-3.2.1.mjs`), cream background, Charter/Manrope and Noto typography, orange emphasis and opening two-image composition, with real Android captures in a neutral phone outline. ASC's ten scenes become Play's eight (Play allows at most eight) by leaving out the Apple Watch and the Dynamic Island / Lock Screen widget scenes:
 
-## Render
+1. `01-countdown` and `02-countdown-detail`: one timer capture across two images
+2. `03-leave`: the time-off planner's top plan for the storefront's holiday region
+3. `04-report`: September monthly report, "Time worked" (Plus)
+4. `05-calendar`: Hours & schedule with the region's public holidays
+5. `06-records`: Records Year view (Plus)
+6. `07-focus`: a running focus block in a planned day (Plus)
+7. `08-breaks`: the timer during the lunch break
 
-Place five **real Android** screenshots in `<output>/raw/`, each 1080 × 2400:
+19 app languages are captured; en-GB and es-419 reuse the en and es sets, as ASC's en-GB and es-MX fall back to en-US and es-ES. zh-HK captions use the app's Hong Kong wording (`play-copy.mjs`) and need a native reader.
 
-- `en-timer.png`: current working shift, with earnings hidden.
-- `en-calendar.png`: Hours & schedule monthly calendar.
-- `en-records.png`: Records Year view with synthetic history.
-- `en-focus.png`: active Focus task with a populated schedule.
-- `en-breaks.png`: timer during the configured lunch break.
+## 1. Capture on a Pixel
 
-Use an isolated test installation and synthetic data, preferably on a physical Android device. Wait for the app to finish launching before capture. When using Android System UI demo mode, keep its status-bar clock consistent with the app clock. Plus scenes may use the existing Debug-only entitlement switch; they are not purchase verification. Never use a personal device archive or simulated purchase prices.
+Use an isolated Debug install, never the Play-installed app:
 
 ```sh
-node scripts/marketing-shots/android/compose.mjs [output-directory]
+cd src-mobile/android
+./gradlew :app:assembleDebug -PdoneatDebugApplicationIdSuffix=.shots
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The default output directory is `build/android-play-internal/store-listing/asc-style`.
+Record the phone's settings first and restore them afterwards. Turn on System UI demo mode (100% battery, full signal, hidden notifications) and Do Not Disturb. `pixel-capture.mjs` sets the demo clock to the real time of each capture, so it matches the app.
 
-- `screenshots/`: six English PNGs, numbered for upload, 1080 × 1920, opaque RGB, under 8 MB each.
-- `overview.png`: review contact sheet, not an upload screenshot.
-- `manifest.json`: source and output hashes, dimensions, order and capture disclosure.
-- HTML files: editable rendered layouts, using the same locally licensed fonts as ASC.
+```sh
+ANDROID_SERIAL=<serial> ANDROID_SHOTS_DEMO_ARCHIVE=<iOS raw/3.2.2/shots/demo-archive.json> \
+  ANDROID_SHOTS_LANGUAGE=en,zh-CN ANDROID_SHOTS_SCENES=records,report,calendar,leave \
+  node scripts/marketing-shots/android/pixel-capture.mjs
+```
 
-The script checks dimensions, opacity and file size on every render. Inspect the overview and full-size outputs before uploading. Screenshot 1 and 2 form a continuous composition. Do not upload the overview, raw captures, JSON or HTML files.
+- Writes only to `com.rainif.doneat.shots`, through `run-as`: the synthetic archive (`pixel-seed.mjs`, the iOS marketing demo history reseeded per scene), device settings, the Debug-only Plus switch and the release-notes marker. It refuses any package without the `.shots` suffix.
+- Changes language with per-app locales (`cmd locale set-app-locales`), never the system locale.
+- `timer` and `focus` need working hours in Asia/Shanghai (09:00–11:55 or 13:05–17:50); `breaks` needs 12:05–12:55. Records, report, calendar and leave work any time.
+- Output: `build/play-store-media/raw/<lang>-<scene>.png` (1280 × 2856) and `capture-manifest.json`.
 
-Source copy: `app-store-connect/ios/3.2.0.json`. Android listing text: `docs/android/store-listing.md`. Rendering uses the existing Chrome helper; no app build or remote store mutation is performed.
+## 2. Compose
 
-## Feature graphic
+```sh
+PLAY_IMAGE_DIR=play-store/images node scripts/marketing-shots/android/compose.mjs
+node scripts/marketing-shots/android/feature-graphic.mjs build/play-store-media play-store/images
+```
 
-Run `node scripts/marketing-shots/android/feature-graphic.mjs [store-listing-directory]` after capturing `asc-style/raw/en-timer.png`. It produces `feature-graphic-en-1024x500.png`, editable HTML and a source/output hash manifest. The graphic shares ASC typography and colors, with an unretouched crop of the real Android timer. The renderer checks size, opacity and file size. This replaces the earlier purple logo-only draft.
+- `screenshots/<lang>/NN-*.png`: 1080 × 1920, opaque RGB, under 8 MB, checked on every render.
+- `overview-<lang>.png`: review contact sheet, not an upload.
+- The phone's own notification, VPN, ringer and Do Not Disturb icons are not part of the app, and this Pixel's demo mode does not hide them. The composer fills the status bar between the clock and the battery with its own background colour; app content is untouched.
+- `PLAY_IMAGE_DIR` replaces each Play language's `phoneScreenshots/`. The feature graphic goes to `en-US/featureGraphic.png` only; other languages fall back to it.
+
+Then check and preview the listing with `npm run play:listing:check` and `npm run play:listing:plan`, both with `--config play-store/3.2.2.json` (see `docs/PLAY-STORE-LISTING-SYNC.md`).
