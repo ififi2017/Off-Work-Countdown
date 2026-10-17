@@ -154,6 +154,9 @@ App Store Connect's workflow triggers, Release archive and distribution.
   box, capture sits in the hole, frame overlays it. Never punch bezels or
   redraw Dynamic Island. App Previews use `IPHONE_67`, 886×1920 portrait,
   with an audio track (silent stereo is acceptable).
+- Google Play listing text and images sync with `npm run play:listing:plan`
+  (read-only) and `play:listing:sync`; see `docs/PLAY-STORE-LISTING-SYNC.md`.
+  It never touches tracks, releases or builds.
 
 ## Source and license notices
 
