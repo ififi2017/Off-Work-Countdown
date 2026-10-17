@@ -54,6 +54,34 @@ class RecordsCalculationSnapshotTest {
         assertFalse(page.matches(RecordsCalculationSnapshot(q, now), RecordsScale.MONTH, first.plusMonths(1)))
     }
 
+    @Test fun aMinuteTickKeepsThePreviousPageOnScreenUntilTheNewOneLoads() {
+        val source = Any()
+        val page = loadPage(RecordsCalculationSnapshot(queries(), now, source), RecordsScale.MONTH, today)
+        val first = today.withDayOfMonth(1)
+        // The queries are rebuilt every minute; only the source token says the business inputs held still.
+        val nextMinute = RecordsCalculationSnapshot(queries(), now + 60_000, source)
+        assertFalse(page.matches(nextMinute, RecordsScale.MONTH, first)) // Still reloads, so today's marks advance.
+        assertTrue(page.standsIn(nextMinute, RecordsScale.MONTH, first))
+        assertFalse(page.standsIn(nextMinute, RecordsScale.WEEK, first))
+        assertFalse(page.standsIn(nextMinute, RecordsScale.MONTH, first.plusMonths(1)))
+    }
+
+    @Test fun aDataOrAccessChangeNeverLetsThePreviousPageStandIn() {
+        val source = Any()
+        val page = loadPage(RecordsCalculationSnapshot(queries(), now, source), RecordsScale.MONTH, today)
+        val first = today.withDayOfMonth(1)
+        val archived = RecordsCalculationSnapshot(queries(), now, Any())
+        assertFalse(page.standsIn(archived, RecordsScale.MONTH, first))
+        // Revoked Plus never shows old data, even if a caller reused the token.
+        val revoked = RecordsCalculationSnapshot(queries(authorized = false), now + 60_000, source)
+        assertFalse(page.standsIn(revoked, RecordsScale.MONTH, first))
+        // Without an explicit token each query revision is its own source.
+        val q = queries()
+        val plain = loadPage(RecordsCalculationSnapshot(q, now), RecordsScale.MONTH, today)
+        assertTrue(plain.standsIn(RecordsCalculationSnapshot(q, now + 60_000), RecordsScale.MONTH, first))
+        assertFalse(plain.standsIn(RecordsCalculationSnapshot(queries(), now + 60_000), RecordsScale.MONTH, first))
+    }
+
     @Test fun lifeRawSnapshotRetainsItsAllocationAndIncomeUntilBusinessInputsOrAccessChange() {
         val preferences = PreferencesRules.defaults("UTC", now)
         val session = ShiftSession(SessionState(), SessionEnvironment(preferences, true, null, emptyList(), HolidayCalendar.EMPTY, "UTC"))

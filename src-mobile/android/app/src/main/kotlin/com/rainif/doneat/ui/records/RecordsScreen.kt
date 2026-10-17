@@ -150,14 +150,14 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         val q = context.queries
         if (scale != RecordsScale.LIFE && q.authorized) return@LaunchedEffect
         val first = q.window(scale, anchor).first
+        // The page already resolved this window. Await its snapshot rather than expanding the same
+        // schedule twice for free week/month views; the last total stays shown until it lands.
+        val loaded = page?.takeIf { it.matches(context.calculation, scale, first) }
+        if (scale != RecordsScale.LIFE && !locked && loaded == null) return@LaunchedEffect
         val ms = withContext(Dispatchers.Default) {
             if (scale == RecordsScale.LIFE) {
                 q.lifetimeRecordedOvertimeMs(context.nowMs)
-            } else if (!locked) {
-                // The page already resolved this window. Await its snapshot rather
-                // than expanding the same schedule twice for free week/month views.
-                val loaded = page?.takeIf { it.matches(context.calculation, scale, first) }
-                    ?: return@withContext null
+            } else if (loaded != null) {
                 loaded.recordedOvertimeMs
             } else {
                 val last = q.window(scale, anchor).second
@@ -244,7 +244,8 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         }
     }
 
-    val current = page?.takeIf { !locked && it.matches(context.calculation, scale, context.queries.window(scale, anchor).first) }
+    // A page from the previous minute stays until this minute's lands, so the tab never blinks on the minute.
+    val current = page?.takeIf { !locked && it.standsIn(context.calculation, scale, context.queries.window(scale, anchor).first) }
     // Stable across Activity recreation, but invalidated by navigation/business/access changes.
     // Only presentation coordinates are saved; the archive and amounts never enter saved UI state.
     val readingContentKey = remember(scale, anchor, context.lifeInputs.archive, context.lifeInputs.preferences,
@@ -309,7 +310,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                 LifeAllocationCard(loaded?.model, loading = loaded == null, decline = profile.futureIncomeDecline, text = text, graph = graph)
             }
             val overtimeMs = overtime?.takeIf {
-                it.calculation.matches(context.calculation) && it.scale == scale && it.first == context.queries.window(scale, anchor).first
+                it.calculation.continues(context.calculation) && it.scale == scale && it.first == context.queries.window(scale, anchor).first
             }?.milliseconds
             // Life totals only overtime actually recorded, for everyone; the projected career never adds to it.
             if (scale == RecordsScale.LIFE && overtimeMs != null) OvertimeLine(text, overtimeMs)
