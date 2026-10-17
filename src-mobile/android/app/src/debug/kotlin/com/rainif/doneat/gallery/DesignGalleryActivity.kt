@@ -293,7 +293,8 @@ private fun Rollover() = Section("Countdown rollover (five digits change at 00:5
 /** The bubble at both ends (pointer on the mark, bubble sliding), in overtime and paused for lunch. */
 @Composable
 private fun Meters() = Section("Progress meter: 0 %, 100 %, overtime, lunch") {
-    Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
+    // The Timer's own inset, so the bubble's overhang at both ends is shown as it appears in the app.
+    Column(Modifier.padding(horizontal = DoneAtSpacing.xl - DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
         DoneAtProgressMeter(0.0, "Progress")
         DoneAtProgressMeter(100.0, "Progress")
         DoneAtProgressMeter(91.7, "Progress", overtime = true)

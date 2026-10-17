@@ -1,6 +1,7 @@
 package com.rainif.doneat.core.designsystem
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Locale
 
@@ -42,5 +43,15 @@ class ProgressMeterGeometryTest {
         assertEquals("100.0%", ProgressMeterGeometry.bubbleLabel(100.0, Locale.US))
         assertEquals("62%", ProgressMeterGeometry.spokenValue(62.4, Locale.US))
         assertEquals("62,4 %", ProgressMeterGeometry.bubbleLabel(62.4, Locale.GERMANY).replace(' ', ' '))
+    }
+
+    @Test fun bubbleOverhangAtBothEndsIsCornerPlusHalfPointerAndFitsTheTimerMargin() {
+        // 22 dp bubble, 12 dp pointer: the bubble hangs 17 dp past the track at 0 % and 100 %.
+        val start = place(0.0)
+        assertEquals(-17f, start.bubbleX, 0.001f)
+        val end = place(100.0)
+        assertEquals(300f + 17f, end.bubbleX + 60f, 0.001f)
+        assertEquals(17f, (ProgressMeterEndOverhang.value), 0.001f)
+        assertTrue("Timer margin must cover the overhang", DoneAtSpacing.xl.value >= ProgressMeterEndOverhang.value)
     }
 }
