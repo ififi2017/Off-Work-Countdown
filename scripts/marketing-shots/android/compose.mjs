@@ -82,7 +82,12 @@ for (const lang of langs) {
   const dir = join(out, 'screenshots', lang);
   mkdirSync(dir, { recursive: true });
   const items = [];
-  for (const page of playPages(lang)) {
+  // Play lays screenshots out left to right in every language. The Arabic
+  // pair is mirrored, so the detail image comes first and the phone runs from
+  // its right edge into the hero.
+  const ordered = playPages(lang);
+  if (lang === 'ar') [ordered[0], ordered[1]] = [{ ...ordered[1], name: '01-countdown-detail' }, { ...ordered[0], name: '02-countdown' }];
+  for (const page of ordered) {
     const source = join(raw, `${lang}-${page.source}.png`);
     if (!existsSync(source)) throw new Error(`Missing capture ${source}`);
     const img = join(masked, `${lang}-${page.source}.png`);
