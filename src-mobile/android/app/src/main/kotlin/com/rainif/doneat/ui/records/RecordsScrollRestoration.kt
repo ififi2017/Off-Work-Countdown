@@ -2,6 +2,10 @@ package com.rainif.doneat.ui.records
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.withTimeoutOrNull
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.rememberUpdatedState
@@ -16,6 +20,12 @@ import kotlin.math.roundToInt
 internal enum class RecordsScrollLayout { SINGLE, COLUMNS, FOLD, EXPANDED }
 internal enum class RecordsReadingSection { CHART, CONCLUSION }
 internal data class RecordsReadingPosition(val section: RecordsReadingSection, val fraction: Float)
+
+/** A reader above the chart (the scale picker in view) returns to the very top, not to the chart's first line. */
+internal const val RECORDS_ABOVE_CHART = -1f
+
+/** The longest the page stays hidden waiting for its content before it is shown anyway. */
+private const val RECORDS_RESTORE_HIDE_MS = 1_000L
 
 /** Heights come from the rendered sections, so wrapping text never changes which section is being read. */
 internal data class RecordsScrollGeometry(val pickerHeight: Int = 0, val chartHeight: Int = 0, val conclusionHeight: Int = 0) {
@@ -43,6 +53,7 @@ internal fun recordsReadingPosition(layout: RecordsScrollLayout, geometry: Recor
         else -> chartOffset - geometry.chartStart(layout, gap, expandedInset)
     }
     val height = if (section == RecordsReadingSection.CHART) geometry.chartHeight else geometry.conclusionHeight
+    if (section == RecordsReadingSection.CHART && offset < 0) return RecordsReadingPosition(section, RECORDS_ABOVE_CHART)
     return RecordsReadingPosition(section, if (height > 0) (offset.toFloat() / height).coerceIn(0f, 1f) else 0f)
 }
 
@@ -51,6 +62,7 @@ internal fun recordsRestoredOffset(position: RecordsReadingPosition, layout: Rec
     gap: Int, expandedInset: Int,
 ): Int {
     val section = if (layout == RecordsScrollLayout.EXPANDED) RecordsReadingSection.CHART else position.section
+    if (section == RecordsReadingSection.CHART && position.section == RecordsReadingSection.CHART && position.fraction < 0f) return 0
     val start = when {
         section == RecordsReadingSection.CONCLUSION && layout == RecordsScrollLayout.SINGLE -> geometry.conclusionStart(gap)
         section == RecordsReadingSection.CONCLUSION -> 0
@@ -71,6 +83,11 @@ internal class RecordsScrollRestoration {
     var contentKey: String? = null
     var readingPosition: RecordsReadingPosition? = null
     var pendingPosition: RecordsReadingPosition? = null
+    /**
+     * True while the page waits to return to a place below the top: its first frames are laid out at the
+     * top while data loads, so drawing them would flash the picker and chart before the jump.
+     */
+    var hidesUntilRestored by mutableStateOf(false)
 
     /** A pending restored position survives placeholder clamping, but never crosses a business/navigation change. */
     fun enter(layout: RecordsScrollLayout, key: String): RecordsReadingPosition? {
@@ -135,6 +152,8 @@ internal val recordsScrollRestorationSaver = listSaver<RecordsScrollRestoration,
             }
             // Even when layout is unchanged, Activity recreation has to wait for real content and replay this.
             pendingPosition = readingPosition
+            // Hidden from the very first frame, before any effect runs, so the top never flashes.
+            hidesUntilRestored = readingPosition?.let { !(it.section == RecordsReadingSection.CHART && it.fraction < 0f) } ?: false
         }
     },
 )
@@ -160,8 +179,12 @@ internal fun RestoreRecordsScroll(layout: RecordsScrollLayout, restoration: Reco
         val position = restoration.enter(layout, contentKey)
         if (position != null) {
             restoration.restoring = true
+            restoration.hidesUntilRestored = !(position.section == RecordsReadingSection.CHART && position.fraction < 0f)
             try {
                 // Placeholder geometry/maxValue cannot satisfy this gate or overwrite the saved reading position.
+                // Never keep the page hidden for long: if real content is slow, show it and restore when it can.
+                withTimeoutOrNull(RECORDS_RESTORE_HIDE_MS) { snapshotFlow { ready.value }.first { it } }
+                restoration.hidesUntilRestored = restoration.hidesUntilRestored && ready.value
                 snapshotFlow { ready.value }.first { it }
                 withFrameNanos { }
                 withFrameNanos { }
@@ -191,6 +214,7 @@ internal fun RestoreRecordsScroll(layout: RecordsScrollLayout, restoration: Reco
                 restoration.readingPosition = position
             } finally {
                 restoration.restoring = false
+                restoration.hidesUntilRestored = false
             }
         }
         snapshotFlow {
