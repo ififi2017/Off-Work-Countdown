@@ -57,9 +57,12 @@ export PLAY_SERVICE_ACCOUNT_KEY_PATH='/安全位置/play-service-account.json'
   Play 上尚不存在的语言必须三项都写。宣传视频等其他字段不受管理，`patch` 不会清掉它们。
 - 字符上限按 Unicode 字符计（含空格和标点）：标题 30、简短说明 80、完整说明 4,000。
 - 配置里没有的远端语言保持不变，并在预览中列为「Not in config」。脚本不会删除语言。
-- 3.2.2 文案取自 `docs/android/store-listing.md` 的「Play 3.2.2 final candidate copy」，只有
-  English 与简体中文；其他语言没有经审阅的译文，所以没有放进配置。长文案只维护英文与简体
-  中文（见 `CLAUDE.md`）。
+- 3.2.2 的 English 与简体中文取自 `docs/android/store-listing.md` 的「Play 3.2.2 final
+  candidate copy」。其余 19 个 Play 语言由 `scripts/play-listing-adapt-3.2.2.mjs` 从已审阅的
+  ASC 3.2.2 元数据改写：去掉 Apple Watch、iPhone Duo、iCloud 与 Apple EULA，换成 Android
+  小组件与倒计时通知、Android 备份和 Google Play 订阅条款。ASC zh-Hant 分成 zh-TW 与 zh-HK
+  （后者用应用的香港用词），es-MX 对应 es-419。改动后运行
+  `node scripts/play-listing-adapt-3.2.2.mjs --write` 重写配置。
 
 图片按语言放在 `<imageBaseDir>/<Play 语言>/` 下。`play-store/images/` 已被 Git 忽略，每次
 发布时从生成的商店素材复制进来：
@@ -77,8 +80,9 @@ play-store/images/en-US/
 核对格式、文件大小、尺寸（截图每边 320–3,840 px，长边不超过短边两倍）、数量和 alpha 通道。
 远端比较使用 Play 返回的 SHA-256 与顺序；任一张不同就整组替换。
 
-截图必须是运行中的真实 Android 应用，并使用合成的班次与薪资数据；构图和来源说明见
-`docs/android/store-listing.md`。
+截图必须是运行中的真实 Android 应用，并使用合成的班次与薪资数据。3.2.2 的截图在 Pixel 上
+用隔离的 Debug 安装拍摄，按 ASC iPhone 版式排版，流程见 `scripts/marketing-shots/android/README.md`；
+来源说明见 `docs/android/store-listing.md`。
 
 ## App 语言与 Play 语言
 
