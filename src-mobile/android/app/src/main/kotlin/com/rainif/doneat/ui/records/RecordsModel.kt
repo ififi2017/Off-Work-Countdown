@@ -38,16 +38,30 @@ import java.time.LocalDate
  * a countdown, so "now" advances on the minute, and only while it is visible.
  */
 @Immutable
-class RecordsContext(val queries: RecordsQueries, val text: RecordsText, val nowMs: Double, val lifeInputs: LifeInputs) {
+class RecordsContext(
+    val queries: RecordsQueries,
+    val text: RecordsText,
+    val nowMs: Double,
+    val lifeInputs: LifeInputs,
+    source: Any = queries,
+) {
     val today: LocalDate get() = queries.today(nowMs)
     // Formatting (including the earnings mask) can change without invalidating any resolved data.
-    val calculation = RecordsCalculationSnapshot(queries, nowMs)
+    val calculation = RecordsCalculationSnapshot(queries, nowMs, source)
 }
 
-/** Query identity includes authorization/archive/schedule changes; presentation text is deliberately absent. */
+/**
+ * Query identity includes authorization/archive/schedule changes; presentation text is deliberately absent.
+ * [source] identifies the business inputs without the minute, so a minute tick can be told apart from a
+ * data change: the queries are rebuilt every minute, the source only when the archive, schedule or access changes.
+ */
 @Immutable
-data class RecordsCalculationSnapshot(val queries: RecordsQueries, val nowMs: Double) {
+data class RecordsCalculationSnapshot(val queries: RecordsQueries, val nowMs: Double, val source: Any = queries) {
     fun matches(other: RecordsCalculationSnapshot) = queries === other.queries && nowMs == other.nowMs
+
+    /** Only the minute moved on: a result for this snapshot may stay on screen while [other]'s loads. */
+    fun continues(other: RecordsCalculationSnapshot) =
+        source === other.source && queries.authorized == other.queries.authorized
 }
 
 /** Inputs that can change Life's income or schedule without changing the archive. */
@@ -78,7 +92,9 @@ fun rememberRecordsContext(graph: AppGraph): RecordsContext {
     val nowMs = rememberMinute(graph)
     val use24Hour = android.text.format.DateFormat.is24HourFormat(context)
     val zone = FoundationCompat.javaZone(prefs.recordsTimeZoneIdentifier)
-    val queries = remember(archive, prefs, plus, holidays, session, nowMs, locale, device.calendarWeekStart) {
+    // Everything the queries are built from except the minute.
+    val source = remember(archive, prefs, plus, holidays, session, locale, device.calendarWeekStart) { Any() }
+    val queries = remember(source, nowMs) {
         RecordsQueries(
             state = archive,
             holidays = holidays,
@@ -99,7 +115,7 @@ fun rememberRecordsContext(graph: AppGraph): RecordsContext {
         RecordsText(resources, locale, zone, use24Hour, TimerText(resources, locale, use24Hour, device.hideEarnings))
     }
     val lifeInputs = LifeInputs(archive, prefs, holidays, session, queries.today(nowMs))
-    return remember(queries, text, nowMs, lifeInputs) { RecordsContext(queries, text, nowMs, lifeInputs) }
+    return remember(queries, text, nowMs, lifeInputs) { RecordsContext(queries, text, nowMs, lifeInputs, source) }
 }
 
 private fun currentShift(session: ShiftSession, nowMs: Double) =
@@ -144,6 +160,13 @@ data class RecordsPage(
     /** A mask/locale formatter update keeps this exact page; a new query (especially revoked Plus) never does. */
     fun matches(calculation: RecordsCalculationSnapshot, scale: RecordsScale, first: LocalDate) =
         this.calculation.matches(calculation) && this.scale == scale && this.first == first
+
+    /**
+     * The same window from a minute ago, shown while the current minute's page loads so the tab does
+     * not blink every minute. A new archive, schedule or access state still drops it at once.
+     */
+    fun standsIn(calculation: RecordsCalculationSnapshot, scale: RecordsScale, first: LocalDate) =
+        this.calculation.continues(calculation) && this.scale == scale && this.first == first
 }
 
 /**
