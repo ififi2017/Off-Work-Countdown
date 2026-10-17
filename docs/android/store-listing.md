@@ -151,3 +151,14 @@ The current English set is `build/android-play-internal/store-listing/asc-style/
 All are 1080 × 1920, opaque RGB PNGs. The contact sheet (`overview.png`) is for review only. The originals are 1080 × 2400 captures of the current Android Debug build on an API 36.1 emulator, with synthetic schedules, records and tasks. Year and Focus scenes use the existing Debug-only Plus switch and are labeled as Plus features. No purchase screen or Apple-only feature is shown. The emulator was launched with `-read-only -no-snapshot-save`; its capture data is not saved to the original AVD.
 
 The English copy files are `build/android-play-internal/store-listing/en-US-{title,short-description,full-description}.txt`. ASC source here means the repository's 3.2.0 metadata and uploaded screenshot templates, not a fresh remote metadata export. No ASC or Play Console writes are part of this preparation.
+
+### Play 3.2.2 screenshots and languages
+
+Prepared 2026-10-17 for owner review. These replace the 3.2.0 emulator set above.
+
+- Languages: every ASC 3.2.2 localization has a Play listing (21): en-US, en-GB, ar, de-DE, es-ES, es-419 (ASC es-MX), fr-FR, hi-IN, id, it-IT, ja-JP, ko-KR, mr-IN, pt-BR, ru-RU, th, tr-TR, vi, zh-CN, zh-TW and zh-HK (ASC zh-Hant, split because Play lists them separately). Copy other than en-US and zh-CN is adapted from the reviewed ASC 3.2.2 metadata by `scripts/play-listing-adapt-3.2.2.mjs`.
+- Screenshots: eight per language, in ASC's iPhone order without the Apple Watch and Dynamic Island / Lock Screen scenes: countdown (two images), time off, cycle report, schedule calendar, Records year, Focus, lunch break. Captions are the reviewed ASC 3.2.1 captions; zh-HK uses the app's Hong Kong wording. en-GB and es-419 reuse the en-US and es-ES sets.
+- Captures: a Pixel 10 Pro (API 37) running an isolated Debug install (`com.rainif.doneat.shots`) with the iOS marketing demo history as synthetic data; Report, Records and Focus use the Debug-only Plus switch. No purchase screen, Play-installed app data or personal data. The status bar between the clock and battery is masked because the phone's own notification icons ignore demo mode.
+- Feature graphic: regenerated for en-US from the new timer capture; the previous one showed the pre-redesign timer.
+- No tablet screenshots: no tablet was available for a real capture.
+- Process: `scripts/marketing-shots/android/README.md`.
