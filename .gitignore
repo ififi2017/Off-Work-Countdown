@@ -69,3 +69,6 @@ devcert.pfx
 /public/licenses/SOURCE.md
 /public/licenses/source.txt
 /public/licenses/CONTRIBUTING.md
+
+# Google Play listing images, copied from build output per release
+/play-store/images/
