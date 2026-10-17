@@ -50,10 +50,32 @@ class RecordsScrollRestorationTest {
         assertEquals(1178, recordsRestoredOffset(summary, RecordsScrollLayout.SINGLE, single, gap, inset))
     }
 
+    @Test fun readerAtTheTopReturnsToTheTopWithThePickerInView() {
+        // Returning to Records used to land on the chart's first line, scrolling the scale picker away.
+        val top = recordsReadingPosition(RecordsScrollLayout.SINGLE, single,
+            singleOffset = 0, chartOffset = 0, conclusionOffset = 0, expandedOffset = 0,
+            activePane = RecordsReadingSection.CHART, gap = gap, expandedInset = inset)
+        assertEquals(RecordsReadingSection.CHART, top.section)
+        assertEquals(RECORDS_ABOVE_CHART, top.fraction, 0f)
+        assertEquals(0, recordsRestoredOffset(top, RecordsScrollLayout.SINGLE, single, gap, inset))
+        assertEquals(0, recordsRestoredOffset(top, RecordsScrollLayout.FOLD, columns.copy(pickerHeight = 60), gap, inset))
+        assertEquals(0, recordsRestoredOffset(top, RecordsScrollLayout.COLUMNS, columns, gap, inset))
+        val partlyScrolled = recordsReadingPosition(RecordsScrollLayout.SINGLE, single,
+            singleOffset = 40, chartOffset = 0, conclusionOffset = 0, expandedOffset = 0,
+            activePane = RecordsReadingSection.CHART, gap = gap, expandedInset = inset)
+        assertEquals(0, recordsRestoredOffset(partlyScrolled, RecordsScrollLayout.SINGLE, single, gap, inset))
+        // Exactly at the chart's first line still means "in the chart".
+        val atChart = recordsReadingPosition(RecordsScrollLayout.SINGLE, single,
+            singleOffset = 64, chartOffset = 0, conclusionOffset = 0, expandedOffset = 0,
+            activePane = RecordsReadingSection.CHART, gap = gap, expandedInset = inset)
+        assertEquals(64, recordsRestoredOffset(atChart, RecordsScrollLayout.SINGLE, single, gap, inset))
+    }
+
     @Test fun topAndTemporaryEmptySectionsNeverProduceNegativeOffsets() {
         val top = recordsReadingPosition(RecordsScrollLayout.SINGLE, RecordsScrollGeometry(),
             0, 0, 0, 0, RecordsReadingSection.CHART, gap, inset)
-        assertEquals(0f, top.fraction, 0f)
+        assertEquals(RECORDS_ABOVE_CHART, top.fraction, 0f)
+        assertEquals(0, recordsRestoredOffset(top, RecordsScrollLayout.SINGLE, RecordsScrollGeometry(), gap, inset))
         assertEquals(0, recordsRestoredOffset(top, RecordsScrollLayout.COLUMNS, RecordsScrollGeometry(), gap, inset))
         val expanded = RecordsReadingPosition(RecordsReadingSection.CHART, .5f)
         assertEquals(166, recordsRestoredOffset(expanded, RecordsScrollLayout.EXPANDED, columns, gap, inset))

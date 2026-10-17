@@ -189,5 +189,11 @@ private val POINTER_HEIGHT = 6.dp
 private val BUBBLE_GAP = 1.dp
 /** Room above the bar for the bubble and pointer (iOS pads the meter by 27 pt). */
 private val BUBBLE_TOP = 29.dp
-/** How far the bubble may hang past the track, into the page margin. */
+/** How far the bubble may hang past the track, into the page margin, while the pointer allows it. */
 private val ALLOWED_OVERFLOW = 14.dp
+/**
+ * At exactly 0 % and 100 % the pointer must stay on the bubble's flat edge (corner radius + half the
+ * pointer), so the bubble hangs this far past the track whatever [ALLOWED_OVERFLOW] says. A screen needs
+ * at least this much margin beside the meter or the bubble is cut; the Timer gives 24 dp.
+ */
+val ProgressMeterEndOverhang = BUBBLE_HEIGHT / 2 + POINTER_WIDTH / 2

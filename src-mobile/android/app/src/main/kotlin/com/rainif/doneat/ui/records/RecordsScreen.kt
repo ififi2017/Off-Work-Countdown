@@ -365,6 +365,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                     }
                     val padding = Modifier.padding(start = DoneAtSpacing.page, end = DoneAtSpacing.page,
                         bottom = DoneAtSpacing.xl + LocalDoneAtBottomBarPadding.current)
+                    Box(Modifier.fillMaxSize().graphicsLayer { alpha = if (scrollRestoration.hidesUntilRestored) 0f else 1f }) {
                     if (expanded) {
                         // A full chart remains one readable pane even when the physical display has a hinge.
                         val safe = if (plan.avoidedFold != null && plan.secondary != null) {
@@ -398,6 +399,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
                             measuredChart()
                             measuredConclusion()
                         }
+                    }
                     }
                 }
             }
