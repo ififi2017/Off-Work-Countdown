@@ -130,6 +130,8 @@ npm run play:listing:sync -- --config play-store/3.2.2.json
 - `--text-only`：只比较和写入文字，忽略所有图片。
 - `--changes-not-sent-for-review`：以 `changesNotSentForReview=true` 提交，之后在 Play Console
   的「发布概览」里手动送审。应用开启了托管发布，或 Play 提示变更需要单独送审时使用。
+  未开启托管发布时 Play 会自动送审，`commit` 返回 HTTP 400「Changes are sent for review
+  automatically」并拒绝该参数；edit 不会提交，远端保持原样（2026-10-17 实测）。
 - `--yes`：跳过输入确认，仅用于已审阅过预览的非交互环境。
 
 不带 `--changes-not-sent-for-review` 时，`edits.commit` 的效果与在 Console 保存并发送变更
