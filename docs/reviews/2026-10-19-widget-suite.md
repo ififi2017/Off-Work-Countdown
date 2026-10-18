@@ -1,8 +1,7 @@
 # Widget suite (3.2.3, plan 023): overnight build and self-check
 
-Branch `feat/widget-suite`, stacked on `fix/ios-notification-tap-crash` (#322,
-which carries the 3.2.3 crash and timer fixes). Rebase onto `main` after #322
-merges.
+Branch `feat/widget-suite`, built on the 3.2.3 crash and timer fixes from
+#322 (merged).
 
 Built and checked without a person present, on one simulator at a time
 (iPhone 18 Pro, iOS 27). Nothing here has run on a real device yet; the list
@@ -115,5 +114,5 @@ the Home Screen they use the orange tint set in code.
 ## Outside this branch
 
 - Xcode Cloud: the workflow's test destination "iPhone Duo" does not exist, so
-  #322's Xcode Cloud run fails before tests. Change the destination in App
+  Xcode Cloud runs fail before tests. Change the destination in App
   Store Connect › Xcode Cloud › workflow › Test action.
