@@ -7,6 +7,8 @@
 
 ## 索引
 
+2026-10-06 新增 [022 · 3.2.1 商店新素材](022-app-store-creative-assets.md)：已核验标题／搜索图与 Duo 独立截屏入口，记录公开 API 契约缺口；已生成中英文 18 张真实 UI 样张，母版审阅、其余语言和上传待完成。用户已接受 Duo 外屏请假页取景；横图按 Apple 官方模板安全区重排；标题依据用户后续提供的多设备预览修正为 V3（iPad 横屏裁切）；搜索视频按新要求改为 24 秒六段完整 App 导览 V4（倒计时、小组件、专注、记录、周期报告、请假规划），仍为本地预览。 后续复核 ASC CLI 5.12.0 已找到公开 JWT 图片上传／位置绑定实现和 Duo 枚举；本 App API 实测与工具扩展待做，creative 视频上传仍需独立核验。 用户随后授权的单图 API 试传已成功：英文 V3 标题图进入素材库并完成处理，未更改位置绑定或送审；见 Plan 022 实测记录。 后续中文搜索 V4 视频 API 预留／上传／提交也已成功，Apple 播放资源处理仍待完成；未改位置绑定或送审。 Duo 简中完整套图已按用户要求合并前两张为 2853×2007 横版开场，当前共 9 张；预览和下载包已更新，尚未上传。
+
 2026-09-05 的 3.1.9 收尾结果与逐项待验步骤见 [发版检查记录](../../docs/reviews/2026-09-05-3.1.9-release-closeout.md)。
 实现完成不等于发版验收通过；本次真机证据和剩余门禁以检查记录为准。
 
@@ -32,6 +34,7 @@
 | 018 | [3.2.0：iOS 架构整改、Apple Watch 基础与原生适配](018-ios-3.2.0-architecture-remediation.md) | 2026-09-12 | IN PROGRESS | 产品版本已统一为 3.2.0（构建号未变）；shipping 工程 692 个 iOS 测试、7 个 WatchAppTests 通过，配对 iPhone／Watch 模拟器权益端到端 7 步通过，schema 1–5 兼容测试与五轮性能已记录；真机、签名归档、StoreKit 恢复购买、27／Duo 与远端 CI 未验收 |
 | 019 | [iOS 规则与本地化回到 iOS 工程](019-ios-native-rules-and-localization.md) | 2026-09-13 | IN PROGRESS | 规则迁移 R1–R4 完成：班次解析、快照、Widget 班次、Watch 投影、区间展开、提醒、汇总与收入由 `ScheduleRules.swift`／`ReminderRules.swift`／`SummaryRules.swift` 实现，以 TS 差分 fixture 为契约，JavaScriptCore 规则包已删除；本地化迁移 L1–L2b 已完成。2026-09-19 继续验收，Watch V2 与 P8 月历重做证据见本轮验收记录 |
 | 020 | [休假规划、班次闹钟与动态周期报告](020-leave-planning-shift-alarms-cycle-reports.md) | 2026-09-27 | IN PROGRESS | 休假规划 P1–P3c 已实现：计算引擎、余额与请假记录同步、叠加到实时排班、采用与撤销、休假页、三次免费查看、介绍入口、排班日历标记与人生视图；班次闹钟已实现；iOS 周/月动画报告（R1）已实现，替换静态周期总结通知；Android 休假功能、闹钟与报告尚未开始，未指定发布版本 |
+| 021 | [工作地点自动化](021-workplace-automation.md) | 2026-10-01 | PLANNED | v0.4（2026-10-18）：3.3.0 收窄为 iOS 快捷指令＋原生地理围栏与来源同步，Android／Siri／Wi-Fi 移到之后；隐私例外已获批；通知额度、存储边界与来源实体的 P1 设计已定（§0.3） |
 
 ## 仍在 `docs/` 的活计划
 
