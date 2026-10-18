@@ -145,14 +145,23 @@ final class WatchSnapshotReceiver: NSObject {
         }
     }
 
+    /// Kept well inside the 45-second wall-clock allowance watchOS gives a
+    /// WatchConnectivity background wake; overrunning it kills the app.
+    static let backgroundDeliveryAllowance: Duration = .seconds(30)
+
     /// The system owns this short background execution window. Do not finish
-    /// it while activation, delegate delivery or atomic cache writes remain.
+    /// it while activation, delegate delivery or atomic cache writes remain,
+    /// but hand it back before the watchdog fires: `hasContentPending` can stay
+    /// set (3.2.1 Watch crash). Undelivered content stays queued for the next
+    /// wake, and unfinished work resumes when the app runs again.
     func handleBackgroundConnectivity() async {
+        let deadline = ContinuousClock.now + Self.backgroundDeliveryAllowance
         await start()
         guard usesSystemSession else { return }
         repeat {
             await Task.yield()
             if activationFinished && !session.hasContentPending && pendingDeliveryCount == 0 { return }
+            if ContinuousClock.now >= deadline { return }
             do { try await Task.sleep(for: .milliseconds(25)) } catch { return }
         } while !Task.isCancelled
     }
