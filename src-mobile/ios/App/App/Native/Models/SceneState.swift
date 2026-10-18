@@ -451,6 +451,11 @@ final class SceneState {
             presentedRoute = nil
             return
         }
+        if url.host == "records" {
+            presentedRoute = nil
+            selectedTab = .records
+            return
+        }
         if url.host == CycleReportPeriod.urlHost {
             // A link that names no valid period opens nothing.
             if let period = CycleReportPeriod(url: url) { openCycleReport(CycleReportRequest(period: period)) }

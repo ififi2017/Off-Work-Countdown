@@ -9,8 +9,21 @@ import WidgetKit
 struct OffWorkWidgets: WidgetBundle {
     var body: some Widget {
         OffWorkCountdownWidget()
+        CountdownBigDigitsWidget()
+        CountdownRingWidget()
+        CountdownTimelineWidget()
+        CountdownDetailWidget()
         WeekProgressWidget()
         RosterWidget()
+        SummaryWidget()
+        YearProgressWidget()
+        LifeWidget()
+        WeekendWidget()
+        HolidayWidget()
+        FocusWidget()
+        ClockInControl()
+        CountdownControl()
+        FocusControl()
         OffWorkLiveActivityWidget()
         ShiftAlarmLiveActivityWidget()
     }

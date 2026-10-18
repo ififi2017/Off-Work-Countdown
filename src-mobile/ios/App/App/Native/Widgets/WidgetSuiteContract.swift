@@ -311,9 +311,13 @@ nonisolated enum WidgetSuiteStore {
     static let appGroupIdentifier = "group.com.rainif.offworkcountdown.macappstore"
 
     static func url(_ file: WidgetSuiteFile) -> URL? {
+        appGroupURL(file: file.rawValue)
+    }
+
+    static func appGroupURL(file name: String) -> URL? {
         FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)?
-            .appending(path: file.rawValue)
+            .appending(path: name)
     }
 
     static func load<Payload: Decodable>(_ type: Payload.Type, from file: WidgetSuiteFile) -> Payload? {

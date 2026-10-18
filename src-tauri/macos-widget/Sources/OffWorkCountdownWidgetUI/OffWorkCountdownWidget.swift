@@ -78,7 +78,7 @@ enum WidgetDiagnostics {
     }
 }
 
-private enum WidgetCopy {
+enum WidgetCopy {
     static var currentLocaleIdentifier: String {
         let preferred = (Locale.preferredLanguages.first ?? "en")
             .replacingOccurrences(of: "_", with: "-")
@@ -113,7 +113,12 @@ private enum WidgetCopy {
         return text(key, locale: locale)
     }
 
+    /// Set by an app that renders these views itself (iOS Settings › Widgets)
+    /// and does not bundle `translation.json`.
+    nonisolated(unsafe) static var appLookup: ((String, String) -> String?)?
+
     static func text(_ key: String, locale: String) -> String {
+        if let value = appLookup?(key, locale) { return value }
         for candidate in [locale, "en"] {
             if let value = table.value(forKey: key, locale: candidate) {
                 return value

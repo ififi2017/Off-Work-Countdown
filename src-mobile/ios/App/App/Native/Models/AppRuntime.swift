@@ -306,5 +306,26 @@ final class AppRuntime {
         // in-app language choice, provided by the committed preferences.
         let text = text
         self.plus.localize = { key in text.t(key) }
+        Self.installWidgetHooks(shifts: shifts, localizer: text.localizer)
+    }
+
+    /// The widget views also render inside the app (Settings › Widgets), where
+    /// there are no bundled `translation.json` files: they read the String
+    /// Catalog instead. The Control Center clock-in intent runs here too.
+    private static func installWidgetHooks(shifts: ShiftSessionStore, localizer: NativeLocalizer) {
+        let lookup: (String, String) -> String? = { key, locale in
+            // Only the app's own previews ask, on the main thread.
+            guard Thread.isMainThread else { return nil }
+            return MainActor.assumeIsolated {
+                let value = localizer.string(key, locale: locale)
+                return value == key ? nil : value
+            }
+        }
+        WidgetSuiteCopy.appLookup = lookup
+        WidgetCopy.appLookup = lookup
+        WidgetIntentRouter.startCountdown = { [weak shifts] in
+            guard let shifts, !shifts.session.countdownStarted else { return false }
+            return await shifts.startCountdown(at: .now).value
+        }
     }
 }
