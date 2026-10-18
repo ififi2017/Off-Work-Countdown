@@ -115,6 +115,36 @@ struct ServiceConcurrencyTests {
         }
     }
 
+    @Test("Stale shift reminders leave before new ones arrive, so the 64-request limit drops none")
+    func staleRemindersMakeRoomFirst() async throws {
+        let suite = "owc.notification.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = makeStore(defaults: defaults, fallback: false)
+        let center = CappedNotificationCenter()
+        // A full queue of the previous plan's ids, all firing before any new one.
+        for index in 0..<64 {
+            center.add(UNNotificationRequest(
+                identifier: "owc.shift.next:0:old\(index)",
+                content: UNMutableNotificationContent(),
+                trigger: UNCalendarNotificationTrigger(
+                    dateMatching: Calendar.current.dateComponents(
+                        [.year, .month, .day, .hour, .minute, .second],
+                        from: now.addingTimeInterval(Double(index + 1))
+                    ),
+                    repeats: false
+                )
+            ))
+        }
+        let service = NotificationService(shiftCenter: center.adapter)
+        await service.reschedule(shifts: store.shifts, now: now)
+        let expected = store.shifts.shiftReminders(at: now).filter {
+            $0.atMs > now.timeIntervalSince1970 * 1_000 && $0.title != nil && $0.body != nil
+        }
+        #expect(!expected.isEmpty)
+        #expect(Set(center.requests.keys) == Set(expected.map { "owc.shift.\($0.id)" }))
+    }
+
     @Test("Late StoreKit evidence cannot replace newer authorization or its cache", arguments: [false, true])
     func newestEntitlementWins(newestAuthorized: Bool) async throws {
         let suite = "owc.entitlement.\(UUID())"
@@ -228,6 +258,36 @@ private final class TestSignal {
     func wait() async {
         var iterator = channel.stream.makeAsyncIterator()
         _ = await iterator.next()
+    }
+}
+
+/// Mirrors iOS: past 64 pending requests the latest-firing ones are dropped
+/// without an error.
+@MainActor
+private final class CappedNotificationCenter {
+    var requests: [String: UNNotificationRequest] = [:]
+
+    func add(_ request: UNNotificationRequest) {
+        requests[request.identifier] = request
+        while requests.count > 64, let latest = requests.values.max(by: { fireDate($0) < fireDate($1) }) {
+            requests[latest.identifier] = nil
+        }
+    }
+
+    private func fireDate(_ request: UNNotificationRequest) -> Date {
+        guard let trigger = request.trigger as? UNCalendarNotificationTrigger else { return .distantFuture }
+        return Calendar.current.date(from: trigger.dateComponents) ?? .distantFuture
+    }
+
+    var adapter: NotificationService.ShiftCenter {
+        .init(
+            authorization: { .allowed },
+            pendingIDs: { Array(self.requests.keys) },
+            deliveredIDs: { [] },
+            add: { self.add($0) },
+            removePending: { ids in for id in ids { self.requests[id] = nil } },
+            removeDelivered: { _ in }
+        )
     }
 }
 

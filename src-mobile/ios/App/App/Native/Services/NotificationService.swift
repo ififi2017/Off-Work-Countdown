@@ -326,8 +326,17 @@ final class NotificationService {
         // and the report notifications leave the shift reminders the rest.
         let shiftBudget = 60 - CycleReportNotificationPlan.reservedSlots
         let desired = Array((essential + health).prefix(schedulesLiveActivityFallback ? shiftBudget - 1 : shiftBudget))
-        var desiredIdentifiers = Set<String>()
-        var allSucceeded = true
+        let fallbackIdentifier = schedulesLiveActivityFallback
+            ? snapshot.map { "owc.shift.live.end.\(Int64($0.endAtMs))" } : nil
+        let desiredIdentifiers = Set(desired.map { "owc.shift.\($0.id)" } + [fallbackIdentifier].compactMap { $0 })
+
+        // Clear what this plan no longer wants before adding. Ids carry their
+        // shift's `current:`/`next:` scope, so the shift that becomes current
+        // gets a whole new set; added first, old and new can pass the 64-request
+        // limit, where iOS silently drops the latest-firing requests and the
+        // later cleanup would leave those reminders missing.
+        let stale = existingIdentifiers.subtracting(desiredIdentifiers)
+        await center.removePending(Array(stale))
 
         for reminder in desired {
             guard generation == scheduleGeneration, shifts.session.publishesLiveSurfaces else { return }
@@ -343,24 +352,19 @@ final class NotificationService {
                 from: date
             )
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-            let identifier = "owc.shift.\(reminder.id)"
-            desiredIdentifiers.insert(identifier)
             let request = UNNotificationRequest(
-                identifier: identifier,
+                identifier: "owc.shift.\(reminder.id)",
                 content: content,
                 trigger: trigger
             )
-            do {
-                try await center.add(request)
-            } catch {
-                allSucceeded = false
-            }
+            // A failed add is retried by the next reschedule.
+            try? await center.add(request)
         }
 
-        if schedulesLiveActivityFallback,
+        if let fallbackIdentifier,
            let snapshot,
-           generation == scheduleGeneration {
-            let identifier = "owc.shift.live.end.\(Int64(snapshot.endAtMs))"
+           generation == scheduleGeneration,
+           shifts.session.publishesLiveSurfaces {
             let content = UNMutableNotificationContent()
             content.title = shifts.text.t("offWorkTime")
             content.body = shifts.text.t("offWorkToday")
@@ -369,21 +373,11 @@ final class NotificationService {
                 [.year, .month, .day, .hour, .minute, .second],
                 from: snapshot.endDate
             )
-            do {
-                try await center.add(UNNotificationRequest(
-                    identifier: identifier,
-                    content: content,
-                    trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-                ))
-                desiredIdentifiers.insert(identifier)
-            } catch {
-                allSucceeded = false
-            }
-        }
-
-        if allSucceeded, generation == scheduleGeneration, shifts.session.publishesLiveSurfaces {
-            let stale = existingIdentifiers.subtracting(desiredIdentifiers)
-            await center.removePending(Array(stale))
+            try? await center.add(UNNotificationRequest(
+                identifier: fallbackIdentifier,
+                content: content,
+                trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            ))
         }
     }
 
