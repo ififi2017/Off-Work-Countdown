@@ -953,7 +953,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.2.2;
+				MARKETING_VERSION = 3.2.3;
 				OTHER_SWIFT_FLAGS = "$(inherited) -DDEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -981,7 +981,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.2.2;
+				MARKETING_VERSION = 3.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
@@ -1005,7 +1005,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 3.2.2;
+				MARKETING_VERSION = 3.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1029,7 +1029,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 3.2.2;
+				MARKETING_VERSION = 3.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1080,7 +1080,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = DoneAt;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.rainif.offworkcountdown.macappstore;
-				MARKETING_VERSION = 3.2.2;
+				MARKETING_VERSION = 3.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.watchkitapp;
 				PRODUCT_MODULE_NAME = DoneAtWatchApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1104,7 +1104,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = DoneAt;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.rainif.offworkcountdown.macappstore;
-				MARKETING_VERSION = 3.2.2;
+				MARKETING_VERSION = 3.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.watchkitapp;
 				PRODUCT_MODULE_NAME = DoneAtWatchApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1126,7 +1126,7 @@
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 3GSK5B9S3T;
 				INFOPLIST_FILE = ../WatchWidgets/Info.plist;
-				MARKETING_VERSION = 3.2.2;
+				MARKETING_VERSION = 3.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.watchkitapp.widgets;
 				PRODUCT_MODULE_NAME = DoneAtWatchWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1148,7 +1148,7 @@
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 3GSK5B9S3T;
 				INFOPLIST_FILE = ../WatchWidgets/Info.plist;
-				MARKETING_VERSION = 3.2.2;
+				MARKETING_VERSION = 3.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.watchkitapp.widgets;
 				PRODUCT_MODULE_NAME = DoneAtWatchWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";

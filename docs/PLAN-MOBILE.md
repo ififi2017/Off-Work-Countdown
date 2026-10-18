@@ -1,5 +1,8 @@
 # Apple 移动端与 Watch 开发计划
 
+2026-10-19 版本更新：用户确认全平台升级到 **3.2.3**（修复 3.2.1 点通知闪退与 Watch 后台
+同步超时）。各平台版本号同 3.2.2 的规则同步；构建号与 Android `versionCode` 在下次上传前另行递增。
+
 2026-10-12 版本更新：用户确认全平台升级到 **3.2.2**（记录页与休假页按新设计改版）。
 主应用、Widget、Watch App 与 Watch Widget 均使用 3.2.2；Web/Desktop/Mac Widget/
 Microsoft Store 与 Android `versionName` 同步。构建号与 Android `versionCode` 在下次上传前另行递增。
