@@ -9,6 +9,8 @@ import WidgetKit
 struct OffWorkWidgets: WidgetBundle {
     var body: some Widget {
         OffWorkCountdownWidget()
+        WeekProgressWidget()
+        RosterWidget()
         OffWorkLiveActivityWidget()
         ShiftAlarmLiveActivityWidget()
     }

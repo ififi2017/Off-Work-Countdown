@@ -33,6 +33,7 @@ extension ServiceCoordinator.Operations {
 #if DEBUG
                 if debugDidResetOnLaunch {
                     WidgetSnapshotPublisher.shared.clear()
+                    WidgetSuiteComposer.shared.clear()
                     await notifications.clearShiftNotifications()
                     await liveActivities.endAll()
                 }
@@ -73,6 +74,8 @@ extension ServiceCoordinator.Operations {
                     LaunchTrace.interval("widgetPublish") { WidgetSnapshotPublisher.shared.publish(snapshot) }
                 }
                 guard !Task.isCancelled else { return }
+                await WidgetSuiteComposer.shared.publish(shifts: shifts)
+                guard !Task.isCancelled else { return }
                 if !shifts.session.publishesLiveSurfaces {
                     await notifications.clearShiftNotifications()
                     await notifications.rescheduleCycleReports(shifts: shifts)
@@ -86,7 +89,14 @@ extension ServiceCoordinator.Operations {
                 guard !Task.isCancelled else { return }
                 await LaunchTrace.interval("shiftAlarms") { await shiftAlarms.reconcile(shifts.shiftAlarmPlan()) }
             },
-            publishWatch: { await watchSnapshots.publish(shifts: shifts) }
+            publishWatch: { await watchSnapshots.publish(shifts: shifts) },
+            // Records, leave and Life edits do not move the schedule signal,
+            // so the suite refreshes whenever the last scene leaves. Unchanged
+            // payloads are not rewritten.
+            publishWidgets: {
+                guard (try? await shifts.records.flush()) != nil, !Task.isCancelled else { return }
+                await WidgetSuiteComposer.shared.publish(shifts: shifts)
+            }
         )
     }
 }

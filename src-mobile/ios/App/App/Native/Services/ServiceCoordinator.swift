@@ -30,6 +30,7 @@ final class ServiceCoordinator {
         var flush: () async throws -> Void
         var publish: () async -> Void
         var publishWatch: () async -> Void = {}
+        var publishWidgets: () async -> Void = {}
     }
 
     private(set) var isLaunching = true
@@ -38,6 +39,7 @@ final class ServiceCoordinator {
     @ObservationIgnored private var calendarTask: Task<Void, Never>?
     @ObservationIgnored private var activationTask: Task<Void, Never>?
     @ObservationIgnored private var publicationTask: Task<Void, Never>?
+    @ObservationIgnored private var widgetTask: Task<Void, Never>?
     @ObservationIgnored private var generation: UInt64 = 0
     @ObservationIgnored private var previousInput: Input?
     @ObservationIgnored private var pendingReschedule = false
@@ -77,6 +79,8 @@ final class ServiceCoordinator {
         calendarTask = nil
         activationTask?.cancel()
         activationTask = nil
+        widgetTask?.cancel()
+        widgetTask = nil
         isReconciling = false
         invalidatePublication()
         previousInput = nil
@@ -93,9 +97,16 @@ final class ServiceCoordinator {
         guard !isLaunching else { return }
         if !wasActive, hasActiveScene {
             activate()
-        } else if wasActive, !hasActiveScene, pendingReschedule {
-            requestPublication()
+        } else if wasActive, !hasActiveScene {
+            if pendingReschedule { requestPublication() } else { refreshWidgets() }
         }
+    }
+
+    /// Widget payloads that follow Records rather than the schedule signal.
+    private func refreshWidgets() {
+        guard operations.input().onboardingComplete, publicationTask == nil else { return }
+        widgetTask?.cancel()
+        widgetTask = Task { [operations] in await operations.publishWidgets() }
     }
 
     func sceneDisconnected(_ id: UUID) {

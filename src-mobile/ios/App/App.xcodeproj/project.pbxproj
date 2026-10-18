@@ -228,6 +228,9 @@
 				Models/FocusActivityIntents.swift,
 				Models/LiveActivityAttributes.swift,
 				Models/ShiftAlarmAttributes.swift,
+				Widgets/WeekRosterWidgets.swift,
+				Widgets/WidgetSuiteContract.swift,
+				Widgets/WidgetSuiteUI.swift,
 			);
 			target = 740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */;
 		};
