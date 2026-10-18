@@ -1,13 +1,80 @@
 # 021 · 工作地点自动化（iOS / Android）
 
-- **状态**：PLANNED · v0.3 产品规则确认版 — 已合并用户本轮 15 项答复及前两轮确认；自动化为现有 Plus 权益，最多 5 个工作地点，不做家的地址；补入 iCloud 最小溯源同步与 Siri／系统建议接入计划。未由用户指定的工程参数单独标为实现默认，不冒充已确认数值。尚未实施、构建或真机验证。
+- **状态**：PLANNED · v0.4 可行性审阅版 — 在 v0.3 产品规则上加入 2026-10-18 源码核对结论（§0）：3.3.0 只交付 iOS 的 P0／P1／I1／I2 与 C1，Android（A1）、Siri（S1）、Wi-Fi（W1）移到 3.3.0 之后；开工前须先解决 §0 列出的阻断项（第 4 项隐私例外已于 2026-10-18 获批）。自动化为现有 Plus 权益，最多 5 个工作地点，不做家的地址。未由用户指定的工程参数单独标为实现默认，不冒充已确认数值。尚未实施、构建或真机验证。
+- **目标版本**：3.3.0（仅 iOS 范围见 §0.1）；其余批次未指定版本。
 - **目标**：用户主动开启 Plus 自动化后检测到达／离开并通知；检测与应用分离，默认仅留参考，支持单条／多选批量确认。来源、触发时间与采用过程可追溯，高质量已采用边界在日历显示“定位认证”。早到延后询问且跨入计划上班时取消额外询问，晚到／未确认上班在计划开始后 30 分钟询问；午间临时外出不结束，晚离开生成加班；同一天的加班汇总展示、真实段和空档保留。支持 5 个工作地点、外勤／出差／居家状态及 iCloud 最小溯源同步；iOS 增加 Siri 查询、操作与系统建议，Android 保留 GMS 路线及不可用降级。
 - **起因**：读取当前 Wi-Fi 名称不等于可以在 App 未运行时可靠接收连接／断开事件。功能应围绕“工作地点事件 → 班次命令”设计，而不是围绕 SSID 轮询或长期后台保活设计。
 - **依赖**：[019 iOS 原生规则与本地化](019-ios-native-rules-and-localization.md)、[004 班次模型](004-shift-model-3.1.0.md)、[018 架构整改](018-ios-3.2.0-architecture-remediation.md)、[AGENTS.md](../../AGENTS.md)、[iOS 工程规范](../../docs/agent-guides/ios.md)、[Android 工程规范](../../docs/agent-guides/android.md)、[Android 交接包](../Android/DoneAt_Android_Handoff_v1_1/00_START_HERE.md)。
 - **源码核对基线**：2026-10-01 的 `main`，提交 `54d4a381112d32712cc904fa6f513827de90c4f8`。这是本计划的审计快照，不代表自动更新 Android 的移植基线；Android 仍按 `docs/android/baseline.md` 与 drift 流程登记增量。
 - **交付方式**：feature branch → PR → main，按契约和平台分批；本计划不代表授权发布、不授权新增商品或外部服务。本次仅交付计划文档，不代表仓库已增加该文件。
 
-## 2026-10-01 · 本轮规划与用户确认
+## 0. 2026-10-18 · 3.3.0 可行性审阅（v0.4）
+
+对照 `codex/ios-leave-plan-groups`（基于 `03542037`）重新核对源码。§1 起的 2026-10-01 基线 `54d4a381` 已落后：休假规划同步已把 `RecordJSON.schemaVersion` 升到 7。结论：iOS 路线可行，平台约束判断正确；作为单一版本范围过大，且有四个计划未覆盖的阻断项。
+
+### 0.1 3.3.0 范围
+
+| 批次 | 3.3.0 | 理由 |
+|---|---|---|
+| P0 能力实测（仅 iOS） | 纳入 | 门禁 |
+| P1 业务契约与可恢复写入 | 纳入 | 双端 fixture 可先只跑 Swift，Kotlin 对齐随 A1 |
+| I1 快捷指令 | 纳入 | 低权限、可独立验收 |
+| I2 iOS 原生监控 | 纳入 | 核心功能 |
+| C1 来源摘要同步 | 纳入，按 §0.3 实现 | 已采用记录需要可迁移的来源；Android 同版只读保留该实体 |
+| U1 | 只做 iOS 部分 | — |
+| A1 Android 原生监控 | 移出 | 尚无 `play-services-location`；主要用户所在的中国大陆设备多无 GMS，只能 `unsupported`；Play 后台定位审核需单独过 |
+| S1 Siri／系统建议 | 移出 | App target 目前没有任何 App Intent（仅 Widget 配置），属于从零接入，且“系统是否推荐”无法验收 |
+| W1 Wi-Fi 增强 | 移出 | 原计划已依赖原生主路线实测 |
+
+iOS／watchOS 最低系统为 26.0，`CLMonitor` 与 `CLServiceSession` 直接可用；§I2 中的旧系统 adapter 不再需要。
+
+### 0.2 开工前须解决的阻断项
+
+1. **本地通知预排额度。** `NotificationService` 已把 `60 − CycleReportNotificationPlan.reservedSlots` 个名额给班次提醒，iOS 上限 64。上班后 30 分钟询问须预排；早到、非工作时段到访询问在事件唤醒时排。P1 须在同一额度表中为自动化预留固定名额（实现默认：只预排下一个班次的状态询问，其余在事件到达时补排），并补额度回归测试，不得挤掉现有班次提醒。
+2. **与现有 `WorkObservation` 的边界。** 现有 `WorkObservation`（`countdownStarted`／`countdownStopped`／`overtimeDeclared` 等）会经 CloudKit 同步，并受 `shouldCollectObservations` 门禁。§3.2 的“`WorkObservation` 保存传感器／用户声明”不得复用该类型，否则原始定位事件会随同步上传，违反 §3.7。映射定为：原始事件与待复核建议 → 新的本机专用自动化存储；采用后的时间 → 现有 `DayOverride.customSegments`（已支持一天多段，满足 §3.9 同日汇总与真实段）；来源摘要 → 第 3 项的新实体。§3.2 的四层名称仅为概念层，实现时改名避免冲突。
+3. **来源摘要的前向兼容。** 同步载荷是每行一份 Codable JSON；若把来源字段加进 `DayOverrideDTO`，3.2.x 客户端编辑后回写会静默丢弃。旧客户端遇到未知 `RecordEntityType` 会跳过整行（`RecordsCloudSync` 的 `RecordEntityType(rawValue:)` 守卫），所以来源摘要须新增独立实体类型（如 `workTimeProvenance`），以 `dayKey`／边界引用关联 `DayOverride`，并按新版本升级 `RecordJSON.schemaVersion`。B72 以此为验收依据。
+4. **隐私边界（2026-10-18 用户已批准）。** 后台定位，以及已采用记录的来源摘要进入私人 iCloud，已作为 021 例外写入根规范 `AGENTS.md` 隐私段：坐标、SSID、围栏状态、原始事件与待复核建议只存本机且不进备份；只有已采用工时的最小来源可随私人 CloudKit 同步／备份。发布前仍须更新 App Store 隐私标签与官网隐私页。`Info.plist` 目前没有任何定位用途说明，`UIBackgroundModes` 只有 `fetch`／`remote-notification`；“始终允许”的提审说明须在 R1 前从零准备。
+
+第 4 项已获批；第 1–3 项的设计已于 2026-10-18 确定，见 §0.3，P1 按此实现。
+
+### 0.3 P1 既定设计（2026-10-18 用户确认）
+
+#### 通知额度
+
+- 新增 `WorkplaceAutomationNotificationPlan.reservedSlots`：自动化开启时为 3，关闭时为 0；班次提醒额度改为 `60 − CycleReportNotificationPlan.reservedSlots − WorkplaceAutomationNotificationPlan.reservedSlots`。未开启自动化的用户提醒数量不变。
+- 三个名额：
+  1. **下一个班次的上班后 30 分钟询问**：只预排最近一个班次，identifier 含 `shiftKey`；每次事件唤醒或回到前台时滚动到下一班。收到当班有效到达时移除。
+  2. **当前到访询问**：早到询问与非工作时段到访询问对同一次到访互斥，共用一个名额，identifier 含 `visitID`。
+  3. **缺失结束核对**：§3.9 的至多一次中性核对。
+- “已记录到达／离开”“已更新上班／下班时间”等即时通知在事件处理时立即提交，不占预排名额。
+- 额度不足时沿用现有排序，先截掉微休息提醒。新增测试断言专注、闹钟刷新、实时活动兜底、周期报告、自动化与班次提醒合计不超过 64。
+
+#### 存储边界
+
+| 数据 | 存放 | 同步／备份 |
+|---|---|---|
+| 原始事件、待复核建议、命令日志与回执、通知注册表 | 新建 `WorkplaceAutomationStore`，文件保护 `completeUntilFirstUserAuthentication`（与 `LifeSummaryCache` 一致，锁屏时可写），`isExcludedFromBackup` | 都不同步、不备份 |
+| 采用后的工时 | 现有 `DayOverride.customSegments`，经现有记录命令写入 | 按现有设置 |
+| 来源摘要 | `WorkTimeProvenance`（见下节） | 私人 CloudKit 与业务备份 |
+| 现有 `WorkObservation` | 不变，只记计时界面上的用户操作 | 现状 |
+
+- 自动化不补写 `countdownStarted` 等观测；`DayOverride` 是唯一结论层。
+- 自动化权益使用新的 `canCollectAutomation`／`canAutoApplyAutomation`，不复用 `shouldCollectObservations`。
+- “定位认证”在显示时推导，不存状态字段：来源摘要记录采用时的边界值，与 `DayOverride` 当前边界相同则认证，不同则显示“自动检测后手动调整”。之后的人工编辑不回写来源摘要。
+- §3.2 四层的实现命名：`AutomationEvent` → `WorkTimeProposal` → `DayOverride` → `WorkTimeProvenance`。
+
+#### 来源摘要实体
+
+沿用 020 新增休假实体的机制（`RecordsSyncAdapter.entityTypeRevision`）：旧版本跳过未知实体类型，升级后的设备因版本号变大完整重新拉取一次，补回之前跳过的行。
+
+- 新增 `RecordEntityType.workTimeProvenance`，每个归属日一行，CloudKit 记录名 `prov.<dayKey>`，与 `DayOverride` 的 `day.<dayKey>` 对应；行内以数组记录该日每个上下班边界。
+- `entityTypeRevision` 升到 4；`supportsFieldMerge = false`，与休假实体一样整行比较胜负。
+- 每条边界记录：边界类型、采用的时间值、来源类型、`observedAt?`、`receivedAt`、`appliedAt`、`appliedBy`、`batchID?`、规则版本、证据等级、判定原因。不含坐标、SSID、地点名称或围栏标识。
+- `RecordJSON.schemaVersion` 升到 8。3.2.x 读取 v8 备份会报未知版本，不会静默丢掉来源。
+- 用户删除证据时为来源行单独写墓碑；清除 `DayOverride` 时来源行可保留，边界值不匹配，认证自然失效。
+- **Android 3.3.0 只做读取并原样保留**：导入／导出 JSON 时识别并保留 `workTimeProvenance`，不实现定位功能；同步更新 `docs/android/wire-contract.md`。
+
+
 
 本计划沿用 019 的结构，编号保持 021。v0.3 以本轮 15 项回复和此前已确认规则为产品依据；旧讨论中的建议与本版冲突时以本版为准。用户确认产品方向不等于代码、平台能力或发布已验收。
 
@@ -471,7 +538,7 @@ Siri／快捷指令可被系统发现不等于可执行所有付费动作。每�
 
 采用 `CLMonitor` 与 `CLMonitor.CircularGeographicCondition`。同名 Monitor 由一个应用级 owner 持有，统一注册最多 5 个工作地点的稳定内外圈标识、管理配额及聚合状态；事件消费者在启动恢复流程中重建，不放入 Widget／Watch Extension。[A1]
 
-- 首先核对最低系统版本；不为本功能擅自抬升 deployment target。确实仍支持较旧系统时，用单独 adapter 处理旧 API，不能同时对同一地点启动两套监控。
+- 最低系统已是 iOS 26.0（§0.1），直接使用 `CLMonitor`／`CLServiceSession`，不需要旧 API adapter；不能同时对同一地点启动两套监控。
 - 对采用 iOS 18 及之后授权会话模型的路径，原生后台路线显式持有 `CLServiceSession(authorization: .always)`，按用户开启行为在前台建立授权目标，进程重建时及时恢复既有会话和事件迭代。仅保存“Always 已授权”的布尔值不足以代替生命周期管理。[A2]
 - `unknown`、诊断错误和能力不可用不能映射为外圈离开。记录系统失败原因，向 UI 输出可用性状态。
 - 以应用启动生命周期恢复服务，不能等用户进入设置页面才开始监听。注册与持久化配置做差异对账，重复冷启动不得重复注册／重复执行。
@@ -620,7 +687,7 @@ iOS 新文案进入 `src-mobile/ios/App/App/Localizable.xcstrings`，覆盖现�
 
 - 不为本功能新增广告、分析、登录、雇主端或员工监控服务器。系统位置服务和地图供应商的数据行为需如实说明，不能泛称“所有数据绝不离开设备”。
 - 本机位置处理不自动等于 App Store 标签中的“收集”，但使用定位也不自动证明可维持 `Data Not Collected`；需要核查业务记录同步、SDK、日志和诊断的实际数据流。[A11]
-- 最小来源摘要已获准按 §3.7 进入正式业务备份／私人 iCloud 同步。先审计 `RecordJSON`、CloudKit 当前协议与旧版读取／回写行为，必要时正式版本迁移、跨端导入和云合并测试；不能把不兼容结构继续标为现有 v6，不用新客户端能导入来代替旧客户端安全性证明。[R3]
+- 最小来源摘要已获准按 §3.7 进入正式业务备份／私人 iCloud 同步。先审计 `RecordJSON`、CloudKit 当前协议与旧版读取／回写行为，必要时正式版本迁移、跨端导入和云合并测试；不能把不兼容结构继续标为现有 v7，按 §0.3 新增实体并升级版本，不用新客户端能导入来代替旧客户端安全性证明。[R3]
 - Apple 提审材料解释位置与班次功能的关联、授权路径、关闭方式和审核人员可复现步骤；遵守后台用途与位置使用要求，不给通过率或“比 Android 更容易”承诺。[A12]
 - Google Play 提交显著披露、隐私政策、后台位置权限声明和真实 Android 功能演示。其政策对核心用途和必要性有要求；“方便自动记录”并不意味着必定获批。[A10]
 - 审核演示应显示实际 App 的开启、授权与后台生效过程。可以压缩演示时间，但不得用调试注入假装真实后台定位。
@@ -632,15 +699,15 @@ iOS 新文案进入 `src-mobile/ios/App/App/Localizable.xcstrings`，覆盖现�
 
 本节复选框表示本计划的交付门禁；Android 任务实施状态仍只记入 `docs/android/progress.md`，避免第二份相互冲突的进度表。
 
-- [ ] **P0 能力与接入验证**：记录实际最低系统／target SDK／依赖版本；核对现有开始、提前开始、停止、提前停止、完成、加班及权益语义；验证 iOS 授权会话、冷启动监听、锁屏 App Intent／确认交互、Siri 返回结果与建议捐赠可用性，以及 Android GMS 注册／Receiver。输出 `docs/reviews/021-workplace-automation-capability.md`，逐项区分已通过、失败与未验证；未经验证的能力不进入对外承诺。
+- [ ] **P0 能力与接入验证**（3.3.0 仅 iOS；须满足 §0.2）：记录实际最低系统／target SDK／依赖版本；核对现有开始、提前开始、停止、提前停止、完成、加班及权益语义；验证 iOS 授权会话、冷启动监听、锁屏 App Intent／确认交互、Siri 返回结果与建议捐赠可用性，以及 Android GMS 注册／Receiver。输出 `docs/reviews/021-workplace-automation-capability.md`，逐项区分已通过、失败与未验证；未经验证的能力不进入对外承诺。
 - [ ] **P1 业务契约和可恢复写入**（依赖 P0 接入结论）：实现 §3 的分层记录、应用开关、单条／批量复核、早到／掐点／半小时询问、多地点聚合、按日加班汇总与真实段、范围工作状态、溯源、Plus 历史保护、统一命令、幂等回执、崩溃恢复及人工抑制；建立双端相同输入／结果的事件 fixture。定位未接入也必须能通过假事件验证。
 - [ ] **I1 iOS 快捷指令**（依赖 P1）：分开自动化上报与明确确认动作，实现无 Scene 执行；覆盖锁屏、确认／取消、重复调用、已结束班次、权限拒绝、无定位调用；交付版本化引导与诊断。可单独验收，不等待原生围栏。
 - [ ] **I2 iOS 原生监控**（依赖 P1、P0 iOS 实证）：实现系统会话、最多 5 地点内外圈、配置代次、权限恢复、设备本地存储及询问型通知降级；接入真实班次命令。先完成后台／冷启动，再做设置页细节；不得用前台 demo 冒充完成。
-- [ ] **A1 Android 原生监控**（依赖 P1、P0 Android 实证）：实现 GMS provider、最多 5 地点聚合、权限流程、Receiver、重启恢复、能力诊断和 DWELL；同时交付无 GMS 降级及可不包含定位模块的发布路径。
+- [ ] **A1 Android 原生监控**（3.3.0 之后；依赖 P1、P0 Android 实证）：实现 GMS provider、最多 5 地点聚合、权限流程、Receiver、重启恢复、能力诊断和 DWELL；同时交付无 GMS 降级及可不包含定位模块的发布路径。
 - [ ] **C1 iCloud 溯源与协议迁移**（依赖 P1）：扩展正式记录的最小来源摘要，沿用私人 CloudKit；完成 schema／旧客户端回写保护、跨端 JSON 兼容、冲突／删除／账户切换／离线恢复；不云端同步执行队列或反复触发自动化。
-- [ ] **S1 iOS Siri 与系统建议**（依赖 P1、I1、P0）：交付 I4 的只读查询、确认动作、App Shortcuts、合规捐赠／删除、预测描述与无薪资对话／基础卡片；新系统交互卡片及 Widget 相关性可独立后续验收，不能用捐赠成功冒充建议必达。
+- [ ] **S1 iOS Siri 与系统建议**（3.3.0 之后；依赖 P1、I1、P0）：交付 I4 的只读查询、确认动作、App Shortcuts、合规捐赠／删除、预测描述与无薪资对话／基础卡片；新系统交互卡片及 Widget 相关性可独立后续验收，不能用捐赠成功冒充建议必达。
 - [ ] **U1 双端 UI／文案／隐私**（随 I1／I2／A1 分批完成）：19 语言、权限／Siri 文案、自动应用、来源时间线／定位认证、今天或范围状态、当日合并加班与真实明细、批量预览、Plus 到期保护、暂停／删除／撤销、无薪资通知及 iCloud／系统建议数据流说明。
-- [ ] **W1 Wi-Fi 可选增强**（依赖原生主路线已实测）：先证明其在实际回调时机可获得，再接入纯规则；iOS 按官方当前网络信息条件启用 entitlement，Android 按实际 API／SDK 最小授权。读不到时是 `unknown`，不是“已离开”。不主动配置公司 Wi-Fi、不伪装 VPN／DNS 以绕过权限。[A13][A14]
+- [ ] **W1 Wi-Fi 可选增强**（3.3.0 之后；依赖原生主路线已实测）：先证明其在实际回调时机可获得，再接入纯规则；iOS 按官方当前网络信息条件启用 entitlement，Android 按实际 API／SDK 最小授权。读不到时是 `unknown`，不是“已离开”。不主动配置公司 Wi-Fi、不伪装 VPN／DNS 以绕过权限。[A13][A14]
 - [ ] **R1 完整验收与发布材料**：完成 §8 的自动化与真机矩阵；更新工程规范、`docs/PLAN-MOBILE.md`、Android 相关 parity／progress 文档与隐私页面；分别记录代码完成、自动化通过、真机通过、审核材料完成、发布授权。
 
 建议分支／PR 顺序：`automation-contracts` → `ios-shortcuts` → `ios-workplace-monitor` 与 `android-workplace-monitor` → `automation-provenance-sync`／`ios-siri-suggestions` → `automation-polish-and-privacy`。分支名仅作组织建议，不要求建立长期平台分支。
@@ -844,6 +911,14 @@ cd src-mobile/android
 - 本轮读取 v0.2 文件并核对 Apple 官方 App Intents／Siri 捐赠／结果／预测相关资料；延续既有源码基线，**未重新审计 main**。最新公开材料中新增 API 不直接认定为工程当前 SDK 可用。
 - 业务验收扩展为 B01–B74，另新增 S01–S18；均为待实现／待运行的规格，不是通过数量。使用文档结构／旧条款检查核对本次修订，未执行应用测试。
 - 未改源码、安装依赖、构建／真机验证、创建分支／PR、修改云端 schema／商品或发布。保留 v0.2，另交付 v0.3；建议入库路径仍为 `plans/iOS/021-workplace-automation.md`。
+
+### 2026-10-18 · v0.4 可行性审阅，未实施
+
+- 对照 `codex/ios-leave-plan-groups`（`03542037`）核对：最低系统 26.0；App target 无定位代码、无 App Intent；`Info.plist` 无定位用途说明；班次提醒已占用约 60 个本地通知名额；`RecordJSON` 为 schema 7，未知实体类型会被旧客户端跳过；现有 `WorkObservation` 随 CloudKit 同步；`DayOverride.customSegments` 支持一天多段；Android 无 `play-services-location`。
+- 新增 §0：3.3.0 收窄为 iOS 的 P0／P1／I1／I2／C1；A1、S1、W1 移到之后；列出通知额度、`WorkObservation` 边界、来源实体前向兼容、隐私例外审批四个阻断项。
+- 修正 §I2 的旧系统 adapter 表述与 §6 的过时 schema 版本。
+- 未改源码、构建、测试或发布。同日用户批准 §0.2 第 4 项隐私例外，已写入 `AGENTS.md`。
+- 同日用户确认 §0.3：通知额度预留 3 个、自动化存储与 `DayOverride` 的边界、`workTimeProvenance` 实体与 Android 只读保留。
 
 后续记录格式沿用 019：`日期 · 批次`，列出实现范围、实际通过的测试及数量、失败项、未验证项、证据路径、关联 PR；不能只写“已完成自动上下班”。
 

@@ -54,6 +54,12 @@ release gates. No rule, plan or script may depend on locally installed skills.
   Review authorization is distinct from Play purchases. Production activation
   requires isolated validation and matching published privacy/Data safety
   disclosures; design approval does not authorize deployment or publication.
+- The approved 2026-10-18 plan 021 exception permits opt-in Plus background
+  location for up to 5 user-saved workplaces. Coordinates, SSIDs, geofence
+  state, raw events and pending proposals stay on-device and out of backups.
+  Only the minimal provenance of adopted work times may join opt-in private
+  CloudKit sync and backups. No tracks, Siri/widget location data or new
+  servers. Shipping requires the App Store label and official privacy page.
 - Share URLs encode only start/end times. Analytics are anonymous aggregate
   event counters: no cookies, identifiers, IP/User-Agent storage or histories.
 - Desktop networking is limited to updates, external links and user-triggered
