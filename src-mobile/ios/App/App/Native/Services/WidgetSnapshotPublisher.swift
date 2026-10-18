@@ -550,11 +550,19 @@ final class WidgetSnapshotComposer {
 
         func appendEvents(from snapshot: NativeShiftSnapshot, at date: Date) {
             for event in shifts.upcomingTimelineEvents(for: snapshot, at: date) {
+                // "Today's shift" is true only on the day this was written, and
+                // the snapshot outlives it. Match `boundaryUpcomingItems`, so a
+                // shift's rows read the same before and after the app opens.
+                let detail = switch event.kind {
+                case .shiftStart: ""
+                case .shiftEnd: snapshot.overtimeEndAtMs == nil ? "" : shifts.text.t("overtime")
+                default: event.detail
+                }
                 appendItem(WidgetUpcomingItem(
                     id: event.id,
                     kind: event.kind.rawValue,
                     title: event.title,
-                    detail: event.detail,
+                    detail: detail,
                     dateMs: Int64(event.date.timeIntervalSince1970 * 1_000),
                     symbolName: event.symbolName
                 ))

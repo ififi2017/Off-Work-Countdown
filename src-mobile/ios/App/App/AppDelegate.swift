@@ -95,14 +95,21 @@ extension OffWorkCountdownApplicationDelegate: UNUserNotificationCenterDelegate 
     /// A notification that names a route (the shift alarm refresh reminder) or
     /// a report period opens it through the app's own link, the same way a
     /// widget does.
+    ///
+    /// Completion-handler form on purpose: the `async` form's generated thunk
+    /// calls UIKit's handler from a concurrency pool thread, which aborts on
+    /// UIKit's main-thread assertion (3.2.1 crash). The handler is called on
+    /// the delivering thread and the link opens on the main actor afterwards.
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse
-    ) async {
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
         let userInfo = response.notification.request.content.userInfo
         let link = userInfo["url"] as? String
         let routeName = userInfo["route"] as? String
-        await MainActor.run {
+        completionHandler()
+        Task { @MainActor in
             // A report names the exact period it closed, so a tap days later
             // still opens that one.
             if let link,
