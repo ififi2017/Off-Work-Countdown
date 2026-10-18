@@ -525,14 +525,3 @@ struct WatchSegmentRing: View {
         return result
     }
 }
-
-/// Hours and minutes, drawn by the system so it keeps counting between entries.
-struct WatchHoursMinutes: View {
-    let end: Date
-    let from: Date
-
-    var body: some View {
-        Text(.currentDate, format: .timer(countingDownIn: min(from, end)..<end, showsHours: true,
-                                          maxFieldCount: 2, maxPrecision: .seconds(60)))
-    }
-}

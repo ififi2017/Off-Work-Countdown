@@ -125,7 +125,7 @@ private struct SummaryPeriodView: View {
                     "done": WidgetSuiteFormat.count(period.workdays, locale: locale),
                     "total": WidgetSuiteFormat.count(period.plannedWorkdays, locale: locale),
                 ])).font(.headline).lineLimit(1).minimumScaleFactor(0.7)
-                ProgressView(value: period.progress).tint(.primary)
+                WidgetSuiteSegmentBar(segments: [(weight: 1, fill: period.progress)], height: 5, tint: .primary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         case .systemSmall:
@@ -143,8 +143,8 @@ private struct SummaryPeriodView: View {
             VStack(alignment: .leading, spacing: 0) {
                 WidgetSuiteHeader(title: title, trailing: remaining)
                 stats.padding(.top, 12)
-                Text(t("widgetSuiteMonthlyHours")).font(.caption).foregroundStyle(.secondary).padding(.top, 18)
-                bars(height: 120, labels: true).padding(.top, 6)
+                Text(t("widgetSuiteMonthlyHours")).font(.caption).foregroundStyle(.secondary).padding(.top, 16)
+                bars(height: 150, labels: true).padding(.top, 6)
                 Spacer(minLength: 8)
                 if let comparison = period.comparison {
                     Divider()
@@ -161,7 +161,7 @@ private struct SummaryPeriodView: View {
                 WidgetSuiteHeader(title: title, trailing: remaining)
                 stats.padding(.top, 10)
                 Spacer(minLength: 8)
-                ProgressView(value: period.progress).tint(WidgetSuitePalette.accent)
+                WidgetSuiteSegmentBar(segments: [(weight: 1, fill: period.progress)])
                 HStack {
                     Text(period.comparison ?? "").lineLimit(1).minimumScaleFactor(0.8)
                     Spacer(minLength: 4)
@@ -442,7 +442,7 @@ private struct LifeFiguresView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(t("widgetSuiteUntilRetirement")).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).widgetAccentable()
                 Text(figures.monthsToRetirement.map(span) ?? daysLived).font(.headline).lineLimit(1).minimumScaleFactor(0.7)
-                ProgressView(value: figures.careerShare ?? figures.lifeShare).tint(.primary)
+                WidgetSuiteSegmentBar(segments: [(weight: 1, fill: figures.careerShare ?? figures.lifeShare)], height: 5, tint: .primary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         case .systemSmall:
@@ -490,7 +490,7 @@ private struct LifeFiguresView: View {
     private func row(_ label: String, _ value: Double) -> some View {
         HStack(spacing: 8) {
             Text(label).font(.caption).frame(width: 46, alignment: .leading).lineLimit(1).minimumScaleFactor(0.7)
-            ProgressView(value: value).tint(WidgetSuitePalette.accent)
+            WidgetSuiteSegmentBar(segments: [(weight: 1, fill: value)])
             Text(WidgetSuiteFormat.percent(value, locale: locale)).font(.caption.weight(.semibold)).monospacedDigit()
                 .frame(width: 40, alignment: .trailing)
         }

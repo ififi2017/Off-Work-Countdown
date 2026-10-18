@@ -96,7 +96,10 @@ struct CountdownStyleModel {
 
     var progress: Double { min(1, max(0, (snapshotEntry?.progressAtDate ?? 0) / 100)) }
 
+    /// Lunch is a gap only while the shift is under way; before clock-in the
+    /// ring measures the wait, which has no lunch in it.
     var segmentWeights: [Double] {
+        guard phase == .working || phase == .break else { return [1] }
         let weights = entry.segments.map { Double(max(0, $0.endAtMs - $0.startAtMs)) }
         return weights.isEmpty ? [1] : weights
     }
@@ -125,18 +128,15 @@ enum CountdownStylePalette {
     static let track = Color.primary.opacity(0.10)
 }
 
-/// Hours and minutes, drawn by the system so it keeps counting while the
-/// extension sleeps. Before iOS 18 / macOS 15 it falls back to the seconds timer.
+/// The countdown drawn by the system, so it keeps counting while the
+/// extension sleeps. A minute-precision system timer switches to words
+/// ("6 hr 53 min") in many languages, and per-minute timeline entries would
+/// spend the extension's render budget, so the styles keep the seconds.
 struct CountdownHoursMinutes: View {
     let range: ClosedRange<Date>
 
     var body: some View {
-        if #available(iOS 18.0, macOS 15.0, *) {
-            Text(.currentDate, format: .timer(countingDownIn: range.lowerBound..<range.upperBound,
-                                              showsHours: true, maxFieldCount: 2, maxPrecision: .seconds(60)))
-        } else {
-            Text(timerInterval: range, countsDown: true)
-        }
+        Text(timerInterval: range, countsDown: true)
     }
 }
 
@@ -404,68 +404,91 @@ public struct CountdownTimelineView: View {
 
     public var body: some View {
         let segments = model.entry.segments
-        let nowMs = Int64(model.entry.date.timeIntervalSince1970 * 1_000) - model.offset
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             Label(model.label, systemImage: "calendar.day.timeline.left")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
-            if segments.isEmpty {
+            if let first = segments.first, let last = segments.last, last.endAtMs > first.startAtMs {
+                CountdownDayAxis(segments: segments, nowMs: model.entry.base.logicalNowMs,
+                                 offset: model.offset, locale: Locale(identifier: model.locale))
+            } else {
                 Spacer(minLength: 0)
                 Text(WidgetCopy.text("countdownNotStarted", locale: model.locale))
                     .font(.footnote.weight(.semibold))
                 Spacer(minLength: 0)
-            } else {
-                HStack(alignment: .top, spacing: 10) {
-                    VStack(spacing: 3) {
-                        ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
-                            let total = Double(max(1, segment.endAtMs - segment.startAtMs))
-                            let done = min(1, max(0, Double(nowMs - segment.startAtMs) / total))
-                            GeometryReader { proxy in
-                                ZStack(alignment: .top) {
-                                    Capsule().fill(CountdownStylePalette.track)
-                                    Capsule().fill(CountdownStylePalette.accent)
-                                        .frame(height: proxy.size.height * done)
-                                }
-                            }
-                            .frame(width: 6)
-                            .frame(maxHeight: .infinity)
-                            .layoutPriority(total)
-                            if index < segments.count - 1 { Spacer().frame(height: 6) }
-                        }
-                    }
-                    VStack(alignment: .leading, spacing: 0) {
-                        ForEach(Array(rows(segments: segments, nowMs: nowMs).enumerated()), id: \.offset) { _, row in
-                            Text(row.text)
-                                .font(.caption2.weight(row.isNow ? .bold : .regular).monospacedDigit())
-                                .foregroundStyle(row.isNow ? .primary : .secondary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-                            Spacer(minLength: 0)
-                        }
-                    }
-                }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .countdownStyleBackground()
         .widgetURL(URL(string: "offworkcountdown://timer"))
     }
+}
 
-    private struct Row { let text: String; let isNow: Bool }
+/// The shift drawn to scale down the side: work as bars, lunch as the gap
+/// between them, and labels at each boundary and at now.
+struct CountdownDayAxis: View {
+    let segments: [WidgetShiftSegment]
+    let nowMs: Int64
+    let offset: Int64
+    let locale: Locale
 
-    private func rows(segments: [WidgetShiftSegment], nowMs: Int64) -> [Row] {
-        let locale = Locale(identifier: model.locale)
-        func time(_ ms: Int64) -> String {
-            Date(timeIntervalSince1970: Double(ms + model.offset) / 1_000).formatted(.dateTime.hour().minute().locale(locale))
-        }
-        var result: [Row] = []
-        for (index, segment) in segments.enumerated() {
-            result.append(Row(text: time(segment.startAtMs), isNow: false))
-            if nowMs >= segment.startAtMs, nowMs < segment.endAtMs {
-                result.append(Row(text: "▸ \(time(nowMs))", isNow: true))
+    private struct Mark: Identifiable {
+        let id: Int
+        let atMs: Int64
+        let text: String
+        let isNow: Bool
+    }
+
+    var body: some View {
+        let startMs = segments.first?.startAtMs ?? 0
+        let span = Double(max(1, (segments.last?.endAtMs ?? 1) - startMs))
+        GeometryReader { proxy in
+            let height = proxy.size.height
+            let y: (Int64) -> CGFloat = { CGFloat(Double($0 - startMs) / span) * height }
+            ZStack(alignment: .topLeading) {
+                ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                    let top = y(segment.startAtMs)
+                    let bottom = y(segment.endAtMs)
+                    let done = min(1, max(0, Double(nowMs - segment.startAtMs) / Double(max(1, segment.endAtMs - segment.startAtMs))))
+                    ZStack(alignment: .top) {
+                        Capsule().fill(CountdownStylePalette.track)
+                        Capsule().fill(CountdownStylePalette.accent).frame(height: (bottom - top) * done)
+                    }
+                    .frame(width: 6, height: max(6, bottom - top))
+                    .offset(y: top)
+                }
+                ForEach(marks) { mark in
+                    Text(mark.text)
+                        .font(.caption2.weight(mark.isNow ? .bold : .regular).monospacedDigit())
+                        .foregroundStyle(mark.isNow ? .primary : .secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .frame(height: 14)
+                        .offset(x: 16, y: min(max(0, y(mark.atMs) - 7), height - 14))
+                }
             }
-            if index == segments.count - 1 { result.append(Row(text: time(segment.endAtMs), isNow: false)) }
+        }
+    }
+
+    private var marks: [Mark] {
+        func time(_ ms: Int64) -> String {
+            Date(timeIntervalSince1970: Double(ms + offset) / 1_000).formatted(.dateTime.hour().minute().locale(locale))
+        }
+        var result: [Mark] = []
+        guard let first = segments.first, let last = segments.last else { return [] }
+        result.append(Mark(id: 0, atMs: first.startAtMs, text: time(first.startAtMs), isNow: false))
+        for index in segments.indices.dropLast() {
+            let gapStart = segments[index].endAtMs
+            let gapEnd = segments[index + 1].startAtMs
+            result.append(Mark(id: index + 1, atMs: (gapStart + gapEnd) / 2, text: "\(time(gapStart))–\(time(gapEnd))", isNow: false))
+        }
+        result.append(Mark(id: 100, atMs: last.endAtMs, text: time(last.endAtMs), isNow: false))
+        if nowMs > first.startAtMs, nowMs < last.endAtMs {
+            // Now replaces whichever label it would sit on.
+            let span = Double(max(1, last.endAtMs - first.startAtMs))
+            result.removeAll { abs(Double($0.atMs - nowMs)) / span < 0.12 }
+            result.append(Mark(id: 200, atMs: nowMs, text: "▸ \(time(nowMs))", isNow: true))
         }
         return result
     }
@@ -627,8 +650,7 @@ public struct CountdownDetailView: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(CountdownStylePalette.accent)
                         .frame(width: 14)
-                    Text(Date(timeIntervalSince1970: Double(item.dateMs + model.offset) / 1_000)
-                        .formatted(.dateTime.hour().minute().locale(locale)))
+                    Text(Self.when(item.dateMs + model.offset, now: model.entry.date, locale: locale))
                         .font(.caption.weight(.semibold).monospacedDigit())
                     Text(item.title)
                         .font(.caption)
@@ -646,6 +668,15 @@ public struct CountdownDetailView: View {
                     .foregroundStyle(.secondary)
             }
         }
+    }
+
+    /// The clock time, with the weekday in front for anything not today, as
+    /// the original widget's coming-up list does.
+    static func when(_ ms: Int64, now: Date, locale: Locale) -> String {
+        let date = Date(timeIntervalSince1970: Double(ms) / 1_000)
+        return widgetUpcomingDateShowsWeekday(date, relativeTo: now, calendar: .current)
+            ? date.formatted(.dateTime.weekday(.abbreviated).hour().minute().locale(locale))
+            : date.formatted(.dateTime.hour().minute().locale(locale))
     }
 
     static func glyph(_ item: WidgetUpcomingItem) -> String {

@@ -109,8 +109,8 @@ private struct DoneAtWatchWidgetView: View {
             ZStack {
                 WatchSegmentRing(weights: weights, progress: progress / 100, lineWidth: 4.5)
                 VStack(spacing: 0) {
-                    if phase == .working || phase == .overtime, let end = timerEnd(value) {
-                        WatchHoursMinutes(end: end, from: entry.date.addingTimeInterval(-3_600))
+                    if phase == .working || phase == .overtime, let remaining = value.remainingMs {
+                        Text(verbatim: WatchDisplayFormat.clock(remaining, showsSeconds: false, presentation))
                             .font(.system(size: 14, weight: .bold, design: .rounded))
                             .monospacedDigit()
                             .minimumScaleFactor(0.6)
@@ -235,8 +235,8 @@ private struct DoneAtWatchWidgetView: View {
         let presentation = value.presentation
         if let progress = value.progress, let phase = value.phase, phase != .before {
             Group {
-                if phase == .working || phase == .overtime, let end = timerEnd(value) {
-                    WatchHoursMinutes(end: end, from: entry.date.addingTimeInterval(-3_600))
+                if phase == .working || phase == .overtime, let remaining = value.remainingMs {
+                    Text(verbatim: WatchDisplayFormat.clock(remaining, showsSeconds: false, presentation))
                 } else {
                     Image(systemName: WatchDisplayFormat.symbol(for: phase))
                 }

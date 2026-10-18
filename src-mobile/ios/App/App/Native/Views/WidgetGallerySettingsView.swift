@@ -179,18 +179,7 @@ struct WidgetGallerySettingsView: View {
                 badge(plus ? "Plus" : (partlyPlus ? text.t("widgetGalleryFreeAndPlus") : text.t("widgetGalleryFree")),
                       tint: plus ? OWCDesign.accent : OWCDesign.secondary)
             }
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: 14) {
-                    ForEach(families, id: \.self) { family in
-                        VStack(spacing: 6) {
-                            WidgetGalleryFrame(family: family) { preview(family) }
-                            Text(sizeName(family)).font(.caption).foregroundStyle(OWCDesign.secondary)
-                        }
-                    }
-                }
-                .padding(.vertical, 2)
-            }
-            .scrollClipDisabled()
+            WidgetGalleryPreviewStage(families: families, sizeName: sizeName) { family in preview(family) }
         }
         .padding(16)
         .overlay(alignment: .bottom) {
@@ -313,7 +302,8 @@ struct WidgetGallerySettingsView: View {
         case .systemMedium: text.t("widgetGallerySizeMedium")
         case .systemLarge: text.t("widgetGallerySizeLarge")
         case .systemExtraLarge: text.t("widgetGallerySizeExtraLarge")
-        default: text.t("widgetGallerySizeLockScreen")
+        case .accessoryCircular: text.t("widgetGallerySizeCircular")
+        default: text.t("widgetGallerySizeRectangular")
         }
     }
 }
@@ -334,34 +324,64 @@ struct WidgetGalleryData {
     let focus: WidgetFocusPayload
 }
 
+/// One size at a time on a light stage, chosen with a size picker; a row of
+/// every size at once took the height of the tallest.
+private struct WidgetGalleryPreviewStage<Preview: View>: View {
+    let families: [WidgetFamily]
+    let sizeName: (WidgetFamily) -> String
+    @ViewBuilder let preview: (WidgetFamily) -> Preview
+    @State private var selected: WidgetFamily?
+
+    var body: some View {
+        let family = selected ?? families.first ?? .systemSmall
+        VStack(spacing: 10) {
+            if families.count > 1 {
+                Picker(selection: Binding(get: { family }, set: { selected = $0 })) {
+                    ForEach(families, id: \.self) { Text(sizeName($0)).tag($0) }
+                } label: {
+                    EmptyView()
+                }
+                .pickerStyle(.segmented)
+            }
+            ViewThatFits(in: .horizontal) {
+                WidgetGalleryFrame(family: family) { preview(family) }
+                WidgetGalleryFrame(family: family) { preview(family) }
+                    .scaleEffect(0.82)
+                    .frame(width: WidgetGalleryFrame<Preview>.size(family).width * 0.82,
+                           height: WidgetGalleryFrame<Preview>.size(family).height * 0.82)
+            }
+            .padding(.vertical, 18)
+            .frame(maxWidth: .infinity)
+            .background(Color(uiColor: .systemGroupedBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .animation(.snappy, value: family)
+        }
+    }
+}
+
 /// A widget at its real point size, on the plate WidgetKit would draw.
-private struct WidgetGalleryFrame<Content: View>: View {
+struct WidgetGalleryFrame<Content: View>: View {
     let family: WidgetFamily
     @ViewBuilder let content: () -> Content
 
     var body: some View {
         let size = Self.size(family)
         let isAccessory = family == .accessoryCircular || family == .accessoryRectangular || family == .accessoryInline
+        let radius: CGFloat = isAccessory ? (family == .accessoryCircular ? size.width / 2 : 14) : 22
         content()
             .padding(isAccessory ? 0 : 16)
             .frame(width: size.width, height: size.height)
-            .background {
-                if isAccessory {
-                    RoundedRectangle(cornerRadius: family == .accessoryCircular ? size.width / 2 : 14, style: .continuous)
-                        .fill(Color(white: 0.16))
-                } else {
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .fill(Color(uiColor: .systemBackground))
-                        .shadow(color: .black.opacity(0.08), radius: 10, y: 3)
-                }
+            .background(isAccessory ? Color(white: 0.16) : Color(uiColor: .systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+            .modifier(WidgetGalleryAccessoryScheme(isAccessory: isAccessory))
+            .shadow(color: .black.opacity(isAccessory ? 0 : 0.10), radius: 12, y: 4)
+            .overlay {
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(isAccessory ? 0 : 0.06), lineWidth: 0.5)
             }
-            .clipShape(RoundedRectangle(cornerRadius: isAccessory ? (family == .accessoryCircular ? size.width / 2 : 14) : 22,
-                                        style: .continuous))
-            .environment(\.colorScheme, isAccessory ? .dark : .light)
-            .padding(isAccessory ? 8 : 0)
+            .padding(isAccessory ? 10 : 0)
             .background {
                 if isAccessory {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Color(red: 0.12, green: 0.16, blue: 0.22))
+                    RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Color(red: 0.12, green: 0.16, blue: 0.22))
                 }
             }
             .allowsHitTesting(false)
@@ -378,6 +398,16 @@ private struct WidgetGalleryFrame<Content: View>: View {
         case .accessoryRectangular: CGSize(width: 172, height: 76)
         default: CGSize(width: 234, height: 26)
         }
+    }
+}
+
+/// Lock Screen accessories always sit on a dark wallpaper; Home Screen
+/// widgets follow the system appearance, as they do on the Home Screen.
+private struct WidgetGalleryAccessoryScheme: ViewModifier {
+    let isAccessory: Bool
+
+    func body(content: Content) -> some View {
+        if isAccessory { content.environment(\.colorScheme, .dark) } else { content }
     }
 }
 
@@ -419,7 +449,7 @@ struct WidgetGallerySamples {
             comparison: text.t("widgetSuiteLastYearTotal", values: ["hours": text.formatHours(1_820)]), includesToday: false
         )
         return WidgetSummaryPayload(generatedAtMs: nowMs, locale: locale, access: unlocked, periods: [week, month, year],
-                                    liveSegments: [], labels: ["hoursUnit": "h"])
+                                    liveSegments: [], labels: ["hoursUnit": text.formatHours(0).replacingOccurrences(of: "0", with: "").trimmingCharacters(in: .whitespaces)])
     }
 
     var life: WidgetLifePayload {
