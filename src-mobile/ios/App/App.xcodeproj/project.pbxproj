@@ -33,6 +33,7 @@
 		D11000000000000000000003 /* WatchSnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000060000000000000006 /* WatchSnapshotCache.swift */; };
 		D11000000000000000000004 /* WatchShiftEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000040000000000000004 /* WatchShiftEvaluation.swift */; };
 		D11000000000000000000005 /* DoneAtWatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12000000000000000000003 /* DoneAtWatchWidgets.swift */; };
+		7A0000111234567890ABCDEF /* DoneAtWatchSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */; };
 		D11000000000000000000006 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000020000000000000002 /* WatchSnapshot.swift */; };
 		D11000000000000000000007 /* WatchSnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000060000000000000006 /* WatchSnapshotCache.swift */; };
 		D11000000000000000000008 /* WatchShiftEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000040000000000000004 /* WatchShiftEvaluation.swift */; };
@@ -198,6 +199,7 @@
 		D12000000000000000000001 /* DoneAtWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchApp.swift; sourceTree = "<group>"; };
 		D12000000000000000000002 /* WatchApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WatchApp.entitlements; sourceTree = "<group>"; };
 		D12000000000000000000003 /* DoneAtWatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchWidgets.swift; sourceTree = "<group>"; };
+		7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchSuite.swift; sourceTree = "<group>"; };
 		D12000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D12000000000000000000005 /* WatchWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WatchWidgets.entitlements; sourceTree = "<group>"; };
 		D12000000000000000000006 /* WatchAppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAppSmokeTests.swift; sourceTree = "<group>"; };
@@ -382,6 +384,7 @@
 			isa = PBXGroup;
 			children = (
 				D12000000000000000000003 /* DoneAtWatchWidgets.swift */,
+				7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */,
 				D12000000000000000000004 /* Info.plist */,
 				D12000000000000000000005 /* WatchWidgets.entitlements */,
 				D12000000000000000000008 /* PrivacyInfo.xcprivacy */,
@@ -725,6 +728,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D11000000000000000000005 /* DoneAtWatchWidgets.swift in Sources */,
+				7A0000111234567890ABCDEF /* DoneAtWatchSuite.swift in Sources */,
 				D11000000000000000000006 /* WatchSnapshot.swift in Sources */,
 				D11000000000000000000007 /* WatchSnapshotCache.swift in Sources */,
 				D11000000000000000000008 /* WatchShiftEvaluation.swift in Sources */,

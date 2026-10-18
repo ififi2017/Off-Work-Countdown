@@ -224,7 +224,7 @@ private struct WeekView: View {
         default:
             VStack(alignment: .leading, spacing: 0) {
                 WidgetSuiteHeader(title: title, trailing: WidgetSuiteFormat.monthDay(atMs, locale: locale), symbol: "calendar")
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                HStack(alignment: .lastTextBaseline, spacing: 8) {
                     headline(size: 28)
                     if let finishLine {
                         Text(finishLine).font(.caption).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.8)
@@ -244,15 +244,20 @@ private struct WeekView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
         } else {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(WidgetSuiteFormat.decimal(week.remainingDays, locale: locale))
-                    .font(.system(size: size, weight: .bold, design: .rounded))
-                    .monospacedDigit()
+            VStack(alignment: .leading, spacing: 0) {
                 Text(t("widgetSuiteWorkdaysLeft"))
-                    .font(.system(size: max(11, size * 0.45), weight: .semibold))
+                    .font(.system(size: max(11, size * 0.42), weight: .semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text(WidgetSuiteFormat.decimal(week.remainingDays, locale: locale))
+                        .font(.system(size: size, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                    Text(t("widgetSuiteDaysUnit"))
+                        .font(.system(size: max(11, size * 0.45), weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
         }
     }

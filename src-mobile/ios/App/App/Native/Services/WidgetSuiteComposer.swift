@@ -362,9 +362,6 @@ final class WidgetSuiteComposer {
             ))
         }
         payload.blocks = blocks
-        payload.labels = [
-            "minutes": text.t("widgetSuiteMinutes"),
-        ]
         return payload
     }
 

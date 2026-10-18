@@ -5,6 +5,8 @@ import WidgetKit
 private struct DoneAtWatchEntry: TimelineEntry {
     let date: Date
     let display: WatchDisplayAvailability
+    /// The shown shift's work segments, so the ring and bar can leave lunch as a gap.
+    var segments: [[Int64]] = []
 }
 
 private struct DoneAtWatchProvider: TimelineProvider {
@@ -26,9 +28,9 @@ private struct DoneAtWatchProvider: TimelineProvider {
             // Keep the render archive bounded while preserving minute progress
             // for the first hour and every exact rule and expiry boundary.
             let entries = WatchDisplayProjection.timelineDates(for: package, from: now).map {
-                DoneAtWatchEntry(date: $0, display: WatchDisplayProjection.project(
-                    package, nowMs: Int64($0.timeIntervalSince1970 * 1_000)
-                ))
+                let nowMs = Int64($0.timeIntervalSince1970 * 1_000)
+                return DoneAtWatchEntry(date: $0, display: WatchDisplayProjection.project(package, nowMs: nowMs),
+                                        segments: WatchCountdownSegments.segments(package, nowMs: nowMs).map { [$0.0, $0.1] })
             }
             completion(.init(entries: entries, policy: .after(now.addingTimeInterval(3_600))))
         }
@@ -51,9 +53,9 @@ private struct DoneAtWatchProvider: TimelineProvider {
         guard let fileURL = WatchSnapshotCache.appGroupFileURL() else { return .init(date: date, display: .waiting) }
         let cache = await WatchSnapshotCache.open(fileURL: fileURL)
         let package = await cache.currentPackage()
-        return .init(date: date, display: WatchDisplayProjection.project(
-            package, nowMs: Int64(date.timeIntervalSince1970 * 1_000)
-        ))
+        let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
+        return .init(date: date, display: WatchDisplayProjection.project(package, nowMs: nowMs),
+                     segments: WatchCountdownSegments.segments(package, nowMs: nowMs).map { [$0.0, $0.1] })
     }
 }
 
@@ -75,7 +77,12 @@ private struct DoneAtWatchWidgetView: View {
         switch entry.display {
         case .content(let value):
             Group {
-                if family == .accessoryCircular { circular(value) } else { rectangular(value) }
+                switch family {
+                case .accessoryCircular: circular(value)
+                case .accessoryCorner: corner(value)
+                case .accessoryInline: inline(value)
+                default: rectangular(value)
+                }
             }
             .environment(\.locale, WatchDisplayFormat.locale(value.presentation))
             .environment(\.layoutDirection, WatchDisplayFormat.isRightToLeft(
@@ -99,16 +106,27 @@ private struct DoneAtWatchWidgetView: View {
     @ViewBuilder private func circular(_ value: WatchDisplayContent) -> some View {
         let presentation = value.presentation
         if let progress = value.progress, let phase = value.phase, phase != .before {
-            Gauge(value: min(100, max(0, progress)), in: 0...100) {
-                Image(systemName: WatchDisplayFormat.symbol(for: phase))
-            } currentValueLabel: {
-                Text(verbatim: WatchDisplayFormat.percent(progress, presentation))
-                    .font(.system(.caption2, design: .rounded, weight: .semibold))
-                    .minimumScaleFactor(0.6)
+            ZStack {
+                WatchSegmentRing(weights: weights, progress: progress / 100, lineWidth: 4.5)
+                VStack(spacing: 0) {
+                    if phase == .working || phase == .overtime, let end = timerEnd(value) {
+                        WatchHoursMinutes(end: end, from: entry.date.addingTimeInterval(-3_600))
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .minimumScaleFactor(0.6)
+                    } else {
+                        Image(systemName: WatchDisplayFormat.symbol(for: phase))
+                            .font(.system(size: 13, weight: .semibold))
+                    }
+                    if let footnote = WatchDisplayFormat.footnote(for: value) {
+                        Text(verbatim: WatchDisplayFormat.time(footnote.atMs, presentation))
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .minimumScaleFactor(0.6)
+                    }
+                }
+                .padding(5)
             }
-            .gaugeStyle(.accessoryCircularCapacity)
-            .tint(phase == .finished ? .secondary : .orange)
-            .widgetAccentable()
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(WatchDisplayFormat.label(for: phase, presentation))
             .accessibilityValue(accessibilitySummary(value))
@@ -134,18 +152,21 @@ private struct DoneAtWatchWidgetView: View {
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .widgetAccentable()
-                if phase == .finished, let footnote {
+                if phase == .finished || phase == .resting, let footnote {
                     headline(footnote)
+                } else if phase == .working || phase == .overtime, let end = timerEnd(value) {
+                    Text(timerInterval: min(entry.date.addingTimeInterval(-3_600), end)...end, countsDown: true)
+                        .font(.headline)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                 } else if let remaining = value.remainingMs {
                     headline(text("watchTimeLeft", presentation,
                                   ["duration": WatchDisplayFormat.shortDuration(remaining, presentation)]))
                 }
                 if let progress = value.progress {
                     HStack(spacing: 6) {
-                        Gauge(value: min(100, max(0, progress)), in: 0...100) { EmptyView() }
-                            .gaugeStyle(.accessoryLinearCapacity)
-                            .tint(phase == .finished ? .secondary : .orange)
-                            .widgetAccentable()
+                        segmentBar(progress: progress / 100, finished: phase == .finished)
                         if phase != .finished, let footnote {
                             Text(footnote)
                                 .font(.caption2)
@@ -177,6 +198,78 @@ private struct DoneAtWatchWidgetView: View {
         .accessibilityElement(children: .combine)
     }
 
+    private var weights: [Double] {
+        let values = entry.segments.map { Double(max(0, $0[1] - $0[0])) }
+        return values.isEmpty ? [1] : values
+    }
+
+    /// When effective work runs out, in real time: the countdown skips lunch.
+    private func timerEnd(_ value: WatchDisplayContent) -> Date? {
+        guard let remaining = value.remainingMs, remaining > 0 else { return nil }
+        return entry.date.addingTimeInterval(Double(remaining) / 1_000)
+    }
+
+    private func segmentBar(progress: Double, finished: Bool) -> some View {
+        let total = max(0.000_1, weights.reduce(0, +))
+        var remaining = min(1, max(0, progress)) * total
+        let fills = weights.map { weight -> Double in
+            let filled = min(weight, max(0, remaining))
+            remaining -= weight
+            return weight > 0 ? filled / weight : 0
+        }
+        return HStack(spacing: 3) {
+            ForEach(Array(fills.enumerated()), id: \.offset) { index, fill in
+                Gauge(value: fill) { EmptyView() }
+                    .gaugeStyle(.accessoryLinearCapacity)
+                    .tint(finished ? .secondary : .orange)
+                    .widgetAccentable()
+                    .frame(maxWidth: .infinity)
+                    .layoutPriority(weights[index] / total)
+            }
+        }
+    }
+
+    // MARK: Corner — the time left along the bezel.
+
+    @ViewBuilder private func corner(_ value: WatchDisplayContent) -> some View {
+        let presentation = value.presentation
+        if let progress = value.progress, let phase = value.phase, phase != .before {
+            Group {
+                if phase == .working || phase == .overtime, let end = timerEnd(value) {
+                    WatchHoursMinutes(end: end, from: entry.date.addingTimeInterval(-3_600))
+                } else {
+                    Image(systemName: WatchDisplayFormat.symbol(for: phase))
+                }
+            }
+            .font(.system(size: 15, weight: .bold, design: .rounded))
+            .widgetCurvesContent()
+            .widgetLabel {
+                Gauge(value: min(100, max(0, progress)), in: 0...100) { EmptyView() }
+                    .tint(.orange)
+            }
+            .accessibilityLabel(WatchDisplayFormat.label(for: phase, presentation))
+        } else {
+            Image(systemName: "moon.zzz").font(.title3).widgetAccentable()
+                .widgetLabel(presentation.restingLabel)
+        }
+    }
+
+    // MARK: Inline — one line above the time.
+
+    @ViewBuilder private func inline(_ value: WatchDisplayContent) -> some View {
+        let presentation = value.presentation
+        if let footnote = WatchDisplayFormat.footnote(for: value) {
+            let time = text(footnote.key, presentation, ["time": WatchDisplayFormat.footnoteTime(footnote, presentation)])
+            if value.phase == .working, let remaining = value.remainingMs {
+                Text(verbatim: "\(time) · \(WatchDisplayFormat.shortDuration(remaining, presentation))")
+            } else {
+                Text(verbatim: time)
+            }
+        } else {
+            Text(verbatim: value.phase == nil ? presentation.restingLabel : "DoneAt")
+        }
+    }
+
     private func headline(_ string: String) -> some View {
         Text(string)
             .font(.headline)
@@ -185,7 +278,9 @@ private struct DoneAtWatchWidgetView: View {
     }
 
     @ViewBuilder private func unavailable(_ message: String, symbol: String) -> some View {
-        if family == .accessoryCircular {
+        if family == .accessoryInline {
+            Text(message)
+        } else if family == .accessoryCircular || family == .accessoryCorner {
             Image(systemName: symbol)
                 .font(.title3)
                 .widgetAccentable()
@@ -227,10 +322,16 @@ struct DoneAtWatchWidget: Widget {
         StaticConfiguration(kind: "DoneAtWatchWidget", provider: DoneAtWatchProvider()) { DoneAtWatchWidgetView(entry: $0) }
             .configurationDisplayName("DoneAt")
             .description(WatchLocalizations.text("watchWidgetDescription"))
-            .supportedFamilies([.accessoryCircular, .accessoryRectangular])
+            .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryCorner, .accessoryInline])
     }
 }
 
 @main struct DoneAtWatchWidgets: WidgetBundle {
-    var body: some Widget { DoneAtWatchWidget() }
+    var body: some Widget {
+        DoneAtWatchWidget()
+        DoneAtWatchWeekWidget()
+        DoneAtWatchShiftWidget()
+        DoneAtWatchHolidayWidget()
+        DoneAtWatchUpNextWidget()
+    }
 }
