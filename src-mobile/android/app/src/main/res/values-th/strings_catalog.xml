@@ -1198,10 +1198,11 @@
     <string name="widgetGallerySectionFocus">โฟกัสและตัวควบคุม</string>
     <string name="widgetGallerySectionRecords">สรุปและชีวิต</string>
     <string name="widgetGallerySectionWeek">สัปดาห์ กะงาน และวันหยุด</string>
+    <string name="widgetGallerySizeCircular">วงกลม</string>
     <string name="widgetGallerySizeExtraLarge">ใหญ่พิเศษ</string>
     <string name="widgetGallerySizeLarge">ใหญ่</string>
-    <string name="widgetGallerySizeLockScreen">หน้าจอล็อค</string>
     <string name="widgetGallerySizeMedium">กลาง</string>
+    <string name="widgetGallerySizeRectangular">สี่เหลี่ยม</string>
     <string name="widgetGallerySizeSmall">เล็ก</string>
     <string name="widgetGalleryStepsControl">ศูนย์ควบคุม: เปิดศูนย์ควบคุม แตะพื้นที่ว่างค้างไว้ แตะ “เพิ่มตัวควบคุม” และค้นหา DoneAt</string>
     <string name="widgetGalleryStepsHome">หน้าจอโฮม: แตะพื้นที่ว่างค้างไว้ แตะ “แก้ไข” แล้วแตะ “เพิ่มวิดเจ็ต” และค้นหา DoneAt</string>

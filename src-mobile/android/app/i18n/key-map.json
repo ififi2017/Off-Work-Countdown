@@ -4322,17 +4322,20 @@
     "widgetGallerySectionWeek": {
       "resource": "string/widgetGallerySectionWeek"
     },
+    "widgetGallerySizeCircular": {
+      "resource": "string/widgetGallerySizeCircular"
+    },
     "widgetGallerySizeExtraLarge": {
       "resource": "string/widgetGallerySizeExtraLarge"
     },
     "widgetGallerySizeLarge": {
       "resource": "string/widgetGallerySizeLarge"
     },
-    "widgetGallerySizeLockScreen": {
-      "resource": "string/widgetGallerySizeLockScreen"
-    },
     "widgetGallerySizeMedium": {
       "resource": "string/widgetGallerySizeMedium"
+    },
+    "widgetGallerySizeRectangular": {
+      "resource": "string/widgetGallerySizeRectangular"
     },
     "widgetGallerySizeSmall": {
       "resource": "string/widgetGallerySizeSmall"

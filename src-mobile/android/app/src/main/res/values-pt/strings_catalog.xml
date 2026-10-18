@@ -1204,10 +1204,11 @@
     <string name="widgetGallerySectionFocus">Foco e controles</string>
     <string name="widgetGallerySectionRecords">Resumo e vida</string>
     <string name="widgetGallerySectionWeek">Semana, escala e feriados</string>
+    <string name="widgetGallerySizeCircular">Circular</string>
     <string name="widgetGallerySizeExtraLarge">Extragrande</string>
     <string name="widgetGallerySizeLarge">Grande</string>
-    <string name="widgetGallerySizeLockScreen">Tela Bloqueada</string>
     <string name="widgetGallerySizeMedium">Médio</string>
+    <string name="widgetGallerySizeRectangular">Retangular</string>
     <string name="widgetGallerySizeSmall">Pequeno</string>
     <string name="widgetGalleryStepsControl">Central de Controle: abra a Central de Controle, toque e segure em uma área vazia, toque em Adicionar um Controle e busque DoneAt.</string>
     <string name="widgetGalleryStepsHome">Tela de Início: toque e segure em uma área vazia, toque em Editar, depois em Adicionar Widget e busque DoneAt.</string>

@@ -1198,10 +1198,11 @@
     <string name="widgetGallerySectionFocus">フォーカスとコントロール</string>
     <string name="widgetGallerySectionRecords">サマリーと人生</string>
     <string name="widgetGallerySectionWeek">今週・シフト・祝日</string>
+    <string name="widgetGallerySizeCircular">円形</string>
     <string name="widgetGallerySizeExtraLarge">特大</string>
     <string name="widgetGallerySizeLarge">大</string>
-    <string name="widgetGallerySizeLockScreen">ロック画面</string>
     <string name="widgetGallerySizeMedium">中</string>
+    <string name="widgetGallerySizeRectangular">長方形</string>
     <string name="widgetGallerySizeSmall">小</string>
     <string name="widgetGalleryStepsControl">コントロールセンター：コントロールセンターを開き、空白部分を長押しして「コントロールを追加」をタップし、DoneAtを検索します。</string>
     <string name="widgetGalleryStepsHome">ホーム画面：空白部分を長押しし、「編集」→「ウィジェットを追加」の順にタップして、DoneAtを検索します。</string>

@@ -1201,10 +1201,11 @@
     <string name="widgetGallerySectionFocus">Fokus und Steuerelemente</string>
     <string name="widgetGallerySectionRecords">Übersicht und Leben</string>
     <string name="widgetGallerySectionWeek">Woche, Schichten und Feiertage</string>
+    <string name="widgetGallerySizeCircular">Rund</string>
     <string name="widgetGallerySizeExtraLarge">Extragroß</string>
     <string name="widgetGallerySizeLarge">Groß</string>
-    <string name="widgetGallerySizeLockScreen">Sperrbildschirm</string>
     <string name="widgetGallerySizeMedium">Mittel</string>
+    <string name="widgetGallerySizeRectangular">Breit</string>
     <string name="widgetGallerySizeSmall">Klein</string>
     <string name="widgetGalleryStepsControl">Kontrollzentrum: Das Kontrollzentrum öffnen, einen leeren Bereich gedrückt halten, auf „Steuerelement hinzufügen“ tippen und nach DoneAt suchen.</string>
     <string name="widgetGalleryStepsHome">Home-Bildschirm: Einen leeren Bereich gedrückt halten, auf „Bearbeiten“, dann auf „Widget hinzufügen“ tippen und nach DoneAt suchen.</string>

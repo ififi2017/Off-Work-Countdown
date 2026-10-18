@@ -1198,10 +1198,11 @@
     <string name="widgetGallerySectionFocus">Fokus dan kontrol</string>
     <string name="widgetGallerySectionRecords">Ringkasan dan hidup</string>
     <string name="widgetGallerySectionWeek">Pekan, shift, dan hari libur</string>
+    <string name="widgetGallerySizeCircular">Bulat</string>
     <string name="widgetGallerySizeExtraLarge">Ekstra besar</string>
     <string name="widgetGallerySizeLarge">Besar</string>
-    <string name="widgetGallerySizeLockScreen">Layar Kunci</string>
     <string name="widgetGallerySizeMedium">Sedang</string>
+    <string name="widgetGallerySizeRectangular">Lebar</string>
     <string name="widgetGallerySizeSmall">Kecil</string>
     <string name="widgetGalleryStepsControl">Pusat Kontrol: buka Pusat Kontrol, sentuh dan tahan area kosong, ketuk Tambah Kontrol, lalu cari DoneAt.</string>
     <string name="widgetGalleryStepsHome">Layar Utama: sentuh dan tahan area kosong, ketuk Edit, lalu Tambah Widget, dan cari DoneAt.</string>

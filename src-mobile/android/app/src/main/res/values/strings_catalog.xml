@@ -1201,10 +1201,11 @@
     <string name="widgetGallerySectionFocus">Focus and controls</string>
     <string name="widgetGallerySectionRecords">Summary and life</string>
     <string name="widgetGallerySectionWeek">Week, shifts and holidays</string>
+    <string name="widgetGallerySizeCircular">Round</string>
     <string name="widgetGallerySizeExtraLarge">Extra large</string>
     <string name="widgetGallerySizeLarge">Large</string>
-    <string name="widgetGallerySizeLockScreen">Lock Screen</string>
     <string name="widgetGallerySizeMedium">Medium</string>
+    <string name="widgetGallerySizeRectangular">Wide</string>
     <string name="widgetGallerySizeSmall">Small</string>
     <string name="widgetGalleryStepsControl">Control Center: open Control Center, touch and hold an empty area, tap Add a Control and search for DoneAt.</string>
     <string name="widgetGalleryStepsHome">Home Screen: touch and hold an empty area, tap Edit, then Add Widget, and search for DoneAt.</string>

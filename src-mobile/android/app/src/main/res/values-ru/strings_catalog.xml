@@ -1207,10 +1207,11 @@
     <string name="widgetGallerySectionFocus">Фокус и управление</string>
     <string name="widgetGallerySectionRecords">Сводка и жизнь</string>
     <string name="widgetGallerySectionWeek">Неделя, смены и праздники</string>
+    <string name="widgetGallerySizeCircular">Круглый</string>
     <string name="widgetGallerySizeExtraLarge">Очень большой</string>
     <string name="widgetGallerySizeLarge">Большой</string>
-    <string name="widgetGallerySizeLockScreen">Экран блокировки</string>
     <string name="widgetGallerySizeMedium">Средний</string>
+    <string name="widgetGallerySizeRectangular">Широкий</string>
     <string name="widgetGallerySizeSmall">Маленький</string>
     <string name="widgetGalleryStepsControl">Пункт управления: открой Пункт управления, нажми и удерживай пустую область, нажми «Добавить элемент управления» и найди DoneAt.</string>
     <string name="widgetGalleryStepsHome">Экран «Домой»: нажми и удерживай пустую область, нажми «Править», затем «Добавить виджет» и найди DoneAt.</string>

@@ -1198,10 +1198,11 @@
     <string name="widgetGallerySectionFocus">Tập trung và điều khiển</string>
     <string name="widgetGallerySectionRecords">Tổng kết và cuộc đời</string>
     <string name="widgetGallerySectionWeek">Tuần, ca làm và ngày lễ</string>
+    <string name="widgetGallerySizeCircular">Tròn</string>
     <string name="widgetGallerySizeExtraLarge">Rất lớn</string>
     <string name="widgetGallerySizeLarge">Lớn</string>
-    <string name="widgetGallerySizeLockScreen">Màn hình khóa</string>
     <string name="widgetGallerySizeMedium">Vừa</string>
+    <string name="widgetGallerySizeRectangular">Chữ nhật</string>
     <string name="widgetGallerySizeSmall">Nhỏ</string>
     <string name="widgetGalleryStepsControl">Trung tâm điều khiển: mở Trung tâm điều khiển, chạm và giữ vùng trống, chạm Thêm điều khiển và tìm DoneAt.</string>
     <string name="widgetGalleryStepsHome">Màn hình chính: chạm và giữ vùng trống, chạm Sửa, rồi chạm Thêm tiện ích và tìm DoneAt.</string>

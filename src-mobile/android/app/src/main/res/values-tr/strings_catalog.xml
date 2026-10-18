@@ -1201,10 +1201,11 @@
     <string name="widgetGallerySectionFocus">Odak ve denetimler</string>
     <string name="widgetGallerySectionRecords">Özet ve hayat</string>
     <string name="widgetGallerySectionWeek">Hafta, vardiyalar ve tatiller</string>
+    <string name="widgetGallerySizeCircular">Yuvarlak</string>
     <string name="widgetGallerySizeExtraLarge">Ekstra büyük</string>
     <string name="widgetGallerySizeLarge">Büyük</string>
-    <string name="widgetGallerySizeLockScreen">Kilit Ekranı</string>
     <string name="widgetGallerySizeMedium">Orta</string>
+    <string name="widgetGallerySizeRectangular">Geniş</string>
     <string name="widgetGallerySizeSmall">Küçük</string>
     <string name="widgetGalleryStepsControl">Denetim Merkezi: Denetim Merkezi’ni aç, boş bir alana dokunup basılı tut, Denetim Ekle’ye dokun ve DoneAt’i ara.</string>
     <string name="widgetGalleryStepsHome">Ana Ekran: boş bir alana dokunup basılı tut, Düzenle’ye, sonra Widget Ekle’ye dokun ve DoneAt’i ara.</string>

@@ -1198,10 +1198,11 @@
     <string name="widgetGallerySectionFocus">專注與控制</string>
     <string name="widgetGallerySectionRecords">總覽與人生</string>
     <string name="widgetGallerySectionWeek">本週、排班同假期</string>
+    <string name="widgetGallerySizeCircular">圓形</string>
     <string name="widgetGallerySizeExtraLarge">特大</string>
     <string name="widgetGallerySizeLarge">大</string>
-    <string name="widgetGallerySizeLockScreen">鎖定畫面</string>
     <string name="widgetGallerySizeMedium">中</string>
+    <string name="widgetGallerySizeRectangular">長方形</string>
     <string name="widgetGallerySizeSmall">小</string>
     <string name="widgetGalleryStepsControl">控制中心：打開控制中心，長按空白位置，輕按「加入控制項目」並搜尋 DoneAt。</string>
     <string name="widgetGalleryStepsHome">主畫面：長按空白位置，輕按「編輯」，再輕按「加入小工具」，然後搜尋 DoneAt。</string>

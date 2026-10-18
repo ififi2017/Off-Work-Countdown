@@ -1204,10 +1204,11 @@
     <string name="widgetGallerySectionFocus">Focus et contrôles</string>
     <string name="widgetGallerySectionRecords">Bilan et vie</string>
     <string name="widgetGallerySectionWeek">Semaine, planning et jours fériés</string>
+    <string name="widgetGallerySizeCircular">Rond</string>
     <string name="widgetGallerySizeExtraLarge">Très grand</string>
     <string name="widgetGallerySizeLarge">Grand</string>
-    <string name="widgetGallerySizeLockScreen">Écran verrouillé</string>
     <string name="widgetGallerySizeMedium">Moyen</string>
+    <string name="widgetGallerySizeRectangular">Large</string>
     <string name="widgetGallerySizeSmall">Petit</string>
     <string name="widgetGalleryStepsControl">Centre de contrôle : ouvrez le centre de contrôle, maintenez le doigt sur une zone vide, touchez « Ajouter un contrôle » et recherchez DoneAt.</string>
     <string name="widgetGalleryStepsHome">Écran d’accueil : maintenez le doigt sur une zone vide, touchez « Modifier », puis « Ajouter un widget », et recherchez DoneAt.</string>

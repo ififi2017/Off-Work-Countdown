@@ -1213,10 +1213,11 @@
     <string name="widgetGallerySectionFocus">التركيز وعناصر التحكم</string>
     <string name="widgetGallerySectionRecords">الملخص والحياة</string>
     <string name="widgetGallerySectionWeek">الأسبوع والورديات والعطلات</string>
+    <string name="widgetGallerySizeCircular">دائري</string>
     <string name="widgetGallerySizeExtraLarge">كبير جدًا</string>
     <string name="widgetGallerySizeLarge">كبير</string>
-    <string name="widgetGallerySizeLockScreen">شاشة القفل</string>
     <string name="widgetGallerySizeMedium">متوسط</string>
+    <string name="widgetGallerySizeRectangular">مستطيل</string>
     <string name="widgetGallerySizeSmall">صغير</string>
     <string name="widgetGalleryStepsControl">مركز التحكم: افتح مركز التحكم، المس مع الاستمرار منطقة فارغة، واضغط على «إضافة عنصر تحكم» وابحث عن DoneAt.</string>
     <string name="widgetGalleryStepsHome">الشاشة الرئيسية: المس مع الاستمرار منطقة فارغة، واضغط على «تعديل» ثم «إضافة أداة» وابحث عن DoneAt.</string>

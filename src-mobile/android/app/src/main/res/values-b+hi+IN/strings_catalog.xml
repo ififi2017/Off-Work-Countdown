@@ -1201,10 +1201,11 @@
     <string name="widgetGallerySectionFocus">फ़ोकस और कंट्रोल</string>
     <string name="widgetGallerySectionRecords">सारांश और जीवन</string>
     <string name="widgetGallerySectionWeek">सप्ताह, शिफ़्ट और छुट्टियाँ</string>
+    <string name="widgetGallerySizeCircular">गोल</string>
     <string name="widgetGallerySizeExtraLarge">बहुत बड़ा</string>
     <string name="widgetGallerySizeLarge">बड़ा</string>
-    <string name="widgetGallerySizeLockScreen">लॉक स्क्रीन</string>
     <string name="widgetGallerySizeMedium">मध्यम</string>
+    <string name="widgetGallerySizeRectangular">आयताकार</string>
     <string name="widgetGallerySizeSmall">छोटा</string>
     <string name="widgetGalleryStepsControl">कंट्रोल सेंटर: कंट्रोल सेंटर खोलें, किसी खाली जगह को टच और होल्ड करें, “कंट्रोल जोड़ें” पर टैप करें और DoneAt खोजें।</string>
     <string name="widgetGalleryStepsHome">होम स्क्रीन: किसी खाली जगह को टच और होल्ड करें, “संपादित करें” पर टैप करें, फिर “विजेट जोड़ें” पर टैप करके DoneAt खोजें।</string>
