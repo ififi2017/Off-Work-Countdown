@@ -352,7 +352,7 @@ private struct WidgetGalleryPreviewStage<Preview: View>: View {
             }
             .padding(.vertical, 18)
             .frame(maxWidth: .infinity)
-            .background(Color(uiColor: .systemGroupedBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .background(WidgetGalleryColors.stage, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .animation(.snappy, value: family)
         }
     }
@@ -370,7 +370,7 @@ struct WidgetGalleryFrame<Content: View>: View {
         content()
             .padding(isAccessory ? 0 : 16)
             .frame(width: size.width, height: size.height)
-            .background(isAccessory ? Color(white: 0.16) : Color(uiColor: .systemBackground))
+            .background(isAccessory ? Color(white: 0.16) : WidgetGalleryColors.widget)
             .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
             .modifier(WidgetGalleryAccessoryScheme(isAccessory: isAccessory))
             .shadow(color: .black.opacity(isAccessory ? 0 : 0.10), radius: 12, y: 4)
@@ -399,6 +399,18 @@ struct WidgetGalleryFrame<Content: View>: View {
         default: CGSize(width: 234, height: 26)
         }
     }
+}
+
+/// Stage and widget surfaces. In dark mode a black widget would vanish into
+/// a black stage, so the stage reads as a dimmed wallpaper and the widget as
+/// the system's dark widget plate.
+enum WidgetGalleryColors {
+    static let stage = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(white: 0.24, alpha: 1) : .systemGroupedBackground
+    })
+    static let widget = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(white: 0.11, alpha: 1) : .systemBackground
+    })
 }
 
 /// Lock Screen accessories always sit on a dark wallpaper; Home Screen

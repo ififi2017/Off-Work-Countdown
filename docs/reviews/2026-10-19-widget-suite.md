@@ -37,6 +37,9 @@ China holidays, Plus sample data where locked).
 | [widgets-en-light.jpg](2026-10-19-widget-suite/widgets-en-light.jpg) | English, light |
 | [widgets-en-dark.jpg](2026-10-19-widget-suite/widgets-en-dark.jpg) | English, dark |
 
+Settings › Widgets on the simulator, dark, free tier:
+[gallery-dark.jpg](2026-10-19-widget-suite/gallery-dark.jpg).
+
 To regenerate: run the test with
 `TEST_RUNNER_OWC_WIDGET_RENDER_DIR=<folder>` in the environment.
 
@@ -58,6 +61,8 @@ the Home Screen they use the orange tint set in code.
 - The Settings gallery originally laid all sizes side by side with a lot of
   empty space; it now has a size picker on a grey stage. It also forced light
   mode and now follows the system appearance; Lock Screen previews stay dark.
+  In dark mode the stage is a dimmed grey so the dark widget plate stays
+  visible.
 - The year summary bars were too short on the large size; raised to fill the
   card.
 
