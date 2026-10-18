@@ -934,6 +934,35 @@ func widgetSnapshotKeepsUpcomingPastPresentationWindow() throws {
 }
 
 @MainActor
+@Test("The current shift's widget rows read like any later shift's, without \"today\"")
+func widgetCurrentShiftRowsSkipToday() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    // Monday 07:00, before clock-in: the snapshot can still be on screen the
+    // next day, so its clock-in row must not say "today's shift".
+    let earlyMonday = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 7
+    )))
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: earlyMonday),
+        active: true,
+        nowMs: Int64(earlyMonday.timeIntervalSince1970 * 1_000)
+    )
+    let boundaries = snapshot.upcoming.filter { $0.kind == "shiftStart" || $0.kind == "shiftEnd" }
+    #expect(boundaries.count >= 2)
+    #expect(boundaries.allSatisfy { $0.detail.isEmpty })
+}
+
+@MainActor
 @Test("Rest-day widget snapshots do not project a phantom weekday shift")
 func widgetSnapshotOmitsRestDayShiftEvents() throws {
     let (defaults, suite) = try isolatedDefaults()

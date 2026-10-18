@@ -77,7 +77,9 @@ private struct ShiftAlarmCountdown: View {
 
     var body: some View {
         if case .countdown(let countdown) = state.mode {
-            Text(timerInterval: Date.now...max(Date.now, countdown.fireDate), countsDown: true)
+            // Bounded below by when the snooze began, not the render time; see
+            // `activityTimerRange`.
+            Text(timerInterval: min(countdown.startDate, countdown.fireDate)...countdown.fireDate, countsDown: true)
                 .multilineTextAlignment(.trailing)
         }
     }
@@ -457,8 +459,7 @@ private struct ActivityCountdownPanel: View {
                    activityLeg(context, at: now)?.isPreview != true {
                     // The interval timer fills the available width without
                     // the .timer style's oversized ideal width shrinking it.
-                    let end = activityEnd(context, at: now)
-                    Text(timerInterval: now...max(now, end), countsDown: true)
+                    Text(timerInterval: activityTimerRange(context, at: now), countsDown: true)
                         .font(.system(size: size, weight: .bold).monospacedDigit())
                         .foregroundStyle(.white)
                         .environment(\.locale, activityLocale(context))
@@ -677,7 +678,7 @@ private struct ActivityCompactCountdown: View {
                 // ideal width (https://developer.apple.com/forums/thread/723316),
                 // and unbounded it blows the island out to its expanded shape
                 // with the countdown rendered blank.
-                Text(timerInterval: timeline.date...max(timeline.date, activityEnd(context, at: timeline.date)), countsDown: true)
+                Text(timerInterval: activityTimerRange(context, at: timeline.date), countsDown: true)
                     .font(.system(size: 14, weight: .bold).monospacedDigit())
                     .foregroundStyle(.white)
                     .environment(\.locale, activityLocale(context))
@@ -827,6 +828,22 @@ private func activityEnd(
     return Date(timeIntervalSince1970: Double(endMs) / 1_000)
 }
 
+/// The span a counting-down `Text(timerInterval:)` covers. Its lower bound is
+/// where the running leg (or the shift) began, never the frame's own date:
+/// iOS renders `TimelineView` frames ahead and can show one a moment early,
+/// and before its lower bound the text holds the whole interval still. A
+/// frame-dated bound read a few seconds ahead of the clock and froze there
+/// until real time caught up.
+private func activityTimerRange(
+    _ context: ActivityViewContext<OffWorkActivityAttributes>,
+    at date: Date
+) -> ClosedRange<Date> {
+    let end = activityEnd(context, at: date)
+    let startMs = activityLeg(context, at: date)?.startAtMs ?? context.attributes.shiftStartAtMs
+    let start = Date(timeIntervalSince1970: Double(startMs) / 1_000)
+    return min(start, end)...end
+}
+
 private func activityComplete(_ context: ActivityViewContext<OffWorkActivityAttributes>, at date: Date) -> Bool {
     context.state.phase == "complete"
         || date.timeIntervalSince1970 * 1_000 >= Double(context.state.chainEndAtMs)
@@ -963,7 +980,7 @@ private func activityCountdownText(
             .lineLimit(1)
             .minimumScaleFactor(0.58)
     } else {
-        Text(timerInterval: now...max(now, activityEnd(context, at: now)), countsDown: true)
+        Text(timerInterval: activityTimerRange(context, at: now), countsDown: true)
             .font(.system(size: size, weight: .bold).monospacedDigit())
             .foregroundStyle(foreground)
             // Live Activities run in the Widget extension, whose process
