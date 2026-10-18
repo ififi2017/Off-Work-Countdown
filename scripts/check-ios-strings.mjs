@@ -74,11 +74,27 @@ export const SAME_AS_ENGLISH_ON_PURPOSE = {
   focusEstimateDetail: ["es", "fr", "it", "pt"],
   // In German a name is a Name
   focusUsualDayName: ["de"],
+  // Apple's own Settings and Home Screen call them "Widgets" in these languages
+  widgetGalleryTitle: ["de", "es", "fr", "pt"],
+  // German uses the English word for a countdown timer
+  widgetGallerySectionCountdown: ["de"],
+  // Apple's French watchOS term
+  widgetGalleryWatchTitle: ["fr"],
 };
 
 /// Catalog keys that no code asks for in a shape `appKeyReferences` sees, each
 /// with where it is really used. Prefer reshaping the code to listing a key.
-export const UNSEEN_ON_PURPOSE = {};
+export const UNSEEN_ON_PURPOSE = {
+  // Control Center labels and the clock-in intent title (plan 023). The widget
+  // extension reads them as LocalizedStringResource from the app bundle, and
+  // App Intents needs the intent title as a literal, so they cannot go
+  // through t("…"). Used in Native/Widgets/FocusControlWidgets.swift.
+  widgetSuiteControlClockInDescription: "FocusControlWidgets.swift",
+  widgetSuiteControlCountdownDescription: "FocusControlWidgets.swift",
+  widgetSuiteControlFocusDescription: "FocusControlWidgets.swift",
+  widgetSuiteControlWorking: "FocusControlWidgets.swift",
+  widgetSuiteIntentStartCountdown: "FocusControlWidgets.swift",
+};
 
 /// Languages whose singular differs from the plural. Everyone else has one
 /// nominal form, so a separate "one" there would be an invented word.

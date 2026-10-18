@@ -41,7 +41,11 @@ struct SummaryWidget: Widget {
 }
 
 struct SummaryWidgetView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets renders these views at sizes the app's own
+    /// environment cannot claim; widgets leave it nil.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     let entry: SummaryWidgetEntry
 
     private var locale: String { entry.payload?.locale ?? WidgetSuiteCopy.systemLocale }
@@ -293,7 +297,11 @@ struct YearProgressWidget: Widget {
 }
 
 struct YearProgressView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets renders these views at sizes the app's own
+    /// environment cannot claim; widgets leave it nil.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     let entry: LifeWidgetEntry
 
     var body: some View {
@@ -373,7 +381,11 @@ nonisolated struct LifeFigures {
 }
 
 struct LifeWidgetView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets renders these views at sizes the app's own
+    /// environment cannot claim; widgets leave it nil.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     let entry: LifeWidgetEntry
 
     private var locale: String { entry.payload?.locale ?? WidgetSuiteCopy.systemLocale }
@@ -607,7 +619,11 @@ struct WeekendWidget: Widget {
 }
 
 struct WeekendWidgetView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets renders these views at sizes the app's own
+    /// environment cannot claim; widgets leave it nil.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     let entry: HolidayWidgetEntry
 
     private var locale: String { entry.payload?.locale ?? WidgetSuiteCopy.systemLocale }
@@ -691,7 +707,11 @@ struct HolidayWidget: Widget {
 }
 
 struct HolidayWidgetView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets renders these views at sizes the app's own
+    /// environment cannot claim; widgets leave it nil.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     let entry: HolidayWidgetEntry
 
     private var locale: String { entry.payload?.locale ?? WidgetSuiteCopy.systemLocale }

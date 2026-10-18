@@ -28,6 +28,7 @@ enum AppRoute: String, Hashable, Identifiable {
     case focus
     case focusPlan
     case appleWatch
+    case widgets
     case about
 
     var id: String { rawValue }

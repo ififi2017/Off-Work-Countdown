@@ -237,7 +237,7 @@ final class AppRuntime {
         _ = focus.carryIncompleteFocusTasks(at: .now)
 #if DEBUG
         if let debugRoute {
-            if debugRoute == .focus || debugRoute == .focusPlan {
+            if debugRoute == .focus || debugRoute == .focusPlan || debugRoute == .widgets {
                 // Focus QA uses the same realistic sample archive as Records.
                 // Keep this behind DEBUG so release launches never synthesize
                 // user tasks or history.

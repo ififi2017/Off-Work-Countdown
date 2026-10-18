@@ -359,6 +359,7 @@ describe("iOS string catalog checks", () => {
         appSources: [join(root, "app")],
         watchSources: [join(root, "watch")],
         watchKeys: ["watchListed"],
+        unseenOnPurpose: {},
       }).map((problem) => problem.replace(/^.*\/(\w+\.swift)/, "$1"));
       expect(problems).toEqual([
         'View.swift:3 asks for "missingKey", which Localizable.xcstrings does not have.',

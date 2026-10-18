@@ -129,7 +129,11 @@ struct WeekProgressWidget: Widget {
 }
 
 struct WeekProgressView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets renders these views at sizes the app's own
+    /// environment cannot claim; widgets leave it nil.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     let entry: CalendarWidgetEntry
 
     var body: some View {
@@ -399,7 +403,11 @@ struct RosterWidget: Widget {
 }
 
 struct RosterView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets renders these views at sizes the app's own
+    /// environment cannot claim; widgets leave it nil.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     let entry: CalendarWidgetEntry
 
     var body: some View {

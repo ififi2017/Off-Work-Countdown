@@ -66,6 +66,8 @@ struct AppRouteDestination: View {
                 )
             case .appleWatch:
                 AppleWatchSettingsView(text: runtime.text)
+            case .widgets:
+                WidgetGallerySettingsView(shifts: runtime.shifts)
             case .about:
                 AboutView(text: runtime.text) {
 #if DEBUG

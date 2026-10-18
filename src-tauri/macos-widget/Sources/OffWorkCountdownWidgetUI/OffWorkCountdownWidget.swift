@@ -594,7 +594,10 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
 }
 
 public struct OffWorkCountdownWidgetView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets on iOS renders this view at a chosen size.
+    private let familyOverride: WidgetFamily?
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.calendar) private var calendar
     #if os(iOS)
@@ -602,8 +605,9 @@ public struct OffWorkCountdownWidgetView: View {
     #endif
     public let entry: OffWorkCountdownWidgetEntry
 
-    public init(entry: OffWorkCountdownWidgetEntry) {
+    public init(entry: OffWorkCountdownWidgetEntry, familyOverride: WidgetFamily? = nil) {
         self.entry = entry
+        self.familyOverride = familyOverride
     }
 
     public var body: some View {

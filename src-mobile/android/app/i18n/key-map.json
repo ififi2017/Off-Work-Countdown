@@ -4280,6 +4280,87 @@
       "resource": "string/widgetDescription",
       "androidOnly": true
     },
+    "widgetGalleryClassicName": {
+      "resource": "string/widgetGalleryClassicName"
+    },
+    "widgetGalleryControlsNote": {
+      "resource": "string/widgetGalleryControlsNote"
+    },
+    "widgetGalleryControlsTitle": {
+      "resource": "string/widgetGalleryControlsTitle"
+    },
+    "widgetGalleryFree": {
+      "resource": "string/widgetGalleryFree"
+    },
+    "widgetGalleryFreeAndPlus": {
+      "resource": "string/widgetGalleryFreeAndPlus"
+    },
+    "widgetGalleryHowToAdd": {
+      "resource": "string/widgetGalleryHowToAdd"
+    },
+    "widgetGalleryIntro": {
+      "resource": "string/widgetGalleryIntro"
+    },
+    "widgetGalleryPlusNote": {
+      "resource": "string/widgetGalleryPlusNote"
+    },
+    "widgetGallerySample": {
+      "resource": "string/widgetGallerySample"
+    },
+    "widgetGallerySampleTask": {
+      "resource": "string/widgetGallerySampleTask"
+    },
+    "widgetGallerySectionCountdown": {
+      "resource": "string/widgetGallerySectionCountdown"
+    },
+    "widgetGallerySectionFocus": {
+      "resource": "string/widgetGallerySectionFocus"
+    },
+    "widgetGallerySectionRecords": {
+      "resource": "string/widgetGallerySectionRecords"
+    },
+    "widgetGallerySectionWeek": {
+      "resource": "string/widgetGallerySectionWeek"
+    },
+    "widgetGallerySizeExtraLarge": {
+      "resource": "string/widgetGallerySizeExtraLarge"
+    },
+    "widgetGallerySizeLarge": {
+      "resource": "string/widgetGallerySizeLarge"
+    },
+    "widgetGallerySizeLockScreen": {
+      "resource": "string/widgetGallerySizeLockScreen"
+    },
+    "widgetGallerySizeMedium": {
+      "resource": "string/widgetGallerySizeMedium"
+    },
+    "widgetGallerySizeSmall": {
+      "resource": "string/widgetGallerySizeSmall"
+    },
+    "widgetGalleryStepsControl": {
+      "resource": "string/widgetGalleryStepsControl"
+    },
+    "widgetGalleryStepsHome": {
+      "resource": "string/widgetGalleryStepsHome"
+    },
+    "widgetGalleryStepsLock": {
+      "resource": "string/widgetGalleryStepsLock"
+    },
+    "widgetGalleryStepsWatch": {
+      "resource": "string/widgetGalleryStepsWatch"
+    },
+    "widgetGalleryTitle": {
+      "resource": "string/widgetGalleryTitle"
+    },
+    "widgetGalleryWatchCountdown": {
+      "resource": "string/widgetGalleryWatchCountdown"
+    },
+    "widgetGalleryWatchNote": {
+      "resource": "string/widgetGalleryWatchNote"
+    },
+    "widgetGalleryWatchTitle": {
+      "resource": "string/widgetGalleryWatchTitle"
+    },
     "widgetOpenToRefresh": {
       "resource": "string/widgetOpenToRefresh",
       "androidOnly": true
@@ -4298,6 +4379,425 @@
     },
     "widgetRestDay": {
       "resource": "string/widgetRestDay"
+    },
+    "widgetStyleBigName": {
+      "resource": "string/widgetStyleBigName"
+    },
+    "widgetStyleDetailName": {
+      "resource": "string/widgetStyleDetailName"
+    },
+    "widgetStyleRingName": {
+      "resource": "string/widgetStyleRingName"
+    },
+    "widgetStyleTimelineName": {
+      "resource": "string/widgetStyleTimelineName"
+    },
+    "widgetSuiteApproximately": {
+      "resource": "string/widgetSuiteApproximately",
+      "params": [
+        "value"
+      ]
+    },
+    "widgetSuiteBigWeek": {
+      "resource": "string/widgetSuiteBigWeek"
+    },
+    "widgetSuiteCareer": {
+      "resource": "string/widgetSuiteCareer"
+    },
+    "widgetSuiteControlClockIn": {
+      "resource": "string/widgetSuiteControlClockIn"
+    },
+    "widgetSuiteControlClockInDescription": {
+      "resource": "string/widgetSuiteControlClockInDescription"
+    },
+    "widgetSuiteControlCountdown": {
+      "resource": "string/widgetSuiteControlCountdown"
+    },
+    "widgetSuiteControlCountdownDescription": {
+      "resource": "string/widgetSuiteControlCountdownDescription"
+    },
+    "widgetSuiteControlFocus": {
+      "resource": "string/widgetSuiteControlFocus"
+    },
+    "widgetSuiteControlFocusDescription": {
+      "resource": "string/widgetSuiteControlFocusDescription"
+    },
+    "widgetSuiteControlWorking": {
+      "resource": "string/widgetSuiteControlWorking"
+    },
+    "widgetSuiteCycleDay": {
+      "resource": "string/widgetSuiteCycleDay",
+      "params": [
+        "day",
+        "length"
+      ]
+    },
+    "widgetSuiteDaysCount": {
+      "resource": "string/widgetSuiteDaysCount",
+      "params": [
+        "count"
+      ]
+    },
+    "widgetSuiteDaysLeft": {
+      "resource": "string/widgetSuiteDaysLeft",
+      "params": [
+        "count"
+      ]
+    },
+    "widgetSuiteDaysUnit": {
+      "resource": "string/widgetSuiteDaysUnit"
+    },
+    "widgetSuiteFinishAt": {
+      "resource": "string/widgetSuiteFinishAt",
+      "params": [
+        "time"
+      ]
+    },
+    "widgetSuiteFocusAdd": {
+      "resource": "string/widgetSuiteFocusAdd"
+    },
+    "widgetSuiteFocusBlockDetail": {
+      "resource": "string/widgetSuiteFocusBlockDetail",
+      "params": [
+        "minutes",
+        "title"
+      ]
+    },
+    "widgetSuiteFocusBreakNow": {
+      "resource": "string/widgetSuiteFocusBreakNow"
+    },
+    "widgetSuiteFocusDescription": {
+      "resource": "string/widgetSuiteFocusDescription"
+    },
+    "widgetSuiteFocusEmpty": {
+      "resource": "string/widgetSuiteFocusEmpty"
+    },
+    "widgetSuiteFocusName": {
+      "resource": "string/widgetSuiteFocusName"
+    },
+    "widgetSuiteFocusNext": {
+      "resource": "string/widgetSuiteFocusNext"
+    },
+    "widgetSuiteFocusNextAt": {
+      "resource": "string/widgetSuiteFocusNextAt",
+      "params": [
+        "time",
+        "title"
+      ]
+    },
+    "widgetSuiteFocusNow": {
+      "resource": "string/widgetSuiteFocusNow"
+    },
+    "widgetSuiteFocusOpen": {
+      "resource": "string/widgetSuiteFocusOpen"
+    },
+    "widgetSuiteFocusPlan": {
+      "resource": "string/widgetSuiteFocusPlan"
+    },
+    "widgetSuiteFocusPromise": {
+      "resource": "string/widgetSuiteFocusPromise"
+    },
+    "widgetSuiteFocusRound": {
+      "resource": "string/widgetSuiteFocusRound",
+      "params": [
+        "round",
+        "rounds"
+      ]
+    },
+    "widgetSuiteFocusStop": {
+      "resource": "string/widgetSuiteFocusStop"
+    },
+    "widgetSuiteHolidayDescription": {
+      "resource": "string/widgetSuiteHolidayDescription"
+    },
+    "widgetSuiteHolidayEstimated": {
+      "resource": "string/widgetSuiteHolidayEstimated"
+    },
+    "widgetSuiteHolidayIn": {
+      "resource": "string/widgetSuiteHolidayIn",
+      "params": [
+        "name",
+        "days"
+      ]
+    },
+    "widgetSuiteHolidayName": {
+      "resource": "string/widgetSuiteHolidayName"
+    },
+    "widgetSuiteHolidayRegionMissing": {
+      "resource": "string/widgetSuiteHolidayRegionMissing"
+    },
+    "widgetSuiteHolidayRun": {
+      "resource": "string/widgetSuiteHolidayRun",
+      "params": [
+        "date",
+        "days"
+      ]
+    },
+    "widgetSuiteIntentStartCountdown": {
+      "resource": "string/widgetSuiteIntentStartCountdown"
+    },
+    "widgetSuiteLastMonthTotal": {
+      "resource": "string/widgetSuiteLastMonthTotal",
+      "params": [
+        "hours"
+      ]
+    },
+    "widgetSuiteLastWeekTotal": {
+      "resource": "string/widgetSuiteLastWeekTotal",
+      "params": [
+        "hours"
+      ]
+    },
+    "widgetSuiteLastYearTotal": {
+      "resource": "string/widgetSuiteLastYearTotal",
+      "params": [
+        "hours"
+      ]
+    },
+    "widgetSuiteLearnPlus": {
+      "resource": "string/widgetSuiteLearnPlus"
+    },
+    "widgetSuiteLeave": {
+      "resource": "string/widgetSuiteLeave"
+    },
+    "widgetSuiteLeaveEmpty": {
+      "resource": "string/widgetSuiteLeaveEmpty"
+    },
+    "widgetSuiteLeavePlan": {
+      "resource": "string/widgetSuiteLeavePlan",
+      "params": [
+        "leave",
+        "total"
+      ]
+    },
+    "widgetSuiteLeavePromise": {
+      "resource": "string/widgetSuiteLeavePromise"
+    },
+    "widgetSuiteLeaveRemaining": {
+      "resource": "string/widgetSuiteLeaveRemaining",
+      "params": [
+        "days"
+      ]
+    },
+    "widgetSuiteLeaveTitle": {
+      "resource": "string/widgetSuiteLeaveTitle"
+    },
+    "widgetSuiteLegendHoliday": {
+      "resource": "string/widgetSuiteLegendHoliday"
+    },
+    "widgetSuiteLifeDescription": {
+      "resource": "string/widgetSuiteLifeDescription"
+    },
+    "widgetSuiteLifeName": {
+      "resource": "string/widgetSuiteLifeName"
+    },
+    "widgetSuiteLifePromise": {
+      "resource": "string/widgetSuiteLifePromise"
+    },
+    "widgetSuiteLifeSetup": {
+      "resource": "string/widgetSuiteLifeSetup"
+    },
+    "widgetSuiteLifeShare": {
+      "resource": "string/widgetSuiteLifeShare",
+      "params": [
+        "percent",
+        "years"
+      ]
+    },
+    "widgetSuiteLifeYears": {
+      "resource": "string/widgetSuiteLifeYears",
+      "params": [
+        "years"
+      ]
+    },
+    "widgetSuiteLived": {
+      "resource": "string/widgetSuiteLived"
+    },
+    "widgetSuiteMakeupWork": {
+      "resource": "string/widgetSuiteMakeupWork"
+    },
+    "widgetSuiteMonthRoster": {
+      "resource": "string/widgetSuiteMonthRoster",
+      "params": [
+        "month"
+      ]
+    },
+    "widgetSuiteMonthlyHours": {
+      "resource": "string/widgetSuiteMonthlyHours"
+    },
+    "widgetSuiteNextHoliday": {
+      "resource": "string/widgetSuiteNextHoliday"
+    },
+    "widgetSuiteNextLeave": {
+      "resource": "string/widgetSuiteNextLeave",
+      "params": [
+        "days"
+      ]
+    },
+    "widgetSuiteNoScheduleMessage": {
+      "resource": "string/widgetSuiteNoScheduleMessage"
+    },
+    "widgetSuiteOpenDoneAt": {
+      "resource": "string/widgetSuiteOpenDoneAt"
+    },
+    "widgetSuiteOpenSettings": {
+      "resource": "string/widgetSuiteOpenSettings"
+    },
+    "widgetSuiteOpenToRefresh": {
+      "resource": "string/widgetSuiteOpenToRefresh"
+    },
+    "widgetSuiteOvertime": {
+      "resource": "string/widgetSuiteOvertime"
+    },
+    "widgetSuitePassed": {
+      "resource": "string/widgetSuitePassed"
+    },
+    "widgetSuiteProgress": {
+      "resource": "string/widgetSuiteProgress"
+    },
+    "widgetSuiteRest": {
+      "resource": "string/widgetSuiteRest"
+    },
+    "widgetSuiteRestAfter": {
+      "resource": "string/widgetSuiteRestAfter",
+      "params": [
+        "count"
+      ]
+    },
+    "widgetSuiteRestOn": {
+      "resource": "string/widgetSuiteRestOn",
+      "params": [
+        "days"
+      ]
+    },
+    "widgetSuiteRestingNow": {
+      "resource": "string/widgetSuiteRestingNow"
+    },
+    "widgetSuiteRestingToday": {
+      "resource": "string/widgetSuiteRestingToday"
+    },
+    "widgetSuiteRosterDescription": {
+      "resource": "string/widgetSuiteRosterDescription"
+    },
+    "widgetSuiteRosterName": {
+      "resource": "string/widgetSuiteRosterName"
+    },
+    "widgetSuiteSmallWeek": {
+      "resource": "string/widgetSuiteSmallWeek"
+    },
+    "widgetSuiteStartsAt": {
+      "resource": "string/widgetSuiteStartsAt",
+      "params": [
+        "time"
+      ]
+    },
+    "widgetSuiteSummaryDescription": {
+      "resource": "string/widgetSuiteSummaryDescription"
+    },
+    "widgetSuiteSummaryName": {
+      "resource": "string/widgetSuiteSummaryName"
+    },
+    "widgetSuiteSummaryPromise": {
+      "resource": "string/widgetSuiteSummaryPromise"
+    },
+    "widgetSuiteThisMonth": {
+      "resource": "string/widgetSuiteThisMonth"
+    },
+    "widgetSuiteThisWeek": {
+      "resource": "string/widgetSuiteThisWeek"
+    },
+    "widgetSuiteThisYear": {
+      "resource": "string/widgetSuiteThisYear"
+    },
+    "widgetSuiteTimeWorked": {
+      "resource": "string/widgetSuiteTimeWorked"
+    },
+    "widgetSuiteToday": {
+      "resource": "string/widgetSuiteToday"
+    },
+    "widgetSuiteTomorrow": {
+      "resource": "string/widgetSuiteTomorrow"
+    },
+    "widgetSuiteUntilRestDay": {
+      "resource": "string/widgetSuiteUntilRestDay"
+    },
+    "widgetSuiteUntilRetirement": {
+      "resource": "string/widgetSuiteUntilRetirement"
+    },
+    "widgetSuiteUntilWeekend": {
+      "resource": "string/widgetSuiteUntilWeekend"
+    },
+    "widgetSuiteWeekDescription": {
+      "resource": "string/widgetSuiteWeekDescription"
+    },
+    "widgetSuiteWeekDone": {
+      "resource": "string/widgetSuiteWeekDone"
+    },
+    "widgetSuiteWeekName": {
+      "resource": "string/widgetSuiteWeekName"
+    },
+    "widgetSuiteWeekNumber": {
+      "resource": "string/widgetSuiteWeekNumber",
+      "params": [
+        "week"
+      ]
+    },
+    "widgetSuiteWeekendDescription": {
+      "resource": "string/widgetSuiteWeekendDescription"
+    },
+    "widgetSuiteWeekendName": {
+      "resource": "string/widgetSuiteWeekendName"
+    },
+    "widgetSuiteWork": {
+      "resource": "string/widgetSuiteWork"
+    },
+    "widgetSuiteWorkdayCount": {
+      "resource": "string/widgetSuiteWorkdayCount",
+      "params": [
+        "count"
+      ]
+    },
+    "widgetSuiteWorkdayProgress": {
+      "resource": "string/widgetSuiteWorkdayProgress",
+      "params": [
+        "done",
+        "total"
+      ]
+    },
+    "widgetSuiteWorkdays": {
+      "resource": "string/widgetSuiteWorkdays"
+    },
+    "widgetSuiteWorkdaysLeft": {
+      "resource": "string/widgetSuiteWorkdaysLeft"
+    },
+    "widgetSuiteWorkdaysRemaining": {
+      "resource": "string/widgetSuiteWorkdaysRemaining",
+      "params": [
+        "count"
+      ]
+    },
+    "widgetSuiteWorked": {
+      "resource": "string/widgetSuiteWorked"
+    },
+    "widgetSuiteYearDescription": {
+      "resource": "string/widgetSuiteYearDescription"
+    },
+    "widgetSuiteYearInline": {
+      "resource": "string/widgetSuiteYearInline",
+      "params": [
+        "year",
+        "percent"
+      ]
+    },
+    "widgetSuiteYearName": {
+      "resource": "string/widgetSuiteYearName"
+    },
+    "widgetSuiteYearsMonths": {
+      "resource": "string/widgetSuiteYearsMonths",
+      "params": [
+        "years",
+        "months"
+      ]
     },
     "widgetWorking": {
       "resource": "string/widgetWorking"

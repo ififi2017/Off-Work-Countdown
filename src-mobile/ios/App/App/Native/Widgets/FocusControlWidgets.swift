@@ -165,7 +165,11 @@ struct FocusWidget: Widget {
 }
 
 struct FocusWidgetView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets renders these views at sizes the app's own
+    /// environment cannot claim; widgets leave it nil.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     let entry: FocusWidgetEntry
 
     private var locale: String { entry.payload?.locale ?? WidgetSuiteCopy.systemLocale }

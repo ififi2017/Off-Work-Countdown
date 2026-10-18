@@ -33,6 +33,7 @@ struct SettingsSectionCard: View {
 
         case .appearance:
             link(.theme, icon: "display", title: shifts.text.t("theme"), value: shifts.text.themeLabel)
+            link(.widgets, icon: "square.grid.2x2", title: shifts.text.t("widgetGalleryTitle"), value: nil)
             link(.language, icon: "globe", title: shifts.text.t("chooselanguage"), value: shifts.text.languageLabel, isLast: true)
 
         case .recordsData:
