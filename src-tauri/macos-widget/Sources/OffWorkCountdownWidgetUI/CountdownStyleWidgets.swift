@@ -163,6 +163,9 @@ struct CountdownSegmentRing: View {
                 }
             }
             .rotationEffect(.degrees(-90))
+            // A square centred in whatever frame the ring is given.
+            .frame(width: min(proxy.size.width, proxy.size.height), height: min(proxy.size.width, proxy.size.height))
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .padding(lineWidth / 2)
     }
@@ -624,11 +627,12 @@ public struct CountdownDetailView: View {
     private var large: some View {
         VStack(alignment: .leading, spacing: 6) {
             status
-            countdown(size: 44)
+            countdown(size: 50)
             targetLine
             CountdownSegmentBar(weights: model.segmentWeights, progress: model.progress).padding(.top, 4)
             Divider().padding(.vertical, 6)
-            upcomingList(limit: 5, compact: false)
+            // Eight rows fill the large widget; fewer left its lower third empty.
+            upcomingList(limit: 8, compact: false)
             Spacer(minLength: 0)
         }
     }

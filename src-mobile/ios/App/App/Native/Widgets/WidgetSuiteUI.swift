@@ -266,6 +266,9 @@ struct WidgetSuiteSegmentRing: View {
                 }
             }
             .rotationEffect(.degrees(-90))
+            // A square centred in whatever frame the ring is given.
+            .frame(width: min(proxy.size.width, proxy.size.height), height: min(proxy.size.width, proxy.size.height))
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .padding(lineWidth / 2)
     }

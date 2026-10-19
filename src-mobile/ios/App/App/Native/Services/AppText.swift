@@ -180,6 +180,11 @@ final class AppText {
         date.formatted(.dateTime.weekday(.wide).locale(preferences.locale))
     }
 
+    /// The narrow weekday ("M", "一") that fits under a chart bar.
+    func weekdayNarrowName(for date: Date) -> String {
+        date.formatted(.dateTime.weekday(.narrow).locale(preferences.locale))
+    }
+
     /// The full weekday name of a civil day number (days since 1970-01-01),
     /// which names the same day whatever zone the device is in.
     func weekdayName(civilDayNumber: Int) -> String {

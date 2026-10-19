@@ -620,34 +620,65 @@ private struct RosterMonthView: View {
                 ]),
                 symbol: "calendar"
             )
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 7), spacing: 3) {
+            HStack(spacing: 3) {
                 ForEach(0..<7, id: \.self) { offset in
                     Text(weekdaySymbol(offset, calendar: calendar))
                         .font(.system(size: 10)).foregroundStyle(.secondary)
-                }
-                ForEach(0..<leading, id: \.self) { _ in Color.clear.frame(height: 40) }
-                ForEach(days) { day in
-                    let colors = chipColors(day)
-                    let isToday = day.dayKey == todayKey
-                    VStack(spacing: 2) {
-                        Text(WidgetSuiteFormat.dayOfMonth(day.startMs, locale: locale))
-                            .font(.system(size: 12, weight: isToday ? .bold : .medium)).monospacedDigit()
-                            .foregroundStyle(isToday ? WidgetSuitePalette.accentText : .primary)
-                        Text(chipTitle(day, payload: payload))
-                            .font(.system(size: 9, weight: .semibold))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.5)
-                            .padding(.horizontal, 3)
-                            .frame(maxWidth: .infinity, minHeight: 15)
-                            .background(colors.fill, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
-                            .foregroundStyle(colors.ink)
-                    }
-                    .frame(height: 40)
-                    .background(isToday ? WidgetSuitePalette.accent.opacity(0.10) : .clear,
-                                in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                        .frame(maxWidth: .infinity)
                 }
             }
-            Spacer(minLength: 0)
+            // Weeks share the height left, so a five- or six-week month fills
+            // the widget instead of leaving its lower part empty.
+            let cells: [WidgetCalendarDay?] = Array(repeating: nil, count: leading) + days.map { Optional($0) }
+            let weeks = stride(from: 0, to: cells.count, by: 7).map { start in
+                (0..<7).map { start + $0 < cells.count ? cells[start + $0] : nil }
+            }
+            VStack(spacing: 3) {
+                ForEach(Array(weeks.enumerated()), id: \.offset) { _, week in
+                    HStack(spacing: 3) {
+                        ForEach(0..<7, id: \.self) { column in
+                            if let day = week[column] {
+                                let colors = chipColors(day)
+                                let isToday = day.dayKey == todayKey
+                                VStack(spacing: 2) {
+                                    Text(WidgetSuiteFormat.dayOfMonth(day.startMs, locale: locale))
+                                        .font(.system(size: 13, weight: isToday ? .bold : .medium)).monospacedDigit()
+                                        .foregroundStyle(isToday ? WidgetSuitePalette.accentText : .primary)
+                                        .lineLimit(1).minimumScaleFactor(0.7)
+                                    Text(chipTitle(day, payload: payload))
+                                        .font(.system(size: 9, weight: .semibold))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.5)
+                                        .padding(.horizontal, 3)
+                                        .frame(maxWidth: .infinity, minHeight: 16)
+                                        .background(colors.fill, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                                        .foregroundStyle(colors.ink)
+                                }
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .background(isToday ? WidgetSuitePalette.accent.opacity(0.10) : .clear,
+                                            in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                            } else {
+                                Color.clear.frame(maxWidth: .infinity, maxHeight: .infinity)
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(maxHeight: .infinity)
+            if let focus = RosterFocusDay.index(payload: payload, atMs: atMs) {
+                let line = rosterFocusLine(payload: payload, focus: focus)
+                HStack(spacing: 6) {
+                    Text([line.heading, line.range].compactMap { $0 }.joined(separator: "  "))
+                        .font(.caption.weight(.semibold)).monospacedDigit()
+                        .lineLimit(1).minimumScaleFactor(0.75)
+                    Spacer(minLength: 4)
+                    if let note = rosterRestNote(payload: payload, after: focus.index) {
+                        Text(note).font(.caption).foregroundStyle(.secondary)
+                            .lineLimit(1).minimumScaleFactor(0.75)
+                    }
+                }
+                .padding(.top, 2)
+            }
         }
     }
 

@@ -141,8 +141,13 @@ private struct SummaryPeriodView: View {
                 WidgetSuiteHeader(title: title, trailing: remaining)
                 stats.padding(.top, 12)
                 Text(t("widgetSuiteMonthlyHours")).font(.caption).foregroundStyle(.secondary).padding(.top, 16)
-                bars(height: 150, labels: true).padding(.top, 6)
-                Spacer(minLength: 8)
+                // The chart takes whatever height the widget has left; the
+                // labels under the bars need about 18 pt.
+                GeometryReader { proxy in
+                    bars(height: max(60, proxy.size.height - 18), labels: true)
+                }
+                .padding(.top, 6)
+                .padding(.bottom, period.comparison == nil ? 0 : 8)
                 if let comparison = period.comparison {
                     Divider()
                     Label(comparison, systemImage: "arrow.left.arrow.right")
