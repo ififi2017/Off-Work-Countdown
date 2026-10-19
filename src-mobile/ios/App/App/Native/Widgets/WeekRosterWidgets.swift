@@ -120,7 +120,7 @@ nonisolated struct RotationOutlook {
 struct WeekProgressWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetSuiteKind.week, provider: CalendarWidgetProvider()) { entry in
-            WeekProgressView(entry: entry)
+            WeekProgressView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteWeekName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteWeekDescription", locale: WidgetSuiteCopy.systemLocale))
@@ -197,14 +197,8 @@ private struct WeekView: View {
             ZStack {
                 WidgetSuiteSegmentRing(segments: week.days.filter(\.isWork).map { Double($0.workMs) },
                                        progress: week.progress, lineWidth: 5, tint: .primary, track: .primary.opacity(0.25))
-                VStack(spacing: 0) {
-                    Text(WidgetSuiteFormat.decimal(week.remainingDays, locale: locale))
-                        .font(.system(.title3, design: .rounded, weight: .bold))
-                        .minimumScaleFactor(0.6)
-                    Text(t("widgetSuiteDaysUnit"))
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                }
+                WidgetSuiteCircularValue(value: WidgetSuiteFormat.decimal(week.remainingDays, locale: locale),
+                                         unit: t("widgetSuiteDaysUnit"))
             }
             .accessibilityElement(children: .combine)
         case .accessoryRectangular:
@@ -328,11 +322,8 @@ private struct RotationView: View {
     var body: some View {
         switch family {
         case .accessoryCircular:
-            VStack(spacing: 0) {
-                Text(WidgetSuiteFormat.count(outlook.workdaysBeforeRest, locale: locale))
-                    .font(.system(.title2, design: .rounded, weight: .bold))
-                Text(t("widgetSuiteDaysUnit")).font(.system(size: 9, weight: .semibold)).foregroundStyle(.secondary)
-            }
+            WidgetSuiteCircularValue(value: WidgetSuiteFormat.count(outlook.workdaysBeforeRest, locale: locale),
+                                     unit: t("widgetSuiteDaysUnit"))
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 2) {
                 Text(cycleNote ?? t("widgetSuiteThisWeek")).font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
@@ -394,7 +385,7 @@ private struct RotationView: View {
 struct RosterWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetSuiteKind.roster, provider: CalendarWidgetProvider()) { entry in
-            RosterView(entry: entry)
+            RosterView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteRosterName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteRosterDescription", locale: WidgetSuiteCopy.systemLocale))
@@ -466,6 +457,30 @@ private func chipColors(_ day: WidgetCalendarDay) -> (fill: Color, ink: Color) {
     }
 }
 
+/// "Saturday, Sunday off" for the next run of days off within a week.
+private func rosterRestNote(payload: WidgetCalendarPayload, after index: Int) -> String? {
+    let locale = payload.locale
+    let following = payload.days.dropFirst(index + 1).prefix(7)
+    guard let start = following.firstIndex(where: { !$0.isWork }) else { return nil }
+    let run = payload.days[start...].prefix { !$0.isWork }.prefix(4)
+    let formatter = ListFormatter()
+    formatter.locale = WidgetSuiteFormat.locale(locale)
+    let names = run.map { WidgetSuiteFormat.weekday($0.startMs, locale: locale) }
+    guard let list = formatter.string(from: names) else { return nil }
+    return WidgetSuiteCopy.t("widgetSuiteRestOn", locale: locale, values: ["days": list])
+}
+
+/// "Today · Monday" and its hours, for the day the roster is about.
+private func rosterFocusLine(payload: WidgetCalendarPayload, focus: (index: Int, isToday: Bool)) -> (heading: String, range: String?) {
+    let locale = payload.locale
+    let day = payload.days[focus.index]
+    let when = WidgetSuiteCopy.t(focus.isToday ? "widgetSuiteToday" : "widgetSuiteTomorrow", locale: locale)
+    let range = day.startAtMs.flatMap { start in
+        day.endAtMs.map { "\(WidgetSuiteFormat.time(start, locale: locale)) – \(WidgetSuiteFormat.time($0, locale: locale))" }
+    }
+    return ("\(when) · \(WidgetSuiteFormat.weekday(day.startMs, locale: locale))", range)
+}
+
 private struct RosterDayView: View {
     let payload: WidgetCalendarPayload
     let atMs: Int64
@@ -479,17 +494,13 @@ private struct RosterDayView: View {
     var body: some View {
         if let focus = RosterFocusDay.index(payload: payload, atMs: atMs) {
             let day = payload.days[focus.index]
-            let when = t(focus.isToday ? "widgetSuiteToday" : "widgetSuiteTomorrow")
-            let heading = "\(when) · \(WidgetSuiteFormat.weekday(day.startMs, locale: locale))"
-            let range = day.startAtMs.flatMap { start in
-                day.endAtMs.map { "\(WidgetSuiteFormat.time(start, locale: locale)) – \(WidgetSuiteFormat.time($0, locale: locale))" }
-            }
+            let (heading, range) = rosterFocusLine(payload: payload, focus: focus)
             if family == .accessoryRectangular {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("\(heading) · \(chipTitle(day, payload: payload))")
                         .font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1).widgetAccentable()
                     Text(range ?? chipTitle(day, payload: payload)).font(.headline).lineLimit(1).minimumScaleFactor(0.7)
-                    if let note = restNote(after: focus.index) {
+                    if let note = rosterRestNote(payload: payload, after: focus.index) {
                         Text(note).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                     }
                 }
@@ -512,7 +523,7 @@ private struct RosterDayView: View {
                             .lineLimit(1).minimumScaleFactor(0.7).padding(.top, 8)
                     }
                     Spacer(minLength: 4)
-                    if let note = restNote(after: focus.index) {
+                    if let note = rosterRestNote(payload: payload, after: focus.index) {
                         Text(note).font(.caption).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.8)
                     }
                 }
@@ -523,17 +534,6 @@ private struct RosterDayView: View {
         }
     }
 
-    /// "Saturday, Sunday off" for the next run of days off within a week.
-    private func restNote(after index: Int) -> String? {
-        let following = payload.days.dropFirst(index + 1).prefix(7)
-        guard let start = following.firstIndex(where: { !$0.isWork }) else { return nil }
-        let run = payload.days[start...].prefix { !$0.isWork }.prefix(4)
-        let formatter = ListFormatter()
-        formatter.locale = WidgetSuiteFormat.locale(locale)
-        let names = run.map { WidgetSuiteFormat.weekday($0.startMs, locale: locale) }
-        guard let list = formatter.string(from: names) else { return nil }
-        return t("widgetSuiteRestOn", ["days": list])
-    }
 }
 
 private struct RosterStripView: View {
@@ -546,34 +546,50 @@ private struct RosterStripView: View {
         let start = payload.dayIndex(containingMs: atMs) ?? 0
         let days = Array(payload.days.dropFirst(start).prefix(7))
         let focus = RosterFocusDay.index(payload: payload, atMs: atMs)
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
             WidgetSuiteHeader(title: WidgetSuiteCopy.t("widgetSuiteRosterName", locale: locale),
                               trailing: WidgetSuiteFormat.monthDay(atMs, locale: locale), symbol: "calendar")
+            Spacer(minLength: 6)
             HStack(spacing: 4) {
                 ForEach(days) { day in
                     let colors = chipColors(day)
                     let isFocus = focus.map { payload.days[$0.index].dayKey == day.dayKey } ?? false
                     VStack(spacing: 3) {
                         Text(WidgetSuiteFormat.weekdayNarrow(day.startMs, locale: locale))
-                            .font(.system(size: 10)).foregroundStyle(.secondary)
+                            .font(.system(size: 11)).foregroundStyle(.secondary)
                         Text(WidgetSuiteFormat.dayOfMonth(day.startMs, locale: locale))
-                            .font(.system(size: 13, weight: isFocus ? .bold : .medium)).monospacedDigit()
+                            .font(.system(size: 14, weight: isFocus ? .bold : .medium)).monospacedDigit()
+                            .lineLimit(1).minimumScaleFactor(0.7)
                         Text(chipTitle(day, payload: payload))
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
-                            .frame(maxWidth: .infinity, minHeight: 20)
-                            .background(colors.fill, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                            .frame(maxWidth: .infinity, minHeight: 24)
+                            .background(colors.fill, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                             .foregroundStyle(colors.ink)
                         Text(day.startAtMs.map { WidgetSuiteFormat.time($0, locale: locale) } ?? " ")
-                            .font(.system(size: 9)).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.6)
+                            .font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.6)
                     }
-                    .padding(.vertical, 3)
+                    .padding(.vertical, 4)
                     .background(isFocus ? WidgetSuitePalette.accent.opacity(0.08) : .clear,
-                                in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                                in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
             }
-            Spacer(minLength: 0)
+            Spacer(minLength: 6)
+            // The day the strip is about, and when the next days off begin.
+            if let focus {
+                let line = rosterFocusLine(payload: payload, focus: focus)
+                HStack(spacing: 6) {
+                    Text([line.heading, line.range].compactMap { $0 }.joined(separator: "  "))
+                        .font(.caption.weight(.semibold)).monospacedDigit()
+                        .lineLimit(1).minimumScaleFactor(0.75)
+                    Spacer(minLength: 4)
+                    if let note = rosterRestNote(payload: payload, after: focus.index) {
+                        Text(note).font(.caption).foregroundStyle(.secondary)
+                            .lineLimit(1).minimumScaleFactor(0.75)
+                    }
+                }
+            }
         }
     }
 }

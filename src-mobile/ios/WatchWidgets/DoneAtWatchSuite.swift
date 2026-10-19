@@ -236,7 +236,7 @@ private struct WatchWeekView: View {
 
 struct DoneAtWatchWeekWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchWeek", provider: WatchSuiteProvider()) { WatchWeekView(entry: $0) }
+        StaticConfiguration(kind: "DoneAtWatchWeek", provider: WatchSuiteProvider()) { WatchWeekView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteWeekName"))
             .description(WatchLocalizations.text("widgetSuiteWeekDescription"))
             .supportedFamilies([.accessoryRectangular, .accessoryCircular])
@@ -303,7 +303,7 @@ private struct WatchShiftDayView: View {
 
 struct DoneAtWatchShiftWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchShift", provider: WatchSuiteProvider()) { WatchShiftDayView(entry: $0) }
+        StaticConfiguration(kind: "DoneAtWatchShift", provider: WatchSuiteProvider()) { WatchShiftDayView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteRosterName"))
             .description(WatchLocalizations.text("widgetSuiteRosterDescription"))
             .supportedFamilies([.accessoryRectangular])
@@ -391,7 +391,7 @@ private struct WatchHolidayView: View {
 
 struct DoneAtWatchHolidayWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchHoliday", provider: WatchSuiteProvider()) { WatchHolidayView(entry: $0) }
+        StaticConfiguration(kind: "DoneAtWatchHoliday", provider: WatchSuiteProvider()) { WatchHolidayView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteWeekendName"))
             .description(WatchLocalizations.text("widgetSuiteWeekendDescription"))
             .supportedFamilies([.accessoryRectangular, .accessoryCircular])
@@ -468,7 +468,7 @@ private struct WatchUpNextProvider: TimelineProvider {
 
 struct DoneAtWatchUpNextWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchUpNext", provider: WatchUpNextProvider()) { WatchUpNextView(entry: $0) }
+        StaticConfiguration(kind: "DoneAtWatchUpNext", provider: WatchUpNextProvider()) { WatchUpNextView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("comingUp"))
             .description(WatchLocalizations.text("widgetSuiteWeekDescription"))
             .supportedFamilies([.accessoryRectangular])
@@ -492,20 +492,25 @@ struct WatchSegmentRing: View {
     var lineWidth: CGFloat = 5
 
     var body: some View {
-        let total = max(0.000_1, weights.reduce(0, +))
-        let gap = weights.count > 1 ? 0.03 : 0
-        ZStack {
-            ForEach(Array(arcs(total: total, gap: gap).enumerated()), id: \.offset) { _, arc in
-                Circle().trim(from: arc.0, to: arc.1)
-                    .stroke(Color.orange.opacity(0.3), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                if arc.2 > arc.0 {
-                    Circle().trim(from: arc.0, to: arc.2)
-                        .stroke(Color.orange, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                        .widgetAccentable()
+        GeometryReader { proxy in
+            let total = max(0.000_1, weights.reduce(0, +))
+            // Round caps reach half a line width into the gap from each side,
+            // so the gap is a line width plus clear space, in points.
+            let circumference = max(1, Double(min(proxy.size.width, proxy.size.height)) * .pi)
+            let gap = weights.count > 1 ? min(0.2, Double(lineWidth + max(2.5, lineWidth * 0.6)) / circumference) : 0
+            ZStack {
+                ForEach(Array(arcs(total: total, gap: gap).enumerated()), id: \.offset) { _, arc in
+                    Circle().trim(from: arc.0, to: arc.1)
+                        .stroke(Color.orange.opacity(0.3), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    if arc.2 > arc.0 {
+                        Circle().trim(from: arc.0, to: arc.2)
+                            .stroke(Color.orange, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                            .widgetAccentable()
+                    }
                 }
             }
+            .rotationEffect(.degrees(-90))
         }
-        .rotationEffect(.degrees(-90))
         .padding(lineWidth / 2)
     }
 
@@ -523,5 +528,17 @@ struct WatchSegmentRing: View {
             cursor += share
         }
         return result
+    }
+}
+
+private extension View {
+    /// Matches the countdown complication: system-formatted text and layout
+    /// follow the iPhone's chosen language rather than the extension bundle.
+    func watchSuiteLocale(_ entry: WatchSuiteEntry) -> some View {
+        let text = WatchSuiteText(presentation: entry.schedule?.presentation)
+        return environment(\.locale, text.locale)
+            .environment(\.layoutDirection, WatchDisplayFormat.isRightToLeft(
+                localeIdentifier: text.localeIdentifier ?? Locale.preferredLanguages.first ?? "en"
+            ) ? .rightToLeft : .leftToRight)
     }
 }

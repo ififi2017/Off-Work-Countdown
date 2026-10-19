@@ -90,6 +90,29 @@ enum WidgetSuitePalette {
 }
 
 /// Title row: what the widget is about, and an optional trailing note.
+/// A number and its unit inside a Lock Screen circular widget. The two sizes
+/// stay close so the unit reads as part of the value, not a footnote under it.
+struct WidgetSuiteCircularValue: View {
+    let value: String
+    let unit: String
+
+    var body: some View {
+        VStack(spacing: -2) {
+            Text(value)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            Text(unit)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .padding(.horizontal, 6)
+    }
+}
+
 struct WidgetSuiteHeader: View {
     let title: String
     var trailing: String?
@@ -226,23 +249,34 @@ struct WidgetSuiteSegmentRing: View {
     var track: Color = WidgetSuitePalette.track
 
     var body: some View {
-        let total = max(0.000_1, segments.reduce(0, +))
-        let gap = segments.count > 1 ? 0.025 : 0
-        ZStack {
-            ForEach(Array(arcs(total: total, gap: gap).enumerated()), id: \.offset) { _, arc in
-                Circle()
-                    .trim(from: arc.start, to: arc.end)
-                    .stroke(track, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                if arc.fillEnd > arc.start {
+        GeometryReader { proxy in
+            let total = max(0.000_1, segments.reduce(0, +))
+            let gap = segments.count > 1 ? WidgetSuiteSegmentRing.gap(lineWidth: lineWidth, diameter: min(proxy.size.width, proxy.size.height)) : 0
+            ZStack {
+                ForEach(Array(arcs(total: total, gap: gap).enumerated()), id: \.offset) { _, arc in
                     Circle()
-                        .trim(from: arc.start, to: arc.fillEnd)
-                        .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                        .widgetAccentable()
+                        .trim(from: arc.start, to: arc.end)
+                        .stroke(track, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    if arc.fillEnd > arc.start {
+                        Circle()
+                            .trim(from: arc.start, to: arc.fillEnd)
+                            .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                            .widgetAccentable()
+                    }
                 }
             }
+            .rotationEffect(.degrees(-90))
         }
-        .rotationEffect(.degrees(-90))
         .padding(lineWidth / 2)
+    }
+
+    /// The gap between segments as a share of the circumference. Round caps
+    /// reach half a line width into it from each side, so the gap is a line
+    /// width plus the clear space that should stay visible between segments,
+    /// whatever the ring's size.
+    static func gap(lineWidth: CGFloat, diameter: CGFloat) -> Double {
+        let circumference = max(1, Double(diameter) * .pi)
+        return min(0.2, Double(lineWidth + max(2.5, lineWidth * 0.6)) / circumference)
     }
 
     private func arcs(total: Double, gap: Double) -> [(start: Double, end: Double, fillEnd: Double)] {
@@ -267,6 +301,13 @@ extension View {
     /// Home Screen widgets draw their own plate; accessories stay clear.
     func widgetSuiteBackground() -> some View {
         containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
+    }
+
+    /// The extension bundle has no localizations of its own, so system-formatted
+    /// text (relative dates, timers, digits) would fall back to English. Follow
+    /// the language the app published instead.
+    func widgetSuiteLocale(_ identifier: String?) -> some View {
+        environment(\.locale, Locale(identifier: identifier ?? WidgetSuiteCopy.systemLocale))
     }
 }
 
