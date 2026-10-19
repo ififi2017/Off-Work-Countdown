@@ -89,6 +89,57 @@ struct LifetimeOfferTests {
         #expect(plus.lifetimeOffer == nil)
     }
 
+    @Test func updateGiftLastsAWeekFromOpening() {
+        var offer = LifetimeOffer(source: .update323, latestObservedAt: now)
+        #expect(offer.expiresAt == nil)
+        offer.claim(at: now)
+        #expect(offer.expiresAt == now.addingTimeInterval(7 * 86_400))
+        #expect(offer.isActive(at: now.addingTimeInterval(7 * 86_400 - 1)))
+        #expect(!offer.isActive(at: now.addingTimeInterval(7 * 86_400)))
+    }
+
+    @Test func updateGiftReplacesAnUnopenedOrEndedOfferOnce() throws {
+        let suite = "LifetimeOfferUpdateGift.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(true, forKey: "ios.native.qaLifetimeOffer")
+        let plus = PlusEntitlement(defaults: defaults)
+        // The QA preview starts an unopened first-run invitation.
+        #expect(plus.lifetimeOffer?.source == .onboarding)
+        plus.inviteUpdateGift()
+        #expect(plus.lifetimeOffer?.source == .update323)
+        #expect(plus.hasWrappedLifetimeOffer)
+        #expect(plus.revealLifetimeOffer(from: .update323))
+        let deadline = try #require(plus.lifetimeOffer?.expiresAt)
+        // Opening it again, or a later invitation, never restarts the week.
+        let reloaded = PlusEntitlement(defaults: defaults)
+        reloaded.inviteUpdateGift()
+        #expect(reloaded.lifetimeOffer?.expiresAt == deadline)
+        #expect(reloaded.hasActiveLifetimeOffer)
+        #expect(!reloaded.hasWrappedLifetimeOffer)
+    }
+
+    @Test func updateGiftKeepsARunningOffer() throws {
+        let suite = "LifetimeOfferRunning.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(true, forKey: "ios.native.qaLifetimeOffer")
+        let plus = PlusEntitlement(defaults: defaults)
+        #expect(plus.revealLifetimeOffer(from: .onboarding))
+        let deadline = try #require(plus.lifetimeOffer?.expiresAt)
+        plus.inviteUpdateGift()
+        #expect(plus.lifetimeOffer?.source == .onboarding)
+        #expect(plus.lifetimeOffer?.expiresAt == deadline)
+    }
+
+    @Test func offerTimeLeftShowsDaysUntilTheLastDay() {
+        let preferences = PreferencesStore(defaults: UserDefaults(suiteName: "OfferRemaining.\(UUID())")!, records: .inMemory())
+        let text = AppText(preferences: preferences)
+        #expect(text.formatOfferRemaining(3_725) == "01:02:05")
+        #expect(text.formatOfferRemaining(-5) == "00:00:00")
+        #expect(text.formatOfferRemaining(6 * 86_400 + 5 * 3_600).contains("6"))
+    }
+
     @Test("Offer percentages follow app language rather than the device region")
     func savingsFollowAppLanguage() async throws {
         let suite = "LifetimeOfferLanguage.\(UUID())"

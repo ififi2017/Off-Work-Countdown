@@ -3,13 +3,25 @@ import Foundation
 /// One local invitation, one real deadline. Reopening a paywall never renews it.
 /// The store owns price and purchase verification; this state only controls access.
 struct LifetimeOffer: Codable, Equatable, Sendable {
-    enum Source: String, Codable, Sendable { case onboarding, update321 }
+    enum Source: String, Codable, Sendable {
+        case onboarding, update321
+        /// The 3.2.3 gift: wrapped on the timer until opened, then a week.
+        case update323
+    }
     let source: Source
     var claimedAt: Date?
     var latestObservedAt: Date
-    static let duration: TimeInterval = 24 * 60 * 60
 
-    var expiresAt: Date? { claimedAt?.addingTimeInterval(Self.duration) }
+    /// A first-run invitation is a decision made in the moment; the update
+    /// gift is opened on the user's own time, so it keeps for a week.
+    var duration: TimeInterval {
+        switch source {
+        case .onboarding, .update321: 24 * 60 * 60
+        case .update323: 7 * 24 * 60 * 60
+        }
+    }
+
+    var expiresAt: Date? { claimedAt?.addingTimeInterval(duration) }
 
     func isActive(at now: Date) -> Bool {
         guard let claimedAt, let expiresAt else { return false }

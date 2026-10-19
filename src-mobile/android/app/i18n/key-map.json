@@ -2517,6 +2517,15 @@
     "plusFocusLocked": {
       "resource": "string/plusFocusLocked"
     },
+    "plusGiftOpen": {
+      "resource": "string/plusGiftOpen"
+    },
+    "plusGiftSubtitle": {
+      "resource": "string/plusGiftSubtitle"
+    },
+    "plusGiftTitle": {
+      "resource": "string/plusGiftTitle"
+    },
     "plusGracePeriod": {
       "resource": "string/plusGracePeriod"
     },
@@ -2538,6 +2547,9 @@
     "plusLifetime": {
       "resource": "string/plusLifetime"
     },
+    "plusLifetimeOnce": {
+      "resource": "string/plusLifetimeOnce"
+    },
     "plusLifetimeWhileSubscribed": {
       "resource": "string/plusLifetimeWhileSubscribed"
     },
@@ -2548,7 +2560,8 @@
       "resource": "string/plusMonthly"
     },
     "plusOfferClaim": {
-      "resource": "string/plusOfferClaim"
+      "resource": "string/plusOfferClaim",
+      "androidOnly": true
     },
     "plusOfferDeadline": {
       "resource": "string/plusOfferDeadline",
@@ -2556,11 +2569,15 @@
         "date"
       ]
     },
-    "plusOfferPreview": {
-      "resource": "string/plusOfferPreview"
+    "plusOfferEndsIn": {
+      "resource": "string/plusOfferEndsIn",
+      "params": [
+        "time"
+      ]
     },
     "plusOfferRemaining": {
-      "resource": "string/plusOfferRemaining"
+      "resource": "string/plusOfferRemaining",
+      "androidOnly": true
     },
     "plusOfferSavings": {
       "resource": "string/plusOfferSavings",
@@ -2571,17 +2588,22 @@
     "plusOfferTerms": {
       "resource": "string/plusOfferTerms"
     },
+    "plusOfferTermsWeek": {
+      "resource": "string/plusOfferTermsWeek"
+    },
     "plusOfferTitle": {
       "resource": "string/plusOfferTitle"
     },
     "plusOfferUnavailable": {
-      "resource": "string/plusOfferUnavailable"
+      "resource": "string/plusOfferUnavailable",
+      "androidOnly": true
     },
     "plusOfferWelcome": {
       "resource": "string/plusOfferWelcome"
     },
     "plusOfferWelcomeBack": {
-      "resource": "string/plusOfferWelcomeBack"
+      "resource": "string/plusOfferWelcomeBack",
+      "androidOnly": true
     },
     "plusOwnedBody": {
       "resource": "string/plusOwnedBody"
@@ -2708,6 +2730,9 @@
     },
     "plusWaitingApproval": {
       "resource": "string/plusWaitingApproval"
+    },
+    "plusWidgetsSlideTitle": {
+      "resource": "string/plusWidgetsSlideTitle"
     },
     "plusYearly": {
       "resource": "string/plusYearly"
@@ -3480,7 +3505,8 @@
       "resource": "string/reportEntryMonth"
     },
     "reportEntryShort": {
-      "resource": "string/reportEntryShort"
+      "resource": "string/reportEntryShort",
+      "androidOnly": true
     },
     "reportEntryTitle": {
       "resource": "string/reportEntryTitle"
@@ -4261,20 +4287,33 @@
         "end"
       ]
     },
-    "whatsNewAlarmsBody": {
-      "resource": "string/whatsNewAlarmsBody"
-    },
     "whatsNewContinue": {
       "resource": "string/whatsNewContinue"
     },
-    "whatsNewLeaveBody": {
-      "resource": "string/whatsNewLeaveBody"
+    "whatsNewHomeBody": {
+      "resource": "string/whatsNewHomeBody"
     },
-    "whatsNewReportsBody": {
-      "resource": "string/whatsNewReportsBody"
+    "whatsNewHomeTitle": {
+      "resource": "string/whatsNewHomeTitle"
+    },
+    "whatsNewHowToAdd": {
+      "resource": "string/whatsNewHowToAdd"
+    },
+    "whatsNewLockBody": {
+      "resource": "string/whatsNewLockBody"
+    },
+    "whatsNewLockTitle": {
+      "resource": "string/whatsNewLockTitle"
     },
     "whatsNewTitle": {
-      "resource": "string/whatsNewTitle"
+      "resource": "string/whatsNewTitle",
+      "androidOnly": true
+    },
+    "whatsNewWatchBody": {
+      "resource": "string/whatsNewWatchBody"
+    },
+    "whatsNewWidgetsTitle": {
+      "resource": "string/whatsNewWidgetsTitle"
     },
     "widgetDescription": {
       "resource": "string/widgetDescription",

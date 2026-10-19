@@ -12,7 +12,6 @@ struct WidgetGallerySettingsView: View {
     @State private var expandedHowTo: Set<WidgetGalleryHowTo> = []
 
     private var text: AppText { shifts.text }
-    private var locale: String { shifts.preferences.languageCode }
     private var isPlus: Bool { shifts.plus.isAuthorized }
 
     var body: some View {
@@ -97,31 +96,7 @@ struct WidgetGallerySettingsView: View {
     }
 
     private func load() async {
-        let now = Date.now
-        let composer = WidgetSuiteComposer.shared
-        let access = WidgetSuiteComposer.access(for: shifts.plus)
-        let calendar = composer.calendarPayload(shifts: shifts, now: now, locale: locale)
-        let snapshot = await WidgetSnapshotComposer.shared.prepare(shifts: shifts, now: now)
-            ?? WidgetSnapshotComposer.shared.publishedSnapshot(shifts: shifts, now: now)
-        let logical = snapshot.logicalNowMs(fromRealMs: WidgetSuiteTime.ms(now))
-        let countdown = CountdownStyleEntry(
-            base: OffWorkCountdownWidgetEntry(date: now, snapshotEntry: snapshot.entry(atMs: logical), locale: snapshot.locale,
-                                              upcoming: snapshot.upcoming, clockOffsetMs: snapshot.clockOffsetMs),
-            segments: snapshot.shift?.segments ?? []
-        )
-        var holiday = composer.holidayPayload(shifts: shifts, calendar: calendar, access: access, now: now, locale: locale)
-        var summary = await composer.summaryPayload(shifts: shifts, calendar: calendar, access: access, now: now, locale: locale)
-        var life = composer.lifePayload(shifts: shifts, access: access, now: now, locale: locale)
-        var focus = composer.focusPayload(shifts: shifts, access: access, now: now, locale: locale)
-        if !isPlus {
-            let samples = WidgetGallerySamples(now: now, locale: locale, text: text)
-            summary = samples.summary
-            life = samples.life
-            focus = samples.focus
-            holiday = samples.holiday(base: holiday)
-        }
-        data = WidgetGalleryData(now: now, countdown: countdown, calendar: calendar, holiday: holiday,
-                                 summary: summary, life: life, focus: focus)
+        data = await WidgetGalleryData.load(shifts: shifts)
     }
 
     // MARK: Layout
@@ -322,6 +297,38 @@ struct WidgetGalleryData {
     let summary: WidgetSummaryPayload
     let life: WidgetLifePayload
     let focus: WidgetFocusPayload
+
+    /// The user's own data in every widget's payload; Plus widgets fall back
+    /// to labelled sample figures until Plus.
+    @MainActor
+    static func load(shifts: ShiftSessionStore) async -> WidgetGalleryData {
+        let now = Date.now
+        let locale = shifts.preferences.languageCode
+        let composer = WidgetSuiteComposer.shared
+        let access = WidgetSuiteComposer.access(for: shifts.plus)
+        let calendar = composer.calendarPayload(shifts: shifts, now: now, locale: locale)
+        let snapshot = await WidgetSnapshotComposer.shared.prepare(shifts: shifts, now: now)
+            ?? WidgetSnapshotComposer.shared.publishedSnapshot(shifts: shifts, now: now)
+        let logical = snapshot.logicalNowMs(fromRealMs: WidgetSuiteTime.ms(now))
+        let countdown = CountdownStyleEntry(
+            base: OffWorkCountdownWidgetEntry(date: now, snapshotEntry: snapshot.entry(atMs: logical), locale: snapshot.locale,
+                                              upcoming: snapshot.upcoming, clockOffsetMs: snapshot.clockOffsetMs),
+            segments: snapshot.shift?.segments ?? []
+        )
+        var holiday = composer.holidayPayload(shifts: shifts, calendar: calendar, access: access, now: now, locale: locale)
+        var summary = await composer.summaryPayload(shifts: shifts, calendar: calendar, access: access, now: now, locale: locale)
+        var life = composer.lifePayload(shifts: shifts, access: access, now: now, locale: locale)
+        var focus = composer.focusPayload(shifts: shifts, access: access, now: now, locale: locale)
+        if !shifts.plus.isAuthorized {
+            let samples = WidgetGallerySamples(now: now, locale: locale, text: shifts.text)
+            summary = samples.summary
+            life = samples.life
+            focus = samples.focus
+            holiday = samples.holiday(base: holiday)
+        }
+        return WidgetGalleryData(now: now, countdown: countdown, calendar: calendar, holiday: holiday,
+                                 summary: summary, life: life, focus: focus)
+    }
 }
 
 /// One size at a time on a light stage, chosen with a size picker; a row of

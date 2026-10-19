@@ -16,6 +16,16 @@ enum OWCMotion {
     static let onboardingDisclosure = Animation.smooth(duration: 0.3, extraBounce: 0)
     static let offerFloat = Animation.easeInOut(duration: 2.6)
     static let offerPeek = Animation.easeInOut(duration: 0.9).delay(1.8)
+    /// The gift leaving the toolbar for the middle of the screen.
+    static let giftArrive = Animation.spring(duration: 0.46, bounce: 0.22)
+    static let giftArriveDuration = 0.46
+    /// The lid springing off, light spilling out.
+    static let giftOpen = Animation.spring(duration: 0.42, bounce: 0.38)
+    static let giftRays = Animation.easeOut(duration: 0.6)
+    static let giftOpenHold = 0.7
+    /// Closing and returning to the toolbar, where its countdown carries on.
+    static let giftReturn = Animation.timingCurve(0.32, 0.72, 0, 1, duration: 0.55)
+    static let giftReturnDuration = 0.55
     /// A single, silent hand settling into the brand's five-o'clock pose.
     static let welcomeHand = Animation.timingCurve(0.16, 1, 0.3, 1, duration: 0.9)
     static let welcomeArrival = Animation.smooth(duration: 0.5)

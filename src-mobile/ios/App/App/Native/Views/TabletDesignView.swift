@@ -146,6 +146,12 @@ private struct TabletTimerRoot: View {
     @Environment(\.tabBarPlacement) private var tabBarPlacement
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// A gift still wrapped, or an opened one still running.
+    private var offerAwaitsPrice: Bool {
+        guard shifts.plus.canOfferLifetime, let offer = shifts.plus.lifetimeOffer else { return false }
+        return offer.claimedAt == nil || offer.isActive(at: .now)
+    }
+
     var body: some View {
         GeometryReader { geometry in
             if AdaptiveDisplayLayout.hasHorizontalFold(in: geometry),
@@ -161,6 +167,14 @@ private struct TabletTimerRoot: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
+        // A gift needs the store's price before it can appear; nothing else
+        // on the timer asks the store for products after a relaunch.
+        .task(id: offerAwaitsPrice) {
+            let plus = shifts.plus
+            if offerAwaitsPrice, plus.products.isEmpty, !plus.isLoadingProducts {
+                await plus.loadProducts()
+            }
+        }
         .toolbar {
             if tabBarPlacement == .sidebar {
                 ToolbarItem(placement: .principal) {
@@ -178,9 +192,9 @@ private struct TabletTimerRoot: View {
             }
 
             // Empty view content still leaves the system's toolbar glass behind.
-            // Omit the item itself until a claimed offer is actually active.
-            if shifts.plus.canOfferLifetime,
-               let offer = shifts.plus.lifetimeOffer, offer.isActive(at: .now) {
+            // Omit the item itself unless a gift is waiting or its offer runs;
+            // while it is open over the app, the opened gift stands in for it.
+            if shifts.plus.hasAvailableLifetimeOffer, !scene.showsLifetimeOffer {
                 ToolbarItem(placement: .topBarLeading) {
                     LifetimeOfferToolbarButton(plus: shifts.plus, text: text) { scene.showsLifetimeOffer = true }
                 }

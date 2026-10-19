@@ -1,375 +1,6 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "whatsNewLeaveBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أضف رصيد إجازاتك فيجد DoneAt عطلات أطول حول العطلات الرسمية ومناوباتك، وتُضاف الخطة التي تختارها إلى جدولك مباشرة."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trag deinen Urlaub ein: DoneAt findet längere Pausen rund um Feiertage und deine Schichten. Den gewählten Plan übernimmst du direkt in deinen Dienstplan."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add your leave balances and DoneAt finds longer breaks around holidays and your shifts. Pick one and it goes straight onto your schedule."
-          }
-        },
-        "en-GB": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add your leave balances and DoneAt finds longer breaks around bank holidays and your shifts. Pick one and it goes straight onto your rota."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Añade tus días disponibles y DoneAt encuentra descansos más largos según festivos y turnos. El plan que elijas se añade directamente a tu horario."
-          }
-        },
-        "es-MX": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Añade tus días disponibles y DoneAt encuentra descansos más largos según feriados y turnos. El plan que elijas se añade directamente a tu rol de turnos."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajoutez vos soldes de congés : DoneAt trouve de plus longues pauses autour des jours fériés et de vos services. Le plan choisi s’ajoute directement à votre planning."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अपनी बची छुट्टियाँ जोड़ें, DoneAt त्योहारों और आपकी शिफ़्ट के हिसाब से लंबे ब्रेक ढूँढेगा। चुना गया प्लान सीधे आपके शेड्यूल में जुड़ जाता है।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tambahkan sisa cutimu, DoneAt mencari libur lebih panjang di sekitar hari libur dan sifmu. Rencana yang dipilih langsung masuk ke jadwal."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aggiungi le ferie disponibili e DoneAt trova pause più lunghe tra festività e turni. Il piano scelto entra subito nel tuo programma."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "休暇の残りを入れると、DoneAt が祝日とシフトから長めの連休を探します。選んだプランはそのまま勤務予定に追加できます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "휴가 잔여를 입력하면 DoneAt이 공휴일과 근무 일정을 바탕으로 더 긴 연휴를 찾아 줘요. 고른 계획은 바로 일정에 추가돼요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "तुमची उरलेली रजा जोडा, DoneAt सुट्ट्या आणि तुमच्या शिफ्टनुसार मोठ्या सुट्ट्या शोधेल. निवडलेली योजना थेट तुमच्या वेळापत्रकात जोडली जाते."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adicione os dias de férias e o DoneAt encontra pausas mais longas entre feriados e turnos. O plano escolhido passa diretamente para o seu horário."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите остаток отпуска — DoneAt найдёт более долгий отдых с учётом праздников и графика. Выбранный план сразу попадёт в график."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ใส่วันลาที่เหลือ แล้ว DoneAt จะหาวันหยุดยาวขึ้นจากวันหยุดและกะของคุณ แผนที่เลือกจะเพิ่มลงตารางงานได้ทันที"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kalan izinlerini ekle, DoneAt tatiller ve vardiyalarına göre daha uzun aralar bulsun. Seçtiğin plan doğrudan programına eklenir."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thêm số ngày phép còn lại, DoneAt tìm kỳ nghỉ dài hơn quanh ngày lễ và ca làm. Kế hoạch bạn chọn được thêm thẳng vào lịch làm."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "填好假期余额，DoneAt 会结合节假日和你的排班找出更长的连休；选好的方案可以直接加入排班。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "填好假期餘額，DoneAt 會按假期同你嘅排班搵出更長嘅連假；揀好嘅方案可以直接加入排班。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "填好假期餘額，DoneAt 會結合節假日和你的排班找出更長的連假；選好的方案可以直接加入排班。"
-          }
-        }
-      }
-    },
-    "whatsNewAlarmsBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اختر لكل نوع مناوبة متى يوقظك المنبه قبلها. يرنّ المنبه حتى في الوضع الصامت."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Leg für jede Schichtart fest, wie früh du geweckt wirst. Der Wecker klingelt auch im Stumm-Modus."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose how early to wake up for each kind of shift. Alarms ring even in Silent mode."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elige con cuánta antelación despertarte para cada tipo de turno. La alarma suena incluso en silencio."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choisissez, pour chaque type de service, combien de temps avant vous réveiller. Le réveil sonne même en mode silencieux."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "हर तरह की शिफ़्ट के लिए चुनें कि कितनी जल्दी जगना है। साइलेंट मोड में भी अलार्म बजेगा।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Atur seberapa awal kamu dibangunkan untuk tiap jenis sif. Alarm tetap berbunyi dalam mode senyap."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scegli per ogni tipo di turno quanto prima svegliarti. La sveglia suona anche in modalità silenziosa."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "シフトの種類ごとに、どれくらい前に起きるかを設定できます。マナーモードでもアラームが鳴ります。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "근무 유형마다 얼마나 일찍 일어날지 정할 수 있어요. 무음 모드에서도 알람이 울려요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "प्रत्येक प्रकारच्या शिफ्टसाठी किती लवकर उठायचे ते निवडा. सायलेंट मोडमध्येही अलार्म वाजेल."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolha, para cada tipo de turno, com quanta antecedência quer acordar. O alarme toca mesmo em silêncio."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Для каждого типа смены задайте, за сколько до начала вас будить. Будильник звонит даже в беззвучном режиме."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ตั้งได้ว่าจะให้ปลุกก่อนเข้ากะแต่ละประเภทนานเท่าไร นาฬิกาปลุกจะดังแม้อยู่ในโหมดเงียบ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Her vardiya türü için ne kadar erken uyanacağını seç. Alarm sessiz modda da çalar."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chọn thức dậy sớm bao lâu cho từng loại ca. Báo thức vẫn reo cả khi ở chế độ im lặng."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "为每种班次设定提前多久起床，静音模式下闹钟也会响。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "為每種更份設定提早幾耐起身，靜音模式下鬧鐘都會響。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "為每種班次設定提前多久起床，靜音模式下鬧鐘也會響。"
-          }
-        }
-      }
-    },
-    "whatsNewReportsBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "راجع ساعات عملك والعمل الإضافي والراحة في تقرير متحرك قصير. لا يظهر الدخل إلا إذا اخترت عرضه."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Blick in einem kurzen animierten Bericht auf Arbeitszeit, Überstunden und Erholung zurück. Den Verdienst siehst du nur, wenn du ihn einblendest."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Look back on your hours, overtime and rest in a short animated report. Pay appears only when you choose to show it."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repasa tus horas, horas extra y descansos en un breve informe animado. Los ingresos solo aparecen si decides mostrarlos."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Revoyez vos heures, heures sup et repos dans un court bilan animé. Les gains n’apparaissent que si vous choisissez de les afficher."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अपने काम के घंटे, ओवरटाइम और आराम को एक छोटी ऐनिमेटेड रिपोर्ट में देखें। कमाई तभी दिखेगी जब आप उसे दिखाना चुनें।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tinjau jam kerja, lembur, dan istirahatmu dalam laporan animasi singkat. Penghasilan hanya tampil jika kamu memilih menampilkannya."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ripercorri ore, straordinari e riposo in un breve report animato. Il guadagno compare solo se scegli di mostrarlo."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "勤務時間・残業・休みを短いアニメーションで振り返れます。収入は表示を選んだときだけ出ます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "근무 시간, 초과 근무, 휴식을 짧은 애니메이션으로 돌아봐요. 수입은 표시하기로 했을 때만 나타나요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "कामाचे तास, ओव्हरटाइम आणि विश्रांती एका छोट्या ॲनिमेटेड अहवालात पाहा. कमाई तुम्ही दाखवायचे ठरवल्यासच दिसेल."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reveja horas, horas extra e descanso num breve relatório animado. Os ganhos só aparecem se escolher mostrá-los."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Короткий анимированный отчёт о часах, переработках и отдыхе. Доход виден, только если вы решите его показать."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ย้อนดูชั่วโมงทำงาน โอที และการพักผ่อนในรายงานแบบแอนิเมชันสั้น ๆ รายได้จะแสดงเฉพาะเมื่อคุณเลือกให้แสดง"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Çalışma saatlerine, fazla mesaine ve dinlenmene kısa, animasyonlu bir raporla göz at. Kazanç yalnızca göstermeyi seçersen görünür."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nhìn lại giờ làm, tăng ca và nghỉ ngơi qua một báo cáo hoạt ảnh ngắn. Thu nhập chỉ hiện khi bạn chọn hiển thị."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用一段动画回顾工时、加班和休息；收入只在你选择显示时出现。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用一段動畫回顧工時、加班同休息；收入只會喺你揀咗顯示先出現。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用一段動畫回顧工時、加班和休息；收入只在你選擇顯示時出現。"
-          }
-        }
-      }
-    },
     "holidayCoverageYearWarning": {
       "extractionState": "manual",
       "localizations": {
@@ -91972,125 +91603,6 @@
         }
       }
     },
-    "whatsNewTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ما الجديد"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neuigkeiten"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "What’s new"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Novedades"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nouveautés"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "नया क्या है"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yang baru"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Novità"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "新着情報"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "새로운 소식"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "नवीन काय आहे"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Novidades"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Что нового"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "มีอะไรใหม่"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yenilikler"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Có gì mới"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "这次更新了什么"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "今次有咩新功能"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "這次更新了什麼"
-          }
-        }
-      }
-    },
     "widgetRestDay": {
       "extractionState": "manual",
       "localizations": {
@@ -118319,125 +117831,6 @@
         }
       }
     },
-    "plusOfferClaim": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تفعيل عرضي لمدة 24 ساعة"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "24-Stunden-Angebot aktivieren"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Claim my 24-hour offer"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Activar mi oferta de 24 horas"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Activer mon offre de 24 h"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "मेरा 24 घंटे का ऑफ़र लें"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Klaim penawaran 24 jam"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Attiva la mia offerta di 24 ore"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "24時間限定オファーを受け取る"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "24시간 혜택 받기"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "माझी 24 तासांची ऑफर घ्या"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ativar minha oferta de 24 horas"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Активировать предложение на 24 часа"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "รับข้อเสนอ 24 ชั่วโมง"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "24 saatlik teklifimi etkinleştir"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nhận ưu đãi 24 giờ"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "领取 24 小时优惠"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "領取 24 小時優惠"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "領取 24 小時優惠"
-          }
-        }
-      }
-    },
     "plusOfferDeadline": {
       "extractionState": "manual",
       "localizations": {
@@ -118553,244 +117946,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "優惠截至 {{date}}"
-          }
-        }
-      }
-    },
-    "plusOfferPreview": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "معاينة فقط. الشراء بالسعر المخفض غير متاح بعد."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nur Vorschau. Der vergünstigte Kauf ist noch nicht verfügbar."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preview only. Discounted purchasing is not connected yet."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Solo vista previa. La compra con descuento aún no está disponible."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aperçu uniquement. L’achat à prix réduit n’est pas encore disponible."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "केवल पूर्वावलोकन। छूट पर खरीदारी अभी उपलब्ध नहीं है।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hanya pratinjau. Pembelian dengan diskon belum tersedia."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Solo anteprima. L’acquisto scontato non è ancora disponibile."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プレビューのみ。割引商品の購入はまだ利用できません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "미리보기예요. 할인 상품은 아직 구매할 수 없어요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "केवळ पूर्वावलोकन. सवलतीची खरेदी अद्याप उपलब्ध नाही."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apenas prévia. A compra com desconto ainda não está disponível."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Только предварительный просмотр. Покупка со скидкой пока недоступна."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ตัวอย่างเท่านั้น ยังไม่สามารถซื้อในราคาส่วนลดได้"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yalnızca önizleme. İndirimli satın alma henüz kullanılamıyor."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chỉ xem trước. Chưa thể mua sản phẩm giảm giá."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "验收预览：优惠商品尚未接入，暂不可购买。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "驗收預覽：優惠商品尚未接入，暫時無法購買。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "驗收預覽：優惠商品尚未接入，暫不可購買。"
-          }
-        }
-      }
-    },
-    "plusOfferRemaining": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "الوقت المتبقي"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Verbleibende Zeit"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Time remaining"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tiempo restante"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Temps restant"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "बचा हुआ समय"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sisa waktu"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tempo rimanente"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "残り時間"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "남은 시간"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "उरलेला वेळ"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tempo restante"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Осталось времени"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เวลาที่เหลือ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kalan süre"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thời gian còn lại"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "优惠剩余时间"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "優惠剩餘時間"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "優惠剩餘時間"
           }
         }
       }
@@ -119148,125 +118303,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "可以再想一想。為你留了一份終身版專屬價格。"
-          }
-        }
-      }
-    },
-    "plusOfferWelcomeBack": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "شكراً لبقائك معنا. امتلك جميع ميزات Plus إلى الأبد."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Danke, dass du dabei bist. Sichere dir alle Plus-Funktionen dauerhaft."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A thank-you for being here. Make every Plus feature yours, for good."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gracias por seguir aquí. Disfruta de todas las funciones Plus para siempre."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Merci de votre fidélité. Profitez de toutes les fonctions Plus, pour toujours."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "साथ बने रहने के लिए धन्यवाद। Plus के सभी फ़ीचर हमेशा के लिए अपने बनाएँ।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Terima kasih sudah bersama kami. Miliki semua fitur Plus selamanya."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Grazie di essere qui. Tutte le funzioni Plus possono essere tue, per sempre."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "いつもありがとうございます。Plusの全機能を、これからもずっと。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "함께해 주셔서 감사해요. Plus의 모든 기능을 평생 이용하세요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "आमच्यासोबत असल्याबद्दल धन्यवाद. Plus ची सर्व वैशिष्ट्ये कायमची तुमची करा."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Obrigado por estar aqui. Tenha todos os recursos Plus para sempre."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Спасибо, что вы с нами. Получите все функции Plus навсегда."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ขอบคุณที่อยู่ด้วยกัน รับทุกฟีเจอร์ของ Plus ไว้ใช้ตลอดไป"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bizimle olduğunuz için teşekkürler. Tüm Plus özellikleri kalıcı olarak sizin olsun."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cảm ơn bạn đã đồng hành. Sở hữu mọi tính năng Plus mãi mãi."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "谢谢你一直在。一次买断，让 Plus 的全部功能长久相伴。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "多謝你一直支持。一次買斷，長用 Plus 全部功能。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "謝謝你一直都在。一次買斷，讓 Plus 的所有功能長久相伴。"
           }
         }
       }
@@ -120463,125 +119499,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "≈{{discount}}折"
-          }
-        }
-      }
-    },
-    "plusOfferUnavailable": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "انتهى العرض أو أنه غير متاح مؤقتًا."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Das Angebot ist abgelaufen oder vorübergehend nicht verfügbar."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This offer has ended or is temporarily unavailable."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La oferta ha terminado o no está disponible temporalmente."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cette offre est terminée ou temporairement indisponible."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "यह ऑफ़र समाप्त हो गया है या अभी उपलब्ध नहीं है।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Penawaran telah berakhir atau sementara tidak tersedia."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "L’offerta è terminata o non è momentaneamente disponibile."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "特別価格は終了したか、一時的に利用できません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "혜택이 종료되었거나 일시적으로 이용할 수 없어요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ही ऑफर संपली आहे किंवा सध्या उपलब्ध नाही."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A oferta terminou ou está temporariamente indisponível."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Предложение завершено или временно недоступно."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ข้อเสนอสิ้นสุดแล้วหรือไม่พร้อมใช้งานชั่วคราว"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Teklif sona erdi veya geçici olarak kullanılamıyor."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ưu đãi đã kết thúc hoặc tạm thời không khả dụng."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "优惠已结束或暂不可用。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "優惠已結束或暫時無法使用。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "優惠已結束或暫時未能使用。"
           }
         }
       }
@@ -122652,125 +121569,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "已紀錄"
-          }
-        }
-      }
-    },
-    "reportEntryShort": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "التقارير"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Berichte"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reports"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Informes"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rapports"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "रिपोर्ट"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Laporan"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resoconti"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "レポート"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "리포트"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अहवाल"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Relatórios"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отчёты"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "รายงาน"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Raporlar"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Báo cáo"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "报告"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "報告"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "報告"
           }
         }
       }
@@ -146333,6 +145131,1672 @@
           "stringUnit": {
             "state": "translated",
             "value": "矩形"
+          }
+        }
+      }
+    },
+    "whatsNewWidgetsTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أدوات جديدة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Widgets"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New widgets"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets nuevos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveaux widgets"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नए विजेट"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget baru"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuovi widget"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新しいウィジェット"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새로운 위젯"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नवीन विजेट"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novos widgets"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Новые виджеты"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วิดเจ็ตใหม่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni widget’lar"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiện ích mới"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全新小组件"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全新小工具"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全新小工具"
+          }
+        }
+      }
+    },
+    "whatsNewHomeTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الشاشة الرئيسية"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home-Bildschirm"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home Screen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pantalla de inicio"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Écran d’accueil"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "होम स्क्रीन"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layar Utama"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schermata Home"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ホーム画面"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "홈 화면"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "होम स्क्रीन"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tela de Início"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экран «Домой»"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หน้าจอโฮม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ana Ekran"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Màn hình chính"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主屏幕"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主畫面"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主畫面"
+          }
+        }
+      }
+    },
+    "whatsNewHomeBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أنماط جديدة للعد التنازلي، إلى جانب هذا الأسبوع والورديات وعطلة الأسبوع والعطلة القادمة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Countdown-Stile, dazu diese Woche, deine Schichten, das Wochenende und der nächste Feiertag."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New countdown styles, plus this week, your shifts, the weekend and your next holiday."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuevos estilos de cuenta atrás y, además, la semana, tus turnos, el fin de semana y el próximo festivo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De nouveaux styles de compte à rebours, et aussi la semaine, vos horaires, le week-end et le prochain jour férié."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काउंटडाउन की नई स्टाइल, साथ में इस सप्ताह, आपकी शिफ़्ट, वीकेंड और अगली छुट्टी।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaya hitung mundur baru, plus pekan ini, shift-mu, akhir pekan, dan libur berikutnya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuovi stili per il conto alla rovescia, più la settimana, i turni, il weekend e la prossima festività."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カウントダウンの新しいスタイルに加えて、今週の進み具合、シフト、週末、次の祝日も。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새로운 카운트다운 스타일과 함께 이번 주, 근무표, 주말, 다음 공휴일도 볼 수 있어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काउंटडाउनच्या नव्या स्टाइल, सोबत हा आठवडा, तुमच्या शिफ्ट, वीकेंड आणि पुढची सुट्टी."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novos estilos de contagem regressiva, além da semana, da sua escala, do fim de semana e do próximo feriado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Новые стили обратного отсчёта, а ещё неделя, смены, выходные и ближайший праздник."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สไตล์นับถอยหลังใหม่ พร้อมสัปดาห์นี้ กะงาน สุดสัปดาห์ และวันหยุดถัดไป"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni geri sayım stilleri; ayrıca bu hafta, vardiyaların, hafta sonu ve sıradaki tatil."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kiểu đếm ngược mới, cùng tuần này, ca làm, cuối tuần và ngày lễ tới."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倒计时新样式，还有本周进度、排班、周末和下个假期。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倒數新款式，仲有本週進度、排班、週末同下個假期。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倒數新樣式，還有本週進度、排班、週末和下個假期。"
+          }
+        }
+      }
+    },
+    "whatsNewLockTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شاشة القفل ومركز التحكم"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sperrbildschirm und Kontrollzentrum"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock Screen and Control Center"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pantalla bloqueada y centro de control"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Écran verrouillé et Centre de contrôle"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लॉक स्क्रीन और कंट्रोल सेंटर"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layar Kunci dan Pusat Kontrol"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schermata di blocco e Centro di Controllo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ロック画面とコントロールセンター"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잠금 화면과 제어 센터"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लॉक स्क्रीन आणि कंट्रोल सेंटर"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tela Bloqueada e Central de Controle"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экран блокировки и Пункт управления"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หน้าจอล็อกและศูนย์ควบคุม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kilit Ekranı ve Denetim Merkezi"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Màn hình khóa và Trung tâm điều khiển"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "锁定屏幕与控制中心"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鎖定畫面同控制中心"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鎖定畫面與控制中心"
+          }
+        }
+      }
+    },
+    "whatsNewLockBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أضئ الشاشة لترى كم تبقّى، وابدأ ورديتك بلمسة واحدة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildschirm an, Restzeit im Blick – und deine Schicht startest du mit einem Tippen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wake your screen to see what’s left, and start your shift with one tap."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enciende la pantalla y verás cuánto falta; empieza tu turno con un toque."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allumez l’écran pour voir le temps restant, et commencez votre journée en un geste."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्क्रीन जगाते ही दिखे कि कितना समय बचा है, और एक टैप में शिफ़्ट शुरू करें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nyalakan layar untuk melihat sisa waktu, dan mulai shift dengan sekali ketuk."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accendi lo schermo e vedi quanto manca; inizia il turno con un tocco."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面をつければ残り時間がわかり、ワンタップで出勤を始められます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면을 켜면 남은 시간이 보이고, 탭 한 번으로 근무를 시작할 수 있어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्क्रीन सुरू करताच किती वेळ उरला ते दिसते, आणि एका टॅपमध्ये शिफ्ट सुरू करा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acenda a tela para ver quanto falta e comece o turno com um toque."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включите экран — и сразу видно, сколько осталось; смена начинается одним касанием."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดหน้าจอก็รู้ว่าเหลืออีกนานแค่ไหน และเริ่มกะได้ในแตะเดียว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ekranı aç, kalan süreyi gör; vardiyanı tek dokunuşla başlat."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bật màn hình là biết còn bao lâu; bắt đầu ca chỉ với một chạm."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕一亮就知道还剩多久，一键开始上班。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一開螢幕就知仲有幾耐，一按就開工。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕一亮就知道還剩多久，一鍵開始上班。"
+          }
+        }
+      }
+    },
+    "whatsNewWatchBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أصبح مضمّن العد التنازلي مقسّمًا عند استراحة الغداء، مع مضمّنات جديدة للأسبوع والورديات والعطلات."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Countdown-Komplikation ist an der Mittagspause geteilt, dazu neue für Woche, Schichten und Feiertage."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The countdown complication splits at lunch, with new ones for your week, shifts and holidays."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La complicación de cuenta atrás se divide en la pausa de la comida, y llegan otras para la semana, los turnos y los festivos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La complication du compte à rebours est coupée à la pause déjeuner, et d’autres arrivent pour la semaine, les horaires et les jours fériés."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काउंटडाउन कॉम्प्लिकेशन लंच ब्रेक पर बँटा दिखता है, और सप्ताह, शिफ़्ट व छुट्टियों के नए कॉम्प्लिकेशन भी हैं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komplikasi hitung mundur kini terbagi saat istirahat makan siang, ditambah yang baru untuk pekan, shift, dan hari libur."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La complicazione del conto alla rovescia è divisa alla pausa pranzo, e se ne aggiungono altre per settimana, turni e festività."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カウントダウンのコンプリケーションが昼休みで区切られ、今週・シフト・祝日のコンプリケーションも加わりました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "카운트다운 컴플리케이션이 점심시간을 기준으로 나뉘고, 이번 주·근무·공휴일 컴플리케이션도 추가됐어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काउंटडाउन कॉम्प्लिकेशन जेवणाच्या सुट्टीला विभागलेले दिसते, आणि आठवडा, शिफ्ट व सुट्ट्यांसाठी नवे कॉम्प्लिकेशनही आहेत."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A complicação da contagem regressiva é dividida no almoço, e chegam outras para a semana, a escala e os feriados."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Усложнение с обратным отсчётом делится на обеденном перерыве, а новые показывают неделю, смены и праздники."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คอมพลิเคชันนับถอยหลังแบ่งช่วงตามพักกลางวัน และมีคอมพลิเคชันใหม่สำหรับสัปดาห์ กะงาน และวันหยุด"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geri sayım komplikasyonu öğle arasında bölünüyor; hafta, vardiyalar ve tatiller için yenileri de geldi."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complication đếm ngược được chia theo giờ nghỉ trưa, thêm các complication mới cho tuần, ca làm và ngày lễ."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倒计时复杂功能按午休分段，还新增了本周、班次和假期复杂功能。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倒數複雜功能按午膳分段，仲新增咗本週、班次同假期複雜功能。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倒數複雜功能依午休分段，還新增了本週、班次和假期複雜功能。"
+          }
+        }
+      }
+    },
+    "whatsNewHowToAdd": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعرّف على طريقة إضافتها"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "So fügst du sie hinzu"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See how to add them"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver cómo añadirlos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voir comment les ajouter"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इन्हें जोड़ने का तरीका देखें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lihat cara menambahkannya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scopri come aggiungerli"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追加のしかたを見る"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "추가하는 방법 보기"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ते कसे जोडायचे ते पाहा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver como adicionar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как их добавить"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ดูวิธีเพิ่ม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nasıl eklenir?"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xem cách thêm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "看看怎么添加"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "睇吓點樣加入"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "看看怎麼加入"
+          }
+        }
+      }
+    },
+    "plusGiftOpen": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "افتح الهدية"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geschenk öffnen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open your gift"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir el regalo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir le cadeau"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "उपहार खोलें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buka hadiah"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri il regalo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ギフトを開ける"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선물 열기"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "भेट उघडा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir o presente"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть подарок"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดของขวัญ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hediyeyi aç"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở quà"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开礼物"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開禮物"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開禮物"
+          }
+        }
+      }
+    },
+    "plusGiftTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هدية لك"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Geschenk für dich"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A gift for you"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un regalo para ti"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un cadeau pour vous"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपके लिए एक उपहार"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hadiah untukmu"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un regalo per te"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あなたへのギフト"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "당신을 위한 선물"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमच्यासाठी एक भेट"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um presente para você"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подарок для вас"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ของขวัญสำหรับคุณ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sana bir hediye"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Một món quà cho bạn"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "给你的一份礼物"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "送你嘅一份禮物"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "送你的一份禮物"
+          }
+        }
+      }
+    },
+    "plusGiftSubtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صالح لمدة 7 أيام. كل ميزات Plus بدفعة واحدة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 Tage gültig. Alle Plus-Funktionen, einmal bezahlt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yours for 7 days. Every Plus feature, paid once."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Válido 7 días. Todas las funciones de Plus en un solo pago."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valable 7 jours. Toutes les fonctions Plus, payées une fois."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 दिन तक मान्य। Plus की सभी सुविधाएँ, एक बार के भुगतान में।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berlaku 7 hari. Semua fitur Plus dengan sekali bayar."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valido 7 giorni. Tutte le funzioni Plus con un solo acquisto."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7日間有効。Plusのすべての機能を買い切りで。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7일 동안 유효해요. 한 번 구매로 모든 Plus 기능을."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 दिवस वैध. Plus ची सर्व वैशिष्ट्ये, एकदाच पैसे भरून."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Válido por 7 dias. Todos os recursos do Plus em um só pagamento."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Действует 7 дней. Все функции Plus — одной покупкой."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้ได้ 7 วัน ซื้อครั้งเดียวได้ทุกฟีเจอร์ของ Plus"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 gün geçerli. Tüm Plus özellikleri tek seferlik ödemeyle."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Có hiệu lực 7 ngày. Toàn bộ tính năng Plus, trả một lần."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 天内有效，一次买断全部 Plus 功能。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 日內有效，一次買斷全部 Plus 功能。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 天內有效，一次買斷全部 Plus 功能。"
+          }
+        }
+      }
+    },
+    "plusOfferTermsWeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يسري السعر الخاص لمدة 7 أيام من فتح الهدية. السعر النهائي هو المعروض في المتجر."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Sonderpreis gilt 7 Tage ab dem Öffnen des Geschenks. Maßgeblich ist der Preis im Store."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The special price lasts 7 days from when you open the gift. The store price is the final price."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El precio especial es válido 7 días desde que abres el regalo. El precio final es el que muestra la tienda."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le prix spécial est valable 7 jours à partir de l’ouverture du cadeau. Le prix affiché dans le Store fait foi."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "विशेष कीमत उपहार खोलने के समय से 7 दिन तक मान्य है। अंतिम कीमत वही है जो स्टोर में दिखती है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Harga khusus berlaku 7 hari sejak hadiah dibuka. Harga akhir sesuai yang tertera di toko."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il prezzo speciale vale 7 giorni dall’apertura del regalo. Il prezzo finale è quello indicato nello Store."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "特別価格はギフトを開けてから7日間有効です。最終価格はストアに表示されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "특별가는 선물을 연 때부터 7일 동안 유효해요. 최종 가격은 스토어에 표시된 가격이에요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "विशेष किंमत भेट उघडल्यापासून 7 दिवस वैध आहे. अंतिम किंमत स्टोअरमध्ये दिसणारीच असेल."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O preço especial vale por 7 dias a partir de quando você abre o presente. O preço final é o mostrado na loja."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Специальная цена действует 7 дней с момента, когда вы открыли подарок. Окончательная цена указана в магазине."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ราคาพิเศษใช้ได้ 7 วันนับจากที่เปิดของขวัญ ราคาสุดท้ายเป็นไปตามที่แสดงในสโตร์"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Özel fiyat, hediyeyi açtığın andan itibaren 7 gün geçerli. Son fiyat mağazada gösterilen fiyattır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giá đặc biệt có hiệu lực 7 ngày kể từ khi bạn mở quà. Giá cuối cùng là giá hiển thị trên cửa hàng."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "专属价自打开礼物起 7 天内有效，实际价格以商店显示为准。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "專屬價由打開禮物起計 7 日內有效，實際價格以商店顯示為準。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "專屬價自打開禮物起 7 天內有效，實際價格以商店顯示為準。"
+          }
+        }
+      }
+    },
+    "plusOfferEndsIn": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يتبقى {{time}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch {{time}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ends in {{time}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quedan {{time}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus que {{time}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} बाकी"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tersisa {{time}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mancano {{time}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "残り {{time}}"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 남음"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} बाकी"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltam {{time}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Осталось {{time}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เหลือ {{time}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} kaldı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Còn {{time}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还剩 {{time}}"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仲有 {{time}}"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "還剩 {{time}}"
+          }
+        }
+      }
+    },
+    "plusLifetimeOnce": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ادفع مرة واحدة واحتفظ به للأبد"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einmal zahlen, für immer behalten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pay once, keep it for good"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un solo pago, para siempre"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Payé une fois, à vous pour toujours"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एक बार भुगतान, हमेशा के लिए"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sekali bayar, selamanya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paghi una volta, è tuo per sempre"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一度の購入でずっと使える"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한 번 구매로 계속 사용"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एकदा पैसे भरा, कायमचे वापरा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pague uma vez, use para sempre"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Одна покупка — навсегда"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จ่ายครั้งเดียว ใช้ได้ตลอดไป"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir kez öde, hep kullan"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trả một lần, dùng mãi mãi"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一次买断，长久使用"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一次買斷，長久使用"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一次買斷，長久使用"
+          }
+        }
+      }
+    },
+    "plusWidgetsSlideTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أدوات ملخص العمل والحياة والتركيز"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets für Arbeitsübersicht, Leben und Fokus"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work summary, life and focus widgets"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets de Resumen laboral, Vida y Enfoque"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets Bilan du travail, Vie et Focus"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कार्य सारांश, जीवन और फ़ोकस विजेट"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget Ringkasan kerja, Hidup, dan Fokus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget Riepilogo lavoro, Vita e Focus"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "勤務サマリー、人生、フォーカスのウィジェット"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무 요약, 인생, 집중 위젯"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कामाचा सारांश, आयुष्य आणि फोकस विजेट"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets Resumo do trabalho, Vida e Foco"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Виджеты «Сводка по работе», «Жизнь» и «Фокус»"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วิดเจ็ตสรุปการทำงาน ชีวิต และโฟกัส"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çalışma özeti, Hayat ve Odak widget’ları"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiện ích Tổng kết giờ làm, Cuộc đời và Tập trung"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工时汇总、人生进度和专注小组件"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工時總覽、人生進度同專注小工具"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工時彙整、人生進度和專注小工具"
           }
         }
       }

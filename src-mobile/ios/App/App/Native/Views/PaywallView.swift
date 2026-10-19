@@ -42,7 +42,7 @@ struct PaywallView: View {
                 }
 
                 if !plus.isAuthorized {
-                    PlusFeatureStage(text: text, initialSelection: reason == .focus ? 2 : (reason == .leavePlanning || reason == .shiftAlarms ? 1 : 0))
+                    PlusFeatureCarousel(text: text, initialPage: carouselPage)
                         .padding(.vertical, 8)
                 }
                 PaywallContent(
@@ -85,6 +85,16 @@ struct PaywallView: View {
         }
     }
 
+    /// Open on the scene of the feature that was tapped.
+    private var carouselPage: PlusFeatureCarousel.Page {
+        switch reason {
+        case .focus: .focus
+        case .leavePlanning, .shiftAlarms: .rest
+        case .charts, .life, .historyEdit, .sync: .records
+        case .intro, .cycleEndSummaryNotifications: .reports
+        }
+    }
+
     private func finishAuthorizedFlow() {
         plus.markIntroSeen()
         onDismiss()
@@ -112,7 +122,7 @@ struct PaywallContent: View {
     var secondaryAction: (() -> Void)?
     var authorizedAction: (() -> Void)?
     var onPurchaseVisibilityChange: ((Bool) -> Void)?
-    @State private var selected = PlusPlanKind.yearly
+    @State private var selected: PlusPlanKind
     @State private var confirmsLifetime = false
     @State private var purchasedFeedback = 0
     @State private var errorFeedback = 0
@@ -142,6 +152,8 @@ struct PaywallContent: View {
         self.authorizedAction = authorizedAction
         self.onPurchaseVisibilityChange = onPurchaseVisibilityChange
         _authorizedAtPresentation = State(initialValue: plus.isAuthorized)
+        // An opened gift is why this page is up; its price comes preselected.
+        _selected = State(initialValue: plus.hasActiveLifetimeOffer ? .lifetime : .yearly)
     }
 
     var body: some View {
@@ -168,18 +180,9 @@ struct PaywallContent: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
-                    if plus.hasAvailableLifetimeOffer {
-                        LifetimeOfferCard(plus: plus, text: text)
-                            .id("plus-plans")
-                            .onScrollVisibilityChange(threshold: 0.15) { onPurchaseVisibilityChange?($0) }
-                        DisclosureGroup(text.t("plusSeePlans")) { purchaseSection.padding(.top, 12) }
-                            .font(.callout.weight(.medium))
-                        restoreButton.font(.callout).foregroundStyle(OWCDesign.secondary)
-                    } else {
-                        purchaseSection
-                            .id("plus-plans")
-                            .onScrollVisibilityChange(threshold: 0.15) { onPurchaseVisibilityChange?($0) }
-                    }
+                    purchaseSection
+                        .id("plus-plans")
+                        .onScrollVisibilityChange(threshold: 0.15) { onPurchaseVisibilityChange?($0) }
                     if showsBenefits { benefits }
                     else {
                         DisclosureGroup(text.t("plusAllBenefits")) { benefits.padding(.top, 12) }
@@ -376,7 +379,7 @@ struct PaywallContent: View {
             }
 
             VStack(spacing: 0) {
-                if !plus.hasAvailableLifetimeOffer { restoreButton }
+                restoreButton
                 if let secondaryTitle, let secondaryAction {
                     Button(secondaryTitle, action: secondaryAction)
                         .frame(maxWidth: .infinity, minHeight: 44)
@@ -388,7 +391,7 @@ struct PaywallContent: View {
             if case .pendingAskToBuy = plus.authorization {
                 statusNote(text.t("plusWaitingApproval"))
             }
-            if let error = plus.lastProductError, !plus.products.isEmpty, !plus.hasAvailableLifetimeOffer {
+            if let error = plus.lastProductError, !plus.products.isEmpty {
                 statusNote(error)
             }
         }
@@ -407,26 +410,10 @@ struct PaywallContent: View {
         .frame(maxWidth: .infinity, minHeight: 44)
     }
 
-    /// Narrow panes and accessibility text sizes use full-width rows, keeping
-    /// plan names readable without squeezing three tiles into the available space.
-    @ViewBuilder
+    /// One plan per row, as most well-read paywalls do: the name, what it
+    /// works out to and the price each get room, at any text size and in the
+    /// longest translation, and the rows compare top to bottom.
     private var planPicker: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            planRows
-        } else {
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 8) {
-                    ForEach(visiblePlans) { plan in
-                        planTile(plan)
-                            .frame(minWidth: 112)
-                    }
-                }
-                planRows
-            }
-        }
-    }
-
-    private var planRows: some View {
         VStack(spacing: 8) {
             ForEach(visiblePlans) { plan in
                 planRow(plan)
@@ -434,26 +421,14 @@ struct PaywallContent: View {
         }
     }
 
-    @ViewBuilder
     private var planPickerPlaceholder: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            VStack(spacing: 8) {
-                ForEach(0..<3, id: \.self) { _ in
-                    planPlaceholder(minHeight: 62)
-                }
+        VStack(spacing: 8) {
+            ForEach(0..<3, id: \.self) { _ in
+                planPlaceholder(minHeight: 62)
             }
-            .overlay { ProgressView() }
-            .accessibilityElement(children: .ignore)
-        } else {
-            HStack(spacing: 8) {
-                ForEach(0..<3, id: \.self) { _ in
-                    planPlaceholder(minHeight: 116)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .overlay { ProgressView() }
-            .accessibilityElement(children: .ignore)
         }
+        .overlay { ProgressView() }
+        .accessibilityElement(children: .ignore)
     }
 
     private func planPlaceholder(minHeight: CGFloat) -> some View {
@@ -466,101 +441,67 @@ struct PaywallContent: View {
             }
     }
 
-    private func planTile(_ plan: PlusPlanKind) -> some View {
-        let chosen = selected == plan
-        return Button {
-            select(plan)
-        } label: {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .top, spacing: 4) {
-                    Text(text.t(plan.titleKey))
-                        .font(.callout.weight(.semibold))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.82)
-                    Spacer(minLength: 0)
-                    Image(systemName: chosen ? "checkmark.circle.fill" : "circle")
-                        .font(.callout.weight(.semibold))
-                        .foregroundStyle(chosen ? OWCDesign.accent : OWCDesign.tertiary)
-                        .accessibilityHidden(true)
-                }
-
-                Text(price(for: plan))
-                    .font(.callout.weight(.semibold).monospacedDigit())
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.68)
-
-                if let monthly = monthlyEquivalent(for: plan) {
-                    Text(monthly)
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(OWCDesign.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                }
-
-                if let badge = badge(for: plan) {
-                    Text(badge)
-                        .font(.footnote.weight(.medium))
-                        .foregroundStyle(chosen ? OWCDesign.accent : OWCDesign.secondary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.82)
-                }
-            }
-            .foregroundStyle(OWCDesign.primary)
-            .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
-            .background(chosen ? OWCDesign.accent.opacity(0.10) : OWCDesign.card)
-            .clipShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous)
-                    .strokeBorder(
-                        chosen ? OWCDesign.accent : Color.primary.opacity(0.16),
-                        lineWidth: chosen ? 2 : 1
-                    )
-            }
-            .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: chosen)
-        }
-        .buttonStyle(OWCPlanCardButtonStyle())
-        .accessibilityAddTraits(chosen ? .isSelected : [])
-        .accessibilityLabel(planAccessibilityLabel(plan))
-    }
-
     private var visiblePlans: [PlusPlanKind] {
         PlusPlanKind.allCases.filter { product(for: $0) != nil }
     }
 
     private func planRow(_ plan: PlusPlanKind) -> some View {
         let chosen = selected == plan
+        let offer = plan == .lifetime && plus.hasActiveLifetimeOffer
         return Button {
             select(plan)
         } label: {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(text.t(plan.titleKey))
-                        .font(.body.weight(.semibold))
-                    // Rows replace the tiles on narrow screens (an iPhone Duo
-                    // cover screen) and at large text; the monthly figure
-                    // belongs here as much as on the tile.
-                    let details = [badge(for: plan), monthlyEquivalent(for: plan)].compactMap { $0 }
-                    if !details.isEmpty {
-                        Text(details.joined(separator: " · "))
-                            .font(.caption.weight(.medium))
+                Image(systemName: chosen ? "checkmark.circle.fill" : "circle")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(chosen ? OWCDesign.accent : OWCDesign.tertiary)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text(text.t(plan.titleKey))
+                            .font(.body.weight(.semibold))
+                        if let badge = badge(for: plan) {
+                            Text(badge)
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(OWCDesign.accent, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                                .lineLimit(1)
+                        }
+                    }
+                    if offer, let deadline = plus.lifetimeOffer?.expiresAt {
+                        TimelineView(.periodic(from: .now, by: 1)) { context in
+                            Text(text.t("plusOfferEndsIn", values: [
+                                "time": text.formatOfferRemaining(deadline.timeIntervalSince(max(context.date, plus.lifetimeOffer?.latestObservedAt ?? context.date)))
+                            ]))
+                            .font(.caption.weight(.medium).monospacedDigit())
+                            .foregroundStyle(OWCDesign.accent)
+                        }
+                    } else if let detail = detail(for: plan) {
+                        Text(detail)
+                            .font(.caption)
                             .foregroundStyle(OWCDesign.secondary)
                     }
                 }
                 Spacer(minLength: 8)
-                Text(price(for: plan))
-                    .font(.body.weight(.semibold).monospacedDigit())
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                Image(systemName: chosen ? "checkmark.circle.fill" : "circle")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(chosen ? OWCDesign.accent : OWCDesign.tertiary)
-                    .accessibilityHidden(true)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(price(for: plan))
+                        .font(.body.weight(.bold).monospacedDigit())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    if offer, let regular = regularLifetimePrice {
+                        Text(regular)
+                            .font(.caption.monospacedDigit())
+                            .strikethrough()
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
+                }
             }
             .foregroundStyle(OWCDesign.primary)
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
-            .frame(minHeight: 56)
+            .frame(minHeight: 62)
             .background(chosen ? OWCDesign.accent.opacity(0.10) : OWCDesign.card)
             .clipShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
             .overlay {
@@ -581,6 +522,10 @@ struct PaywallContent: View {
     }
 
     private func purchaseSelected() {
+        if selected == .lifetime, plus.hasActiveLifetimeOffer {
+            Task { await plus.purchaseLifetimeOffer() }
+            return
+        }
         guard let product = product(for: selected) else { return }
         if selected == .lifetime, plus.hasActiveSubscription {
             confirmsLifetime = true
@@ -600,16 +545,26 @@ struct PaywallContent: View {
         }
     }
 
+    /// While an opened gift lasts, lifetime is sold at its price.
     private func product(for plan: PlusPlanKind) -> Product? {
         switch plan {
         case .yearly: plus.yearlyProduct()
         case .monthly: plus.monthlyProduct()
-        case .lifetime: plus.lifetimeProduct()
+        case .lifetime: plus.hasActiveLifetimeOffer
+            ? (plus.discountedLifetimeProduct() ?? plus.lifetimeProduct()) : plus.lifetimeProduct()
         }
     }
 
     private func price(for plan: PlusPlanKind) -> String {
-        product(for: plan)?.displayPrice ?? "—"
+        if plan == .lifetime, plus.hasActiveLifetimeOffer, plus.discountedLifetimeProduct() == nil,
+           let preview = plus.previewLifetimeOfferPrices {
+            return preview.discounted
+        }
+        return product(for: plan)?.displayPrice ?? "—"
+    }
+
+    private var regularLifetimePrice: String? {
+        plus.lifetimeProduct()?.displayPrice ?? plus.previewLifetimeOfferPrices?.regular
     }
 
     /// The yearly price spread over twelve months, in the store's own currency
@@ -620,17 +575,27 @@ struct PaywallContent: View {
         return text.t("plusPerMonth", values: ["price": perMonth])
     }
 
+    private func detail(for plan: PlusPlanKind) -> String? {
+        switch plan {
+        case .yearly: monthlyEquivalent(for: plan)
+        case .lifetime: text.t("plusLifetimeOnce")
+        case .monthly: nil
+        }
+    }
+
     private func badge(for plan: PlusPlanKind) -> String? {
         switch plan {
         case .yearly:
             return plus.yearlyEligibleForTrial ? text.t("plusTrialBadge") : text.t("plusBestValue")
+        case .lifetime where plus.hasActiveLifetimeOffer:
+            return plus.lifetimeSavingsLabel(text: text)
         case .monthly, .lifetime:
             return nil
         }
     }
 
     private func planAccessibilityLabel(_ plan: PlusPlanKind) -> String {
-        [text.t(plan.titleKey), price(for: plan), monthlyEquivalent(for: plan), badge(for: plan)]
+        [text.t(plan.titleKey), price(for: plan), badge(for: plan), detail(for: plan)]
             .compactMap { $0 }
             .joined(separator: ", ")
     }
@@ -684,6 +649,12 @@ struct PaywallContent: View {
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if selected == .lifetime, plus.hasActiveLifetimeOffer, let offer = plus.lifetimeOffer {
+                Text(text.t(offer.source == .update323 ? "plusOfferTermsWeek" : "plusOfferTerms"))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -789,8 +760,8 @@ private struct OWCPlanCardButtonStyle: ButtonStyle {
 
 private enum PlusPlanKind: String, CaseIterable, Identifiable {
     case yearly
-    case monthly
     case lifetime
+    case monthly
 
     var id: String { rawValue }
 
