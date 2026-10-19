@@ -25,7 +25,9 @@ Watch page (5) and widgets page (9) retire; pages 1–2 and 5–10 keep their
 ## Status (2026-10-19)
 
 zh-CN and en rendered and audited (`creative-audit-3.2.3.mjs`: sizes, opaque
-RGB, layout audit, source hashes; no findings). Review sheet:
+RGB, layout audit, source hashes; no findings). Chrome's actual-font check
+confirms every line is set in the licensed poster fonts (see `search-video.md`,
+Poster fonts). Review sheet:
 `shots-review/widget-pages-zh-CN-en.jpg`; manifest:
 `screenshot-manifest.json`. Nothing uploaded. Other locales follow after
 review; the Home Screen and Lock Screen need recapturing in each locale's

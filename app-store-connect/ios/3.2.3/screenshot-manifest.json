@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-10-19T02:32:41.259Z",
+  "createdAt": "2026-10-19T02:57:20.845Z",
   "uploaded": false,
   "items": [
     {
@@ -12,7 +12,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "98b3ef7ba45462043ee098421b64bba915e50b150e0e675cefbf31ef4a744173",
+      "sha256": "a45cfc3c7c297c91de679b892b677c0daadfcb53d016b76b61547b0b27bb7e9b",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -34,6 +34,10 @@
           "多款小组件免费可用。"
         ]
       },
+      "fontsUsed": [
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
       "layoutAudit": {
         "issues": []
       },
@@ -49,7 +53,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "346fdc03a4ddc59120caa0a6b8fbe21dc6cf90c0d317fbe9ce4bddf347f2dca8",
+      "sha256": "80302c28a65635e4dfdf1de6e029bb9fde162dc18f28c0e9c70521e4f55d2d3c",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -79,6 +83,11 @@
           "Apple Watch 也能看。"
         ]
       },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
       "layoutAudit": {
         "issues": []
       },
@@ -116,6 +125,10 @@
           "Many of them free."
         ]
       },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
       "layoutAudit": {
         "issues": []
       },
@@ -161,6 +174,10 @@
           "and your countdown on Apple Watch."
         ]
       },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
       "layoutAudit": {
         "issues": []
       },

@@ -22,7 +22,7 @@ import {once} from 'node:events';
 import {COPY} from './creative-copy-3.2.1.mjs';
 import {searchLine,LOCALES} from './creative-copy-3.2.3.mjs';
 import {renderer} from './creative-renderer-3.2.1.mjs';
-import {posterFonts} from './creative-fonts.mjs';
+import {posterFonts,assertPosterFonts} from './creative-fonts.mjs';
 
 const dir=fileURLToPath(new URL('.',import.meta.url));
 const raw=join(dir,'raw/3.2.3/search'),out=join(dir,'out/creative-3.2.3/search');
@@ -247,6 +247,7 @@ try{for(const lang of languages){
  const scenes=SCENES.map(x=>placed(x,lang)),sources=await prepare(lang,scenes),name=`${lang}-search-video-3.2.3`,htmlPath=join(out,name+'.html'),file=join(out,name+'.mp4');
  writeFileSync(htmlPath,html(lang,sources,scenes));await r.load(htmlPath,W,H);
  await r.evaluate(`window.layoutReady.then(()=>Promise.all([...document.querySelectorAll('video')].map(v=>v.readyState>=2?0:new Promise((ok,no)=>{v.addEventListener('loadeddata',ok,{once:true});v.addEventListener('error',()=>no(Error('decode failed: '+v.src)),{once:true});}))))`);
+ const fontsUsed=await assertPosterFonts(r,'h1 .ink, h1 .accent, .note',name);
  const fits=await r.evaluate('window.shrink'),size=Math.min(...fits),floor=['zh-CN','zh-TW','ja','ko'].includes(lang)?FLOOR.cjk:FLOOR.latin;
  const flagged=fits.map((v,i)=>({scene:SCENES[i].key,fitsAt:v})).filter(x=>x.fitsAt<floor);
  console.log(`${lang}: headlines at ${size}px (longest: ${SCENES[fits.indexOf(size)].key})`);
@@ -262,7 +263,7 @@ try{for(const lang of languages){
  const v=probe.streams.find(s=>s.codec_type==='video');
  if(probe.streams.length!==1||v.width!==W||v.height!==H||v.r_frame_rate!==`${FPS}/1`||Number(v.nb_frames)!==DURATION*FPS||v.pix_fmt!=='yuv420p')throw Error('spec mismatch '+JSON.stringify(probe));
  const item={locale:lang,ascLocale:COPY[lang].asc,file:name+'.mp4',width:W,height:H,fps:FPS,duration:DURATION,frames:DURATION*FPS,audio:false,sha256:sha(file),
-  validatedFrames:await r.evaluate('window.validatedFrames'),headlineSize:size,headlineFits:Object.fromEntries(fits.map((v,i)=>[SCENES[i].key,v])),shrinkFlagged:flagged,safeArea:SAFE,template:TEMPLATE,
+  validatedFrames:await r.evaluate('window.validatedFrames'),headlineSize:size,fontsUsed,headlineFits:Object.fromEntries(fits.map((v,i)=>[SCENES[i].key,v])),shrinkFlagged:flagged,safeArea:SAFE,template:TEMPLATE,
   stillAudits:audits.map(a=>({time:a.time,minHeadline:a.minHeadline,issues:a.issues})),sources,status:'local-not-uploaded'};
  // Parallel workers each own one entry file; the manifest is rebuilt from all
  // of them, so no worker can overwrite another's entry.

@@ -102,17 +102,28 @@ node scripts/marketing-shots/ios/creative-audit-3.2.3.mjs
 Raw captures and renders are ignored (`raw/3.2.3`, `out/creative-3.2.3`);
 the manifests, audit and review sheets are copied into this folder.
 
+## Poster fonts
+
+The first render set new Chinese characters (就, 知, 道, 剩, 久 and others) in a
+system fallback (PingFang SC) next to Noto Serif SC, because the poster fonts
+are Google Fonts subsets of earlier copy. The Simplified Chinese serif and
+sans subsets were refreshed with the 3.2.3 copy
+(`creative-fonts-refresh.mjs`), and both renderers now fail on any text that
+Chrome sets in a non-poster font (`assertPosterFonts`; families recorded as
+`fontsUsed` in the manifests).
+
 ## Status (2026-10-19)
 
 zh-CN and en rendered locally; nothing uploaded, bound or submitted.
 
 | Locale | ASC | Headline px | Report in-point | Frames audited | SHA-256 |
 |---|---|---|---|---|---|
-| zh-CN | zh-Hans | 93 | 6.8 s | 825 | `3e0219a95816` |
+| zh-CN | zh-Hans | 93 | 6.8 s | 825 | `53db8596e1a0` |
 | en | en-US + en-GB | 69 | 6.0 s | 825 | `980bf0966131` |
 
 Both are 1920×1280, 30 fps, 810 frames (27 s), H.264 yuv420p, no audio.
-Every frame passed the safe-area, clipping and overlap audit, and
+Every frame passed the safe-area, clipping and overlap audit, Chrome
+reports only the licensed poster fonts for every headline and note, and
 `creative-audit-3.2.3.mjs` reports no findings (`audit.json`). Review
 sheets with the Art Safe Area outlined are in `search-review/`. The other
 15 store locales keep the 3.2.2 video until their lines are written.
