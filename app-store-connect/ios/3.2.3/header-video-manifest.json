@@ -1,0 +1,978 @@
+{
+  "createdAt": "2026-10-19T03:32:16.873Z",
+  "uploaded": false,
+  "items": [
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "kind": "header",
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Serif SC"
+      ],
+      "file": "zh-CN-header-video-v4.mp4",
+      "poster": "zh-CN-header-video-v4-0.00.png",
+      "width": 3840,
+      "height": 1646,
+      "fps": 30,
+      "duration": 8,
+      "recipeSHA": "2eef60dfc55cba5874a5fc5020e5d226af7fb6cc53abc3c45d932972f8a83eb0",
+      "sha256": "97df0b01047e9547d47a47547be9b38bbddaafaceeb9384b725c34c378d524bc",
+      "revision": 4,
+      "layoutAudits": [
+        {
+          "time": 0,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 607.0625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "几点下班，",
+              "x": 1145,
+              "y": 689.859375,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "心里有数。",
+              "x": 1145,
+              "y": 848.890625,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 142,
+          "issues": []
+        },
+        {
+          "time": 3.2,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 607.0625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "几点下班，",
+              "x": 1145,
+              "y": 689.859375,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "心里有数。",
+              "x": 1145,
+              "y": 848.890625,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 142,
+          "issues": []
+        },
+        {
+          "time": 7.96,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 607.0625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "几点下班，",
+              "x": 1145,
+              "y": 689.859375,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "心里有数。",
+              "x": 1145,
+              "y": 848.890625,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 142,
+          "issues": []
+        }
+      ],
+      "sources": [],
+      "safeTemplate": {
+        "scene": "header-21x9",
+        "width": 3840,
+        "height": 1646,
+        "safeArea": {
+          "x": 1097,
+          "y": 493,
+          "width": 1646,
+          "height": 661
+        },
+        "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-product_page_header_template-static.psd",
+        "sha256": "4200f416adcf3affb70d5847c1d0554fc39b7405110ec527bdea92bfb82f93b0",
+        "layer": "Art Safe Area",
+        "reverifiedOn": "2026-10-11",
+        "reverification": "Fresh download SHA-256 matches; Art Safe Area named layer bounds independently re-read with psd-tools."
+      },
+      "validatedFrames": 0,
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "kind": "header",
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Serif TC"
+      ],
+      "file": "zh-TW-header-video-v4.mp4",
+      "poster": "zh-TW-header-video-v4-0.00.png",
+      "width": 3840,
+      "height": 1646,
+      "fps": 30,
+      "duration": 8,
+      "recipeSHA": "b95c5b2680fd554c17f5daf7d3fd73d1679006b570ddf66c13ff0b8c9d1aa437",
+      "sha256": "491506a0632ddd270f45f8f693b300baf21dbe612a2ada3b148bf468b5bc32f5",
+      "revision": 4,
+      "layoutAudits": [
+        {
+          "time": 0,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 607.0625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "幾點下班，",
+              "x": 1145,
+              "y": 689.859375,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "心裡有數。",
+              "x": 1145,
+              "y": 848.890625,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 142,
+          "issues": []
+        },
+        {
+          "time": 3.2,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 607.0625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "幾點下班，",
+              "x": 1145,
+              "y": 689.859375,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "心裡有數。",
+              "x": 1145,
+              "y": 848.890625,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 142,
+          "issues": []
+        },
+        {
+          "time": 7.96,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 607.0625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "幾點下班，",
+              "x": 1145,
+              "y": 689.859375,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "心裡有數。",
+              "x": 1145,
+              "y": 848.890625,
+              "width": 705,
+              "height": 204
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 142,
+          "issues": []
+        }
+      ],
+      "sources": [],
+      "safeTemplate": {
+        "scene": "header-21x9",
+        "width": 3840,
+        "height": 1646,
+        "safeArea": {
+          "x": 1097,
+          "y": 493,
+          "width": 1646,
+          "height": 661
+        },
+        "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-product_page_header_template-static.psd",
+        "sha256": "4200f416adcf3affb70d5847c1d0554fc39b7405110ec527bdea92bfb82f93b0",
+        "layer": "Art Safe Area",
+        "reverifiedOn": "2026-10-11",
+        "reverification": "Fresh download SHA-256 matches; Art Safe Area named layer bounds independently re-read with psd-tools."
+      },
+      "validatedFrames": 0,
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "kind": "header",
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Serif JP"
+      ],
+      "file": "ja-header-video-v4.mp4",
+      "poster": "ja-header-video-v4-0.00.png",
+      "width": 3840,
+      "height": 1646,
+      "fps": 30,
+      "duration": 8,
+      "recipeSHA": "7e28e6e90f6e3a8950951b129bb9202e02c23a7171088bfb29a86fa9690c6110",
+      "sha256": "a397ab672c14efc19daf404774c5d68bdbeb12aa883a846a17211d3d1c4b0178",
+      "revision": 4,
+      "layoutAudits": [
+        {
+          "time": 0,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 607.0625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "上がる時間が、",
+              "x": 1145,
+              "y": 689.859375,
+              "width": 987,
+              "height": 204
+            },
+            {
+              "name": "すぐわかる。",
+              "x": 1145,
+              "y": 848.890625,
+              "width": 846,
+              "height": 204
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 142,
+          "issues": []
+        },
+        {
+          "time": 3.2,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 607.0625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "上がる時間が、",
+              "x": 1145,
+              "y": 689.859375,
+              "width": 987,
+              "height": 204
+            },
+            {
+              "name": "すぐわかる。",
+              "x": 1145,
+              "y": 848.890625,
+              "width": 846,
+              "height": 204
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 142,
+          "issues": []
+        },
+        {
+          "time": 7.96,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 607.0625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "上がる時間が、",
+              "x": 1145,
+              "y": 689.859375,
+              "width": 987,
+              "height": 204
+            },
+            {
+              "name": "すぐわかる。",
+              "x": 1145,
+              "y": 848.890625,
+              "width": 846,
+              "height": 204
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 142,
+          "issues": []
+        }
+      ],
+      "sources": [],
+      "safeTemplate": {
+        "scene": "header-21x9",
+        "width": 3840,
+        "height": 1646,
+        "safeArea": {
+          "x": 1097,
+          "y": 493,
+          "width": 1646,
+          "height": 661
+        },
+        "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-product_page_header_template-static.psd",
+        "sha256": "4200f416adcf3affb70d5847c1d0554fc39b7405110ec527bdea92bfb82f93b0",
+        "layer": "Art Safe Area",
+        "reverifiedOn": "2026-10-11",
+        "reverification": "Fresh download SHA-256 matches; Art Safe Area named layer bounds independently re-read with psd-tools."
+      },
+      "validatedFrames": 0,
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "kind": "header",
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Serif KR"
+      ],
+      "file": "ko-header-video-v4.mp4",
+      "poster": "ko-header-video-v4-0.00.png",
+      "width": 3840,
+      "height": 1646,
+      "fps": 30,
+      "duration": 8,
+      "recipeSHA": "948519ae7990cad5a3658bf5150b3b7555a96455562a88614549190323619241",
+      "sha256": "bf85dd137ea1ea082b7593be39d50892e6a54792c8d3a1004cdd7d90614184b2",
+      "revision": 4,
+      "layoutAudits": [
+        {
+          "time": 0,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 618.265625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "퇴근이 보이면",
+              "x": 1145,
+              "y": 702.0625,
+              "width": 791.078125,
+              "height": 190
+            },
+            {
+              "name": "마음이 놓여요.",
+              "x": 1145,
+              "y": 849.890625,
+              "width": 834.296875,
+              "height": 190
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 132,
+          "issues": []
+        },
+        {
+          "time": 3.2,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 618.265625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "퇴근이 보이면",
+              "x": 1145,
+              "y": 702.0625,
+              "width": 791.078125,
+              "height": 190
+            },
+            {
+              "name": "마음이 놓여요.",
+              "x": 1145,
+              "y": 849.890625,
+              "width": 834.296875,
+              "height": 190
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 132,
+          "issues": []
+        },
+        {
+          "time": 7.96,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 618.265625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "퇴근이 보이면",
+              "x": 1145,
+              "y": 702.0625,
+              "width": 791.078125,
+              "height": 190
+            },
+            {
+              "name": "마음이 놓여요.",
+              "x": 1145,
+              "y": 849.890625,
+              "width": 834.296875,
+              "height": 190
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 132,
+          "issues": []
+        }
+      ],
+      "sources": [],
+      "safeTemplate": {
+        "scene": "header-21x9",
+        "width": 3840,
+        "height": 1646,
+        "safeArea": {
+          "x": 1097,
+          "y": 493,
+          "width": 1646,
+          "height": 661
+        },
+        "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-product_page_header_template-static.psd",
+        "sha256": "4200f416adcf3affb70d5847c1d0554fc39b7405110ec527bdea92bfb82f93b0",
+        "layer": "Art Safe Area",
+        "reverifiedOn": "2026-10-11",
+        "reverification": "Fresh download SHA-256 matches; Art Safe Area named layer bounds independently re-read with psd-tools."
+      },
+      "validatedFrames": 0,
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "kind": "header",
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "file": "ru-header-video-v4.mp4",
+      "poster": "ru-header-video-v4-0.00.png",
+      "width": 3840,
+      "height": 1646,
+      "fps": 30,
+      "duration": 8,
+      "recipeSHA": "60718bc4db59f618dc2c510b2b99307ae764055bb2cfd679492b966ff93799b7",
+      "sha256": "2e122466d0b97692ee33f45d3a9aa8eee7983581bcfe492a9029857c783c31ef",
+      "revision": 4,
+      "layoutAudits": [
+        {
+          "time": 0,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 618.265625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "Знаешь, когда",
+              "x": 1145,
+              "y": 707.0625,
+              "width": 952.453125,
+              "height": 181
+            },
+            {
+              "name": "можно уйти.",
+              "x": 1145,
+              "y": 854.890625,
+              "width": 869.1875,
+              "height": 181
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 132,
+          "issues": []
+        },
+        {
+          "time": 3.2,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 618.265625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "Знаешь, когда",
+              "x": 1145,
+              "y": 707.0625,
+              "width": 952.453125,
+              "height": 181
+            },
+            {
+              "name": "можно уйти.",
+              "x": 1145,
+              "y": 854.890625,
+              "width": 869.1875,
+              "height": 181
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 132,
+          "issues": []
+        },
+        {
+          "time": 7.96,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 618.265625,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "Знаешь, когда",
+              "x": 1145,
+              "y": 707.0625,
+              "width": 952.453125,
+              "height": 181
+            },
+            {
+              "name": "можно уйти.",
+              "x": 1145,
+              "y": 854.890625,
+              "width": 869.1875,
+              "height": 181
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 132,
+          "issues": []
+        }
+      ],
+      "sources": [],
+      "safeTemplate": {
+        "scene": "header-21x9",
+        "width": 3840,
+        "height": 1646,
+        "safeArea": {
+          "x": 1097,
+          "y": 493,
+          "width": 1646,
+          "height": 661
+        },
+        "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-product_page_header_template-static.psd",
+        "sha256": "4200f416adcf3affb70d5847c1d0554fc39b7405110ec527bdea92bfb82f93b0",
+        "layer": "Art Safe Area",
+        "reverifiedOn": "2026-10-11",
+        "reverification": "Fresh download SHA-256 matches; Art Safe Area named layer bounds independently re-read with psd-tools."
+      },
+      "validatedFrames": 0,
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "mr-IN",
+      "ascLocale": "mr-IN",
+      "kind": "header",
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Serif Devanagari"
+      ],
+      "file": "mr-IN-header-video-v4.mp4",
+      "poster": "mr-IN-header-video-v4-0.00.png",
+      "width": 3840,
+      "height": 1646,
+      "fps": 30,
+      "duration": 8,
+      "recipeSHA": "ea6d8c6ad52485baa784f1772c51c02021490083bd84913013b22252eabd471e",
+      "sha256": "eb846723d9f77bb81f9aec836ad1fe34be32df5105a06b2dce72370ae64b89c1",
+      "revision": 4,
+      "layoutAudits": [
+        {
+          "time": 0,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 581.296875,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "सुट्टी कधी,",
+              "x": 1145,
+              "y": 676.09375,
+              "width": 480.21875,
+              "height": 206
+            },
+            {
+              "name": "कळून राहो",
+              "x": 1145,
+              "y": 860.890625,
+              "width": 495.265625,
+              "height": 206
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 132,
+          "issues": []
+        },
+        {
+          "time": 3.2,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 581.296875,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "सुट्टी कधी,",
+              "x": 1145,
+              "y": 676.09375,
+              "width": 480.21875,
+              "height": 206
+            },
+            {
+              "name": "कळून राहो",
+              "x": 1145,
+              "y": 860.890625,
+              "width": 495.265625,
+              "height": 206
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 132,
+          "issues": []
+        },
+        {
+          "time": 7.96,
+          "safeArea": {
+            "x": 1097,
+            "y": 493,
+            "width": 1646,
+            "height": 661
+          },
+          "bounds": [
+            {
+              "name": "DoneAt",
+              "x": 1145,
+              "y": 581.296875,
+              "width": 238.625,
+              "height": 92
+            },
+            {
+              "name": "सुट्टी कधी,",
+              "x": 1145,
+              "y": 676.09375,
+              "width": 480.21875,
+              "height": 206
+            },
+            {
+              "name": "कळून राहो",
+              "x": 1145,
+              "y": 860.890625,
+              "width": 495.265625,
+              "height": 206
+            },
+            {
+              "name": "mark including conservative shadow envelope",
+              "x": 2259,
+              "y": 587.5,
+              "width": 472,
+              "height": 486
+            }
+          ],
+          "headlineFontSize": 132,
+          "issues": []
+        }
+      ],
+      "sources": [],
+      "safeTemplate": {
+        "scene": "header-21x9",
+        "width": 3840,
+        "height": 1646,
+        "safeArea": {
+          "x": 1097,
+          "y": 493,
+          "width": 1646,
+          "height": 661
+        },
+        "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-product_page_header_template-static.psd",
+        "sha256": "4200f416adcf3affb70d5847c1d0554fc39b7405110ec527bdea92bfb82f93b0",
+        "layer": "Art Safe Area",
+        "reverifiedOn": "2026-10-11",
+        "reverification": "Fresh download SHA-256 matches; Art Safe Area named layer bounds independently re-read with psd-tools."
+      },
+      "validatedFrames": 0,
+      "status": "proof-not-uploaded"
+    }
+  ]
+}

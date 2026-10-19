@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-10-19T02:57:20.845Z",
+  "createdAt": "2026-10-19T09:21:37.132Z",
   "uploaded": false,
   "items": [
     {
@@ -12,7 +12,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "a45cfc3c7c297c91de679b892b677c0daadfcb53d016b76b61547b0b27bb7e9b",
+      "sha256": "1e996b30ce8f076d39d6511eaef0487d40a1f02756b2340b9870447112b86c53",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -20,7 +20,7 @@
         },
         {
           "file": "raw/3.2.3/widgets/zh-CN-home1.png",
-          "sha256": "95a047bd8b1f8c3af73961f368d920659d9075725b86f6994817b814f4a472f8"
+          "sha256": "4bff0f70da4be658f1ad20fcd37b593e2f7da0ccad0d7fc181d0ed962f2010c3"
         }
       ],
       "copy": {
@@ -53,7 +53,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "80302c28a65635e4dfdf1de6e029bb9fde162dc18f28c0e9c70521e4f55d2d3c",
+      "sha256": "e7789679d4cbc4da544e02ed01b4fb0cea634e6bf0971f532b8365207585cfeb",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -61,7 +61,7 @@
         },
         {
           "file": "raw/3.2.3/widgets/zh-CN-lock.png",
-          "sha256": "ca3283ed4efde85941eda4aed73d3fe372e43fe2251c3d9b6cb705e74b51426e"
+          "sha256": "70787c795eaaa25c7969f42559e485f1b08880335858475add557950e25b018d"
         },
         {
           "file": "raw/3.2.3/search/zh-CN-watch.png",
@@ -103,7 +103,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "31129b87e94dc3b21bca3e79418f60a3c4e95afdf0b1221c7a3a509ba4e88bd1",
+      "sha256": "ea96e540d8f0a56f594f34f3b0976b15e4c3c77eba31f30b253073e7f81c1676",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -111,7 +111,7 @@
         },
         {
           "file": "raw/3.2.3/widgets/en-home1.png",
-          "sha256": "36bdf01aac1ce84934a57556ba50fbf92dfcd696f82b9e237785993bbbdb7f80"
+          "sha256": "cb9da8e795578ae4aab712e9605b91eb329bfed686fa4bdb30b1c971fd5d1838"
         }
       ],
       "copy": {
@@ -144,7 +144,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "e68bb86bf12bcd739b72a6b87dd0995a52dd1fc6117d75032b3e72fc20634b8e",
+      "sha256": "9e94f3f972ee4c70d4aee4440692beb32398bae0374785873a9b974c722fa83c",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -152,7 +152,7 @@
         },
         {
           "file": "raw/3.2.3/widgets/en-lock.png",
-          "sha256": "4638211b4dd6b7f2bd587db05ea762e4a869cbb1aea504c3775352fbae4e6aee"
+          "sha256": "506e3b812c63361154ab5969780cd717f5790f39a8d05cb49d4b7d72e8540a0b"
         },
         {
           "file": "raw/3.2.3/search/en-watch.png",
@@ -177,6 +177,1366 @@
       "fontsUsed": [
         "Charter",
         "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "zh-TW/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "c77f26874e59d780f08d9f3cd2bebf95b52d33baa170fadcf53c451e8a5b79b2",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/zh-TW-home1.png",
+          "sha256": "39e6c127e5311c5c9cc8268556697a514d16c574896a220eefeb68200e5a929b"
+        }
+      ],
+      "copy": {
+        "label": "全新小工具",
+        "lines": [
+          "不打開，",
+          "主畫面就看得到。"
+        ],
+        "sub": [
+          "倒數、本週進度、班表與假日，",
+          "多款小工具免費使用。"
+        ]
+      },
+      "fontsUsed": [
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "zh-TW/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "cd65214474e3a850cd6bd231e9869dbb547fbefbbed66d49bf8626b55e7fc641",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/zh-TW-lock.png",
+          "sha256": "508dc909b16ba3cea7a3621d192aebe3c6657ec7bf454f699931c845476e1406"
+        },
+        {
+          "file": "raw/3.2.3/search/zh-TW-watch.png",
+          "sha256": "33b6140921bdb60c57f1723701b243f658eb88e17ca1ddcce066724e55caae12"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "鎖定畫面 · Apple Watch",
+        "lines": [
+          "螢幕一亮，",
+          "就知道還剩多久。"
+        ],
+        "sub": [
+          "鎖定畫面小工具、一鍵開始上班，",
+          "Apple Watch 也看得到。"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "ja/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "aca4740aaa2f03001de0b0ceb75bba16c1bdf6b5f8df34df1f97ecbce58e92c1",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ja-home1.png",
+          "sha256": "4fb3a6b5ebbefba83ab04d19bc5a8da6ba7c5c2ef8766e3a3cba5edbacfc71fa"
+        }
+      ],
+      "copy": {
+        "label": "新しいウィジェット",
+        "lines": [
+          "開かなくても、",
+          "ホーム画面でわかる。"
+        ],
+        "sub": [
+          "カウントダウン、今週の進み具合、シフト、祝日。",
+          "多くは無料で使えます。"
+        ]
+      },
+      "fontsUsed": [
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "ja/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "76e5e1cf61935005ed4d721c5b17e91d5162c09b2c61c5aa00ccf67bdae3ef8d",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ja-lock.png",
+          "sha256": "30bab412a802a4e5dfd3229b062cb7085efb907af5dde8d0edabf8e9b99d7fe5"
+        },
+        {
+          "file": "raw/3.2.3/search/ja-watch.png",
+          "sha256": "2019d7c134c8434b5441ce19daa51f7e16ce0ef6ef1262c693cc09640d9aea38"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "ロック画面 · Apple Watch",
+        "lines": [
+          "画面をつければ、",
+          "あと何分かわかる。"
+        ],
+        "sub": [
+          "ロック画面のウィジェット、ワンタップで出勤、",
+          "Apple Watch でも確認できます。"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "ko/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "619fb3a9021d8295a37a1f02dfc326f129c28fb4ed3558e33c590b3af96187de",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ko-home1.png",
+          "sha256": "3a7e516695c83a280a9fb76a02367aaa905782f165197a31fa6f7c1300ef156d"
+        }
+      ],
+      "copy": {
+        "label": "새로운 위젯",
+        "lines": [
+          "열지 않아도,",
+          "홈 화면에서 한눈에."
+        ],
+        "sub": [
+          "카운트다운, 이번 주 진행률, 근무표와 공휴일.",
+          "대부분 무료로 쓸 수 있어요."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "ko/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "77216fff76e952eefc8f572b05923838898ee6dad8350fb742c8db9333523ed0",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ko-lock.png",
+          "sha256": "92a4d152b88a5b437b6243acf30d9d41dff0f067775bc8ec49d6b024f750c77c"
+        },
+        {
+          "file": "raw/3.2.3/search/ko-watch.png",
+          "sha256": "7df995ea92be8b0924bd9fbd9e9c5e53793ce1525e2f6730837b253bf70fb92c"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "잠금 화면 · Apple Watch",
+        "lines": [
+          "화면을 켜면,",
+          "남은 시간이 보여요."
+        ],
+        "sub": [
+          "잠금 화면 위젯, 탭 한 번으로 근무 시작,",
+          "Apple Watch에서도 볼 수 있어요."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "de",
+      "ascLocale": "de-DE",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "de/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "007064da8f30a377a33af2e15b939ace04fa539e12d9f261a3564b371b867fe5",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/de-home1.png",
+          "sha256": "8f4fbed2ad709c3b23dd89b35bbb406e42d3d21d9292a05443b21150f9af91c0"
+        }
+      ],
+      "copy": {
+        "label": "NEUE WIDGETS",
+        "lines": [
+          "Dein Tag,",
+          "auf dem Home-Bildschirm."
+        ],
+        "sub": [
+          "Countdown, Wochenfortschritt, Schichten und Feiertage.",
+          "Viele davon kostenlos."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "de",
+      "ascLocale": "de-DE",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "de/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "469f80bbb7b63865aae5f00efdbafc1a26b4c54a5b67e783c7be616a3daefb0e",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/de-lock.png",
+          "sha256": "5a08eadc15a3c2772227d92b4920b890177585cdb45b55310a2115ffe157c9ba"
+        },
+        {
+          "file": "raw/3.2.3/search/de-watch.png",
+          "sha256": "b450b0f6971464608c11ca5e5cd28be68cededf101d81ce37f9c68c1b499c455"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "SPERRBILDSCHIRM · APPLE WATCH",
+        "lines": [
+          "Bildschirm an.",
+          "Restzeit im Blick."
+        ],
+        "sub": [
+          "Widgets auf dem Sperrbildschirm, Schichtstart per Tipp",
+          "und dein Countdown auf der Apple Watch."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "fr",
+      "ascLocale": "fr-FR",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "fr/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "6575b484758e1cf41586e858e26fb1860d507fad7fdab68b858bf28b3bb0ce76",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/fr-home1.png",
+          "sha256": "8ac77fd74e7eccde70fc524e97c79e4bd261b091ee7bb36eff7eed35645105f4"
+        }
+      ],
+      "copy": {
+        "label": "NOUVEAUX WIDGETS",
+        "lines": [
+          "Votre journée,",
+          "sur l’écran d’accueil."
+        ],
+        "sub": [
+          "Compte à rebours, semaine, horaires et jours fériés.",
+          "Beaucoup sont gratuits."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "fr",
+      "ascLocale": "fr-FR",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "fr/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "e8dc1d4ce9145ed8ccabf70d050154cae0524ec38815b136023eb1d588dba203",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/fr-lock.png",
+          "sha256": "9d6db0d17cb7349ba3ae72f2b10cecefd4823d80bc5c6033535bf3e26bd5219c"
+        },
+        {
+          "file": "raw/3.2.3/search/fr-watch.png",
+          "sha256": "1ca92f7cc89f629ce20514e63bef9328383be6ca5285082df716b31ca63832ba"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "ÉCRAN VERROUILLÉ · APPLE WATCH",
+        "lines": [
+          "Un regard.",
+          "Le temps restant."
+        ],
+        "sub": [
+          "Des widgets sur l’écran verrouillé, le début de journée en un geste",
+          "et votre compte à rebours sur Apple Watch."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "es",
+      "ascLocale": "es-ES",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "es/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "47df7526588b670cff6c57beeab5febf2ca69ab2e98a19738fd10ccd85327dbd",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/es-home1.png",
+          "sha256": "b7b7acff3ab624935f518c25958043e6fca74e4cb805431f19edcdd479a05a6d"
+        }
+      ],
+      "copy": {
+        "label": "WIDGETS NUEVOS",
+        "lines": [
+          "Tu día,",
+          "en la pantalla de inicio."
+        ],
+        "sub": [
+          "Cuenta atrás, progreso semanal, turnos y festivos.",
+          "Muchos son gratis."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "es",
+      "ascLocale": "es-ES",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "es/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "efc993923a91a301d8d1fae761f13f30cd6af98ef35c6149390281e6e80c86bf",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/es-lock.png",
+          "sha256": "3e41f8ad22d8bc9f025d75e199e375f4358cf91411ed9ef1f61752785437a36f"
+        },
+        {
+          "file": "raw/3.2.3/search/es-watch.png",
+          "sha256": "fefcd2323762d943bb5a532f14cb05d51acee82514fb84d0357df04a24103db1"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "PANTALLA BLOQUEADA · APPLE WATCH",
+        "lines": [
+          "Enciende la pantalla.",
+          "Mira cuánto falta."
+        ],
+        "sub": [
+          "Widgets en la pantalla bloqueada, empieza tu turno con un toque",
+          "y tu cuenta atrás en el Apple Watch."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "it",
+      "ascLocale": "it",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "it/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "fc1d34e6de797fbfd3dd2a3f977ab9e72a631b01e51adb4a292155925f158221",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/it-home1.png",
+          "sha256": "1a0c7e3139bc2731f2cda18acbfa541103985abbaa01d8d15204fa6ba0e062e3"
+        }
+      ],
+      "copy": {
+        "label": "NUOVI WIDGET",
+        "lines": [
+          "La tua giornata,",
+          "sulla schermata Home."
+        ],
+        "sub": [
+          "Conto alla rovescia, settimana, turni e festività.",
+          "Molti sono gratis."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "it",
+      "ascLocale": "it",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "it/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "acab6b87db3b556afb6114407ccab58f4dee2d03158a87761e7d0c5770764b85",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/it-lock.png",
+          "sha256": "55365b37749f267cc7f0ccf12b9c81e9a147bac2791a3b473cc43e15cff54cf4"
+        },
+        {
+          "file": "raw/3.2.3/search/it-watch.png",
+          "sha256": "6bcabf19d599724d27d05f3c66ae05d526444f50a54ed593070e0b9f79e3d953"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "SCHERMATA DI BLOCCO · APPLE WATCH",
+        "lines": [
+          "Accendi lo schermo.",
+          "Vedi quanto manca."
+        ],
+        "sub": [
+          "Widget nella schermata di blocco, inizio turno con un tocco",
+          "e il conto alla rovescia su Apple Watch."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "pt",
+      "ascLocale": "pt-BR",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "pt/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "ac1ef1d03c9faefb843ca60f34312f34700a62b894440c59d834df408ffed815",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/pt-home1.png",
+          "sha256": "ff5bb0d07f77d2a01d37b3ed4f74c461092225ac69e2a04612fe1d7fa812f03e"
+        }
+      ],
+      "copy": {
+        "label": "NOVOS WIDGETS",
+        "lines": [
+          "Seu dia,",
+          "na Tela de Início."
+        ],
+        "sub": [
+          "Contagem regressiva, semana, escalas e feriados.",
+          "Muitos são gratuitos."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "pt",
+      "ascLocale": "pt-BR",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "pt/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "f0b66b730aa32801ae49f0330b6bb3c3bfeaaedc13de30ffb8a5e864dd162e27",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/pt-lock.png",
+          "sha256": "4e6f440f74c39a22ffd21347ff0cdf3fe5b741ad50d31aca51fc0c4d98b7b586"
+        },
+        {
+          "file": "raw/3.2.3/search/pt-watch.png",
+          "sha256": "0993a49a34efea74462a505b7a913247df6bb219f7bb1e14468662de133244a3"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "TELA BLOQUEADA · APPLE WATCH",
+        "lines": [
+          "Acenda a tela.",
+          "Veja quanto falta."
+        ],
+        "sub": [
+          "Widgets na Tela Bloqueada, comece o turno com um toque",
+          "e sua contagem regressiva no Apple Watch."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "ru/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "e5abea51ebf916fcdfbd9d54fd72599e77346d969b3cc34440db6bf698ec0b4e",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ru-home1.png",
+          "sha256": "5b0ae0333661a02428b1b7717157c45314aec2f3d907e68ca6728817907f03c1"
+        }
+      ],
+      "copy": {
+        "label": "НОВЫЕ ВИДЖЕТЫ",
+        "lines": [
+          "Ваш день —",
+          "на экране «Домой»."
+        ],
+        "sub": [
+          "Обратный отсчёт, неделя, смены и праздники.",
+          "Многие — бесплатно."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "ru/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "e27d5408dfd0c1517db7c6757e1c31bff39fbb2d9d242b9eb7d92fcb1e363da3",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ru-lock.png",
+          "sha256": "8c249b02d4ca0d6de477d87077bede56a4c01ce4cd42fce4d4f38c52b287ddc3"
+        },
+        {
+          "file": "raw/3.2.3/search/ru-watch.png",
+          "sha256": "27e1d040580a73bc2ce9d76ce1640da709e7315ba08a2c4c8fbd8946bf2d0e86"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "ЭКРАН БЛОКИРОВКИ · APPLE WATCH",
+        "lines": [
+          "Взгляд на экран —",
+          "сколько осталось."
+        ],
+        "sub": [
+          "Виджеты на экране блокировки, начало смены одним касанием",
+          "и обратный отсчёт на Apple Watch."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "tr",
+      "ascLocale": "tr",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "tr/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "8f587eabb2b067cf9ee6c39011261cfc3a287970ff1b9f16d6cd1d517bae5229",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/tr-home1.png",
+          "sha256": "f3ee2265adc3d0be20ad6e0f173fe0c02d299754e37eccea425dcf44027dcd6e"
+        }
+      ],
+      "copy": {
+        "label": "YENİ WIDGET’LAR",
+        "lines": [
+          "Günün,",
+          "ana ekranında."
+        ],
+        "sub": [
+          "Geri sayım, haftalık ilerleme, vardiyalar ve tatiller.",
+          "Çoğu ücretsiz."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "tr",
+      "ascLocale": "tr",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "tr/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "dea362a55ffa674c5259a354a854f61f4015388e530f67a0752fe17e8502a05f",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/tr-lock.png",
+          "sha256": "0d73b471335a87265df42d72e31142f9f4cad366d42d693aaef05ab09ce219c3"
+        },
+        {
+          "file": "raw/3.2.3/search/tr-watch.png",
+          "sha256": "db2613772a8818d76ad13069dbe3a93fd3f05c4e3e84b3fcedadb5c9aff5442b"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "KİLİT EKRANI · APPLE WATCH",
+        "lines": [
+          "Ekranı aç,",
+          "kalan süreyi gör."
+        ],
+        "sub": [
+          "Kilit ekranı widget’ları, tek dokunuşla mesai başlangıcı",
+          "ve Apple Watch’ta geri sayım."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "id",
+      "ascLocale": "id",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "id/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "513c53d54e668ce88fec08b0b80684bcab2fb3ebabf567491766bb7ccc54f01c",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/id-home1.png",
+          "sha256": "71cc2434ed784e8eb901b2fec6afbd0b62d2a6a6e62cec82fc5d6be1a09b4947"
+        }
+      ],
+      "copy": {
+        "label": "WIDGET BARU",
+        "lines": [
+          "Harimu,",
+          "di Layar Utama."
+        ],
+        "sub": [
+          "Hitung mundur, progres minggu, shift, dan hari libur.",
+          "Banyak yang gratis."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "id",
+      "ascLocale": "id",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "id/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "4d375b2bcad5d905cfcd083abbaddc84d2b74e173aa6bd1145774cf970c3f0d4",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/id-lock.png",
+          "sha256": "7bcb10cdf427cb4df0c2908fb5266bc40d99ead353931da1988a1a9a8a3e22b9"
+        },
+        {
+          "file": "raw/3.2.3/search/id-watch.png",
+          "sha256": "aeea11ef8095db46a90a45d80827ed710e0779420697cb429f3b9e33969c1e15"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "LAYAR TERKUNCI · APPLE WATCH",
+        "lines": [
+          "Nyalakan layar,",
+          "lihat sisa waktu."
+        ],
+        "sub": [
+          "Widget Layar Terkunci, mulai shift dengan sekali ketuk,",
+          "dan hitung mundur di Apple Watch."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "vi/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "eaacf7859db29188fb6a65a7b303c535fa5d7a5bbd62440b10249b546f4c1ade",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/vi-home1.png",
+          "sha256": "1220ea1206e690a67293c2528ee3e28175d6996023a6274566c908da3774010a"
+        }
+      ],
+      "copy": {
+        "label": "TIỆN ÍCH MỚI",
+        "lines": [
+          "Ngày của bạn,",
+          "ngay trên màn hình chính."
+        ],
+        "sub": [
+          "Đếm ngược, tiến độ tuần, ca làm và ngày lễ.",
+          "Nhiều tiện ích miễn phí."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "vi/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "5275546582adfb37ea0057f815e8c47ce0a76f809738b3b350378b9711014981",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/vi-lock.png",
+          "sha256": "33c2004774adf921e4c71549e56e6e1545d2f24476a9c38e043b85cc03629eef"
+        },
+        {
+          "file": "raw/3.2.3/search/vi-watch.png",
+          "sha256": "89d80f7d67c12c69f621dc429c509aeb73a6449f858c4ad37055c6fb0aa671ad"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "MÀN HÌNH KHÓA · APPLE WATCH",
+        "lines": [
+          "Bật màn hình,",
+          "biết còn bao lâu."
+        ],
+        "sub": [
+          "Tiện ích màn hình khóa, bắt đầu ca chỉ với một chạm",
+          "và đếm ngược trên Apple Watch."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "th",
+      "ascLocale": "th",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "th/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "40c767a213de0f9f289c87337ed806625a15c3853b4418bec7f5db3478424fdd",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/th-home1.png",
+          "sha256": "ae0405527bbcd8e88b099c11770f0d9863c474186da1911c8a7360282812e447"
+        }
+      ],
+      "copy": {
+        "label": "วิดเจ็ตใหม่",
+        "lines": [
+          "วันทำงานของคุณ",
+          "บนหน้าจอโฮม"
+        ],
+        "sub": [
+          "นับถอยหลัง ความคืบหน้าสัปดาห์ กะงาน และวันหยุด",
+          "หลายแบบใช้ได้ฟรี"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Thai Medium",
+        "Noto Serif Thai"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "th",
+      "ascLocale": "th",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "th/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "fa54e5de21d2207c0c0a49d430c64f0bde88417796d95605f39fd37e00a45e1f",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/th-lock.png",
+          "sha256": "aa9d76f272aeed8802ec0ab6e9ce180a634e88c81811a3aac9ad5fadeaa4275c"
+        },
+        {
+          "file": "raw/3.2.3/search/th-watch.png",
+          "sha256": "50ba2b201d615240f325cbb3e4a541b435f91c246f3c32e58c5439dd252dbc3e"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "หน้าจอล็อก · Apple Watch",
+        "lines": [
+          "เปิดหน้าจอ",
+          "ก็รู้ว่าเหลืออีกนาน"
+        ],
+        "sub": [
+          "วิดเจ็ตหน้าจอล็อก เริ่มกะได้ในแตะเดียว",
+          "และนับถอยหลังบน Apple Watch"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Thai Medium",
+        "Noto Serif Thai"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "hi-IN/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "9682f0bdb315966cdeb9c6d374e73a51f8152082e64bf9c8e663001f5a1dfb8b",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/hi-IN-home1.png",
+          "sha256": "ad58857b00dec897ca40ad18d09901f1fb19182ae08908bce3631b768b2aed4c"
+        }
+      ],
+      "copy": {
+        "label": "नए विजेट",
+        "lines": [
+          "आपका दिन,",
+          "होम स्क्रीन पर।"
+        ],
+        "sub": [
+          "काउंटडाउन, हफ़्ते की प्रगति, शिफ़्ट और छुट्टियाँ।",
+          "कई मुफ़्त हैं।"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "hi-IN/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "ffc7c4f6889fddd261f18cda1017dc4bf0535d05610226cfdfa16eeb7594706a",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/hi-IN-lock.png",
+          "sha256": "1a5dc0bb3710fc27e4c8ae2096d737e0ea50d998b54e37c4f7bde2d6cf93b9c5"
+        },
+        {
+          "file": "raw/3.2.3/search/hi-IN-watch.png",
+          "sha256": "481ae4c91a78ced8d8c1a3ea85cf3f0b3ae89e2294d4802c5e1003775c924344"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "लॉक स्क्रीन · Apple Watch",
+        "lines": [
+          "स्क्रीन जगाइए,",
+          "बचा समय देखिए।"
+        ],
+        "sub": [
+          "लॉक स्क्रीन विजेट, एक टैप में शिफ़्ट शुरू,",
+          "और Apple Watch पर काउंटडाउन।"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ar",
+      "ascLocale": "ar-SA",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "ar/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "f3dccc2968de80763ef9acf9d314dffd9918c411926094831790b3832302d70c",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ar-home1.png",
+          "sha256": "2d0a3fdb666620f832b1f57c38ecb695fccd516a3a3b7f4c8b3bb23367a416fb"
+        }
+      ],
+      "copy": {
+        "label": "أدوات جديدة",
+        "lines": [
+          "يومك،",
+          "على الشاشة الرئيسية."
+        ],
+        "sub": [
+          "عدّ تنازلي، تقدّم الأسبوع، المناوبات والعطلات.",
+          "كثير منها مجاني."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ar",
+      "ascLocale": "ar-SA",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "ar/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "5cd18355337f531a636262c21474703089f524515c4b2a698bbfdcbe620c450c",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ar-lock.png",
+          "sha256": "e8428d7473a9fbcbe9d4e6e71d6b85dc2eceda20636f8a9705f9e747c10b84a0"
+        },
+        {
+          "file": "raw/3.2.3/search/ar-watch.png",
+          "sha256": "c9b66716e247175a16e53690d765f8f72e4fcd3e30919cdfe990f1f7887d0289"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "شاشة القفل · Apple Watch",
+        "lines": [
+          "أضئ الشاشة،",
+          "واعرف كم تبقّى."
+        ],
+        "sub": [
+          "أدوات على شاشة القفل، وبدء المناوبة بلمسة،",
+          "والعدّ التنازلي على Apple Watch."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic Medium"
       ],
       "layoutAudit": {
         "issues": []

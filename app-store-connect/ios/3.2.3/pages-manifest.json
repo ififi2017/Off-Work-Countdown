@@ -1,0 +1,2652 @@
+{
+  "createdAt": "2026-10-19T09:39:00.091Z",
+  "uploaded": false,
+  "items": [
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "iphone",
+      "order": 6,
+      "scene": "calendar",
+      "file": "zh-CN/iphone/06-calendar.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "29f343230294c80506a346cbb553320b3586ca60855a61ab7b6b5852f8fec161",
+      "sha256": "ddaa0e309289cd4b4d2981d21356959eb5e96dd9ceee736491570ece77dfe5b3",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-CN-iphone-calendar.png",
+          "sha256": "b17a810c703ac867a585de469025ef3b6f3a414509d41e6787f0704a8eddb1f5"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "report",
+      "file": "zh-CN/iphone/04-report.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "4728da8f1e2ec7637221cbbabb754bb96bba8747347b94afddc291c88305f98a",
+      "sha256": "a40f90ec49996d905a8022840d4e603e3f52402473346576bbb32f81ab38436b",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-CN-iphone-report.png",
+          "sha256": "bc0d9c2191bc78c38ce5e4a2d47ccde294c465608cd9e1493d74ec00154d275f"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "report",
+      "file": "zh-TW/iphone/04-report.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "13810aa56b7c2e7c702e5cc1e9b7c575541442e8547cf4ffecb09c37d577c620",
+      "sha256": "4b25168aa4f1c3174c10956f8d163fce53daba9895f45b4516c675035a5f71b2",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-TW-iphone-report.png",
+          "sha256": "7d8934f04c9b2881b7a0e27c34ea83c5ad75e238b1bcc059a26b02bcdb95d8c9"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "report",
+      "file": "ja/iphone/04-report.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "8e4826e79f99f6d36028fed561fb690b9c259bc8ddd7975d421ebeb92673ad41",
+      "sha256": "0950b3c5abbc0dbdac6c5cc85902fc920b940e1596eed2da78bde37ac63f4757",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ja-iphone-report.png",
+          "sha256": "a4643ecb9a5d1f03b234cbbf52739f9345b935eb3b2074a8cb5c50f4b5d6b253"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "report",
+      "file": "ko/iphone/04-report.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "ed39c6492bcc42350072fe7882e8d51510cf6797fc0c3920fb245eb99de5f38b",
+      "sha256": "87cc68bc209805f40ba5e494e977694578022f713fb596fefc0df7a7c924ee6b",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ko-iphone-report.png",
+          "sha256": "13964f2fb6d74cefe964c27462bebaa8cc73b3c3909ca4c5593a5dda29014bce"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "report",
+      "file": "ru/iphone/04-report.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "f5ab84fb0521a14d9af2d30633cd3b635f49fde8336ec1876a9de35bd5942a07",
+      "sha256": "6ad15344f0b267524eb6d935124e319bff241a9451b142ea1ce8245c22f78db2",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ru-iphone-report.png",
+          "sha256": "a1559881f930582a97b8a274d93b80c3896f80f6b2fd12a027bbc4255e1b960d"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "tr",
+      "ascLocale": "tr",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "report",
+      "file": "tr/iphone/04-report.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "a0f898c1edcf2d946bee4f7b0e96357bba447caf828b04d1d4dd52043c606569",
+      "sha256": "ae679e8df867f901225feee84d6ab5c0667ea0f7f784a34acf4a53012b629456",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/tr-iphone-report.png",
+          "sha256": "6e9985852cf958881ffc68a13de868e8454d0a8855a48803a6975c55dc28bed2"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "report",
+      "file": "vi/iphone/04-report.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "15a96cbefd28faf1807e72aceba41639c2ecc7ef7ed9f7cfdffd158940d26566",
+      "sha256": "5cd910774dfff6bc4c8696ff7226c539d236b5ff8ab7dc3ab219c1ec91c19d06",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/vi-iphone-report.png",
+          "sha256": "7bdfe7a3cf60eff4b1f18ab6de2ad2ab86f7be8cb1de50c56687d2edfbab52c6"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "th",
+      "ascLocale": "th",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "report",
+      "file": "th/iphone/04-report.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "d4f5af2d06998727761776f76697e85dc5a89a85b8e74f25d18ef0c658121c46",
+      "sha256": "3d8e907f1fc7b2838fcaa72e3b1489c2c7f0fa60f453086b0f97819b4a7e8ee1",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/th-iphone-report.png",
+          "sha256": "8cd29a12462c024f47cd98111aefc1ab85821a82273aaf79c7e0aafc7675ff6e"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Thai Medium",
+        "Noto Serif Thai"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "report",
+      "file": "hi-IN/iphone/04-report.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "3008f127e262662774b0e08a87a7fe889c2ac9a84135acde11ee4d208e297ee8",
+      "sha256": "9ba2ea9dd502e8b06b5af35faae9553e228ad5e9874cf5232104832aa9515a2c",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/hi-IN-iphone-report.png",
+          "sha256": "20b7c896d598cdf4e0978f9c3388294fde5055c3ac674cf8c5403e5c930d4cf7"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "iphone",
+      "order": 8,
+      "scene": "focus",
+      "file": "zh-CN/iphone/08-focus.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "398db3779444c0ea74fdfc920904a41a1c0c0d09f0abe9e30729db704ca16ee4",
+      "sha256": "d5e5dd4477ad3fa13697e061bf0c7c685433389e3a7d9606434ea5fdf8e8138f",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-CN-iphone-focus.png",
+          "sha256": "d7da49cf3bddef46f2e4427414f54313eccdbf2cd6b85d1dca4d98d854e8e6b1"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "iphone",
+      "order": 10,
+      "scene": "rest",
+      "file": "zh-CN/iphone/10-rest.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "1c4936a63ab678332444148811b0c7c51ea18ba690941b8c2df05bf0bf7ae440",
+      "sha256": "d5828fa329f554d9b47ac1464e433ed19f2cc102f587b8e69ada20c006528cd2",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-CN-iphone-rest.png",
+          "sha256": "fd19c4995db773061623727cb1b0f5a0f3779c022caef78b9af082d6bcc58dd9"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "iphone",
+      "order": 6,
+      "scene": "calendar",
+      "file": "zh-TW/iphone/06-calendar.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "c675460baf0e6fe56adbdbb3f74edcafc41fc0cb98336b9d86894e363f877745",
+      "sha256": "83dcd515b4d04240adbf01de4d37f8158a527c9c45da406e8eb8e6ede671f164",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-TW-iphone-calendar.png",
+          "sha256": "78074ba75c9525861cca18e8abd27ad6132569e487f06189a7c9865f0ba3c798"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "iphone",
+      "order": 8,
+      "scene": "focus",
+      "file": "zh-TW/iphone/08-focus.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "6af26d51a2dfbac7880e59538687f993958843261e0d72aad1421192fe7564d1",
+      "sha256": "301025780c9e7c094bc262d010e5b33cd75b1c64fa8fa3226acaaa6fc13cd251",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-TW-iphone-focus.png",
+          "sha256": "d6ec6f1bb779685756395b52fbcd1da73e7de78e26f1a9b017787806b8f69e94"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "iphone",
+      "order": 10,
+      "scene": "rest",
+      "file": "zh-TW/iphone/10-rest.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "37c68e55c8ec802f3f159ccaab3d54c156bcfd74cc9835f75a23ae055b176afe",
+      "sha256": "bd4ae0dae2d41bffc115d6d4837aeb737aba6153a72a35801a6172aa2cfb11ab",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-TW-iphone-rest.png",
+          "sha256": "ce8f04a2a231067f71818b9874f850518d62d921565f8e2a973d40ff831d9af7"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "iphone",
+      "order": 6,
+      "scene": "calendar",
+      "file": "ja/iphone/06-calendar.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "d6a4396f40e41235db864986470d2c7f763e7a215934e6d9e6e75dbc6a77a868",
+      "sha256": "6f46337317d8a428823cc3d515272ba6a5d2fed184132c682326fb61b6248e0d",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ja-iphone-calendar.png",
+          "sha256": "b65f365b7aa9083366b1ef9b0f372b2745b0436a6021dbc0580a8015aafe0bba"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "iphone",
+      "order": 8,
+      "scene": "focus",
+      "file": "ja/iphone/08-focus.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "2f48b5cd6645d1222f000374565b52c75186eb564f52ee653e42a2612f2daebe",
+      "sha256": "ac44158c1602b9ba8b5672a554a23ffa92b8150b16cda51b598b55137331c8f7",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ja-iphone-focus.png",
+          "sha256": "f590b4dccf0fb6260ed554e959708fd0f9ab0c867855d7c1331ef2c0524990b5"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "iphone",
+      "order": 10,
+      "scene": "rest",
+      "file": "ja/iphone/10-rest.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "fb0dd1467ca685a403a8bea92fff9864942388486dd73e741a64b514d6aeba4a",
+      "sha256": "1f0ca730a8b209933971683a904073c44082711429b25c5094340a7b325880a7",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ja-iphone-rest.png",
+          "sha256": "3647a2de478a6c9e7c233798432c4b954abdfa5fbcff102838c68c93e6aad3bf"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "iphone",
+      "order": 6,
+      "scene": "calendar",
+      "file": "ko/iphone/06-calendar.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "1a92418d20b75e67db40e24a514db637e4750e35a13abe9450d17a0405cdb3a3",
+      "sha256": "46e5aaae2cc0b2b1cb253dc0c6b851afc862e60cd0b6a04d0d71419943e9e291",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ko-iphone-calendar.png",
+          "sha256": "081c9735fda65d1acd031885326c3d3dc5f216376fe9f0dd41288afbd45a585e"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "iphone",
+      "order": 8,
+      "scene": "focus",
+      "file": "ko/iphone/08-focus.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "553fdb2bf00567ad71b336cedcc3131248f1c490b878cc1bc66e47386ccba728",
+      "sha256": "bdc835089b05645ef8d2234f9b2ca2611542e552978a77a17b51ca7b614594d5",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ko-iphone-focus.png",
+          "sha256": "9079093cfc62d32a4fc8b41970517a2bd48468f3538c69e8c5c24ad0dfa68ce3"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "iphone",
+      "order": 10,
+      "scene": "rest",
+      "file": "ko/iphone/10-rest.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "48db271f188f2a6146c345ea08e16afa16586b249878a3b7c8df939066c21572",
+      "sha256": "32d5e795370b16a5b0fc1ea7094b6dbe32b0d7143396e2717fe566b21de97283",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ko-iphone-rest.png",
+          "sha256": "f28e903046123d317495fbc46858c36ebf4c30b72d8e53d5e96a2117a3dfaff2"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "iphone",
+      "order": 6,
+      "scene": "calendar",
+      "file": "ru/iphone/06-calendar.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "e169fa309bdf52ce3a6a69fbfe0b2ef26c0148cb84ee7c24fa10763c6d878ad5",
+      "sha256": "60a64beee6505b25556ff2395937ad10345315708711b412a6757d5fa13845ae",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ru-iphone-calendar.png",
+          "sha256": "eea30336a1d86f047bf6a220b0f22a1665b1f0b678d2c1324ca74a035fafa076"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "iphone",
+      "order": 8,
+      "scene": "focus",
+      "file": "ru/iphone/08-focus.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "74eba5ed44df18abd4f00610dd58f9d1c9784101d58e321fc343ef4778e25c55",
+      "sha256": "10037029459ea0bf296ccdaab0cd7f79891a0197304fa434ab023507f4e1a118",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ru-iphone-focus.png",
+          "sha256": "a1c6b0a57e5f9b82ee900883a6e12882ad4a5e969cb1311b3279584b9fa2518f"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "iphone",
+      "order": 10,
+      "scene": "rest",
+      "file": "ru/iphone/10-rest.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "21edf947ce62ba592c09329d27a34da98144f1f7a11bc11526360a89325d8f56",
+      "sha256": "fa1a82f765a2f6c22745045811016740e3c3266a8687d6aeed7dd0927c351e99",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ru-iphone-rest.png",
+          "sha256": "480eed79516238006b0572a644286b2b6058f8a7b214aa240b3a2a59b54184f7"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "iphone",
+      "order": 6,
+      "scene": "calendar",
+      "file": "vi/iphone/06-calendar.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "ac4068d3ff0009ef3bbc87a64e1795f4091f52ced30c69c4d599a0cb9f8eccec",
+      "sha256": "5de4c244e69a13b4504a8ef4b7ed32cdebf10f269d8353ad77a1e0f2ba89baf0",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/vi-iphone-calendar.png",
+          "sha256": "9d12fcd9500dbfd6232c86d89aacd171403ab81d66ea2e400465b7798bda5708"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "iphone",
+      "order": 8,
+      "scene": "focus",
+      "file": "vi/iphone/08-focus.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "4d257faba75e1769029ed8e767483d9223cc2d3f71fb71406d3efb13a2ae1031",
+      "sha256": "31c4d7d44f9ded3bdbe80ef211b677c14cca3b84002323867cda16394f6b9832",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/vi-iphone-focus.png",
+          "sha256": "05e2a8c858b099e1a8161ccbf1107475b0a316708ddd81eda1644e707829d0fc"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "iphone",
+      "order": 10,
+      "scene": "rest",
+      "file": "vi/iphone/10-rest.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "9746c3a4caf83c178c6f8843f0518a2a638e339d95da7280780eb3dce7c096e0",
+      "sha256": "9114735957aba8aa1a64c1f6ae32cd746795b09893e8cc683ae7a949c087dc7e",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/vi-iphone-rest.png",
+          "sha256": "9cbceda399e346333ddecbeb369379c90a193dd629f0d5e27fb71448d638cb74"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "iphone",
+      "order": 6,
+      "scene": "calendar",
+      "file": "hi-IN/iphone/06-calendar.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "ee137485e8d35ed7d638931a9b3c22a6849419865083b476a368b403582c458d",
+      "sha256": "135008015177e6712a9085ce4df3ea1dc8be16ac77e33b79c6fb58992fe2204d",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/hi-IN-iphone-calendar.png",
+          "sha256": "7f8335cd04b342a8293fb29151ea68fc4eb035ae59b1b79d96381eda29692546"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "iphone",
+      "order": 8,
+      "scene": "focus",
+      "file": "hi-IN/iphone/08-focus.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "40472d41586f9d769071e2c9e1e8c880996d7e9c5f637985ec8c2296c22e67bb",
+      "sha256": "949d92dc501f5cd3cd02e101fc8ddd05f04dc18aa10c2138756158cf8b6fb423",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/hi-IN-iphone-focus.png",
+          "sha256": "1f1c8441e66ffb4cf9cadfe6301da2f3fd79054517e24177188833fa73ecdba9"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "iphone",
+      "order": 10,
+      "scene": "rest",
+      "file": "hi-IN/iphone/10-rest.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "ef598930a84b2d3e01b88d8ad9394e5fc8ad742b1f6bd1ec717742755755cbee",
+      "sha256": "ac4d66172e9004d3f8ea662d965439c315470bf3fdcaa90bc17ed25547b506a7",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/hi-IN-iphone-rest.png",
+          "sha256": "6c01314b90729d31a140391d6dbe23f33d687d544b0315c50acfd21adabdcc8b"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "duo",
+      "order": 3,
+      "scene": "report",
+      "file": "zh-CN/duo/03-report.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "13d027fa2ffb5105865851108c631c56b14227af2b06f2cecd8598c35a998c5f",
+      "sha256": "22e29a6c74a0318a7c43c5051a42423eccfe99baf46c6b6cccd95985566780ac",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-CN-duo-inner-report.png",
+          "sha256": "37c2447894864009decad75c3fc4b60ceb699692b882aaafdd24265e475bc6d8"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "duo",
+      "order": 3,
+      "scene": "report",
+      "file": "zh-TW/duo/03-report.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "022e5b09a11ccdd9fcd662b21399caa3530c58aa6a6bf3b0110201a971bd9fba",
+      "sha256": "7e2cb098f9bda4d92bea21af3bff7eea6db92fc2f5c84ee5fe62062056dd3a49",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-TW-duo-inner-report.png",
+          "sha256": "feffe942730fa34578d846c8c317105eca7806855d4f032473c2d743cdc7e543"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "duo",
+      "order": 3,
+      "scene": "report",
+      "file": "ja/duo/03-report.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "e7c4ae42f2571d9b1eb5f894bc984fec9ed3d58f29f063d5858b180af2c91223",
+      "sha256": "33c894e218305a8c555cdd717551619d93a3329a933d1948bdb835cff24dd515",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ja-duo-inner-report.png",
+          "sha256": "f86bd8b2deae0992498ae788cb8251ab9d06ddb5688f8f0bb829188c3491c092"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "duo",
+      "order": 3,
+      "scene": "report",
+      "file": "ko/duo/03-report.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "c785b08137f68eb569ac9fca675afa4bad61f01fb51a632ab980fc9da2e00c0a",
+      "sha256": "26d42e103060171ad3786ea86cfeee4ccb08b705b771ade24fa517f7231dd670",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ko-duo-inner-report.png",
+          "sha256": "f67be8e9f03da5cefa0588e989e062bfbb4d8a4af88c141f7e61b691560b6f0e"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "duo",
+      "order": 3,
+      "scene": "report",
+      "file": "ru/duo/03-report.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "ea3504257e48e9d04de9003c5ab12ddbabaafccd8fde9f4abec87d6f87cf163a",
+      "sha256": "f6250e0ae0a75cc234a43e5d53f9e3ead0964555829a821cab3af93a8ad04655",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ru-duo-inner-report.png",
+          "sha256": "fbd3353354d09170f5caaca91529881a10674e02a48a0de326b7c385e8be0b60"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "tr",
+      "ascLocale": "tr",
+      "platform": "duo",
+      "order": 3,
+      "scene": "report",
+      "file": "tr/duo/03-report.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "60287d8d70c728254ed35aaea431fec12eb63c80ef3f0c640c11419c7461b555",
+      "sha256": "af3ad3062fbf24fa980e9632908c35dd0ef66ec299e79b1a0e9326098f069922",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/tr-duo-inner-report.png",
+          "sha256": "746c7bae93d125ed97f8e522ec4b1176cb5d3c2583cef08ef2331094d22704fc"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "duo",
+      "order": 3,
+      "scene": "report",
+      "file": "vi/duo/03-report.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "35c11abcb5e64e21d665ec7c6f89e5be2e20c1c427ee7dde651d152e9d4252a1",
+      "sha256": "1332c980974ac7be4c8895fb64e53e7051fcd5fdc62af035c2ffcc7460fd59ee",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/vi-duo-inner-report.png",
+          "sha256": "8ca355ccd1a40a60bf9f85b99c37091ae733de383bb6e426ceacf247eeb95282"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "th",
+      "ascLocale": "th",
+      "platform": "duo",
+      "order": 3,
+      "scene": "report",
+      "file": "th/duo/03-report.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "65dfd3c94d7f8f8c7f4eeca318eb37bde81746da638b22d888c3ef50622c9371",
+      "sha256": "26e63703a7d0f8b5f184fc45c2f71f2516c84de50890d7ee2a4a22f2f9bdbff9",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/th-duo-inner-report.png",
+          "sha256": "5dd6fc2e3ea9e65e5d190047aaed41b04d9ed3d70184c27ffb962bfc4abd87f6"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Thai Medium",
+        "Noto Serif Thai"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "duo",
+      "order": 3,
+      "scene": "report",
+      "file": "hi-IN/duo/03-report.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "f39846ad2bc7e4da88461b32da184679e59321012477cb60b3af9ccb25b02012",
+      "sha256": "2dabd61fb6dc8ad623d10f5c4a7aa00f5ec04592dd274683d8e24a5919457adf",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/hi-IN-duo-inner-report.png",
+          "sha256": "fefc1a450c21ea01ab0f05fbc74e4999b23a1bfedd365b9239d013fadbad1ed2"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "duo",
+      "order": 5,
+      "scene": "calendar",
+      "file": "zh-CN/duo/05-calendar.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "a16d08d9d0b4f7c89b960a19b5f6e0001959b99027e1f476800122ed6c31a457",
+      "sha256": "5b4149dd2b3af0b383c5bc73d85c5e768fded3000c186c56de8612a387fb45da",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-CN-duo-inner-calendar.png",
+          "sha256": "cfda3ffe1fffedbff1ad22cf6d021e57315d46e60bc35309fc5d1749704ff042"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "duo",
+      "order": 7,
+      "scene": "focus",
+      "file": "zh-CN/duo/07-focus.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "2aef5a9b09e679678dbad91fa1d3ab8e0a726d072d0e6c7246b0c556c17d8d25",
+      "sha256": "69885f3f3facd4792c7d314c354537a9214c97bb23dd91efc5944279f78c6c3d",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-CN-duo-outer-focus.png",
+          "sha256": "1174de3e6f53089faff00bc2a9bf70801e8b993e2703771992f63ea61e456d72"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "duo",
+      "order": 8,
+      "scene": "widgets",
+      "file": "zh-CN/duo/08-widgets.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "f446209d4f8eac95cfbb2bc38818da1c7cf5dd1e3db2b3b2776f937f1a9a82a9",
+      "sha256": "4c49693d760d08c57fdc131cefa17f004bd14c30067887c7ec6782e1833d6068",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-CN-duo-outer-widgets.png",
+          "sha256": "ad58dc77ea20fc0fc5550fd303099bb60fa07ed3520cd7c1e36b37fc26ccd50e"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "duo",
+      "order": 9,
+      "scene": "rest",
+      "file": "zh-CN/duo/09-rest.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "a3c533a181bf2e4bfd4deda859c5ad033bcf6420dc28e54cad255144bd335782",
+      "sha256": "1f54447bd52c846ca9e19d9002a40763c01b59a74060c9dc62d5e088b5d76690",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-CN-duo-outer-rest.png",
+          "sha256": "739dffdd619fb33a768a9d63f547ca98a2b16e24fa07c3342dc212688f5c68e4"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "duo",
+      "order": 5,
+      "scene": "calendar",
+      "file": "zh-TW/duo/05-calendar.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "8a647dd35da3d4489be8684b01c5e9455d089323ae8bd1b30ad23428aa625688",
+      "sha256": "e2230586cbcbf1f83839624c33f9e163e92fb66064d40b32c190d8cdf24a4b55",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-TW-duo-inner-calendar.png",
+          "sha256": "a7cee2a3acd869d69bd7d5f9bc749e8bb7bfeee61ac81f61df6351d40bc95a59"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "duo",
+      "order": 7,
+      "scene": "focus",
+      "file": "zh-TW/duo/07-focus.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "7781e36f183afe6f09c9cce74820c3a22a9bdc1f53bb43e7ae90ef645da26421",
+      "sha256": "7ee264007fad6d9564286e61bd6b65d9579c6ef789d5f29d5ab56cb854bd7409",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-TW-duo-outer-focus.png",
+          "sha256": "6cae70cd35aff08b3a1e024867d16803b64f7d5f410f514a99af334a13166be1"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "duo",
+      "order": 8,
+      "scene": "widgets",
+      "file": "zh-TW/duo/08-widgets.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "d61e2eeb50b261ef3e938f9b3a4a7edfe03decf5bb45bab386eb1f9ac174dfdb",
+      "sha256": "8fcc1ff85b78e28d826663736c1d405b34eeaa80c9e684067935a1b6a14998bf",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-TW-duo-outer-widgets.png",
+          "sha256": "97c9fc984728a8f958b567a687b4857596153696f14fae3e40e292c145d1dcf8"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "duo",
+      "order": 9,
+      "scene": "rest",
+      "file": "zh-TW/duo/09-rest.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "7a0316d30943b8b9fbeeb1017e2e29908cc284f9fcec655fc3975a7a7ce9e96f",
+      "sha256": "59380d0f92ce7f2b880f0ede0de12044276ebe746641614c33cd021fbd397ba0",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/zh-TW-duo-outer-rest.png",
+          "sha256": "d5a53e5fe05f0e8037f0c1532da883f6958fc19cbc599fc3e17c67d0710df05c"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "duo",
+      "order": 5,
+      "scene": "calendar",
+      "file": "ja/duo/05-calendar.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "cba94a7b63606a1bfd934e65273c33d7ae921dd5cfc066e59113a2aee8f9771f",
+      "sha256": "a680a228eb7aed46f739609d0a2950209de5379c2ddbd89bce190292620081b3",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ja-duo-inner-calendar.png",
+          "sha256": "c245b0d4be61f3ff9f7e318c3ace7f52a9e97557cd76d3e41846468c87d5e60c"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "duo",
+      "order": 7,
+      "scene": "focus",
+      "file": "ja/duo/07-focus.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "4a4b0e7e8262f3aa39eeedef5ac8b2f6833e3326916e46107d56e22584fc9b43",
+      "sha256": "a054874cc058f08233495d4ed1f07cd2dd4028aafb162895781a5d6c0ac94cfc",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ja-duo-outer-focus.png",
+          "sha256": "bf539201510c8681efd926acca066f236d78e6f5e3f3c3f726715073068a53a1"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "duo",
+      "order": 8,
+      "scene": "widgets",
+      "file": "ja/duo/08-widgets.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "d0c9ec406b04903c0b79eea1e3ad05fd62287c34e910a69da8971f57824230e7",
+      "sha256": "6799c0eb80ad4a5aa7c4e2ca2a88ed0ff8d0ebf794a01868b003f57b850e65c0",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ja-duo-outer-widgets.png",
+          "sha256": "d2f5a658eb636b763186b6e5bfd71535efde1c3f8e64ea2fbfec1fe525f12d41"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "duo",
+      "order": 9,
+      "scene": "rest",
+      "file": "ja/duo/09-rest.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "c4ac4d449abbc36a25905716b03bc773a6fef527618e74078d932efa4bf117dc",
+      "sha256": "484f1f02c0d0c7fe744b4d3a8b156d5989ab42ed9d4988d99df1ece4ba281a32",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ja-duo-outer-rest.png",
+          "sha256": "084d6e7fbc6c495f226d89ea8447643c454d7e3b1faed87bc662ffe3f9d593ac"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "duo",
+      "order": 5,
+      "scene": "calendar",
+      "file": "ko/duo/05-calendar.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "352ed731a4d25bf9051a75081310e6bc4a35856b5c21ff6cec374000f575f6f2",
+      "sha256": "5cf462733f22615e391a9b0f549f5d2b601e2ec8cba3edd35771973104f66c3c",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ko-duo-inner-calendar.png",
+          "sha256": "0e98fe5cf6033c6a6429212fb741e79ef5a438ff34f4dba07c7dcbe31e0d2c87"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "duo",
+      "order": 7,
+      "scene": "focus",
+      "file": "ko/duo/07-focus.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "2ce6f6708f8804e99e9721ea1a5b2517930cfc3acdae562f96df8429771c3c43",
+      "sha256": "e8da1ec0b9b24cdf6a24bb2a2b3cf96911c58a5be8ef9ce8b44822e95c7b2ab4",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ko-duo-outer-focus.png",
+          "sha256": "727580bd9df29088afa698ce74a725ff017c6a3c91b615ddbefb8c2a2c53bbaf"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "duo",
+      "order": 8,
+      "scene": "widgets",
+      "file": "ko/duo/08-widgets.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "edf8c7f9454abe1ba92fad21de0ca9dee772b4755b33e691d28e925dc05a27db",
+      "sha256": "bf6d8b33eb74adbc28db3741290b226458bc1d51d4c838d2ee28893b6baded35",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ko-duo-outer-widgets.png",
+          "sha256": "7ac1c101d74571a7d8e9e67cf00a5627f2b20a3fd9202d11e66f728bfa6d628a"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "duo",
+      "order": 9,
+      "scene": "rest",
+      "file": "ko/duo/09-rest.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "e521a47b3cdecf1836d505963bf601625332cfbc3edddc3217baf8a73c160697",
+      "sha256": "04d6bbc435ceeb5d96e2d744a7ac96162220d474165eaae2b7533fe69b0b19b7",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ko-duo-outer-rest.png",
+          "sha256": "f24bdde6162ff3e3a59fd3b63009f92110d5142a89fba0f3bca907a514a5a107"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "duo",
+      "order": 5,
+      "scene": "calendar",
+      "file": "ru/duo/05-calendar.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "9d47bb0e75ebcb8d3cf78edaab25031fa9d151a6de98bf7b29a562820f2782f2",
+      "sha256": "b0081a31cf61da43197efb948dcc167a80e75f02cbe7ac7276686b29629f7b81",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ru-duo-inner-calendar.png",
+          "sha256": "e3f606757b58a9b072f54f88c8387c8f4846b255345e0bfee9022e6ee47f5726"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "duo",
+      "order": 7,
+      "scene": "focus",
+      "file": "ru/duo/07-focus.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "2189cda786b167339ebc60787a1ca80850deefe716d4e3322f8defd14b4da1d3",
+      "sha256": "7cc24004aa40a1eab8e26e04476bdd2df174a5def7df8d8ec1fb7fae30d66512",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ru-duo-outer-focus.png",
+          "sha256": "0597cfd87ba3dca14a6be5e8afc4f62d99e4e77ba0adf91485ae2a36dd01b387"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "duo",
+      "order": 8,
+      "scene": "widgets",
+      "file": "ru/duo/08-widgets.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "0d91c3ee563c636556cc3d9fa778b60eb7df5aaf747b734d5f35fc53c4d35ed3",
+      "sha256": "3e0dcea3679ac57dda2b5e1d4ed7be7fdaed07721f7daf482fa1256c0d41935f",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ru-duo-outer-widgets.png",
+          "sha256": "34313d19133c568e2aa3e9972dfe7a09d00f11b1ab820bfe747a4f0ec890eada"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "duo",
+      "order": 9,
+      "scene": "rest",
+      "file": "ru/duo/09-rest.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "c29ff18160c071b3f9a743e1608081731d611123b185d23b64afdd8a93078cc4",
+      "sha256": "eddc33cc5fb939e9bdf2f80b874b1c1b69c02d6a68c79a03cd714daeab4419c6",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/ru-duo-outer-rest.png",
+          "sha256": "69b3f43081dda04566d2842a79d5a119f49bc175c3f72e87c7d1e3c934e74dbb"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "duo",
+      "order": 5,
+      "scene": "calendar",
+      "file": "vi/duo/05-calendar.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "0c13b1af8e27b75d86dad8ffb270fbe6341082bf65eac4a837da2bd35623de8d",
+      "sha256": "c387b109022db3bf44253dea8bfbd392cbceddd0424880af9dd3caea90a4c6aa",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/vi-duo-inner-calendar.png",
+          "sha256": "5f1676e571c9f62f0d0b046698274d3b460863b49a0f96eced82a84066496d1e"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "duo",
+      "order": 7,
+      "scene": "focus",
+      "file": "vi/duo/07-focus.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "b73d2a53d68eafeb56bbdb2dfed705487a011f552e7ca504ba76d37ddb80281e",
+      "sha256": "f468f878a258689a5caa60677867bf8d6aedbac514eeacb3745dc68bc07a691d",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/vi-duo-outer-focus.png",
+          "sha256": "c565073a9974d15db0c9f501ce1ea11b6f893f7f04f66901ba29d20b884a89fb"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "duo",
+      "order": 8,
+      "scene": "widgets",
+      "file": "vi/duo/08-widgets.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "3e599e35b7ec9e5bcfdfaecf3455a94b658f9f21e572d40701dea2be0d88fb09",
+      "sha256": "efe1b4bd27fa9d265297d6e17c751ca4b9254c7e042ee4d4d67cf9eda6f74f85",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/vi-duo-outer-widgets.png",
+          "sha256": "0005e2a760c1ce93be3a85e14fbb8de6209f234dda24ac872415d94435283a44"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "duo",
+      "order": 9,
+      "scene": "rest",
+      "file": "vi/duo/09-rest.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "f707f90d2189fc7b5894bfdd727a6b7dd6cd0cae9400c0675706cb7227c3b42f",
+      "sha256": "094c949c63cbe73b519d29bfc5262a4c078691551f84400c12d76ea928e78504",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/vi-duo-outer-rest.png",
+          "sha256": "87df19e1b702fbb8e6bcba677ce35a5dd262dfaab66eebe6734e0beb25f118be"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "duo",
+      "order": 5,
+      "scene": "calendar",
+      "file": "hi-IN/duo/05-calendar.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "d3269736e78d784df3929d564429121886afe05263a2b288e431c78113ef6b33",
+      "sha256": "6a4e47aa70ffe36e93d339a49c15364d4ed0e5a633a2269af27a96435f77bc34",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/hi-IN-duo-inner-calendar.png",
+          "sha256": "95da29e235f82918ded6050235359069b841827412229b21a87fd167a2ebfd47"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "duo",
+      "order": 7,
+      "scene": "focus",
+      "file": "hi-IN/duo/07-focus.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "42bed2e8aa40ba56e4c68015bb83c8ad90470691ce1a3992735d6d0972e66cc8",
+      "sha256": "ab72976dda3af355f4e04e039b9e1c598b0355108adeaa78d5c620e6c79b717b",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/hi-IN-duo-outer-focus.png",
+          "sha256": "3cb2933bfba98ae468a92e4940d91aa43b063f7195505963185ba6249bb9af57"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "duo",
+      "order": 8,
+      "scene": "widgets",
+      "file": "hi-IN/duo/08-widgets.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "a02a24d102d022c447f3f383554a5332ed14c86642c57ba1f2f5d51e10633bbe",
+      "sha256": "9ed9717ef17c048dae8a25f43c6a6b642fa0e4684aa54298552d4da875c1fa91",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/hi-IN-duo-outer-widgets.png",
+          "sha256": "550c8be5f8e7b62ab025a0b094c24a63a06c4c7e182ed899934a14819e2b79d8"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "duo",
+      "order": 9,
+      "scene": "rest",
+      "file": "hi-IN/duo/09-rest.png",
+      "width": 1398,
+      "height": 2034,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "54e00d57e3f2fb02e39d86d9e7be0dc155ca5776614139d87503d76ed6204bb6",
+      "sha256": "d496fbc12f1d29d212ad0606645a6838532eb9858222e346832711add002cea5",
+      "sources": [
+        {
+          "file": "raw/3.2.1/all-locales/hi-IN-duo-outer-rest.png",
+          "sha256": "41ff7e6f5235cd02a1550ccd6fbb8f043fa22084bf53e2aee4ff0646f5845e8b"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Outer Closed Portrait.png",
+          "sha256": "1129243087c318fdb993ee64fe1e0df6db27b33d1d8176cd9f4be59a88925145"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "zh-CN/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "0eaf5ea62be00d36e4d326f22c3e3663fe84b6d2e092c9d69c14e5484c47ea8d",
+      "sha256": "760ca60879ef9852d0bd51f6f74e9ffbdad08a3a4dcdc033901f688577c47f5e",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/zh-CN-iphone-leave.png",
+          "sha256": "6d11d1cc124d6146e09578832f5cdeac262e7baf4a6c6a28a04e379464626402"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "zh-TW/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "bc761b7e7e0ee55443db70aec2270d9dfd24fe7cf20eeb9e575756f06eb4f953",
+      "sha256": "ac8b2204ac0e79eed30bc91c87334f8b0fa0c8ae7e10a979aa34cdd7246696bb",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/zh-TW-iphone-leave.png",
+          "sha256": "6734389cf725de50be47462be9f86a3f39092ce9c34912ce87be1fc3e0b3453f"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "ja/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "814b2ac75df3112bd1d3c7841bdb5f65608338f9407c40cd42d607b1419f6e3e",
+      "sha256": "010ad897006c8d8d8a048c0f119c56928dc363cf40a38155fdb4133e589debcd",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ja-iphone-leave.png",
+          "sha256": "0c47d93aff29061ffae588587acbc0ec8d73fee1de52e4dd06b6d9602b04a304"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "ko/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "eb7fe89958582f9952166fdfc541525e4aaa700a79468072bedbe5f174569687",
+      "sha256": "21d0f82364ff37865cc88a8290767011e9b6d1e4e7ad87073becee562a9708af",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ko-iphone-leave.png",
+          "sha256": "d3b10c4555c7e68f8345bb9443e97840a1a61c495ed0e962079606602d85540a"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "ru/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "06160155321ad8e5db084c95258f1f72930bc19307db0a3401008fa81817dd49",
+      "sha256": "f3344b51a91ae048c28204a1e68484d8b1033df13c532c5a8f805b47ee5cd0b7",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ru-iphone-leave.png",
+          "sha256": "8beb82309e9ebe1d3432cb8abd2f5387bae1a409cef8fe86b5c09aa3a45a9dec"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "tr",
+      "ascLocale": "tr",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "tr/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "25a07c447a37613bf9d4c8f380715636baf3d91b6615a5b00da88d3ecf3c5036",
+      "sha256": "51ba31562efd6fbd6c78677449de05f77b1082bc4df76e8c3416819a161e2089",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/tr-iphone-leave.png",
+          "sha256": "be2848c5d570d2fd21b0c2fb5d911176d1d4ea4a25fad8256c5236ac5e177656"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "vi/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "cc8238a6db8306567f26dc122d3ba069546400815c6c878e4977bbf04eb3b290",
+      "sha256": "4851a399639b9854478a757734754865046e3ba147dda9ef16d2bfac835285f4",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/vi-iphone-leave.png",
+          "sha256": "ada4a958e6580ea2adc62e73e27d6da190edc940e30d9a5d378c7908064c3292"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "hi-IN/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "3744d4180e90824588abd3078f4ad97fe959558f24e43d780f9d48ec237dd9f4",
+      "sha256": "81b8d3327a19bedbb3c59683ff42b3de5176de3c6f30089bbe6b4a7eedabc79e",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/hi-IN-iphone-leave.png",
+          "sha256": "2861d19ba16a6d04b842e734ae008db5c42e0b7dc057f93c0ce4a701bc7ad4da"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "iphone",
+      "order": 7,
+      "scene": "records",
+      "file": "zh-CN/iphone/07-records.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "d973e339bf19136411fab47ef50dc1aefd1272c5202295e22e57e0cd06e05cc7",
+      "sha256": "e99874838ad50c9f53f3e8ff3a1ac3f78a29e83237b96cf5891011ecaf0ecea0",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/zh-CN-iphone-records.png",
+          "sha256": "ceb7228bf38dbad1201ce84000b3f2edfbf0e75402f1fc08626d16bbf4fc3b37"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "iphone",
+      "order": 7,
+      "scene": "records",
+      "file": "zh-TW/iphone/07-records.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "4e25a42a917bd26a3ba3a5238444cde87147fde697234768ed4c47fb3137e05f",
+      "sha256": "d26db15724c1952da817b4e0dbbe5bdb3ce7b9530f3bb9f3fb748d818383c919",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/zh-TW-iphone-records.png",
+          "sha256": "a18b88dbff8b282063dd5ced1aab1268b247802f31ea6bd9f20dc29252a55cc6"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "iphone",
+      "order": 7,
+      "scene": "records",
+      "file": "ja/iphone/07-records.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "2fb7745058317b63466cfd1e33aec6979f94f4d7c00b80a6003df8dcafc35028",
+      "sha256": "864514fc80c237680418c94d7589d7fcad9f45504e52a1d4f1a78be1d760b6bc",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ja-iphone-records.png",
+          "sha256": "00b5fc1894236d57e99489f75825526f4f8fe138acce74177cbbec0803e3a5f6"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "iphone",
+      "order": 7,
+      "scene": "records",
+      "file": "ko/iphone/07-records.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "7cc8e2b73f2e1ffca8f8f2198db1b7ad5b38677a3cb3ed5f655d20eb26cfaa26",
+      "sha256": "a0d8bf67124a18db7bd99c05a7c2f38818cdf0daf766a2332276a83ddb15acb6",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ko-iphone-records.png",
+          "sha256": "0c07e86df78cf53670b300b91f1c08139a1051ddec3503e9a028a990c2fa8cbc"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "iphone",
+      "order": 7,
+      "scene": "records",
+      "file": "ru/iphone/07-records.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "63d6a4ae04e5929ef2ba0f9b37e64a570d45add15b698f6959b8d27cdd9f6a03",
+      "sha256": "7017ac8ed9fc7d6c18f1ee4b2c823f8b18a16d0ee9a83678fe89379c145e1e5c",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ru-iphone-records.png",
+          "sha256": "e767cb72282141d98011f17a35de1219dd1284a484f0de031aac28d3e7cc97ee"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "iphone",
+      "order": 7,
+      "scene": "records",
+      "file": "vi/iphone/07-records.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "01355f7a19e253339e5a428c5a4d294d8d8597f7fc883d177dca58790748db56",
+      "sha256": "083f9c1a3a5011b48ba4df271199c30972b2f012f55e3162e753763d967f871c",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/vi-iphone-records.png",
+          "sha256": "a20b64d63e8607e647d78ec326dce8aedca5f5171355df39f19274f713c6a265"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "iphone",
+      "order": 7,
+      "scene": "records",
+      "file": "hi-IN/iphone/07-records.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "4b8ffda11ecb428942a44a9a3588db4ff044c35a973222ca784d9607ded0338f",
+      "sha256": "af5409821cdb4f63ffe1f3d8e78d1d144cd0e3674e26ea521728207fed65f124",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/hi-IN-iphone-records.png",
+          "sha256": "3c1159114d8aca9605724e097a858b819b6b3c3118a5baa06921c1ef699a26fd"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    }
+  ]
+}

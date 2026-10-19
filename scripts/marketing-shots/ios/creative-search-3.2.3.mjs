@@ -47,7 +47,8 @@ const SCENES=[
   pieces:[{key:[0,372,1320,448],show:[0,372,1320,2496],radius:56}]},
  // 3.2.3: the ring and the classic countdown from the first Home Screen page
  // (free), side by side; two widgets per beat keep them legible in search.
- {key:'home',line:'home',file:'home1',dir:'widgets',video:true,inPoint:0.5,bg:'#ffffff',layout:'row',gap:56,stagger:true,
+ // A still: the simulator draws Home Screen widgets once and holds them.
+ {key:'home',line:'home',file:'home1',dir:'widgets',bg:'#ffffff',layout:'row',gap:56,stagger:true,
   pieces:[{key:[93,934,530,530],show:[93,934,530,530],radius:100},{key:[93,282,1134,530],show:[93,282,1134,530],radius:100}]},
  // The seven-day shifts and week progress (both free) from the same page.
  {key:'desk',line:'desk',file:'home1',dir:'widgets',bg:'#ffffff',layout:'row',gap:56,stagger:true,
@@ -96,6 +97,12 @@ const FLOOR={latin:64,cjk:68};
 const base=(s,lang,file)=>join(s.dir==='widgets'?widgets:raw,`${lang}-${file||s.file||s.key}`);
 
 function placed(s,lang){
+ // Arabic mirrors the Home Screen: the same widgets sit at mirrored x, and
+ // the row reads right to left, so the order of the pieces flips too.
+ if(lang==='ar'&&s.dir==='widgets'&&s.layout==='row'){
+  const flip=([x,y,w,h])=>[1320-x-w,y,w,h];
+  s={...s,pieces:s.pieces.map(p=>({...p,key:flip(p.key),show:flip(p.show)})).reverse()};
+ }
  if(!s.anchor)return s;
  const png=base(s,lang)+'.png';
  const y=s.anchor.widget?JSON.parse(execFileSync('python3',[join(dir,'creative-widget-crop.py'),png],{encoding:'utf8'})).y
