@@ -20,6 +20,9 @@ enum OWCMotion {
     /// toolbar gift handing over to it.
     static let giftOverlay = Animation.easeInOut(duration: 0.22)
     static let giftOverlayDuration = 0.22
+    /// The offer paywall fading in around the settled gift.
+    static let paywallReveal = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.36)
+    static let paywallRevealDuration = 0.36
     /// The gift leaving the toolbar for the middle of the screen.
     static let giftArrive = Animation.spring(duration: 0.46, bounce: 0.22)
     static let giftArriveDuration = 0.46

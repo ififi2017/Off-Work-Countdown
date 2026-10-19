@@ -212,6 +212,10 @@ struct PaywallContent: View {
         .onChange(of: plus.lastProductError) { _, error in
             if error != nil { errorFeedback += 1 }
         }
+        // An offer opened while this page was already built takes the selection.
+        .onChange(of: plus.hasActiveLifetimeOffer) { _, active in
+            if active { selected = .lifetime }
+        }
         .onChange(of: plus.products.count) { _, _ in
             if product(for: selected) == nil, let first = visiblePlans.first {
                 selected = first

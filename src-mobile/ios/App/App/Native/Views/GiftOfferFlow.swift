@@ -100,6 +100,8 @@ struct GiftOfferOverlay: View {
     @State private var started = false
     @State private var paywallMounted = false
     @State private var paywallShown = false
+    /// Hidden only once the paywall's own gift is fully shown in its place.
+    @State private var giftHandedOver = false
     @State private var giftCenter: CGPoint?
     @State private var giftSize: CGFloat?
     @State private var lidLift: CGFloat = 0
@@ -144,7 +146,8 @@ struct GiftOfferOverlay: View {
                         .allowsHitTesting(paywallShown)
                         .accessibilityHidden(!paywallShown)
                 }
-                if !paywallShown {
+                // Above the paywall, on its header gift, until that one is fully in.
+                if !giftHandedOver {
                     ZStack {
                         GiftRays()
                             .frame(width: Self.openGiftSize * 1.9, height: Self.openGiftSize * 1.9)
@@ -179,13 +182,21 @@ struct GiftOfferOverlay: View {
     }
 
     /// The toolbar gift in this layer's coordinates: the reported frame, or
-    /// where the bar puts a leading item when none has been reported yet.
+    /// where the bar puts a leading item. A frame caught while the bar was
+    /// still sliding in (after going back) can lie far from the leading
+    /// corner; the gift would then appear there and fly sideways, so such a
+    /// frame is not trusted.
     private func toolbarRect(in geometry: GeometryProxy) -> CGRect {
         let origin = geometry.frame(in: .global).origin
-        if let toolbarFrame, toolbarFrame.width > 0 {
-            return toolbarFrame.offsetBy(dx: -origin.x, dy: -origin.y)
-        }
-        return CGRect(x: 26, y: 3, width: 39, height: 39)
+        let standard = CGRect(x: 26, y: 3, width: 39, height: 39)
+        guard let toolbarFrame, toolbarFrame.width > 0 else { return standard }
+        let local = toolbarFrame.offsetBy(dx: -origin.x, dy: -origin.y)
+        // On iPad the leading item sits beside the sidebar, so only its
+        // height in the bar and its size are checked there.
+        let leadingLimit = UIDevice.current.userInterfaceIdiom == .phone ? 140 : geometry.size.width * 0.75
+        let plausible = local.minX >= -4 && local.maxX <= leadingLimit && local.minY >= -12 && local.maxY <= 70
+            && (24...56).contains(local.width)
+        return plausible ? local : standard
     }
 
     private func headerRect(in geometry: GeometryProxy) -> CGRect {
@@ -201,20 +212,24 @@ struct GiftOfferOverlay: View {
         giftSize = rect.width
     }
 
-    /// Show the built paywall over the gift, which then steps aside.
+    /// The paywall fades in around the gift, which already sits on
+    /// its header gift; the hand-over happens once the page is fully shown,
+    /// so nothing disappears while it fades.
     private func revealPaywall() async {
-        paywallMounted = true
-        // Two frames for the hidden page to lay out before it is shown.
-        await Task.yield()
-        try? await Task.sleep(for: .milliseconds(34))
-        withAnimation(OWCMotion.phase) { paywallShown = true }
+        withAnimation(OWCMotion.paywallReveal) { paywallShown = true }
+        try? await Task.sleep(for: .seconds(OWCMotion.paywallRevealDuration))
+        giftHandedOver = true
     }
 
     private func open(in geometry: GeometryProxy) async {
         let home = toolbarRect(in: geometry)
         place(home)
-        // Drawn exactly over the toolbar's gift first; only then hide that one.
+        // Build the hidden page now, while nothing moves: laying it out takes
+        // a moment, and doing it mid-animation skipped the lid and the glide.
+        // The toolbar's gift stays until this one is drawn over it.
+        paywallMounted = true
         await Task.yield()
+        try? await Task.sleep(for: .milliseconds(34))
         onCover()
         guard !reduceMotion else {
             backdrop = true
@@ -224,6 +239,7 @@ struct GiftOfferOverlay: View {
             }
             paywallMounted = true
             paywallShown = true
+            giftHandedOver = true
             return
         }
         if unwraps { await unwrap(in: geometry) } else { await arrive(in: geometry) }
@@ -251,19 +267,22 @@ struct GiftOfferOverlay: View {
             rays = true
             caption = true
         }
-        // Build the page while the open gift holds still.
-        paywallMounted = true
         try? await Task.sleep(for: .seconds(OWCMotion.giftOpenHold))
+        // Settle into the header: smaller, lid half closed, light fading.
+        withAnimation(OWCMotion.giftReturn) {
+            place(headerRect(in: geometry))
+            lidLift = GiftOfferLayout.headerLidLift
+            lidTilt = GiftOfferLayout.headerLidTilt.degrees
+            rays = false
+            caption = false
+        }
+        try? await Task.sleep(for: .seconds(OWCMotion.giftReturnDuration))
         await revealPaywall()
     }
 
     /// The mirror of closing: the opened gift settles into the header, then
     /// the paywall fades in around it.
     private func arrive(in geometry: GeometryProxy) async {
-        paywallMounted = true
-        // The hidden page reports where its header gift sits.
-        await Task.yield()
-        try? await Task.sleep(for: .milliseconds(34))
         withAnimation(OWCMotion.giftReturn) {
             place(headerRect(in: geometry))
             lidLift = GiftOfferLayout.headerLidLift
@@ -286,6 +305,7 @@ struct GiftOfferOverlay: View {
         lidTilt = GiftOfferLayout.headerLidTilt.degrees
         rays = false
         caption = false
+        giftHandedOver = false
         withAnimation(OWCMotion.stateExit) { paywallShown = false }
         withAnimation(OWCMotion.giftReturn) {
             place(toolbarRect(in: geometry))
