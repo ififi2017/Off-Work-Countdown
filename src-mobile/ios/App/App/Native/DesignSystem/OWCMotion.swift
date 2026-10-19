@@ -16,6 +16,9 @@ enum OWCMotion {
     static let onboardingDisclosure = Animation.smooth(duration: 0.3, extraBounce: 0)
     static let offerFloat = Animation.easeInOut(duration: 2.6)
     static let offerPeek = Animation.easeInOut(duration: 0.9).delay(1.8)
+    /// The open gift's layer arriving over the app and leaving it, and the
+    /// toolbar gift handing over to it.
+    static let giftOverlay = Animation.easeInOut(duration: 0.22)
     /// The gift leaving the toolbar for the middle of the screen.
     static let giftArrive = Animation.spring(duration: 0.46, bounce: 0.22)
     static let giftArriveDuration = 0.46

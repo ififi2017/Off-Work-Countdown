@@ -46,7 +46,9 @@ struct OffWorkCountdownRootView: View {
         .overlay {
             if showsLandscapeTimer {
                 PhoneLandscapeTimerOverlay(shifts: runtime.shifts)
-                    .transition(.opacity)
+                    // Its gift starts exactly where the toolbar's was, so it
+                // arrives at once and fades only on the way out.
+                .transition(.asymmetric(insertion: .identity, removal: .opacity))
             }
         }
         // Over the tab bar and toolbars, so the gift can leave the timer's
@@ -54,8 +56,13 @@ struct OffWorkCountdownRootView: View {
         .overlay {
             if scene.showsLifetimeOffer {
                 GiftOfferOverlay(plus: runtime.plus, text: runtime.text) {
-                    scene.showsLifetimeOffer = false
+                    withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.giftOverlay) {
+                        scene.showsLifetimeOffer = false
+                    }
                 }
+                // Its gift starts exactly where the toolbar's was, so it
+                // arrives at once and fades only on the way out.
+                .transition(.asymmetric(insertion: .identity, removal: .opacity))
             }
         }
         .background {

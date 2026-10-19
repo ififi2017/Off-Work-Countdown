@@ -7,8 +7,11 @@ import SwiftUI
 struct LifetimeOfferToolbarButton: View {
     let plus: PlusEntitlement
     let text: AppText
+    /// The gift is open over the app; the opened one stands in for this one.
+    var isHidden = false
     let onOpen: () -> Void
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         if plus.canOfferLifetime, let offer = plus.lifetimeOffer {
@@ -49,6 +52,10 @@ struct LifetimeOfferToolbarButton: View {
                     .accessibilityLabel(text.t("plusGiftOpen"))
                 }
             }
+            .opacity(isHidden ? 0 : 1)
+            .allowsHitTesting(!isHidden)
+            // Hand over to the opened gift at once; fade back in as it lands.
+            .animation(isHidden ? nil : (reduceMotion ? OWCMotion.reduced : OWCMotion.giftOverlay), value: isHidden)
             .onChange(of: scenePhase) { _, _ in plus.observeLifetimeOffer() }
             .onDisappear { plus.observeLifetimeOffer() }
         }

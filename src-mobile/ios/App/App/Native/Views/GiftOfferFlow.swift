@@ -77,7 +77,9 @@ struct GiftOfferOverlay: View {
     let text: AppText
     let onFinish: () -> Void
 
-    private enum Phase { case opening, paywall, closing }
+    /// `opening` unwraps a new gift; `arriving` carries an already opened
+    /// one from the toolbar into the paywall's header.
+    private enum Phase { case opening, arriving, paywall, closing }
     @State private var phase: Phase
     @State private var started = false
     @State private var giftCenter: CGPoint?
@@ -89,14 +91,15 @@ struct GiftOfferOverlay: View {
     @State private var openFeedback = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private static let toolbarGiftSize: CGFloat = 34
+    /// The toolbar gift's drawn size (OfferGiftIcon at 30 pt draws 1.3×).
+    private static let toolbarGiftSize: CGFloat = 38
     private static let openGiftSize: CGFloat = 150
 
     init(plus: PlusEntitlement, text: AppText, onFinish: @escaping () -> Void) {
         self.plus = plus
         self.text = text
         self.onFinish = onFinish
-        _phase = State(initialValue: plus.hasWrappedLifetimeOffer ? .opening : .paywall)
+        _phase = State(initialValue: plus.hasWrappedLifetimeOffer ? .opening : .arriving)
     }
 
     var body: some View {
@@ -121,6 +124,8 @@ struct GiftOfferOverlay: View {
                             .frame(width: giftSize, height: giftSize)
                     }
                     .position(giftCenter ?? home)
+                    // Takes over from the paywall's gift at once, in its place.
+                    .transition(.identity)
                     if phase == .opening {
                         Text(text.t("plusGiftTitle"))
                             .font(.title2.bold())
@@ -140,7 +145,7 @@ struct GiftOfferOverlay: View {
     }
 
     /// The toolbar's leading item: the bar's own inset plus half the button.
-    private static let toolbarPoint = CGPoint(x: 16 + 22, y: GiftOfferLayout.navigationBar / 2)
+    private static let toolbarPoint = CGPoint(x: 16 + 29, y: GiftOfferLayout.navigationBar / 2)
 
     private func headerPoint(in geometry: GeometryProxy) -> CGPoint {
         let side = max(0, (geometry.size.width - GiftOfferLayout.maxWidth) / 2)
@@ -151,6 +156,10 @@ struct GiftOfferOverlay: View {
     }
 
     private func open(in geometry: GeometryProxy) async {
+        if phase == .arriving {
+            await arrive(in: geometry)
+            return
+        }
         guard phase == .opening else { return }
         let source = plus.lifetimeOffer?.source ?? .update323
         guard !reduceMotion else {
@@ -158,6 +167,10 @@ struct GiftOfferOverlay: View {
             return
         }
         giftCenter = Self.toolbarPoint
+        // Let the gift be drawn where the toolbar's was before it leaves, so
+        // the flight starts from there instead of jumping to the middle.
+        await Task.yield()
+        try? await Task.sleep(for: .milliseconds(16))
         withAnimation(OWCMotion.giftArrive) {
             giftCenter = CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.4)
             giftSize = Self.openGiftSize
@@ -176,6 +189,27 @@ struct GiftOfferOverlay: View {
         }
         withAnimation(OWCMotion.giftRays) { rays = true }
         try? await Task.sleep(for: .seconds(OWCMotion.giftOpenHold))
+        withAnimation(OWCMotion.phase) { phase = .paywall }
+    }
+
+    /// The mirror of closing: the opened gift settles into the header, then
+    /// the paywall fades in around it.
+    private func arrive(in geometry: GeometryProxy) async {
+        guard !reduceMotion else {
+            withAnimation(OWCMotion.reduced) { phase = .paywall }
+            return
+        }
+        giftCenter = Self.toolbarPoint
+        await Task.yield()
+        try? await Task.sleep(for: .milliseconds(16))
+        withAnimation(OWCMotion.giftReturn) {
+            giftCenter = headerPoint(in: geometry)
+            giftSize = GiftOfferLayout.headerGiftSize
+            lidLift = GiftOfferLayout.headerLidLift
+            lidTilt = GiftOfferLayout.headerLidTilt.degrees
+            backdrop = true
+        }
+        try? await Task.sleep(for: .seconds(OWCMotion.giftReturnDuration))
         withAnimation(OWCMotion.phase) { phase = .paywall }
     }
 

@@ -192,11 +192,14 @@ private struct TabletTimerRoot: View {
             }
 
             // Empty view content still leaves the system's toolbar glass behind.
-            // Omit the item itself unless a gift is waiting or its offer runs;
-            // while it is open over the app, the opened gift stands in for it.
-            if shifts.plus.hasAvailableLifetimeOffer, !scene.showsLifetimeOffer {
+            // Omit the item itself unless a gift is waiting or its offer runs.
+            // While the gift is open over the app the item stays, so its glass
+            // never pops in or out; only the gift inside fades.
+            if shifts.plus.hasAvailableLifetimeOffer {
                 ToolbarItem(placement: .topBarLeading) {
-                    LifetimeOfferToolbarButton(plus: shifts.plus, text: text) { scene.showsLifetimeOffer = true }
+                    LifetimeOfferToolbarButton(plus: shifts.plus, text: text, isHidden: scene.showsLifetimeOffer) {
+                        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.giftOverlay) { scene.showsLifetimeOffer = true }
+                    }
                 }
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
