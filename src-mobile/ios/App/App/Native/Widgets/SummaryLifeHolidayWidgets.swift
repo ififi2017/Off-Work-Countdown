@@ -113,10 +113,7 @@ private struct SummaryPeriodView: View {
             ZStack {
                 WidgetSuiteSegmentRing(segments: [1], progress: period.progress, lineWidth: 5, tint: .primary,
                                        track: .primary.opacity(0.25))
-                VStack(spacing: 0) {
-                    Text(hours).font(.system(.callout, design: .rounded, weight: .bold)).minimumScaleFactor(0.6)
-                    Text(hoursUnit).font(.system(size: 9, weight: .semibold)).foregroundStyle(.secondary)
-                }
+                WidgetSuiteCircularValue(value: hours, unit: hoursUnit)
             }
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 2) {
