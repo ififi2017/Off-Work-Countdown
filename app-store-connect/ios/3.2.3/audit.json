@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-10-19T11:05:13.609Z",
+  "checkedAt": "2026-10-19T12:08:55.879Z",
   "videos": 18,
   "screenshots": 34,
-  "pages": 82,
+  "pages": 97,
   "headers": 6,
   "checked": [
     {
@@ -610,6 +610,66 @@
     {
       "file": "pages/hi-IN/iphone/07-records.png",
       "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-CN/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-TW/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ja/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ko/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ru/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/tr/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/vi/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/hi-IN/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-CN/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-TW/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ja/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ko/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ru/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/vi/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/hi-IN/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
     },
     {
       "file": "header/zh-CN-header-video-v4.mp4",

@@ -34,8 +34,8 @@ assets were affected:
 - Re-rendered locally (`out/creative-3.2.3/`):
   - `header/`: header V4 for the 6 affected locales
     (`creative-video-locales-3.2.1.mjs`, `IOS_SHOTS_VIDEO_KINDS=header`).
-  - `pages/`: the affected iPhone pages, plus Duo report, calendar, focus,
-    widgets and rest (`creative-compose-locales-3.2.1.mjs`). Time off and
+  - `pages/`: every affected iPhone and Duo page
+    (`creative-compose-locales-3.2.1.mjs`). Time off and
     Records use new captures of the 3.2.2 redesign
     (`creative-capture-pages-3.2.3.mjs`, raw `raw/3.2.3/pages`), because the
     3.2.2 captures were not kept.
@@ -43,18 +43,18 @@ assets were affected:
 
 ## Result
 
-82 pages (iPhone: 45 — Time off 8, Cycle report 9, Calendar, Records, Focus
-and Rest 7 each; Duo: 37 — Cycle report 9, Calendar, Focus, Widgets and Rest
-7 each) and 6 header videos re-rendered. `creative-audit-3.2.3.mjs` finds
+97 pages (iPhone: 45 — Time off 8, Cycle report 9, Calendar, Records, Focus
+and Rest 7 each; Duo: 52 — Time off 8, Cycle report 9, Calendar, Records,
+Focus, Widgets and Rest 7 each) and 6 header videos re-rendered. `creative-audit-3.2.3.mjs` finds
 no issues. File names follow the 3.2.1/3.2.2 page numbering; in the 3.2.3
 iPhone order, Time off is page 5, Cycle report 6, Calendar 7, Records 8,
 Focus 9 and Rest 10.
 
+Duo Time off and Records were captured on the iPhone Duo simulator's inner
+display (2007×2853 portrait), which the owner opened in Device Hub; headless,
+the Duo exposes no displays.
+
 ## Not done
 
-- **Duo Time off and Records (positions 2 and 6)** for the 8 and 7 affected
-  locales; every other affected Duo page is re-rendered. These need the iPhone Duo simulator's inner display. That display
-  is only exposed after it is opened in Device Hub, a GUI step. Headless,
-  the Duo reports no display ports.
 - Nothing has been uploaded. Replacing a live asset is a separate step and
   needs the owner's yes.
