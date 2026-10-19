@@ -1,8 +1,8 @@
 {
   "backToApp": "Back to the countdown",
   "startCta": "Start web countdown",
-  "iosCta": "Use shifts on iPhone",
-  "webBoundary": "This page prefills a start and end time for the browser timer. It does not plan a roster. Rotating weeks, several shift kinds, and a calendar that repeats on its own are in the iOS app.",
+  "iosCta": "Use shifts on iPhone or Android",
+  "webBoundary": "This page prefills a start and end time for the browser timer. It does not plan a roster. Rotating weeks, several shift kinds, and a calendar that repeats on its own are in the iOS and Android apps.",
   "scheduleLabel": "Hours",
   "perDayLabel": "Per day",
   "perWeekLabel": "Per week",

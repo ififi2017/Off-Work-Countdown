@@ -1,8 +1,8 @@
 {
   "backToApp": "Zurück zum Countdown",
   "startCta": "Web-Countdown starten",
-  "iosCta": "Schichten auf dem iPhone nutzen",
-  "webBoundary": "Diese Seite füllt nur eine Start- und Endzeit in den Browser-Timer ein. Sie erstellt keinen Dienstplan. Wechselnde Wochen, mehrere Schichtarten und ein automatisch wiederholender Kalender gibt es in der iOS-App.",
+  "iosCta": "Schichten auf iPhone oder Android nutzen",
+  "webBoundary": "Diese Seite füllt nur eine Start- und Endzeit in den Browser-Timer ein. Sie erstellt keinen Dienstplan. Wechselnde Wochen, mehrere Schichtarten und ein automatisch wiederholender Kalender gibt es in den Apps für iOS und Android.",
   "scheduleLabel": "Arbeitszeit",
   "perDayLabel": "Pro Tag",
   "perWeekLabel": "Pro Woche",

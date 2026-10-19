@@ -51,7 +51,7 @@ type Mode = "finish" | "hours";
 
 const BREAK_OPTIONS = [0, 15, 30, 45, 60, 90] as const;
 const DAY_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const;
-const PLATFORMS = "iPhone · iPad · Mac · Windows";
+const PLATFORMS = "iPhone · iPad · Android · Mac · Windows";
 
 function fill(template: string, values: Record<string, string | number>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) =>

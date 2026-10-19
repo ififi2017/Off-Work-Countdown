@@ -1,8 +1,8 @@
 {
   "backToApp": "Torna al conto alla rovescia",
   "startCta": "Avvia il conto alla rovescia web",
-  "iosCta": "Usa i turni su iPhone",
-  "webBoundary": "Questa pagina inserisce solo un orario di inizio e fine nel timer del browser. Non crea un piano turni. Settimane alternate, più tipi di turno e un calendario che si ripete sono nell'app iOS.",
+  "iosCta": "Usa i turni su iPhone o Android",
+  "webBoundary": "Questa pagina inserisce solo un orario di inizio e fine nel timer del browser. Non crea un piano turni. Settimane alternate, più tipi di turno e un calendario che si ripete sono nelle app per iOS e Android.",
   "scheduleLabel": "Orario",
   "perDayLabel": "Al giorno",
   "perWeekLabel": "A settimana",

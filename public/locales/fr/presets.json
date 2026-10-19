@@ -1,8 +1,8 @@
 {
   "backToApp": "Retour au compte à rebours",
   "startCta": "Lancer le compte à rebours web",
-  "iosCta": "Utiliser les horaires sur iPhone",
-  "webBoundary": "Cette page remplit simplement une heure de début et de fin dans le minuteur du navigateur. Elle ne crée pas de planning. Semaines alternées, plusieurs types de service et un calendrier à répétition automatique sont dans l'app iOS.",
+  "iosCta": "Utiliser les horaires sur iPhone ou Android",
+  "webBoundary": "Cette page remplit simplement une heure de début et de fin dans le minuteur du navigateur. Elle ne crée pas de planning. Semaines alternées, plusieurs types de service et un calendrier à répétition automatique sont dans les apps iOS et Android.",
   "scheduleLabel": "Horaires",
   "perDayLabel": "Par jour",
   "perWeekLabel": "Par semaine",
