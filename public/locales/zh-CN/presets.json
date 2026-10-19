@@ -1,8 +1,8 @@
 {
   "backToApp": "返回倒计时",
   "startCta": "开始网页倒计时",
-  "iosCta": "在 iPhone 上用班次功能",
-  "webBoundary": "本页只是把一组起止时刻预填进网页倒计时，不会替你排班。大小周、多种班次、会自己循环的日历，请用 iOS App。",
+  "iosCta": "在 iPhone 或 Android 上用班次功能",
+  "webBoundary": "本页只是把一组起止时刻预填进网页倒计时，不会替你排班。大小周、多种班次、会自己循环的日历，请用 iOS 或 Android App。",
   "scheduleLabel": "作息",
   "perDayLabel": "每天",
   "perWeekLabel": "每周",

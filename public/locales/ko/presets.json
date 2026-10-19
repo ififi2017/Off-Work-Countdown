@@ -1,8 +1,8 @@
 {
   "backToApp": "카운트다운으로 돌아가기",
   "startCta": "웹 카운트다운 시작",
-  "iosCta": "iPhone에서 근무 시간 사용",
-  "webBoundary": "이 페이지는 브라우저 타이머에 시작 시간과 종료 시간만 입력합니다. 근무표를 작성하지 않습니다. 격주, 여러 근무 유형, 자동 반복 일정은 iOS 앱에서 이용하세요.",
+  "iosCta": "iPhone·Android에서 근무 시간 사용",
+  "webBoundary": "이 페이지는 브라우저 타이머에 시작 시간과 종료 시간만 입력합니다. 근무표를 작성하지 않습니다. 격주, 여러 근무 유형, 자동 반복 일정은 iOS·Android 앱에서 이용하세요.",
   "scheduleLabel": "근무 시간",
   "perDayLabel": "하루",
   "perWeekLabel": "주간",

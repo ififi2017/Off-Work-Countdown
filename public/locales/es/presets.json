@@ -1,8 +1,8 @@
 {
   "backToApp": "Volver a la cuenta regresiva",
   "startCta": "Iniciar cuenta regresiva web",
-  "iosCta": "Usar turnos en iPhone",
-  "webBoundary": "Esta página solo rellena una hora de inicio y fin en el temporizador del navegador. No crea un cuadrante. Semanas alternas, varios tipos de turno y un calendario que se repite solo están en la app iOS.",
+  "iosCta": "Usar turnos en iPhone o Android",
+  "webBoundary": "Esta página solo rellena una hora de inicio y fin en el temporizador del navegador. No crea un cuadrante. Semanas alternas, varios tipos de turno y un calendario que se repite solo están en las apps para iOS y Android.",
   "scheduleLabel": "Horario",
   "perDayLabel": "Por día",
   "perWeekLabel": "Por semana",

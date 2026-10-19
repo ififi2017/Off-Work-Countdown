@@ -1,8 +1,8 @@
 {
   "backToApp": "Quay lại đếm ngược",
   "startCta": "Bắt đầu đếm ngược web",
-  "iosCta": "Dùng ca làm trên iPhone",
-  "webBoundary": "Trang này chỉ điền giờ bắt đầu và kết thúc vào bộ đếm thời gian trình duyệt. Không tạo lịch ca. Tuần xen kẽ, nhiều loại ca và lịch tự lặp có trong ứng dụng iOS.",
+  "iosCta": "Dùng ca làm trên iPhone hoặc Android",
+  "webBoundary": "Trang này chỉ điền giờ bắt đầu và kết thúc vào bộ đếm thời gian trình duyệt. Không tạo lịch ca. Tuần xen kẽ, nhiều loại ca và lịch tự lặp có trong ứng dụng iOS và Android.",
   "scheduleLabel": "Giờ làm",
   "perDayLabel": "Mỗi ngày",
   "perWeekLabel": "Mỗi tuần",

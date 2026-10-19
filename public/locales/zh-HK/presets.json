@@ -1,8 +1,8 @@
 {
   "backToApp": "返回倒數計時",
   "startCta": "開始網頁倒數計時",
-  "iosCta": "喺 iPhone 上用班次功能",
-  "webBoundary": "呢頁只係將一組起止時間預填入網頁倒數計時，唔會幫你排更。大小週、多種班次、會自己循環嘅日曆，請用 iOS App。",
+  "iosCta": "喺 iPhone 或 Android 上用班次功能",
+  "webBoundary": "呢頁只係將一組起止時間預填入網頁倒數計時，唔會幫你排更。大小週、多種班次、會自己循環嘅日曆，請用 iOS 或 Android App。",
   "scheduleLabel": "工時",
   "perDayLabel": "每日",
   "perWeekLabel": "每週",

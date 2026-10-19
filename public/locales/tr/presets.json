@@ -1,8 +1,8 @@
 {
   "backToApp": "Geri sayıma dön",
   "startCta": "Web geri sayımını başlat",
-  "iosCta": "iPhone'da vardiyaları kullan",
-  "webBoundary": "Bu sayfa yalnızca tarayıcı zamanlayıcısına bir başlangıç ve bitiş saati girer. Vardiya çizelgesi oluşturmaz. Değişen haftalar, birden fazla vardiya türü ve otomatik tekrarlayan takvim iOS uygulamasındadır.",
+  "iosCta": "iPhone veya Android'de vardiyaları kullan",
+  "webBoundary": "Bu sayfa yalnızca tarayıcı zamanlayıcısına bir başlangıç ve bitiş saati girer. Vardiya çizelgesi oluşturmaz. Değişen haftalar, birden fazla vardiya türü ve otomatik tekrarlayan takvim iOS ve Android uygulamalarındadır.",
   "scheduleLabel": "Çalışma saatleri",
   "perDayLabel": "Günlük",
   "perWeekLabel": "Haftalık",

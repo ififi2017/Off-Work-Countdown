@@ -1,8 +1,8 @@
 {
   "backToApp": "Kembali ke hitung mundur",
   "startCta": "Mulai hitung mundur web",
-  "iosCta": "Gunakan shift di iPhone",
-  "webBoundary": "Halaman ini hanya mengisi waktu mulai dan selesai di timer browser. Tidak membuat jadwal shift. Minggu bergantian, beberapa jenis shift, dan kalender yang berulang otomatis ada di aplikasi iOS.",
+  "iosCta": "Gunakan shift di iPhone atau Android",
+  "webBoundary": "Halaman ini hanya mengisi waktu mulai dan selesai di timer browser. Tidak membuat jadwal shift. Minggu bergantian, beberapa jenis shift, dan kalender yang berulang otomatis ada di aplikasi iOS dan Android.",
   "scheduleLabel": "Jam kerja",
   "perDayLabel": "Per hari",
   "perWeekLabel": "Per minggu",
