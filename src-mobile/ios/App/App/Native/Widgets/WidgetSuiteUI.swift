@@ -268,6 +268,13 @@ extension View {
     func widgetSuiteBackground() -> some View {
         containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
     }
+
+    /// The extension bundle has no localizations of its own, so system-formatted
+    /// text (relative dates, timers, digits) would fall back to English. Follow
+    /// the language the app published instead.
+    func widgetSuiteLocale(_ identifier: String?) -> some View {
+        environment(\.locale, Locale(identifier: identifier ?? WidgetSuiteCopy.systemLocale))
+    }
 }
 
 nonisolated enum WidgetSuiteFormat {

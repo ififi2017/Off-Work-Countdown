@@ -32,7 +32,7 @@ nonisolated struct SummaryWidgetProvider: TimelineProvider {
 struct SummaryWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetSuiteKind.summary, provider: SummaryWidgetProvider()) { entry in
-            SummaryWidgetView(entry: entry)
+            SummaryWidgetView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteSummaryName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteSummaryDescription", locale: WidgetSuiteCopy.systemLocale))
@@ -288,7 +288,7 @@ nonisolated struct CalendarProgress {
 struct YearProgressWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "\(WidgetSuiteKind.prefix).year", provider: LifeWidgetProvider()) { entry in
-            YearProgressView(entry: entry)
+            YearProgressView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteYearName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteYearDescription", locale: WidgetSuiteCopy.systemLocale))
@@ -343,7 +343,7 @@ struct YearProgressView: View {
 struct LifeWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetSuiteKind.life, provider: LifeWidgetProvider()) { entry in
-            LifeWidgetView(entry: entry)
+            LifeWidgetView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteLifeName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteLifeDescription", locale: WidgetSuiteCopy.systemLocale))
@@ -610,7 +610,7 @@ nonisolated struct HolidayWidgetProvider: TimelineProvider {
 struct WeekendWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "\(WidgetSuiteKind.prefix).weekend", provider: HolidayWidgetProvider()) { entry in
-            WeekendWidgetView(entry: entry)
+            WeekendWidgetView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteWeekendName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteWeekendDescription", locale: WidgetSuiteCopy.systemLocale))
@@ -698,7 +698,7 @@ nonisolated enum HolidayMath {
 struct HolidayWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetSuiteKind.holiday, provider: HolidayWidgetProvider()) { entry in
-            HolidayWidgetView(entry: entry)
+            HolidayWidgetView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteHolidayName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteHolidayDescription", locale: WidgetSuiteCopy.systemLocale))

@@ -120,7 +120,7 @@ nonisolated struct RotationOutlook {
 struct WeekProgressWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetSuiteKind.week, provider: CalendarWidgetProvider()) { entry in
-            WeekProgressView(entry: entry)
+            WeekProgressView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteWeekName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteWeekDescription", locale: WidgetSuiteCopy.systemLocale))
@@ -394,7 +394,7 @@ private struct RotationView: View {
 struct RosterWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetSuiteKind.roster, provider: CalendarWidgetProvider()) { entry in
-            RosterView(entry: entry)
+            RosterView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteRosterName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteRosterDescription", locale: WidgetSuiteCopy.systemLocale))

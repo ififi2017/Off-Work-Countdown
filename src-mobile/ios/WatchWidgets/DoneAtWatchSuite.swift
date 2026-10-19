@@ -236,7 +236,7 @@ private struct WatchWeekView: View {
 
 struct DoneAtWatchWeekWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchWeek", provider: WatchSuiteProvider()) { WatchWeekView(entry: $0) }
+        StaticConfiguration(kind: "DoneAtWatchWeek", provider: WatchSuiteProvider()) { WatchWeekView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteWeekName"))
             .description(WatchLocalizations.text("widgetSuiteWeekDescription"))
             .supportedFamilies([.accessoryRectangular, .accessoryCircular])
@@ -303,7 +303,7 @@ private struct WatchShiftDayView: View {
 
 struct DoneAtWatchShiftWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchShift", provider: WatchSuiteProvider()) { WatchShiftDayView(entry: $0) }
+        StaticConfiguration(kind: "DoneAtWatchShift", provider: WatchSuiteProvider()) { WatchShiftDayView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteRosterName"))
             .description(WatchLocalizations.text("widgetSuiteRosterDescription"))
             .supportedFamilies([.accessoryRectangular])
@@ -391,7 +391,7 @@ private struct WatchHolidayView: View {
 
 struct DoneAtWatchHolidayWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchHoliday", provider: WatchSuiteProvider()) { WatchHolidayView(entry: $0) }
+        StaticConfiguration(kind: "DoneAtWatchHoliday", provider: WatchSuiteProvider()) { WatchHolidayView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteWeekendName"))
             .description(WatchLocalizations.text("widgetSuiteWeekendDescription"))
             .supportedFamilies([.accessoryRectangular, .accessoryCircular])
@@ -468,7 +468,7 @@ private struct WatchUpNextProvider: TimelineProvider {
 
 struct DoneAtWatchUpNextWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchUpNext", provider: WatchUpNextProvider()) { WatchUpNextView(entry: $0) }
+        StaticConfiguration(kind: "DoneAtWatchUpNext", provider: WatchUpNextProvider()) { WatchUpNextView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("comingUp"))
             .description(WatchLocalizations.text("widgetSuiteWeekDescription"))
             .supportedFamilies([.accessoryRectangular])
@@ -523,5 +523,17 @@ struct WatchSegmentRing: View {
             cursor += share
         }
         return result
+    }
+}
+
+private extension View {
+    /// Matches the countdown complication: system-formatted text and layout
+    /// follow the iPhone's chosen language rather than the extension bundle.
+    func watchSuiteLocale(_ entry: WatchSuiteEntry) -> some View {
+        let text = WatchSuiteText(presentation: entry.schedule?.presentation)
+        return environment(\.locale, text.locale)
+            .environment(\.layoutDirection, WatchDisplayFormat.isRightToLeft(
+                localeIdentifier: text.localeIdentifier ?? Locale.preferredLanguages.first ?? "en"
+            ) ? .rightToLeft : .leftToRight)
     }
 }

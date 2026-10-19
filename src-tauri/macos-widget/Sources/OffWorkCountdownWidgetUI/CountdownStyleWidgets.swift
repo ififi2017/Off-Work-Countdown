@@ -242,6 +242,7 @@ public struct CountdownBigDigitsWidget: Widget {
         StaticConfiguration(kind: countdownBigDigitsWidgetKind,
                             provider: CountdownStyleProvider(appGroupIdentifier: appGroupIdentifier, storageMode: storageMode)) { entry in
             CountdownBigDigitsView(model: CountdownStyleModel(entry: entry))
+                .environment(\.locale, Locale(identifier: entry.base.locale))
         }
         .configurationDisplayName(Text(verbatim: WidgetCopy.text("widgetStyleBigName", locale: WidgetCopy.currentLocaleIdentifier)))
         .description(Text(verbatim: WidgetCopy.text("widgetStyleBigDescription", locale: WidgetCopy.currentLocaleIdentifier)))
@@ -310,6 +311,7 @@ public struct CountdownRingWidget: Widget {
         StaticConfiguration(kind: countdownRingWidgetKind,
                             provider: CountdownStyleProvider(appGroupIdentifier: appGroupIdentifier, storageMode: storageMode)) { entry in
             CountdownRingView(model: CountdownStyleModel(entry: entry))
+                .environment(\.locale, Locale(identifier: entry.base.locale))
         }
         .configurationDisplayName(Text(verbatim: WidgetCopy.text("widgetStyleRingName", locale: WidgetCopy.currentLocaleIdentifier)))
         .description(Text(verbatim: WidgetCopy.text("widgetStyleRingDescription", locale: WidgetCopy.currentLocaleIdentifier)))
@@ -392,6 +394,7 @@ public struct CountdownTimelineWidget: Widget {
         StaticConfiguration(kind: countdownTimelineWidgetKind,
                             provider: CountdownStyleProvider(appGroupIdentifier: appGroupIdentifier, storageMode: storageMode)) { entry in
             CountdownTimelineView(model: CountdownStyleModel(entry: entry))
+                .environment(\.locale, Locale(identifier: entry.base.locale))
         }
         .configurationDisplayName(Text(verbatim: WidgetCopy.text("widgetStyleTimelineName", locale: WidgetCopy.currentLocaleIdentifier)))
         .description(Text(verbatim: WidgetCopy.text("widgetStyleTimelineDescription", locale: WidgetCopy.currentLocaleIdentifier)))
@@ -510,6 +513,7 @@ public struct CountdownDetailWidget: Widget {
                             provider: CountdownStyleProvider(appGroupIdentifier: appGroupIdentifier, storageMode: storageMode,
                                                              carriesUpcoming: true)) { entry in
             CountdownDetailView(model: CountdownStyleModel(entry: entry))
+                .environment(\.locale, Locale(identifier: entry.base.locale))
         }
         .configurationDisplayName(Text(verbatim: WidgetCopy.text("widgetStyleDetailName", locale: WidgetCopy.currentLocaleIdentifier)))
         .description(Text(verbatim: WidgetCopy.text("widgetStyleDetailDescription", locale: WidgetCopy.currentLocaleIdentifier)))

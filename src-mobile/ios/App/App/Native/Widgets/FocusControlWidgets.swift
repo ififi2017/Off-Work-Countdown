@@ -156,7 +156,7 @@ nonisolated struct FocusWidgetProvider: TimelineProvider {
 struct FocusWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetSuiteKind.focus, provider: FocusWidgetProvider()) { entry in
-            FocusWidgetView(entry: entry)
+            FocusWidgetView(entry: entry).widgetSuiteLocale(entry.payload?.locale)
         }
         .configurationDisplayName(WidgetSuiteCopy.t("widgetSuiteFocusName", locale: WidgetSuiteCopy.systemLocale))
         .description(WidgetSuiteCopy.t("widgetSuiteFocusDescription", locale: WidgetSuiteCopy.systemLocale))
