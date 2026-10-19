@@ -1,22 +1,17 @@
-# iOS 3.2.3 · App Store Connect upload plan (dry run, not applied)
+# iOS 3.2.3 · App Store Connect upload plan (media not applied)
 
 Script: `scripts/app-store-connect/creative-3.2.3.mjs`. It is read-only by
 default. The full dry-run output from 2026-10-19 is in `upload-dry-run.txt`.
 
-## Before anything can be applied
+## Version
 
-iOS 3.2.3 does not exist in App Store Connect yet. The newest version is
-3.2.2, which is `READY_FOR_SALE`. Screenshots and placements can only change
-on an editable version, so the dry run previews against 3.2.2. A new version
-starts from 3.2.2's screenshots and placements.
-
-To create the version:
-
-1. Write `app-store-connect/ios/3.2.3.json`, including the What's New text.
-2. Run `npm run asc:sync -- --config app-store-connect/ios/3.2.3.json`.
-
-This step writes to App Store Connect. `--apply` refuses to run until the
-version exists and is editable.
+iOS 3.2.3 was created on 2026-10-19 with `npm run asc:sync -- --config
+app-store-connect/ios/3.2.3.json` (output: `asc-sync-apply.txt`). It is
+`PREPARE_FOR_SUBMISSION` with no build selected. All 20 localizations read
+back identical to the config, so the only change from 3.2.2 is What's New. The
+new version inherited 3.2.2's screenshots and placements. The dry run against
+the version itself (`upload-dry-run.txt`) matches the earlier preview against
+3.2.2 line for line. No media has been uploaded.
 
 ## What --apply changes
 

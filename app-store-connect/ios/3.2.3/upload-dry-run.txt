@@ -1,5 +1,5 @@
 Local: audit clean; 34 widget pages, 97 font-fixed pages, 24 videos meet Apple's current specs.
-Remote: iOS 3.2.2 (READY_FOR_SALE) — iOS 3.2.3 does not exist yet; this previews what it will start from, 20 localizations.
+Remote: iOS 3.2.3 (PREPARE_FOR_SUBMISSION), 20 localizations.
 
 ~ zh-Hans APP_IPHONE_67: 8 upload, 8 delete
      1 keep 3.2.1-zh-CN-iphone-01
