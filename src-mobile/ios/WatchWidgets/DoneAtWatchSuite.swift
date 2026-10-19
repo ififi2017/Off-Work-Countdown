@@ -492,20 +492,25 @@ struct WatchSegmentRing: View {
     var lineWidth: CGFloat = 5
 
     var body: some View {
-        let total = max(0.000_1, weights.reduce(0, +))
-        let gap = weights.count > 1 ? 0.03 : 0
-        ZStack {
-            ForEach(Array(arcs(total: total, gap: gap).enumerated()), id: \.offset) { _, arc in
-                Circle().trim(from: arc.0, to: arc.1)
-                    .stroke(Color.orange.opacity(0.3), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                if arc.2 > arc.0 {
-                    Circle().trim(from: arc.0, to: arc.2)
-                        .stroke(Color.orange, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                        .widgetAccentable()
+        GeometryReader { proxy in
+            let total = max(0.000_1, weights.reduce(0, +))
+            // Round caps reach half a line width into the gap from each side,
+            // so the gap is a line width plus clear space, in points.
+            let circumference = max(1, Double(min(proxy.size.width, proxy.size.height)) * .pi)
+            let gap = weights.count > 1 ? min(0.2, Double(lineWidth + max(2.5, lineWidth * 0.6)) / circumference) : 0
+            ZStack {
+                ForEach(Array(arcs(total: total, gap: gap).enumerated()), id: \.offset) { _, arc in
+                    Circle().trim(from: arc.0, to: arc.1)
+                        .stroke(Color.orange.opacity(0.3), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    if arc.2 > arc.0 {
+                        Circle().trim(from: arc.0, to: arc.2)
+                            .stroke(Color.orange, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                            .widgetAccentable()
+                    }
                 }
             }
+            .rotationEffect(.degrees(-90))
         }
-        .rotationEffect(.degrees(-90))
         .padding(lineWidth / 2)
     }
 

@@ -226,23 +226,34 @@ struct WidgetSuiteSegmentRing: View {
     var track: Color = WidgetSuitePalette.track
 
     var body: some View {
-        let total = max(0.000_1, segments.reduce(0, +))
-        let gap = segments.count > 1 ? 0.025 : 0
-        ZStack {
-            ForEach(Array(arcs(total: total, gap: gap).enumerated()), id: \.offset) { _, arc in
-                Circle()
-                    .trim(from: arc.start, to: arc.end)
-                    .stroke(track, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                if arc.fillEnd > arc.start {
+        GeometryReader { proxy in
+            let total = max(0.000_1, segments.reduce(0, +))
+            let gap = segments.count > 1 ? WidgetSuiteSegmentRing.gap(lineWidth: lineWidth, diameter: min(proxy.size.width, proxy.size.height)) : 0
+            ZStack {
+                ForEach(Array(arcs(total: total, gap: gap).enumerated()), id: \.offset) { _, arc in
                     Circle()
-                        .trim(from: arc.start, to: arc.fillEnd)
-                        .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                        .widgetAccentable()
+                        .trim(from: arc.start, to: arc.end)
+                        .stroke(track, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    if arc.fillEnd > arc.start {
+                        Circle()
+                            .trim(from: arc.start, to: arc.fillEnd)
+                            .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                            .widgetAccentable()
+                    }
                 }
             }
+            .rotationEffect(.degrees(-90))
         }
-        .rotationEffect(.degrees(-90))
         .padding(lineWidth / 2)
+    }
+
+    /// The gap between segments as a share of the circumference. Round caps
+    /// reach half a line width into it from each side, so the gap is a line
+    /// width plus the clear space that should stay visible between segments,
+    /// whatever the ring's size.
+    static func gap(lineWidth: CGFloat, diameter: CGFloat) -> Double {
+        let circumference = max(1, Double(diameter) * .pi)
+        return min(0.2, Double(lineWidth + max(2.5, lineWidth * 0.6)) / circumference)
     }
 
     private func arcs(total: Double, gap: Double) -> [(start: Double, end: Double, fillEnd: Double)] {
