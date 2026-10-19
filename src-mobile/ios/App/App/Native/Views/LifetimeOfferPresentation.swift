@@ -9,6 +9,9 @@ struct LifetimeOfferToolbarButton: View {
     let text: AppText
     /// The gift is open over the app; the opened one stands in for this one.
     var isHidden = false
+    /// Where the gift is drawn, in global coordinates, for the opened gift
+    /// to start from and land on.
+    var onGiftFrame: (CGRect) -> Void = { _ in }
     let onOpen: () -> Void
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -22,6 +25,7 @@ struct LifetimeOfferToolbarButton: View {
                             Button(action: onOpen) {
                                 HStack(spacing: 7) {
                                     OfferGiftIcon(size: 25)
+                                        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { onGiftFrame($0) }
                                     VStack(alignment: .leading, spacing: 1) {
                                         Text(plus.lifetimeSavingsLabel(text: text) ?? text.t("plusOfferTitle"))
                                             .font(.caption2.weight(.bold))
@@ -48,6 +52,7 @@ struct LifetimeOfferToolbarButton: View {
                 } else {
                     Button(action: onOpen) {
                         OfferGiftIcon(size: 30)
+                            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { onGiftFrame($0) }
                     }
                     .accessibilityLabel(text.t("plusGiftOpen"))
                 }

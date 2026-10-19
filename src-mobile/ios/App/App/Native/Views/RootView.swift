@@ -55,7 +55,9 @@ struct OffWorkCountdownRootView: View {
         // toolbar and return to it.
         .overlay {
             if scene.showsLifetimeOffer {
-                GiftOfferOverlay(plus: runtime.plus, text: runtime.text, onHandBack: {
+                GiftOfferOverlay(plus: runtime.plus, text: runtime.text, toolbarFrame: scene.giftToolbarFrame, onCover: {
+                    scene.giftCoversToolbar = true
+                }, onHandBack: {
                     withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.giftOverlay) {
                         scene.giftCoversToolbar = false
                     }
