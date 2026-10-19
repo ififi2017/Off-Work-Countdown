@@ -835,3 +835,10 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - PR313 合并进 main 后，push 触发 run 36，生成 3.2.2(136)，以 completed 状态发布到 Alpha；所有者已在 Pixel 从 Play 安装 136（installer=com.android.vending）。隔离 Debug 包 parity322 已卸载。
 - 所有者将 Cloudflare 账户升级到 Workers Paid。Dashboard「Workers 计划」显示付费档为当前套餐（每请求最多 5 分钟 CPU，默认 30 秒，本 Worker 未设 cpu_ms 上限），免费档每请求 10 ms 的限制不再适用。
 - 用 `wrangler tail` 实时观察（只用 jq 留下时间、结果、CPU、墙钟、路径、状态，不保存 IP 或请求头，结束后停止）。所有者用许可测试账号在 136 上购买月订阅：Google RTDN 通知 `/notifications` CPU **19 ms**、墙钟 793 ms、204（冷实例：Google 推送 JWT 校验、OAuth 断言签名、Play API、D1 写入）；应用 `/verify` CPU 7 ms、墙钟 37 ms、200。D1 新增 doneat_plus 订阅 active、test_purchase=1，到期 22:59:52 UTC（许可测试月期为 5 分钟）。应用 Plus 页显示“感谢你支持 DoneAt / 你的 Plus 方案”。19 ms 证明冷路径在免费档会超过 10 ms；付费档下首次成功购买的服务端验证与应用签名回执链路实测通过。
+
+### Google Play 公开上架与 Web/官网入口（2026-10-19）
+
+- 所有者确认 Android 已在 Google Play 公开上架：<https://play.google.com/store/apps/details?id=com.rainif.doneat>（未登录访问返回 200）。
+- 产品仓（Web）：19 语 `getAppPlatforms` 加 Android；`getAppNoteMobile`、Desktop 设置页 `downloadMobileApp`、作息预设页 `iosCta` / `webBoundary` 改为同时指向 iOS 与 Android；工时计算器平台行与 README / README_CN 加 Google Play 入口。下载按钮仍去官网下载页，Web 不直接放商店徽章。
+- 官网仓：下载章、下载页和首页收尾加官方 Google Play 徽章（19 语，顺序 App Store → Google Play → Microsoft Store；国内站不显示）；平台行去掉“即将推出”；门厅标题／描述、JSON-LD 加 Android；19 语下载／FAQ／About／隐私去掉“测试阶段”说法并补系统要求 Android 8.0+。数据处理范围不变，Play Data safety 无需随此改动重填。
+
