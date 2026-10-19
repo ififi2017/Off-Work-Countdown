@@ -1,8 +1,8 @@
 {
   "backToApp": "Quay lại đếm ngược",
   "startCta": "Bắt đầu đếm ngược web",
-  "iosCta": "Dùng ca làm trên iPhone",
-  "webBoundary": "Trang này chỉ điền giờ bắt đầu và kết thúc vào bộ đếm thời gian trình duyệt. Không tạo lịch ca. Tuần xen kẽ, nhiều loại ca và lịch tự lặp có trong ứng dụng iOS.",
+  "iosCta": "Dùng ca làm trên iPhone hoặc Android",
+  "webBoundary": "Trang này chỉ điền giờ bắt đầu và kết thúc vào bộ đếm thời gian trình duyệt. Không tạo lịch ca. Tuần xen kẽ, nhiều loại ca và lịch tự lặp có trong ứng dụng iOS và Android.",
   "scheduleLabel": "Giờ làm",
   "perDayLabel": "Mỗi ngày",
   "perWeekLabel": "Mỗi tuần",
@@ -17,14 +17,14 @@
     "996": {
       "name": "996",
       "metaTitle": "Lịch 996 — 9 giờ sáng đến 9 giờ tối, sáu ngày một tuần",
-      "metaDescription": "Mở đếm ngược trình duyệt với 09:00–21:00. Mười hai giờ một ngày, 72 một tuần. Xoay vòng hoặc nhiều loại ca trên iOS.",
+      "metaDescription": "Mở đếm ngược trình duyệt với 09:00–21:00. Mười hai giờ một ngày, 72 một tuần. Xoay vòng hoặc nhiều loại ca trên iOS và Android.",
       "intro": "Từ 9 giờ sáng đến 9 giờ tối, sáu ngày một tuần — điền sẵn để bộ đếm web bắt đầu với những giờ này.",
       "body": [
         "996 chỉ ngày làm việc từ 9 giờ sáng đến 9 giờ tối, sáu ngày một tuần. Thuật ngữ này bắt nguồn từ ngành công nghệ Trung Quốc, nhưng giờ được sử dụng rộng rãi hơn nhiều.",
         "Điều đáng chú ý là phép tính: mười hai giờ một ngày nhân sáu ngày bằng 72 giờ một tuần — gần gấp đôi tuần làm việc 40 giờ thông thường, và chưa tính thời gian đi lại.",
         "Vào tháng 8 năm 2021, Tòa án Nhân dân Tối cao và Bộ Nhân lực và An sinh Xã hội Trung Quốc đã cùng công bố các vụ tranh chấp lao động xác định rằng lịch 996 vượt quá giới hạn giờ làm việc theo luật định. Việc áp dụng cho công việc cụ thể nào phụ thuộc vào hợp đồng của bạn và quy định địa phương.",
         "Bộ đếm web đo khoảng thời gian bạn đặt, từ đầu đến cuối, kể cả những ngày dài. Nó không giữ lịch tuần hay chuyển đổi giữa các mẫu. Nếu hôm nay là 09:00–21:00, hãy bắt đầu đếm ngược; nếu không, thay đổi giờ nào đó trên trang chủ.",
-        "Dùng trình duyệt khi bạn chỉ muốn một giờ bắt đầu, một giờ kết thúc và không cần cài đặt gì. Dùng iOS khi tuần thay đổi — tuần xen kẽ, xoay vòng làm/nghỉ hoặc nhiều hơn một loại ngày."
+        "Dùng trình duyệt khi bạn chỉ muốn một giờ bắt đầu, một giờ kết thúc và không cần cài đặt gì. Dùng iOS hoặc Android khi tuần thay đổi — tuần xen kẽ, xoay vòng làm/nghỉ hoặc nhiều hơn một loại ngày."
       ]
     },
     "9-to-5": {
@@ -35,8 +35,8 @@
       "body": [
         "9 giờ đến 5 giờ là cách nói ngắn gọn cho ngày làm việc tiêu chuẩn: tám giờ một ngày, năm ngày một tuần, tổng cộng 40 giờ. Tại Hoa Kỳ, tuần 40 giờ được luật hóa bởi Đạo luật Tiêu chuẩn Lao động Công bằng năm 1938, và cụm từ này từ đó trở thành tên gọi chung cho giờ làm văn phòng bình thường trong tiếng Anh.",
         "Nói chính xác, 9 giờ đến 5 giờ chỉ là tám giờ khi nghỉ trưa được trả. Khi không được trả, cùng những giờ trên đồng hồ thường chỉ bằng bảy hoặc bảy giờ rưỡi công việc được trả — đáng để kiểm tra trước khi so sánh hai lời mời chỉ dựa trên giờ.",
-        "Đếm ngược web đo những giờ bạn đặt. Nếu bạn muốn chỉ phản ánh thời gian được trả, hãy đẩy giờ kết thúc sớm hơn một giờ trên trang chủ. Nó không lên kế hoạch tuần với các ngày hỗn hợp; đó là việc của ứng dụng iOS.",
-        "Ở lại trình duyệt cho một khoảng 09:00–17:00. Dùng iOS nếu bạn cần nhiều loại ca hoặc lịch tự lặp."
+        "Đếm ngược web đo những giờ bạn đặt. Nếu bạn muốn chỉ phản ánh thời gian được trả, hãy đẩy giờ kết thúc sớm hơn một giờ trên trang chủ. Nó không lên kế hoạch tuần với các ngày hỗn hợp; đó là việc của ứng dụng iOS và Android.",
+        "Ở lại trình duyệt cho một khoảng 09:00–17:00. Dùng iOS hoặc Android nếu bạn cần nhiều loại ca hoặc lịch tự lặp."
       ]
     },
     "9-to-6": {
@@ -48,19 +48,19 @@
         "9 giờ đến 6 giờ là ngày làm văn phòng phổ biến ở phần lớn Đông Á và Đông Nam Á: chín giờ từ đầu đến cuối, năm ngày một tuần, tổng cộng 45 giờ.",
         "Giờ thêm so với 9 giờ đến 5 giờ thường là nghỉ trưa không được trả, vì vậy hai mẫu dù số khác nhau thường bằng cùng một lượng công việc được trả.",
         "Bắt đầu đếm ngược web để theo dõi chín giờ từ đầu đến cuối, hoặc điều chỉnh giờ kết thúc trên trang chủ nếu nghỉ của bạn được tính khác. Trang này chỉ điền hai giờ; không xoay vòng giữa nhiều ngày.",
-        "Giữ bộ đếm trình duyệt cho một khoảng 09:00–18:00. Dùng iOS nếu tuần trộn các mẫu hoặc theo chu kỳ làm/nghỉ."
+        "Giữ bộ đếm trình duyệt cho một khoảng 09:00–18:00. Dùng iOS hoặc Android nếu tuần trộn các mẫu hoặc theo chu kỳ làm/nghỉ."
       ]
     },
     "night-shift": {
       "name": "Ca đêm",
       "metaTitle": "Giờ đêm — đếm ngược qua nửa đêm",
-      "metaDescription": "Mở đếm ngược trình duyệt với 22:00–06:00. Kết thúc trước bắt đầu được xử lý là qua đêm. Xoay vòng nhiều ca trên iOS.",
+      "metaDescription": "Mở đếm ngược trình duyệt với 22:00–06:00. Kết thúc trước bắt đầu được xử lý là qua đêm. Xoay vòng nhiều ca trên iOS và Android.",
       "intro": "Từ 10 giờ tối đến 6 giờ sáng hôm sau — điền sẵn để bộ đếm web theo dõi ngày qua nửa đêm.",
       "body": [
         "Ca đêm là trường hợp đếm ngược thông thường thất bại: giờ kết thúc trên đồng hồ sớm hơn giờ bắt đầu, nên phép trừ cho kết quả âm.",
         "Bộ đếm web nhận ra kết thúc sớm hơn bắt đầu là qua nửa đêm. Nếu bạn mở lúc 1 giờ sáng, nó hiển thị năm giờ còn lại của ca bắt đầu tối hôm trước, không phải 29 giờ đến tối nay.",
         "Cách xử lý tương tự áp dụng cho bất kỳ cặp qua đêm nào, không chỉ 22 giờ đến 6 giờ — đặt giờ của bạn trên trang chủ và khoảng thời gian sẽ được neo theo cách tương tự. Trình duyệt không xoay vòng giữa nhiều mẫu đêm.",
-        "Dùng trang này nếu câu hỏi duy nhất hôm nay là 22:00–06:00. Dùng iOS nếu đêm, ngày và ngày nghỉ phải luân phiên."
+        "Dùng trang này nếu câu hỏi duy nhất hôm nay là 22:00–06:00. Dùng iOS hoặc Android nếu đêm, ngày và ngày nghỉ phải luân phiên."
       ]
     }
   }

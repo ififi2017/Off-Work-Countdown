@@ -2,13 +2,14 @@
 
 下班倒计时现为 DoneAt.
 
-下班倒计时是一款注重隐私的下班时间工具，同时提供网页版、轻量的 Tauri 桌面客户端，以及 App Store 上的 iPhone / iPad 原生应用。设置一次班次后，就能随时查看剩余时间、进度和预估收入。
+下班倒计时是一款注重隐私的下班时间工具，同时提供网页版、轻量的 Tauri 桌面客户端，App Store 上的 iPhone / iPad 原生应用，以及 Google Play 上的 Android 原生应用。设置一次班次后，就能随时查看剩余时间、进度和预估收入。
 
 [English README](README.md)
 
 [![官网](https://img.shields.io/badge/DoneAt-doneat.app-0f172a)](https://doneat.app/zh-CN)
 [![网页版](https://img.shields.io/badge/Web-%E7%AB%8B%E5%8D%B3%E4%BD%BF%E7%94%A8-ff6b35)](https://off.rainif.com/zh-CN)
 [![App Store](https://img.shields.io/badge/App%20Store-iPhone%20%26%20iPad-0d96f6?logo=apple&logoColor=white)](https://apps.apple.com/cn/app/id6802803318)
+[![Google Play](https://img.shields.io/badge/Google%20Play-Android-01875f?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.rainif.doneat)
 [![桌面版](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
 [![许可证](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
 
@@ -37,13 +38,14 @@
 
 - **网页版：**[立即使用](https://off.rainif.com/zh-CN)，无需安装。
 - **iPhone 和 iPad：**[从 App Store 获取](https://apps.apple.com/cn/app/id6802803318)，**免费**，商店名为 **DoneAt**。原生 SwiftUI，带主屏幕和锁定屏幕小组件、实时活动与灵动岛。需要 **iOS 26** 或 **iPadOS 26**。
+- **Android：**[在 Google Play 获取](https://play.google.com/store/apps/details?id=com.rainif.doneat)，**免费下载**，商店名为 **DoneAt**。原生 Kotlin 与 Jetpack Compose，带桌面小组件和常驻通知。需要 **Android 8.0** 或更高版本。
 - **桌面客户端：**[打开下载页](https://doneat.app/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。macOS 版需要 macOS 11.3（Big Sur）或更高版本。
 - **Windows 用户：**[从 Microsoft Store 获取](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ)，会自动更新，安装时也不会出现 SmartScreen 提示。
 - **macOS 用户：**[从 Mac App Store 获取](https://apps.apple.com/cn/app/id6802803318)，同样**免费**，与 iPhone、iPad 共用同一条商品页。它一键安装、由 App Store 负责更新，并且多一个 GitHub DMG 没有的倒计时小组件。那些 DMG 由同一份源码构建，一直免费，也不会下架。
 - **Chrome 扩展：**[从 Chrome 应用商店添加](https://chromewebstore.google.com/detail/bepmkflijihfjodllcjogafffdcjabcf)，点工具栏图标就能看剩余时间，数据只存在浏览器本地。
 - **安装包列表：**[最新 GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)。
 
-iOS 版是原生 SwiftUI，班次规则与网页版、桌面版共用。iPhone、iPad 和 Mac 共用同一条 App Store 商品页。
+iOS 版是原生 SwiftUI，班次规则与网页版、桌面版共用。iPhone、iPad 和 Mac 共用同一条 App Store 商品页。Android 版是原生 Kotlin 应用，同样遵循这套班次规则。
 
 桌面版额外提供 macOS 菜单栏倒计时、Windows 置顶迷你计时器、原生通知、登录时启动、全局快捷键和一键更新。它仍然坚持本地优先：班次、薪资设置与倒计时状态只保存在你的设备上。
 
@@ -84,6 +86,7 @@ DMG 需要 **macOS 11.3（Big Sur）或更高版本**，Apple Silicon 与 Intel 
 - macOS 菜单栏倒计时与原生玻璃迷你窗；Windows 紧凑迷你计时器
 - iPhone / iPad 原生应用：主屏幕与锁定屏幕小组件、实时活动与灵动岛
 - iPhone 横屏模式与 iPad 大屏布局
+- Android 原生应用：桌面小组件、常驻通知，以及手机、横屏与大屏布局
 - 通过带更新签名的 GitHub Release 在客户端内更新
 - 常见作息说明页：996、朝九晚五、朝九晚六、夜班
 - 支持离线使用的渐进式Web应用(PWA)

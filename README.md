@@ -3,8 +3,9 @@
 Off Work Countdown is now DoneAt.
 
 DoneAt is a privacy-friendly countdown for the end of your workday,
-available on the Web, as a lightweight Tauri desktop app, and as a native
-iPhone and iPad app on the App Store. Set your schedule once, then keep the
+available on the Web, as a lightweight Tauri desktop app, as a native iPhone
+and iPad app on the App Store, and as a native Android app on Google Play.
+Set your schedule once, then keep the
 remaining time, progress and estimated earnings at a glance.
 
 [中文版 README](README_CN.md)
@@ -12,6 +13,7 @@ remaining time, progress and estimated earnings at a glance.
 [![Official site](https://img.shields.io/badge/DoneAt-doneat.app-0f172a)](https://doneat.app)
 [![Web App](https://img.shields.io/badge/Web-open%20app-ff6b35)](https://off.rainif.com/en)
 [![App Store](https://img.shields.io/badge/App%20Store-iPhone%20%26%20iPad-0d96f6?logo=apple&logoColor=white)](https://apps.apple.com/us/app/off-work-countdown/id6802803318)
+[![Google Play](https://img.shields.io/badge/Google%20Play-Android-01875f?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.rainif.doneat)
 [![Desktop Release](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
 [![License](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
 
@@ -44,6 +46,11 @@ remaining time, progress and estimated earnings at a glance.
   — **free**, listed as **DoneAt**. Native SwiftUI, with Home Screen and Lock
   Screen widgets, Live Activities and Dynamic Island. It needs **iOS 26** or
   **iPadOS 26**.
+- **Android:**
+  [get it on Google Play](https://play.google.com/store/apps/details?id=com.rainif.doneat)
+  — free to download, listed as **DoneAt**. Native Kotlin and Jetpack Compose,
+  with home-screen widgets and an ongoing notification. It needs **Android 8.0**
+  or later.
 - **Desktop:** [open the download page](https://doneat.app/en/download) —
   macOS Apple Silicon / Intel and Windows x64 / ARM64 are available. The macOS
   build requires macOS 11.3 (Big Sur) or later.
@@ -63,7 +70,8 @@ remaining time, progress and estimated earnings at a glance.
 - **Release files:** [latest GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest).
 
 The iOS app is native SwiftUI and shares the same schedule rules as Web and
-Desktop. iPhone, iPad and Mac share one App Store listing.
+Desktop. iPhone, iPad and Mac share one App Store listing. The Android app is
+native Kotlin and follows the same schedule rules.
 
 The desktop app adds a menu-bar countdown on macOS, a compact always-on-top
 mini timer on Windows, native notifications, launch at login, a global shortcut
@@ -141,6 +149,7 @@ steps below are for the direct installers.
 - macOS menu-bar countdown and native glass mini timer; Windows compact mini timer
 - Native iOS app on iPhone and iPad: Home Screen and Lock Screen widgets, Live Activities and Dynamic Island
 - iPhone landscape and iPad-optimized layouts
+- Native Android app: home-screen widgets, an ongoing notification, and phone, landscape and large-screen layouts
 - In-app desktop updates from signed GitHub Release artifacts, with a mirror fallback when GitHub is unreachable
 - Schedule reference pages: 996, 9 to 5, 9 to 6 and night shift
 - Progressive Web App (PWA) support for offline use

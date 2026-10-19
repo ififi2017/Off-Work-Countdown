@@ -64,7 +64,7 @@ watchOS 代码不复制这些规则，只消费 iPhone 的投影。
 | P6 | Xcode Cloud、TestFlight、商店截图与审核材料 | 🟡 3.1.8 截图/Preview 已上传，官网隐私已切 doneat.app；正式送审仍待人工 |
 | W0–W3 | 免费 Apple Watch App、独立排班与表盘组件 | 🔵 V2 已实现，验收进行中 |
 | X1 | iPhone 与 iPad 的可选跨设备同步 | ⚪ 技术决策保留，当前不实施 |
-| A0 | Android 原生客户端 | 🔵 移植进行中，详见 Android 进度 |
+| A0 | Android 原生客户端 | 🟢 已在 [Google Play](https://play.google.com/store/apps/details?id=com.rainif.doneat) 公开上架（2026-10-19 所有者确认），后续见 Android 进度 |
 
 2026-09-05 分支验收：专注画布已补回「专注 → 休息 → 下一轮」操作，修复晚开始越格、
 模板跨日与手动休息保留、健康提醒关闭仍被接管、立即开始丢失估算等问题。创建表单与辅助字号
