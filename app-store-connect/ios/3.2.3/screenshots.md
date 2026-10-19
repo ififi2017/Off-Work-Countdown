@@ -6,7 +6,7 @@ PNG), in the approved 3.2.1/3.2.2 page layout, rendered by
 
 | Page | Shows | zh-CN | en |
 |---|---|---|---|
-| 3 · Home Screen | Real Home Screen of free widgets: classic countdown, ring, week progress, 7-day shifts | 全新小组件 · 不用打开，桌面就有数。 · 倒计时、本周进度、班表与节假日，多款小组件免费可用。 | NEW WIDGETS · Your day, on your Home Screen. · Countdown, week progress, shifts and holidays. Many of them free. |
+| 3 · Home Screen | Real Home Screen of widgets: classic countdown, ring, week progress, 7-day shifts | 全新小组件 · 不用打开，桌面就有数。 · 倒计时、本周进度、班表与节假日，多种尺寸，随心摆放。 | NEW WIDGETS · Your day, on your Home Screen. · Countdown, week progress, shifts and holidays. Arrange them your way. |
 | 4 · Lock Screen & Watch | Real Lock Screen (countdown, ring, week, weekend line, Start shift and clock-off controls) with the Watch countdown in front | 锁屏 · Apple Watch · 锁屏一亮，就知道还剩多久。 · 锁屏小组件、一键开始上班，Apple Watch 也能看。 | LOCK SCREEN · APPLE WATCH · Wake your screen. See how long is left. · Lock Screen widgets, a Start shift control and your countdown on Apple Watch. |
 
 Changes from the approved plan: the page 4 label drops “Control Center” and
@@ -52,6 +52,16 @@ and Watch mirrored on page 4.
 
 Known difference: the Watch on page 4 is the Watch app's review fixture,
 fixed at 2:37:5x left, so it does not match the phone's countdown.
+
+## No price wording (Guideline 2.3.7)
+
+App Review rejected 3.2.2 for screenshots that said "free". Page 3's first
+subline ended "多款小组件免费可用" / "Many of them free" (and translations); it
+now reads "多种尺寸，随心摆放。" / "Arrange them your way." in every locale.
+This branch also carries the 3.2.2 fix (`06c9f241`), so the re-rendered Time
+off pages no longer show "· 3 free tries". A scan of the text of all 155
+compositions in `out/creative-3.2.3` (pages, widget pages, search and header
+videos) finds no price wording in any language.
 
 ## Status (2026-10-19)
 

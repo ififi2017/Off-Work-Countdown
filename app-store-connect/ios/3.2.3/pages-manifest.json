@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-10-19T12:08:15.994Z",
+  "createdAt": "2026-10-19T12:27:48.631Z",
   "uploaded": false,
   "items": [
     {
@@ -2162,267 +2162,6 @@
       "locale": "zh-CN",
       "ascLocale": "zh-Hans",
       "platform": "iphone",
-      "order": 3,
-      "scene": "leave",
-      "file": "zh-CN/iphone/03-leave.png",
-      "width": 1320,
-      "height": 2868,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_67",
-      "recipeSHA": "0eaf5ea62be00d36e4d326f22c3e3663fe84b6d2e092c9d69c14e5484c47ea8d",
-      "sha256": "760ca60879ef9852d0bd51f6f74e9ffbdad08a3a4dcdc033901f688577c47f5e",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/zh-CN-iphone-leave.png",
-          "sha256": "6d11d1cc124d6146e09578832f5cdeac262e7baf4a6c6a28a04e379464626402"
-        },
-        {
-          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
-          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans SC Medium",
-        "Noto Serif SC"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "zh-TW",
-      "ascLocale": "zh-Hant",
-      "platform": "iphone",
-      "order": 3,
-      "scene": "leave",
-      "file": "zh-TW/iphone/03-leave.png",
-      "width": 1320,
-      "height": 2868,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_67",
-      "recipeSHA": "bc761b7e7e0ee55443db70aec2270d9dfd24fe7cf20eeb9e575756f06eb4f953",
-      "sha256": "ac8b2204ac0e79eed30bc91c87334f8b0fa0c8ae7e10a979aa34cdd7246696bb",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/zh-TW-iphone-leave.png",
-          "sha256": "6734389cf725de50be47462be9f86a3f39092ce9c34912ce87be1fc3e0b3453f"
-        },
-        {
-          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
-          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans TC Medium",
-        "Noto Serif TC"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "ja",
-      "ascLocale": "ja",
-      "platform": "iphone",
-      "order": 3,
-      "scene": "leave",
-      "file": "ja/iphone/03-leave.png",
-      "width": 1320,
-      "height": 2868,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_67",
-      "recipeSHA": "814b2ac75df3112bd1d3c7841bdb5f65608338f9407c40cd42d607b1419f6e3e",
-      "sha256": "010ad897006c8d8d8a048c0f119c56928dc363cf40a38155fdb4133e589debcd",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/ja-iphone-leave.png",
-          "sha256": "0c47d93aff29061ffae588587acbc0ec8d73fee1de52e4dd06b6d9602b04a304"
-        },
-        {
-          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
-          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans JP Medium",
-        "Noto Serif JP"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "ko",
-      "ascLocale": "ko",
-      "platform": "iphone",
-      "order": 3,
-      "scene": "leave",
-      "file": "ko/iphone/03-leave.png",
-      "width": 1320,
-      "height": 2868,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_67",
-      "recipeSHA": "eb7fe89958582f9952166fdfc541525e4aaa700a79468072bedbe5f174569687",
-      "sha256": "21d0f82364ff37865cc88a8290767011e9b6d1e4e7ad87073becee562a9708af",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/ko-iphone-leave.png",
-          "sha256": "d3b10c4555c7e68f8345bb9443e97840a1a61c495ed0e962079606602d85540a"
-        },
-        {
-          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
-          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans KR Medium",
-        "Noto Serif KR"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "ru",
-      "ascLocale": "ru",
-      "platform": "iphone",
-      "order": 3,
-      "scene": "leave",
-      "file": "ru/iphone/03-leave.png",
-      "width": 1320,
-      "height": 2868,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_67",
-      "recipeSHA": "06160155321ad8e5db084c95258f1f72930bc19307db0a3401008fa81817dd49",
-      "sha256": "f3344b51a91ae048c28204a1e68484d8b1033df13c532c5a8f805b47ee5cd0b7",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/ru-iphone-leave.png",
-          "sha256": "8beb82309e9ebe1d3432cb8abd2f5387bae1a409cef8fe86b5c09aa3a45a9dec"
-        },
-        {
-          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
-          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Source Serif 4"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "tr",
-      "ascLocale": "tr",
-      "platform": "iphone",
-      "order": 3,
-      "scene": "leave",
-      "file": "tr/iphone/03-leave.png",
-      "width": 1320,
-      "height": 2868,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_67",
-      "recipeSHA": "25a07c447a37613bf9d4c8f380715636baf3d91b6615a5b00da88d3ecf3c5036",
-      "sha256": "51ba31562efd6fbd6c78677449de05f77b1082bc4df76e8c3416819a161e2089",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/tr-iphone-leave.png",
-          "sha256": "be2848c5d570d2fd21b0c2fb5d911176d1d4ea4a25fad8256c5236ac5e177656"
-        },
-        {
-          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
-          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
-        }
-      ],
-      "fontsUsed": [
-        "Charter",
-        "Manrope Medium"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "vi",
-      "ascLocale": "vi",
-      "platform": "iphone",
-      "order": 3,
-      "scene": "leave",
-      "file": "vi/iphone/03-leave.png",
-      "width": 1320,
-      "height": 2868,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_67",
-      "recipeSHA": "cc8238a6db8306567f26dc122d3ba069546400815c6c878e4977bbf04eb3b290",
-      "sha256": "4851a399639b9854478a757734754865046e3ba147dda9ef16d2bfac835285f4",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/vi-iphone-leave.png",
-          "sha256": "ada4a958e6580ea2adc62e73e27d6da190edc940e30d9a5d378c7908064c3292"
-        },
-        {
-          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
-          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Source Serif 4"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "hi-IN",
-      "ascLocale": "hi",
-      "platform": "iphone",
-      "order": 3,
-      "scene": "leave",
-      "file": "hi-IN/iphone/03-leave.png",
-      "width": 1320,
-      "height": 2868,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_67",
-      "recipeSHA": "3744d4180e90824588abd3078f4ad97fe959558f24e43d780f9d48ec237dd9f4",
-      "sha256": "81b8d3327a19bedbb3c59683ff42b3de5176de3c6f30089bbe6b4a7eedabc79e",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/hi-IN-iphone-leave.png",
-          "sha256": "2861d19ba16a6d04b842e734ae008db5c42e0b7dc057f93c0ce4a701bc7ad4da"
-        },
-        {
-          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
-          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans Devanagari Medium",
-        "Noto Serif Devanagari"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "zh-CN",
-      "ascLocale": "zh-Hans",
-      "platform": "iphone",
       "order": 7,
       "scene": "records",
       "file": "zh-CN/iphone/07-records.png",
@@ -2652,267 +2391,6 @@
       "locale": "zh-CN",
       "ascLocale": "zh-Hans",
       "platform": "duo",
-      "order": 2,
-      "scene": "leave",
-      "file": "zh-CN/duo/02-leave.png",
-      "width": 2007,
-      "height": 2853,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_DUO",
-      "recipeSHA": "b462040f39f1c43bd5a60a1dea640563008d67156bd48a6e48534eb9e2ef41f2",
-      "sha256": "e4bbbcf609c37f60935c86a3b8281b6c2bf3bb8b4f1943e90ef1ffc08db597c5",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/zh-CN-duo-inner-leave.png",
-          "sha256": "659b9997a839c6826f30277f1363a89130ef6a862b5c09f51f124ca47f988365"
-        },
-        {
-          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
-          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans SC Medium",
-        "Noto Serif SC"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "zh-TW",
-      "ascLocale": "zh-Hant",
-      "platform": "duo",
-      "order": 2,
-      "scene": "leave",
-      "file": "zh-TW/duo/02-leave.png",
-      "width": 2007,
-      "height": 2853,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_DUO",
-      "recipeSHA": "8113457d4741e3e35a6e1fbf027abbcb11f602f3e3e25271bda8aed105b6ae24",
-      "sha256": "c4ed2ee2f23c8149aab7fd26ac903637f7f8e23a21183010921a4c4e79fac734",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/zh-TW-duo-inner-leave.png",
-          "sha256": "5315d260d0e5cd910302cfc489842ba0d3eeba168071c9cd98168245e91bb516"
-        },
-        {
-          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
-          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans TC Medium",
-        "Noto Serif TC"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "ja",
-      "ascLocale": "ja",
-      "platform": "duo",
-      "order": 2,
-      "scene": "leave",
-      "file": "ja/duo/02-leave.png",
-      "width": 2007,
-      "height": 2853,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_DUO",
-      "recipeSHA": "1ff7adf3392654687d446c6ff2b28b0ec1883efb43ac879437ef1c318912917f",
-      "sha256": "c06e6ed864be76e4ef2b0dc9e9619c8818b1445cd7f05f89a436ac7944b92782",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/ja-duo-inner-leave.png",
-          "sha256": "755fc8428e7d31707f92116f16e1f152165b65f81164f68b6568a1650e3bfe93"
-        },
-        {
-          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
-          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans JP Medium",
-        "Noto Serif JP"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "ko",
-      "ascLocale": "ko",
-      "platform": "duo",
-      "order": 2,
-      "scene": "leave",
-      "file": "ko/duo/02-leave.png",
-      "width": 2007,
-      "height": 2853,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_DUO",
-      "recipeSHA": "10f8a8f5e54c5afb85286e81c3b82fdfc64eac7913add1e07ee44ccf1cfac04a",
-      "sha256": "b10d73912a9a892be5152f3552e8d0ed3acb7a836097ebc2f6ad3d075b35a532",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/ko-duo-inner-leave.png",
-          "sha256": "7199a7f400968390adee4bd1232b769990823820eadab0d8fd9e63df29370e48"
-        },
-        {
-          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
-          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans KR Medium",
-        "Noto Serif KR"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "ru",
-      "ascLocale": "ru",
-      "platform": "duo",
-      "order": 2,
-      "scene": "leave",
-      "file": "ru/duo/02-leave.png",
-      "width": 2007,
-      "height": 2853,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_DUO",
-      "recipeSHA": "6fd8e88c471a498adc580762e5de355cec42f38795c2542e288de22096984941",
-      "sha256": "4b80bdc65a3f48d5e99d65f0e4336bf1f468e3ebf3ae7ab1596d96406c30023d",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/ru-duo-inner-leave.png",
-          "sha256": "782267b23801984b7ba0db2f6fe67245e2adfe3542eb4b196c378d2f56c23438"
-        },
-        {
-          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
-          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Source Serif 4"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "tr",
-      "ascLocale": "tr",
-      "platform": "duo",
-      "order": 2,
-      "scene": "leave",
-      "file": "tr/duo/02-leave.png",
-      "width": 2007,
-      "height": 2853,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_DUO",
-      "recipeSHA": "bb07b94dae888e4691e6cf1e58d7e33f98b8e6ae01d4d6b0d799890a494c1687",
-      "sha256": "ecf5cd0a3960dd43e11f14b00e34f8ec897b92a18adbf3f619b4d5fe4a271432",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/tr-duo-inner-leave.png",
-          "sha256": "f4c4f26fad706013b04c414511a5f65020b4888a6de1354f94644f95d04dd6a1"
-        },
-        {
-          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
-          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
-        }
-      ],
-      "fontsUsed": [
-        "Charter",
-        "Manrope Medium"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "vi",
-      "ascLocale": "vi",
-      "platform": "duo",
-      "order": 2,
-      "scene": "leave",
-      "file": "vi/duo/02-leave.png",
-      "width": 2007,
-      "height": 2853,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_DUO",
-      "recipeSHA": "ad3d326d35691d609f38f934d2a4e8ff23b27abe7861a6f30440dcd2990b4b0b",
-      "sha256": "9ece9adf909ff5dd8790643397ad19e259622d2b58e2e2be6dae9a3e81586aa7",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/vi-duo-inner-leave.png",
-          "sha256": "4e1f0d59b996f293bb95c7f749843d92c74e1b8fb8b607eecf754e17efc1c2aa"
-        },
-        {
-          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
-          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Source Serif 4"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "hi-IN",
-      "ascLocale": "hi",
-      "platform": "duo",
-      "order": 2,
-      "scene": "leave",
-      "file": "hi-IN/duo/02-leave.png",
-      "width": 2007,
-      "height": 2853,
-      "orientation": "portrait",
-      "display": "APP_IPHONE_DUO",
-      "recipeSHA": "c2f331ff224e63e100d41c90e7ecaa6407f28c6bb020d5919884e1c2de3ed10f",
-      "sha256": "9c91f609afdc34ede1067ad22fce159c33fbcd594465c91fd14982d49ea021a4",
-      "sources": [
-        {
-          "file": "raw/3.2.3/pages/hi-IN-duo-inner-leave.png",
-          "sha256": "3a276977e2b53f109d114fd8108758a51ca742a0d660b1f97ba5e600c4b1ce67"
-        },
-        {
-          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
-          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
-        }
-      ],
-      "fontsUsed": [
-        "Manrope Medium",
-        "Noto Sans Devanagari Medium",
-        "Noto Serif Devanagari"
-      ],
-      "layoutAudit": {
-        "issues": []
-      },
-      "status": "proof-not-uploaded"
-    },
-    {
-      "locale": "zh-CN",
-      "ascLocale": "zh-Hans",
-      "platform": "duo",
       "order": 6,
       "scene": "records",
       "file": "zh-CN/duo/06-records.png",
@@ -3122,6 +2600,522 @@
         {
           "file": "raw/3.2.3/pages/hi-IN-duo-inner-records.png",
           "sha256": "eeff3d1c3062be759284272043284d00158dda35c8e38231ea1ddd158e8b998d"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "zh-CN/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "151c20f4834b11e29cf83839739888bf6053a8adb970e38f067e62d7c355168e",
+      "sha256": "78d58790edc62ddf81a0979ad9c71d4190440db831f1052fb19c3957d7f5d7dd",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/zh-CN-iphone-leave.png",
+          "sha256": "6d11d1cc124d6146e09578832f5cdeac262e7baf4a6c6a28a04e379464626402"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "duo",
+      "order": 2,
+      "scene": "leave",
+      "file": "zh-CN/duo/02-leave.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "147b93faba6ee735b104b8c41ca33f5c68805d61b33d278676797c030fb02d01",
+      "sha256": "bdbeffdddb6d3fd1ec97301efd6d0a76df46edf334d58a0b07cf06845b08e33b",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/zh-CN-duo-inner-leave.png",
+          "sha256": "659b9997a839c6826f30277f1363a89130ef6a862b5c09f51f124ca47f988365"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "zh-TW/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "66d5a7f4f720a36d5a2bcee9fc6da28f700768614859f391afc24b5edfa68ba5",
+      "sha256": "5d2a99234b7d0ba720705169ba8120af7131bc0272dc662abc74292fc75c0fdf",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/zh-TW-iphone-leave.png",
+          "sha256": "6734389cf725de50be47462be9f86a3f39092ce9c34912ce87be1fc3e0b3453f"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "duo",
+      "order": 2,
+      "scene": "leave",
+      "file": "zh-TW/duo/02-leave.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "40a8e1875f293ea627d12c007d6deb54c87e96ca2800163f40028be403037856",
+      "sha256": "68779d66ce97579b237c8ca2ca57a90a267f23789d495210498c227a2dda1254",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/zh-TW-duo-inner-leave.png",
+          "sha256": "5315d260d0e5cd910302cfc489842ba0d3eeba168071c9cd98168245e91bb516"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "ja/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "1b0fc6b51dcf4c356be87fdc3ea6b4f0a9521d370a0f05ad66e85e9e7fd97e2b",
+      "sha256": "5195d3bf86be806f6ed04a11903d7183571b2f619bfb7ceceaf6821275eed2ba",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ja-iphone-leave.png",
+          "sha256": "0c47d93aff29061ffae588587acbc0ec8d73fee1de52e4dd06b6d9602b04a304"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "duo",
+      "order": 2,
+      "scene": "leave",
+      "file": "ja/duo/02-leave.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "e4e94a772e28660524e9df99b812fee199d37d684701f0bac9c5278c4c6ae19e",
+      "sha256": "37a9cec824ffc9c48fff9027bd5b8844ce78639300fffc5b256ead3919535fbc",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ja-duo-inner-leave.png",
+          "sha256": "755fc8428e7d31707f92116f16e1f152165b65f81164f68b6568a1650e3bfe93"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "ko/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "9b90016a155ebf3fa1532c0c1c4e59a43932e0d91b74cd236301d558959c56bf",
+      "sha256": "f3ec0a214fcbac5b52039e0f7509484e34a3329ec247cbadd752c3b6a60e2fc4",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ko-iphone-leave.png",
+          "sha256": "d3b10c4555c7e68f8345bb9443e97840a1a61c495ed0e962079606602d85540a"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "duo",
+      "order": 2,
+      "scene": "leave",
+      "file": "ko/duo/02-leave.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "0c08b76327ab045e964fa36cf4fad180a30bf23041bedcb19f8e775bfab26d6a",
+      "sha256": "aea50679ad8b5dbce099b3b3f033e94c6ffe12a4952aeeccfe66539f3230551d",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ko-duo-inner-leave.png",
+          "sha256": "7199a7f400968390adee4bd1232b769990823820eadab0d8fd9e63df29370e48"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "ru/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "7d0c34efcceb8f07183716996b12cf72aeddac02c685669aa15519a5c68a5af9",
+      "sha256": "346816e7c1d5bb806ad8eb5c04ae82a66003614d67adc19be0b6aab48dbd4432",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ru-iphone-leave.png",
+          "sha256": "8beb82309e9ebe1d3432cb8abd2f5387bae1a409cef8fe86b5c09aa3a45a9dec"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "duo",
+      "order": 2,
+      "scene": "leave",
+      "file": "ru/duo/02-leave.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "8d52dedeede6784b086860cb32afc005194786fea90a8e7b8663d259c71288ec",
+      "sha256": "691b33b57316f4866cf5be78da86659ed2be372482468deb72512f2bf86ecbed",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/ru-duo-inner-leave.png",
+          "sha256": "782267b23801984b7ba0db2f6fe67245e2adfe3542eb4b196c378d2f56c23438"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "tr",
+      "ascLocale": "tr",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "tr/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "f5e7267557cd652a7a0e79dba1144c613cb0f0367aeeffa4090668c804179b0d",
+      "sha256": "4f27579789a07f49e318adbc073f69fd52ddd1db983c248ac4e8eadf57b5090f",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/tr-iphone-leave.png",
+          "sha256": "be2848c5d570d2fd21b0c2fb5d911176d1d4ea4a25fad8256c5236ac5e177656"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "tr",
+      "ascLocale": "tr",
+      "platform": "duo",
+      "order": 2,
+      "scene": "leave",
+      "file": "tr/duo/02-leave.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "74ba38a20f4b19d5f1884ddfbedcd0080af473509051f0a36a2117e58eb76a48",
+      "sha256": "d4d3c73335f4583ad41ebe820d5bbc79e3f69e71a0ee4b2cf39f477f8dc20f38",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/tr-duo-inner-leave.png",
+          "sha256": "f4c4f26fad706013b04c414511a5f65020b4888a6de1354f94644f95d04dd6a1"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "vi/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "71340561b1955e714e6931ef5283d953e9d84f8cc90b0781458c2a380d6e917b",
+      "sha256": "021577b48702e365209bac45a03904d05566b2a4c67a0db0de543810cbba611c",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/vi-iphone-leave.png",
+          "sha256": "ada4a958e6580ea2adc62e73e27d6da190edc940e30d9a5d378c7908064c3292"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "duo",
+      "order": 2,
+      "scene": "leave",
+      "file": "vi/duo/02-leave.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "37795b9895dccd21c9e6f164574584e36e4dde740b1d13f7e2afb542fb0ce520",
+      "sha256": "a7c1f6d34bdc90c3f33860a9e564c87754243075bb9852ff6c7e1be0f82f87af",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/vi-duo-inner-leave.png",
+          "sha256": "4e1f0d59b996f293bb95c7f749843d92c74e1b8fb8b607eecf754e17efc1c2aa"
+        },
+        {
+          "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",
+          "sha256": "fb37b8002e055fd10b397bc3b0cd96ab79ad75cf643f50e1839e3c59d8f33714"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "leave",
+      "file": "hi-IN/iphone/03-leave.png",
+      "width": 1320,
+      "height": 2868,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_67",
+      "recipeSHA": "e98e0b9bd5b6bb9fd22a4b8933123efa054a69347d6d2a0b441d9b0e914edca4",
+      "sha256": "62ac56aded123796e35713d47b8e85fa6d8530d2be366a0cde9b31a491ca12b9",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/hi-IN-iphone-leave.png",
+          "sha256": "2861d19ba16a6d04b842e734ae008db5c42e0b7dc057f93c0ce4a701bc7ad4da"
+        },
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        }
+      ],
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "duo",
+      "order": 2,
+      "scene": "leave",
+      "file": "hi-IN/duo/02-leave.png",
+      "width": 2007,
+      "height": 2853,
+      "orientation": "portrait",
+      "display": "APP_IPHONE_DUO",
+      "recipeSHA": "3687979ec9793953ca5fc23d643a82d92dd2ce3e2c97973194ca7abc1f118b91",
+      "sha256": "9892f0820a6339895528296b55f90cd51701d92e862be97db3541f19727ae903",
+      "sources": [
+        {
+          "file": "raw/3.2.3/pages/hi-IN-duo-inner-leave.png",
+          "sha256": "3a276977e2b53f109d114fd8108758a51ca742a0d660b1f97ba5e600c4b1ce67"
         },
         {
           "file": "frames/iPhone Duo - Star White - Inner Open Portrait.png",

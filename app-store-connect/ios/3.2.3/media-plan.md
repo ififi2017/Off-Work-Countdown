@@ -52,7 +52,7 @@ data" sits in the corner, with "DoneAt Plus · " added on the Plus beats.
 Both pages use the approved poster layout (label, two-line serif headline,
 subline, official iPhone 18 Pro Max frame, real capture). Demo data only.
 
-**Page 3 · Home Screen.** A real Home Screen with only free widgets:
+**Page 3 · Home Screen.** A real Home Screen of widgets:
 Countdown Timeline (medium), Ring + Week progress (small), Shifts 7 days
 (medium), Next holiday + Year progress (small).
 
@@ -60,7 +60,7 @@ Countdown Timeline (medium), Ring + Week progress (small), Shifts 7 days
 |---|---|---|
 | Label | 全新小组件 | NEW WIDGETS |
 | Headline | 不用打开，<br>桌面就有数。 | Your day,<br>on your Home Screen. |
-| Subline | 倒计时、本周进度、班表与节假日，<br>多款小组件免费可用。 | Countdown, week progress, shifts and holidays.<br>Many of them free. |
+| Subline | 倒计时、本周进度、班表与节假日，<br>多种尺寸，随心摆放。 | Countdown, week progress, shifts and holidays.<br>Arrange them your way. |
 
 **Page 4 · Lock Screen and Apple Watch.** A real Lock Screen with a
 rectangular countdown, week ring and inline clock-off time, plus the Start

@@ -54,6 +54,10 @@ Duo Time off and Records were captured on the iPhone Duo simulator's inner
 display (2007×2853 portrait), which the owner opened in Device Hub; headless,
 the Duo exposes no displays.
 
+Time off pages were rendered again after the price-reference fix: their
+label no longer adds "· 3 free tries" (review sheet
+`pages-review/time-off-no-price.jpg`).
+
 ## Not done
 
 - Nothing has been uploaded. Replacing a live asset is a separate step and

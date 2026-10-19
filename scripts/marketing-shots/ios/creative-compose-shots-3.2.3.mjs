@@ -1,6 +1,6 @@
 // 3.2.3 App Store screenshots: two widget pages for the iPhone 6.9″ set
 // (APP_IPHONE_67, 1320×2868), in the approved 3.2.1/3.2.2 page layout.
-//   3 · Home Screen: a real Home Screen of free DoneAt widgets.
+//   3 · Home Screen: a real Home Screen of DoneAt widgets.
 //   4 · Lock Screen and Apple Watch: the Lock Screen widgets and controls,
 //       with the upgraded Watch countdown in front.
 // They take positions 3 and 4; the old Watch (5) and widgets (9) pages

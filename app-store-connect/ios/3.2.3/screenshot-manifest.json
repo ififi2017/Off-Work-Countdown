@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-10-19T09:21:37.132Z",
+  "createdAt": "2026-10-19T12:29:20.808Z",
   "uploaded": false,
   "items": [
     {
@@ -12,7 +12,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "1e996b30ce8f076d39d6511eaef0487d40a1f02756b2340b9870447112b86c53",
+      "sha256": "17167dff7b566891206c54a235d082f3263b619556a2144f296d50d77b748878",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -31,7 +31,7 @@
         ],
         "sub": [
           "倒计时、本周进度、班表与节假日，",
-          "多款小组件免费可用。"
+          "多种尺寸，随心摆放。"
         ]
       },
       "fontsUsed": [
@@ -103,7 +103,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "ea96e540d8f0a56f594f34f3b0976b15e4c3c77eba31f30b253073e7f81c1676",
+      "sha256": "b31aa2003b62de149bf423a59632fef1daf849c8448f02018e5dc58110ceeddb",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -122,7 +122,7 @@
         ],
         "sub": [
           "Countdown, week progress, shifts and holidays.",
-          "Many of them free."
+          "Arrange them your way."
         ]
       },
       "fontsUsed": [
@@ -193,7 +193,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "c77f26874e59d780f08d9f3cd2bebf95b52d33baa170fadcf53c451e8a5b79b2",
+      "sha256": "f593e81361e2471aa84821ba9c81fde9c30d629bb2461b195533ed32bfa2102b",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -212,7 +212,7 @@
         ],
         "sub": [
           "倒數、本週進度、班表與假日，",
-          "多款小工具免費使用。"
+          "多種尺寸，隨心擺放。"
         ]
       },
       "fontsUsed": [
@@ -284,7 +284,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "aca4740aaa2f03001de0b0ceb75bba16c1bdf6b5f8df34df1f97ecbce58e92c1",
+      "sha256": "468b5c98cad3b965edafb731b1a6aee5cabbc1dc5c2f5a54dbcd2bb79d6f5e5b",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -303,7 +303,7 @@
         ],
         "sub": [
           "カウントダウン、今週の進み具合、シフト、祝日。",
-          "多くは無料で使えます。"
+          "好きなサイズで、好きな場所に。"
         ]
       },
       "fontsUsed": [
@@ -375,7 +375,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "619fb3a9021d8295a37a1f02dfc326f129c28fb4ed3558e33c590b3af96187de",
+      "sha256": "ff70f8de8fd625edc3129016f5faebc797a9a5ba258f73520dea738da41822ac",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -394,7 +394,7 @@
         ],
         "sub": [
           "카운트다운, 이번 주 진행률, 근무표와 공휴일.",
-          "대부분 무료로 쓸 수 있어요."
+          "원하는 크기로, 원하는 곳에."
         ]
       },
       "fontsUsed": [
@@ -467,7 +467,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "007064da8f30a377a33af2e15b939ace04fa539e12d9f261a3564b371b867fe5",
+      "sha256": "e8445059aa4e119c4fd3f7a41b45ae23bb36e0c62ca76449127417e95653d79d",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -486,7 +486,7 @@
         ],
         "sub": [
           "Countdown, Wochenfortschritt, Schichten und Feiertage.",
-          "Viele davon kostenlos."
+          "In der Größe, die zu dir passt."
         ]
       },
       "fontsUsed": [
@@ -557,7 +557,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "6575b484758e1cf41586e858e26fb1860d507fad7fdab68b858bf28b3bb0ce76",
+      "sha256": "95e0cc754956a7da7c950909231bd28536bcaf86eae37a9e344008b7903be36c",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -576,7 +576,7 @@
         ],
         "sub": [
           "Compte à rebours, semaine, horaires et jours fériés.",
-          "Beaucoup sont gratuits."
+          "À la taille qui vous convient."
         ]
       },
       "fontsUsed": [
@@ -647,7 +647,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "47df7526588b670cff6c57beeab5febf2ca69ab2e98a19738fd10ccd85327dbd",
+      "sha256": "002f5544b497e866b9df95d8389a7c49dccff421bd6d0f5b4a43ed7729e2d8c4",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -666,7 +666,7 @@
         ],
         "sub": [
           "Cuenta atrás, progreso semanal, turnos y festivos.",
-          "Muchos son gratis."
+          "Del tamaño que prefieras."
         ]
       },
       "fontsUsed": [
@@ -737,7 +737,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "fc1d34e6de797fbfd3dd2a3f977ab9e72a631b01e51adb4a292155925f158221",
+      "sha256": "1f073d59c16c39da52c0f3e27e00012c53f453285ac12a9f5106673dbae05f15",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -756,7 +756,7 @@
         ],
         "sub": [
           "Conto alla rovescia, settimana, turni e festività.",
-          "Molti sono gratis."
+          "Della misura che preferisci."
         ]
       },
       "fontsUsed": [
@@ -827,7 +827,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "ac1ef1d03c9faefb843ca60f34312f34700a62b894440c59d834df408ffed815",
+      "sha256": "0812f482457e93073bb04a7c56256248fbcc1c905188655c259e9b2a1fdd7689",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -846,7 +846,7 @@
         ],
         "sub": [
           "Contagem regressiva, semana, escalas e feriados.",
-          "Muitos são gratuitos."
+          "No tamanho que você preferir."
         ]
       },
       "fontsUsed": [
@@ -917,7 +917,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "e5abea51ebf916fcdfbd9d54fd72599e77346d969b3cc34440db6bf698ec0b4e",
+      "sha256": "35a7f74a26138c6b33e47dbbb5c537ab03083e59a42f5a5ad38e647ea4827239",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -936,7 +936,7 @@
         ],
         "sub": [
           "Обратный отсчёт, неделя, смены и праздники.",
-          "Многие — бесплатно."
+          "Любого размера — как вам удобно."
         ]
       },
       "fontsUsed": [
@@ -1007,7 +1007,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "8f587eabb2b067cf9ee6c39011261cfc3a287970ff1b9f16d6cd1d517bae5229",
+      "sha256": "71f9ca6f695092398e41d4e223874fbe00dabb3827b1059aecf1d679c6453fa5",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -1026,7 +1026,7 @@
         ],
         "sub": [
           "Geri sayım, haftalık ilerleme, vardiyalar ve tatiller.",
-          "Çoğu ücretsiz."
+          "İstediğin boyutta, istediğin yerde."
         ]
       },
       "fontsUsed": [
@@ -1097,7 +1097,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "513c53d54e668ce88fec08b0b80684bcab2fb3ebabf567491766bb7ccc54f01c",
+      "sha256": "259d18400b09cd7fc2b49759a6066172aa82b3352c8c01854e33e44508713bb5",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -1116,7 +1116,7 @@
         ],
         "sub": [
           "Hitung mundur, progres minggu, shift, dan hari libur.",
-          "Banyak yang gratis."
+          "Dalam ukuran yang kamu suka."
         ]
       },
       "fontsUsed": [
@@ -1187,7 +1187,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "eaacf7859db29188fb6a65a7b303c535fa5d7a5bbd62440b10249b546f4c1ade",
+      "sha256": "38d1f60cb1789954e623f9c5ca64f750f376e27becb1366b2164327b52a7cc9b",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -1206,7 +1206,7 @@
         ],
         "sub": [
           "Đếm ngược, tiến độ tuần, ca làm và ngày lễ.",
-          "Nhiều tiện ích miễn phí."
+          "Chọn kích thước bạn thích."
         ]
       },
       "fontsUsed": [
@@ -1277,7 +1277,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "40c767a213de0f9f289c87337ed806625a15c3853b4418bec7f5db3478424fdd",
+      "sha256": "e88a506a466740488e030885dddd72598f855bdb6f56d7ba063c3cefaa1496c6",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -1296,7 +1296,7 @@
         ],
         "sub": [
           "นับถอยหลัง ความคืบหน้าสัปดาห์ กะงาน และวันหยุด",
-          "หลายแบบใช้ได้ฟรี"
+          "เลือกขนาดที่ชอบ วางตรงไหนก็ได้"
         ]
       },
       "fontsUsed": [
@@ -1369,7 +1369,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "9682f0bdb315966cdeb9c6d374e73a51f8152082e64bf9c8e663001f5a1dfb8b",
+      "sha256": "12e548b4840df52a21efc68580954c9b967e3d8476707d7368927042fe2acef7",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -1388,7 +1388,7 @@
         ],
         "sub": [
           "काउंटडाउन, हफ़्ते की प्रगति, शिफ़्ट और छुट्टियाँ।",
-          "कई मुफ़्त हैं।"
+          "जिस आकार में चाहें, जहाँ चाहें।"
         ]
       },
       "fontsUsed": [
@@ -1461,7 +1461,7 @@
       "width": 1320,
       "height": 2868,
       "display": "APP_IPHONE_67",
-      "sha256": "f3dccc2968de80763ef9acf9d314dffd9918c411926094831790b3832302d70c",
+      "sha256": "b202a73c70ff9cc62e2fc7638e7eccff22aae5115eacb75f4b7677896d827228",
       "sources": [
         {
           "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
@@ -1480,7 +1480,7 @@
         ],
         "sub": [
           "عدّ تنازلي، تقدّم الأسبوع، المناوبات والعطلات.",
-          "كثير منها مجاني."
+          "بالحجم الذي يناسبك."
         ]
       },
       "fontsUsed": [
