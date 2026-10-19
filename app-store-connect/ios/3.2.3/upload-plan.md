@@ -1,4 +1,4 @@
-# iOS 3.2.3 · App Store Connect upload plan (media not applied)
+# iOS 3.2.3 · App Store Connect media upload
 
 Script: `scripts/app-store-connect/creative-3.2.3.mjs`. It is read-only by
 default. The full dry-run output from 2026-10-19 is in `upload-dry-run.txt`.
@@ -11,7 +11,20 @@ app-store-connect/ios/3.2.3.json` (output: `asc-sync-apply.txt`). It is
 back identical to the config, so the only change from 3.2.2 is What's New. The
 new version inherited 3.2.2's screenshots and placements. The dry run against
 the version itself (`upload-dry-run.txt`) matches the earlier preview against
-3.2.2 line for line. No media has been uploaded.
+3.2.2 line for line.
+
+## Applied (2026-10-19)
+
+`creative-3.2.3.mjs --apply` ran on the 3.2.3 draft (log: `asc-media-apply.log`,
+receipt: `asc-media-receipt.json`). Results:
+
+- **Screenshots:** all 26 sets read back in the planned order with every
+  screenshot `COMPLETE`: 17 iPhone sets of 10 and 9 Duo sets of 9.
+- **Videos:** all 24 uploaded and processed.
+- **Placements:** all 26 read back `ACTIVE` (20 search, 6 header).
+- **Re-check:** a dry run afterwards plans no changes.
+
+No build is selected and nothing has been submitted for review.
 
 ## What --apply changes
 

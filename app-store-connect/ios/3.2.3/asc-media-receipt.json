@@ -1,0 +1,2997 @@
+{
+  "appId": "6802803318",
+  "versionString": "3.2.3",
+  "sets": {
+    "zh-Hans APP_IPHONE_67": {
+      "setId": "2c8053e6-fd11-4625-baec-c3db7e4e2da1",
+      "original": [
+        {
+          "id": "0b6ceedb-a7a7-4c28-94b8-342737da90d9",
+          "fileName": "doneat-3.2.1-zh-CN-iphone-01-514e63d41f9b.png"
+        },
+        {
+          "id": "67f8f44f-f20b-4c49-898d-c35c7f271631",
+          "fileName": "doneat-3.2.1-zh-CN-iphone-02-8779b4f87e1b.png"
+        },
+        {
+          "id": "33431a5a-2079-474a-bcd6-77749d01c88c",
+          "fileName": "doneat-3.2.2-zh-CN-iphone-03-nofree-b344d12eeaa0.png"
+        },
+        {
+          "id": "28064127-4ec4-4117-845f-a4c31c369ff2",
+          "fileName": "doneat-3.2.1-zh-CN-iphone-04-c4f768311a67.png"
+        },
+        {
+          "id": "e6c7364e-d1e9-40b1-a21a-770422e4e22d",
+          "fileName": "doneat-3.2.2-zh-CN-iphone-05-nofree-3d29f4b877cd.png"
+        },
+        {
+          "id": "e3334844-6024-429b-b67d-1e9b2826173b",
+          "fileName": "doneat-3.2.1-zh-CN-iphone-06-81724ba57e88.png"
+        },
+        {
+          "id": "98547ae0-ce31-44ab-9e66-fb6d3b17d38e",
+          "fileName": "doneat-3.2.2-zh-CN-iphone-07-91e451907422.png"
+        },
+        {
+          "id": "0c2a7d18-fbb6-4613-9103-856c510b9eaa",
+          "fileName": "doneat-3.2.1-zh-CN-iphone-08-6e890daf2e92.png"
+        },
+        {
+          "id": "6d45868f-2f67-443a-b174-33af09b43379",
+          "fileName": "doneat-3.2.1-zh-CN-iphone-09-981441f2c367.png"
+        },
+        {
+          "id": "0eddd3b3-87d3-4fda-9f89-21df681d2c5f",
+          "fileName": "doneat-3.2.1-zh-CN-iphone-10-e090d07cb83e.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "37400019-57a8-8a76-8023-0328de89f929",
+          "fileName": "doneat-3.2.3-zh-CN-iphone-03-widgets-home-17167dff7b56.png",
+          "md5": "8ac2d2d3cb27bf671004ecbc18929556"
+        },
+        "4": {
+          "id": "d3400019-57a8-8a76-8033-56b20cd8065c",
+          "fileName": "doneat-3.2.3-zh-CN-iphone-04-widgets-lock-e7789679d4cb.png",
+          "md5": "841deafb595abce9e3a492e17378c811"
+        },
+        "5": {
+          "id": "a3c00019-57a8-8a76-8002-e24b88e9d24a",
+          "fileName": "doneat-3.2.3-zh-CN-iphone-05-leave-78d58790edc6.png",
+          "md5": "1c863dac818f5953563b659f1c92f762"
+        },
+        "6": {
+          "id": "6a800019-57a8-8a76-8006-04f059280c68",
+          "fileName": "doneat-3.2.3-zh-CN-iphone-06-report-a40f90ec4999.png",
+          "md5": "7c06e6dface55154e4ec25d1d1517c2c"
+        },
+        "7": {
+          "id": "f5800019-57a8-8a76-8023-9721b8aa4616",
+          "fileName": "doneat-3.2.3-zh-CN-iphone-07-calendar-ddaa0e309289.png",
+          "md5": "a9e1af6e7e4e4631b25e2a77409c6fed"
+        },
+        "8": {
+          "id": "c9c00019-57a8-8a76-8003-176d3fe0ab11",
+          "fileName": "doneat-3.2.3-zh-CN-iphone-08-records-e99874838ad5.png",
+          "md5": "f7d4749dd2a86cc9a7f31d7c9455c881"
+        },
+        "9": {
+          "id": "ce800019-57a8-8a76-8016-063414205209",
+          "fileName": "doneat-3.2.3-zh-CN-iphone-09-focus-d5e5dd4477ad.png",
+          "md5": "8bcb070f56787bf9611fd3dc08de93bd"
+        },
+        "10": {
+          "id": "14400019-57a8-8a76-8032-38aecb67760a",
+          "fileName": "doneat-3.2.3-zh-CN-iphone-10-rest-d5828fa329f5.png",
+          "md5": "d7e6c3a44ad941cf1be255fe6f6e4853"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T12:57:17.950Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-zh-CN-iphone-01-514e63d41f9b.png",
+          "doneat-3.2.1-zh-CN-iphone-02-8779b4f87e1b.png",
+          "doneat-3.2.3-zh-CN-iphone-03-widgets-home-17167dff7b56.png",
+          "doneat-3.2.3-zh-CN-iphone-04-widgets-lock-e7789679d4cb.png",
+          "doneat-3.2.3-zh-CN-iphone-05-leave-78d58790edc6.png",
+          "doneat-3.2.3-zh-CN-iphone-06-report-a40f90ec4999.png",
+          "doneat-3.2.3-zh-CN-iphone-07-calendar-ddaa0e309289.png",
+          "doneat-3.2.3-zh-CN-iphone-08-records-e99874838ad5.png",
+          "doneat-3.2.3-zh-CN-iphone-09-focus-d5e5dd4477ad.png",
+          "doneat-3.2.3-zh-CN-iphone-10-rest-d5828fa329f5.png"
+        ]
+      }
+    },
+    "en-US APP_IPHONE_67": {
+      "setId": "9fe6dfd1-86f6-4ed0-8db8-4fac2c9fd8cd",
+      "original": [
+        {
+          "id": "8aa53d8f-7830-445c-a552-3ef510d7c4f5",
+          "fileName": "doneat-3.2.1-en-iphone-01-96f93fc3e71e.png"
+        },
+        {
+          "id": "30235eb7-bea2-44b8-a672-5043dbe64292",
+          "fileName": "doneat-3.2.1-en-iphone-02-75c4044bdaf9.png"
+        },
+        {
+          "id": "e6ece6e4-dc39-4459-8d47-3cda972325c9",
+          "fileName": "doneat-3.2.2-en-iphone-03-nofree-7fe42d8a761f.png"
+        },
+        {
+          "id": "7087a6c4-2377-4939-8450-3e2cbd1ef33e",
+          "fileName": "doneat-3.2.1-en-iphone-04-f81c047f6519.png"
+        },
+        {
+          "id": "4e453e2a-d1d3-43e6-8dd6-ad63a0b5026c",
+          "fileName": "doneat-3.2.2-en-iphone-05-nofree-4e487d1d2bd1.png"
+        },
+        {
+          "id": "28a603a2-f9d2-49e4-9292-334b592f76c5",
+          "fileName": "doneat-3.2.1-en-iphone-06-b0123a474add.png"
+        },
+        {
+          "id": "9dd39a52-9f24-481a-bac7-7a72681e8022",
+          "fileName": "doneat-3.2.2-en-iphone-07-752ab1e44552.png"
+        },
+        {
+          "id": "49ad1c4d-d04f-41cc-986d-989804b7d93e",
+          "fileName": "doneat-3.2.1-en-iphone-08-8849468d6770.png"
+        },
+        {
+          "id": "cf6c4639-dd53-437c-b078-70960e82fe27",
+          "fileName": "doneat-3.2.1-en-iphone-09-fef0b4f99fec.png"
+        },
+        {
+          "id": "00a91934-e087-4d02-ac02-9cd1d2bcbfc8",
+          "fileName": "doneat-3.2.1-en-iphone-10-84c0cd971199.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "c0000019-57a8-8a76-8015-c3a2b2a19858",
+          "fileName": "doneat-3.2.3-en-iphone-03-widgets-home-b31aa2003b62.png",
+          "md5": "dd9244457228ebf184b047e406eaaff8"
+        },
+        "4": {
+          "id": "8b400019-57a8-8a76-802c-61f5636e7374",
+          "fileName": "doneat-3.2.3-en-iphone-04-widgets-lock-9e94f3f972ee.png",
+          "md5": "6ece5b4f1f2a73e8ffb394b404887748"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T12:59:27.641Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-en-iphone-01-96f93fc3e71e.png",
+          "doneat-3.2.1-en-iphone-02-75c4044bdaf9.png",
+          "doneat-3.2.3-en-iphone-03-widgets-home-b31aa2003b62.png",
+          "doneat-3.2.3-en-iphone-04-widgets-lock-9e94f3f972ee.png",
+          "doneat-3.2.2-en-iphone-03-nofree-7fe42d8a761f.png",
+          "doneat-3.2.1-en-iphone-04-f81c047f6519.png",
+          "doneat-3.2.1-en-iphone-06-b0123a474add.png",
+          "doneat-3.2.2-en-iphone-07-752ab1e44552.png",
+          "doneat-3.2.1-en-iphone-08-8849468d6770.png",
+          "doneat-3.2.1-en-iphone-10-84c0cd971199.png"
+        ]
+      }
+    },
+    "zh-Hant APP_IPHONE_67": {
+      "setId": "c5b09c90-d2d4-4279-999b-618383e91699",
+      "original": [
+        {
+          "id": "90410cad-ac0d-4bc9-a6f7-facac7739d91",
+          "fileName": "doneat-3.2.1-zh-TW-iphone-01-7a4f1c5b01d6.png"
+        },
+        {
+          "id": "1b0bbe1a-8b0b-41a1-8594-0fd547dcac1d",
+          "fileName": "doneat-3.2.1-zh-TW-iphone-02-001f7e4aec9e.png"
+        },
+        {
+          "id": "a4953856-759e-422b-8c5e-8ff02f041d21",
+          "fileName": "doneat-3.2.2-zh-TW-iphone-03-nofree-acf8221e6f2b.png"
+        },
+        {
+          "id": "2e0c0649-6a29-4fb8-86e3-8369bbc5b27c",
+          "fileName": "doneat-3.2.1-zh-TW-iphone-04-ed8ec47996b2.png"
+        },
+        {
+          "id": "76306e0b-3102-4f2e-a6f6-7af645edc3e6",
+          "fileName": "doneat-3.2.2-zh-TW-iphone-05-nofree-025f952f3d58.png"
+        },
+        {
+          "id": "2531de69-4eb9-464a-afd4-efabaeb93f7d",
+          "fileName": "doneat-3.2.1-zh-TW-iphone-06-831abb23556a.png"
+        },
+        {
+          "id": "b8f90811-ea7f-4407-bfb7-540cf593508b",
+          "fileName": "doneat-3.2.2-zh-TW-iphone-07-c8d078256d37.png"
+        },
+        {
+          "id": "40ee9753-807d-4ebd-a993-01663061394d",
+          "fileName": "doneat-3.2.1-zh-TW-iphone-08-a259bb346a21.png"
+        },
+        {
+          "id": "f610dc0c-73e4-4341-9c22-dcf5aa0d1b06",
+          "fileName": "doneat-3.2.1-zh-TW-iphone-09-5ca56f9bd8f3.png"
+        },
+        {
+          "id": "3e7a35df-f788-492d-b600-70bf3663b8e2",
+          "fileName": "doneat-3.2.1-zh-TW-iphone-10-c28a53a9e361.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "3a400019-57a8-8a76-800b-63f214143da4",
+          "fileName": "doneat-3.2.3-zh-TW-iphone-03-widgets-home-f593e81361e2.png",
+          "md5": "3bd790dad01015ee55c5d3da6b3b5893"
+        },
+        "4": {
+          "id": "69800019-57a8-8a76-801b-64e1bed93d49",
+          "fileName": "doneat-3.2.3-zh-TW-iphone-04-widgets-lock-cd65214474e3.png",
+          "md5": "4a55dd5059fc95a6f8d50493a247847e"
+        },
+        "5": {
+          "id": "03400019-57a8-8a76-8036-ed0f487758c3",
+          "fileName": "doneat-3.2.3-zh-TW-iphone-05-leave-5d2a99234b7d.png",
+          "md5": "7622bf785b4214244301a6d0ffafacd4"
+        },
+        "6": {
+          "id": "b6000019-57a8-8a76-8009-c485605dea9d",
+          "fileName": "doneat-3.2.3-zh-TW-iphone-06-report-4b25168aa4f1.png",
+          "md5": "b5bfd837e0f9b9e1eb87d6c9627ca346"
+        },
+        "7": {
+          "id": "19c00019-57a8-8a76-802e-bee227c53ef7",
+          "fileName": "doneat-3.2.3-zh-TW-iphone-07-calendar-83dcd515b4d0.png",
+          "md5": "6a2a618033026869c96647f7a54ca752"
+        },
+        "8": {
+          "id": "ae400019-57a8-8a76-8026-efb9f1d55bf2",
+          "fileName": "doneat-3.2.3-zh-TW-iphone-08-records-d26db15724c1.png",
+          "md5": "ffaf932b19b50fa3b2caa02355f51d56"
+        },
+        "9": {
+          "id": "84000019-57a8-8a76-8019-53d5948e4a8f",
+          "fileName": "doneat-3.2.3-zh-TW-iphone-09-focus-301025780c9e.png",
+          "md5": "a93aefd0d5cb865dc7b9a36f3c932cb4"
+        },
+        "10": {
+          "id": "a3400019-57a8-8a76-8006-653e3b1993af",
+          "fileName": "doneat-3.2.3-zh-TW-iphone-10-rest-bd4ae0dae2d4.png",
+          "md5": "83739157fd406dd99b954c0029fad5a9"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:00:23.921Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-zh-TW-iphone-01-7a4f1c5b01d6.png",
+          "doneat-3.2.1-zh-TW-iphone-02-001f7e4aec9e.png",
+          "doneat-3.2.3-zh-TW-iphone-03-widgets-home-f593e81361e2.png",
+          "doneat-3.2.3-zh-TW-iphone-04-widgets-lock-cd65214474e3.png",
+          "doneat-3.2.3-zh-TW-iphone-05-leave-5d2a99234b7d.png",
+          "doneat-3.2.3-zh-TW-iphone-06-report-4b25168aa4f1.png",
+          "doneat-3.2.3-zh-TW-iphone-07-calendar-83dcd515b4d0.png",
+          "doneat-3.2.3-zh-TW-iphone-08-records-d26db15724c1.png",
+          "doneat-3.2.3-zh-TW-iphone-09-focus-301025780c9e.png",
+          "doneat-3.2.3-zh-TW-iphone-10-rest-bd4ae0dae2d4.png"
+        ]
+      }
+    },
+    "ja APP_IPHONE_67": {
+      "setId": "2f6c33cc-df8c-413c-ac59-a0b063dbc753",
+      "original": [
+        {
+          "id": "e1e00d19-8490-42c1-bce9-02281e12b620",
+          "fileName": "doneat-3.2.1-ja-iphone-01-d0bf08670380.png"
+        },
+        {
+          "id": "d6f52433-1904-427f-8413-3b4189e332e5",
+          "fileName": "doneat-3.2.1-ja-iphone-02-07ced9cdc218.png"
+        },
+        {
+          "id": "560839af-a240-475a-a3ed-ab5b94fedda2",
+          "fileName": "doneat-3.2.2-ja-iphone-03-nofree-284f6b068448.png"
+        },
+        {
+          "id": "bd20bf02-5b77-4edf-8f38-084337c40426",
+          "fileName": "doneat-3.2.1-ja-iphone-04-76e12821e436.png"
+        },
+        {
+          "id": "662ef06c-cea4-42a5-a984-11d00358fcf9",
+          "fileName": "doneat-3.2.2-ja-iphone-05-nofree-0e75dbe01ae4.png"
+        },
+        {
+          "id": "f2e6bc97-f672-40dc-a30c-254015c17746",
+          "fileName": "doneat-3.2.1-ja-iphone-06-26ef5d42d905.png"
+        },
+        {
+          "id": "9ed51ea9-bf45-4bc4-a3ac-d3321a496d4e",
+          "fileName": "doneat-3.2.2-ja-iphone-07-ab52ff8bc56f.png"
+        },
+        {
+          "id": "dbbaa3c5-991c-4ed8-8145-d95c073f3c91",
+          "fileName": "doneat-3.2.1-ja-iphone-08-be01bda36038.png"
+        },
+        {
+          "id": "4fb6b022-aee3-454f-a906-88e6756ab81e",
+          "fileName": "doneat-3.2.1-ja-iphone-09-edb5cc1d00dc.png"
+        },
+        {
+          "id": "99bd4b49-11b3-4cec-a8f5-97a56935dbb5",
+          "fileName": "doneat-3.2.1-ja-iphone-10-724217675baf.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "d9400019-57a8-8a76-8018-fdf52ff46cf0",
+          "fileName": "doneat-3.2.3-ja-iphone-03-widgets-home-468b5c98cad3.png",
+          "md5": "26d87cda38a72d115d68e4b24b56ae14"
+        },
+        "4": {
+          "id": "9b800019-57a8-8a76-8019-2c05a11933ac",
+          "fileName": "doneat-3.2.3-ja-iphone-04-widgets-lock-76e5e1cf6193.png",
+          "md5": "31839d4bdba7790a6ef974fc51ffbed3"
+        },
+        "5": {
+          "id": "a7000019-57a8-8a76-800c-9da24b2fe192",
+          "fileName": "doneat-3.2.3-ja-iphone-05-leave-5195d3bf86be.png",
+          "md5": "3b2bfc9282ee8c218c2946d0ec9eda68"
+        },
+        "6": {
+          "id": "fdc00019-57a8-8a76-8003-3a87051e64bf",
+          "fileName": "doneat-3.2.3-ja-iphone-06-report-0950b3c5abbc.png",
+          "md5": "ed7989abdc9fb5f8166d957b570f0f49"
+        },
+        "7": {
+          "id": "77000019-57a8-8a76-8035-9bb0711d3035",
+          "fileName": "doneat-3.2.3-ja-iphone-07-calendar-6f46337317d8.png",
+          "md5": "804a27f58160365a699e844035cd9f1b"
+        },
+        "8": {
+          "id": "b2800019-57a8-8a76-8029-5f44b4540576",
+          "fileName": "doneat-3.2.3-ja-iphone-08-records-864514fc80c2.png",
+          "md5": "43a7007256afce3c06d2cfa80699061f"
+        },
+        "9": {
+          "id": "41c00019-57a8-8a76-800a-56f9d063ac3e",
+          "fileName": "doneat-3.2.3-ja-iphone-09-focus-ac44158c1602.png",
+          "md5": "e88b435eab0bb49e497a716dcd9654d8"
+        },
+        "10": {
+          "id": "12400019-57a8-8a76-801d-7a32f94c47c2",
+          "fileName": "doneat-3.2.3-ja-iphone-10-rest-1f0ca730a8b2.png",
+          "md5": "b023af4b131cf5aeead21d238553e38f"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:01:32.977Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-ja-iphone-01-d0bf08670380.png",
+          "doneat-3.2.1-ja-iphone-02-07ced9cdc218.png",
+          "doneat-3.2.3-ja-iphone-03-widgets-home-468b5c98cad3.png",
+          "doneat-3.2.3-ja-iphone-04-widgets-lock-76e5e1cf6193.png",
+          "doneat-3.2.3-ja-iphone-05-leave-5195d3bf86be.png",
+          "doneat-3.2.3-ja-iphone-06-report-0950b3c5abbc.png",
+          "doneat-3.2.3-ja-iphone-07-calendar-6f46337317d8.png",
+          "doneat-3.2.3-ja-iphone-08-records-864514fc80c2.png",
+          "doneat-3.2.3-ja-iphone-09-focus-ac44158c1602.png",
+          "doneat-3.2.3-ja-iphone-10-rest-1f0ca730a8b2.png"
+        ]
+      }
+    },
+    "ko APP_IPHONE_67": {
+      "setId": "94e67641-0453-4aa4-90dd-0e6bffea24f8",
+      "original": [
+        {
+          "id": "3e874c3a-99bf-466d-a433-e47ad20c42f7",
+          "fileName": "doneat-3.2.1-ko-iphone-01-c1ab12613e48.png"
+        },
+        {
+          "id": "b2df61ce-bd9e-4270-a91f-68194a4858d9",
+          "fileName": "doneat-3.2.1-ko-iphone-02-f09f86897ada.png"
+        },
+        {
+          "id": "dbfc618e-7a3f-4178-bf55-fdeefc6046f4",
+          "fileName": "doneat-3.2.2-ko-iphone-03-nofree-e3293fc4939b.png"
+        },
+        {
+          "id": "f39874b9-8bf9-4848-8206-238d870e8343",
+          "fileName": "doneat-3.2.1-ko-iphone-04-3063f743b4a9.png"
+        },
+        {
+          "id": "628195ee-be11-4c8d-bb09-0a2d4685a6bc",
+          "fileName": "doneat-3.2.2-ko-iphone-05-nofree-2d03c38c87dc.png"
+        },
+        {
+          "id": "99ef0012-a3d9-4b21-b460-2377b60e6f19",
+          "fileName": "doneat-3.2.1-ko-iphone-06-d68e81f8f829.png"
+        },
+        {
+          "id": "ef2ebabd-b553-4150-8ac7-4287d148d502",
+          "fileName": "doneat-3.2.2-ko-iphone-07-59170302c67e.png"
+        },
+        {
+          "id": "6a2ac936-d37e-4969-989e-c9901ee9a05a",
+          "fileName": "doneat-3.2.1-ko-iphone-08-b0670aa14106.png"
+        },
+        {
+          "id": "3930d181-6577-4d92-b1c1-9129bb8ffc2e",
+          "fileName": "doneat-3.2.1-ko-iphone-09-00ccedcdb783.png"
+        },
+        {
+          "id": "3470930c-358b-44c0-a175-8372c3912672",
+          "fileName": "doneat-3.2.1-ko-iphone-10-2af7ec299192.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "c6c00019-57a8-8a76-8010-7ac937e3fe5c",
+          "fileName": "doneat-3.2.3-ko-iphone-03-widgets-home-ff70f8de8fd6.png",
+          "md5": "d87951f72740b555f3205ff2868a4d3a"
+        },
+        "4": {
+          "id": "04400019-57a8-8a76-801e-c24e283d8990",
+          "fileName": "doneat-3.2.3-ko-iphone-04-widgets-lock-77216fff76e9.png",
+          "md5": "213b614bb4a067f174cd0ac6af374672"
+        },
+        "5": {
+          "id": "8cc00019-57a8-8a76-803a-68abfafc1d98",
+          "fileName": "doneat-3.2.3-ko-iphone-05-leave-f3ec0a214fcb.png",
+          "md5": "cfe64f97961143f4020c72614c78ea4e"
+        },
+        "6": {
+          "id": "41000019-57a8-8a76-800c-3456dd1fbf1b",
+          "fileName": "doneat-3.2.3-ko-iphone-06-report-87cc68bc2098.png",
+          "md5": "d4e8f9c008599cec7e177f46f4baac7d"
+        },
+        "7": {
+          "id": "c0400019-57a8-8a76-8024-f713395a9b31",
+          "fileName": "doneat-3.2.3-ko-iphone-07-calendar-46e5aaae2cc0.png",
+          "md5": "dd53e887f233d1c15001b4489be62ae2"
+        },
+        "8": {
+          "id": "1cc00019-57a8-8a76-8024-13b1e61d5b78",
+          "fileName": "doneat-3.2.3-ko-iphone-08-records-a0d8bf67124a.png",
+          "md5": "04a25493c568b1753dfb88fcd64dd74f"
+        },
+        "9": {
+          "id": "39400019-57a8-8a76-8000-986ff2a23544",
+          "fileName": "doneat-3.2.3-ko-iphone-09-focus-bdc835089b05.png",
+          "md5": "b9d74bd2b55085a87fcb6b6632b8a8b4"
+        },
+        "10": {
+          "id": "e5400019-57a8-8a76-8007-67062705d6ae",
+          "fileName": "doneat-3.2.3-ko-iphone-10-rest-32d5e795370b.png",
+          "md5": "6902329ed88089aff613eaafdb55c0db"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:03:07.896Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-ko-iphone-01-c1ab12613e48.png",
+          "doneat-3.2.1-ko-iphone-02-f09f86897ada.png",
+          "doneat-3.2.3-ko-iphone-03-widgets-home-ff70f8de8fd6.png",
+          "doneat-3.2.3-ko-iphone-04-widgets-lock-77216fff76e9.png",
+          "doneat-3.2.3-ko-iphone-05-leave-f3ec0a214fcb.png",
+          "doneat-3.2.3-ko-iphone-06-report-87cc68bc2098.png",
+          "doneat-3.2.3-ko-iphone-07-calendar-46e5aaae2cc0.png",
+          "doneat-3.2.3-ko-iphone-08-records-a0d8bf67124a.png",
+          "doneat-3.2.3-ko-iphone-09-focus-bdc835089b05.png",
+          "doneat-3.2.3-ko-iphone-10-rest-32d5e795370b.png"
+        ]
+      }
+    },
+    "de-DE APP_IPHONE_67": {
+      "setId": "e023da20-692c-45fc-a787-1aadcc90db06",
+      "original": [
+        {
+          "id": "b984dfab-bf77-4f4c-972f-e8954d251090",
+          "fileName": "doneat-3.2.1-de-iphone-01-df940bab2e20.png"
+        },
+        {
+          "id": "63cc7365-95d2-43a2-b191-5af30d04c8ab",
+          "fileName": "doneat-3.2.1-de-iphone-02-39dbb48b452d.png"
+        },
+        {
+          "id": "f0dcdd11-e2a0-4f0f-85f1-23e78671ef6a",
+          "fileName": "doneat-3.2.2-de-iphone-03-nofree-3bb3e42fbc2e.png"
+        },
+        {
+          "id": "11ab02f9-0baf-4b8b-ab4e-4ba4ba661832",
+          "fileName": "doneat-3.2.1-de-iphone-04-ee026bb9ef92.png"
+        },
+        {
+          "id": "99f80d51-c590-4596-90ea-5a18d589cf61",
+          "fileName": "doneat-3.2.2-de-iphone-05-nofree-38942801188c.png"
+        },
+        {
+          "id": "30c77f98-44bd-4813-9d55-0decc9943dbe",
+          "fileName": "doneat-3.2.1-de-iphone-06-c7182b394f3b.png"
+        },
+        {
+          "id": "8ee6557d-f3d3-4267-80a8-cf5186596708",
+          "fileName": "doneat-3.2.2-de-iphone-07-a165963d8034.png"
+        },
+        {
+          "id": "3e23b640-1aca-4e4c-8715-5153768ab39e",
+          "fileName": "doneat-3.2.1-de-iphone-08-506f6f02e0db.png"
+        },
+        {
+          "id": "457f5e4e-9671-4012-b2b6-197d279e1ddd",
+          "fileName": "doneat-3.2.1-de-iphone-09-ad99dc5d2d91.png"
+        },
+        {
+          "id": "72996034-966c-4819-b52b-0316107056cb",
+          "fileName": "doneat-3.2.1-de-iphone-10-baddbf99a87d.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "c5800019-57a8-8a76-8023-2d5bae91b7fc",
+          "fileName": "doneat-3.2.3-de-iphone-03-widgets-home-e8445059aa4e.png",
+          "md5": "c6b80e4047f1c8a7b4c235d434f6dbec"
+        },
+        "4": {
+          "id": "d3800019-57a8-8a76-8018-f5ac694ddaa5",
+          "fileName": "doneat-3.2.3-de-iphone-04-widgets-lock-469f80bbb7b6.png",
+          "md5": "d9ff63c82d102caf12754bbac174a0ca"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:03:26.718Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-de-iphone-01-df940bab2e20.png",
+          "doneat-3.2.1-de-iphone-02-39dbb48b452d.png",
+          "doneat-3.2.3-de-iphone-03-widgets-home-e8445059aa4e.png",
+          "doneat-3.2.3-de-iphone-04-widgets-lock-469f80bbb7b6.png",
+          "doneat-3.2.2-de-iphone-03-nofree-3bb3e42fbc2e.png",
+          "doneat-3.2.1-de-iphone-04-ee026bb9ef92.png",
+          "doneat-3.2.1-de-iphone-06-c7182b394f3b.png",
+          "doneat-3.2.2-de-iphone-07-a165963d8034.png",
+          "doneat-3.2.1-de-iphone-08-506f6f02e0db.png",
+          "doneat-3.2.1-de-iphone-10-baddbf99a87d.png"
+        ]
+      }
+    },
+    "fr-FR APP_IPHONE_67": {
+      "setId": "20ab1dc9-cc27-4a8f-8e91-2c7660270786",
+      "original": [
+        {
+          "id": "989e71b9-b33d-43be-9500-4b9284c455ea",
+          "fileName": "doneat-3.2.1-fr-iphone-01-22244c035575.png"
+        },
+        {
+          "id": "606cf8eb-a528-4a69-9a5a-45d1f51f9e01",
+          "fileName": "doneat-3.2.1-fr-iphone-02-5a5bd78cc67c.png"
+        },
+        {
+          "id": "e8ac95f7-5c39-40cd-b5c1-629f1165785b",
+          "fileName": "doneat-3.2.2-fr-iphone-03-nofree-32162550f805.png"
+        },
+        {
+          "id": "f7cc0768-dcbf-4bce-8693-8f7602dccdec",
+          "fileName": "doneat-3.2.1-fr-iphone-04-f6d5e7bb2753.png"
+        },
+        {
+          "id": "48df455c-2d6c-45c9-8412-b6a3bfab2ddb",
+          "fileName": "doneat-3.2.2-fr-iphone-05-nofree-3a7967282313.png"
+        },
+        {
+          "id": "7e71c054-14a6-4058-8893-5c1c06a2410e",
+          "fileName": "doneat-3.2.1-fr-iphone-06-8ae1dd92985c.png"
+        },
+        {
+          "id": "b13d4fd6-5904-4d0e-a94c-e614bda81dc5",
+          "fileName": "doneat-3.2.2-fr-iphone-07-9d618fe2f1bf.png"
+        },
+        {
+          "id": "8ca580ed-47ac-4159-8870-6ac3e42b864e",
+          "fileName": "doneat-3.2.1-fr-iphone-08-c67a44f36fca.png"
+        },
+        {
+          "id": "3f334490-56b0-4fdc-8164-897a88fe865b",
+          "fileName": "doneat-3.2.1-fr-iphone-09-89eea76edf2e.png"
+        },
+        {
+          "id": "df25a3d5-da61-4f45-83ca-188523e3796a",
+          "fileName": "doneat-3.2.1-fr-iphone-10-eea7b6189a9a.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "57800019-57a8-8a76-8018-a8a7c611c2a1",
+          "fileName": "doneat-3.2.3-fr-iphone-03-widgets-home-95e0cc754956.png",
+          "md5": "6c5fe10a30a1b09e44ff7439f8eb7fef"
+        },
+        "4": {
+          "id": "29c00019-57a8-8a76-8005-608247e23e94",
+          "fileName": "doneat-3.2.3-fr-iphone-04-widgets-lock-e8dc1d4ce914.png",
+          "md5": "7df1aed23a9f91b7db7d94f34bf6eced"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:03:45.140Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-fr-iphone-01-22244c035575.png",
+          "doneat-3.2.1-fr-iphone-02-5a5bd78cc67c.png",
+          "doneat-3.2.3-fr-iphone-03-widgets-home-95e0cc754956.png",
+          "doneat-3.2.3-fr-iphone-04-widgets-lock-e8dc1d4ce914.png",
+          "doneat-3.2.2-fr-iphone-03-nofree-32162550f805.png",
+          "doneat-3.2.1-fr-iphone-04-f6d5e7bb2753.png",
+          "doneat-3.2.1-fr-iphone-06-8ae1dd92985c.png",
+          "doneat-3.2.2-fr-iphone-07-9d618fe2f1bf.png",
+          "doneat-3.2.1-fr-iphone-08-c67a44f36fca.png",
+          "doneat-3.2.1-fr-iphone-10-eea7b6189a9a.png"
+        ]
+      }
+    },
+    "es-ES APP_IPHONE_67": {
+      "setId": "3e7c9667-8133-4bad-b612-3008e2a1ba86",
+      "original": [
+        {
+          "id": "f0ba2d2d-8d72-477b-a4e9-0638aae72cb8",
+          "fileName": "doneat-3.2.1-es-iphone-01-fa2c1029a8e6.png"
+        },
+        {
+          "id": "24eb9173-e9b3-49e1-a4bb-0b19fbd2367d",
+          "fileName": "doneat-3.2.1-es-iphone-02-a2e3ae3978fb.png"
+        },
+        {
+          "id": "f06b5419-6003-49e4-8c96-059c3040f6e8",
+          "fileName": "doneat-3.2.2-es-iphone-03-nofree-996713922eb0.png"
+        },
+        {
+          "id": "0fc695c3-9e33-48ec-9817-bcd99e572f8e",
+          "fileName": "doneat-3.2.1-es-iphone-04-13dc8218ce9f.png"
+        },
+        {
+          "id": "868b41ea-0a1f-4d2a-a739-3507f18554a8",
+          "fileName": "doneat-3.2.2-es-iphone-05-nofree-49aafd48027d.png"
+        },
+        {
+          "id": "3fa2a7d3-6681-48a3-b76e-eeac8abb8658",
+          "fileName": "doneat-3.2.1-es-iphone-06-679e02d01de9.png"
+        },
+        {
+          "id": "79bd0715-779c-4c12-808a-65d11b264a2a",
+          "fileName": "doneat-3.2.2-es-iphone-07-b1ae0ca43bad.png"
+        },
+        {
+          "id": "28e8323a-fa47-48ce-982c-31c64eba266b",
+          "fileName": "doneat-3.2.1-es-iphone-08-1a628b2f2947.png"
+        },
+        {
+          "id": "d63560cb-9a94-4bc0-886f-35400fe424b5",
+          "fileName": "doneat-3.2.1-es-iphone-09-56565c4a0782.png"
+        },
+        {
+          "id": "bd449361-5b66-4cdb-ba83-59de3c73bfaf",
+          "fileName": "doneat-3.2.1-es-iphone-10-b0df13a52195.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "e1000019-57a8-8a76-8011-be1bc7edef64",
+          "fileName": "doneat-3.2.3-es-iphone-03-widgets-home-002f5544b497.png",
+          "md5": "4a42af967fea595d15991d3c7c6e78c9"
+        },
+        "4": {
+          "id": "3f800019-57a8-8a76-800e-22e281790f90",
+          "fileName": "doneat-3.2.3-es-iphone-04-widgets-lock-efc993923a91.png",
+          "md5": "cb9a5e77e73f83f61a7ccccc60edf58b"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:04:04.513Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-es-iphone-01-fa2c1029a8e6.png",
+          "doneat-3.2.1-es-iphone-02-a2e3ae3978fb.png",
+          "doneat-3.2.3-es-iphone-03-widgets-home-002f5544b497.png",
+          "doneat-3.2.3-es-iphone-04-widgets-lock-efc993923a91.png",
+          "doneat-3.2.2-es-iphone-03-nofree-996713922eb0.png",
+          "doneat-3.2.1-es-iphone-04-13dc8218ce9f.png",
+          "doneat-3.2.1-es-iphone-06-679e02d01de9.png",
+          "doneat-3.2.2-es-iphone-07-b1ae0ca43bad.png",
+          "doneat-3.2.1-es-iphone-08-1a628b2f2947.png",
+          "doneat-3.2.1-es-iphone-10-b0df13a52195.png"
+        ]
+      }
+    },
+    "it APP_IPHONE_67": {
+      "setId": "13cab8cc-4785-4edd-b1ef-e95780f2c4bf",
+      "original": [
+        {
+          "id": "e9199d40-fcfd-43cd-ac8a-70371e611b7a",
+          "fileName": "doneat-3.2.1-it-iphone-01-20075c48e210.png"
+        },
+        {
+          "id": "587a0aa6-88a3-4816-b5e9-403fa8d2662c",
+          "fileName": "doneat-3.2.1-it-iphone-02-f2b79904c664.png"
+        },
+        {
+          "id": "091ee4f1-d121-4bd0-81b4-1864e8ae626a",
+          "fileName": "doneat-3.2.2-it-iphone-03-nofree-c59f792f88d7.png"
+        },
+        {
+          "id": "e7aab674-1ddb-4e87-b0d6-e884fd4bb90a",
+          "fileName": "doneat-3.2.1-it-iphone-04-a23b60fc1e6b.png"
+        },
+        {
+          "id": "34e23694-31d2-48fc-a308-3a2cbc28bf8a",
+          "fileName": "doneat-3.2.2-it-iphone-05-nofree-b575f2381673.png"
+        },
+        {
+          "id": "1a7c134e-0883-42a4-aff2-82eda5703cd7",
+          "fileName": "doneat-3.2.1-it-iphone-06-8ae828d3b18e.png"
+        },
+        {
+          "id": "c1b68c11-519f-4c0b-8c9a-f8c4d7ce0458",
+          "fileName": "doneat-3.2.2-it-iphone-07-43037faecf35.png"
+        },
+        {
+          "id": "db56b273-9883-4234-9357-156cb9cbe354",
+          "fileName": "doneat-3.2.1-it-iphone-08-931eb363c9c7.png"
+        },
+        {
+          "id": "94c14e82-4d53-4129-a6fd-6bbd2e36fac7",
+          "fileName": "doneat-3.2.1-it-iphone-09-2fa1ed6ce84b.png"
+        },
+        {
+          "id": "5c42dbd2-cf42-4c42-8731-b29118d2dbdf",
+          "fileName": "doneat-3.2.1-it-iphone-10-e7c2e8165b66.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "cb400019-57a8-8a76-8008-f226456daea0",
+          "fileName": "doneat-3.2.3-it-iphone-03-widgets-home-1f073d59c16c.png",
+          "md5": "d2b361139250916b8f7faffece6dc893"
+        },
+        "4": {
+          "id": "0d400019-57a8-8a76-801e-da79acbeca42",
+          "fileName": "doneat-3.2.3-it-iphone-04-widgets-lock-acab6b87db3b.png",
+          "md5": "a55658d64a16e9386b82ad2b5e127be5"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:04:23.237Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-it-iphone-01-20075c48e210.png",
+          "doneat-3.2.1-it-iphone-02-f2b79904c664.png",
+          "doneat-3.2.3-it-iphone-03-widgets-home-1f073d59c16c.png",
+          "doneat-3.2.3-it-iphone-04-widgets-lock-acab6b87db3b.png",
+          "doneat-3.2.2-it-iphone-03-nofree-c59f792f88d7.png",
+          "doneat-3.2.1-it-iphone-04-a23b60fc1e6b.png",
+          "doneat-3.2.1-it-iphone-06-8ae828d3b18e.png",
+          "doneat-3.2.2-it-iphone-07-43037faecf35.png",
+          "doneat-3.2.1-it-iphone-08-931eb363c9c7.png",
+          "doneat-3.2.1-it-iphone-10-e7c2e8165b66.png"
+        ]
+      }
+    },
+    "pt-BR APP_IPHONE_67": {
+      "setId": "f2f2151e-08ab-4d5f-b035-65621c81f031",
+      "original": [
+        {
+          "id": "e03e8b3b-b732-476c-b8cd-c907439d78f1",
+          "fileName": "doneat-3.2.1-pt-iphone-01-e6c56ffa3330.png"
+        },
+        {
+          "id": "2562515b-810d-4f4c-a479-6a7d19aca335",
+          "fileName": "doneat-3.2.1-pt-iphone-02-c02ed1278534.png"
+        },
+        {
+          "id": "1dcb8005-5343-4f3b-bee3-d84a9634ee27",
+          "fileName": "doneat-3.2.2-pt-iphone-03-nofree-73f3178f3e5d.png"
+        },
+        {
+          "id": "aeebe132-3e5c-4068-b308-e5a8f3c2f579",
+          "fileName": "doneat-3.2.1-pt-iphone-04-98d0c4d16800.png"
+        },
+        {
+          "id": "b624ef20-f5cb-4bf9-9dc5-5f023be7fc58",
+          "fileName": "doneat-3.2.2-pt-iphone-05-nofree-19f166024b12.png"
+        },
+        {
+          "id": "9a48a60e-ea94-4d21-a695-4c4e9a8fbbe4",
+          "fileName": "doneat-3.2.1-pt-iphone-06-ed424a76934b.png"
+        },
+        {
+          "id": "3bf6433a-c186-4b46-aab0-61652c3920c6",
+          "fileName": "doneat-3.2.2-pt-iphone-07-e3d375f3b6e2.png"
+        },
+        {
+          "id": "68937b87-4b7d-4e06-8b23-7d0046f98b30",
+          "fileName": "doneat-3.2.1-pt-iphone-08-54a4ed7815a3.png"
+        },
+        {
+          "id": "7e5a8beb-8bf5-43a0-9582-73f45d4babfb",
+          "fileName": "doneat-3.2.1-pt-iphone-09-3cad165bd52a.png"
+        },
+        {
+          "id": "8ec98cb3-6700-4299-98b4-3c37ddb2a7e6",
+          "fileName": "doneat-3.2.1-pt-iphone-10-101fd805dcfb.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "17c00019-57a8-8a76-8013-4fbcb0a7888c",
+          "fileName": "doneat-3.2.3-pt-iphone-03-widgets-home-0812f482457e.png",
+          "md5": "d10631f80a0ca9a12cfd53c0dc6d10f9"
+        },
+        "4": {
+          "id": "e9400019-57a8-8a76-8037-589eebe00d29",
+          "fileName": "doneat-3.2.3-pt-iphone-04-widgets-lock-f0b66b730aa3.png",
+          "md5": "ee04d8577cc7f749d84f0fbe57b97c50"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:04:43.785Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-pt-iphone-01-e6c56ffa3330.png",
+          "doneat-3.2.1-pt-iphone-02-c02ed1278534.png",
+          "doneat-3.2.3-pt-iphone-03-widgets-home-0812f482457e.png",
+          "doneat-3.2.3-pt-iphone-04-widgets-lock-f0b66b730aa3.png",
+          "doneat-3.2.2-pt-iphone-03-nofree-73f3178f3e5d.png",
+          "doneat-3.2.1-pt-iphone-04-98d0c4d16800.png",
+          "doneat-3.2.1-pt-iphone-06-ed424a76934b.png",
+          "doneat-3.2.2-pt-iphone-07-e3d375f3b6e2.png",
+          "doneat-3.2.1-pt-iphone-08-54a4ed7815a3.png",
+          "doneat-3.2.1-pt-iphone-10-101fd805dcfb.png"
+        ]
+      }
+    },
+    "ru APP_IPHONE_67": {
+      "setId": "9c52a23a-db73-4dc4-a1fd-1b6db71817cf",
+      "original": [
+        {
+          "id": "c5245911-0732-4489-8866-44e7f2dbf324",
+          "fileName": "doneat-3.2.1-ru-iphone-01-fbe668e78cc7.png"
+        },
+        {
+          "id": "da4d0014-950b-4034-a25e-ea5da479f166",
+          "fileName": "doneat-3.2.1-ru-iphone-02-45275947d4b1.png"
+        },
+        {
+          "id": "c84454ad-1fd9-4a43-816e-8778f64cb2cd",
+          "fileName": "doneat-3.2.2-ru-iphone-03-nofree-e384f2359edd.png"
+        },
+        {
+          "id": "6f567421-306b-48b4-bb1c-64f59277554c",
+          "fileName": "doneat-3.2.1-ru-iphone-04-bb2f896eecbe.png"
+        },
+        {
+          "id": "0702eff9-e7c0-4810-ade1-c403db73b9db",
+          "fileName": "doneat-3.2.2-ru-iphone-05-nofree-7b5cd9cc450a.png"
+        },
+        {
+          "id": "80133d98-d1e2-475e-9899-ccc697cb4c9d",
+          "fileName": "doneat-3.2.1-ru-iphone-06-cfac82343fa9.png"
+        },
+        {
+          "id": "ecea3aab-4e12-41d1-b142-8bc7bb3ee8cd",
+          "fileName": "doneat-3.2.2-ru-iphone-07-eb2fb5d5d513.png"
+        },
+        {
+          "id": "f84b8f3e-e788-4c23-8944-f9b4e8944b06",
+          "fileName": "doneat-3.2.1-ru-iphone-08-726f5c68f9fe.png"
+        },
+        {
+          "id": "8cc170a0-186e-4d6b-a34e-9ffc19c9f8da",
+          "fileName": "doneat-3.2.1-ru-iphone-09-c1ed5db35744.png"
+        },
+        {
+          "id": "9fff259c-ee5d-4922-9ca1-b94c5fe9f225",
+          "fileName": "doneat-3.2.1-ru-iphone-10-33f40b752faf.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "7c000019-57a8-8a76-8014-da1a7b095359",
+          "fileName": "doneat-3.2.3-ru-iphone-03-widgets-home-35a7f74a2613.png",
+          "md5": "4af0e86e510c584a34fcb2905ea49593"
+        },
+        "4": {
+          "id": "afc00019-57a8-8a76-803a-99c08d1dee1a",
+          "fileName": "doneat-3.2.3-ru-iphone-04-widgets-lock-e27d5408dfd0.png",
+          "md5": "84453e56f4d694dba91eacb1136c4e3b"
+        },
+        "5": {
+          "id": "ab400019-57a8-8a76-8036-99d47649f41b",
+          "fileName": "doneat-3.2.3-ru-iphone-05-leave-346816e7c1d5.png",
+          "md5": "39780795dcb13efa46e8bc072733821a"
+        },
+        "6": {
+          "id": "a2000019-57a8-8a76-8031-abd520f4a1df",
+          "fileName": "doneat-3.2.3-ru-iphone-06-report-6ad15344f0b2.png",
+          "md5": "f98814dc0dadbea34858bc25a775f311"
+        },
+        "7": {
+          "id": "60800019-57a8-8a76-8023-3533a84a5878",
+          "fileName": "doneat-3.2.3-ru-iphone-07-calendar-60a64beee650.png",
+          "md5": "762fd06931d9244ab2c9cef714f81287"
+        },
+        "8": {
+          "id": "09c00019-57a8-8a76-8005-37da31f3892b",
+          "fileName": "doneat-3.2.3-ru-iphone-08-records-7017ac8ed9fc.png",
+          "md5": "5f33ee133c1c25248902d585f71f0797"
+        },
+        "9": {
+          "id": "62800019-57a8-8a76-8002-f3a3498207ed",
+          "fileName": "doneat-3.2.3-ru-iphone-09-focus-10037029459e.png",
+          "md5": "83125d45107087820c436120a8ff718a"
+        },
+        "10": {
+          "id": "25400019-57a8-8a76-8013-01031ed451da",
+          "fileName": "doneat-3.2.3-ru-iphone-10-rest-fa1a82f765a2.png",
+          "md5": "1777e500c979253a7af6ede75b9f4100"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:05:53.291Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-ru-iphone-01-fbe668e78cc7.png",
+          "doneat-3.2.1-ru-iphone-02-45275947d4b1.png",
+          "doneat-3.2.3-ru-iphone-03-widgets-home-35a7f74a2613.png",
+          "doneat-3.2.3-ru-iphone-04-widgets-lock-e27d5408dfd0.png",
+          "doneat-3.2.3-ru-iphone-05-leave-346816e7c1d5.png",
+          "doneat-3.2.3-ru-iphone-06-report-6ad15344f0b2.png",
+          "doneat-3.2.3-ru-iphone-07-calendar-60a64beee650.png",
+          "doneat-3.2.3-ru-iphone-08-records-7017ac8ed9fc.png",
+          "doneat-3.2.3-ru-iphone-09-focus-10037029459e.png",
+          "doneat-3.2.3-ru-iphone-10-rest-fa1a82f765a2.png"
+        ]
+      }
+    },
+    "tr APP_IPHONE_67": {
+      "setId": "be9dd1dd-16e4-4109-b955-23ad5048d6b5",
+      "original": [
+        {
+          "id": "8f4ab0d2-c822-44f2-a516-6b5835c9344f",
+          "fileName": "doneat-3.2.1-tr-iphone-01-c685dff32500.png"
+        },
+        {
+          "id": "07165cc5-dfce-4e1b-bdb0-539c0d16451e",
+          "fileName": "doneat-3.2.1-tr-iphone-02-0c486be3c4ac.png"
+        },
+        {
+          "id": "fed0b4c7-da9a-4892-91e2-7b01a3da086d",
+          "fileName": "doneat-3.2.2-tr-iphone-03-nofree-b036abf8bb3e.png"
+        },
+        {
+          "id": "d3abcb60-3fd4-4094-bce1-1071b55b7499",
+          "fileName": "doneat-3.2.1-tr-iphone-04-eef8f39a2a02.png"
+        },
+        {
+          "id": "25f60a15-fc8c-4051-b447-25c5294fcc89",
+          "fileName": "doneat-3.2.2-tr-iphone-05-nofree-ce6b238f7bca.png"
+        },
+        {
+          "id": "29798a0a-47a8-46a1-976a-1cde2cff76ef",
+          "fileName": "doneat-3.2.1-tr-iphone-06-3335e61762ee.png"
+        },
+        {
+          "id": "5419a99b-6a8c-498c-a8eb-9ef0734083e2",
+          "fileName": "doneat-3.2.2-tr-iphone-07-93f1931a96d3.png"
+        },
+        {
+          "id": "3ad04355-c6ed-42a4-8801-9fcba797f4c5",
+          "fileName": "doneat-3.2.1-tr-iphone-08-3c5a99f4d642.png"
+        },
+        {
+          "id": "a5cb8ab2-3089-4c16-8063-430a8bf21100",
+          "fileName": "doneat-3.2.1-tr-iphone-09-386f4b86fda0.png"
+        },
+        {
+          "id": "05f03317-f986-487b-a280-e9817533486e",
+          "fileName": "doneat-3.2.1-tr-iphone-10-fadd62a00b8f.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "03400019-57a8-8a76-801e-01753ba20931",
+          "fileName": "doneat-3.2.3-tr-iphone-03-widgets-home-71f9ca6f6950.png",
+          "md5": "fc85fbf587c0e673d6f8d9a97bf4aa7a"
+        },
+        "4": {
+          "id": "d9c00019-57a8-8a76-8029-692a64ebc770",
+          "fileName": "doneat-3.2.3-tr-iphone-04-widgets-lock-dea362a55ffa.png",
+          "md5": "c37aed817928df40036174a0e778227e"
+        },
+        "5": {
+          "id": "cf000019-57a8-8a76-8032-95cc21abdb8c",
+          "fileName": "doneat-3.2.3-tr-iphone-05-leave-4f27579789a0.png",
+          "md5": "d440cf374e798d8e5b377b5feb024315"
+        },
+        "6": {
+          "id": "04c00019-57a8-8a76-8018-619cd3444f5a",
+          "fileName": "doneat-3.2.3-tr-iphone-06-report-ae679e8df867.png",
+          "md5": "324bf0c5d74ec041d2fe54aa908b55e2"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:06:26.237Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-tr-iphone-01-c685dff32500.png",
+          "doneat-3.2.1-tr-iphone-02-0c486be3c4ac.png",
+          "doneat-3.2.3-tr-iphone-03-widgets-home-71f9ca6f6950.png",
+          "doneat-3.2.3-tr-iphone-04-widgets-lock-dea362a55ffa.png",
+          "doneat-3.2.3-tr-iphone-05-leave-4f27579789a0.png",
+          "doneat-3.2.3-tr-iphone-06-report-ae679e8df867.png",
+          "doneat-3.2.1-tr-iphone-06-3335e61762ee.png",
+          "doneat-3.2.2-tr-iphone-07-93f1931a96d3.png",
+          "doneat-3.2.1-tr-iphone-08-3c5a99f4d642.png",
+          "doneat-3.2.1-tr-iphone-10-fadd62a00b8f.png"
+        ]
+      }
+    },
+    "id APP_IPHONE_67": {
+      "setId": "b14b50e5-c66b-4550-8ddf-749d974f41a2",
+      "original": [
+        {
+          "id": "3fff1cca-f348-4924-b429-6986a622f1a0",
+          "fileName": "doneat-3.2.1-id-iphone-01-8eaa029b9ba0.png"
+        },
+        {
+          "id": "f8328524-8a50-4573-811b-3c5038452e32",
+          "fileName": "doneat-3.2.1-id-iphone-02-e0b81222520f.png"
+        },
+        {
+          "id": "b120e09f-8924-4f67-a9ad-28f44b4e32c3",
+          "fileName": "doneat-3.2.2-id-iphone-03-nofree-11c3916ff22a.png"
+        },
+        {
+          "id": "009e8f71-4622-47dd-a5ac-323e573e7e52",
+          "fileName": "doneat-3.2.1-id-iphone-04-3a62a1bd025d.png"
+        },
+        {
+          "id": "596cacae-7ece-45d5-b599-756b86b58167",
+          "fileName": "doneat-3.2.2-id-iphone-05-nofree-984b9ff68289.png"
+        },
+        {
+          "id": "8deb57e9-ac90-459a-a339-5dea14fd098c",
+          "fileName": "doneat-3.2.1-id-iphone-06-39f4123e9a38.png"
+        },
+        {
+          "id": "719a8791-e287-419e-827b-cdb7f2e25574",
+          "fileName": "doneat-3.2.2-id-iphone-07-0909584f4f11.png"
+        },
+        {
+          "id": "31526cd2-6932-4e86-bcdf-5c02e3b4ee70",
+          "fileName": "doneat-3.2.1-id-iphone-08-7eaf37cdd2eb.png"
+        },
+        {
+          "id": "1aafa81c-eb1f-4391-aef9-039276210f9e",
+          "fileName": "doneat-3.2.1-id-iphone-09-6d0f711882c2.png"
+        },
+        {
+          "id": "dfee6dbc-1cca-4ee8-bf60-dd35c5bbf444",
+          "fileName": "doneat-3.2.1-id-iphone-10-bb4126f49d31.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "f0800019-57a8-8a76-8017-cd3fd95d995c",
+          "fileName": "doneat-3.2.3-id-iphone-03-widgets-home-259d18400b09.png",
+          "md5": "e76491e587bf8bf7b06b12278954acda"
+        },
+        "4": {
+          "id": "b0c00019-57a8-8a76-800f-4b5ce16e49e5",
+          "fileName": "doneat-3.2.3-id-iphone-04-widgets-lock-4d375b2bcad5.png",
+          "md5": "01f45603d70b9de9959ddce1ed916687"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:06:43.896Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-id-iphone-01-8eaa029b9ba0.png",
+          "doneat-3.2.1-id-iphone-02-e0b81222520f.png",
+          "doneat-3.2.3-id-iphone-03-widgets-home-259d18400b09.png",
+          "doneat-3.2.3-id-iphone-04-widgets-lock-4d375b2bcad5.png",
+          "doneat-3.2.2-id-iphone-03-nofree-11c3916ff22a.png",
+          "doneat-3.2.1-id-iphone-04-3a62a1bd025d.png",
+          "doneat-3.2.1-id-iphone-06-39f4123e9a38.png",
+          "doneat-3.2.2-id-iphone-07-0909584f4f11.png",
+          "doneat-3.2.1-id-iphone-08-7eaf37cdd2eb.png",
+          "doneat-3.2.1-id-iphone-10-bb4126f49d31.png"
+        ]
+      }
+    },
+    "vi APP_IPHONE_67": {
+      "setId": "89b62269-783f-423f-b514-df306ec73e92",
+      "original": [
+        {
+          "id": "6153e215-a61d-4430-a93e-6de9d4dcb7f4",
+          "fileName": "doneat-3.2.1-vi-iphone-01-f5771676ac13.png"
+        },
+        {
+          "id": "12f806cc-ceac-44ad-8c0e-e07499eac1e4",
+          "fileName": "doneat-3.2.1-vi-iphone-02-05e1b48725cd.png"
+        },
+        {
+          "id": "2abd51e9-59f8-4753-b85c-84b75d0e9eed",
+          "fileName": "doneat-3.2.2-vi-iphone-03-nofree-a855ffcd9ac7.png"
+        },
+        {
+          "id": "e443d8c6-8c5a-4c7f-914c-421b78cef0fc",
+          "fileName": "doneat-3.2.1-vi-iphone-04-89266100bb1f.png"
+        },
+        {
+          "id": "ae4b8c95-4a0e-4a6c-91ef-fd090a8ce889",
+          "fileName": "doneat-3.2.2-vi-iphone-05-nofree-65e1f5f1ac89.png"
+        },
+        {
+          "id": "ca42c4ba-c58a-4f76-a94c-f74810e78adf",
+          "fileName": "doneat-3.2.1-vi-iphone-06-8cae99723f62.png"
+        },
+        {
+          "id": "c7c43603-8f41-44cf-8e16-53e6e2d65f67",
+          "fileName": "doneat-3.2.2-vi-iphone-07-596787a16445.png"
+        },
+        {
+          "id": "d053ab08-c424-49ad-bdd1-0277fb171107",
+          "fileName": "doneat-3.2.1-vi-iphone-08-6ec3747ebc72.png"
+        },
+        {
+          "id": "c111b62a-0925-4af4-99ba-ebc5c1013c51",
+          "fileName": "doneat-3.2.1-vi-iphone-09-8b39b29f81c2.png"
+        },
+        {
+          "id": "d35a69bb-859a-4e9e-ad09-82b76d8f4334",
+          "fileName": "doneat-3.2.1-vi-iphone-10-ee2d8f14f4b5.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "18400019-57a8-8a76-8027-c59a58aa354d",
+          "fileName": "doneat-3.2.3-vi-iphone-03-widgets-home-38d1f60cb178.png",
+          "md5": "549b354e1c7ca966053999169adc489d"
+        },
+        "4": {
+          "id": "5c000019-57a8-8a76-8033-ff7c35089a05",
+          "fileName": "doneat-3.2.3-vi-iphone-04-widgets-lock-5275546582ad.png",
+          "md5": "0a2ed9102b7ab8b230fc778231f440e8"
+        },
+        "5": {
+          "id": "a7400019-57a8-8a76-8006-fcf32328ea22",
+          "fileName": "doneat-3.2.3-vi-iphone-05-leave-021577b48702.png",
+          "md5": "3debd15c5aaa9ab8b0fc9f02175bb8f6"
+        },
+        "6": {
+          "id": "e7c00019-57a8-8a76-8038-b4954ccceaf9",
+          "fileName": "doneat-3.2.3-vi-iphone-06-report-5cd910774dff.png",
+          "md5": "d6ecea2d047de256b97a2484e2b8c0fe"
+        },
+        "7": {
+          "id": "30800019-57a8-8a76-8021-adacef12e66a",
+          "fileName": "doneat-3.2.3-vi-iphone-07-calendar-5de4c244e69a.png",
+          "md5": "c1a0f905c0073b1c5c92e4f87296bcdf"
+        },
+        "8": {
+          "id": "d1c00019-57a8-8a76-8034-1e0a7ae1c48e",
+          "fileName": "doneat-3.2.3-vi-iphone-08-records-083f9c1a3a50.png",
+          "md5": "f53c70dd1d9ea6db8bf2b1e5e95bd8b5"
+        },
+        "9": {
+          "id": "8e400019-57a8-8a76-800e-1caa4f060c36",
+          "fileName": "doneat-3.2.3-vi-iphone-09-focus-31c4d7d44f9d.png",
+          "md5": "0b16c0451b57c70a721b0d60e12e7169"
+        },
+        "10": {
+          "id": "9ec00019-57a8-8a76-8027-dd542bf557b3",
+          "fileName": "doneat-3.2.3-vi-iphone-10-rest-9114735957ab.png",
+          "md5": "d20b498c1037c074bdb4cbcd6bae512b"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:07:52.174Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-vi-iphone-01-f5771676ac13.png",
+          "doneat-3.2.1-vi-iphone-02-05e1b48725cd.png",
+          "doneat-3.2.3-vi-iphone-03-widgets-home-38d1f60cb178.png",
+          "doneat-3.2.3-vi-iphone-04-widgets-lock-5275546582ad.png",
+          "doneat-3.2.3-vi-iphone-05-leave-021577b48702.png",
+          "doneat-3.2.3-vi-iphone-06-report-5cd910774dff.png",
+          "doneat-3.2.3-vi-iphone-07-calendar-5de4c244e69a.png",
+          "doneat-3.2.3-vi-iphone-08-records-083f9c1a3a50.png",
+          "doneat-3.2.3-vi-iphone-09-focus-31c4d7d44f9d.png",
+          "doneat-3.2.3-vi-iphone-10-rest-9114735957ab.png"
+        ]
+      }
+    },
+    "th APP_IPHONE_67": {
+      "setId": "0c67bfc9-de94-454a-b0a6-4e590b38e57b",
+      "original": [
+        {
+          "id": "fbc940e9-2670-438a-a1f6-4da484a3ccff",
+          "fileName": "doneat-3.2.1-th-iphone-01-5dfcf3957d85.png"
+        },
+        {
+          "id": "8db463a1-567f-4af3-9b71-80badcf7bfd5",
+          "fileName": "doneat-3.2.1-th-iphone-02-f34392c1079c.png"
+        },
+        {
+          "id": "a550e630-0832-4634-a8e8-9c66cab995a4",
+          "fileName": "doneat-3.2.2-th-iphone-03-nofree-13f609bd0086.png"
+        },
+        {
+          "id": "8a461920-b5e1-46f4-8b7f-396da899b48f",
+          "fileName": "doneat-3.2.1-th-iphone-04-ed9518c4b864.png"
+        },
+        {
+          "id": "2bd3819c-f45b-41da-b265-19e0329b25fc",
+          "fileName": "doneat-3.2.2-th-iphone-05-nofree-8c666e178aa9.png"
+        },
+        {
+          "id": "56d345cd-e197-4433-931f-55f9276a62d2",
+          "fileName": "doneat-3.2.1-th-iphone-06-c6a85e2ecd2b.png"
+        },
+        {
+          "id": "1f4b61be-e18c-46d4-b014-83b2961d62df",
+          "fileName": "doneat-3.2.2-th-iphone-07-a4affb3e2303.png"
+        },
+        {
+          "id": "5407f441-d627-4b94-a53e-ed4a885ee83a",
+          "fileName": "doneat-3.2.1-th-iphone-08-c3e5087ef7e9.png"
+        },
+        {
+          "id": "3c87219e-24c1-40b0-b7e8-c677b553695d",
+          "fileName": "doneat-3.2.1-th-iphone-09-53ed49356d77.png"
+        },
+        {
+          "id": "b0585d98-295e-4a10-8493-9c124523c7f4",
+          "fileName": "doneat-3.2.1-th-iphone-10-8665186a5791.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "0b400019-57a8-8a76-801b-780cc41d0448",
+          "fileName": "doneat-3.2.3-th-iphone-03-widgets-home-e88a506a4667.png",
+          "md5": "8da6a195dfc3296860cc1308ade7d16d"
+        },
+        "4": {
+          "id": "ca400019-57a8-8a76-8018-0a14a906e23a",
+          "fileName": "doneat-3.2.3-th-iphone-04-widgets-lock-fa54e5de21d2.png",
+          "md5": "542f46e4665fdfcceff2e53244349634"
+        },
+        "6": {
+          "id": "51c00019-57a8-8a76-801e-e9fcbf29d359",
+          "fileName": "doneat-3.2.3-th-iphone-06-report-3d8e907f1fc7.png",
+          "md5": "7adf757c862b83f9fa61c121ea3159c9"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:08:21.358Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-th-iphone-01-5dfcf3957d85.png",
+          "doneat-3.2.1-th-iphone-02-f34392c1079c.png",
+          "doneat-3.2.3-th-iphone-03-widgets-home-e88a506a4667.png",
+          "doneat-3.2.3-th-iphone-04-widgets-lock-fa54e5de21d2.png",
+          "doneat-3.2.2-th-iphone-03-nofree-13f609bd0086.png",
+          "doneat-3.2.3-th-iphone-06-report-3d8e907f1fc7.png",
+          "doneat-3.2.1-th-iphone-06-c6a85e2ecd2b.png",
+          "doneat-3.2.2-th-iphone-07-a4affb3e2303.png",
+          "doneat-3.2.1-th-iphone-08-c3e5087ef7e9.png",
+          "doneat-3.2.1-th-iphone-10-8665186a5791.png"
+        ]
+      }
+    },
+    "hi APP_IPHONE_67": {
+      "setId": "aa7f64d8-029d-4aa4-b557-f8ed190375b5",
+      "original": [
+        {
+          "id": "6cfc33c0-68cb-4c88-9226-2b5266bf0b91",
+          "fileName": "doneat-3.2.1-hi-IN-iphone-01-94452a9ed54e.png"
+        },
+        {
+          "id": "88576328-2454-42b5-8ac2-abb73ef8be20",
+          "fileName": "doneat-3.2.1-hi-IN-iphone-02-6e23f6e3e02a.png"
+        },
+        {
+          "id": "1953cf20-dd52-490b-954b-4417ec68fe93",
+          "fileName": "doneat-3.2.2-hi-IN-iphone-03-nofree-9de69796813d.png"
+        },
+        {
+          "id": "c8b41017-078a-4069-bc93-39b9aa173fa7",
+          "fileName": "doneat-3.2.1-hi-IN-iphone-04-05ea91678c2f.png"
+        },
+        {
+          "id": "fae32d17-c45b-4976-ace8-2a6a783c965a",
+          "fileName": "doneat-3.2.2-hi-IN-iphone-05-nofree-8e38cfa7a394.png"
+        },
+        {
+          "id": "c75ab6c8-0d49-4d31-b02c-a189607095e6",
+          "fileName": "doneat-3.2.1-hi-IN-iphone-06-d7d42a719da0.png"
+        },
+        {
+          "id": "0dbe1c7c-f9e1-42f3-9a55-842426e63749",
+          "fileName": "doneat-3.2.2-hi-IN-iphone-07-f16f8784f25f.png"
+        },
+        {
+          "id": "374b096c-845c-4774-9852-19c3b40fac44",
+          "fileName": "doneat-3.2.1-hi-IN-iphone-08-26e991034f56.png"
+        },
+        {
+          "id": "086c01b5-6bf3-43d3-8713-ba92addbe9e8",
+          "fileName": "doneat-3.2.1-hi-IN-iphone-09-c4970aa89525.png"
+        },
+        {
+          "id": "48d9797d-533a-4a95-81a2-3e2453202d71",
+          "fileName": "doneat-3.2.1-hi-IN-iphone-10-dafcb9cf65b0.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "8dc00019-57a8-8a76-803f-10c5372df2c0",
+          "fileName": "doneat-3.2.3-hi-IN-iphone-03-widgets-home-12e548b4840d.png",
+          "md5": "1d4de4d9c42fc569b891fcdd1fa061fa"
+        },
+        "4": {
+          "id": "84800019-57a8-8a76-8023-9d1cb75c4af1",
+          "fileName": "doneat-3.2.3-hi-IN-iphone-04-widgets-lock-ffc7c4f6889f.png",
+          "md5": "f1b322c7cf916ac58985f5ccbb447b27"
+        },
+        "5": {
+          "id": "de000019-57a8-8a76-802c-9265d7a3a37f",
+          "fileName": "doneat-3.2.3-hi-IN-iphone-05-leave-62ac56aded12.png",
+          "md5": "74840be7c64e4f77de10bef95bb24c78"
+        },
+        "6": {
+          "id": "96000019-57a8-8a76-8014-5c85de98d49f",
+          "fileName": "doneat-3.2.3-hi-IN-iphone-06-report-9ba2ea9dd502.png",
+          "md5": "11950ce9dadc9ddfb0e7fe03c705c51a"
+        },
+        "7": {
+          "id": "b7c00019-57a8-8a76-8030-efd645c29186",
+          "fileName": "doneat-3.2.3-hi-IN-iphone-07-calendar-135008015177.png",
+          "md5": "7b137fef8bbef41329959cb0aa395440"
+        },
+        "8": {
+          "id": "42800019-57a8-8a76-8000-5b5bc921d4d2",
+          "fileName": "doneat-3.2.3-hi-IN-iphone-08-records-af5409821cdb.png",
+          "md5": "14886989487e8f74a1f7d2c37d8cd2b7"
+        },
+        "9": {
+          "id": "58400019-57a8-8a76-8032-df50cf37641b",
+          "fileName": "doneat-3.2.3-hi-IN-iphone-09-focus-949d92dc501f.png",
+          "md5": "0834faa108f16cfce6c35927c98835ff"
+        },
+        "10": {
+          "id": "cbc00019-57a8-8a76-800f-1d41f14639fa",
+          "fileName": "doneat-3.2.3-hi-IN-iphone-10-rest-ac4d66172e90.png",
+          "md5": "e6d71a98b55306d8e58e463f1dd9fc6f"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:09:21.546Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-hi-IN-iphone-01-94452a9ed54e.png",
+          "doneat-3.2.1-hi-IN-iphone-02-6e23f6e3e02a.png",
+          "doneat-3.2.3-hi-IN-iphone-03-widgets-home-12e548b4840d.png",
+          "doneat-3.2.3-hi-IN-iphone-04-widgets-lock-ffc7c4f6889f.png",
+          "doneat-3.2.3-hi-IN-iphone-05-leave-62ac56aded12.png",
+          "doneat-3.2.3-hi-IN-iphone-06-report-9ba2ea9dd502.png",
+          "doneat-3.2.3-hi-IN-iphone-07-calendar-135008015177.png",
+          "doneat-3.2.3-hi-IN-iphone-08-records-af5409821cdb.png",
+          "doneat-3.2.3-hi-IN-iphone-09-focus-949d92dc501f.png",
+          "doneat-3.2.3-hi-IN-iphone-10-rest-ac4d66172e90.png"
+        ]
+      }
+    },
+    "ar-SA APP_IPHONE_67": {
+      "setId": "39dcb30d-6908-4af2-9f32-9384dfdc794e",
+      "original": [
+        {
+          "id": "32419a44-b652-4dad-93c5-e6bdd9eb56c5",
+          "fileName": "doneat-3.2.1-ar-iphone-01-b889cdb6cdc3.png"
+        },
+        {
+          "id": "9ed8fd48-5189-4cd0-8980-a33979e8bc8e",
+          "fileName": "doneat-3.2.1-ar-iphone-02-3f7bd98e7d23.png"
+        },
+        {
+          "id": "7a4766f9-e6e4-4c91-9e5c-71cf461986ad",
+          "fileName": "doneat-3.2.2-ar-iphone-03-nofree-2aa84b36c828.png"
+        },
+        {
+          "id": "26b867db-10f4-4397-9833-2657b4c53ceb",
+          "fileName": "doneat-3.2.1-ar-iphone-04-ada6a59cfaa9.png"
+        },
+        {
+          "id": "ba72c7c4-e08c-4e23-925e-6b2dc4d8bce2",
+          "fileName": "doneat-3.2.2-ar-iphone-05-nofree-c2d3cb83d148.png"
+        },
+        {
+          "id": "a8296703-0ed4-454f-a719-6df5bdd626aa",
+          "fileName": "doneat-3.2.1-ar-iphone-06-f55c167db6d3.png"
+        },
+        {
+          "id": "1ad3adcb-c659-4a66-b08a-e9cc04077b1e",
+          "fileName": "doneat-3.2.2-ar-iphone-07-93e1af2d40d4.png"
+        },
+        {
+          "id": "20231d94-2362-4588-b2d4-4920b926e978",
+          "fileName": "doneat-3.2.1-ar-iphone-08-98444da59dec.png"
+        },
+        {
+          "id": "0150c693-f108-483e-887a-efaeb12eb949",
+          "fileName": "doneat-3.2.1-ar-iphone-09-26031513b376.png"
+        },
+        {
+          "id": "cfd6f74c-3b2d-4d60-923c-0ccfbefa3b53",
+          "fileName": "doneat-3.2.1-ar-iphone-10-fb6c603bafcc.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "89800019-57a8-8a76-8029-e4f7b8ff268a",
+          "fileName": "doneat-3.2.3-ar-iphone-03-widgets-home-b202a73c70ff.png",
+          "md5": "9190925dae211df801fcd2b52343f1e8"
+        },
+        "4": {
+          "id": "4c400019-57a8-8a76-8003-27d5ceda9f1e",
+          "fileName": "doneat-3.2.3-ar-iphone-04-widgets-lock-5cd18355337f.png",
+          "md5": "c21666990459f0c49b2ab80980110ee6"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:09:43.030Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-ar-iphone-01-b889cdb6cdc3.png",
+          "doneat-3.2.1-ar-iphone-02-3f7bd98e7d23.png",
+          "doneat-3.2.3-ar-iphone-03-widgets-home-b202a73c70ff.png",
+          "doneat-3.2.3-ar-iphone-04-widgets-lock-5cd18355337f.png",
+          "doneat-3.2.2-ar-iphone-03-nofree-2aa84b36c828.png",
+          "doneat-3.2.1-ar-iphone-04-ada6a59cfaa9.png",
+          "doneat-3.2.1-ar-iphone-06-f55c167db6d3.png",
+          "doneat-3.2.2-ar-iphone-07-93e1af2d40d4.png",
+          "doneat-3.2.1-ar-iphone-08-98444da59dec.png",
+          "doneat-3.2.1-ar-iphone-10-fb6c603bafcc.png"
+        ]
+      }
+    },
+    "zh-Hans APP_IPHONE_DUO": {
+      "setId": "a3579fff-f663-4d9c-963a-3b827333a259",
+      "original": [
+        {
+          "id": "bd359c55-9eff-4931-961e-90fca54a01cd",
+          "fileName": "doneat-3.2.1-zh-CN-duo-01-756a7210857b.png"
+        },
+        {
+          "id": "79245a0e-5427-415b-90db-f27f294a2818",
+          "fileName": "doneat-3.2.2-zh-CN-duo-02-nofree-8c3f8328e97f.png"
+        },
+        {
+          "id": "51a392b9-180d-4ba9-8594-15265307c2ba",
+          "fileName": "doneat-3.2.1-zh-CN-duo-03-fc7a53a1cdbf.png"
+        },
+        {
+          "id": "54090bcd-f44d-49bf-95e7-f7bb05ffeb88",
+          "fileName": "doneat-3.2.2-zh-CN-duo-04-nofree-b3770ef14fc8.png"
+        },
+        {
+          "id": "36f00c8e-a0f3-4454-9c97-07380a7c18ab",
+          "fileName": "doneat-3.2.1-zh-CN-duo-05-a10d5ad43634.png"
+        },
+        {
+          "id": "337f7d8e-aabd-4e8f-a9d9-de38104da83b",
+          "fileName": "doneat-3.2.2-zh-CN-duo-06-ea421bd07063.png"
+        },
+        {
+          "id": "d8c748d4-80da-4897-b2f3-e8c2901d415d",
+          "fileName": "doneat-3.2.1-zh-CN-duo-07-0f7ce6cee748.png"
+        },
+        {
+          "id": "1349b295-64bf-4e15-979b-4ac3c1e69099",
+          "fileName": "doneat-3.2.1-zh-CN-duo-08-e1d54e5ca42b.png"
+        },
+        {
+          "id": "0587e5b5-65cf-4033-8ad3-343f8729723c",
+          "fileName": "doneat-3.2.1-zh-CN-duo-09-3bbae90c3158.png"
+        }
+      ],
+      "uploads": {
+        "2": {
+          "id": "e9400019-57a8-8a76-8027-7ba5d9ba9126",
+          "fileName": "doneat-3.2.3-zh-CN-duo-02-leave-bdbeffdddb6d.png",
+          "md5": "c670c6c3d7788ae1df73a380a71bea83"
+        },
+        "3": {
+          "id": "69c00019-57a8-8a76-8006-4f7cda4ed10f",
+          "fileName": "doneat-3.2.3-zh-CN-duo-03-report-22e29a6c74a0.png",
+          "md5": "68750fc6f6d8e07858531d5112f2210e"
+        },
+        "5": {
+          "id": "9fc00019-57a8-8a76-8021-57ceab5918dd",
+          "fileName": "doneat-3.2.3-zh-CN-duo-05-calendar-5b4149dd2b3a.png",
+          "md5": "13e8cbb14844d8b1de81f9e15d5e4027"
+        },
+        "6": {
+          "id": "d8c00019-57a8-8a76-8038-f1cb6d886f1a",
+          "fileName": "doneat-3.2.3-zh-CN-duo-06-records-c33db8d0a6e8.png",
+          "md5": "2e0cbb182e499a90689bf435709ff5f1"
+        },
+        "7": {
+          "id": "11800019-57a8-8a76-8022-0a0b93aabc57",
+          "fileName": "doneat-3.2.3-zh-CN-duo-07-focus-69885f3f3fac.png",
+          "md5": "4f32dc8c38c46ea3345ba98a44137770"
+        },
+        "8": {
+          "id": "e9800019-57a8-8a76-8037-5ce0ca33f6d5",
+          "fileName": "doneat-3.2.3-zh-CN-duo-08-widgets-4c49693d760d.png",
+          "md5": "07c2a48e9ef8e21b935e8a4646bd2671"
+        },
+        "9": {
+          "id": "5b400019-57a8-8a76-802b-c70e539a1eee",
+          "fileName": "doneat-3.2.3-zh-CN-duo-09-rest-1f54447bd52c.png",
+          "md5": "35fa04395909d52f096931c248a3cff7"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:10:36.426Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-zh-CN-duo-01-756a7210857b.png",
+          "doneat-3.2.3-zh-CN-duo-02-leave-bdbeffdddb6d.png",
+          "doneat-3.2.3-zh-CN-duo-03-report-22e29a6c74a0.png",
+          "doneat-3.2.2-zh-CN-duo-04-nofree-b3770ef14fc8.png",
+          "doneat-3.2.3-zh-CN-duo-05-calendar-5b4149dd2b3a.png",
+          "doneat-3.2.3-zh-CN-duo-06-records-c33db8d0a6e8.png",
+          "doneat-3.2.3-zh-CN-duo-07-focus-69885f3f3fac.png",
+          "doneat-3.2.3-zh-CN-duo-08-widgets-4c49693d760d.png",
+          "doneat-3.2.3-zh-CN-duo-09-rest-1f54447bd52c.png"
+        ]
+      }
+    },
+    "zh-Hant APP_IPHONE_DUO": {
+      "setId": "e494c7da-15a5-4a25-a0a3-c5c17e96ea75",
+      "original": [
+        {
+          "id": "f3730f7e-a5ac-4a4b-806a-367eb0a79ddc",
+          "fileName": "doneat-3.2.1-zh-TW-duo-01-63cfe5686b60.png"
+        },
+        {
+          "id": "4aac9b5d-fe89-41b1-bf0c-9dc907bf467a",
+          "fileName": "doneat-3.2.2-zh-TW-duo-02-nofree-93a3573d86d6.png"
+        },
+        {
+          "id": "ae8447ed-0930-4676-af1d-42112fd6faa6",
+          "fileName": "doneat-3.2.1-zh-TW-duo-03-604f33a066de.png"
+        },
+        {
+          "id": "bab10ab8-115f-4d4e-8b31-7a71169f9438",
+          "fileName": "doneat-3.2.2-zh-TW-duo-04-nofree-bfbf1ae3e1a8.png"
+        },
+        {
+          "id": "3d3a061a-65a7-487d-a1dc-86e6bd48896a",
+          "fileName": "doneat-3.2.1-zh-TW-duo-05-90c4a25e4f58.png"
+        },
+        {
+          "id": "e8cd0955-e54e-4dc9-9c8b-f27a69b08dc1",
+          "fileName": "doneat-3.2.2-zh-TW-duo-06-4368351ec046.png"
+        },
+        {
+          "id": "15542b3f-1893-490e-a5b8-a6ba28cbb83f",
+          "fileName": "doneat-3.2.1-zh-TW-duo-07-075445bc839f.png"
+        },
+        {
+          "id": "39258112-c4ce-492e-bd7c-7fe87397c011",
+          "fileName": "doneat-3.2.1-zh-TW-duo-08-062430f22222.png"
+        },
+        {
+          "id": "80a521eb-1a5d-45c4-bdbc-bf97900ba1d0",
+          "fileName": "doneat-3.2.1-zh-TW-duo-09-72fa4128ae60.png"
+        }
+      ],
+      "uploads": {
+        "2": {
+          "id": "e6800019-57a8-8a76-803b-6cd5cd544ab2",
+          "fileName": "doneat-3.2.3-zh-TW-duo-02-leave-68779d66ce97.png",
+          "md5": "02f50e3bc6f5875446c8f1f373d5fd05"
+        },
+        "3": {
+          "id": "45c00019-57a8-8a76-8001-ec9fa2ae92b8",
+          "fileName": "doneat-3.2.3-zh-TW-duo-03-report-7e2cb098f9bd.png",
+          "md5": "d0380e31f01a175419cb496bfcfc2124"
+        },
+        "5": {
+          "id": "f0400019-57a8-8a76-8038-c06a2044f13d",
+          "fileName": "doneat-3.2.3-zh-TW-duo-05-calendar-e2230586cbcb.png",
+          "md5": "79b1434c34fe1c50926ec46ee256fdcf"
+        },
+        "6": {
+          "id": "98c00019-57a8-8a76-8035-599854f8713b",
+          "fileName": "doneat-3.2.3-zh-TW-duo-06-records-283a677ac960.png",
+          "md5": "772ec4541e170a13f34a1b0c069b807d"
+        },
+        "7": {
+          "id": "57c00019-57a8-8a76-802c-c66426df5a37",
+          "fileName": "doneat-3.2.3-zh-TW-duo-07-focus-7ee264007fad.png",
+          "md5": "842ea5292347a98e0247768239c16c54"
+        },
+        "8": {
+          "id": "5a000019-57a8-8a76-800b-12a9d210f520",
+          "fileName": "doneat-3.2.3-zh-TW-duo-08-widgets-8fcc1ff85b78.png",
+          "md5": "09cabaa72eaca01367e6e0da33a19958"
+        },
+        "9": {
+          "id": "33400019-57a8-8a76-8017-2dd2becfeac5",
+          "fileName": "doneat-3.2.3-zh-TW-duo-09-rest-59380d0f92ce.png",
+          "md5": "32894114b5d1a8221666eba25b8cab63"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:11:29.281Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-zh-TW-duo-01-63cfe5686b60.png",
+          "doneat-3.2.3-zh-TW-duo-02-leave-68779d66ce97.png",
+          "doneat-3.2.3-zh-TW-duo-03-report-7e2cb098f9bd.png",
+          "doneat-3.2.2-zh-TW-duo-04-nofree-bfbf1ae3e1a8.png",
+          "doneat-3.2.3-zh-TW-duo-05-calendar-e2230586cbcb.png",
+          "doneat-3.2.3-zh-TW-duo-06-records-283a677ac960.png",
+          "doneat-3.2.3-zh-TW-duo-07-focus-7ee264007fad.png",
+          "doneat-3.2.3-zh-TW-duo-08-widgets-8fcc1ff85b78.png",
+          "doneat-3.2.3-zh-TW-duo-09-rest-59380d0f92ce.png"
+        ]
+      }
+    },
+    "ja APP_IPHONE_DUO": {
+      "setId": "5f502ccc-82f8-4164-84d5-ad29af6c84aa",
+      "original": [
+        {
+          "id": "0048a01f-a4df-4a88-8026-5fea27f84ca2",
+          "fileName": "doneat-3.2.1-ja-duo-01-803b1e3ec9c6.png"
+        },
+        {
+          "id": "47e22e5a-04ec-4e7b-a352-35f7d1af5b48",
+          "fileName": "doneat-3.2.2-ja-duo-02-nofree-0e3149e8aec8.png"
+        },
+        {
+          "id": "a1e0b027-1980-4cc4-9f65-a3fa5264f31a",
+          "fileName": "doneat-3.2.1-ja-duo-03-34ee3ca3b1f0.png"
+        },
+        {
+          "id": "3a78a9a8-0419-4cd2-bd85-162711d77f09",
+          "fileName": "doneat-3.2.2-ja-duo-04-nofree-35192a60f3f2.png"
+        },
+        {
+          "id": "b6b4aa2f-ac23-4759-9c94-9d3cf7493f24",
+          "fileName": "doneat-3.2.1-ja-duo-05-3e0f9f598448.png"
+        },
+        {
+          "id": "0be9275c-be1e-4abc-85de-359297a9c9a8",
+          "fileName": "doneat-3.2.2-ja-duo-06-8c4215f9a30c.png"
+        },
+        {
+          "id": "e0419903-a517-40b3-b755-c5ae56555fae",
+          "fileName": "doneat-3.2.1-ja-duo-07-6104ae6d1eef.png"
+        },
+        {
+          "id": "33c7eaad-bc93-48e6-9941-c83a3b2bae42",
+          "fileName": "doneat-3.2.1-ja-duo-08-ac148a48014a.png"
+        },
+        {
+          "id": "be0e4bf8-d3cf-4686-b420-f74692807629",
+          "fileName": "doneat-3.2.1-ja-duo-09-f82605694931.png"
+        }
+      ],
+      "uploads": {
+        "2": {
+          "id": "db800019-57a8-8a76-8023-b197ad29d444",
+          "fileName": "doneat-3.2.3-ja-duo-02-leave-37a9cec824ff.png",
+          "md5": "24733ded982ce311f3e6d7d12906565e"
+        },
+        "3": {
+          "id": "53000019-57a8-8a76-802e-ee38be547c07",
+          "fileName": "doneat-3.2.3-ja-duo-03-report-33c894e21830.png",
+          "md5": "777bde28adfb60758187d9c425977766"
+        },
+        "5": {
+          "id": "1c800019-57a8-8a76-8030-417cc5fbd37c",
+          "fileName": "doneat-3.2.3-ja-duo-05-calendar-a680a228eb7a.png",
+          "md5": "07d383d378e935a9fe46cc5906063c21"
+        },
+        "6": {
+          "id": "a0400019-57a8-8a76-8013-078e84820359",
+          "fileName": "doneat-3.2.3-ja-duo-06-records-81f53b56c0e2.png",
+          "md5": "14f477f4b0fe128459b994384482a9c9"
+        },
+        "7": {
+          "id": "67400019-57a8-8a76-8035-1b4d757cdeb2",
+          "fileName": "doneat-3.2.3-ja-duo-07-focus-a054874cc058.png",
+          "md5": "ae883df6d4f6ffac09dde45a7b60c8c1"
+        },
+        "8": {
+          "id": "9e800019-57a8-8a76-8017-ff367e4046a1",
+          "fileName": "doneat-3.2.3-ja-duo-08-widgets-6799c0eb80ad.png",
+          "md5": "205358d0edfbfdf329e26dc53ba481de"
+        },
+        "9": {
+          "id": "d8400019-57a8-8a76-8031-ebd080560f34",
+          "fileName": "doneat-3.2.3-ja-duo-09-rest-484f1f02c0d0.png",
+          "md5": "df852614fad5a0c1ada8501e77507825"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:12:20.489Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-ja-duo-01-803b1e3ec9c6.png",
+          "doneat-3.2.3-ja-duo-02-leave-37a9cec824ff.png",
+          "doneat-3.2.3-ja-duo-03-report-33c894e21830.png",
+          "doneat-3.2.2-ja-duo-04-nofree-35192a60f3f2.png",
+          "doneat-3.2.3-ja-duo-05-calendar-a680a228eb7a.png",
+          "doneat-3.2.3-ja-duo-06-records-81f53b56c0e2.png",
+          "doneat-3.2.3-ja-duo-07-focus-a054874cc058.png",
+          "doneat-3.2.3-ja-duo-08-widgets-6799c0eb80ad.png",
+          "doneat-3.2.3-ja-duo-09-rest-484f1f02c0d0.png"
+        ]
+      }
+    },
+    "ko APP_IPHONE_DUO": {
+      "setId": "414bba76-bb29-4412-bc0b-d2d7ac129260",
+      "original": [
+        {
+          "id": "b0229bf9-f529-4967-9c20-07272bac8c57",
+          "fileName": "doneat-3.2.1-ko-duo-01-bc8af391bd20.png"
+        },
+        {
+          "id": "8c7dbbcc-b973-45cb-9e5a-421cb7a739cb",
+          "fileName": "doneat-3.2.2-ko-duo-02-nofree-d96ce409fdd4.png"
+        },
+        {
+          "id": "bd70b9c5-19a3-4297-b32c-b64ff2669df3",
+          "fileName": "doneat-3.2.1-ko-duo-03-525563b6aeef.png"
+        },
+        {
+          "id": "0439cd16-50b7-41a5-84ea-f44165c36a34",
+          "fileName": "doneat-3.2.2-ko-duo-04-nofree-891723ff147a.png"
+        },
+        {
+          "id": "79be606c-bab8-4663-b036-fac9094ef3cc",
+          "fileName": "doneat-3.2.1-ko-duo-05-c5be8949802b.png"
+        },
+        {
+          "id": "58de4ceb-6df7-44cc-ba9e-b498254baa93",
+          "fileName": "doneat-3.2.2-ko-duo-06-6fb1b156c7ad.png"
+        },
+        {
+          "id": "3554fcba-5c69-405a-a159-3226e72a5dfd",
+          "fileName": "doneat-3.2.1-ko-duo-07-283a0666f5c4.png"
+        },
+        {
+          "id": "29693e1c-2c63-4f47-baa2-5ca4bf7f22c1",
+          "fileName": "doneat-3.2.1-ko-duo-08-953cfbd9405f.png"
+        },
+        {
+          "id": "0bc9555a-f0e3-4704-b3e6-c3d37c8b0a45",
+          "fileName": "doneat-3.2.1-ko-duo-09-da0ba5b8b59a.png"
+        }
+      ],
+      "uploads": {
+        "2": {
+          "id": "eec00019-57a8-8a76-8006-1bb3421a7d8f",
+          "fileName": "doneat-3.2.3-ko-duo-02-leave-aea50679ad8b.png",
+          "md5": "056765bb1d5a61a52ad65c0f10b58b2d"
+        },
+        "3": {
+          "id": "1d800019-57a8-8a76-8005-15e945447bc8",
+          "fileName": "doneat-3.2.3-ko-duo-03-report-26d42e103060.png",
+          "md5": "f766e0ee353bd0d76954c96606d11e43"
+        },
+        "5": {
+          "id": "a6400019-57a8-8a76-8031-a81386ca5470",
+          "fileName": "doneat-3.2.3-ko-duo-05-calendar-5cf462733f22.png",
+          "md5": "d267f642ab4ea88ba0dbb6294b71dc34"
+        },
+        "6": {
+          "id": "74800019-57a8-8a76-801e-d7de1ed588fd",
+          "fileName": "doneat-3.2.3-ko-duo-06-records-89b95a443837.png",
+          "md5": "1fba9cf82033364e7669abf137ead5df"
+        },
+        "7": {
+          "id": "65800019-57a8-8a76-8010-e7ee7c997249",
+          "fileName": "doneat-3.2.3-ko-duo-07-focus-e8da1ec0b9b2.png",
+          "md5": "f538d749f7a0b27ac2608db67d534271"
+        },
+        "8": {
+          "id": "54c00019-57a8-8a76-8037-da3b4baf67df",
+          "fileName": "doneat-3.2.3-ko-duo-08-widgets-bf6d8b33eb74.png",
+          "md5": "85ffdaa167e1d5ceed9e70cd2f178942"
+        },
+        "9": {
+          "id": "f0000019-57a8-8a76-8039-5768b1a35f94",
+          "fileName": "doneat-3.2.3-ko-duo-09-rest-04d6bbc435ce.png",
+          "md5": "401a514441d8115c0838c4da72a234f5"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:13:13.570Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-ko-duo-01-bc8af391bd20.png",
+          "doneat-3.2.3-ko-duo-02-leave-aea50679ad8b.png",
+          "doneat-3.2.3-ko-duo-03-report-26d42e103060.png",
+          "doneat-3.2.2-ko-duo-04-nofree-891723ff147a.png",
+          "doneat-3.2.3-ko-duo-05-calendar-5cf462733f22.png",
+          "doneat-3.2.3-ko-duo-06-records-89b95a443837.png",
+          "doneat-3.2.3-ko-duo-07-focus-e8da1ec0b9b2.png",
+          "doneat-3.2.3-ko-duo-08-widgets-bf6d8b33eb74.png",
+          "doneat-3.2.3-ko-duo-09-rest-04d6bbc435ce.png"
+        ]
+      }
+    },
+    "ru APP_IPHONE_DUO": {
+      "setId": "72010752-8500-49ea-b297-de658b836f6f",
+      "original": [
+        {
+          "id": "be573cf1-84b8-483a-b1e8-d9a94bef0172",
+          "fileName": "doneat-3.2.1-ru-duo-01-4d6827e6aefe.png"
+        },
+        {
+          "id": "d15948ec-e851-4c4f-8785-c0d39f60c281",
+          "fileName": "doneat-3.2.2-ru-duo-02-nofree-5da5a26a0c02.png"
+        },
+        {
+          "id": "5ba38762-cfa9-4a75-84a1-0ac640e80f8a",
+          "fileName": "doneat-3.2.1-ru-duo-03-9e5181185c25.png"
+        },
+        {
+          "id": "c80dd21c-e7c8-472f-b544-2e464ca98f84",
+          "fileName": "doneat-3.2.2-ru-duo-04-nofree-1d1dcd9189e4.png"
+        },
+        {
+          "id": "6375846a-702c-4143-a3e3-0f6f70ccaf7a",
+          "fileName": "doneat-3.2.1-ru-duo-05-108af284094b.png"
+        },
+        {
+          "id": "c9f25488-ce5b-4822-8cc5-6ea2c563f847",
+          "fileName": "doneat-3.2.2-ru-duo-06-8f493e3e8814.png"
+        },
+        {
+          "id": "110a7c71-45f8-451d-bb52-3c94a19a9e75",
+          "fileName": "doneat-3.2.1-ru-duo-07-964bb644b411.png"
+        },
+        {
+          "id": "d5220795-c11d-44d8-bcad-11cce06e84d5",
+          "fileName": "doneat-3.2.1-ru-duo-08-f2a985d6dad6.png"
+        },
+        {
+          "id": "559c6756-3c61-4dd4-95aa-646b362cb68e",
+          "fileName": "doneat-3.2.1-ru-duo-09-2c03e69517f7.png"
+        }
+      ],
+      "uploads": {
+        "2": {
+          "id": "44800019-57a8-8a76-8008-a478cc58e6cc",
+          "fileName": "doneat-3.2.3-ru-duo-02-leave-691b33b57316.png",
+          "md5": "af5e4549def194e96beda0dfa6fa5d13"
+        },
+        "3": {
+          "id": "c7400019-57a8-8a76-8014-daf361aba5f8",
+          "fileName": "doneat-3.2.3-ru-duo-03-report-f6250e0ae0a7.png",
+          "md5": "5ff001dc99cff8267c6abd7538cac73c"
+        },
+        "5": {
+          "id": "5a400019-57a8-8a76-8018-1c734e0e49b1",
+          "fileName": "doneat-3.2.3-ru-duo-05-calendar-b0081a31cf61.png",
+          "md5": "3ce28abf8668d8b378e328ec83a303bc"
+        },
+        "6": {
+          "id": "cd800019-57a8-8a76-803b-0ae9f6f24011",
+          "fileName": "doneat-3.2.3-ru-duo-06-records-1382d824dc33.png",
+          "md5": "075cd97057814eba56798fb3f6fd1240"
+        },
+        "7": {
+          "id": "65c00019-57a8-8a76-800c-e2b55ad160a7",
+          "fileName": "doneat-3.2.3-ru-duo-07-focus-7cc24004aa40.png",
+          "md5": "722a9e6abf67c28b2e3e40bf5b7d6c03"
+        },
+        "8": {
+          "id": "71c00019-57a8-8a76-8027-c8e8e19baacb",
+          "fileName": "doneat-3.2.3-ru-duo-08-widgets-3e0dcea3679a.png",
+          "md5": "7dde1ccbcf17bc8c323c1bfd26f619b6"
+        },
+        "9": {
+          "id": "36c00019-57a8-8a76-8014-2709236f5185",
+          "fileName": "doneat-3.2.3-ru-duo-09-rest-eddc33cc5fb9.png",
+          "md5": "f7ab297f244097e3e05ef22bcc1678fd"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:14:09.574Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-ru-duo-01-4d6827e6aefe.png",
+          "doneat-3.2.3-ru-duo-02-leave-691b33b57316.png",
+          "doneat-3.2.3-ru-duo-03-report-f6250e0ae0a7.png",
+          "doneat-3.2.2-ru-duo-04-nofree-1d1dcd9189e4.png",
+          "doneat-3.2.3-ru-duo-05-calendar-b0081a31cf61.png",
+          "doneat-3.2.3-ru-duo-06-records-1382d824dc33.png",
+          "doneat-3.2.3-ru-duo-07-focus-7cc24004aa40.png",
+          "doneat-3.2.3-ru-duo-08-widgets-3e0dcea3679a.png",
+          "doneat-3.2.3-ru-duo-09-rest-eddc33cc5fb9.png"
+        ]
+      }
+    },
+    "tr APP_IPHONE_DUO": {
+      "setId": "2a718db4-5575-4718-af58-9ccf14716112",
+      "original": [
+        {
+          "id": "04d38941-10b2-4d15-8bd6-e184099ef80e",
+          "fileName": "doneat-3.2.1-tr-duo-01-b4e1220e5413.png"
+        },
+        {
+          "id": "3ca2c9e8-35e3-4397-bc8b-e379d5438f8f",
+          "fileName": "doneat-3.2.2-tr-duo-02-nofree-422bfac32e12.png"
+        },
+        {
+          "id": "9bba7b63-b727-429d-acfd-25c7404bf751",
+          "fileName": "doneat-3.2.1-tr-duo-03-b365b8009601.png"
+        },
+        {
+          "id": "e9d71f2c-6007-48eb-972e-32651cb185a7",
+          "fileName": "doneat-3.2.2-tr-duo-04-nofree-db1ce4e2264d.png"
+        },
+        {
+          "id": "b09c5382-8088-4e28-8250-f046395ded93",
+          "fileName": "doneat-3.2.1-tr-duo-05-babb1767ac08.png"
+        },
+        {
+          "id": "2aa7517f-817c-49ff-8b35-293a9415bce1",
+          "fileName": "doneat-3.2.2-tr-duo-06-e4479347ebcb.png"
+        },
+        {
+          "id": "9b0d44fd-df09-49a6-a6c8-0b33755fb443",
+          "fileName": "doneat-3.2.1-tr-duo-07-35f252bab128.png"
+        },
+        {
+          "id": "b7a0a528-9d33-4cf0-8c6a-662cba5d08da",
+          "fileName": "doneat-3.2.1-tr-duo-08-70551dade393.png"
+        },
+        {
+          "id": "cbb2beea-a563-4d2f-ac23-75b08a1b1292",
+          "fileName": "doneat-3.2.1-tr-duo-09-562a0a476f14.png"
+        }
+      ],
+      "uploads": {
+        "2": {
+          "id": "98800019-57a8-8a76-803c-d9b1971a7837",
+          "fileName": "doneat-3.2.3-tr-duo-02-leave-d4d3c73335f4.png",
+          "md5": "63ac8df6170eba44ff8a033a35ba18bb"
+        },
+        "3": {
+          "id": "51c00019-57a8-8a76-801b-0b44d61eb57d",
+          "fileName": "doneat-3.2.3-tr-duo-03-report-af3ad3062fbf.png",
+          "md5": "457408bbfe83d3eb3bb18ecb729e9d89"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:14:28.426Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-tr-duo-01-b4e1220e5413.png",
+          "doneat-3.2.3-tr-duo-02-leave-d4d3c73335f4.png",
+          "doneat-3.2.3-tr-duo-03-report-af3ad3062fbf.png",
+          "doneat-3.2.2-tr-duo-04-nofree-db1ce4e2264d.png",
+          "doneat-3.2.1-tr-duo-05-babb1767ac08.png",
+          "doneat-3.2.2-tr-duo-06-e4479347ebcb.png",
+          "doneat-3.2.1-tr-duo-07-35f252bab128.png",
+          "doneat-3.2.1-tr-duo-08-70551dade393.png",
+          "doneat-3.2.1-tr-duo-09-562a0a476f14.png"
+        ]
+      }
+    },
+    "vi APP_IPHONE_DUO": {
+      "setId": "111d514b-7300-4d13-b730-af4fbce8e4ce",
+      "original": [
+        {
+          "id": "fe1f541c-4d8a-4cf8-aa29-f7e6f00bf0a4",
+          "fileName": "doneat-3.2.1-vi-duo-01-03c42611d32b.png"
+        },
+        {
+          "id": "69025cc3-5856-411d-8a5f-90bd201dda9c",
+          "fileName": "doneat-3.2.2-vi-duo-02-nofree-47fce549c024.png"
+        },
+        {
+          "id": "92372bb7-60f2-48dd-895d-e550ea124b9d",
+          "fileName": "doneat-3.2.1-vi-duo-03-931f7535b8f7.png"
+        },
+        {
+          "id": "a9598182-fb2d-4728-855a-49e624e92e8c",
+          "fileName": "doneat-3.2.2-vi-duo-04-nofree-98c0c61fa209.png"
+        },
+        {
+          "id": "fb9f4eec-e7e8-4cbc-b278-13fc461ab22b",
+          "fileName": "doneat-3.2.1-vi-duo-05-5051013d9535.png"
+        },
+        {
+          "id": "af9e599f-26ec-4dbe-81d3-150ade9b6a80",
+          "fileName": "doneat-3.2.2-vi-duo-06-910bd865a41c.png"
+        },
+        {
+          "id": "ee173f9f-d279-455a-bdf9-4be49f257d0b",
+          "fileName": "doneat-3.2.1-vi-duo-07-7e9c44060880.png"
+        },
+        {
+          "id": "9851216c-ad7d-4c99-9427-5bdb239b2986",
+          "fileName": "doneat-3.2.1-vi-duo-08-b19732ddc9bf.png"
+        },
+        {
+          "id": "07389606-2b12-4b60-9251-03e7d06ff46c",
+          "fileName": "doneat-3.2.1-vi-duo-09-05fe24415353.png"
+        }
+      ],
+      "uploads": {
+        "2": {
+          "id": "5d000019-57a8-8a76-8021-5da8445a775f",
+          "fileName": "doneat-3.2.3-vi-duo-02-leave-a7c1f6d34bdc.png",
+          "md5": "fd6ffa3ef89f82bf36d96b92faf821d1"
+        },
+        "3": {
+          "id": "27c00019-57a8-8a76-801a-707c36300d9a",
+          "fileName": "doneat-3.2.3-vi-duo-03-report-1332c980974a.png",
+          "md5": "b767823f3f1cc9404fb43c205c683492"
+        },
+        "5": {
+          "id": "55c00019-57a8-8a76-8036-c4ea61f3841c",
+          "fileName": "doneat-3.2.3-vi-duo-05-calendar-c387b109022d.png",
+          "md5": "30f7ba74c0e6059f110e8f8ad9ea65ce"
+        },
+        "6": {
+          "id": "83000019-57a8-8a76-8018-ed262de2cdff",
+          "fileName": "doneat-3.2.3-vi-duo-06-records-0164fec2a7c7.png",
+          "md5": "2225832f7c1a5f5c3fe6630afbb980b3"
+        },
+        "7": {
+          "id": "40000019-57a8-8a76-8015-304d225c94ed",
+          "fileName": "doneat-3.2.3-vi-duo-07-focus-f468f878a258.png",
+          "md5": "0c0f278ee9c0c39e5c97e5f686d96a03"
+        },
+        "8": {
+          "id": "fdc00019-57a8-8a76-8014-88141f6b5107",
+          "fileName": "doneat-3.2.3-vi-duo-08-widgets-efe1b4bd27fa.png",
+          "md5": "cc965bbbe9de410f8681a0548b300a87"
+        },
+        "9": {
+          "id": "a1800019-57a8-8a76-8024-d9a5c956c631",
+          "fileName": "doneat-3.2.3-vi-duo-09-rest-094c949c63cb.png",
+          "md5": "ff23b71c99ec34cf0a7c20458d271b3a"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:15:16.952Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-vi-duo-01-03c42611d32b.png",
+          "doneat-3.2.3-vi-duo-02-leave-a7c1f6d34bdc.png",
+          "doneat-3.2.3-vi-duo-03-report-1332c980974a.png",
+          "doneat-3.2.2-vi-duo-04-nofree-98c0c61fa209.png",
+          "doneat-3.2.3-vi-duo-05-calendar-c387b109022d.png",
+          "doneat-3.2.3-vi-duo-06-records-0164fec2a7c7.png",
+          "doneat-3.2.3-vi-duo-07-focus-f468f878a258.png",
+          "doneat-3.2.3-vi-duo-08-widgets-efe1b4bd27fa.png",
+          "doneat-3.2.3-vi-duo-09-rest-094c949c63cb.png"
+        ]
+      }
+    },
+    "th APP_IPHONE_DUO": {
+      "setId": "81b4ebe5-d1fd-45a7-9e64-4d97ad05f72f",
+      "original": [
+        {
+          "id": "8c21018b-cbd2-4e95-86ca-44e124162f20",
+          "fileName": "doneat-3.2.1-th-duo-01-fab5b0b70ff2.png"
+        },
+        {
+          "id": "b96a7a22-2675-4643-8eb6-e7806438fd0a",
+          "fileName": "doneat-3.2.2-th-duo-02-nofree-018691851166.png"
+        },
+        {
+          "id": "6dc21e54-0ecb-42fa-89aa-cb5f644ebe75",
+          "fileName": "doneat-3.2.1-th-duo-03-dd279083354e.png"
+        },
+        {
+          "id": "5f604f9a-60e4-418d-88ed-6f628732aa4c",
+          "fileName": "doneat-3.2.2-th-duo-04-nofree-9feae8342a01.png"
+        },
+        {
+          "id": "abc23590-c8ff-4bed-a6fb-05f013428165",
+          "fileName": "doneat-3.2.1-th-duo-05-7fbeae7d1502.png"
+        },
+        {
+          "id": "a6102e3c-295d-4e74-bb90-878a09ab5c02",
+          "fileName": "doneat-3.2.2-th-duo-06-983c5fc2f697.png"
+        },
+        {
+          "id": "28137058-0cd7-4d15-8d7b-809428fe7a61",
+          "fileName": "doneat-3.2.1-th-duo-07-2164594ce3ee.png"
+        },
+        {
+          "id": "aefc1d69-92b6-45c5-81f0-9145f2210bf1",
+          "fileName": "doneat-3.2.1-th-duo-08-af11a794036e.png"
+        },
+        {
+          "id": "980c5a50-5857-4ce5-a1fd-4a5f2247b707",
+          "fileName": "doneat-3.2.1-th-duo-09-5e6df37a555b.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "c6c00019-57a8-8a76-802e-9ab7ebcedc6f",
+          "fileName": "doneat-3.2.3-th-duo-03-report-26e63703a7d0.png",
+          "md5": "776b207fa2133106c75fbd481d88ec91"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:15:27.821Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-th-duo-01-fab5b0b70ff2.png",
+          "doneat-3.2.2-th-duo-02-nofree-018691851166.png",
+          "doneat-3.2.3-th-duo-03-report-26e63703a7d0.png",
+          "doneat-3.2.2-th-duo-04-nofree-9feae8342a01.png",
+          "doneat-3.2.1-th-duo-05-7fbeae7d1502.png",
+          "doneat-3.2.2-th-duo-06-983c5fc2f697.png",
+          "doneat-3.2.1-th-duo-07-2164594ce3ee.png",
+          "doneat-3.2.1-th-duo-08-af11a794036e.png",
+          "doneat-3.2.1-th-duo-09-5e6df37a555b.png"
+        ]
+      }
+    },
+    "hi APP_IPHONE_DUO": {
+      "setId": "c7b74ad5-b20f-4dce-8c27-62bc0e545a59",
+      "original": [
+        {
+          "id": "abb1fabf-7801-449e-bdd3-8d297c50d94b",
+          "fileName": "doneat-3.2.1-hi-IN-duo-01-89289013d0bd.png"
+        },
+        {
+          "id": "a708d787-9bc8-403d-83c2-980aec9a69b5",
+          "fileName": "doneat-3.2.2-hi-IN-duo-02-nofree-908d6e3042d5.png"
+        },
+        {
+          "id": "297d0bdc-fa96-4f31-bdaf-81af5c4f77e2",
+          "fileName": "doneat-3.2.1-hi-IN-duo-03-f107e1247572.png"
+        },
+        {
+          "id": "fbcfe383-59e1-4b59-8b2c-c1da8ad61afd",
+          "fileName": "doneat-3.2.2-hi-IN-duo-04-nofree-a69b0fc6c3fc.png"
+        },
+        {
+          "id": "352d289a-c5e1-4587-acce-672d6bcb9a2d",
+          "fileName": "doneat-3.2.1-hi-IN-duo-05-3734789de26a.png"
+        },
+        {
+          "id": "3028d8fc-d242-4b9f-9e84-d2f57873d4c8",
+          "fileName": "doneat-3.2.2-hi-IN-duo-06-024b5afb998f.png"
+        },
+        {
+          "id": "662e4cc6-8dad-45a9-9397-7ab0ceffdf0a",
+          "fileName": "doneat-3.2.1-hi-IN-duo-07-b9472611e23f.png"
+        },
+        {
+          "id": "6ca2e8a9-015a-4759-b4f2-6faa18dae584",
+          "fileName": "doneat-3.2.1-hi-IN-duo-08-0806923e3501.png"
+        },
+        {
+          "id": "73ec097c-f65d-4610-b007-3e5a91f5d378",
+          "fileName": "doneat-3.2.1-hi-IN-duo-09-f13e32a65253.png"
+        }
+      ],
+      "uploads": {
+        "2": {
+          "id": "4b800019-57a8-8a76-8013-b684fd807190",
+          "fileName": "doneat-3.2.3-hi-IN-duo-02-leave-9892f0820a63.png",
+          "md5": "bb58aacf095f6d8d8dc062b26d658706"
+        },
+        "3": {
+          "id": "e8000019-57a8-8a76-8018-742aabaffe95",
+          "fileName": "doneat-3.2.3-hi-IN-duo-03-report-2dabd61fb6dc.png",
+          "md5": "7faa412aa57366f76ec1bc759c5dc377"
+        },
+        "5": {
+          "id": "6e000019-57a8-8a76-8006-730d2398cb25",
+          "fileName": "doneat-3.2.3-hi-IN-duo-05-calendar-6a4e47aa70ff.png",
+          "md5": "b7addbe8d5a44b30502684284db89e44"
+        },
+        "6": {
+          "id": "e9400019-57a8-8a76-8020-9a3fac889444",
+          "fileName": "doneat-3.2.3-hi-IN-duo-06-records-484b2512631d.png",
+          "md5": "0a319a0862a4f3915de97618e2e48c33"
+        },
+        "7": {
+          "id": "68c00019-57a8-8a76-802d-84411f78f95c",
+          "fileName": "doneat-3.2.3-hi-IN-duo-07-focus-ab72976dda3a.png",
+          "md5": "3ee5c48bf5ea0538118b25367ac98721"
+        },
+        "8": {
+          "id": "41800019-57a8-8a76-8008-e05696948af9",
+          "fileName": "doneat-3.2.3-hi-IN-duo-08-widgets-9ed9717ef17c.png",
+          "md5": "541b6b673423115bb77076763c61e3a2"
+        },
+        "9": {
+          "id": "9a800019-57a8-8a76-8022-31203e1eb7e8",
+          "fileName": "doneat-3.2.3-hi-IN-duo-09-rest-d496fbc12f1d.png",
+          "md5": "74a908c63f291496652aa009bd9633fe"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-19T13:16:17.820Z",
+        "ok": true,
+        "files": [
+          "doneat-3.2.1-hi-IN-duo-01-89289013d0bd.png",
+          "doneat-3.2.3-hi-IN-duo-02-leave-9892f0820a63.png",
+          "doneat-3.2.3-hi-IN-duo-03-report-2dabd61fb6dc.png",
+          "doneat-3.2.2-hi-IN-duo-04-nofree-a69b0fc6c3fc.png",
+          "doneat-3.2.3-hi-IN-duo-05-calendar-6a4e47aa70ff.png",
+          "doneat-3.2.3-hi-IN-duo-06-records-484b2512631d.png",
+          "doneat-3.2.3-hi-IN-duo-07-focus-ab72976dda3a.png",
+          "doneat-3.2.3-hi-IN-duo-08-widgets-9ed9717ef17c.png",
+          "doneat-3.2.3-hi-IN-duo-09-rest-d496fbc12f1d.png"
+        ]
+      }
+    }
+  },
+  "videos": {
+    "APP_STORE_SEARCH_RESULTS_ASSET ar": {
+      "id": "c0c00019-57a8-8a76-8127-4bb47bdc3ea7",
+      "file": "ar-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-ar-search-c1d94912c223.mp4",
+      "sha256": "c1d94912c223878ad5794672aed6afa8d0f18c3e8293d45f46571ac283c9ae33",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:18.986Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:23.419Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET de": {
+      "id": "4a800019-57a8-8a76-811d-b652da7c4e1d",
+      "file": "de-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-de-search-92adbbf0eed1.mp4",
+      "sha256": "92adbbf0eed1ae8eea2687213660dd033e12c62b0192759c22eb67780f522100",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:23.915Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:26.327Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET en": {
+      "id": "e7400019-57a8-8a76-8114-2c8d1b97ceec",
+      "file": "en-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-en-search-278a8de03d8f.mp4",
+      "sha256": "278a8de03d8fdc9bdac72fa218892766b24a53aa33120c96c6780f8b83e45153",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:26.888Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:28.999Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET es": {
+      "id": "c2c00019-57a8-8a76-8111-224c7943b68a",
+      "file": "es-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-es-search-ad66a9244af3.mp4",
+      "sha256": "ad66a9244af3c2ea38700241f3474f1305bca7f2ed1205bcf59c81f0d8058086",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:29.610Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:31.589Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET fr": {
+      "id": "9f400019-57a8-8a76-813b-de1d078e58f8",
+      "file": "fr-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-fr-search-72a5c90cc1b0.mp4",
+      "sha256": "72a5c90cc1b0a54c82020fedeea9e46b0fbb8fa9002b775e5e2eea9d38798c46",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:32.394Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:34.718Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET hi-IN": {
+      "id": "1ec00019-57a8-8a76-8102-f6a54a3d49da",
+      "file": "hi-IN-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-hi-IN-search-9c884b992690.mp4",
+      "sha256": "9c884b992690005a39081e22a07b1906dbe98197db712267ae037d9d6e51f6b5",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:35.279Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:37.152Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET id": {
+      "id": "b9c00019-57a8-8a76-8100-787fc96a1862",
+      "file": "id-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-id-search-15c0cf53d004.mp4",
+      "sha256": "15c0cf53d0048d960e4cd50a787fc38a054c12b38ae5728619240482ce772667",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:37.677Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:39.731Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET it": {
+      "id": "17400019-57a8-8a76-813f-42e2a41c340b",
+      "file": "it-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-it-search-63f81a305465.mp4",
+      "sha256": "63f81a3054654e826cf105ffa9378874b7e320de64716b43556cd0f7a7da7e68",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:40.253Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:42.606Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET ja": {
+      "id": "42400019-57a8-8a76-8126-3db0d109350f",
+      "file": "ja-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-ja-search-4e465e47f3df.mp4",
+      "sha256": "4e465e47f3dfe807db35f1c4a924330efce62377c17eeefccdab571f45df1bf6",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:43.101Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:45.903Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET ko": {
+      "id": "63000019-57a8-8a76-810d-55e80f162523",
+      "file": "ko-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-ko-search-65be56afabaa.mp4",
+      "sha256": "65be56afabaa6eb43c548721494fc7a51cb01d2c2c95395d3e42263b64b90720",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:46.498Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:16:58.559Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET mr-IN": {
+      "id": "1f800019-57a8-8a76-8135-7f89ed6ec6a4",
+      "file": "mr-IN-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-mr-IN-search-63916bdae98e.mp4",
+      "sha256": "63916bdae98ee3146a159c69a943940e125e65a883034b860d2010191ffd6ce6",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:16:59.054Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:17:08.042Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET pt": {
+      "id": "e8000019-57a8-8a76-8129-255ea86fdfd9",
+      "file": "pt-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-pt-search-11002f906a54.mp4",
+      "sha256": "11002f906a54cca01ad0af56b4fc96c210b08eef93f0ad1f7d90ad944f9f8235",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:17:08.647Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:17:17.179Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET ru": {
+      "id": "52400019-57a8-8a76-8106-31a1b84590cc",
+      "file": "ru-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-ru-search-b75caf06e1bb.mp4",
+      "sha256": "b75caf06e1bbb1532ecff8f63113b9ae77eeaa1ff7bc3aec06093a1f014aff17",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:17:18.619Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:17:28.028Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET th": {
+      "id": "65000019-57a8-8a76-811c-ac2f7c12b3a0",
+      "file": "th-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-th-search-bfbd0d13a828.mp4",
+      "sha256": "bfbd0d13a8287af667499277ce9a673c6c49142600e1b26ed9cdfe83e5441c16",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:17:28.621Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:17:37.629Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET tr": {
+      "id": "03c00019-57a8-8a76-812c-986976de759b",
+      "file": "tr-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-tr-search-74ccbefe8563.mp4",
+      "sha256": "74ccbefe85636ea4173708c2e35a314d54c99ce78a36b86af42075685ed35eb2",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:17:38.189Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:17:47.062Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET vi": {
+      "id": "c8000019-57a8-8a76-8136-6f353ecb36e3",
+      "file": "vi-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-vi-search-70c0884a8dbc.mp4",
+      "sha256": "70c0884a8dbc992802b5b45beeeef5fecfa03013464299482c42f2c7b862947a",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:17:47.660Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:17:56.776Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET zh-CN": {
+      "id": "81800019-57a8-8a76-8121-e25ce7381d4a",
+      "file": "zh-CN-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-zh-CN-search-db8d7bbdeb5d.mp4",
+      "sha256": "db8d7bbdeb5d1ea7c95bda6f734e707e4dd3b97c1c0cda1451f0cb6d47655aff",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:17:57.340Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:18:05.978Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET zh-TW": {
+      "id": "c6000019-57a8-8a76-8126-61925d6cae3c",
+      "file": "zh-TW-search-video-3.2.3.mp4",
+      "fileName": "doneat-3.2.3-zh-TW-search-91ebeff96bf0.mp4",
+      "sha256": "91ebeff96bf04fe5927fc9e868637485666cc2c08f9d55e2fcc442834fb76e33",
+      "specId": "a28b6440-2fe2-58f0-9da3-354cb54cab57",
+      "reservedAt": "2026-10-19T13:18:06.695Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:18:15.251Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET zh-CN": {
+      "id": "80400019-57a8-8a76-8137-3e2f73787510",
+      "file": "zh-CN-header-video-v4.mp4",
+      "fileName": "doneat-3.2.3-zh-CN-header-v4-97df0b01047e.mp4",
+      "sha256": "97df0b01047e9547d47a47547be9b38bbddaafaceeb9384b725c34c378d524bc",
+      "specId": "8aeaae00-2a17-4781-bfc0-44ca02e26ccb",
+      "reservedAt": "2026-10-19T13:18:21.668Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:18:30.878Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET zh-TW": {
+      "id": "7ec00019-57a8-8a76-8124-302aa9f83952",
+      "file": "zh-TW-header-video-v4.mp4",
+      "fileName": "doneat-3.2.3-zh-TW-header-v4-491506a0632d.mp4",
+      "sha256": "491506a0632ddd270f45f8f693b300baf21dbe612a2ada3b148bf468b5bc32f5",
+      "specId": "8aeaae00-2a17-4781-bfc0-44ca02e26ccb",
+      "reservedAt": "2026-10-19T13:18:31.446Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:18:38.706Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET ja": {
+      "id": "12800019-57a8-8a76-812b-23046c9a06aa",
+      "file": "ja-header-video-v4.mp4",
+      "fileName": "doneat-3.2.3-ja-header-v4-a397ab672c14.mp4",
+      "sha256": "a397ab672c14efc19daf404774c5d68bdbeb12aa883a846a17211d3d1c4b0178",
+      "specId": "8aeaae00-2a17-4781-bfc0-44ca02e26ccb",
+      "reservedAt": "2026-10-19T13:18:39.280Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:18:46.833Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET ko": {
+      "id": "0c800019-57a8-8a76-8125-6bd1d437201b",
+      "file": "ko-header-video-v4.mp4",
+      "fileName": "doneat-3.2.3-ko-header-v4-bf85dd137ea1.mp4",
+      "sha256": "bf85dd137ea1ea082b7593be39d50892e6a54792c8d3a1004cdd7d90614184b2",
+      "specId": "8aeaae00-2a17-4781-bfc0-44ca02e26ccb",
+      "reservedAt": "2026-10-19T13:18:47.375Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:18:54.694Z",
+      "state": "PREPARE_FOR_SUBMISSION"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET ru": {
+      "id": "7ac00019-57a8-8a76-8103-ff9ac074c7f5",
+      "file": "ru-header-video-v4.mp4",
+      "fileName": "doneat-3.2.3-ru-header-v4-2e122466d0b9.mp4",
+      "sha256": "2e122466d0b97692ee33f45d3a9aa8eee7983581bcfe492a9029857c783c31ef",
+      "specId": "8aeaae00-2a17-4781-bfc0-44ca02e26ccb",
+      "reservedAt": "2026-10-19T13:18:55.276Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:19:02.825Z",
+      "state": "COMPLETE"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET mr-IN": {
+      "id": "52800019-57a8-8a76-811e-6741768ed984",
+      "file": "mr-IN-header-video-v4.mp4",
+      "fileName": "doneat-3.2.3-mr-IN-header-v4-eb846723d9f7.mp4",
+      "sha256": "eb846723d9f77bb81f9aec836ad1fe34be32df5105a06b2dce72370ae64b89c1",
+      "specId": "8aeaae00-2a17-4781-bfc0-44ca02e26ccb",
+      "reservedAt": "2026-10-19T13:19:03.415Z",
+      "uploaded": true,
+      "uploadedAt": "2026-10-19T13:19:10.422Z",
+      "state": "COMPLETE"
+    }
+  },
+  "placements": {
+    "APP_STORE_SEARCH_RESULTS_ASSET ar-SA": {
+      "id": "1c800019-57a8-8a76-8f1d-dcdc97a1e471",
+      "videoId": "c0c00019-57a8-8a76-8127-4bb47bdc3ea7",
+      "file": "ar-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "6d000019-57a8-8a76-8f25-377fb124576c",
+          "videoId": "51800019-57a8-8a76-810d-db8095dcbe9d"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:18.811Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET de-DE": {
+      "id": "13800019-57a8-8a76-8f2c-adb9f00638de",
+      "videoId": "4a800019-57a8-8a76-811d-b652da7c4e1d",
+      "file": "de-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "aec00019-57a8-8a76-8f1e-63503eca5181",
+          "videoId": "35c00019-57a8-8a76-8101-7fc6e4fd8868"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:20.054Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET en-US": {
+      "id": "47800019-57a8-8a76-8f10-bb8596733193",
+      "videoId": "e7400019-57a8-8a76-8114-2c8d1b97ceec",
+      "file": "en-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "26400019-57a8-8a76-8f3b-a3087c15b3aa",
+          "videoId": "35000019-57a8-8a76-8100-fde04bd9b3c3"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:21.040Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET en-GB": {
+      "id": "f7800019-57a8-8a76-8f22-89b56944a6b3",
+      "videoId": "e7400019-57a8-8a76-8114-2c8d1b97ceec",
+      "file": "en-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "eb400019-57a8-8a76-8f3c-12f000f5aeaf",
+          "videoId": "35000019-57a8-8a76-8100-fde04bd9b3c3"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:21.957Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET es-ES": {
+      "id": "d5400019-57a8-8a76-8f14-d344e50924e6",
+      "videoId": "c2c00019-57a8-8a76-8111-224c7943b68a",
+      "file": "es-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "8ac00019-57a8-8a76-8f21-ca7b0d731748",
+          "videoId": "1b000019-57a8-8a76-810e-535a78b2d239"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:22.910Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET es-MX": {
+      "id": "fe400019-57a8-8a76-8f1a-46196192504f",
+      "videoId": "c2c00019-57a8-8a76-8111-224c7943b68a",
+      "file": "es-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "46c00019-57a8-8a76-8f32-b515bb842ef9",
+          "videoId": "1b000019-57a8-8a76-810e-535a78b2d239"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:23.829Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET fr-FR": {
+      "id": "29000019-57a8-8a76-8f19-3f0b2e8b10b1",
+      "videoId": "9f400019-57a8-8a76-813b-de1d078e58f8",
+      "file": "fr-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "f7000019-57a8-8a76-8f0f-17fe4383efe0",
+          "videoId": "3ec00019-57a8-8a76-8123-19532a5d0454"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:27.969Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET hi": {
+      "id": "44000019-57a8-8a76-8f30-1dd4886cd5a6",
+      "videoId": "1ec00019-57a8-8a76-8102-f6a54a3d49da",
+      "file": "hi-IN-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "bb000019-57a8-8a76-8f0a-94f0c85cab52",
+          "videoId": "47400019-57a8-8a76-811d-0b61fc2f4d48"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:28.780Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET id": {
+      "id": "a9400019-57a8-8a76-8f22-f9eb9262ec3d",
+      "videoId": "b9c00019-57a8-8a76-8100-787fc96a1862",
+      "file": "id-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "b9c00019-57a8-8a76-8f11-53793ced8925",
+          "videoId": "98000019-57a8-8a76-811a-a7167211277f"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:29.595Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET it": {
+      "id": "80000019-57a8-8a76-8f35-1437c3e7add4",
+      "videoId": "17400019-57a8-8a76-813f-42e2a41c340b",
+      "file": "it-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "e4400019-57a8-8a76-8f07-24004c7ef367",
+          "videoId": "a8000019-57a8-8a76-811c-0752e9aeecec"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:30.870Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET ja": {
+      "id": "8a800019-57a8-8a76-8f20-cccb8a3a79c0",
+      "videoId": "42400019-57a8-8a76-8126-3db0d109350f",
+      "file": "ja-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "3a000019-57a8-8a76-8f3d-561b744c2aa2",
+          "videoId": "85800019-57a8-8a76-811a-63ae2f7da078"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:32.040Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET ko": {
+      "id": "ea800019-57a8-8a76-8f25-1f1f24e7d1ba",
+      "videoId": "63000019-57a8-8a76-810d-55e80f162523",
+      "file": "ko-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "3b000019-57a8-8a76-8f39-6b4a4ce9124f",
+          "videoId": "84000019-57a8-8a76-8119-83db3dfe185d"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:32.970Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET mr-IN": {
+      "id": "f3000019-57a8-8a76-8f3f-805fea6aca28",
+      "videoId": "1f800019-57a8-8a76-8135-7f89ed6ec6a4",
+      "file": "mr-IN-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "a2000019-57a8-8a76-8f3d-4a2efc0f2a3c",
+          "videoId": "18800019-57a8-8a76-813d-fc175c5269c0"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:34.013Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET pt-BR": {
+      "id": "b9800019-57a8-8a76-8f1f-1b6ff2dd76c3",
+      "videoId": "e8000019-57a8-8a76-8129-255ea86fdfd9",
+      "file": "pt-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "bd400019-57a8-8a76-8f3e-e0c164e2c96f",
+          "videoId": "d6c00019-57a8-8a76-8109-a1217eeaa374"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:34.834Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET ru": {
+      "id": "08400019-57a8-8a76-8f2e-c08eae478a6d",
+      "videoId": "52400019-57a8-8a76-8106-31a1b84590cc",
+      "file": "ru-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "27800019-57a8-8a76-8f20-f0363d046ea4",
+          "videoId": "61c00019-57a8-8a76-8126-c5ed0c613207"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:35.637Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET th": {
+      "id": "36400019-57a8-8a76-8f22-f7e71267364c",
+      "videoId": "65000019-57a8-8a76-811c-ac2f7c12b3a0",
+      "file": "th-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "0e800019-57a8-8a76-8f03-5c4432ebdb4d",
+          "videoId": "72c00019-57a8-8a76-8132-ef0b58c62e7e"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:36.393Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET tr": {
+      "id": "10000019-57a8-8a76-8f18-3a5f0ef92c84",
+      "videoId": "03c00019-57a8-8a76-812c-986976de759b",
+      "file": "tr-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "b2400019-57a8-8a76-8f13-6899b285c619",
+          "videoId": "63800019-57a8-8a76-813b-8495cdb040c2"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:37.165Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET vi": {
+      "id": "1fc00019-57a8-8a76-8f23-1e65c6d70706",
+      "videoId": "c8000019-57a8-8a76-8136-6f353ecb36e3",
+      "file": "vi-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "02c00019-57a8-8a76-8f2d-6a345a9c8a4c",
+          "videoId": "d7c00019-57a8-8a76-813e-164867d547f7"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:38.288Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET zh-Hans": {
+      "id": "0dc00019-57a8-8a76-8f08-b3f03874e31b",
+      "videoId": "81800019-57a8-8a76-8121-e25ce7381d4a",
+      "file": "zh-CN-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "9b000019-57a8-8a76-8f30-889c97a9cae2",
+          "videoId": "6dc00019-57a8-8a76-810f-a97282364001"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:39.256Z"
+    },
+    "APP_STORE_SEARCH_RESULTS_ASSET zh-Hant": {
+      "id": "e3800019-57a8-8a76-8f3e-aaa576d12d9a",
+      "videoId": "c6000019-57a8-8a76-8126-61925d6cae3c",
+      "file": "zh-TW-search-video-3.2.3.mp4",
+      "previous": [
+        {
+          "id": "d9000019-57a8-8a76-8f2a-b3774aef5988",
+          "videoId": "30400019-57a8-8a76-8120-6cc62c5f4363"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:40.150Z"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET zh-Hans": {
+      "id": "e2800019-57a8-8a76-8f17-865d7928a9b3",
+      "videoId": "80400019-57a8-8a76-8137-3e2f73787510",
+      "file": "zh-CN-header-video-v4.mp4",
+      "previous": [
+        {
+          "id": "ce400019-57a8-8a76-8f2e-6b87c88f7858",
+          "videoId": "5c000019-57a8-8a76-8113-be715fb5dc64"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:41.109Z"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET zh-Hant": {
+      "id": "79800019-57a8-8a76-8f18-a85287b69bc6",
+      "videoId": "7ec00019-57a8-8a76-8124-302aa9f83952",
+      "file": "zh-TW-header-video-v4.mp4",
+      "previous": [
+        {
+          "id": "19000019-57a8-8a76-8f17-f4fd0c4148a5",
+          "videoId": "29800019-57a8-8a76-8120-59757aff1564"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:42.126Z"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET ja": {
+      "id": "04800019-57a8-8a76-8f27-b8609a9ed0a5",
+      "videoId": "12800019-57a8-8a76-812b-23046c9a06aa",
+      "file": "ja-header-video-v4.mp4",
+      "previous": [
+        {
+          "id": "7d000019-57a8-8a76-8f2a-9ad0c0276af4",
+          "videoId": "2e800019-57a8-8a76-8105-2a3bf221ec98"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:43.198Z"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET ko": {
+      "id": "c9400019-57a8-8a76-8f2f-0c3bf77e41f0",
+      "videoId": "0c800019-57a8-8a76-8125-6bd1d437201b",
+      "file": "ko-header-video-v4.mp4",
+      "previous": [
+        {
+          "id": "68800019-57a8-8a76-8f19-87919d3b7e7f",
+          "videoId": "41800019-57a8-8a76-8101-940567c87809"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:44.209Z"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET ru": {
+      "id": "45000019-57a8-8a76-8f3e-50bf917caab0",
+      "videoId": "7ac00019-57a8-8a76-8103-ff9ac074c7f5",
+      "file": "ru-header-video-v4.mp4",
+      "previous": [
+        {
+          "id": "c6800019-57a8-8a76-8f00-7ddc06ec2005",
+          "videoId": "f8c00019-57a8-8a76-8114-05cd33527c9a"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:45.094Z"
+    },
+    "PRODUCT_PAGE_HEADER_ASSET mr-IN": {
+      "id": "22800019-57a8-8a76-8f08-96aac64f5b80",
+      "videoId": "52800019-57a8-8a76-811e-6741768ed984",
+      "file": "mr-IN-header-video-v4.mp4",
+      "previous": [
+        {
+          "id": "edc00019-57a8-8a76-8f3f-32ffbf4e3d78",
+          "videoId": "02c00019-57a8-8a76-810d-e671f5c8fc15"
+        }
+      ],
+      "boundAt": "2026-10-19T13:19:46.158Z"
+    }
+  },
+  "updatedAt": "2026-10-19T13:19:59.084Z",
+  "readback": {
+    "checkedAt": "2026-10-19T13:19:59.084Z",
+    "items": [
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET ar-SA",
+        "file": "ar-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET de-DE",
+        "file": "de-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET en-US",
+        "file": "en-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET en-GB",
+        "file": "en-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET es-ES",
+        "file": "es-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET es-MX",
+        "file": "es-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET fr-FR",
+        "file": "fr-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET hi",
+        "file": "hi-IN-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET id",
+        "file": "id-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET it",
+        "file": "it-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET ja",
+        "file": "ja-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET ko",
+        "file": "ko-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET mr-IN",
+        "file": "mr-IN-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET pt-BR",
+        "file": "pt-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET ru",
+        "file": "ru-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET th",
+        "file": "th-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET tr",
+        "file": "tr-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET vi",
+        "file": "vi-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET zh-Hans",
+        "file": "zh-CN-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "APP_STORE_SEARCH_RESULTS_ASSET zh-Hant",
+        "file": "zh-TW-search-video-3.2.3.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "PRODUCT_PAGE_HEADER_ASSET zh-Hans",
+        "file": "zh-CN-header-video-v4.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "PRODUCT_PAGE_HEADER_ASSET zh-Hant",
+        "file": "zh-TW-header-video-v4.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "PRODUCT_PAGE_HEADER_ASSET ja",
+        "file": "ja-header-video-v4.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "PRODUCT_PAGE_HEADER_ASSET ko",
+        "file": "ko-header-video-v4.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "PRODUCT_PAGE_HEADER_ASSET ru",
+        "file": "ru-header-video-v4.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      },
+      {
+        "key": "PRODUCT_PAGE_HEADER_ASSET mr-IN",
+        "file": "mr-IN-header-video-v4.mp4",
+        "state": "ACTIVE",
+        "ok": true
+      }
+    ],
+    "errors": 0
+  }
+}

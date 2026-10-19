@@ -1,0 +1,709 @@
+Local: audit clean; 34 widget pages, 97 font-fixed pages, 24 videos meet Apple's current specs.
+Remote: iOS 3.2.3 (PREPARE_FOR_SUBMISSION), 20 localizations.
+
+~ zh-Hans APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-zh-CN-iphone-01
+     2 keep 3.2.1-zh-CN-iphone-02
+     3 NEW  3.2.3-zh-CN-iphone-03-widgets-home
+     4 NEW  3.2.3-zh-CN-iphone-04-widgets-lock
+     5 NEW  3.2.3-zh-CN-iphone-05-leave  (replaces 3.2.2-zh-CN-iphone-03-nofree)
+     6 NEW  3.2.3-zh-CN-iphone-06-report  (replaces 3.2.1-zh-CN-iphone-04)
+     7 NEW  3.2.3-zh-CN-iphone-07-calendar  (replaces 3.2.1-zh-CN-iphone-06)
+     8 NEW  3.2.3-zh-CN-iphone-08-records  (replaces 3.2.2-zh-CN-iphone-07)
+     9 NEW  3.2.3-zh-CN-iphone-09-focus  (replaces 3.2.1-zh-CN-iphone-08)
+    10 NEW  3.2.3-zh-CN-iphone-10-rest  (replaces 3.2.1-zh-CN-iphone-10)
+       retire 3.2.2-zh-CN-iphone-05-nofree
+       retire 3.2.1-zh-CN-iphone-09
+~ en-US APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-en-iphone-01
+     2 keep 3.2.1-en-iphone-02
+     3 NEW  3.2.3-en-iphone-03-widgets-home
+     4 NEW  3.2.3-en-iphone-04-widgets-lock
+     5 keep 3.2.2-en-iphone-03-nofree
+     6 keep 3.2.1-en-iphone-04
+     7 keep 3.2.1-en-iphone-06
+     8 keep 3.2.2-en-iphone-07
+     9 keep 3.2.1-en-iphone-08
+    10 keep 3.2.1-en-iphone-10
+       retire 3.2.2-en-iphone-05-nofree
+       retire 3.2.1-en-iphone-09
+~ zh-Hant APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-zh-TW-iphone-01
+     2 keep 3.2.1-zh-TW-iphone-02
+     3 NEW  3.2.3-zh-TW-iphone-03-widgets-home
+     4 NEW  3.2.3-zh-TW-iphone-04-widgets-lock
+     5 NEW  3.2.3-zh-TW-iphone-05-leave  (replaces 3.2.2-zh-TW-iphone-03-nofree)
+     6 NEW  3.2.3-zh-TW-iphone-06-report  (replaces 3.2.1-zh-TW-iphone-04)
+     7 NEW  3.2.3-zh-TW-iphone-07-calendar  (replaces 3.2.1-zh-TW-iphone-06)
+     8 NEW  3.2.3-zh-TW-iphone-08-records  (replaces 3.2.2-zh-TW-iphone-07)
+     9 NEW  3.2.3-zh-TW-iphone-09-focus  (replaces 3.2.1-zh-TW-iphone-08)
+    10 NEW  3.2.3-zh-TW-iphone-10-rest  (replaces 3.2.1-zh-TW-iphone-10)
+       retire 3.2.2-zh-TW-iphone-05-nofree
+       retire 3.2.1-zh-TW-iphone-09
+~ ja APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-ja-iphone-01
+     2 keep 3.2.1-ja-iphone-02
+     3 NEW  3.2.3-ja-iphone-03-widgets-home
+     4 NEW  3.2.3-ja-iphone-04-widgets-lock
+     5 NEW  3.2.3-ja-iphone-05-leave  (replaces 3.2.2-ja-iphone-03-nofree)
+     6 NEW  3.2.3-ja-iphone-06-report  (replaces 3.2.1-ja-iphone-04)
+     7 NEW  3.2.3-ja-iphone-07-calendar  (replaces 3.2.1-ja-iphone-06)
+     8 NEW  3.2.3-ja-iphone-08-records  (replaces 3.2.2-ja-iphone-07)
+     9 NEW  3.2.3-ja-iphone-09-focus  (replaces 3.2.1-ja-iphone-08)
+    10 NEW  3.2.3-ja-iphone-10-rest  (replaces 3.2.1-ja-iphone-10)
+       retire 3.2.2-ja-iphone-05-nofree
+       retire 3.2.1-ja-iphone-09
+~ ko APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-ko-iphone-01
+     2 keep 3.2.1-ko-iphone-02
+     3 NEW  3.2.3-ko-iphone-03-widgets-home
+     4 NEW  3.2.3-ko-iphone-04-widgets-lock
+     5 NEW  3.2.3-ko-iphone-05-leave  (replaces 3.2.2-ko-iphone-03-nofree)
+     6 NEW  3.2.3-ko-iphone-06-report  (replaces 3.2.1-ko-iphone-04)
+     7 NEW  3.2.3-ko-iphone-07-calendar  (replaces 3.2.1-ko-iphone-06)
+     8 NEW  3.2.3-ko-iphone-08-records  (replaces 3.2.2-ko-iphone-07)
+     9 NEW  3.2.3-ko-iphone-09-focus  (replaces 3.2.1-ko-iphone-08)
+    10 NEW  3.2.3-ko-iphone-10-rest  (replaces 3.2.1-ko-iphone-10)
+       retire 3.2.2-ko-iphone-05-nofree
+       retire 3.2.1-ko-iphone-09
+~ de-DE APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-de-iphone-01
+     2 keep 3.2.1-de-iphone-02
+     3 NEW  3.2.3-de-iphone-03-widgets-home
+     4 NEW  3.2.3-de-iphone-04-widgets-lock
+     5 keep 3.2.2-de-iphone-03-nofree
+     6 keep 3.2.1-de-iphone-04
+     7 keep 3.2.1-de-iphone-06
+     8 keep 3.2.2-de-iphone-07
+     9 keep 3.2.1-de-iphone-08
+    10 keep 3.2.1-de-iphone-10
+       retire 3.2.2-de-iphone-05-nofree
+       retire 3.2.1-de-iphone-09
+~ fr-FR APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-fr-iphone-01
+     2 keep 3.2.1-fr-iphone-02
+     3 NEW  3.2.3-fr-iphone-03-widgets-home
+     4 NEW  3.2.3-fr-iphone-04-widgets-lock
+     5 keep 3.2.2-fr-iphone-03-nofree
+     6 keep 3.2.1-fr-iphone-04
+     7 keep 3.2.1-fr-iphone-06
+     8 keep 3.2.2-fr-iphone-07
+     9 keep 3.2.1-fr-iphone-08
+    10 keep 3.2.1-fr-iphone-10
+       retire 3.2.2-fr-iphone-05-nofree
+       retire 3.2.1-fr-iphone-09
+~ es-ES APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-es-iphone-01
+     2 keep 3.2.1-es-iphone-02
+     3 NEW  3.2.3-es-iphone-03-widgets-home
+     4 NEW  3.2.3-es-iphone-04-widgets-lock
+     5 keep 3.2.2-es-iphone-03-nofree
+     6 keep 3.2.1-es-iphone-04
+     7 keep 3.2.1-es-iphone-06
+     8 keep 3.2.2-es-iphone-07
+     9 keep 3.2.1-es-iphone-08
+    10 keep 3.2.1-es-iphone-10
+       retire 3.2.2-es-iphone-05-nofree
+       retire 3.2.1-es-iphone-09
+~ it APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-it-iphone-01
+     2 keep 3.2.1-it-iphone-02
+     3 NEW  3.2.3-it-iphone-03-widgets-home
+     4 NEW  3.2.3-it-iphone-04-widgets-lock
+     5 keep 3.2.2-it-iphone-03-nofree
+     6 keep 3.2.1-it-iphone-04
+     7 keep 3.2.1-it-iphone-06
+     8 keep 3.2.2-it-iphone-07
+     9 keep 3.2.1-it-iphone-08
+    10 keep 3.2.1-it-iphone-10
+       retire 3.2.2-it-iphone-05-nofree
+       retire 3.2.1-it-iphone-09
+~ pt-BR APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-pt-iphone-01
+     2 keep 3.2.1-pt-iphone-02
+     3 NEW  3.2.3-pt-iphone-03-widgets-home
+     4 NEW  3.2.3-pt-iphone-04-widgets-lock
+     5 keep 3.2.2-pt-iphone-03-nofree
+     6 keep 3.2.1-pt-iphone-04
+     7 keep 3.2.1-pt-iphone-06
+     8 keep 3.2.2-pt-iphone-07
+     9 keep 3.2.1-pt-iphone-08
+    10 keep 3.2.1-pt-iphone-10
+       retire 3.2.2-pt-iphone-05-nofree
+       retire 3.2.1-pt-iphone-09
+~ ru APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-ru-iphone-01
+     2 keep 3.2.1-ru-iphone-02
+     3 NEW  3.2.3-ru-iphone-03-widgets-home
+     4 NEW  3.2.3-ru-iphone-04-widgets-lock
+     5 NEW  3.2.3-ru-iphone-05-leave  (replaces 3.2.2-ru-iphone-03-nofree)
+     6 NEW  3.2.3-ru-iphone-06-report  (replaces 3.2.1-ru-iphone-04)
+     7 NEW  3.2.3-ru-iphone-07-calendar  (replaces 3.2.1-ru-iphone-06)
+     8 NEW  3.2.3-ru-iphone-08-records  (replaces 3.2.2-ru-iphone-07)
+     9 NEW  3.2.3-ru-iphone-09-focus  (replaces 3.2.1-ru-iphone-08)
+    10 NEW  3.2.3-ru-iphone-10-rest  (replaces 3.2.1-ru-iphone-10)
+       retire 3.2.2-ru-iphone-05-nofree
+       retire 3.2.1-ru-iphone-09
+~ tr APP_IPHONE_67: 4 upload, 4 delete
+     1 keep 3.2.1-tr-iphone-01
+     2 keep 3.2.1-tr-iphone-02
+     3 NEW  3.2.3-tr-iphone-03-widgets-home
+     4 NEW  3.2.3-tr-iphone-04-widgets-lock
+     5 NEW  3.2.3-tr-iphone-05-leave  (replaces 3.2.2-tr-iphone-03-nofree)
+     6 NEW  3.2.3-tr-iphone-06-report  (replaces 3.2.1-tr-iphone-04)
+     7 keep 3.2.1-tr-iphone-06
+     8 keep 3.2.2-tr-iphone-07
+     9 keep 3.2.1-tr-iphone-08
+    10 keep 3.2.1-tr-iphone-10
+       retire 3.2.2-tr-iphone-05-nofree
+       retire 3.2.1-tr-iphone-09
+~ id APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-id-iphone-01
+     2 keep 3.2.1-id-iphone-02
+     3 NEW  3.2.3-id-iphone-03-widgets-home
+     4 NEW  3.2.3-id-iphone-04-widgets-lock
+     5 keep 3.2.2-id-iphone-03-nofree
+     6 keep 3.2.1-id-iphone-04
+     7 keep 3.2.1-id-iphone-06
+     8 keep 3.2.2-id-iphone-07
+     9 keep 3.2.1-id-iphone-08
+    10 keep 3.2.1-id-iphone-10
+       retire 3.2.2-id-iphone-05-nofree
+       retire 3.2.1-id-iphone-09
+~ vi APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-vi-iphone-01
+     2 keep 3.2.1-vi-iphone-02
+     3 NEW  3.2.3-vi-iphone-03-widgets-home
+     4 NEW  3.2.3-vi-iphone-04-widgets-lock
+     5 NEW  3.2.3-vi-iphone-05-leave  (replaces 3.2.2-vi-iphone-03-nofree)
+     6 NEW  3.2.3-vi-iphone-06-report  (replaces 3.2.1-vi-iphone-04)
+     7 NEW  3.2.3-vi-iphone-07-calendar  (replaces 3.2.1-vi-iphone-06)
+     8 NEW  3.2.3-vi-iphone-08-records  (replaces 3.2.2-vi-iphone-07)
+     9 NEW  3.2.3-vi-iphone-09-focus  (replaces 3.2.1-vi-iphone-08)
+    10 NEW  3.2.3-vi-iphone-10-rest  (replaces 3.2.1-vi-iphone-10)
+       retire 3.2.2-vi-iphone-05-nofree
+       retire 3.2.1-vi-iphone-09
+~ th APP_IPHONE_67: 3 upload, 3 delete
+     1 keep 3.2.1-th-iphone-01
+     2 keep 3.2.1-th-iphone-02
+     3 NEW  3.2.3-th-iphone-03-widgets-home
+     4 NEW  3.2.3-th-iphone-04-widgets-lock
+     5 keep 3.2.2-th-iphone-03-nofree
+     6 NEW  3.2.3-th-iphone-06-report  (replaces 3.2.1-th-iphone-04)
+     7 keep 3.2.1-th-iphone-06
+     8 keep 3.2.2-th-iphone-07
+     9 keep 3.2.1-th-iphone-08
+    10 keep 3.2.1-th-iphone-10
+       retire 3.2.2-th-iphone-05-nofree
+       retire 3.2.1-th-iphone-09
+~ hi APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-hi-IN-iphone-01
+     2 keep 3.2.1-hi-IN-iphone-02
+     3 NEW  3.2.3-hi-IN-iphone-03-widgets-home
+     4 NEW  3.2.3-hi-IN-iphone-04-widgets-lock
+     5 NEW  3.2.3-hi-IN-iphone-05-leave  (replaces 3.2.2-hi-IN-iphone-03-nofree)
+     6 NEW  3.2.3-hi-IN-iphone-06-report  (replaces 3.2.1-hi-IN-iphone-04)
+     7 NEW  3.2.3-hi-IN-iphone-07-calendar  (replaces 3.2.1-hi-IN-iphone-06)
+     8 NEW  3.2.3-hi-IN-iphone-08-records  (replaces 3.2.2-hi-IN-iphone-07)
+     9 NEW  3.2.3-hi-IN-iphone-09-focus  (replaces 3.2.1-hi-IN-iphone-08)
+    10 NEW  3.2.3-hi-IN-iphone-10-rest  (replaces 3.2.1-hi-IN-iphone-10)
+       retire 3.2.2-hi-IN-iphone-05-nofree
+       retire 3.2.1-hi-IN-iphone-09
+~ ar-SA APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-ar-iphone-01
+     2 keep 3.2.1-ar-iphone-02
+     3 NEW  3.2.3-ar-iphone-03-widgets-home
+     4 NEW  3.2.3-ar-iphone-04-widgets-lock
+     5 keep 3.2.2-ar-iphone-03-nofree
+     6 keep 3.2.1-ar-iphone-04
+     7 keep 3.2.1-ar-iphone-06
+     8 keep 3.2.2-ar-iphone-07
+     9 keep 3.2.1-ar-iphone-08
+    10 keep 3.2.1-ar-iphone-10
+       retire 3.2.2-ar-iphone-05-nofree
+       retire 3.2.1-ar-iphone-09
+~ zh-Hans APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-zh-CN-duo-01
+     2 NEW  3.2.3-zh-CN-duo-02-leave  (replaces 3.2.2-zh-CN-duo-02-nofree)
+     3 NEW  3.2.3-zh-CN-duo-03-report  (replaces 3.2.1-zh-CN-duo-03)
+     4 keep 3.2.2-zh-CN-duo-04-nofree
+     5 NEW  3.2.3-zh-CN-duo-05-calendar  (replaces 3.2.1-zh-CN-duo-05)
+     6 NEW  3.2.3-zh-CN-duo-06-records  (replaces 3.2.2-zh-CN-duo-06)
+     7 NEW  3.2.3-zh-CN-duo-07-focus  (replaces 3.2.1-zh-CN-duo-07)
+     8 NEW  3.2.3-zh-CN-duo-08-widgets  (replaces 3.2.1-zh-CN-duo-08)
+     9 NEW  3.2.3-zh-CN-duo-09-rest  (replaces 3.2.1-zh-CN-duo-09)
+~ zh-Hant APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-zh-TW-duo-01
+     2 NEW  3.2.3-zh-TW-duo-02-leave  (replaces 3.2.2-zh-TW-duo-02-nofree)
+     3 NEW  3.2.3-zh-TW-duo-03-report  (replaces 3.2.1-zh-TW-duo-03)
+     4 keep 3.2.2-zh-TW-duo-04-nofree
+     5 NEW  3.2.3-zh-TW-duo-05-calendar  (replaces 3.2.1-zh-TW-duo-05)
+     6 NEW  3.2.3-zh-TW-duo-06-records  (replaces 3.2.2-zh-TW-duo-06)
+     7 NEW  3.2.3-zh-TW-duo-07-focus  (replaces 3.2.1-zh-TW-duo-07)
+     8 NEW  3.2.3-zh-TW-duo-08-widgets  (replaces 3.2.1-zh-TW-duo-08)
+     9 NEW  3.2.3-zh-TW-duo-09-rest  (replaces 3.2.1-zh-TW-duo-09)
+~ ja APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-ja-duo-01
+     2 NEW  3.2.3-ja-duo-02-leave  (replaces 3.2.2-ja-duo-02-nofree)
+     3 NEW  3.2.3-ja-duo-03-report  (replaces 3.2.1-ja-duo-03)
+     4 keep 3.2.2-ja-duo-04-nofree
+     5 NEW  3.2.3-ja-duo-05-calendar  (replaces 3.2.1-ja-duo-05)
+     6 NEW  3.2.3-ja-duo-06-records  (replaces 3.2.2-ja-duo-06)
+     7 NEW  3.2.3-ja-duo-07-focus  (replaces 3.2.1-ja-duo-07)
+     8 NEW  3.2.3-ja-duo-08-widgets  (replaces 3.2.1-ja-duo-08)
+     9 NEW  3.2.3-ja-duo-09-rest  (replaces 3.2.1-ja-duo-09)
+~ ko APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-ko-duo-01
+     2 NEW  3.2.3-ko-duo-02-leave  (replaces 3.2.2-ko-duo-02-nofree)
+     3 NEW  3.2.3-ko-duo-03-report  (replaces 3.2.1-ko-duo-03)
+     4 keep 3.2.2-ko-duo-04-nofree
+     5 NEW  3.2.3-ko-duo-05-calendar  (replaces 3.2.1-ko-duo-05)
+     6 NEW  3.2.3-ko-duo-06-records  (replaces 3.2.2-ko-duo-06)
+     7 NEW  3.2.3-ko-duo-07-focus  (replaces 3.2.1-ko-duo-07)
+     8 NEW  3.2.3-ko-duo-08-widgets  (replaces 3.2.1-ko-duo-08)
+     9 NEW  3.2.3-ko-duo-09-rest  (replaces 3.2.1-ko-duo-09)
+~ ru APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-ru-duo-01
+     2 NEW  3.2.3-ru-duo-02-leave  (replaces 3.2.2-ru-duo-02-nofree)
+     3 NEW  3.2.3-ru-duo-03-report  (replaces 3.2.1-ru-duo-03)
+     4 keep 3.2.2-ru-duo-04-nofree
+     5 NEW  3.2.3-ru-duo-05-calendar  (replaces 3.2.1-ru-duo-05)
+     6 NEW  3.2.3-ru-duo-06-records  (replaces 3.2.2-ru-duo-06)
+     7 NEW  3.2.3-ru-duo-07-focus  (replaces 3.2.1-ru-duo-07)
+     8 NEW  3.2.3-ru-duo-08-widgets  (replaces 3.2.1-ru-duo-08)
+     9 NEW  3.2.3-ru-duo-09-rest  (replaces 3.2.1-ru-duo-09)
+~ tr APP_IPHONE_DUO: 2 upload, 2 delete
+     1 keep 3.2.1-tr-duo-01
+     2 NEW  3.2.3-tr-duo-02-leave  (replaces 3.2.2-tr-duo-02-nofree)
+     3 NEW  3.2.3-tr-duo-03-report  (replaces 3.2.1-tr-duo-03)
+     4 keep 3.2.2-tr-duo-04-nofree
+     5 keep 3.2.1-tr-duo-05
+     6 keep 3.2.2-tr-duo-06
+     7 keep 3.2.1-tr-duo-07
+     8 keep 3.2.1-tr-duo-08
+     9 keep 3.2.1-tr-duo-09
+~ vi APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-vi-duo-01
+     2 NEW  3.2.3-vi-duo-02-leave  (replaces 3.2.2-vi-duo-02-nofree)
+     3 NEW  3.2.3-vi-duo-03-report  (replaces 3.2.1-vi-duo-03)
+     4 keep 3.2.2-vi-duo-04-nofree
+     5 NEW  3.2.3-vi-duo-05-calendar  (replaces 3.2.1-vi-duo-05)
+     6 NEW  3.2.3-vi-duo-06-records  (replaces 3.2.2-vi-duo-06)
+     7 NEW  3.2.3-vi-duo-07-focus  (replaces 3.2.1-vi-duo-07)
+     8 NEW  3.2.3-vi-duo-08-widgets  (replaces 3.2.1-vi-duo-08)
+     9 NEW  3.2.3-vi-duo-09-rest  (replaces 3.2.1-vi-duo-09)
+~ th APP_IPHONE_DUO: 1 upload, 1 delete
+     1 keep 3.2.1-th-duo-01
+     2 keep 3.2.2-th-duo-02-nofree
+     3 NEW  3.2.3-th-duo-03-report  (replaces 3.2.1-th-duo-03)
+     4 keep 3.2.2-th-duo-04-nofree
+     5 keep 3.2.1-th-duo-05
+     6 keep 3.2.2-th-duo-06
+     7 keep 3.2.1-th-duo-07
+     8 keep 3.2.1-th-duo-08
+     9 keep 3.2.1-th-duo-09
+~ hi APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-hi-IN-duo-01
+     2 NEW  3.2.3-hi-IN-duo-02-leave  (replaces 3.2.2-hi-IN-duo-02-nofree)
+     3 NEW  3.2.3-hi-IN-duo-03-report  (replaces 3.2.1-hi-IN-duo-03)
+     4 keep 3.2.2-hi-IN-duo-04-nofree
+     5 NEW  3.2.3-hi-IN-duo-05-calendar  (replaces 3.2.1-hi-IN-duo-05)
+     6 NEW  3.2.3-hi-IN-duo-06-records  (replaces 3.2.2-hi-IN-duo-06)
+     7 NEW  3.2.3-hi-IN-duo-07-focus  (replaces 3.2.1-hi-IN-duo-07)
+     8 NEW  3.2.3-hi-IN-duo-08-widgets  (replaces 3.2.1-hi-IN-duo-08)
+     9 NEW  3.2.3-hi-IN-duo-09-rest  (replaces 3.2.1-hi-IN-duo-09)
+
+~ search ar-SA: replace 1 placement(s) with ar-search-video-3.2.3.mp4 (27.0 s)
+~ search de-DE: replace 1 placement(s) with de-search-video-3.2.3.mp4 (27.0 s)
+~ search en-US: replace 1 placement(s) with en-search-video-3.2.3.mp4 (27.0 s)
+~ search en-GB: replace 1 placement(s) with en-search-video-3.2.3.mp4 (27.0 s)
+~ search es-ES: replace 1 placement(s) with es-search-video-3.2.3.mp4 (27.0 s)
+~ search es-MX: replace 1 placement(s) with es-search-video-3.2.3.mp4 (27.0 s)
+~ search fr-FR: replace 1 placement(s) with fr-search-video-3.2.3.mp4 (27.0 s)
+~ search hi: replace 1 placement(s) with hi-IN-search-video-3.2.3.mp4 (27.0 s)
+~ search id: replace 1 placement(s) with id-search-video-3.2.3.mp4 (27.0 s)
+~ search it: replace 1 placement(s) with it-search-video-3.2.3.mp4 (27.0 s)
+~ search ja: replace 1 placement(s) with ja-search-video-3.2.3.mp4 (27.0 s)
+~ search ko: replace 1 placement(s) with ko-search-video-3.2.3.mp4 (27.0 s)
+~ search mr-IN: replace 1 placement(s) with mr-IN-search-video-3.2.3.mp4 (27.0 s)
+~ search pt-BR: replace 1 placement(s) with pt-search-video-3.2.3.mp4 (27.0 s)
+~ search ru: replace 1 placement(s) with ru-search-video-3.2.3.mp4 (27.0 s)
+~ search th: replace 1 placement(s) with th-search-video-3.2.3.mp4 (27.0 s)
+~ search tr: replace 1 placement(s) with tr-search-video-3.2.3.mp4 (27.0 s)
+~ search vi: replace 1 placement(s) with vi-search-video-3.2.3.mp4 (27.0 s)
+~ search zh-Hans: replace 1 placement(s) with zh-CN-search-video-3.2.3.mp4 (27.0 s)
+~ search zh-Hant: replace 1 placement(s) with zh-TW-search-video-3.2.3.mp4 (27.0 s)
+~ header zh-Hans: replace 1 placement(s) with zh-CN-header-video-v4.mp4 (8.0 s)
+~ header zh-Hant: replace 1 placement(s) with zh-TW-header-video-v4.mp4 (8.0 s)
+~ header ja: replace 1 placement(s) with ja-header-video-v4.mp4 (8.0 s)
+~ header ko: replace 1 placement(s) with ko-header-video-v4.mp4 (8.0 s)
+~ header ru: replace 1 placement(s) with ru-header-video-v4.mp4 (8.0 s)
+~ header mr-IN: replace 1 placement(s) with mr-IN-header-video-v4.mp4 (8.0 s)
+
+Totals: 131 screenshot uploads, 131 screenshot deletions in 26 sets; 24 video uploads; 26 placements.
+zh-Hans APP_IPHONE_67: deleted doneat-3.2.2-zh-CN-iphone-03-nofree-b344d12eeaa0.png
+zh-Hans APP_IPHONE_67: deleted doneat-3.2.1-zh-CN-iphone-04-c4f768311a67.png
+zh-Hans APP_IPHONE_67: deleted doneat-3.2.2-zh-CN-iphone-05-nofree-3d29f4b877cd.png
+zh-Hans APP_IPHONE_67: deleted doneat-3.2.1-zh-CN-iphone-06-81724ba57e88.png
+zh-Hans APP_IPHONE_67: deleted doneat-3.2.2-zh-CN-iphone-07-91e451907422.png
+zh-Hans APP_IPHONE_67: deleted doneat-3.2.1-zh-CN-iphone-08-6e890daf2e92.png
+zh-Hans APP_IPHONE_67: deleted doneat-3.2.1-zh-CN-iphone-09-981441f2c367.png
+zh-Hans APP_IPHONE_67: deleted doneat-3.2.1-zh-CN-iphone-10-e090d07cb83e.png
+zh-Hans APP_IPHONE_67 3: uploaded doneat-3.2.3-zh-CN-iphone-03-widgets-home-17167dff7b56.png
+zh-Hans APP_IPHONE_67 4: uploaded doneat-3.2.3-zh-CN-iphone-04-widgets-lock-e7789679d4cb.png
+zh-Hans APP_IPHONE_67 5: uploaded doneat-3.2.3-zh-CN-iphone-05-leave-78d58790edc6.png
+zh-Hans APP_IPHONE_67 6: uploaded doneat-3.2.3-zh-CN-iphone-06-report-a40f90ec4999.png
+zh-Hans APP_IPHONE_67 7: uploaded doneat-3.2.3-zh-CN-iphone-07-calendar-ddaa0e309289.png
+zh-Hans APP_IPHONE_67 8: uploaded doneat-3.2.3-zh-CN-iphone-08-records-e99874838ad5.png
+zh-Hans APP_IPHONE_67 9: uploaded doneat-3.2.3-zh-CN-iphone-09-focus-d5e5dd4477ad.png
+zh-Hans APP_IPHONE_67 10: uploaded doneat-3.2.3-zh-CN-iphone-10-rest-d5828fa329f5.png
+zh-Hans APP_IPHONE_67: 10 screenshots in order
+en-US APP_IPHONE_67: deleted doneat-3.2.2-en-iphone-05-nofree-4e487d1d2bd1.png
+en-US APP_IPHONE_67: deleted doneat-3.2.1-en-iphone-09-fef0b4f99fec.png
+en-US APP_IPHONE_67 3: uploaded doneat-3.2.3-en-iphone-03-widgets-home-b31aa2003b62.png
+en-US APP_IPHONE_67 4: uploaded doneat-3.2.3-en-iphone-04-widgets-lock-9e94f3f972ee.png
+en-US APP_IPHONE_67: 10 screenshots in order
+zh-Hant APP_IPHONE_67: deleted doneat-3.2.2-zh-TW-iphone-03-nofree-acf8221e6f2b.png
+zh-Hant APP_IPHONE_67: deleted doneat-3.2.1-zh-TW-iphone-04-ed8ec47996b2.png
+zh-Hant APP_IPHONE_67: deleted doneat-3.2.2-zh-TW-iphone-05-nofree-025f952f3d58.png
+zh-Hant APP_IPHONE_67: deleted doneat-3.2.1-zh-TW-iphone-06-831abb23556a.png
+zh-Hant APP_IPHONE_67: deleted doneat-3.2.2-zh-TW-iphone-07-c8d078256d37.png
+zh-Hant APP_IPHONE_67: deleted doneat-3.2.1-zh-TW-iphone-08-a259bb346a21.png
+zh-Hant APP_IPHONE_67: deleted doneat-3.2.1-zh-TW-iphone-09-5ca56f9bd8f3.png
+zh-Hant APP_IPHONE_67: deleted doneat-3.2.1-zh-TW-iphone-10-c28a53a9e361.png
+zh-Hant APP_IPHONE_67 3: uploaded doneat-3.2.3-zh-TW-iphone-03-widgets-home-f593e81361e2.png
+zh-Hant APP_IPHONE_67 4: uploaded doneat-3.2.3-zh-TW-iphone-04-widgets-lock-cd65214474e3.png
+zh-Hant APP_IPHONE_67 5: uploaded doneat-3.2.3-zh-TW-iphone-05-leave-5d2a99234b7d.png
+zh-Hant APP_IPHONE_67 6: uploaded doneat-3.2.3-zh-TW-iphone-06-report-4b25168aa4f1.png
+zh-Hant APP_IPHONE_67 7: uploaded doneat-3.2.3-zh-TW-iphone-07-calendar-83dcd515b4d0.png
+zh-Hant APP_IPHONE_67 8: uploaded doneat-3.2.3-zh-TW-iphone-08-records-d26db15724c1.png
+zh-Hant APP_IPHONE_67 9: uploaded doneat-3.2.3-zh-TW-iphone-09-focus-301025780c9e.png
+zh-Hant APP_IPHONE_67 10: uploaded doneat-3.2.3-zh-TW-iphone-10-rest-bd4ae0dae2d4.png
+zh-Hant APP_IPHONE_67: 10 screenshots in order
+ja APP_IPHONE_67: deleted doneat-3.2.2-ja-iphone-03-nofree-284f6b068448.png
+ja APP_IPHONE_67: deleted doneat-3.2.1-ja-iphone-04-76e12821e436.png
+ja APP_IPHONE_67: deleted doneat-3.2.2-ja-iphone-05-nofree-0e75dbe01ae4.png
+ja APP_IPHONE_67: deleted doneat-3.2.1-ja-iphone-06-26ef5d42d905.png
+ja APP_IPHONE_67: deleted doneat-3.2.2-ja-iphone-07-ab52ff8bc56f.png
+ja APP_IPHONE_67: deleted doneat-3.2.1-ja-iphone-08-be01bda36038.png
+ja APP_IPHONE_67: deleted doneat-3.2.1-ja-iphone-09-edb5cc1d00dc.png
+ja APP_IPHONE_67: deleted doneat-3.2.1-ja-iphone-10-724217675baf.png
+ja APP_IPHONE_67 3: uploaded doneat-3.2.3-ja-iphone-03-widgets-home-468b5c98cad3.png
+ja APP_IPHONE_67 4: uploaded doneat-3.2.3-ja-iphone-04-widgets-lock-76e5e1cf6193.png
+ja APP_IPHONE_67 5: uploaded doneat-3.2.3-ja-iphone-05-leave-5195d3bf86be.png
+ja APP_IPHONE_67 6: uploaded doneat-3.2.3-ja-iphone-06-report-0950b3c5abbc.png
+ja APP_IPHONE_67 7: uploaded doneat-3.2.3-ja-iphone-07-calendar-6f46337317d8.png
+ja APP_IPHONE_67 8: uploaded doneat-3.2.3-ja-iphone-08-records-864514fc80c2.png
+ja APP_IPHONE_67 9: uploaded doneat-3.2.3-ja-iphone-09-focus-ac44158c1602.png
+ja APP_IPHONE_67 10: uploaded doneat-3.2.3-ja-iphone-10-rest-1f0ca730a8b2.png
+ja APP_IPHONE_67: 10 screenshots in order
+ko APP_IPHONE_67: deleted doneat-3.2.2-ko-iphone-03-nofree-e3293fc4939b.png
+ko APP_IPHONE_67: deleted doneat-3.2.1-ko-iphone-04-3063f743b4a9.png
+ko APP_IPHONE_67: deleted doneat-3.2.2-ko-iphone-05-nofree-2d03c38c87dc.png
+ko APP_IPHONE_67: deleted doneat-3.2.1-ko-iphone-06-d68e81f8f829.png
+ko APP_IPHONE_67: deleted doneat-3.2.2-ko-iphone-07-59170302c67e.png
+ko APP_IPHONE_67: deleted doneat-3.2.1-ko-iphone-08-b0670aa14106.png
+ko APP_IPHONE_67: deleted doneat-3.2.1-ko-iphone-09-00ccedcdb783.png
+ko APP_IPHONE_67: deleted doneat-3.2.1-ko-iphone-10-2af7ec299192.png
+ko APP_IPHONE_67 3: uploaded doneat-3.2.3-ko-iphone-03-widgets-home-ff70f8de8fd6.png
+ko APP_IPHONE_67 4: uploaded doneat-3.2.3-ko-iphone-04-widgets-lock-77216fff76e9.png
+ko APP_IPHONE_67 5: uploaded doneat-3.2.3-ko-iphone-05-leave-f3ec0a214fcb.png
+ko APP_IPHONE_67 6: uploaded doneat-3.2.3-ko-iphone-06-report-87cc68bc2098.png
+ko APP_IPHONE_67 7: uploaded doneat-3.2.3-ko-iphone-07-calendar-46e5aaae2cc0.png
+ko APP_IPHONE_67 8: uploaded doneat-3.2.3-ko-iphone-08-records-a0d8bf67124a.png
+ko APP_IPHONE_67 9: uploaded doneat-3.2.3-ko-iphone-09-focus-bdc835089b05.png
+ko APP_IPHONE_67 10: uploaded doneat-3.2.3-ko-iphone-10-rest-32d5e795370b.png
+ko APP_IPHONE_67: 10 screenshots in order
+de-DE APP_IPHONE_67: deleted doneat-3.2.2-de-iphone-05-nofree-38942801188c.png
+de-DE APP_IPHONE_67: deleted doneat-3.2.1-de-iphone-09-ad99dc5d2d91.png
+de-DE APP_IPHONE_67 3: uploaded doneat-3.2.3-de-iphone-03-widgets-home-e8445059aa4e.png
+de-DE APP_IPHONE_67 4: uploaded doneat-3.2.3-de-iphone-04-widgets-lock-469f80bbb7b6.png
+de-DE APP_IPHONE_67: 10 screenshots in order
+fr-FR APP_IPHONE_67: deleted doneat-3.2.2-fr-iphone-05-nofree-3a7967282313.png
+fr-FR APP_IPHONE_67: deleted doneat-3.2.1-fr-iphone-09-89eea76edf2e.png
+fr-FR APP_IPHONE_67 3: uploaded doneat-3.2.3-fr-iphone-03-widgets-home-95e0cc754956.png
+fr-FR APP_IPHONE_67 4: uploaded doneat-3.2.3-fr-iphone-04-widgets-lock-e8dc1d4ce914.png
+fr-FR APP_IPHONE_67: 10 screenshots in order
+es-ES APP_IPHONE_67: deleted doneat-3.2.2-es-iphone-05-nofree-49aafd48027d.png
+es-ES APP_IPHONE_67: deleted doneat-3.2.1-es-iphone-09-56565c4a0782.png
+es-ES APP_IPHONE_67 3: uploaded doneat-3.2.3-es-iphone-03-widgets-home-002f5544b497.png
+es-ES APP_IPHONE_67 4: uploaded doneat-3.2.3-es-iphone-04-widgets-lock-efc993923a91.png
+es-ES APP_IPHONE_67: 10 screenshots in order
+it APP_IPHONE_67: deleted doneat-3.2.2-it-iphone-05-nofree-b575f2381673.png
+it APP_IPHONE_67: deleted doneat-3.2.1-it-iphone-09-2fa1ed6ce84b.png
+it APP_IPHONE_67 3: uploaded doneat-3.2.3-it-iphone-03-widgets-home-1f073d59c16c.png
+it APP_IPHONE_67 4: uploaded doneat-3.2.3-it-iphone-04-widgets-lock-acab6b87db3b.png
+it APP_IPHONE_67: 10 screenshots in order
+pt-BR APP_IPHONE_67: deleted doneat-3.2.2-pt-iphone-05-nofree-19f166024b12.png
+pt-BR APP_IPHONE_67: deleted doneat-3.2.1-pt-iphone-09-3cad165bd52a.png
+pt-BR APP_IPHONE_67 3: uploaded doneat-3.2.3-pt-iphone-03-widgets-home-0812f482457e.png
+pt-BR APP_IPHONE_67 4: uploaded doneat-3.2.3-pt-iphone-04-widgets-lock-f0b66b730aa3.png
+pt-BR APP_IPHONE_67: 10 screenshots in order
+ru APP_IPHONE_67: deleted doneat-3.2.2-ru-iphone-03-nofree-e384f2359edd.png
+ru APP_IPHONE_67: deleted doneat-3.2.1-ru-iphone-04-bb2f896eecbe.png
+ru APP_IPHONE_67: deleted doneat-3.2.2-ru-iphone-05-nofree-7b5cd9cc450a.png
+ru APP_IPHONE_67: deleted doneat-3.2.1-ru-iphone-06-cfac82343fa9.png
+ru APP_IPHONE_67: deleted doneat-3.2.2-ru-iphone-07-eb2fb5d5d513.png
+ru APP_IPHONE_67: deleted doneat-3.2.1-ru-iphone-08-726f5c68f9fe.png
+ru APP_IPHONE_67: deleted doneat-3.2.1-ru-iphone-09-c1ed5db35744.png
+ru APP_IPHONE_67: deleted doneat-3.2.1-ru-iphone-10-33f40b752faf.png
+ru APP_IPHONE_67 3: uploaded doneat-3.2.3-ru-iphone-03-widgets-home-35a7f74a2613.png
+ru APP_IPHONE_67 4: uploaded doneat-3.2.3-ru-iphone-04-widgets-lock-e27d5408dfd0.png
+ru APP_IPHONE_67 5: uploaded doneat-3.2.3-ru-iphone-05-leave-346816e7c1d5.png
+ru APP_IPHONE_67 6: uploaded doneat-3.2.3-ru-iphone-06-report-6ad15344f0b2.png
+ru APP_IPHONE_67 7: uploaded doneat-3.2.3-ru-iphone-07-calendar-60a64beee650.png
+ru APP_IPHONE_67 8: uploaded doneat-3.2.3-ru-iphone-08-records-7017ac8ed9fc.png
+ru APP_IPHONE_67 9: uploaded doneat-3.2.3-ru-iphone-09-focus-10037029459e.png
+ru APP_IPHONE_67 10: uploaded doneat-3.2.3-ru-iphone-10-rest-fa1a82f765a2.png
+ru APP_IPHONE_67: 10 screenshots in order
+tr APP_IPHONE_67: deleted doneat-3.2.2-tr-iphone-03-nofree-b036abf8bb3e.png
+tr APP_IPHONE_67: deleted doneat-3.2.1-tr-iphone-04-eef8f39a2a02.png
+tr APP_IPHONE_67: deleted doneat-3.2.2-tr-iphone-05-nofree-ce6b238f7bca.png
+tr APP_IPHONE_67: deleted doneat-3.2.1-tr-iphone-09-386f4b86fda0.png
+tr APP_IPHONE_67 3: uploaded doneat-3.2.3-tr-iphone-03-widgets-home-71f9ca6f6950.png
+tr APP_IPHONE_67 4: uploaded doneat-3.2.3-tr-iphone-04-widgets-lock-dea362a55ffa.png
+tr APP_IPHONE_67 5: uploaded doneat-3.2.3-tr-iphone-05-leave-4f27579789a0.png
+tr APP_IPHONE_67 6: uploaded doneat-3.2.3-tr-iphone-06-report-ae679e8df867.png
+tr APP_IPHONE_67: 10 screenshots in order
+id APP_IPHONE_67: deleted doneat-3.2.2-id-iphone-05-nofree-984b9ff68289.png
+id APP_IPHONE_67: deleted doneat-3.2.1-id-iphone-09-6d0f711882c2.png
+id APP_IPHONE_67 3: uploaded doneat-3.2.3-id-iphone-03-widgets-home-259d18400b09.png
+id APP_IPHONE_67 4: uploaded doneat-3.2.3-id-iphone-04-widgets-lock-4d375b2bcad5.png
+id APP_IPHONE_67: 10 screenshots in order
+vi APP_IPHONE_67: deleted doneat-3.2.2-vi-iphone-03-nofree-a855ffcd9ac7.png
+vi APP_IPHONE_67: deleted doneat-3.2.1-vi-iphone-04-89266100bb1f.png
+vi APP_IPHONE_67: deleted doneat-3.2.2-vi-iphone-05-nofree-65e1f5f1ac89.png
+vi APP_IPHONE_67: deleted doneat-3.2.1-vi-iphone-06-8cae99723f62.png
+vi APP_IPHONE_67: deleted doneat-3.2.2-vi-iphone-07-596787a16445.png
+vi APP_IPHONE_67: deleted doneat-3.2.1-vi-iphone-08-6ec3747ebc72.png
+vi APP_IPHONE_67: deleted doneat-3.2.1-vi-iphone-09-8b39b29f81c2.png
+vi APP_IPHONE_67: deleted doneat-3.2.1-vi-iphone-10-ee2d8f14f4b5.png
+vi APP_IPHONE_67 3: uploaded doneat-3.2.3-vi-iphone-03-widgets-home-38d1f60cb178.png
+vi APP_IPHONE_67 4: uploaded doneat-3.2.3-vi-iphone-04-widgets-lock-5275546582ad.png
+vi APP_IPHONE_67 5: uploaded doneat-3.2.3-vi-iphone-05-leave-021577b48702.png
+vi APP_IPHONE_67 6: uploaded doneat-3.2.3-vi-iphone-06-report-5cd910774dff.png
+vi APP_IPHONE_67 7: uploaded doneat-3.2.3-vi-iphone-07-calendar-5de4c244e69a.png
+vi APP_IPHONE_67 8: uploaded doneat-3.2.3-vi-iphone-08-records-083f9c1a3a50.png
+vi APP_IPHONE_67 9: uploaded doneat-3.2.3-vi-iphone-09-focus-31c4d7d44f9d.png
+vi APP_IPHONE_67 10: uploaded doneat-3.2.3-vi-iphone-10-rest-9114735957ab.png
+vi APP_IPHONE_67: 10 screenshots in order
+th APP_IPHONE_67: deleted doneat-3.2.1-th-iphone-04-ed9518c4b864.png
+th APP_IPHONE_67: deleted doneat-3.2.2-th-iphone-05-nofree-8c666e178aa9.png
+th APP_IPHONE_67: deleted doneat-3.2.1-th-iphone-09-53ed49356d77.png
+th APP_IPHONE_67 3: uploaded doneat-3.2.3-th-iphone-03-widgets-home-e88a506a4667.png
+th APP_IPHONE_67 4: uploaded doneat-3.2.3-th-iphone-04-widgets-lock-fa54e5de21d2.png
+th APP_IPHONE_67 6: uploaded doneat-3.2.3-th-iphone-06-report-3d8e907f1fc7.png
+th APP_IPHONE_67: 10 screenshots in order
+hi APP_IPHONE_67: deleted doneat-3.2.2-hi-IN-iphone-03-nofree-9de69796813d.png
+hi APP_IPHONE_67: deleted doneat-3.2.1-hi-IN-iphone-04-05ea91678c2f.png
+hi APP_IPHONE_67: deleted doneat-3.2.2-hi-IN-iphone-05-nofree-8e38cfa7a394.png
+hi APP_IPHONE_67: deleted doneat-3.2.1-hi-IN-iphone-06-d7d42a719da0.png
+hi APP_IPHONE_67: deleted doneat-3.2.2-hi-IN-iphone-07-f16f8784f25f.png
+hi APP_IPHONE_67: deleted doneat-3.2.1-hi-IN-iphone-08-26e991034f56.png
+hi APP_IPHONE_67: deleted doneat-3.2.1-hi-IN-iphone-09-c4970aa89525.png
+hi APP_IPHONE_67: deleted doneat-3.2.1-hi-IN-iphone-10-dafcb9cf65b0.png
+hi APP_IPHONE_67 3: uploaded doneat-3.2.3-hi-IN-iphone-03-widgets-home-12e548b4840d.png
+hi APP_IPHONE_67 4: uploaded doneat-3.2.3-hi-IN-iphone-04-widgets-lock-ffc7c4f6889f.png
+hi APP_IPHONE_67 5: uploaded doneat-3.2.3-hi-IN-iphone-05-leave-62ac56aded12.png
+hi APP_IPHONE_67 6: uploaded doneat-3.2.3-hi-IN-iphone-06-report-9ba2ea9dd502.png
+hi APP_IPHONE_67 7: uploaded doneat-3.2.3-hi-IN-iphone-07-calendar-135008015177.png
+hi APP_IPHONE_67 8: uploaded doneat-3.2.3-hi-IN-iphone-08-records-af5409821cdb.png
+hi APP_IPHONE_67 9: uploaded doneat-3.2.3-hi-IN-iphone-09-focus-949d92dc501f.png
+hi APP_IPHONE_67 10: uploaded doneat-3.2.3-hi-IN-iphone-10-rest-ac4d66172e90.png
+hi APP_IPHONE_67: 10 screenshots in order
+ar-SA APP_IPHONE_67: deleted doneat-3.2.2-ar-iphone-05-nofree-c2d3cb83d148.png
+ar-SA APP_IPHONE_67: deleted doneat-3.2.1-ar-iphone-09-26031513b376.png
+ar-SA APP_IPHONE_67 3: uploaded doneat-3.2.3-ar-iphone-03-widgets-home-b202a73c70ff.png
+ar-SA APP_IPHONE_67 4: uploaded doneat-3.2.3-ar-iphone-04-widgets-lock-5cd18355337f.png
+ar-SA APP_IPHONE_67: 10 screenshots in order
+zh-Hans APP_IPHONE_DUO: deleted doneat-3.2.2-zh-CN-duo-02-nofree-8c3f8328e97f.png
+zh-Hans APP_IPHONE_DUO: deleted doneat-3.2.1-zh-CN-duo-03-fc7a53a1cdbf.png
+zh-Hans APP_IPHONE_DUO: deleted doneat-3.2.1-zh-CN-duo-05-a10d5ad43634.png
+zh-Hans APP_IPHONE_DUO: deleted doneat-3.2.2-zh-CN-duo-06-ea421bd07063.png
+zh-Hans APP_IPHONE_DUO: deleted doneat-3.2.1-zh-CN-duo-07-0f7ce6cee748.png
+zh-Hans APP_IPHONE_DUO: deleted doneat-3.2.1-zh-CN-duo-08-e1d54e5ca42b.png
+zh-Hans APP_IPHONE_DUO: deleted doneat-3.2.1-zh-CN-duo-09-3bbae90c3158.png
+zh-Hans APP_IPHONE_DUO 2: uploaded doneat-3.2.3-zh-CN-duo-02-leave-bdbeffdddb6d.png
+zh-Hans APP_IPHONE_DUO 3: uploaded doneat-3.2.3-zh-CN-duo-03-report-22e29a6c74a0.png
+zh-Hans APP_IPHONE_DUO 5: uploaded doneat-3.2.3-zh-CN-duo-05-calendar-5b4149dd2b3a.png
+zh-Hans APP_IPHONE_DUO 6: uploaded doneat-3.2.3-zh-CN-duo-06-records-c33db8d0a6e8.png
+zh-Hans APP_IPHONE_DUO 7: uploaded doneat-3.2.3-zh-CN-duo-07-focus-69885f3f3fac.png
+zh-Hans APP_IPHONE_DUO 8: uploaded doneat-3.2.3-zh-CN-duo-08-widgets-4c49693d760d.png
+zh-Hans APP_IPHONE_DUO 9: uploaded doneat-3.2.3-zh-CN-duo-09-rest-1f54447bd52c.png
+zh-Hans APP_IPHONE_DUO: 9 screenshots in order
+zh-Hant APP_IPHONE_DUO: deleted doneat-3.2.2-zh-TW-duo-02-nofree-93a3573d86d6.png
+zh-Hant APP_IPHONE_DUO: deleted doneat-3.2.1-zh-TW-duo-03-604f33a066de.png
+zh-Hant APP_IPHONE_DUO: deleted doneat-3.2.1-zh-TW-duo-05-90c4a25e4f58.png
+zh-Hant APP_IPHONE_DUO: deleted doneat-3.2.2-zh-TW-duo-06-4368351ec046.png
+zh-Hant APP_IPHONE_DUO: deleted doneat-3.2.1-zh-TW-duo-07-075445bc839f.png
+zh-Hant APP_IPHONE_DUO: deleted doneat-3.2.1-zh-TW-duo-08-062430f22222.png
+zh-Hant APP_IPHONE_DUO: deleted doneat-3.2.1-zh-TW-duo-09-72fa4128ae60.png
+zh-Hant APP_IPHONE_DUO 2: uploaded doneat-3.2.3-zh-TW-duo-02-leave-68779d66ce97.png
+zh-Hant APP_IPHONE_DUO 3: uploaded doneat-3.2.3-zh-TW-duo-03-report-7e2cb098f9bd.png
+zh-Hant APP_IPHONE_DUO 5: uploaded doneat-3.2.3-zh-TW-duo-05-calendar-e2230586cbcb.png
+zh-Hant APP_IPHONE_DUO 6: uploaded doneat-3.2.3-zh-TW-duo-06-records-283a677ac960.png
+zh-Hant APP_IPHONE_DUO 7: uploaded doneat-3.2.3-zh-TW-duo-07-focus-7ee264007fad.png
+zh-Hant APP_IPHONE_DUO 8: uploaded doneat-3.2.3-zh-TW-duo-08-widgets-8fcc1ff85b78.png
+zh-Hant APP_IPHONE_DUO 9: uploaded doneat-3.2.3-zh-TW-duo-09-rest-59380d0f92ce.png
+zh-Hant APP_IPHONE_DUO: 9 screenshots in order
+ja APP_IPHONE_DUO: deleted doneat-3.2.2-ja-duo-02-nofree-0e3149e8aec8.png
+ja APP_IPHONE_DUO: deleted doneat-3.2.1-ja-duo-03-34ee3ca3b1f0.png
+ja APP_IPHONE_DUO: deleted doneat-3.2.1-ja-duo-05-3e0f9f598448.png
+ja APP_IPHONE_DUO: deleted doneat-3.2.2-ja-duo-06-8c4215f9a30c.png
+ja APP_IPHONE_DUO: deleted doneat-3.2.1-ja-duo-07-6104ae6d1eef.png
+ja APP_IPHONE_DUO: deleted doneat-3.2.1-ja-duo-08-ac148a48014a.png
+ja APP_IPHONE_DUO: deleted doneat-3.2.1-ja-duo-09-f82605694931.png
+ja APP_IPHONE_DUO 2: uploaded doneat-3.2.3-ja-duo-02-leave-37a9cec824ff.png
+ja APP_IPHONE_DUO 3: uploaded doneat-3.2.3-ja-duo-03-report-33c894e21830.png
+ja APP_IPHONE_DUO 5: uploaded doneat-3.2.3-ja-duo-05-calendar-a680a228eb7a.png
+ja APP_IPHONE_DUO 6: uploaded doneat-3.2.3-ja-duo-06-records-81f53b56c0e2.png
+ja APP_IPHONE_DUO 7: uploaded doneat-3.2.3-ja-duo-07-focus-a054874cc058.png
+ja APP_IPHONE_DUO 8: uploaded doneat-3.2.3-ja-duo-08-widgets-6799c0eb80ad.png
+ja APP_IPHONE_DUO 9: uploaded doneat-3.2.3-ja-duo-09-rest-484f1f02c0d0.png
+ja APP_IPHONE_DUO: 9 screenshots in order
+ko APP_IPHONE_DUO: deleted doneat-3.2.2-ko-duo-02-nofree-d96ce409fdd4.png
+ko APP_IPHONE_DUO: deleted doneat-3.2.1-ko-duo-03-525563b6aeef.png
+ko APP_IPHONE_DUO: deleted doneat-3.2.1-ko-duo-05-c5be8949802b.png
+ko APP_IPHONE_DUO: deleted doneat-3.2.2-ko-duo-06-6fb1b156c7ad.png
+ko APP_IPHONE_DUO: deleted doneat-3.2.1-ko-duo-07-283a0666f5c4.png
+ko APP_IPHONE_DUO: deleted doneat-3.2.1-ko-duo-08-953cfbd9405f.png
+ko APP_IPHONE_DUO: deleted doneat-3.2.1-ko-duo-09-da0ba5b8b59a.png
+ko APP_IPHONE_DUO 2: uploaded doneat-3.2.3-ko-duo-02-leave-aea50679ad8b.png
+ko APP_IPHONE_DUO 3: uploaded doneat-3.2.3-ko-duo-03-report-26d42e103060.png
+ko APP_IPHONE_DUO 5: uploaded doneat-3.2.3-ko-duo-05-calendar-5cf462733f22.png
+ko APP_IPHONE_DUO 6: uploaded doneat-3.2.3-ko-duo-06-records-89b95a443837.png
+ko APP_IPHONE_DUO 7: uploaded doneat-3.2.3-ko-duo-07-focus-e8da1ec0b9b2.png
+ko APP_IPHONE_DUO 8: uploaded doneat-3.2.3-ko-duo-08-widgets-bf6d8b33eb74.png
+ko APP_IPHONE_DUO 9: uploaded doneat-3.2.3-ko-duo-09-rest-04d6bbc435ce.png
+ko APP_IPHONE_DUO: 9 screenshots in order
+ru APP_IPHONE_DUO: deleted doneat-3.2.2-ru-duo-02-nofree-5da5a26a0c02.png
+ru APP_IPHONE_DUO: deleted doneat-3.2.1-ru-duo-03-9e5181185c25.png
+ru APP_IPHONE_DUO: deleted doneat-3.2.1-ru-duo-05-108af284094b.png
+ru APP_IPHONE_DUO: deleted doneat-3.2.2-ru-duo-06-8f493e3e8814.png
+ru APP_IPHONE_DUO: deleted doneat-3.2.1-ru-duo-07-964bb644b411.png
+ru APP_IPHONE_DUO: deleted doneat-3.2.1-ru-duo-08-f2a985d6dad6.png
+ru APP_IPHONE_DUO: deleted doneat-3.2.1-ru-duo-09-2c03e69517f7.png
+ru APP_IPHONE_DUO 2: uploaded doneat-3.2.3-ru-duo-02-leave-691b33b57316.png
+ru APP_IPHONE_DUO 3: uploaded doneat-3.2.3-ru-duo-03-report-f6250e0ae0a7.png
+ru APP_IPHONE_DUO 5: uploaded doneat-3.2.3-ru-duo-05-calendar-b0081a31cf61.png
+ru APP_IPHONE_DUO 6: uploaded doneat-3.2.3-ru-duo-06-records-1382d824dc33.png
+ru APP_IPHONE_DUO 7: uploaded doneat-3.2.3-ru-duo-07-focus-7cc24004aa40.png
+ru APP_IPHONE_DUO 8: uploaded doneat-3.2.3-ru-duo-08-widgets-3e0dcea3679a.png
+ru APP_IPHONE_DUO 9: uploaded doneat-3.2.3-ru-duo-09-rest-eddc33cc5fb9.png
+ru APP_IPHONE_DUO: 9 screenshots in order
+tr APP_IPHONE_DUO: deleted doneat-3.2.2-tr-duo-02-nofree-422bfac32e12.png
+tr APP_IPHONE_DUO: deleted doneat-3.2.1-tr-duo-03-b365b8009601.png
+tr APP_IPHONE_DUO 2: uploaded doneat-3.2.3-tr-duo-02-leave-d4d3c73335f4.png
+tr APP_IPHONE_DUO 3: uploaded doneat-3.2.3-tr-duo-03-report-af3ad3062fbf.png
+tr APP_IPHONE_DUO: 9 screenshots in order
+vi APP_IPHONE_DUO: deleted doneat-3.2.2-vi-duo-02-nofree-47fce549c024.png
+vi APP_IPHONE_DUO: deleted doneat-3.2.1-vi-duo-03-931f7535b8f7.png
+vi APP_IPHONE_DUO: deleted doneat-3.2.1-vi-duo-05-5051013d9535.png
+vi APP_IPHONE_DUO: deleted doneat-3.2.2-vi-duo-06-910bd865a41c.png
+vi APP_IPHONE_DUO: deleted doneat-3.2.1-vi-duo-07-7e9c44060880.png
+vi APP_IPHONE_DUO: deleted doneat-3.2.1-vi-duo-08-b19732ddc9bf.png
+vi APP_IPHONE_DUO: deleted doneat-3.2.1-vi-duo-09-05fe24415353.png
+vi APP_IPHONE_DUO 2: uploaded doneat-3.2.3-vi-duo-02-leave-a7c1f6d34bdc.png
+vi APP_IPHONE_DUO 3: uploaded doneat-3.2.3-vi-duo-03-report-1332c980974a.png
+vi APP_IPHONE_DUO 5: uploaded doneat-3.2.3-vi-duo-05-calendar-c387b109022d.png
+vi APP_IPHONE_DUO 6: uploaded doneat-3.2.3-vi-duo-06-records-0164fec2a7c7.png
+vi APP_IPHONE_DUO 7: uploaded doneat-3.2.3-vi-duo-07-focus-f468f878a258.png
+vi APP_IPHONE_DUO 8: uploaded doneat-3.2.3-vi-duo-08-widgets-efe1b4bd27fa.png
+vi APP_IPHONE_DUO 9: uploaded doneat-3.2.3-vi-duo-09-rest-094c949c63cb.png
+vi APP_IPHONE_DUO: 9 screenshots in order
+th APP_IPHONE_DUO: deleted doneat-3.2.1-th-duo-03-dd279083354e.png
+th APP_IPHONE_DUO 3: uploaded doneat-3.2.3-th-duo-03-report-26e63703a7d0.png
+th APP_IPHONE_DUO: 9 screenshots in order
+hi APP_IPHONE_DUO: deleted doneat-3.2.2-hi-IN-duo-02-nofree-908d6e3042d5.png
+hi APP_IPHONE_DUO: deleted doneat-3.2.1-hi-IN-duo-03-f107e1247572.png
+hi APP_IPHONE_DUO: deleted doneat-3.2.1-hi-IN-duo-05-3734789de26a.png
+hi APP_IPHONE_DUO: deleted doneat-3.2.2-hi-IN-duo-06-024b5afb998f.png
+hi APP_IPHONE_DUO: deleted doneat-3.2.1-hi-IN-duo-07-b9472611e23f.png
+hi APP_IPHONE_DUO: deleted doneat-3.2.1-hi-IN-duo-08-0806923e3501.png
+hi APP_IPHONE_DUO: deleted doneat-3.2.1-hi-IN-duo-09-f13e32a65253.png
+hi APP_IPHONE_DUO 2: uploaded doneat-3.2.3-hi-IN-duo-02-leave-9892f0820a63.png
+hi APP_IPHONE_DUO 3: uploaded doneat-3.2.3-hi-IN-duo-03-report-2dabd61fb6dc.png
+hi APP_IPHONE_DUO 5: uploaded doneat-3.2.3-hi-IN-duo-05-calendar-6a4e47aa70ff.png
+hi APP_IPHONE_DUO 6: uploaded doneat-3.2.3-hi-IN-duo-06-records-484b2512631d.png
+hi APP_IPHONE_DUO 7: uploaded doneat-3.2.3-hi-IN-duo-07-focus-ab72976dda3a.png
+hi APP_IPHONE_DUO 8: uploaded doneat-3.2.3-hi-IN-duo-08-widgets-9ed9717ef17c.png
+hi APP_IPHONE_DUO 9: uploaded doneat-3.2.3-hi-IN-duo-09-rest-d496fbc12f1d.png
+hi APP_IPHONE_DUO: 9 screenshots in order
+APP_STORE_SEARCH_RESULTS_ASSET ar: uploaded doneat-3.2.3-ar-search-c1d94912c223.mp4
+APP_STORE_SEARCH_RESULTS_ASSET de: uploaded doneat-3.2.3-de-search-92adbbf0eed1.mp4
+APP_STORE_SEARCH_RESULTS_ASSET en: uploaded doneat-3.2.3-en-search-278a8de03d8f.mp4
+APP_STORE_SEARCH_RESULTS_ASSET es: uploaded doneat-3.2.3-es-search-ad66a9244af3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET fr: uploaded doneat-3.2.3-fr-search-72a5c90cc1b0.mp4
+APP_STORE_SEARCH_RESULTS_ASSET hi-IN: uploaded doneat-3.2.3-hi-IN-search-9c884b992690.mp4
+APP_STORE_SEARCH_RESULTS_ASSET id: uploaded doneat-3.2.3-id-search-15c0cf53d004.mp4
+APP_STORE_SEARCH_RESULTS_ASSET it: uploaded doneat-3.2.3-it-search-63f81a305465.mp4
+APP_STORE_SEARCH_RESULTS_ASSET ja: uploaded doneat-3.2.3-ja-search-4e465e47f3df.mp4
+APP_STORE_SEARCH_RESULTS_ASSET ko: uploaded doneat-3.2.3-ko-search-65be56afabaa.mp4
+APP_STORE_SEARCH_RESULTS_ASSET mr-IN: uploaded doneat-3.2.3-mr-IN-search-63916bdae98e.mp4
+APP_STORE_SEARCH_RESULTS_ASSET pt: uploaded doneat-3.2.3-pt-search-11002f906a54.mp4
+APP_STORE_SEARCH_RESULTS_ASSET ru: uploaded doneat-3.2.3-ru-search-b75caf06e1bb.mp4
+APP_STORE_SEARCH_RESULTS_ASSET th: uploaded doneat-3.2.3-th-search-bfbd0d13a828.mp4
+APP_STORE_SEARCH_RESULTS_ASSET tr: uploaded doneat-3.2.3-tr-search-74ccbefe8563.mp4
+APP_STORE_SEARCH_RESULTS_ASSET vi: uploaded doneat-3.2.3-vi-search-70c0884a8dbc.mp4
+APP_STORE_SEARCH_RESULTS_ASSET zh-CN: uploaded doneat-3.2.3-zh-CN-search-db8d7bbdeb5d.mp4
+APP_STORE_SEARCH_RESULTS_ASSET zh-TW: uploaded doneat-3.2.3-zh-TW-search-91ebeff96bf0.mp4
+PRODUCT_PAGE_HEADER_ASSET zh-CN: uploaded doneat-3.2.3-zh-CN-header-v4-97df0b01047e.mp4
+PRODUCT_PAGE_HEADER_ASSET zh-TW: uploaded doneat-3.2.3-zh-TW-header-v4-491506a0632d.mp4
+PRODUCT_PAGE_HEADER_ASSET ja: uploaded doneat-3.2.3-ja-header-v4-a397ab672c14.mp4
+PRODUCT_PAGE_HEADER_ASSET ko: uploaded doneat-3.2.3-ko-header-v4-bf85dd137ea1.mp4
+PRODUCT_PAGE_HEADER_ASSET ru: uploaded doneat-3.2.3-ru-header-v4-2e122466d0b9.mp4
+PRODUCT_PAGE_HEADER_ASSET mr-IN: uploaded doneat-3.2.3-mr-IN-header-v4-eb846723d9f7.mp4
+Processing: 24/24 ready
+APP_STORE_SEARCH_RESULTS_ASSET ar-SA: bound ar-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET de-DE: bound de-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET en-US: bound en-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET en-GB: bound en-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET es-ES: bound es-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET es-MX: bound es-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET fr-FR: bound fr-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET hi: bound hi-IN-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET id: bound id-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET it: bound it-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET ja: bound ja-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET ko: bound ko-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET mr-IN: bound mr-IN-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET pt-BR: bound pt-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET ru: bound ru-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET th: bound th-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET tr: bound tr-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET vi: bound vi-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET zh-Hans: bound zh-CN-search-video-3.2.3.mp4
+APP_STORE_SEARCH_RESULTS_ASSET zh-Hant: bound zh-TW-search-video-3.2.3.mp4
+PRODUCT_PAGE_HEADER_ASSET zh-Hans: bound zh-CN-header-video-v4.mp4
+PRODUCT_PAGE_HEADER_ASSET zh-Hant: bound zh-TW-header-video-v4.mp4
+PRODUCT_PAGE_HEADER_ASSET ja: bound ja-header-video-v4.mp4
+PRODUCT_PAGE_HEADER_ASSET ko: bound ko-header-video-v4.mp4
+PRODUCT_PAGE_HEADER_ASSET ru: bound ru-header-video-v4.mp4
+PRODUCT_PAGE_HEADER_ASSET mr-IN: bound mr-IN-header-video-v4.mp4
+✓ APP_STORE_SEARCH_RESULTS_ASSET ar-SA ar-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET de-DE de-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET en-US en-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET en-GB en-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET es-ES es-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET es-MX es-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET fr-FR fr-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET hi hi-IN-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET id id-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET it it-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET ja ja-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET ko ko-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET mr-IN mr-IN-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET pt-BR pt-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET ru ru-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET th th-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET tr tr-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET vi vi-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET zh-Hans zh-CN-search-video-3.2.3.mp4 ACTIVE
+✓ APP_STORE_SEARCH_RESULTS_ASSET zh-Hant zh-TW-search-video-3.2.3.mp4 ACTIVE
+✓ PRODUCT_PAGE_HEADER_ASSET zh-Hans zh-CN-header-video-v4.mp4 ACTIVE
+✓ PRODUCT_PAGE_HEADER_ASSET zh-Hant zh-TW-header-video-v4.mp4 ACTIVE
+✓ PRODUCT_PAGE_HEADER_ASSET ja ja-header-video-v4.mp4 ACTIVE
+✓ PRODUCT_PAGE_HEADER_ASSET ko ko-header-video-v4.mp4 ACTIVE
+✓ PRODUCT_PAGE_HEADER_ASSET ru ru-header-video-v4.mp4 ACTIVE
+✓ PRODUCT_PAGE_HEADER_ASSET mr-IN mr-IN-header-video-v4.mp4 ACTIVE
+Done. No build selected, nothing submitted.
