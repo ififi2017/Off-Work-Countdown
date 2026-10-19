@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-10-19T02:39:17.763Z",
+  "videos": 2,
+  "screenshots": 4,
+  "checked": [
+    {
+      "file": "en-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 69
+    },
+    {
+      "file": "zh-CN-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 93
+    },
+    {
+      "file": "zh-CN/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "zh-CN/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "en/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "en/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    }
+  ],
+  "findings": []
+}

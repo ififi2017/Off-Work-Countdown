@@ -1,0 +1,612 @@
+{
+  "createdAt": "2026-10-19T02:38:36.554Z",
+  "uploaded": false,
+  "items": [
+    {
+      "locale": "en",
+      "ascLocale": "en-US",
+      "file": "en-search-video-3.2.3.mp4",
+      "width": 1920,
+      "height": 1280,
+      "fps": 30,
+      "duration": 27,
+      "frames": 810,
+      "audio": false,
+      "sha256": "980bf09661318e7dadf08320681230349de856f9bc825d1300152aa8f348d579",
+      "validatedFrames": 825,
+      "headlineSize": 69,
+      "headlineFits": {
+        "timer": 88,
+        "home": 74,
+        "desk": 88,
+        "lock": 69,
+        "watch": 78,
+        "focus": 88,
+        "records": 88,
+        "report": 88,
+        "leave": 81
+      },
+      "shrinkFlagged": [],
+      "safeArea": {
+        "x": 418,
+        "y": 382.5,
+        "width": 1084,
+        "height": 515
+      },
+      "template": {
+        "scene": "search-3x2",
+        "width": 3840,
+        "height": 2560,
+        "safeArea": {
+          "x": 836,
+          "y": 765,
+          "width": 2168,
+          "height": 1030
+        },
+        "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-search_results_template-static.psd",
+        "sha256": "7bb57a3c33cc4402d1c82e85a0211cf0f2f2b1c05cf7f36e4710092226dea056",
+        "layer": "Art Safe Area"
+      },
+      "stillAudits": [
+        {
+          "time": 0,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 1,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 2.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 2.95,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 3.05,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 3.3,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 4.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 7.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 10.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 13.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 16.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 19.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 22.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 25.5,
+          "minHeadline": 69,
+          "issues": []
+        },
+        {
+          "time": 26.8,
+          "minHeadline": 69,
+          "issues": []
+        }
+      ],
+      "sources": [
+        {
+          "scene": "timer",
+          "capture": "en-timer.png",
+          "captureSHA256": "d7d0c3286a689d5fbc389dfeb6cf2f717c4d6c8b55981e058c67105fc3b395fa",
+          "recording": "en-timer.mov",
+          "recordingSHA256": "51d690304d032d32028f734dfd93616b8cdd9256d392e73abd08c57371dda674",
+          "inPoint": 0.2,
+          "nativeDuration": 8.815
+        },
+        {
+          "scene": "home",
+          "captures": [
+            {
+              "file": "widgets/en-home1.png",
+              "sha256": "36bdf01aac1ce84934a57556ba50fbf92dfcd696f82b9e237785993bbbdb7f80"
+            }
+          ],
+          "recording": "widgets/en-home1.mov",
+          "recordingSHA256": "68899ea873fe0d8cbd818bd0f127a5125f9fddde3b680ae47927bfddc48b5881",
+          "inPoint": 0.5,
+          "nativeDuration": 8.733333
+        },
+        {
+          "scene": "desk",
+          "captures": [
+            {
+              "file": "widgets/en-home1.png",
+              "sha256": "36bdf01aac1ce84934a57556ba50fbf92dfcd696f82b9e237785993bbbdb7f80"
+            }
+          ]
+        },
+        {
+          "scene": "lock",
+          "captures": [
+            {
+              "file": "widgets/en-lock.png",
+              "sha256": "4638211b4dd6b7f2bd587db05ea762e4a869cbb1aea504c3775352fbae4e6aee"
+            }
+          ],
+          "recording": "widgets/en-lock.mov",
+          "recordingSHA256": "6cbf2eb00ff209a7737e5acfd5c632c7a4ee7d98a533e15a5ce9e9ab109302b2",
+          "inPoint": 0.5,
+          "nativeDuration": 9.233333
+        },
+        {
+          "scene": "watch",
+          "capture": "en-watch.png",
+          "captureSHA256": "a0994855d3544597c29c2a7b716ebc42225efafa5d2c97c8e03ad37e1a250205",
+          "recording": "en-watch.mov",
+          "recordingSHA256": "55522f6f3bb04355d20093e9c6217174c9438ce31df06ecb33224cba466a4d50",
+          "inPoint": 0.5,
+          "nativeDuration": 8.783333
+        },
+        {
+          "scene": "focus",
+          "capture": "en-focus.png",
+          "captureSHA256": "d70446eb1b6412782e1c9e179f9f06bc6604a38198f9ca4a024d4c2aada3f86c",
+          "recording": "en-focus.mov",
+          "recordingSHA256": "460be14b10add0173f066e6cce797b56ca8086ee27ed9e84d26c690abe1b611c",
+          "inPoint": 0.2,
+          "nativeDuration": 7.815
+        },
+        {
+          "scene": "records",
+          "capture": "en-records.png",
+          "captureSHA256": "5aa86ad51b3cf982ecd30b358fc9a2f23e9f7dc962c7b87f5b043847558f6fc5",
+          "reveal": [
+            [
+              53,
+              1290,
+              173,
+              50
+            ],
+            [
+              226,
+              1290,
+              174,
+              50
+            ],
+            [
+              400,
+              1290,
+              173,
+              50
+            ],
+            [
+              573,
+              1290,
+              174,
+              50
+            ],
+            [
+              747,
+              1290,
+              173,
+              50
+            ]
+          ],
+          "rowShift": 0
+        },
+        {
+          "scene": "report",
+          "capture": "en-report.png",
+          "captureSHA256": "d1666809e751a5e7297a5c60001f5592f93bc6301e9b3e65c819587de66f9d61",
+          "recording": "en-report.mov",
+          "recordingSHA256": "4137548bfbc2ed04b8f1bc4af03c7f7ded49a0c7b1255604a16d804014e75311",
+          "inPoint": 6,
+          "nativeDuration": 25.811667
+        },
+        {
+          "scene": "leave",
+          "capture": "en-leave.png",
+          "captureSHA256": "0c1c6a29acef58eb916e96dbbc4cfb65b895041b3b603ed5eb681b5afa7cf3ba",
+          "reveal": [
+            [
+              747,
+              1140,
+              173,
+              52
+            ],
+            [
+              920,
+              1140,
+              174,
+              52
+            ],
+            [
+              1094,
+              1140,
+              173,
+              52
+            ],
+            [
+              53,
+              1290,
+              173,
+              100
+            ],
+            [
+              226,
+              1290,
+              174,
+              100
+            ],
+            [
+              400,
+              1290,
+              173,
+              100
+            ],
+            [
+              573,
+              1290,
+              174,
+              100
+            ],
+            [
+              747,
+              1290,
+              173,
+              100
+            ],
+            [
+              920,
+              1290,
+              174,
+              100
+            ],
+            [
+              1094,
+              1290,
+              173,
+              100
+            ]
+          ],
+          "rowShift": 0
+        }
+      ],
+      "status": "local-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "file": "zh-CN-search-video-3.2.3.mp4",
+      "width": 1920,
+      "height": 1280,
+      "fps": 30,
+      "duration": 27,
+      "frames": 810,
+      "audio": false,
+      "sha256": "3e0219a95816dedda63de933dc6470320ffa223ec4c8b0f22ab6cf92535d9405",
+      "validatedFrames": 825,
+      "headlineSize": 93,
+      "headlineFits": {
+        "timer": 102,
+        "home": 93,
+        "desk": 93,
+        "lock": 102,
+        "watch": 104,
+        "focus": 102,
+        "records": 93,
+        "report": 93,
+        "leave": 93
+      },
+      "shrinkFlagged": [],
+      "safeArea": {
+        "x": 418,
+        "y": 382.5,
+        "width": 1084,
+        "height": 515
+      },
+      "template": {
+        "scene": "search-3x2",
+        "width": 3840,
+        "height": 2560,
+        "safeArea": {
+          "x": 836,
+          "y": 765,
+          "width": 2168,
+          "height": 1030
+        },
+        "source": "https://devimages-cdn.apple.com/design/resources/download/app-store/creative_assets-search_results_template-static.psd",
+        "sha256": "7bb57a3c33cc4402d1c82e85a0211cf0f2f2b1c05cf7f36e4710092226dea056",
+        "layer": "Art Safe Area"
+      },
+      "stillAudits": [
+        {
+          "time": 0,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 1,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 2.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 2.95,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 3.05,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 3.3,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 4.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 7.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 10.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 13.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 16.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 19.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 22.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 25.5,
+          "minHeadline": 93,
+          "issues": []
+        },
+        {
+          "time": 26.8,
+          "minHeadline": 93,
+          "issues": []
+        }
+      ],
+      "sources": [
+        {
+          "scene": "timer",
+          "capture": "zh-CN-timer.png",
+          "captureSHA256": "1a2a32f5aa542cf90661917648e98c1f8048e084c558cd3f4fb096ea51b35d40",
+          "recording": "zh-CN-timer.mov",
+          "recordingSHA256": "4a9359f29e940142ae41cf2869040f8f645b57fb67e2bdb405d14636318f68ae",
+          "inPoint": 0.2,
+          "nativeDuration": 8.695
+        },
+        {
+          "scene": "home",
+          "captures": [
+            {
+              "file": "widgets/zh-CN-home1.png",
+              "sha256": "95a047bd8b1f8c3af73961f368d920659d9075725b86f6994817b814f4a472f8"
+            }
+          ],
+          "recording": "widgets/zh-CN-home1.mov",
+          "recordingSHA256": "56077c1b1b40f43c62b29643e856411fc06b8ba5ae8e3a7b69de1d31ba9b34ee",
+          "inPoint": 0.5,
+          "nativeDuration": 6.233333
+        },
+        {
+          "scene": "desk",
+          "captures": [
+            {
+              "file": "widgets/zh-CN-home1.png",
+              "sha256": "95a047bd8b1f8c3af73961f368d920659d9075725b86f6994817b814f4a472f8"
+            }
+          ]
+        },
+        {
+          "scene": "lock",
+          "captures": [
+            {
+              "file": "widgets/zh-CN-lock.png",
+              "sha256": "ca3283ed4efde85941eda4aed73d3fe372e43fe2251c3d9b6cb705e74b51426e"
+            }
+          ],
+          "recording": "widgets/zh-CN-lock.mov",
+          "recordingSHA256": "821678aa58907491fdf93aa41ad4d77e9d055af1d56e0f8a7440968644b4b7dc",
+          "inPoint": 0.5,
+          "nativeDuration": 8.233333
+        },
+        {
+          "scene": "watch",
+          "capture": "zh-CN-watch.png",
+          "captureSHA256": "5b5887a6a94910ed353552b4243fe1376bf6fefd3d2290b6253b590e470fb323",
+          "recording": "zh-CN-watch.mov",
+          "recordingSHA256": "41cfb5301bbaca139ed3c69cdc1399610c5a301a00ac0a34cdc64bc70ea86b33",
+          "inPoint": 0.5,
+          "nativeDuration": 8.491667
+        },
+        {
+          "scene": "focus",
+          "capture": "zh-CN-focus.png",
+          "captureSHA256": "8b1a1172cc9aa0107be1a496de9558f02d5568ed9ca839ba8ed4d55f0fecbb10",
+          "recording": "zh-CN-focus.mov",
+          "recordingSHA256": "b91919430f9e7ca0fdef31f41a386d1267b5c4a029ae328ca47a7690d1155c8f",
+          "inPoint": 0.2,
+          "nativeDuration": 7.79
+        },
+        {
+          "scene": "records",
+          "capture": "zh-CN-records.png",
+          "captureSHA256": "35c5120a147ef19b1a9ed71449fcc7438c2486c24f6fe4cb04ee6942ac10f60d",
+          "reveal": [
+            [
+              53,
+              1290,
+              173,
+              50
+            ],
+            [
+              226,
+              1290,
+              174,
+              50
+            ],
+            [
+              400,
+              1290,
+              173,
+              50
+            ],
+            [
+              573,
+              1290,
+              174,
+              50
+            ],
+            [
+              747,
+              1290,
+              173,
+              50
+            ]
+          ],
+          "rowShift": 0
+        },
+        {
+          "scene": "report",
+          "capture": "zh-CN-report.png",
+          "captureSHA256": "18342e4bd98922c8c3b84290115fa52ac58a72213bd38318f0a795a44427dd6d",
+          "recording": "zh-CN-report.mov",
+          "recordingSHA256": "ee5824677ffb6f6b9302cac3763272a7f427c32f6219b90068c2300b3533dff7",
+          "inPoint": 6.8,
+          "nativeDuration": 25.786667
+        },
+        {
+          "scene": "leave",
+          "capture": "zh-CN-leave.png",
+          "captureSHA256": "328a40d1bbdf6d21d2ac49e35a748f558171ea404fd71eec9180d9671d22e8ae",
+          "reveal": [
+            [
+              747,
+              1140,
+              173,
+              52
+            ],
+            [
+              920,
+              1140,
+              174,
+              52
+            ],
+            [
+              1094,
+              1140,
+              173,
+              52
+            ],
+            [
+              53,
+              1290,
+              173,
+              100
+            ],
+            [
+              226,
+              1290,
+              174,
+              100
+            ],
+            [
+              400,
+              1290,
+              173,
+              100
+            ],
+            [
+              573,
+              1290,
+              174,
+              100
+            ],
+            [
+              747,
+              1290,
+              173,
+              100
+            ],
+            [
+              920,
+              1290,
+              174,
+              100
+            ],
+            [
+              1094,
+              1290,
+              173,
+              100
+            ]
+          ],
+          "rowShift": 0
+        }
+      ],
+      "status": "local-not-uploaded"
+    }
+  ]
+}

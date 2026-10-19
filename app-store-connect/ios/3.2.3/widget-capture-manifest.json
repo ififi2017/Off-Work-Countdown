@@ -1,0 +1,78 @@
+{
+  "simulator": "3C9FDCBC-0FA4-4E18-BFF4-2A8C36877966",
+  "note": "Home/Lock Screen arranged by hand; see app-store-connect/ios/3.2.3/search-video.md",
+  "items": [
+    {
+      "name": "en-home2",
+      "file": "en-home2.png",
+      "sha256": "4f65b2eca4a0e2304d1622d3ef14e55e3be59bc995a05cff45078cddc11c51c5",
+      "video": {
+        "file": "en-home2.mov",
+        "sha256": "c1cfe8d63c7492827464d0eb4dcf7cdca74a6329bf6640b484c0dcde7edfa952",
+        "seconds": 4,
+        "screenshots": 5
+      },
+      "capturedAt": "2026-10-19T02:15:13.373Z"
+    },
+    {
+      "name": "en-home1",
+      "file": "en-home1.png",
+      "sha256": "36bdf01aac1ce84934a57556ba50fbf92dfcd696f82b9e237785993bbbdb7f80",
+      "video": {
+        "file": "en-home1.mov",
+        "sha256": "68899ea873fe0d8cbd818bd0f127a5125f9fddde3b680ae47927bfddc48b5881",
+        "seconds": 8,
+        "screenshots": 10
+      },
+      "capturedAt": "2026-10-19T02:18:06.721Z"
+    },
+    {
+      "name": "en-lock",
+      "file": "en-lock.png",
+      "sha256": "4638211b4dd6b7f2bd587db05ea762e4a869cbb1aea504c3775352fbae4e6aee",
+      "video": {
+        "file": "en-lock.mov",
+        "sha256": "6cbf2eb00ff209a7737e5acfd5c632c7a4ee7d98a533e15a5ce9e9ab109302b2",
+        "seconds": 8,
+        "screenshots": 5
+      },
+      "capturedAt": "2026-10-19T02:19:31.581Z"
+    },
+    {
+      "name": "zh-CN-home1",
+      "file": "zh-CN-home1.png",
+      "sha256": "95a047bd8b1f8c3af73961f368d920659d9075725b86f6994817b814f4a472f8",
+      "video": {
+        "file": "zh-CN-home1.mov",
+        "sha256": "56077c1b1b40f43c62b29643e856411fc06b8ba5ae8e3a7b69de1d31ba9b34ee",
+        "seconds": 6,
+        "screenshots": 8
+      },
+      "capturedAt": "2026-10-19T02:26:27.234Z"
+    },
+    {
+      "name": "zh-CN-home2",
+      "file": "zh-CN-home2.png",
+      "sha256": "155f10d30e4a0a7da059d7f34945279c0073efae20136ba2e8ad979f7ee98962",
+      "video": {
+        "file": "zh-CN-home2.mov",
+        "sha256": "a003cf46553671000771612132851a0ae1f5d78556d7896704e27872b530fac9",
+        "seconds": 4,
+        "screenshots": 6
+      },
+      "capturedAt": "2026-10-19T02:26:45.193Z"
+    },
+    {
+      "name": "zh-CN-lock",
+      "file": "zh-CN-lock.png",
+      "sha256": "ca3283ed4efde85941eda4aed73d3fe372e43fe2251c3d9b6cb705e74b51426e",
+      "video": {
+        "file": "zh-CN-lock.mov",
+        "sha256": "821678aa58907491fdf93aa41ad4d77e9d055af1d56e0f8a7440968644b4b7dc",
+        "seconds": 8,
+        "screenshots": 10
+      },
+      "capturedAt": "2026-10-19T02:28:08.480Z"
+    }
+  ]
+}

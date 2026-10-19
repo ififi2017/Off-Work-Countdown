@@ -1,0 +1,170 @@
+{
+  "createdAt": "2026-10-19T02:32:41.259Z",
+  "uploaded": false,
+  "items": [
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "zh-CN/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "98b3ef7ba45462043ee098421b64bba915e50b150e0e675cefbf31ef4a744173",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/zh-CN-home1.png",
+          "sha256": "95a047bd8b1f8c3af73961f368d920659d9075725b86f6994817b814f4a472f8"
+        }
+      ],
+      "copy": {
+        "label": "全新小组件",
+        "lines": [
+          "不用打开，",
+          "桌面就有数。"
+        ],
+        "sub": [
+          "倒计时、本周进度、班表与节假日，",
+          "多款小组件免费可用。"
+        ]
+      },
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "zh-CN/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "346fdc03a4ddc59120caa0a6b8fbe21dc6cf90c0d317fbe9ce4bddf347f2dca8",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/zh-CN-lock.png",
+          "sha256": "ca3283ed4efde85941eda4aed73d3fe372e43fe2251c3d9b6cb705e74b51426e"
+        },
+        {
+          "file": "raw/3.2.3/search/zh-CN-watch.png",
+          "sha256": "5b5887a6a94910ed353552b4243fe1376bf6fefd3d2290b6253b590e470fb323"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "锁屏 · Apple Watch",
+        "lines": [
+          "锁屏一亮，",
+          "就知道还剩多久。"
+        ],
+        "sub": [
+          "锁屏小组件、一键开始上班，",
+          "Apple Watch 也能看。"
+        ]
+      },
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "en",
+      "ascLocale": "en-US",
+      "platform": "iphone",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "en/03-widgets-home.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "31129b87e94dc3b21bca3e79418f60a3c4e95afdf0b1221c7a3a509ba4e88bd1",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/en-home1.png",
+          "sha256": "36bdf01aac1ce84934a57556ba50fbf92dfcd696f82b9e237785993bbbdb7f80"
+        }
+      ],
+      "copy": {
+        "label": "NEW WIDGETS",
+        "lines": [
+          "Your day,",
+          "on your Home Screen."
+        ],
+        "sub": [
+          "Countdown, week progress, shifts and holidays.",
+          "Many of them free."
+        ]
+      },
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "en",
+      "ascLocale": "en-US",
+      "platform": "iphone",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "en/04-widgets-lock.png",
+      "width": 1320,
+      "height": 2868,
+      "display": "APP_IPHONE_67",
+      "sha256": "e68bb86bf12bcd739b72a6b87dd0995a52dd1fc6117d75032b3e72fc20634b8e",
+      "sources": [
+        {
+          "file": "frames/iPhone 18 Pro Max - Silver - Portrait.png",
+          "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d"
+        },
+        {
+          "file": "raw/3.2.3/widgets/en-lock.png",
+          "sha256": "4638211b4dd6b7f2bd587db05ea762e4a869cbb1aea504c3775352fbae4e6aee"
+        },
+        {
+          "file": "raw/3.2.3/search/en-watch.png",
+          "sha256": "a0994855d3544597c29c2a7b716ebc42225efafa5d2c97c8e03ad37e1a250205"
+        },
+        {
+          "file": "frames/watch-s11-46mm-gold-milanese.png",
+          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
+        }
+      ],
+      "copy": {
+        "label": "LOCK SCREEN · APPLE WATCH",
+        "lines": [
+          "Wake your screen.",
+          "See how long is left."
+        ],
+        "sub": [
+          "Lock Screen widgets, a Start shift control",
+          "and your countdown on Apple Watch."
+        ]
+      },
+      "layoutAudit": {
+        "issues": []
+      },
+      "status": "proof-not-uploaded"
+    }
+  ]
+}
