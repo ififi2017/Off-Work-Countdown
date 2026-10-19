@@ -90,6 +90,29 @@ enum WidgetSuitePalette {
 }
 
 /// Title row: what the widget is about, and an optional trailing note.
+/// A number and its unit inside a Lock Screen circular widget. The two sizes
+/// stay close so the unit reads as part of the value, not a footnote under it.
+struct WidgetSuiteCircularValue: View {
+    let value: String
+    let unit: String
+
+    var body: some View {
+        VStack(spacing: -2) {
+            Text(value)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            Text(unit)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .padding(.horizontal, 6)
+    }
+}
+
 struct WidgetSuiteHeader: View {
     let title: String
     var trailing: String?
