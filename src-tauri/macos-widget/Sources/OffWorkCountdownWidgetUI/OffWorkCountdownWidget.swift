@@ -347,6 +347,11 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
 
     private let loader: SharedWidgetSnapshotLoader
 
+    /// Run after each timeline request with the snapshot it read. The iOS
+    /// extension uses it for one-time work that has to happen even if the
+    /// app is never opened (the 3.2.3 update note); macOS leaves it unset.
+    nonisolated(unsafe) public static var timelineHook: (@Sendable (WidgetSnapshot?) -> Void)?
+
     public init(appGroupIdentifier: String?, storageMode: String = "app-group") {
         loader = SharedWidgetSnapshotLoader(
             appGroupIdentifier: appGroupIdentifier,
@@ -374,6 +379,7 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
         completion: @escaping @Sendable (Timeline<OffWorkCountdownWidgetEntry>) -> Void
     ) {
         completion(makeTimeline(now: Date(), family: context.family))
+        if let hook = Self.timelineHook { hook(loader.load()) }
     }
 
     /// The single entry WidgetKit asks for when it wants a preview instead of a

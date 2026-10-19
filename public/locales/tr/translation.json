@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "Yılın ne kadarı geçti.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} geçti",
   "widgetSuiteYearName": "Yıl ilerlemesi",
-  "widgetSuiteYearsMonths": "{{years}} yıl {{months}} ay"
+  "widgetSuiteYearsMonths": "{{years}} yıl {{months}} ay",
+  "updateWidgetsNoticeTitle": "DoneAt 3.2.3’te yeni widget’lar",
+  "updateWidgetsNoticeBody": "Geri sayımın Ana Ekran’da, Kilit Ekranı’nda ve Apple Watch’ta. Nasıl ekleneceğini görmek için DoneAt’i aç."
 }

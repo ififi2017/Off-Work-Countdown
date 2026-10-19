@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "Quanta parte dell’anno è già passata.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} trascorso",
   "widgetSuiteYearName": "Avanzamento dell’anno",
-  "widgetSuiteYearsMonths": "{{years}} a. {{months}} m."
+  "widgetSuiteYearsMonths": "{{years}} a. {{months}} m.",
+  "updateWidgetsNoticeTitle": "Nuovi widget in DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "Il conto alla rovescia sulla schermata Home, sulla schermata di blocco e su Apple Watch. Apri DoneAt per vedere come aggiungerli."
 }

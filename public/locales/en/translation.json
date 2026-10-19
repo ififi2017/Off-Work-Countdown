@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "How much of the year has passed.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} done",
   "widgetSuiteYearName": "Year progress",
-  "widgetSuiteYearsMonths": "{{years}} yr {{months}} mo"
+  "widgetSuiteYearsMonths": "{{years}} yr {{months}} mo",
+  "updateWidgetsNoticeTitle": "New widgets in DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "See your countdown on your Home Screen, Lock Screen and Apple Watch. Open DoneAt to see how to add them."
 }

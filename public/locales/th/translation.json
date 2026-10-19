@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "ปีนี้ผ่านไปแล้วเท่าไร",
   "widgetSuiteYearInline": "{{year}} · ผ่านไป {{percent}}",
   "widgetSuiteYearName": "ความคืบหน้าของปี",
-  "widgetSuiteYearsMonths": "{{years}} ปี {{months}} เดือน"
+  "widgetSuiteYearsMonths": "{{years}} ปี {{months}} เดือน",
+  "updateWidgetsNoticeTitle": "วิดเจ็ตใหม่ใน DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "ดูนับถอยหลังบนหน้าจอโฮม หน้าจอล็อก และ Apple Watch เปิด DoneAt เพื่อดูวิธีเพิ่ม"
 }

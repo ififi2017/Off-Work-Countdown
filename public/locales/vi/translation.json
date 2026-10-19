@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "Năm nay đã trôi qua bao nhiêu.",
   "widgetSuiteYearInline": "{{year}} · đã qua {{percent}}",
   "widgetSuiteYearName": "Tiến độ năm",
-  "widgetSuiteYearsMonths": "{{years}} năm {{months}} tháng"
+  "widgetSuiteYearsMonths": "{{years}} năm {{months}} tháng",
+  "updateWidgetsNoticeTitle": "Tiện ích mới trong DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "Xem đếm ngược trên Màn hình chính, Màn hình khóa và Apple Watch. Mở DoneAt để xem cách thêm."
 }

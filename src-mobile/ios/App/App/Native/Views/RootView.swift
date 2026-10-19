@@ -221,6 +221,7 @@ struct OffWorkCountdownRootView: View {
         }
         .onDisappear { runtime.services.sceneDisconnected(scene.id) }
         .onAppear {
+            UpdateAnnouncementGate.appOpened()
             AppOrientationPolicy.shared.update(onboardingComplete: runtime.preferences.onboardingComplete)
             reportScenePhase()
             applyQAGeometryIfRequested()

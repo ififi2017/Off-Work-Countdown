@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "वर्षाचा किती भाग उलटला आहे.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} उलटले",
   "widgetSuiteYearName": "वर्षाची प्रगती",
-  "widgetSuiteYearsMonths": "{{years}} वर्षे {{months}} महिने"
+  "widgetSuiteYearsMonths": "{{years}} वर्षे {{months}} महिने",
+  "updateWidgetsNoticeTitle": "DoneAt 3.2.3 मध्ये नवीन विजेट",
+  "updateWidgetsNoticeBody": "होम स्क्रीन, लॉक स्क्रीन आणि Apple Watch वर तुमचा काउंटडाउन पाहा. ते कसे जोडायचे ते पाहण्यासाठी DoneAt उघडा."
 }

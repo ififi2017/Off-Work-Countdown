@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "كم مضى من السنة.",
   "widgetSuiteYearInline": "{{year}} · مضى {{percent}}",
   "widgetSuiteYearName": "تقدّم السنة",
-  "widgetSuiteYearsMonths": "{{years}} سنة {{months}} شهر"
+  "widgetSuiteYearsMonths": "{{years}} سنة {{months}} شهر",
+  "updateWidgetsNoticeTitle": "أدوات جديدة في DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "شاهد العد التنازلي على الشاشة الرئيسية وشاشة القفل وApple Watch. افتح DoneAt لتعرف طريقة إضافتها."
 }

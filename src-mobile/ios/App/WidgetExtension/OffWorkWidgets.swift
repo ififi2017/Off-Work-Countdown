@@ -3,10 +3,16 @@ import AlarmKit
 import AppIntents
 import SwiftUI
 import UIKit
+import OSLog
+import UserNotifications
 import WidgetKit
 
 @main
 struct OffWorkWidgets: WidgetBundle {
+    init() {
+        OffWorkCountdownTimelineProvider.timelineHook = { UpdateAnnouncement.scheduleIfNeeded(snapshot: $0) }
+    }
+
     var body: some Widget {
         OffWorkCountdownWidget()
         CountdownBigDigitsWidget()
@@ -1099,4 +1105,70 @@ private func activityProgress(_ progress: Double) -> some View {
 private func focusActionURL(_ action: FocusActivityRequest.Action, startAtMs: Int64) -> URL {
     // Only a fixed action and an integer enter this URL; no task title or salary.
     URL(string: "offworkcountdown://focus?action=\(action.rawValue)&start=\(startAtMs)")!
+}
+
+/// A one-time local note that 3.2.3 brings new widgets, for people who see
+/// DoneAt mostly through its widgets and may not open the app after the
+/// update. WidgetKit asks this extension for a timeline after an update, so
+/// it can schedule the note without the app running. It is feature news
+/// only, never an offer or a price, and goes out a little after the next
+/// clock-off. It needs notifications the person already allowed (it never
+/// asks), is scheduled once per device, and is cancelled when the app opens.
+enum UpdateAnnouncement {
+    /// Also used by the app, which cancels the note when it opens.
+    static let identifier = "doneat.update.3.2.3.widgets"
+    static let handledKey = "ios.updateAnnouncement.323.handled"
+    private static let log = Logger(subsystem: "com.rainif.offworkcountdown.widget", category: "update-note")
+
+    static func scheduleIfNeeded(snapshot: WidgetSnapshot?, now: Date = .now) {
+        guard let group = Bundle.main.object(forInfoDictionaryKey: "OWCAppGroupIdentifier") as? String,
+              let defaults = UserDefaults(suiteName: group),
+              !defaults.bool(forKey: handledKey) else { return }
+        // Claim it first: several widgets can ask for timelines at once.
+        defaults.set(true, forKey: handledKey)
+        let locale = snapshot?.locale ?? WidgetCopy.currentLocaleIdentifier
+        let fireDate = Self.fireDate(snapshot: snapshot, now: now)
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral: break
+            default: return
+            }
+            let content = UNMutableNotificationContent()
+            content.title = WidgetCopy.text("updateWidgetsNoticeTitle", locale: locale)
+            content.body = WidgetCopy.text("updateWidgetsNoticeBody", locale: locale)
+            content.sound = nil
+            content.interruptionLevel = .passive
+            let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)) { error in
+                if let error {
+                    log.error("Update note not scheduled: \(error.localizedDescription, privacy: .public)")
+                } else {
+                    log.info("Update note scheduled for \(fireDate.formatted(.iso8601), privacy: .public)")
+                }
+            }
+        }
+    }
+
+    /// Fifteen minutes after the next clock-off the cached shift knows of,
+    /// moved to midday when that falls late at night; without a shift ahead,
+    /// the next 18:30.
+    static func fireDate(snapshot: WidgetSnapshot?, now: Date, calendar: Calendar = .current) -> Date {
+        if let snapshot, let shift = snapshot.shift {
+            let endMs = (shift.overtimeEndAtMs ?? shift.plannedEndAtMs) + snapshot.clockOffsetMs
+            let afterClockOff = Date(timeIntervalSince1970: Double(endMs) / 1_000).addingTimeInterval(15 * 60)
+            if afterClockOff > now.addingTimeInterval(60) {
+                let hour = calendar.component(.hour, from: afterClockOff)
+                if hour >= 8 && hour < 22 { return afterClockOff }
+                return next(hour: 12, minute: 30, after: afterClockOff, calendar: calendar)
+            }
+        }
+        return next(hour: 18, minute: 30, after: now, calendar: calendar)
+    }
+
+    private static func next(hour: Int, minute: Int, after date: Date, calendar: Calendar) -> Date {
+        calendar.nextDate(after: date, matching: DateComponents(hour: hour, minute: minute, second: 0),
+                          matchingPolicy: .nextTime) ?? date.addingTimeInterval(24 * 60 * 60)
+    }
 }

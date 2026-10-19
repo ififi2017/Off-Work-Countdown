@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "Berapa banyak dari tahun ini yang sudah berlalu.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} berlalu",
   "widgetSuiteYearName": "Kemajuan tahun",
-  "widgetSuiteYearsMonths": "{{years}} thn {{months}} bln"
+  "widgetSuiteYearsMonths": "{{years}} thn {{months}} bln",
+  "updateWidgetsNoticeTitle": "Widget baru di DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "Hitung mundurmu di Layar Utama, Layar Kunci, dan Apple Watch. Buka DoneAt untuk melihat cara menambahkannya."
 }
