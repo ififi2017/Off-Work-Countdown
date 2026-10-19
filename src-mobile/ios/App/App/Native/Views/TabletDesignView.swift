@@ -167,6 +167,12 @@ private struct TabletTimerRoot: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
+        // Every eligible person finds the 3.2.3 gift here, not only those who
+        // finished What's New: anyone without lifetime or an active
+        // subscription, once the store has confirmed that.
+        .task(id: shifts.plus.canOfferLifetime) {
+            if shifts.plus.canOfferLifetime { shifts.plus.inviteUpdateGift() }
+        }
         // A gift needs the store's price before it can appear; nothing else
         // on the timer asks the store for products after a relaunch.
         .task(id: offerAwaitsPrice) {
