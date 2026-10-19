@@ -1,0 +1,345 @@
+Local: audit clean; 34 widget pages, 97 font-fixed pages, 24 videos meet Apple's current specs.
+Remote: iOS 3.2.2 (READY_FOR_SALE) — iOS 3.2.3 does not exist yet; this previews what it will start from, 20 localizations.
+
+~ zh-Hans APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-zh-CN-iphone-01
+     2 keep 3.2.1-zh-CN-iphone-02
+     3 NEW  3.2.3-zh-CN-iphone-03-widgets-home
+     4 NEW  3.2.3-zh-CN-iphone-04-widgets-lock
+     5 NEW  3.2.3-zh-CN-iphone-05-leave  (replaces 3.2.2-zh-CN-iphone-03-nofree)
+     6 NEW  3.2.3-zh-CN-iphone-06-report  (replaces 3.2.1-zh-CN-iphone-04)
+     7 NEW  3.2.3-zh-CN-iphone-07-calendar  (replaces 3.2.1-zh-CN-iphone-06)
+     8 NEW  3.2.3-zh-CN-iphone-08-records  (replaces 3.2.2-zh-CN-iphone-07)
+     9 NEW  3.2.3-zh-CN-iphone-09-focus  (replaces 3.2.1-zh-CN-iphone-08)
+    10 NEW  3.2.3-zh-CN-iphone-10-rest  (replaces 3.2.1-zh-CN-iphone-10)
+       retire 3.2.2-zh-CN-iphone-05-nofree
+       retire 3.2.1-zh-CN-iphone-09
+~ en-US APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-en-iphone-01
+     2 keep 3.2.1-en-iphone-02
+     3 NEW  3.2.3-en-iphone-03-widgets-home
+     4 NEW  3.2.3-en-iphone-04-widgets-lock
+     5 keep 3.2.2-en-iphone-03-nofree
+     6 keep 3.2.1-en-iphone-04
+     7 keep 3.2.1-en-iphone-06
+     8 keep 3.2.2-en-iphone-07
+     9 keep 3.2.1-en-iphone-08
+    10 keep 3.2.1-en-iphone-10
+       retire 3.2.2-en-iphone-05-nofree
+       retire 3.2.1-en-iphone-09
+~ zh-Hant APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-zh-TW-iphone-01
+     2 keep 3.2.1-zh-TW-iphone-02
+     3 NEW  3.2.3-zh-TW-iphone-03-widgets-home
+     4 NEW  3.2.3-zh-TW-iphone-04-widgets-lock
+     5 NEW  3.2.3-zh-TW-iphone-05-leave  (replaces 3.2.2-zh-TW-iphone-03-nofree)
+     6 NEW  3.2.3-zh-TW-iphone-06-report  (replaces 3.2.1-zh-TW-iphone-04)
+     7 NEW  3.2.3-zh-TW-iphone-07-calendar  (replaces 3.2.1-zh-TW-iphone-06)
+     8 NEW  3.2.3-zh-TW-iphone-08-records  (replaces 3.2.2-zh-TW-iphone-07)
+     9 NEW  3.2.3-zh-TW-iphone-09-focus  (replaces 3.2.1-zh-TW-iphone-08)
+    10 NEW  3.2.3-zh-TW-iphone-10-rest  (replaces 3.2.1-zh-TW-iphone-10)
+       retire 3.2.2-zh-TW-iphone-05-nofree
+       retire 3.2.1-zh-TW-iphone-09
+~ ja APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-ja-iphone-01
+     2 keep 3.2.1-ja-iphone-02
+     3 NEW  3.2.3-ja-iphone-03-widgets-home
+     4 NEW  3.2.3-ja-iphone-04-widgets-lock
+     5 NEW  3.2.3-ja-iphone-05-leave  (replaces 3.2.2-ja-iphone-03-nofree)
+     6 NEW  3.2.3-ja-iphone-06-report  (replaces 3.2.1-ja-iphone-04)
+     7 NEW  3.2.3-ja-iphone-07-calendar  (replaces 3.2.1-ja-iphone-06)
+     8 NEW  3.2.3-ja-iphone-08-records  (replaces 3.2.2-ja-iphone-07)
+     9 NEW  3.2.3-ja-iphone-09-focus  (replaces 3.2.1-ja-iphone-08)
+    10 NEW  3.2.3-ja-iphone-10-rest  (replaces 3.2.1-ja-iphone-10)
+       retire 3.2.2-ja-iphone-05-nofree
+       retire 3.2.1-ja-iphone-09
+~ ko APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-ko-iphone-01
+     2 keep 3.2.1-ko-iphone-02
+     3 NEW  3.2.3-ko-iphone-03-widgets-home
+     4 NEW  3.2.3-ko-iphone-04-widgets-lock
+     5 NEW  3.2.3-ko-iphone-05-leave  (replaces 3.2.2-ko-iphone-03-nofree)
+     6 NEW  3.2.3-ko-iphone-06-report  (replaces 3.2.1-ko-iphone-04)
+     7 NEW  3.2.3-ko-iphone-07-calendar  (replaces 3.2.1-ko-iphone-06)
+     8 NEW  3.2.3-ko-iphone-08-records  (replaces 3.2.2-ko-iphone-07)
+     9 NEW  3.2.3-ko-iphone-09-focus  (replaces 3.2.1-ko-iphone-08)
+    10 NEW  3.2.3-ko-iphone-10-rest  (replaces 3.2.1-ko-iphone-10)
+       retire 3.2.2-ko-iphone-05-nofree
+       retire 3.2.1-ko-iphone-09
+~ de-DE APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-de-iphone-01
+     2 keep 3.2.1-de-iphone-02
+     3 NEW  3.2.3-de-iphone-03-widgets-home
+     4 NEW  3.2.3-de-iphone-04-widgets-lock
+     5 keep 3.2.2-de-iphone-03-nofree
+     6 keep 3.2.1-de-iphone-04
+     7 keep 3.2.1-de-iphone-06
+     8 keep 3.2.2-de-iphone-07
+     9 keep 3.2.1-de-iphone-08
+    10 keep 3.2.1-de-iphone-10
+       retire 3.2.2-de-iphone-05-nofree
+       retire 3.2.1-de-iphone-09
+~ fr-FR APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-fr-iphone-01
+     2 keep 3.2.1-fr-iphone-02
+     3 NEW  3.2.3-fr-iphone-03-widgets-home
+     4 NEW  3.2.3-fr-iphone-04-widgets-lock
+     5 keep 3.2.2-fr-iphone-03-nofree
+     6 keep 3.2.1-fr-iphone-04
+     7 keep 3.2.1-fr-iphone-06
+     8 keep 3.2.2-fr-iphone-07
+     9 keep 3.2.1-fr-iphone-08
+    10 keep 3.2.1-fr-iphone-10
+       retire 3.2.2-fr-iphone-05-nofree
+       retire 3.2.1-fr-iphone-09
+~ es-ES APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-es-iphone-01
+     2 keep 3.2.1-es-iphone-02
+     3 NEW  3.2.3-es-iphone-03-widgets-home
+     4 NEW  3.2.3-es-iphone-04-widgets-lock
+     5 keep 3.2.2-es-iphone-03-nofree
+     6 keep 3.2.1-es-iphone-04
+     7 keep 3.2.1-es-iphone-06
+     8 keep 3.2.2-es-iphone-07
+     9 keep 3.2.1-es-iphone-08
+    10 keep 3.2.1-es-iphone-10
+       retire 3.2.2-es-iphone-05-nofree
+       retire 3.2.1-es-iphone-09
+~ it APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-it-iphone-01
+     2 keep 3.2.1-it-iphone-02
+     3 NEW  3.2.3-it-iphone-03-widgets-home
+     4 NEW  3.2.3-it-iphone-04-widgets-lock
+     5 keep 3.2.2-it-iphone-03-nofree
+     6 keep 3.2.1-it-iphone-04
+     7 keep 3.2.1-it-iphone-06
+     8 keep 3.2.2-it-iphone-07
+     9 keep 3.2.1-it-iphone-08
+    10 keep 3.2.1-it-iphone-10
+       retire 3.2.2-it-iphone-05-nofree
+       retire 3.2.1-it-iphone-09
+~ pt-BR APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-pt-iphone-01
+     2 keep 3.2.1-pt-iphone-02
+     3 NEW  3.2.3-pt-iphone-03-widgets-home
+     4 NEW  3.2.3-pt-iphone-04-widgets-lock
+     5 keep 3.2.2-pt-iphone-03-nofree
+     6 keep 3.2.1-pt-iphone-04
+     7 keep 3.2.1-pt-iphone-06
+     8 keep 3.2.2-pt-iphone-07
+     9 keep 3.2.1-pt-iphone-08
+    10 keep 3.2.1-pt-iphone-10
+       retire 3.2.2-pt-iphone-05-nofree
+       retire 3.2.1-pt-iphone-09
+~ ru APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-ru-iphone-01
+     2 keep 3.2.1-ru-iphone-02
+     3 NEW  3.2.3-ru-iphone-03-widgets-home
+     4 NEW  3.2.3-ru-iphone-04-widgets-lock
+     5 NEW  3.2.3-ru-iphone-05-leave  (replaces 3.2.2-ru-iphone-03-nofree)
+     6 NEW  3.2.3-ru-iphone-06-report  (replaces 3.2.1-ru-iphone-04)
+     7 NEW  3.2.3-ru-iphone-07-calendar  (replaces 3.2.1-ru-iphone-06)
+     8 NEW  3.2.3-ru-iphone-08-records  (replaces 3.2.2-ru-iphone-07)
+     9 NEW  3.2.3-ru-iphone-09-focus  (replaces 3.2.1-ru-iphone-08)
+    10 NEW  3.2.3-ru-iphone-10-rest  (replaces 3.2.1-ru-iphone-10)
+       retire 3.2.2-ru-iphone-05-nofree
+       retire 3.2.1-ru-iphone-09
+~ tr APP_IPHONE_67: 4 upload, 4 delete
+     1 keep 3.2.1-tr-iphone-01
+     2 keep 3.2.1-tr-iphone-02
+     3 NEW  3.2.3-tr-iphone-03-widgets-home
+     4 NEW  3.2.3-tr-iphone-04-widgets-lock
+     5 NEW  3.2.3-tr-iphone-05-leave  (replaces 3.2.2-tr-iphone-03-nofree)
+     6 NEW  3.2.3-tr-iphone-06-report  (replaces 3.2.1-tr-iphone-04)
+     7 keep 3.2.1-tr-iphone-06
+     8 keep 3.2.2-tr-iphone-07
+     9 keep 3.2.1-tr-iphone-08
+    10 keep 3.2.1-tr-iphone-10
+       retire 3.2.2-tr-iphone-05-nofree
+       retire 3.2.1-tr-iphone-09
+~ id APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-id-iphone-01
+     2 keep 3.2.1-id-iphone-02
+     3 NEW  3.2.3-id-iphone-03-widgets-home
+     4 NEW  3.2.3-id-iphone-04-widgets-lock
+     5 keep 3.2.2-id-iphone-03-nofree
+     6 keep 3.2.1-id-iphone-04
+     7 keep 3.2.1-id-iphone-06
+     8 keep 3.2.2-id-iphone-07
+     9 keep 3.2.1-id-iphone-08
+    10 keep 3.2.1-id-iphone-10
+       retire 3.2.2-id-iphone-05-nofree
+       retire 3.2.1-id-iphone-09
+~ vi APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-vi-iphone-01
+     2 keep 3.2.1-vi-iphone-02
+     3 NEW  3.2.3-vi-iphone-03-widgets-home
+     4 NEW  3.2.3-vi-iphone-04-widgets-lock
+     5 NEW  3.2.3-vi-iphone-05-leave  (replaces 3.2.2-vi-iphone-03-nofree)
+     6 NEW  3.2.3-vi-iphone-06-report  (replaces 3.2.1-vi-iphone-04)
+     7 NEW  3.2.3-vi-iphone-07-calendar  (replaces 3.2.1-vi-iphone-06)
+     8 NEW  3.2.3-vi-iphone-08-records  (replaces 3.2.2-vi-iphone-07)
+     9 NEW  3.2.3-vi-iphone-09-focus  (replaces 3.2.1-vi-iphone-08)
+    10 NEW  3.2.3-vi-iphone-10-rest  (replaces 3.2.1-vi-iphone-10)
+       retire 3.2.2-vi-iphone-05-nofree
+       retire 3.2.1-vi-iphone-09
+~ th APP_IPHONE_67: 3 upload, 3 delete
+     1 keep 3.2.1-th-iphone-01
+     2 keep 3.2.1-th-iphone-02
+     3 NEW  3.2.3-th-iphone-03-widgets-home
+     4 NEW  3.2.3-th-iphone-04-widgets-lock
+     5 keep 3.2.2-th-iphone-03-nofree
+     6 NEW  3.2.3-th-iphone-06-report  (replaces 3.2.1-th-iphone-04)
+     7 keep 3.2.1-th-iphone-06
+     8 keep 3.2.2-th-iphone-07
+     9 keep 3.2.1-th-iphone-08
+    10 keep 3.2.1-th-iphone-10
+       retire 3.2.2-th-iphone-05-nofree
+       retire 3.2.1-th-iphone-09
+~ hi APP_IPHONE_67: 8 upload, 8 delete
+     1 keep 3.2.1-hi-IN-iphone-01
+     2 keep 3.2.1-hi-IN-iphone-02
+     3 NEW  3.2.3-hi-IN-iphone-03-widgets-home
+     4 NEW  3.2.3-hi-IN-iphone-04-widgets-lock
+     5 NEW  3.2.3-hi-IN-iphone-05-leave  (replaces 3.2.2-hi-IN-iphone-03-nofree)
+     6 NEW  3.2.3-hi-IN-iphone-06-report  (replaces 3.2.1-hi-IN-iphone-04)
+     7 NEW  3.2.3-hi-IN-iphone-07-calendar  (replaces 3.2.1-hi-IN-iphone-06)
+     8 NEW  3.2.3-hi-IN-iphone-08-records  (replaces 3.2.2-hi-IN-iphone-07)
+     9 NEW  3.2.3-hi-IN-iphone-09-focus  (replaces 3.2.1-hi-IN-iphone-08)
+    10 NEW  3.2.3-hi-IN-iphone-10-rest  (replaces 3.2.1-hi-IN-iphone-10)
+       retire 3.2.2-hi-IN-iphone-05-nofree
+       retire 3.2.1-hi-IN-iphone-09
+~ ar-SA APP_IPHONE_67: 2 upload, 2 delete
+     1 keep 3.2.1-ar-iphone-01
+     2 keep 3.2.1-ar-iphone-02
+     3 NEW  3.2.3-ar-iphone-03-widgets-home
+     4 NEW  3.2.3-ar-iphone-04-widgets-lock
+     5 keep 3.2.2-ar-iphone-03-nofree
+     6 keep 3.2.1-ar-iphone-04
+     7 keep 3.2.1-ar-iphone-06
+     8 keep 3.2.2-ar-iphone-07
+     9 keep 3.2.1-ar-iphone-08
+    10 keep 3.2.1-ar-iphone-10
+       retire 3.2.2-ar-iphone-05-nofree
+       retire 3.2.1-ar-iphone-09
+~ zh-Hans APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-zh-CN-duo-01
+     2 NEW  3.2.3-zh-CN-duo-02-leave  (replaces 3.2.2-zh-CN-duo-02-nofree)
+     3 NEW  3.2.3-zh-CN-duo-03-report  (replaces 3.2.1-zh-CN-duo-03)
+     4 keep 3.2.2-zh-CN-duo-04-nofree
+     5 NEW  3.2.3-zh-CN-duo-05-calendar  (replaces 3.2.1-zh-CN-duo-05)
+     6 NEW  3.2.3-zh-CN-duo-06-records  (replaces 3.2.2-zh-CN-duo-06)
+     7 NEW  3.2.3-zh-CN-duo-07-focus  (replaces 3.2.1-zh-CN-duo-07)
+     8 NEW  3.2.3-zh-CN-duo-08-widgets  (replaces 3.2.1-zh-CN-duo-08)
+     9 NEW  3.2.3-zh-CN-duo-09-rest  (replaces 3.2.1-zh-CN-duo-09)
+~ zh-Hant APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-zh-TW-duo-01
+     2 NEW  3.2.3-zh-TW-duo-02-leave  (replaces 3.2.2-zh-TW-duo-02-nofree)
+     3 NEW  3.2.3-zh-TW-duo-03-report  (replaces 3.2.1-zh-TW-duo-03)
+     4 keep 3.2.2-zh-TW-duo-04-nofree
+     5 NEW  3.2.3-zh-TW-duo-05-calendar  (replaces 3.2.1-zh-TW-duo-05)
+     6 NEW  3.2.3-zh-TW-duo-06-records  (replaces 3.2.2-zh-TW-duo-06)
+     7 NEW  3.2.3-zh-TW-duo-07-focus  (replaces 3.2.1-zh-TW-duo-07)
+     8 NEW  3.2.3-zh-TW-duo-08-widgets  (replaces 3.2.1-zh-TW-duo-08)
+     9 NEW  3.2.3-zh-TW-duo-09-rest  (replaces 3.2.1-zh-TW-duo-09)
+~ ja APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-ja-duo-01
+     2 NEW  3.2.3-ja-duo-02-leave  (replaces 3.2.2-ja-duo-02-nofree)
+     3 NEW  3.2.3-ja-duo-03-report  (replaces 3.2.1-ja-duo-03)
+     4 keep 3.2.2-ja-duo-04-nofree
+     5 NEW  3.2.3-ja-duo-05-calendar  (replaces 3.2.1-ja-duo-05)
+     6 NEW  3.2.3-ja-duo-06-records  (replaces 3.2.2-ja-duo-06)
+     7 NEW  3.2.3-ja-duo-07-focus  (replaces 3.2.1-ja-duo-07)
+     8 NEW  3.2.3-ja-duo-08-widgets  (replaces 3.2.1-ja-duo-08)
+     9 NEW  3.2.3-ja-duo-09-rest  (replaces 3.2.1-ja-duo-09)
+~ ko APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-ko-duo-01
+     2 NEW  3.2.3-ko-duo-02-leave  (replaces 3.2.2-ko-duo-02-nofree)
+     3 NEW  3.2.3-ko-duo-03-report  (replaces 3.2.1-ko-duo-03)
+     4 keep 3.2.2-ko-duo-04-nofree
+     5 NEW  3.2.3-ko-duo-05-calendar  (replaces 3.2.1-ko-duo-05)
+     6 NEW  3.2.3-ko-duo-06-records  (replaces 3.2.2-ko-duo-06)
+     7 NEW  3.2.3-ko-duo-07-focus  (replaces 3.2.1-ko-duo-07)
+     8 NEW  3.2.3-ko-duo-08-widgets  (replaces 3.2.1-ko-duo-08)
+     9 NEW  3.2.3-ko-duo-09-rest  (replaces 3.2.1-ko-duo-09)
+~ ru APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-ru-duo-01
+     2 NEW  3.2.3-ru-duo-02-leave  (replaces 3.2.2-ru-duo-02-nofree)
+     3 NEW  3.2.3-ru-duo-03-report  (replaces 3.2.1-ru-duo-03)
+     4 keep 3.2.2-ru-duo-04-nofree
+     5 NEW  3.2.3-ru-duo-05-calendar  (replaces 3.2.1-ru-duo-05)
+     6 NEW  3.2.3-ru-duo-06-records  (replaces 3.2.2-ru-duo-06)
+     7 NEW  3.2.3-ru-duo-07-focus  (replaces 3.2.1-ru-duo-07)
+     8 NEW  3.2.3-ru-duo-08-widgets  (replaces 3.2.1-ru-duo-08)
+     9 NEW  3.2.3-ru-duo-09-rest  (replaces 3.2.1-ru-duo-09)
+~ tr APP_IPHONE_DUO: 2 upload, 2 delete
+     1 keep 3.2.1-tr-duo-01
+     2 NEW  3.2.3-tr-duo-02-leave  (replaces 3.2.2-tr-duo-02-nofree)
+     3 NEW  3.2.3-tr-duo-03-report  (replaces 3.2.1-tr-duo-03)
+     4 keep 3.2.2-tr-duo-04-nofree
+     5 keep 3.2.1-tr-duo-05
+     6 keep 3.2.2-tr-duo-06
+     7 keep 3.2.1-tr-duo-07
+     8 keep 3.2.1-tr-duo-08
+     9 keep 3.2.1-tr-duo-09
+~ vi APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-vi-duo-01
+     2 NEW  3.2.3-vi-duo-02-leave  (replaces 3.2.2-vi-duo-02-nofree)
+     3 NEW  3.2.3-vi-duo-03-report  (replaces 3.2.1-vi-duo-03)
+     4 keep 3.2.2-vi-duo-04-nofree
+     5 NEW  3.2.3-vi-duo-05-calendar  (replaces 3.2.1-vi-duo-05)
+     6 NEW  3.2.3-vi-duo-06-records  (replaces 3.2.2-vi-duo-06)
+     7 NEW  3.2.3-vi-duo-07-focus  (replaces 3.2.1-vi-duo-07)
+     8 NEW  3.2.3-vi-duo-08-widgets  (replaces 3.2.1-vi-duo-08)
+     9 NEW  3.2.3-vi-duo-09-rest  (replaces 3.2.1-vi-duo-09)
+~ th APP_IPHONE_DUO: 1 upload, 1 delete
+     1 keep 3.2.1-th-duo-01
+     2 keep 3.2.2-th-duo-02-nofree
+     3 NEW  3.2.3-th-duo-03-report  (replaces 3.2.1-th-duo-03)
+     4 keep 3.2.2-th-duo-04-nofree
+     5 keep 3.2.1-th-duo-05
+     6 keep 3.2.2-th-duo-06
+     7 keep 3.2.1-th-duo-07
+     8 keep 3.2.1-th-duo-08
+     9 keep 3.2.1-th-duo-09
+~ hi APP_IPHONE_DUO: 7 upload, 7 delete
+     1 keep 3.2.1-hi-IN-duo-01
+     2 NEW  3.2.3-hi-IN-duo-02-leave  (replaces 3.2.2-hi-IN-duo-02-nofree)
+     3 NEW  3.2.3-hi-IN-duo-03-report  (replaces 3.2.1-hi-IN-duo-03)
+     4 keep 3.2.2-hi-IN-duo-04-nofree
+     5 NEW  3.2.3-hi-IN-duo-05-calendar  (replaces 3.2.1-hi-IN-duo-05)
+     6 NEW  3.2.3-hi-IN-duo-06-records  (replaces 3.2.2-hi-IN-duo-06)
+     7 NEW  3.2.3-hi-IN-duo-07-focus  (replaces 3.2.1-hi-IN-duo-07)
+     8 NEW  3.2.3-hi-IN-duo-08-widgets  (replaces 3.2.1-hi-IN-duo-08)
+     9 NEW  3.2.3-hi-IN-duo-09-rest  (replaces 3.2.1-hi-IN-duo-09)
+
+~ search ar-SA: replace 1 placement(s) with ar-search-video-3.2.3.mp4 (27.0 s)
+~ search de-DE: replace 1 placement(s) with de-search-video-3.2.3.mp4 (27.0 s)
+~ search en-US: replace 1 placement(s) with en-search-video-3.2.3.mp4 (27.0 s)
+~ search en-GB: replace 1 placement(s) with en-search-video-3.2.3.mp4 (27.0 s)
+~ search es-ES: replace 1 placement(s) with es-search-video-3.2.3.mp4 (27.0 s)
+~ search es-MX: replace 1 placement(s) with es-search-video-3.2.3.mp4 (27.0 s)
+~ search fr-FR: replace 1 placement(s) with fr-search-video-3.2.3.mp4 (27.0 s)
+~ search hi: replace 1 placement(s) with hi-IN-search-video-3.2.3.mp4 (27.0 s)
+~ search id: replace 1 placement(s) with id-search-video-3.2.3.mp4 (27.0 s)
+~ search it: replace 1 placement(s) with it-search-video-3.2.3.mp4 (27.0 s)
+~ search ja: replace 1 placement(s) with ja-search-video-3.2.3.mp4 (27.0 s)
+~ search ko: replace 1 placement(s) with ko-search-video-3.2.3.mp4 (27.0 s)
+~ search mr-IN: replace 1 placement(s) with mr-IN-search-video-3.2.3.mp4 (27.0 s)
+~ search pt-BR: replace 1 placement(s) with pt-search-video-3.2.3.mp4 (27.0 s)
+~ search ru: replace 1 placement(s) with ru-search-video-3.2.3.mp4 (27.0 s)
+~ search th: replace 1 placement(s) with th-search-video-3.2.3.mp4 (27.0 s)
+~ search tr: replace 1 placement(s) with tr-search-video-3.2.3.mp4 (27.0 s)
+~ search vi: replace 1 placement(s) with vi-search-video-3.2.3.mp4 (27.0 s)
+~ search zh-Hans: replace 1 placement(s) with zh-CN-search-video-3.2.3.mp4 (27.0 s)
+~ search zh-Hant: replace 1 placement(s) with zh-TW-search-video-3.2.3.mp4 (27.0 s)
+~ header zh-Hans: replace 1 placement(s) with zh-CN-header-video-v4.mp4 (8.0 s)
+~ header zh-Hant: replace 1 placement(s) with zh-TW-header-video-v4.mp4 (8.0 s)
+~ header ja: replace 1 placement(s) with ja-header-video-v4.mp4 (8.0 s)
+~ header ko: replace 1 placement(s) with ko-header-video-v4.mp4 (8.0 s)
+~ header ru: replace 1 placement(s) with ru-header-video-v4.mp4 (8.0 s)
+~ header mr-IN: replace 1 placement(s) with mr-IN-header-video-v4.mp4 (8.0 s)
+
+Totals: 131 screenshot uploads, 131 screenshot deletions in 26 sets; 24 video uploads; 26 placements.
+
+Dry run only. Nothing was changed.
