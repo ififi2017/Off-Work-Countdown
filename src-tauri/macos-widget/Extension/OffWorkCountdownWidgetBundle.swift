@@ -6,5 +6,9 @@ import WidgetKit
 struct OffWorkCountdownWidgetBundle: WidgetBundle {
     var body: some Widget {
         OffWorkCountdownWidget()
+        CountdownBigDigitsWidget()
+        CountdownRingWidget()
+        CountdownTimelineWidget()
+        CountdownDetailWidget()
     }
 }

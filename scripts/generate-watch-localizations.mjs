@@ -15,6 +15,13 @@ export const watchLocalizationKeys = [
   "watchCacheCorrupt", "watchUpdateRequired", "watchWaitingForIPhone", "watchSyncExpired", "watchOpenIPhone",
   "watchTimeLeftTitle", "watchTimeLeft", "watchOffAt", "watchOvertimeUntil", "watchBackAt", "watchNextShiftAt",
   "watchWidgetDescription",
+  // Plan 023 complications reuse the iPhone widget suite's copy.
+  "comingUp", "startTime", "endTime", "lunchShort", "lunchBackAt",
+  "widgetSuiteThisWeek", "widgetSuiteFinishAt", "widgetSuiteWeekDone", "widgetSuiteDaysUnit", "widgetSuiteWeekName",
+  "widgetSuiteWeekDescription", "widgetSuiteToday", "widgetSuiteTomorrow", "widgetSuiteWork", "widgetSuiteRest",
+  "widgetSuiteRestOn", "widgetSuiteRestingNow", "widgetSuiteRosterName", "widgetSuiteRosterDescription",
+  "widgetSuiteUntilWeekend", "widgetSuiteUntilRestDay", "widgetSuiteHolidayIn", "widgetSuiteWeekendName",
+  "widgetSuiteWeekendDescription",
 ];
 export const watchLocalizationsPath = "src-mobile/ios/WatchApp/WatchLocalizations.generated.swift";
 // Spelled out rather than imported: check-ios-strings.mjs imports the key list

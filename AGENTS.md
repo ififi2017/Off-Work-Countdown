@@ -106,7 +106,7 @@ release gates. No rule, plan or script may depend on locally installed skills.
   `src-mobile/ios/Shared/` into iPhone, Watch App and Watch widgets. Cached
   configuration resolves later shifts offline; do not implement another
   recurrence algorithm or impose a rolling snapshot expiry. Transport never
-  includes salary, career income or the record archive. Watch App and both
+  includes salary, career income or the record archive. Watch App and all
   complications are free; entitlement fields exist only for V1 cache reading.
 - No JavaScriptCore runtime rules bundle: do not restore `CountdownRules.js`
   (`check:ios` rejects it).

@@ -78,7 +78,7 @@ enum WidgetDiagnostics {
     }
 }
 
-private enum WidgetCopy {
+enum WidgetCopy {
     static var currentLocaleIdentifier: String {
         let preferred = (Locale.preferredLanguages.first ?? "en")
             .replacingOccurrences(of: "_", with: "-")
@@ -113,7 +113,12 @@ private enum WidgetCopy {
         return text(key, locale: locale)
     }
 
+    /// Set by an app that renders these views itself (iOS Settings › Widgets)
+    /// and does not bundle `translation.json`.
+    nonisolated(unsafe) static var appLookup: ((String, String) -> String?)?
+
     static func text(_ key: String, locale: String) -> String {
+        if let value = appLookup?(key, locale) { return value }
         for candidate in [locale, "en"] {
             if let value = table.value(forKey: key, locale: candidate) {
                 return value
@@ -589,7 +594,10 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
 }
 
 public struct OffWorkCountdownWidgetView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Settings › Widgets on iOS renders this view at a chosen size.
+    private let familyOverride: WidgetFamily?
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.calendar) private var calendar
     #if os(iOS)
@@ -597,8 +605,9 @@ public struct OffWorkCountdownWidgetView: View {
     #endif
     public let entry: OffWorkCountdownWidgetEntry
 
-    public init(entry: OffWorkCountdownWidgetEntry) {
+    public init(entry: OffWorkCountdownWidgetEntry, familyOverride: WidgetFamily? = nil) {
         self.entry = entry
+        self.familyOverride = familyOverride
     }
 
     public var body: some View {

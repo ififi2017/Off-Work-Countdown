@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* WidgetSnapshot.swift */; };
 		A10000000000000000000002 /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* OffWorkCountdownWidget.swift */; };
+		A10000000000000000000009 /* CountdownStyleWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* CountdownStyleWidgets.swift */; };
 		A10000000000000000000003 /* OffWorkCountdownWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* OffWorkCountdownWidgetBundle.swift */; };
 		A10000000000000000000004 /* locales in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* locales */; };
 /* End PBXBuildFile section */
@@ -16,6 +17,7 @@
 /* Begin PBXFileReference section */
 		A20000000000000000000001 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WidgetSnapshotContract/WidgetSnapshot.swift; sourceTree = "<group>"; };
 		A20000000000000000000002 /* OffWorkCountdownWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/OffWorkCountdownWidgetUI/OffWorkCountdownWidget.swift; sourceTree = "<group>"; };
+		A20000000000000000000009 /* CountdownStyleWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/OffWorkCountdownWidgetUI/CountdownStyleWidgets.swift; sourceTree = "<group>"; };
 		A20000000000000000000003 /* OffWorkCountdownWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension/OffWorkCountdownWidgetBundle.swift; sourceTree = "<group>"; };
 		A20000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Extension/Info.plist; sourceTree = "<group>"; };
 		A20000000000000000000005 /* Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Extension/Widget.entitlements; sourceTree = "<group>"; };
@@ -58,6 +60,7 @@
 			children = (
 				A20000000000000000000003 /* OffWorkCountdownWidgetBundle.swift */,
 				A20000000000000000000002 /* OffWorkCountdownWidget.swift */,
+				A20000000000000000000009 /* CountdownStyleWidgets.swift */,
 				A20000000000000000000001 /* WidgetSnapshot.swift */,
 				A20000000000000000000004 /* Info.plist */,
 				A20000000000000000000005 /* Widget.entitlements */,
@@ -134,6 +137,7 @@
 			files = (
 				A10000000000000000000001 /* WidgetSnapshot.swift in Sources */,
 				A10000000000000000000002 /* OffWorkCountdownWidget.swift in Sources */,
+				A10000000000000000000009 /* CountdownStyleWidgets.swift in Sources */,
 				A10000000000000000000003 /* OffWorkCountdownWidgetBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

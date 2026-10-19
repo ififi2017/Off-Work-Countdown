@@ -28,6 +28,7 @@ enum AppRoute: String, Hashable, Identifiable {
     case focus
     case focusPlan
     case appleWatch
+    case widgets
     case about
 
     var id: String { rawValue }
@@ -449,6 +450,11 @@ final class SceneState {
             timerPath.removeAll()
             selectedTab = .timer
             presentedRoute = nil
+            return
+        }
+        if url.host == "records" {
+            presentedRoute = nil
+            selectedTab = .records
             return
         }
         if url.host == CycleReportPeriod.urlHost {

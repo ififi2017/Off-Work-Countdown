@@ -14,6 +14,9 @@
 		710000041234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
 		710000061234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
 		710000071234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */; };
+		7A0000021234567890ABCDEF /* CountdownStyleWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */; };
+		7A0000031234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */; };
+		7A0000041234567890ABCDEF /* CountdownStyleWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */; };
 		710000081234567890ABCDEF /* OffWorkWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000071234567890ABCDEF /* OffWorkWidgets.swift */; };
 		710000091234567890ABCDEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		7100000A1234567890ABCDEF /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
@@ -30,6 +33,7 @@
 		D11000000000000000000003 /* WatchSnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000060000000000000006 /* WatchSnapshotCache.swift */; };
 		D11000000000000000000004 /* WatchShiftEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000040000000000000004 /* WatchShiftEvaluation.swift */; };
 		D11000000000000000000005 /* DoneAtWatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12000000000000000000003 /* DoneAtWatchWidgets.swift */; };
+		7A0000111234567890ABCDEF /* DoneAtWatchSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */; };
 		D11000000000000000000006 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000020000000000000002 /* WatchSnapshot.swift */; };
 		D11000000000000000000007 /* WatchSnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000060000000000000006 /* WatchSnapshotCache.swift */; };
 		D11000000000000000000008 /* WatchShiftEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000040000000000000004 /* WatchShiftEvaluation.swift */; };
@@ -157,6 +161,7 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		720000041234567890ABCDEF /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		720000051234567890ABCDEF /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WidgetSnapshot.swift; path = "../../../src-tauri/macos-widget/Sources/WidgetSnapshotContract/WidgetSnapshot.swift"; sourceTree = SOURCE_ROOT; };
+		7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CountdownStyleWidgets.swift; path = "../../../src-tauri/macos-widget/Sources/OffWorkCountdownWidgetUI/CountdownStyleWidgets.swift"; sourceTree = SOURCE_ROOT; };
 		720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OffWorkCountdownWidget.swift; path = "../../../src-tauri/macos-widget/Sources/OffWorkCountdownWidgetUI/OffWorkCountdownWidget.swift"; sourceTree = SOURCE_ROOT; };
 		720000071234567890ABCDEF /* OffWorkWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkWidgets.swift; sourceTree = "<group>"; };
 		720000081234567890ABCDEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -194,6 +199,7 @@
 		D12000000000000000000001 /* DoneAtWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchApp.swift; sourceTree = "<group>"; };
 		D12000000000000000000002 /* WatchApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WatchApp.entitlements; sourceTree = "<group>"; };
 		D12000000000000000000003 /* DoneAtWatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchWidgets.swift; sourceTree = "<group>"; };
+		7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchSuite.swift; sourceTree = "<group>"; };
 		D12000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D12000000000000000000005 /* WatchWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WatchWidgets.entitlements; sourceTree = "<group>"; };
 		D12000000000000000000006 /* WatchAppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAppSmokeTests.swift; sourceTree = "<group>"; };
@@ -228,6 +234,11 @@
 				Models/FocusActivityIntents.swift,
 				Models/LiveActivityAttributes.swift,
 				Models/ShiftAlarmAttributes.swift,
+				Widgets/FocusControlWidgets.swift,
+				Widgets/SummaryLifeHolidayWidgets.swift,
+				Widgets/WeekRosterWidgets.swift,
+				Widgets/WidgetSuiteContract.swift,
+				Widgets/WidgetSuiteUI.swift,
 			);
 			target = 740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */;
 		};
@@ -310,6 +321,7 @@
 				B32000090000000000000009 /* WatchDisplayProjection.swift */,
 				B32000040000000000000004 /* WatchShiftEvaluation.swift */,
 				720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */,
+				7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */,
 				504EC3051FED79650016851F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -372,6 +384,7 @@
 			isa = PBXGroup;
 			children = (
 				D12000000000000000000003 /* DoneAtWatchWidgets.swift */,
+				7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */,
 				D12000000000000000000004 /* Info.plist */,
 				D12000000000000000000005 /* WatchWidgets.entitlements */,
 				D12000000000000000000008 /* PrivacyInfo.xcprivacy */,
@@ -655,6 +668,8 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				710000041234567890ABCDEF /* WidgetSnapshot.swift in Sources */,
+				7A0000031234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */,
+				7A0000041234567890ABCDEF /* CountdownStyleWidgets.swift in Sources */,
 				B32000010000000000000001 /* WatchSnapshot.swift in Sources */,
 				B32000050000000000000005 /* WatchSnapshotCache.swift in Sources */,
 				B32000080000000000000008 /* WatchPairing.swift in Sources */,
@@ -675,6 +690,7 @@
 			files = (
 				710000061234567890ABCDEF /* WidgetSnapshot.swift in Sources */,
 				710000071234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */,
+				7A0000021234567890ABCDEF /* CountdownStyleWidgets.swift in Sources */,
 				710000081234567890ABCDEF /* OffWorkWidgets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -712,6 +728,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D11000000000000000000005 /* DoneAtWatchWidgets.swift in Sources */,
+				7A0000111234567890ABCDEF /* DoneAtWatchSuite.swift in Sources */,
 				D11000000000000000000006 /* WatchSnapshot.swift in Sources */,
 				D11000000000000000000007 /* WatchSnapshotCache.swift in Sources */,
 				D11000000000000000000008 /* WatchShiftEvaluation.swift in Sources */,

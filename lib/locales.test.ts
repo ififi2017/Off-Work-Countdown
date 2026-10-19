@@ -27,6 +27,10 @@ const loadSeo = (locale: string): Record<string, string> =>
 const SAME_AS_ENGLISH_ON_PURPOSE: Record<string, "*" | readonly string[]> = {
   // 品牌、产品名与平台名
   getAppPlatforms: "*",
+  // Widget suite (plan 023): "Focus" as the iOS app already says it, and the
+  // "min" abbreviation these languages share with English.
+  widgetSuiteFocusName: ["fr", "it"],
+  widgetSuiteFocusBlockDetail: ["es", "fr", "it", "pt"],
   liveActivity: ["id"],
   woodfishSkin: [
     "ar",
