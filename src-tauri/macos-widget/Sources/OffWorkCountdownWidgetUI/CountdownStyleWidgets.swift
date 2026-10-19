@@ -233,7 +233,13 @@ struct CountdownSegmentBar: View {
 extension View {
     @ViewBuilder func countdownStyleBackground() -> some View {
         if #available(iOS 17.0, macOS 14.0, *) {
+            #if os(iOS)
+            // The same surface as the widget suite: `.background` resolves to
+            // black in dark mode, systemBackground to the elevated widget grey.
+            containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
+            #else
             containerBackground(for: .widget) { Color.clear.background(.background) }
+            #endif
         } else {
             padding()
         }
