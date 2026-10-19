@@ -10,24 +10,14 @@
 //   IOS_SHOTS_LANGUAGE=zh-CN,en node scripts/marketing-shots/ios/creative-compose-shots-3.2.3.mjs
 import{readFileSync,writeFileSync,mkdirSync,existsSync}from'node:fs';import{execFileSync}from'node:child_process';
 import{join,relative}from'node:path';import{fileURLToPath,pathToFileURL}from'node:url';import{createHash}from'node:crypto';
-import{COPY}from'./creative-copy-3.2.1.mjs';import{posterFonts,assertPosterFonts}from'./creative-fonts.mjs';import{escapeHTML as esc}from'../brand.mjs';import{flattenPng}from'../chrome.mjs';import{renderer}from'./creative-renderer-3.2.1.mjs';
+import{COPY}from'./creative-copy-3.2.1.mjs';import{PAGES}from'./creative-copy-3.2.3.mjs';import{posterFonts,assertPosterFonts}from'./creative-fonts.mjs';import{escapeHTML as esc}from'../brand.mjs';import{flattenPng}from'../chrome.mjs';import{renderer}from'./creative-renderer-3.2.1.mjs';
 
 const dir=fileURLToPath(new URL('.',import.meta.url)),widgets=join(dir,'raw/3.2.3/widgets'),search=join(dir,'raw/3.2.3/search'),out=join(dir,'out/creative-3.2.3/shots');mkdirSync(out,{recursive:true});
 const uri=p=>pathToFileURL(p).href,hash=b=>createHash('sha256').update(b).digest('hex');
 const frame={file:join(dir,'frames/iPhone 18 Pro Max - Silver - Portrait.png'),w:1470,h:3000,x:75,y:66,sw:1320,sh:2868,r:'14.4% / 6.62%'};
 const watchFrame=join(dir,'frames/watch-s11-46mm-gold-milanese.png');
 
-// Written for 3.2.3 and listed for review in screenshots.md.
-const PAGES={
- 'zh-CN':{
-  home:{label:'全新小组件',lines:['不用打开，','桌面就有数。'],sub:['倒计时、本周进度、班表与节假日，','多款小组件免费可用。']},
-  lock:{label:'锁屏 · Apple Watch',lines:['锁屏一亮，','就知道还剩多久。'],sub:['锁屏小组件、一键开始上班，','Apple Watch 也能看。']},
- },
- en:{
-  home:{label:'NEW WIDGETS',lines:['Your day,','on your Home Screen.'],sub:['Countdown, week progress, shifts and holidays.','Many of them free.']},
-  lock:{label:'LOCK SCREEN · APPLE WATCH',lines:['Wake your screen.','See how long is left.'],sub:['Lock Screen widgets, a Start shift control','and your countdown on Apple Watch.']},
- },
-};
+// Page copy lives in creative-copy-3.2.3.mjs (PAGES).
 const languages=(process.env.IOS_SHOTS_LANGUAGE||Object.keys(PAGES).join(',')).split(',');
 
 const layoutScript=`<script>window.layoutReady=document.fonts.ready.then(()=>{
