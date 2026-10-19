@@ -8,6 +8,9 @@ struct GiftOfferPaywall: View {
     let text: AppText
     let onNotNow: () -> Void
     let onDone: () -> Void
+    /// Over the app, the page sits on the gift layer's frosted glass rather
+    /// than an opaque page, which turned solid black in Dark Mode.
+    var translucent = false
 
     var body: some View {
         NavigationStack {
@@ -45,7 +48,8 @@ struct GiftOfferPaywall: View {
                 .frame(maxWidth: .infinity)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .background(OWCDesign.page)
+            .background(translucent ? AnyShapeStyle(Color.clear) : AnyShapeStyle(OWCDesign.page))
+            .containerBackground(translucent ? AnyShapeStyle(Color.clear) : AnyShapeStyle(OWCDesign.page), for: .navigation)
             .toolbar {
                 if !plus.isAuthorized {
                     ToolbarItem(placement: .cancellationAction) {
@@ -75,6 +79,9 @@ private enum GiftOfferLayout {
 struct GiftOfferOverlay: View {
     let plus: PlusEntitlement
     let text: AppText
+    /// The gift has landed: let the toolbar's own gift fade back in.
+    let onHandBack: () -> Void
+    /// Remove this layer. Called once, after the hand-back has faded.
     let onFinish: () -> Void
 
     /// `opening` unwraps a new gift; `arriving` carries an already opened
@@ -89,15 +96,19 @@ struct GiftOfferOverlay: View {
     @State private var rays = false
     @State private var backdrop = false
     @State private var openFeedback = 0
+    @State private var giftOpacity: Double = 1
+    @State private var finished = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
 
     /// The toolbar gift's drawn size (OfferGiftIcon at 30 pt draws 1.3×).
     private static let toolbarGiftSize: CGFloat = 38
     private static let openGiftSize: CGFloat = 150
 
-    init(plus: PlusEntitlement, text: AppText, onFinish: @escaping () -> Void) {
+    init(plus: PlusEntitlement, text: AppText, onHandBack: @escaping () -> Void, onFinish: @escaping () -> Void) {
         self.plus = plus
         self.text = text
+        self.onHandBack = onHandBack
         self.onFinish = onFinish
         _phase = State(initialValue: plus.hasWrappedLifetimeOffer ? .opening : .arriving)
     }
@@ -112,7 +123,8 @@ struct GiftOfferOverlay: View {
                     .ignoresSafeArea()
                     .accessibilityHidden(true)
                 if phase == .paywall {
-                    GiftOfferPaywall(plus: plus, text: text, onNotNow: { close(in: geometry) }, onDone: onFinish)
+                    GiftOfferPaywall(plus: plus, text: text, onNotNow: { close(in: geometry) }, onDone: finish,
+                                     translucent: true)
                         .transition(.opacity)
                 } else {
                     ZStack {
@@ -124,6 +136,7 @@ struct GiftOfferOverlay: View {
                             .frame(width: giftSize, height: giftSize)
                     }
                     .position(giftCenter ?? home)
+                    .opacity(giftOpacity)
                     // Takes over from the paywall's gift at once, in its place.
                     .transition(.identity)
                     if phase == .opening {
@@ -142,6 +155,10 @@ struct GiftOfferOverlay: View {
             }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: openFeedback)
+        // Leaving the app mid-animation must not strand this layer over the timer.
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active, self.phase == .closing { finish() }
+        }
     }
 
     /// The toolbar's leading item: the bar's own inset plus half the button.
@@ -215,7 +232,7 @@ struct GiftOfferOverlay: View {
 
     private func close(in geometry: GeometryProxy) {
         guard !reduceMotion else {
-            onFinish()
+            finish()
             return
         }
         giftCenter = headerPoint(in: geometry)
@@ -234,7 +251,19 @@ struct GiftOfferOverlay: View {
         }
         Task {
             try? await Task.sleep(for: .seconds(OWCMotion.giftReturnDuration))
-            onFinish()
+            // Cross-fade with the toolbar's gift, then leave without relying
+            // on a removal transition finishing.
+            withAnimation(OWCMotion.giftOverlay) { giftOpacity = 0 }
+            onHandBack()
+            try? await Task.sleep(for: .seconds(OWCMotion.giftOverlayDuration))
+            finish()
         }
+    }
+
+    private func finish() {
+        guard !finished else { return }
+        finished = true
+        onHandBack()
+        onFinish()
     }
 }

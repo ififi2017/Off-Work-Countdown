@@ -55,14 +55,17 @@ struct OffWorkCountdownRootView: View {
         // toolbar and return to it.
         .overlay {
             if scene.showsLifetimeOffer {
-                GiftOfferOverlay(plus: runtime.plus, text: runtime.text) {
+                GiftOfferOverlay(plus: runtime.plus, text: runtime.text, onHandBack: {
                     withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.giftOverlay) {
-                        scene.showsLifetimeOffer = false
+                        scene.giftCoversToolbar = false
                     }
-                }
-                // Its gift starts exactly where the toolbar's was, so it
-                // arrives at once and fades only on the way out.
-                .transition(.asymmetric(insertion: .identity, removal: .opacity))
+                }, onFinish: {
+                    scene.showsLifetimeOffer = false
+                })
+                // Its gift starts and ends exactly on the toolbar's, and it
+                // fades its own parts, so it comes and goes without a transition.
+                .transition(.identity)
+                .onDisappear { scene.giftCoversToolbar = false }
             }
         }
         .background {

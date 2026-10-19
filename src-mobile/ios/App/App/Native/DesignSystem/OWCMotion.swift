@@ -19,6 +19,7 @@ enum OWCMotion {
     /// The open gift's layer arriving over the app and leaving it, and the
     /// toolbar gift handing over to it.
     static let giftOverlay = Animation.easeInOut(duration: 0.22)
+    static let giftOverlayDuration = 0.22
     /// The gift leaving the toolbar for the middle of the screen.
     static let giftArrive = Animation.spring(duration: 0.46, bounce: 0.22)
     static let giftArriveDuration = 0.46

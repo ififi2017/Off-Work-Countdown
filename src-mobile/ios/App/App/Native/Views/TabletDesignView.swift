@@ -197,8 +197,9 @@ private struct TabletTimerRoot: View {
             // never pops in or out; only the gift inside fades.
             if shifts.plus.hasAvailableLifetimeOffer {
                 ToolbarItem(placement: .topBarLeading) {
-                    LifetimeOfferToolbarButton(plus: shifts.plus, text: text, isHidden: scene.showsLifetimeOffer) {
-                        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.giftOverlay) { scene.showsLifetimeOffer = true }
+                    LifetimeOfferToolbarButton(plus: shifts.plus, text: text, isHidden: scene.giftCoversToolbar) {
+                        scene.giftCoversToolbar = true
+                        scene.showsLifetimeOffer = true
                     }
                 }
             }
