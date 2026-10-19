@@ -1,0 +1,147 @@
+<en-US>
+This update redesigns Records and Time off.
+• Records: Week, Month, Year and Life share one set of marks. Solid means it happened; outlined means planned or estimated. Summaries lead with the conclusion, then hours and estimated pay.
+• Time off: see your balances and which leave expires first, set a goal with a large stepper, and compare plans sorted by least leave.
+• Make-up workdays show a short “Work” label in the calendar.
+• Smoother switching to Records, plus other fixes.
+</en-US>
+<en-GB>
+This update redesigns Records and Time off.
+• Records: Week, Month, Year and Life share one set of marks. Solid means it happened; outlined means planned or estimated. Summaries lead with the conclusion, then hours and estimated pay.
+• Time off: see your balances and which leave expires first, set a goal with a large stepper, and compare plans sorted by least leave.
+• Make-up workdays show a short “Work” label in the calendar.
+• Smoother switching to Records, plus other fixes.
+</en-GB>
+<zh-CN>
+这次更新主要改版了记录和休假。
+• 记录：周 / 月 / 年 / 人生用同一套标记，实心是已发生，空心是计划或估算；摘要先给结论，再拆工时和预估收入。
+• 休假：首页看余额和最先过期的假；用大号步进选目标天数；方案按用假从少到多排序。
+• 补班日在月历里显示短标签「补班」。
+• 切到记录页更顺畅，另外修了一些问题。
+</zh-CN>
+<zh-TW>
+這次更新主要改版了紀錄和休假。
+• 紀錄：周 / 月 / 年 / 人生使用同一套標記，實心是已發生，空心是計畫或估算；摘要先給結論，再拆工時和預估收入。
+• 休假：首頁查看餘額和最先過期的假；用大號步進選目標天數；方案依用假由少到多排序。
+• 補班日在月曆中顯示短標籤「補班」。
+• 切換到紀錄頁更順暢，另外修正了一些問題。
+</zh-TW>
+<zh-HK>
+今次更新主要改版了紀錄和放假。
+• 紀錄：周 / 月 / 年 / 人生使用同一套標記，實心是已發生，空心是計劃或估算；摘要先給結論，再拆工時和預計收入。
+• 放假：首頁查看餘額和最先到期的假期；用大號步進選目標日數；方案按用假由少到多排序。
+• 補班日在月曆中顯示短標籤「補班」。
+• 切換到紀錄頁更流暢，另外修正了一些問題。
+</zh-HK>
+<ja-JP>
+今回のアップデートでは「記録」と「休暇」を刷新しました。
+• 記録：週・月・年・人生で同じマークを使います。塗りつぶしは実績、枠線は予定や推計です。サマリーは結論から始まり、勤務時間と見込み収入を示します。
+• 休暇：残日数と期限が近い休暇をひと目で確認。大きなステッパーで目標日数を選び、休暇の少ない順にプランを比較できます。
+• 振替出勤日はカレンダーに短く「出勤」と表示します。
+• 記録タブへの切り替えがよりスムーズになり、その他の不具合も修正しました。
+</ja-JP>
+<ko-KR>
+이번 업데이트에서 기록과 휴가를 새로 디자인했습니다.
+• 기록: 주·월·년·인생이 같은 표시를 씁니다. 채워진 표시는 실제 기록, 테두리만 있는 표시는 계획이나 추정입니다. 요약은 결론부터 보여 주고 근무 시간과 예상 수입을 나눠 보여 줍니다.
+• 휴가: 남은 휴가와 먼저 만료되는 휴가를 확인하고, 큰 스테퍼로 목표 일수를 정하고, 휴가를 적게 쓰는 순으로 계획을 비교하세요.
+• 대체 근무일은 달력에 짧게 '근무'로 표시됩니다.
+• 기록 탭 전환이 더 매끄러워졌고 그 밖의 문제도 고쳤습니다.
+</ko-KR>
+<de-DE>
+Dieses Update gestaltet Einträge und Urlaub neu.
+• Einträge: Woche, Monat, Jahr und Leben nutzen dieselben Markierungen. Gefüllt heißt erledigt, umrandet heißt geplant oder geschätzt. Zusammenfassungen nennen erst das Fazit, dann Stunden und erwartetes Gehalt.
+• Urlaub: Resturlaub und zuerst verfallende Tage im Blick, Ziel per großem Stepper wählen, Pläne nach geringstem Urlaubsbedarf.
+• Ersatzarbeitstage zeigen im Kalender kurz „Arbeit“.
+• Flüssigerer Wechsel zu Einträge, weitere Korrekturen.
+</de-DE>
+<fr-FR>
+Cette mise à jour repense le Journal et les Congés.
+• Journal : Semaine, Mois, Année et Vie partagent les mêmes repères. Plein = réalisé, contour = prévu ou estimé. Les résumés commencent par la conclusion, puis les heures et le salaire estimé.
+• Congés : soldes et jours qui expirent en premier, objectif via un grand sélecteur, plans triés par congés utilisés.
+• Les jours de rattrapage affichent « Travail » dans le calendrier.
+• Passage plus fluide vers le Journal et autres corrections.
+</fr-FR>
+<es-ES>
+Esta actualización rediseña Registro y Vacaciones.
+• Registro: Semana, Mes, Año y Vida usan las mismas marcas. Relleno es lo ocurrido; contorno, lo previsto o estimado. Los resúmenes empiezan por la conclusión y luego horas e ingresos estimados.
+• Vacaciones: consulta saldos y qué caduca antes, elige un objetivo con un selector grande y compara planes por menos días usados.
+• Los días laborables compensatorios muestran «Trabajo» en el calendario.
+• Paso más fluido a Registro y otras mejoras.
+</es-ES>
+<es-419>
+Esta actualización rediseña Registro y Vacaciones.
+• Registro: Semana, Mes, Año y Vida usan las mismas marcas. Relleno es lo que ya pasó; contorno, lo planeado o estimado. Los resúmenes empiezan por la conclusión y luego horas e ingresos estimados.
+• Vacaciones: revisa saldos y qué vence primero, elige una meta con un selector grande y compara planes por menos días usados.
+• Los días laborables compensatorios muestran «Trabajo» en el calendario.
+• Paso más fluido a Registro y otras mejoras.
+</es-419>
+<it-IT>
+Questo aggiornamento ridisegna Registro e Ferie.
+• Registro: Settimana, Mese, Anno e Vita usano gli stessi segni. Pieno indica ciò che è avvenuto, contorno ciò che è previsto o stimato. I riepiloghi partono dalla conclusione, poi ore e paga stimata.
+• Ferie: vedi i saldi e cosa scade prima, scegli l’obiettivo con un selettore grande e confronta piani per meno ferie usate.
+• I giorni lavorativi di recupero mostrano «Lavoro» nel calendario.
+• Passaggio più fluido al Registro e altre correzioni.
+</it-IT>
+<pt-BR>
+Esta atualização redesenha Registos e Férias.
+• Registos: Semana, Mês, Ano e Vida usam as mesmas marcas. Preenchido é o que aconteceu; contorno é o planejado ou estimado. Os resumos começam pela conclusão e depois mostram horas e ganhos estimados.
+• Férias: veja saldos e o que vence primeiro, escolha uma meta com um seletor grande e compare planos por menos dias usados.
+• Dias de trabalho compensatório mostram “Trabalho” no calendário.
+• Troca mais fluida para Registos e outras correções.
+</pt-BR>
+<ru-RU>
+В этом обновлении переработаны «Записи» и «Отпуск».
+• Записи: Неделя, Месяц, Год и Жизнь используют одни и те же отметки. Заливка — то, что уже было, контур — план или оценка. Сводки начинаются с вывода, затем часы и ожидаемый доход.
+• Отпуск: остатки и дни, которые сгорят первыми, выбор цели крупным переключателем и планы, отсортированные по наименьшему расходу отпуска.
+• Перенесённые рабочие дни в календаре помечены коротко: «Работа».
+• Плавный переход к Записям и другие исправления.
+</ru-RU>
+<tr-TR>
+Bu güncelleme Kayıtlar ve İzin ekranlarını yeniliyor.
+• Kayıtlar: Hafta, Ay, Yıl ve Yaşam aynı işaretleri kullanır. Dolu, gerçekleşeni; çerçeve, planlananı ya da tahmini gösterir. Özetler sonuçla başlar, ardından saatleri ve tahmini kazancı ayırır.
+• İzin: bakiyeleri ve ilk sona erecek izni görün, hedefi büyük bir seçiciyle belirleyin, planları en az izin kullanana göre karşılaştırın.
+• Telafi iş günleri takvimde kısaca “Mesai” olarak görünür.
+• Kayıtlar’a daha akıcı geçiş ve diğer düzeltmeler.
+</tr-TR>
+<id>
+Pembaruan ini mendesain ulang Catatan dan Cuti.
+• Catatan: Minggu, Bulan, Tahun, dan Hidup memakai tanda yang sama. Isi penuh berarti sudah terjadi; garis tepi berarti rencana atau perkiraan. Ringkasan diawali kesimpulan, lalu jam dan perkiraan penghasilan.
+• Cuti: lihat saldo dan cuti yang segera kedaluwarsa, pilih target dengan stepper besar, bandingkan rencana dari cuti paling sedikit.
+• Hari kerja pengganti tampil sebagai “Kerja” di kalender.
+• Pindah ke Catatan lebih mulus, plus perbaikan.
+</id>
+<vi>
+Bản cập nhật này thiết kế lại Nhật ký và Nghỉ phép.
+• Nhật ký: Tuần, Tháng, Năm và Đời dùng chung một bộ ký hiệu. Tô đặc là đã diễn ra, viền là dự kiến hoặc ước tính. Phần tóm tắt nêu kết luận trước, rồi đến giờ làm và thu nhập dự kiến.
+• Nghỉ phép: xem số ngày còn lại và phép sắp hết hạn, chọn mục tiêu bằng bộ chọn lớn, so sánh phương án theo số ngày phép ít nhất.
+• Ngày làm bù hiển thị nhãn ngắn “Làm bù” trên lịch.
+• Chuyển sang Nhật ký mượt hơn và nhiều sửa lỗi khác.
+</vi>
+<th>
+อัปเดตนี้ออกแบบหน้าบันทึกและวันหยุดพักผ่อนใหม่
+• บันทึก: สัปดาห์ เดือน ปี และชีวิตใช้สัญลักษณ์ชุดเดียวกัน แบบทึบคือเกิดขึ้นแล้ว แบบเส้นขอบคือแผนหรือค่าประมาณ สรุปจะบอกผลก่อน แล้วจึงแยกชั่วโมงทำงานและรายได้โดยประมาณ
+• วันหยุดพักผ่อน: ดูวันลาคงเหลือและวันลาที่จะหมดอายุก่อน เลือกเป้าหมายด้วยตัวปรับขนาดใหญ่ และเปรียบเทียบแผนที่เรียงจากใช้วันลาน้อยที่สุด
+• วันทำงานชดเชยแสดงป้ายสั้น “ทำงาน” ในปฏิทิน
+• สลับไปหน้าบันทึกได้ลื่นขึ้น และแก้ไขปัญหาอื่น ๆ
+</th>
+<hi-IN>
+इस अपडेट में रिकॉर्ड और छुट्टियाँ नए सिरे से डिज़ाइन किए गए हैं।
+• रिकॉर्ड: सप्ताह, महीना, वर्ष और जीवन एक जैसे चिह्न इस्तेमाल करते हैं। भरा चिह्न यानी हो चुका, खाली घेरा यानी योजना या अनुमान। सारांश पहले निष्कर्ष बताता है, फिर घंटे और अनुमानित कमाई।
+• छुट्टियाँ: बची छुट्टियाँ और पहले खत्म होने वाली छुट्टी देखें, बड़े स्टेपर से लक्ष्य चुनें, कम छुट्टी वाली योजनाओं की तुलना करें।
+• प्रतिपूरक कार्यदिवस कैलेंडर में “काम” लेबल के साथ दिखते हैं।
+• रिकॉर्ड पर जाना अब ज़्यादा सहज, और कई सुधार।
+</hi-IN>
+<mr-IN>
+या अपडेटमध्ये नोंदी आणि सुट्ट्या नव्याने डिझाइन केल्या आहेत.
+• नोंदी: आठवडा, महिना, वर्ष आणि आयुष्य एकाच प्रकारच्या खुणा वापरतात. भरलेली खूण म्हणजे झालेले, रिकामी कडा म्हणजे नियोजित किंवा अंदाजे. सारांश आधी निष्कर्ष सांगतो, मग तास आणि अंदाजे कमाई.
+• सुट्ट्या: शिल्लक सुट्ट्या आणि आधी संपणारी सुट्टी पाहा, मोठ्या स्टेपरने लक्ष्य निवडा आणि सर्वात कमी सुट्टी लागणाऱ्या योजनांची तुलना करा.
+• बदली कामाचा दिवस कॅलेंडरमध्ये “काम” या छोट्या लेबलसह दिसतो.
+• नोंदींकडे जाणे अधिक सहज, आणि इतर सुधारणा.
+</mr-IN>
+<ar>
+يعيد هذا التحديث تصميم السجل والإجازات.
+• السجل: تستخدم الأسبوع والشهر والسنة والعمر العلامات نفسها. العلامة الممتلئة لما حدث، والمحددة لما هو مخطط أو تقديري. تبدأ الملخصات بالخلاصة، ثم الساعات والدخل المتوقع.
+• الإجازات: اطّلع على أرصدتك وما ينتهي أولًا، واختر هدفك بمحدد كبير، وقارن الخطط مرتبة من الأقل استخدامًا للإجازة.
+• تظهر أيام العمل التعويضية في التقويم بعلامة قصيرة «عمل».
+• انتقال أسلس إلى السجل وإصلاحات أخرى.
+</ar>
