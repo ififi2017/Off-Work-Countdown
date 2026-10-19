@@ -238,11 +238,13 @@ struct OnboardingGlancePage: View {
                             surfaceSelector
                         }
                         .frame(maxWidth: 320)
-                        preview(height: min(340, max(280, viewport.height - 32)))
+                        preview(height: min(470, max(300, viewport.height - 32)))
                     }
                 } else {
                     introduction
-                    preview(height: min(320, max(280, viewport.height - 260)))
+                    // Grow with the screen: the widget suite fills a tall
+                    // phone instead of leaving its lower half empty.
+                    preview(height: min(440, max(300, viewport.height - 235)))
                     surfaceSelector
                 }
                 if dynamicTypeSize.isAccessibilitySize { exploreButton }
@@ -268,11 +270,20 @@ struct OnboardingGlancePage: View {
         .multilineTextAlignment(.center)
     }
 
+    /// Four places to preview, in one native segmented row.
     private var surfaceSelector: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 8) { surfaceButtons }
-            VStack(spacing: 8) { surfaceButtons }
+        Picker(selection: Binding(
+            get: { surface },
+            set: { item in withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.phase) { surface = item } }
+        )) {
+            ForEach(OnboardingSystemSurface.available, id: \.self) { item in
+                Text(item.title(text)).tag(item)
+            }
+        } label: {
+            Text(text.t("onboardingSystemTitle"))
         }
+        .pickerStyle(.segmented)
+        .controlSize(.large)
     }
 
     private func preview(height: CGFloat) -> some View {
@@ -291,7 +302,7 @@ struct OnboardingGlancePage: View {
                 }
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(text.t("onboardingSystemTitle") + ", " + text.t(surface.titleKey))
+                .accessibilityLabel(text.t("onboardingSystemTitle") + ", " + surface.title(text))
                 .accessibilityValue(snapshot.map { snapshot in
                     surface == .liveActivity && snapshot.isBeforeStart(at: now)
                         ? text.t("startTime") + ", " + snapshot.startDate.formatted(.dateTime.month().day().hour().minute().locale(shifts.preferences.locale))
@@ -311,19 +322,4 @@ struct OnboardingGlancePage: View {
             .frame(minHeight: 44)
     }
 
-    private var surfaceButtons: some View {
-        ForEach(OnboardingSystemSurface.allCases, id: \.self) { item in
-            Button {
-                withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.phase) { surface = item }
-            } label: {
-                Text(text.t(item.titleKey))
-                    .font(.subheadline.weight(.medium))
-                    .padding(.horizontal, 14)
-                    .frame(minHeight: 44)
-                    .background(surface == item ? OWCDesign.accent.opacity(0.12) : OWCDesign.control, in: Capsule())
-            }
-            .buttonStyle(.plain)
-            .accessibilityAddTraits(surface == item ? .isSelected : [])
-        }
-    }
 }
