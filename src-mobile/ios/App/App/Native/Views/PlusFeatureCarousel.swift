@@ -8,6 +8,7 @@ struct PlusFeatureCarousel: View {
     var initialPage: Page = .reports
     @State private var current: Page?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private static let shadowRoom: CGFloat = 16
 
     enum Page: Int, CaseIterable, Identifiable {
         case reports, records, rest, focus, widgets
@@ -30,8 +31,11 @@ struct PlusFeatureCarousel: View {
             ScrollView(.horizontal) {
                 HStack(alignment: .top, spacing: 0) {
                     ForEach(Page.allCases) { page in
+                        // Room inside the scroll bounds for each scene's shadow,
+                        // which a horizontal scroll view otherwise cuts square.
                         scene(page, isActive: page == shown)
-                            .padding(.horizontal, 2)
+                            .padding(.horizontal, Self.shadowRoom)
+                            .padding(.vertical, Self.shadowRoom)
                             .containerRelativeFrame(.horizontal)
                             .id(page)
                     }
@@ -41,6 +45,8 @@ struct PlusFeatureCarousel: View {
             .scrollTargetBehavior(.paging)
             .scrollIndicators(.hidden)
             .scrollPosition(id: $current)
+            .padding(.horizontal, -Self.shadowRoom)
+            .padding(.vertical, -Self.shadowRoom)
             .onAppear { if current == nil { current = initialPage } }
 
             Text(text.t(shown.captionKey))

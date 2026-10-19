@@ -29,12 +29,6 @@ struct WhatsNewView: View {
                         feature("lock", text.t("whatsNewLockTitle"), "whatsNewLockBody")
                         feature("applewatch", "Apple Watch", "whatsNewWatchBody")
                     }
-                    VStack(spacing: 8) {
-                        Button(text.t("whatsNewHowToAdd"), action: onShowWidgets)
-                            .font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44)
-                        Button(text.t("whatsNewContinue"), action: onDismiss)
-                            .buttonStyle(OWCPrimaryButtonStyle())
-                    }
                 }
                 .padding(24)
                 .frame(maxWidth: 560)
@@ -42,6 +36,19 @@ struct WhatsNewView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .background(OWCDesign.page)
+            // Kept in reach however long the page runs.
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 4) {
+                    Button(text.t("whatsNewHowToAdd"), action: onShowWidgets)
+                        .font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44)
+                    Button(text.t("whatsNewContinue"), action: onDismiss)
+                        .buttonStyle(OWCPrimaryButtonStyle())
+                }
+                .padding(.horizontal, 24).padding(.top, 8).padding(.bottom, 12)
+                .frame(maxWidth: 560)
+                .frame(maxWidth: .infinity)
+                .background(.bar)
+            }
         }
         .tint(OWCDesign.accent)
         .interactiveDismissDisabled()

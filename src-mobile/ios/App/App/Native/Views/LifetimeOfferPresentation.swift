@@ -88,6 +88,7 @@ private enum GiftPhase: CaseIterable {
 struct GiftArtwork: View {
     var lidLift: CGFloat = 0
     var lidTilt: Angle = .zero
+    private static let headroom: CGFloat = 0.5
 
     private static func hdr(_ red: Float, _ green: Float, _ blue: Float) -> Color {
         var resolved = Color.white.resolve(in: EnvironmentValues())
@@ -154,7 +155,11 @@ struct GiftArtwork: View {
             }
             .shadow(color: Color(red: 0.35, green: 0.12, blue: 0.04).opacity(0.18),
                     radius: 3 * unit, y: 3 * unit)
+            // The offscreen buffer is only as large as its view: give a lifted,
+            // tilted lid room above and beside the box before rasterising.
+            .padding(Self.headroom * geometry.size.width)
             .drawingGroup(opaque: false, colorMode: .extendedLinear)
+            .padding(-Self.headroom * geometry.size.width)
             .allowedDynamicRange(.high)
         }
         .accessibilityHidden(true)
