@@ -67,10 +67,18 @@ private struct WatchSuiteEntry: TimelineEntry {
 }
 
 private struct WatchSuiteProvider: TimelineProvider {
-    func placeholder(in context: Context) -> WatchSuiteEntry { .init(date: .now, schedule: nil) }
+    /// The skeleton follows the real layout, so it draws a sample week rather
+    /// than the "open DoneAt on iPhone" state.
+    func placeholder(in context: Context) -> WatchSuiteEntry { .init(date: .now, schedule: WatchWidgetSample.schedule()) }
 
     func getSnapshot(in context: Context, completion: @escaping @Sendable (WatchSuiteEntry) -> Void) {
-        Task { completion(.init(date: .now, schedule: await Self.schedule())) }
+        let isPreview = context.isPreview
+        Task {
+            let schedule = await Self.schedule()
+            // The face gallery shows what the complication looks like before any sync.
+            let shown = isPreview && schedule?.isConfigured != true ? WatchWidgetSample.schedule() : schedule
+            completion(.init(date: .now, schedule: shown))
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<WatchSuiteEntry>) -> Void) {
@@ -190,13 +198,8 @@ private struct WatchWeekView: View {
                             Text("\(text.decimal(figures.remainingDays)) \(text.t("widgetSuiteDaysUnit"))")
                                 .font(.headline).lineLimit(1).minimumScaleFactor(0.7)
                         }
-                        HStack(spacing: 2) {
-                            ForEach(Array(figures.fills.enumerated()), id: \.offset) { _, fill in
-                                Gauge(value: fill) { EmptyView() }
-                                    .gaugeStyle(.accessoryLinearCapacity)
-                                    .tint(.orange)
-                            }
-                        }
+                        WatchSegmentBar(segments: figures.fills.map { (1, $0) })
+                            .padding(.top, 2)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -228,7 +231,10 @@ private struct WatchWeekView: View {
         let total = shifts.reduce(Int64(0)) { $0 + $1.workMs }
         let remaining = shifts.reduce(Int64(0)) { $0 + $1.remainingMs(at: nowMs) }
         let days = shifts.reduce(0.0) { $1.workMs > 0 ? $0 + Double($1.remainingMs(at: nowMs)) / Double($1.workMs) : $0 }
-        let fills = shifts.map { $0.workMs > 0 ? 1 - Double($0.remainingMs(at: nowMs)) / Double($0.workMs) : 0 }
+        let fills = shifts.map { shift -> Double in
+            guard shift.workMs > 0, nowMs > shift.startMs else { return 0 }
+            return 1 - Double(shift.remainingMs(at: nowMs)) / Double(shift.workMs)
+        }
         let finish = shifts.last.map(\.endMs).flatMap { $0 > nowMs ? $0 : nil }
         return Figures(totalMs: total, remainingMs: remaining, remainingDays: days, finishMs: finish, fills: fills)
     }
@@ -482,6 +488,76 @@ nonisolated enum WatchCountdownSegments {
     static func segments(_ package: WatchSnapshotPackageV1?, nowMs: Int64) -> [(Int64, Int64)] {
         let content = package?.schedule?.content(at: nowMs) ?? package?.content
         return content?.shift?.segments.map { ($0.startAtMs, $0.endAtMs) } ?? []
+    }
+}
+
+/// A 09:00–18:00 weekday with lunch at noon, for placeholders and the face
+/// gallery. It never reaches a timeline: real entries always come from the
+/// iPhone's schedule.
+enum WatchWidgetSample {
+    static var presentation: WatchPresentationV1 {
+        let locale = WatchLocalizations.resolveLocale(Locale.preferredLanguages)
+        let working = WatchLocalizations.text("widgetWorking", localeIdentifier: locale)
+        return WatchPresentationV1(localeIdentifier: locale, timeZoneIdentifier: TimeZone.current.identifier,
+                                   workingLabel: working, lunchLabel: WatchLocalizations.text("lunchShort", localeIdentifier: locale),
+                                   restingLabel: working, overtimeLabel: working, finishedLabel: working)
+    }
+
+    static func schedule(now: Date = .now) -> WatchScheduleV2 {
+        let input = ScheduleRuleInput(
+            startTime: "09:00", endTime: "18:00", nowMs: now.timeIntervalSince1970 * 1_000, workdays: [1, 2, 3, 4, 5],
+            schedule: NativeWorkSchedule(mode: "classic", referenceWeekStartMs: nil, referenceWeekType: nil,
+                                         singleWeekendWorkday: nil, rotationAnchorMs: nil, rotationWorkDays: nil, rotationRestDays: nil),
+            breakStartTime: "12:00", breakDurationMinutes: 60, overtimeEndAtMs: nil, forcedWorkdayStartMs: nil,
+            timeZoneIdentifier: TimeZone.current.identifier
+        )
+        return WatchScheduleV2(configuration: input, automaticallyRuns: true, isConfigured: true, currentShift: nil,
+                               currentUntilMs: Int64(now.timeIntervalSince1970 * 1_000) + 86_400_000, presentation: presentation)
+    }
+}
+
+/// Segments of a bar, each filled from its leading edge. The system linear
+/// gauge clips a small fill to its rounded track, so a day just begun shows
+/// only a sliver at the edge; here a started segment shows at least a dot and
+/// one not yet begun shows only its track.
+struct WatchSegmentBar: View {
+    let segments: [(weight: Double, fill: Double)]
+    var tint: Color = .orange
+    var height: CGFloat = 8
+    var gap: CGFloat = 2
+
+    var body: some View {
+        GeometryReader { proxy in
+            let total = max(0.000_1, segments.reduce(0) { $0 + $1.weight })
+            let usable = proxy.size.width - gap * CGFloat(max(0, segments.count - 1))
+            HStack(spacing: gap) {
+                ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                    let width = max(height, usable * segment.weight / total)
+                    let fill = min(1, max(0, segment.fill))
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(tint.opacity(0.3))
+                        if fill > 0 {
+                            Capsule().fill(tint)
+                                .frame(width: max(height, width * fill))
+                                .widgetAccentable()
+                        }
+                    }
+                    .frame(width: width)
+                }
+            }
+        }
+        .frame(height: height)
+    }
+
+    /// Splits one overall progress across weighted segments, in order.
+    static func fills(weights: [Double], progress: Double) -> [(weight: Double, fill: Double)] {
+        let total = max(0.000_1, weights.reduce(0, +))
+        var remaining = min(1, max(0, progress)) * total
+        return weights.map { weight in
+            let filled = min(weight, max(0, remaining))
+            remaining -= weight
+            return (weight, weight > 0 ? filled / weight : 0)
+        }
     }
 }
 

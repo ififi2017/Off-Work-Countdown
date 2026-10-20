@@ -227,8 +227,9 @@ struct WidgetSuiteSegmentBar: View {
                     let width = max(height, usable * segment.weight / total)
                     ZStack(alignment: .leading) {
                         Capsule().fill(WidgetSuitePalette.track)
+                        // A started segment shows at least a dot, not a sliver.
                         Capsule().fill(tint)
-                            .frame(width: width * min(1, max(0, segment.fill)))
+                            .frame(width: max(height, width * min(1, max(0, segment.fill))))
                             .opacity(segment.fill > 0 ? 1 : 0)
                     }
                     .frame(width: width)

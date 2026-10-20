@@ -211,7 +211,9 @@ struct CountdownSegmentBar: View {
                     let width = usable * weight / total
                     ZStack(alignment: .leading) {
                         Capsule().fill(CountdownStylePalette.track)
-                        Capsule().fill(CountdownStylePalette.accent).frame(width: width * fills[index])
+                        // A started segment shows at least a dot, not a sliver.
+                        Capsule().fill(CountdownStylePalette.accent)
+                            .frame(width: fills[index] > 0 ? max(height, width * fills[index]) : 0)
                     }
                     .frame(width: max(height, width))
                 }

@@ -16,7 +16,7 @@ export const watchLocalizationKeys = [
   "watchTimeLeftTitle", "watchTimeLeft", "watchOffAt", "watchOvertimeUntil", "watchBackAt", "watchNextShiftAt",
   "watchWidgetDescription",
   // Plan 023 complications reuse the iPhone widget suite's copy.
-  "comingUp", "startTime", "endTime", "lunchShort", "lunchBackAt",
+  "comingUp", "startTime", "endTime", "lunchShort", "lunchBackAt", "widgetWorking",
   "widgetSuiteThisWeek", "widgetSuiteFinishAt", "widgetSuiteWeekDone", "widgetSuiteDaysUnit", "widgetSuiteWeekName",
   "widgetSuiteWeekDescription", "widgetSuiteToday", "widgetSuiteTomorrow", "widgetSuiteWork", "widgetSuiteRest",
   "widgetSuiteRestOn", "widgetSuiteRestingNow", "widgetSuiteRosterName", "widgetSuiteRosterDescription",
