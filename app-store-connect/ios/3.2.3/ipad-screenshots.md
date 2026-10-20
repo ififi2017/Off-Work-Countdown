@@ -113,16 +113,20 @@ node scripts/marketing-shots/ios/creative-compose-ipad-3.2.3.mjs
 node scripts/marketing-shots/ios/creative-audit-3.2.3.mjs
 ```
 
-## Upload (not done)
+## Upload (2026-10-20, owner-approved)
 
-`scripts/app-store-connect/ipad-shots-3.2.3.mjs` is read-only unless `--apply`.
+Applied with `scripts/app-store-connect/ipad-shots-3.2.3.mjs --apply` to
+the iOS 3.2.3 draft (`PREPARE_FOR_SUBMISSION`), after the dry run in
+`ipad-upload-dry-run.txt`.
 
-- **Dry run (2026-10-20):** see `ipad-upload-dry-run.txt`. iOS 3.2.3 is `PREPARE_FOR_SUBMISSION`.
 - **Per set** (17 iPad 13″ sets):
-  - 2 uploads (pages 3 and 4);
-  - 2 deletions (live 03 Watch and 07 widgets);
-  - one reorder.
-- **Kept pages:** 102. Each must still be the exact live screenshot the review sheets were built from, or the script stops.
+  - new pages 3 and 4 uploaded;
+  - live 03 (Watch) and 07 (widgets) deleted;
+  - the 6 kept pages moved to 1, 2 and 5–8.
 - **Not changed:** videos, metadata, builds and every other set.
 - **Locales without sets:** en-GB, es-MX and mr-IN have no iPad sets and fall back to the primary locale.
-- **Apply:** runs only after the owner approves. It writes `asc-ipad-receipt.json`, resumes from it, and reads every set back in order.
+- **First run:** stopped after en-US because its read-back came too soon. App Store Connect shows a new order a moment after the reorder request, and the set was already correct. The script now retries the read-back; the second run did the other 16 sets.
+- **Logs:** `ipad-upload-apply.log` and `ipad-upload-apply-2.log`.
+- **Read back:** every set holds 8 screenshots, all `COMPLETE`, in the planned order, and the new pages match their checksums. A fresh dry run plans nothing.
+- **Receipt:** `asc-ipad-receipt.json`.
+- No build selected, nothing submitted.

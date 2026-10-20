@@ -119,8 +119,14 @@ for(const p of todo){
  }
  const order=p.target.map((t,i)=>t.keep?t.keep.id:rec.uploads[String(i+1)].id);
  await api.request(`/v1/appScreenshotSets/${p.setId}/relationships/appScreenshots`,{method:'PATCH',body:{data:order.map(id=>({type:'appScreenshots',id}))}});
- const after=await api.list(`/v1/appScreenshotSets/${p.setId}/appScreenshots?limit=50`);
- rec.readback={checkedAt:new Date().toISOString(),ok:after.length===8&&after.every((s,i)=>s.id===order[i]&&s.attributes.assetDeliveryState?.state==='COMPLETE'),files:after.map(s=>s.attributes.fileName)};save();
+ // The new order shows up a moment after the PATCH, so read back a few times.
+ let after,ok=false;
+ for(let i=0;i<10&&!ok;i++){
+  if(i)await new Promise(r=>setTimeout(r,3000));
+  after=await api.list(`/v1/appScreenshotSets/${p.setId}/appScreenshots?limit=50`);
+  ok=after.length===8&&after.every((s,i)=>s.id===order[i]&&s.attributes.assetDeliveryState?.state==='COMPLETE');
+ }
+ rec.readback={checkedAt:new Date().toISOString(),ok,files:after.map(s=>s.attributes.fileName)};save();
  if(!rec.readback.ok)throw Error(`${p.locale}: the set did not read back in the planned order`);
  console.log(`${p.locale}: 8 screenshots in order`);
 }
