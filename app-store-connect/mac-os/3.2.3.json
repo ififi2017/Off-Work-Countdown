@@ -1,0 +1,384 @@
+{
+  "$schema": "../metadata.schema.json",
+  "schemaVersion": 1,
+  "screenshotBaseDir": "scripts/marketing-shots/macos/out",
+  "app": {
+    "bundleId": "com.rainif.offworkcountdown.macappstore",
+    "platform": "MAC_OS",
+    "versionString": "3.2.3",
+    "createVersionIfMissing": true,
+    "releaseType": "MANUAL",
+    "copyright": "© 2026 fi_niaR Studio"
+  },
+  "localizations": {
+    "ar-SA": {
+      "promotionalText": "تابع ورديتك على Mac في لمحة: عداد في شريط القوائم، ويدجت لسطح المكتب، مؤقت عائم وأرباح محفوظة على جهازك.",
+      "description": "يجعل DoneAt يوم عملك أوضح من النظرة الأولى.\nاضبط جدولك مرة واحدة. قبل الدوام، يحسب الوقت حتى البداية. وأثناء الوردية، يعرض وقت العمل الفعلي المتبقي ويوقف التقدم خلال استراحة الغداء. وفي أيام الراحة، يبقي الوردية التالية أمامك. وإذا تغير يومك، يمكنك البدء مبكرًا أو الانصراف مبكرًا أو إضافة وقت إضافي أو توقيت يوم غير مجدول دون إعادة بناء جدولك.\nالميزات\n• عد تنازلي مباشر لبداية الدوام ونهايته\n• أيام عمل ثابتة وأسابيع متناوبة ودورات عمل وراحة\n• دعم الورديات الليلية التي تتجاوز منتصف الليل\n• استراحة غداء مخصصة لا تُحتسب من وقت العمل\n• بدء مبكر وانصراف مبكر ووقت إضافي وتوقيت يدوي\n• تقدير اختياري للدخل وملخصات أسبوعية وسنوية\n• تذكيرات بالدوام والغداء والحركة\n• ويدجت لسطح المكتب بخمسة أنماط، مع عداد في شريط القوائم ومؤقت صغير عائم\n• إشعارات أصلية، تشغيل عند تسجيل الدخول، واختصار عام لإظهار المؤقت أو إخفائه\n• مشاركة العد التنازلي كصورة أو رابط\n• صفحة «الإحصائيات» لأيام العمل والساعات مع العمل الإضافي وطرقات Woodfish في كل شهر\n• متاح بـ19 لغة ويتبع لغة النظام\n\nالخصوصية\nتبقى جداولك وبيانات راتبك على جهاز Mac. لا يوجد حساب أو تسجيل أو تحليلات أو خادم؛ يعمل التطبيق بالكامل دون اتصال.\n\nلا يتضمن تطبيق Mac أي عمليات شراء داخل التطبيق أو اشتراكات.\n\nشروط الاستخدام: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nالخصوصية: https://doneat.app/en/privacy",
+      "keywords": "عمل,مؤقت,ساعات,انصراف,غداء,إضافي,حضور,مناوبة,تذكير",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• أربعة أنماط جديدة للويدجت: أرقام كبيرة، وحلقة تترك فراغًا لاستراحة الغداء، والخط الزمني لليوم، وعرض مفصّل لما هو قادم.\n• تشمل عطلات البر الرئيسي للصين الآن عام 2027، مع وسمها كتوقعات إلى أن يُعلن الجدول الرسمي.\n• في تقويم المناوبات، تظهر أيام العمل التعويضية الآن كأيام عمل.\n• إصلاحات وتحسينات صغيرة أخرى.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "ar-01-countdown.png",
+          "ar-02-mini-woodfish.png",
+          "ar-03-stats.png",
+          "ar-04-setup.png",
+          "ar-05-settings.png",
+          "ar-06-widget.png"
+        ]
+      }
+    },
+    "de-DE": {
+      "promotionalText": "Behalte deine Schicht auf dem Mac im Blick – mit Menüleisten-Countdown, Desktop-Widgets, schwebendem Mini-Timer und lokalen Verdienstangaben.",
+      "description": "DoneAt zeigt Ihnen genau, wie viel vom Arbeitstag noch übrig ist.\n\nArbeitszeiten einmal einstellen. Countdown, Fortschrittsbalken und der bisherige Verdienst aktualisieren sich jede Sekunde — in der App, in der Menüleiste, im schwebenden Mini-Timer und als Widget auf dem Schreibtisch.\n\nFUNKTIONEN\n• Countdown und Tagesfortschritt in Echtzeit\n• Eigene Anfangs- und Endzeiten, auch für Nachtschichten über Mitternacht\n• Wählen Sie Ihre Arbeitstage; die App weiß, wann heute frei ist\n• Verdienst des Tages, aus Monats- oder Tagesgehalt berechnet\n• Wochen- und Jahressummen, geschätzt aus Ihrem Zeitplan\n• Optionale Erinnerung 15 Minuten vor Feierabend\n• Widgets in fünf Stilen, dazu Countdown in der Menüleiste und schwebender Mini-Timer\n• Systemmitteilungen, Start bei der Anmeldung, globales Tastenkürzel zum Ein-/Ausblenden\n• Teilen Sie Ihren Countdown als Stimmungsbild oder Link\n• Seite „Aktivität“ mit Arbeitstagen, Stunden inklusive Überstunden und Woodfish-Schlägen pro Monat\n• 19 Sprachen, folgt Ihrer Systemsprache\n\nDATENSCHUTZ\nZeitplan, Gehalt und Countdown-Status verlassen Ihren Mac nie. Kein Konto, keine Anmeldung, keine Analyse, kein Server. Die App funktioniert vollständig offline.\n\nDie Mac-App enthält keine In-App-Käufe oder Abonnements.\n\nNutzungsbedingungen: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nDatenschutz: https://doneat.app/en/privacy",
+      "keywords": "Arbeitszeit,Timer,Schicht,Menüleiste,Widget,Gehalt,Stundenlohn,Fortschritt,Uhr",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Vier neue Widget-Stile: große Ziffern, ein Ring mit Lücke für die Mittagspause, die Zeitleiste des Tages und eine Detailansicht mit dem, was als Nächstes kommt.\n• Die Feiertage für Festlandchina enthalten jetzt 2027, als Prognose gekennzeichnet, bis die offizielle Regelung veröffentlicht ist.\n• Im Schichtkalender erscheinen nachzuarbeitende Tage jetzt als Arbeitstage.\n• Weitere kleine Korrekturen und Verbesserungen.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "de-01-countdown.png",
+          "de-02-mini-woodfish.png",
+          "de-03-stats.png",
+          "de-04-setup.png",
+          "de-05-settings.png",
+          "de-06-widget.png"
+        ]
+      }
+    },
+    "en-GB": {
+      "promotionalText": "See how long until you finish, right in the menu bar: a live countdown, desktop and Notification Centre widgets, a floating mini timer and today's estimated pay. Offline.",
+      "description": "DoneAt shows you exactly how much of your working day is left.\n\nSet your hours once. The countdown, the progress bar and the running total of what you have earned all update every second — in the app, in the menu bar, in a floating mini timer, and on your desktop as a widget.\n\nFEATURES\n• Real-time countdown and progress bar for the day\n• Custom start and end times, including overnight shifts that cross midnight\n• Pick the days you work; the app knows when today is a rest day\n• Live earnings for the day, from a monthly or daily salary\n• Weekly and yearly totals estimated from your schedule\n• Optional reminder 15 minutes before you finish\n• Desktop widgets in five styles, plus a menu-bar countdown and a floating mini timer\n• Native notifications, launch at login, and a global show/hide shortcut\n• Share your countdown as a mood-based image or a link\n• An Activity page with each month's days worked, hours including overtime, and woodfish knocks\n• 19 languages, following your system language\n\nPRIVACY\nYour schedule, salary and countdown state never leave your Mac. There is no account, no sign-up, no analytics and no server. The app works fully offline.\n\nThe Mac app has no in-app purchases or subscriptions.\n\nTerms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacy Policy: https://doneat.app/en/privacy",
+      "keywords": "menu,bar,widget,desktop,floating,clock,off,finish,workday,hours,salary,earnings,calendar,holiday",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Four new desktop widget styles: big digits, a ring that leaves lunch as a gap, today's timeline, and a detailed view with what's coming up.\n• Holidays for mainland China now include 2027, marked as predicted until the official arrangement is published.\n• In the schedule calendar, make-up workdays now show as workdays.\n• Smaller fixes and polish.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "en-01-countdown.png",
+          "en-02-mini-woodfish.png",
+          "en-03-stats.png",
+          "en-04-setup.png",
+          "en-05-settings.png",
+          "en-06-widget.png"
+        ]
+      },
+      "name": "DoneAt: Shift Countdown Timer",
+      "subtitle": "Work Rota, Duty Roster & Pay",
+      "privacyPolicyUrl": "https://doneat.app/en/privacy"
+    },
+    "en-US": {
+      "promotionalText": "Your workday, right in the menu bar: a live countdown to clock-out, desktop and Notification Center widgets, a floating mini timer and today's pay—on your Mac, offline.",
+      "description": "DoneAt shows you exactly how much of your workday is left.\n\nSet your hours once. The countdown, the progress bar and the running total of what you have earned all update every second — in the app, in the menu bar, in a floating mini timer, and on your desktop as a widget.\n\nFEATURES\n• Real-time countdown and progress bar for the day\n• Custom start and end times, including overnight shifts that cross midnight\n• Pick the days you work; the app knows when today is a rest day\n• Live earnings for the day, from a monthly or daily salary\n• Weekly and yearly totals estimated from your schedule\n• Optional reminder 15 minutes before you finish\n• Desktop widgets in five styles, plus a menu-bar countdown and a floating mini timer\n• Native notifications, launch at login, and a global show/hide shortcut\n• Share your countdown as a mood-based image or a link\n• An Activity page with each month's days worked, hours including overtime, and woodfish knocks\n• 19 languages, following your system language\n\nPRIVACY\nYour schedule, salary and countdown state never leave your Mac. There is no account, no sign-up, no analytics and no server. The app works fully offline.\n\nThe Mac app has no in-app purchases or subscriptions.\n\nTerms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacy Policy: https://doneat.app/en/privacy",
+      "keywords": "menu,bar,widget,desktop,floating,clock,out,off,workday,hours,salary,wage,overtime,calendar,holiday",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Four new desktop widget styles: big digits, a ring that leaves lunch as a gap, today's timeline, and a detailed view with what's coming up.\n• Holidays for mainland China now include 2027, marked as predicted until the official arrangement is published.\n• In the schedule calendar, make-up workdays now show as workdays.\n• Smaller fixes and polish.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "en-01-countdown.png",
+          "en-02-mini-woodfish.png",
+          "en-03-stats.png",
+          "en-04-setup.png",
+          "en-05-settings.png",
+          "en-06-widget.png"
+        ]
+      }
+    },
+    "es-ES": {
+      "promotionalText": "Consulta tu jornada en el Mac de un vistazo: contador en la barra de menús, widgets de escritorio, minitemporizador flotante e ingresos privados.",
+      "description": "DoneAt te permite entender tu jornada de un vistazo.\nConfigura tu horario una vez. Antes de trabajar, DoneAt cuenta hasta la hora de entrada. Durante el turno, muestra el tiempo efectivo restante y pausa el progreso durante la comida. En los días libres, mantiene visible el próximo turno. Si el día cambia, puedes empezar antes, salir antes, añadir horas extra o cronometrar una jornada no programada sin rehacer tu horario.\nFUNCIONES\n• Cuenta atrás en tiempo real hasta la entrada y la salida\n• Días fijos, semanas alternas y rotaciones de trabajo y descanso\n• Turnos nocturnos que cruzan la medianoche\n• Pausas para comer excluidas del tiempo trabajado\n• Entrada anticipada, salida anticipada, horas extra y conteo manual\n• Estimación opcional de ingresos y resúmenes semanales y anuales\n• Avisos de turno, comida y movimiento\n• Widgets de escritorio en cinco estilos, además de un contador en la barra de menús y un minitemporizador flotante\n• Notificaciones nativas, inicio al iniciar sesión y un atajo global para mostrar u ocultar el temporizador\n• Comparte la cuenta atrás como imagen o enlace\n• Página Actividad con los días trabajados, las horas con horas extra y los toques del Woodfish de cada mes\n• Disponible en 19 idiomas y adaptado al idioma del sistema\n\nPRIVACIDAD\nTu horario y tus datos salariales permanecen en tu Mac. No hay cuenta, registro, análisis ni servidor; la app funciona completamente sin conexión.\n\nLa app para Mac no incluye compras dentro de la app ni suscripciones.\n\nTérminos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacidad: https://doneat.app/en/privacy",
+      "keywords": "trabajo,reloj,fichar,horario,horas extra,descanso,productividad,salida,empleo",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Cuatro estilos nuevos de widget: números grandes, un anillo que deja hueco para la comida, la línea de tiempo del día y una vista detallada con lo que viene.\n• Los festivos de China continental incluyen ya 2027, marcados como previsión hasta que se publique el calendario oficial.\n• En el calendario de turnos, los días laborables de recuperación se muestran como laborables.\n• Otras correcciones y mejoras menores.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "es-01-countdown.png",
+          "es-02-mini-woodfish.png",
+          "es-03-stats.png",
+          "es-04-setup.png",
+          "es-05-settings.png",
+          "es-06-widget.png"
+        ]
+      }
+    },
+    "es-MX": {
+      "name": "DoneAt - Cuenta regresiva",
+      "subtitle": "Rol de turnos, jornada, sueldo",
+      "privacyPolicyUrl": "https://doneat.app/en/privacy",
+      "promotionalText": "Consulta tu jornada en la Mac de un vistazo: cuenta regresiva en la barra de menús, widgets de escritorio, minitemporizador flotante e ingresos privados.",
+      "description": "DoneAt te permite entender tu jornada de un vistazo.\nConfigura tu horario una vez. Antes de trabajar, DoneAt cuenta el tiempo que falta para tu hora de entrada. Durante el turno, muestra el tiempo efectivo restante y pausa el progreso a la hora de la comida. En tus días de descanso, mantiene visible el próximo turno. Si el día cambia, puedes entrar antes, salir antes, agregar horas extra o cronometrar una jornada no programada sin rehacer tu horario.\nFUNCIONES\n• Cuenta regresiva en tiempo real para la entrada y la salida\n• Días fijos, semanas alternas y rotaciones de trabajo y descanso\n• Turnos nocturnos que pasan de la medianoche\n• La hora de la comida no cuenta como tiempo trabajado\n• Entrada anticipada, salida anticipada, horas extra y conteo manual\n• Estimación opcional de ingresos y resúmenes semanales y anuales\n• Avisos de turno, comida y movimiento\n• Widgets de escritorio en cinco estilos, además de una cuenta regresiva en la barra de menús y un minitemporizador flotante\n• Notificaciones nativas, apertura al iniciar sesión y un atajo global para mostrar u ocultar el temporizador\n• Comparte tu cuenta regresiva como imagen o enlace\n• Página Actividad con los días trabajados, las horas con horas extra y los toques del Woodfish de cada mes\n• Disponible en 19 idiomas y adaptado al idioma del sistema\n\nPRIVACIDAD\nTu horario y tus datos de sueldo se quedan en tu Mac. No hay cuenta, registro, análisis ni servidor; la app funciona completamente sin conexión.\n\nLa app para Mac no incluye compras dentro de la app ni suscripciones.\n\nTérminos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacidad: https://doneat.app/en/privacy",
+      "keywords": "trabajo,reloj,checar,horario,horas extra,descanso,productividad,salida,empleo",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Cuatro estilos nuevos de widget: números grandes, un anillo que deja un espacio para la comida, la línea de tiempo del día y una vista detallada con lo que sigue.\n• Los días festivos de China continental ya incluyen 2027, marcados como estimación hasta que se publique el calendario oficial.\n• En el calendario de turnos, los días laborables de reposición se muestran como laborables.\n• Otras correcciones y mejoras menores.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "es-01-countdown.png",
+          "es-02-mini-woodfish.png",
+          "es-03-stats.png",
+          "es-04-setup.png",
+          "es-05-settings.png",
+          "es-06-widget.png"
+        ]
+      }
+    },
+    "fr-FR": {
+      "promotionalText": "Suivez votre journée sur Mac en un coup d’œil : compte à rebours dans la barre des menus, widgets de bureau, mini-minuteur flottant et revenus privés.",
+      "description": "DoneAt rend votre journée de travail lisible en un coup d'œil.\nDéfinissez votre planning une fois. Avant le travail, DoneAt compte jusqu'à l'heure de début. Pendant le service, l'app affiche le temps de travail effectif restant et met la progression en pause pendant le déjeuner. Les jours de repos, le prochain service reste visible. Si la journée change, commencez plus tôt, partez plus tôt, ajoutez des heures supplémentaires ou chronométrez une journée imprévue sans refaire votre planning.\nFONCTIONNALITÉS\n• Compte à rebours en temps réel avant le début et la fin du travail\n• Jours fixes, semaines alternées et cycles travail/repos\n• Services de nuit au-delà de minuit\n• Pause déjeuner exclue du temps travaillé\n• Début anticipé, départ anticipé, heures supplémentaires et comptage manuel\n• Estimation facultative du salaire et bilans hebdomadaires et annuels\n• Rappels de service, de déjeuner et de mouvement\n• Widgets de bureau en cinq styles, avec un compte à rebours dans la barre des menus et un mini-minuteur flottant\n• Notifications natives, lancement à l’ouverture de session et raccourci global pour afficher ou masquer le minuteur\n• Partage du décompte sous forme d'image ou de lien\n• Une page Activité avec les jours travaillés, les heures (supplémentaires comprises) et les frappes du Woodfish de chaque mois\n• 19 langues et adaptation à la langue du système\n\nCONFIDENTIALITÉ\nVotre planning et vos données salariales restent sur votre Mac. Aucun compte, aucune inscription, aucune analyse ni serveur : l’app fonctionne entièrement hors ligne.\n\nL’app Mac ne propose aucun achat intégré ni abonnement.\n\nConditions d'utilisation : https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nConfidentialité : https://doneat.app/en/privacy",
+      "keywords": "minuteur,pointer,heures sup,pause,productivité,emploi,service,fin de journée",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Quatre nouveaux styles de widget : grands chiffres, un anneau qui laisse un vide pour la pause déjeuner, la frise de la journée et une vue détaillée avec ce qui arrive ensuite.\n• Les jours fériés de Chine continentale incluent désormais 2027, signalés comme prévisionnels jusqu’à la publication du calendrier officiel.\n• Dans le calendrier des horaires, les jours de récupération travaillés apparaissent comme travaillés.\n• Autres corrections et finitions.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "fr-01-countdown.png",
+          "fr-02-mini-woodfish.png",
+          "fr-03-stats.png",
+          "fr-04-setup.png",
+          "fr-05-settings.png",
+          "fr-06-widget.png"
+        ]
+      }
+    },
+    "hi": {
+      "promotionalText": "Mac पर अपनी शिफ़्ट एक नज़र में देखें—मेनू बार काउंटडाउन, डेस्कटॉप विजेट, फ़्लोटिंग मिनी टाइमर और निजी कमाई के साथ।",
+      "description": "DoneAt आपके कामकाजी दिन को एक नज़र में समझना आसान बनाता है।\nअपना शेड्यूल एक बार सेट करें। काम से पहले DoneAt शुरू होने तक गिनता है। शिफ़्ट के दौरान यह बचा हुआ वास्तविक काम का समय दिखाता है और लंच में प्रगति रोक देता है। छुट्टी के दिन अगली शिफ़्ट सामने रहती है। दिन बदल जाए तो शेड्यूल दोबारा बनाए बिना जल्दी शुरू करें, जल्दी छुट्टी लें, ओवरटाइम जोड़ें या बिना तय शिफ़्ट वाले दिन का समय गिनें।\nमुख्य सुविधाएँ\n• काम शुरू और खत्म होने तक लाइव काउंटडाउन\n• तय कार्यदिवस, एकांतर सप्ताह और काम/आराम चक्र\n• आधी रात के बाद तक चलने वाली रात की शिफ़्ट\n• काम के समय से बाहर रखा गया लंच ब्रेक\n• जल्दी शुरुआत, जल्दी छुट्टी, ओवरटाइम और हाथ से समय गिनना\n• वैकल्पिक कमाई अनुमान और साप्ताहिक व वार्षिक सारांश\n• शिफ़्ट, लंच और चलने-फिरने के रिमाइंडर\n• पाँच स्टाइल में डेस्कटॉप विजेट, साथ में मेनू बार काउंटडाउन और फ़्लोटिंग मिनी टाइमर\n• मूल सूचनाएँ, लॉगिन पर लॉन्च और टाइमर दिखाने/छिपाने का वैश्विक शॉर्टकट\n• काउंटडाउन को इमेज या लिंक के रूप में शेयर करें\n• ‘गतिविधि’ पेज: हर महीने के काम के दिन, ओवरटाइम समेत घंटे और Woodfish की ठोक\n• 19 भाषाएँ और सिस्टम भाषा का समर्थन\n\nगोपनीयता\nआपका शेड्यूल और वेतन डेटा आपके Mac पर ही रहता है। कोई अकाउंट, साइन-अप, एनालिटिक्स या सर्वर नहीं; ऐप पूरी तरह ऑफ़लाइन काम करता है।\n\nMac ऐप में कोई इन-ऐप खरीदारी या सब्सक्रिप्शन नहीं है।\n\nउपयोग की शर्तें: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nगोपनीयता: https://doneat.app/en/privacy",
+      "keywords": "नौकरी,लंच,ओवरटाइम,घंटे,हाजिरी",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• चार नए विजेट स्टाइल: बड़े अंक, लंच के लिए खाली जगह छोड़ने वाली रिंग, आज की टाइमलाइन, और आगे क्या है दिखाने वाला विस्तृत व्यू।\n• मुख्यभूमि चीन की छुट्टियों में अब 2027 शामिल है, आधिकारिक घोषणा तक इसे अनुमानित बताया जाता है।\n• शिफ़्ट कैलेंडर में बदले में काम वाले दिन अब कार्यदिवस के रूप में दिखते हैं।\n• अन्य छोटे सुधार।",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "hi-IN-01-countdown.png",
+          "hi-IN-02-mini-woodfish.png",
+          "hi-IN-03-stats.png",
+          "hi-IN-04-setup.png",
+          "hi-IN-05-settings.png",
+          "hi-IN-06-widget.png"
+        ]
+      }
+    },
+    "id": {
+      "promotionalText": "Pantau hari kerja di Mac dalam sekejap—hitung mundur di bar menu, widget desktop, timer mini mengambang, dan penghasilan tetap pribadi.",
+      "description": "DoneAt membuat hari kerja Anda mudah dipahami dalam sekali lihat.\nAtur jadwal sekali saja. Sebelum kerja, DoneAt menghitung mundur hingga waktu mulai. Selama sif, aplikasi menampilkan sisa waktu kerja efektif dan menjeda progres saat makan siang. Pada hari libur, sif berikutnya tetap terlihat. Jika rencana hari ini berubah, mulai lebih awal, pulang lebih awal, tambahkan lembur, atau hitung hari kerja tak terjadwal tanpa menyusun ulang jadwal.\nFITUR\n• Hitung mundur langsung hingga kerja dimulai dan berakhir\n• Hari kerja tetap, minggu bergantian, dan rotasi kerja/libur\n• Sif malam yang melewati tengah malam\n• Istirahat makan siang yang tidak dihitung sebagai waktu kerja\n• Mulai awal, pulang awal, lembur, dan hitung manual\n• Perkiraan penghasilan opsional serta ringkasan mingguan dan tahunan\n• Pengingat sif, makan siang, dan bergerak\n• Widget desktop dalam lima gaya, ditambah hitung mundur di bar menu dan timer mini mengambang\n• Notifikasi asli, jalankan saat login, dan pintasan global untuk menampilkan/menyembunyikan timer\n• Bagikan hitung mundur sebagai gambar atau tautan\n• Halaman Aktivitas berisi hari kerja, jam kerja termasuk lembur, dan ketukan Woodfish setiap bulan\n• Tersedia dalam 19 bahasa dan mengikuti bahasa sistem\n\nPRIVASI\nJadwal dan data gaji Anda tetap berada di Mac. Tanpa akun, pendaftaran, analitik, atau server; aplikasi bekerja sepenuhnya secara offline.\n\nAplikasi Mac tidak memiliki pembelian dalam aplikasi atau langganan.\n\nKetentuan Penggunaan: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivasi: https://doneat.app/en/privacy",
+      "keywords": "pulang,timer,sif,lembur,jam,istirahat,produktivitas,karyawan,pengingat,progres",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Empat gaya widget baru: angka besar, cincin yang mengosongkan jam makan siang, linimasa hari ini, dan tampilan detail dengan apa yang akan datang.\n• Hari libur Tiongkok daratan kini mencakup 2027, ditandai sebagai prakiraan hingga jadwal resmi diumumkan.\n• Di kalender sif, hari kerja pengganti kini tampil sebagai hari kerja.\n• Perbaikan dan penyempurnaan kecil lainnya.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "id-01-countdown.png",
+          "id-02-mini-woodfish.png",
+          "id-03-stats.png",
+          "id-04-setup.png",
+          "id-05-settings.png",
+          "id-06-widget.png"
+        ]
+      }
+    },
+    "it": {
+      "promotionalText": "Tieni d'occhio la giornata sul Mac: conto alla rovescia nella barra dei menu, widget desktop, mini timer fluttuante e guadagni privati.",
+      "description": "DoneAt rende la giornata lavorativa chiara a colpo d'occhio.\nImposta l'orario una volta. Prima del lavoro, DoneAt conta fino all'inizio. Durante il turno mostra il tempo di lavoro effettivo rimanente e mette in pausa l'avanzamento a pranzo. Nei giorni liberi mantiene visibile il prossimo turno. Se la giornata cambia, puoi iniziare prima, uscire prima, aggiungere straordinari o cronometrare un giorno non programmato senza rifare l'orario.\nFUNZIONI\n• Conto alla rovescia in tempo reale fino all'inizio e alla fine del lavoro\n• Giorni fissi, settimane alterne e rotazioni lavoro/riposo\n• Turni notturni oltre la mezzanotte\n• Pausa pranzo esclusa dal tempo lavorato\n• Inizio anticipato, uscita anticipata, straordinari e conteggio manuale\n• Stima facoltativa dei guadagni e riepiloghi settimanali e annuali\n• Promemoria per turno, pranzo e movimento\n• Widget desktop in cinque stili, più il conto alla rovescia nella barra dei menu e un mini timer fluttuante\n• Notifiche native, avvio al login e scorciatoia globale per mostrare o nascondere il timer\n• Condivisione del conto alla rovescia come immagine o link\n• Pagina Attività con giorni lavorati, ore con gli straordinari e colpi di Woodfish di ogni mese\n• 19 lingue e lingua di sistema automatica\n\nPRIVACY\nIl tuo orario e i dati dello stipendio restano sul Mac. Nessun account, registrazione, analisi o server: l’app funziona completamente offline.\n\nL’app per Mac non include acquisti in-app né abbonamenti.\n\nTermini di utilizzo: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacy: https://doneat.app/en/privacy",
+      "keywords": "lavoro,timer,timbrare,giornata,orario,straordinari,pausa,produttività,uscita,ore",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Quattro nuovi stili di widget: cifre grandi, un anello che lascia vuota la pausa pranzo, la cronologia della giornata e una vista dettagliata con ciò che viene dopo.\n• Le festività della Cina continentale includono ora il 2027, indicate come previsione fino alla pubblicazione del calendario ufficiale.\n• Nel calendario dei turni, i giorni lavorativi di recupero appaiono come lavorativi.\n• Altre piccole correzioni e rifiniture.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "it-01-countdown.png",
+          "it-02-mini-woodfish.png",
+          "it-03-stats.png",
+          "it-04-setup.png",
+          "it-05-settings.png",
+          "it-06-widget.png"
+        ]
+      }
+    },
+    "ja": {
+      "promotionalText": "退勤まであと何分？メニューバーのカウントダウン、デスクトップと通知センターのウィジェット、フローティングのミニタイマーで、今日の稼ぎもひと目で。データはMacの中だけ、完全オフライン。",
+      "description": "DoneAtなら、今日の勤務があとどれだけ残っているかを一目で確認できます。\n\n勤務時間を一度設定するだけ。カウントダウン、進捗バー、今日の稼ぎが毎秒更新されます——アプリの中でも、メニューバーでも、フローティングのミニタイマーでも、デスクトップのウィジェットでも。\n\n機能\n• リアルタイムのカウントダウンと当日の進捗バー\n• 開始・終了時刻をカスタマイズ。深夜をまたぐ夜勤にも対応\n• 勤務日を選択。今日が休日かどうかをアプリが判断します\n• 月給または日給から、今日の稼ぎを算出\n• 現在のスケジュールから今週・今年の合計を推定\n• 終業 15 分前のリマインダー（任意）\n• 5 種類のスタイルのデスクトップウィジェット、メニューバーのカウントダウン、フローティングのミニタイマー\n• システム通知、ログイン時に起動、表示/非表示のグローバルショートカット\n• カウントダウンを気分に合わせた画像やリンクで共有\n• 月ごとの出勤日数、残業を含む勤務時間、木魚の回数がわかる「記録」ページ\n• 19 言語対応、システムの言語に追従\n\nプライバシー\nスケジュール、給与、カウントダウンの状態がこの Mac から出ることはありません。アカウント登録も、サインアップも、解析も、サーバーもありません。完全にオフラインで動作します。\n\nMac 版にはアプリ内課金やサブスクリプションはありません。\n\n利用規約: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nプライバシー: https://doneat.app/en/privacy",
+      "keywords": "メニューバー,タイマー,フローティング,時給,残業,仕事,終業,祝日,隔週,Mac",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• デスクトップウィジェットに 4 つの新スタイル：大きな数字、昼休みを空けたリング、今日のタイムライン、この後の予定が見える詳細表示。\n• 中国本土の祝日に 2027 年を追加しました。正式発表までは予測として表示します。\n• シフトカレンダーで振替出勤日を出勤日として表示するようにしました。\n• そのほかの細かな修正と改善。",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "ja-01-countdown.png",
+          "ja-02-mini-woodfish.png",
+          "ja-03-stats.png",
+          "ja-04-setup.png",
+          "ja-05-settings.png",
+          "ja-06-widget.png"
+        ]
+      }
+    },
+    "ko": {
+      "promotionalText": "Mac에서 근무를 한눈에 확인하세요. 메뉴 막대 카운트다운, 데스크탑 위젯, 떠 있는 미니 타이머와 기기 내 수입 표시를 제공합니다.",
+      "description": "DoneAt은 오늘 근무가 얼마나 남았는지 한눈에 보여줍니다.\n\n근무 시간을 한 번만 설정하세요. 카운트다운, 진행 바, 오늘 번 돈이 매초 갱신됩니다 — 앱에서도, 메뉴 막대에서도, 떠 있는 미니 타이머에서도, 데스크탑 위젯에서도.\n\n기능\n• 실시간 카운트다운과 당일 진행 바\n• 시작·종료 시각 직접 설정, 자정을 넘기는 야간 근무도 지원\n• 근무 요일 선택, 오늘이 쉬는 날인지 앱이 판단합니다\n• 월급 또는 일급을 기준으로 오늘 번 돈 계산\n• 현재 일정으로 이번 주와 올해 합계 추정\n• 퇴근 15분 전 알림(선택)\n• 다섯 가지 스타일의 데스크탑 위젯, 메뉴 막대 카운트다운, 떠 있는 미니 타이머\n• 시스템 알림, 로그인 시 실행, 표시/숨기기 전역 단축키\n• 카운트다운을 무드 이미지나 링크로 공유\n• 월별 출근 일수, 초과 근무를 포함한 근무 시간, 목탁 횟수를 보여 주는 통계 페이지\n• 19개 언어, 시스템 언어를 따릅니다\n\n개인정보\n일정, 급여, 카운트다운 상태는 이 Mac을 벗어나지 않습니다. 계정도, 가입도, 분석도, 서버도 없습니다. 완전히 오프라인으로 동작합니다.\n\nMac 앱에는 앱 내 구입이나 구독이 없습니다.\n\n이용약관: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n개인정보 처리방침: https://doneat.app/en/privacy",
+      "keywords": "타이머,메뉴막대,월급,시급,야근,진행률,근태",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• 데스크탑 위젯 스타일 4가지 추가: 큰 숫자, 점심시간을 비워 둔 링, 오늘의 타임라인, 다음 일정을 보여 주는 상세 보기.\n• 중국 본토 공휴일에 2027년을 추가했습니다. 공식 발표 전까지 예측으로 표시됩니다.\n• 근무 캘린더에서 대체 근무일이 근무일로 표시됩니다.\n• 그 밖의 자잘한 수정과 개선.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "ko-01-countdown.png",
+          "ko-02-mini-woodfish.png",
+          "ko-03-stats.png",
+          "ko-04-setup.png",
+          "ko-05-settings.png",
+          "ko-06-widget.png"
+        ]
+      }
+    },
+    "pt-BR": {
+      "promotionalText": "Veja sua jornada no Mac de relance: contagem na barra de menus, widgets de mesa, minitemporizador flutuante e ganhos privados.",
+      "description": "O DoneAt deixa seu dia de trabalho claro em um relance.\nDefina seu horário uma vez. Antes do trabalho, o DoneAt conta até a entrada. Durante o turno, mostra o tempo efetivo restante e pausa o progresso no almoço. Nos dias de folga, mantém o próximo turno à vista. Se o dia mudar, comece mais cedo, saia mais cedo, adicione hora extra ou conte um dia não programado sem refazer seu horário.\nRECURSOS\n• Contagem regressiva em tempo real até a entrada e a saída\n• Dias fixos, semanas alternadas e ciclos de trabalho e folga\n• Turnos noturnos que passam da meia-noite\n• Intervalo de almoço fora do tempo trabalhado\n• Entrada antecipada, saída antecipada, hora extra e contagem manual\n• Estimativa opcional de ganhos e resumos semanais e anuais\n• Lembretes de turno, almoço e movimento\n• Widgets de mesa em cinco estilos, além de contagem na barra de menus e um minitemporizador flutuante\n• Notificações nativas, inicialização ao iniciar sessão e atalho global para mostrar ou ocultar o timer\n• Compartilhe a contagem como imagem ou link\n• Página Atividade com dias trabalhados, horas com hora extra e toques no Woodfish de cada mês\n• Disponível em 19 idiomas e segue o idioma do sistema\n\nPRIVACIDADE\nSeu horário e seus dados salariais continuam no Mac. Sem conta, cadastro, análises ou servidor; o app funciona totalmente off-line.\n\nO app para Mac não tem compras dentro do app nem assinaturas.\n\nTermos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacidade: https://doneat.app/en/privacy",
+      "keywords": "relógio,ponto,jornada,horário,hora extra,intervalo,produtividade,emprego,folga",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Quatro novos estilos de widget: números grandes, um anel que deixa o almoço em branco, a linha do tempo do dia e uma visão detalhada com o que vem a seguir.\n• Os feriados da China continental agora incluem 2027, marcados como previsão até a divulgação do calendário oficial.\n• No calendário de turnos, os dias de trabalho compensatório aparecem como dias de trabalho.\n• Outras pequenas correções e ajustes.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "pt-01-countdown.png",
+          "pt-02-mini-woodfish.png",
+          "pt-03-stats.png",
+          "pt-04-setup.png",
+          "pt-05-settings.png",
+          "pt-06-widget.png"
+        ]
+      }
+    },
+    "ru": {
+      "promotionalText": "Следите за рабочим днём на Mac: отсчёт в строке меню, виджеты рабочего стола, плавающий мини-таймер и доходы только на устройстве.",
+      "description": "DoneAt помогает понять рабочий день с одного взгляда.\nНастройте график один раз. До работы DoneAt считает время до начала, во время смены показывает остаток фактического рабочего времени и ставит прогресс на паузу во время обеда. В выходные следующая смена остается перед глазами. Если планы изменились, можно начать или уйти раньше, добавить переработку либо засечь незапланированный рабочий день, не переделывая график.\nВОЗМОЖНОСТИ\n• Обратный отсчет до начала и конца работы\n• Фиксированные дни, чередующиеся недели и циклы работы/отдыха\n• Ночные смены после полуночи\n• Обеденный перерыв вне рабочего времени\n• Раннее начало и окончание, переработка и ручной отсчет\n• Необязательная оценка дохода, итоги недели и года\n• Напоминания о смене, обеде и движении\n• Виджеты рабочего стола в пяти стилях, отсчёт в строке меню и плавающий мини-таймер\n• Системные уведомления, запуск при входе и глобальное сочетание клавиш для показа или скрытия таймера\n• Отправка отсчета картинкой или ссылкой\n• Страница «Статистика»: рабочие дни, часы с учётом переработок и удары по Woodfish за каждый месяц\n• 19 языков и автоматический выбор языка системы\n\nКОНФИДЕНЦИАЛЬНОСТЬ\nВаш график и данные о зарплате остаются на Mac. Без аккаунта, регистрации, аналитики и сервера — приложение полностью работает офлайн.\n\nВ приложении для Mac нет встроенных покупок и подписок.\n\nУсловия использования: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nКонфиденциальность: https://doneat.app/en/privacy",
+      "keywords": "работа,табель,рабочий день,часы,переработка,отдых",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Четыре новых стиля виджетов: крупные цифры, кольцо с промежутком на обед, шкала дня и подробный вид с тем, что впереди.\n• В праздники континентального Китая добавлен 2027 год — с пометкой «прогноз», пока не опубликован официальный график.\n• В календаре смен рабочие дни-отработки теперь отмечены как рабочие.\n• Другие мелкие исправления и улучшения.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "ru-01-countdown.png",
+          "ru-02-mini-woodfish.png",
+          "ru-03-stats.png",
+          "ru-04-setup.png",
+          "ru-05-settings.png",
+          "ru-06-widget.png"
+        ]
+      }
+    },
+    "th": {
+      "promotionalText": "ดูวันทำงานบน Mac ได้ในพริบตา พร้อมตัวนับในแถบเมนู วิดเจ็ตเดสก์ท็อป ตัวจับเวลาแบบลอย และรายได้ส่วนตัว",
+      "description": "DoneAt ช่วยให้เข้าใจวันทำงานได้ในพริบตา\nตั้งตารางเพียงครั้งเดียว ก่อนเริ่มงาน DoneAt จะนับถอยหลังถึงเวลาเข้างาน ระหว่างกะจะแสดงเวลาทำงานจริงที่เหลือและหยุดความคืบหน้าช่วงพักกลางวัน วันหยุดก็ยังเห็นกะถัดไป หากแผนวันนี้เปลี่ยน คุณเริ่มก่อน เลิกก่อน เพิ่มล่วงเวลา หรือจับเวลาวันทำงานนอกตารางได้โดยไม่ต้องสร้างตารางใหม่\nคุณสมบัติ\n• นับถอยหลังแบบเรียลไทม์ถึงเวลาเริ่มและเลิกงาน\n• วันทำงานประจำ สัปดาห์สลับ และรอบทำงาน/พัก\n• กะกลางคืนที่ข้ามเที่ยงคืน\n• พักกลางวันที่ไม่นับเป็นเวลาทำงาน\n• เริ่มก่อน เลิกก่อน ล่วงเวลา และจับเวลาเอง\n• ประมาณรายได้เสริมและสรุปรายสัปดาห์/รายปี\n• การเตือนกะ พักกลางวัน และขยับร่างกาย\n• วิดเจ็ตเดสก์ท็อปห้าแบบ พร้อมตัวนับถอยหลังในแถบเมนูและตัวจับเวลาขนาดเล็กแบบลอย\n• การแจ้งเตือนของระบบ เปิดเมื่อเข้าสู่ระบบ และปุ่มลัดส่วนกลางเพื่อแสดงหรือซ่อนตัวจับเวลา\n• แชร์การนับถอยหลังเป็นภาพหรือลิงก์\n• หน้า “สถิติ” แสดงวันทำงาน ชั่วโมงรวมโอที และจำนวนครั้งที่เคาะ Woodfish ของแต่ละเดือน\n• รองรับ 19 ภาษาและทำตามภาษาระบบ\n\nความเป็นส่วนตัว\nตารางงานและข้อมูลเงินเดือนของคุณยังคงอยู่บน Mac ไม่มีบัญชี การสมัคร การวิเคราะห์ หรือเซิร์ฟเวอร์ แอปทำงานแบบออฟไลน์ได้เต็มรูปแบบ\n\nแอปบน Mac ไม่มีการซื้อภายในแอปหรือการสมัครสมาชิก\n\nข้อกำหนดการใช้งาน: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nความเป็นส่วนตัว: https://doneat.app/en/privacy",
+      "keywords": "ตัวจับเวลา,เข้างาน,ล่วงเวลา,เตือน",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• สไตล์วิดเจ็ตใหม่ 4 แบบ: ตัวเลขใหญ่ วงแหวนที่เว้นช่วงพักกลางวัน ไทม์ไลน์ของวันนี้ และมุมมองรายละเอียดที่บอกว่ามีอะไรต่อไป\n• วันหยุดของจีนแผ่นดินใหญ่เพิ่มปี 2027 แล้ว โดยระบุว่าเป็นการคาดการณ์จนกว่าจะประกาศอย่างเป็นทางการ\n• ในปฏิทินกะ วันทำงานชดเชยจะแสดงเป็นวันทำงาน\n• การแก้ไขและปรับปรุงเล็กน้อยอื่น ๆ",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "th-01-countdown.png",
+          "th-02-mini-woodfish.png",
+          "th-03-stats.png",
+          "th-04-setup.png",
+          "th-05-settings.png",
+          "th-06-widget.png"
+        ]
+      }
+    },
+    "tr": {
+      "promotionalText": "Çalışma gününü Mac’te bir bakışta takip et: menü çubuğu sayacı, masaüstü widget’ları, yüzen mini zamanlayıcı ve özel kazançlar.",
+      "description": "DoneAt çalışma gününü tek bakışta anlaşılır kılar.\nProgramını bir kez ayarla. İşten önce başlangıca kadar sayar; vardiya sırasında kalan etkin çalışma süresini gösterir ve öğle molasında ilerlemeyi durdurur. Tatil günlerinde sonraki vardiya görünür kalır. Günün değişirse programı baştan yapmadan erken başla, erken çık, fazla mesai ekle veya plansız bir çalışma gününü elle say.\nÖZELLİKLER\n• İş başlangıcı ve çıkışına gerçek zamanlı geri sayım\n• Sabit günler, dönüşümlü haftalar ve çalışma/dinlenme döngüleri\n• Gece yarısını geçen vardiyalar\n• Çalışma süresinden çıkarılan öğle molası\n• Erken başlangıç, erken çıkış, fazla mesai ve elle sayım\n• İsteğe bağlı kazanç tahmini, haftalık ve yıllık özetler\n• Vardiya, öğle molası ve hareket hatırlatıcıları\n• Beş stilde masaüstü widget’ı; menü çubuğunda sayaç ve yüzen mini zamanlayıcı\n• Yerel bildirimler, girişte başlatma ve zamanlayıcıyı gösterip gizlemek için genel kısayol\n• Geri sayımı görsel veya bağlantı olarak paylaşma\n• Her ayın çalışılan günlerini, fazla mesai dahil saatlerini ve Woodfish vuruşlarını gösteren İstatistik sayfası\n• 19 dil ve sistem dilini otomatik izleme\n\nGİZLİLİK\nProgramınız ve maaş verileriniz Mac’inizde kalır. Hesap, kayıt, analiz veya sunucu yoktur; uygulama tamamen çevrimdışı çalışır.\n\nMac uygulamasında uygulama içi satın alma veya abonelik yoktur.\n\nKullanım Koşulları: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nGizlilik: https://doneat.app/en/privacy",
+      "keywords": "timer,çalışma saati,mola,puantaj,verimlilik,personel,hatırlatıcı",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Dört yeni widget stili: büyük rakamlar, öğle arasını boş bırakan halka, günün zaman çizelgesi ve sırada ne olduğunu gösteren ayrıntılı görünüm.\n• Çin anakarası tatillerine 2027 eklendi; resmî takvim yayımlanana kadar tahmin olarak işaretlenir.\n• Vardiya takviminde telafi iş günleri artık iş günü olarak görünür.\n• Diğer küçük düzeltmeler ve iyileştirmeler.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "tr-01-countdown.png",
+          "tr-02-mini-woodfish.png",
+          "tr-03-stats.png",
+          "tr-04-setup.png",
+          "tr-05-settings.png",
+          "tr-06-widget.png"
+        ]
+      }
+    },
+    "vi": {
+      "promotionalText": "Theo dõi ngày làm việc trên Mac trong nháy mắt với bộ đếm thanh menu, tiện ích màn hình nền, hẹn giờ mini nổi và thu nhập riêng tư.",
+      "description": "DoneAt giúp bạn hiểu ngày làm việc chỉ trong nháy mắt.\nĐặt lịch một lần. Trước giờ làm, DoneAt đếm ngược đến lúc bắt đầu. Trong ca, ứng dụng hiển thị thời gian làm việc thực tế còn lại và tạm dừng tiến độ khi nghỉ trưa. Ngày nghỉ vẫn thấy ca tiếp theo. Khi kế hoạch thay đổi, bạn có thể bắt đầu sớm, tan ca sớm, thêm giờ làm hoặc đếm một ngày ngoài lịch mà không cần tạo lại lịch.\nTÍNH NĂNG\n• Đếm ngược theo thời gian thực đến giờ vào và tan ca\n• Ngày cố định, tuần xen kẽ và chu kỳ làm/nghỉ\n• Ca đêm kéo dài qua nửa đêm\n• Nghỉ trưa không tính vào giờ làm\n• Bắt đầu sớm, tan ca sớm, làm thêm và đếm thủ công\n• Ước tính thu nhập tùy chọn và tổng kết tuần/năm\n• Nhắc ca làm, nghỉ trưa và vận động\n• Tiện ích màn hình nền với năm kiểu, cùng bộ đếm trong thanh menu và hẹn giờ mini nổi\n• Thông báo gốc, khởi chạy khi đăng nhập và phím tắt toàn cục để hiện hoặc ẩn bộ đếm\n• Chia sẻ đếm ngược bằng hình ảnh hoặc liên kết\n• Trang Thống kê với số ngày làm, giờ làm tính cả tăng ca và số lần gõ mõ theo từng tháng\n• Có 19 ngôn ngữ và tự theo ngôn ngữ hệ thống\n\nQUYỀN RIÊNG TƯ\nLịch làm việc và dữ liệu lương của bạn vẫn ở trên máy Mac. Không có tài khoản, đăng ký, phân tích hay máy chủ; ứng dụng hoạt động hoàn toàn ngoại tuyến.\n\nỨng dụng trên Mac không có giao dịch mua trong ứng dụng hay gói đăng ký.\n\nĐiều khoản sử dụng: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nQuyền riêng tư: https://doneat.app/en/privacy",
+      "keywords": "công việc,hẹn giờ,nghỉ trưa,năng suất,nhân viên,nhắc nhở",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• Bốn kiểu tiện ích mới: số lớn, vòng tròn chừa khoảng nghỉ trưa, dòng thời gian trong ngày và chế độ chi tiết với những gì sắp tới.\n• Ngày lễ của Trung Quốc đại lục nay có thêm năm 2027, được ghi là dự đoán cho đến khi lịch chính thức được công bố.\n• Trong lịch ca, ngày làm bù nay hiển thị là ngày làm việc.\n• Các sửa lỗi và tinh chỉnh nhỏ khác.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "vi-01-countdown.png",
+          "vi-02-mini-woodfish.png",
+          "vi-03-stats.png",
+          "vi-04-setup.png",
+          "vi-05-settings.png",
+          "vi-06-widget.png"
+        ]
+      }
+    },
+    "zh-Hans": {
+      "promotionalText": "下班还有多久，看一眼菜单栏就知道：实时倒计时、桌面与通知中心小组件、悬浮木鱼迷你计时器，还有今天已经赚了多少。数据只存在你的 Mac 上，完全离线。",
+      "description": "DoneAt 让你一眼看清今天还剩多少班要上。\n\n设一次上下班时间即可。倒计时、进度条和今日已赚每秒刷新——在应用里、在菜单栏、在悬浮的迷你计时器上，也在桌面小组件上。\n\n功能\n• 实时倒计时与当日进度条\n• 自定义上下班时间，支持跨过午夜的夜班\n• 选择自己的工作日，应用知道今天是不是休息日\n• 按月薪或日薪推算今日已赚\n• 按当前排班推算本周与今年的总量\n• 可选的下班前 15 分钟提醒\n• 五种样式的桌面小组件，外加菜单栏倒计时和悬浮迷你计时器\n• 系统通知、开机自启、全局显示/隐藏快捷键\n• 把倒计时分享成心情图片或一条链接\n• “统计”页按月记录出勤天数、含加班的工时和敲木鱼的次数\n• 19 种语言，跟随系统语言\n\n隐私\n你的排班、工资和倒计时状态从不离开这台 Mac。没有账号、无需注册、没有埋点、没有服务器。完全离线可用。\n\nMac 版没有任何内购或订阅。\n\n使用条款：https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n隐私政策：https://doneat.app/zh-CN/privacy",
+      "keywords": "菜单栏,悬浮窗,计时器,木鱼,摸鱼,上班,时薪,加班,桌面,节假日,调休,mac",
+      "supportUrl": "https://doneat.app/zh-CN/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• 新增四种桌面小组件样式：大数字、在午休处留出空隙的圆环、今日时间轴，以及能看到“接下来”的详细样式。\n• 中国大陆节假日加入 2027 年，正式安排公布前标注为推测。\n• 排班日历中的调休上班日现在显示为上班。\n• 其他细节修复与打磨。",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "zh-CN-01-countdown.png",
+          "zh-CN-02-mini-woodfish.png",
+          "zh-CN-03-stats.png",
+          "zh-CN-04-setup.png",
+          "zh-CN-05-settings.png",
+          "zh-CN-06-widget.png"
+        ]
+      }
+    },
+    "zh-Hant": {
+      "promotionalText": "離下班還有多久，看一眼選單列就知道：即時倒數、桌面與通知中心小工具、懸浮木魚迷你計時器，還有今天已經賺了多少。資料只存在你的 Mac 上，完全離線。",
+      "description": "DoneAt 讓你一眼看清今天還剩多少班要上。\n\n設定一次上下班時間即可。倒數計時、進度條和今日已賺每秒更新——在應用程式裡、在選單列、在懸浮的迷你計時器上，也在桌面小工具上。\n\n功能\n• 即時倒數計時與當日進度條\n• 自訂上下班時間，支援跨過午夜的夜班\n• 選擇自己的工作日，應用程式知道今天是不是休息日\n• 依月薪或日薪推算今日已賺\n• 依目前排班推算本週與今年的總量\n• 可選的下班前 15 分鐘提醒\n• 五種樣式的桌面小工具，外加選單列倒數計時和懸浮迷你計時器\n• 系統通知、開機自動啟動、全域顯示/隱藏快速鍵\n• 把倒數計時分享成心情圖片或一條連結\n• 「統計」頁按月記錄出勤天數、含加班的工時和敲木魚的次數\n• 19 種語言，跟隨系統語言\n\n隱私\n你的排班、薪資和倒數計時狀態從不離開這台 Mac。沒有帳號、無需註冊、沒有追蹤、沒有伺服器。完全離線可用。\n\nMac 版沒有任何 App 內購買或訂閱。\n\n使用條款：https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n隱私權政策：https://doneat.app/zh-CN/privacy",
+      "keywords": "選單列,懸浮,木魚,摸魚,上班,時薪,加班,桌面,國定假日,補班,單雙週,mac",
+      "supportUrl": "https://doneat.app/zh-CN/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• 新增四種桌面小工具樣式：大數字、在午休處留出空隙的圓環、今日時間軸，以及能看到「接下來」的詳細樣式。\n• 中國大陸節假日加入 2027 年，正式安排公布前標註為推測。\n• 排班月曆中的調休上班日現在顯示為上班。\n• 其他細節修正與打磨。",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "zh-TW-01-countdown.png",
+          "zh-TW-02-mini-woodfish.png",
+          "zh-TW-03-stats.png",
+          "zh-TW-04-setup.png",
+          "zh-TW-05-settings.png",
+          "zh-TW-06-widget.png"
+        ]
+      }
+    },
+    "mr-IN": {
+      "promotionalText": "Mac वर तुमची शिफ्ट एका नजरेत पाहा: मेनू बारमधील काउंटडाउन, डेस्कटॉप विजेट, तरंगता मिनी टायमर आणि डिव्हाइसवरच मोजलेली कमाई.",
+      "description": "DoneAt तुमच्या कामाच्या दिवसात नेमका किती वेळ उरला आहे ते दाखवते.\n\nतुमच्या कामाच्या वेळा एकदाच सेट करा. काउंटडाउन, प्रगती पट्टी आणि आतापर्यंतची कमाई दर सेकंदाला अपडेट होते — ॲपमध्ये, मेनू बारमध्ये, तरंगत्या मिनी टायमरवर आणि डेस्कटॉपवरील विजेटमध्ये.\n\nवैशिष्ट्ये\n• दिवसासाठी रिअल-टाइम काउंटडाउन आणि प्रगती पट्टी\n• कामाची सुरुवात आणि शेवटची वेळ स्वतः ठरवा, मध्यरात्र ओलांडणाऱ्या रात्रपाळीसह\n• तुमचे कामाचे दिवस निवडा; आज विश्रांतीचा दिवस आहे का हे ॲपला कळते\n• मासिक किंवा दैनिक पगारावरून आजची कमाई\n• तुमच्या वेळापत्रकावरून आठवडा आणि वर्षाच्या एकूण कमाईचा अंदाज\n• काम संपण्याच्या 15 मिनिटे आधी पर्यायी रिमाइंडर\n• पाच शैलींमधील डेस्कटॉप विजेट, तसेच मेनू बार काउंटडाउन आणि तरंगता मिनी टायमर\n• सिस्टम सूचना, लॉगिनवेळी सुरू होणे आणि दाखवा/लपवा यासाठी ग्लोबल शॉर्टकट\n• काउंटडाउन मूडनुसार इमेज किंवा लिंक म्हणून शेअर करा\n• ॲक्टिव्हिटी पेज: दर महिन्याचे कामाचे दिवस, ओव्हरटाइमसह तास आणि वुडफिश ठोक्यांची संख्या\n• 19 भाषा, सिस्टमच्या भाषेनुसार\n\nगोपनीयता\nतुमचे वेळापत्रक, पगार आणि काउंटडाउनची स्थिती कधीही तुमच्या Mac बाहेर जात नाही. खाते नाही, साइन-अप नाही, ॲनालिटिक्स नाही आणि सर्व्हर नाही. ॲप पूर्णपणे ऑफलाइन चालते.\n\nMac ॲपमध्ये कोणतीही इन-ॲप खरेदी किंवा सदस्यता नाही.\n\nवापराच्या अटी: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nगोपनीयता धोरण: https://doneat.app/en/privacy",
+      "keywords": "पाळी,रात्रपाळी,पगार,कॅलेंडर,shift,duty,roster",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "• चार नवीन विजेट शैली: मोठे अंक, जेवणाच्या सुट्टीसाठी मोकळी जागा ठेवणारी रिंग, आजची टाइमलाइन आणि पुढे काय आहे ते दाखवणारे तपशीलवार दृश्य.\n• मुख्य भूमी चीनच्या सुट्ट्यांमध्ये आता 2027 चा समावेश आहे; अधिकृत घोषणा होईपर्यंत ते अंदाजित म्हणून दाखवले जाते.\n• शिफ्ट कॅलेंडरमध्ये भरपाईचे कामाचे दिवस आता कामाचे दिवस म्हणून दिसतात.\n• इतर लहान सुधारणा.",
+      "screenshots": {
+        "APP_DESKTOP": [
+          "en-01-countdown.png",
+          "en-02-mini-woodfish.png",
+          "en-03-stats.png",
+          "en-04-setup.png",
+          "en-05-settings.png",
+          "en-06-widget.png"
+        ]
+      },
+      "name": "DoneAt - शिफ्ट काउंटडाउन",
+      "subtitle": "ड्युटीचे वेळापत्रक व आजची कमाई",
+      "privacyPolicyUrl": "https://doneat.app/en/privacy"
+    }
+  }
+}
