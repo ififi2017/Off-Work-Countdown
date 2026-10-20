@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { buildShiftReminders, type ShiftReminderInputs } from "./reminders";
 import {
   WORKING_PROGRESS_STEPS,
+  buildWidgetUpcoming,
   createWidgetSnapshot,
   getWidgetTimelineEntry,
   serializeWidgetSnapshot,
@@ -289,5 +291,169 @@ describe("WidgetSnapshotV1", () => {
         expiresAtMs: 10,
       })
     ).toThrow("expire after");
+  });
+});
+
+describe("buildWidgetUpcoming", () => {
+  const hour = 3_600_000;
+  const day = Date.UTC(2026, 9, 20, 0, 0);
+  // 09:00–12:00, 13:00–18:00 UTC today; tomorrow the same.
+  const shiftOn = (offset: number, overtimeEndAtMs: number | null = null) => ({
+    segments: [
+      { startAtMs: day + offset + 9 * hour, endAtMs: day + offset + 12 * hour },
+      { startAtMs: day + offset + 13 * hour, endAtMs: overtimeEndAtMs ?? day + offset + 18 * hour },
+    ],
+    plannedEndAtMs: day + offset + 18 * hour,
+    overtimeEndAtMs,
+  });
+  const today = shiftOn(0);
+  const tomorrow = shiftOn(24 * hour);
+  const labels = {
+    shiftStart: "Start",
+    shiftEnd: "End",
+    overtime: "Overtime",
+    breakTitle: "Lunch",
+    breakStarts: "Starts",
+    breakBackAt: "Back at",
+    microBreak: "Health reminder",
+    microBreakDetail: "60 min",
+    milestone: "Off work reminder",
+  };
+  const reminderInputs = (mode: ShiftReminderInputs["mode"], microBreakEnabled: boolean): ShiftReminderInputs => ({
+    mode,
+    fallbackTitle: "Off work reminder",
+    breakTitle: "Break reminder",
+    milestoneTitles: {
+      milestone50: "50% left",
+      milestone75: "25% left",
+      milestone90: "10% left",
+      milestone95: "5% left",
+      milestone100: "Off work time!",
+    },
+    milestoneMessages: {
+      milestone50: ["a"],
+      milestone75: ["b"],
+      milestone90: ["c"],
+      milestone95: ["d"],
+      milestone100: ["e"],
+    },
+    lunchStartEnabled: true,
+    lunchStartBody: "Lunch",
+    lunchEndEnabled: true,
+    lunchEndBody: "Back",
+    microBreakEnabled,
+    microBreakIntervalMinutes: 60,
+    microBreakMessages: ["Stretch"],
+  });
+  const kinds = (items: { kind: string }[]) => items.map((item) => item.kind);
+
+  it("lists the rest of today and tomorrow's boundaries, in order", () => {
+    const nowMs = day + 10 * hour;
+    const items = buildWidgetUpcoming({
+      shift: today,
+      nextShift: tomorrow,
+      reminders: buildShiftReminders(today, reminderInputs("simple", false)),
+      notificationMode: "simple",
+      microBreakEnabled: false,
+      labels,
+      nowMs,
+      expiresAtMs: day + 48 * hour,
+    });
+    expect(kinds(items)).toEqual([
+      "lunchStart", "lunchEnd", "shiftEnd",
+      "shiftStart", "lunchStart", "lunchEnd", "shiftEnd",
+    ]);
+    expect(items[0]).toEqual({
+      id: `lunch-start-${day + 12 * hour}`,
+      kind: "lunchStart",
+      title: "Lunch",
+      detail: "Starts",
+      dateMs: day + 12 * hour,
+    });
+    expect(items.every((item, index) => index === 0 || items[index - 1].dateMs <= item.dateMs)).toBe(true);
+    // 已过去的今天上班不再列出；上下班行不写「今天的班次」。
+    expect(items.some((item) => item.id === `shift-start-${day + 9 * hour}`)).toBe(false);
+    expect(items.filter((item) => item.kind === "shiftEnd").map((item) => item.detail)).toEqual(["", ""]);
+  });
+
+  it("adds one micro-break row and the titled milestones from lib/reminders", () => {
+    const nowMs = day + 9 * hour + 5 * 60_000;
+    const reminders = buildShiftReminders(today, reminderInputs("milestones", true));
+    const items = buildWidgetUpcoming({
+      shift: today,
+      nextShift: null,
+      reminders,
+      notificationMode: "milestones",
+      microBreakEnabled: true,
+      labels,
+      nowMs,
+      expiresAtMs: day + 24 * hour,
+    });
+    const health = items.filter((item) => item.kind === "health");
+    expect(health).toHaveLength(1);
+    const firstMicroBreak = reminders
+      .filter((reminder) => reminder.kind === "microBreak" && reminder.atMs > nowMs)
+      .sort((a, b) => a.atMs - b.atMs)[0];
+    expect(health[0]).toMatchObject({ id: firstMicroBreak.id, title: "Health reminder", detail: "60 min", dateMs: firstMicroBreak.atMs });
+    const milestones = items.filter((item) => item.kind === "milestone");
+    expect(milestones.map((item) => item.detail)).toEqual(["50% left", "25% left", "10% left", "5% left"]);
+    expect(milestones.every((item) => item.title === "Off work reminder")).toBe(true);
+  });
+
+  it("leaves milestones out unless reminders follow progress", () => {
+    const items = buildWidgetUpcoming({
+      shift: today,
+      nextShift: null,
+      reminders: buildShiftReminders(today, reminderInputs("simple", false)),
+      notificationMode: "simple",
+      microBreakEnabled: false,
+      labels,
+      nowMs: day + 9 * hour,
+      expiresAtMs: day + 24 * hour,
+    });
+    expect(kinds(items)).toEqual(["lunchStart", "lunchEnd", "shiftEnd"]);
+  });
+
+  it("marks overtime and drops rows past the snapshot's expiry", () => {
+    const overtime = shiftOn(0, day + 20 * hour);
+    const items = buildWidgetUpcoming({
+      shift: overtime,
+      nextShift: tomorrow,
+      reminders: [],
+      notificationMode: "off",
+      microBreakEnabled: false,
+      labels,
+      nowMs: day + 19 * hour,
+      expiresAtMs: day + 24 * hour + 10 * hour,
+    });
+    expect(items.map((item) => [item.kind, item.detail])).toEqual([
+      ["shiftEnd", "Overtime"],
+      ["shiftStart", ""],
+    ]);
+  });
+
+  it("is written into the snapshot only when there is something to show", () => {
+    const options = {
+      running: true,
+      shift: today,
+      nextShift: tomorrow,
+      locale: "en",
+      generatedAtMs: day + 10 * hour,
+      expiresAtMs: day + 33 * hour,
+    };
+    expect("upcoming" in createWidgetSnapshot(options)).toBe(false);
+    const upcoming = buildWidgetUpcoming({
+      shift: today,
+      nextShift: tomorrow,
+      reminders: [],
+      notificationMode: "off",
+      microBreakEnabled: false,
+      labels,
+      nowMs: options.generatedAtMs,
+      expiresAtMs: options.expiresAtMs,
+    });
+    const snapshot = JSON.parse(serializeWidgetSnapshot(createWidgetSnapshot({ ...options, upcoming })));
+    expect(snapshot.upcoming).toEqual(upcoming);
+    expect(Object.keys(snapshot.upcoming[0]).sort()).toEqual(["dateMs", "detail", "id", "kind", "title"]);
   });
 });
