@@ -115,8 +115,14 @@ node scripts/marketing-shots/ios/creative-audit-3.2.3.mjs
 
 ## Upload (not done)
 
-Nothing is uploaded until the owner approves these pages. An upload would:
-1. Swap iPad positions 3 and 7 for the new pages.
-2. Reorder the set as above, in the 3.2.3 draft only.
+`scripts/app-store-connect/ipad-shots-3.2.3.mjs` is read-only unless `--apply`.
 
-It would use a dry run first, like `creative-3.2.3.mjs`.
+- **Dry run (2026-10-20):** see `ipad-upload-dry-run.txt`. iOS 3.2.3 is `PREPARE_FOR_SUBMISSION`.
+- **Per set** (17 iPad 13″ sets):
+  - 2 uploads (pages 3 and 4);
+  - 2 deletions (live 03 Watch and 07 widgets);
+  - one reorder.
+- **Kept pages:** 102. Each must still be the exact live screenshot the review sheets were built from, or the script stops.
+- **Not changed:** videos, metadata, builds and every other set.
+- **Locales without sets:** en-GB, es-MX and mr-IN have no iPad sets and fall back to the primary locale.
+- **Apply:** runs only after the owner approves. It writes `asc-ipad-receipt.json`, resumes from it, and reads every set back in order.
