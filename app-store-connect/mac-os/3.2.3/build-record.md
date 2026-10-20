@@ -5,11 +5,11 @@ Release record required by `SOURCE.md` for store-only builds.
 | Field | Value |
 |---|---|
 | Platform | macOS (Mac App Store, universal arm64 + x86_64) |
-| Version / build | 3.2.3 (3.2.30) — host and widget `CFBundleVersion` match |
+| Version / build | 3.2.3 (3.2.31) — host and widget `CFBundleVersion` match; supersedes 3.2.30 |
 | Minimum macOS | 13.0 |
-| Source commit | [`b1fc3800`](https://github.com/ififi2017/Off-Work-Countdown/tree/b1fc3800cfa36770654109816cf0c83e871abc3c) (main, merge of #331) |
-| Source archive | https://github.com/ififi2017/Off-Work-Countdown/archive/b1fc3800cfa36770654109816cf0c83e871abc3c.tar.gz |
-| Package | `DoneAt-3.2.3-macappstore.pkg`, 18,049,739 bytes, SHA-256 `4d13cdc05795f1e094ff34e875f022b11c2ca02bfc45043abf48d0a1006976d6` |
+| Source commit | [`9a8dc82d`](https://github.com/ififi2017/Off-Work-Countdown/tree/9a8dc82d43fa3d823daad8df4d9db0435f00bdfd) (head of #337, on main `b1fc3800`) |
+| Source archive | https://github.com/ififi2017/Off-Work-Countdown/archive/9a8dc82d43fa3d823daad8df4d9db0435f00bdfd.tar.gz |
+| Package | `DoneAt-3.2.3-macappstore.pkg`, 18,050,461 bytes, SHA-256 `9554d4be87a33706b4587ef245af61352a6c1019960e2e68a8dcea77f645bb18` |
 | Built | 2026-10-20, clean tree, Rust 1.99.1, Xcode 27.1 (27A9275) |
 
 ## Checks on the bundle
@@ -64,3 +64,26 @@ node scripts/embed-macos-profile.mjs && npm run pack:macappstore
 
 Not yet done: TestFlight install on a Mac, confirming the tested-device line
 in `review-notes.txt`, selecting the build and submitting.
+
+## 3.2.31 (2026-10-21, owner-approved)
+
+3.2.30 had two widget bugs found on a real Mac. Both are fixed in #337:
+- After a snapshot write the host reloaded only the classic widget kind, so
+  the four new styles kept stale timelines.
+- The desktop snapshot had no "coming up" rows.
+
+3.2.31 was rebuilt from #337's head `9a8dc82d` with the same toolchain, profiles
+and checks:
+- the host links `reloadAllTimelines`;
+- the frontend bundle contains the "coming up" rows;
+- the source notice names `9a8dc82d`, with no "uncommitted" marker.
+
+Results:
+- `altool --validate-app`: no errors.
+- Upload: delivery `58cdf16c-02f9-4512-84d3-d07eb1782fb5`, processed `VALID`.
+
+The macOS 3.2.3 version still has **3.2.30** selected. That selection was made
+in App Store Connect after the 3.2.30 upload, not by this record's process. It
+must be switched to 3.2.31 before submission, and #337 merged so that `main`
+matches the shipped source. Nothing submitted.
+
