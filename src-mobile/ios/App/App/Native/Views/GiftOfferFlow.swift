@@ -132,7 +132,7 @@ struct GiftOfferOverlay: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let home = toolbarRect(in: geometry)
+            let home = toolbarRect(in: geometry) ?? headerRect(in: geometry)
             ZStack {
                 Rectangle()
                     .fill(.regularMaterial)
@@ -185,18 +185,26 @@ struct GiftOfferOverlay: View {
     /// where the bar puts a leading item. A frame caught while the bar was
     /// still sliding in (after going back) can lie far from the leading
     /// corner; the gift would then appear there and fly sideways, so such a
-    /// frame is not trusted.
-    private func toolbarRect(in geometry: GeometryProxy) -> CGRect {
+    /// frame is not trusted. Nil when the gift would sit under a window's
+    /// controls: a narrow iPad window keeps the item in the toolbar's
+    /// overflow menu, and the leading corner belongs to the controls.
+    private func toolbarRect(in geometry: GeometryProxy) -> CGRect? {
+        let rect = reportedToolbarRect(in: geometry) ?? CGRect(x: 26, y: 3, width: 39, height: 39)
+        guard UIDevice.current.userInterfaceIdiom == .pad else { return rect }
+        let controls = CGRect(origin: .zero, size: geometry.containerCornerInsets.topLeading)
+        return controls.intersects(rect) ? nil : rect
+    }
+
+    private func reportedToolbarRect(in geometry: GeometryProxy) -> CGRect? {
+        guard let toolbarFrame, toolbarFrame.width > 0 else { return nil }
         let origin = geometry.frame(in: .global).origin
-        let standard = CGRect(x: 26, y: 3, width: 39, height: 39)
-        guard let toolbarFrame, toolbarFrame.width > 0 else { return standard }
         let local = toolbarFrame.offsetBy(dx: -origin.x, dy: -origin.y)
         // On iPad the leading item sits beside the sidebar, so only its
         // height in the bar and its size are checked there.
         let leadingLimit = UIDevice.current.userInterfaceIdiom == .phone ? 140 : geometry.size.width * 0.75
         let plausible = local.minX >= -4 && local.maxX <= leadingLimit && local.minY >= -12 && local.maxY <= 70
             && (24...56).contains(local.width)
-        return plausible ? local : standard
+        return plausible ? local : nil
     }
 
     private func headerRect(in geometry: GeometryProxy) -> CGRect {
@@ -223,7 +231,18 @@ struct GiftOfferOverlay: View {
 
     private func open(in geometry: GeometryProxy) async {
         let home = toolbarRect(in: geometry)
-        place(home)
+        // With nothing in the toolbar to leave from, it appears where it opens.
+        if let home {
+            place(home)
+        } else if unwraps {
+            let side = Self.openGiftSize * 0.6
+            place(CGRect(x: geometry.size.width / 2 - side / 2, y: geometry.size.height * 0.4 - side / 2,
+                         width: side, height: side))
+            giftOpacity = 0
+        } else {
+            place(headerRect(in: geometry))
+            giftOpacity = 0
+        }
         // Build the hidden page now, while nothing moves: laying it out takes
         // a moment, and doing it mid-animation skipped the lid and the glide.
         // The toolbar's gift stays until this one is drawn over it.
@@ -231,6 +250,9 @@ struct GiftOfferOverlay: View {
         await Task.yield()
         try? await Task.sleep(for: .milliseconds(34))
         onCover()
+        if home == nil, !reduceMotion {
+            withAnimation(OWCMotion.giftOverlay) { giftOpacity = 1 }
+        }
         guard !reduceMotion else {
             backdrop = true
             if unwraps, !plus.revealLifetimeOffer(from: plus.lifetimeOffer?.source ?? .update323) {
@@ -307,8 +329,20 @@ struct GiftOfferOverlay: View {
         caption = false
         giftHandedOver = false
         withAnimation(OWCMotion.stateExit) { paywallShown = false }
+        guard let home = toolbarRect(in: geometry) else {
+            // Nowhere on screen to return to: leave from the header.
+            withAnimation(OWCMotion.giftOverlay) {
+                giftOpacity = 0
+                backdrop = false
+            }
+            Task {
+                try? await Task.sleep(for: .seconds(OWCMotion.giftOverlayDuration))
+                finish()
+            }
+            return
+        }
         withAnimation(OWCMotion.giftReturn) {
-            place(toolbarRect(in: geometry))
+            place(home)
             lidLift = 0
             lidTilt = 0
             backdrop = false
