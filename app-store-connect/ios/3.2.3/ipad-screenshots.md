@@ -1,9 +1,11 @@
 # iOS 3.2.3 · iPad 13″ screenshots (local, not uploaded)
 
 ASC set: `APP_IPAD_PRO_3GEN_129` (2064×2752), 17 store locales. The iPad
-equivalents of the 3.2.3 iPhone widget pages 3 and 4 (`screenshots.md`),
-with the same reviewed copy (`creative-copy-3.2.3.mjs`, `PAGES`). Nothing
-was uploaded, bound or submitted.
+equivalents of the 3.2.3 iPhone widget pages 3 and 4 (`screenshots.md`).
+Page 3 uses the reviewed iPhone copy (`creative-copy-3.2.3.mjs`, `PAGES`).
+Page 4 is Lock Screen only, with its own label and subline (`IPAD_LOCK`). Apple
+Watch pairs only with iPhone, so an iPad page that shows a Watch would suggest
+something an iPad-only user can't do. Nothing was uploaded, bound or submitted.
 
 ## Order
 
@@ -14,14 +16,14 @@ The set keeps 8 pages:
 | 1 | Countdown (hero) | kept |
 | 2 | Countdown detail | kept |
 | 3 | **Home Screen widgets** | new |
-| 4 | **Lock Screen · Apple Watch** | new |
+| 4 | **Lock Screen** | new |
 | 5 | Calendar | kept (was 4) |
 | 6 | Records | kept (was 5) |
 | 7 | Focus | kept (was 6) |
 | 8 | Breaks | kept (was 8) |
 
 Two pages retire:
-- 3 (Apple Watch), which page 4 now covers;
+- 3 (Apple Watch): the Watch needs an iPhone, and the iPhone set keeps its Watch page;
 - 7 (Dynamic Island · Lock Screen · widgets), replaced by real 3.2.3 widgets.
 
 The kept pages are the live 3.2.3 draft's files, read back with
@@ -41,10 +43,24 @@ from the iPad Watch page, which now retires.
   - shifts (medium), this week and year;
   - Countdown & up next (extra large);
   - this month and Progress (medium).
-- **Page 4** shows the whole iPad at 660 px, because the 866 px crop would cut off the Lock Screen widgets near the bottom of the display.
+- **Page 4** shows the whole iPad, centred, at 660 px. The 866 px crop would cut off the Lock Screen widgets near the bottom of the display.
   - On a 13″ display those widgets are small, so the real widget row is also shown enlarged just above itself: a crop of the same capture, like the 3.2.0 widget page's crops.
-  - The Watch (the iPhone 3.2.3 Watch fixture) stands beside it on the wallpaper.
-  - Arabic mirrors the iPad and the Watch.
+  - No Watch.
+
+## Page 4 copy
+
+The headline is the iPhone page's (reviewed). The label is its Lock Screen
+half. The subline is new and names only what the widgets show, since iPad
+Lock Screens have no control slots.
+
+| Locale | Subline |
+|---|---|
+| zh-CN | 倒计时、圆环和本周进度，/ 不用解锁也能看。 |
+| en | Countdown, ring and week progress, / right on your Lock Screen. |
+
+The other 15 locales are in `IPAD_LOCK_SUB` (`creative-copy-3.2.3.mjs`).
+The Japanese, Korean and Simplified/Traditional Chinese sans subsets gained
+their new characters with `creative-fonts-refresh.mjs`.
 
 ## Capture
 
@@ -61,7 +77,6 @@ from the iPad Watch page, which now retires.
 - **Lock Screen** (arranged by hand):
   - rectangular countdown, ring and week circulars;
   - the inline "until the weekend" line.
-  - iPad Lock Screens have no control slots, so the Start shift control isn't shown. The shared subline still mentions it: the control exists on iPad in Control Center.
 - **Per locale**, after the reboot:
   1. Lock Screen › Customize › Done redraws the widgets, which come back blank.
   2. Page to Today View and back so every Home Screen widget redraws together.
@@ -72,7 +87,7 @@ from the iPad Watch page, which now retires.
 ## Checks
 
 - `creative-compose-ipad-3.2.3.mjs`:
-  - layout audit: no overflow, art below the copy, nothing outside the canvas, Watch fully visible;
+  - layout audit: no overflow, art below the copy, nothing outside the canvas;
   - Chrome's actual fonts: poster fonts only, no system fallback. That covers the Chinese poster-font fix.
   - Headlines are 67–88 px.
 - `creative-audit-3.2.3.mjs` has no findings (`audit.json`). It now also checks:

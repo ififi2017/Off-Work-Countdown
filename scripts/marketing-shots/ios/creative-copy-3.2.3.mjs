@@ -61,3 +61,28 @@ export const PAGES={
  'hi-IN':{home:P('नए विजेट','आपका दिन,|होम स्क्रीन पर।','काउंटडाउन, हफ़्ते की प्रगति, शिफ़्ट और छुट्टियाँ।|जिस आकार में चाहें, जहाँ चाहें।'),lock:P('लॉक स्क्रीन · Apple Watch','स्क्रीन जगाइए,|बचा समय देखिए।','लॉक स्क्रीन विजेट, एक टैप में शिफ़्ट शुरू,|और Apple Watch पर काउंटडाउन।')},
  ar:{home:P('أدوات جديدة','يومك،|على الشاشة الرئيسية.','عدّ تنازلي، تقدّم الأسبوع، المناوبات والعطلات.|بالحجم الذي يناسبك.'),lock:P('شاشة القفل · Apple Watch','أضئ الشاشة،|واعرف كم تبقّى.','أدوات على شاشة القفل، وبدء المناوبة بلمسة،|والعدّ التنازلي على Apple Watch.')},
 };
+
+// iPad page 4 (Lock Screen only). Apple Watch pairs only with iPhone, so the
+// iPad page shows no Watch, and iPad Lock Screens have no control slots, so
+// it names only what the widgets show. The headline is the iPhone page's;
+// the label is its Lock Screen half. Subline: [line 1, line 2].
+const IPAD_LOCK_SUB={
+ 'zh-CN':'倒计时、圆环和本周进度，|不用解锁也能看。',
+ en:'Countdown, ring and week progress,|right on your Lock Screen.',
+ 'zh-TW':'倒數、圓環和本週進度，|不用解鎖也看得到。',
+ ja:'カウントダウン、リング、今週の進み具合。|ロックを解除しなくても見られます。',
+ ko:'카운트다운, 링, 이번 주 진행률을|잠금 해제 없이 바로 확인하세요.',
+ de:'Countdown, Ring und Wochenfortschritt,|direkt auf dem Sperrbildschirm.',
+ fr:'Compte à rebours, anneau et semaine,|directement sur l’écran verrouillé.',
+ es:'Cuenta atrás, anillo y progreso semanal,|en la pantalla bloqueada.',
+ it:'Conto alla rovescia, anello e settimana,|direttamente sulla schermata di blocco.',
+ pt:'Contagem regressiva, anel e progresso da semana,|direto na Tela Bloqueada.',
+ ru:'Обратный отсчёт, кольцо и прогресс недели —|прямо на экране блокировки.',
+ tr:'Geri sayım, halka ve haftalık ilerleme,|doğrudan kilit ekranında.',
+ id:'Hitung mundur, cincin, dan progres minggu,|langsung di Layar Terkunci.',
+ vi:'Đếm ngược, vòng tròn và tiến độ tuần,|ngay trên màn hình khóa.',
+ th:'นับถอยหลัง วงแหวน และความคืบหน้าสัปดาห์|ดูได้บนหน้าจอล็อกเลย',
+ 'hi-IN':'काउंटडाउन, रिंग और हफ़्ते की प्रगति,|सीधे लॉक स्क्रीन पर।',
+ ar:'عدّ تنازلي وحلقة وتقدّم الأسبوع،|مباشرةً على شاشة القفل.',
+};
+export const IPAD_LOCK=Object.fromEntries(Object.entries(IPAD_LOCK_SUB).map(([l,sub])=>[l,{label:PAGES[l].lock.label.split(' · ')[0],lines:PAGES[l].lock.lines,sub:sub.split('|')}]));

@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-10-20T11:13:59.454Z",
+  "createdAt": "2026-10-20T13:33:21.555Z",
   "uploaded": false,
   "items": [
     {
@@ -54,7 +54,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "72caff5380f769699a1610abd325bdf4cbecd2fded7151bf04029b68450649a5",
+      "sha256": "8a275db35bec3f6079ae2c301842b0f7215a3725b8d5b1c30a3bd41251c77882",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -63,25 +63,17 @@
         {
           "file": "raw/3.2.3/widgets/en-ipad-lock.png",
           "sha256": "d6fc006136866cd31651bec48bd71bdff42bc89eee516d859cb6db275df718ca"
-        },
-        {
-          "file": "raw/3.2.3/search/en-watch.png",
-          "sha256": "a0994855d3544597c29c2a7b716ebc42225efafa5d2c97c8e03ad37e1a250205"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "LOCK SCREEN · APPLE WATCH",
+        "label": "LOCK SCREEN",
         "lines": [
           "Wake your screen.",
           "See how long is left."
         ],
         "sub": [
-          "Lock Screen widgets, a Start shift control",
-          "and your countdown on Apple Watch."
+          "Countdown, ring and week progress,",
+          "right on your Lock Screen."
         ]
       },
       "fontsUsed": [
@@ -146,7 +138,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "5c4aed888a721b76e1a267360ebbd5026c3090dbc1bc7f412e760ecf7f5d17bf",
+      "sha256": "46cd225b83ec7932bc9ad78bc7c60f4d9e1ecd76856f8ad49687b5878e28f1f4",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -155,25 +147,17 @@
         {
           "file": "raw/3.2.3/widgets/de-ipad-lock.png",
           "sha256": "0ef95a55297ccbf07456e0822e45a676889884d9cb0195ba8c93fa1be1e78986"
-        },
-        {
-          "file": "raw/3.2.3/search/de-watch.png",
-          "sha256": "b450b0f6971464608c11ca5e5cd28be68cededf101d81ce37f9c68c1b499c455"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "SPERRBILDSCHIRM · APPLE WATCH",
+        "label": "SPERRBILDSCHIRM",
         "lines": [
           "Bildschirm an.",
           "Restzeit im Blick."
         ],
         "sub": [
-          "Widgets auf dem Sperrbildschirm, Schichtstart per Tipp",
-          "und dein Countdown auf der Apple Watch."
+          "Countdown, Ring und Wochenfortschritt,",
+          "direkt auf dem Sperrbildschirm."
         ]
       },
       "fontsUsed": [
@@ -238,7 +222,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "e59aa2347833e8baf204c669ecf7638d7ff177d722c6043877d1b3ece11cd78c",
+      "sha256": "4689bfeea5a5d760004ea69c3e109b1a5730b4f912b59c6f4bdaa286a5fb9805",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -247,25 +231,17 @@
         {
           "file": "raw/3.2.3/widgets/fr-ipad-lock.png",
           "sha256": "9ee70e8d320423d88e0d9aecb4bae314df86929a0f4cde2f3e8b8183eca3ccd1"
-        },
-        {
-          "file": "raw/3.2.3/search/fr-watch.png",
-          "sha256": "1ca92f7cc89f629ce20514e63bef9328383be6ca5285082df716b31ca63832ba"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "ÉCRAN VERROUILLÉ · APPLE WATCH",
+        "label": "ÉCRAN VERROUILLÉ",
         "lines": [
           "Un regard.",
           "Le temps restant."
         ],
         "sub": [
-          "Des widgets sur l’écran verrouillé, le début de journée en un geste",
-          "et votre compte à rebours sur Apple Watch."
+          "Compte à rebours, anneau et semaine,",
+          "directement sur l’écran verrouillé."
         ]
       },
       "fontsUsed": [
@@ -330,7 +306,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "89145b0a878de7d02522b3eb8b0381e376aeded85483dabc0586cee587fab280",
+      "sha256": "eeb121a5222f2ebc99b8c053e8455d55c4e8e41d26dafbbd53d0ce13045db221",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -339,25 +315,17 @@
         {
           "file": "raw/3.2.3/widgets/es-ipad-lock.png",
           "sha256": "22ed44936dcaa315aa63ec424d1b9c608174a0ba902914d1cf45a3c7778a9b68"
-        },
-        {
-          "file": "raw/3.2.3/search/es-watch.png",
-          "sha256": "fefcd2323762d943bb5a532f14cb05d51acee82514fb84d0357df04a24103db1"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "PANTALLA BLOQUEADA · APPLE WATCH",
+        "label": "PANTALLA BLOQUEADA",
         "lines": [
           "Enciende la pantalla.",
           "Mira cuánto falta."
         ],
         "sub": [
-          "Widgets en la pantalla bloqueada, empieza tu turno con un toque",
-          "y tu cuenta atrás en el Apple Watch."
+          "Cuenta atrás, anillo y progreso semanal,",
+          "en la pantalla bloqueada."
         ]
       },
       "fontsUsed": [
@@ -422,7 +390,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "79274ab84b01168ee505a80c7138facd9b012a86c3dceaf098191161d85c7b54",
+      "sha256": "079577497d4c57339cc25e7b56e76730959309fd844162c931caff64aa21934a",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -431,25 +399,17 @@
         {
           "file": "raw/3.2.3/widgets/it-ipad-lock.png",
           "sha256": "505f80c37bfd3aa57022c8479baa64e00ac8c3eeffa512dd1bfc733d070f0659"
-        },
-        {
-          "file": "raw/3.2.3/search/it-watch.png",
-          "sha256": "6bcabf19d599724d27d05f3c66ae05d526444f50a54ed593070e0b9f79e3d953"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "SCHERMATA DI BLOCCO · APPLE WATCH",
+        "label": "SCHERMATA DI BLOCCO",
         "lines": [
           "Accendi lo schermo.",
           "Vedi quanto manca."
         ],
         "sub": [
-          "Widget nella schermata di blocco, inizio turno con un tocco",
-          "e il conto alla rovescia su Apple Watch."
+          "Conto alla rovescia, anello e settimana,",
+          "direttamente sulla schermata di blocco."
         ]
       },
       "fontsUsed": [
@@ -514,7 +474,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "cb8b43a79c67aa43ff52b233ad5366c0aa1249c1ff7f8db8c7e992a291fb6a65",
+      "sha256": "abbe44933d831f6d67a0ca545aa7a3a48971aad473877500542fbeaa305472e5",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -523,25 +483,17 @@
         {
           "file": "raw/3.2.3/widgets/pt-ipad-lock.png",
           "sha256": "8f1a000828d4ab2fca8030dc8a3cd847b2a1455db85ad9ccc69e546abcc3934d"
-        },
-        {
-          "file": "raw/3.2.3/search/pt-watch.png",
-          "sha256": "0993a49a34efea74462a505b7a913247df6bb219f7bb1e14468662de133244a3"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "TELA BLOQUEADA · APPLE WATCH",
+        "label": "TELA BLOQUEADA",
         "lines": [
           "Acenda a tela.",
           "Veja quanto falta."
         ],
         "sub": [
-          "Widgets na Tela Bloqueada, comece o turno com um toque",
-          "e sua contagem regressiva no Apple Watch."
+          "Contagem regressiva, anel e progresso da semana,",
+          "direto na Tela Bloqueada."
         ]
       },
       "fontsUsed": [
@@ -606,7 +558,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "e3c5466848d5bc45ef50b1b0dc3e7659fe379428286e2aabc900553413a4cf2d",
+      "sha256": "8030b64ad4a973bee3577c95afe31182de954ceb805f979b97c5d1b69adf674e",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -615,29 +567,20 @@
         {
           "file": "raw/3.2.3/widgets/ja-ipad-lock.png",
           "sha256": "6478837cd538f1ef9212ba901473a14b49166ae27537b74f21a421682ac58b58"
-        },
-        {
-          "file": "raw/3.2.3/search/ja-watch.png",
-          "sha256": "2019d7c134c8434b5441ce19daa51f7e16ce0ef6ef1262c693cc09640d9aea38"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "ロック画面 · Apple Watch",
+        "label": "ロック画面",
         "lines": [
           "画面をつければ、",
           "あと何分かわかる。"
         ],
         "sub": [
-          "ロック画面のウィジェット、ワンタップで出勤、",
-          "Apple Watch でも確認できます。"
+          "カウントダウン、リング、今週の進み具合。",
+          "ロックを解除しなくても見られます。"
         ]
       },
       "fontsUsed": [
-        "Manrope Medium",
         "Noto Sans JP Medium",
         "Noto Serif JP"
       ],
@@ -700,7 +643,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "96abf3b3b79420130e1036a970ac5e734af2e7e957019d8c870b81b5677fc328",
+      "sha256": "9a37d6996961162241b29375969ed6a25e5abadc9009c5733b71d74d458df1a1",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -709,25 +652,17 @@
         {
           "file": "raw/3.2.3/widgets/ko-ipad-lock.png",
           "sha256": "cdb85c1511e7bd04955bc20ecd76878779b63c71e949d6a61971d23e4777b690"
-        },
-        {
-          "file": "raw/3.2.3/search/ko-watch.png",
-          "sha256": "7df995ea92be8b0924bd9fbd9e9c5e53793ce1525e2f6730837b253bf70fb92c"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "잠금 화면 · Apple Watch",
+        "label": "잠금 화면",
         "lines": [
           "화면을 켜면,",
           "남은 시간이 보여요."
         ],
         "sub": [
-          "잠금 화면 위젯, 탭 한 번으로 근무 시작,",
-          "Apple Watch에서도 볼 수 있어요."
+          "카운트다운, 링, 이번 주 진행률을",
+          "잠금 해제 없이 바로 확인하세요."
         ]
       },
       "fontsUsed": [
@@ -793,7 +728,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "45c16478870add1b2a79d6109d9d1701e057c97810eca7b352e106b5d2178488",
+      "sha256": "cdd9185e5a88086e55c273410e6c1745df19a5e1c0d2ed60c305c31ddd8d2653",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -802,25 +737,17 @@
         {
           "file": "raw/3.2.3/widgets/ru-ipad-lock.png",
           "sha256": "7406411d4a09c79f36ad97700cbcb7da5a74c81907eb92aaf730a91b84dc82e2"
-        },
-        {
-          "file": "raw/3.2.3/search/ru-watch.png",
-          "sha256": "27e1d040580a73bc2ce9d76ce1640da709e7315ba08a2c4c8fbd8946bf2d0e86"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "ЭКРАН БЛОКИРОВКИ · APPLE WATCH",
+        "label": "ЭКРАН БЛОКИРОВКИ",
         "lines": [
           "Взгляд на экран —",
           "сколько осталось."
         ],
         "sub": [
-          "Виджеты на экране блокировки, начало смены одним касанием",
-          "и обратный отсчёт на Apple Watch."
+          "Обратный отсчёт, кольцо и прогресс недели —",
+          "прямо на экране блокировки."
         ]
       },
       "fontsUsed": [
@@ -885,7 +812,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "6da9dfb11eb01af4798d80099a3b2f180851371459442f44704e71cd9a63de7e",
+      "sha256": "437faca9d5fbd0f5c113b6f3a3e79c509ebac642adc4eda1f35862b7420b2f80",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -894,25 +821,17 @@
         {
           "file": "raw/3.2.3/widgets/tr-ipad-lock.png",
           "sha256": "f10f5230b98d775ff5b2e60f983a6d158f3cd9b5af59164e1c38158497a71478"
-        },
-        {
-          "file": "raw/3.2.3/search/tr-watch.png",
-          "sha256": "db2613772a8818d76ad13069dbe3a93fd3f05c4e3e84b3fcedadb5c9aff5442b"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "KİLİT EKRANI · APPLE WATCH",
+        "label": "KİLİT EKRANI",
         "lines": [
           "Ekranı aç,",
           "kalan süreyi gör."
         ],
         "sub": [
-          "Kilit ekranı widget’ları, tek dokunuşla mesai başlangıcı",
-          "ve Apple Watch’ta geri sayım."
+          "Geri sayım, halka ve haftalık ilerleme,",
+          "doğrudan kilit ekranında."
         ]
       },
       "fontsUsed": [
@@ -977,7 +896,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "494bc6d05a341e34bf0d3ad680a77d8dbdc6d9088185402addf7a6acee58249d",
+      "sha256": "3c1e4bcfb1112f4d7e4bebcbe2f50d136b264255c7fdfddcd3d6443f57511838",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -986,25 +905,17 @@
         {
           "file": "raw/3.2.3/widgets/id-ipad-lock.png",
           "sha256": "718bb4a7d5766d601a689ff1ef0f867b9e66f6e1be20a724d84ba6bd92c343da"
-        },
-        {
-          "file": "raw/3.2.3/search/id-watch.png",
-          "sha256": "aeea11ef8095db46a90a45d80827ed710e0779420697cb429f3b9e33969c1e15"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "LAYAR TERKUNCI · APPLE WATCH",
+        "label": "LAYAR TERKUNCI",
         "lines": [
           "Nyalakan layar,",
           "lihat sisa waktu."
         ],
         "sub": [
-          "Widget Layar Terkunci, mulai shift dengan sekali ketuk,",
-          "dan hitung mundur di Apple Watch."
+          "Hitung mundur, cincin, dan progres minggu,",
+          "langsung di Layar Terkunci."
         ]
       },
       "fontsUsed": [
@@ -1069,7 +980,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "960d9e2895b79713c4e54473fd5bada63b622302485616c35a6c40986b5bba30",
+      "sha256": "e2b3104a6282870193036a30f8c0d97c48014cf822be1131c4ecac2ebf5e9724",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -1078,25 +989,17 @@
         {
           "file": "raw/3.2.3/widgets/vi-ipad-lock.png",
           "sha256": "67f6495fe3c053325785388d1031f23f1350e245400a547686f34425a16a92c7"
-        },
-        {
-          "file": "raw/3.2.3/search/vi-watch.png",
-          "sha256": "89d80f7d67c12c69f621dc429c509aeb73a6449f858c4ad37055c6fb0aa671ad"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "MÀN HÌNH KHÓA · APPLE WATCH",
+        "label": "MÀN HÌNH KHÓA",
         "lines": [
           "Bật màn hình,",
           "biết còn bao lâu."
         ],
         "sub": [
-          "Tiện ích màn hình khóa, bắt đầu ca chỉ với một chạm",
-          "và đếm ngược trên Apple Watch."
+          "Đếm ngược, vòng tròn và tiến độ tuần,",
+          "ngay trên màn hình khóa."
         ]
       },
       "fontsUsed": [
@@ -1162,7 +1065,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "f87c43e6f66c33e1eeba95b1e6109e206443de3d7e288b2a35e3f18bc9db8dcb",
+      "sha256": "4686c50920d72d808b4a9dbc07a97fa140fcdd3949b2aff0add4731b5c042efb",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -1171,25 +1074,17 @@
         {
           "file": "raw/3.2.3/widgets/th-ipad-lock.png",
           "sha256": "c4e46394fcc5f3867c76664acb8f5498cb2df6afd59da705c2e8c7da62496705"
-        },
-        {
-          "file": "raw/3.2.3/search/th-watch.png",
-          "sha256": "50ba2b201d615240f325cbb3e4a541b435f91c246f3c32e58c5439dd252dbc3e"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "หน้าจอล็อก · Apple Watch",
+        "label": "หน้าจอล็อก",
         "lines": [
           "เปิดหน้าจอ",
           "ก็รู้ว่าเหลืออีกนาน"
         ],
         "sub": [
-          "วิดเจ็ตหน้าจอล็อก เริ่มกะได้ในแตะเดียว",
-          "และนับถอยหลังบน Apple Watch"
+          "นับถอยหลัง วงแหวน และความคืบหน้าสัปดาห์",
+          "ดูได้บนหน้าจอล็อกเลย"
         ]
       },
       "fontsUsed": [
@@ -1256,7 +1151,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "f78556a79a96149900a43ec0c3b3f95839c7b5a649364ae31eb4abd6a5bacc41",
+      "sha256": "a84beb6a8c72365179e185adf408e4dbfe7d65aaa6057294468e1476a077f01c",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -1265,25 +1160,17 @@
         {
           "file": "raw/3.2.3/widgets/hi-IN-ipad-lock.png",
           "sha256": "a104b3956e0714f06e54abf51014752425e95e8dd696cd4d015a008e47ca6f78"
-        },
-        {
-          "file": "raw/3.2.3/search/hi-IN-watch.png",
-          "sha256": "481ae4c91a78ced8d8c1a3ea85cf3f0b3ae89e2294d4802c5e1003775c924344"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "लॉक स्क्रीन · Apple Watch",
+        "label": "लॉक स्क्रीन",
         "lines": [
           "स्क्रीन जगाइए,",
           "बचा समय देखिए।"
         ],
         "sub": [
-          "लॉक स्क्रीन विजेट, एक टैप में शिफ़्ट शुरू,",
-          "और Apple Watch पर काउंटडाउन।"
+          "काउंटडाउन, रिंग और हफ़्ते की प्रगति,",
+          "सीधे लॉक स्क्रीन पर।"
         ]
       },
       "fontsUsed": [
@@ -1350,7 +1237,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "ce57673a3d9274eb33bc56e1c7af8b57ab3ef8aac42049f38232991130db83f1",
+      "sha256": "ff3732357fae6bf101b457a8f33239667cff36029d5b16258aa6b9ef68e86f80",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -1359,25 +1246,17 @@
         {
           "file": "raw/3.2.3/widgets/ar-ipad-lock.png",
           "sha256": "7fa673742091026c6c7c16560c03ab10bcb49224f0553805a0e16151a2569e0b"
-        },
-        {
-          "file": "raw/3.2.3/search/ar-watch.png",
-          "sha256": "c9b66716e247175a16e53690d765f8f72e4fcd3e30919cdfe990f1f7887d0289"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "شاشة القفل · Apple Watch",
+        "label": "شاشة القفل",
         "lines": [
           "أضئ الشاشة،",
           "واعرف كم تبقّى."
         ],
         "sub": [
-          "أدوات على شاشة القفل، وبدء المناوبة بلمسة،",
-          "والعدّ التنازلي على Apple Watch."
+          "عدّ تنازلي وحلقة وتقدّم الأسبوع،",
+          "مباشرةً على شاشة القفل."
         ]
       },
       "fontsUsed": [
@@ -1443,7 +1322,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "3b13414647c300c2c78f668488339c50c7b9e5c66d3cfff94ad1faf836cd1f58",
+      "sha256": "02adf0853d8ecc4e982ed9b749228fa29ecc69601ae211185a8ef57b852c4f04",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -1452,29 +1331,20 @@
         {
           "file": "raw/3.2.3/widgets/zh-CN-ipad-lock.png",
           "sha256": "033ddfefe580e575fe3c1910bf20f461bd343d7c008632c455ae79511cedaa4a"
-        },
-        {
-          "file": "raw/3.2.3/search/zh-CN-watch.png",
-          "sha256": "5b5887a6a94910ed353552b4243fe1376bf6fefd3d2290b6253b590e470fb323"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "锁屏 · Apple Watch",
+        "label": "锁屏",
         "lines": [
           "锁屏一亮，",
           "就知道还剩多久。"
         ],
         "sub": [
-          "锁屏小组件、一键开始上班，",
-          "Apple Watch 也能看。"
+          "倒计时、圆环和本周进度，",
+          "不用解锁也能看。"
         ]
       },
       "fontsUsed": [
-        "Manrope Medium",
         "Noto Sans SC Medium",
         "Noto Serif SC"
       ],
@@ -1536,7 +1406,7 @@
       "width": 2064,
       "height": 2752,
       "display": "APP_IPAD_PRO_3GEN_129",
-      "sha256": "93423b5f7ffd2e3522225814bbfed9943fe05a5bd5c98fb4de0f5f044b296cbe",
+      "sha256": "0cbeeac89de51b265950e0a784df147bc4344c0da4c7c4b580e44a7e9e8e794a",
       "sources": [
         {
           "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
@@ -1545,29 +1415,20 @@
         {
           "file": "raw/3.2.3/widgets/zh-TW-ipad-lock.png",
           "sha256": "455476cc28b323d6dda44d596ef88837f335ad191822318d7e70ed9e1082514f"
-        },
-        {
-          "file": "raw/3.2.3/search/zh-TW-watch.png",
-          "sha256": "33b6140921bdb60c57f1723701b243f658eb88e17ca1ddcce066724e55caae12"
-        },
-        {
-          "file": "frames/watch-s11-46mm-gold-milanese.png",
-          "sha256": "0f94f02a5ef807631f4ff4de8c8f8c77a139148834fd6c643343a02380c899e4"
         }
       ],
       "copy": {
-        "label": "鎖定畫面 · Apple Watch",
+        "label": "鎖定畫面",
         "lines": [
           "螢幕一亮，",
           "就知道還剩多久。"
         ],
         "sub": [
-          "鎖定畫面小工具、一鍵開始上班，",
-          "Apple Watch 也看得到。"
+          "倒數、圓環和本週進度，",
+          "不用解鎖也看得到。"
         ]
       },
       "fontsUsed": [
-        "Manrope Medium",
         "Noto Sans TC Medium",
         "Noto Serif TC"
       ],
