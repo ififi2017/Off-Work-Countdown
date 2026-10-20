@@ -464,11 +464,15 @@ private struct LifeFiguresView: View {
             VStack(alignment: .leading, spacing: 7) {
                 WidgetSuiteHeader(title: t("widgetSuiteProgress"),
                                   trailing: date.formatted(.dateTime.month().day().weekday(.abbreviated).locale(WidgetSuiteFormat.locale(locale))))
-                row(t("widgetSuiteToday"), progress.today)
-                row(t("widgetSuiteThisWeek"), progress.week)
-                row(t("widgetSuiteThisMonth"), progress.month)
-                row(t("widgetSuiteThisYear"), progress.year)
-                if let career = figures.careerShare { row(t("widgetSuiteCareer"), career) }
+                // One label column as wide as its longest label: "This week"
+                // no longer truncates, and the bars still start together.
+                Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 7) {
+                    row(t("widgetSuiteToday"), progress.today)
+                    row(t("widgetSuiteThisWeek"), progress.week)
+                    row(t("widgetSuiteThisMonth"), progress.month)
+                    row(t("widgetSuiteThisYear"), progress.year)
+                    if let career = figures.careerShare { row(t("widgetSuiteCareer"), career) }
+                }
             }
         default:
             VStack(alignment: .leading, spacing: 8) {
@@ -490,8 +494,8 @@ private struct LifeFiguresView: View {
     }
 
     private func row(_ label: String, _ value: Double) -> some View {
-        HStack(spacing: 8) {
-            Text(label).font(.caption).frame(width: 46, alignment: .leading).lineLimit(1).minimumScaleFactor(0.7)
+        GridRow {
+            Text(label).font(.caption).lineLimit(1).minimumScaleFactor(0.8)
             WidgetSuiteSegmentBar(segments: [(weight: 1, fill: value)])
             Text(WidgetSuiteFormat.percent(value, locale: locale)).font(.caption.weight(.semibold)).monospacedDigit()
                 .frame(width: 40, alignment: .trailing)
