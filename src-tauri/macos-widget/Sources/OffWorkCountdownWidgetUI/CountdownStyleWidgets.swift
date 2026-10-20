@@ -651,7 +651,10 @@ public struct CountdownDetailView: View {
                 CountdownSegmentRing(weights: model.segmentWeights, progress: model.progress, lineWidth: 12, tint: model.phaseColor)
                 VStack(spacing: 2) {
                     status
+                    // The system timer takes the width it is offered and
+                    // starts at its leading edge; centre it in the ring.
                     countdown(size: 34)
+                        .multilineTextAlignment(.center)
                     targetLine
                 }
                 .padding(28)
