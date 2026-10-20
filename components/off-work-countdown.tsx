@@ -1374,6 +1374,19 @@ export function OffWorkCountdown({
             woodfishSoundEnabled,
             showEarningsLabel: t("showEarnings"),
             hideEarningsLabel: t("hideEarnings"),
+            // 「倒计时与接下来」小组件的行标题；与 iOS 同名同义，扩展排班的
+            // 休息叫「中途休息」，否则是「午休」。
+            widgetUpcomingLabels: {
+              shiftStart: t("startTime"),
+              shiftEnd: t("endTime"),
+              overtime: t("overtime"),
+              breakTitle: storedRoster ? t("extendedBreak") : t("lunchBreak"),
+              breakStarts: storedRoster ? t("extendedBreakStart") : t("lunchStartTime"),
+              breakBackAt: t("lunchBackAt"),
+              microBreak: t("microBreakReminder"),
+              microBreakDetail: t("minutesShort", { count: microBreakIntervalMinutes }),
+              milestone: t("offWorkReminder"),
+            },
           }
         : {
             ...emptyDesktopCountdownState(

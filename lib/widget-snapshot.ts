@@ -7,6 +7,7 @@ import {
   isValidShiftTimeline,
   type ShiftTimeline,
 } from "./countdown";
+import type { ReminderNotificationMode, ShiftReminder } from "./reminders";
 
 export const WIDGET_SNAPSHOT_SCHEMA_VERSION = 1 as const;
 
@@ -86,6 +87,140 @@ export interface WidgetSnapshotV1 {
   /** 仅用于诊断和未来展示；extension 不得从 segments 推导排班规则。 */
   shift: ShiftTimeline | null;
   entries: WidgetTimelineEntry[];
+  /** 「接下来」列表；没有可显示的事项时省略，与 Swift 编码一致。 */
+  upcoming?: WidgetUpcomingItem[];
+}
+
+/**
+ * 「倒计时与接下来」小组件的一行。字段与 Swift 的 `WidgetUpcomingItem` 一一对应；
+ * extension 只按 `dateMs` 过滤已过去的行并排版，不推导任何时刻。
+ */
+export interface WidgetUpcomingItem {
+  /** 跨次生成稳定，用于去重。 */
+  id: string;
+  /** `shiftStart` / `lunchStart` / `lunchEnd` / `health` / `milestone` / `shiftEnd`，决定图标。 */
+  kind: string;
+  title: string;
+  detail: string;
+  dateMs: number;
+}
+
+/** 由界面按当前语言排好的文案；小组件只显示，不翻译。 */
+export interface WidgetUpcomingLabels {
+  shiftStart: string;
+  shiftEnd: string;
+  overtime: string;
+  /** 午休，或扩展排班里的「中途休息」。 */
+  breakTitle: string;
+  breakStarts: string;
+  breakBackAt: string;
+  microBreak: string;
+  /** 已代入间隔分钟数，例如「60 分钟」。 */
+  microBreakDetail: string;
+  milestone: string;
+}
+
+export interface BuildWidgetUpcomingOptions {
+  shift: ShiftTimeline | null;
+  nextShift: ShiftTimeline | null;
+  /** `buildShiftReminders` 为当前班次算出的提醒（lib/reminders.ts）。 */
+  reminders: ShiftReminder[];
+  notificationMode: ReminderNotificationMode;
+  /** 健康提醒开关。关闭时 reminders 里仍有无标题的静默条目，不能据此列行。 */
+  microBreakEnabled: boolean;
+  labels: WidgetUpcomingLabels;
+  nowMs: number;
+  expiresAtMs: number;
+}
+
+/**
+ * 「接下来」：当前班次剩下的边界与提醒，加上下一班的边界。
+ *
+ * 与 iOS 的 `WidgetSnapshotPublisher.upcomingItems` 同一套取舍：
+ * - 上下班与午休边界来自已解析的班次；
+ * - 健康提醒只列最近的一次，带间隔，而不是每小时一行；
+ * - 进度提醒仅在「按进度提醒」时列出，跳过没有标题的静默档位，以及与下班同刻的 100%；
+ * - 上下班行不写「今天的班次」：快照会活过写入当天。
+ * 提醒时刻全部取自 `reminders`，这里不重新推算。
+ */
+export function buildWidgetUpcoming({
+  shift,
+  nextShift,
+  reminders,
+  notificationMode,
+  microBreakEnabled,
+  labels,
+  nowMs,
+  expiresAtMs,
+}: BuildWidgetUpcomingOptions): WidgetUpcomingItem[] {
+  const items: WidgetUpcomingItem[] = [];
+  const seen = new Set<string>();
+  const add = (item: WidgetUpcomingItem) => {
+    if (!(item.dateMs > nowMs && item.dateMs < expiresAtMs)) return;
+    if (seen.has(item.id)) return;
+    seen.add(item.id);
+    items.push({ ...item, dateMs: Math.round(item.dateMs) });
+  };
+
+  const boundaries = (timeline: ShiftTimeline) => {
+    const startAtMs = getShiftStartAtMs(timeline);
+    const endAtMs = getShiftEndAtMs(timeline);
+    const during = (atMs: number) => atMs > nowMs && atMs <= endAtMs;
+    add({ id: `shift-start-${startAtMs}`, kind: "shiftStart", title: labels.shiftStart, detail: "", dateMs: startAtMs });
+    timeline.segments.slice(0, -1).forEach((segment, index) => {
+      const next = timeline.segments[index + 1];
+      if (next.startAtMs <= segment.endAtMs) return;
+      if (during(segment.endAtMs)) {
+        add({ id: `lunch-start-${segment.endAtMs}`, kind: "lunchStart", title: labels.breakTitle, detail: labels.breakStarts, dateMs: segment.endAtMs });
+      }
+      if (during(next.startAtMs)) {
+        add({ id: `lunch-end-${next.startAtMs}`, kind: "lunchEnd", title: labels.breakTitle, detail: labels.breakBackAt, dateMs: next.startAtMs });
+      }
+    });
+    return { endAtMs, during };
+  };
+
+  if (shift && isValidShiftTimeline(shift)) {
+    const { endAtMs, during } = boundaries(shift);
+    const microBreak = microBreakEnabled
+      ? reminders
+          .filter((reminder) => reminder.kind === "microBreak" && during(reminder.atMs))
+          .sort((a, b) => a.atMs - b.atMs)[0]
+      : undefined;
+    if (microBreak) {
+      add({ id: microBreak.id, kind: "health", title: labels.microBreak, detail: labels.microBreakDetail, dateMs: microBreak.atMs });
+    }
+    if (notificationMode === "milestones") {
+      for (const reminder of reminders) {
+        if (reminder.kind !== "milestone" || reminder.title === null) continue;
+        // 100% 与下班同刻，下班那一行已经说了。
+        if (/(^|:)milestone:100$/.test(reminder.id) || !during(reminder.atMs)) continue;
+        add({ id: reminder.id, kind: "milestone", title: labels.milestone, detail: reminder.title, dateMs: reminder.atMs });
+      }
+    }
+    add({
+      id: `shift-end-${endAtMs}`,
+      kind: "shiftEnd",
+      title: labels.shiftEnd,
+      detail: shift.overtimeEndAtMs === null ? "" : labels.overtime,
+      dateMs: endAtMs,
+    });
+  }
+
+  if (nextShift && isValidShiftTimeline(nextShift)) {
+    const { endAtMs } = boundaries(nextShift);
+    add({
+      id: `shift-end-${endAtMs}`,
+      kind: "shiftEnd",
+      title: labels.shiftEnd,
+      detail: nextShift.overtimeEndAtMs === null ? "" : labels.overtime,
+      dateMs: endAtMs,
+    });
+  }
+
+  // 同一时刻：上班在前，下班在后，其余居中。
+  const order = (kind: string) => (kind === "shiftStart" ? 0 : kind === "shiftEnd" ? 2 : 1);
+  return items.sort((a, b) => a.dateMs - b.dateMs || order(a.kind) - order(b.kind));
 }
 
 export interface CreateWidgetSnapshotOptions {
@@ -98,6 +233,8 @@ export interface CreateWidgetSnapshotOptions {
   nextShift: ShiftTimeline | null;
   locale: string;
   generatedAtMs: number;
+  /** `buildWidgetUpcoming` 的结果；空列表不写进快照。 */
+  upcoming?: WidgetUpcomingItem[];
   expiresAtMs: number;
 }
 
@@ -201,6 +338,7 @@ export function createWidgetSnapshot({
   locale,
   generatedAtMs,
   expiresAtMs,
+  upcoming = [],
 }: CreateWidgetSnapshotOptions): WidgetSnapshotV1 {
   if (!Number.isFinite(generatedAtMs) || !Number.isFinite(expiresAtMs)) {
     throw new Error("widget snapshot timestamps must be finite");
@@ -315,6 +453,7 @@ export function createWidgetSnapshot({
       overtimeEndAtMs: shift.overtimeEndAtMs,
     },
     entries,
+    ...(upcoming.length ? { upcoming } : {}),
   };
 }
 

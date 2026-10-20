@@ -16,6 +16,7 @@ import {
   setWoodfishDay,
   type DesktopStatsState,
 } from "./desktop-stats";
+import type { WidgetUpcomingLabels } from "./widget-snapshot";
 import {
   buildShiftReminders,
   shiftRemindersRevision,
@@ -98,6 +99,11 @@ export interface DesktopCountdownState extends ShiftTimeline {
   microBreakMessages: string[];
   miniSkin: DesktopMiniSkin;
   woodfishSoundEnabled: boolean;
+  /**
+   * 「倒计时与接下来」小组件的行标题，由界面按当前语言排好。可选：只有正在计时
+   * 的界面构造点需要它，空态和旧快照没有这一栏，小组件就不列「接下来」。
+   */
+  widgetUpcomingLabels?: WidgetUpcomingLabels;
   /** 迷你面板眼睛按钮的无障碍描述，随界面语言走。 */
   showEarningsLabel: string;
   hideEarningsLabel: string;
@@ -307,23 +313,39 @@ export async function writeDesktopCountdownState(
 ): Promise<void> {
   const store = await getDesktopStore();
   if (!store) return;
-  await store.set(DESKTOP_COUNTDOWN_KEY, projectReminders(state));
+  const projected = projectReminders(state);
+  await store.set(DESKTOP_COUNTDOWN_KEY, projected);
 
   if (IS_MAC_APP_STORE_BUILD) {
     // WidgetSnapshot 由前端业务层投影；Rust 只负责把 JSON 原子写进 App Group。
     // 小组件同步失败不能回滚已经成功的主应用 Store 写入。
     try {
       const generatedAtMs = Date.now();
-      const { createWidgetSnapshot, serializeWidgetSnapshot } = await import(
-        "./widget-snapshot"
-      );
+      const { buildWidgetUpcoming, createWidgetSnapshot, serializeWidgetSnapshot } =
+        await import("./widget-snapshot");
+      const expiresAtMs = widgetSnapshotExpiryMs(state, generatedAtMs);
+      const shift = state.running ? state : null;
+      const nextShift = state.running ? state.nextShift : null;
+      const upcoming = state.widgetUpcomingLabels
+        ? buildWidgetUpcoming({
+            shift,
+            nextShift,
+            reminders: projected.reminders,
+            notificationMode: state.notificationMode,
+            microBreakEnabled: state.microBreakEnabled,
+            labels: state.widgetUpcomingLabels,
+            nowMs: generatedAtMs,
+            expiresAtMs,
+          })
+        : [];
       const snapshot = createWidgetSnapshot({
         running: state.running,
-        shift: state.running ? state : null,
-        nextShift: state.running ? state.nextShift : null,
+        shift,
+        nextShift,
         locale: state.lang,
         generatedAtMs,
-        expiresAtMs: widgetSnapshotExpiryMs(state, generatedAtMs),
+        expiresAtMs,
+        upcoming,
       });
       const { invoke } = await import("@tauri-apps/api/core");
       await invoke("write_widget_snapshot", {
