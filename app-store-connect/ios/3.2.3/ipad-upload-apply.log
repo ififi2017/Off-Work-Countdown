@@ -1,0 +1,206 @@
+Local: audit clean; 34 iPad pages for 17 locales.
+Remote: iOS 3.2.3 (PREPARE_FOR_SUBMISSION), 20 localizations; APP_IPAD_PRO_3GEN_129 sets only.
+
+~ en-US: 2 upload, 2 delete, reorder
+    1 keep en-ipad-01-countdown.png
+    2 keep en-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-en-ipad-03-widgets-home
+    4 NEW  3.2.3-en-ipad-04-widgets-lock
+    5 keep en-ipad-04-calendar.png
+    6 keep en-ipad-05-records.png
+    7 keep en-ipad-06-focus.png
+    8 keep en-ipad-08-breaks.png
+      retire 3.2.2-en-ipad-03-nofree
+      retire en-ipad-07-widgets.png
+~ de-DE: 2 upload, 2 delete, reorder
+    1 keep de-ipad-01-countdown.png
+    2 keep de-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-de-ipad-03-widgets-home
+    4 NEW  3.2.3-de-ipad-04-widgets-lock
+    5 keep de-ipad-04-calendar.png
+    6 keep de-ipad-05-records.png
+    7 keep de-ipad-06-focus.png
+    8 keep de-ipad-08-breaks.png
+      retire 3.2.2-de-ipad-03-nofree
+      retire de-ipad-07-widgets.png
+~ fr-FR: 2 upload, 2 delete, reorder
+    1 keep fr-ipad-01-countdown.png
+    2 keep fr-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-fr-ipad-03-widgets-home
+    4 NEW  3.2.3-fr-ipad-04-widgets-lock
+    5 keep fr-ipad-04-calendar.png
+    6 keep fr-ipad-05-records.png
+    7 keep fr-ipad-06-focus.png
+    8 keep fr-ipad-08-breaks.png
+      retire 3.2.2-fr-ipad-03-nofree
+      retire fr-ipad-07-widgets.png
+~ es-ES: 2 upload, 2 delete, reorder
+    1 keep es-ipad-01-countdown.png
+    2 keep es-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-es-ipad-03-widgets-home
+    4 NEW  3.2.3-es-ipad-04-widgets-lock
+    5 keep es-ipad-04-calendar.png
+    6 keep es-ipad-05-records.png
+    7 keep es-ipad-06-focus.png
+    8 keep es-ipad-08-breaks.png
+      retire 3.2.2-es-ipad-03-nofree
+      retire es-ipad-07-widgets.png
+~ it: 2 upload, 2 delete, reorder
+    1 keep it-ipad-01-countdown.png
+    2 keep it-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-it-ipad-03-widgets-home
+    4 NEW  3.2.3-it-ipad-04-widgets-lock
+    5 keep it-ipad-04-calendar.png
+    6 keep it-ipad-05-records.png
+    7 keep it-ipad-06-focus.png
+    8 keep it-ipad-08-breaks.png
+      retire 3.2.2-it-ipad-03-nofree
+      retire it-ipad-07-widgets.png
+~ pt-BR: 2 upload, 2 delete, reorder
+    1 keep pt-ipad-01-countdown.png
+    2 keep pt-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-pt-ipad-03-widgets-home
+    4 NEW  3.2.3-pt-ipad-04-widgets-lock
+    5 keep pt-ipad-04-calendar.png
+    6 keep pt-ipad-05-records.png
+    7 keep pt-ipad-06-focus.png
+    8 keep pt-ipad-08-breaks.png
+      retire 3.2.2-pt-ipad-03-nofree
+      retire pt-ipad-07-widgets.png
+~ ja: 2 upload, 2 delete, reorder
+    1 keep ja-ipad-01-countdown.png
+    2 keep ja-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-ja-ipad-03-widgets-home
+    4 NEW  3.2.3-ja-ipad-04-widgets-lock
+    5 keep ja-ipad-04-calendar.png
+    6 keep ja-ipad-05-records.png
+    7 keep ja-ipad-06-focus.png
+    8 keep ja-ipad-08-breaks.png
+      retire 3.2.2-ja-ipad-03-nofree
+      retire ja-ipad-07-widgets.png
+~ ko: 2 upload, 2 delete, reorder
+    1 keep ko-ipad-01-countdown.png
+    2 keep ko-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-ko-ipad-03-widgets-home
+    4 NEW  3.2.3-ko-ipad-04-widgets-lock
+    5 keep ko-ipad-04-calendar.png
+    6 keep ko-ipad-05-records.png
+    7 keep ko-ipad-06-focus.png
+    8 keep ko-ipad-08-breaks.png
+      retire 3.2.2-ko-ipad-03-nofree
+      retire ko-ipad-07-widgets.png
+~ ru: 2 upload, 2 delete, reorder
+    1 keep ru-ipad-01-countdown.png
+    2 keep ru-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-ru-ipad-03-widgets-home
+    4 NEW  3.2.3-ru-ipad-04-widgets-lock
+    5 keep ru-ipad-04-calendar.png
+    6 keep ru-ipad-05-records.png
+    7 keep ru-ipad-06-focus.png
+    8 keep ru-ipad-08-breaks.png
+      retire 3.2.2-ru-ipad-03-nofree
+      retire ru-ipad-07-widgets.png
+~ tr: 2 upload, 2 delete, reorder
+    1 keep tr-ipad-01-countdown.png
+    2 keep tr-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-tr-ipad-03-widgets-home
+    4 NEW  3.2.3-tr-ipad-04-widgets-lock
+    5 keep tr-ipad-04-calendar.png
+    6 keep tr-ipad-05-records.png
+    7 keep tr-ipad-06-focus.png
+    8 keep tr-ipad-08-breaks.png
+      retire 3.2.2-tr-ipad-03-nofree
+      retire tr-ipad-07-widgets.png
+~ id: 2 upload, 2 delete, reorder
+    1 keep id-ipad-01-countdown.png
+    2 keep id-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-id-ipad-03-widgets-home
+    4 NEW  3.2.3-id-ipad-04-widgets-lock
+    5 keep id-ipad-04-calendar.png
+    6 keep id-ipad-05-records.png
+    7 keep id-ipad-06-focus.png
+    8 keep id-ipad-08-breaks.png
+      retire 3.2.2-id-ipad-03-nofree
+      retire id-ipad-07-widgets.png
+~ vi: 2 upload, 2 delete, reorder
+    1 keep vi-ipad-01-countdown.png
+    2 keep vi-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-vi-ipad-03-widgets-home
+    4 NEW  3.2.3-vi-ipad-04-widgets-lock
+    5 keep vi-ipad-04-calendar.png
+    6 keep vi-ipad-05-records.png
+    7 keep vi-ipad-06-focus.png
+    8 keep vi-ipad-08-breaks.png
+      retire 3.2.2-vi-ipad-03-nofree
+      retire vi-ipad-07-widgets.png
+~ th: 2 upload, 2 delete, reorder
+    1 keep th-ipad-01-countdown.png
+    2 keep th-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-th-ipad-03-widgets-home
+    4 NEW  3.2.3-th-ipad-04-widgets-lock
+    5 keep th-ipad-04-calendar.png
+    6 keep th-ipad-05-records.png
+    7 keep th-ipad-06-focus.png
+    8 keep th-ipad-08-breaks.png
+      retire 3.2.2-th-ipad-03-nofree
+      retire th-ipad-07-widgets.png
+~ hi: 2 upload, 2 delete, reorder
+    1 keep hi-IN-ipad-01-countdown.png
+    2 keep hi-IN-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-hi-IN-ipad-03-widgets-home
+    4 NEW  3.2.3-hi-IN-ipad-04-widgets-lock
+    5 keep hi-IN-ipad-04-calendar.png
+    6 keep hi-IN-ipad-05-records.png
+    7 keep hi-IN-ipad-06-focus.png
+    8 keep hi-IN-ipad-08-breaks.png
+      retire 3.2.2-hi-IN-ipad-03-nofree
+      retire hi-IN-ipad-07-widgets.png
+~ ar-SA: 2 upload, 2 delete, reorder
+    1 keep ar-ipad-01-countdown.png
+    2 keep ar-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-ar-ipad-03-widgets-home
+    4 NEW  3.2.3-ar-ipad-04-widgets-lock
+    5 keep ar-ipad-04-calendar.png
+    6 keep ar-ipad-05-records.png
+    7 keep ar-ipad-06-focus.png
+    8 keep ar-ipad-08-breaks.png
+      retire 3.2.2-ar-ipad-03-nofree
+      retire ar-ipad-07-widgets.png
+~ zh-Hans: 2 upload, 2 delete, reorder
+    1 keep zh-CN-ipad-01-countdown.png
+    2 keep zh-CN-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-zh-CN-ipad-03-widgets-home
+    4 NEW  3.2.3-zh-CN-ipad-04-widgets-lock
+    5 keep zh-CN-ipad-04-calendar.png
+    6 keep zh-CN-ipad-05-records.png
+    7 keep zh-CN-ipad-06-focus.png
+    8 keep zh-CN-ipad-08-breaks.png
+      retire 3.2.2-zh-CN-ipad-03-nofree
+      retire zh-CN-ipad-07-widgets.png
+~ zh-Hant: 2 upload, 2 delete, reorder
+    1 keep zh-TW-ipad-01-countdown.png
+    2 keep zh-TW-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-zh-TW-ipad-03-widgets-home
+    4 NEW  3.2.3-zh-TW-ipad-04-widgets-lock
+    5 keep zh-TW-ipad-04-calendar.png
+    6 keep zh-TW-ipad-05-records.png
+    7 keep zh-TW-ipad-06-focus.png
+    8 keep zh-TW-ipad-08-breaks.png
+      retire 3.2.2-zh-TW-ipad-03-nofree
+      retire zh-TW-ipad-07-widgets.png
+
+Totals: 34 screenshot uploads, 34 screenshot deletions, 17 reorders in 17 sets. No videos, metadata, builds or other sets.
+en-US: deleted doneat-3.2.2-en-ipad-03-nofree-ab94ae83f6ca.png
+en-US: deleted en-ipad-07-widgets.png
+en-US 3: uploaded doneat-3.2.3-en-ipad-03-widgets-home-28d38379447a.png
+en-US 4: uploaded doneat-3.2.3-en-ipad-04-widgets-lock-8a275db35bec.png
+file:///Volumes/BACKUP/Projects/Off-Work-Countdown/.claude/worktrees/store-media-3-2-3-1399f1/scripts/app-store-connect/ipad-shots-3.2.3.mjs:124
+ if(!rec.readback.ok)throw Error(`${p.locale}: the set did not read back in the planned order`);
+                           ^
+
+Error: en-US: the set did not read back in the planned order
+    at file:///Volumes/BACKUP/Projects/Off-Work-Countdown/.claude/worktrees/store-media-3-2-3-1399f1/scripts/app-store-connect/ipad-shots-3.2.3.mjs:124:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+Node.js v22.22.3
+exit=1

@@ -1,0 +1,1442 @@
+{
+  "createdAt": "2026-10-20T13:33:21.555Z",
+  "uploaded": false,
+  "items": [
+    {
+      "locale": "en",
+      "ascLocale": "en-US",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "en/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "28d38379447a8df491007458ce1989d461cae3ef01da6444ec9ff5f11b009a22",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/en-ipad-home.png",
+          "sha256": "166c38018effef0284a7799f32d0e307e68b65caf237f576848e67a8c18129b6"
+        }
+      ],
+      "copy": {
+        "label": "NEW WIDGETS",
+        "lines": [
+          "Your day,",
+          "on your Home Screen."
+        ],
+        "sub": [
+          "Countdown, week progress, shifts and holidays.",
+          "Arrange them your way."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 83.52
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "en",
+      "ascLocale": "en-US",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "en/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "8a275db35bec3f6079ae2c301842b0f7215a3725b8d5b1c30a3bd41251c77882",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/en-ipad-lock.png",
+          "sha256": "d6fc006136866cd31651bec48bd71bdff42bc89eee516d859cb6db275df718ca"
+        }
+      ],
+      "copy": {
+        "label": "LOCK SCREEN",
+        "lines": [
+          "Wake your screen.",
+          "See how long is left."
+        ],
+        "sub": [
+          "Countdown, ring and week progress,",
+          "right on your Lock Screen."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 83.52
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "de",
+      "ascLocale": "de-DE",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "de/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "43d6f4b207d78530e2d3f5ea18029f89f286776715ec661f22a31b7198f68fa4",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/de-ipad-home.png",
+          "sha256": "5ae07f711a53c1a98af128106e7255a1035e35f458e8936064da23d6b302b193"
+        }
+      ],
+      "copy": {
+        "label": "NEUE WIDGETS",
+        "lines": [
+          "Dein Tag,",
+          "auf dem Home-Bildschirm."
+        ],
+        "sub": [
+          "Countdown, Wochenfortschritt, Schichten und Feiertage.",
+          "In der Größe, die zu dir passt."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 74.56
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "de",
+      "ascLocale": "de-DE",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "de/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "46cd225b83ec7932bc9ad78bc7c60f4d9e1ecd76856f8ad49687b5878e28f1f4",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/de-ipad-lock.png",
+          "sha256": "0ef95a55297ccbf07456e0822e45a676889884d9cb0195ba8c93fa1be1e78986"
+        }
+      ],
+      "copy": {
+        "label": "SPERRBILDSCHIRM",
+        "lines": [
+          "Bildschirm an.",
+          "Restzeit im Blick."
+        ],
+        "sub": [
+          "Countdown, Ring und Wochenfortschritt,",
+          "direkt auf dem Sperrbildschirm."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 76.56
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "fr",
+      "ascLocale": "fr-FR",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "fr/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "4cf13621a04b70317e593217a0d156d6cdede7f51aa89567adcb55f57766e5b4",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/fr-ipad-home.png",
+          "sha256": "5a0d8e733d561a46998a63b6922085515417b60439c1fbe623871152337c5cdd"
+        }
+      ],
+      "copy": {
+        "label": "NOUVEAUX WIDGETS",
+        "lines": [
+          "Votre journée,",
+          "sur l’écran d’accueil."
+        ],
+        "sub": [
+          "Compte à rebours, semaine, horaires et jours fériés.",
+          "À la taille qui vous convient."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 74.24
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "fr",
+      "ascLocale": "fr-FR",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "fr/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "4689bfeea5a5d760004ea69c3e109b1a5730b4f912b59c6f4bdaa286a5fb9805",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/fr-ipad-lock.png",
+          "sha256": "9ee70e8d320423d88e0d9aecb4bae314df86929a0f4cde2f3e8b8183eca3ccd1"
+        }
+      ],
+      "copy": {
+        "label": "ÉCRAN VERROUILLÉ",
+        "lines": [
+          "Un regard.",
+          "Le temps restant."
+        ],
+        "sub": [
+          "Compte à rebours, anneau et semaine,",
+          "directement sur l’écran verrouillé."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 74.24
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "es",
+      "ascLocale": "es-ES",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "es/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "e292ccef1b1494aa0a0dc816fa079d5298cd68c71d7baae420407496b340cb7a",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/es-ipad-home.png",
+          "sha256": "696208f52d401f1547520c378dd0c5fed88a2937f5ca09393e125c1d2316c0fe"
+        }
+      ],
+      "copy": {
+        "label": "WIDGETS NUEVOS",
+        "lines": [
+          "Tu día,",
+          "en la pantalla de inicio."
+        ],
+        "sub": [
+          "Cuenta atrás, progreso semanal, turnos y festivos.",
+          "Del tamaño que prefieras."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 75.4
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "es",
+      "ascLocale": "es-ES",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "es/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "eeb121a5222f2ebc99b8c053e8455d55c4e8e41d26dafbbd53d0ce13045db221",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/es-ipad-lock.png",
+          "sha256": "22ed44936dcaa315aa63ec424d1b9c608174a0ba902914d1cf45a3c7778a9b68"
+        }
+      ],
+      "copy": {
+        "label": "PANTALLA BLOQUEADA",
+        "lines": [
+          "Enciende la pantalla.",
+          "Mira cuánto falta."
+        ],
+        "sub": [
+          "Cuenta atrás, anillo y progreso semanal,",
+          "en la pantalla bloqueada."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 75.4
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "it",
+      "ascLocale": "it",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "it/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "2a89b996bda1601e5ed8a4be28be8e11bf41a12e55061f0cac3c1868fb2bec25",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/it-ipad-home.png",
+          "sha256": "7b4f3812d5bb07b19cbaf71d8a71064fb1a2cea16821b169415d2b5dc95e7591"
+        }
+      ],
+      "copy": {
+        "label": "NUOVI WIDGET",
+        "lines": [
+          "La tua giornata,",
+          "sulla schermata Home."
+        ],
+        "sub": [
+          "Conto alla rovescia, settimana, turni e festività.",
+          "Della misura che preferisci."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 68.44
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "it",
+      "ascLocale": "it",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "it/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "079577497d4c57339cc25e7b56e76730959309fd844162c931caff64aa21934a",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/it-ipad-lock.png",
+          "sha256": "505f80c37bfd3aa57022c8479baa64e00ac8c3eeffa512dd1bfc733d070f0659"
+        }
+      ],
+      "copy": {
+        "label": "SCHERMATA DI BLOCCO",
+        "lines": [
+          "Accendi lo schermo.",
+          "Vedi quanto manca."
+        ],
+        "sub": [
+          "Conto alla rovescia, anello e settimana,",
+          "direttamente sulla schermata di blocco."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 68.44
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "pt",
+      "ascLocale": "pt-BR",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "pt/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "8e216310f3248ff2e6ec37f62f3ca6ee99a6235e226eab8afc9ecf3d90c71fce",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/pt-ipad-home.png",
+          "sha256": "25a57117449a629156a07f3df259b27a2112d095a659dacd0ae03f2b1339d128"
+        }
+      ],
+      "copy": {
+        "label": "NOVOS WIDGETS",
+        "lines": [
+          "Seu dia,",
+          "na Tela de Início."
+        ],
+        "sub": [
+          "Contagem regressiva, semana, escalas e feriados.",
+          "No tamanho que você preferir."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 71.92
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "pt",
+      "ascLocale": "pt-BR",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "pt/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "abbe44933d831f6d67a0ca545aa7a3a48971aad473877500542fbeaa305472e5",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/pt-ipad-lock.png",
+          "sha256": "8f1a000828d4ab2fca8030dc8a3cd847b2a1455db85ad9ccc69e546abcc3934d"
+        }
+      ],
+      "copy": {
+        "label": "TELA BLOQUEADA",
+        "lines": [
+          "Acenda a tela.",
+          "Veja quanto falta."
+        ],
+        "sub": [
+          "Contagem regressiva, anel e progresso da semana,",
+          "direto na Tela Bloqueada."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 71.92
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "ja/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "1736822b183dc645b4d51adc5273b42003670bdd01a15ecb29146fd0577e1403",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ja-ipad-home.png",
+          "sha256": "ad02269a820972d37454a953157c11aa7e8372bfe84e997cd62091157f437e65"
+        }
+      ],
+      "copy": {
+        "label": "新しいウィジェット",
+        "lines": [
+          "開かなくても、",
+          "ホーム画面でわかる。"
+        ],
+        "sub": [
+          "カウントダウン、今週の進み具合、シフト、祝日。",
+          "好きなサイズで、好きな場所に。"
+        ]
+      },
+      "fontsUsed": [
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 78.88
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ja",
+      "ascLocale": "ja",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "ja/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "8030b64ad4a973bee3577c95afe31182de954ceb805f979b97c5d1b69adf674e",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ja-ipad-lock.png",
+          "sha256": "6478837cd538f1ef9212ba901473a14b49166ae27537b74f21a421682ac58b58"
+        }
+      ],
+      "copy": {
+        "label": "ロック画面",
+        "lines": [
+          "画面をつければ、",
+          "あと何分かわかる。"
+        ],
+        "sub": [
+          "カウントダウン、リング、今週の進み具合。",
+          "ロックを解除しなくても見られます。"
+        ]
+      },
+      "fontsUsed": [
+        "Noto Sans JP Medium",
+        "Noto Serif JP"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 78.88
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "ko/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "89ecc4b9f37d2a4840c2c820b736835c9845f094bc68bc540c8f6e3278a5dc3a",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ko-ipad-home.png",
+          "sha256": "16ea5c89feff60ceaec160d40d5468870ea5be590f15b06b07375551617cb586"
+        }
+      ],
+      "copy": {
+        "label": "새로운 위젯",
+        "lines": [
+          "열지 않아도,",
+          "홈 화면에서 한눈에."
+        ],
+        "sub": [
+          "카운트다운, 이번 주 진행률, 근무표와 공휴일.",
+          "원하는 크기로, 원하는 곳에."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 69.6
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ko",
+      "ascLocale": "ko",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "ko/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "9a37d6996961162241b29375969ed6a25e5abadc9009c5733b71d74d458df1a1",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ko-ipad-lock.png",
+          "sha256": "cdb85c1511e7bd04955bc20ecd76878779b63c71e949d6a61971d23e4777b690"
+        }
+      ],
+      "copy": {
+        "label": "잠금 화면",
+        "lines": [
+          "화면을 켜면,",
+          "남은 시간이 보여요."
+        ],
+        "sub": [
+          "카운트다운, 링, 이번 주 진행률을",
+          "잠금 해제 없이 바로 확인하세요."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans KR Medium",
+        "Noto Serif KR"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 69.6
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "ru/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "be9c2a9e6e08082ff2a9e4523da88388dc617a48fe28020acd9c1ad53b92d48b",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ru-ipad-home.png",
+          "sha256": "c7ad9596b30fb825c5140e4020b9b94fdb0e2f73e8878bac8f4f7d8ea60ff6d8"
+        }
+      ],
+      "copy": {
+        "label": "НОВЫЕ ВИДЖЕТЫ",
+        "lines": [
+          "Ваш день —",
+          "на экране «Домой»."
+        ],
+        "sub": [
+          "Обратный отсчёт, неделя, смены и праздники.",
+          "Любого размера — как вам удобно."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 67.28
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ru",
+      "ascLocale": "ru",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "ru/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "cdd9185e5a88086e55c273410e6c1745df19a5e1c0d2ed60c305c31ddd8d2653",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ru-ipad-lock.png",
+          "sha256": "7406411d4a09c79f36ad97700cbcb7da5a74c81907eb92aaf730a91b84dc82e2"
+        }
+      ],
+      "copy": {
+        "label": "ЭКРАН БЛОКИРОВКИ",
+        "lines": [
+          "Взгляд на экран —",
+          "сколько осталось."
+        ],
+        "sub": [
+          "Обратный отсчёт, кольцо и прогресс недели —",
+          "прямо на экране блокировки."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 67.28
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "tr",
+      "ascLocale": "tr",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "tr/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "e046196cca8f4a2124ddc0c4b45d5ed89491b6a091dd123597a54a63071f6331",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/tr-ipad-home.png",
+          "sha256": "2782980c448dd09be943ac556b6cab5ba60dbcd30142925741f0a1f534af5bfa"
+        }
+      ],
+      "copy": {
+        "label": "YENİ WIDGET’LAR",
+        "lines": [
+          "Günün,",
+          "ana ekranında."
+        ],
+        "sub": [
+          "Geri sayım, haftalık ilerleme, vardiyalar ve tatiller.",
+          "İstediğin boyutta, istediğin yerde."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 74.24
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "tr",
+      "ascLocale": "tr",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "tr/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "437faca9d5fbd0f5c113b6f3a3e79c509ebac642adc4eda1f35862b7420b2f80",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/tr-ipad-lock.png",
+          "sha256": "f10f5230b98d775ff5b2e60f983a6d158f3cd9b5af59164e1c38158497a71478"
+        }
+      ],
+      "copy": {
+        "label": "KİLİT EKRANI",
+        "lines": [
+          "Ekranı aç,",
+          "kalan süreyi gör."
+        ],
+        "sub": [
+          "Geri sayım, halka ve haftalık ilerleme,",
+          "doğrudan kilit ekranında."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 74.24
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "id",
+      "ascLocale": "id",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "id/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "30ba04d25253e0a597058bcc16e0e4d5cf4179b28f6eaa1ea8e7b72d17adf790",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/id-ipad-home.png",
+          "sha256": "84b20e2e84a68d2c0a59ed094c41cf9618a12b1bef946828e492bc5dcd9c1a5a"
+        }
+      ],
+      "copy": {
+        "label": "WIDGET BARU",
+        "lines": [
+          "Harimu,",
+          "di Layar Utama."
+        ],
+        "sub": [
+          "Hitung mundur, progres minggu, shift, dan hari libur.",
+          "Dalam ukuran yang kamu suka."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 71.92
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "id",
+      "ascLocale": "id",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "id/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "3c1e4bcfb1112f4d7e4bebcbe2f50d136b264255c7fdfddcd3d6443f57511838",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/id-ipad-lock.png",
+          "sha256": "718bb4a7d5766d601a689ff1ef0f867b9e66f6e1be20a724d84ba6bd92c343da"
+        }
+      ],
+      "copy": {
+        "label": "LAYAR TERKUNCI",
+        "lines": [
+          "Nyalakan layar,",
+          "lihat sisa waktu."
+        ],
+        "sub": [
+          "Hitung mundur, cincin, dan progres minggu,",
+          "langsung di Layar Terkunci."
+        ]
+      },
+      "fontsUsed": [
+        "Charter",
+        "Manrope Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 71.92
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "vi/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "98f7ea77c440d31ffa8ee4f326f5b7cb19279165bbd7e7c2d0a6eaf93fafabd2",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/vi-ipad-home.png",
+          "sha256": "ddd12041fe787c96fc7ad83ff35413cf6dea98d2371c84e13ae7c1ffcd150e3f"
+        }
+      ],
+      "copy": {
+        "label": "TIỆN ÍCH MỚI",
+        "lines": [
+          "Ngày của bạn,",
+          "ngay trên màn hình chính."
+        ],
+        "sub": [
+          "Đếm ngược, tiến độ tuần, ca làm và ngày lễ.",
+          "Chọn kích thước bạn thích."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 69.6
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "vi",
+      "ascLocale": "vi",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "vi/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "e2b3104a6282870193036a30f8c0d97c48014cf822be1131c4ecac2ebf5e9724",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/vi-ipad-lock.png",
+          "sha256": "67f6495fe3c053325785388d1031f23f1350e245400a547686f34425a16a92c7"
+        }
+      ],
+      "copy": {
+        "label": "MÀN HÌNH KHÓA",
+        "lines": [
+          "Bật màn hình,",
+          "biết còn bao lâu."
+        ],
+        "sub": [
+          "Đếm ngược, vòng tròn và tiến độ tuần,",
+          "ngay trên màn hình khóa."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Source Serif 4"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 69.6
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "th",
+      "ascLocale": "th",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "th/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "cec25318e03b5122143b7920901e1d0d728df88d878bc1883a50f2f5766c4264",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/th-ipad-home.png",
+          "sha256": "f33c082140acc3970f9043731df13c07ea770d907b2540ca6605072ecfc72b2c"
+        }
+      ],
+      "copy": {
+        "label": "วิดเจ็ตใหม่",
+        "lines": [
+          "วันทำงานของคุณ",
+          "บนหน้าจอโฮม"
+        ],
+        "sub": [
+          "นับถอยหลัง ความคืบหน้าสัปดาห์ กะงาน และวันหยุด",
+          "เลือกขนาดที่ชอบ วางตรงไหนก็ได้"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Thai Medium",
+        "Noto Serif Thai"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 75.4
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "th",
+      "ascLocale": "th",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "th/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "4686c50920d72d808b4a9dbc07a97fa140fcdd3949b2aff0add4731b5c042efb",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/th-ipad-lock.png",
+          "sha256": "c4e46394fcc5f3867c76664acb8f5498cb2df6afd59da705c2e8c7da62496705"
+        }
+      ],
+      "copy": {
+        "label": "หน้าจอล็อก",
+        "lines": [
+          "เปิดหน้าจอ",
+          "ก็รู้ว่าเหลืออีกนาน"
+        ],
+        "sub": [
+          "นับถอยหลัง วงแหวน และความคืบหน้าสัปดาห์",
+          "ดูได้บนหน้าจอล็อกเลย"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Thai Medium",
+        "Noto Serif Thai"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 75.4
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "hi-IN/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "86bbd8e2d165ca6c204cb19048d92bc7ab8afafa7bfa24a8a2a45011cdabd0de",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/hi-IN-ipad-home.png",
+          "sha256": "b7970b6fe0aac05cbb823b735b806ebd5074cfeaa13b1bb2004adf47fd3d49bc"
+        }
+      ],
+      "copy": {
+        "label": "नए विजेट",
+        "lines": [
+          "आपका दिन,",
+          "होम स्क्रीन पर।"
+        ],
+        "sub": [
+          "काउंटडाउन, हफ़्ते की प्रगति, शिफ़्ट और छुट्टियाँ।",
+          "जिस आकार में चाहें, जहाँ चाहें।"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 69.6
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "hi-IN",
+      "ascLocale": "hi",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "hi-IN/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "a84beb6a8c72365179e185adf408e4dbfe7d65aaa6057294468e1476a077f01c",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/hi-IN-ipad-lock.png",
+          "sha256": "a104b3956e0714f06e54abf51014752425e95e8dd696cd4d015a008e47ca6f78"
+        }
+      ],
+      "copy": {
+        "label": "लॉक स्क्रीन",
+        "lines": [
+          "स्क्रीन जगाइए,",
+          "बचा समय देखिए।"
+        ],
+        "sub": [
+          "काउंटडाउन, रिंग और हफ़्ते की प्रगति,",
+          "सीधे लॉक स्क्रीन पर।"
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Sans Devanagari Medium",
+        "Noto Serif Devanagari"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 69.6
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ar",
+      "ascLocale": "ar-SA",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "ar/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "d4ecf4c3447c416d5591f1c5f2e03517e03cad4d6cbeb6f4e74c8d9ea4b7f40c",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ar-ipad-home.png",
+          "sha256": "d46040ce4dedb7131035e34398251bc0ce46df2b428dd13084dbd8865408f743"
+        }
+      ],
+      "copy": {
+        "label": "أدوات جديدة",
+        "lines": [
+          "يومك،",
+          "على الشاشة الرئيسية."
+        ],
+        "sub": [
+          "عدّ تنازلي، تقدّم الأسبوع، المناوبات والعطلات.",
+          "بالحجم الذي يناسبك."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 88.16
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "ar",
+      "ascLocale": "ar-SA",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "ar/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "ff3732357fae6bf101b457a8f33239667cff36029d5b16258aa6b9ef68e86f80",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/ar-ipad-lock.png",
+          "sha256": "7fa673742091026c6c7c16560c03ab10bcb49224f0553805a0e16151a2569e0b"
+        }
+      ],
+      "copy": {
+        "label": "شاشة القفل",
+        "lines": [
+          "أضئ الشاشة،",
+          "واعرف كم تبقّى."
+        ],
+        "sub": [
+          "عدّ تنازلي وحلقة وتقدّم الأسبوع،",
+          "مباشرةً على شاشة القفل."
+        ]
+      },
+      "fontsUsed": [
+        "Manrope Medium",
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic Medium"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 88.16
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "zh-CN/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "d3a280b9bf60192fef4eba5e0497a10e34e455d805ca0c6b93a0c2119b9c39d3",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/zh-CN-ipad-home.png",
+          "sha256": "38419a9b85fa4ded9db3b866287e84ab202f52c92501772f70167df3b3c17c57"
+        }
+      ],
+      "copy": {
+        "label": "全新小组件",
+        "lines": [
+          "不用打开，",
+          "桌面就有数。"
+        ],
+        "sub": [
+          "倒计时、本周进度、班表与节假日，",
+          "多种尺寸，随心摆放。"
+        ]
+      },
+      "fontsUsed": [
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 88.16
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-CN",
+      "ascLocale": "zh-Hans",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "zh-CN/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "02adf0853d8ecc4e982ed9b749228fa29ecc69601ae211185a8ef57b852c4f04",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/zh-CN-ipad-lock.png",
+          "sha256": "033ddfefe580e575fe3c1910bf20f461bd343d7c008632c455ae79511cedaa4a"
+        }
+      ],
+      "copy": {
+        "label": "锁屏",
+        "lines": [
+          "锁屏一亮，",
+          "就知道还剩多久。"
+        ],
+        "sub": [
+          "倒计时、圆环和本周进度，",
+          "不用解锁也能看。"
+        ]
+      },
+      "fontsUsed": [
+        "Noto Sans SC Medium",
+        "Noto Serif SC"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 88.16
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "ipad",
+      "order": 3,
+      "scene": "widgets-home",
+      "file": "zh-TW/03-widgets-home.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "5c10fa93185d8875fcc37e1370432b2a42bc7bb20e771b00cb669f185e21be51",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/zh-TW-ipad-home.png",
+          "sha256": "de1b077859a274783f3a0c22bf242314461d1ce18006e9194de065998dfe283f"
+        }
+      ],
+      "copy": {
+        "label": "全新小工具",
+        "lines": [
+          "不打開，",
+          "主畫面就看得到。"
+        ],
+        "sub": [
+          "倒數、本週進度、班表與假日，",
+          "多種尺寸，隨心擺放。"
+        ]
+      },
+      "fontsUsed": [
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 88.16
+      },
+      "status": "proof-not-uploaded"
+    },
+    {
+      "locale": "zh-TW",
+      "ascLocale": "zh-Hant",
+      "platform": "ipad",
+      "order": 4,
+      "scene": "widgets-lock",
+      "file": "zh-TW/04-widgets-lock.png",
+      "width": 2064,
+      "height": 2752,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "sha256": "0cbeeac89de51b265950e0a784df147bc4344c0da4c7c4b580e44a7e9e8e794a",
+      "sources": [
+        {
+          "file": "frames/ipad-pro-m5-13-inch-space-black-portrait.png",
+          "sha256": "0f995b4f4f48ea4f50f4da416eb18979ca4b0987a653158730a3b272901c2cc6"
+        },
+        {
+          "file": "raw/3.2.3/widgets/zh-TW-ipad-lock.png",
+          "sha256": "455476cc28b323d6dda44d596ef88837f335ad191822318d7e70ed9e1082514f"
+        }
+      ],
+      "copy": {
+        "label": "鎖定畫面",
+        "lines": [
+          "螢幕一亮，",
+          "就知道還剩多久。"
+        ],
+        "sub": [
+          "倒數、圓環和本週進度，",
+          "不用解鎖也看得到。"
+        ]
+      },
+      "fontsUsed": [
+        "Noto Sans TC Medium",
+        "Noto Serif TC"
+      ],
+      "layoutAudit": {
+        "issues": [],
+        "headlinePx": 88.16
+      },
+      "status": "proof-not-uploaded"
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+Local: audit clean; 34 iPad pages for 17 locales.
+Remote: iOS 3.2.3 (PREPARE_FOR_SUBMISSION), 20 localizations; APP_IPAD_PRO_3GEN_129 sets only.
+
+= en-US: already done
+~ de-DE: 2 upload, 2 delete, reorder
+    1 keep de-ipad-01-countdown.png
+    2 keep de-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-de-ipad-03-widgets-home
+    4 NEW  3.2.3-de-ipad-04-widgets-lock
+    5 keep de-ipad-04-calendar.png
+    6 keep de-ipad-05-records.png
+    7 keep de-ipad-06-focus.png
+    8 keep de-ipad-08-breaks.png
+      retire 3.2.2-de-ipad-03-nofree
+      retire de-ipad-07-widgets.png
+~ fr-FR: 2 upload, 2 delete, reorder
+    1 keep fr-ipad-01-countdown.png
+    2 keep fr-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-fr-ipad-03-widgets-home
+    4 NEW  3.2.3-fr-ipad-04-widgets-lock
+    5 keep fr-ipad-04-calendar.png
+    6 keep fr-ipad-05-records.png
+    7 keep fr-ipad-06-focus.png
+    8 keep fr-ipad-08-breaks.png
+      retire 3.2.2-fr-ipad-03-nofree
+      retire fr-ipad-07-widgets.png
+~ es-ES: 2 upload, 2 delete, reorder
+    1 keep es-ipad-01-countdown.png
+    2 keep es-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-es-ipad-03-widgets-home
+    4 NEW  3.2.3-es-ipad-04-widgets-lock
+    5 keep es-ipad-04-calendar.png
+    6 keep es-ipad-05-records.png
+    7 keep es-ipad-06-focus.png
+    8 keep es-ipad-08-breaks.png
+      retire 3.2.2-es-ipad-03-nofree
+      retire es-ipad-07-widgets.png
+~ it: 2 upload, 2 delete, reorder
+    1 keep it-ipad-01-countdown.png
+    2 keep it-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-it-ipad-03-widgets-home
+    4 NEW  3.2.3-it-ipad-04-widgets-lock
+    5 keep it-ipad-04-calendar.png
+    6 keep it-ipad-05-records.png
+    7 keep it-ipad-06-focus.png
+    8 keep it-ipad-08-breaks.png
+      retire 3.2.2-it-ipad-03-nofree
+      retire it-ipad-07-widgets.png
+~ pt-BR: 2 upload, 2 delete, reorder
+    1 keep pt-ipad-01-countdown.png
+    2 keep pt-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-pt-ipad-03-widgets-home
+    4 NEW  3.2.3-pt-ipad-04-widgets-lock
+    5 keep pt-ipad-04-calendar.png
+    6 keep pt-ipad-05-records.png
+    7 keep pt-ipad-06-focus.png
+    8 keep pt-ipad-08-breaks.png
+      retire 3.2.2-pt-ipad-03-nofree
+      retire pt-ipad-07-widgets.png
+~ ja: 2 upload, 2 delete, reorder
+    1 keep ja-ipad-01-countdown.png
+    2 keep ja-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-ja-ipad-03-widgets-home
+    4 NEW  3.2.3-ja-ipad-04-widgets-lock
+    5 keep ja-ipad-04-calendar.png
+    6 keep ja-ipad-05-records.png
+    7 keep ja-ipad-06-focus.png
+    8 keep ja-ipad-08-breaks.png
+      retire 3.2.2-ja-ipad-03-nofree
+      retire ja-ipad-07-widgets.png
+~ ko: 2 upload, 2 delete, reorder
+    1 keep ko-ipad-01-countdown.png
+    2 keep ko-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-ko-ipad-03-widgets-home
+    4 NEW  3.2.3-ko-ipad-04-widgets-lock
+    5 keep ko-ipad-04-calendar.png
+    6 keep ko-ipad-05-records.png
+    7 keep ko-ipad-06-focus.png
+    8 keep ko-ipad-08-breaks.png
+      retire 3.2.2-ko-ipad-03-nofree
+      retire ko-ipad-07-widgets.png
+~ ru: 2 upload, 2 delete, reorder
+    1 keep ru-ipad-01-countdown.png
+    2 keep ru-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-ru-ipad-03-widgets-home
+    4 NEW  3.2.3-ru-ipad-04-widgets-lock
+    5 keep ru-ipad-04-calendar.png
+    6 keep ru-ipad-05-records.png
+    7 keep ru-ipad-06-focus.png
+    8 keep ru-ipad-08-breaks.png
+      retire 3.2.2-ru-ipad-03-nofree
+      retire ru-ipad-07-widgets.png
+~ tr: 2 upload, 2 delete, reorder
+    1 keep tr-ipad-01-countdown.png
+    2 keep tr-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-tr-ipad-03-widgets-home
+    4 NEW  3.2.3-tr-ipad-04-widgets-lock
+    5 keep tr-ipad-04-calendar.png
+    6 keep tr-ipad-05-records.png
+    7 keep tr-ipad-06-focus.png
+    8 keep tr-ipad-08-breaks.png
+      retire 3.2.2-tr-ipad-03-nofree
+      retire tr-ipad-07-widgets.png
+~ id: 2 upload, 2 delete, reorder
+    1 keep id-ipad-01-countdown.png
+    2 keep id-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-id-ipad-03-widgets-home
+    4 NEW  3.2.3-id-ipad-04-widgets-lock
+    5 keep id-ipad-04-calendar.png
+    6 keep id-ipad-05-records.png
+    7 keep id-ipad-06-focus.png
+    8 keep id-ipad-08-breaks.png
+      retire 3.2.2-id-ipad-03-nofree
+      retire id-ipad-07-widgets.png
+~ vi: 2 upload, 2 delete, reorder
+    1 keep vi-ipad-01-countdown.png
+    2 keep vi-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-vi-ipad-03-widgets-home
+    4 NEW  3.2.3-vi-ipad-04-widgets-lock
+    5 keep vi-ipad-04-calendar.png
+    6 keep vi-ipad-05-records.png
+    7 keep vi-ipad-06-focus.png
+    8 keep vi-ipad-08-breaks.png
+      retire 3.2.2-vi-ipad-03-nofree
+      retire vi-ipad-07-widgets.png
+~ th: 2 upload, 2 delete, reorder
+    1 keep th-ipad-01-countdown.png
+    2 keep th-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-th-ipad-03-widgets-home
+    4 NEW  3.2.3-th-ipad-04-widgets-lock
+    5 keep th-ipad-04-calendar.png
+    6 keep th-ipad-05-records.png
+    7 keep th-ipad-06-focus.png
+    8 keep th-ipad-08-breaks.png
+      retire 3.2.2-th-ipad-03-nofree
+      retire th-ipad-07-widgets.png
+~ hi: 2 upload, 2 delete, reorder
+    1 keep hi-IN-ipad-01-countdown.png
+    2 keep hi-IN-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-hi-IN-ipad-03-widgets-home
+    4 NEW  3.2.3-hi-IN-ipad-04-widgets-lock
+    5 keep hi-IN-ipad-04-calendar.png
+    6 keep hi-IN-ipad-05-records.png
+    7 keep hi-IN-ipad-06-focus.png
+    8 keep hi-IN-ipad-08-breaks.png
+      retire 3.2.2-hi-IN-ipad-03-nofree
+      retire hi-IN-ipad-07-widgets.png
+~ ar-SA: 2 upload, 2 delete, reorder
+    1 keep ar-ipad-01-countdown.png
+    2 keep ar-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-ar-ipad-03-widgets-home
+    4 NEW  3.2.3-ar-ipad-04-widgets-lock
+    5 keep ar-ipad-04-calendar.png
+    6 keep ar-ipad-05-records.png
+    7 keep ar-ipad-06-focus.png
+    8 keep ar-ipad-08-breaks.png
+      retire 3.2.2-ar-ipad-03-nofree
+      retire ar-ipad-07-widgets.png
+~ zh-Hans: 2 upload, 2 delete, reorder
+    1 keep zh-CN-ipad-01-countdown.png
+    2 keep zh-CN-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-zh-CN-ipad-03-widgets-home
+    4 NEW  3.2.3-zh-CN-ipad-04-widgets-lock
+    5 keep zh-CN-ipad-04-calendar.png
+    6 keep zh-CN-ipad-05-records.png
+    7 keep zh-CN-ipad-06-focus.png
+    8 keep zh-CN-ipad-08-breaks.png
+      retire 3.2.2-zh-CN-ipad-03-nofree
+      retire zh-CN-ipad-07-widgets.png
+~ zh-Hant: 2 upload, 2 delete, reorder
+    1 keep zh-TW-ipad-01-countdown.png
+    2 keep zh-TW-ipad-02-countdown-detail.png
+    3 NEW  3.2.3-zh-TW-ipad-03-widgets-home
+    4 NEW  3.2.3-zh-TW-ipad-04-widgets-lock
+    5 keep zh-TW-ipad-04-calendar.png
+    6 keep zh-TW-ipad-05-records.png
+    7 keep zh-TW-ipad-06-focus.png
+    8 keep zh-TW-ipad-08-breaks.png
+      retire 3.2.2-zh-TW-ipad-03-nofree
+      retire zh-TW-ipad-07-widgets.png
+
+Totals: 32 screenshot uploads, 32 screenshot deletions, 16 reorders in 16 sets. No videos, metadata, builds or other sets.
+de-DE: deleted doneat-3.2.2-de-ipad-03-nofree-fad51c5a2faf.png
+de-DE: deleted de-ipad-07-widgets.png
+de-DE 3: uploaded doneat-3.2.3-de-ipad-03-widgets-home-43d6f4b207d7.png
+de-DE 4: uploaded doneat-3.2.3-de-ipad-04-widgets-lock-46cd225b83ec.png
+de-DE: 8 screenshots in order
+fr-FR: deleted doneat-3.2.2-fr-ipad-03-nofree-17f63e13879d.png
+fr-FR: deleted fr-ipad-07-widgets.png
+fr-FR 3: uploaded doneat-3.2.3-fr-ipad-03-widgets-home-4cf13621a04b.png
+fr-FR 4: uploaded doneat-3.2.3-fr-ipad-04-widgets-lock-4689bfeea5a5.png
+fr-FR: 8 screenshots in order
+es-ES: deleted doneat-3.2.2-es-ipad-03-nofree-28896d45f4a5.png
+es-ES: deleted es-ipad-07-widgets.png
+es-ES 3: uploaded doneat-3.2.3-es-ipad-03-widgets-home-e292ccef1b14.png
+es-ES 4: uploaded doneat-3.2.3-es-ipad-04-widgets-lock-eeb121a5222f.png
+es-ES: 8 screenshots in order
+it: deleted doneat-3.2.2-it-ipad-03-nofree-183cb8c284d3.png
+it: deleted it-ipad-07-widgets.png
+it 3: uploaded doneat-3.2.3-it-ipad-03-widgets-home-2a89b996bda1.png
+it 4: uploaded doneat-3.2.3-it-ipad-04-widgets-lock-079577497d4c.png
+it: 8 screenshots in order
+pt-BR: deleted doneat-3.2.2-pt-ipad-03-nofree-3ef82bcb4198.png
+pt-BR: deleted pt-ipad-07-widgets.png
+pt-BR 3: uploaded doneat-3.2.3-pt-ipad-03-widgets-home-8e216310f324.png
+pt-BR 4: uploaded doneat-3.2.3-pt-ipad-04-widgets-lock-abbe44933d83.png
+pt-BR: 8 screenshots in order
+ja: deleted doneat-3.2.2-ja-ipad-03-nofree-3876292d63b2.png
+ja: deleted ja-ipad-07-widgets.png
+ja 3: uploaded doneat-3.2.3-ja-ipad-03-widgets-home-1736822b183d.png
+ja 4: uploaded doneat-3.2.3-ja-ipad-04-widgets-lock-8030b64ad4a9.png
+ja: 8 screenshots in order
+ko: deleted doneat-3.2.2-ko-ipad-03-nofree-1a90b53c8810.png
+ko: deleted ko-ipad-07-widgets.png
+ko 3: uploaded doneat-3.2.3-ko-ipad-03-widgets-home-89ecc4b9f37d.png
+ko 4: uploaded doneat-3.2.3-ko-ipad-04-widgets-lock-9a37d6996961.png
+ko: 8 screenshots in order
+ru: deleted doneat-3.2.2-ru-ipad-03-nofree-4e0d7b3949c3.png
+ru: deleted ru-ipad-07-widgets.png
+ru 3: uploaded doneat-3.2.3-ru-ipad-03-widgets-home-be9c2a9e6e08.png
+ru 4: uploaded doneat-3.2.3-ru-ipad-04-widgets-lock-cdd9185e5a88.png
+ru: 8 screenshots in order
+tr: deleted doneat-3.2.2-tr-ipad-03-nofree-ddde3805f247.png
+tr: deleted tr-ipad-07-widgets.png
+tr 3: uploaded doneat-3.2.3-tr-ipad-03-widgets-home-e046196cca8f.png
+tr 4: uploaded doneat-3.2.3-tr-ipad-04-widgets-lock-437faca9d5fb.png
+tr: 8 screenshots in order
+id: deleted doneat-3.2.2-id-ipad-03-nofree-075152543898.png
+id: deleted id-ipad-07-widgets.png
+id 3: uploaded doneat-3.2.3-id-ipad-03-widgets-home-30ba04d25253.png
+id 4: uploaded doneat-3.2.3-id-ipad-04-widgets-lock-3c1e4bcfb111.png
+id: 8 screenshots in order
+vi: deleted doneat-3.2.2-vi-ipad-03-nofree-6e8766b049ac.png
+vi: deleted vi-ipad-07-widgets.png
+vi 3: uploaded doneat-3.2.3-vi-ipad-03-widgets-home-98f7ea77c440.png
+vi 4: uploaded doneat-3.2.3-vi-ipad-04-widgets-lock-e2b3104a6282.png
+vi: 8 screenshots in order
+th: deleted doneat-3.2.2-th-ipad-03-nofree-b5126a106821.png
+th: deleted th-ipad-07-widgets.png
+th 3: uploaded doneat-3.2.3-th-ipad-03-widgets-home-cec25318e03b.png
+th 4: uploaded doneat-3.2.3-th-ipad-04-widgets-lock-4686c50920d7.png
+th: 8 screenshots in order
+hi: deleted doneat-3.2.2-hi-IN-ipad-03-nofree-cf3c6d389615.png
+hi: deleted hi-IN-ipad-07-widgets.png
+hi 3: uploaded doneat-3.2.3-hi-IN-ipad-03-widgets-home-86bbd8e2d165.png
+hi 4: uploaded doneat-3.2.3-hi-IN-ipad-04-widgets-lock-a84beb6a8c72.png
+hi: 8 screenshots in order
+ar-SA: deleted doneat-3.2.2-ar-ipad-03-nofree-a9082a3e5e16.png
+ar-SA: deleted ar-ipad-07-widgets.png
+ar-SA 3: uploaded doneat-3.2.3-ar-ipad-03-widgets-home-d4ecf4c3447c.png
+ar-SA 4: uploaded doneat-3.2.3-ar-ipad-04-widgets-lock-ff3732357fae.png
+ar-SA: 8 screenshots in order
+zh-Hans: deleted doneat-3.2.2-zh-CN-ipad-03-nofree-ee36e0b33ad6.png
+zh-Hans: deleted zh-CN-ipad-07-widgets.png
+zh-Hans 3: uploaded doneat-3.2.3-zh-CN-ipad-03-widgets-home-d3a280b9bf60.png
+zh-Hans 4: uploaded doneat-3.2.3-zh-CN-ipad-04-widgets-lock-02adf0853d8e.png
+zh-Hans: 8 screenshots in order
+zh-Hant: deleted doneat-3.2.2-zh-TW-ipad-03-nofree-71bfbf7c3b06.png
+zh-Hant: deleted zh-TW-ipad-07-widgets.png
+zh-Hant 3: uploaded doneat-3.2.3-zh-TW-ipad-03-widgets-home-5c10fa93185d.png
+zh-Hant 4: uploaded doneat-3.2.3-zh-TW-ipad-04-widgets-lock-0cbeeac89de5.png
+zh-Hant: 8 screenshots in order
+Done. No build selected, nothing submitted.
+exit=0

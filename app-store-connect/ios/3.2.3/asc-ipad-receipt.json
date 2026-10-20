@@ -1,0 +1,1079 @@
+{
+  "appId": "6802803318",
+  "versionString": "3.2.3",
+  "display": "APP_IPAD_PRO_3GEN_129",
+  "sets": {
+    "en-US": {
+      "setId": "9463309a-d534-4836-81cb-82a9b5e121ea",
+      "original": [
+        {
+          "id": "42beaffb-b303-47ef-a537-a2fc6c9ef709",
+          "fileName": "en-ipad-01-countdown.png"
+        },
+        {
+          "id": "3659e388-a9e5-4568-94cf-d60db76e2db1",
+          "fileName": "en-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "1a0c23a8-f66a-4382-a10d-d215c29c14e3",
+          "fileName": "doneat-3.2.2-en-ipad-03-nofree-ab94ae83f6ca.png"
+        },
+        {
+          "id": "c0d20085-6a81-4662-8776-b715fc7320b1",
+          "fileName": "en-ipad-04-calendar.png"
+        },
+        {
+          "id": "55270903-7210-4a91-9072-d0fb9da30165",
+          "fileName": "en-ipad-05-records.png"
+        },
+        {
+          "id": "608188e4-d6ed-418b-af7f-389197a202af",
+          "fileName": "en-ipad-06-focus.png"
+        },
+        {
+          "id": "48456d17-d817-4d4e-a310-67781efc9af2",
+          "fileName": "en-ipad-07-widgets.png"
+        },
+        {
+          "id": "a81052bf-76d0-43a9-834a-19d5c98391f5",
+          "fileName": "en-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "6d800019-57a8-8a76-8032-7b2f9410d096",
+          "fileName": "doneat-3.2.3-en-ipad-03-widgets-home-28d38379447a.png",
+          "md5": "57ab813062ff5b65a4152ed12d0183f6"
+        },
+        "4": {
+          "id": "6f400019-57a8-8a76-801d-585e4755e7b1",
+          "fileName": "doneat-3.2.3-en-ipad-04-widgets-lock-8a275db35bec.png",
+          "md5": "99c1b011816ffdbb3b8055a1e307bde2"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:03:57.588Z",
+        "ok": false,
+        "files": [
+          "en-ipad-01-countdown.png",
+          "en-ipad-02-countdown-detail.png",
+          "en-ipad-04-calendar.png",
+          "en-ipad-05-records.png",
+          "en-ipad-06-focus.png",
+          "en-ipad-08-breaks.png",
+          "doneat-3.2.3-en-ipad-03-widgets-home-28d38379447a.png",
+          "doneat-3.2.3-en-ipad-04-widgets-lock-8a275db35bec.png"
+        ]
+      }
+    },
+    "de-DE": {
+      "setId": "15a833c6-a91e-4393-b444-5f2e98f7d8f3",
+      "original": [
+        {
+          "id": "e6a19bea-26e7-4a3a-9dd4-63481b5b5c3c",
+          "fileName": "de-ipad-01-countdown.png"
+        },
+        {
+          "id": "3c0e9f0b-61ec-4a47-8d76-adb2d1f8f0f0",
+          "fileName": "de-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "9d605e7e-aa89-487a-a602-6e481fd954b2",
+          "fileName": "doneat-3.2.2-de-ipad-03-nofree-fad51c5a2faf.png"
+        },
+        {
+          "id": "e89a1e32-a2b3-4b16-9eda-fe741c67636d",
+          "fileName": "de-ipad-04-calendar.png"
+        },
+        {
+          "id": "b8d30d26-66df-4657-86b3-0a1473f5cddb",
+          "fileName": "de-ipad-05-records.png"
+        },
+        {
+          "id": "55696ee0-ed61-4406-9188-f50430926dba",
+          "fileName": "de-ipad-06-focus.png"
+        },
+        {
+          "id": "7d8162c6-d6d4-47e5-bc65-a5833b41eee1",
+          "fileName": "de-ipad-07-widgets.png"
+        },
+        {
+          "id": "c886f73c-c35e-488f-883d-831f9d4e6881",
+          "fileName": "de-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "83000019-57a8-8a76-802c-1c42587447b7",
+          "fileName": "doneat-3.2.3-de-ipad-03-widgets-home-43d6f4b207d7.png",
+          "md5": "4148a2158f2e54edc1f447d2d434280d"
+        },
+        "4": {
+          "id": "bac00019-57a8-8a76-8032-2e9885cb3125",
+          "fileName": "doneat-3.2.3-de-ipad-04-widgets-lock-46cd225b83ec.png",
+          "md5": "cab3490dd3cd554a9e9688ccc9d75b8d"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:05:19.896Z",
+        "ok": true,
+        "files": [
+          "de-ipad-01-countdown.png",
+          "de-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-de-ipad-03-widgets-home-43d6f4b207d7.png",
+          "doneat-3.2.3-de-ipad-04-widgets-lock-46cd225b83ec.png",
+          "de-ipad-04-calendar.png",
+          "de-ipad-05-records.png",
+          "de-ipad-06-focus.png",
+          "de-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "fr-FR": {
+      "setId": "9e788430-f95e-4d53-b11d-d741cf683780",
+      "original": [
+        {
+          "id": "baf99a92-0d70-49ac-affc-fa6eb1c802df",
+          "fileName": "fr-ipad-01-countdown.png"
+        },
+        {
+          "id": "e67f0809-2fc8-4e31-b1f0-6427c26fe63b",
+          "fileName": "fr-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "3d73d285-70d1-4770-8dca-e5aed6e5e5d7",
+          "fileName": "doneat-3.2.2-fr-ipad-03-nofree-17f63e13879d.png"
+        },
+        {
+          "id": "888e802c-a995-453a-a32c-5fb9c1618015",
+          "fileName": "fr-ipad-04-calendar.png"
+        },
+        {
+          "id": "2cc3fa0f-10ef-4138-b9bf-ee5530ad23ab",
+          "fileName": "fr-ipad-05-records.png"
+        },
+        {
+          "id": "a2c38532-ff48-4325-a9f8-709b8f567f50",
+          "fileName": "fr-ipad-06-focus.png"
+        },
+        {
+          "id": "8b303889-fcbb-4c47-8f39-8c6bc1132d40",
+          "fileName": "fr-ipad-07-widgets.png"
+        },
+        {
+          "id": "857bc084-b033-4e1c-930c-fb3046ba0fd5",
+          "fileName": "fr-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "88c00019-57a8-8a76-8020-6f13cf989653",
+          "fileName": "doneat-3.2.3-fr-ipad-03-widgets-home-4cf13621a04b.png",
+          "md5": "20984392a0570071944d30d66325df1b"
+        },
+        "4": {
+          "id": "3ac00019-57a8-8a76-8025-0b58244018f9",
+          "fileName": "doneat-3.2.3-fr-ipad-04-widgets-lock-4689bfeea5a5.png",
+          "md5": "25af968c7516b76399e9319167e15d80"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:05:40.376Z",
+        "ok": true,
+        "files": [
+          "fr-ipad-01-countdown.png",
+          "fr-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-fr-ipad-03-widgets-home-4cf13621a04b.png",
+          "doneat-3.2.3-fr-ipad-04-widgets-lock-4689bfeea5a5.png",
+          "fr-ipad-04-calendar.png",
+          "fr-ipad-05-records.png",
+          "fr-ipad-06-focus.png",
+          "fr-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "es-ES": {
+      "setId": "51eceeb4-538f-4bcf-8b64-6e043a100dac",
+      "original": [
+        {
+          "id": "354719d7-b1ae-44a2-8c88-2c5698801b13",
+          "fileName": "es-ipad-01-countdown.png"
+        },
+        {
+          "id": "57a63153-e4c3-4811-8e4a-3fe4524ee8c8",
+          "fileName": "es-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "6221f686-e743-43dd-9652-ecfc0ac98dca",
+          "fileName": "doneat-3.2.2-es-ipad-03-nofree-28896d45f4a5.png"
+        },
+        {
+          "id": "237215a5-d2ae-4b0b-bf0f-1d6c5ae44669",
+          "fileName": "es-ipad-04-calendar.png"
+        },
+        {
+          "id": "05a9439a-deb3-4719-835a-516a0778c4f3",
+          "fileName": "es-ipad-05-records.png"
+        },
+        {
+          "id": "fbd3fd73-85a0-437b-b8bc-3796f49e30bd",
+          "fileName": "es-ipad-06-focus.png"
+        },
+        {
+          "id": "788bedcb-213f-4afc-89dc-ed845e462d78",
+          "fileName": "es-ipad-07-widgets.png"
+        },
+        {
+          "id": "e60ce437-6690-4cf9-a443-f7170553672d",
+          "fileName": "es-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "c8c00019-57a8-8a76-800a-c171e9caf96d",
+          "fileName": "doneat-3.2.3-es-ipad-03-widgets-home-e292ccef1b14.png",
+          "md5": "7303632eb0cf63f41499d4594a2b46ad"
+        },
+        "4": {
+          "id": "e5000019-57a8-8a76-8020-0de52313ed44",
+          "fileName": "doneat-3.2.3-es-ipad-04-widgets-lock-eeb121a5222f.png",
+          "md5": "860b2b1b6bc1686802b4bbf54b1419e8"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:05:59.805Z",
+        "ok": true,
+        "files": [
+          "es-ipad-01-countdown.png",
+          "es-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-es-ipad-03-widgets-home-e292ccef1b14.png",
+          "doneat-3.2.3-es-ipad-04-widgets-lock-eeb121a5222f.png",
+          "es-ipad-04-calendar.png",
+          "es-ipad-05-records.png",
+          "es-ipad-06-focus.png",
+          "es-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "it": {
+      "setId": "2cce51f9-eb92-4c7e-9b3e-43c554b6f845",
+      "original": [
+        {
+          "id": "d035da5a-9cd4-43d7-8bfa-906f16c5538b",
+          "fileName": "it-ipad-01-countdown.png"
+        },
+        {
+          "id": "37124ab3-6f06-4e01-a3cb-f483acd96f54",
+          "fileName": "it-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "7aa563b6-ef96-4406-8f3a-f310b132e994",
+          "fileName": "doneat-3.2.2-it-ipad-03-nofree-183cb8c284d3.png"
+        },
+        {
+          "id": "b78e6233-562d-459c-a390-11b0a40be652",
+          "fileName": "it-ipad-04-calendar.png"
+        },
+        {
+          "id": "9ae5e8cd-e2f8-495b-9dbb-47f7f91802da",
+          "fileName": "it-ipad-05-records.png"
+        },
+        {
+          "id": "4c648116-3d59-4562-b7d9-55485eb1a469",
+          "fileName": "it-ipad-06-focus.png"
+        },
+        {
+          "id": "d6072ada-562c-423f-9644-7209a4fd4ba2",
+          "fileName": "it-ipad-07-widgets.png"
+        },
+        {
+          "id": "fb435f8f-2d23-40a9-9096-6abd0f8e1779",
+          "fileName": "it-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "16400019-57a8-8a76-802e-d88fedc84e2f",
+          "fileName": "doneat-3.2.3-it-ipad-03-widgets-home-2a89b996bda1.png",
+          "md5": "25a0a8bd5a4cec8a6852f87264864339"
+        },
+        "4": {
+          "id": "21c00019-57a8-8a76-803b-9ab29c245f9f",
+          "fileName": "doneat-3.2.3-it-ipad-04-widgets-lock-079577497d4c.png",
+          "md5": "3f44a52b4d74630bd2010b690207d9df"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:06:17.487Z",
+        "ok": true,
+        "files": [
+          "it-ipad-01-countdown.png",
+          "it-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-it-ipad-03-widgets-home-2a89b996bda1.png",
+          "doneat-3.2.3-it-ipad-04-widgets-lock-079577497d4c.png",
+          "it-ipad-04-calendar.png",
+          "it-ipad-05-records.png",
+          "it-ipad-06-focus.png",
+          "it-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "pt-BR": {
+      "setId": "18e0f164-4f39-4027-9707-46c67d43adef",
+      "original": [
+        {
+          "id": "d7cd89ef-3cb0-43c1-8e0a-d38d6c7e2692",
+          "fileName": "pt-ipad-01-countdown.png"
+        },
+        {
+          "id": "50cfd1c4-c632-484f-a628-53642f573b8a",
+          "fileName": "pt-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "47c30cd4-a058-4e3d-a2b9-f18e39032526",
+          "fileName": "doneat-3.2.2-pt-ipad-03-nofree-3ef82bcb4198.png"
+        },
+        {
+          "id": "11c1e6ea-7a37-4480-9e77-85fc2f91bf72",
+          "fileName": "pt-ipad-04-calendar.png"
+        },
+        {
+          "id": "a67c147a-e6d2-49b8-ab32-3b36c7e7c416",
+          "fileName": "pt-ipad-05-records.png"
+        },
+        {
+          "id": "2e41839b-5d04-4c4f-889f-6680bd9b6302",
+          "fileName": "pt-ipad-06-focus.png"
+        },
+        {
+          "id": "7558ea37-1fc2-4df4-b504-29f8d26dc8c3",
+          "fileName": "pt-ipad-07-widgets.png"
+        },
+        {
+          "id": "7b481439-ba3d-4bbd-8a5f-213d4fac8c2d",
+          "fileName": "pt-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "d1c00019-57a8-8a76-8016-bb3f1e30e916",
+          "fileName": "doneat-3.2.3-pt-ipad-03-widgets-home-8e216310f324.png",
+          "md5": "edcb66889ae70e05e938451586c762b6"
+        },
+        "4": {
+          "id": "18c00019-57a8-8a76-801e-eed5e3f4007c",
+          "fileName": "doneat-3.2.3-pt-ipad-04-widgets-lock-abbe44933d83.png",
+          "md5": "614423cc6cd559643f25843cde19f74f"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:06:36.630Z",
+        "ok": true,
+        "files": [
+          "pt-ipad-01-countdown.png",
+          "pt-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-pt-ipad-03-widgets-home-8e216310f324.png",
+          "doneat-3.2.3-pt-ipad-04-widgets-lock-abbe44933d83.png",
+          "pt-ipad-04-calendar.png",
+          "pt-ipad-05-records.png",
+          "pt-ipad-06-focus.png",
+          "pt-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "ja": {
+      "setId": "dbf6b736-88a9-466c-980f-1744c593f7d6",
+      "original": [
+        {
+          "id": "7457c6b5-8f99-4d71-95f6-667027971912",
+          "fileName": "ja-ipad-01-countdown.png"
+        },
+        {
+          "id": "57187765-fb27-42c0-9841-40454f0324c8",
+          "fileName": "ja-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "58df65b9-cf18-44a0-9031-b46081311c80",
+          "fileName": "doneat-3.2.2-ja-ipad-03-nofree-3876292d63b2.png"
+        },
+        {
+          "id": "1467b3f7-cb9f-4b89-b542-a77ca1049aec",
+          "fileName": "ja-ipad-04-calendar.png"
+        },
+        {
+          "id": "6b9d0422-16b0-4224-9cfa-cf054831268a",
+          "fileName": "ja-ipad-05-records.png"
+        },
+        {
+          "id": "161b04c2-3db2-4343-9298-c020ffef77d2",
+          "fileName": "ja-ipad-06-focus.png"
+        },
+        {
+          "id": "14da1a8e-080d-48b9-8507-637a648b19f3",
+          "fileName": "ja-ipad-07-widgets.png"
+        },
+        {
+          "id": "da338087-0ff2-428d-9145-f920fe7bfbc2",
+          "fileName": "ja-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "5c000019-57a8-8a76-8012-95d914401275",
+          "fileName": "doneat-3.2.3-ja-ipad-03-widgets-home-1736822b183d.png",
+          "md5": "62880f8640aab30032a96b482a8e5a64"
+        },
+        "4": {
+          "id": "95000019-57a8-8a76-8006-086718419572",
+          "fileName": "doneat-3.2.3-ja-ipad-04-widgets-lock-8030b64ad4a9.png",
+          "md5": "8575df11bb3f64c97b46b255e3436def"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:06:59.701Z",
+        "ok": true,
+        "files": [
+          "ja-ipad-01-countdown.png",
+          "ja-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-ja-ipad-03-widgets-home-1736822b183d.png",
+          "doneat-3.2.3-ja-ipad-04-widgets-lock-8030b64ad4a9.png",
+          "ja-ipad-04-calendar.png",
+          "ja-ipad-05-records.png",
+          "ja-ipad-06-focus.png",
+          "ja-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "ko": {
+      "setId": "e2205edf-38a0-4607-a502-739cef5e28b7",
+      "original": [
+        {
+          "id": "e8af38b2-f0bf-43e5-8d14-d0012d0237e0",
+          "fileName": "ko-ipad-01-countdown.png"
+        },
+        {
+          "id": "f0c7e84a-fab7-470f-a2f7-6dc6be3dcb1f",
+          "fileName": "ko-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "5499bb17-f823-4196-9885-5daaf622dead",
+          "fileName": "doneat-3.2.2-ko-ipad-03-nofree-1a90b53c8810.png"
+        },
+        {
+          "id": "042f0a11-66c1-48e4-8ae5-cb8c1678498a",
+          "fileName": "ko-ipad-04-calendar.png"
+        },
+        {
+          "id": "59a6c16a-d555-47a0-a8e2-98d907e3e78d",
+          "fileName": "ko-ipad-05-records.png"
+        },
+        {
+          "id": "768152bc-b59d-45ca-ba0d-2768aa2baa17",
+          "fileName": "ko-ipad-06-focus.png"
+        },
+        {
+          "id": "17a18dc4-11b0-4418-b1a3-050b883d6135",
+          "fileName": "ko-ipad-07-widgets.png"
+        },
+        {
+          "id": "aefbc8b8-df39-4f83-b9c3-bc54ab86f18a",
+          "fileName": "ko-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "d7800019-57a8-8a76-8025-be3455f4f838",
+          "fileName": "doneat-3.2.3-ko-ipad-03-widgets-home-89ecc4b9f37d.png",
+          "md5": "16c0b8c184c2228d35a804f32f74c15a"
+        },
+        "4": {
+          "id": "f0000019-57a8-8a76-803b-6c0a4334f2ed",
+          "fileName": "doneat-3.2.3-ko-ipad-04-widgets-lock-9a37d6996961.png",
+          "md5": "b92545049f1969cb5ba234ae1d76aa9c"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:07:19.325Z",
+        "ok": true,
+        "files": [
+          "ko-ipad-01-countdown.png",
+          "ko-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-ko-ipad-03-widgets-home-89ecc4b9f37d.png",
+          "doneat-3.2.3-ko-ipad-04-widgets-lock-9a37d6996961.png",
+          "ko-ipad-04-calendar.png",
+          "ko-ipad-05-records.png",
+          "ko-ipad-06-focus.png",
+          "ko-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "ru": {
+      "setId": "ea8de5c7-0be7-467a-b801-49f8a31f0dfb",
+      "original": [
+        {
+          "id": "7d70183f-dd0c-4969-b96b-b81232da9a9f",
+          "fileName": "ru-ipad-01-countdown.png"
+        },
+        {
+          "id": "1c6f673b-b93b-4a5d-9f09-d1c8d200cdbc",
+          "fileName": "ru-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "b336b521-6b31-48b7-a848-6fc84159b096",
+          "fileName": "doneat-3.2.2-ru-ipad-03-nofree-4e0d7b3949c3.png"
+        },
+        {
+          "id": "a3cfc905-ebe9-4147-b62e-5fc4127c15ac",
+          "fileName": "ru-ipad-04-calendar.png"
+        },
+        {
+          "id": "3ddb9dee-e7a5-4533-8953-350cb5785471",
+          "fileName": "ru-ipad-05-records.png"
+        },
+        {
+          "id": "21aea039-42db-420a-a9e9-a0644979b64b",
+          "fileName": "ru-ipad-06-focus.png"
+        },
+        {
+          "id": "d63d3beb-68f3-4eec-8d49-4f3f9c9962e7",
+          "fileName": "ru-ipad-07-widgets.png"
+        },
+        {
+          "id": "ed977c6b-1710-4d8a-b152-e90e97f1ca17",
+          "fileName": "ru-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "f3000019-57a8-8a76-8020-7dc129f2ddff",
+          "fileName": "doneat-3.2.3-ru-ipad-03-widgets-home-be9c2a9e6e08.png",
+          "md5": "49e4b5afb59901a1a142f6053c31345e"
+        },
+        "4": {
+          "id": "61000019-57a8-8a76-8019-281e53f6c275",
+          "fileName": "doneat-3.2.3-ru-ipad-04-widgets-lock-cdd9185e5a88.png",
+          "md5": "2d466215c95ed1ac940be76d1bf6ddc0"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:07:40.914Z",
+        "ok": true,
+        "files": [
+          "ru-ipad-01-countdown.png",
+          "ru-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-ru-ipad-03-widgets-home-be9c2a9e6e08.png",
+          "doneat-3.2.3-ru-ipad-04-widgets-lock-cdd9185e5a88.png",
+          "ru-ipad-04-calendar.png",
+          "ru-ipad-05-records.png",
+          "ru-ipad-06-focus.png",
+          "ru-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "tr": {
+      "setId": "f1075fd2-7752-4078-baf4-eaed6d6024ab",
+      "original": [
+        {
+          "id": "e4f2d798-dce8-4608-b09b-6d25ad364d0e",
+          "fileName": "tr-ipad-01-countdown.png"
+        },
+        {
+          "id": "1ff439f5-f0b7-426d-aaf2-eb9bb255e76a",
+          "fileName": "tr-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "49e07bf8-b85f-4daa-8f0d-3ac871fc1207",
+          "fileName": "doneat-3.2.2-tr-ipad-03-nofree-ddde3805f247.png"
+        },
+        {
+          "id": "f60f5b19-7228-46db-8eac-dbb867a51d8f",
+          "fileName": "tr-ipad-04-calendar.png"
+        },
+        {
+          "id": "e6cfe764-50b9-41b4-8a52-e47448a0ba54",
+          "fileName": "tr-ipad-05-records.png"
+        },
+        {
+          "id": "95619ecd-e03b-441c-a3aa-0084dbec5f1b",
+          "fileName": "tr-ipad-06-focus.png"
+        },
+        {
+          "id": "4fbbc7fd-f55c-416a-a414-6978493c5922",
+          "fileName": "tr-ipad-07-widgets.png"
+        },
+        {
+          "id": "a1bef3a6-697f-47e9-b34d-2fa1a712a284",
+          "fileName": "tr-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "3cc00019-57a8-8a76-8030-f7f1abd5e6da",
+          "fileName": "doneat-3.2.3-tr-ipad-03-widgets-home-e046196cca8f.png",
+          "md5": "d07312c0029fdeddde6cfc97259dbc6c"
+        },
+        "4": {
+          "id": "38400019-57a8-8a76-803d-00868912325c",
+          "fileName": "doneat-3.2.3-tr-ipad-04-widgets-lock-437faca9d5fb.png",
+          "md5": "754ffdb28f35457441d3d79f1115c16f"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:08:01.740Z",
+        "ok": true,
+        "files": [
+          "tr-ipad-01-countdown.png",
+          "tr-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-tr-ipad-03-widgets-home-e046196cca8f.png",
+          "doneat-3.2.3-tr-ipad-04-widgets-lock-437faca9d5fb.png",
+          "tr-ipad-04-calendar.png",
+          "tr-ipad-05-records.png",
+          "tr-ipad-06-focus.png",
+          "tr-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "id": {
+      "setId": "6a232b7e-424e-4b93-80d7-6effecb87756",
+      "original": [
+        {
+          "id": "2e42e4db-1129-4d84-adcc-3ea317378ef3",
+          "fileName": "id-ipad-01-countdown.png"
+        },
+        {
+          "id": "c1e4fd52-3580-4b7b-9945-874958fba21e",
+          "fileName": "id-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "b0e207ce-92a3-4db8-be80-b56ae7d26110",
+          "fileName": "doneat-3.2.2-id-ipad-03-nofree-075152543898.png"
+        },
+        {
+          "id": "6ec1fde3-e5d9-478a-a77a-1ef3c663584e",
+          "fileName": "id-ipad-04-calendar.png"
+        },
+        {
+          "id": "e01bdc73-e7ed-4d03-9913-9ce3999047d7",
+          "fileName": "id-ipad-05-records.png"
+        },
+        {
+          "id": "1911ec5e-ea84-4a5d-80a3-26f399b95aa1",
+          "fileName": "id-ipad-06-focus.png"
+        },
+        {
+          "id": "66c7bfa8-36f0-4dbc-850b-c6c5b33ca9e1",
+          "fileName": "id-ipad-07-widgets.png"
+        },
+        {
+          "id": "04f51d60-b461-47c4-8e41-a9094b93cc52",
+          "fileName": "id-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "ca000019-57a8-8a76-802a-f984a067200b",
+          "fileName": "doneat-3.2.3-id-ipad-03-widgets-home-30ba04d25253.png",
+          "md5": "5b5b6c8a1b7d30f59517fec2a3078941"
+        },
+        "4": {
+          "id": "48000019-57a8-8a76-800c-a47441e8945e",
+          "fileName": "doneat-3.2.3-id-ipad-04-widgets-lock-3c1e4bcfb111.png",
+          "md5": "86a88ca2a4eb6d5a0a98df9371bf7dbc"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:08:33.247Z",
+        "ok": true,
+        "files": [
+          "id-ipad-01-countdown.png",
+          "id-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-id-ipad-03-widgets-home-30ba04d25253.png",
+          "doneat-3.2.3-id-ipad-04-widgets-lock-3c1e4bcfb111.png",
+          "id-ipad-04-calendar.png",
+          "id-ipad-05-records.png",
+          "id-ipad-06-focus.png",
+          "id-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "vi": {
+      "setId": "6470167a-f1ff-4222-bfc6-3a41451f3389",
+      "original": [
+        {
+          "id": "60352a6a-6daf-49fb-a5e8-11357e718f50",
+          "fileName": "vi-ipad-01-countdown.png"
+        },
+        {
+          "id": "f4f741c6-98ee-4fd6-82c0-717ac9457ae7",
+          "fileName": "vi-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "b8681db5-7ca5-4c85-8892-c92c451173a8",
+          "fileName": "doneat-3.2.2-vi-ipad-03-nofree-6e8766b049ac.png"
+        },
+        {
+          "id": "c46ab7a3-020e-4f0b-8011-2c939b1bedba",
+          "fileName": "vi-ipad-04-calendar.png"
+        },
+        {
+          "id": "116264a8-dc06-4211-9de5-76ff68825c7d",
+          "fileName": "vi-ipad-05-records.png"
+        },
+        {
+          "id": "381bc616-9c41-4924-a848-444679f322ad",
+          "fileName": "vi-ipad-06-focus.png"
+        },
+        {
+          "id": "27a38190-0ea3-4778-bbe0-d485feff2a0b",
+          "fileName": "vi-ipad-07-widgets.png"
+        },
+        {
+          "id": "ab90e4b3-a2de-4521-857c-dd86f474a050",
+          "fileName": "vi-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "0a800019-57a8-8a76-801e-767074701c64",
+          "fileName": "doneat-3.2.3-vi-ipad-03-widgets-home-98f7ea77c440.png",
+          "md5": "0f021262f5a639edf973cce29fc2e389"
+        },
+        "4": {
+          "id": "21400019-57a8-8a76-8003-bce780b1de7a",
+          "fileName": "doneat-3.2.3-vi-ipad-04-widgets-lock-e2b3104a6282.png",
+          "md5": "0044a66a1fcea501b93e30fd99466121"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:08:53.362Z",
+        "ok": true,
+        "files": [
+          "vi-ipad-01-countdown.png",
+          "vi-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-vi-ipad-03-widgets-home-98f7ea77c440.png",
+          "doneat-3.2.3-vi-ipad-04-widgets-lock-e2b3104a6282.png",
+          "vi-ipad-04-calendar.png",
+          "vi-ipad-05-records.png",
+          "vi-ipad-06-focus.png",
+          "vi-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "th": {
+      "setId": "68da2e94-3075-4abd-b323-3bdfe978b43c",
+      "original": [
+        {
+          "id": "a5767e05-270d-498c-b95d-1ba2b0fbe8f1",
+          "fileName": "th-ipad-01-countdown.png"
+        },
+        {
+          "id": "d0779609-7866-45c6-9b3b-3ac743b09305",
+          "fileName": "th-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "a5b61b02-68f3-4107-a407-e57b157be1ab",
+          "fileName": "doneat-3.2.2-th-ipad-03-nofree-b5126a106821.png"
+        },
+        {
+          "id": "729b5785-b7e0-4c60-be4c-a3b5d0dbb068",
+          "fileName": "th-ipad-04-calendar.png"
+        },
+        {
+          "id": "1afbc658-8f9e-42ac-b35f-0d630690d784",
+          "fileName": "th-ipad-05-records.png"
+        },
+        {
+          "id": "9a936ebc-3fac-44fc-8ed6-b6e59c38789a",
+          "fileName": "th-ipad-06-focus.png"
+        },
+        {
+          "id": "d7d1d060-e9e8-4a2f-a419-9c4f19890b5b",
+          "fileName": "th-ipad-07-widgets.png"
+        },
+        {
+          "id": "89523a47-f7bb-4a30-a9ab-16e558105142",
+          "fileName": "th-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "11800019-57a8-8a76-8010-a7d107a308d2",
+          "fileName": "doneat-3.2.3-th-ipad-03-widgets-home-cec25318e03b.png",
+          "md5": "9b121ff80abd9d23c60fb4ef427a4da3"
+        },
+        "4": {
+          "id": "db800019-57a8-8a76-8012-f15c9f8d8722",
+          "fileName": "doneat-3.2.3-th-ipad-04-widgets-lock-4686c50920d7.png",
+          "md5": "a2f00e0a9ab02d3bca4f5e6052b14e9e"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:10:53.531Z",
+        "ok": true,
+        "files": [
+          "th-ipad-01-countdown.png",
+          "th-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-th-ipad-03-widgets-home-cec25318e03b.png",
+          "doneat-3.2.3-th-ipad-04-widgets-lock-4686c50920d7.png",
+          "th-ipad-04-calendar.png",
+          "th-ipad-05-records.png",
+          "th-ipad-06-focus.png",
+          "th-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "hi": {
+      "setId": "55c60b32-4dd4-492a-b23c-3ffa59c4d87e",
+      "original": [
+        {
+          "id": "e9de5249-45d1-45a7-a8a9-e9e6f6591e8b",
+          "fileName": "hi-IN-ipad-01-countdown.png"
+        },
+        {
+          "id": "4972035d-3906-4b98-9c82-df5735189ad3",
+          "fileName": "hi-IN-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "427b9c79-00a6-45ad-b161-a8980aefb0ba",
+          "fileName": "doneat-3.2.2-hi-IN-ipad-03-nofree-cf3c6d389615.png"
+        },
+        {
+          "id": "5aaef683-3f79-4239-a0af-2b26d87f0503",
+          "fileName": "hi-IN-ipad-04-calendar.png"
+        },
+        {
+          "id": "43ad9f32-03e7-4652-a1d8-84b99e2bcb82",
+          "fileName": "hi-IN-ipad-05-records.png"
+        },
+        {
+          "id": "b98f019f-7a89-491b-81f7-3885e8cc4d52",
+          "fileName": "hi-IN-ipad-06-focus.png"
+        },
+        {
+          "id": "a13f91c5-07f8-4999-9552-4ef7d671958e",
+          "fileName": "hi-IN-ipad-07-widgets.png"
+        },
+        {
+          "id": "6ec79f48-5710-43e5-9a15-864b45410540",
+          "fileName": "hi-IN-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "7c000019-57a8-8a76-8013-4e83d0b659d7",
+          "fileName": "doneat-3.2.3-hi-IN-ipad-03-widgets-home-86bbd8e2d165.png",
+          "md5": "66c3ce13d7bd8370433de260b0b717e4"
+        },
+        "4": {
+          "id": "7e800019-57a8-8a76-803d-5b925a08ac9e",
+          "fileName": "doneat-3.2.3-hi-IN-ipad-04-widgets-lock-a84beb6a8c72.png",
+          "md5": "4fab42a57e7984281340d3d7b3f16655"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:11:14.080Z",
+        "ok": true,
+        "files": [
+          "hi-IN-ipad-01-countdown.png",
+          "hi-IN-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-hi-IN-ipad-03-widgets-home-86bbd8e2d165.png",
+          "doneat-3.2.3-hi-IN-ipad-04-widgets-lock-a84beb6a8c72.png",
+          "hi-IN-ipad-04-calendar.png",
+          "hi-IN-ipad-05-records.png",
+          "hi-IN-ipad-06-focus.png",
+          "hi-IN-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "ar-SA": {
+      "setId": "8280ab5f-d60c-4d55-9a3c-2b0d64f1f2fe",
+      "original": [
+        {
+          "id": "49772bd7-77cc-4277-8e59-c81c8ee80e9d",
+          "fileName": "ar-ipad-01-countdown.png"
+        },
+        {
+          "id": "3ebd417f-1e4c-45ad-843e-2366f6741437",
+          "fileName": "ar-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "8ba61881-3482-407c-985c-af512b5e3c2a",
+          "fileName": "doneat-3.2.2-ar-ipad-03-nofree-a9082a3e5e16.png"
+        },
+        {
+          "id": "20d7f933-e5d0-4430-bc1d-d8efa8781323",
+          "fileName": "ar-ipad-04-calendar.png"
+        },
+        {
+          "id": "54514ed1-0def-4386-ba3f-ecc39de03aae",
+          "fileName": "ar-ipad-05-records.png"
+        },
+        {
+          "id": "82f7d3c5-a871-4e7f-b904-34b81096016a",
+          "fileName": "ar-ipad-06-focus.png"
+        },
+        {
+          "id": "b60e6067-2262-47cf-a5c4-c5d86232127d",
+          "fileName": "ar-ipad-07-widgets.png"
+        },
+        {
+          "id": "6d2328a3-d4e0-458c-9aac-48598a406f0f",
+          "fileName": "ar-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "91c00019-57a8-8a76-8031-618108f55e6f",
+          "fileName": "doneat-3.2.3-ar-ipad-03-widgets-home-d4ecf4c3447c.png",
+          "md5": "d26f3134a8f11c7dc678f8b1bca37593"
+        },
+        "4": {
+          "id": "b5400019-57a8-8a76-8039-26636b168fc9",
+          "fileName": "doneat-3.2.3-ar-ipad-04-widgets-lock-ff3732357fae.png",
+          "md5": "d28532d2ffba1e71c536a8a0dbe08513"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:11:35.739Z",
+        "ok": true,
+        "files": [
+          "ar-ipad-01-countdown.png",
+          "ar-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-ar-ipad-03-widgets-home-d4ecf4c3447c.png",
+          "doneat-3.2.3-ar-ipad-04-widgets-lock-ff3732357fae.png",
+          "ar-ipad-04-calendar.png",
+          "ar-ipad-05-records.png",
+          "ar-ipad-06-focus.png",
+          "ar-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "zh-Hans": {
+      "setId": "1109d2db-2291-47fe-a5b4-9a2598879ab5",
+      "original": [
+        {
+          "id": "e42ed0ec-6b07-462b-a6dd-0f1421054d5d",
+          "fileName": "zh-CN-ipad-01-countdown.png"
+        },
+        {
+          "id": "78eeaa52-a4d4-4563-80a0-676fc02da248",
+          "fileName": "zh-CN-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "51f09593-c92f-496b-9a4f-ea2538f66370",
+          "fileName": "doneat-3.2.2-zh-CN-ipad-03-nofree-ee36e0b33ad6.png"
+        },
+        {
+          "id": "2c420460-953a-4caa-8585-b7d53332a7cb",
+          "fileName": "zh-CN-ipad-04-calendar.png"
+        },
+        {
+          "id": "56d856a7-5ba5-4397-9cc0-0a61bca84ad0",
+          "fileName": "zh-CN-ipad-05-records.png"
+        },
+        {
+          "id": "8689917a-29a3-4437-aabe-ba2e3536df60",
+          "fileName": "zh-CN-ipad-06-focus.png"
+        },
+        {
+          "id": "b56697ba-d806-42b7-876d-e8a0856727db",
+          "fileName": "zh-CN-ipad-07-widgets.png"
+        },
+        {
+          "id": "7a136cb2-5842-496b-8be2-241e28293211",
+          "fileName": "zh-CN-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "6f400019-57a8-8a76-8000-c6621416bc59",
+          "fileName": "doneat-3.2.3-zh-CN-ipad-03-widgets-home-d3a280b9bf60.png",
+          "md5": "9e5e9a6bdf41e7258e913863a1310dfd"
+        },
+        "4": {
+          "id": "d5000019-57a8-8a76-801f-dbe7abd9cada",
+          "fileName": "doneat-3.2.3-zh-CN-ipad-04-widgets-lock-02adf0853d8e.png",
+          "md5": "fa47c5f921b09a333b668c7ff2a13710"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:11:58.889Z",
+        "ok": true,
+        "files": [
+          "zh-CN-ipad-01-countdown.png",
+          "zh-CN-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-zh-CN-ipad-03-widgets-home-d3a280b9bf60.png",
+          "doneat-3.2.3-zh-CN-ipad-04-widgets-lock-02adf0853d8e.png",
+          "zh-CN-ipad-04-calendar.png",
+          "zh-CN-ipad-05-records.png",
+          "zh-CN-ipad-06-focus.png",
+          "zh-CN-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "zh-Hant": {
+      "setId": "71d8978a-b4f5-4125-9459-ae337de02231",
+      "original": [
+        {
+          "id": "51d864c6-bfad-4efe-97cc-19a1db1bc017",
+          "fileName": "zh-TW-ipad-01-countdown.png"
+        },
+        {
+          "id": "b9a5e8f7-6616-44ec-abf1-30da33146c4d",
+          "fileName": "zh-TW-ipad-02-countdown-detail.png"
+        },
+        {
+          "id": "7d780ed4-ec04-45ac-b8dd-e19a26cc07b4",
+          "fileName": "doneat-3.2.2-zh-TW-ipad-03-nofree-71bfbf7c3b06.png"
+        },
+        {
+          "id": "dc790cd5-317d-4559-8c02-dc1044678d18",
+          "fileName": "zh-TW-ipad-04-calendar.png"
+        },
+        {
+          "id": "5b0dab2e-5323-4e95-a470-524f522fdf7d",
+          "fileName": "zh-TW-ipad-05-records.png"
+        },
+        {
+          "id": "c4cb3aa5-b449-4ea2-8954-042d45af029f",
+          "fileName": "zh-TW-ipad-06-focus.png"
+        },
+        {
+          "id": "cf4dab5c-a0de-49c5-93fd-4cf526383aad",
+          "fileName": "zh-TW-ipad-07-widgets.png"
+        },
+        {
+          "id": "0e9d19ad-4b00-475f-8337-1f67f447e7ef",
+          "fileName": "zh-TW-ipad-08-breaks.png"
+        }
+      ],
+      "uploads": {
+        "3": {
+          "id": "3c000019-57a8-8a76-800e-47104cd7dbf3",
+          "fileName": "doneat-3.2.3-zh-TW-ipad-03-widgets-home-5c10fa93185d.png",
+          "md5": "8636bde8f612d7b5a9ccf7d8f588b862"
+        },
+        "4": {
+          "id": "20800019-57a8-8a76-8001-969a4efcc218",
+          "fileName": "doneat-3.2.3-zh-TW-ipad-04-widgets-lock-0cbeeac89de5.png",
+          "md5": "986b3071233af6efabcd9b2e334db5c7"
+        }
+      },
+      "readback": {
+        "checkedAt": "2026-10-20T15:12:56.742Z",
+        "ok": true,
+        "files": [
+          "zh-TW-ipad-01-countdown.png",
+          "zh-TW-ipad-02-countdown-detail.png",
+          "doneat-3.2.3-zh-TW-ipad-03-widgets-home-5c10fa93185d.png",
+          "doneat-3.2.3-zh-TW-ipad-04-widgets-lock-0cbeeac89de5.png",
+          "zh-TW-ipad-04-calendar.png",
+          "zh-TW-ipad-05-records.png",
+          "zh-TW-ipad-06-focus.png",
+          "zh-TW-ipad-08-breaks.png"
+        ]
+      }
+    }
+  },
+  "updatedAt": "2026-10-20T15:12:56.742Z"
+}
