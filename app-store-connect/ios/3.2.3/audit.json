@@ -1,9 +1,10 @@
 {
-  "checkedAt": "2026-10-19T12:30:14.210Z",
+  "checkedAt": "2026-10-20T11:15:10.448Z",
   "videos": 18,
   "screenshots": 34,
   "pages": 97,
   "headers": 6,
+  "ipad": 34,
   "checked": [
     {
       "file": "ar-search-video-3.2.3.mp4",
@@ -694,6 +695,210 @@
     {
       "file": "header/mr-IN-header-video-v4.mp4",
       "frames": 240
+    },
+    {
+      "file": "ipad/en/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 83.52
+    },
+    {
+      "file": "ipad/en/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 83.52
+    },
+    {
+      "file": "ipad/de/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 74.56
+    },
+    {
+      "file": "ipad/de/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 76.56
+    },
+    {
+      "file": "ipad/fr/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 74.24
+    },
+    {
+      "file": "ipad/fr/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 74.24
+    },
+    {
+      "file": "ipad/es/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 75.4
+    },
+    {
+      "file": "ipad/es/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 75.4
+    },
+    {
+      "file": "ipad/it/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 68.44
+    },
+    {
+      "file": "ipad/it/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 68.44
+    },
+    {
+      "file": "ipad/pt/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 71.92
+    },
+    {
+      "file": "ipad/pt/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 71.92
+    },
+    {
+      "file": "ipad/ja/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 78.88
+    },
+    {
+      "file": "ipad/ja/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 78.88
+    },
+    {
+      "file": "ipad/ko/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 69.6
+    },
+    {
+      "file": "ipad/ko/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 69.6
+    },
+    {
+      "file": "ipad/ru/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 67.28
+    },
+    {
+      "file": "ipad/ru/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 67.28
+    },
+    {
+      "file": "ipad/tr/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 74.24
+    },
+    {
+      "file": "ipad/tr/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 74.24
+    },
+    {
+      "file": "ipad/id/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 71.92
+    },
+    {
+      "file": "ipad/id/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 71.92
+    },
+    {
+      "file": "ipad/vi/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 69.6
+    },
+    {
+      "file": "ipad/vi/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 69.6
+    },
+    {
+      "file": "ipad/th/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 75.4
+    },
+    {
+      "file": "ipad/th/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 75.4
+    },
+    {
+      "file": "ipad/hi-IN/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 69.6
+    },
+    {
+      "file": "ipad/hi-IN/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 69.6
+    },
+    {
+      "file": "ipad/ar/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 88.16
+    },
+    {
+      "file": "ipad/ar/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 88.16
+    },
+    {
+      "file": "ipad/zh-CN/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 88.16
+    },
+    {
+      "file": "ipad/zh-CN/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 88.16
+    },
+    {
+      "file": "ipad/zh-TW/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 88.16
+    },
+    {
+      "file": "ipad/zh-TW/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPAD_PRO_3GEN_129",
+      "headlinePx": 88.16
     }
   ],
   "findings": []

@@ -81,7 +81,27 @@ for(const v of headers){
  checked.push({file:'header/'+v.file,frames:Number(video.nb_read_frames)});
 }
 
-const report={checkedAt:new Date().toISOString(),videos:videos.length,screenshots:shots.length,pages:pages.length,headers:headers.length,checked,findings};
+// iPad 13″ widget pages (creative-compose-ipad-3.2.3.mjs): 2064×2752 opaque
+// PNG (APP_IPAD_PRO_3GEN_129), an empty layout audit, the actual-font check,
+// unchanged sources, and no price or "free" wording in any caption
+// (Guideline 2.3.7).
+const PRICE=/\bfree\b|gratis|kostenlos|gratuit|gratuito|grátis|бесплатн|ücretsiz|miễn phí|ฟรี|मुफ़्त|مجان|免费|免費|無料|무료|\bprice\b|[$¥€£₹]/i;
+const ipadFile=join(out,'ipad/screenshot-manifest.json'),ipad=existsSync(ipadFile)?JSON.parse(readFileSync(ipadFile,'utf8')).items:[];
+for(const p of ipad){
+ const file=join(out,'ipad',p.file);
+ if(!existsSync(file)){fail(p.file,'missing');continue;}
+ const png=readFileSync(file);
+ if(png.readUInt32BE(16)!==2064||png.readUInt32BE(20)!==2752)fail(p.file,'not 2064×2752');
+ if(png[25]!==2)fail(p.file,'not opaque RGB (colour type '+png[25]+')');
+ if(sha(file)!==p.sha256)fail(p.file,'hash differs from manifest');
+ if(p.layoutAudit.issues.length)fail(p.file,'layout audit issues',p.layoutAudit.issues);
+ if(!p.fontsUsed?.length)fail(p.file,'no actual-font check recorded');
+ const words=[p.copy.label,...p.copy.lines,...p.copy.sub].join(' ');if(PRICE.test(words))fail(p.file,'price wording in caption',words.match(PRICE)[0]);
+ for(const s of p.sources){const f=join(dir,s.file);if(!existsSync(f)||sha(f)!==s.sha256)fail(p.file,'source changed since render',s.file);}
+ checked.push({file:'ipad/'+p.file,order:p.order,display:p.display,headlinePx:p.layoutAudit.headlinePx});
+}
+
+const report={checkedAt:new Date().toISOString(),videos:videos.length,screenshots:shots.length,pages:pages.length,headers:headers.length,ipad:ipad.length,checked,findings};
 writeFileSync(join(out,'audit.json'),JSON.stringify(report,null,2)+'\n');
-console.log(JSON.stringify({videos:videos.length,screenshots:shots.length,pages:pages.length,headers:headers.length,findings},null,1));
+console.log(JSON.stringify({videos:videos.length,screenshots:shots.length,pages:pages.length,headers:headers.length,ipad:ipad.length,findings},null,1));
 if(findings.length)process.exitCode=1;
