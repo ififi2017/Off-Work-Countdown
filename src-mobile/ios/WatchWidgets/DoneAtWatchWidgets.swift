@@ -10,10 +10,33 @@ private struct DoneAtWatchEntry: TimelineEntry {
 }
 
 private struct DoneAtWatchProvider: TimelineProvider {
-    func placeholder(in context: Context) -> DoneAtWatchEntry { .init(date: .now, display: .waiting) }
+    /// The skeleton follows the real layout: a shift in the afternoon, not
+    /// the "waiting for iPhone" state.
+    func placeholder(in context: Context) -> DoneAtWatchEntry { Self.sample(at: .now) }
 
     func getSnapshot(in context: Context, completion: @escaping @Sendable (DoneAtWatchEntry) -> Void) {
-        Task { completion(await entry(at: .now)) }
+        let isPreview = context.isPreview
+        Task {
+            let entry = await entry(at: .now)
+            // The face gallery shows what the complication looks like before any sync.
+            if isPreview, case .content = entry.display { completion(entry) }
+            else if isPreview { completion(Self.sample(at: .now)) }
+            else { completion(entry) }
+        }
+    }
+
+    /// 09:00–12:00 and 13:00–18:00, two thirds done at 15:19.
+    static func sample(at date: Date) -> DoneAtWatchEntry {
+        let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
+        let minute: Int64 = 60_000
+        let start = nowMs - (6 * 60 + 19) * minute
+        let end = nowMs + (2 * 60 + 41) * minute
+        let content = WatchDisplayContent(
+            scheduleState: .scheduled, phase: .working, remainingMs: end - nowMs, progress: 66,
+            effectiveEndAtMs: end, nextBoundaryAtMs: end, nextShiftStartAtMs: nil, presentation: WatchWidgetSample.presentation
+        )
+        return .init(date: date, display: .content(content),
+                     segments: [[start, start + 180 * minute], [start + 240 * minute, end]])
     }
 
     func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<DoneAtWatchEntry>) -> Void) {
@@ -210,23 +233,8 @@ private struct DoneAtWatchWidgetView: View {
     }
 
     private func segmentBar(progress: Double, finished: Bool) -> some View {
-        let total = max(0.000_1, weights.reduce(0, +))
-        var remaining = min(1, max(0, progress)) * total
-        let fills = weights.map { weight -> Double in
-            let filled = min(weight, max(0, remaining))
-            remaining -= weight
-            return weight > 0 ? filled / weight : 0
-        }
-        return HStack(spacing: 3) {
-            ForEach(Array(fills.enumerated()), id: \.offset) { index, fill in
-                Gauge(value: fill) { EmptyView() }
-                    .gaugeStyle(.accessoryLinearCapacity)
-                    .tint(finished ? .secondary : .orange)
-                    .widgetAccentable()
-                    .frame(maxWidth: .infinity)
-                    .layoutPriority(weights[index] / total)
-            }
-        }
+        WatchSegmentBar(segments: WatchSegmentBar.fills(weights: weights, progress: progress),
+                        tint: finished ? .secondary : .orange, gap: 3)
     }
 
     // MARK: Corner — the time left along the bezel.
