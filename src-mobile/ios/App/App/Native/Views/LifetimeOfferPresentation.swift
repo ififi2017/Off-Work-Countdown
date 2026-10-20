@@ -1,45 +1,68 @@
 import SwiftUI
 
-/// A small, persistent entry in the timer's leading toolbar. Switching tabs
-/// does not dismiss or renew the offer; the deadline belongs to PlusEntitlement.
+/// A small, persistent entry in the timer's leading toolbar. A wrapped gift
+/// waits there until it is opened; an opened one shows its saving and the time
+/// left. Switching tabs does not dismiss or renew the offer; the deadline
+/// belongs to PlusEntitlement.
 struct LifetimeOfferToolbarButton: View {
     let plus: PlusEntitlement
     let text: AppText
+    /// The gift is open over the app; the opened one stands in for this one.
+    var isHidden = false
+    /// Where the gift is drawn, in global coordinates, for the opened gift
+    /// to start from and land on.
+    var onGiftFrame: (CGRect) -> Void = { _ in }
     let onOpen: () -> Void
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        if plus.canOfferLifetime, let offer = plus.lifetimeOffer, let deadline = offer.expiresAt {
-            TimelineView(PausableSecondsSchedule(isPaused: scenePhase != .active)) { context in
-                if offer.isActive(at: context.date) {
-                    Button(action: onOpen) {
-                        HStack(spacing: 7) {
-                            OfferGiftIcon(size: 25)
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(plus.lifetimeSavingsLabel(text: text) ?? text.t("plusOfferTitle"))
-                                    .font(.caption2.weight(.bold))
-                                Text(text.formatDuration(max(0, deadline.timeIntervalSince(max(context.date, offer.latestObservedAt))) * 1000))
-                                    .font(.caption.monospacedDigit().weight(.semibold))
+        if plus.canOfferLifetime, let offer = plus.lifetimeOffer {
+            Group {
+                if let deadline = offer.expiresAt {
+                    TimelineView(PausableSecondsSchedule(isPaused: scenePhase != .active)) { context in
+                        if offer.isActive(at: context.date) {
+                            Button(action: onOpen) {
+                                HStack(spacing: 7) {
+                                    OfferGiftIcon(size: 25)
+                                        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { onGiftFrame($0) }
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(plus.lifetimeSavingsLabel(text: text) ?? text.t("plusOfferTitle"))
+                                            .font(.caption2.weight(.bold))
+                                        Text(text.formatOfferRemaining(deadline.timeIntervalSince(max(context.date, offer.latestObservedAt))))
+                                            .font(.caption.monospacedDigit().weight(.semibold))
+                                    }
+                                    .lineLimit(1)
+                                }
                             }
-                            .lineLimit(1)
+                            .accessibilityLabel(text.t("plusOfferTitle"))
+                            .accessibilityValue(text.t("plusOfferDeadline", values: ["date": text.formatDate(deadline) + " " + text.formatTime(deadline)]))
                         }
                     }
-                    .accessibilityLabel(text.t("plusOfferTitle"))
-                    .accessibilityValue(text.t("plusOfferDeadline", values: ["date": text.formatDate(deadline) + " " + text.formatTime(deadline)]))
+                    .task(id: deadline) {
+                        let remaining = deadline.timeIntervalSince(max(.now, offer.latestObservedAt))
+                        if remaining > 0 {
+                            do { try await Task.sleep(for: .seconds(remaining)) }
+                            catch { return }
+                        }
+                        // Refresh the parent toolbar so expiry removes the entire item,
+                        // rather than leaving an empty Liquid Glass button behind.
+                        plus.observeLifetimeOffer()
+                    }
+                } else {
+                    Button(action: onOpen) {
+                        OfferGiftIcon(size: 30)
+                            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { onGiftFrame($0) }
+                    }
+                    .accessibilityLabel(text.t("plusGiftOpen"))
                 }
             }
+            .opacity(isHidden ? 0 : 1)
+            .allowsHitTesting(!isHidden)
+            // Hand over to the opened gift at once; fade back in as it lands.
+            .animation(isHidden ? nil : (reduceMotion ? OWCMotion.reduced : OWCMotion.giftOverlay), value: isHidden)
             .onChange(of: scenePhase) { _, _ in plus.observeLifetimeOffer() }
             .onDisappear { plus.observeLifetimeOffer() }
-            .task(id: deadline) {
-                let remaining = deadline.timeIntervalSince(max(.now, offer.latestObservedAt))
-                if remaining > 0 {
-                    do { try await Task.sleep(for: .seconds(remaining)) }
-                    catch { return }
-                }
-                // Refresh the parent toolbar so expiry removes the entire item,
-                // rather than leaving an empty Liquid Glass button behind.
-                plus.observeLifetimeOffer()
-            }
         }
     }
 }
@@ -71,8 +94,13 @@ private enum GiftPhase: CaseIterable {
     case rest, floating, peek, settling
 }
 
-private struct GiftArtwork: View {
-    var lidLift: CGFloat
+/// The gift itself. `lidLift` raises the lid by a fraction of the height and
+/// `lidTilt` turns it about its left edge, so the same drawing can sit closed
+/// in the toolbar, burst open, and settle half-open over the paywall.
+struct GiftArtwork: View {
+    var lidLift: CGFloat = 0
+    var lidTilt: Angle = .zero
+    private static let headroom: CGFloat = 0.5
 
     private static func hdr(_ red: Float, _ green: Float, _ blue: Float) -> Color {
         var resolved = Color.white.resolve(in: EnvironmentValues())
@@ -134,13 +162,19 @@ private struct GiftArtwork: View {
                         .frame(width: 14 * unit, height: 10 * unit)
                         .offset(x: 43 * unit, y: 27 * unit)
                 }
+                .rotationEffect(lidTilt, anchor: UnitPoint(x: 0.12, y: 0.5))
                 .offset(y: -geometry.size.height * lidLift)
             }
             .shadow(color: Color(red: 0.35, green: 0.12, blue: 0.04).opacity(0.18),
                     radius: 3 * unit, y: 3 * unit)
+            // The offscreen buffer is only as large as its view: give a lifted,
+            // tilted lid room above and beside the box before rasterising.
+            .padding(Self.headroom * geometry.size.width)
             .drawingGroup(opaque: false, colorMode: .extendedLinear)
+            .padding(-Self.headroom * geometry.size.width)
             .allowedDynamicRange(.high)
         }
+        .accessibilityHidden(true)
     }
 }
 
@@ -166,36 +200,38 @@ private nonisolated struct GiftBow: Shape {
     }
 }
 
+/// Light spilling out of an opened gift: short strokes radiating from the lid.
+struct GiftRays: View {
+    var body: some View {
+        Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height * 0.42)
+            let radius = min(size.width, size.height) / 2
+            for index in 0..<9 {
+                let angle = Angle.degrees(-170 + Double(index) * 20).radians
+                let direction = CGPoint(x: cos(angle), y: sin(angle))
+                var path = Path()
+                path.move(to: CGPoint(x: center.x + direction.x * radius * 0.55, y: center.y + direction.y * radius * 0.55))
+                path.addLine(to: CGPoint(x: center.x + direction.x * radius * 0.82, y: center.y + direction.y * radius * 0.82))
+                context.stroke(path, with: .color(Color(red: 1, green: 0.8, blue: 0.55)),
+                               style: StrokeStyle(lineWidth: max(2, radius * 0.045), lineCap: .round))
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// The first-run invitation, offered once after the introductory paywall
+/// closes. It shows the same offer paywall the update gift opens onto.
 struct LifetimeOfferSheet: View {
     let plus: PlusEntitlement
     let text: AppText
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    OfferGiftIcon(size: 64).padding(.top, 20)
-                    if plus.hasAvailableLifetimeOffer {
-                        LifetimeOfferCard(plus: plus, text: text)
-                    } else {
-                        Text(text.t("plusOfferUnavailable")).foregroundStyle(OWCDesign.secondary)
-                    }
-                    Button(text.t("plusRestore")) { Task { await plus.restore() } }
-                        .disabled(plus.isBusy)
-                }
-                .padding(24).frame(maxWidth: 560).frame(maxWidth: .infinity)
-            }
-            .background(OWCDesign.page)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(text.t("close")) { dismiss() }
-                }
-            }
-        }
-        .presentationDetents([.large])
-        .onChange(of: plus.isAuthorized) { _, owned in if owned { dismiss() } }
-        .task { plus.observeLifetimeOffer() }
-        .onDisappear { plus.observeLifetimeOffer() }
+        GiftOfferPaywall(plus: plus, text: text, onNotNow: { dismiss() }, onDone: { dismiss() })
+            .presentationDetents([.large])
+            .onChange(of: plus.isAuthorized) { _, owned in if owned { dismiss() } }
+            .task { plus.observeLifetimeOffer() }
+            .onDisappear { plus.observeLifetimeOffer() }
     }
 }

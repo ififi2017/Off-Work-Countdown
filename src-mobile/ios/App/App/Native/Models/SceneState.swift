@@ -95,6 +95,10 @@ final class SceneState {
     var recordsPath: [RecordsRoute] = []
     var settingsPath: [AppRoute] = []
     var showsLifetimeOffer = false
+    /// The opened gift stands in for the toolbar's until it lands back there.
+    var giftCoversToolbar = false
+    /// The toolbar gift's frame in global coordinates.
+    var giftToolbarFrame: CGRect?
     var paywallSheet: PlusPaywallReason?
     var timerSheet: TimerSheet? {
         didSet { if timerSheet != nil { presentAddFocus = false } }

@@ -17,6 +17,9 @@ final class AppText {
         localizer.string(key, locale: preferences.languageCode, values: values)
     }
 
+    /// The app language, for payloads drawn in it (widget previews).
+    var languageCode: String { preferences.languageCode }
+
     /// Plural-aware lookup. `count` picks the grammatical variant and, unless
     /// the caller supplies its own, also fills `{{count}}` with the
     /// locale-formatted number. Keeping both on one argument is the point:
@@ -60,6 +63,17 @@ final class AppText {
         let total = max(0, Int(milliseconds / 1_000))
         guard includeSeconds else { return formatRelativeDuration(milliseconds) }
         return String(format: "%02d:%02d:%02d", total / 3_600, (total % 3_600) / 60, total % 60)
+    }
+
+    /// Time left on an offer: days and hours while a day or more remains,
+    /// then a ticking clock for the last day.
+    func formatOfferRemaining(_ seconds: TimeInterval) -> String {
+        let remaining = max(0, seconds)
+        guard remaining >= 86_400 else { return formatDuration(remaining * 1_000) }
+        return Duration.seconds(Int(remaining)).formatted(
+            .units(allowed: [.days, .hours], width: .narrow, maximumUnitCount: 2)
+                .locale(preferences.locale)
+        )
     }
 
     func formatDays(_ value: Double) -> String {
@@ -178,6 +192,11 @@ final class AppText {
 
     func weekdayName(for date: Date) -> String {
         date.formatted(.dateTime.weekday(.wide).locale(preferences.locale))
+    }
+
+    /// The narrow weekday ("M", "一") that fits under a chart bar.
+    func weekdayNarrowName(for date: Date) -> String {
+        date.formatted(.dateTime.weekday(.narrow).locale(preferences.locale))
     }
 
     /// The full weekday name of a civil day number (days since 1970-01-01),

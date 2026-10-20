@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "今年がどれだけ過ぎたか。",
   "widgetSuiteYearInline": "{{year}} · {{percent}} 経過",
   "widgetSuiteYearName": "今年の進捗",
-  "widgetSuiteYearsMonths": "{{years}}年{{months}}か月"
+  "widgetSuiteYearsMonths": "{{years}}年{{months}}か月",
+  "updateWidgetsNoticeTitle": "DoneAt 3.2.3：新しいウィジェット",
+  "updateWidgetsNoticeBody": "ホーム画面、ロック画面、Apple Watch で退勤までのカウントダウンを確認できます。DoneAt を開いて追加方法をご覧ください。"
 }

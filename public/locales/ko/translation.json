@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "올해가 얼마나 지났는지 보여줘요.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} 지남",
   "widgetSuiteYearName": "올해 진행률",
-  "widgetSuiteYearsMonths": "{{years}}년 {{months}}개월"
+  "widgetSuiteYearsMonths": "{{years}}년 {{months}}개월",
+  "updateWidgetsNoticeTitle": "DoneAt 3.2.3: 새로운 위젯",
+  "updateWidgetsNoticeBody": "홈 화면, 잠금 화면, Apple Watch에서 퇴근 카운트다운을 볼 수 있어요. DoneAt을 열고 추가하는 방법을 확인하세요."
 }

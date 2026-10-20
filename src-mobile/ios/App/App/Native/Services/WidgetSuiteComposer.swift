@@ -413,7 +413,7 @@ final class WidgetSuiteComposer {
                     let date = day.date
                     let state: WidgetSummaryPeriod.Bar.State = day.isToday ? .current
                         : (day.kind == .upcoming ? .future : (day.kind == .rest ? .rest : .past))
-                    bars.append(.init(label: text.weekdayName(for: date), valueMs: day.workMs, state: state))
+                    bars.append(.init(label: text.weekdayNarrowName(for: date), valueMs: day.workMs, state: state))
                 }
             }
 

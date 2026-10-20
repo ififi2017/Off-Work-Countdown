@@ -62,3 +62,27 @@ Uploaded to the iOS 3.2.2 draft. A set holds at most ten screenshots, so each
 old one is deleted, the new one uploaded and put back at the same position.
 Read back: every iPhone set has 10 and every Duo set 9 screenshots in their
 original order, all `COMPLETE`. No build selected, nothing submitted.
+
+## Guideline 2.3.7 fix (2026-10-15)
+
+Review of 3.2.2 (259) on iPad Air 11-inch (M3) rejected the screenshots for a
+price reference: Apple counts "free" as one. Three captions said so, all
+inherited from 3.2.0/3.2.1 copy:
+
+| Page | Removed |
+|---|---|
+| Time off label (iPhone 3, Duo 2) | "· 3 free tries" (and its 16 translations) |
+| Apple Watch subline (iPhone 5, Duo 4, iPad 3) | "free on your wrist" → "Your shift countdown, on your wrist." |
+| Apple Watch note (same pages) | "Free to use" under "Apple Watch" |
+
+The 85 affected screenshots (17 locales × 5) were re-rendered from the exact
+composition HTML that produced the uploaded PNGs, with only that copy changed;
+an unmodified re-render of the iPhone and Duo pages is pixel-identical to the
+uploaded files. A scan of every other uploaded page's caption text in all 17
+locales found no other price wording. `creative-copy.mjs`,
+`creative-copy-3.2.1.mjs` and both compose scripts no longer produce it.
+
+Swapped in place with `scripts/app-store-connect/creative-shots-3.2.2-price-fix.mjs`
+(receipt: `asc-screenshots-price-fix-receipt.json`). App Store and in-app copy
+about the free tier (description, What's New, paywall) is unchanged: Apple
+allows pricing in the description.

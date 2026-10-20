@@ -1,0 +1,152 @@
+Validated 20 locales, 0 screenshots, and 0 previews from /Volumes/BACKUP/Projects/Off-Work-Countdown/.claude/worktrees/store-media-3-2-3-1399f1/app-store-connect/ios/3.2.3.json.
+
+App: com.rainif.offworkcountdown.macappstore
+Target: IOS 3.2.3
+Remote version: not created
+Screenshots: skipped (pass --include-screenshots)
+Previews: skipped (pass --include-previews)
+
+Planned changes:
+  + create IOS version 3.2.3
+  + ar-SA: create version localization
+      promotionalText: "undefined" -> "كم بقي على نهاية الدوام وكم كسبت اليوم، بمجرد فتح التطبيق. جديد: خطّط…"
+      description: "undefined" -> "كم ساعة بقيت حتى نهاية الدوام؟ وكم كسبت اليوم؟ DoneAt يجيبك عن السؤال…"
+      keywords: "undefined" -> "دوام,وردية,ورديات,شفت,حاسبة,عطلة,رسمية,إجازة,منبه"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "مع هذا التحديث، أصبح DoneAt على الشاشة الرئيسية وشاشة القفل ومركز الت…"
+  + de-DE: create version localization
+      promotionalText: "undefined" -> "Wann ist Feierabend, was hast du heute verdient? App auf, alles da. N…"
+      description: "undefined" -> "Wie viele Stunden noch bis Feierabend? Was hast du heute schon verdie…"
+      keywords: "undefined" -> "Schichtkalender,Schichtarbeit,Wechselschicht,Nachtschicht,Arbeitszeit…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "Mit diesem Update kommt DoneAt auf deinen Home-Bildschirm, den Sperrb…"
+  + en-GB: create version localization
+      promotionalText: "undefined" -> "See how long until you finish and what you've earned today, the momen…"
+      description: "undefined" -> "How many hours until you finish work? How much have you earned today?…"
+      keywords: "undefined" -> "calendar,planner,schedule,tracker,clock,off,finish,night,rotation,hou…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "This update brings DoneAt to your Home Screen, Lock Screen, Control C…"
+  + en-US: create version localization
+      promotionalText: "undefined" -> "Your shift countdown and today's earnings, right there when you open …"
+      description: "undefined" -> "How many hours until your shift ends? How much have you made today? D…"
+      keywords: "undefined" -> "calendar,planner,tracker,clock,out,workday,worker,nurse,overtime,wage…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "This update brings DoneAt to your Home Screen, Lock Screen, Control C…"
+  + es-ES: create version localization
+      promotionalText: "undefined" -> "Cuánto te queda para salir y cuánto has ganado hoy, nada más abrir. N…"
+      description: "undefined" -> "¿Cuántas horas te quedan para salir? ¿Cuánto has ganado hoy en este t…"
+      keywords: "undefined" -> "trabajo,laboral,calendario,horario,salida,noche,rotativo,fin,horas,fe…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "Con esta actualización, DoneAt llega a tu pantalla de inicio, a la pa…"
+  + es-MX: create version localization
+      promotionalText: "undefined" -> "Cuánto falta para salir y cuánto llevas ganado hoy, con solo abrirla.…"
+      description: "undefined" -> "¿Cuántas horas te faltan para salir? ¿Cuánto llevas ganado hoy en est…"
+      keywords: "undefined" -> "trabajo,laboral,calendario,horario,salida,noche,horas,festivo,vacacio…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "Con esta actualización, DoneAt llega a tu pantalla de inicio, a la pa…"
+  + fr-FR: create version localization
+      promotionalText: "undefined" -> "La fin de votre service et vos gains du jour, dès l'ouverture. Nouvea…"
+      description: "undefined" -> "Encore combien d'heures avant la fin de votre service ? Combien avez-…"
+      keywords: "undefined" -> "planning,horaire,calendrier,roulement,2x8,équipe,nuit,garde,poste,fin…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "Avec cette mise à jour, DoneAt s’installe sur votre écran d’accueil, …"
+  + hi: create version localization
+      promotionalText: "undefined" -> "शिफ़्ट खत्म होने में कितना समय बचा और आज कितना कमाया, ऐप खोलते ही दिख…"
+      description: "undefined" -> "शिफ़्ट खत्म होने में कितने घंटे बचे हैं? आज इस शिफ़्ट में कितना कमाया…"
+      keywords: "undefined" -> "shift,countdown,duty,roster,leave,salary,नौकरी,छुट्टी,अलार्म"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "इस अपडेट के साथ DoneAt अब होम स्क्रीन, लॉक स्क्रीन, कंट्रोल सेंटर और …"
+  + id: create version localization
+      promotionalText: "undefined" -> "Berapa lama lagi pulang dan sudah dapat berapa hari ini, langsung ter…"
+      description: "undefined" -> "Berapa jam lagi sampai pulang? Sudah dapat berapa dari sif hari ini? …"
+      keywords: "undefined" -> "sif,pulang,jam,kalender,malam,piket,kantor,karyawan,upah,penghasilan,…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "Lewat pembaruan ini, DoneAt hadir di Layar Utama, Layar Kunci, Pusat …"
+  + it: create version localization
+      promotionalText: "undefined" -> "Quanto manca a fine turno e quanto hai guadagnato oggi, appena apri l…"
+      description: "undefined" -> "Quante ore mancano a fine turno? Quanto hai guadagnato oggi? DoneAt r…"
+      keywords: "undefined" -> "lavoro,turno,turni,orario,notte,rotazione,ore,stipendio,uscita,fine,f…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "Con questo aggiornamento DoneAt arriva sulla schermata Home, sulla sc…"
+  + ja: create version localization
+      promotionalText: "undefined" -> "退勤まであと何分か、今日いくら稼いだか、開けばすぐ分かります。新機能の休暇の計画では、祝日とシフトに合わせて取れる休暇をすべて月間カレンダ…"
+      description: "undefined" -> "退勤まであと何時間？今日のシフトでいくら稼いだ？ DoneAtはこの2つに答えるアプリです。始業と終業の時刻を設定すれば、カウントダウンが…"
+      keywords: "undefined" -> "残業,時給,有給,休暇,目覚まし,祝日,仕事,終業,バイト,三交替,看護師"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "DoneAt が、ホーム画面・ロック画面・コントロールセンター・Apple Watch でも使えるようになりました。 • ホーム画面：カウ…"
+  + ko: create version localization
+      promotionalText: "undefined" -> "퇴근까지 남은 시간과 오늘 번 돈, 열면 바로 보여요. 새 휴가 계획은 공휴일과 근무표에 맞춰 쉴 수 있는 계획을 모두 달력…"
+      description: "undefined" -> "퇴근까지 몇 시간 남았을까요? 오늘 근무로 얼마 벌었을까요? DoneAt은 이 두 가지에 답해 줘요. 출퇴근 시간만 정하면 …"
+      keywords: "undefined" -> "퇴근시간,야간근무,간호사,시급,월급,칼퇴,직장인,공휴일,연차,휴가,알람"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "이제 홈 화면, 잠금 화면, 제어 센터, Apple Watch에서도 DoneAt을 만나 보세요. • 홈 화면: 카운트다운에 …"
+  + mr-IN: create version localization
+      promotionalText: "undefined" -> "शिफ्ट संपायला किती वेळ उरला आणि आज किती कमावलं, ॲप उघडताच दिसतं. नवीन…"
+      description: "undefined" -> "शिफ्ट संपायला किती तास उरले? आज या शिफ्टमध्ये किती कमावलं? DoneAt या …"
+      keywords: "undefined" -> "shift,duty,roster,पाळी,रात्रपाळी,पगार,रजा,गजर"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "या अपडेटमुळे DoneAt आता होम स्क्रीन, लॉक स्क्रीन, कंट्रोल सेंटर आणि A…"
+  + pt-BR: create version localization
+      promotionalText: "undefined" -> "Quanto falta para o fim do expediente e quanto você ganhou hoje, logo…"
+      description: "undefined" -> "Quantas horas faltam para acabar o expediente? Quanto você já ganhou …"
+      keywords: "undefined" -> "contagem,regressiva,turno,plantão,12x36,6x1,folga,jornada,noturno,fer…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "Com esta atualização, o DoneAt chega à Tela de Início, à Tela Bloquea…"
+  + ru: create version localization
+      promotionalText: "undefined" -> "Сколько до конца смены и сколько заработано сегодня — видно сразу при…"
+      description: "undefined" -> "Сколько часов до конца смены? Сколько вы уже заработали сегодня? Done…"
+      keywords: "undefined" -> "отпуск,будильник,смен,календарь,2/2,праздник,ночная"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "В этом обновлении DoneAt появляется на экране «Домой», экране блокиро…"
+  + th: create version localization
+      promotionalText: "undefined" -> "อีกนานแค่ไหนจะเลิกงาน วันนี้ได้เงินเท่าไร เปิดแอปก็เห็นทันที ใหม่: วา…"
+      description: "undefined" -> "อีกกี่ชั่วโมงจะเลิกงาน? กะนี้วันนี้ได้เงินไปเท่าไรแล้ว? DoneAt ตอบสอง…"
+      keywords: "undefined" -> "ลางาน,นาฬิกาปลุก,กะดึก,โอที,วันหยุด"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "อัปเดตนี้พา DoneAt ไปอยู่บนหน้าจอโฮม หน้าจอล็อก ศูนย์ควบคุม และ Apple…"
+  + tr: create version localization
+      promotionalText: "undefined" -> "Mesainin bitmesine ne kadar kaldığı ve bugün ne kadar kazandığın, aça…"
+      description: "undefined" -> "Mesainin bitmesine kaç saat kaldı? Bugün bu vardiyada ne kadar kazand…"
+      keywords: "undefined" -> "geri,sayım,plan,çizelge,gece,çalışma,saati,ücret,hesaplama,resmi,tati…"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "Bu güncellemeyle DoneAt artık Ana Ekran’da, Kilit Ekranı’nda, Denetim…"
+  + vi: create version localization
+      promotionalText: "undefined" -> "Còn bao lâu nữa tan ca, hôm nay kiếm được bao nhiêu, mở ra là thấy ng…"
+      description: "undefined" -> "Còn mấy tiếng nữa là tan ca? Ca hôm nay kiếm được bao nhiêu rồi? Done…"
+      keywords: "undefined" -> "đêm,trực,chấm công,giờ,tăng,thu nhập,việc,ngày lễ,nghỉ phép,báo thức"
+      supportUrl: "undefined" -> "https://doneat.app/en/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "Với bản cập nhật này, DoneAt có mặt trên Màn hình chính, Màn hình khó…"
+  + zh-Hans: create version localization
+      promotionalText: "undefined" -> "几点下班、今天挣了多少，打开就能看到。这次新加了休假规划：填好年假和调休还剩几天，它会结合节假日和你的排班，把能休的方案都列出来，在月历上…"
+      description: "undefined" -> "还有几个小时下班？今天这班挣了多少？ DoneAt 就是回答这两个问题的。设好上下班时间，倒计时会自动扣掉午休，算的是你真正还要干多久。基…"
+      keywords: "undefined" -> "工资,轮班,夜班,加班,调休,节假日,年假,休假,摸鱼,打工人,灵动岛,小组件"
+      supportUrl: "undefined" -> "https://doneat.app/zh-CN/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "这次更新，把 DoneAt 放到了主屏幕、锁定屏幕、控制中心和 Apple Watch 上。 • 主屏幕：倒计时新增大数字、分段圆环、今日…"
+  + zh-Hant: create version localization
+      promotionalText: "undefined" -> "幾點下班、今天賺了多少，打開就看得到。這次新增規劃休假：填好特休和補休還剩幾天，它會結合節假日和你的班表，把能休的方案都列出來，在月曆上一…"
+      description: "undefined" -> "還有幾個小時下班？今天這班賺了多少？ DoneAt 就是回答這兩個問題的。設好上下班時間，倒數會自動扣掉午休，算的是你真正還要做多久。基本…"
+      keywords: "undefined" -> "放工,返工,更表,上班,夜班,值班,時薪,加班,補班,特休,請假,年假,休假,鬧鐘"
+      supportUrl: "undefined" -> "https://doneat.app/zh-CN/about"
+      marketingUrl: "undefined" -> "https://doneat.app/"
+      whatsNew: "undefined" -> "這次更新，把 DoneAt 放到了主畫面、鎖定畫面、控制中心和 Apple Watch 上。 • 主畫面：倒數新增大數字、分段圓環、今日時…"
+
+Unchanged groups: 20

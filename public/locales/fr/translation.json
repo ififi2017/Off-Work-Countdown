@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "La part de l’année déjà écoulée.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} écoulé",
   "widgetSuiteYearName": "Progression de l’année",
-  "widgetSuiteYearsMonths": "{{years}} a. {{months}} m."
+  "widgetSuiteYearsMonths": "{{years}} a. {{months}} m.",
+  "updateWidgetsNoticeTitle": "Nouveaux widgets dans DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "Votre compte à rebours sur l’écran d’accueil, l’écran verrouillé et l’Apple Watch. Ouvrez DoneAt pour voir comment les ajouter."
 }

@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "今年已經過去多少。",
   "widgetSuiteYearInline": "{{year}} 已過 {{percent}}",
   "widgetSuiteYearName": "今年進度",
-  "widgetSuiteYearsMonths": "{{years}} 年 {{months}} 個月"
+  "widgetSuiteYearsMonths": "{{years}} 年 {{months}} 個月",
+  "updateWidgetsNoticeTitle": "DoneAt 3.2.3：全新小工具",
+  "updateWidgetsNoticeBody": "主畫面、鎖定畫面和 Apple Watch 都能看下班倒數。打開 DoneAt，看看怎麼加入。"
 }

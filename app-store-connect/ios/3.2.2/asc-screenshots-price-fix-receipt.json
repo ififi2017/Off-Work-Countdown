@@ -1,0 +1,2496 @@
+{
+  "appId": "6802803318",
+  "versionString": "3.2.2",
+  "reason": "Guideline 2.3.7: remove price references from screenshots",
+  "swaps": {
+    "ar-SA APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-ar-iphone-03-nofree-2aa84b36c828.png",
+      "md5": "7e483a01e70954f56bc3877643e91437",
+      "setId": "e56380d2-ef53-44b4-8015-e11f6ac1209d",
+      "previous": {
+        "id": "8a000019-57a8-8a76-8027-89843794bc7d",
+        "fileName": "doneat-3.2.2-ar-iphone-03-19e5ca73c825.png"
+      },
+      "order": [
+        "05327196-a291-4360-a6d9-4a4fa93bfbea",
+        "64c2b828-8397-4416-afee-8b4d64d51263",
+        "8a000019-57a8-8a76-8027-89843794bc7d",
+        "03e4f504-f50b-47df-ba32-c4291e6a2830",
+        "23476256-7bc9-4a8e-9968-3e5ba571e885",
+        "7dca8699-03be-4d50-8ef5-7c2340f15c90",
+        "f2000019-57a8-8a76-803e-50c623443433",
+        "6393abe5-55e3-432b-89cc-9fc217ce9758",
+        "057244b7-ea6d-41dc-a542-a52a320a761c",
+        "765098a1-9124-4a2d-a8f2-74ad0f5ce6bc"
+      ],
+      "deleted": true,
+      "newId": "4e800019-57a8-8a76-800a-53e016fb15c7",
+      "swappedAt": "2026-10-15T03:12:03.524Z"
+    },
+    "ar-SA APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-ar-duo-02-nofree-1b04c7bb453e.png",
+      "md5": "d061bd4ec62cd74328fe0acadafadf48",
+      "setId": "9645c8e9-191a-4040-b910-344fe409fe4e",
+      "previous": {
+        "id": "cf000019-57a8-8a76-8026-bab3b33f1ecd",
+        "fileName": "doneat-3.2.2-ar-duo-02-49eca377c7d1.png"
+      },
+      "order": [
+        "2ab69470-299e-4710-a571-81ad5e9f7868",
+        "cf000019-57a8-8a76-8026-bab3b33f1ecd",
+        "30f3d0aa-b08e-48a6-9792-042e133e7334",
+        "f5212632-8ef6-4851-b2ac-00f1930c50aa",
+        "751e3bdf-2d44-4d3f-97bd-3bb169b4de00",
+        "ebc00019-57a8-8a76-8016-36b2bc4c3fc4",
+        "25cb859b-0661-4b97-b450-b517256e2903",
+        "29aa7542-4ef1-4008-8f11-a6750307a405",
+        "571f6f69-52a7-4863-99be-703bc7e1051c"
+      ],
+      "deleted": true,
+      "newId": "58800019-57a8-8a76-800e-a8a04101d102",
+      "swappedAt": "2026-10-15T03:12:10.083Z"
+    },
+    "ar-SA APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-ar-iphone-05-nofree-c2d3cb83d148.png",
+      "md5": "2dc4ccc6754dc7eddf75e235232ed7e1",
+      "setId": "e56380d2-ef53-44b4-8015-e11f6ac1209d",
+      "previous": {
+        "id": "23476256-7bc9-4a8e-9968-3e5ba571e885",
+        "fileName": "doneat-3.2.1-ar-iphone-05-62d2a87ddcce.png"
+      },
+      "order": [
+        "05327196-a291-4360-a6d9-4a4fa93bfbea",
+        "64c2b828-8397-4416-afee-8b4d64d51263",
+        "4e800019-57a8-8a76-800a-53e016fb15c7",
+        "03e4f504-f50b-47df-ba32-c4291e6a2830",
+        "23476256-7bc9-4a8e-9968-3e5ba571e885",
+        "7dca8699-03be-4d50-8ef5-7c2340f15c90",
+        "f2000019-57a8-8a76-803e-50c623443433",
+        "6393abe5-55e3-432b-89cc-9fc217ce9758",
+        "057244b7-ea6d-41dc-a542-a52a320a761c",
+        "765098a1-9124-4a2d-a8f2-74ad0f5ce6bc"
+      ],
+      "deleted": true,
+      "newId": "5d800019-57a8-8a76-8023-1de58262aa28",
+      "swappedAt": "2026-10-15T03:12:17.252Z"
+    },
+    "ar-SA APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-ar-duo-04-nofree-5107c1b9bccd.png",
+      "md5": "70f1d7e43ee197b75b5e55a91a1dad1e",
+      "setId": "9645c8e9-191a-4040-b910-344fe409fe4e",
+      "previous": {
+        "id": "f5212632-8ef6-4851-b2ac-00f1930c50aa",
+        "fileName": "doneat-3.2.1-ar-duo-04-12c87257063a.png"
+      },
+      "order": [
+        "2ab69470-299e-4710-a571-81ad5e9f7868",
+        "58800019-57a8-8a76-800e-a8a04101d102",
+        "30f3d0aa-b08e-48a6-9792-042e133e7334",
+        "f5212632-8ef6-4851-b2ac-00f1930c50aa",
+        "751e3bdf-2d44-4d3f-97bd-3bb169b4de00",
+        "ebc00019-57a8-8a76-8016-36b2bc4c3fc4",
+        "25cb859b-0661-4b97-b450-b517256e2903",
+        "29aa7542-4ef1-4008-8f11-a6750307a405",
+        "571f6f69-52a7-4863-99be-703bc7e1051c"
+      ],
+      "deleted": true,
+      "newId": "73800019-57a8-8a76-803e-9d2b1030756a",
+      "swappedAt": "2026-10-15T03:12:24.092Z"
+    },
+    "ar-SA APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-ar-ipad-03-nofree-a9082a3e5e16.png",
+      "md5": "3ca328e7ea7b697bd1f054f29ab22db1",
+      "setId": "3ff529b0-f806-435e-ae59-ad343c06fa0e",
+      "previous": {
+        "id": "ee98535c-569e-4199-9d29-cda9698e9498",
+        "fileName": "ar-ipad-03-watch.png"
+      },
+      "order": [
+        "e435bfad-71af-457d-a75e-81911060ea04",
+        "327c758e-f672-4d93-9dc3-5bb33b53ddfa",
+        "ee98535c-569e-4199-9d29-cda9698e9498",
+        "1a22dd1d-03ce-4341-a9f4-d3fd79430d0f",
+        "87866caa-afb8-45fa-8f71-9d58eeefdc34",
+        "70dd88da-63b6-43cb-a4b5-b7cfcf545354",
+        "11b82fb9-0bcd-4676-bdcc-fc2506c0899a",
+        "b6c6fb28-d505-4e6c-97f9-6eff3cfd9bef"
+      ],
+      "deleted": true,
+      "newId": "7f800019-57a8-8a76-801c-994d18a5907a",
+      "swappedAt": "2026-10-15T03:12:31.580Z"
+    },
+    "de-DE APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-de-iphone-03-nofree-3bb3e42fbc2e.png",
+      "md5": "8e0948f31dc1d3e9fb1831e2145927b3",
+      "setId": "2b25e02f-942c-4959-9c1f-1f0601250860",
+      "previous": {
+        "id": "e8400019-57a8-8a76-8027-82e5e6b8f0f9",
+        "fileName": "doneat-3.2.2-de-iphone-03-b5e09e17340b.png"
+      },
+      "order": [
+        "004a200f-c9a6-4f1c-9ce9-7c3350582007",
+        "1d293979-c99a-4dc4-9176-0259d83a8ede",
+        "e8400019-57a8-8a76-8027-82e5e6b8f0f9",
+        "71c14cf3-15a1-4173-9879-0afe0328e8a5",
+        "76393e83-da69-4c6b-8601-9962f7d8309a",
+        "1fca147c-08be-40e9-81be-2ec82e3a886e",
+        "64800019-57a8-8a76-8030-994c8c4b9efa",
+        "2bdf5dd0-bed8-4a59-94b2-57d2bf9d91b8",
+        "bd1fb9a0-d336-4200-8df0-7e8512b63896",
+        "fdaa69df-4195-46a9-b271-d159cff6cf27"
+      ],
+      "deleted": true,
+      "newId": "af000019-57a8-8a76-801a-a4e28d7085bd",
+      "swappedAt": "2026-10-15T03:12:38.125Z"
+    },
+    "de-DE APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-de-duo-02-nofree-f763c2e39f24.png",
+      "md5": "64ff35b8a3396cdff9baf44b8ef9d6a7",
+      "setId": "ad50c973-a6f4-4c9a-bb40-25b865010ed8",
+      "previous": {
+        "id": "46400019-57a8-8a76-8032-922bfe4c3b1d",
+        "fileName": "doneat-3.2.2-de-duo-02-737ecbb98a38.png"
+      },
+      "order": [
+        "8e137e69-0fcc-417f-a992-3f2e91ef88d4",
+        "46400019-57a8-8a76-8032-922bfe4c3b1d",
+        "74af812a-3fc0-44b4-8f8d-bacdd5389917",
+        "270997f6-67a7-4582-9bc3-b5e901ccf91d",
+        "d567c497-a12a-44fe-9938-42b095fd0f68",
+        "b0400019-57a8-8a76-8013-4b32fded5420",
+        "b6bc11bc-274a-4718-9d46-0cb28cdf2a6a",
+        "5cc1887b-f305-4551-82ca-bad95dd1c3e9",
+        "1e2e48cb-3114-452d-8fd2-d03600635f04"
+      ],
+      "deleted": true,
+      "newId": "09400019-57a8-8a76-8022-be147d234360",
+      "swappedAt": "2026-10-15T03:12:45.216Z"
+    },
+    "de-DE APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-de-iphone-05-nofree-38942801188c.png",
+      "md5": "9939e46016dc3a333a38121e40e25f7e",
+      "setId": "2b25e02f-942c-4959-9c1f-1f0601250860",
+      "previous": {
+        "id": "76393e83-da69-4c6b-8601-9962f7d8309a",
+        "fileName": "doneat-3.2.1-de-iphone-05-31f83161b55d.png"
+      },
+      "order": [
+        "004a200f-c9a6-4f1c-9ce9-7c3350582007",
+        "1d293979-c99a-4dc4-9176-0259d83a8ede",
+        "af000019-57a8-8a76-801a-a4e28d7085bd",
+        "71c14cf3-15a1-4173-9879-0afe0328e8a5",
+        "76393e83-da69-4c6b-8601-9962f7d8309a",
+        "1fca147c-08be-40e9-81be-2ec82e3a886e",
+        "64800019-57a8-8a76-8030-994c8c4b9efa",
+        "2bdf5dd0-bed8-4a59-94b2-57d2bf9d91b8",
+        "bd1fb9a0-d336-4200-8df0-7e8512b63896",
+        "fdaa69df-4195-46a9-b271-d159cff6cf27"
+      ],
+      "deleted": true,
+      "newId": "17c00019-57a8-8a76-8005-96047b973eab",
+      "swappedAt": "2026-10-15T03:12:52.187Z"
+    },
+    "de-DE APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-de-duo-04-nofree-066bb5ba5391.png",
+      "md5": "41efd69f0b8f091b1bfd8124ddd03b14",
+      "setId": "ad50c973-a6f4-4c9a-bb40-25b865010ed8",
+      "previous": {
+        "id": "270997f6-67a7-4582-9bc3-b5e901ccf91d",
+        "fileName": "doneat-3.2.1-de-duo-04-b8b17e52c16a.png"
+      },
+      "order": [
+        "8e137e69-0fcc-417f-a992-3f2e91ef88d4",
+        "09400019-57a8-8a76-8022-be147d234360",
+        "74af812a-3fc0-44b4-8f8d-bacdd5389917",
+        "270997f6-67a7-4582-9bc3-b5e901ccf91d",
+        "d567c497-a12a-44fe-9938-42b095fd0f68",
+        "b0400019-57a8-8a76-8013-4b32fded5420",
+        "b6bc11bc-274a-4718-9d46-0cb28cdf2a6a",
+        "5cc1887b-f305-4551-82ca-bad95dd1c3e9",
+        "1e2e48cb-3114-452d-8fd2-d03600635f04"
+      ],
+      "deleted": true,
+      "newId": "e2000019-57a8-8a76-8011-36fb997d399e",
+      "swappedAt": "2026-10-15T03:12:59.138Z"
+    },
+    "de-DE APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-de-ipad-03-nofree-fad51c5a2faf.png",
+      "md5": "2cdc7ed45ae97d813843bf7114826cbd",
+      "setId": "ad2c6ac0-93fa-4e5d-b760-490ebe877357",
+      "previous": {
+        "id": "4c8061e5-8ef1-4eba-a90d-e4bf133880cd",
+        "fileName": "de-ipad-03-watch.png"
+      },
+      "order": [
+        "db7753c4-b0fa-4611-bb5f-1bcf32c75beb",
+        "e3b72a1f-1138-4054-b684-c43009c6108a",
+        "4c8061e5-8ef1-4eba-a90d-e4bf133880cd",
+        "6b0b1c7f-467c-4f95-973c-e58b6097835b",
+        "151a5f56-4c2f-47c7-8142-c06df24c8c9a",
+        "20bc173a-5e48-4141-ad5d-426d158f613e",
+        "3b4bbc29-a4f2-4009-97aa-cbb63c6ea9e4",
+        "53c46996-f091-4140-a668-6db553842d6c"
+      ],
+      "deleted": true,
+      "newId": "22000019-57a8-8a76-801c-12a9bd4d741c",
+      "swappedAt": "2026-10-15T03:13:06.701Z"
+    },
+    "en-US APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-en-iphone-03-nofree-7fe42d8a761f.png",
+      "md5": "c9901463600a7b67bd4fa6375000d19c",
+      "setId": "4b283c35-2ec9-448c-a016-4f31eb6fb4cd",
+      "previous": {
+        "id": "5b000019-57a8-8a76-802d-71e56fd40f08",
+        "fileName": "doneat-3.2.2-en-iphone-03-f28f974bd272.png"
+      },
+      "order": [
+        "cf3a7b83-2ce8-44d7-83a9-8ec7b69a8e2c",
+        "524c3d46-6f2b-4f85-8254-9bd2f45dc845",
+        "5b000019-57a8-8a76-802d-71e56fd40f08",
+        "6b37ef4b-af97-418d-a50c-ba6591aeb29f",
+        "977a8d8d-bbcb-4eac-a7fa-32bc38159797",
+        "0345abc3-b189-446f-b20a-e4b154591bed",
+        "17400019-57a8-8a76-803b-08f812e593f6",
+        "10eafdd2-86d3-40f3-b637-78a2fa1e51e3",
+        "7dd00468-4f69-408e-bcaf-f20459310f29",
+        "57c20252-dc7d-4730-b571-ca07eea2f455"
+      ],
+      "deleted": true,
+      "newId": "4cc00019-57a8-8a76-803b-2ec6c5b5a2a2",
+      "swappedAt": "2026-10-15T03:13:13.515Z"
+    },
+    "en-US APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-en-duo-02-nofree-d6c3aa193955.png",
+      "md5": "665c14a65b941113f9f0c1fc4a6d0910",
+      "setId": "2b0bb5b7-b5b6-41ff-95a8-1cd0c646c943",
+      "previous": {
+        "id": "68800019-57a8-8a76-8024-382cebc32b1f",
+        "fileName": "doneat-3.2.2-en-duo-02-ea51747d88ff.png"
+      },
+      "order": [
+        "3e861228-dceb-4517-8de6-190c4f9f9e0d",
+        "68800019-57a8-8a76-8024-382cebc32b1f",
+        "9f658cbb-7127-4c51-ac88-d8192b465c51",
+        "afe2a063-0430-4188-b06f-24684dc76925",
+        "02309e4a-637c-4bdd-abef-18782098bfc4",
+        "bd400019-57a8-8a76-8018-eec23ada55db",
+        "303eccdd-0118-4154-a322-afb404e5d9ad",
+        "b365e8d3-4e50-46b1-8b07-80835d62ec4e",
+        "d20460e2-a0c9-43a0-8c19-fc3c19c6d97b"
+      ],
+      "deleted": true,
+      "newId": "02800019-57a8-8a76-8024-008bc90944a4",
+      "swappedAt": "2026-10-15T03:13:20.066Z"
+    },
+    "en-US APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-en-iphone-05-nofree-4e487d1d2bd1.png",
+      "md5": "3ca8290576ce9bae76e0114267b3a2bd",
+      "setId": "4b283c35-2ec9-448c-a016-4f31eb6fb4cd",
+      "previous": {
+        "id": "977a8d8d-bbcb-4eac-a7fa-32bc38159797",
+        "fileName": "doneat-3.2.1-en-iphone-05-1aba56dbaa5a.png"
+      },
+      "order": [
+        "cf3a7b83-2ce8-44d7-83a9-8ec7b69a8e2c",
+        "524c3d46-6f2b-4f85-8254-9bd2f45dc845",
+        "4cc00019-57a8-8a76-803b-2ec6c5b5a2a2",
+        "6b37ef4b-af97-418d-a50c-ba6591aeb29f",
+        "977a8d8d-bbcb-4eac-a7fa-32bc38159797",
+        "0345abc3-b189-446f-b20a-e4b154591bed",
+        "17400019-57a8-8a76-803b-08f812e593f6",
+        "10eafdd2-86d3-40f3-b637-78a2fa1e51e3",
+        "7dd00468-4f69-408e-bcaf-f20459310f29",
+        "57c20252-dc7d-4730-b571-ca07eea2f455"
+      ],
+      "deleted": true,
+      "newId": "7e000019-57a8-8a76-803c-9aa198f0365b",
+      "swappedAt": "2026-10-15T03:13:27.407Z"
+    },
+    "en-US APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-en-duo-04-nofree-4dd90c2a1d1d.png",
+      "md5": "7409aa57708a7332beabb36e1638750d",
+      "setId": "2b0bb5b7-b5b6-41ff-95a8-1cd0c646c943",
+      "previous": {
+        "id": "afe2a063-0430-4188-b06f-24684dc76925",
+        "fileName": "doneat-3.2.1-en-duo-04-3edfc0ae0323.png"
+      },
+      "order": [
+        "3e861228-dceb-4517-8de6-190c4f9f9e0d",
+        "02800019-57a8-8a76-8024-008bc90944a4",
+        "9f658cbb-7127-4c51-ac88-d8192b465c51",
+        "afe2a063-0430-4188-b06f-24684dc76925",
+        "02309e4a-637c-4bdd-abef-18782098bfc4",
+        "bd400019-57a8-8a76-8018-eec23ada55db",
+        "303eccdd-0118-4154-a322-afb404e5d9ad",
+        "b365e8d3-4e50-46b1-8b07-80835d62ec4e",
+        "d20460e2-a0c9-43a0-8c19-fc3c19c6d97b"
+      ],
+      "deleted": true,
+      "newId": "77000019-57a8-8a76-8022-f3dd0a7bd159",
+      "swappedAt": "2026-10-15T03:13:34.379Z"
+    },
+    "en-US APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-en-ipad-03-nofree-ab94ae83f6ca.png",
+      "md5": "d6f15bd3d9e485d752764b388fee1cb8",
+      "setId": "06c9f2e1-7d28-4d99-bb3e-8f35e432b9d7",
+      "previous": {
+        "id": "a30c1e52-fca4-4479-ac22-da493d760ba5",
+        "fileName": "en-ipad-03-watch.png"
+      },
+      "order": [
+        "e3a1c513-879a-4b36-99ee-3755b429e10f",
+        "60fdb941-6230-4ec4-beb7-c7ead57782eb",
+        "a30c1e52-fca4-4479-ac22-da493d760ba5",
+        "52a59742-80f1-438e-b205-88a7b861fe01",
+        "dac0733d-9446-4112-942b-b89ac5f8ee7e",
+        "2c808170-8ed6-4f49-b12b-fc929aaa953c",
+        "5f812bc4-f429-463e-b91b-d2aa95ac0b54",
+        "47cbb9c6-e818-4de8-bd8f-1b943a1c51cc"
+      ],
+      "deleted": true,
+      "newId": "48000019-57a8-8a76-8014-132b7b6d809c",
+      "swappedAt": "2026-10-15T03:13:42.226Z"
+    },
+    "es-ES APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-es-iphone-03-nofree-996713922eb0.png",
+      "md5": "a27abd0943efda1185981ee2fdcbb5e1",
+      "setId": "369059d0-893b-4822-93b8-de17f7979e3d",
+      "previous": {
+        "id": "1d800019-57a8-8a76-8004-9c3a08e6666e",
+        "fileName": "doneat-3.2.2-es-iphone-03-d59d7ecb9276.png"
+      },
+      "order": [
+        "2a5d4965-75f8-4872-8e8f-990e7930b887",
+        "55c59dfe-b63b-423a-a601-028dcdeb29c1",
+        "1d800019-57a8-8a76-8004-9c3a08e6666e",
+        "c37e1d77-8e49-41a4-9799-2951832c079f",
+        "94130001-13d7-4857-b8ef-e4fc0fb0d7e7",
+        "f1cbe8c2-3bfc-4f5a-9ecf-e441ef290400",
+        "34400019-57a8-8a76-8029-90d42c930b0d",
+        "119e8774-6b62-4e8d-a3a6-a61568ae4258",
+        "03e6a4f6-5fce-408b-92ea-0f85c23928cc",
+        "01889d7a-51fc-4f66-92d1-65b21018e1ef"
+      ],
+      "deleted": true,
+      "newId": "74c00019-57a8-8a76-8035-ad21bb644cb3",
+      "swappedAt": "2026-10-15T03:13:48.965Z"
+    },
+    "es-ES APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-es-duo-02-nofree-966f0123114f.png",
+      "md5": "876b2e194fa6d6251a64701c26c0d41e",
+      "setId": "1fa4bd84-94c9-4f27-b7a2-37e16cef2669",
+      "previous": {
+        "id": "a0800019-57a8-8a76-8036-62775ad9ef19",
+        "fileName": "doneat-3.2.2-es-duo-02-2a7d78913a07.png"
+      },
+      "order": [
+        "8f31ca49-4ccf-46d0-bd88-b9d4ca4dfb71",
+        "a0800019-57a8-8a76-8036-62775ad9ef19",
+        "f6093d8e-eced-4f25-8572-56e462ec5574",
+        "2d7a649f-4388-41a4-b640-111bbdf7fb36",
+        "f6a65e1d-59ca-49ca-bf38-44c6b8d32d5d",
+        "9fc00019-57a8-8a76-8019-d812605766f7",
+        "1664dba4-b3c6-4cfa-89c6-8ac943beca72",
+        "03223114-a612-4afb-b8de-3f71141a46b5",
+        "291f005e-1bd2-4deb-8224-aa36962f0893"
+      ],
+      "deleted": true,
+      "newId": "4bc00019-57a8-8a76-8000-eabe7a7782db",
+      "swappedAt": "2026-10-15T03:13:55.718Z"
+    },
+    "es-ES APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-es-iphone-05-nofree-49aafd48027d.png",
+      "md5": "8199179ee0b67fb3f568e33ef6eb580d",
+      "setId": "369059d0-893b-4822-93b8-de17f7979e3d",
+      "previous": {
+        "id": "94130001-13d7-4857-b8ef-e4fc0fb0d7e7",
+        "fileName": "doneat-3.2.1-es-iphone-05-ebf6e56139fd.png"
+      },
+      "order": [
+        "2a5d4965-75f8-4872-8e8f-990e7930b887",
+        "55c59dfe-b63b-423a-a601-028dcdeb29c1",
+        "74c00019-57a8-8a76-8035-ad21bb644cb3",
+        "c37e1d77-8e49-41a4-9799-2951832c079f",
+        "94130001-13d7-4857-b8ef-e4fc0fb0d7e7",
+        "f1cbe8c2-3bfc-4f5a-9ecf-e441ef290400",
+        "34400019-57a8-8a76-8029-90d42c930b0d",
+        "119e8774-6b62-4e8d-a3a6-a61568ae4258",
+        "03e6a4f6-5fce-408b-92ea-0f85c23928cc",
+        "01889d7a-51fc-4f66-92d1-65b21018e1ef"
+      ],
+      "deleted": true,
+      "newId": "f5000019-57a8-8a76-8010-90f5d79c4017",
+      "swappedAt": "2026-10-15T03:14:03.073Z"
+    },
+    "es-ES APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-es-duo-04-nofree-8381ac1263de.png",
+      "md5": "533d1a7b3bb587803a5bcc7380a3d9d1",
+      "setId": "1fa4bd84-94c9-4f27-b7a2-37e16cef2669",
+      "previous": {
+        "id": "2d7a649f-4388-41a4-b640-111bbdf7fb36",
+        "fileName": "doneat-3.2.1-es-duo-04-41d4c0cbc9e8.png"
+      },
+      "order": [
+        "8f31ca49-4ccf-46d0-bd88-b9d4ca4dfb71",
+        "4bc00019-57a8-8a76-8000-eabe7a7782db",
+        "f6093d8e-eced-4f25-8572-56e462ec5574",
+        "2d7a649f-4388-41a4-b640-111bbdf7fb36",
+        "f6a65e1d-59ca-49ca-bf38-44c6b8d32d5d",
+        "9fc00019-57a8-8a76-8019-d812605766f7",
+        "1664dba4-b3c6-4cfa-89c6-8ac943beca72",
+        "03223114-a612-4afb-b8de-3f71141a46b5",
+        "291f005e-1bd2-4deb-8224-aa36962f0893"
+      ],
+      "deleted": true,
+      "newId": "69400019-57a8-8a76-802d-15bdf0ba8d24",
+      "swappedAt": "2026-10-15T03:14:10.405Z"
+    },
+    "es-ES APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-es-ipad-03-nofree-28896d45f4a5.png",
+      "md5": "6e7f782461e13a8f130847d69d135aea",
+      "setId": "bd3f4923-2d9c-4417-a2c9-1541138a0d0d",
+      "previous": {
+        "id": "7ff2476f-ff5a-4d23-b876-a35845f53149",
+        "fileName": "es-ipad-03-watch.png"
+      },
+      "order": [
+        "4836cb1f-ac92-4762-adc4-93df388d3a1e",
+        "ec2dbbd9-8a16-4d0d-ab36-1f5f1f37bf69",
+        "7ff2476f-ff5a-4d23-b876-a35845f53149",
+        "c7a5fe3f-848d-45cf-9156-fa2704b31dcd",
+        "5b06b95f-8824-4a81-96d5-6a24e4800bfd",
+        "ce8de434-f353-481f-9f71-76fc137440df",
+        "de129d85-9779-4080-8693-802f36b444ed",
+        "6dda865a-7776-4acc-84b7-7d60bd1e0cdb"
+      ],
+      "deleted": true,
+      "newId": "4fc00019-57a8-8a76-8031-b3d52ffbefa4",
+      "swappedAt": "2026-10-15T03:14:18.260Z"
+    },
+    "fr-FR APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-fr-iphone-03-nofree-32162550f805.png",
+      "md5": "db8ab266d9c39d18beb25b0a4ac62a8a",
+      "setId": "dd530e45-e3f0-47b8-9030-72c97c6a8aaa",
+      "previous": {
+        "id": "07800019-57a8-8a76-8019-e349ad252802",
+        "fileName": "doneat-3.2.2-fr-iphone-03-029293040af6.png"
+      },
+      "order": [
+        "0a390ab5-a1ac-450e-bc72-d108116ec22d",
+        "cd72324e-c51e-4385-9538-9bd4b846036b",
+        "07800019-57a8-8a76-8019-e349ad252802",
+        "f73d399b-7556-4052-a1a5-7def929ee35d",
+        "deeef653-8705-4222-a2bc-7745602b48ce",
+        "622ab43b-4c3b-4b45-a403-0b394b9859f7",
+        "8f000019-57a8-8a76-800c-b522fff6a886",
+        "c2d92ff9-e1f6-4e61-9e7a-c975519a8ec9",
+        "f1e4d6be-3da3-4862-a210-f622c12f2672",
+        "be4f80b5-4ed5-44c1-9a12-71a90ccd4b58"
+      ],
+      "deleted": true,
+      "newId": "efc00019-57a8-8a76-803e-7fe82fcdb2b9",
+      "swappedAt": "2026-10-15T03:14:25.075Z"
+    },
+    "fr-FR APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-fr-duo-02-nofree-cc5b80e5fe6e.png",
+      "md5": "36c5a0997fee195313c16733c88d011f",
+      "setId": "016faad9-222c-4f1d-8291-5290f0c211b0",
+      "previous": {
+        "id": "46000019-57a8-8a76-8019-6ee11235d233",
+        "fileName": "doneat-3.2.2-fr-duo-02-b7cb327be449.png"
+      },
+      "order": [
+        "1647e19a-5689-46a0-963b-4230d0950d2c",
+        "46000019-57a8-8a76-8019-6ee11235d233",
+        "6bb11ee0-9637-49e0-8b56-ae4d684dde5b",
+        "938eb332-0ba0-44d8-b52a-b21098f2c09a",
+        "c5893f7f-73bb-40b5-989c-a7b4e94560b0",
+        "85c00019-57a8-8a76-8034-6b27233306cb",
+        "ae9af485-7e6e-4d30-919d-6aba49c2d5c6",
+        "c74db894-aa23-476e-89a5-d47e3fdde109",
+        "1044f511-c120-42ac-a295-808fff529904"
+      ],
+      "deleted": true,
+      "newId": "ed400019-57a8-8a76-8020-2d705d691782",
+      "swappedAt": "2026-10-15T03:14:32.418Z"
+    },
+    "fr-FR APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-fr-iphone-05-nofree-3a7967282313.png",
+      "md5": "46949ac6b6f513226d18dcf9dac49f50",
+      "setId": "dd530e45-e3f0-47b8-9030-72c97c6a8aaa",
+      "previous": {
+        "id": "deeef653-8705-4222-a2bc-7745602b48ce",
+        "fileName": "doneat-3.2.1-fr-iphone-05-01df0e6fa549.png"
+      },
+      "order": [
+        "0a390ab5-a1ac-450e-bc72-d108116ec22d",
+        "cd72324e-c51e-4385-9538-9bd4b846036b",
+        "efc00019-57a8-8a76-803e-7fe82fcdb2b9",
+        "f73d399b-7556-4052-a1a5-7def929ee35d",
+        "deeef653-8705-4222-a2bc-7745602b48ce",
+        "622ab43b-4c3b-4b45-a403-0b394b9859f7",
+        "8f000019-57a8-8a76-800c-b522fff6a886",
+        "c2d92ff9-e1f6-4e61-9e7a-c975519a8ec9",
+        "f1e4d6be-3da3-4862-a210-f622c12f2672",
+        "be4f80b5-4ed5-44c1-9a12-71a90ccd4b58"
+      ],
+      "deleted": true,
+      "newId": "92000019-57a8-8a76-8024-bf31841d7263",
+      "swappedAt": "2026-10-15T03:14:40.111Z"
+    },
+    "fr-FR APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-fr-duo-04-nofree-bd952fab029a.png",
+      "md5": "a048ca18fd2209e58bd35de9454b9c58",
+      "setId": "016faad9-222c-4f1d-8291-5290f0c211b0",
+      "previous": {
+        "id": "938eb332-0ba0-44d8-b52a-b21098f2c09a",
+        "fileName": "doneat-3.2.1-fr-duo-04-c36f2f3da6b2.png"
+      },
+      "order": [
+        "1647e19a-5689-46a0-963b-4230d0950d2c",
+        "ed400019-57a8-8a76-8020-2d705d691782",
+        "6bb11ee0-9637-49e0-8b56-ae4d684dde5b",
+        "938eb332-0ba0-44d8-b52a-b21098f2c09a",
+        "c5893f7f-73bb-40b5-989c-a7b4e94560b0",
+        "85c00019-57a8-8a76-8034-6b27233306cb",
+        "ae9af485-7e6e-4d30-919d-6aba49c2d5c6",
+        "c74db894-aa23-476e-89a5-d47e3fdde109",
+        "1044f511-c120-42ac-a295-808fff529904"
+      ],
+      "deleted": true,
+      "newId": "2f800019-57a8-8a76-800b-63165d919dd0",
+      "swappedAt": "2026-10-15T03:14:47.097Z"
+    },
+    "fr-FR APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-fr-ipad-03-nofree-17f63e13879d.png",
+      "md5": "092be1fccedaa0330b4632ee383b3310",
+      "setId": "fb8d2e37-9081-4ccd-afb0-9f90102d1aa5",
+      "previous": {
+        "id": "791a0490-68f3-428d-9634-75a525a4cec6",
+        "fileName": "fr-ipad-03-watch.png"
+      },
+      "order": [
+        "043a3261-cd44-4553-b7f7-c63f103ae762",
+        "a308675e-2f1e-4073-b1c2-08c783e34711",
+        "791a0490-68f3-428d-9634-75a525a4cec6",
+        "c48fc49a-6949-47c0-a3ac-6a779e77958a",
+        "b51642b8-1f9a-47cb-850c-f85fea61b549",
+        "7f547a77-77d6-4bdc-95c3-7190777af872",
+        "92caa1cf-572a-479e-bc72-e2c0892b1db8",
+        "5b203436-d0a5-46fb-a708-15e5203605c8"
+      ],
+      "deleted": true,
+      "newId": "de800019-57a8-8a76-8006-3ab67f254a91",
+      "swappedAt": "2026-10-15T03:14:56.188Z"
+    },
+    "hi APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-hi-IN-iphone-03-nofree-9de69796813d.png",
+      "md5": "68ac6668562a7930046eff80ade55cdc",
+      "setId": "ce1aebe2-871f-46e0-89cf-cdc87efc94b8",
+      "previous": {
+        "id": "6ec00019-57a8-8a76-800f-26d9d7c8fc4b",
+        "fileName": "doneat-3.2.2-hi-IN-iphone-03-72b55e7b8304.png"
+      },
+      "order": [
+        "276dea81-2bd4-4193-89d5-fa7d124e4c04",
+        "9b4f2782-abb0-4959-bc7a-d863f847a972",
+        "6ec00019-57a8-8a76-800f-26d9d7c8fc4b",
+        "0071c933-27a2-4c18-9d0b-6115f731c1e9",
+        "ffa3bab6-9ff9-40b8-b0ee-2d51e13f0c93",
+        "8702f302-a947-4a49-9ee3-6dbb01d6dad7",
+        "72400019-57a8-8a76-8015-6343f88ecd03",
+        "c8f5bdba-30e4-46f0-8aaf-05f15983301d",
+        "d2fd8cc3-11a9-41ca-a114-08d550da9d7e",
+        "cf0dbe71-33eb-425d-abab-857a37108fde"
+      ],
+      "deleted": true,
+      "newId": "4e000019-57a8-8a76-800c-951cf6cd1f00",
+      "swappedAt": "2026-10-15T03:15:02.826Z"
+    },
+    "hi APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-hi-IN-duo-02-nofree-908d6e3042d5.png",
+      "md5": "3107d766fce0871145e497d542382d44",
+      "setId": "382d656b-551f-40da-b193-9241c0086b63",
+      "previous": {
+        "id": "0a800019-57a8-8a76-8002-c9bf73660e9e",
+        "fileName": "doneat-3.2.2-hi-IN-duo-02-7c88e3f5f4a1.png"
+      },
+      "order": [
+        "b936803e-8000-46a1-89c1-bc957964d877",
+        "0a800019-57a8-8a76-8002-c9bf73660e9e",
+        "013fec6b-cfa8-4ac5-a75b-0a545bf34891",
+        "f29bc295-72bc-4215-b22e-b8cd8bce0002",
+        "14a3ac39-24dc-4317-9eb6-524e3b5744d2",
+        "7cc00019-57a8-8a76-801d-af4e6b7454d3",
+        "43aff066-1f6e-46b8-a146-aab9b2bf2ba6",
+        "b60a8375-caed-489e-85bc-b24ef0d836b5",
+        "d77df5a3-918f-4dc9-9eb2-8d15ad969ba6"
+      ],
+      "deleted": true,
+      "newId": "12000019-57a8-8a76-801c-779f9f82d53a",
+      "swappedAt": "2026-10-15T03:15:10.162Z"
+    },
+    "hi APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-hi-IN-iphone-05-nofree-8e38cfa7a394.png",
+      "md5": "8be74c9e009df4da1c927b878f20e08d",
+      "setId": "ce1aebe2-871f-46e0-89cf-cdc87efc94b8",
+      "previous": {
+        "id": "ffa3bab6-9ff9-40b8-b0ee-2d51e13f0c93",
+        "fileName": "doneat-3.2.1-hi-IN-iphone-05-e1d5fedc134b.png"
+      },
+      "order": [
+        "276dea81-2bd4-4193-89d5-fa7d124e4c04",
+        "9b4f2782-abb0-4959-bc7a-d863f847a972",
+        "4e000019-57a8-8a76-800c-951cf6cd1f00",
+        "0071c933-27a2-4c18-9d0b-6115f731c1e9",
+        "ffa3bab6-9ff9-40b8-b0ee-2d51e13f0c93",
+        "8702f302-a947-4a49-9ee3-6dbb01d6dad7",
+        "72400019-57a8-8a76-8015-6343f88ecd03",
+        "c8f5bdba-30e4-46f0-8aaf-05f15983301d",
+        "d2fd8cc3-11a9-41ca-a114-08d550da9d7e",
+        "cf0dbe71-33eb-425d-abab-857a37108fde"
+      ],
+      "deleted": true,
+      "newId": "04400019-57a8-8a76-801c-4196aa12ba2c",
+      "swappedAt": "2026-10-15T03:15:17.611Z"
+    },
+    "hi APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-hi-IN-duo-04-nofree-a69b0fc6c3fc.png",
+      "md5": "2d8fec793f76d02dfd85a3ec3f57da40",
+      "setId": "382d656b-551f-40da-b193-9241c0086b63",
+      "previous": {
+        "id": "f29bc295-72bc-4215-b22e-b8cd8bce0002",
+        "fileName": "doneat-3.2.1-hi-IN-duo-04-e10e142d6f14.png"
+      },
+      "order": [
+        "b936803e-8000-46a1-89c1-bc957964d877",
+        "12000019-57a8-8a76-801c-779f9f82d53a",
+        "013fec6b-cfa8-4ac5-a75b-0a545bf34891",
+        "f29bc295-72bc-4215-b22e-b8cd8bce0002",
+        "14a3ac39-24dc-4317-9eb6-524e3b5744d2",
+        "7cc00019-57a8-8a76-801d-af4e6b7454d3",
+        "43aff066-1f6e-46b8-a146-aab9b2bf2ba6",
+        "b60a8375-caed-489e-85bc-b24ef0d836b5",
+        "d77df5a3-918f-4dc9-9eb2-8d15ad969ba6"
+      ],
+      "deleted": true,
+      "newId": "07800019-57a8-8a76-8028-7024bff1e9f3",
+      "swappedAt": "2026-10-15T03:15:24.325Z"
+    },
+    "hi APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-hi-IN-ipad-03-nofree-cf3c6d389615.png",
+      "md5": "464b8bd7eebbdc2577810dedd0562ee7",
+      "setId": "58fbfdcb-631d-42e3-b677-d839667d69c7",
+      "previous": {
+        "id": "305622c9-c5c6-4ed1-a7a0-26191d8ea3e6",
+        "fileName": "hi-IN-ipad-03-watch.png"
+      },
+      "order": [
+        "b03abd0a-8468-4918-937e-67dd4a99b155",
+        "f2528057-4c03-4f0d-b3de-78eeb4a2ff7c",
+        "305622c9-c5c6-4ed1-a7a0-26191d8ea3e6",
+        "c343c2c9-aa64-42b1-b76e-39ed215a4627",
+        "02f8bfe8-e411-4bcc-a5e8-189330f63e7d",
+        "3cbae82c-c253-4ed2-b27b-7c70f110b058",
+        "20db6a31-7461-4711-baaa-80698d957226",
+        "dc85a6e7-5d4e-4407-8605-7f89c0b24d6c"
+      ],
+      "deleted": true,
+      "newId": "89400019-57a8-8a76-8019-b36f0cff90d0",
+      "swappedAt": "2026-10-15T03:15:31.938Z"
+    },
+    "id APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-id-iphone-03-nofree-11c3916ff22a.png",
+      "md5": "813baea5e2c67ca9d14d5dd297875e86",
+      "setId": "553de07e-edd7-445a-8a62-7a9b5b76e114",
+      "previous": {
+        "id": "a7000019-57a8-8a76-802b-78ba87049e29",
+        "fileName": "doneat-3.2.2-id-iphone-03-671d5416818a.png"
+      },
+      "order": [
+        "deaae611-1228-4cb2-8754-d2d610cf460f",
+        "c39579c9-c2b3-45d2-9214-d5bee7633596",
+        "a7000019-57a8-8a76-802b-78ba87049e29",
+        "52406d0c-7f7b-417a-a7e1-e746b52f1b97",
+        "aadf6fd8-0ce5-452d-bfd2-4c32b0b63ee5",
+        "73df3476-0787-4d84-af5b-79d61e8299fa",
+        "d0c00019-57a8-8a76-8034-4eb9a770a4f4",
+        "3c4a636b-0068-4bd7-a9d0-ded44ef38045",
+        "6b8d314a-61a5-4094-9dd8-fc18df00ca82",
+        "608f3eda-a3f7-4f02-9c0c-f5061955ba1d"
+      ],
+      "deleted": true,
+      "newId": "f4800019-57a8-8a76-8032-b638e5e2215b",
+      "swappedAt": "2026-10-15T03:15:38.474Z"
+    },
+    "id APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-id-duo-02-nofree-6ee110e7d7c2.png",
+      "md5": "e8757af34690e6a32db8bd491f73b85b",
+      "setId": "ecc30057-e319-4b18-a990-910ea628bd87",
+      "previous": {
+        "id": "b2c00019-57a8-8a76-800b-13fb0028dfb8",
+        "fileName": "doneat-3.2.2-id-duo-02-95b1753788f9.png"
+      },
+      "order": [
+        "d2a35f3b-6ed4-44ef-844c-370d5d544161",
+        "b2c00019-57a8-8a76-800b-13fb0028dfb8",
+        "75ccb40b-5f81-4bcb-80c2-c1565ca73acc",
+        "55540f14-c4ac-4ab4-b2c9-5d78287022c3",
+        "85760425-5414-49c8-9cf4-0a9d78d957f2",
+        "ac000019-57a8-8a76-8036-7acc9e981799",
+        "ee11a886-a149-4b4a-9fe5-8b10853aa0e9",
+        "1b2575fd-0e11-44c1-9d74-4a99e18b706f",
+        "420df8bc-eafa-4633-94a5-3484c0845578"
+      ],
+      "deleted": true,
+      "newId": "c3000019-57a8-8a76-8008-3539d4c03337",
+      "swappedAt": "2026-10-15T03:15:45.290Z"
+    },
+    "id APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-id-iphone-05-nofree-984b9ff68289.png",
+      "md5": "50d851a231029d8571785b920d03b802",
+      "setId": "553de07e-edd7-445a-8a62-7a9b5b76e114",
+      "previous": {
+        "id": "aadf6fd8-0ce5-452d-bfd2-4c32b0b63ee5",
+        "fileName": "doneat-3.2.1-id-iphone-05-f745428fd42a.png"
+      },
+      "order": [
+        "deaae611-1228-4cb2-8754-d2d610cf460f",
+        "c39579c9-c2b3-45d2-9214-d5bee7633596",
+        "f4800019-57a8-8a76-8032-b638e5e2215b",
+        "52406d0c-7f7b-417a-a7e1-e746b52f1b97",
+        "aadf6fd8-0ce5-452d-bfd2-4c32b0b63ee5",
+        "73df3476-0787-4d84-af5b-79d61e8299fa",
+        "d0c00019-57a8-8a76-8034-4eb9a770a4f4",
+        "3c4a636b-0068-4bd7-a9d0-ded44ef38045",
+        "6b8d314a-61a5-4094-9dd8-fc18df00ca82",
+        "608f3eda-a3f7-4f02-9c0c-f5061955ba1d"
+      ],
+      "deleted": true,
+      "newId": "f5c00019-57a8-8a76-802b-31a6ddefa59f",
+      "swappedAt": "2026-10-15T03:15:52.806Z"
+    },
+    "id APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-id-duo-04-nofree-11d524e9ff05.png",
+      "md5": "673014e634fbf251c9b73962abd089fd",
+      "setId": "ecc30057-e319-4b18-a990-910ea628bd87",
+      "previous": {
+        "id": "55540f14-c4ac-4ab4-b2c9-5d78287022c3",
+        "fileName": "doneat-3.2.1-id-duo-04-90fb207bfca2.png"
+      },
+      "order": [
+        "d2a35f3b-6ed4-44ef-844c-370d5d544161",
+        "c3000019-57a8-8a76-8008-3539d4c03337",
+        "75ccb40b-5f81-4bcb-80c2-c1565ca73acc",
+        "55540f14-c4ac-4ab4-b2c9-5d78287022c3",
+        "85760425-5414-49c8-9cf4-0a9d78d957f2",
+        "ac000019-57a8-8a76-8036-7acc9e981799",
+        "ee11a886-a149-4b4a-9fe5-8b10853aa0e9",
+        "1b2575fd-0e11-44c1-9d74-4a99e18b706f",
+        "420df8bc-eafa-4633-94a5-3484c0845578"
+      ],
+      "deleted": true,
+      "newId": "15c00019-57a8-8a76-8006-5d5064270406",
+      "swappedAt": "2026-10-15T03:15:59.575Z"
+    },
+    "id APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-id-ipad-03-nofree-075152543898.png",
+      "md5": "f1d9867babe19e97363c221e9b2f18d1",
+      "setId": "f4a94ace-783a-4cd5-b443-a3996ce94775",
+      "previous": {
+        "id": "33007097-14a2-43ad-9ec9-2eb40379feb3",
+        "fileName": "id-ipad-03-watch.png"
+      },
+      "order": [
+        "2bbb7919-0f8f-4018-b7f2-7c019935bef3",
+        "869de507-7e4a-43bc-8587-796dc7a6d762",
+        "33007097-14a2-43ad-9ec9-2eb40379feb3",
+        "f123de37-be53-477c-9f7b-db722bfbbb24",
+        "d5896bda-86fc-4783-8ee4-9fd73a3e811f",
+        "8d18a404-4048-49f0-b4ca-fc8c8d9a3c19",
+        "6caafe19-fc87-44c1-86b0-85c16b0d00a1",
+        "211557b8-afb7-41eb-98fc-dbee1ea4ebc9"
+      ],
+      "deleted": true,
+      "newId": "59c00019-57a8-8a76-8039-635cb1a16355",
+      "swappedAt": "2026-10-15T03:16:07.307Z"
+    },
+    "it APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-it-iphone-03-nofree-c59f792f88d7.png",
+      "md5": "829be774c99880bda0bbb46a20455e92",
+      "setId": "24c6077f-631d-4dd0-89fa-9af60c0704de",
+      "previous": {
+        "id": "e0400019-57a8-8a76-8007-87f5c4f63dbd",
+        "fileName": "doneat-3.2.2-it-iphone-03-8a5a9182d1d8.png"
+      },
+      "order": [
+        "6bd97851-5db0-43e0-948d-bfb060521e73",
+        "6fbe633a-3b61-4498-b6d8-2b1f071ba30f",
+        "e0400019-57a8-8a76-8007-87f5c4f63dbd",
+        "8f3d8e7d-703f-4552-b8b2-ed9fa6aadae2",
+        "0e2b2733-53ee-4784-8f11-542f2e598e0d",
+        "56df5ddf-5350-4884-a359-ebbfa09f8484",
+        "a8400019-57a8-8a76-8021-99cce81609cf",
+        "2d819557-6c40-4249-9492-6eee20d7bc86",
+        "eda3aa5d-8765-4be0-b869-68e087309b3b",
+        "6f495589-4ba8-444e-96ee-706ee7d37e57"
+      ],
+      "deleted": true,
+      "newId": "ccc00019-57a8-8a76-803e-521b42ad5ec6",
+      "swappedAt": "2026-10-15T03:16:14.124Z"
+    },
+    "it APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-it-duo-02-nofree-e5b934d2740e.png",
+      "md5": "b4e5f0b4782977cf034f3de568e34e0d",
+      "setId": "d7e0bde6-3ab5-4587-b0e9-a25a3169b05c",
+      "previous": {
+        "id": "96800019-57a8-8a76-8029-6b1d497db18e",
+        "fileName": "doneat-3.2.2-it-duo-02-2e69b8e04396.png"
+      },
+      "order": [
+        "cd173707-d3fd-4fb8-a016-3ec7c6c3a044",
+        "96800019-57a8-8a76-8029-6b1d497db18e",
+        "370fed37-c8cf-4cb8-8083-c5229c4e1ee3",
+        "1f632d59-e7b4-4079-8bab-dddc63691c00",
+        "f4799788-e823-42cf-aca4-d5d7a237cfc8",
+        "a0c00019-57a8-8a76-8038-6c37e816f5e2",
+        "a7e53813-b199-43e7-9b72-4ed50babcaf4",
+        "db0241df-17ac-4649-b928-61c07f72d22f",
+        "5df63621-3c93-405a-a58d-5cc7562144c0"
+      ],
+      "deleted": true,
+      "newId": "58800019-57a8-8a76-8032-c1e13753c281",
+      "swappedAt": "2026-10-15T03:16:20.741Z"
+    },
+    "it APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-it-iphone-05-nofree-b575f2381673.png",
+      "md5": "53305631956383c80608457c360e035e",
+      "setId": "24c6077f-631d-4dd0-89fa-9af60c0704de",
+      "previous": {
+        "id": "0e2b2733-53ee-4784-8f11-542f2e598e0d",
+        "fileName": "doneat-3.2.1-it-iphone-05-5ab5da471219.png"
+      },
+      "order": [
+        "6bd97851-5db0-43e0-948d-bfb060521e73",
+        "6fbe633a-3b61-4498-b6d8-2b1f071ba30f",
+        "ccc00019-57a8-8a76-803e-521b42ad5ec6",
+        "8f3d8e7d-703f-4552-b8b2-ed9fa6aadae2",
+        "0e2b2733-53ee-4784-8f11-542f2e598e0d",
+        "56df5ddf-5350-4884-a359-ebbfa09f8484",
+        "a8400019-57a8-8a76-8021-99cce81609cf",
+        "2d819557-6c40-4249-9492-6eee20d7bc86",
+        "eda3aa5d-8765-4be0-b869-68e087309b3b",
+        "6f495589-4ba8-444e-96ee-706ee7d37e57"
+      ],
+      "deleted": true,
+      "newId": "91400019-57a8-8a76-8036-38139f70923b",
+      "swappedAt": "2026-10-15T03:16:27.992Z"
+    },
+    "it APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-it-duo-04-nofree-df693914fc38.png",
+      "md5": "dba77a20d77fcdd863fd31cb85b8b4b9",
+      "setId": "d7e0bde6-3ab5-4587-b0e9-a25a3169b05c",
+      "previous": {
+        "id": "1f632d59-e7b4-4079-8bab-dddc63691c00",
+        "fileName": "doneat-3.2.1-it-duo-04-7be58d48df8d.png"
+      },
+      "order": [
+        "cd173707-d3fd-4fb8-a016-3ec7c6c3a044",
+        "58800019-57a8-8a76-8032-c1e13753c281",
+        "370fed37-c8cf-4cb8-8083-c5229c4e1ee3",
+        "1f632d59-e7b4-4079-8bab-dddc63691c00",
+        "f4799788-e823-42cf-aca4-d5d7a237cfc8",
+        "a0c00019-57a8-8a76-8038-6c37e816f5e2",
+        "a7e53813-b199-43e7-9b72-4ed50babcaf4",
+        "db0241df-17ac-4649-b928-61c07f72d22f",
+        "5df63621-3c93-405a-a58d-5cc7562144c0"
+      ],
+      "deleted": true,
+      "newId": "c7800019-57a8-8a76-8009-6cc0a271dc36",
+      "swappedAt": "2026-10-15T03:16:34.666Z"
+    },
+    "it APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-it-ipad-03-nofree-183cb8c284d3.png",
+      "md5": "6700086a4984d2ef871bf800bfe53b1d",
+      "setId": "b770ef97-3666-448c-92ea-efafcd6fe211",
+      "previous": {
+        "id": "c5c62f64-4ad6-4f8f-8c70-e7a04972bbd7",
+        "fileName": "it-ipad-03-watch.png"
+      },
+      "order": [
+        "deb37ba7-48a1-4b2c-b57f-ac7f7021eb09",
+        "c0bba1c8-a0ad-45b9-bb69-ddf6256581d1",
+        "c5c62f64-4ad6-4f8f-8c70-e7a04972bbd7",
+        "26f3a913-5c1c-4e9b-b133-b85aff88610c",
+        "c603cd04-e7ff-4c19-802b-72df9a0b297c",
+        "e58240e4-95a8-406a-be7b-95c639076f66",
+        "d89e2fbb-eed3-4082-abc8-4992a0351d64",
+        "24187553-ea1d-4686-a525-a4b444122bab"
+      ],
+      "deleted": true,
+      "newId": "c1800019-57a8-8a76-803b-70ea64aef88e",
+      "swappedAt": "2026-10-15T03:16:42.092Z"
+    },
+    "ja APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-ja-iphone-03-nofree-284f6b068448.png",
+      "md5": "b9970a9b5d917c2bac602339eed0e535",
+      "setId": "2a237c96-b332-437c-9e0e-940c52376abf",
+      "previous": {
+        "id": "fe800019-57a8-8a76-803b-b83b46a9e82f",
+        "fileName": "doneat-3.2.2-ja-iphone-03-a1b95b025dfc.png"
+      },
+      "order": [
+        "1ce6a59e-4919-4fc7-ad2f-9027dd52baf8",
+        "a8500ad6-5928-4538-91d9-c409df020559",
+        "fe800019-57a8-8a76-803b-b83b46a9e82f",
+        "53a94d15-1467-4147-bfed-2120aaa193ca",
+        "dab36030-fe78-44fb-8a10-aa537329c483",
+        "2c399289-4e4c-4edd-a484-4b906a2a41ce",
+        "12800019-57a8-8a76-8013-82bdf64430ed",
+        "ca49e1c2-3ecd-4794-8106-043cb46a1e7c",
+        "8ddce571-2dda-497d-a4ed-d06d1d31c9f8",
+        "20943bd1-1471-4f75-a502-d0446e1786f2"
+      ],
+      "deleted": true,
+      "newId": "c9c00019-57a8-8a76-8035-79f74637a87d",
+      "swappedAt": "2026-10-15T03:16:48.727Z"
+    },
+    "ja APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-ja-duo-02-nofree-0e3149e8aec8.png",
+      "md5": "99cf63623dbfe1cafc9899aefb3beac2",
+      "setId": "8ff358a1-040f-4baf-b4fc-49446d16f806",
+      "previous": {
+        "id": "b8000019-57a8-8a76-8035-4eaa91e91b5b",
+        "fileName": "doneat-3.2.2-ja-duo-02-f8f6dfe22f1a.png"
+      },
+      "order": [
+        "b937e21c-02d6-4431-8e62-27a381596baf",
+        "b8000019-57a8-8a76-8035-4eaa91e91b5b",
+        "3e0ef472-6ca8-430f-a679-d744b54d9fab",
+        "3443f23c-aa2b-4950-85a0-66fc7b5ae385",
+        "11e39233-373c-4540-a8cf-bfd60dcd890c",
+        "ea000019-57a8-8a76-8039-0207c04ac2db",
+        "c2215632-e2e8-4b7a-95f8-4e2df8401382",
+        "00157525-6569-4fac-a7c5-2a0b5b895963",
+        "b27de8af-5761-4737-af39-7a761481ff89"
+      ],
+      "deleted": true,
+      "newId": "b4000019-57a8-8a76-802f-840ed416f0e3",
+      "swappedAt": "2026-10-15T03:16:55.808Z"
+    },
+    "ja APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-ja-iphone-05-nofree-0e75dbe01ae4.png",
+      "md5": "8ca0b8ab90d0e91bdd6c3f4d1830cfd0",
+      "setId": "2a237c96-b332-437c-9e0e-940c52376abf",
+      "previous": {
+        "id": "dab36030-fe78-44fb-8a10-aa537329c483",
+        "fileName": "doneat-3.2.1-ja-iphone-05-bb3fde36ef07.png"
+      },
+      "order": [
+        "1ce6a59e-4919-4fc7-ad2f-9027dd52baf8",
+        "a8500ad6-5928-4538-91d9-c409df020559",
+        "c9c00019-57a8-8a76-8035-79f74637a87d",
+        "53a94d15-1467-4147-bfed-2120aaa193ca",
+        "dab36030-fe78-44fb-8a10-aa537329c483",
+        "2c399289-4e4c-4edd-a484-4b906a2a41ce",
+        "12800019-57a8-8a76-8013-82bdf64430ed",
+        "ca49e1c2-3ecd-4794-8106-043cb46a1e7c",
+        "8ddce571-2dda-497d-a4ed-d06d1d31c9f8",
+        "20943bd1-1471-4f75-a502-d0446e1786f2"
+      ],
+      "deleted": true,
+      "newId": "51800019-57a8-8a76-802d-20dc03cb2248",
+      "swappedAt": "2026-10-15T03:17:03.406Z"
+    },
+    "ja APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-ja-duo-04-nofree-35192a60f3f2.png",
+      "md5": "1e31a2a25601cb0d086c3b32442bd57d",
+      "setId": "8ff358a1-040f-4baf-b4fc-49446d16f806",
+      "previous": {
+        "id": "3443f23c-aa2b-4950-85a0-66fc7b5ae385",
+        "fileName": "doneat-3.2.1-ja-duo-04-63fa36dae09a.png"
+      },
+      "order": [
+        "b937e21c-02d6-4431-8e62-27a381596baf",
+        "b4000019-57a8-8a76-802f-840ed416f0e3",
+        "3e0ef472-6ca8-430f-a679-d744b54d9fab",
+        "3443f23c-aa2b-4950-85a0-66fc7b5ae385",
+        "11e39233-373c-4540-a8cf-bfd60dcd890c",
+        "ea000019-57a8-8a76-8039-0207c04ac2db",
+        "c2215632-e2e8-4b7a-95f8-4e2df8401382",
+        "00157525-6569-4fac-a7c5-2a0b5b895963",
+        "b27de8af-5761-4737-af39-7a761481ff89"
+      ],
+      "deleted": true,
+      "newId": "a4400019-57a8-8a76-8011-aa9f788d1d4d",
+      "swappedAt": "2026-10-15T03:17:10.222Z"
+    },
+    "ja APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-ja-ipad-03-nofree-3876292d63b2.png",
+      "md5": "f4c1a7568eb15744f4f65b070e0c0a0e",
+      "setId": "215bd90d-a5a8-4973-be74-1b1b4755ed75",
+      "previous": {
+        "id": "29aadd54-130a-49f7-8ff4-530918229e94",
+        "fileName": "ja-ipad-03-watch.png"
+      },
+      "order": [
+        "b598fed5-1a15-4d2e-8919-0a7b6ed01149",
+        "fba3abc8-9efa-4792-865e-0a4e68b72cbf",
+        "29aadd54-130a-49f7-8ff4-530918229e94",
+        "2825ea0f-ffa8-435b-bf2b-437b1804e067",
+        "60252eab-6401-46a2-8ef4-16ba3c4b415c",
+        "795d1a27-b31a-43a5-a3a1-a20bd4b89fe0",
+        "41f32fde-5449-46d9-840f-bef2f4d73672",
+        "fedf9601-62ec-4a58-908a-95af27b9e731"
+      ],
+      "deleted": true,
+      "newId": "6a000019-57a8-8a76-802d-44b4570c2436",
+      "swappedAt": "2026-10-15T03:17:17.569Z"
+    },
+    "ko APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-ko-iphone-03-nofree-e3293fc4939b.png",
+      "md5": "9411a3995ccb243455a71b28aa3e13b5",
+      "setId": "65e1c090-ba94-4faa-a42d-eca1789d355a",
+      "previous": {
+        "id": "61400019-57a8-8a76-801b-e0c4fe0a7ded",
+        "fileName": "doneat-3.2.2-ko-iphone-03-253cbb74073b.png"
+      },
+      "order": [
+        "4cd455aa-6eb8-4aa3-a54e-d27aa18c115a",
+        "a9fec350-3e69-4a9e-82e8-6c10405ec5d8",
+        "61400019-57a8-8a76-801b-e0c4fe0a7ded",
+        "93df2ae4-356a-48de-ac6d-d4426269167d",
+        "b06d7c81-afa9-4437-a393-4b693d766107",
+        "9af138b4-f6a6-4c50-8aa5-acd88ea038da",
+        "18400019-57a8-8a76-8014-c58511b7f1a9",
+        "5dc4a686-d06f-4dad-9d3c-44e0e7b8481f",
+        "b598d62a-23ec-4a23-bc21-cc178f6e1160",
+        "bf12d945-7051-4fe3-8973-520542ebb184"
+      ],
+      "deleted": true,
+      "newId": "93800019-57a8-8a76-802d-59ff4b5b57ff",
+      "swappedAt": "2026-10-15T03:17:24.152Z"
+    },
+    "ko APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-ko-duo-02-nofree-d96ce409fdd4.png",
+      "md5": "da1949acbdcd5204b9eaec486cffcfa1",
+      "setId": "22f16854-8cc0-4cad-9222-3a62b8e260c7",
+      "previous": {
+        "id": "7c800019-57a8-8a76-803e-c7410ded9b01",
+        "fileName": "doneat-3.2.2-ko-duo-02-acf8a399a2ed.png"
+      },
+      "order": [
+        "5dd6ae30-9309-4447-8bf6-bb8eb6591ec9",
+        "7c800019-57a8-8a76-803e-c7410ded9b01",
+        "f7817c6c-b7e5-48ae-8e79-72adc0f3ad18",
+        "907e8f8e-b567-411f-9a68-b470d10ea162",
+        "4640de87-fe71-4728-96a2-ea8e37cf73be",
+        "68000019-57a8-8a76-8027-106028c73b73",
+        "95d22e29-1a5b-4a59-88eb-4e20f968014a",
+        "207aa23f-9330-4692-891b-3beccf40c0d3",
+        "6907db46-d31b-4f54-91c6-f70546911027"
+      ],
+      "deleted": true,
+      "newId": "fd400019-57a8-8a76-801f-221659636102",
+      "swappedAt": "2026-10-15T03:17:30.854Z"
+    },
+    "ko APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-ko-iphone-05-nofree-2d03c38c87dc.png",
+      "md5": "735a64d4726d732a567f764f884300d3",
+      "setId": "65e1c090-ba94-4faa-a42d-eca1789d355a",
+      "previous": {
+        "id": "b06d7c81-afa9-4437-a393-4b693d766107",
+        "fileName": "doneat-3.2.1-ko-iphone-05-dbb2986a66e4.png"
+      },
+      "order": [
+        "4cd455aa-6eb8-4aa3-a54e-d27aa18c115a",
+        "a9fec350-3e69-4a9e-82e8-6c10405ec5d8",
+        "93800019-57a8-8a76-802d-59ff4b5b57ff",
+        "93df2ae4-356a-48de-ac6d-d4426269167d",
+        "b06d7c81-afa9-4437-a393-4b693d766107",
+        "9af138b4-f6a6-4c50-8aa5-acd88ea038da",
+        "18400019-57a8-8a76-8014-c58511b7f1a9",
+        "5dc4a686-d06f-4dad-9d3c-44e0e7b8481f",
+        "b598d62a-23ec-4a23-bc21-cc178f6e1160",
+        "bf12d945-7051-4fe3-8973-520542ebb184"
+      ],
+      "deleted": true,
+      "newId": "c8800019-57a8-8a76-8014-2ca713c3d78b",
+      "swappedAt": "2026-10-15T03:17:38.364Z"
+    },
+    "ko APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-ko-duo-04-nofree-891723ff147a.png",
+      "md5": "1375a06859b42caac4043e337b23cb30",
+      "setId": "22f16854-8cc0-4cad-9222-3a62b8e260c7",
+      "previous": {
+        "id": "907e8f8e-b567-411f-9a68-b470d10ea162",
+        "fileName": "doneat-3.2.1-ko-duo-04-b8c83b57b562.png"
+      },
+      "order": [
+        "5dd6ae30-9309-4447-8bf6-bb8eb6591ec9",
+        "fd400019-57a8-8a76-801f-221659636102",
+        "f7817c6c-b7e5-48ae-8e79-72adc0f3ad18",
+        "907e8f8e-b567-411f-9a68-b470d10ea162",
+        "4640de87-fe71-4728-96a2-ea8e37cf73be",
+        "68000019-57a8-8a76-8027-106028c73b73",
+        "95d22e29-1a5b-4a59-88eb-4e20f968014a",
+        "207aa23f-9330-4692-891b-3beccf40c0d3",
+        "6907db46-d31b-4f54-91c6-f70546911027"
+      ],
+      "deleted": true,
+      "newId": "f7000019-57a8-8a76-8036-7ea0f66bd4a5",
+      "swappedAt": "2026-10-15T03:17:45.492Z"
+    },
+    "ko APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-ko-ipad-03-nofree-1a90b53c8810.png",
+      "md5": "17d7dec0c17513a469d620d849f67262",
+      "setId": "fa11bdfe-a9f5-4877-b775-504916fa6a25",
+      "previous": {
+        "id": "e3c0f4c9-796b-4c67-903c-fb9f578e9d95",
+        "fileName": "ko-ipad-03-watch.png"
+      },
+      "order": [
+        "330f8bec-57a8-4860-923a-698d0115407b",
+        "6ba9da86-e844-40d8-acd0-6de6e800c505",
+        "e3c0f4c9-796b-4c67-903c-fb9f578e9d95",
+        "f559b2f7-d473-418f-aa90-ba75fbc73cf8",
+        "4e21daaf-d07b-4419-a793-7b44f7f975c2",
+        "88af41ac-3998-4e8a-87db-8b8f5afabd71",
+        "333cfc28-73ec-4226-a82c-08bff4f41c41",
+        "9e1f7358-2938-4e05-9b80-c92a08ec0b47"
+      ],
+      "deleted": true,
+      "newId": "adc00019-57a8-8a76-801f-5c68e1d93e63",
+      "swappedAt": "2026-10-15T03:17:52.973Z"
+    },
+    "pt-BR APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-pt-iphone-03-nofree-73f3178f3e5d.png",
+      "md5": "3bd75eb28a360c0ae639bf6ef3ad2c75",
+      "setId": "07fa2bc2-be3a-405b-8f1c-68e9013a6519",
+      "previous": {
+        "id": "ae400019-57a8-8a76-803f-37f91732bb26",
+        "fileName": "doneat-3.2.2-pt-iphone-03-346a8ca7444a.png"
+      },
+      "order": [
+        "5b454a41-d13a-4fa5-bcab-fcf7017e6d64",
+        "8dfa0bca-fc18-4142-967b-f5ff237c9d34",
+        "ae400019-57a8-8a76-803f-37f91732bb26",
+        "39d5ae54-dcd5-4cf2-bbce-c892c2a7d686",
+        "218cec31-609c-4fb9-b07e-fd75531c7f87",
+        "8aedcb6f-9713-496f-8f6a-618a706dd234",
+        "51000019-57a8-8a76-802e-4c74ae612a52",
+        "222e4490-5494-44e3-8072-2a6a08e47217",
+        "80740375-6872-4824-b3d0-7753436765f4",
+        "e47ff549-73bf-492b-93a9-fff587537376"
+      ],
+      "deleted": true,
+      "newId": "76c00019-57a8-8a76-8034-a870e3a0c9c0",
+      "swappedAt": "2026-10-15T03:17:59.509Z"
+    },
+    "pt-BR APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-pt-duo-02-nofree-ef2f22f78512.png",
+      "md5": "b8ba35bfff17bdc0b7558552fa0dfdb7",
+      "setId": "0a7e4220-ebf8-48d7-851f-665570e2b140",
+      "previous": {
+        "id": "01400019-57a8-8a76-8023-51f83a3cc7a1",
+        "fileName": "doneat-3.2.2-pt-duo-02-7efc309f8a07.png"
+      },
+      "order": [
+        "43fa6dd1-e3ae-4b4f-b2f7-fb0ac8ffbc11",
+        "01400019-57a8-8a76-8023-51f83a3cc7a1",
+        "e5261417-ab0c-455d-b225-0c9c30fd0c18",
+        "0e185b08-29fa-4cf2-936d-93964dad07de",
+        "ea205442-b549-4475-8e06-45d4363248f6",
+        "1f000019-57a8-8a76-8026-929e803ba3f8",
+        "4efdd754-250e-4ed7-9f7b-2330c77ba085",
+        "3020ffe9-52c4-4244-831d-7a7ac8d643e4",
+        "cc41ff3e-e143-443e-951e-a1c5e448036a"
+      ],
+      "deleted": true,
+      "newId": "a5400019-57a8-8a76-803b-200a0b4a0b30",
+      "swappedAt": "2026-10-15T03:18:06.846Z"
+    },
+    "pt-BR APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-pt-iphone-05-nofree-19f166024b12.png",
+      "md5": "8e75290453e3af26d96ac7f757615e81",
+      "setId": "07fa2bc2-be3a-405b-8f1c-68e9013a6519",
+      "previous": {
+        "id": "218cec31-609c-4fb9-b07e-fd75531c7f87",
+        "fileName": "doneat-3.2.1-pt-iphone-05-46ae9d79a1d3.png"
+      },
+      "order": [
+        "5b454a41-d13a-4fa5-bcab-fcf7017e6d64",
+        "8dfa0bca-fc18-4142-967b-f5ff237c9d34",
+        "76c00019-57a8-8a76-8034-a870e3a0c9c0",
+        "39d5ae54-dcd5-4cf2-bbce-c892c2a7d686",
+        "218cec31-609c-4fb9-b07e-fd75531c7f87",
+        "8aedcb6f-9713-496f-8f6a-618a706dd234",
+        "51000019-57a8-8a76-802e-4c74ae612a52",
+        "222e4490-5494-44e3-8072-2a6a08e47217",
+        "80740375-6872-4824-b3d0-7753436765f4",
+        "e47ff549-73bf-492b-93a9-fff587537376"
+      ],
+      "deleted": true,
+      "newId": "4cc00019-57a8-8a76-803c-9452c7cbcb1a",
+      "swappedAt": "2026-10-15T03:18:14.184Z"
+    },
+    "pt-BR APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-pt-duo-04-nofree-50b7e2a85f0b.png",
+      "md5": "452b0a3deadaa156952632c183918f0c",
+      "setId": "0a7e4220-ebf8-48d7-851f-665570e2b140",
+      "previous": {
+        "id": "0e185b08-29fa-4cf2-936d-93964dad07de",
+        "fileName": "doneat-3.2.1-pt-duo-04-48a84fd18202.png"
+      },
+      "order": [
+        "43fa6dd1-e3ae-4b4f-b2f7-fb0ac8ffbc11",
+        "a5400019-57a8-8a76-803b-200a0b4a0b30",
+        "e5261417-ab0c-455d-b225-0c9c30fd0c18",
+        "0e185b08-29fa-4cf2-936d-93964dad07de",
+        "ea205442-b549-4475-8e06-45d4363248f6",
+        "1f000019-57a8-8a76-8026-929e803ba3f8",
+        "4efdd754-250e-4ed7-9f7b-2330c77ba085",
+        "3020ffe9-52c4-4244-831d-7a7ac8d643e4",
+        "cc41ff3e-e143-443e-951e-a1c5e448036a"
+      ],
+      "deleted": true,
+      "newId": "abc00019-57a8-8a76-803a-7ddaed64dc9c",
+      "swappedAt": "2026-10-15T03:18:21.248Z"
+    },
+    "pt-BR APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-pt-ipad-03-nofree-3ef82bcb4198.png",
+      "md5": "02a785d3868d5e8f952a908b7d4d12ac",
+      "setId": "3c66d56b-0ff5-4357-80b7-422ab7a1d11f",
+      "previous": {
+        "id": "57ce68e5-b024-472c-a596-53924584f827",
+        "fileName": "pt-ipad-03-watch.png"
+      },
+      "order": [
+        "186585de-2525-4ed4-bc8c-3863095c3866",
+        "90a7a5a1-ba2a-4f6b-ba3d-a35af6011014",
+        "57ce68e5-b024-472c-a596-53924584f827",
+        "1c39d771-e985-4e8f-b872-b2d650df8214",
+        "93fc60eb-81cb-4722-a4ca-f390d82d721d",
+        "34a273cf-998f-4eea-ba54-bb1dc7070fdf",
+        "543ead28-189f-4313-8c80-794c17826178",
+        "cbb66e30-2cb2-4f42-9412-04d1dcb6a4f6"
+      ],
+      "deleted": true,
+      "newId": "d4000019-57a8-8a76-802f-c3351ac0e6ef",
+      "swappedAt": "2026-10-15T03:18:28.866Z"
+    },
+    "ru APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-ru-iphone-03-nofree-e384f2359edd.png",
+      "md5": "caa9b9b60c4c963f3da6314b7bb29d53",
+      "setId": "c605cc8d-c1c3-425e-92ad-d162d87fccac",
+      "previous": {
+        "id": "29000019-57a8-8a76-8009-40d05cca7205",
+        "fileName": "doneat-3.2.2-ru-iphone-03-6d653e6d7b3a.png"
+      },
+      "order": [
+        "1f3365b2-deec-4c9c-898b-25c4b236b0d3",
+        "8a2e7b65-1c3f-43dd-b651-c574e65d65f9",
+        "29000019-57a8-8a76-8009-40d05cca7205",
+        "2ca97d25-cada-4d10-bcff-c60eccbc3dc5",
+        "f984009f-644b-4968-ac57-43e35204758e",
+        "438d1aa1-8be9-4e7c-abc3-ef24e190370d",
+        "a6800019-57a8-8a76-8014-eb354b1a86a2",
+        "77ed3953-7a1c-4c09-b489-3b4b3c7addc3",
+        "409c54bc-d297-4d50-8a00-7fef533a2d8f",
+        "738fb9eb-e4ca-4b14-9c2e-2e6451ffaf40"
+      ],
+      "deleted": true,
+      "newId": "4d400019-57a8-8a76-802f-5b815affc0db",
+      "swappedAt": "2026-10-15T03:18:35.268Z"
+    },
+    "ru APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-ru-duo-02-nofree-5da5a26a0c02.png",
+      "md5": "102406cb0a53ca598bdb970ab123d8e2",
+      "setId": "620bda15-db4a-42d4-8a70-29d1fd8481d0",
+      "previous": {
+        "id": "69400019-57a8-8a76-8035-4497b8e823fd",
+        "fileName": "doneat-3.2.2-ru-duo-02-09ae59dff5bf.png"
+      },
+      "order": [
+        "fc918d1e-8e73-4a8c-963f-7ddcc3310318",
+        "69400019-57a8-8a76-8035-4497b8e823fd",
+        "f2776ff2-9c4e-4ea1-b3d4-9bfde5a3468e",
+        "bdaa7340-a41d-4d4f-a416-1243842c6979",
+        "3d5a0d15-2f35-4af7-89ea-4cabbd349876",
+        "d9800019-57a8-8a76-802c-1d605fcdb1cb",
+        "9dafd348-850a-43b0-a606-797ec201d99e",
+        "c3487bf4-b79c-4b35-9413-9cf275480c74",
+        "2b543cab-5099-47db-ad1d-b3c01b19fedc"
+      ],
+      "deleted": true,
+      "newId": "09000019-57a8-8a76-801a-4f9e9388b37f",
+      "swappedAt": "2026-10-15T03:18:42.237Z"
+    },
+    "ru APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-ru-iphone-05-nofree-7b5cd9cc450a.png",
+      "md5": "118fad23cf47f05266d89821a3d29ef2",
+      "setId": "c605cc8d-c1c3-425e-92ad-d162d87fccac",
+      "previous": {
+        "id": "f984009f-644b-4968-ac57-43e35204758e",
+        "fileName": "doneat-3.2.1-ru-iphone-05-17103fbad963.png"
+      },
+      "order": [
+        "1f3365b2-deec-4c9c-898b-25c4b236b0d3",
+        "8a2e7b65-1c3f-43dd-b651-c574e65d65f9",
+        "4d400019-57a8-8a76-802f-5b815affc0db",
+        "2ca97d25-cada-4d10-bcff-c60eccbc3dc5",
+        "f984009f-644b-4968-ac57-43e35204758e",
+        "438d1aa1-8be9-4e7c-abc3-ef24e190370d",
+        "a6800019-57a8-8a76-8014-eb354b1a86a2",
+        "77ed3953-7a1c-4c09-b489-3b4b3c7addc3",
+        "409c54bc-d297-4d50-8a00-7fef533a2d8f",
+        "738fb9eb-e4ca-4b14-9c2e-2e6451ffaf40"
+      ],
+      "deleted": true,
+      "newId": "68400019-57a8-8a76-801d-0a1781912c7b",
+      "swappedAt": "2026-10-15T03:18:49.594Z"
+    },
+    "ru APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-ru-duo-04-nofree-1d1dcd9189e4.png",
+      "md5": "8d4129d46a047eaf83d168785f0f37fd",
+      "setId": "620bda15-db4a-42d4-8a70-29d1fd8481d0",
+      "previous": {
+        "id": "bdaa7340-a41d-4d4f-a416-1243842c6979",
+        "fileName": "doneat-3.2.1-ru-duo-04-1a41ca8b71d7.png"
+      },
+      "order": [
+        "fc918d1e-8e73-4a8c-963f-7ddcc3310318",
+        "09000019-57a8-8a76-801a-4f9e9388b37f",
+        "f2776ff2-9c4e-4ea1-b3d4-9bfde5a3468e",
+        "bdaa7340-a41d-4d4f-a416-1243842c6979",
+        "3d5a0d15-2f35-4af7-89ea-4cabbd349876",
+        "d9800019-57a8-8a76-802c-1d605fcdb1cb",
+        "9dafd348-850a-43b0-a606-797ec201d99e",
+        "c3487bf4-b79c-4b35-9413-9cf275480c74",
+        "2b543cab-5099-47db-ad1d-b3c01b19fedc"
+      ],
+      "deleted": true,
+      "newId": "92400019-57a8-8a76-801a-d9c8c6d3c79c",
+      "swappedAt": "2026-10-15T03:18:56.917Z"
+    },
+    "ru APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-ru-ipad-03-nofree-4e0d7b3949c3.png",
+      "md5": "ed9a76d5867fb9c7cb2ccca47623c9e2",
+      "setId": "4f4ddf26-e3e5-4973-816d-dedbdd44e20a",
+      "previous": {
+        "id": "dad3f4a0-57b1-4a1b-904c-9087e712c782",
+        "fileName": "ru-ipad-03-watch.png"
+      },
+      "order": [
+        "2ff9f448-19c8-41a3-8a4c-1bf599d7edf9",
+        "07a9d391-d12e-42cf-8eb6-5573818f44a1",
+        "dad3f4a0-57b1-4a1b-904c-9087e712c782",
+        "cee596d0-5904-4276-9949-c54832dddd61",
+        "ccd82c27-8a21-456e-939e-0f8768db6ef4",
+        "855b72b9-940a-455b-a41f-63bca27ed9ee",
+        "e4ae5526-c253-4961-bb7e-571d5cea125b",
+        "38c05e09-f58e-4fea-a132-dbc049cb2817"
+      ],
+      "deleted": true,
+      "newId": "e0800019-57a8-8a76-8023-aaa286b39d05",
+      "swappedAt": "2026-10-15T03:19:04.415Z"
+    },
+    "th APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-th-iphone-03-nofree-13f609bd0086.png",
+      "md5": "eb3d08b3b11ef3e74c698221ff517cd3",
+      "setId": "19a475ef-fda3-4450-886f-efe07f817e62",
+      "previous": {
+        "id": "95c00019-57a8-8a76-8004-1f8f0032331b",
+        "fileName": "doneat-3.2.2-th-iphone-03-72204ad60f2c.png"
+      },
+      "order": [
+        "582fffb3-dd3e-423a-8fec-95e95a5bbdf6",
+        "8277eab6-9f04-457e-b450-2f08120b4bde",
+        "95c00019-57a8-8a76-8004-1f8f0032331b",
+        "0e1ef806-4348-4587-8e09-5a24f4957245",
+        "805500c5-9e0f-4138-b7a4-e2c556657b49",
+        "bd053a08-22ca-4518-add2-6298d4554e87",
+        "d5000019-57a8-8a76-8017-20870bbc1630",
+        "a7c9be68-172e-401d-acea-4804fbbf4ba6",
+        "006aaddb-086f-478b-88ce-be128382f045",
+        "5623545a-c5f2-451f-8091-7f164b0f526a"
+      ],
+      "deleted": true,
+      "newId": "8d800019-57a8-8a76-801d-4cc1840c714d",
+      "swappedAt": "2026-10-15T03:19:11.083Z"
+    },
+    "th APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-th-duo-02-nofree-018691851166.png",
+      "md5": "0efb55cd07314982a490a877995734fd",
+      "setId": "8ca12bca-1c13-4141-9ff2-4ad195a31d5a",
+      "previous": {
+        "id": "f8c00019-57a8-8a76-8026-6136e3671d05",
+        "fileName": "doneat-3.2.2-th-duo-02-e1a69a7fd2a0.png"
+      },
+      "order": [
+        "256de474-bb25-4207-b997-fcd4b72ea54f",
+        "f8c00019-57a8-8a76-8026-6136e3671d05",
+        "1756a7d5-9c39-4f42-9358-afb8cc8c6d63",
+        "26c84c22-0e35-41b7-8770-116206e45557",
+        "646b554e-5067-4ec6-956f-9331b7ebfcf0",
+        "3d800019-57a8-8a76-8030-7f0a068f6043",
+        "f113fb63-a9c3-4696-9b34-dde261ffa2f0",
+        "f8985f8c-7762-4c56-bc5c-696af863a724",
+        "b473f040-d725-47e5-bbfe-18015f7f0cf8"
+      ],
+      "deleted": true,
+      "newId": "ccc00019-57a8-8a76-801e-71b720ff59a2",
+      "swappedAt": "2026-10-15T03:19:17.889Z"
+    },
+    "th APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-th-iphone-05-nofree-8c666e178aa9.png",
+      "md5": "782ff6e5277d0e5d69006cadfd6943a0",
+      "setId": "19a475ef-fda3-4450-886f-efe07f817e62",
+      "previous": {
+        "id": "805500c5-9e0f-4138-b7a4-e2c556657b49",
+        "fileName": "doneat-3.2.1-th-iphone-05-162f1ff3940e.png"
+      },
+      "order": [
+        "582fffb3-dd3e-423a-8fec-95e95a5bbdf6",
+        "8277eab6-9f04-457e-b450-2f08120b4bde",
+        "8d800019-57a8-8a76-801d-4cc1840c714d",
+        "0e1ef806-4348-4587-8e09-5a24f4957245",
+        "805500c5-9e0f-4138-b7a4-e2c556657b49",
+        "bd053a08-22ca-4518-add2-6298d4554e87",
+        "d5000019-57a8-8a76-8017-20870bbc1630",
+        "a7c9be68-172e-401d-acea-4804fbbf4ba6",
+        "006aaddb-086f-478b-88ce-be128382f045",
+        "5623545a-c5f2-451f-8091-7f164b0f526a"
+      ],
+      "deleted": true,
+      "newId": "5b400019-57a8-8a76-8038-c650842c6980",
+      "swappedAt": "2026-10-15T03:19:25.477Z"
+    },
+    "th APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-th-duo-04-nofree-9feae8342a01.png",
+      "md5": "e472360d5b5a13d26b4e75d0adc72fc7",
+      "setId": "8ca12bca-1c13-4141-9ff2-4ad195a31d5a",
+      "previous": {
+        "id": "26c84c22-0e35-41b7-8770-116206e45557",
+        "fileName": "doneat-3.2.1-th-duo-04-0f40714e250b.png"
+      },
+      "order": [
+        "256de474-bb25-4207-b997-fcd4b72ea54f",
+        "ccc00019-57a8-8a76-801e-71b720ff59a2",
+        "1756a7d5-9c39-4f42-9358-afb8cc8c6d63",
+        "26c84c22-0e35-41b7-8770-116206e45557",
+        "646b554e-5067-4ec6-956f-9331b7ebfcf0",
+        "3d800019-57a8-8a76-8030-7f0a068f6043",
+        "f113fb63-a9c3-4696-9b34-dde261ffa2f0",
+        "f8985f8c-7762-4c56-bc5c-696af863a724",
+        "b473f040-d725-47e5-bbfe-18015f7f0cf8"
+      ],
+      "deleted": true,
+      "newId": "8f800019-57a8-8a76-802a-68a5642dedaa",
+      "swappedAt": "2026-10-15T03:19:32.569Z"
+    },
+    "th APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-th-ipad-03-nofree-b5126a106821.png",
+      "md5": "ed1151ab40d629aae163f2b4459fd006",
+      "setId": "47c15bfa-7ecb-4198-a920-04fec428046f",
+      "previous": {
+        "id": "d922cb89-bd73-4136-8cc7-cf6b934550cc",
+        "fileName": "th-ipad-03-watch.png"
+      },
+      "order": [
+        "062c9515-bb60-4662-94c1-a9c6a44757bd",
+        "f9e52734-c867-446c-a549-2cf1dec55908",
+        "d922cb89-bd73-4136-8cc7-cf6b934550cc",
+        "6cbf5890-c727-40f8-ad67-80e0cdbffd50",
+        "c0d95a9b-37ea-45a5-b032-ba7de689d483",
+        "f253a5cc-945b-4c8b-9a77-ff77aac6eaec",
+        "65c2434e-69bc-425f-ac8f-c6d566787492",
+        "430587ec-f675-4446-b500-261ed55d4c48"
+      ],
+      "deleted": true,
+      "newId": "5bc00019-57a8-8a76-8025-68b2870f48e9",
+      "swappedAt": "2026-10-15T03:19:40.077Z"
+    },
+    "tr APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-tr-iphone-03-nofree-b036abf8bb3e.png",
+      "md5": "7cbac7555b474080916a5f399daf769b",
+      "setId": "f7ef49f4-c7d7-43cb-a941-39b144f706c2",
+      "previous": {
+        "id": "25c00019-57a8-8a76-8000-2f29392f6e38",
+        "fileName": "doneat-3.2.2-tr-iphone-03-84c7ddcb5606.png"
+      },
+      "order": [
+        "046f54ac-b89e-4cb7-b36b-3d6a706299bd",
+        "abe4b689-e9f5-4765-b7a3-51abf71c88de",
+        "25c00019-57a8-8a76-8000-2f29392f6e38",
+        "2a84821f-a165-4bd2-800b-8dc413b26236",
+        "cd593905-6ee9-4200-ac3f-2c488c900bdc",
+        "6289f2e5-e7e4-4db7-8e3d-86c10e0273c7",
+        "02800019-57a8-8a76-8010-431738678c34",
+        "453c409d-123a-4dbc-99d1-9603b0c7015c",
+        "3fcf2dcc-1198-4f9f-bced-f73bcae1150f",
+        "ae57be7a-f757-4057-af8b-756933f7caf9"
+      ],
+      "deleted": true,
+      "newId": "f7800019-57a8-8a76-802b-035e6a1b0e29",
+      "swappedAt": "2026-10-15T03:19:46.635Z"
+    },
+    "tr APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-tr-duo-02-nofree-422bfac32e12.png",
+      "md5": "83ce6b003818cd2b6e29e460032cecef",
+      "setId": "e537f2bc-4c33-46d1-bba5-b9761b759228",
+      "previous": {
+        "id": "51400019-57a8-8a76-8026-b7787cfe9022",
+        "fileName": "doneat-3.2.2-tr-duo-02-ab2e81adaa99.png"
+      },
+      "order": [
+        "de01a0f8-04ab-4b72-98f5-cfc826b71c99",
+        "51400019-57a8-8a76-8026-b7787cfe9022",
+        "199434cf-295a-49db-abc6-44dfab970e5a",
+        "bf2f584e-767f-48b8-bdfc-ad65733b5878",
+        "105daa24-663a-4e8c-8ea3-bf020e91eb7d",
+        "4d400019-57a8-8a76-803c-96e84f6e39e3",
+        "299f66ac-34e5-4c31-8c25-478e84b15fba",
+        "37b70dbf-22d3-4cc2-bef5-40996f6a2b8a",
+        "da7faf92-cd38-4b84-8d69-792f65443d5a"
+      ],
+      "deleted": true,
+      "newId": "0e000019-57a8-8a76-8015-c821285c795c",
+      "swappedAt": "2026-10-15T03:19:53.551Z"
+    },
+    "tr APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-tr-iphone-05-nofree-ce6b238f7bca.png",
+      "md5": "82db860feaa806952d89d4638d81dc5f",
+      "setId": "f7ef49f4-c7d7-43cb-a941-39b144f706c2",
+      "previous": {
+        "id": "cd593905-6ee9-4200-ac3f-2c488c900bdc",
+        "fileName": "doneat-3.2.1-tr-iphone-05-eb280fc48712.png"
+      },
+      "order": [
+        "046f54ac-b89e-4cb7-b36b-3d6a706299bd",
+        "abe4b689-e9f5-4765-b7a3-51abf71c88de",
+        "f7800019-57a8-8a76-802b-035e6a1b0e29",
+        "2a84821f-a165-4bd2-800b-8dc413b26236",
+        "cd593905-6ee9-4200-ac3f-2c488c900bdc",
+        "6289f2e5-e7e4-4db7-8e3d-86c10e0273c7",
+        "02800019-57a8-8a76-8010-431738678c34",
+        "453c409d-123a-4dbc-99d1-9603b0c7015c",
+        "3fcf2dcc-1198-4f9f-bced-f73bcae1150f",
+        "ae57be7a-f757-4057-af8b-756933f7caf9"
+      ],
+      "deleted": true,
+      "newId": "f6400019-57a8-8a76-8009-7e03828d4542",
+      "swappedAt": "2026-10-15T03:20:01.128Z"
+    },
+    "tr APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-tr-duo-04-nofree-db1ce4e2264d.png",
+      "md5": "6f1bfa8db9d47e98ca17e5a3aeec177c",
+      "setId": "e537f2bc-4c33-46d1-bba5-b9761b759228",
+      "previous": {
+        "id": "bf2f584e-767f-48b8-bdfc-ad65733b5878",
+        "fileName": "doneat-3.2.1-tr-duo-04-c870f1eeb6a0.png"
+      },
+      "order": [
+        "de01a0f8-04ab-4b72-98f5-cfc826b71c99",
+        "0e000019-57a8-8a76-8015-c821285c795c",
+        "199434cf-295a-49db-abc6-44dfab970e5a",
+        "bf2f584e-767f-48b8-bdfc-ad65733b5878",
+        "105daa24-663a-4e8c-8ea3-bf020e91eb7d",
+        "4d400019-57a8-8a76-803c-96e84f6e39e3",
+        "299f66ac-34e5-4c31-8c25-478e84b15fba",
+        "37b70dbf-22d3-4cc2-bef5-40996f6a2b8a",
+        "da7faf92-cd38-4b84-8d69-792f65443d5a"
+      ],
+      "deleted": true,
+      "newId": "8a000019-57a8-8a76-8033-d71ba07a2bcc",
+      "swappedAt": "2026-10-15T03:20:08.488Z"
+    },
+    "tr APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-tr-ipad-03-nofree-ddde3805f247.png",
+      "md5": "e94f839ff6103360401a6766700c6051",
+      "setId": "c61d83c5-e935-4be6-be0e-c85914302cb3",
+      "previous": {
+        "id": "7dfe8847-6169-4222-8571-77b11808d722",
+        "fileName": "tr-ipad-03-watch.png"
+      },
+      "order": [
+        "9c0079f2-4b53-4b02-84a2-ae56b923e24c",
+        "53937d5b-5291-4295-bf11-891eff63c3b0",
+        "7dfe8847-6169-4222-8571-77b11808d722",
+        "e822826c-21c5-4a97-8c68-14827f19c030",
+        "7f901e76-a9c3-4079-84f5-c0b8a222e543",
+        "7cd55f48-364c-411e-b90e-6a7d63545d4f",
+        "dac5d99c-5c8b-4469-a13a-03c037d5e78f",
+        "4622f8dc-5939-4a06-a858-3a1246e24b98"
+      ],
+      "deleted": true,
+      "newId": "32400019-57a8-8a76-802a-f1d9e11da580",
+      "swappedAt": "2026-10-15T03:20:16.187Z"
+    },
+    "vi APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-vi-iphone-03-nofree-a855ffcd9ac7.png",
+      "md5": "6bf7ded194613b5906864cd19cf72fa3",
+      "setId": "588a7da3-0644-4b6e-a9a8-2631c9f00894",
+      "previous": {
+        "id": "f1400019-57a8-8a76-8022-625852914ad4",
+        "fileName": "doneat-3.2.2-vi-iphone-03-69fbb22753fd.png"
+      },
+      "order": [
+        "f108be08-8545-4ec7-a86c-1363a7d12967",
+        "7c6062f7-69af-46ac-b30a-f211618b2ee2",
+        "f1400019-57a8-8a76-8022-625852914ad4",
+        "c9dcda49-54fd-4dc6-a6f0-2a840296cad5",
+        "badf9ee9-c51a-47c3-b7b4-8359a6de771d",
+        "c3ae824a-42f2-496c-ac9c-7df2df07a4a3",
+        "78400019-57a8-8a76-8029-45b7996fb7c7",
+        "59590611-be76-44ea-80b8-b6a7230dd1d7",
+        "a860409d-571d-4bc8-93fe-9f37f8cf8ee6",
+        "97c78175-5a13-4b70-8a5f-ecfdce4dbf7d"
+      ],
+      "deleted": true,
+      "newId": "26c00019-57a8-8a76-803e-c0e832d3251b",
+      "swappedAt": "2026-10-15T03:20:23.179Z"
+    },
+    "vi APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-vi-duo-02-nofree-47fce549c024.png",
+      "md5": "6509d7a5df70f9d7d4783d3d90ec83ef",
+      "setId": "d62451c0-d623-4688-a6c6-319feadc5e1f",
+      "previous": {
+        "id": "b6000019-57a8-8a76-8015-556503604b7a",
+        "fileName": "doneat-3.2.2-vi-duo-02-f6628a9ebc9c.png"
+      },
+      "order": [
+        "412fd3b1-4261-4155-850f-9242138654c7",
+        "b6000019-57a8-8a76-8015-556503604b7a",
+        "17b2998a-5b02-48d0-a593-45b6e1f3680e",
+        "491d336e-ad06-40f1-a356-2914453aec87",
+        "4bb38ff3-210e-4b74-8cef-19c7dccad658",
+        "65400019-57a8-8a76-8009-538b22940d32",
+        "17c5027b-d8b2-4d8d-beb4-7982b67468df",
+        "db875173-820b-42ff-a32c-9f15db6918d8",
+        "68dd847f-bfd0-45ce-b5cb-2b8787aa9ac2"
+      ],
+      "deleted": true,
+      "newId": "dac00019-57a8-8a76-8007-ac954864219c",
+      "swappedAt": "2026-10-15T03:20:30.363Z"
+    },
+    "vi APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-vi-iphone-05-nofree-65e1f5f1ac89.png",
+      "md5": "2e1752aa7cd5cdb82efb57f1bc6774e3",
+      "setId": "588a7da3-0644-4b6e-a9a8-2631c9f00894",
+      "previous": {
+        "id": "badf9ee9-c51a-47c3-b7b4-8359a6de771d",
+        "fileName": "doneat-3.2.1-vi-iphone-05-12a9f1db03ab.png"
+      },
+      "order": [
+        "f108be08-8545-4ec7-a86c-1363a7d12967",
+        "7c6062f7-69af-46ac-b30a-f211618b2ee2",
+        "26c00019-57a8-8a76-803e-c0e832d3251b",
+        "c9dcda49-54fd-4dc6-a6f0-2a840296cad5",
+        "badf9ee9-c51a-47c3-b7b4-8359a6de771d",
+        "c3ae824a-42f2-496c-ac9c-7df2df07a4a3",
+        "78400019-57a8-8a76-8029-45b7996fb7c7",
+        "59590611-be76-44ea-80b8-b6a7230dd1d7",
+        "a860409d-571d-4bc8-93fe-9f37f8cf8ee6",
+        "97c78175-5a13-4b70-8a5f-ecfdce4dbf7d"
+      ],
+      "deleted": true,
+      "newId": "5b800019-57a8-8a76-803a-2d8e991b9b90",
+      "swappedAt": "2026-10-15T03:20:37.583Z"
+    },
+    "vi APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-vi-duo-04-nofree-98c0c61fa209.png",
+      "md5": "c121f4138ed7198fe56e16a31fbf972d",
+      "setId": "d62451c0-d623-4688-a6c6-319feadc5e1f",
+      "previous": {
+        "id": "491d336e-ad06-40f1-a356-2914453aec87",
+        "fileName": "doneat-3.2.1-vi-duo-04-fbfd027ff924.png"
+      },
+      "order": [
+        "412fd3b1-4261-4155-850f-9242138654c7",
+        "dac00019-57a8-8a76-8007-ac954864219c",
+        "17b2998a-5b02-48d0-a593-45b6e1f3680e",
+        "491d336e-ad06-40f1-a356-2914453aec87",
+        "4bb38ff3-210e-4b74-8cef-19c7dccad658",
+        "65400019-57a8-8a76-8009-538b22940d32",
+        "17c5027b-d8b2-4d8d-beb4-7982b67468df",
+        "db875173-820b-42ff-a32c-9f15db6918d8",
+        "68dd847f-bfd0-45ce-b5cb-2b8787aa9ac2"
+      ],
+      "deleted": true,
+      "newId": "d9000019-57a8-8a76-8027-df849c1ab015",
+      "swappedAt": "2026-10-15T03:20:44.137Z"
+    },
+    "vi APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-vi-ipad-03-nofree-6e8766b049ac.png",
+      "md5": "a50d4dc0a332838b1e24d37ad61e6bb2",
+      "setId": "e4fa34d9-f947-43bc-ba8a-67692da6275e",
+      "previous": {
+        "id": "badcecb8-1efe-4a3e-b5ab-1d15f9780a6c",
+        "fileName": "vi-ipad-03-watch.png"
+      },
+      "order": [
+        "c79ea1bf-9cac-4331-98c3-71158d9ed8c7",
+        "eeaefbcb-aa65-40be-875d-97c610e5fd73",
+        "badcecb8-1efe-4a3e-b5ab-1d15f9780a6c",
+        "6cc4375a-a8c5-4797-a638-fe113ecab062",
+        "b4db8983-062b-4942-865c-ef8f0b31a856",
+        "f1a03444-e189-4eaf-9843-757b03680735",
+        "9378b080-71d2-481a-acfb-4d4ba2bdc68f",
+        "b956bf11-8724-4922-b7e1-555c3c0bfc61"
+      ],
+      "deleted": true,
+      "newId": "32400019-57a8-8a76-8032-2268afeefc17",
+      "swappedAt": "2026-10-15T03:20:51.735Z"
+    },
+    "zh-Hans APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-zh-CN-iphone-03-nofree-b344d12eeaa0.png",
+      "md5": "5d14cf10829c9a294bd5631b0e6ff239",
+      "setId": "480b70fc-cff0-42ae-8dca-9b709483b736",
+      "previous": {
+        "id": "43000019-57a8-8a76-8034-1636e91c06b0",
+        "fileName": "doneat-3.2.2-zh-CN-iphone-03-e20ea3d5aa1e.png"
+      },
+      "order": [
+        "f88f766a-bd98-41a8-8a11-c8132471d4ee",
+        "6485f51f-0f2c-4c7c-be6e-4806342d301a",
+        "43000019-57a8-8a76-8034-1636e91c06b0",
+        "a080656b-df42-4d18-aca8-151472fe5ab5",
+        "440babba-1daa-4ae9-b993-4539a862a13e",
+        "fa3e12a2-b381-4dc7-a7d6-171e2d3b7733",
+        "7cc00019-57a8-8a76-8026-ebc0b7516d36",
+        "75133493-c56f-4fdd-ad72-e53ca0e0b855",
+        "08535635-f475-44c4-9060-da8baf76a47b",
+        "e01489e1-c03c-4fb7-ba14-6143bd4cbf88"
+      ],
+      "deleted": true,
+      "newId": "54800019-57a8-8a76-8036-7e45e3f7e7bd",
+      "swappedAt": "2026-10-15T03:20:58.217Z"
+    },
+    "zh-Hans APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-zh-CN-duo-02-nofree-8c3f8328e97f.png",
+      "md5": "0d94070d2307900c3b8ea29bbd3e645e",
+      "setId": "f463babe-2051-42df-b693-2cd8cd2950f5",
+      "previous": {
+        "id": "2b000019-57a8-8a76-8003-79cb0c29e34a",
+        "fileName": "doneat-3.2.2-zh-CN-duo-02-998658bc30d2.png"
+      },
+      "order": [
+        "b63b7bf0-a44d-4f9b-a27b-086df2d9146d",
+        "2b000019-57a8-8a76-8003-79cb0c29e34a",
+        "a740ea53-5f9a-48e3-b336-231d2fe2e1ea",
+        "856b4033-f716-47b7-8bfb-aff5fc17d025",
+        "720d7e3f-0c57-446d-a467-2a7f27ce1723",
+        "6d800019-57a8-8a76-8022-3c67da63705f",
+        "888ef9b0-3676-4abf-aadb-2ffc2804c7d4",
+        "78628322-b002-477f-8acf-c0d84ea57996",
+        "a858387e-c66b-4fac-af5c-73811780921f"
+      ],
+      "deleted": true,
+      "newId": "24c00019-57a8-8a76-8000-2b56ec76ea32",
+      "swappedAt": "2026-10-15T03:21:05.129Z"
+    },
+    "zh-Hans APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-zh-CN-iphone-05-nofree-3d29f4b877cd.png",
+      "md5": "7c1a2290b2c74f8c07f87e2533554417",
+      "setId": "480b70fc-cff0-42ae-8dca-9b709483b736",
+      "previous": {
+        "id": "440babba-1daa-4ae9-b993-4539a862a13e",
+        "fileName": "doneat-3.2.1-zh-CN-iphone-05-2101a28d8108.png"
+      },
+      "order": [
+        "f88f766a-bd98-41a8-8a11-c8132471d4ee",
+        "6485f51f-0f2c-4c7c-be6e-4806342d301a",
+        "54800019-57a8-8a76-8036-7e45e3f7e7bd",
+        "a080656b-df42-4d18-aca8-151472fe5ab5",
+        "440babba-1daa-4ae9-b993-4539a862a13e",
+        "fa3e12a2-b381-4dc7-a7d6-171e2d3b7733",
+        "7cc00019-57a8-8a76-8026-ebc0b7516d36",
+        "75133493-c56f-4fdd-ad72-e53ca0e0b855",
+        "08535635-f475-44c4-9060-da8baf76a47b",
+        "e01489e1-c03c-4fb7-ba14-6143bd4cbf88"
+      ],
+      "deleted": true,
+      "newId": "cb000019-57a8-8a76-8005-77fb89ffd9f3",
+      "swappedAt": "2026-10-15T03:21:12.772Z"
+    },
+    "zh-Hans APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-zh-CN-duo-04-nofree-b3770ef14fc8.png",
+      "md5": "4800930b31c890b5749e384ec978574e",
+      "setId": "f463babe-2051-42df-b693-2cd8cd2950f5",
+      "previous": {
+        "id": "856b4033-f716-47b7-8bfb-aff5fc17d025",
+        "fileName": "doneat-3.2.1-zh-CN-duo-04-8dbd16e39ac5.png"
+      },
+      "order": [
+        "b63b7bf0-a44d-4f9b-a27b-086df2d9146d",
+        "24c00019-57a8-8a76-8000-2b56ec76ea32",
+        "a740ea53-5f9a-48e3-b336-231d2fe2e1ea",
+        "856b4033-f716-47b7-8bfb-aff5fc17d025",
+        "720d7e3f-0c57-446d-a467-2a7f27ce1723",
+        "6d800019-57a8-8a76-8022-3c67da63705f",
+        "888ef9b0-3676-4abf-aadb-2ffc2804c7d4",
+        "78628322-b002-477f-8acf-c0d84ea57996",
+        "a858387e-c66b-4fac-af5c-73811780921f"
+      ],
+      "deleted": true,
+      "newId": "64000019-57a8-8a76-8019-1410bbdc70f6",
+      "swappedAt": "2026-10-15T03:21:20.049Z"
+    },
+    "zh-Hans APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-zh-CN-ipad-03-nofree-ee36e0b33ad6.png",
+      "md5": "b2f24963a7441672ce8dea5366d89553",
+      "setId": "a454da42-e62d-45f1-ac64-3b4d86f54925",
+      "previous": {
+        "id": "215289cd-b986-47f0-82d3-8ea8736921b4",
+        "fileName": "zh-CN-ipad-03-watch.png"
+      },
+      "order": [
+        "373409c1-4997-4c12-9a5a-8f8a8edb5135",
+        "dfe35f4c-a0d7-46ca-8010-a19e132cead9",
+        "215289cd-b986-47f0-82d3-8ea8736921b4",
+        "d08306f3-1039-4426-ae8c-eaada31fce21",
+        "640d70b6-29a4-4608-ad9b-47c731e96e16",
+        "69664c1d-68ce-4eeb-bc64-6960abacf256",
+        "f60a7e0c-e395-4776-8d75-429ccb1afa96",
+        "b7a7e8d7-b62a-4aed-b1b8-307bb1e7ce88"
+      ],
+      "deleted": true,
+      "newId": "49800019-57a8-8a76-8028-2ff56fc2182a",
+      "swappedAt": "2026-10-15T03:21:27.478Z"
+    },
+    "zh-Hant APP_IPHONE_67 3": {
+      "fileName": "doneat-3.2.2-zh-TW-iphone-03-nofree-acf8221e6f2b.png",
+      "md5": "cdc89364bc1238e4c695ff6a7ae9915d",
+      "setId": "e8b7b5e2-8f21-4d51-ba7a-4e678d703ee2",
+      "previous": {
+        "id": "3dc00019-57a8-8a76-801c-da0a5280ceb9",
+        "fileName": "doneat-3.2.2-zh-TW-iphone-03-1ac8dd1283c5.png"
+      },
+      "order": [
+        "514590fa-64a4-41ca-94f8-e27aebce579c",
+        "32f6d2a9-cd32-46e2-ac36-c933b08bfd07",
+        "3dc00019-57a8-8a76-801c-da0a5280ceb9",
+        "6722eb73-4ec6-4fe7-8d4d-18dbf475c91d",
+        "9ef0b61c-f044-4042-b0fd-b080c8375b5e",
+        "f7d2ff10-2e8b-4ffe-9344-85b5f3d879ea",
+        "8ec00019-57a8-8a76-8013-4ae749f00634",
+        "00f6992c-dba8-4f5f-bf2c-dc15c7f89a44",
+        "eb9c3147-2276-4ef1-8cbe-c7ceadc81e1b",
+        "710ccaf5-16b3-4f5c-9090-76dc7de930cf"
+      ],
+      "deleted": true,
+      "newId": "a3400019-57a8-8a76-803a-2b670fc85d51",
+      "swappedAt": "2026-10-15T03:21:34.204Z"
+    },
+    "zh-Hant APP_IPHONE_DUO 2": {
+      "fileName": "doneat-3.2.2-zh-TW-duo-02-nofree-93a3573d86d6.png",
+      "md5": "d9791874ff6215f4bd42b6a2965baa30",
+      "setId": "925fa9bf-d338-4922-ba3c-67fa0d602761",
+      "previous": {
+        "id": "70800019-57a8-8a76-8022-5924aabace4e",
+        "fileName": "doneat-3.2.2-zh-TW-duo-02-ca3472f7925e.png"
+      },
+      "order": [
+        "cfe6cc29-4f88-43ee-8602-0dea524cea09",
+        "70800019-57a8-8a76-8022-5924aabace4e",
+        "e1102932-af6a-40a8-9b84-b7e24cf093a3",
+        "3215fd43-c03b-41d8-89da-a8c4d3fc783c",
+        "c19259dc-9772-42c2-a535-2967fe28da09",
+        "21c00019-57a8-8a76-8038-c5ba52981090",
+        "dbd15e9c-428b-4bb1-bd2b-3ee9f7411ee8",
+        "046cccee-c910-450c-84a6-1c641fae5980",
+        "de029333-cc7b-4142-8430-a29d06d58fac"
+      ],
+      "deleted": true,
+      "newId": "06800019-57a8-8a76-8032-ab4c827a198f",
+      "swappedAt": "2026-10-15T03:21:41.125Z"
+    },
+    "zh-Hant APP_IPHONE_67 5": {
+      "fileName": "doneat-3.2.2-zh-TW-iphone-05-nofree-025f952f3d58.png",
+      "md5": "43823d3b4547d9023dd3e0a391fb209b",
+      "setId": "e8b7b5e2-8f21-4d51-ba7a-4e678d703ee2",
+      "previous": {
+        "id": "9ef0b61c-f044-4042-b0fd-b080c8375b5e",
+        "fileName": "doneat-3.2.1-zh-TW-iphone-05-9c0c5637376a.png"
+      },
+      "order": [
+        "514590fa-64a4-41ca-94f8-e27aebce579c",
+        "32f6d2a9-cd32-46e2-ac36-c933b08bfd07",
+        "a3400019-57a8-8a76-803a-2b670fc85d51",
+        "6722eb73-4ec6-4fe7-8d4d-18dbf475c91d",
+        "9ef0b61c-f044-4042-b0fd-b080c8375b5e",
+        "f7d2ff10-2e8b-4ffe-9344-85b5f3d879ea",
+        "8ec00019-57a8-8a76-8013-4ae749f00634",
+        "00f6992c-dba8-4f5f-bf2c-dc15c7f89a44",
+        "eb9c3147-2276-4ef1-8cbe-c7ceadc81e1b",
+        "710ccaf5-16b3-4f5c-9090-76dc7de930cf"
+      ],
+      "deleted": true,
+      "newId": "7d000019-57a8-8a76-8030-8d9cf20578fa",
+      "swappedAt": "2026-10-15T03:21:48.788Z"
+    },
+    "zh-Hant APP_IPHONE_DUO 4": {
+      "fileName": "doneat-3.2.2-zh-TW-duo-04-nofree-bfbf1ae3e1a8.png",
+      "md5": "f5acf370d0dc6b57b7a274941a014b86",
+      "setId": "925fa9bf-d338-4922-ba3c-67fa0d602761",
+      "previous": {
+        "id": "3215fd43-c03b-41d8-89da-a8c4d3fc783c",
+        "fileName": "doneat-3.2.1-zh-TW-duo-04-a26af2c85b32.png"
+      },
+      "order": [
+        "cfe6cc29-4f88-43ee-8602-0dea524cea09",
+        "06800019-57a8-8a76-8032-ab4c827a198f",
+        "e1102932-af6a-40a8-9b84-b7e24cf093a3",
+        "3215fd43-c03b-41d8-89da-a8c4d3fc783c",
+        "c19259dc-9772-42c2-a535-2967fe28da09",
+        "21c00019-57a8-8a76-8038-c5ba52981090",
+        "dbd15e9c-428b-4bb1-bd2b-3ee9f7411ee8",
+        "046cccee-c910-450c-84a6-1c641fae5980",
+        "de029333-cc7b-4142-8430-a29d06d58fac"
+      ],
+      "deleted": true,
+      "newId": "e0400019-57a8-8a76-8039-1499d887f3bd",
+      "swappedAt": "2026-10-15T03:21:55.697Z"
+    },
+    "zh-Hant APP_IPAD_PRO_3GEN_129 3": {
+      "fileName": "doneat-3.2.2-zh-TW-ipad-03-nofree-71bfbf7c3b06.png",
+      "md5": "961d144c16bb6303132dd16de8da4d6f",
+      "setId": "0cd1f7e1-5318-4090-aea6-b1486ad83205",
+      "previous": {
+        "id": "ae8e15f0-9a61-42e9-89c1-89a3b0ac8aab",
+        "fileName": "zh-TW-ipad-03-watch.png"
+      },
+      "order": [
+        "7763cf25-d032-477a-a4d8-47d0edd06c97",
+        "d4755d0d-057c-4491-930e-1373783a457c",
+        "ae8e15f0-9a61-42e9-89c1-89a3b0ac8aab",
+        "73fdb888-6b3b-4586-a30a-03c1440a0f13",
+        "246c5a5f-84e5-46af-a8df-f0e4a22df5e8",
+        "50b8c513-3192-4a00-8552-83d6314201c0",
+        "e24a348f-a4dd-4dc8-84af-c76022056fd8",
+        "084de1d0-382e-4010-935b-a10fb2f83167"
+      ],
+      "deleted": true,
+      "newId": "df000019-57a8-8a76-8008-8d03a476c3d2",
+      "swappedAt": "2026-10-15T03:22:03.739Z"
+    }
+  },
+  "updatedAt": "2026-10-15T03:22:25.708Z",
+  "readback": {
+    "checkedAt": "2026-10-15T03:22:25.708Z",
+    "items": [
+      {
+        "key": "ar-SA APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-ar-iphone-03-nofree-2aa84b36c828.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "ar-SA APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-ar-duo-02-nofree-1b04c7bb453e.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "ar-SA APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-ar-iphone-05-nofree-c2d3cb83d148.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "ar-SA APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-ar-duo-04-nofree-5107c1b9bccd.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "ar-SA APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-ar-ipad-03-nofree-a9082a3e5e16.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "de-DE APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-de-iphone-03-nofree-3bb3e42fbc2e.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "de-DE APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-de-duo-02-nofree-f763c2e39f24.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "de-DE APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-de-iphone-05-nofree-38942801188c.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "de-DE APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-de-duo-04-nofree-066bb5ba5391.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "de-DE APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-de-ipad-03-nofree-fad51c5a2faf.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "en-US APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-en-iphone-03-nofree-7fe42d8a761f.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "en-US APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-en-duo-02-nofree-d6c3aa193955.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "en-US APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-en-iphone-05-nofree-4e487d1d2bd1.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "en-US APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-en-duo-04-nofree-4dd90c2a1d1d.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "en-US APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-en-ipad-03-nofree-ab94ae83f6ca.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "es-ES APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-es-iphone-03-nofree-996713922eb0.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "es-ES APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-es-duo-02-nofree-966f0123114f.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "es-ES APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-es-iphone-05-nofree-49aafd48027d.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "es-ES APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-es-duo-04-nofree-8381ac1263de.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "es-ES APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-es-ipad-03-nofree-28896d45f4a5.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "fr-FR APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-fr-iphone-03-nofree-32162550f805.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "fr-FR APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-fr-duo-02-nofree-cc5b80e5fe6e.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "fr-FR APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-fr-iphone-05-nofree-3a7967282313.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "fr-FR APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-fr-duo-04-nofree-bd952fab029a.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "fr-FR APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-fr-ipad-03-nofree-17f63e13879d.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "hi APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-hi-IN-iphone-03-nofree-9de69796813d.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "hi APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-hi-IN-duo-02-nofree-908d6e3042d5.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "hi APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-hi-IN-iphone-05-nofree-8e38cfa7a394.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "hi APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-hi-IN-duo-04-nofree-a69b0fc6c3fc.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "hi APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-hi-IN-ipad-03-nofree-cf3c6d389615.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "id APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-id-iphone-03-nofree-11c3916ff22a.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "id APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-id-duo-02-nofree-6ee110e7d7c2.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "id APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-id-iphone-05-nofree-984b9ff68289.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "id APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-id-duo-04-nofree-11d524e9ff05.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "id APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-id-ipad-03-nofree-075152543898.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "it APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-it-iphone-03-nofree-c59f792f88d7.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "it APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-it-duo-02-nofree-e5b934d2740e.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "it APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-it-iphone-05-nofree-b575f2381673.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "it APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-it-duo-04-nofree-df693914fc38.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "it APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-it-ipad-03-nofree-183cb8c284d3.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "ja APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-ja-iphone-03-nofree-284f6b068448.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "ja APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-ja-duo-02-nofree-0e3149e8aec8.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "ja APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-ja-iphone-05-nofree-0e75dbe01ae4.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "ja APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-ja-duo-04-nofree-35192a60f3f2.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "ja APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-ja-ipad-03-nofree-3876292d63b2.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "ko APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-ko-iphone-03-nofree-e3293fc4939b.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "ko APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-ko-duo-02-nofree-d96ce409fdd4.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "ko APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-ko-iphone-05-nofree-2d03c38c87dc.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "ko APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-ko-duo-04-nofree-891723ff147a.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "ko APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-ko-ipad-03-nofree-1a90b53c8810.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "pt-BR APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-pt-iphone-03-nofree-73f3178f3e5d.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "pt-BR APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-pt-duo-02-nofree-ef2f22f78512.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "pt-BR APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-pt-iphone-05-nofree-19f166024b12.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "pt-BR APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-pt-duo-04-nofree-50b7e2a85f0b.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "pt-BR APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-pt-ipad-03-nofree-3ef82bcb4198.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "ru APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-ru-iphone-03-nofree-e384f2359edd.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "ru APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-ru-duo-02-nofree-5da5a26a0c02.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "ru APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-ru-iphone-05-nofree-7b5cd9cc450a.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "ru APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-ru-duo-04-nofree-1d1dcd9189e4.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "ru APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-ru-ipad-03-nofree-4e0d7b3949c3.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "th APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-th-iphone-03-nofree-13f609bd0086.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "th APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-th-duo-02-nofree-018691851166.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "th APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-th-iphone-05-nofree-8c666e178aa9.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "th APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-th-duo-04-nofree-9feae8342a01.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "th APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-th-ipad-03-nofree-b5126a106821.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "tr APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-tr-iphone-03-nofree-b036abf8bb3e.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "tr APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-tr-duo-02-nofree-422bfac32e12.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "tr APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-tr-iphone-05-nofree-ce6b238f7bca.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "tr APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-tr-duo-04-nofree-db1ce4e2264d.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "tr APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-tr-ipad-03-nofree-ddde3805f247.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "vi APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-vi-iphone-03-nofree-a855ffcd9ac7.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "vi APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-vi-duo-02-nofree-47fce549c024.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "vi APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-vi-iphone-05-nofree-65e1f5f1ac89.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "vi APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-vi-duo-04-nofree-98c0c61fa209.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "vi APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-vi-ipad-03-nofree-6e8766b049ac.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "zh-Hans APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-zh-CN-iphone-03-nofree-b344d12eeaa0.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "zh-Hans APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-zh-CN-duo-02-nofree-8c3f8328e97f.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "zh-Hans APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-zh-CN-iphone-05-nofree-3d29f4b877cd.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "zh-Hans APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-zh-CN-duo-04-nofree-b3770ef14fc8.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "zh-Hans APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-zh-CN-ipad-03-nofree-ee36e0b33ad6.png",
+        "count": 8,
+        "ok": true
+      },
+      {
+        "key": "zh-Hant APP_IPHONE_67 3",
+        "fileName": "doneat-3.2.2-zh-TW-iphone-03-nofree-acf8221e6f2b.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "zh-Hant APP_IPHONE_DUO 2",
+        "fileName": "doneat-3.2.2-zh-TW-duo-02-nofree-93a3573d86d6.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "zh-Hant APP_IPHONE_67 5",
+        "fileName": "doneat-3.2.2-zh-TW-iphone-05-nofree-025f952f3d58.png",
+        "count": 10,
+        "ok": true
+      },
+      {
+        "key": "zh-Hant APP_IPHONE_DUO 4",
+        "fileName": "doneat-3.2.2-zh-TW-duo-04-nofree-bfbf1ae3e1a8.png",
+        "count": 9,
+        "ok": true
+      },
+      {
+        "key": "zh-Hant APP_IPAD_PRO_3GEN_129 3",
+        "fileName": "doneat-3.2.2-zh-TW-ipad-03-nofree-71bfbf7c3b06.png",
+        "count": 8,
+        "ok": true
+      }
+    ],
+    "errors": 0
+  }
+}

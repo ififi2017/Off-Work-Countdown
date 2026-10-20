@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "Wie viel vom Jahr schon vorbei ist.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} vergangen",
   "widgetSuiteYearName": "Jahresfortschritt",
-  "widgetSuiteYearsMonths": "{{years}} J. {{months}} Mon."
+  "widgetSuiteYearsMonths": "{{years}} J. {{months}} Mon.",
+  "updateWidgetsNoticeTitle": "Neue Widgets in DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "Dein Countdown auf Home-Bildschirm, Sperrbildschirm und Apple Watch. Öffne DoneAt, um zu sehen, wie du sie hinzufügst."
 }

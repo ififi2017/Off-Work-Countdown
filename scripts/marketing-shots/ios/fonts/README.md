@@ -30,7 +30,9 @@ identifies the actual TrueType format returned by the service.
 `manifest.json` records each downloaded font's original URL, license source,
 SHA-256 and Google Fonts CSS request. The request includes this edition's
 character subset. If marketing copy adds characters, obtain updated subsets
-and repeat the browser's actual-font check; never silently use a system fallback.
+(`creative-fonts-refresh.mjs <family> <text>`) and repeat the browser's
+actual-font check (`assertPosterFonts` in `creative-fonts.mjs`, which the 3.2.3
+compositors run on every render); never silently use a system fallback.
 The `Poster Charter` name in CSS is an alias, not a modification of font metadata.
 
 Sources checked:

@@ -90,6 +90,5 @@
     <string name="shiftAlarmsOpenSettings">Abrir Configuración</string>
     <string name="syncPrivacyDetail">Su rol de turnos, salario, recordatorios, apariencia, idioma, perfil de vida, registros y datos de Focus se sincronizan a través de su base de datos privada de iCloud. El permiso de notificación, la protección biométrica y las actividades en vivo permanecen en este dispositivo.</string>
     <string name="watchCacheCorrupt">No se pudo leer el rol de turnos guardado. Abre DoneAt en tu iPhone.</string>
-    <string name="whatsNewLeaveBody">Añade tus días disponibles y DoneAt encuentra descansos más largos según feriados y turnos. El plan que elijas se añade directamente a tu rol de turnos.</string>
     <string name="workSchedule">Horas y rol de turnos</string>
 </resources>

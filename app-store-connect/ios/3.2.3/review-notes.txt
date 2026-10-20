@@ -1,0 +1,39 @@
+DoneAt 3.2.3 adds a suite of Home Screen and Lock Screen widgets, Control Center controls and Apple Watch complications, a Settings page that previews them, and a redesigned paywall. It adds no new product or permission.
+
+New in this version and how to test:
+
+- Widgets: long-press the Home Screen or Lock Screen, tap Edit › Add Widget and search for DoneAt. New countdown styles (big digits, segmented ring, today's timeline, detail), This week, Shifts, Year progress, Until the weekend and Next holiday are free. Work summary, Life and Focus widgets are DoneAt Plus; without Plus they show a locked state with no data. Widgets never show salary.
+- Control Center: three DoneAt controls. The clock-in control only starts a countdown; it never ends a shift.
+- Apple Watch: the countdown complication is split at lunch and adds Corner and Inline families. New free complications show this week, today's or tomorrow's shift, the weekend, the next holiday and what's coming up.
+- Settings › Widgets lists every widget, control and complication at its real size with the user's own schedule, marks each free or Plus, and explains how to add it.
+- Onboarding previews the widgets, Lock Screen, Live Activity and Apple Watch. The paywall shows Plus as swipeable illustrated scenes above the plans, listed as rows.
+- Fixes: a crash when opening a notification, reminders that could go missing, Live Activity countdowns that ran a few seconds ahead, and the Watch app closing in the background.
+
+Lifetime offer (com.rainif.offworkcountdown.plus.lifetime.offer, approved with 3.2.1):
+
+- On a fresh install, closing the introductory paywall after onboarding reveals the offer once. It shows the offer paywall with the discounted lifetime price preselected and the regular price struck through, and lasts 24 hours from that moment.
+- People updating to 3.2.3 see What's New, then find a wrapped gift at the top left of the timer. Tapping it opens the gift and shows the same offer paywall, valid for 7 days from opening. "Not now" closes it; the gift stays at the top left with the time remaining, and tapping it reopens the paywall.
+- The window is stored on the device and never restarts, even if the clock changes. When it ends, the gift disappears. Nothing is shown unless StoreKit supplies a lower price in the same currency. Both lifetime products grant and restore the same Plus access.
+
+This version has screenshots and an App Store search-results video but no App Preview or review video.
+
+Unchanged from 3.2.2: the countdown, today's schedule, earnings estimate, Apple Watch app and the last 7 days of records are free; Plus unlocks the rest, including the three Plus widgets.
+
+How to reach the paid features:
+
+1. On the optional Plus introduction after onboarding, tap See plans.
+2. In Settings › Shift alarms, turning alarms on presents the paywall.
+3. In Records, tap See them with Plus under the calendar, Year, Life, Reports, Focus, editing a past day or Enable iCloud Sync to present the paywall.
+4. In Time off, start a fourth plan search to present the paywall.
+5. Open Settings › DoneAt Plus to restore or manage purchases. Restore purchases is available without Plus.
+
+Products:
+
+- Yearly subscription: 7-day introductory free trial for eligible new subscribers.
+- Monthly subscription: no trial.
+- Lifetime: one-time non-consumable with Family Sharing. The app warns that it does not cancel an active subscription.
+- Lifetime offer: the same access at a lower price, only during the window above.
+
+There is no DoneAt account or product sign-in. Please use a Sandbox Apple ID to test purchases.
+
+Privacy: data stays on the device by default; widgets and complications read a salary-free snapshot through the App Group. iCloud sync uses the user's private database only when turned on. Salary never appears in widgets, complications, notifications, Live Activities, share links or analytics.

@@ -104,6 +104,7 @@ object Strings {
     fun pausedUntil(res: Resources, time: String): String = res.getString(R.string.pausedUntil, time)
     fun plusAndroidYearlyTrialPrice(res: Resources, price: String): String = res.getString(R.string.plusAndroidYearlyTrialPrice, price)
     fun plusOfferDeadline(res: Resources, date: String): String = res.getString(R.string.plusOfferDeadline, date)
+    fun plusOfferEndsIn(res: Resources, time: String): String = res.getString(R.string.plusOfferEndsIn, time)
     fun plusOfferSavings(res: Resources, discount: String): String = res.getString(R.string.plusOfferSavings, discount)
     fun plusPerMonth(res: Resources, price: String): String = res.getString(R.string.plusPerMonth, price)
     fun plusTrialEndBody(res: Resources, price: String): String = res.getString(R.string.plusTrialEndBody, price)

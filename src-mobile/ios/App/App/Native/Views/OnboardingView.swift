@@ -77,7 +77,7 @@ struct OnboardingView: View {
                             OnboardingJourneyDigits(text: text, remainingMs: snapshot.heroRemainingMs(at: now),
                                                     compact: scene.onboardingPage == OnboardingPages.glance,
                                                     pointSize: glanceSurface.clockPointSize)
-                                .foregroundStyle(scene.onboardingPage == OnboardingPages.glance && glanceSurface == .lockScreen ? Color.white : OWCDesign.primary)
+                                .foregroundStyle(scene.onboardingPage == OnboardingPages.glance && glanceSurface.hasLightClock ? Color.white : OWCDesign.primary)
                                 .frame(width: bounds.width, height: bounds.height)
                                 .position(x: bounds.midX, y: bounds.midY)
                                 .animation(reduceMotion ? nil : OWCMotion.onboardingContinuity, value: scene.onboardingPage)

@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "Какая часть года уже прошла.",
   "widgetSuiteYearInline": "{{year}} · прошло {{percent}}",
   "widgetSuiteYearName": "Прогресс года",
-  "widgetSuiteYearsMonths": "{{years}} г. {{months}} мес."
+  "widgetSuiteYearsMonths": "{{years}} г. {{months}} мес.",
+  "updateWidgetsNoticeTitle": "Новые виджеты в DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "Обратный отсчёт на экране «Домой», экране блокировки и Apple Watch. Откройте DoneAt, чтобы узнать, как их добавить."
 }

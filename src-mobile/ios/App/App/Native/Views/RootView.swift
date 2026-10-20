@@ -42,11 +42,32 @@ struct OffWorkCountdownRootView: View {
                 adaptiveLayout.transition(.opacity)
             }
         }
-        .accessibilityHidden(showsLandscapeTimer)
+        .accessibilityHidden(showsLandscapeTimer || scene.showsLifetimeOffer)
         .overlay {
             if showsLandscapeTimer {
                 PhoneLandscapeTimerOverlay(shifts: runtime.shifts)
-                    .transition(.opacity)
+                    // Its gift starts exactly where the toolbar's was, so it
+                // arrives at once and fades only on the way out.
+                .transition(.asymmetric(insertion: .identity, removal: .opacity))
+            }
+        }
+        // Over the tab bar and toolbars, so the gift can leave the timer's
+        // toolbar and return to it.
+        .overlay {
+            if scene.showsLifetimeOffer {
+                GiftOfferOverlay(plus: runtime.plus, text: runtime.text, toolbarFrame: scene.giftToolbarFrame, onCover: {
+                    scene.giftCoversToolbar = true
+                }, onHandBack: {
+                    withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.giftOverlay) {
+                        scene.giftCoversToolbar = false
+                    }
+                }, onFinish: {
+                    scene.showsLifetimeOffer = false
+                })
+                // Its gift starts and ends exactly on the toolbar's, and it
+                // fades its own parts, so it comes and goes without a transition.
+                .transition(.identity)
+                .onDisappear { scene.giftCoversToolbar = false }
             }
         }
         .background {
@@ -102,9 +123,6 @@ struct OffWorkCountdownRootView: View {
             if presented { paywallPresentationActive = true }
             scene.writeQASurfaceMarker(onboardingComplete: runtime.preferences.onboardingComplete, hasSeenPlusIntro: runtime.plus.hasSeenIntro)
         }
-        .sheet(isPresented: Bindable(scene).showsLifetimeOffer) {
-            LifetimeOfferSheet(plus: runtime.plus, text: runtime.text)
-        }
         .sheet(item: Bindable(scene).dayEditor) { draft in
             NavigationStack {
                 RecordDayEditView(draft: draft, actions: runtime.recordActions)
@@ -158,9 +176,13 @@ struct OffWorkCountdownRootView: View {
             set: { if !$0 { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) } }
         )) {
             WhatsNewView(
-                text: runtime.text,
-                plus: runtime.plus,
-                onDismiss: { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) }
+                shifts: runtime.shifts,
+                onDismiss: { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) },
+                onShowWidgets: {
+                    scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus)
+                    scene.selectedTab = .settings
+                    scene.settingsPath = [.widgets]
+                }
             )
                 .presentationBackground(.clear)
         }
@@ -199,6 +221,7 @@ struct OffWorkCountdownRootView: View {
         }
         .onDisappear { runtime.services.sceneDisconnected(scene.id) }
         .onAppear {
+            UpdateAnnouncementGate.appOpened()
             AppOrientationPolicy.shared.update(onboardingComplete: runtime.preferences.onboardingComplete)
             reportScenePhase()
             applyQAGeometryIfRequested()

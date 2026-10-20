@@ -316,6 +316,28 @@ final class PlusEntitlement {
         persistLifetimeOffer()
     }
 
+    /// The 3.2.3 gift, once per device. An earlier invitation that was never
+    /// opened, or whose window has passed, gives way to it; one still running
+    /// keeps its own deadline.
+    func inviteUpdateGift(at now: Date = .now) {
+        guard canOfferLifetime else { return }
+        if let lifetimeOffer {
+            if lifetimeOffer.source == .update323 || lifetimeOffer.isActive(at: now) { return }
+        }
+        lifetimeOffer = LifetimeOffer(source: .update323, latestObservedAt: max(now, lifetimeOffer?.latestObservedAt ?? now))
+        persistLifetimeOffer()
+    }
+
+    /// An invitation waiting to be opened, with a price the store can sell.
+    var hasWrappedLifetimeOffer: Bool {
+        hasAvailableLifetimeOffer && lifetimeOffer?.claimedAt == nil
+    }
+
+    /// An opened invitation whose window is still running.
+    var hasActiveLifetimeOffer: Bool {
+        hasAvailableLifetimeOffer && lifetimeOffer?.isActive(at: .now) == true
+    }
+
     func claimLifetimeOffer(at now: Date = .now) {
         guard canOfferLifetime, discountedLifetimeProduct() != nil || previewsLifetimeOffer else { return }
         lifetimeOffer?.claim(at: now)

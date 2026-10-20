@@ -27,7 +27,8 @@ const TOUR_OPENERS={
 };
 export const COPY=Object.fromEntries(Object.entries(BASE).map(([lang,b])=>{
  const [brand,note,trials,leave,report]=EXTRA[lang];
- const l=P(leave[0]+' · '+trials,leave[1],leave[2]),r=P(report[0]+' · DoneAt Plus',report[1],report[2]);
+ // Guideline 2.3.7: screenshots carry no price wording ("free"), so the trial count is not shown.
+ const l=P(leave[0],leave[1],leave[2]),r=P(report[0]+' · DoneAt Plus',report[1],report[2]);
  const pages=[{label:'DoneAt',lines:b.hero,sub:b.intro.split('|')},b.pages[0],l,r,...b.pages.slice(1)];
  // Duo's widget image uses the native Home Screen preview, not an Island graphic.
  const widget={...pages[8],label:b.pages[5].label,sub:[FOOTERS[lang][1]]};

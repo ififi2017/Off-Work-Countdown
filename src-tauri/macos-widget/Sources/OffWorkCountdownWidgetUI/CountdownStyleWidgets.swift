@@ -148,21 +148,34 @@ struct CountdownSegmentRing: View {
     var tint: Color = CountdownStylePalette.accent
 
     var body: some View {
-        let total = max(0.000_1, weights.reduce(0, +))
-        let gap = weights.count > 1 ? 0.025 : 0
-        let arcs = Self.arcs(weights: weights, total: total, gap: gap, progress: progress)
-        ZStack {
-            ForEach(Array(arcs.enumerated()), id: \.offset) { _, arc in
-                Circle().trim(from: arc.start, to: arc.end)
-                    .stroke(CountdownStylePalette.track, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                if arc.fill > arc.start {
-                    Circle().trim(from: arc.start, to: arc.fill)
-                        .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+        GeometryReader { proxy in
+            let total = max(0.000_1, weights.reduce(0, +))
+            let gap = weights.count > 1 ? Self.gap(lineWidth: lineWidth, diameter: min(proxy.size.width, proxy.size.height)) : 0
+            let arcs = Self.arcs(weights: weights, total: total, gap: gap, progress: progress)
+            ZStack {
+                ForEach(Array(arcs.enumerated()), id: \.offset) { _, arc in
+                    Circle().trim(from: arc.start, to: arc.end)
+                        .stroke(CountdownStylePalette.track, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    if arc.fill > arc.start {
+                        Circle().trim(from: arc.start, to: arc.fill)
+                            .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    }
                 }
             }
+            .rotationEffect(.degrees(-90))
+            // A square centred in whatever frame the ring is given.
+            .frame(width: min(proxy.size.width, proxy.size.height), height: min(proxy.size.width, proxy.size.height))
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .rotationEffect(.degrees(-90))
         .padding(lineWidth / 2)
+    }
+
+    /// The gap between segments as a share of the circumference. Round caps
+    /// reach half a line width into it from each side, so the gap is a line
+    /// width plus clear space that stays visible at any ring size.
+    static func gap(lineWidth: CGFloat, diameter: CGFloat) -> Double {
+        let circumference = max(1, Double(diameter) * .pi)
+        return min(0.2, Double(lineWidth + max(2.5, lineWidth * 0.6)) / circumference)
     }
 
     static func arcs(weights: [Double], total: Double, gap: Double, progress: Double) -> [(start: Double, end: Double, fill: Double)] {
@@ -220,7 +233,13 @@ struct CountdownSegmentBar: View {
 extension View {
     @ViewBuilder func countdownStyleBackground() -> some View {
         if #available(iOS 17.0, macOS 14.0, *) {
+            #if os(iOS)
+            // The same surface as the widget suite: `.background` resolves to
+            // black in dark mode, systemBackground to the elevated widget grey.
+            containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
+            #else
             containerBackground(for: .widget) { Color.clear.background(.background) }
+            #endif
         } else {
             padding()
         }
@@ -614,11 +633,12 @@ public struct CountdownDetailView: View {
     private var large: some View {
         VStack(alignment: .leading, spacing: 6) {
             status
-            countdown(size: 44)
+            countdown(size: 50)
             targetLine
             CountdownSegmentBar(weights: model.segmentWeights, progress: model.progress).padding(.top, 4)
             Divider().padding(.vertical, 6)
-            upcomingList(limit: 5, compact: false)
+            // Eight rows fill the large widget; fewer left its lower third empty.
+            upcomingList(limit: 8, compact: false)
             Spacer(minLength: 0)
         }
     }

@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "Cuánto del año ya ha pasado.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} transcurrido",
   "widgetSuiteYearName": "Progreso del año",
-  "widgetSuiteYearsMonths": "{{years}} a. {{months}} m."
+  "widgetSuiteYearsMonths": "{{years}} a. {{months}} m.",
+  "updateWidgetsNoticeTitle": "Widgets nuevos en DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "Tu cuenta atrás en la pantalla de inicio, la pantalla bloqueada y el Apple Watch. Abre DoneAt para ver cómo añadirlos."
 }

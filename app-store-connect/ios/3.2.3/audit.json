@@ -1,0 +1,700 @@
+{
+  "checkedAt": "2026-10-19T12:30:14.210Z",
+  "videos": 18,
+  "screenshots": 34,
+  "pages": 97,
+  "headers": 6,
+  "checked": [
+    {
+      "file": "ar-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 88
+    },
+    {
+      "file": "de-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 64
+    },
+    {
+      "file": "en-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 69
+    },
+    {
+      "file": "es-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 66
+    },
+    {
+      "file": "fr-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 68
+    },
+    {
+      "file": "hi-IN-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 72
+    },
+    {
+      "file": "id-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 71
+    },
+    {
+      "file": "it-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 69
+    },
+    {
+      "file": "ja-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 68
+    },
+    {
+      "file": "ko-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 73
+    },
+    {
+      "file": "mr-IN-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 79
+    },
+    {
+      "file": "pt-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 70
+    },
+    {
+      "file": "ru-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 64
+    },
+    {
+      "file": "th-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 68
+    },
+    {
+      "file": "tr-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 65
+    },
+    {
+      "file": "vi-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 72
+    },
+    {
+      "file": "zh-CN-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 93
+    },
+    {
+      "file": "zh-TW-search-video-3.2.3.mp4",
+      "duration": 27,
+      "frames": 810,
+      "headlineSize": 85
+    },
+    {
+      "file": "zh-CN/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "zh-CN/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "en/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "en/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "zh-TW/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "zh-TW/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "ja/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "ja/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "ko/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "ko/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "de/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "de/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "fr/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "fr/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "es/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "es/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "it/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "it/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pt/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pt/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "ru/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "ru/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "tr/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "tr/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "id/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "id/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "vi/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "vi/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "th/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "th/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "hi-IN/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "hi-IN/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "ar/03-widgets-home.png",
+      "order": 3,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "ar/04-widgets-lock.png",
+      "order": 4,
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-CN/iphone/06-calendar.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-CN/iphone/04-report.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-TW/iphone/04-report.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ja/iphone/04-report.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ko/iphone/04-report.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ru/iphone/04-report.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/tr/iphone/04-report.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/vi/iphone/04-report.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/th/iphone/04-report.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/hi-IN/iphone/04-report.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-CN/iphone/08-focus.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-CN/iphone/10-rest.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-TW/iphone/06-calendar.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-TW/iphone/08-focus.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-TW/iphone/10-rest.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ja/iphone/06-calendar.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ja/iphone/08-focus.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ja/iphone/10-rest.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ko/iphone/06-calendar.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ko/iphone/08-focus.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ko/iphone/10-rest.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ru/iphone/06-calendar.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ru/iphone/08-focus.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ru/iphone/10-rest.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/vi/iphone/06-calendar.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/vi/iphone/08-focus.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/vi/iphone/10-rest.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/hi-IN/iphone/06-calendar.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/hi-IN/iphone/08-focus.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/hi-IN/iphone/10-rest.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-CN/duo/03-report.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-TW/duo/03-report.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ja/duo/03-report.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ko/duo/03-report.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ru/duo/03-report.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/tr/duo/03-report.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/vi/duo/03-report.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/th/duo/03-report.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/hi-IN/duo/03-report.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-CN/duo/05-calendar.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-CN/duo/07-focus.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-CN/duo/08-widgets.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-CN/duo/09-rest.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-TW/duo/05-calendar.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-TW/duo/07-focus.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-TW/duo/08-widgets.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-TW/duo/09-rest.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ja/duo/05-calendar.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ja/duo/07-focus.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ja/duo/08-widgets.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ja/duo/09-rest.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ko/duo/05-calendar.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ko/duo/07-focus.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ko/duo/08-widgets.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ko/duo/09-rest.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ru/duo/05-calendar.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ru/duo/07-focus.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ru/duo/08-widgets.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ru/duo/09-rest.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/vi/duo/05-calendar.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/vi/duo/07-focus.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/vi/duo/08-widgets.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/vi/duo/09-rest.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/hi-IN/duo/05-calendar.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/hi-IN/duo/07-focus.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/hi-IN/duo/08-widgets.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/hi-IN/duo/09-rest.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-CN/iphone/07-records.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-TW/iphone/07-records.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ja/iphone/07-records.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ko/iphone/07-records.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ru/iphone/07-records.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/vi/iphone/07-records.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/hi-IN/iphone/07-records.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-CN/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-TW/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ja/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ko/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ru/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/vi/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/hi-IN/duo/06-records.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-CN/iphone/03-leave.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-CN/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/zh-TW/iphone/03-leave.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/zh-TW/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ja/iphone/03-leave.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ja/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ko/iphone/03-leave.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ko/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/ru/iphone/03-leave.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/ru/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/tr/iphone/03-leave.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/tr/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/vi/iphone/03-leave.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/vi/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "pages/hi-IN/iphone/03-leave.png",
+      "display": "APP_IPHONE_67"
+    },
+    {
+      "file": "pages/hi-IN/duo/02-leave.png",
+      "display": "APP_IPHONE_DUO"
+    },
+    {
+      "file": "header/zh-CN-header-video-v4.mp4",
+      "frames": 240
+    },
+    {
+      "file": "header/zh-TW-header-video-v4.mp4",
+      "frames": 240
+    },
+    {
+      "file": "header/ja-header-video-v4.mp4",
+      "frames": 240
+    },
+    {
+      "file": "header/ko-header-video-v4.mp4",
+      "frames": 240
+    },
+    {
+      "file": "header/ru-header-video-v4.mp4",
+      "frames": 240
+    },
+    {
+      "file": "header/mr-IN-header-video-v4.mp4",
+      "frames": 240
+    }
+  ],
+  "findings": []
+}

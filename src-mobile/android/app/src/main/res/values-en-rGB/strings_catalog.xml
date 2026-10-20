@@ -59,6 +59,5 @@
     <string name="syncPrivacyDetail">Your work rota, salary, reminders, appearance, language, Life profile, records and Focus data sync through your private iCloud database. Notification permission, biometric protection and Live Activities stay on this device.</string>
     <string name="wallpaperColors">Use wallpaper colours</string>
     <string name="watchCacheCorrupt">The saved rota couldn’t be read. Open DoneAt on your iPhone.</string>
-    <string name="whatsNewLeaveBody">Add your leave balances and DoneAt finds longer breaks around bank holidays and your shifts. Pick one and it goes straight onto your rota.</string>
     <string name="workSchedule">Hours &amp; rota</string>
 </resources>

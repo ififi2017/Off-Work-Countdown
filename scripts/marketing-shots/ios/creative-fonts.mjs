@@ -22,3 +22,11 @@ export function posterFonts(lang){
  }
  return {css,serif:`"${serif}","Source Serif 4"`,sans};
 }
+
+// Actual-font check: every glyph of poster copy must come from the licensed
+// poster fonts, never a system fallback (fonts/README.md).
+export async function assertPosterFonts(r,selector,label){
+ const used=await r.platformFonts(selector),bad=used.filter(u=>u.node.trim()&&(!u.fonts.length||u.fonts.some(f=>!f.isCustomFont)));
+ if(bad.length)throw Error(`${label}: text not set in the poster fonts: `+JSON.stringify(bad));
+ return [...new Set(used.flatMap(u=>u.fonts.map(f=>f.familyName)))].sort();
+}

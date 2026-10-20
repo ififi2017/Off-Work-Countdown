@@ -590,5 +590,7 @@
   "widgetSuiteYearDescription": "Quanto do ano já passou.",
   "widgetSuiteYearInline": "{{year}} · {{percent}} decorrido",
   "widgetSuiteYearName": "Progresso do ano",
-  "widgetSuiteYearsMonths": "{{years}} a {{months}} m"
+  "widgetSuiteYearsMonths": "{{years}} a {{months}} m",
+  "updateWidgetsNoticeTitle": "Novos widgets no DoneAt 3.2.3",
+  "updateWidgetsNoticeBody": "Sua contagem regressiva na Tela de Início, na Tela Bloqueada e no Apple Watch. Abra o DoneAt para ver como adicioná-los."
 }
