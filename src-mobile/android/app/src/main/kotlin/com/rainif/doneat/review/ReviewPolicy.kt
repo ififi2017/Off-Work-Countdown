@@ -87,6 +87,8 @@ internal data class ReviewPolicy(
     companion object {
         const val MINIMUM_COMPLETED_DAYS = 2
         const val REQUEST_GAP_MS = 120L * 24 * 60 * 60 * 1_000
+        /** Never over the first frame of a visit, nor over the five-second clock-off celebration. */
+        const val FOREGROUND_SETTLE_MS = 6_000L
 
         /** As on iOS, completion uses Records' calendar, including overnight shifts. */
         fun dayKey(endAtMs: Long, recordsZone: ZoneId): String =

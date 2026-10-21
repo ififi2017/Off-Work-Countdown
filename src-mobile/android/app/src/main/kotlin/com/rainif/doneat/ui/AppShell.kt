@@ -179,7 +179,8 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
         reportStageChanged(stack.lastOrNull() is Route.CycleReport || showsClock)
     }
     BackHandler(showsClock) { clockDismissed = true }
-    val paywallRoute = stacks.values.any { entries -> entries.any { it is Route.Plus || it is Route.PlusFor } }
+    // Only the page on screen: a paywall left under another tab is not in the way.
+    val paywallRoute = stack.lastOrNull().let { it is Route.Plus || it is Route.PlusFor }
     SideEffect { graph.reviewPaywallRoute.value = paywallRoute }
     DisposableEffect(Unit) {
         onDispose { graph.reviewPaywallRoute.value = false }

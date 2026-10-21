@@ -25,8 +25,11 @@ class ReviewCoordinator private constructor(context: Context) {
         disabled = prefs.getBoolean("disabled", false),
     )
     private val foregroundTicks = MutableStateFlow(0)
-    /** Bumped from [android.app.Activity.onResume]. The UI reads it once per return to the foreground. */
+    /** Bumped once per return from the background. The UI decides once per value. */
     val foreground = foregroundTicks.asStateFlow()
+    /** Process start counts as coming back; dialogs, rotation and the shade do not. */
+    private var backgrounded = true
+    private var decidedVisit = 0
 
     init { persist() }
 
@@ -45,16 +48,29 @@ class ReviewCoordinator private constructor(context: Context) {
     @Synchronized
     fun disableAutomatic() = update(state.disable())
 
+    /** From [android.app.Activity.onStart]; only the first start after [noteBackground] is a new visit. */
+    @Synchronized
     fun noteForeground() {
+        if (!backgrounded) return
+        backgrounded = false
         foregroundTicks.value = foregroundTicks.value + 1
     }
 
+    /** From [android.app.Activity.onStop], except while the activity is recreated for a configuration change. */
+    @Synchronized
+    fun noteBackground() {
+        backgrounded = true
+    }
+
     /**
-     * Decides and, when asking, records the attempt before Play is called.
-     * A suppressed or failed card must not be retried on the next resume.
+     * Decides once per [visit] and, when asking, records the attempt before Play
+     * is called. A suppressed or failed card must not be retried on the next
+     * resume, and a recreated activity must not decide the same visit again.
      */
     @Synchronized
-    fun consumeForeground(event: ReviewForeground): Boolean {
+    internal fun consumeForeground(visit: Int, event: ReviewForeground): Boolean {
+        if (visit <= decidedVisit) return false
+        decidedVisit = visit
         val outcome = if (BuildConfig.DEBUG) {
             ReviewDebugGate.intercept(appContext, state, event)
                 ?: state.onForeground(event, BuildConfig.VERSION_NAME)
@@ -110,14 +126,14 @@ class ReviewCoordinator private constructor(context: Context) {
             return offWorkAtMs(shift, session.isForcedWorkday(shift), session.isEndedEarly(shift), session.state.earlyOffAtMs)
         }
 
-        fun offWorkAtMs(shift: ShiftSnapshot, forcedWorkday: Boolean, endedEarly: Boolean, earlyOffAtMs: Double?): Long? {
+        internal fun offWorkAtMs(shift: ShiftSnapshot, forcedWorkday: Boolean, endedEarly: Boolean, earlyOffAtMs: Double?): Long? {
             val worked = (shift.isWorkday || forcedWorkday || endedEarly) && shift.segments.isNotEmpty()
             if (!worked) return null
             val end = if (endedEarly) earlyOffAtMs ?: shift.plannedEndAtMs else shift.endAtMs
             return end.toLong()
         }
 
-        fun foregroundEvent(session: ShiftSession, nowMs: Double, blocker: ReviewBlocker): ReviewForeground {
+        internal fun foregroundEvent(session: ShiftSession, nowMs: Double, blocker: ReviewBlocker): ReviewForeground {
             val offWorkAtMs = offWorkAtMs(session, nowMs)
             val now = nowMs.toLong()
             val finished = offWorkAtMs?.takeIf { now >= it }?.let { ReviewPolicy.dayKey(it, session.recordsZone) }

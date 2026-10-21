@@ -7,10 +7,11 @@ import Foundation
 /// back after off-work, instead of covering the clock-off celebration:
 /// - Shifts finished on at least `minimumCompletedDays` different days since
 ///   the last request, so one trial day is not mistaken for a habit
-/// - The first return to the foreground after that day's off-work time, and
-///   at most one attempt per records-calendar day
-/// - Not while the paywall, lifetime gift or What's New is on screen; that
-///   open is left unused for the next one that is clear
+/// - The first return from the background after that day's off-work time,
+///   once the opening surface has settled, and at most one attempt per
+///   records-calendar day
+/// - Not while the paywall, lifetime gift, What's New or the life-setup offer
+///   is on screen; that open is left unused for the next one that is clear
 /// - At most once per app version (CFBundleShortVersionString)
 /// - At least 120 days between requests
 /// The system itself limits display to 3 times per year.
@@ -25,6 +26,9 @@ nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
 
     static let minimumIntervalDays: Int = 120
     static let minimumCompletedDays: Int = 2
+    /// Never over the first frame of a visit, nor over the five-second
+    /// clock-off celebration.
+    static let foregroundSettle: Duration = .seconds(6)
     private static let minimumIntervalMs: Double = Double(minimumIntervalDays) * 24 * 60 * 60 * 1_000
 
     var phase: Phase = .waitingForCompletion
@@ -103,14 +107,15 @@ nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
     }
 }
 
-enum ReviewPromptBlocker: Equatable, Sendable {
+nonisolated enum ReviewPromptBlocker: Equatable, Sendable {
     case none
     case paywall
     case lifetimeGift
     case whatsNew
+    case lifeSetup
 }
 
-struct ReviewForeground: Equatable, Sendable {
+nonisolated struct ReviewForeground: Equatable, Sendable {
     var nowMs: Double
     var todayKey: String
     var offWorkAtMs: Double?

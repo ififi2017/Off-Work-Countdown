@@ -167,7 +167,7 @@ struct OffWorkCountdownRootView: View {
             hasBlockingPresentation: hasRootPresentation(excludingLifeSetup: true),
             presentationActive: $lifeSetupPresentationActive
         ))
-        .modifier(AppReviewPromptModifier(shifts: runtime.shifts, blocker: reviewBlocker))
+        .modifier(AppReviewPromptModifier(shifts: runtime.shifts, blocker: { reviewBlocker }))
         .fullScreenCover(isPresented: Binding(
             get: { runtime.preferences.onboardingComplete && scene.showsReleaseNotes },
             set: { if !$0 { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) } }
@@ -306,13 +306,14 @@ struct OffWorkCountdownRootView: View {
             && !hasRootPresentation(excludingFocusActivity: true)
     }
 
-    /// Paywall, lifetime gift and What's New each postpone the review card
-    /// until the next foreground where none of them is up.
+    /// Paywall, lifetime gift, What's New and the automatic life-setup offer
+    /// each postpone the review card until the next visit where none is up.
     private var reviewBlocker: ReviewPromptBlocker {
         if runtime.preferences.onboardingComplete && scene.showsReleaseNotes { return .whatsNew }
         if scene.showsLifetimeOffer { return .lifetimeGift }
         if scene.paywallSheet != nil || paywallPresentationActive { return .paywall }
         if runtime.preferences.onboardingComplete && !runtime.plus.hasSeenIntro { return .paywall }
+        if scene.lifeSetupOfferPresented || scene.lifeSetupEditorPresented || lifeSetupPresentationActive { return .lifeSetup }
         return .none
     }
 
@@ -380,17 +381,43 @@ private struct AdaptivePresentationSizing<Wide: PresentationSizing, Compact: Pre
 
 private struct AppReviewPromptModifier: ViewModifier {
     let shifts: ShiftSessionStore
-    let blocker: ReviewPromptBlocker
+    /// Read once the visit has settled, so the layer up at that moment decides.
+    let blocker: () -> ReviewPromptBlocker
     @Environment(\.requestReview) private var requestReview
     @Environment(\.scenePhase) private var scenePhase
+    @State private var visit = 0
+    @State private var decidedVisit = 0
+    @State private var leftForBackground = true
+
+    private struct Settling: Equatable {
+        let visit: Int
+        let isActive: Bool
+    }
 
     func body(content: Content) -> some View {
         content
-            // The first time this visit becomes active. Dismissing a layer
-            // without leaving does not ask again; the next foreground does.
+            // Control Center, Face ID and system alerts only make the scene
+            // inactive; a new visit is a return from the background.
             .onChange(of: scenePhase, initial: true) { _, phase in
-                guard phase == .active else { return }
-                if shifts.consumeReviewOnForeground(blocker: blocker) {
+                switch phase {
+                case .background:
+                    leftForBackground = true
+                case .active where leftForBackground:
+                    leftForBackground = false
+                    visit += 1
+                default:
+                    break
+                }
+            }
+            // One decision per visit, after the opening surface and any
+            // clock-off celebration have settled. Dismissing a layer without
+            // leaving does not ask again; the next visit does.
+            .task(id: Settling(visit: visit, isActive: scenePhase == .active)) {
+                guard scenePhase == .active, visit > decidedVisit else { return }
+                try? await Task.sleep(for: AppReviewPromptState.foregroundSettle)
+                guard !Task.isCancelled else { return }
+                decidedVisit = visit
+                if shifts.consumeReviewOnForeground(blocker: blocker()) {
                     requestReview()
                 }
             }

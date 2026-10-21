@@ -74,7 +74,7 @@ class AppGraph(app: Application) {
     val reviewPaywallRoute = MutableStateFlow(false)
     val reviewLifetimeGift = MutableStateFlow(false)
 
-    fun reviewBlocker(): ReviewBlocker = when {
+    internal fun reviewBlocker(): ReviewBlocker = when {
         reviewWhatsNew.value -> ReviewBlocker.WHATS_NEW
         reviewLifetimeGift.value -> ReviewBlocker.LIFETIME_GIFT
         reviewPaywallIntro.value || reviewPaywallRoute.value -> ReviewBlocker.PAYWALL

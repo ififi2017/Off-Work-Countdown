@@ -93,72 +93,89 @@ struct AppReviewPromptTests {
     @Test func twoFinishedDaysAreDueAndOneIsNot() {
         #expect(AppReviewPromptState.minimumCompletedDays == 2)
         var one = finished(days: 1)
-        #expect(!one.onForeground(open(finishedShiftDayKey: "2026-10-01"), currentVersion: "3.2.1"))
+        let asked1 = one.onForeground(open(finishedShiftDayKey: "2026-10-01"), currentVersion: "3.2.1")
+        #expect(!asked1)
         #expect(one.lastAttemptDayKey == nil)
         #expect(one.completedDays == 1)
         var two = finished(days: 2)
-        #expect(two.onForeground(open(finishedShiftDayKey: "2026-10-02"), currentVersion: "3.2.1"))
+        let asked2 = two.onForeground(open(finishedShiftDayKey: "2026-10-02"), currentVersion: "3.2.1")
+        #expect(asked2)
         #expect(two.lastAttemptDayKey == "2026-10-21")
         #expect(two.completedDays == 0)
     }
 
     @Test func theFirstForegroundAfterOffWorkAsksAndTheNextOpenThatDayDoesNot() {
         var state = finished(days: 2)
-        #expect(!state.onForeground(open(nowMs: 4_999, offWorkAtMs: 5_000, finishedShiftDayKey: nil), currentVersion: "3.2.1"))
+        let asked1 = state.onForeground(open(nowMs: 4_999, offWorkAtMs: 5_000, finishedShiftDayKey: nil), currentVersion: "3.2.1")
+        #expect(!asked1)
         #expect(state.lastAttemptDayKey == nil)
-        #expect(state.onForeground(open(nowMs: 5_000, offWorkAtMs: 5_000), currentVersion: "3.2.1"))
-        #expect(!state.onForeground(open(nowMs: 20_000), currentVersion: "3.2.1"))
+        let asked2 = state.onForeground(open(nowMs: 5_000, offWorkAtMs: 5_000), currentVersion: "3.2.1")
+        #expect(asked2)
+        let asked3 = state.onForeground(open(nowMs: 20_000), currentVersion: "3.2.1")
+        #expect(!asked3)
     }
 
     @Test func aMorningOpenDoesNotUseUpTheForegroundAfterOffWork() {
         var state = finished(days: 2)
-        #expect(!state.onForeground(open(nowMs: 1_000, offWorkAtMs: 8_000, finishedShiftDayKey: nil), currentVersion: "3.2.1"))
+        let asked1 = state.onForeground(open(nowMs: 1_000, offWorkAtMs: 8_000, finishedShiftDayKey: nil), currentVersion: "3.2.1")
+        #expect(!asked1)
         #expect(state.lastAttemptDayKey == nil)
-        #expect(state.onForeground(open(nowMs: 8_000, offWorkAtMs: 8_000), currentVersion: "3.2.1"))
+        let asked2 = state.onForeground(open(nowMs: 8_000, offWorkAtMs: 8_000), currentVersion: "3.2.1")
+        #expect(asked2)
     }
 
     @Test func aBlockingLayerDefersWithoutConsumingTheDaysAttempt() {
-        for blocker in [ReviewPromptBlocker.paywall, .lifetimeGift, .whatsNew] {
+        for blocker in [ReviewPromptBlocker.paywall, .lifetimeGift, .whatsNew, .lifeSetup] {
             var state = finished(days: 2)
-            #expect(!state.onForeground(open(blocker: blocker), currentVersion: "3.2.1"))
+            let asked1 = state.onForeground(open(blocker: blocker), currentVersion: "3.2.1")
+            #expect(!asked1)
             #expect(state.lastAttemptDayKey == nil)
             #expect(state.completedDays == 2)
-            #expect(state.onForeground(open(nowMs: 12_000), currentVersion: "3.2.1"))
+            let asked2 = state.onForeground(open(nowMs: 12_000), currentVersion: "3.2.1")
+            #expect(asked2)
         }
     }
 
     @Test func theFinishingOpenCountsThatDayBeforeTheThreshold() {
         var one = finished(days: 1)
-        #expect(one.onForeground(open(finishedShiftDayKey: "2026-10-02", todayKey: "2026-10-02"), currentVersion: "3.2.1"))
+        let asked1 = one.onForeground(open(todayKey: "2026-10-02", finishedShiftDayKey: "2026-10-02"), currentVersion: "3.2.1")
+        #expect(asked1)
         var none = AppReviewPromptState()
-        #expect(!none.onForeground(open(finishedShiftDayKey: "2026-10-01"), currentVersion: "3.2.1"))
+        let asked2 = none.onForeground(open(finishedShiftDayKey: "2026-10-01"), currentVersion: "3.2.1")
+        #expect(!asked2)
         #expect(none.completedDays == 1)
         #expect(none.lastAttemptDayKey == nil)
     }
 
     @Test func aRestDayDoesNotAsk() {
         var state = finished(days: 2)
-        #expect(!state.onForeground(open(offWorkAtMs: nil, finishedShiftDayKey: nil), currentVersion: "3.2.1"))
+        let asked1 = state.onForeground(open(offWorkAtMs: nil, finishedShiftDayKey: nil), currentVersion: "3.2.1")
+        #expect(!asked1)
         #expect(state.lastAttemptDayKey == nil)
     }
 
 #if DEBUG
     @Test func ignoringThresholdsStillWaitsForOffWorkAndAClearOpen() {
         var state = AppReviewPromptState()
-        #expect(!state.onForegroundIgnoringThresholds(open(nowMs: 1_000, offWorkAtMs: 5_000, finishedShiftDayKey: nil)))
+        let asked1 = state.onForegroundIgnoringThresholds(open(nowMs: 1_000, offWorkAtMs: 5_000, finishedShiftDayKey: nil))
+        #expect(!asked1)
         #expect(state.lastAttemptDayKey == nil)
-        #expect(!state.onForegroundIgnoringThresholds(open(blocker: .whatsNew)))
+        let asked2 = state.onForegroundIgnoringThresholds(open(blocker: .whatsNew))
+        #expect(!asked2)
         #expect(state.lastTriggeredVersion == nil)
-        #expect(state.onForegroundIgnoringThresholds(open()))
+        let asked3 = state.onForegroundIgnoringThresholds(open())
+        #expect(asked3)
         #expect(state.lastAttemptDayKey == "2026-10-21")
         #expect(state.lastTriggeredVersion == nil)
-        #expect(!state.onForegroundIgnoringThresholds(open(nowMs: 11_000)))
+        let asked4 = state.onForegroundIgnoringThresholds(open(nowMs: 11_000))
+        #expect(!asked4)
     }
 
     @Test func aManualOptOutStillBlocksTheThresholdOverride() {
         var state = finished(days: 2)
         state.disable()
-        #expect(!state.onForegroundIgnoringThresholds(open()))
+        let asked1 = state.onForegroundIgnoringThresholds(open())
+        #expect(!asked1)
     }
 #endif
 }
