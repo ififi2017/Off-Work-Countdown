@@ -37,9 +37,6 @@ final class ShiftSessionStore {
     /// once without persisting a permanent suppression flag.
     var lastCelebratedEndAtMs: Double = 0
     private var reviewPromptState = AppReviewPromptState()
-    /// Bumped when a celebration the user is watching makes the review
-    /// request due. The root view requests it once that moment settles.
-    private(set) var reviewRequestOffer = 0
     /// The stored preference keeps its pre-report name so synced devices and
     /// backups read it unchanged; it now switches the weekly report.
     var weeklyReportNotificationsAreActive: Bool {
@@ -229,33 +226,53 @@ final class ShiftSessionStore {
         if reviewPromptState != previous { persistReviewPromptState() }
     }
 
-    /// Called as the clock-off celebration plays on screen: the one pause the
-    /// review request is allowed to follow. Only when the user was here for
-    /// the moment itself — a shift that ended hours ago still celebrates on
-    /// the next launch, and asking then would be asking at launch.
-    func offerReviewAfterCelebration(endAtMs: Double, now: Date = .now) {
+    /// The first return to the foreground after today's off-work time. Records
+    /// the attempt before the caller shows the system card, so a suppressed
+    /// card is not retried on the next resume. A blocking layer returns false
+    /// without consuming the day.
+    func consumeReviewOnForeground(now: Date = .now, blocker: ReviewPromptBlocker) -> Bool {
         let nowMs = now.timeIntervalSince1970 * 1_000
-        guard abs(nowMs - endAtMs) <= 2 * 60 * 1_000,
-              reviewPromptState.isDue(currentVersion: Self.appVersion, nowMs: nowMs)
-        else { return }
-        reviewRequestOffer += 1
-    }
-
-    /// Checks throttling once more at the moment of asking; a request the user
-    /// turned off in Settings meanwhile, or one already made, is not repeated.
-    func claimReviewRequest() -> Bool {
-        reviewPromptState.isDue(
-            currentVersion: Self.appVersion,
-            nowMs: Date.now.timeIntervalSince1970 * 1_000
+        let offWorkAtMs = reviewOffWorkAtMs(at: now)
+        let finishedDay = offWorkAtMs.flatMap { end -> String? in
+            guard nowMs >= end else { return nil }
+            return reviewDayKey(end)
+        }
+        let event = ReviewForeground(
+            nowMs: nowMs,
+            todayKey: RecordJSON.dayKey(now, calendar: preferences.recordsCalendar),
+            offWorkAtMs: offWorkAtMs,
+            finishedShiftDayKey: finishedDay,
+            blocker: blocker
         )
+#if DEBUG
+        if AppReviewDebugSwitch.forceArmed {
+            guard blocker == .none else { return false }
+            AppReviewDebugSwitch.forceArmed = false
+            return true
+        }
+#endif
+        let previous = reviewPromptState
+        let request: Bool
+#if DEBUG
+        if AppReviewDebugSwitch.ignoresThresholds {
+            request = reviewPromptState.onForegroundIgnoringThresholds(event)
+        } else {
+            request = reviewPromptState.onForeground(event, currentVersion: Self.appVersion)
+        }
+#else
+        request = reviewPromptState.onForeground(event, currentVersion: Self.appVersion)
+#endif
+        if reviewPromptState != previous { persistReviewPromptState() }
+        return request
     }
 
-    /// Records that the system review was triggered. Call this after requesting
-    /// the system review.
-    func recordReviewTriggered() {
-        let nowMs = Date.now.timeIntervalSince1970 * 1_000
-        reviewPromptState.recordTrigger(version: Self.appVersion, atMs: nowMs)
-        persistReviewPromptState()
+    /// Today's shift end, or nil when the day has no shift to finish.
+    private func reviewOffWorkAtMs(at date: Date) -> Double? {
+        guard session.shouldQuerySnapshot(at: date), let shift = session.snapshot(at: date) else { return nil }
+        let worked = (shift.isWorkday || session.isForcedWorkday(shift) || session.isEndedEarly(shift)) && !shift.segments.isEmpty
+        guard worked else { return nil }
+        if session.isEndedEarly(shift) { return session.earlyOffAtMs ?? shift.plannedEndAtMs }
+        return shift.endAtMs
     }
 
     func disableAutomaticReviewPrompt() {

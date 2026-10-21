@@ -1,7 +1,5 @@
 package com.rainif.doneat.ui
 
-import android.content.Context
-import android.content.ContextWrapper
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
@@ -30,6 +28,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.movableContentOf
@@ -45,13 +44,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import com.rainif.doneat.ui.adaptive.LocalDoneAtWindowPosture
 import com.rainif.doneat.ui.timer.LandscapeClock
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.fragment.app.FragmentActivity
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -76,7 +71,6 @@ import com.rainif.doneat.ui.settings.SettingsHomeScreen
 import com.rainif.doneat.ui.settings.ThemeScreen
 import com.rainif.doneat.ui.timer.TimerScreen
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import java.time.Instant
 
 /**
@@ -185,39 +179,10 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
         reportStageChanged(stack.lastOrNull() is Route.CycleReport || showsClock)
     }
     BackHandler(showsClock) { clockDismissed = true }
-    val context = LocalContext.current
-    val activity = remember(context) { context.fragmentActivity() }
-    val reviewOffer by graph.reviews.offers.collectAsStateWithLifecycle()
-    DisposableEffect(activity, reviewOffer) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_PAUSE) graph.reviews.discardOffer(reviewOffer)
-        }
-        activity?.lifecycle?.addObserver(observer)
-        onDispose {
-            activity?.lifecycle?.removeObserver(observer)
-            graph.reviews.discardOffer(reviewOffer)
-        }
-    }
-    LaunchedEffect(activity, selected, stack.lastOrNull(), reviewBlocked, reviewOffer, showsClock) {
-        val host = activity ?: return@LaunchedEffect
-        if (reviewOffer == 0L) return@LaunchedEffect
-        if (selected != AppTab.TIMER || stack.lastOrNull() != Route.TimerHome || reviewBlocked || showsClock ||
-            !host.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-            graph.reviews.discardOffer(reviewOffer)
-            return@LaunchedEffect
-        }
-        try {
-            // Wait for the real clock-off celebration, never ask on launch.
-            delay(com.rainif.doneat.review.ReviewPolicy.CELEBRATION_SETTLE_MS)
-            graph.reviews.requestIfEligible(host, reviewOffer) {
-                selectedState.value == AppTab.TIMER &&
-                    stacks.getValue(AppTab.TIMER).lastOrNull() == Route.TimerHome &&
-                    !graph.reviewBlocked.value && graph.requestedTab.value == null
-            }
-        } catch (cancelled: kotlinx.coroutines.CancellationException) {
-            graph.reviews.discardOffer(reviewOffer)
-            throw cancelled
-        }
+    val paywallRoute = stacks.values.any { entries -> entries.any { it is Route.Plus || it is Route.PlusFor } }
+    SideEffect { graph.reviewPaywallRoute.value = paywallRoute }
+    DisposableEffect(Unit) {
+        onDispose { graph.reviewPaywallRoute.value = false }
     }
 
     BackHandler(enabled = stack.size <= 1 && selected != AppTab.TIMER) { select(AppTab.TIMER) }
@@ -346,15 +311,6 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
     }
 }
 
-private fun Context.fragmentActivity(): FragmentActivity? {
-    var current: Context = this
-    while (current is ContextWrapper) {
-        if (current is FragmentActivity) return current
-        current = current.baseContext
-    }
-    return current as? FragmentActivity
-}
-
 private fun tabFromStoredName(value: String): AppTab =
     AppTab.entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: AppTab.TIMER
 
@@ -459,7 +415,10 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
             }, back)
         }
         Route.ReviewAccess -> com.rainif.doneat.plus.ReviewAccessScreen(graph.plus.reviewAccess, back)
-        Route.About -> AboutScreen(open, back) { com.rainif.doneat.plus.PlusDebugSection(graph.plus) }
+        Route.About -> AboutScreen(open, back) {
+            com.rainif.doneat.plus.PlusDebugSection(graph.plus)
+            com.rainif.doneat.review.ReviewDebugSection()
+        }
         Route.Acknowledgements -> AcknowledgementsScreen(back)
         is Route.Leave -> com.rainif.doneat.ui.leave.LeaveScreen(graph, key.fromRecords, open, back)
         is Route.LeaveBalanceEdit -> com.rainif.doneat.ui.leave.LeaveBalanceEditScreen(graph, key.balanceID, key.guided, back) {

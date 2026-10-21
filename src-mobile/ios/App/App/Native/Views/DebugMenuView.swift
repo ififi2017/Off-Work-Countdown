@@ -13,6 +13,8 @@ struct DebugMenuView: View {
     @State private var showsResult = false
     @State private var actionFeedback = 0
     @State private var pendingScenario: DebugTimerScenario?
+    @State private var ignoreReviewThresholds = AppReviewDebugSwitch.ignoresThresholds
+    @State private var reviewForceArmed = AppReviewDebugSwitch.forceArmed
 
     var body: some View {
         NavigationStack {
@@ -65,6 +67,30 @@ struct DebugMenuView: View {
                     } label: {
                         Label(debug.shifts.text.t("plusManage"), systemImage: "cart")
                     }
+                }
+
+                Section {
+                    Toggle(isOn: $ignoreReviewThresholds) {
+                        Label("忽略评分门槛", systemImage: "star.bubble")
+                    }
+                    .onChange(of: ignoreReviewThresholds) { _, value in
+                        AppReviewDebugSwitch.ignoresThresholds = value
+                    }
+                    Button {
+                        AppReviewDebugSwitch.forceArmed = true
+                        reviewForceArmed = true
+                        actionFeedback += 1
+                    } label: {
+                        Label(
+                            reviewForceArmed ? "已预约：下次回到前台强制请求评分" : "下次回到前台强制请求评分",
+                            systemImage: "star.leadinghalf.filled"
+                        )
+                    }
+                    .foregroundStyle(.primary)
+                } header: {
+                    Text("评分请求")
+                } footer: {
+                    Text("仅 Debug。忽略门槛仍要下班后当天第一次打开，一天一次；付费墙、终身礼包和新版说明会推迟到下一次打开。强制请求只生效一次，遇到这些弹层会继续等到下一次打开。Release 构建没有这些开关。")
                 }
 
                 Section {

@@ -267,7 +267,7 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                                 onClockOff = { confirmThen(Confirmation.CLOCK_OFF) { perform { clockOffEarly(it, System.currentTimeMillis().toDouble()) } } },
                                 onUndoClockIn = { perform { undoEarlyClockIn(it, System.currentTimeMillis().toDouble()) } },
                                 onCancelManual = { confirmThen(Confirmation.CANCEL_MANUAL) {
-                                    perform({ graph.reviews.clearTrackedCompletion() }) { cancelManualTiming(it, System.currentTimeMillis().toDouble()) }
+                                    perform { cancelManualTiming(it, System.currentTimeMillis().toDouble()) }
                                 } },
                                 onOvertime = { showOvertime = true },
                                 onShare = { open(Route.TimerShare) },
@@ -283,7 +283,6 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
                                     celebration++
                                     if (session.state.countdownStarted && (shift.isWorkday || session.isForcedWorkday(shift)) && shift.segments.isNotEmpty()) {
                                         graph.reviews.noteCompletion(token.toLong(), session.recordsZone)
-                                        graph.reviews.offerAfterCelebration(token.toLong())
                                     }
                                 }
                             }

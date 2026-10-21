@@ -600,7 +600,6 @@ struct CompletedShiftDesignView: View {
         guard shifts.lastCelebratedEndAtMs != celebrationToken else { return }
         shifts.markCelebrated(endAtMs: celebrationToken)
         celebrate()
-        shifts.offerReviewAfterCelebration(endAtMs: celebrationToken)
     }
 
     /// Paced against the five-second animation rather than fired at once: the

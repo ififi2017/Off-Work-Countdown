@@ -5,25 +5,28 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.rainif.doneat.BuildConfig
+import com.rainif.doneat.core.domain.schedule.ShiftSnapshot
+import com.rainif.doneat.core.domain.session.ShiftSession
 import java.time.ZoneId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** Device-local request state. The backup include list excludes SharedPreferences. */
 class ReviewCoordinator private constructor(context: Context) {
-    private val prefs = context.applicationContext.getSharedPreferences("play_review", Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
+    private val prefs = appContext.getSharedPreferences("play_review", Context.MODE_PRIVATE)
     private var state = ReviewPolicy(
         completedDays = prefs.getInt("completed_days", 0).coerceAtLeast(0),
         lastCompletedDayKey = prefs.getString("last_completed_day", null),
         lastRequestVersion = prefs.getString("last_request_version", null),
         // Preserve old throttling and opt-out, but never promote old tracked/ready ends into completions.
         lastRequestAtMs = prefs.getLong("last_request", 0),
+        lastAttemptDayKey = prefs.getString("last_attempt_day", null),
         disabled = prefs.getBoolean("disabled", false),
     )
-    private val mutableOffers = MutableStateFlow(0L)
-    val offers = mutableOffers.asStateFlow()
-    private var pendingOffer: ReviewOffer? = null
-    private var requestGeneration = 0L
+    private val foregroundTicks = MutableStateFlow(0)
+    /** Bumped from [android.app.Activity.onResume]. The UI reads it once per return to the foreground. */
+    val foreground = foregroundTicks.asStateFlow()
 
     init { persist() }
 
@@ -32,70 +35,44 @@ class ReviewCoordinator private constructor(context: Context) {
     fun noteCompletion(endAtMs: Long, recordsZone: ZoneId) =
         update(state.completed(ReviewPolicy.dayKey(endAtMs, recordsZone)))
 
-    /** Call once as the automatic clock-off celebration starts, never on manual replay. */
-    @Synchronized
-    fun offerAfterCelebration(endAtMs: Long, nowMs: Long = System.currentTimeMillis()) {
-        if (!state.canOffer(endAtMs, BuildConfig.VERSION_NAME, nowMs)) return
-        val id = mutableOffers.value + 1
-        pendingOffer = ReviewOffer(id, nowMs)
-        mutableOffers.value = id
-    }
-
-    /** An editor, navigation or loss of foreground drops the moment instead of deferring it. */
-    @Synchronized
-    fun discardOffer(offerId: Long) {
-        if (mutableOffers.value != offerId) return
-        pendingOffer = null
-        requestGeneration++
-    }
-
     /** Undo or extra overtime means the former end was not the final clock-off. */
     @Synchronized
     fun revokeCompletion(endAtMs: Long, recordsZone: ZoneId) {
-        clearTrackedCompletion()
         update(state.revoked(ReviewPolicy.dayKey(endAtMs, recordsZone)))
-    }
-
-    /** Canceling a manual run discards an outstanding request. No projected end is persisted. */
-    @Synchronized
-    fun clearTrackedCompletion() {
-        pendingOffer = null
-        requestGeneration++
     }
 
     /** The manual Settings link remains usable after automatic requests stop. */
     @Synchronized
-    fun disableAutomatic() {
-        clearTrackedCompletion()
-        update(state.disable())
+    fun disableAutomatic() = update(state.disable())
+
+    fun noteForeground() {
+        foregroundTicks.value = foregroundTicks.value + 1
     }
 
-    /** Root waits six seconds after [offers], dropping the offer whenever presentation is blocked. */
-    fun requestIfEligible(activity: FragmentActivity, offerId: Long, canPresent: () -> Boolean) {
-        val now = System.currentTimeMillis()
-        val generation: Long
-        synchronized(this) {
-            val offer = pendingOffer?.takeIf { it.id == offerId } ?: return
-            if (!canPresent() || !activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                discardOffer(offerId)
-                return
-            }
-            if (!offer.hasSettled(now)) return
-            pendingOffer = null
-            if (!state.isDue(BuildConfig.VERSION_NAME, now)) return
-            generation = ++requestGeneration
-            update(state.requested(BuildConfig.VERSION_NAME, now))
+    /**
+     * Decides and, when asking, records the attempt before Play is called.
+     * A suppressed or failed card must not be retried on the next resume.
+     */
+    @Synchronized
+    fun consumeForeground(event: ReviewForeground): Boolean {
+        val outcome = if (BuildConfig.DEBUG) {
+            ReviewDebugGate.intercept(appContext, state, event)
+                ?: state.onForeground(event, BuildConfig.VERSION_NAME)
+        } else {
+            state.onForeground(event, BuildConfig.VERSION_NAME)
         }
-        // Play may silently suppress the card. A failed request is equally silent and consumed.
+        if (outcome.policy != state) update(outcome.policy)
+        return outcome.request
+    }
+
+    /** Play may silently suppress the card. A failed request is equally silent and already consumed. */
+    fun launchReview(activity: FragmentActivity) {
+        if (!activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return
         try {
             val manager = ReviewManagerFactory.create(activity)
             manager.requestReviewFlow().addOnCompleteListener(activity) { task ->
-                synchronized(this) {
-                    if (task.isSuccessful && generation == requestGeneration && !state.disabled &&
-                        canPresent() && activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
-                    ) {
-                        try { manager.launchReviewFlow(activity, task.result) } catch (_: Exception) { }
-                    }
+                if (task.isSuccessful && activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    try { manager.launchReviewFlow(activity, task.result) } catch (_: Exception) { }
                 }
             }
         } catch (_: Exception) { }
@@ -114,6 +91,7 @@ class ReviewCoordinator private constructor(context: Context) {
             .putString("last_completed_day", state.lastCompletedDayKey)
             .putString("last_request_version", state.lastRequestVersion)
             .putLong("last_request", state.lastRequestAtMs)
+            .putString("last_attempt_day", state.lastAttemptDayKey)
             .putBoolean("disabled", state.disabled)
             .commit()
     }
@@ -123,6 +101,33 @@ class ReviewCoordinator private constructor(context: Context) {
 
         fun get(context: Context): ReviewCoordinator = shared ?: synchronized(this) {
             shared ?: ReviewCoordinator(context).also { shared = it }
+        }
+
+        /** Today's off-work instant, or null when this day has no shift to finish. */
+        fun offWorkAtMs(session: ShiftSession, nowMs: Double): Long? {
+            if (!session.shouldQuerySnapshot(nowMs)) return null
+            val shift = session.snapshot(nowMs) ?: return null
+            return offWorkAtMs(shift, session.isForcedWorkday(shift), session.isEndedEarly(shift), session.state.earlyOffAtMs)
+        }
+
+        fun offWorkAtMs(shift: ShiftSnapshot, forcedWorkday: Boolean, endedEarly: Boolean, earlyOffAtMs: Double?): Long? {
+            val worked = (shift.isWorkday || forcedWorkday || endedEarly) && shift.segments.isNotEmpty()
+            if (!worked) return null
+            val end = if (endedEarly) earlyOffAtMs ?: shift.plannedEndAtMs else shift.endAtMs
+            return end.toLong()
+        }
+
+        fun foregroundEvent(session: ShiftSession, nowMs: Double, blocker: ReviewBlocker): ReviewForeground {
+            val offWorkAtMs = offWorkAtMs(session, nowMs)
+            val now = nowMs.toLong()
+            val finished = offWorkAtMs?.takeIf { now >= it }?.let { ReviewPolicy.dayKey(it, session.recordsZone) }
+            return ReviewForeground(
+                nowMs = now,
+                todayKey = ReviewPolicy.dayKey(now, session.recordsZone),
+                offWorkAtMs = offWorkAtMs,
+                finishedShiftDayKey = finished,
+                blocker = blocker,
+            )
         }
     }
 }

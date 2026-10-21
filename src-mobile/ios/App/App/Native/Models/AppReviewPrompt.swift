@@ -3,12 +3,14 @@ import Foundation
 /// Durable eligibility for the system App Store review prompt.
 ///
 /// Following App Store Review Guideline 5.6.1, we call the system review API
-/// directly without a custom pre-prompt. Because nothing softens that sheet,
-/// it is only offered at a natural pause the user has just watched happen —
-/// the clock-off celebration in the app — and never on launch, where Apple's
-/// guidance says not to ask. Throttling keeps it respectful:
+/// directly without a custom pre-prompt. The ask waits until the user comes
+/// back after off-work, instead of covering the clock-off celebration:
 /// - Shifts finished on at least `minimumCompletedDays` different days since
 ///   the last request, so one trial day is not mistaken for a habit
+/// - The first return to the foreground after that day's off-work time, and
+///   at most one attempt per records-calendar day
+/// - Not while the paywall, lifetime gift or What's New is on screen; that
+///   open is left unused for the next one that is clear
 /// - At most once per app version (CFBundleShortVersionString)
 /// - At least 120 days between requests
 /// The system itself limits display to 3 times per year.
@@ -22,7 +24,7 @@ nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
     }
 
     static let minimumIntervalDays: Int = 120
-    static let minimumCompletedDays: Int = 3
+    static let minimumCompletedDays: Int = 2
     private static let minimumIntervalMs: Double = Double(minimumIntervalDays) * 24 * 60 * 60 * 1_000
 
     var phase: Phase = .waitingForCompletion
@@ -32,6 +34,9 @@ nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
     /// so state written before this field existed decodes as zero.
     var completedDays: Int?
     var lastCompletedDayKey: String?
+    /// Records-calendar day of the last real attempt. A blocked open does not set it.
+    /// Optional so state written before this field existed still decodes.
+    var lastAttemptDayKey: String?
 
     /// Counts a finished shift once per calendar day, however many times that
     /// day's completion is noted.
@@ -66,4 +71,67 @@ nonisolated struct AppReviewPromptState: Codable, Equatable, Sendable {
     mutating func disable() {
         phase = .never
     }
+
+    /// After today's off-work time, the first clear foreground. A blocking layer
+    /// does not consume the day's attempt.
+    mutating func onForeground(_ event: ReviewForeground, currentVersion: String) -> Bool {
+        noteFinishedShift(event)
+        guard event.blocker == .none else { return false }
+        guard let offWorkAtMs = event.offWorkAtMs, event.nowMs >= offWorkAtMs else { return false }
+        guard lastAttemptDayKey != event.todayKey else { return false }
+        guard isDue(currentVersion: currentVersion, nowMs: event.nowMs) else { return false }
+        recordTrigger(version: currentVersion, atMs: event.nowMs)
+        lastAttemptDayKey = event.todayKey
+        return true
+    }
+
+#if DEBUG
+    /// Skips the day count, version dedup and 120-day gap. A manual opt-out still wins.
+    mutating func onForegroundIgnoringThresholds(_ event: ReviewForeground) -> Bool {
+        noteFinishedShift(event)
+        guard phase != .never, event.blocker == .none else { return false }
+        guard let offWorkAtMs = event.offWorkAtMs, event.nowMs >= offWorkAtMs else { return false }
+        guard lastAttemptDayKey != event.todayKey else { return false }
+        lastAttemptDayKey = event.todayKey
+        return true
+    }
+#endif
+
+    private mutating func noteFinishedShift(_ event: ReviewForeground) {
+        guard let day = event.finishedShiftDayKey, let offWorkAtMs = event.offWorkAtMs, event.nowMs >= offWorkAtMs else { return }
+        noteCompletion(dayKey: day)
+    }
 }
+
+enum ReviewPromptBlocker: Equatable, Sendable {
+    case none
+    case paywall
+    case lifetimeGift
+    case whatsNew
+}
+
+struct ReviewForeground: Equatable, Sendable {
+    var nowMs: Double
+    var todayKey: String
+    var offWorkAtMs: Double?
+    var finishedShiftDayKey: String?
+    var blocker: ReviewPromptBlocker
+}
+
+#if DEBUG
+/// Debug builds only. Release never compiles these keys or the menu that writes them.
+enum AppReviewDebugSwitch {
+    private static let ignoreKey = "ios.native.debug.reviewIgnoreThresholds"
+    private static let forceKey = "ios.native.debug.reviewForce"
+
+    static var ignoresThresholds: Bool {
+        get { UserDefaults.standard.bool(forKey: ignoreKey) }
+        set { UserDefaults.standard.set(newValue, forKey: ignoreKey) }
+    }
+
+    static var forceArmed: Bool {
+        get { UserDefaults.standard.bool(forKey: forceKey) }
+        set { UserDefaults.standard.set(newValue, forKey: forceKey) }
+    }
+}
+#endif

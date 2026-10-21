@@ -18,6 +18,7 @@ import com.rainif.doneat.core.domain.session.ScheduleFieldChange
 import com.rainif.doneat.plus.PlusAccess
 import com.rainif.doneat.focus.FocusCoordinator
 import com.rainif.doneat.timer.TimerCoordinator
+import com.rainif.doneat.review.ReviewBlocker
 import com.rainif.doneat.review.ReviewCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,8 +66,20 @@ class AppGraph(app: Application) {
 
     /** Capture a completed shift's eligibility once at process launch. */
     val reviews = ReviewCoordinator.get(app)
-    /** The Timer screen clears this only when its transient controls are closed. */
+    /** The Timer screen clears this only when its transient controls are closed. The landscape clock reads it. */
     val reviewBlocked = MutableStateFlow(true)
+    /** Each writer owns one flag, so a paywall route update cannot drop What's New. */
+    val reviewWhatsNew = MutableStateFlow(false)
+    val reviewPaywallIntro = MutableStateFlow(false)
+    val reviewPaywallRoute = MutableStateFlow(false)
+    val reviewLifetimeGift = MutableStateFlow(false)
+
+    fun reviewBlocker(): ReviewBlocker = when {
+        reviewWhatsNew.value -> ReviewBlocker.WHATS_NEW
+        reviewLifetimeGift.value -> ReviewBlocker.LIFETIME_GIFT
+        reviewPaywallIntro.value || reviewPaywallRoute.value -> ReviewBlocker.PAYWALL
+        else -> ReviewBlocker.NONE
+    }
 
     /** Focus runs on the same archive; its queue of planned starts is device-local, beside the session. */
     val focus = FocusStore(records, sessions.session, plus.authorized, files.resolve("device/focus-queue.json"), newId, { app.getString(R.string.focusTaskTitle) })

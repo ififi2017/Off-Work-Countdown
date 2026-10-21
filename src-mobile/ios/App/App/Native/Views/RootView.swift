@@ -167,10 +167,7 @@ struct OffWorkCountdownRootView: View {
             hasBlockingPresentation: hasRootPresentation(excludingLifeSetup: true),
             presentationActive: $lifeSetupPresentationActive
         ))
-        .modifier(AppReviewPromptModifier(
-            shifts: runtime.shifts, isBlocked: hasRootPresentation()
-                || lifeSetupPresentationActive || scenePhase != .active
-        ))
+        .modifier(AppReviewPromptModifier(shifts: runtime.shifts, blocker: reviewBlocker))
         .fullScreenCover(isPresented: Binding(
             get: { runtime.preferences.onboardingComplete && scene.showsReleaseNotes },
             set: { if !$0 { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) } }
@@ -309,6 +306,16 @@ struct OffWorkCountdownRootView: View {
             && !hasRootPresentation(excludingFocusActivity: true)
     }
 
+    /// Paywall, lifetime gift and What's New each postpone the review card
+    /// until the next foreground where none of them is up.
+    private var reviewBlocker: ReviewPromptBlocker {
+        if runtime.preferences.onboardingComplete && scene.showsReleaseNotes { return .whatsNew }
+        if scene.showsLifetimeOffer { return .lifetimeGift }
+        if scene.paywallSheet != nil || paywallPresentationActive { return .paywall }
+        if runtime.preferences.onboardingComplete && !runtime.plus.hasSeenIntro { return .paywall }
+        return .none
+    }
+
     private func hasRootPresentation(
         excludingLifeSetup: Bool = false, excludingFocusActivity: Bool = false
     ) -> Bool {
@@ -373,35 +380,19 @@ private struct AdaptivePresentationSizing<Wide: PresentationSizing, Compact: Pre
 
 private struct AppReviewPromptModifier: ViewModifier {
     let shifts: ShiftSessionStore
-    let isBlocked: Bool
+    let blocker: ReviewPromptBlocker
     @Environment(\.requestReview) private var requestReview
-    @State private var handledOffer = 0
-
-    private struct Trigger: Equatable {
-        let offer: Int
-        let isBlocked: Bool
-    }
+    @Environment(\.scenePhase) private var scenePhase
 
     func body(content: Content) -> some View {
         content
-        // Offered by the clock-off celebration, and asked only once its
-        // five-second animation has finished: the sheet follows the moment
-        // instead of covering it. If anything covers the screen or the app
-        // leaves the foreground first, that moment has passed and the offer
-        // is dropped rather than raised later out of context.
-        .task(id: Trigger(offer: shifts.reviewRequestOffer, isBlocked: isBlocked)) {
-            let offer = shifts.reviewRequestOffer
-            guard offer > handledOffer else { return }
-            guard !isBlocked else {
-                handledOffer = offer
-                return
+            // The first time this visit becomes active. Dismissing a layer
+            // without leaving does not ask again; the next foreground does.
+            .onChange(of: scenePhase, initial: true) { _, phase in
+                guard phase == .active else { return }
+                if shifts.consumeReviewOnForeground(blocker: blocker) {
+                    requestReview()
+                }
             }
-            try? await Task.sleep(for: .seconds(6))
-            guard !Task.isCancelled else { return }
-            handledOffer = offer
-            guard shifts.claimReviewRequest() else { return }
-            requestReview()
-            shifts.recordReviewTriggered()
-        }
     }
 }

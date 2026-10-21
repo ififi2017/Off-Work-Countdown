@@ -27,9 +27,12 @@ import com.rainif.doneat.ui.adaptive.LocalDoneAtWindowPosture
 import com.rainif.doneat.ui.adaptive.rememberWindowPosture
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import com.rainif.doneat.ui.release.ReleaseNotesPolicy
 import com.rainif.doneat.ui.release.WhatsNewScreen
 import androidx.compose.runtime.remember
@@ -48,6 +51,7 @@ import com.rainif.doneat.core.designsystem.DoneAtMotion
 import com.rainif.doneat.core.designsystem.LocalDoneAtMotion
 import com.rainif.doneat.core.designsystem.ThemeMode
 import com.rainif.doneat.reminders.Reminders
+import com.rainif.doneat.review.ReviewCoordinator
 import com.rainif.doneat.ui.AppLanguageScope
 import com.rainif.doneat.ui.AppLocale
 import com.rainif.doneat.ui.ArchiveRecoveryScreen
@@ -60,14 +64,17 @@ import com.rainif.doneat.plus.PlusIntroPolicy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import androidx.lifecycle.Lifecycle
 
 /** A [FragmentActivity] so `BiometricPrompt` can confirm the owner before earnings are revealed. */
 class MainActivity : FragmentActivity() {
     override fun onResume() {
         super.onResume()
-        (application as DoneAtApplication).graph.plus.onForeground(true)
-        (application as DoneAtApplication).graph.plus.refresh()
-        (application as DoneAtApplication).graph.plus.observeLifetimeOffer()
+        val graph = (application as DoneAtApplication).graph
+        graph.plus.onForeground(true)
+        graph.plus.refresh()
+        graph.plus.observeLifetimeOffer()
+        graph.reviews.noteForeground()
     }
 
     override fun onPause() {
@@ -129,6 +136,13 @@ class MainActivity : FragmentActivity() {
                 ThemeMode.DARK -> true
             }
             var reportStage by remember { mutableStateOf(false) }
+            val showsReleaseNotes = ReleaseNotesPolicy.shouldPresent(releaseNotes.loaded, setUp, releaseNotes.seenRelease)
+            val showsPaywallIntro = PlusIntroPolicy.shouldPresent(intro, setUp && device.onboardingComplete, plusAuthorized)
+            SideEffect {
+                graph.reviewWhatsNew.value = showsReleaseNotes
+                graph.reviewPaywallIntro.value = showsPaywallIntro
+            }
+            ReviewForegroundEffect(graph, this@MainActivity)
             // One window owner: report routes use light icons, then return to the app theme.
             SystemBarsFollowTheme(dark || reportStage)
             AppLanguageScope(prefs.languageOverride) {
@@ -140,7 +154,7 @@ class MainActivity : FragmentActivity() {
                             LaunchPlaceholder()
                         } else if (archiveError == RecordPersistenceError.INVALID_ARCHIVE || archiveError == RecordPersistenceError.UNREADABLE_ARCHIVE) {
                             ArchiveRecoveryScreen(graph)
-                        } else if (ReleaseNotesPolicy.shouldPresent(releaseNotes.loaded, setUp, releaseNotes.seenRelease)) {
+                        } else if (showsReleaseNotes) {
                             WhatsNewScreen(graph, continuing = continuingRelease,
                                 errorText = if (releaseNotes.writeFailed) androidx.compose.ui.res.stringResource(R.string.retryAction) else null,
                                 onDismiss = {
@@ -152,7 +166,7 @@ class MainActivity : FragmentActivity() {
                                         } finally { continuingRelease = false } }
                                     }
                                 })
-                        } else if (PlusIntroPolicy.shouldPresent(intro, setUp && device.onboardingComplete, plusAuthorized)) {
+                        } else if (showsPaywallIntro) {
                             CompositionLocalProvider(LocalDoneAtWindowPosture provides rememberWindowPosture()) { PlusIntroScreen(graph) }
                         } else AnimatedContent(
                             targetState = setUp,
@@ -222,6 +236,28 @@ class MainActivity : FragmentActivity() {
             system != null -> graph.settings.edit { it.copy(languageOverride = system) }
             else -> AppLocale.applyToSystem(this, preferred)
         }
+    }
+}
+
+/**
+ * One decision per return to the foreground, after release-note and intro state
+ * have loaded and the shell has published which layer is up. Dismissing a layer
+ * in the same visit does not ask; the next resume does.
+ */
+@Composable
+private fun ReviewForegroundEffect(graph: AppGraph, activity: FragmentActivity) {
+    val generation by graph.reviews.foreground.collectAsStateWithLifecycle()
+    LaunchedEffect(generation) {
+        if (generation == 0) return@LaunchedEffect
+        withFrameNanos { }
+        snapshotFlow {
+            graph.loaded.value && graph.plus.introState.value.loaded && graph.releaseNotes.state.value.loaded
+        }.first { it }
+        withFrameNanos { }
+        if (!activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return@LaunchedEffect
+        val nowMs = System.currentTimeMillis().toDouble()
+        val event = ReviewCoordinator.foregroundEvent(graph.sessions.session.value, nowMs, graph.reviewBlocker())
+        if (graph.reviews.consumeForeground(event)) graph.reviews.launchReview(activity)
     }
 }
 
