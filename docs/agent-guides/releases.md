@@ -98,6 +98,13 @@ npm run tauri:build:macappstore
 npm run pack:macappstore
 ```
 
+- A macOS `CFBundleVersion` must be higher than every earlier upload, not just
+  within its version (90061). 3.2.1 shipped as build 3.2.10, so later builds
+  need a higher number (3.2.3 shipped as 3.2.30). Set both host and widget:
+  `OWC_WIDGET_BUILD_NUMBER=<n>` and
+  `--config '{"bundle":{"macOS":{"bundleVersion":"<n>"}}}'` on `tauri build`.
+  Check with `xcrun altool --validate-app -t macos` before uploading.
+
 Verify the signed host group is Team ID-prefixed:
 
 ```bash
