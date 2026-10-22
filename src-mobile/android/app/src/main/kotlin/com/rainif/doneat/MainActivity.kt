@@ -105,7 +105,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onStop() {
         // A rotation or language switch recreates the activity; that is not leaving the app.
-        if (!isChangingConfigurations) (application as DoneAtApplication).graph.reviews.noteBackground()
+        (application as DoneAtApplication).graph.reviews.noteStop(isChangingConfigurations)
         super.onStop()
     }
 
@@ -263,10 +263,10 @@ private fun ReviewForegroundEffect(graph: AppGraph, activity: FragmentActivity) 
         }.first { it }
         delay(ReviewPolicy.FOREGROUND_SETTLE_MS)
         withFrameNanos { }
-        if (!activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return@LaunchedEffect
         val nowMs = System.currentTimeMillis().toDouble()
+        val stillHere = activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
         val event = ReviewCoordinator.foregroundEvent(graph.sessions.session.value, nowMs, graph.reviewBlocker())
-        if (graph.reviews.consumeForeground(visit, event)) graph.reviews.launchReview(activity)
+        if (graph.reviews.consumeForeground(visit, event, stillHere)) graph.reviews.launchReview(activity)
     }
 }
 

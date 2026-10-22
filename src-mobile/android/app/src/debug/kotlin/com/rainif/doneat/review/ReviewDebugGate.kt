@@ -92,7 +92,7 @@ fun ReviewDebugSection() {
                 ignore = it
                 ReviewDebugGate.setIgnoresThresholds(context, it)
             },
-            supporting = "仍要下班后当天第一次打开，一天一次。付费墙、终身礼包和新版说明会推迟到下一次打开。",
+            supporting = "仍要下班后当天第一次打开，一天一次。付费墙、终身礼包、新版说明、编辑器、排班、专注和其它弹层会推迟到下一次打开。",
         )
         ActionRow(
             if (armed) "已预约：下次回到前台强制请求评分" else "下次回到前台强制请求评分",

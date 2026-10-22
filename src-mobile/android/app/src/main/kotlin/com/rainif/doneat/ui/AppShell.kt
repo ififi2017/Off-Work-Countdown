@@ -54,6 +54,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEvent
 import com.rainif.doneat.AppGraph
+import com.rainif.doneat.review.reviewSurfaceBlocker
 import com.rainif.doneat.R
 import com.rainif.doneat.core.domain.records.LifeProfileDraft
 import com.rainif.doneat.core.domain.records.FoundationCompat
@@ -181,9 +182,22 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
     BackHandler(showsClock) { clockDismissed = true }
     // Only the page on screen: a paywall left under another tab is not in the way.
     val paywallRoute = stack.lastOrNull().let { it is Route.Plus || it is Route.PlusFor }
-    SideEffect { graph.reviewPaywallRoute.value = paywallRoute }
+    val reviewSurface = reviewSurfaceBlocker(
+        onTimerTab = selected == AppTab.TIMER,
+        onFocusTab = selected == AppTab.FOCUS,
+        route = stack.lastOrNull() as? Route,
+        timerDialog = reviewBlocked,
+        landscapeClock = showsClock,
+    )
+    SideEffect {
+        graph.reviewPaywallRoute.value = paywallRoute
+        graph.reviewSurface.value = reviewSurface
+    }
     DisposableEffect(Unit) {
-        onDispose { graph.reviewPaywallRoute.value = false }
+        onDispose {
+            graph.reviewPaywallRoute.value = false
+            graph.reviewSurface.value = com.rainif.doneat.review.ReviewBlocker.DIALOG
+        }
     }
 
     BackHandler(enabled = stack.size <= 1 && selected != AppTab.TIMER) { select(AppTab.TIMER) }

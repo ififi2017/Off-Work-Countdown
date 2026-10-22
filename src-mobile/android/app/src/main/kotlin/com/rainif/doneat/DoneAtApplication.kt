@@ -73,12 +73,14 @@ class AppGraph(app: Application) {
     val reviewPaywallIntro = MutableStateFlow(false)
     val reviewPaywallRoute = MutableStateFlow(false)
     val reviewLifetimeGift = MutableStateFlow(false)
+    /** Editors, schedule, focus, dialogs and any page other than the timer home. Blocked until the shell reports. */
+    internal val reviewSurface = MutableStateFlow(ReviewBlocker.DIALOG)
 
     internal fun reviewBlocker(): ReviewBlocker = when {
         reviewWhatsNew.value -> ReviewBlocker.WHATS_NEW
         reviewLifetimeGift.value -> ReviewBlocker.LIFETIME_GIFT
         reviewPaywallIntro.value || reviewPaywallRoute.value -> ReviewBlocker.PAYWALL
-        else -> ReviewBlocker.NONE
+        else -> reviewSurface.value
     }
 
     /** Focus runs on the same archive; its queue of planned starts is device-local, beside the session. */

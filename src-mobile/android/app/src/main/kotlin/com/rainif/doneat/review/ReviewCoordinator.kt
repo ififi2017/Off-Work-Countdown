@@ -28,8 +28,7 @@ class ReviewCoordinator private constructor(context: Context) {
     /** Bumped once per return from the background. The UI decides once per value. */
     val foreground = foregroundTicks.asStateFlow()
     /** Process start counts as coming back; dialogs, rotation and the shade do not. */
-    private var backgrounded = true
-    private var decidedVisit = 0
+    private var visits = ReviewVisits()
 
     init { persist() }
 
@@ -48,29 +47,32 @@ class ReviewCoordinator private constructor(context: Context) {
     @Synchronized
     fun disableAutomatic() = update(state.disable())
 
-    /** From [android.app.Activity.onStart]; only the first start after [noteBackground] is a new visit. */
+    /** From [android.app.Activity.onStart]; only the first start after a real [noteStop] is a new visit. */
     @Synchronized
     fun noteForeground() {
-        if (!backgrounded) return
-        backgrounded = false
-        foregroundTicks.value = foregroundTicks.value + 1
+        val next = visits.onStart()
+        if (next == visits) return
+        visits = next
+        foregroundTicks.value = visits.generation
     }
 
-    /** From [android.app.Activity.onStop], except while the activity is recreated for a configuration change. */
+    /** From [android.app.Activity.onStop]. A configuration change is not leaving the app. */
     @Synchronized
-    fun noteBackground() {
-        backgrounded = true
+    fun noteStop(changingConfigurations: Boolean) {
+        visits = visits.onStop(changingConfigurations)
     }
 
     /**
      * Decides once per [visit] and, when asking, records the attempt before Play
-     * is called. A suppressed or failed card must not be retried on the next
-     * resume, and a recreated activity must not decide the same visit again.
+     * is called. Leaving during the six-second wait passes [stillInForeground]
+     * false and does not consume the day. A recreated activity must not decide
+     * the same visit again.
      */
     @Synchronized
-    internal fun consumeForeground(visit: Int, event: ReviewForeground): Boolean {
-        if (visit <= decidedVisit) return false
-        decidedVisit = visit
+    internal fun consumeForeground(visit: Int, event: ReviewForeground, stillInForeground: Boolean): Boolean {
+        val (next, decide) = visits.onSettled(visit, stillInForeground)
+        visits = next
+        if (!decide) return false
         val outcome = if (BuildConfig.DEBUG) {
             ReviewDebugGate.intercept(appContext, state, event)
                 ?: state.onForeground(event, BuildConfig.VERSION_NAME)
@@ -133,17 +135,7 @@ class ReviewCoordinator private constructor(context: Context) {
             return end.toLong()
         }
 
-        internal fun foregroundEvent(session: ShiftSession, nowMs: Double, blocker: ReviewBlocker): ReviewForeground {
-            val offWorkAtMs = offWorkAtMs(session, nowMs)
-            val now = nowMs.toLong()
-            val finished = offWorkAtMs?.takeIf { now >= it }?.let { ReviewPolicy.dayKey(it, session.recordsZone) }
-            return ReviewForeground(
-                nowMs = now,
-                todayKey = ReviewPolicy.dayKey(now, session.recordsZone),
-                offWorkAtMs = offWorkAtMs,
-                finishedShiftDayKey = finished,
-                blocker = blocker,
-            )
-        }
+        internal fun foregroundEvent(session: ShiftSession, nowMs: Double, blocker: ReviewBlocker): ReviewForeground =
+            ReviewPolicy.foreground(nowMs.toLong(), offWorkAtMs(session, nowMs), session.recordsZone, blocker)
     }
 }

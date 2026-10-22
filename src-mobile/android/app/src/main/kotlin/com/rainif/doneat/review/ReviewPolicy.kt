@@ -3,12 +3,49 @@ package com.rainif.doneat.review
 import java.time.Instant
 import java.time.ZoneId
 
-/** A full-screen layer that must not share the screen with the system review card. */
+/**
+ * A surface that must not share the screen with the system review card.
+ * Editors, the schedule editor, focus and other pages or dialogs defer the
+ * same way the paywall does: the open is not today's attempt.
+ */
 internal enum class ReviewBlocker {
     NONE,
     PAYWALL,
     LIFETIME_GIFT,
     WHATS_NEW,
+    EDITOR,
+    SCHEDULE,
+    FOCUS,
+    DIALOG,
+}
+
+/**
+ * Which returns to the foreground start a visit. A cold start still does:
+ * [backgrounded] begins set. Rotation does not, and neither does a start
+ * that never went through [onStop]. Leaving during the settle wait does not
+ * decide the visit.
+ */
+internal data class ReviewVisits(
+    val generation: Int = 0,
+    val backgrounded: Boolean = true,
+    val decided: Int = 0,
+) {
+    fun onStart(): ReviewVisits =
+        if (!backgrounded) this else copy(generation = generation + 1, backgrounded = false)
+
+    /** A configuration change recreates the activity without leaving the app. */
+    fun onStop(changingConfigurations: Boolean): ReviewVisits =
+        if (changingConfigurations || backgrounded) this else copy(backgrounded = true)
+
+    /**
+     * The settle wait ended. [stillInForeground] is false when the user left
+     * during those six seconds: the visit stays undecided and is not an attempt.
+     * The same visit may still be decided if it becomes foreground again.
+     */
+    fun onSettled(visit: Int, stillInForeground: Boolean): Pair<ReviewVisits, Boolean> {
+        if (!stillInForeground || visit != generation || visit <= decided) return this to false
+        return copy(decided = visit) to true
+    }
 }
 
 /**
@@ -51,9 +88,9 @@ internal data class ReviewPolicy(
             (lastRequestAtMs == 0L || nowMs - lastRequestAtMs >= REQUEST_GAP_MS)
 
     /**
-     * After today's off-work time, the first foreground that is actually free of
-     * the paywall, lifetime gift and What's New. A blocked open stays unattempted
-     * so the next qualifying foreground can ask. At most one attempt per day.
+     * After today's off-work time, the first foreground with nothing else on
+     * screen. A blocked open stays unattempted so the next qualifying
+     * foreground can ask. At most one attempt per records-calendar day.
      */
     fun onForeground(event: ReviewForeground, version: String): ReviewForegroundResult {
         val counted = countingFinishedShift(event)
@@ -90,8 +127,18 @@ internal data class ReviewPolicy(
         /** Never over the first frame of a visit, nor over the five-second clock-off celebration. */
         const val FOREGROUND_SETTLE_MS = 6_000L
 
-        /** As on iOS, completion uses Records' calendar, including overnight shifts. */
+        /** As on iOS, completion and "today" use Records' calendar, including overnight shifts. */
         fun dayKey(endAtMs: Long, recordsZone: ZoneId): String =
             Instant.ofEpochMilli(endAtMs).atZone(recordsZone).toLocalDate().toString()
+
+        /** [todayKey] is the records day of [nowMs]. The finished day is counted only once off-work is past. */
+        fun foreground(nowMs: Long, offWorkAtMs: Long?, recordsZone: ZoneId, blocker: ReviewBlocker = ReviewBlocker.NONE) =
+            ReviewForeground(
+                nowMs = nowMs,
+                todayKey = dayKey(nowMs, recordsZone),
+                offWorkAtMs = offWorkAtMs,
+                finishedShiftDayKey = offWorkAtMs?.takeIf { nowMs >= it }?.let { dayKey(it, recordsZone) },
+                blocker = blocker,
+            )
     }
 }

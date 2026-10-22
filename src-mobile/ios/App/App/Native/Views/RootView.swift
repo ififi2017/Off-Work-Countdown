@@ -306,15 +306,23 @@ struct OffWorkCountdownRootView: View {
             && !hasRootPresentation(excludingFocusActivity: true)
     }
 
-    /// Paywall, lifetime gift, What's New and the automatic life-setup offer
-    /// each postpone the review card until the next visit where none is up.
+    /// Paywall, lifetime gift, What's New, life setup, editors, the schedule,
+    /// focus and any other root sheet postpone the card until the next visit
+    /// where none of them is up.
     private var reviewBlocker: ReviewPromptBlocker {
         if runtime.preferences.onboardingComplete && scene.showsReleaseNotes { return .whatsNew }
         if scene.showsLifetimeOffer { return .lifetimeGift }
         if scene.paywallSheet != nil || paywallPresentationActive { return .paywall }
         if runtime.preferences.onboardingComplete && !runtime.plus.hasSeenIntro { return .paywall }
         if scene.lifeSetupOfferPresented || scene.lifeSetupEditorPresented || lifeSetupPresentationActive { return .lifeSetup }
-        return .none
+        let paths = scene.timerPath + scene.settingsPath + scene.focusPath
+        return ReviewSurface(
+            dayEditor: scene.dayEditor != nil,
+            scheduleEditor: paths.contains(.schedule) || paths.contains(.lunch),
+            focus: scene.selectedTab == .focus || scene.presentAddFocus || scene.hasFocusActivityPresentation
+                || paths.contains(.focus) || paths.contains(.focusPlan),
+            dialog: scene.timerSheet != nil || scene.pendingPlusAction != nil
+        ).blocker
     }
 
     private func hasRootPresentation(
@@ -385,9 +393,7 @@ private struct AppReviewPromptModifier: ViewModifier {
     let blocker: () -> ReviewPromptBlocker
     @Environment(\.requestReview) private var requestReview
     @Environment(\.scenePhase) private var scenePhase
-    @State private var visit = 0
-    @State private var decidedVisit = 0
-    @State private var leftForBackground = true
+    @State private var visits = ReviewVisits()
 
     private struct Settling: Equatable {
         let visit: Int
@@ -398,28 +404,33 @@ private struct AppReviewPromptModifier: ViewModifier {
         content
             // Control Center, Face ID and system alerts only make the scene
             // inactive; a new visit is a return from the background.
+            // A cold start is still a visit.
             .onChange(of: scenePhase, initial: true) { _, phase in
-                switch phase {
-                case .background:
-                    leftForBackground = true
-                case .active where leftForBackground:
-                    leftForBackground = false
-                    visit += 1
-                default:
-                    break
-                }
+                visits = visits.observed(Self.reviewPhase(phase))
             }
             // One decision per visit, after the opening surface and any
-            // clock-off celebration have settled. Dismissing a layer without
-            // leaving does not ask again; the next visit does.
-            .task(id: Settling(visit: visit, isActive: scenePhase == .active)) {
-                guard scenePhase == .active, visit > decidedVisit else { return }
+            // clock-off celebration have settled. Leaving during the wait
+            // cancels it. Dismissing a layer without leaving does not ask
+            // again; the next visit does.
+            .task(id: Settling(visit: visits.generation, isActive: scenePhase == .active)) {
+                let visit = visits.generation
+                guard scenePhase == .active, visit > visits.decided else { return }
                 try? await Task.sleep(for: AppReviewPromptState.foregroundSettle)
-                guard !Task.isCancelled else { return }
-                decidedVisit = visit
+                guard !Task.isCancelled, scenePhase == .active else { return }
+                let outcome = visits.settled(visit: visit, stillActive: true)
+                visits = outcome.visits
+                guard outcome.decide else { return }
                 if shifts.consumeReviewOnForeground(blocker: blocker()) {
                     requestReview()
                 }
             }
+    }
+
+    private static func reviewPhase(_ phase: ScenePhase) -> ReviewScenePhase {
+        switch phase {
+        case .active: .active
+        case .background: .background
+        default: .inactive
+        }
     }
 }

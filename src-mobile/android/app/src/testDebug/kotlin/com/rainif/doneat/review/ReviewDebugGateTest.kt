@@ -52,6 +52,20 @@ class ReviewDebugGateTest {
         assertEquals(due, asked.result.policy)
     }
 
+    @Test fun restoredSurfacesKeepAForcedOrIgnoredRequestWaiting() {
+        val fresh = ReviewPolicy()
+        val due = ReviewPolicy(completedDays = 2)
+        for (blocker in listOf(ReviewBlocker.EDITOR, ReviewBlocker.SCHEDULE, ReviewBlocker.FOCUS, ReviewBlocker.DIALOG)) {
+            val ignored = fresh.debugIntercept(ReviewDebugMode.IGNORE, event(blocker = blocker))
+            assertFalse(blocker.name, ignored.result.request)
+            assertNull(ignored.result.policy.lastAttemptDayKey)
+            val forced = due.debugIntercept(ReviewDebugMode.FORCE, event(blocker = blocker))
+            assertFalse(blocker.name, forced.result.request)
+            assertFalse(forced.consumeForce)
+            assertEquals(due, forced.result.policy)
+        }
+    }
+
     @Test fun aManualOptOutStillBlocksTheThresholdOverride() {
         val disabled = ReviewPolicy(completedDays = 2).disable()
         val result = disabled.debugIntercept(ReviewDebugMode.IGNORE, event())

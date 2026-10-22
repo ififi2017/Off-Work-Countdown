@@ -10,8 +10,9 @@ import Foundation
 /// - The first return from the background after that day's off-work time,
 ///   once the opening surface has settled, and at most one attempt per
 ///   records-calendar day
-/// - Not while the paywall, lifetime gift, What's New or the life-setup offer
-///   is on screen; that open is left unused for the next one that is clear
+/// - Not while the paywall, lifetime gift, What's New, life-setup offer,
+///   an editor, the schedule, focus, or another sheet is on screen; that
+///   open is left unused for the next one that is clear
 /// - At most once per app version (CFBundleShortVersionString)
 /// - At least 120 days between requests
 /// The system itself limits display to 3 times per year.
@@ -113,6 +114,64 @@ nonisolated enum ReviewPromptBlocker: Equatable, Sendable {
     case lifetimeGift
     case whatsNew
     case lifeSetup
+    case editor
+    case schedule
+    case focus
+    case dialog
+}
+
+nonisolated enum ReviewScenePhase: Equatable, Sendable {
+    case active, inactive, background
+}
+
+/// Which scene changes start a visit. A cold start still does (`backgrounded`
+/// begins set). Control Center only goes inactive and does not. Leaving during
+/// the settle wait does not decide the visit.
+nonisolated struct ReviewVisits: Equatable, Sendable {
+    var generation: Int = 0
+    var backgrounded: Bool = true
+    var decided: Int = 0
+
+    func observed(_ phase: ReviewScenePhase) -> ReviewVisits {
+        switch phase {
+        case .background:
+            var next = self
+            next.backgrounded = true
+            return next
+        case .active where backgrounded:
+            var next = self
+            next.backgrounded = false
+            next.generation += 1
+            return next
+        default:
+            return self
+        }
+    }
+
+    /// `stillActive` is false when the six-second wait was cancelled. The visit
+    /// stays undecided, so a later settle of the same visit may still ask.
+    func settled(visit: Int, stillActive: Bool) -> (visits: ReviewVisits, decide: Bool) {
+        guard stillActive, visit == generation, visit > decided else { return (self, false) }
+        var next = self
+        next.decided = visit
+        return (next, true)
+    }
+}
+
+/// Editors, the schedule, focus and other sheets. Same deferral as the paywall.
+nonisolated struct ReviewSurface: Equatable, Sendable {
+    var dayEditor = false
+    var scheduleEditor = false
+    var focus = false
+    var dialog = false
+
+    var blocker: ReviewPromptBlocker {
+        if dayEditor { return .editor }
+        if scheduleEditor { return .schedule }
+        if focus { return .focus }
+        if dialog { return .dialog }
+        return .none
+    }
 }
 
 nonisolated struct ReviewForeground: Equatable, Sendable {
@@ -121,6 +180,22 @@ nonisolated struct ReviewForeground: Equatable, Sendable {
     var offWorkAtMs: Double?
     var finishedShiftDayKey: String?
     var blocker: ReviewPromptBlocker
+
+    /// [todayKey] is the records day of [nowMs]. The finished day is set only once off-work is past.
+    static func capture(nowMs: Double, offWorkAtMs: Double?, calendar: Calendar, blocker: ReviewPromptBlocker) -> ReviewForeground {
+        let now = Date(timeIntervalSince1970: nowMs / 1_000)
+        let finished = offWorkAtMs.flatMap { end -> String? in
+            guard nowMs >= end else { return nil }
+            return RecordJSON.dayKey(Date(timeIntervalSince1970: end / 1_000), calendar: calendar)
+        }
+        return ReviewForeground(
+            nowMs: nowMs,
+            todayKey: RecordJSON.dayKey(now, calendar: calendar),
+            offWorkAtMs: offWorkAtMs,
+            finishedShiftDayKey: finished,
+            blocker: blocker
+        )
+    }
 }
 
 #if DEBUG

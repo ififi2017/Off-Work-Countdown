@@ -232,16 +232,10 @@ final class ShiftSessionStore {
     /// without consuming the day.
     func consumeReviewOnForeground(now: Date = .now, blocker: ReviewPromptBlocker) -> Bool {
         let nowMs = now.timeIntervalSince1970 * 1_000
-        let offWorkAtMs = reviewOffWorkAtMs(at: now)
-        let finishedDay = offWorkAtMs.flatMap { end -> String? in
-            guard nowMs >= end else { return nil }
-            return reviewDayKey(end)
-        }
-        let event = ReviewForeground(
+        let event = ReviewForeground.capture(
             nowMs: nowMs,
-            todayKey: RecordJSON.dayKey(now, calendar: preferences.recordsCalendar),
-            offWorkAtMs: offWorkAtMs,
-            finishedShiftDayKey: finishedDay,
+            offWorkAtMs: reviewOffWorkAtMs(at: now),
+            calendar: preferences.recordsCalendar,
             blocker: blocker
         )
 #if DEBUG
