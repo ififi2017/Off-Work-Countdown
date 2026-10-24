@@ -74,5 +74,187 @@ struct AppReviewPromptTests {
         let state = try JSONDecoder().decode(AppReviewPromptState.self, from: Data(legacy.utf8))
         #expect(state.phase == .readyForNextLaunch)
         #expect(!state.isDue(currentVersion: "3.2.1", nowMs: 2_000))
+        #expect(state.lastAttemptDayKey == nil)
+    }
+
+    private func open(
+        nowMs: Double = 10_000,
+        todayKey: String = "2026-10-21",
+        offWorkAtMs: Double? = 5_000,
+        finishedShiftDayKey: String? = nil,
+        blocker: ReviewPromptBlocker = .none
+    ) -> ReviewForeground {
+        ReviewForeground(
+            nowMs: nowMs, todayKey: todayKey, offWorkAtMs: offWorkAtMs,
+            finishedShiftDayKey: finishedShiftDayKey, blocker: blocker
+        )
+    }
+
+    @Test func twoFinishedDaysAreDueAndOneIsNot() {
+        #expect(AppReviewPromptState.minimumCompletedDays == 2)
+        var one = finished(days: 1)
+        let asked1 = one.onForeground(open(finishedShiftDayKey: "2026-10-01"), currentVersion: "3.2.1")
+        #expect(!asked1)
+        #expect(one.lastAttemptDayKey == nil)
+        #expect(one.completedDays == 1)
+        var two = finished(days: 2)
+        let asked2 = two.onForeground(open(finishedShiftDayKey: "2026-10-02"), currentVersion: "3.2.1")
+        #expect(asked2)
+        #expect(two.lastAttemptDayKey == "2026-10-21")
+        #expect(two.completedDays == 0)
+    }
+
+    @Test func theFirstForegroundAfterOffWorkAsksAndTheNextOpenThatDayDoesNot() {
+        var state = finished(days: 2)
+        let asked1 = state.onForeground(open(nowMs: 4_999, offWorkAtMs: 5_000, finishedShiftDayKey: nil), currentVersion: "3.2.1")
+        #expect(!asked1)
+        #expect(state.lastAttemptDayKey == nil)
+        let asked2 = state.onForeground(open(nowMs: 5_000, offWorkAtMs: 5_000), currentVersion: "3.2.1")
+        #expect(asked2)
+        let asked3 = state.onForeground(open(nowMs: 20_000), currentVersion: "3.2.1")
+        #expect(!asked3)
+    }
+
+    @Test func aMorningOpenDoesNotUseUpTheForegroundAfterOffWork() {
+        var state = finished(days: 2)
+        let asked1 = state.onForeground(open(nowMs: 1_000, offWorkAtMs: 8_000, finishedShiftDayKey: nil), currentVersion: "3.2.1")
+        #expect(!asked1)
+        #expect(state.lastAttemptDayKey == nil)
+        let asked2 = state.onForeground(open(nowMs: 8_000, offWorkAtMs: 8_000), currentVersion: "3.2.1")
+        #expect(asked2)
+    }
+
+    @Test func aBlockingLayerDefersWithoutConsumingTheDaysAttempt() {
+        for blocker in [ReviewPromptBlocker.paywall, .lifetimeGift, .whatsNew, .lifeSetup] {
+            var state = finished(days: 2)
+            let asked1 = state.onForeground(open(blocker: blocker), currentVersion: "3.2.1")
+            #expect(!asked1)
+            #expect(state.lastAttemptDayKey == nil)
+            #expect(state.completedDays == 2)
+            let asked2 = state.onForeground(open(nowMs: 12_000), currentVersion: "3.2.1")
+            #expect(asked2)
+        }
+    }
+
+    @Test func theFinishingOpenCountsThatDayBeforeTheThreshold() {
+        var one = finished(days: 1)
+        let asked1 = one.onForeground(open(todayKey: "2026-10-02", finishedShiftDayKey: "2026-10-02"), currentVersion: "3.2.1")
+        #expect(asked1)
+        var none = AppReviewPromptState()
+        let asked2 = none.onForeground(open(finishedShiftDayKey: "2026-10-01"), currentVersion: "3.2.1")
+        #expect(!asked2)
+        #expect(none.completedDays == 1)
+        #expect(none.lastAttemptDayKey == nil)
+    }
+
+    @Test func aRestDayDoesNotAsk() {
+        var state = finished(days: 2)
+        let asked1 = state.onForeground(open(offWorkAtMs: nil, finishedShiftDayKey: nil), currentVersion: "3.2.1")
+        #expect(!asked1)
+        #expect(state.lastAttemptDayKey == nil)
+    }
+
+#if DEBUG
+    @Test func ignoringThresholdsStillWaitsForOffWorkAndAClearOpen() {
+        var state = AppReviewPromptState()
+        let asked1 = state.onForegroundIgnoringThresholds(open(nowMs: 1_000, offWorkAtMs: 5_000, finishedShiftDayKey: nil))
+        #expect(!asked1)
+        #expect(state.lastAttemptDayKey == nil)
+        let asked2 = state.onForegroundIgnoringThresholds(open(blocker: .whatsNew))
+        #expect(!asked2)
+        #expect(state.lastTriggeredVersion == nil)
+        let asked3 = state.onForegroundIgnoringThresholds(open())
+        #expect(asked3)
+        #expect(state.lastAttemptDayKey == "2026-10-21")
+        #expect(state.lastTriggeredVersion == nil)
+        let asked4 = state.onForegroundIgnoringThresholds(open(nowMs: 11_000))
+        #expect(!asked4)
+    }
+
+    @Test func aManualOptOutStillBlocksTheThresholdOverride() {
+        var state = finished(days: 2)
+        state.disable()
+        let asked1 = state.onForegroundIgnoringThresholds(open())
+        #expect(!asked1)
+    }
+#endif
+
+    @Test func theSettleWaitIsSixSecondsAndAColdStartIsStillAVisit() {
+        #expect(AppReviewPromptState.foregroundSettle == .seconds(6))
+        let cold = ReviewVisits().observed(.active)
+        #expect(cold.generation == 1)
+        #expect(!cold.backgrounded)
+    }
+
+    @Test func onlyAReturnFromTheBackgroundStartsAnotherVisit() {
+        let cold = ReviewVisits().observed(.active)
+        #expect(cold.observed(.inactive) == cold)
+        #expect(cold.observed(.active) == cold)
+        let returned = cold.observed(.background).observed(.active)
+        #expect(returned.generation == 2)
+    }
+
+    @Test func leavingDuringTheSettleCancelsThatWait() {
+        let visit = ReviewVisits().observed(.active)
+        let cancelled = visit.settled(visit: visit.generation, stillActive: false)
+        #expect(!cancelled.decide)
+        #expect(cancelled.visits.decided == 0)
+        let ready = cancelled.visits.settled(visit: visit.generation, stillActive: true)
+        #expect(ready.decide)
+        #expect(ready.visits.decided == 1)
+        let again = ready.visits.settled(visit: 1, stillActive: true)
+        #expect(!again.decide)
+    }
+
+    @Test func restoredSurfacesDeferWithoutConsumingTheDaysAttempt() {
+        #expect(ReviewSurface().blocker == .none)
+        for surface in [
+            ReviewSurface(dayEditor: true),
+            ReviewSurface(scheduleEditor: true),
+            ReviewSurface(focus: true),
+            ReviewSurface(dialog: true),
+        ] {
+            var state = finished(days: 2)
+            let blocker = surface.blocker
+            #expect(blocker != .none)
+            let asked = state.onForeground(open(blocker: blocker), currentVersion: "3.2.1")
+            #expect(!asked)
+            #expect(state.lastAttemptDayKey == nil)
+            #expect(state.completedDays == 2)
+        }
+    }
+
+    @Test func anOvernightShiftUsesTheRecordsDayAndWaitsUntilThatOffWorkInstant() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+        func ms(_ day: Int, _ hour: Int) -> Double {
+            let date = calendar.date(from: DateComponents(year: 2026, month: 10, day: day, hour: hour))!
+            return date.timeIntervalSince1970 * 1_000
+        }
+        let off = ms(22, 6)
+        let evening = ReviewForeground.capture(nowMs: ms(21, 23), offWorkAtMs: off, calendar: calendar, blocker: .none)
+        #expect(evening.todayKey == "2026-10-21")
+        #expect(evening.finishedShiftDayKey == nil)
+        let afterMidnight = ReviewForeground.capture(nowMs: ms(22, 1), offWorkAtMs: off, calendar: calendar, blocker: .none)
+        #expect(afterMidnight.todayKey == "2026-10-22")
+        #expect(afterMidnight.finishedShiftDayKey == nil)
+
+        var state = finished(days: 2)
+        let asked1 = state.onForeground(evening, currentVersion: "3.2.1")
+        #expect(!asked1)
+        #expect(state.lastAttemptDayKey == nil)
+        let asked2 = state.onForeground(afterMidnight, currentVersion: "3.2.1")
+        #expect(!asked2)
+        #expect(state.lastAttemptDayKey == nil)
+
+        let clockOff = ReviewForeground.capture(nowMs: off, offWorkAtMs: off, calendar: calendar, blocker: .none)
+        #expect(clockOff.todayKey == "2026-10-22")
+        #expect(clockOff.finishedShiftDayKey == "2026-10-22")
+        let asked3 = state.onForeground(clockOff, currentVersion: "3.2.1")
+        #expect(asked3)
+        #expect(state.lastAttemptDayKey == "2026-10-22")
+        let later = ReviewForeground.capture(nowMs: off + 60_000, offWorkAtMs: off, calendar: calendar, blocker: .none)
+        let asked4 = state.onForeground(later, currentVersion: "3.2.1")
+        #expect(!asked4)
     }
 }

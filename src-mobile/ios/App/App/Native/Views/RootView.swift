@@ -167,10 +167,7 @@ struct OffWorkCountdownRootView: View {
             hasBlockingPresentation: hasRootPresentation(excludingLifeSetup: true),
             presentationActive: $lifeSetupPresentationActive
         ))
-        .modifier(AppReviewPromptModifier(
-            shifts: runtime.shifts, isBlocked: hasRootPresentation()
-                || lifeSetupPresentationActive || scenePhase != .active
-        ))
+        .modifier(AppReviewPromptModifier(shifts: runtime.shifts, blocker: { reviewBlocker }))
         .fullScreenCover(isPresented: Binding(
             get: { runtime.preferences.onboardingComplete && scene.showsReleaseNotes },
             set: { if !$0 { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) } }
@@ -309,6 +306,25 @@ struct OffWorkCountdownRootView: View {
             && !hasRootPresentation(excludingFocusActivity: true)
     }
 
+    /// Paywall, lifetime gift, What's New, life setup, editors, the schedule,
+    /// focus and any other root sheet postpone the card until the next visit
+    /// where none of them is up.
+    private var reviewBlocker: ReviewPromptBlocker {
+        if runtime.preferences.onboardingComplete && scene.showsReleaseNotes { return .whatsNew }
+        if scene.showsLifetimeOffer { return .lifetimeGift }
+        if scene.paywallSheet != nil || paywallPresentationActive { return .paywall }
+        if runtime.preferences.onboardingComplete && !runtime.plus.hasSeenIntro { return .paywall }
+        if scene.lifeSetupOfferPresented || scene.lifeSetupEditorPresented || lifeSetupPresentationActive { return .lifeSetup }
+        let paths = scene.timerPath + scene.settingsPath + scene.focusPath
+        return ReviewSurface(
+            dayEditor: scene.dayEditor != nil,
+            scheduleEditor: paths.contains(.schedule) || paths.contains(.lunch),
+            focus: scene.selectedTab == .focus || scene.presentAddFocus || scene.hasFocusActivityPresentation
+                || paths.contains(.focus) || paths.contains(.focusPlan),
+            dialog: scene.timerSheet != nil || scene.pendingPlusAction != nil
+        ).blocker
+    }
+
     private func hasRootPresentation(
         excludingLifeSetup: Bool = false, excludingFocusActivity: Bool = false
     ) -> Bool {
@@ -373,35 +389,48 @@ private struct AdaptivePresentationSizing<Wide: PresentationSizing, Compact: Pre
 
 private struct AppReviewPromptModifier: ViewModifier {
     let shifts: ShiftSessionStore
-    let isBlocked: Bool
+    /// Read once the visit has settled, so the layer up at that moment decides.
+    let blocker: () -> ReviewPromptBlocker
     @Environment(\.requestReview) private var requestReview
-    @State private var handledOffer = 0
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var visits = ReviewVisits()
 
-    private struct Trigger: Equatable {
-        let offer: Int
-        let isBlocked: Bool
+    private struct Settling: Equatable {
+        let visit: Int
+        let isActive: Bool
     }
 
     func body(content: Content) -> some View {
         content
-        // Offered by the clock-off celebration, and asked only once its
-        // five-second animation has finished: the sheet follows the moment
-        // instead of covering it. If anything covers the screen or the app
-        // leaves the foreground first, that moment has passed and the offer
-        // is dropped rather than raised later out of context.
-        .task(id: Trigger(offer: shifts.reviewRequestOffer, isBlocked: isBlocked)) {
-            let offer = shifts.reviewRequestOffer
-            guard offer > handledOffer else { return }
-            guard !isBlocked else {
-                handledOffer = offer
-                return
+            // Control Center, Face ID and system alerts only make the scene
+            // inactive; a new visit is a return from the background.
+            // A cold start is still a visit.
+            .onChange(of: scenePhase, initial: true) { _, phase in
+                visits = visits.observed(Self.reviewPhase(phase))
             }
-            try? await Task.sleep(for: .seconds(6))
-            guard !Task.isCancelled else { return }
-            handledOffer = offer
-            guard shifts.claimReviewRequest() else { return }
-            requestReview()
-            shifts.recordReviewTriggered()
+            // One decision per visit, after the opening surface and any
+            // clock-off celebration have settled. Leaving during the wait
+            // cancels it. Dismissing a layer without leaving does not ask
+            // again; the next visit does.
+            .task(id: Settling(visit: visits.generation, isActive: scenePhase == .active)) {
+                let visit = visits.generation
+                guard scenePhase == .active, visit > visits.decided else { return }
+                try? await Task.sleep(for: AppReviewPromptState.foregroundSettle)
+                guard !Task.isCancelled, scenePhase == .active else { return }
+                let outcome = visits.settled(visit: visit, stillActive: true)
+                visits = outcome.visits
+                guard outcome.decide else { return }
+                if shifts.consumeReviewOnForeground(blocker: blocker()) {
+                    requestReview()
+                }
+            }
+    }
+
+    private static func reviewPhase(_ phase: ScenePhase) -> ReviewScenePhase {
+        switch phase {
+        case .active: .active
+        case .background: .background
+        default: .inactive
         }
     }
 }

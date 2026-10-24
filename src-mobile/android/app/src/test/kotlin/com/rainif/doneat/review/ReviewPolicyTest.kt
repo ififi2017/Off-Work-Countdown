@@ -1,9 +1,11 @@
 package com.rainif.doneat.review
 
+import com.rainif.doneat.ui.Route
 import java.time.Instant
 import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -11,10 +13,18 @@ class ReviewPolicyTest {
     private fun completedDays(count: Int, initial: ReviewPolicy = ReviewPolicy()): ReviewPolicy =
         (1..count).fold(initial) { state, day -> state.completed("2026-10-${day.toString().padStart(2, '0')}") }
 
-    @Test fun aSingleTrialDayAndTwoDaysAreNotYetDue() {
+    private fun foreground(
+        nowMs: Long = 10_000,
+        todayKey: String = "2026-10-21",
+        offWorkAtMs: Long? = 5_000,
+        finishedShiftDayKey: String? = null,
+        blocker: ReviewBlocker = ReviewBlocker.NONE,
+    ) = ReviewForeground(nowMs, todayKey, offWorkAtMs, finishedShiftDayKey, blocker)
+
+    @Test fun oneFinishedDayIsNotYetDueAndTwoAre() {
         assertFalse(completedDays(1).isDue("3.2.1", 1_000))
-        assertFalse(completedDays(2).isDue("3.2.1", 1_000))
-        assertTrue(completedDays(3).isDue("3.2.1", 1_000))
+        assertTrue(completedDays(2).isDue("3.2.1", 1_000))
+        assertEquals(2, ReviewPolicy.MINIMUM_COMPLETED_DAYS)
     }
 
     @Test fun returningToCompletedSurfaceCountsTheSameDayOnce() {
@@ -25,12 +35,12 @@ class ReviewPolicyTest {
     }
 
     @Test fun continuingWorkRevokesThatDayAndLaterCompletionCountsAgain() {
-        val revoked = completedDays(3).revoked("2026-10-03")
-        assertEquals(2, revoked.completedDays)
+        val revoked = completedDays(2).revoked("2026-10-02")
+        assertEquals(1, revoked.completedDays)
         assertFalse(revoked.isDue("3.2.1", 1_000))
-        assertEquals(revoked, revoked.revoked("2026-10-03"))
-        assertEquals(3, revoked.completed("2026-10-03").completedDays)
         assertEquals(revoked, revoked.revoked("2026-10-02"))
+        assertEquals(2, revoked.completed("2026-10-02").completedDays)
+        assertEquals(revoked, revoked.revoked("2026-10-01"))
     }
 
     @Test fun suppressedOrFailedPlayRequestStartsCountingAgain() {
@@ -55,9 +65,9 @@ class ReviewPolicyTest {
     }
 
     @Test fun manualReviewPermanentlyDisablesAutomaticRequests() {
-        val disabled = completedDays(3).disable()
+        val disabled = completedDays(2).disable()
         assertFalse(disabled.isDue("3.2.1", 1_000))
-        assertFalse(disabled.canOffer(1_000, "3.2.2", 1_000))
+        assertFalse(disabled.onForeground(foreground(), "3.2.2").request)
         assertEquals(disabled, disabled.completed("2026-10-04"))
     }
 
@@ -72,22 +82,66 @@ class ReviewPolicyTest {
         assertFalse(completedDays(3, legacy.disable()).isDue("3.2.1", Long.MAX_VALUE))
     }
 
-    @Test fun onlyTheRealClockOffWindowCanOfferFollowingACelebration() {
-        val state = completedDays(3)
-        val end = 1_000_000L
-        val window = ReviewPolicy.COMPLETION_WINDOW_MS
-        assertTrue(state.canOffer(end, "3.2.1", end - window))
-        assertTrue(state.canOffer(end, "3.2.1", end + window))
-        assertFalse(state.canOffer(end, "3.2.1", end - window - 1))
-        assertFalse(state.canOffer(end, "3.2.1", end + window + 1))
-        assertFalse(completedDays(2).canOffer(end, "3.2.1", end))
+    @Test fun theFirstForegroundAfterOffWorkRequestsAndASecondOpenTheSameDayDoesNot() {
+        val due = completedDays(2)
+        val before = foreground(nowMs = 4_999, offWorkAtMs = 5_000, finishedShiftDayKey = null)
+        val tooEarly = due.onForeground(before, "3.2.1")
+        assertFalse(tooEarly.request)
+        assertEquals(due, tooEarly.policy)
+
+        val opened = tooEarly.policy.onForeground(foreground(), "3.2.1")
+        assertTrue(opened.request)
+        assertEquals("2026-10-21", opened.policy.lastAttemptDayKey)
+        assertEquals("3.2.1", opened.policy.lastRequestVersion)
+        assertEquals(0, opened.policy.completedDays)
+
+        val again = opened.policy.onForeground(foreground(nowMs = 20_000), "3.2.1")
+        assertFalse(again.request)
+        assertEquals(opened.policy, again.policy)
     }
 
-    @Test fun celebrationMustFinishBeforeRequesting() {
-        val offer = ReviewOffer(1, 1_000)
-        assertFalse(offer.hasSettled(999))
-        assertFalse(offer.hasSettled(6_999))
-        assertTrue(offer.hasSettled(7_000))
+    @Test fun anOpenBeforeOffWorkDoesNotUseUpTheDaysFirstForegroundAfterIt() {
+        val due = completedDays(2)
+        val morning = due.onForeground(
+            foreground(nowMs = 1_000, offWorkAtMs = 8_000, finishedShiftDayKey = null),
+            "3.2.1",
+        )
+        assertFalse(morning.request)
+        assertNull(morning.policy.lastAttemptDayKey)
+        assertTrue(morning.policy.onForeground(foreground(nowMs = 8_000, offWorkAtMs = 8_000), "3.2.1").request)
+    }
+
+    @Test fun aBlockingLayerDefersWithoutConsumingTheDaysAttempt() {
+        val due = completedDays(2)
+        for (blocker in listOf(ReviewBlocker.PAYWALL, ReviewBlocker.LIFETIME_GIFT, ReviewBlocker.WHATS_NEW)) {
+            val blocked = due.onForeground(foreground(blocker = blocker), "3.2.1")
+            assertFalse(blocker.name, blocked.request)
+            assertNull(blocked.policy.lastAttemptDayKey)
+            assertEquals(2, blocked.policy.completedDays)
+            val nextOpen = blocked.policy.onForeground(foreground(nowMs = 12_000), "3.2.1")
+            assertTrue(blocker.name, nextOpen.request)
+        }
+    }
+
+    @Test fun theFinishingOpenCountsThatDayBeforeCheckingTheThreshold() {
+        val oneDay = completedDays(1)
+        val waiting = oneDay.onForeground(
+            foreground(finishedShiftDayKey = "2026-10-02", todayKey = "2026-10-02"),
+            "3.2.1",
+        )
+        assertTrue(waiting.request)
+        assertEquals(0, waiting.policy.completedDays)
+        val stillOne = ReviewPolicy().onForeground(foreground(finishedShiftDayKey = "2026-10-01"), "3.2.1")
+        assertFalse(stillOne.request)
+        assertEquals(1, stillOne.policy.completedDays)
+        assertNull(stillOne.policy.lastAttemptDayKey)
+    }
+
+    @Test fun aRestDayHasNoOffWorkMomentSoItDoesNotAsk() {
+        val due = completedDays(2)
+        val rest = due.onForeground(foreground(offWorkAtMs = null, finishedShiftDayKey = null), "3.2.1")
+        assertFalse(rest.request)
+        assertNull(rest.policy.lastAttemptDayKey)
     }
 
     @Test fun overnightCompletionUsesRecordsCalendarRatherThanStartDayOrDeviceZone() {
@@ -100,5 +154,84 @@ class ReviewPolicyTest {
         val state = ReviewPolicy().completed(ReviewPolicy.dayKey(beforeMidnight, zone))
             .completed(ReviewPolicy.dayKey(afterMidnight, zone))
         assertEquals(2, state.completedDays)
+    }
+
+    @Test fun theSettleWaitIsSixSecondsAndAColdStartIsStillAVisit() {
+        assertEquals(6_000L, ReviewPolicy.FOREGROUND_SETTLE_MS)
+        val cold = ReviewVisits().onStart()
+        assertEquals(1, cold.generation)
+        assertFalse(cold.backgrounded)
+    }
+
+    @Test fun onlyAReturnFromTheBackgroundStartsAnotherVisit() {
+        val cold = ReviewVisits().onStart()
+        assertEquals(cold, cold.onStart())
+        assertEquals(1, cold.onStop(changingConfigurations = true).onStart().generation)
+        assertEquals(2, cold.onStop(changingConfigurations = false).onStart().generation)
+    }
+
+    @Test fun leavingDuringTheSettleCancelsThatWait() {
+        val visit = ReviewVisits().onStart()
+        val (cancelled, ask) = visit.onSettled(visit.generation, stillInForeground = false)
+        assertFalse(ask)
+        assertEquals(0, cancelled.decided)
+        val (ready, decide) = cancelled.onSettled(visit.generation, stillInForeground = true)
+        assertTrue(decide)
+        assertEquals(1, ready.decided)
+        val (again, second) = ready.onSettled(1, true)
+        assertFalse(second)
+        assertEquals(ready, again)
+    }
+
+    @Test fun anOvernightShiftUsesTheRecordsDayAndWaitsUntilThatOffWorkInstant() {
+        val zone = ZoneId.of("Asia/Shanghai")
+        val offWork = Instant.parse("2026-10-21T22:00:00Z").toEpochMilli()
+        val evening = ReviewPolicy.foreground(Instant.parse("2026-10-21T15:00:00Z").toEpochMilli(), offWork, zone)
+        assertEquals("2026-10-21", evening.todayKey)
+        assertNull(evening.finishedShiftDayKey)
+        val afterMidnight = ReviewPolicy.foreground(Instant.parse("2026-10-21T17:00:00Z").toEpochMilli(), offWork, zone)
+        assertEquals("2026-10-22", afterMidnight.todayKey)
+        assertNull(afterMidnight.finishedShiftDayKey)
+
+        val due = completedDays(2)
+        val before = due.onForeground(evening, "3.2.1")
+        assertFalse(before.request)
+        assertNull(before.policy.lastAttemptDayKey)
+        val stillBefore = before.policy.onForeground(afterMidnight, "3.2.1")
+        assertFalse(stillBefore.request)
+        assertNull(stillBefore.policy.lastAttemptDayKey)
+
+        val clockOff = ReviewPolicy.foreground(offWork, offWork, zone)
+        assertEquals("2026-10-22", clockOff.todayKey)
+        assertEquals("2026-10-22", clockOff.finishedShiftDayKey)
+        val asked = stillBefore.policy.onForeground(clockOff, "3.2.1")
+        assertTrue(asked.request)
+        assertEquals("2026-10-22", asked.policy.lastAttemptDayKey)
+        val later = asked.policy.onForeground(ReviewPolicy.foreground(offWork + 60_000, offWork, zone), "3.2.1")
+        assertFalse(later.request)
+    }
+
+    @Test fun restoredSurfacesDeferWithoutConsumingTheDaysAttempt() {
+        val clear = reviewSurfaceBlocker(true, false, Route.TimerHome, timerDialog = false, landscapeClock = false)
+        assertEquals(ReviewBlocker.NONE, clear)
+        val surfaces = listOf(
+            reviewSurfaceBlocker(true, false, Route.TimerHome, timerDialog = true, landscapeClock = false) to ReviewBlocker.DIALOG,
+            reviewSurfaceBlocker(true, false, Route.TimerHome, timerDialog = false, landscapeClock = true) to ReviewBlocker.DIALOG,
+            reviewSurfaceBlocker(false, false, Route.Schedule, false, false) to ReviewBlocker.SCHEDULE,
+            reviewSurfaceBlocker(false, false, Route.ShiftTypeEdit("early", true), false, false) to ReviewBlocker.SCHEDULE,
+            reviewSurfaceBlocker(false, false, Route.RecordsDayEdit("2026-10-21"), false, false) to ReviewBlocker.EDITOR,
+            reviewSurfaceBlocker(false, false, Route.Salary, false, false) to ReviewBlocker.EDITOR,
+            reviewSurfaceBlocker(false, true, Route.FocusHome, false, false) to ReviewBlocker.FOCUS,
+            reviewSurfaceBlocker(false, false, Route.TimerShare, false, false) to ReviewBlocker.DIALOG,
+            reviewSurfaceBlocker(false, false, Route.SettingsHome, false, false) to ReviewBlocker.DIALOG,
+        )
+        val due = completedDays(2)
+        for ((blocker, expected) in surfaces) {
+            assertEquals(expected.name, expected, blocker)
+            val blocked = due.onForeground(foreground(blocker = blocker), "3.2.1")
+            assertFalse(blocker.name, blocked.request)
+            assertNull(blocked.policy.lastAttemptDayKey)
+            assertEquals(2, blocked.policy.completedDays)
+        }
     }
 }

@@ -61,6 +61,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -168,7 +169,13 @@ fun PlusIntroScreen(graph: AppGraph) {
         PlusScreen(graph, onBack = ::finish, dismissLabel = R.string.close)
         if (checkingOffer) CircularProgressIndicator(Modifier.align(Alignment.Center).size(DoneAtSpacing.xl))
     }
-    if (showsOffer) LifetimeOfferSheet(graph.plus, onDismiss = { scope.launch { graph.plus.markIntroSeen() } })
+    if (showsOffer) {
+        DisposableEffect(graph) {
+            graph.reviewLifetimeGift.value = true
+            onDispose { graph.reviewLifetimeGift.value = false }
+        }
+        LifetimeOfferSheet(graph.plus, onDismiss = { scope.launch { graph.plus.markIntroSeen() } })
+    }
 }
 
 /** Shared with the Debug gallery so visual checks exercise the complete purchase page. */
