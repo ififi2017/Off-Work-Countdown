@@ -64,14 +64,19 @@ nonisolated enum WatchDisplayProjection {
         }
     }
 
-    /// Dates at which a cached package can change without a new phone delivery.
-    /// Minute progress samples cover the first hour. Later entries stay hourly
-    /// so the Watch's render archive remains bounded; exact shift, break and
-    /// day boundaries are always added separately.
+    /// Progress moves in steps of 100 / `progressStepCount` percent. The
+    /// complication shows the last step reached, so its ring and bar only
+    /// change at the instants `progressStepDates` lists.
+    static let progressStepCount = 20
+
+    /// Dates at which a cached package can change without a new phone delivery:
+    /// exact shift, break and day boundaries, and each progress step. Remaining
+    /// time counts down on its own in the view, so no per-minute entries are
+    /// needed. WidgetKit renders every entry ahead of time, and the old minute
+    /// and hourly samples pushed the Watch extension past its CPU limit.
     static func timelineDates(
         for package: WatchSnapshotPackageV1?,
-        from now: Date,
-        minuteCount: Int = 60
+        from now: Date
     ) -> [Date] {
         let nowMs = Int64((now.timeIntervalSince1970 * 1_000).rounded(.towardZero))
         guard let package, package.isValid else { return [now] }
@@ -84,23 +89,14 @@ nonisolated enum WatchDisplayProjection {
                 milliseconds.insert(Int64(midnight))
                 midnight = zone.addCivilDaysMs(midnight, 1)
             }
-            // WidgetKit renders every entry, not just the currently visible
-            // one. Keep the long-range coverage hourly so minute updates in
-            // the first hour do not recreate the old 250-view archive.
-            for offset in 1...48 {
-                let instant = nowMs + Int64(offset) * 3_600_000
-                if instant <= end { milliseconds.insert(instant) }
-            }
-            if minuteCount > 0 {
-                for offset in 1...min(minuteCount, 120) {
-                    milliseconds.insert(nowMs + Int64(offset) * 60_000)
-                }
-            }
             var cursor = nowMs
             // At most a handful of shifts fit in 48 hours. Keep a hard bound
             // even for a malformed future rule, and include every exact edge.
             for _ in 0..<64 {
                 let content = schedule.content(at: cursor)
+                if let shift = content.shift {
+                    milliseconds.formUnion(progressStepDates(for: shift).filter { $0 > nowMs && $0 <= end })
+                }
                 var edges = content.shift?.segments.flatMap { [$0.startAtMs, $0.endAtMs] } ?? []
                 edges += content.shift?.transitions.map(\.atMs) ?? []
                 if let next = content.nextShift { edges.append(next.startAtMs) }
@@ -112,12 +108,6 @@ nonisolated enum WatchDisplayProjection {
             return milliseconds.sorted().map { Date(timeIntervalSince1970: Double($0) / 1_000) }
         }
 
-        if minuteCount > 0 {
-            for offset in 1...min(minuteCount, 120) {
-                let (value, overflow) = nowMs.addingReportingOverflow(Int64(offset) * 60_000)
-                if !overflow, value < package.expiresAtMs { milliseconds.insert(value) }
-            }
-        }
         milliseconds.insert(package.expiresAtMs)
         if let accessEnd = package.access.validUntilMs { milliseconds.insert(accessEnd) }
         if let content = package.content {
@@ -125,6 +115,7 @@ nonisolated enum WatchDisplayProjection {
                 milliseconds.formUnion(shift.segments.flatMap { [$0.startAtMs, $0.endAtMs] })
                 milliseconds.formUnion(shift.transitions.map(\.atMs))
                 if let finished = shift.finishedAtMs { milliseconds.insert(finished) }
+                milliseconds.formUnion(progressStepDates(for: shift).filter { $0 < package.expiresAtMs })
             }
             if let next = content.nextShift {
                 milliseconds.insert(next.startAtMs)
@@ -135,6 +126,32 @@ nonisolated enum WatchDisplayProjection {
             .filter { $0 >= nowMs && $0 <= WatchSnapshotContract.maximumJSONTimestamp }
             .sorted()
             .map { Date(timeIntervalSince1970: Double($0) / 1_000) }
+    }
+
+    /// The instants at which a running shift's effective progress first reaches
+    /// each step. Breaks do not count, matching `WatchShiftEvaluator`, so a step
+    /// that falls in a break lands where the next segment begins.
+    static func progressStepDates(for shift: WatchShiftProjectionV1) -> [Int64] {
+        guard shift.isRunning, shift.finishedAtMs == nil,
+              shift.segments.allSatisfy({ $0.startAtMs < $0.endAtMs }) else { return [] }
+        let total = shift.segments.reduce(Int64(0)) { $0 + ($1.endAtMs - $1.startAtMs) }
+        let steps = Int64(progressStepCount)
+        guard total > 0 else { return [] }
+        var dates: [Int64] = []
+        var step: Int64 = 1
+        var elapsedBefore: Int64 = 0
+        for segment in shift.segments {
+            let duration = segment.endAtMs - segment.startAtMs
+            // Round up so an entry never shows a step before it is reached.
+            while step < steps {
+                let target = (total * step + steps - 1) / steps
+                guard target <= elapsedBefore + duration else { break }
+                dates.append(segment.startAtMs + target - elapsedBefore)
+                step += 1
+            }
+            elapsedBefore += duration
+        }
+        return dates
     }
 
     /// When the complication is worth surfacing in the Smart Stack: the shift the
@@ -202,6 +219,14 @@ nonisolated enum WatchDisplayFormat {
         let units: Set<Duration.UnitsFormatStyle.Unit> = minutes >= 60 ? [.hours, .minutes] : [.minutes]
         return Duration.seconds(minutes * 60)
             .formatted(.units(allowed: units, width: .narrow).locale(locale(presentation)))
+    }
+
+    /// The last progress step reached, so the complication's ring and bar
+    /// stay put between the timeline entries `progressStepDates` produces.
+    static func steppedProgress(_ progress: Double) -> Double {
+        let step = 100 / Double(WatchDisplayProjection.progressStepCount)
+        // The small allowance absorbs rounding at an entry placed exactly on a step.
+        return min(100, max(0, ((progress + 1e-6) / step).rounded(.down) * step))
     }
 
     /// "60%" with the language's own digits and percent placement.

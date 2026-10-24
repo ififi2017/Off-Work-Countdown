@@ -48,8 +48,8 @@ private struct DoneAtWatchProvider: TimelineProvider {
             }
             let cache = await WatchSnapshotCache.open(fileURL: fileURL)
             let package = await cache.currentPackage()
-            // Keep the render archive bounded while preserving minute progress
-            // for the first hour and every exact rule and expiry boundary.
+            // WidgetKit renders every entry up front. Only boundaries and 5%
+            // progress steps get one; the countdown clocks run by themselves.
             let entries = WatchDisplayProjection.timelineDates(for: package, from: now).map {
                 let nowMs = Int64($0.timeIntervalSince1970 * 1_000)
                 return DoneAtWatchEntry(date: $0, display: WatchDisplayProjection.project(package, nowMs: nowMs),
@@ -130,10 +130,11 @@ private struct DoneAtWatchWidgetView: View {
         let presentation = value.presentation
         if let progress = value.progress, let phase = value.phase, phase != .before {
             ZStack {
-                WatchSegmentRing(weights: weights, progress: progress / 100, lineWidth: 4.5)
+                WatchSegmentRing(weights: weights, progress: WatchDisplayFormat.steppedProgress(progress) / 100,
+                                 lineWidth: 4.5)
                 VStack(spacing: 0) {
-                    if phase == .working || phase == .overtime, let remaining = value.remainingMs {
-                        Text(verbatim: WatchDisplayFormat.clock(remaining, showsSeconds: false, presentation))
+                    if let countdown = countdown(value) {
+                        countdown
                             .font(.system(size: 14, weight: .bold, design: .rounded))
                             .monospacedDigit()
                             .minimumScaleFactor(0.6)
@@ -152,7 +153,7 @@ private struct DoneAtWatchWidgetView: View {
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(WatchDisplayFormat.label(for: phase, presentation))
-            .accessibilityValue(accessibilitySummary(value))
+            .accessibilityValue(accessibilitySummary(value, progress: WatchDisplayFormat.steppedProgress(progress)))
         } else {
             let notConfigured = value.scheduleState == .notConfigured
             Image(systemName: notConfigured ? "calendar.badge.exclamationmark" : "moon.zzz")
@@ -177,8 +178,8 @@ private struct DoneAtWatchWidgetView: View {
                     .widgetAccentable()
                 if phase == .finished || phase == .resting, let footnote {
                     headline(footnote)
-                } else if phase == .working || phase == .overtime, let end = timerEnd(value) {
-                    Text(timerInterval: min(entry.date.addingTimeInterval(-3_600), end)...end, countsDown: true)
+                } else if let countdown = countdown(value) {
+                    countdown
                         .font(.headline)
                         .monospacedDigit()
                         .lineLimit(1)
@@ -189,7 +190,8 @@ private struct DoneAtWatchWidgetView: View {
                 }
                 if let progress = value.progress {
                     HStack(spacing: 6) {
-                        segmentBar(progress: progress / 100, finished: phase == .finished)
+                        segmentBar(progress: WatchDisplayFormat.steppedProgress(progress) / 100,
+                                   finished: phase == .finished)
                         if phase != .finished, let footnote {
                             Text(footnote)
                                 .font(.caption2)
@@ -232,6 +234,13 @@ private struct DoneAtWatchWidgetView: View {
         return entry.date.addingTimeInterval(Double(remaining) / 1_000)
     }
 
+    /// A system countdown while work runs. Entries only come at boundaries and
+    /// 5% steps, so a clock formatted per entry would fall up to a step behind.
+    private func countdown(_ value: WatchDisplayContent) -> Text? {
+        guard value.phase == .working || value.phase == .overtime, let end = timerEnd(value) else { return nil }
+        return Text(timerInterval: min(entry.date.addingTimeInterval(-3_600), end)...end, countsDown: true)
+    }
+
     private func segmentBar(progress: Double, finished: Bool) -> some View {
         WatchSegmentBar(segments: WatchSegmentBar.fills(weights: weights, progress: progress),
                         tint: finished ? .secondary : .orange, gap: 3)
@@ -243,8 +252,8 @@ private struct DoneAtWatchWidgetView: View {
         let presentation = value.presentation
         if let progress = value.progress, let phase = value.phase, phase != .before {
             Group {
-                if phase == .working || phase == .overtime, let remaining = value.remainingMs {
-                    Text(verbatim: WatchDisplayFormat.clock(remaining, showsSeconds: false, presentation))
+                if let countdown = countdown(value) {
+                    countdown
                 } else {
                     Image(systemName: WatchDisplayFormat.symbol(for: phase))
                 }
@@ -252,7 +261,7 @@ private struct DoneAtWatchWidgetView: View {
             .font(.system(size: 15, weight: .bold, design: .rounded))
             .widgetCurvesContent()
             .widgetLabel {
-                Gauge(value: min(100, max(0, progress)), in: 0...100) { EmptyView() }
+                Gauge(value: WatchDisplayFormat.steppedProgress(progress), in: 0...100) { EmptyView() }
                     .tint(.orange)
             }
             .accessibilityLabel(WatchDisplayFormat.label(for: phase, presentation))
@@ -268,8 +277,8 @@ private struct DoneAtWatchWidgetView: View {
         let presentation = value.presentation
         if let footnote = WatchDisplayFormat.footnote(for: value) {
             let time = text(footnote.key, presentation, ["time": WatchDisplayFormat.footnoteTime(footnote, presentation)])
-            if value.phase == .working, let remaining = value.remainingMs {
-                Text(verbatim: "\(time) · \(WatchDisplayFormat.shortDuration(remaining, presentation))")
+            if value.phase == .working, let countdown = countdown(value) {
+                Text("\(time) · \(countdown)")
             } else {
                 Text(verbatim: time)
             }
@@ -307,17 +316,23 @@ private struct DoneAtWatchWidgetView: View {
         }
     }
 
-    private func accessibilitySummary(_ value: WatchDisplayContent) -> String {
+    /// Read with the live countdown, so VoiceOver is as current as the face.
+    private func accessibilitySummary(_ value: WatchDisplayContent, progress: Double) -> Text {
         let presentation = value.presentation
-        var parts: [String] = []
-        if value.phase != .finished, let remaining = value.remainingMs {
-            parts.append(text("watchTimeLeft", presentation, ["duration": WatchDisplayFormat.shortDuration(remaining, presentation)]))
+        var parts: [Text] = []
+        if let countdown = countdown(value) {
+            let template = WatchLocalizations.text("watchTimeLeft", localeIdentifier: presentation.localeIdentifier)
+                .components(separatedBy: "{{duration}}")
+            parts.append(template.count == 2 ? Text("\(template[0])\(countdown)\(template[1])") : countdown)
+        } else if value.phase != .finished, let remaining = value.remainingMs {
+            parts.append(Text(text("watchTimeLeft", presentation,
+                                   ["duration": WatchDisplayFormat.shortDuration(remaining, presentation)])))
         }
-        if let progress = value.progress { parts.append(WatchDisplayFormat.percent(progress, presentation)) }
+        parts.append(Text(WatchDisplayFormat.percent(progress, presentation)))
         if let footnote = WatchDisplayFormat.footnote(for: value) {
-            parts.append(text(footnote.key, presentation, ["time": WatchDisplayFormat.footnoteTime(footnote, presentation)]))
+            parts.append(Text(text(footnote.key, presentation, ["time": WatchDisplayFormat.footnoteTime(footnote, presentation)])))
         }
-        return parts.joined(separator: ", ")
+        return parts.dropFirst().reduce(parts[0]) { Text("\($0), \($1)") }
     }
 
     private func text(_ key: String, _ presentation: WatchPresentationV1, _ values: [String: String] = [:]) -> String {
