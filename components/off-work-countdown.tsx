@@ -4475,16 +4475,36 @@ export function OffWorkCountdown({
                 {t("workHoursCalculator")}
               </a>
             </nav>
-            <a
-              href={siteConfig.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={t("githubRepository")}
-              className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-gray-900 dark:hover:text-gray-100"
-            >
-              <Github className="h-3.5 w-3.5" aria-hidden="true" />
-              GitHub
-            </a>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <a
+                href={siteConfig.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t("githubRepository")}
+                className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                <Github className="h-3.5 w-3.5" aria-hidden="true" />
+                GitHub
+              </a>
+              {/* fi_niaR Studio mark, shared with finiar.app and the studio's product sites. */}
+              <a
+                href="https://finiar.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                dir="ltr"
+                aria-label="fi_niaR Studio"
+                className="inline-flex items-center whitespace-nowrap font-bold tracking-[-0.01em] transition-colors [font-family:var(--font-geist-mono),ui-monospace,monospace] hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                <span aria-hidden="true" className="mr-[0.4em] text-[#2f6fdb] dark:text-[#7aa7ff]">
+                  &gt;
+                </span>
+                fi_niaR Studio
+                <span
+                  aria-hidden="true"
+                  className="studio-mark-cursor ml-[0.15em] inline-block h-[0.95em] w-[0.55em] bg-[#2f6fdb] dark:bg-[#7aa7ff]"
+                />
+              </a>
+            </div>
           </footer>
         </div>
       )}
