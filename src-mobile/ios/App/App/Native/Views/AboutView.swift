@@ -4,6 +4,9 @@ struct AboutView<DebugMenu: View>: View {
     @Environment(SceneState.self) private var scene
     let text: AppText
     @ViewBuilder var debugMenu: DebugMenu
+    // The outlined mark spans a little more than one em (cursor top to the
+    // underscore), so this keeps it on the subheadline it replaced.
+    @ScaledMetric(relativeTo: .subheadline) private var studioMarkHeight: CGFloat = 16
 #if DEBUG
     @State private var debugUnlockCount = 0
     @State private var showsDebugMenu = false
@@ -32,9 +35,8 @@ struct AboutView<DebugMenu: View>: View {
                         Text(verbatim: OWCBrand.shortName)
                             .font(.title2.bold())
 #endif
-                        Text(verbatim: "fi_niaR Studio")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(OWCDesign.secondary)
+                        StudioMark()
+                            .frame(height: studioMarkHeight)
                         Text(verbatim: "\(text.t("version")) \(version)")
                             .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
@@ -136,6 +138,53 @@ struct AboutView<DebugMenu: View>: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
     }
 
+}
+
+/// The studio mark shared with the web footer and finiar.app. The outline
+/// leaves room for the cursor block, drawn here so it can blink with the web's
+/// 1.1 s step timing; Reduce Motion keeps it lit.
+private struct StudioMark: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    // Cursor frame within the asset, from scripts/generate-ios-studio-mark.py.
+    private static let cursor = (x: 0.9447, y: 0.0, width: 0.0553, height: 0.902)
+    private static let blinkHalfPeriod: TimeInterval = 0.55
+    private static let cursorColor = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0x7A / 255, green: 0xA7 / 255, blue: 0xFF / 255, alpha: 1)
+            : UIColor(red: 0x2F / 255, green: 0x6F / 255, blue: 0xDB / 255, alpha: 1)
+    })
+
+    var body: some View {
+        Image("StudioMark")
+            .resizable()
+            .scaledToFit()
+            .overlay {
+                GeometryReader { proxy in
+                    TimelineView(.periodic(from: .distantPast, by: Self.blinkHalfPeriod)) { context in
+                        Rectangle()
+                            .fill(Self.cursorColor)
+                            .opacity(isCursorLit(at: context.date) ? 0.85 : 0)
+                            .frame(
+                                width: proxy.size.width * Self.cursor.width,
+                                height: proxy.size.height * Self.cursor.height
+                            )
+                            .offset(
+                                x: proxy.size.width * Self.cursor.x,
+                                y: proxy.size.height * Self.cursor.y
+                            )
+                    }
+                }
+            }
+            .environment(\.layoutDirection, .leftToRight)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: "fi_niaR Studio"))
+    }
+
+    private func isCursorLit(at date: Date) -> Bool {
+        reduceMotion
+            || Int(date.timeIntervalSinceReferenceDate / Self.blinkHalfPeriod).isMultiple(of: 2)
+    }
 }
 
 private struct HolidayTemplateAttribution: Decodable, Identifiable {

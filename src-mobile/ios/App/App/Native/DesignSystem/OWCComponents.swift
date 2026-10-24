@@ -165,6 +165,10 @@ struct OWCContentSizedScrollView<Content: View>: View {
     private let content: Content
     @State private var contentHeight: CGFloat = 0
     @State private var isAwayFromTop = false
+    @State private var topInset: CGFloat = 0
+    /// The top inset with the large title expanded: the tallest one seen at the
+    /// current width.
+    @State private var expandedTopInset: CGFloat = 0
 
     init(
         showsIndicators: Bool = true,
@@ -193,17 +197,35 @@ struct OWCContentSizedScrollView<Content: View>: View {
                     // point of this container.
                     .padding(.bottom, OWCDesign.detailBottomInset)
             }
-            // Collapsing a large navigation title grows the viewport. Never
-            // disable the pan while it still needs to return to the top.
-            .onScrollGeometryChange(for: Bool.self) { geometry in
-                geometry.contentOffset.y + geometry.contentInsets.top > 1
-            } action: { _, awayFromTop in
-                isAwayFromTop = awayFromTop
+            .onScrollGeometryChange(for: TopEdge.self) { geometry in
+                TopEdge(
+                    isAwayFromTop: geometry.contentOffset.y + geometry.contentInsets.top > 1,
+                    inset: geometry.contentInsets.top
+                )
+            } action: { _, edge in
+                isAwayFromTop = edge.isAwayFromTop
+                topInset = edge.inset
+                expandedTopInset = max(expandedTopInset, edge.inset)
             }
-            .scrollDisabled(!isAwayFromTop && contentHeight <= viewport.size.height + 1)
+            // Collapsing a large navigation title grows the viewport by the
+            // height the title gave up. Judge the fit against the expanded
+            // title instead: a page that only fits once the title has
+            // collapsed must keep its pan, or the title can never be pulled
+            // back down and the page is stuck at the top.
+            .scrollDisabled(
+                !isAwayFromTop
+                    && contentHeight <= viewport.size.height - (expandedTopInset - topInset) + 1
+            )
             .scrollBounceBehavior(.basedOnSize)
+            // Rotation changes the bar (landscape phones have no large title).
+            .onChange(of: viewport.size.width) { expandedTopInset = topInset }
         }
         .onPreferenceChange(OWCScrollContentHeightKey.self) { contentHeight = $0 }
+    }
+
+    private struct TopEdge: Equatable {
+        let isAwayFromTop: Bool
+        let inset: CGFloat
     }
 }
 
