@@ -13,6 +13,20 @@ nonisolated enum WatchSnapshotContract {
     static let maximumRetiredGenerations = 64
 }
 
+/// Every Watch complication reads the same cached package, so a new one
+/// reloads them all.
+nonisolated enum WatchWidgetKind {
+    static let countdown = "DoneAtWatchWidget"
+    static let week = "DoneAtWatchWeek"
+    static let shift = "DoneAtWatchShift"
+    static let holiday = "DoneAtWatchHoliday"
+    static let upNext = "DoneAtWatchUpNext"
+
+    static let all = [countdown, week, shift, holiday, upNext]
+    /// The kinds whose provider implements a Smart Stack `relevance()`.
+    static let relevant = [countdown, upNext]
+}
+
 nonisolated struct WatchSnapshotPackageV1: Codable, Equatable, Sendable {
     let schemaVersion: Int
     let sourceGeneration: String
