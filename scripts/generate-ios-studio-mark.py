@@ -2,7 +2,8 @@
 
 Mirrors components/off-work-countdown.tsx: "> fi_niaR Studio" in Geist Mono
 Bold, -0.01em tracking, 0.4em after the chevron and a 0.55em x 0.95em cursor
-block 0.15em after the text. Text uses iOS secondaryLabel; accents use the
+block 0.15em after the text. The canvas keeps room for the cursor, which
+AboutView draws and blinks itself; this prints its frame as fractions. Text uses iOS secondaryLabel; accents use the
 web footer's blue. Requires fontTools (`pip install fonttools`).
 
     python3 scripts/generate-ios-studio-mark.py
@@ -43,8 +44,9 @@ def svg(text_fill, text_op, accent):
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}" width="{(right-left)/EM*17:.2f}" height="{(bottom-top)/EM*17:.2f}">
 <path fill="{accent}" d="{cp}"/>
 <path fill="{text_fill}" fill-opacity="{text_op}" d="{wp}"/>
-<rect fill="{accent}" fill-opacity="0.85" x="{cx:.0f}" y="{-ch:.0f}" width="{cw:.0f}" height="{ch:.0f}"/>
 </svg>
 '''
 open(os.path.join(OUT, "studio-light.svg"), "w").write(svg("#3C3C43", "0.6", "#2F6FDB"))
 open(os.path.join(OUT, "studio-dark.svg"), "w").write(svg("#EBEBF5", "0.6", "#7AA7FF"))
+W, H = right - left, bottom - top
+print(f"cursor x={(cx-left)/W:.4f} y={(-ch-top)/H:.4f} width={cw/W:.4f} height={ch/H:.4f}")
