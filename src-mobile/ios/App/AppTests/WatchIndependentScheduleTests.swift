@@ -295,6 +295,79 @@ struct WatchIndependentScheduleTests {
         #expect(schedule(zone: "UTC", plan: mismatch).isValid == false)
     }
 
+    @Test("Schedule complications get entries at boundaries and progress steps, not every quarter hour")
+    func suiteRenderVolume() {
+        let value = schedule()
+        let start = date("2026-09-21T00:02:13Z")
+        let now = Date(timeIntervalSince1970: Double(start) / 1_000)
+        let week = WatchScheduleOutlook.timelineDates(value, from: now, includesProgressSteps: true)
+            .map { Int64(($0.timeIntervalSince1970 * 1_000).rounded()) }
+        let others = WatchScheduleOutlook.timelineDates(value, from: now, includesProgressSteps: false)
+            .map { Int64(($0.timeIntervalSince1970 * 1_000).rounded()) }
+        // WidgetKit renders every entry in every family, and these share the
+        // countdown complication's CPU budget. Quarter-hour filler made ~70.
+        // Now: four edges per shift, one local midnight, and 19 steps per
+        // shift for "This week" only.
+        #expect(week.count == 48)
+        #expect(others.count == 10)
+        #expect(week.first == start && others.first == start)
+        #expect(week == Array(Set(week)).sorted())
+        #expect(!week.contains(date("2026-09-21T01:15:00Z")))
+        #expect(Set(others).isSubset(of: Set(week)))
+        for day in ["2026-09-21", "2026-09-22"] {
+            for clock in ["01:00:00Z", "04:00:00Z", "05:00:00Z", "09:00:00Z"] {
+                #expect(others.contains(date(day + "T" + clock)))
+            }
+        }
+        // Local midnight in the schedule's zone, not the Watch's.
+        #expect(others.contains(date("2026-09-21T16:00:00Z")))
+        #expect(week.contains(date("2026-09-21T01:21:00Z")))
+        #expect(week.allSatisfy { $0 <= start + 36 * 3_600_000 })
+    }
+
+    @Test("A shift entering the two-day coming-up window gets its own entry")
+    func suiteUpcomingWindow() {
+        let now = Date(timeIntervalSince1970: Double(date("2026-09-19T00:00:00Z")) / 1_000)
+        let times = WatchScheduleOutlook.timelineDates(schedule(), from: now, includesProgressSteps: false)
+            .map { Int64(($0.timeIntervalSince1970 * 1_000).rounded()) }
+        #expect(times.contains(date("2026-09-21T01:00:00Z") - WatchScheduleOutlook.upcomingWindowMs))
+    }
+
+    @Test("This week shows nothing stale between its timeline entries", arguments: [
+        "2026-09-21T00:02:13Z", "2026-09-20T10:00:00Z", "2026-09-25T06:30:00Z",
+    ])
+    func suiteWeekBetweenEntries(start: String) {
+        let value = schedule()
+        let startMs = date(start)
+        let times = WatchScheduleOutlook.timelineDates(
+            value, from: Date(timeIntervalSince1970: Double(startMs) / 1_000), includesProgressSteps: true
+        ).map { Int64(($0.timeIntervalSince1970 * 1_000).rounded()) }
+        let figures = { WatchScheduleOutlook.weekFigures(value.configuration, nowMs: $0) }
+        var changes = 0
+        for (entry, next) in zip(times, times.dropFirst()) {
+            let shown = figures(entry)
+            #expect(figures((entry + next) / 2) == shown, "Changed after \(entry)")
+            #expect(figures(next - 1) == shown, "Changed before \(next)")
+            if figures(next) != shown { changes += 1 }
+        }
+        // Not vacuous: most entries do change what the week shows.
+        #expect(changes >= times.count / 2)
+    }
+
+    @Test("This week's fills and progress hold the last 5% step reached")
+    func suiteWeekSteps() {
+        let value = schedule()
+        let monday = WatchScheduleOutlook.weekFigures(value.configuration, nowMs: date("2026-09-21T01:20:59Z"))
+        #expect(monday.fills.first == 0)
+        let step = WatchScheduleOutlook.weekFigures(value.configuration, nowMs: date("2026-09-21T01:21:00Z"))
+        #expect(step.fills.first == 0.05)
+        #expect(abs(step.remainingDays - 4.95) < 1e-9)
+        #expect(abs(step.progress - 0.01) < 1e-9)
+        #expect(!step.isDone)
+        let friday = WatchScheduleOutlook.weekFigures(value.configuration, nowMs: date("2026-09-25T09:00:00Z"))
+        #expect(friday.isDone && friday.progress == 1 && friday.remainingDays == 0 && friday.finishMs == nil)
+    }
+
     @Test("Timeline includes a later shift even when the app was never opened again")
     func futureTimeline() {
         let value = package(schedule())

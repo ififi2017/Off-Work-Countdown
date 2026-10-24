@@ -7,66 +7,15 @@ import WidgetKit
 // `ShiftRuleCore`; nothing here schedules, and no salary, record or leave
 // data reaches the Watch. All of them are free.
 
-/// The next shifts from the cached configuration, resolved by the shared rules.
-nonisolated enum WatchScheduleOutlook {
-    struct Shift: Equatable {
-        let startMs: Int64
-        let endMs: Int64
-        let segments: [(Int64, Int64)]
-        let dayNumber: Int
-        let shiftName: String?
-
-        static func == (lhs: Shift, rhs: Shift) -> Bool {
-            lhs.startMs == rhs.startMs && lhs.endMs == rhs.endMs && lhs.dayNumber == rhs.dayNumber
-        }
-
-        var workMs: Int64 { segments.reduce(0) { $0 + max(0, $1.1 - $1.0) } }
-        func remainingMs(at ms: Int64) -> Int64 { segments.reduce(0) { $0 + max(0, $1.1 - max($1.0, ms)) } }
-    }
-
-    static func shifts(_ input: ScheduleRuleInput, fromMs: Int64, throughMs: Int64, limit: Int = 20) -> [Shift] {
-        var probe = input
-        probe.nowMs = Double(fromMs)
-        let resolver = ExtendedScheduleResolver(plan: probe.extendedSchedule)
-        let zone = CivilZone(identifier: probe.timeZoneIdentifier, extended: resolver)
-        var result: [Shift] = []
-        var current = ShiftRuleCore.resolveCurrentShift(probe, zone)
-        if ShiftRuleCore.isActualShift(current, probe, zone), current.endAtMs > Double(fromMs) {
-            result.append(shift(current, zone: zone, input: probe, resolver: resolver))
-        }
-        while result.count < limit, let next = ShiftRuleCore.nextShift(after: current, probe, zone),
-              next.startAtMs <= Double(throughMs) {
-            if !result.contains(where: { $0.startMs == Int64(next.startAtMs) }) {
-                result.append(shift(next, zone: zone, input: probe, resolver: resolver))
-            }
-            current = next
-            probe.nowMs = next.endAtMs
-        }
-        return result
-    }
-
-    private static func shift(_ timeline: ShiftTimeline, zone: CivilZone, input: ScheduleRuleInput,
-                              resolver: ExtendedScheduleResolver?) -> Shift {
-        let day = zone.civil(timeline.startAtMs).dayNumber
-        let name = input.extendedSchedule.flatMap { plan in
-            resolver?.day(dayNumber: day).shiftTypeID.flatMap { id in plan.shiftTypes.first { $0.id == id }?.name }
-        }
-        return Shift(startMs: Int64(timeline.startAtMs), endMs: Int64(timeline.endAtMs),
-                     segments: timeline.segments.map { (Int64($0.startAtMs), Int64($0.endAtMs)) },
-                     dayNumber: day, shiftName: name)
-    }
-
-    static func zone(_ input: ScheduleRuleInput) -> CivilZone {
-        CivilZone(identifier: input.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: input.extendedSchedule))
-    }
-}
-
 private struct WatchSuiteEntry: TimelineEntry {
     let date: Date
     let schedule: WatchScheduleV2?
 }
 
 private struct WatchSuiteProvider: TimelineProvider {
+    /// Only "This week" draws progress; the others change at boundaries alone.
+    var includesProgressSteps = false
+
     /// The skeleton follows the real layout, so it draws a sample week rather
     /// than the "open DoneAt on iPhone" state.
     func placeholder(in context: Context) -> WatchSuiteEntry { .init(date: .now, schedule: WatchWidgetSample.schedule()) }
@@ -82,31 +31,12 @@ private struct WatchSuiteProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<WatchSuiteEntry>) -> Void) {
+        let includesProgressSteps = includesProgressSteps
         Task {
             let now = Date.now
             let schedule = await Self.schedule()
-            var dates = [now]
-            if let schedule, schedule.isConfigured {
-                let nowMs = Int64(now.timeIntervalSince1970 * 1_000)
-                // Boundaries and a quarter-hour filler inside work, for a day and a half.
-                for shift in WatchScheduleOutlook.shifts(schedule.configuration, fromMs: nowMs, throughMs: nowMs + 36 * 3_600_000) {
-                    for segment in shift.segments {
-                        for point in stride(from: max(segment.0, nowMs), through: segment.1, by: 15 * 60_000) {
-                            dates.append(Date(timeIntervalSince1970: Double(point) / 1_000))
-                        }
-                        dates.append(Date(timeIntervalSince1970: Double(segment.1) / 1_000))
-                    }
-                }
-            }
-            var calendar = Calendar.current
-            calendar.timeZone = .current
-            var cursor = calendar.startOfDay(for: now)
-            for _ in 0..<3 {
-                guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
-                dates.append(next)
-                cursor = next
-            }
-            let entries = Array(Set(dates.filter { $0 >= now })).sorted().prefix(120).map { WatchSuiteEntry(date: $0, schedule: schedule) }
+            let entries = WatchScheduleOutlook.timelineDates(schedule, from: now, includesProgressSteps: includesProgressSteps)
+                .map { WatchSuiteEntry(date: $0, schedule: schedule) }
             completion(.init(entries: entries, policy: .after(now.addingTimeInterval(4 * 3_600))))
         }
     }
@@ -170,7 +100,8 @@ private struct WatchWeekView: View {
         let text = WatchSuiteText(presentation: entry.schedule?.presentation)
         Group {
             if let schedule = entry.schedule, schedule.isConfigured {
-                let figures = Self.figures(schedule, at: entry.date)
+                let figures = WatchScheduleOutlook.weekFigures(
+                    schedule.configuration, nowMs: Int64(entry.date.timeIntervalSince1970 * 1_000))
                 switch family {
                 case .accessoryCircular:
                     Gauge(value: figures.progress) {
@@ -192,7 +123,7 @@ private struct WatchWeekView: View {
                                     .font(.caption2).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.7)
                             }
                         }
-                        if figures.remainingMs == 0, figures.totalMs > 0 {
+                        if figures.isDone {
                             Text(text.t("widgetSuiteWeekDone")).font(.headline).lineLimit(1).minimumScaleFactor(0.6)
                         } else {
                             Text("\(text.decimal(figures.remainingDays)) \(text.t("widgetSuiteDaysUnit"))")
@@ -210,39 +141,11 @@ private struct WatchWeekView: View {
         .containerBackground(.fill.tertiary, for: .widget)
         .widgetURL(URL(string: "offworkcountdown://timer"))
     }
-
-    struct Figures {
-        let totalMs: Int64
-        let remainingMs: Int64
-        let remainingDays: Double
-        let finishMs: Int64?
-        let fills: [Double]
-        var progress: Double { totalMs > 0 ? 1 - Double(remainingMs) / Double(totalMs) : 0 }
-    }
-
-    static func figures(_ schedule: WatchScheduleV2, at date: Date) -> Figures {
-        let input = schedule.configuration
-        let zone = WatchScheduleOutlook.zone(input)
-        let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
-        let weekStart = Int64(zone.weekStartMs(Double(nowMs)))
-        let weekEnd = Int64(zone.addCivilDaysMs(Double(weekStart), 7))
-        let shifts = WatchScheduleOutlook.shifts(input, fromMs: weekStart, throughMs: weekEnd - 1)
-            .filter { $0.startMs >= weekStart && $0.startMs < weekEnd }
-        let total = shifts.reduce(Int64(0)) { $0 + $1.workMs }
-        let remaining = shifts.reduce(Int64(0)) { $0 + $1.remainingMs(at: nowMs) }
-        let days = shifts.reduce(0.0) { $1.workMs > 0 ? $0 + Double($1.remainingMs(at: nowMs)) / Double($1.workMs) : $0 }
-        let fills = shifts.map { shift -> Double in
-            guard shift.workMs > 0, nowMs > shift.startMs else { return 0 }
-            return 1 - Double(shift.remainingMs(at: nowMs)) / Double(shift.workMs)
-        }
-        let finish = shifts.last.map(\.endMs).flatMap { $0 > nowMs ? $0 : nil }
-        return Figures(totalMs: total, remainingMs: remaining, remainingDays: days, finishMs: finish, fills: fills)
-    }
 }
 
 struct DoneAtWatchWeekWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchWeek", provider: WatchSuiteProvider()) { WatchWeekView(entry: $0).watchSuiteLocale($0) }
+        StaticConfiguration(kind: "DoneAtWatchWeek", provider: WatchSuiteProvider(includesProgressSteps: true)) { WatchWeekView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteWeekName"))
             .description(WatchLocalizations.text("widgetSuiteWeekDescription"))
             .supportedFamilies([.accessoryRectangular, .accessoryCircular])

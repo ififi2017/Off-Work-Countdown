@@ -132,21 +132,27 @@ nonisolated enum WatchDisplayProjection {
     /// each step. Breaks do not count, matching `WatchShiftEvaluator`, so a step
     /// that falls in a break lands where the next segment begins.
     static func progressStepDates(for shift: WatchShiftProjectionV1) -> [Int64] {
-        guard shift.isRunning, shift.finishedAtMs == nil,
-              shift.segments.allSatisfy({ $0.startAtMs < $0.endAtMs }) else { return [] }
-        let total = shift.segments.reduce(Int64(0)) { $0 + ($1.endAtMs - $1.startAtMs) }
+        guard shift.isRunning, shift.finishedAtMs == nil else { return [] }
+        return progressStepDates(segments: shift.segments.map { ($0.startAtMs, $0.endAtMs) })
+    }
+
+    /// The same steps for any list of work segments, as the schedule
+    /// complications resolve them from the cached configuration.
+    static func progressStepDates(segments: [(Int64, Int64)]) -> [Int64] {
+        guard segments.allSatisfy({ $0.0 < $0.1 }) else { return [] }
+        let total = segments.reduce(Int64(0)) { $0 + ($1.1 - $1.0) }
         let steps = Int64(progressStepCount)
         guard total > 0 else { return [] }
         var dates: [Int64] = []
         var step: Int64 = 1
         var elapsedBefore: Int64 = 0
-        for segment in shift.segments {
-            let duration = segment.endAtMs - segment.startAtMs
+        for segment in segments {
+            let duration = segment.1 - segment.0
             // Round up so an entry never shows a step before it is reached.
             while step < steps {
                 let target = (total * step + steps - 1) / steps
                 guard target <= elapsedBefore + duration else { break }
-                dates.append(segment.startAtMs + target - elapsedBefore)
+                dates.append(segment.0 + target - elapsedBefore)
                 step += 1
             }
             elapsedBefore += duration
