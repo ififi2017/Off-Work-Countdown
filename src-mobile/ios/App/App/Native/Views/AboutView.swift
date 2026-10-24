@@ -4,6 +4,9 @@ struct AboutView<DebugMenu: View>: View {
     @Environment(SceneState.self) private var scene
     let text: AppText
     @ViewBuilder var debugMenu: DebugMenu
+    // The outlined mark spans a little more than one em (cursor top to the
+    // underscore), so this keeps it on the subheadline it replaced.
+    @ScaledMetric(relativeTo: .subheadline) private var studioMarkHeight: CGFloat = 16
 #if DEBUG
     @State private var debugUnlockCount = 0
     @State private var showsDebugMenu = false
@@ -32,9 +35,12 @@ struct AboutView<DebugMenu: View>: View {
                         Text(verbatim: OWCBrand.shortName)
                             .font(.title2.bold())
 #endif
-                        Text(verbatim: "fi_niaR Studio")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(OWCDesign.secondary)
+                        // The studio mark shared with the web footer and finiar.app.
+                        Image("StudioMark")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: studioMarkHeight)
+                            .accessibilityLabel(Text(verbatim: "fi_niaR Studio"))
                         Text(verbatim: "\(text.t("version")) \(version)")
                             .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
