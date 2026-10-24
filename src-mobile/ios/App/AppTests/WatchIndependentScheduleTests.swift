@@ -307,32 +307,43 @@ struct WatchIndependentScheduleTests {
         #expect(times.contains(date("2026-09-21T09:00:00Z")))
     }
 
-    @Test("Complication timelines update each minute without dropping shift boundaries")
-    func complicationRenderVolume() {
+    @Test("Complication timelines step progress by 5% without dropping shift boundaries")
+    func complicationRenderVolume() throws {
         let value = package(schedule())
         let start = date("2026-09-21T00:02:13Z")
         let now = Date(timeIntervalSince1970: Double(start) / 1_000)
         let dates = WatchDisplayProjection.timelineDates(for: value, from: now)
         let times = dates.map { Int64(($0.timeIntervalSince1970 * 1_000).rounded()) }
-        // Minute entries cover the next hour; later coverage stays sparse so
-        // this ordinary two-day schedule remains well below the old 250 views.
-        #expect(dates.count <= 128)
+        // WidgetKit renders every entry ahead of time; minute and hourly samples
+        // pushed the Watch extension past its CPU limit. Two shifts of 19 steps
+        // plus their boundaries stay far below the old ~110 entries.
+        #expect(dates.count <= 64)
         #expect(times.first == start)
-        #expect(times.last == start + 48 * 3_600_000)
         #expect(times == Array(Set(times)).sorted())
-        for offset in 1...60 {
-            #expect(times.contains(start + Int64(offset) * 60_000))
-        }
+        #expect(!times.contains(start + 60_000))
         for day in ["2026-09-21", "2026-09-22"] {
             for clock in ["01:00:00Z", "04:00:00Z", "05:00:00Z", "09:00:00Z", "16:00:00Z"] {
                 #expect(times.contains(date(day + "T" + clock)))
             }
         }
-        for time in times {
-            guard case .content = WatchDisplayProjection.project(value, nowMs: time) else {
-                Issue.record("Every complication entry must resolve from the cached schedule")
-                return
+        // 7 effective hours make 21-minute steps; the step that falls in lunch
+        // waits for work to resume, and nothing is sampled during the break.
+        #expect(times.contains(date("2026-09-21T01:21:00Z")))
+        #expect(times.contains(date("2026-09-21T03:48:00Z")))
+        #expect(times.contains(date("2026-09-21T05:09:00Z")))
+        #expect(!times.contains { $0 > date("2026-09-21T04:00:00Z") && $0 < date("2026-09-21T05:00:00Z") })
+        let steps = times.filter { $0 > date("2026-09-21T01:00:00Z") && $0 < date("2026-09-21T09:00:00Z") }
+            .filter { $0 != date("2026-09-21T04:00:00Z") && $0 != date("2026-09-21T05:00:00Z") }
+        #expect(steps.count == WatchDisplayProjection.progressStepCount - 1)
+        for (index, instant) in steps.enumerated() {
+            guard case .content(let display) = WatchDisplayProjection.project(value, nowMs: instant) else {
+                Issue.record("Expected content at a progress step"); continue
             }
+            let progress = try #require(display.progress)
+            #expect(WatchDisplayFormat.steppedProgress(progress) == Double(index + 1) * 5)
+            // A millisecond earlier the previous step still shows.
+            guard case .content(let before) = WatchDisplayProjection.project(value, nowMs: instant - 1) else { continue }
+            #expect(WatchDisplayFormat.steppedProgress(try #require(before.progress)) == Double(index) * 5)
         }
     }
 
@@ -431,7 +442,7 @@ struct WatchIndependentScheduleTests {
             #expect(WatchDisplayFormat.footnote(for: display)?.atMs == start)
         }
         let dates = WatchDisplayProjection.timelineDates(for: value,
-            from: Date(timeIntervalSince1970: Double(date("2026-09-19T15:48:00Z")) / 1000), minuteCount: 0)
+            from: Date(timeIntervalSince1970: Double(date("2026-09-19T15:48:00Z")) / 1000))
             .map { Int64($0.timeIntervalSince1970 * 1000) }
         #expect(dates.contains(date("2026-09-19T16:00:00Z")))
         #expect(dates.contains(start))

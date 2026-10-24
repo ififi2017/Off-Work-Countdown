@@ -49,15 +49,28 @@ struct WatchDisplayProjectionTests {
     func boundaries() {
         let dates = WatchDisplayProjection.timelineDates(
             for: package(access: .active, accessUntilMs: 700, expiresAtMs: 1_000, shift: shift(finishedAtMs: 650)),
-            from: Date(timeIntervalSince1970: 0.2), minuteCount: 0
+            from: Date(timeIntervalSince1970: 0.2)
         ).map { Int64(($0.timeIntervalSince1970 * 1_000).rounded()) }
         for expected in [500, 600, 650, 700, 1_000] as [Int64] { #expect(dates.contains(expected)) }
 
         let pendingDates = WatchDisplayProjection.timelineDates(
             for: package(access: .pending, accessUntilMs: 700),
-            from: Date(timeIntervalSince1970: 0.2), minuteCount: 0
+            from: Date(timeIntervalSince1970: 0.2)
         ).map { Int64(($0.timeIntervalSince1970 * 1_000).rounded()) }
         #expect(pendingDates.contains(700))
+    }
+
+    @Test("Progress steps skip the break and stop for a finished shift")
+    func progressSteps() {
+        // 500 effective ms make 25 ms steps; 300 ms are worked before the 500–600 break.
+        let steps = WatchDisplayProjection.progressStepDates(for: shift(finishedAtMs: nil))
+        #expect(steps.count == WatchDisplayProjection.progressStepCount - 1)
+        #expect(steps.first == 225)
+        #expect(steps.contains(500))
+        #expect(steps.contains(625))
+        #expect(!steps.contains { $0 > 500 && $0 < 600 })
+        #expect(steps.last == 775)
+        #expect(WatchDisplayProjection.progressStepDates(for: shift(finishedAtMs: 650)).isEmpty)
     }
 
     @Test("Smart Stack relevance covers only a shift the Watch may show, clipped to both expiries")
@@ -102,6 +115,11 @@ struct WatchDisplayProjectionTests {
         #expect(WatchDisplayFormat.clock(1, showsSeconds: false, shanghai) == "0:01")
         #expect(WatchDisplayFormat.shortDuration(3 * 3_600_000 + 17 * 60_000 + 1, newYork) == "3h 18m")
         #expect(WatchDisplayFormat.shortDuration(45 * 60_000, newYork) == "45m")
+        // The complication shows the last 5% step reached, never one ahead.
+        #expect(WatchDisplayFormat.steppedProgress(59.6) == 55)
+        #expect(WatchDisplayFormat.steppedProgress(59.999_999_9) == 60)
+        #expect(WatchDisplayFormat.steppedProgress(100) == 100)
+        #expect(WatchDisplayFormat.steppedProgress(-1) == 0)
         #expect(WatchDisplayFormat.percent(59.6, newYork) == "60%")
         // Layout direction follows the words' language, not the bundle's declared localizations.
         #expect(WatchDisplayFormat.isRightToLeft(localeIdentifier: "ar"))
