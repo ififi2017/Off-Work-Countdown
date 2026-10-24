@@ -342,7 +342,7 @@ private struct DoneAtWatchWidgetView: View {
 
 struct DoneAtWatchWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchWidget", provider: DoneAtWatchProvider()) { DoneAtWatchWidgetView(entry: $0) }
+        StaticConfiguration(kind: WatchWidgetKind.countdown, provider: DoneAtWatchProvider()) { DoneAtWatchWidgetView(entry: $0) }
             .configurationDisplayName("DoneAt")
             .description(WatchLocalizations.text("watchWidgetDescription"))
             .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryCorner, .accessoryInline])

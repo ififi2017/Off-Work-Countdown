@@ -37,7 +37,9 @@ private struct WatchSuiteProvider: TimelineProvider {
             let schedule = await Self.schedule()
             let entries = WatchScheduleOutlook.timelineDates(schedule, from: now, includesProgressSteps: includesProgressSteps)
                 .map { WatchSuiteEntry(date: $0, schedule: schedule) }
-            completion(.init(entries: entries, policy: .after(now.addingTimeInterval(4 * 3_600))))
+            // The Watch app reloads every kind when a package arrives, so this
+            // fallback fires while the 36-hour timeline still has 24 hours left.
+            completion(.init(entries: entries, policy: .after(now.addingTimeInterval(12 * 3_600))))
         }
     }
 
@@ -145,7 +147,7 @@ private struct WatchWeekView: View {
 
 struct DoneAtWatchWeekWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchWeek", provider: WatchSuiteProvider(includesProgressSteps: true)) { WatchWeekView(entry: $0).watchSuiteLocale($0) }
+        StaticConfiguration(kind: WatchWidgetKind.week, provider: WatchSuiteProvider(includesProgressSteps: true)) { WatchWeekView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteWeekName"))
             .description(WatchLocalizations.text("widgetSuiteWeekDescription"))
             .supportedFamilies([.accessoryRectangular, .accessoryCircular])
@@ -212,7 +214,7 @@ private struct WatchShiftDayView: View {
 
 struct DoneAtWatchShiftWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchShift", provider: WatchSuiteProvider()) { WatchShiftDayView(entry: $0).watchSuiteLocale($0) }
+        StaticConfiguration(kind: WatchWidgetKind.shift, provider: WatchSuiteProvider()) { WatchShiftDayView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteRosterName"))
             .description(WatchLocalizations.text("widgetSuiteRosterDescription"))
             .supportedFamilies([.accessoryRectangular])
@@ -300,7 +302,7 @@ private struct WatchHolidayView: View {
 
 struct DoneAtWatchHolidayWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchHoliday", provider: WatchSuiteProvider()) { WatchHolidayView(entry: $0).watchSuiteLocale($0) }
+        StaticConfiguration(kind: WatchWidgetKind.holiday, provider: WatchSuiteProvider()) { WatchHolidayView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("widgetSuiteWeekendName"))
             .description(WatchLocalizations.text("widgetSuiteWeekendDescription"))
             .supportedFamilies([.accessoryRectangular, .accessoryCircular])
@@ -377,7 +379,7 @@ private struct WatchUpNextProvider: TimelineProvider {
 
 struct DoneAtWatchUpNextWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "DoneAtWatchUpNext", provider: WatchUpNextProvider()) { WatchUpNextView(entry: $0).watchSuiteLocale($0) }
+        StaticConfiguration(kind: WatchWidgetKind.upNext, provider: WatchUpNextProvider()) { WatchUpNextView(entry: $0).watchSuiteLocale($0) }
             .configurationDisplayName(WatchLocalizations.text("comingUp"))
             .description(WatchLocalizations.text("widgetSuiteWeekDescription"))
             .supportedFamilies([.accessoryRectangular])
