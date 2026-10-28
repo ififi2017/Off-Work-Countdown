@@ -322,7 +322,7 @@ fun HealthScreen(p: SyncedPreferences, edit: EditPreferences, onBack: () -> Unit
 @Composable
 fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Composable () -> Unit = {}) {
     val context = LocalContext.current
-    val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "" }
+    val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).let { "${it.versionName} (${androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(it)})" } }.getOrNull() ?: "" }
     DoneAtPage(stringResource(R.string.aboutProject), onBack, stringResource(R.string.settings)) {
         SettingsGroup {
             Column(
@@ -332,10 +332,11 @@ fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Compos
             ) {
                 CelebratingBrandMark(stringResource(R.string.app_name), Modifier.size(120.dp).padding(bottom = DoneAtSpacing.s), showsDepth = true)
                 Text("DoneAt", style = MaterialTheme.typography.headlineSmall)
-                Text("fi_niaR Studio", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                StudioBrandMark()
                 Text("${stringResource(R.string.version)} $version", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+        AboutUpdates()
         SettingsGroup {
             NavigationRow(stringResource(R.string.acknowledgements), { open(Route.Acknowledgements) }, Icons.AutoMirrored.Outlined.MenuBook)
         }
@@ -347,6 +348,9 @@ fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Compos
             ActionRow(stringResource(R.string.visitOfficialWebsite), { openUrl(context, if (com.rainif.doneat.BuildConfig.CN_CHANNEL) "https://doneat.com.cn/android/buy" else "https://doneat.app/") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
             RowDivider(inset = false)
             ActionRow(stringResource(R.string.downloadDesktopApp), { openUrl(context, "https://doneat.app/download") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+        }
+        SettingsGroup(stringResource(R.string.androidAppFiling)) {
+            ActionRow("沪ICP备2026055302号-2A", { openUrl(context, "https://beian.miit.gov.cn/") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
         }
         debugSection()
     }

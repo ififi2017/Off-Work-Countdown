@@ -25,6 +25,16 @@
     <string name="allowExactReminders">السماح بالتذكيرات الدقيقة</string>
     <string name="alternatingCurrentWeek">هذا الأسبوع</string>
     <string name="amount">المبلغ</string>
+    <string name="androidAppFiling">تسجيل التطبيق</string>
+    <string name="androidCheckUpdates">التحقق من وجود تحديثات</string>
+    <string name="androidCheckingUpdates">جارٍ التحقق…</string>
+    <string name="androidUpdateAvailable">يتوفر إصدار جديد</string>
+    <string name="androidUpdateCurrent">لديك أحدث إصدار.</string>
+    <string name="androidUpdateDownload">فتح صفحة التنزيل</string>
+    <string name="androidUpdateFailed">تعذّر التحقق من وجود تحديثات. يُرجى المحاولة مرة أخرى.</string>
+    <string name="androidUpdateIncompatible">يتطلب أحدث إصدار إصدارًا أحدث من Android.</string>
+    <string name="androidUpdateMessage">الإصدار %1$s متاح. افتح الموقع الرسمي لتنزيله وتثبيته. ستبقى بياناتك على هذا الجهاز.</string>
+    <string name="androidUpdatePlay">التحديثات على Google Play</string>
     <string name="annualBonus">مكافأة نهاية العام</string>
     <string name="annualBonusMonths">أشهر المكافأة</string>
     <string name="appearanceSection">المظهر</string>

@@ -25,6 +25,16 @@
     <string name="allowExactReminders">Izinkan pengingat tepat waktu</string>
     <string name="alternatingCurrentWeek">Minggu ini</string>
     <string name="amount">Jumlah</string>
+    <string name="androidAppFiling">Pendaftaran aplikasi</string>
+    <string name="androidCheckUpdates">Periksa pembaruan</string>
+    <string name="androidCheckingUpdates">Memeriksa…</string>
+    <string name="androidUpdateAvailable">Versi baru tersedia</string>
+    <string name="androidUpdateCurrent">Versi Anda sudah terbaru.</string>
+    <string name="androidUpdateDownload">Buka halaman unduhan</string>
+    <string name="androidUpdateFailed">Tidak dapat memeriksa pembaruan. Silakan coba lagi.</string>
+    <string name="androidUpdateIncompatible">Versi terbaru memerlukan Android yang lebih baru.</string>
+    <string name="androidUpdateMessage">Versi %1$s tersedia. Buka situs resmi untuk mengunduh dan memasangnya. Data Anda tetap tersimpan di perangkat ini.</string>
+    <string name="androidUpdatePlay">Pembaruan di Google Play</string>
     <string name="annualBonus">Bonus akhir tahun</string>
     <string name="annualBonusMonths">Bulan bonus</string>
     <string name="appearanceSection">Tampilan</string>

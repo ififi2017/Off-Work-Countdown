@@ -25,6 +25,16 @@
     <string name="allowExactReminders">อนุญาตการแจ้งเตือนแบบตรงเวลา</string>
     <string name="alternatingCurrentWeek">สัปดาห์นี้</string>
     <string name="amount">จำนวนเงิน</string>
+    <string name="androidAppFiling">การจดทะเบียนแอป</string>
+    <string name="androidCheckUpdates">ตรวจหาการอัปเดต</string>
+    <string name="androidCheckingUpdates">กำลังตรวจสอบ…</string>
+    <string name="androidUpdateAvailable">มีเวอร์ชันใหม่แล้ว</string>
+    <string name="androidUpdateCurrent">คุณใช้เวอร์ชันล่าสุดแล้ว</string>
+    <string name="androidUpdateDownload">เปิดหน้าดาวน์โหลด</string>
+    <string name="androidUpdateFailed">ตรวจสอบการอัปเดตไม่ได้ โปรดลองอีกครั้ง</string>
+    <string name="androidUpdateIncompatible">เวอร์ชันล่าสุดต้องใช้ Android เวอร์ชันใหม่กว่า</string>
+    <string name="androidUpdateMessage">มีเวอร์ชัน %1$s แล้ว เปิดเว็บไซต์ทางการเพื่อดาวน์โหลดและติดตั้ง ข้อมูลของคุณยังคงอยู่ในอุปกรณ์นี้</string>
+    <string name="androidUpdatePlay">อัปเดตบน Google Play</string>
     <string name="annualBonus">โบนัสสิ้นปี</string>
     <string name="annualBonusMonths">จำนวนเดือนโบนัส</string>
     <string name="appearanceSection">ลักษณะ</string>

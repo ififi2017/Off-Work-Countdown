@@ -25,6 +25,16 @@
     <string name="allowExactReminders">Разрешить точные напоминания</string>
     <string name="alternatingCurrentWeek">Эта неделя</string>
     <string name="amount">Сумма</string>
+    <string name="androidAppFiling">Регистрация приложения</string>
+    <string name="androidCheckUpdates">Проверить обновления</string>
+    <string name="androidCheckingUpdates">Проверка…</string>
+    <string name="androidUpdateAvailable">Доступна новая версия</string>
+    <string name="androidUpdateCurrent">У вас установлена последняя версия.</string>
+    <string name="androidUpdateDownload">Открыть страницу загрузки</string>
+    <string name="androidUpdateFailed">Не удалось проверить обновления. Попробуйте ещё раз.</string>
+    <string name="androidUpdateIncompatible">Для последней версии требуется более новая версия Android.</string>
+    <string name="androidUpdateMessage">Доступна версия %1$s. Откройте официальный сайт, чтобы скачать и установить её. Ваши данные останутся на этом устройстве.</string>
+    <string name="androidUpdatePlay">Обновления в Google Play</string>
     <string name="annualBonus">Премия по итогам года</string>
     <string name="annualBonusMonths">Месяцы премии</string>
     <string name="appearanceSection">Оформление</string>

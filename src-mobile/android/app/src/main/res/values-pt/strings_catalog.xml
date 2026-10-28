@@ -25,6 +25,16 @@
     <string name="allowExactReminders">Permitir lembretes exatos</string>
     <string name="alternatingCurrentWeek">Esta semana</string>
     <string name="amount">Valor</string>
+    <string name="androidAppFiling">Registo da aplicação</string>
+    <string name="androidCheckUpdates">Verificar atualizações</string>
+    <string name="androidCheckingUpdates">A verificar…</string>
+    <string name="androidUpdateAvailable">Está disponível uma nova versão</string>
+    <string name="androidUpdateCurrent">Está a utilizar a versão mais recente.</string>
+    <string name="androidUpdateDownload">Abrir página de transferência</string>
+    <string name="androidUpdateFailed">Não foi possível verificar as atualizações. Tente novamente.</string>
+    <string name="androidUpdateIncompatible">A versão mais recente requer uma versão mais recente do Android.</string>
+    <string name="androidUpdateMessage">A versão %1$s está disponível. Abra o site oficial para a transferir e instalar. Os seus dados ficam neste dispositivo.</string>
+    <string name="androidUpdatePlay">Atualizações no Google Play</string>
     <string name="annualBonus">Bônus de fim de ano</string>
     <string name="annualBonusMonths">Meses de bônus</string>
     <string name="appearanceSection">Aparência</string>

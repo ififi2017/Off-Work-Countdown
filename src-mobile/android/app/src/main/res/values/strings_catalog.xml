@@ -25,6 +25,16 @@
     <string name="allowExactReminders">Allow exact reminders</string>
     <string name="alternatingCurrentWeek">This week</string>
     <string name="amount">Amount</string>
+    <string name="androidAppFiling">App registration</string>
+    <string name="androidCheckUpdates">Check for updates</string>
+    <string name="androidCheckingUpdates">Checking…</string>
+    <string name="androidUpdateAvailable">A new version is available</string>
+    <string name="androidUpdateCurrent">You’re up to date.</string>
+    <string name="androidUpdateDownload">Open download page</string>
+    <string name="androidUpdateFailed">Couldn’t check for updates. Please try again.</string>
+    <string name="androidUpdateIncompatible">The latest version needs a newer Android version.</string>
+    <string name="androidUpdateMessage">Version %1$s is available. Open the official website to download and install it. Your data stays on this device.</string>
+    <string name="androidUpdatePlay">Updates on Google Play</string>
     <string name="annualBonus">Year-end bonus</string>
     <string name="annualBonusMonths">Bonus months</string>
     <string name="appearanceSection">Appearance</string>

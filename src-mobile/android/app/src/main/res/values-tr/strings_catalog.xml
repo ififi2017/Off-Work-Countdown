@@ -25,6 +25,16 @@
     <string name="allowExactReminders">Tam zamanlı hatırlatıcılara izin ver</string>
     <string name="alternatingCurrentWeek">Bu hafta</string>
     <string name="amount">Tutar</string>
+    <string name="androidAppFiling">Uygulama kaydı</string>
+    <string name="androidCheckUpdates">Güncellemeleri kontrol et</string>
+    <string name="androidCheckingUpdates">Kontrol ediliyor…</string>
+    <string name="androidUpdateAvailable">Yeni bir sürüm mevcut</string>
+    <string name="androidUpdateCurrent">En güncel sürümü kullanıyorsunuz.</string>
+    <string name="androidUpdateDownload">İndirme sayfasını aç</string>
+    <string name="androidUpdateFailed">Güncellemeler kontrol edilemedi. Lütfen tekrar deneyin.</string>
+    <string name="androidUpdateIncompatible">En son sürüm daha yeni bir Android sürümü gerektiriyor.</string>
+    <string name="androidUpdateMessage">%1$s sürümü mevcut. İndirip yüklemek için resmî web sitesini açın. Verileriniz bu cihazda kalır.</string>
+    <string name="androidUpdatePlay">Google Play üzerinden güncelleme</string>
     <string name="annualBonus">Yıl sonu ikramiyesi</string>
     <string name="annualBonusMonths">İkramiye ayı</string>
     <string name="appearanceSection">Görünüm</string>

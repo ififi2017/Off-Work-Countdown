@@ -25,6 +25,16 @@
     <string name="allowExactReminders">सटीक रिमाइंडर की अनुमति दें</string>
     <string name="alternatingCurrentWeek">यह सप्ताह</string>
     <string name="amount">राशि</string>
+    <string name="androidAppFiling">ऐप पंजीकरण</string>
+    <string name="androidCheckUpdates">अपडेट देखें</string>
+    <string name="androidCheckingUpdates">जाँच हो रही है…</string>
+    <string name="androidUpdateAvailable">नया वर्शन उपलब्ध है</string>
+    <string name="androidUpdateCurrent">आपका ऐप अप टू डेट है।</string>
+    <string name="androidUpdateDownload">डाउनलोड पेज खोलें</string>
+    <string name="androidUpdateFailed">अपडेट नहीं देखे जा सके। कृपया फिर कोशिश करें।</string>
+    <string name="androidUpdateIncompatible">नए वर्शन के लिए Android का नया वर्शन चाहिए।</string>
+    <string name="androidUpdateMessage">वर्शन %1$s उपलब्ध है। इसे डाउनलोड और इंस्टॉल करने के लिए आधिकारिक वेबसाइट खोलें। आपका डेटा इसी डिवाइस पर रहेगा।</string>
+    <string name="androidUpdatePlay">Google Play पर अपडेट</string>
     <string name="annualBonus">साल के अंत का बोनस</string>
     <string name="annualBonusMonths">बोनस के महीने</string>
     <string name="appearanceSection">रूप</string>

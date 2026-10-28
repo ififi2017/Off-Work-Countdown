@@ -511,3 +511,15 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 - 已恢复 Wi-Fi 和移动数据，读回均为原值 `1`、飞行模式仍为 `0`，默认网络重新出现。联网后点击恢复购买回到 Yearly / Monthly / Lifetime 免费方案页，未恢复已过期月订阅。字号、三项动画均为原值 `1.0`，熄屏超时仍为 `2147483647`；设备临时 UI 文件已清理。未创建闹钟、改动真实购买或用户记录。
 - 设备截图：`qa/2026-10-04-billing/115-offline-expiry-before.png`、`115-offline-expiry-after.png`、`115-offline-cold-expired.png`。本轮仅补证据，源码与已通过完整 [Android CI 37190172604](https://github.com/ififi2017/Off-Work-Countdown/actions/runs/37190172604) / [主 CI 37190172586](https://github.com/ififi2017/Off-Work-Countdown/actions/runs/37190172586) 的 `2bcec6ae` 相同；没有重复宣称自动测试就是设备验证。
 - T21 / T26 仍为 IN_PROGRESS：其他商品、pending、退款、宽限/暂停、替换与重复/迟到 RTDN 的完整矩阵、生产冷/热路径 CPU 余量，以及原生起床闹钟平台接入尚未完成。生产全局公钥变量未启用，未调整 Cloudflare 套餐。
+
+## 2026-10-28 CN updates and About
+
+- Implementation: manual CN HTTPS version check, version-code comparison, explicit browser download; Play channel opens its official store page. No automatic download, installer permissions, device IDs or work data in update requests.
+- About uses the outlined StudioMark assets from iOS origin/main `ffd91597c4f54ddf813f5a90321b6544ce695e00`, preserving light/dark colours and reduced-motion cursor. Only this user-requested visual increment is adopted; rules baseline is unchanged.
+- Owner supplied APP registration: 沪ICP备2026055302号-2A; links to MIIT.
+- Candidate CN build is 3.2.1(6); Play default code remains 5. Verification and release status follow below.
+
+- Validation: CN module suites passed (575 tests, including four update-contract tests); CN debug/release lint and builds passed. Play app tests, debug lint and release build passed. `check:version` and headless iOS simulator build passed; no iOS visual inspection performed.
+- Pixel 10 Pro: official signed CN 6 installed over CN 5 with app data retained. Chinese About inspected in light/dark, correct APP registration and studio mark; real HTTPS check returned current against the existing public build-5 feed. Newer-version dialog is covered by unit tests, not a synthetic production feed. Existing annual entitlement/expiry remained visible; its pre-existing pending-request warning was already present before installation, so this is not a fresh membership-verification acceptance. System night mode restored to auto.
+- Localized generation preserves three previously shipped estimated-holiday strings in the Android-only catalog because this CN source baseline predates their iOS catalog entries. No scheduling behaviour or iOS source changed.
+- Signed APK SHA-256: `5f6455f5ce44413c55dccbe261973e421727aa07c90583e4e5452c7bb79d672d`; 5,782,546 bytes; existing official certificate retained. Publication record: `docs/android/releases/cn-3.2.1-6.md`.

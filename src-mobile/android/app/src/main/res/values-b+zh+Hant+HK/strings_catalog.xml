@@ -25,6 +25,16 @@
     <string name="allowExactReminders">允許精確提醒</string>
     <string name="alternatingCurrentWeek">本週</string>
     <string name="amount">金額</string>
+    <string name="androidAppFiling">應用程式備案</string>
+    <string name="androidCheckUpdates">檢查更新</string>
+    <string name="androidCheckingUpdates">正在檢查…</string>
+    <string name="androidUpdateAvailable">有新版本可用</string>
+    <string name="androidUpdateCurrent">已是最新版本。</string>
+    <string name="androidUpdateDownload">開啟下載頁面</string>
+    <string name="androidUpdateFailed">無法檢查更新，請再試。</string>
+    <string name="androidUpdateIncompatible">最新版本需要較新的 Android 版本。</string>
+    <string name="androidUpdateMessage">版本 %1$s 已推出。開啟官方網站即可下載及安裝，資料會保留喺呢部裝置。</string>
+    <string name="androidUpdatePlay">透過 Google Play 更新</string>
     <string name="annualBonus">年終獎金</string>
     <string name="annualBonusMonths">獎金月數</string>
     <string name="appearanceSection">外觀</string>

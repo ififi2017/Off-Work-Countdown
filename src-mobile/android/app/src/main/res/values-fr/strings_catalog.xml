@@ -25,6 +25,16 @@
     <string name="allowExactReminders">Autoriser les rappels exacts</string>
     <string name="alternatingCurrentWeek">Cette semaine</string>
     <string name="amount">Montant</string>
+    <string name="androidAppFiling">Enregistrement de l’application</string>
+    <string name="androidCheckUpdates">Rechercher des mises à jour</string>
+    <string name="androidCheckingUpdates">Vérification…</string>
+    <string name="androidUpdateAvailable">Une nouvelle version est disponible</string>
+    <string name="androidUpdateCurrent">Vous utilisez la dernière version.</string>
+    <string name="androidUpdateDownload">Ouvrir la page de téléchargement</string>
+    <string name="androidUpdateFailed">Impossible de vérifier les mises à jour. Réessayez.</string>
+    <string name="androidUpdateIncompatible">La dernière version nécessite une version plus récente d’Android.</string>
+    <string name="androidUpdateMessage">La version %1$s est disponible. Ouvrez le site officiel pour la télécharger et l’installer. Vos données restent sur cet appareil.</string>
+    <string name="androidUpdatePlay">Mises à jour sur Google Play</string>
     <string name="annualBonus">Prime de fin d’année</string>
     <string name="annualBonusMonths">Mois de prime</string>
     <string name="appearanceSection">Apparence</string>

@@ -25,6 +25,16 @@
     <string name="allowExactReminders">정확한 알림 허용</string>
     <string name="alternatingCurrentWeek">이번 주</string>
     <string name="amount">금액</string>
+    <string name="androidAppFiling">앱 등록</string>
+    <string name="androidCheckUpdates">업데이트 확인</string>
+    <string name="androidCheckingUpdates">확인 중…</string>
+    <string name="androidUpdateAvailable">새 버전을 사용할 수 있습니다</string>
+    <string name="androidUpdateCurrent">최신 버전입니다.</string>
+    <string name="androidUpdateDownload">다운로드 페이지 열기</string>
+    <string name="androidUpdateFailed">업데이트를 확인할 수 없습니다. 다시 시도해 주세요.</string>
+    <string name="androidUpdateIncompatible">최신 버전을 사용하려면 더 최신 Android 버전이 필요합니다.</string>
+    <string name="androidUpdateMessage">버전 %1$s을 사용할 수 있습니다. 공식 웹사이트를 열어 다운로드하고 설치하세요. 데이터는 이 기기에 그대로 보관됩니다.</string>
+    <string name="androidUpdatePlay">Google Play에서 업데이트</string>
     <string name="annualBonus">연말 보너스</string>
     <string name="annualBonusMonths">보너스 개월 수</string>
     <string name="appearanceSection">외관</string>

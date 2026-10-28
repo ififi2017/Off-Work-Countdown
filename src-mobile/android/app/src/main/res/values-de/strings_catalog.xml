@@ -25,6 +25,16 @@
     <string name="allowExactReminders">Exakte Erinnerungen erlauben</string>
     <string name="alternatingCurrentWeek">Diese Woche</string>
     <string name="amount">Betrag</string>
+    <string name="androidAppFiling">App-Registrierung</string>
+    <string name="androidCheckUpdates">Nach Updates suchen</string>
+    <string name="androidCheckingUpdates">Wird geprüft…</string>
+    <string name="androidUpdateAvailable">Eine neue Version ist verfügbar</string>
+    <string name="androidUpdateCurrent">Du bist auf dem neuesten Stand.</string>
+    <string name="androidUpdateDownload">Downloadseite öffnen</string>
+    <string name="androidUpdateFailed">Updates konnten nicht abgerufen werden. Bitte versuche es erneut.</string>
+    <string name="androidUpdateIncompatible">Die neueste Version benötigt eine neuere Android-Version.</string>
+    <string name="androidUpdateMessage">Version %1$s ist verfügbar. Öffne die offizielle Website, um sie herunterzuladen und zu installieren. Deine Daten bleiben auf diesem Gerät.</string>
+    <string name="androidUpdatePlay">Updates über Google Play</string>
     <string name="annualBonus">Jahresendbonus</string>
     <string name="annualBonusMonths">Bonusmonate</string>
     <string name="appearanceSection">Darstellung</string>

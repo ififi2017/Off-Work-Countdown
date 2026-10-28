@@ -202,6 +202,49 @@
     "amount": {
       "resource": "string/amount"
     },
+    "androidAppFiling": {
+      "resource": "string/androidAppFiling",
+      "androidOnly": true
+    },
+    "androidCheckUpdates": {
+      "resource": "string/androidCheckUpdates",
+      "androidOnly": true
+    },
+    "androidCheckingUpdates": {
+      "resource": "string/androidCheckingUpdates",
+      "androidOnly": true
+    },
+    "androidUpdateAvailable": {
+      "resource": "string/androidUpdateAvailable",
+      "androidOnly": true
+    },
+    "androidUpdateCurrent": {
+      "resource": "string/androidUpdateCurrent",
+      "androidOnly": true
+    },
+    "androidUpdateDownload": {
+      "resource": "string/androidUpdateDownload",
+      "androidOnly": true
+    },
+    "androidUpdateFailed": {
+      "resource": "string/androidUpdateFailed",
+      "androidOnly": true
+    },
+    "androidUpdateIncompatible": {
+      "resource": "string/androidUpdateIncompatible",
+      "androidOnly": true
+    },
+    "androidUpdateMessage": {
+      "resource": "string/androidUpdateMessage",
+      "params": [
+        "version"
+      ],
+      "androidOnly": true
+    },
+    "androidUpdatePlay": {
+      "resource": "string/androidUpdatePlay",
+      "androidOnly": true
+    },
     "annualBonus": {
       "resource": "string/annualBonus"
     },
@@ -1396,13 +1439,15 @@
       ]
     },
     "holidayEstimatedLabel": {
-      "resource": "string/holidayEstimatedLabel"
+      "resource": "string/holidayEstimatedLabel",
+      "androidOnly": true
     },
     "holidayEstimatedYearWarning": {
       "resource": "string/holidayEstimatedYearWarning",
       "params": [
         "year"
-      ]
+      ],
+      "androidOnly": true
     },
     "holidayMakeupWorkday": {
       "resource": "string/holidayMakeupWorkday"
@@ -1523,7 +1568,8 @@
       "resource": "string/leaveEstimatedHolidaysYear",
       "params": [
         "year"
-      ]
+      ],
+      "androidOnly": true
     },
     "leaveEstimatedYear": {
       "resource": "string/leaveEstimatedYear",

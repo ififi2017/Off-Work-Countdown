@@ -25,6 +25,16 @@
     <string name="allowExactReminders">Cho phép lời nhắc chính xác</string>
     <string name="alternatingCurrentWeek">Tuần này</string>
     <string name="amount">Số tiền</string>
+    <string name="androidAppFiling">Đăng ký ứng dụng</string>
+    <string name="androidCheckUpdates">Kiểm tra cập nhật</string>
+    <string name="androidCheckingUpdates">Đang kiểm tra…</string>
+    <string name="androidUpdateAvailable">Đã có phiên bản mới</string>
+    <string name="androidUpdateCurrent">Bạn đang dùng phiên bản mới nhất.</string>
+    <string name="androidUpdateDownload">Mở trang tải xuống</string>
+    <string name="androidUpdateFailed">Không thể kiểm tra cập nhật. Vui lòng thử lại.</string>
+    <string name="androidUpdateIncompatible">Phiên bản mới nhất cần phiên bản Android mới hơn.</string>
+    <string name="androidUpdateMessage">Đã có phiên bản %1$s. Hãy mở trang web chính thức để tải xuống và cài đặt. Dữ liệu của bạn vẫn ở trên thiết bị này.</string>
+    <string name="androidUpdatePlay">Cập nhật trên Google Play</string>
     <string name="annualBonus">Thưởng cuối năm</string>
     <string name="annualBonusMonths">Số tháng thưởng</string>
     <string name="appearanceSection">Giao diện</string>

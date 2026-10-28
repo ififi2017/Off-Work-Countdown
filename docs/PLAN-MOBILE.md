@@ -454,3 +454,8 @@ iOS 自由排班增加选择班次后的日期点选与涂抹，重复操作恢�
 ## 2026-10-04 源码许可证切换
 
 新修订的项目源码采用 MPL-2.0；已发布的 MIT 版本及原有授权不撤销。品牌、指定素材和第三方资源按根目录 `LICENSING.md` / `ASSETS.md` / `TRADEMARKS.md` 区分。独立商业分支允许，不能冒充官方。发行前依 `SOURCE.md` 保存并公开对应平台、版本、build number 的源码提交；商店中已有二进制的许可不因本次 PR 自动改变。实施与验证记录见 `docs/reviews/2026-10-04-licensing-transition.md`。
+
+
+### 2026-10-28 Android update and About increment
+
+CN 3.2.1(6) adds a user-triggered HTTPS update check with explicit official-page download confirmation; Play uses its store update page. Update metadata contains no device or purchase identifiers. About adopts the explicitly requested latest iOS studio artwork and owner-provided APP registration. Detailed verification and publication status remains in `docs/android/progress.md`.

@@ -25,6 +25,16 @@
     <string name="allowExactReminders">正確なリマインダーを許可</string>
     <string name="alternatingCurrentWeek">今週</string>
     <string name="amount">金額</string>
+    <string name="androidAppFiling">アプリ届出</string>
+    <string name="androidCheckUpdates">更新を確認</string>
+    <string name="androidCheckingUpdates">確認中…</string>
+    <string name="androidUpdateAvailable">新しいバージョンがあります</string>
+    <string name="androidUpdateCurrent">最新バージョンです。</string>
+    <string name="androidUpdateDownload">ダウンロードページを開く</string>
+    <string name="androidUpdateFailed">更新を確認できませんでした。もう一度お試しください。</string>
+    <string name="androidUpdateIncompatible">最新バージョンには、より新しい Android が必要です。</string>
+    <string name="androidUpdateMessage">バージョン %1$s が公開されました。公式サイトを開いてダウンロードとインストールを行ってください。データはこの端末に残ります。</string>
+    <string name="androidUpdatePlay">Google Play で更新</string>
     <string name="annualBonus">年末賞与</string>
     <string name="annualBonusMonths">賞与月数</string>
     <string name="appearanceSection">外観</string>

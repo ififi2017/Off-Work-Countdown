@@ -11,6 +11,7 @@ import com.rainif.doneat.R
  */
 @Suppress("unused", "FunctionName")
 object Strings {
+    fun androidUpdateMessage(res: Resources, version: String): String = res.getString(R.string.androidUpdateMessage, version)
     fun biometricsLockoutHint(res: Resources, biometry: String): String = res.getString(R.string.biometricsLockoutHint, biometry)
     fun biometricsNotEnrolledHint(res: Resources, biometry: String): String = res.getString(R.string.biometricsNotEnrolledHint, biometry)
     fun biometricsUnavailableHint(res: Resources, app: String): String = res.getString(R.string.biometricsUnavailableHint, app)

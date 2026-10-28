@@ -25,6 +25,16 @@
     <string name="allowExactReminders">Consenti promemoria esatti</string>
     <string name="alternatingCurrentWeek">Questa settimana</string>
     <string name="amount">Importo</string>
+    <string name="androidAppFiling">Registrazione dell’app</string>
+    <string name="androidCheckUpdates">Controlla aggiornamenti</string>
+    <string name="androidCheckingUpdates">Verifica in corso…</string>
+    <string name="androidUpdateAvailable">È disponibile una nuova versione</string>
+    <string name="androidUpdateCurrent">Hai già l’ultima versione.</string>
+    <string name="androidUpdateDownload">Apri la pagina di download</string>
+    <string name="androidUpdateFailed">Impossibile verificare gli aggiornamenti. Riprova.</string>
+    <string name="androidUpdateIncompatible">L’ultima versione richiede una versione più recente di Android.</string>
+    <string name="androidUpdateMessage">La versione %1$s è disponibile. Apri il sito ufficiale per scaricarla e installarla. I tuoi dati restano su questo dispositivo.</string>
+    <string name="androidUpdatePlay">Aggiornamenti su Google Play</string>
     <string name="annualBonus">Bonus di fine anno</string>
     <string name="annualBonusMonths">Mesi di bonus</string>
     <string name="appearanceSection">Aspetto</string>

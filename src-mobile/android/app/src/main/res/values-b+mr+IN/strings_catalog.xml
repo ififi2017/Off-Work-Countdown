@@ -25,6 +25,16 @@
     <string name="allowExactReminders">अचूक स्मरणपत्रांना परवानगी द्या</string>
     <string name="alternatingCurrentWeek">हा आठवडा</string>
     <string name="amount">रक्कम</string>
+    <string name="androidAppFiling">अॅप नोंदणी</string>
+    <string name="androidCheckUpdates">अपडेट तपासा</string>
+    <string name="androidCheckingUpdates">तपासत आहे…</string>
+    <string name="androidUpdateAvailable">नवीन आवृत्ती उपलब्ध आहे</string>
+    <string name="androidUpdateCurrent">तुमची आवृत्ती अद्ययावत आहे.</string>
+    <string name="androidUpdateDownload">डाउनलोड पृष्ठ उघडा</string>
+    <string name="androidUpdateFailed">अपडेट तपासता आले नाहीत. कृपया पुन्हा प्रयत्न करा.</string>
+    <string name="androidUpdateIncompatible">नवीनतम आवृत्तीसाठी Android ची नवीन आवृत्ती आवश्यक आहे.</string>
+    <string name="androidUpdateMessage">आवृत्ती %1$s उपलब्ध आहे. ती डाउनलोड आणि इन्स्टॉल करण्यासाठी अधिकृत वेबसाइट उघडा. तुमचा डेटा याच डिव्हाइसवर राहील.</string>
+    <string name="androidUpdatePlay">Google Play वर अपडेट</string>
     <string name="annualBonus">वर्षअखेरीचा बोनस</string>
     <string name="annualBonusMonths">बोनसचे महिने</string>
     <string name="appearanceSection">स्वरूप</string>
