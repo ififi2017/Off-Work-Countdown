@@ -29,8 +29,13 @@ class ProtectionTests(unittest.TestCase):
     def test_actual_protected_environment_passes(self):
         self.assertEqual(signing.validate_protection(self.environment, self.policies), 42)
 
-    def test_missing_reviewer_or_self_review_protection_fails(self):
-        for change in ({'prevent_self_review': False}, {'reviewers': []}, {'reviewers': [{'type': 'User'}]}):
+    def test_owner_may_dispatch_and_manually_approve(self):
+        self.environment['protection_rules'][0]['prevent_self_review'] = False
+        self.assertEqual(signing.validate_protection(self.environment, self.policies), 42)
+
+    def test_missing_reviewer_or_ambiguous_self_review_policy_fails(self):
+        for change in ({'prevent_self_review': None}, {'prevent_self_review': 'false'},
+                       {'reviewers': []}, {'reviewers': [{'type': 'User'}]}):
             environment = copy.deepcopy(self.environment)
             environment['protection_rules'][0].update(change)
             with self.subTest(change=change), self.assertRaises(ValueError):

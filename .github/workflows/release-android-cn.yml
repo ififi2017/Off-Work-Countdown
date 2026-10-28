@@ -22,7 +22,7 @@ on:
         required: true
         type: string
       sign:
-        description: Request protected isolated signing (requires independent environment reviewer)
+        description: Request protected isolated signing (requires manual environment approval; owner may self-approve)
         default: false
         type: boolean
       draft:
@@ -179,7 +179,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Require reviewers, prevent self-review and main-only policy
+      - name: Require reviewers and main-only policy
         id: protection
         run: python3 scripts/android-cn-signing.py preflight --repository "$GITHUB_REPOSITORY"
 

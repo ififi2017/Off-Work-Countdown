@@ -72,7 +72,8 @@ APK signed or release created during implementation.
    public configuration. The build emits an unsigned candidate.
 2. A separate, secret-free preflight job checks the **existing** environment
    `android-cn-release` via GitHub's environment/branch-policy APIs. Require
-   nonempty required reviewers, `prevent_self_review=true`, and exactly one
+   nonempty required reviewers, an explicit boolean `prevent_self_review`
+   setting (either false or true), and exactly one
    deployment rule permitting branch `main`. Missing environment, API failure,
    missing/ambiguous fields, or weaker protection fails closed before any job
    requests that environment; CI never creates/changes protection settings.
@@ -101,8 +102,11 @@ APK signed or release created during implementation.
 Environment and branch checks use GitHub's documented read APIs:
 [environment protection](https://docs.github.com/en/rest/deployments/environments#get-an-environment)
 and [deployment branch policies](https://docs.github.com/en/rest/deployments/branch-policies#list-deployment-branch-policies).
-An independent reviewer must be available: the person dispatching a signing
-run cannot approve it. Configure protection and independent CN environment
+The same owner may dispatch and manually approve a signing run; no second
+account is required. Set `prevent_self_review=false` to allow this. An owner
+may instead choose true if they want a different reviewer. CI still waits for
+the configured environment's manual approval before signing. Configure
+protection and independent CN environment
 secrets explicitly before opting in; this change does not create secrets or
 modify the existing environment. Owner/admin changes to protection during a
 run remain outside code enforcement; both API checks must pass.
@@ -125,7 +129,7 @@ before any environment job or signing step. The code/tests do not make this
 a live release service.
 
 To activate later, the owner must separately configure the exact environment
-and independent reviewer/main-branch protections above, supply those four CN
+and required-reviewer/main-branch protections above, supply those four CN
 secrets, confirm the public-key repository variable, and choose a reviewed
 immutable source containing CN. Current product `main` has no CN channel, so
 a new 3.2.3 CN release also needs source integration first. No environment,

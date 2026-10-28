@@ -24,8 +24,8 @@ ENVIRONMENT = 'android-cn-release'
 def validate_protection(environment, policies):
     cn.require(environment.get('name') == ENVIRONMENT and isinstance(environment.get('id'), int), 'Missing signing environment')
     rules = [r for r in environment.get('protection_rules', []) if r.get('type') == 'required_reviewers']
-    cn.require(len(rules) == 1 and rules[0].get('prevent_self_review') is True,
-               'Signing requires enforced reviewers and prevention of self-review')
+    cn.require(len(rules) == 1 and isinstance(rules[0].get('prevent_self_review'), bool),
+               'Signing requires enforced reviewers and an explicit self-review policy')
     reviewers = rules[0].get('reviewers')
     cn.require(isinstance(reviewers, list) and len(reviewers) > 0 and all(
         r.get('type') in ('User', 'Team') and isinstance(r.get('reviewer', {}).get('id'), int) for r in reviewers),
