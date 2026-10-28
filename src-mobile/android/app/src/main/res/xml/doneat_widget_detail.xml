@@ -4,6 +4,6 @@
     android:initialLayout="@layout/glance_default_loading_layout"
     android:previewImage="@drawable/widget_suite_preview"
     android:minWidth="220dp" android:minHeight="250dp"
-    android:minResizeWidth="220dp" android:minResizeHeight="150dp"
+    android:minResizeWidth="220dp" android:minResizeHeight="110dp"
     android:resizeMode="horizontal|vertical" android:updatePeriodMillis="0"
     android:widgetCategory="home_screen" />

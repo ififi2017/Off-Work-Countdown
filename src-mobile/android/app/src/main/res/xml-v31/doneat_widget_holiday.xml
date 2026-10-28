@@ -3,8 +3,8 @@
     android:description="@string/widgetSuiteHolidayDescription"
     android:initialLayout="@layout/glance_default_loading_layout"
     android:previewImage="@drawable/widget_suite_preview"
-    android:minWidth="150dp" android:minHeight="150dp"
-    android:minResizeWidth="150dp" android:minResizeHeight="150dp"
+    android:minWidth="110dp" android:minHeight="110dp"
+    android:minResizeWidth="110dp" android:minResizeHeight="110dp"
     android:resizeMode="horizontal|vertical" android:updatePeriodMillis="0"
     android:widgetCategory="home_screen"
     android:previewLayout="@layout/widget_preview_holiday" android:targetCellWidth="2" android:targetCellHeight="2" />

@@ -92,6 +92,9 @@ class DoneAtSuiteWidget(private val kind: DoneAtWidgetKind) : GlanceAppWidget() 
             val size = LocalSize.current
             val current = safe?.focus?.current(now)
             val focusRunning = kind == DoneAtWidgetKind.FOCUS && current != null
+            val focusQueueCount = safe?.focus?.blocks?.count { it.startMs > now }?.coerceAtMost(4) ?: 0
+            val focusOffset = WidgetFocusLayout.offset(size.width.value, size.height.value, focusQueueCount, focusRunning)
+            val expandedFocus = WidgetFocusLayout.expanded(size.width.value, size.height.value)
             val controls = focusRunning && current?.isBreak == false && size.width >= 220.dp
             val paintCard = if (focusRunning) card.copy(nativeFocusTimer = true) else card
             val bitmap = remember(paintCard, size, localized) { widgetCardBitmap(localized, paintCard, size) }
@@ -102,16 +105,16 @@ class DoneAtSuiteWidget(private val kind: DoneAtWidgetKind) : GlanceAppWidget() 
                     val timerWidth = WidgetFocusLayout.timerWidth(size.width.value, size.width < 220.dp || current.isBreak)
                     val views = RemoteViews(localized.packageName, R.layout.widget_countdown).apply {
                         setTextViewTextSize(R.id.widget_countdown, TypedValue.COMPLEX_UNIT_SP,
-                            widgetFocusTimerFont(localized, widgetFocusClockText(localized, current.endMs - now), timerWidth, size.width < 220.dp))
+                            widgetFocusTimerFont(localized, widgetFocusClockText(localized, current.endMs - now), timerWidth, size.width < 220.dp, expandedFocus))
                         setChronometer(R.id.widget_countdown, SystemClock.elapsedRealtime() + (current.endMs - now).coerceAtLeast(0), null, true)
                         setChronometerCountDown(R.id.widget_countdown, true)
                     }
-                    Box(GlanceModifier.fillMaxSize().padding(start = WidgetFocusLayout.INSET.dp, top = WidgetFocusLayout.TIMER_TOP.dp)) {
-                        AndroidRemoteViews(views, GlanceModifier.width(timerWidth.dp).height(44.dp))
+                    Box(GlanceModifier.fillMaxSize().padding(start = WidgetFocusLayout.INSET.dp, top = (focusOffset + WidgetFocusLayout.timerTop(size.width.value, size.height.value)).dp)) {
+                        AndroidRemoteViews(views, GlanceModifier.width(timerWidth.dp).height(WidgetFocusLayout.timerHeight(size.width.value, size.height.value).dp))
                     }
                 }
                 if (controls && current != null) {
-                    Column(GlanceModifier.fillMaxSize().padding(start = WidgetFocusLayout.buttonStart(size.width.value).dp, top = WidgetFocusLayout.BUTTON_TOP.dp, end = 16.dp)) {
+                    Column(GlanceModifier.fillMaxSize().padding(start = WidgetFocusLayout.buttonStart(size.width.value).dp, top = (focusOffset + WidgetFocusLayout.buttonTop(size.width.value, size.height.value)).dp, end = 16.dp)) {
                         Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             val colors = ButtonDefaults.buttonColors(backgroundColor = ColorProvider(Color.Transparent),
                                 contentColor = ColorProvider(Color(androidx.core.content.ContextCompat.getColor(localized, R.color.widget_primary))))

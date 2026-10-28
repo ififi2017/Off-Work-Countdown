@@ -55,8 +55,12 @@ private class CountdownDrawing(private val context: Context, private val kind: D
     private val medium = !large && width >= 220
     private val compact = medium && height < 145
     private val wide = kind == DoneAtWidgetKind.CLASSIC || kind == DoneAtWidgetKind.DETAIL
-    private val baseW = if (wide && (medium || large)) 364f else 170f
-    private val baseH = if (wide && large) 382f else if (wide && compact) 118f else 170f
+    // The optional glance styles have real wide/tall layouts. Do not centre a
+    // scaled 170-square inside a larger host: its timer and artwork both need
+    // to use the complete allocated rectangle.
+    private val expandedStyle = !wide && (width >= 220 || height >= 250)
+    private val baseW = if (expandedStyle) width else if (wide && (medium || large)) 364f else 170f
+    private val baseH = if (expandedStyle) height else if (wide && large) 382f else if (wide && compact) 118f else 170f
     private val scale = min(width / baseW, height / baseH)
     private val originX = (width - baseW * scale) / 2
     private val originY = (height - baseH * scale) / 2
@@ -122,7 +126,7 @@ private class CountdownDrawing(private val context: Context, private val kind: D
     private fun timer(left: Float, top: Float, w: Float, sp: Float, center: Boolean = false) {
         if (!counting && kind != DoneAtWidgetKind.CLASSIC) { text(label, left, top + sp * 0.12f, w, sp * 0.57f, true, center = center, maxLines = 2); return }
         val value = if (counting) timerText else "0:00:00"
-        val p = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = primary; typeface = Typeface.create("sans-serif", Typeface.BOLD); textSize = sp * fontScale }
+        val p = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = primary; typeface = Typeface.create("sans-serif", Typeface.BOLD); fontFeatureSettings = "tnum"; textSize = sp * fontScale }
         // Released iOS and Android keep system-ticked seconds; fit the real figure, never crop or fake minutes.
         p.textSize = min(sp * 1.2f, min(p.textSize, (w - 2).coerceAtLeast(1f) / p.measureText(value).coerceAtLeast(1f) * p.textSize))
         val h = p.fontMetrics.descent - p.fontMetrics.ascent + 2
@@ -208,34 +212,133 @@ private class CountdownDrawing(private val context: Context, private val kind: D
         text(t(R.string.comingUp), 16f, 171f, 332f, 11f, true, secondary); upcoming(16f, 192f, 332f, 4, false, true, 40f)
     }
     private fun big() {
+        if (expandedStyle) { bigExpanded(); return }
         icon(phaseGlyph(), 16f, 38f, 13f, phaseColor)
         text(if (entry?.phase == WidgetPhase.WORKING) t(R.string.timeLeftCaption) else label, 34f, 37f, 120f, 13f, true, secondary)
         if (counting) timer(16f, 60f, 138f, 60f) else icon(if (entry?.phase == WidgetPhase.DONE) "check" else "sunrise", 16f, 62f, 40f, phaseColor)
         target?.takeIf { counting }?.let { text(clock(it), 16f, 119f, 138f, 13f, true, phaseColor) }
     }
+    private fun bigExpanded() {
+        val pad = min(baseW, baseH).times(0.095f).coerceIn(10f, 20f)
+        val content = baseW - 2 * pad
+        val tall = baseH >= 250
+        val caption = if (entry?.phase == WidgetPhase.WORKING) t(R.string.timeLeftCaption) else label
+        icon(phaseGlyph(), pad, pad + 1, if (tall) 17f else 13f, phaseColor)
+        text(caption, pad + if (tall) 25f else 20f, pad, content - 25, if (tall) 15f else 13f, true, secondary)
+        val top = if (tall) max(pad + 38, baseH * 0.24f) else pad + 24
+        val font = if (tall) (baseW * 0.26f).coerceIn(48f, 96f)
+            else min(72f, ((baseH - pad - 24 - top) / 1.2f).coerceAtLeast(24f))
+        if (counting) timer(pad, top, content, font)
+        else icon(if (entry?.phase == WidgetPhase.DONE) "check" else "sunrise", pad, top + 3, if (tall) 64f else 46f, phaseColor)
+        if (tall) {
+            val digitsBottom = timer?.let { (it.top + it.height - originY) / scale } ?: top + 64
+            target?.takeIf { counting }?.let { text(clock(it), pad, digitsBottom + 12, content, 19f, true, phaseColor) }
+            text(t(R.string.widgetSuiteToday), pad, baseH - pad - 56, content - 74, 12f, true, secondary)
+            text(percent, baseW - pad - 66, baseH - pad - 59, 66f, 16f, true, phaseColor)
+            shiftSummary(pad, baseH - pad - 28, content)
+        } else {
+            target?.takeIf { counting }?.let { text(clock(it), pad, baseH - pad - 16, content, 13f, true, phaseColor) }
+        }
+    }
     private fun ringStyle() {
+        if (expandedStyle) { ringExpanded(); return }
         ring(21f, 21f, 128f, true, 9f); icon(phaseGlyph(), 78f, 52f, 14f, phaseColor)
         if (counting) timer(39f, 74f, 92f, 26f, true) else icon(if (entry?.phase == WidgetPhase.DONE) "check" else "play", 71f, 74f, 28f, phaseColor)
         target?.takeIf { counting }?.let { text(clock(it), 36f, 108f, 98f, 11f, color = secondary, center = true) }
     }
+    private fun ringExpanded() {
+        val pad = min(baseW, baseH).times(0.095f).coerceIn(10f, 20f)
+        val tall = baseH >= 250
+        val diameter = if (tall) min(baseW - pad * 2, baseH - 110).coerceAtLeast(90f)
+            else min(baseH - 2 * pad, (baseW - 3 * pad) * 0.46f).coerceAtLeast(70f)
+        val left = if (tall) (baseW - diameter) / 2 else pad
+        val top = if (tall) pad + 27 + max(0f, (baseH - pad - 28 - (pad + 27) - diameter - 16) / 2) else (baseH - diameter) / 2
+        val stroke = (diameter * 0.07f).coerceIn(7f, 12f)
+        ring(left, top, diameter, true, stroke)
+        icon(phaseGlyph(), left + diameter / 2 - 8, top + diameter * 0.24f, 16f, phaseColor)
+        val timerWidth = diameter * 0.68f
+        if (counting) timer(left + (diameter - timerWidth) / 2, top + diameter * 0.41f, timerWidth, if (tall) 46f else 27f, true)
+        else icon(if (entry?.phase == WidgetPhase.DONE) "check" else "play", left + diameter / 2 - 15, top + diameter * 0.43f, 30f, phaseColor)
+        target?.takeIf { counting }?.let { text(clock(it), left + diameter * 0.16f, top + diameter * 0.68f, diameter * 0.68f, if (tall) 14f else 11f, color = secondary, center = true) }
+        if (tall) {
+            brand(pad, pad, 18f); text(label, pad + 26, pad + 2, baseW - 2 * pad - 26, 13f, true, phaseColor)
+            shiftSummary(pad, baseH - pad - 28, baseW - 2 * pad)
+        } else {
+            val side = left + diameter + 22
+            val sideWidth = (baseW - side - pad).coerceAtLeast(1f)
+            text(label, side, pad + 3, sideWidth, 13f, true, secondary)
+            val percentFont = min(32f, ((baseH - pad - 28 - baseH * 0.36f - 8) / 1.45f).coerceAtLeast(16f))
+            text(percent, side, baseH * 0.36f, sideWidth, percentFont, true, phaseColor)
+            shiftSummary(side, baseH - pad - 28, sideWidth)
+        }
+    }
+    /** A wider host can show both exact segment weights and their already-resolved clock boundaries. */
+    private fun shiftSummary(left: Float, top: Float, w: Float) {
+        segmentBar(left, top, w)
+        val first = segments.firstOrNull()
+        val last = segments.lastOrNull()
+        if (first == null || last == null) { targetLine(left, top + 14, w); return }
+        val edge = min(66f, w * 0.35f)
+        text(clock(first.startMs), left, top + 14, edge, 11f, color = secondary)
+        text(clock(last.endMs), left + w - edge, top + 14, edge, 11f, color = secondary)
+        if (w >= 260) segments.zipWithNext().firstOrNull { it.second.startMs > it.first.endMs }?.let { (a, b) ->
+            text("${clock(a.endMs)}–${clock(b.startMs)}", left + edge + 8, top + 14, w - 2 * edge - 16, 11f, color = secondary, center = true)
+        }
+    }
     private fun timeline() {
+        if (expandedStyle) { timelineExpanded(); return }
         header(mark = 16f, title = t(R.string.widgetSuiteToday))
+        dayAxis(16f, 44f, 138f, 109f, 12f)
+    }
+    private fun timelineExpanded() {
+        val pad = min(baseW, baseH).times(0.095f).coerceIn(10f, 20f)
+        val tall = baseH >= 250
+        brand(pad, pad, 18f); text(t(R.string.widgetSuiteToday), pad + 26, pad + 2, baseW - 2 * pad - 26, 13f, true)
+        val short = baseH < 145
+        val top = pad + if (short) 28 else 36
+        val split = if (tall) baseW >= 300 else baseW >= 250
+        if (!split) { dayAxis(pad, top, baseW - 2 * pad, baseH - top - pad, if (tall) 14f else 12f); return }
+        val axisWidth = (baseW - 2 * pad) * 0.47f
+        val side = pad + axisWidth + 24
+        val sideWidth = baseW - side - pad
+        rect(side - 12, top, 0.6f, baseH - top - pad, track)
+        dayAxis(pad, top, axisWidth, baseH - top - pad, 12f)
+        text(label, side, top, sideWidth, 12f, true, secondary, maxLines = 2)
+        val timerTop = top + if (short) 18 else 30
+        val targetTop = if (short) baseH - pad - 13 else top + 76
+        val timerFont = if (short) ((targetTop - timerTop - 6) / 1.45f).coerceAtLeast(14f) else if (tall) 34f else 31f
+        timer(side, timerTop, sideWidth, timerFont)
+        targetLine(side, targetTop, sideWidth)
+        if (tall) {
+            text(t(R.string.comingUp), side, top + 116, sideWidth, 11f, true, secondary)
+            val available = baseH - pad - (top + 141)
+            val limit = (available / 31f).toInt().coerceIn(1, 5)
+            upcoming(side, top + 141, sideWidth, limit, true, false, 31f)
+        } else if (!short) segmentBar(side, baseH - pad - 6, sideWidth)
+    }
+    private fun dayAxis(left: Float, top: Float, w: Float, axisH: Float, labelSp: Float) {
         val values = segments.filter { it.durationMs > 0 }; val first = values.firstOrNull(); val last = values.lastOrNull()
-        if (first == null || last == null) { text(label, 16f, 70f, 138f, 13f, true, maxLines = 2); return }
-        val top = 44f; val axisH = 109f; val span = (last.endMs - first.startMs).coerceAtLeast(1)
+        if (first == null || last == null) { text(label, left, top + 18, w, labelSp, true, maxLines = 2); return }
+        val span = (last.endMs - first.startMs).coerceAtLeast(1)
         fun y(ms: Long) = top + ((ms - first.startMs).toDouble() / span * axisH).toFloat()
         values.forEach { segment ->
-            val y1 = y(segment.startMs); val h = (y(segment.endMs) - y1).coerceAtLeast(3f); rect(16f, y1, 6f, h, track, 3f)
+            val y1 = y(segment.startMs); val h = (y(segment.endMs) - y1).coerceAtLeast(3f); rect(left, y1, 6f, h, track, 3f)
             val fill = ((now - segment.startMs).toDouble() / segment.durationMs.coerceAtLeast(1)).coerceIn(0.0, 1.0)
-            if (fill > 0) rect(16f, y1, 6f, (h * fill).toFloat().coerceAtLeast(3f), accent, 3f)
+            if (fill > 0) rect(left, y1, 6f, (h * fill).toFloat().coerceAtLeast(3f), accent, 3f)
         }
         data class Mark(val ms: Long, val label: String, val isNow: Boolean = false)
         val marks = mutableListOf(Mark(first.startMs, "${clock(first.startMs)} ${t(R.string.startTime)}"), Mark(last.endMs, "${clock(last.endMs)} ${t(R.string.endTime)}"))
-        values.zipWithNext().filter { it.second.startMs > it.first.endMs }.forEach { (a, b) -> marks += Mark((a.endMs + b.startMs) / 2, "${clock(a.endMs)} ${t(R.string.lunchBreak)}") }
+        values.zipWithNext().filter { it.second.startMs > it.first.endMs }.forEach { (a, b) ->
+            val gap = if (w >= 200) "${clock(a.endMs)}–${clock(b.startMs)}" else clock(a.endMs)
+            marks += Mark((a.endMs + b.startMs) / 2, "$gap ${t(R.string.lunchBreak)}")
+        }
         if (now > first.startMs && now < last.endMs) {
             marks.removeAll { kotlin.math.abs(it.ms - now).toDouble() / span < 0.12 }; marks += Mark(now, "${t(R.string.focusBandStateCurrent)} ${clock(now)}", true)
         }
-        marks.sortedBy { it.ms }.forEach { mark -> text(mark.label, 32f, (y(mark.ms) - 7).coerceIn(top, top + axisH - 14), 122f, 12f, mark.isNow, if (mark.isNow) primary else secondary); description += mark.label }
+        marks.sortedBy { it.ms }.forEach { mark ->
+            text(mark.label, left + 16, (y(mark.ms) - 7).coerceIn(top, max(top, top + axisH - 16)), w - 16, labelSp, mark.isNow, if (mark.isNow) primary else secondary)
+            description += mark.label
+        }
     }
     private fun detailMedium() {
         brand(16f, 16f, 18f); text(label, 40f, 18f, 132f, 12f, true, phaseColor)
@@ -266,7 +369,7 @@ private class CountdownDrawing(private val context: Context, private val kind: D
                 text(whenText, left + w - 66, y + 10, 66f, 12f, color = secondary)
                 if (index < min(items.size, limit) - 1) rect(left + 24, y + rowHeight - 1, w - 24, 0.5f, track)
             } else {
-                val timeW = if (compact) 40f else if (otherDay) 72f else 42f
+                val timeW = if (otherDay) min(72f, w * 0.46f) else if (compact) 40f else 42f
                 text(whenText, left + 21, y + 3, timeW, if (compact) 12f else 13f, true, if (otherDay) secondary else primary)
                 val titleLeft = left + 21 + timeW + 7; val detailW = if (!compact && item.detail.isNotBlank()) 92f else 0f
                 text(item.title, titleLeft, y + 3, (w - (titleLeft - left) - detailW).coerceAtLeast(20f), if (compact) 12f else 13f, color = if (otherDay) secondary else primary)

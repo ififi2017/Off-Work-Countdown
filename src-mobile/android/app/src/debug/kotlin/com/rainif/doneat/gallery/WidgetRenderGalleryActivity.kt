@@ -52,7 +52,9 @@ class WidgetRenderGalleryActivity : ComponentActivity() {
             val folder = File(cacheDir, "widget-design/${if(samples) if(intent.getBooleanExtra("locked", false)) "samples-locked" else "samples" else "actual"}-$locale-${if (dark) "dark" else "light"}-$fontScale")
             withContext(Dispatchers.Default) {
                 folder.mkdirs()
-                val sizes = listOf("small" to DpSize(170.dp, 170.dp), "medium" to DpSize(364.dp, 170.dp), "large" to DpSize(364.dp, 382.dp))
+                val sizes = if (intent.getBooleanExtra("deviceSizes", false))
+                    listOf("small" to DpSize(180.dp, 240.dp), "medium" to DpSize(390.dp, 180.dp), "large" to DpSize(390.dp, 390.dp))
+                else listOf("small" to DpSize(170.dp, 170.dp), "medium" to DpSize(364.dp, 170.dp), "large" to DpSize(364.dp, 382.dp))
                 for (kind in DoneAtWidgetKind.entries) for ((label, size) in sizes) {
                     if (kind == DoneAtWidgetKind.DETAIL && label == "small") continue
                     val bitmap = if (kind.countdown) widgetCountdownPreviewBitmap(context, kind, rendered.second, rendered.first, now, size)

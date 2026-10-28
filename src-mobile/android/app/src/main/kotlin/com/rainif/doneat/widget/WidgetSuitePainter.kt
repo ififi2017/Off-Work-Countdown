@@ -42,6 +42,19 @@ internal object WidgetFocusLayout {
     const val BUTTON_GAP = 8f
     fun timerWidth(width: Float, small: Boolean) = (width - INSET * 2 - if (small) 0f else 108f).coerceAtLeast(44f)
     fun buttonStart(width: Float) = width - INSET - BUTTON_SIZE * 2 - BUTTON_GAP
+    fun expanded(width: Float, height: Float) = width >= 220f && height >= 220f
+    fun titleTop(width: Float, height: Float) = if (expanded(width, height)) 48f else TITLE_TOP
+    fun timerTop(width: Float, height: Float) = if (expanded(width, height)) 76f else TIMER_TOP
+    fun buttonTop(width: Float, height: Float) = if (expanded(width, height)) 91f else BUTTON_TOP
+    fun timerHeight(width: Float, height: Float) = if (expanded(width, height)) 80f else 44f
+    fun panelHeight(width: Float, height: Float, queuedCount: Int, running: Boolean): Float = when {
+        height < 220f -> height
+        width < 220f -> min(height, 210f)
+        running -> min(height, 250f + 32f * queuedCount.coerceIn(0, 4))
+        else -> min(height, 250f)
+    }
+    fun offset(width: Float, height: Float, queuedCount: Int, running: Boolean) =
+        (height - panelHeight(width, height, queuedCount, running)) / 2
 }
 
 /** A sampled gallery value; installed widgets use the system Chronometer in this exact slot. */
@@ -54,8 +67,8 @@ internal fun widgetFocusClockText(context: Context, remainingMs: Long): String {
         else formatter.format(seconds / 60) + ":" + two(seconds % 60)
 }
 
-internal fun widgetFocusTimerFont(context: Context, clock: String, width: Float, small: Boolean): Float {
-    val requested = if (small) 30f else 34f
+internal fun widgetFocusTimerFont(context: Context, clock: String, width: Float, small: Boolean, expanded: Boolean = false): Float {
+    val requested = if (expanded) 56f else if (small) 30f else 34f
     val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = requested * context.resources.configuration.fontScale
         typeface = Typeface.DEFAULT_BOLD
@@ -64,7 +77,10 @@ internal fun widgetFocusTimerFont(context: Context, clock: String, width: Float,
     // At 200% text size the old 0.6 floor could still exceed a small
     // widget's slot. Fit the complete clock, with a rounding inset, and
     // share this exact SP value with the installed system Chronometer.
-    return requested * ((width - 2f).coerceAtLeast(1f) / paint.measureText(clock).coerceAtLeast(1f)).coerceAtMost(1f)
+    val widthFit = (width - 2f).coerceAtLeast(1f) / paint.measureText(clock).coerceAtLeast(1f)
+    val lineHeight = paint.fontMetrics.descent - paint.fontMetrics.ascent
+    val heightFit = (if (expanded) 76f else 40f) / lineHeight.coerceAtLeast(1f)
+    return requested * min(widthFit, heightFit).coerceAtMost(1f)
 }
 
 /** HTML boards 1/2/4/6/7: each widget has its own family layout, never a generic metrics card. */
@@ -78,9 +94,11 @@ internal class WidgetSuitePainter(private val context: Context, private val card
     private val fontScale = res.configuration.fontScale
     private val rtl = res.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
     private val w = size.width.value.coerceAtLeast(1f)
-    private val h = size.height.value.coerceAtLeast(1f)
+    private var h = size.height.value.coerceAtLeast(1f)
+    private val hostHeight = h
     private val small = w < 220f
     private val large = !small && h >= 220f
+    private val tall = h >= 220f
     private val inset = 16f
     private val cw = (w - inset * 2).coerceAtLeast(1f)
     private val image = createBitmap((w * density).roundToInt().coerceAtLeast(1), (h * density).roundToInt().coerceAtLeast(1))
@@ -124,6 +142,15 @@ internal class WidgetSuitePainter(private val context: Context, private val card
         paint.color = color; paint.style = Paint.Style.FILL
         val left = x(start, width)
         canvas.drawRoundRect(left, top, left + width, top + height, radius, radius, paint)
+    }
+    /** Keep a complete content group together when the launcher supplies excess height. */
+    private fun centeredPanel(height: Float, draw: () -> Unit) {
+        val previous = h
+        val panel = height.coerceIn(1f, previous)
+        canvas.save()
+        canvas.translate(0f, (previous - panel) / 2)
+        h = panel
+        try { draw() } finally { h = previous; canvas.restore() }
     }
     private fun rule(y: Float) = box(inset, y, cw, .6f, track)
     private fun text(value: String, start: Float, top: Float, width: Float, size: Float, bold: Boolean = false,
@@ -232,36 +259,45 @@ internal class WidgetSuitePainter(private val context: Context, private val card
         if (state.kind == DoneAtWidgetKind.YEAR) { year(); return image }
         if (snapshot == null) { empty(); return image }
         when (state.kind) {
-            DoneAtWidgetKind.WEEK -> week(snapshot.calendar)
+            DoneAtWidgetKind.WEEK -> centeredPanel(if (large) min(h, 292f) else if (tall) min(h, 210f) else h) { week(snapshot.calendar) }
             DoneAtWidgetKind.ROSTER -> roster(snapshot.calendar)
             DoneAtWidgetKind.YEAR -> year()
-            DoneAtWidgetKind.WEEKEND -> weekend(snapshot)
-            DoneAtWidgetKind.HOLIDAY -> holiday(snapshot.holiday)
+            DoneAtWidgetKind.WEEKEND -> centeredPanel(if (large) min(h, 286f) else if (tall) min(h, 210f) else h) { weekend(snapshot) }
+            DoneAtWidgetKind.HOLIDAY -> centeredPanel(if (large) min(h, 286f) else if (tall) min(h, 210f) else h) { holiday(snapshot.holiday) }
             DoneAtWidgetKind.SUMMARY -> summary(snapshot.summary)
             DoneAtWidgetKind.LIFE -> life(snapshot.life)
-            DoneAtWidgetKind.FOCUS -> focus(snapshot.focus)
+            DoneAtWidgetKind.FOCUS -> {
+                val queueCount = snapshot.focus.blocks.count { it.startMs > now }.coerceAtMost(4)
+                centeredPanel(WidgetFocusLayout.panelHeight(w, h, queueCount, snapshot.focus.current(now) != null)) { focus(snapshot.focus) }
+            }
             else -> empty()
         }
         return image
     }
 
     private fun empty(message: String = card.headline, action: String = card.caption) {
-        header(card.title)
-        text(message, inset, 43f, cw, 15f, true, lines = if (large) 4 else 3)
-        text(action, inset, h - inset - 28, cw, 12f, true, accentText, lines = 2)
+        centeredPanel(if (large) min(h, 246f) else if (tall) min(h, 210f) else h) {
+            header(card.title)
+            text(message, inset, if (large) 56f else 43f, cw, if (large) 22f else 15f, true, lines = 3)
+            text(action, inset, h - inset - if (large) 34 else 28, cw, if (large) 14f else 12f, true, accentText, lines = 2)
+        }
     }
     private fun locked() {
-        header(card.title)
-        box(w - inset - 32, inset - 1, 32f, 16f, blend(accent, .14f), 5f)
-        text("Plus", w - inset - 29, inset + 1, 26f, 10f, true, accentText, center = true)
-        text(card.caption, inset, 43f, cw, if (small) 15f else 17f, true, lines = 2)
-        val y = h - inset - 42
-        if (state.kind == DoneAtWidgetKind.SUMMARY) {
-            val ratios = listOf(.6f, .85f, .7f, .45f, .2f)
-            val cell = (cw - 8 * 4) / 5
-            ratios.forEachIndexed { i, value -> box(inset + i * (cell + 8), y + 20 * (1 - value), cell, 20 * value, track, 4f) }
-        } else segmentBar(y + 8, List(4) { 0.0 })
-        text(t(R.string.widgetSuiteLearnPlus), inset, h - inset - 14, cw, 12f, true, accentText)
+        centeredPanel(if (large) min(h, 286f) else if (tall) min(h, 210f) else h) {
+            val spacious = large && h >= 270f
+            header(card.title)
+            box(w - inset - 32, inset - 1, 32f, 16f, blend(accent, .14f), 5f)
+            text("Plus", w - inset - 29, inset + 1, 26f, 10f, true, accentText, center = true)
+            text(card.caption, inset, if (spacious) 58f else 43f, cw, if (spacious) 22f else if (small) 15f else 17f, true, lines = if (spacious) 3 else 2)
+            val chartHeight = if (spacious) 44f else 20f
+            val y = h - inset - if (spacious) 100 else 42
+            if (state.kind == DoneAtWidgetKind.SUMMARY) {
+                val ratios = listOf(.6f, .85f, .7f, .45f, .2f)
+                val cell = (cw - 8 * 4) / 5
+                ratios.forEachIndexed { i, value -> box(inset + i * (cell + 8), y + chartHeight * (1 - value), cell, chartHeight * value, track, 4f) }
+            } else segmentBar(y + chartHeight / 2, List(4) { 0.0 }, if (spacious) 10f else 6f)
+            text(t(R.string.widgetSuiteLearnPlus), inset, h - inset - if (spacious) 30 else 14, cw, if (spacious) 14f else 12f, true, accentText)
+        }
     }
 
     private fun week(payload: WidgetCalendarPayload) {
@@ -282,10 +318,10 @@ internal class WidgetSuitePainter(private val context: Context, private val card
             text(headline, inset, 42f, headlineWidth + 1, 26f, true)
             val remainingWidth = cw - headlineWidth - 8
             if (remainingWidth > 65) text(finish.orEmpty(), inset + headlineWidth + 8, 55f, remainingWidth, 11f, color = muted)
-            val chartHeight = if (large) (h - 126 - inset - 22).coerceAtMost(180f) else if (h >= 164) 30f else 24f
-            val columnsY = if (large) 126f else h - inset - chartHeight - 18
             val gap = 6f
             val cell = (cw - gap * 6) / 7
+            val chartHeight = if (large) min((h - 126 - inset - 22).coerceAtLeast(24f), cell * 3f) else if (h >= 164) 30f else 24f
+            val columnsY = if (large) h - inset - chartHeight - 22 else h - inset - chartHeight - 18
             week.days.take(7).forEachIndexed { i, day ->
                 val start = inset + i * (cell + gap)
                 box(start, columnsY, cell, chartHeight, if (day.isWork) track else rest, 6f)
@@ -306,17 +342,17 @@ internal class WidgetSuitePainter(private val context: Context, private val card
         }
         header(note ?: t(R.string.widgetSuiteThisWeek))
         val headline = if (outlook.workdaysBeforeRest > 0) t(R.string.widgetSuiteRestAfter, count(outlook.workdaysBeforeRest)) else t(R.string.widgetSuiteRestingToday)
-        text(headline, inset, 44f, cw, if (small) 22f else 24f, true, lines = 2)
+        text(headline, inset, 44f, cw, if (large) 30f else if (small) 22f else 24f, true, lines = 2)
         text(outlook.nextRest?.let { t(R.string.widgetSuiteRestOn, date(it.startMs, "EEE")) }.orEmpty(), inset, 88f, cw, 11f, color = muted)
         val list = outlook.days.take(if (small) 7 else 14)
         val gap = if (small) 2f else 3f
         val cell = (cw - gap * (list.size - 1)) / list.size.coerceAtLeast(1)
-        val y = h - inset - if (small) 17 else 37
+        val y = h - inset - if (large) 72 else if (small) 17 else 37
         list.forEachIndexed { i, day ->
             val start = inset + i * (cell + gap)
-            box(start, y, cell, if (small) 14f else 22f, if (day.isWork) blend(accent, .16f) else rest, 4f)
+            box(start, y, cell, if (large) 48f else if (small) 14f else 22f, if (day.isWork) blend(accent, .16f) else rest, 4f)
             text(if (day.isWork) t(R.string.widgetSuiteWork) else t(R.string.widgetSuiteRest), start + 1, y + 2, cell - 2, if (small) 8f else 10f, true, if (day.isWork) accentText else muted, center = true)
-            if (!small) text(weekday(day.startMs), start, y + 27, cell, 9f, color = muted, center = true)
+            if (!small) text(weekday(day.startMs), start, y + (if (large) 53 else 27), cell, 9f, color = muted, center = true)
         }
     }
 
@@ -404,28 +440,30 @@ internal class WidgetSuitePainter(private val context: Context, private val card
     }
 
     private fun weekend(suite: WidgetSuiteSnapshot) {
-        header(t(R.string.widgetSuiteWeekendName))
+        val spacious = large && h >= 270f
         val start = suite.holiday.weekendStartMs
         if (start == null) { empty(t(R.string.widgetSuiteNoScheduleMessage), t(R.string.widgetSuiteOpenSettings)); return }
         if (start <= now && suite.calendar.day(now)?.isWork == true) { empty(t(R.string.widgetSuiteOpenToRefresh)); return }
+        header(t(R.string.widgetSuiteWeekendName))
         if (start <= now) {
-            text(t(R.string.widgetSuiteRestingToday), inset, 48f, cw, 23f, true, lines = 2)
-            text(t(R.string.widgetSuiteRestingNow), inset, 105f, cw, 12f, color = muted, lines = 2)
+            text(t(R.string.widgetSuiteRestingToday), inset, if (spacious) 55f else 48f, cw, if (spacious) 34f else 23f, true, lines = 2)
+            text(t(R.string.widgetSuiteRestingNow), inset, if (spacious) 130f else 105f, cw, if (spacious) 15f else 12f, color = muted, lines = 2)
         } else {
             val minutes = (start - now).coerceAtLeast(0) / 60_000
             val days = minutes / (24 * 60)
             val number = NumberFormat.getIntegerInstance(locale).apply { isGroupingUsed = false }
             val zero = number.format(0).first()
             val clock = number.format(minutes / 60 % 24) + ":" + number.format(minutes % 60).padStart(2, zero)
-            val parts = listOf(Triple(number.format(days), 40f, true), Triple(t(R.string.widgetSuiteDaysUnit), 15f, true), Triple(clock, 22f, true))
+            val parts = listOf(Triple(number.format(days), if (spacious) 68f else 40f, true), Triple(t(R.string.widgetSuiteDaysUnit), if (spacious) 22f else 15f, true), Triple(clock, if (spacious) 38f else 22f, true))
             val styles = parts.map { (_, size, bold) -> TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
                 textSize = size * fontScale; typeface = Typeface.create("sans-serif", if (bold) Typeface.BOLD else Typeface.NORMAL)
                 color = ink; fontFeatureSettings = "tnum"
             } }
             val total = parts.indices.sumOf { styles[it].measureText(parts[it].first).toDouble() }.toFloat() + 8
-            val factor = min(1f, cw / total).coerceAtMost(1.35f / fontScale)
+            val lineHeight = styles.first().fontMetrics.descent - styles.first().fontMetrics.ascent
+            val factor = min(min(1f, cw / total), (if (spacious) 82f else 48f) / lineHeight.coerceAtLeast(1f))
             styles.forEach { it.textSize *= factor }
-            val baseline = 48f - styles.first().fontMetrics.ascent
+            val baseline = (if (spacious) 50f else 48f) - styles.first().fontMetrics.ascent
             var logicalStart = inset
             parts.forEachIndexed { index, (value, _, _) ->
                 val style = styles[index]
@@ -435,18 +473,31 @@ internal class WidgetSuitePainter(private val context: Context, private val card
                 canvas.save(); canvas.translate(x(logicalStart, partWidth), baseline + style.fontMetrics.ascent); layout.draw(canvas); canvas.restore()
                 logicalStart += partWidth + if (index == 1) 5 else 3
             }
-            text(t(R.string.widgetSuiteRestOn, date(start, "EEE") + " " + time(start)), inset, 102f, cw, 12f, color = muted)
+            text(t(R.string.widgetSuiteRestOn, date(start, "EEE") + " " + time(start)), inset, if (spacious) 142f else 102f, cw, if (spacious) 15f else 12f, color = muted)
         }
         val progress = WidgetWeekProgress.from(suite.calendar, now)
-        segmentBar(h - inset - 6, progress.days.filter { it.isWork }.map { progress.fill(it, now) })
+        if (spacious) {
+            val gap = 6f
+            val cell = (cw - gap * 6) / 7
+            val height = min(cell * 1.35f, 62f)
+            val top = h - inset - height - 22
+            progress.days.take(7).forEachIndexed { index, day ->
+                val start = inset + index * (cell + gap)
+                box(start, top, cell, height, if (day.isWork) track else rest, 6f)
+                val fill = progress.fill(day, now).coerceIn(0.0, 1.0).toFloat()
+                if (fill > 0) box(start, top + height * (1 - fill), cell, height * fill, accent, min(6f, height * fill / 2))
+                text(weekday(day.startMs), start, top + height + 5, cell, 11f, day.dayKey == today.toString(), color = muted, center = true)
+            }
+        } else segmentBar(h - inset - 6, progress.days.filter { it.isWork }.map { progress.fill(it, now) })
     }
 
     private fun holiday(payload: WidgetHolidayPayload) {
+        val spacious = large && h >= 270f
         val leave = payload.nextLeave
         if (!small && payload.access.isUnlocked(now) && leave != null) {
             header(t(R.string.widgetSuiteNextLeave, count(daysUntil(leave.startMs))), payload.labels["remaining"])
-            text(payload.labels["requested"].orEmpty(), inset, 43f, cw, if (h < 170) 16f else 20f, true, lines = 2)
-            leaveStrip(leave.days, if (large) 116f else (h - inset - 56).coerceAtLeast(88f), if (large) 36f else if (h < 170) 18f else 22f)
+            text(payload.labels["requested"].orEmpty(), inset, if (spacious) 56f else 43f, cw, if (spacious) 28f else if (h < 170) 16f else 20f, true, lines = 2)
+            leaveStrip(leave.days, if (spacious) 150f else (h - inset - 56).coerceAtLeast(88f), if (spacious) 70f else if (h < 170) 18f else 22f)
             return
         }
         val holiday = payload.nextHoliday
@@ -455,18 +506,18 @@ internal class WidgetSuitePainter(private val context: Context, private val card
         val mainWidth = if (!small) (cw - 16) / 2 else cw
         header(t(R.string.widgetSuiteNextHoliday), if (small) holiday.name else null)
         if (small) valueUnit(count(daysUntil(holiday.startMs)), t(R.string.widgetSuiteDaysUnit), 49f, 40f)
-        else text(t(R.string.widgetSuiteDaysCount, count(daysUntil(holiday.startMs))), inset, 49f, mainWidth, 28f, true)
-        if (!small) text(holiday.name, inset, 95f, mainWidth, 13f, true)
-        text(t(R.string.widgetSuiteHolidayRun, date(holiday.startMs), count(holiday.days)), inset, if (small) 98f else 115f, mainWidth, if (small) 10f else 11f, color = muted, lines = if (small) 1 else 2)
+        else numberSuffix(count(daysUntil(holiday.startMs)), t(R.string.widgetSuiteDaysUnit), inset, if (spacious) 53f else 49f, mainWidth, if (spacious) 52f else 28f, if (spacious) 16f else 14f)
+        if (!small) text(holiday.name, inset, if (spacious) 131f else 95f, mainWidth, if (spacious) 18f else 13f, true, lines = if (spacious) 2 else 1)
+        text(t(R.string.widgetSuiteHolidayRun, date(holiday.startMs), count(holiday.days)), inset, if (spacious) 186f else if (small) 98f else 115f, mainWidth, if (spacious) 13f else if (small) 10f else 11f, color = muted, lines = if (small) 1 else 2)
         if (small) {
             if (holiday.isEstimated) text(t(R.string.widgetSuiteHolidayEstimated), inset, h - inset - 22, cw, 9f, color = muted, lines = 2)
         } else {
             val right = inset + mainWidth + 16
             box(right - 8, 44f, .6f, h - 60, track)
-            text(t(R.string.widgetSuiteLeaveTitle), right, 45f, mainWidth, 13f, true)
+            text(t(R.string.widgetSuiteLeaveTitle), right, if (spacious) 53f else 45f, mainWidth, if (spacious) 16f else 13f, true)
             val allowed = payload.access.isUnlocked(now)
-            text(t(if (allowed) R.string.widgetSuiteLeaveEmpty else R.string.widgetSuiteLeavePromise), right, 68f, mainWidth, 12f, color = muted, lines = 2)
-            text(if (allowed) payload.labels["remaining"].orEmpty() else t(R.string.widgetSuiteLearnPlus), right, h - inset - 28, mainWidth, 11f, true, if (allowed) muted else accentText, lines = 2)
+            text(t(if (allowed) R.string.widgetSuiteLeaveEmpty else R.string.widgetSuiteLeavePromise), right, if (spacious) 85f else 68f, mainWidth, if (spacious) 16f else 12f, color = muted, lines = if (spacious) 3 else 2)
+            text(if (allowed) payload.labels["remaining"].orEmpty() else t(R.string.widgetSuiteLearnPlus), right, if (spacious) 202f else h - inset - 28, mainWidth, if (spacious) 13f else 11f, true, if (allowed) muted else accentText, lines = 2)
         }
     }
     private fun daysUntil(start: Long) = ChronoUnit.DAYS.between(today, Instant.ofEpochMilli(start).atZone(zone).toLocalDate()).coerceAtLeast(0).toInt()
@@ -617,11 +668,14 @@ internal class WidgetSuitePainter(private val context: Context, private val card
     private fun focus(payload: WidgetFocusPayload) {
         val block = payload.current(now)
         val next = payload.next(now)
+        val titleTop = WidgetFocusLayout.titleTop(w, hostHeight)
+        val timerTop = WidgetFocusLayout.timerTop(w, hostHeight)
+        val buttonTop = WidgetFocusLayout.buttonTop(w, hostHeight)
         if (block == null) {
-            header(t(R.string.widgetSuiteFocusNext))
             if (next == null) { empty(t(R.string.widgetSuiteFocusEmpty), t(R.string.widgetSuiteFocusPlan)); return }
-            text(time(next.startMs), inset, 46f, cw, 30f, true)
-            text(t(R.string.widgetSuiteFocusBlockDetail, count(((next.endMs - next.startMs) / 60_000).toInt()), next.title), inset, 85f, cw, 12f, color = muted, lines = 2)
+            header(t(R.string.widgetSuiteFocusNext))
+            text(time(next.startMs), inset, if (large) 57f else 46f, cw, if (large) 48f else 30f, true)
+            text(t(R.string.widgetSuiteFocusBlockDetail, count(((next.endMs - next.startMs) / 60_000).toInt()), next.title), inset, if (large) 129f else 85f, cw, if (large) 16f else 12f, color = muted, lines = 2)
             text(t(R.string.widgetSuiteFocusOpen), inset, h - inset - 15, cw, 12f, true, accentText)
             return
         }
@@ -631,19 +685,19 @@ internal class WidgetSuitePainter(private val context: Context, private val card
         if (!small && !block.isBreak) {
             for (index in 0..1) {
                 val start = WidgetFocusLayout.buttonStart(w) + index * (WidgetFocusLayout.BUTTON_SIZE + WidgetFocusLayout.BUTTON_GAP)
-                box(start, WidgetFocusLayout.BUTTON_TOP, 44f, 44f, rest, 22f)
+                box(start, buttonTop, 44f, 44f, rest, 22f)
                 if (!card.nativeFocusTimer) {
                     if (index == 0) {
-                        box(start + 13, WidgetFocusLayout.BUTTON_TOP + 21, 18f, 2f, ink, 1f)
-                        box(start + 21, WidgetFocusLayout.BUTTON_TOP + 13, 2f, 18f, ink, 1f)
-                    } else box(start + 16, WidgetFocusLayout.BUTTON_TOP + 16, 12f, 12f, ink, 2f)
+                        box(start + 13, buttonTop + 21, 18f, 2f, ink, 1f)
+                        box(start + 21, buttonTop + 13, 2f, 18f, ink, 1f)
+                    } else box(start + 16, buttonTop + 16, 12f, 12f, ink, 2f)
                 }
             }
         }
-        text(block.title, inset, WidgetFocusLayout.TITLE_TOP, titleWidth, 15f, true)
+        text(block.title, inset, titleTop, titleWidth, if (large) 20f else 15f, true)
         if (!card.nativeFocusTimer) {
             val clock = widgetFocusClockText(context, block.endMs - now)
-            text(clock, inset, WidgetFocusLayout.TIMER_TOP, titleWidth, widgetFocusTimerFont(context, clock, titleWidth, small), true, fit = false)
+            text(clock, inset, timerTop, titleWidth, widgetFocusTimerFont(context, clock, titleWidth, small, large), true, fit = false)
         }
         val progress = ((now - block.startMs).toDouble() / (block.endMs - block.startMs).coerceAtLeast(1)).coerceIn(0.0, 1.0)
         val rounds = block.rounds.coerceAtLeast(block.round).coerceAtLeast(1)
@@ -652,17 +706,17 @@ internal class WidgetSuitePainter(private val context: Context, private val card
         val values = (0 until visibleSegments).map { (overall * visibleSegments - it).coerceIn(0.0, 1.0) }
         val nextBlock = payload.blocks.firstOrNull { it.startMs >= block.endMs && it.startMs > now }
         val nextCaption = nextBlock?.let { t(R.string.widgetSuiteFocusNextAt, time(it.startMs), it.title) }
-        val y = h - inset - if (nextCaption != null && !small) 26 else 6
-        segmentBar(y, values)
-        if (nextCaption != null && !small) text(nextCaption, inset, y + 12, cw, 11f, color = muted)
+        val y = h - inset - if (nextCaption != null && !small) (if (large) 42 else 26) else (if (large) 12 else 6)
+        segmentBar(y, values, if (large) 12f else 6f)
+        if (nextCaption != null && !small) text(nextCaption, inset, y + (if (large) 22 else 12), cw, if (large) 13f else 11f, color = muted)
         if (large) {
             val queue = payload.blocks.filter { it.startMs > now }.take(4)
-            var top = 122f
+            var top = 166f
             queue.forEach { item ->
                 if (top + 28 < y) {
-                    text(time(item.startMs), inset, top, 64f, 12f, true)
-                    text(item.title, inset + 72, top, cw - 72, 12f, color = muted)
-                    top += 28
+                    text(time(item.startMs), inset, top, 72f, 14f, true)
+                    text(item.title, inset + 80, top, cw - 80, 14f, color = muted)
+                    top += 32
                 }
             }
         }

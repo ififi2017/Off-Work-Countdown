@@ -9,6 +9,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:fontFeatureSettings="tnum"
+    android:fontFamily="sans-serif"
     android:includeFontPadding="false"
     android:maxLines="1"
     android:textColor="@color/widget_primary"
