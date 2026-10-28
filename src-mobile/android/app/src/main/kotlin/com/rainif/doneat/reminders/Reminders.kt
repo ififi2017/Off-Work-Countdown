@@ -205,6 +205,11 @@ internal object ReminderNotifier {
     }
 
     fun post(context: Context, reminder: PlannedReminder) {
+        // A CN registration cannot outlive its signed lease, including after process death or reboot.
+        if (com.rainif.doneat.BuildConfig.CN_CHANNEL && reminder.channel in setOf(ReminderChannel.REPORT, ReminderChannel.FOCUS)) {
+            val plus = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph.plus
+            if (!plus.isAuthorizedNow()) return
+        }
         // Denied notifications leave the app fully usable; the reminder is simply not shown.
         if (!canPost(context)) return
         // Focus alerts open the Focus tab; their own request code keeps the two intents apart.

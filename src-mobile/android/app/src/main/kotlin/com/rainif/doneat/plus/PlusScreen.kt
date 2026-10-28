@@ -75,6 +75,10 @@ import com.rainif.doneat.ui.settings.openUrl
 @Composable
 fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
     pendingAction: PlusPendingAction? = null, onAuthorized: (PlusPendingAction) -> Unit = {}) {
+    if (com.rainif.doneat.BuildConfig.CN_CHANNEL) {
+        CnMembershipScreen(graph, onBack, pendingAction, onAuthorized)
+        return
+    }
     val authorized by graph.plus.authorized.collectAsStateWithLifecycle()
     val store by graph.plus.state.collectAsStateWithLifecycle()
     val activity = LocalContext.current.activity()

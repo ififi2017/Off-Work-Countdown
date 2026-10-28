@@ -135,6 +135,9 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
     val missingYears = remember(request?.fromDayNumber, request?.throughDayNumber, session, holidays) {
         request?.let { LeavePlanning.missingMainlandHolidayYears(session, it.fromDayNumber..it.throughDayNumber, holidays) }.orEmpty()
     }
+    val estimatedYears = remember(request?.fromDayNumber, request?.throughDayNumber, session, holidays) {
+        request?.let { LeavePlanning.estimatedHolidayYears(session, it.fromDayNumber..it.throughDayNumber, holidays) }.orEmpty()
+    }
 
     fun search() {
         val query = request ?: return
@@ -144,6 +147,7 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
             val state = graph.records.state.value
             val now = graph.nowMs()
             val found = withContext(Dispatchers.Default) { LeavePlanning.find(session, state, query, now, holidays) }
+            graph.leaveEstimatedHolidayYears.value = LeavePlanning.estimatedHolidayYears(session, query.fromDayNumber..query.throughDayNumber, holidays)
             graph.leaveProposals.value = found
             searching = false
             open(Route.LeavePlanResults)
@@ -212,6 +216,9 @@ fun LeavePlannerScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Uni
                     SettingsFooter(Strings.leaveRangeFooter(context.resources, text.fullDate(window.first), text.fullDate(window.last)))
                     missingYears.forEach { year ->
                         Note(Strings.leaveMainlandHolidaysMissing(context.resources, year.toString()))
+                    }
+                    estimatedYears.forEach { year ->
+                        Note(Strings.holidayEstimatedYearWarning(context.resources, year.toString()))
                     }
                 }
             }
@@ -308,6 +315,7 @@ private fun LeaveTrialBanner(left: Int, text: LeaveText, explainsCost: Boolean =
 fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () -> Unit) {
     val text = rememberLeaveText(graph)
     val proposals by graph.leaveProposals.collectAsStateWithLifecycle()
+    val searchedEstimatedYears by graph.leaveEstimatedHolidayYears.collectAsStateWithLifecycle()
     val plus by graph.plus.authorized.collectAsStateWithLifecycle()
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -344,6 +352,13 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
     DoneAtPage(text.string(R.string.leaveResultsTitle), onBack, text.string(R.string.leavePlanAction)) {
         if (trialWriteFailed) PageFooter(text.string(R.string.leaveTrialSaveFailed))
         if (!plus && options.isNotEmpty()) LeaveTrialBanner(device.leavePlannerTrialsLeft, text, explainsCost = true)
+        val estimatedYears = (searchedEstimatedYears + options.flatMap { it.caveats.filterIsInstance<LeavePlannerCaveat.HolidaysEstimated>() }
+            .map { it.year }).distinct().sorted()
+        if (estimatedYears.isNotEmpty()) {
+            Column(Modifier.padding(horizontal = DoneAtSpacing.page)) {
+                estimatedYears.forEach { Note(Strings.holidayEstimatedYearWarning(context.resources, it.toString())) }
+            }
+        }
         if (options.isEmpty()) {
             SettingsGroup {
                 Text(
@@ -376,7 +391,12 @@ fun LeavePlanResultsScreen(graph: AppGraph, open: (Route) -> Unit, onBack: () ->
                         if (proposal.caveats.isNotEmpty()) {
                             Row(horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Outlined.Info, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text(text.string(R.string.leaveEstimated), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                val predicted = proposal.caveats.filterIsInstance<LeavePlannerCaveat.HolidaysEstimated>().map { it.year }.sorted()
+                                Text(
+                                    if (predicted.isEmpty()) text.string(R.string.leaveEstimated)
+                                    else predicted.joinToString(" · ") { Strings.leaveEstimatedHolidaysYear(context.resources, it.toString()) },
+                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                     }
@@ -527,10 +547,12 @@ private fun itemDetail(item: LeavePlanItem, text: LeaveText): String = when (ite
     LeavePlanItem.Role.LATE_RETURN -> text.string(R.string.leaveRoleLate)
 }
 
-/** Each caveat once, in a fixed order: missing holiday years first, by year. */
+/** Each caveat once, with predicted holidays distinguished from missing data. */
 private fun caveatLabels(proposal: LeavePlanProposal, text: LeaveText, res: android.content.res.Resources): List<String> {
     val years = proposal.caveats.filterIsInstance<LeavePlannerCaveat.HolidaysNotIncluded>().map { it.year }.sorted()
-    return years.map { Strings.leaveEstimatedYear(res, it.toString()) } +
+    val estimatedYears = proposal.caveats.filterIsInstance<LeavePlannerCaveat.HolidaysEstimated>().map { it.year }.sorted()
+    return estimatedYears.map { Strings.holidayEstimatedYearWarning(res, it.toString()) } +
+        years.map { Strings.leaveEstimatedYear(res, it.toString()) } +
         listOfNotNull(
             text.string(R.string.leaveCarriedOverCaveat).takeIf { LeavePlannerCaveat.CarriedOverRoster in proposal.caveats },
             text.string(R.string.leaveUnassignedCaveat).takeIf { LeavePlannerCaveat.Unassigned in proposal.caveats },

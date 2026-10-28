@@ -12,16 +12,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+enum class PlusStatus { UNCONFIGURED, LOADING, FREE, SUBSCRIBED, LIFETIME, PENDING, OFFLINE, ERROR }
 enum class PlusPlan { MONTHLY, YEARLY, LIFETIME }
 data class PlusOffer(val plan: PlusPlan, val price: String, val offerToken: String, val sevenDayTrial: Boolean = false)
 data class PlusStoreState(val status: PlusStatus = PlusStatus.LOADING, val offers: List<PlusOffer> = emptyList(),
     val busy: Boolean = false, val hasPurchasedBefore: Boolean = false, val operationFailed: Boolean = false,
     val hasActiveSubscription: Boolean = status == PlusStatus.SUBSCRIBED,
-    val verifiedSubscriptionExpiresAtMs: Long? = null) {
+    val verifiedSubscriptionExpiresAtMs: Long? = null, val verifiedAuthorizationUntilMs: Long? = null) {
     val authorized: Boolean get() = status == PlusStatus.SUBSCRIBED || status == PlusStatus.LIFETIME
 
     /** Callers pass now explicitly. A client cache age must never stand in for Google's expiry. */
     fun shiftAlarmAuthorization(nowMs: Long): ShiftAlarmAuthorization = when {
+        authorized && verifiedAuthorizationUntilMs != null && verifiedAuthorizationUntilMs > nowMs ->
+            ShiftAlarmAuthorization.VerifiedUntil(verifiedAuthorizationUntilMs)
+        BuildConfig.CN_CHANNEL -> ShiftAlarmAuthorization.Unavailable
         status == PlusStatus.LIFETIME -> ShiftAlarmAuthorization.Lifetime
         status == PlusStatus.SUBSCRIBED && (verifiedSubscriptionExpiresAtMs ?: 0) > nowMs ->
             ShiftAlarmAuthorization.VerifiedUntil(verifiedSubscriptionExpiresAtMs!!)
@@ -32,9 +36,9 @@ data class PlusStoreState(val status: PlusStatus = PlusStatus.LOADING, val offer
 /** The sole purchase gate shared by every paid screen. */
 class PlusAccess(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val repository = PlayBillingRepository(context.applicationContext, scope)
+    internal val repository = createChannelRepository(context.applicationContext, scope)
     val state: StateFlow<PlusStoreState> = repository.state
-    private val _authorized = MutableStateFlow(repository.state.value.authorized || PlusDebugOverride.read(context))
+    private val _authorized = MutableStateFlow(repository.state.value.authorized || (!BuildConfig.CN_CHANNEL && PlusDebugOverride.read(context)))
     val authorized: StateFlow<Boolean> = _authorized.asStateFlow()
     private val _collectsObservations = MutableStateFlow(_authorized.value || !repository.state.value.hasPurchasedBefore)
     /** Mirrors iOS until D-07 changes: free users collect, lapsed buyers pause. */
@@ -42,20 +46,28 @@ class PlusAccess(private val context: Context) {
 
     init {
         scope.launch { repository.state.collect {
-            val granted = it.authorized || PlusDebugOverride.read(context)
+            val granted = it.authorized || (!BuildConfig.CN_CHANNEL && PlusDebugOverride.read(context))
             _authorized.value = granted
             _collectsObservations.value = granted || !it.hasPurchasedBefore
         } }
-        if (BuildConfig.PLAY_BILLING_PUBLIC_KEY.isNotBlank()) scope.launch { repository.refresh() }
+        if (BuildConfig.CN_CHANNEL || BuildConfig.PLAY_BILLING_PUBLIC_KEY.isNotBlank()) scope.launch { repository.refresh() }
     }
 
+    fun isAuthorizedNow(): Boolean = repository.authorizedNow() || (!BuildConfig.CN_CHANNEL && PlusDebugOverride.read(context))
     fun refresh() { scope.launch { repository.refresh() } }
     fun restore() { scope.launch { repository.refresh() } }
     fun purchase(activity: Activity, offer: PlusOffer) { scope.launch { repository.purchase(activity, offer) } }
     fun setDebugAuthorized(value: Boolean) {
-        if (!PlusDebugOverride.AVAILABLE) return
+        if (BuildConfig.CN_CHANNEL || !PlusDebugOverride.AVAILABLE) return
         PlusDebugOverride.write(context, value)
         _authorized.value = value || state.value.authorized
         _collectsObservations.value = _authorized.value || !state.value.hasPurchasedBefore
     }
+}
+
+internal interface ChannelPlusRepository {
+    val state: StateFlow<PlusStoreState>
+    fun authorizedNow(): Boolean = state.value.authorized
+    suspend fun refresh(): Boolean
+    suspend fun purchase(activity: Activity, offer: PlusOffer)
 }

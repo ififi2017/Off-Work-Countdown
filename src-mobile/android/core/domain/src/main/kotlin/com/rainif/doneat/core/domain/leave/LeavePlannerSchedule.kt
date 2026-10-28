@@ -48,6 +48,7 @@ object LeavePlannerSchedule {
         hours: ScheduleHours,
         range: IntRange,
         zoneId: ZoneId,
+        holidayEstimated: (year: Int, region: String) -> Boolean = { _, _ -> false },
         holidayCoverage: (year: Int, region: String) -> Boolean,
     ): List<LeavePlannerDay> {
         val zone = CivilZone(zoneId)
@@ -71,9 +72,13 @@ object LeavePlannerSchedule {
                 ExtendedScheduleDay.Source.UNASSIGNED -> if (plan?.fallsBackToBaseSchedule != true) caveats += LeavePlannerCaveat.Unassigned
                 else -> Unit
             }
-            if (region != null && source != ExtendedScheduleDay.Source.HAND_SET) {
+            if (region != null) {
                 val year = CivilZone.civilDate(dayNumber).first
-                if (!holidayCoverage(year, region)) caveats += LeavePlannerCaveat.HolidaysNotIncluded(year)
+                // Keep the year-level warning even on manually assigned days within a predicted range.
+                if (holidayEstimated(year, region)) caveats += LeavePlannerCaveat.HolidaysEstimated(year)
+                else if (source != ExtendedScheduleDay.Source.HAND_SET && !holidayCoverage(year, region)) {
+                    caveats += LeavePlannerCaveat.HolidaysNotIncluded(year)
+                }
             }
             LeavePlannerDay(
                 dayNumber = dayNumber,
@@ -89,5 +94,5 @@ object LeavePlannerSchedule {
 
     /** [days] covering with [calendar]'s bundled data. */
     fun days(hours: ScheduleHours, range: IntRange, zoneId: ZoneId, calendar: HolidayCalendar) =
-        days(hours, range, zoneId) { year, region -> calendar.covers(year, region) }
+        days(hours, range, zoneId, holidayEstimated = calendar::isEstimated, holidayCoverage = calendar::covers)
 }

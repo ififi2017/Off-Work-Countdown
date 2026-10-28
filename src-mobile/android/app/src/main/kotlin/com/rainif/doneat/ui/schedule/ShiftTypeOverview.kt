@@ -6,6 +6,7 @@ import com.rainif.doneat.R
 import com.rainif.doneat.core.domain.schedule.AnnualShiftDateRange
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
+import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.l10n.Strings
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -13,6 +14,13 @@ import java.util.Locale
 import java.util.UUID
 
 internal data class ShiftDateCoverage(val first: String, val last: String, val count: Int)
+
+internal fun estimatedCoverageYears(holidays: HolidayCalendar, region: String?, from: String): List<Int> {
+    if (region.isNullOrEmpty()) return emptyList()
+    val start = LocalDate.parse(from)
+    val last = start.plusYears(1).minusDays(1)
+    return (start.year..last.year).filter { holidays.isEstimated(it, region) }
+}
 
 /** Same next-calendar-year window and resolver as the iOS shift type overview. */
 internal fun shiftDateCoverage(plan: ExtendedSchedulePlan, from: String): Map<UUID, ShiftDateCoverage> {

@@ -35,4 +35,17 @@ class ShiftTypeOverviewTest {
         assertEquals(ShiftDateCoverage("2024-03-01", "2024-03-01", 1), coverage[assigned.id])
         assertEquals("2025-02-27", coverage[base.id]?.last)
     }
+
+    @Test fun predictedWarningsFollowThePreviewWindowAndSelectedRegion() {
+        val calendar = HolidayCalendar.parse("""{
+            "schemaVersion": 1, "datasetVersion": "test", "names": [{"en": "New Year"}],
+            "regions": {"CN": {"coveredFromYear": 2026, "coveredThroughYear": 2027,
+                "estimatedYears": [2027], "days": [[20270101, 0, 0]]}}
+        }""")
+        assertEquals(listOf(2027), estimatedCoverageYears(calendar, "CN", "2026-10-07"))
+        assertEquals(listOf(2027), estimatedCoverageYears(calendar, "CN", "2027-01-01"))
+        assertTrue(estimatedCoverageYears(calendar, "CN", "2026-01-01").isEmpty())
+        assertTrue(estimatedCoverageYears(calendar, "US", "2026-10-07").isEmpty())
+        assertTrue(estimatedCoverageYears(calendar, null, "2026-10-07").isEmpty())
+    }
 }

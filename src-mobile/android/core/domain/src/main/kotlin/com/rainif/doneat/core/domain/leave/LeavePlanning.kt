@@ -49,4 +49,13 @@ object LeavePlanning {
         val last = CivilZone.civilDate(range.last).first
         return (first..last).filter { !holidays.covers(it, "CN") }
     }
+
+    /** Prediction notices follow the calendar selected by the active schedule, including hand-set days. */
+    fun estimatedHolidayYears(session: ShiftSession, range: IntRange, holidays: HolidayCalendar): List<Int> {
+        if (!session.env.isExtendedScheduleEnabled) return emptyList()
+        val region = session.env.extendedSchedule?.content?.holidayRegionIdentifier ?: return emptyList()
+        val first = CivilZone.civilDate(range.first).first
+        val last = CivilZone.civilDate(range.last).first
+        return (first..last).filter { holidays.isEstimated(it, region) }
+    }
 }

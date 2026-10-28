@@ -2,13 +2,15 @@ package com.rainif.doneat.core.domain.schedule
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.int
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Versioned, bundled national calendars (`HolidayTemplates.json`, shared with
- * iOS). No runtime network or date prediction: outside a region's covered
+ * iOS). No runtime network or prediction algorithm: bundled estimates carry
+ * explicit year metadata. Outside a region's covered
  * years there is simply no entry. Loaded once by the caller and passed in; the
  * rules never read a global.
  */
@@ -18,13 +20,16 @@ class HolidayCalendar private constructor(
 ) {
     data class Day(val isWorkday: Boolean, val names: Map<String, String>)
 
-    private class Region(val years: IntRange, val days: Map<Int, Day>)
+    private class Region(val years: IntRange, val days: Map<Int, Day>, val estimatedYears: Set<Int>)
 
     val regionIdentifiers: List<String> get() = regions.keys.sorted()
 
     fun coveredThroughYear(regionIdentifier: String): Int? = regions[regionIdentifier]?.years?.last
 
     fun covers(year: Int, regionIdentifier: String) = regions[regionIdentifier]?.years?.contains(year) == true
+
+    /** Covered data can still be a prediction until the formal announcement replaces it. */
+    fun isEstimated(year: Int, regionIdentifier: String) = regions[regionIdentifier]?.estimatedYears?.contains(year) == true
 
     /** `dateCode` is `yyyymmdd`. */
     fun day(dateCode: Int, regionIdentifier: String): Day? = regions[regionIdentifier]?.days?.get(dateCode)
@@ -61,7 +66,14 @@ class HolidayCalendar private constructor(
                     ) fail("row $identifier $values")
                     days[values[0]] = Day(values[1] == 1, names[values[2]])
                 }
-                Region(from..through, days)
+                val estimatedYears = source["estimatedYears"]?.jsonArray?.map { entry ->
+                    if (entry.jsonPrimitive.isString) fail("estimated year $identifier")
+                    entry.jsonPrimitive.intOrNull ?: fail("estimated year $identifier")
+                }.orEmpty()
+                if (estimatedYears.distinct().size != estimatedYears.size || estimatedYears.any { year ->
+                        year !in from..through || days.keys.none { it / 10_000 == year }
+                    }) fail("estimated years $identifier")
+                Region(from..through, days, estimatedYears.toSet())
             }
             return HolidayCalendar(version, regions)
         }

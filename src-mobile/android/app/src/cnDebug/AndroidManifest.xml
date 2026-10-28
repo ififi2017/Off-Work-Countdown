@@ -1,0 +1,1 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:networkSecurityConfig="@xml/cn_debug_network"><activity android:name=".plus.CnMembershipDebugActivity" android:exported="true" android:label="DoneAt CN membership debug" /></application></manifest>

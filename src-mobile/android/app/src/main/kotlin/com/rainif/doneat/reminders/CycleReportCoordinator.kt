@@ -74,7 +74,10 @@ class CycleReportCoordinator(
         val zone = runCatching { ZoneId.of(p.recordsTimeZoneIdentifier) }.getOrElse { ZoneId.systemDefault() }
         val items = CycleReportNotificationPlan.items(d.weeklyReportEnabled && entitlement, d.monthlyReportEnabled && entitlement,
             d.yearlyReportEnabled && entitlement, nowMs(), zone, d.calendarFirstDay(locale))
-        val desired = items.map { period ->
+        val desired = items.filter { period ->
+            !com.rainif.doneat.BuildConfig.CN_CHANNEL ||
+                period.notificationAtMs < (storeState.value.verifiedAuthorizationUntilMs ?: 0L)
+        }.map { period ->
             val (title, body) = when (period.kind) {
                 CycleReportKind.WEEK -> R.string.reportNotificationWeekTitle to R.string.reportNotificationWeekBody
                 CycleReportKind.MONTH -> R.string.reportNotificationMonthTitle to R.string.reportNotificationMonthBody
