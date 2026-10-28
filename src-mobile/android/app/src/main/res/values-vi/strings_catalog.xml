@@ -25,6 +25,10 @@
     <string name="allowExactReminders">Cho phép lời nhắc chính xác</string>
     <string name="alternatingCurrentWeek">Tuần này</string>
     <string name="amount">Số tiền</string>
+    <string name="androidWidgetGalleryIntro">Chọn tiện ích để xem lịch làm việc trên màn hình chính.</string>
+    <string name="androidWidgetGalleryPin">Thêm tiện ích</string>
+    <string name="androidWidgetGalleryPinUnavailable">Thêm tiện ích này từ trình chọn tiện ích trên màn hình chính.</string>
+    <string name="androidWidgetGalleryStepsHome">Nhấn giữ vùng trống trên màn hình chính, mở Tiện ích rồi chọn DoneAt. Kích thước có sẵn tùy thuộc vào trình khởi chạy của bạn.</string>
     <string name="annualBonus">Thưởng cuối năm</string>
     <string name="annualBonusMonths">Số tháng thưởng</string>
     <string name="appearanceSection">Giao diện</string>

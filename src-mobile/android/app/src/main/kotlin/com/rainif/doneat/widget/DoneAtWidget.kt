@@ -86,6 +86,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -123,8 +124,8 @@ private object WidgetColors {
  * all schedule rules ran in the app. With no snapshot, or one past its
  * expiry, it says so and asks for the app.
  */
-class DoneAtWidget(private val previewSize: DpSize = SMALL) : GlanceAppWidget() {
-    override val sizeMode = SizeMode.Responsive(setOf(SMALL, MEDIUM, LARGE))
+class DoneAtWidget(private val previewSize: DpSize = SMALL, private val kind: DoneAtWidgetKind = DoneAtWidgetKind.CLASSIC) : GlanceAppWidget() {
+    override val sizeMode = if (kind == DoneAtWidgetKind.CLASSIC) SizeMode.Responsive(setOf(SMALL, MEDIUM, LARGE)) else SizeMode.Exact
     override val previewSizeMode: PreviewSizeMode = SizeMode.Responsive(setOf(previewSize))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -138,7 +139,10 @@ class DoneAtWidget(private val previewSize: DpSize = SMALL) : GlanceAppWidget() 
             val entry = snapshot?.entry(now)
             LaunchedEffect(tick, snapshot) { WidgetRefresh.schedule(context, entry, now) }
             val localized = remember(snapshot?.locale) { snapshot?.locale?.let { localized(context, it) } ?: context }
-            Content(localized, snapshot?.upcoming.orEmpty(), entry, now)
+            val suite by produceState<com.rainif.doneat.core.domain.widget.WidgetSuiteSnapshot?>(null, tick) {
+                value = withContext(Dispatchers.IO) { WidgetSuiteCoordinator.read(context) }
+            }
+            Content(localized, snapshot?.upcoming.orEmpty(), entry, now, kind, suite?.countdownSegments.orEmpty())
         }
     }
 
@@ -157,7 +161,7 @@ class DoneAtWidget(private val previewSize: DpSize = SMALL) : GlanceAppWidget() 
             nextBoundaryAtMs = now + 4 * 60 * 60_000L,
         )
         val upcoming = listOf(WidgetUpcomingItem("lunch", "break", context.getString(R.string.lunchBreak), "", now + 60 * 60_000L))
-        provideContent { Content(context, upcoming, entry, now) }
+        provideContent { Content(context, upcoming, entry, now, kind, emptyList()) }
     }
 
     private fun localized(context: Context, tag: String): Context {
@@ -170,25 +174,40 @@ class DoneAtWidget(private val previewSize: DpSize = SMALL) : GlanceAppWidget() 
 internal object WidgetSignals {
     val tick = MutableStateFlow(0L)
 
-    private val receivers = listOf(
-        DoneAtWidgetReceiver::class.java,
-        DoneAtWidgetMediumReceiver::class.java,
-        DoneAtWidgetLargeReceiver::class.java,
-    )
+    private val widgets: List<Pair<Class<out GlanceAppWidgetReceiver>, GlanceAppWidget>> = listOf(
+        DoneAtWidgetReceiver::class.java to DoneAtWidget(SMALL),
+        DoneAtWidgetMediumReceiver::class.java to DoneAtWidget(MEDIUM),
+        DoneAtWidgetLargeReceiver::class.java to DoneAtWidget(LARGE),
+    ) + DoneAtWidgetKind.entries.filter { it != DoneAtWidgetKind.CLASSIC }.map { it.receiver to it.widget() }
+    private val receivers get() = widgets.map { it.first }
 
     suspend fun redraw(context: Context) {
         tick.update { it + 1 }
         val manager = GlanceAppWidgetManager(context)
         val appWidgets = AppWidgetManager.getInstance(context)
-        val widget = DoneAtWidget()
-        receivers.flatMap { appWidgets.getAppWidgetIds(ComponentName(context, it)).asList() }
-            .forEach { widget.update(context, manager.getGlanceIdBy(it)) }
+        widgets.forEach { (receiver, widget) ->
+            appWidgets.getAppWidgetIds(ComponentName(context, receiver)).forEach { widget.update(context, manager.getGlanceIdBy(it)) }
+        }
     }
 
     fun hasWidgets(context: Context): Boolean {
         val manager = AppWidgetManager.getInstance(context)
         return receivers.any { manager.getAppWidgetIds(ComponentName(context, it)).isNotEmpty() }
     }
+
+    fun hasCountdownWidgets(context: Context): Boolean {
+        val manager = AppWidgetManager.getInstance(context)
+        val countdowns = listOf(DoneAtWidgetReceiver::class.java, DoneAtWidgetMediumReceiver::class.java, DoneAtWidgetLargeReceiver::class.java) +
+            DoneAtWidgetKind.entries.filter { it.countdown }.map { it.receiver }
+        return countdowns.any { manager.getAppWidgetIds(ComponentName(context, it)).isNotEmpty() }
+    }
+
+    fun installedSuiteKinds(context: Context): Set<DoneAtWidgetKind> {
+        val manager = AppWidgetManager.getInstance(context)
+        return DoneAtWidgetKind.entries.filter { !it.countdown && manager.getAppWidgetIds(ComponentName(context, it.receiver)).isNotEmpty() }.toSet()
+    }
+
+    fun hasSuiteWidgets(context: Context) = installedSuiteKinds(context).isNotEmpty()
 
     suspend fun publishMissingPreviews(context: Context) {
         if (Build.VERSION.SDK_INT < 35) return
@@ -230,8 +249,19 @@ class WidgetRefreshReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.Default).launch {
             try {
                 val graph = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph
+                graph.loaded.first { it }
                 graph.plus.reviewAccess.awaitLoaded()
                 graph.plus.revalidateLocalAccess()
+                val now = System.currentTimeMillis()
+                val suite = WidgetSuiteCoordinator.read(context)
+                val force = intent.action == Intent.ACTION_LOCALE_CHANGED
+                val civilDayChanged = suite?.let { snapshot ->
+                    listOf(snapshot.timeZoneIdentifier, snapshot.lifeTimeZoneIdentifier).any { zoneID ->
+                        val zone = ZoneId.of(zoneID)
+                        Instant.ofEpochMilli(snapshot.generatedAtMs).atZone(zone).toLocalDate() != Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
+                    }
+                } == true
+                if (force || civilDayChanged) graph.widgets.refresh()
                 WidgetSignals.redraw(context)
             } finally {
                 pending.finish()
@@ -241,8 +271,6 @@ class WidgetRefreshReceiver : BroadcastReceiver() {
 }
 
 internal object WidgetRefresh {
-    private const val PROGRESS_STEP_MS = 15 * 60_000L
-
     private fun intent(context: Context) = PendingIntent.getBroadcast(
         context, 0, Intent(context, WidgetRefreshReceiver::class.java),
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
@@ -256,15 +284,23 @@ internal object WidgetRefresh {
      */
     fun schedule(context: Context, entry: WidgetEntry?, nowMs: Long) {
         val manager = context.getSystemService(AlarmManager::class.java)
-        entry ?: return manager.cancel(intent(context))
-        val moving = entry.phase == WidgetPhase.WORKING || entry.phase == WidgetPhase.BEFORE
-        val ordinaryAt = if (moving) minOf(entry.validUntilMs, nowMs + PROGRESS_STEP_MS) else entry.validUntilMs
+        val kinds = WidgetSignals.installedSuiteKinds(context)
+        // The suite cache also exists for people who installed only legacy
+        // countdowns. Its presence must not turn their 15-minute refresh into
+        // a minute alarm, or add calendars they never placed on the launcher.
+        val suite = if (kinds.isEmpty()) null else WidgetSuiteCoordinator.read(context)
+        val ordinaryAt = widgetNextRefreshAt(entry.takeIf { WidgetSignals.hasCountdownWidgets(context) }, suite, kinds, nowMs) ?: return manager.cancel(intent(context))
         val plus = (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph.plus
         val reviewUntil = if (!plus.state.value.authorized) plus.reviewAccess.verifiedExpiry(nowMs) else null
         val at = minOf(ordinaryAt, reviewUntil ?: ordinaryAt)
         val exact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || manager.canScheduleExactAlarms()
         if (exact) manager.setExact(AlarmManager.RTC, at, intent(context))
         else manager.setWindow(AlarmManager.RTC, at, 60_000, intent(context))
+    }
+
+    fun scheduleSuite(context: Context, snapshot: com.rainif.doneat.core.domain.widget.WidgetSuiteSnapshot?, nowMs: Long) {
+        // Use one earliest-boundary alarm, regardless of which widget composed last.
+        if (snapshot != null && WidgetSignals.hasSuiteWidgets(context)) schedule(context, WidgetCoordinator.read(context)?.entry(nowMs), nowMs)
     }
 
     fun cancel(context: Context) = context.getSystemService(AlarmManager::class.java).cancel(intent(context))
@@ -341,7 +377,8 @@ private fun ring(context: Context, sizeDp: Dp, progress: Double): Bitmap {
 }
 
 @Composable
-private fun Content(context: Context, upcoming: List<WidgetUpcomingItem>, entry: WidgetEntry?, nowMs: Long) {
+private fun Content(context: Context, upcoming: List<WidgetUpcomingItem>, entry: WidgetEntry?, nowMs: Long,
+                    kind: DoneAtWidgetKind, segments: List<com.rainif.doneat.core.domain.widget.WidgetTimeSegment>) {
     val size = LocalSize.current
     val open = Intent(LocalContext.current, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, "timer")
     Box(
@@ -350,6 +387,7 @@ private fun Content(context: Context, upcoming: List<WidgetUpcomingItem>, entry:
     ) {
         when {
             entry == null -> Empty(context, size)
+            kind != DoneAtWidgetKind.CLASSIC -> StyledCountdown(context, kind, entry, upcoming.filter { it.dateMs > nowMs }, segments, nowMs)
             size.width >= LARGE.width && size.height >= LARGE.height -> Large(context, entry, upcoming.filter { it.dateMs > nowMs }, nowMs)
             size.width >= MEDIUM.width -> Medium(context, entry, nowMs)
             else -> Small(context, entry, nowMs)
@@ -358,12 +396,12 @@ private fun Content(context: Context, upcoming: List<WidgetUpcomingItem>, entry:
 }
 
 @Composable
-private fun Header(context: Context, compact: Boolean) {
+private fun Header(context: Context, compact: Boolean, tiny: Boolean = false) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        val mark = if (compact) 20.dp else 22.dp
+        val mark = if (tiny) 16.dp else if (compact) 20.dp else 22.dp
         Image(ImageProvider(brandMark(context, mark)), null, GlanceModifier.size(mark))
         Spacer(GlanceModifier.width(8.dp))
-        Text(context.getString(R.string.app_name), style = TextStyle(color = WidgetColors.primary, fontSize = 12.sp, fontWeight = FontWeight.Bold), maxLines = 1)
+        Text(context.getString(R.string.app_name), style = TextStyle(color = WidgetColors.primary, fontSize = if (tiny) 10.sp else 12.sp, fontWeight = FontWeight.Bold), maxLines = 1)
     }
 }
 
@@ -424,14 +462,24 @@ private fun Progress(context: Context, entry: WidgetEntry) = Column(GlanceModifi
 
 @Composable
 private fun Small(context: Context, entry: WidgetEntry, nowMs: Long) {
+    // A launcher can allocate only 110dp to an existing 2×2 instance. The
+    // label must not spend the vertical space of a full padded capsule.
     Column(GlanceModifier.fillMaxSize()) {
-        Header(context, compact = true)
+        Header(context, compact = true, tiny = true)
         Spacer(GlanceModifier.defaultWeight())
-        Badge(context, entry)
-        Spacer(GlanceModifier.height(6.dp))
-        Countdown(context, entry, nowMs, 24f)
+        Text(context.getString(labelRes(entry.labelKey)), style = TextStyle(color = WidgetColors.secondary, fontSize = 9.sp), maxLines = 1)
+        Spacer(GlanceModifier.height(2.dp))
+        Countdown(context, entry, nowMs, 20f)
         Spacer(GlanceModifier.defaultWeight())
-        Progress(context, entry)
+        LinearProgressIndicator(progress = (entry.progressAtDate / 100).toFloat().coerceIn(0f, 1f),
+            modifier = GlanceModifier.fillMaxWidth().height(4.dp).cornerRadius(2.dp),
+            color = WidgetColors.accent, backgroundColor = WidgetColors.track)
+        Spacer(GlanceModifier.height(3.dp))
+        Row(GlanceModifier.fillMaxWidth()) {
+            Text("${entry.progressAtDate.coerceIn(0.0, 100.0).roundToInt()}%", style = TextStyle(color = WidgetColors.accent, fontSize = 9.sp, fontWeight = FontWeight.Bold))
+            Spacer(GlanceModifier.defaultWeight())
+            entry.nextBoundaryAtMs?.let { Text(time(context, it), style = TextStyle(color = WidgetColors.secondary, fontSize = 9.sp)) }
+        }
     }
 }
 
@@ -508,5 +556,61 @@ private fun Empty(context: Context, size: DpSize) {
         Spacer(GlanceModifier.height(3.dp))
         Text(context.getString(R.string.widgetOpenToRefresh), style = TextStyle(color = WidgetColors.secondary, fontSize = 11.sp), maxLines = 2)
         Spacer(GlanceModifier.defaultWeight())
+    }
+}
+
+
+@Composable
+private fun StyledCountdown(context: Context, kind: DoneAtWidgetKind, entry: WidgetEntry,
+                            upcoming: List<WidgetUpcomingItem>, segments: List<com.rainif.doneat.core.domain.widget.WidgetTimeSegment>, nowMs: Long) {
+    val size = LocalSize.current
+    when (kind) {
+        DoneAtWidgetKind.DETAIL -> if (size.height >= LARGE.height) Large(context, entry, upcoming, nowMs) else {
+            Column(GlanceModifier.fillMaxSize()) {
+                Header(context, compact = true)
+                Spacer(GlanceModifier.height(8.dp))
+                Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(GlanceModifier.defaultWeight()) {
+                        Badge(context, entry)
+                        Spacer(GlanceModifier.height(6.dp))
+                        Countdown(context, entry, nowMs, 26f)
+                        Boundary(context, entry)
+                    }
+                    if (upcoming.isNotEmpty()) {
+                        Spacer(GlanceModifier.width(12.dp))
+                        Column(GlanceModifier.defaultWeight()) { Upcoming(context, upcoming.take(2), nowMs) }
+                    }
+                }
+            }
+        }
+        DoneAtWidgetKind.RING -> Column(GlanceModifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(context.getString(labelRes(entry.labelKey)), style = TextStyle(color = WidgetColors.secondary, fontSize = 11.sp), maxLines = 1)
+            Spacer(GlanceModifier.defaultWeight())
+            val diameter = minOf(size.width.value - 32, size.height.value - 58).coerceIn(62f, 132f).dp
+            Box(GlanceModifier.size(diameter), contentAlignment = Alignment.Center) {
+                Image(ImageProvider(widgetSegmentArtwork(context, diameter, diameter, segments, entry.progressAtDate / 100, ring = true)), null, GlanceModifier.size(diameter))
+                Countdown(context, entry, nowMs, if (diameter.value < 90) 17f else 24f)
+            }
+            Spacer(GlanceModifier.defaultWeight())
+            Boundary(context, entry)
+        }
+        else -> Column(GlanceModifier.fillMaxSize()) {
+            Text(context.getString(kind.titleRes), style = TextStyle(color = WidgetColors.accent, fontSize = 12.sp, fontWeight = FontWeight.Bold), maxLines = 1)
+            Spacer(GlanceModifier.defaultWeight())
+            Badge(context, entry)
+            Spacer(GlanceModifier.height(7.dp))
+            Countdown(context, entry, nowMs, if (size.width < 220.dp) 29f else 42f)
+            Spacer(GlanceModifier.defaultWeight())
+            if (kind == DoneAtWidgetKind.TIMELINE) {
+                Image(ImageProvider(widgetSegmentArtwork(context, size.width - 32.dp, 24.dp, segments, entry.progressAtDate / 100, ring = false)),
+                    context.getString(R.string.widgetStyleTimelineName), GlanceModifier.fillMaxWidth().height(24.dp))
+                Spacer(GlanceModifier.height(4.dp))
+                Row(GlanceModifier.fillMaxWidth()) {
+                    segments.firstOrNull()?.let { Text(time(context, it.startMs), style = TextStyle(color = WidgetColors.secondary, fontSize = 10.sp)) }
+                    Spacer(GlanceModifier.defaultWeight())
+                    segments.lastOrNull()?.let { Text(time(context, it.endMs), style = TextStyle(color = WidgetColors.secondary, fontSize = 10.sp)) }
+                }
+            } else Progress(context, entry)
+        }
     }
 }

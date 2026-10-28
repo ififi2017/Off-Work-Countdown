@@ -25,6 +25,10 @@
     <string name="allowExactReminders">Izinkan pengingat tepat waktu</string>
     <string name="alternatingCurrentWeek">Minggu ini</string>
     <string name="amount">Jumlah</string>
+    <string name="androidWidgetGalleryIntro">Pilih widget untuk melihat jadwal kerja di layar utama.</string>
+    <string name="androidWidgetGalleryPin">Tambahkan widget</string>
+    <string name="androidWidgetGalleryPinUnavailable">Tambahkan widget ini melalui pemilih widget di layar utama.</string>
+    <string name="androidWidgetGalleryStepsHome">Sentuh dan tahan area kosong di layar utama, buka Widget, lalu pilih DoneAt. Ukuran yang tersedia bergantung pada peluncur yang Anda gunakan.</string>
     <string name="annualBonus">Bonus akhir tahun</string>
     <string name="annualBonusMonths">Bulan bonus</string>
     <string name="appearanceSection">Tampilan</string>

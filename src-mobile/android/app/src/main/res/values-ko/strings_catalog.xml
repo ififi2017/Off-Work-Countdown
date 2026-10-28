@@ -25,6 +25,10 @@
     <string name="allowExactReminders">정확한 알림 허용</string>
     <string name="alternatingCurrentWeek">이번 주</string>
     <string name="amount">금액</string>
+    <string name="androidWidgetGalleryIntro">위젯을 선택해 홈 화면에서 근무 일정을 확인하세요.</string>
+    <string name="androidWidgetGalleryPin">위젯 추가</string>
+    <string name="androidWidgetGalleryPinUnavailable">홈 화면의 위젯 선택 메뉴에서 이 위젯을 추가하세요.</string>
+    <string name="androidWidgetGalleryStepsHome">홈 화면의 빈 공간을 길게 누르고 위젯을 연 다음 DoneAt을 선택하세요. 사용 가능한 크기는 런처에 따라 다릅니다.</string>
     <string name="annualBonus">연말 보너스</string>
     <string name="annualBonusMonths">보너스 개월 수</string>
     <string name="appearanceSection">외관</string>

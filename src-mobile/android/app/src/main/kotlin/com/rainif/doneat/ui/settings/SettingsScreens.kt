@@ -3,6 +3,7 @@ package com.rainif.doneat.ui.settings
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +24,8 @@ import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
@@ -33,7 +36,10 @@ import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material.icons.outlined.RateReview
 import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.AlertDialog
@@ -56,6 +62,9 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.expand
+import androidx.compose.ui.semantics.collapse
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -194,6 +203,8 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: Devic
                 NavigationRow(stringResource(R.string.theme), { open(Route.Theme) }, Icons.Outlined.Contrast, SettingsLabels.theme(p.theme))
                 RowDivider()
                 NavigationRow(stringResource(R.string.chooselanguage), { open(Route.Language) }, Icons.Outlined.Language, SettingsLabels.language(p.languageOverride))
+                RowDivider()
+                NavigationRow(stringResource(R.string.widgetGalleryTitle), { open(Route.WidgetGallery) }, Icons.Outlined.Widgets)
             }
             SettingsGroup(stringResource(R.string.recordsDataSection)) {
                 NavigationRow(stringResource(R.string.calendarWeekStart), { choosingWeekStart = true }, Icons.Outlined.CalendarToday,
@@ -400,15 +411,31 @@ fun AcknowledgementsScreen(onBack: () -> Unit) {
     }
     DoneAtPage(stringResource(R.string.acknowledgements), onBack, stringResource(R.string.aboutProject)) {
         (libraryLicenses + attributions).forEach { (name, url, license) ->
+            var expanded by rememberSaveable(name, url) { mutableStateOf(false) }
             SettingsGroup {
-                ActionRow(name, { openUrl(context, url) }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
-                RowDivider(inset = false)
-                Text(
-                    license,
-                    modifier = Modifier.padding(DoneAtSpacing.l),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ListItem(
+                    headlineContent = { Text(name) },
+                    trailingContent = {
+                        Icon(if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                            contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    },
+                    colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                    modifier = Modifier.clickable(role = Role.Button) { expanded = !expanded }
+                        .semantics {
+                            if (expanded) collapse { expanded = false; true }
+                            else expand { expanded = true; true }
+                        },
                 )
+                if (expanded) {
+                    RowDivider(inset = false)
+                    ActionRow(url, { openUrl(context, url) }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+                    Text(
+                        license,
+                        modifier = Modifier.padding(DoneAtSpacing.l),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

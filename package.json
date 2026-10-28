@@ -18,6 +18,8 @@
     "check:android-extended-fixtures": "node scripts/generate-android-extended-fixtures.mjs --check",
     "generate:android-record-fixtures": "node scripts/generate-android-record-fixtures.mjs",
     "check:android-record-fixtures": "node scripts/generate-android-record-fixtures.mjs --check",
+    "generate:android-widget-suite-fixtures": "node scripts/generate-android-widget-suite-fixtures.mjs",
+    "check:android-widget-suite-fixtures": "node scripts/generate-android-widget-suite-fixtures.mjs --check",
     "generate:android-strings": "node scripts/generate-android-strings.mjs",
     "generate:desktop-holidays": "node scripts/generate-desktop-holidays.mjs",
     "check:android-strings": "node scripts/generate-android-strings.mjs --check",

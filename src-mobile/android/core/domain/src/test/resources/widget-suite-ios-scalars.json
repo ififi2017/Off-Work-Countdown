@@ -1,0 +1,91 @@
+{
+  "calendar": [
+    {
+      "daysLeftInYear": 299,
+      "month": 0.24091520861372812,
+      "nowMs": 1772996400000,
+      "today": 0.4782608695652174,
+      "week": 0.0658682634730539,
+      "year": 0.18207762557077625
+    },
+    {
+      "daysLeftInYear": 61,
+      "month": 0.018030513176144243,
+      "nowMs": 1793563200000,
+      "today": 0.52,
+      "week": 0.07692307692307693,
+      "year": 0.8342465753424657
+    }
+  ],
+  "life": [
+    {
+      "ageMonths": 328,
+      "careerShare": 0.3333333333333333,
+      "daysLived": 10000,
+      "lifeShare": 0.3422383758735634,
+      "monthsToRetirement": 65,
+      "monthsWorked": 32,
+      "nowMs": 1793181600000,
+      "todayOrdinal": 20754,
+      "zone": "UTC"
+    },
+    {
+      "ageMonths": 328,
+      "careerShare": 0.3333333333333333,
+      "daysLived": 10000,
+      "lifeShare": 0.3422383758735634,
+      "monthsToRetirement": 65,
+      "monthsWorked": 32,
+      "nowMs": 1793131200000,
+      "todayOrdinal": 20753,
+      "zone": "Pacific/Kiritimati"
+    },
+    {
+      "ageMonths": 328,
+      "careerShare": 0.3333333333333333,
+      "daysLived": 10000,
+      "lifeShare": 0.3422383758735634,
+      "monthsToRetirement": 65,
+      "monthsWorked": 32,
+      "nowMs": 1793134800000,
+      "todayOrdinal": 20753,
+      "zone": "Pacific/Auckland"
+    }
+  ],
+  "week": [
+    {
+      "nowMs": 1793016000000,
+      "progress": 0.19999999999999996,
+      "remainingDays": 1.5714285714285714,
+      "remainingMs": 43200000,
+      "totalMs": 54000000
+    },
+    {
+      "nowMs": 1793019600000,
+      "progress": 0.19999999999999996,
+      "remainingDays": 1.5714285714285714,
+      "remainingMs": 43200000,
+      "totalMs": 54000000
+    },
+    {
+      "nowMs": 1793152800000,
+      "progress": 0.7333333333333334,
+      "remainingDays": 0.5,
+      "remainingMs": 14400000,
+      "totalMs": 54000000
+    }
+  ],
+  "oracle": {
+    "fixtureSchemaVersion": 1,
+    "generator": "scripts/generate-android-widget-suite-fixtures.mjs",
+    "referenceCommit": "ffd91597",
+    "description": "Actual Swift WidgetSuiteContract plus verbatim WeekProgress, CalendarProgress and LifeFigures. referenceCommit is the original iOS 3.2.3 baseline; sourceHashes identify every compiled source and generator input. Run on macOS; no simulator. Do not edit answers by hand.",
+    "sourceHashes": {
+      "src-mobile/ios/App/App/Native/Widgets/WidgetSuiteContract.swift": "65155ed3d90d2fc61b9528425f7dc7383eaf4530a124033dc1a1b644d2e7e628",
+      "src-mobile/ios/App/App/Native/Widgets/WeekRosterWidgets.swift": "daf3b9dc56dbab490481c53a747f7bf922d438552d3c0bc5f2489a88efa6f50d",
+      "src-mobile/ios/App/App/Native/Widgets/SummaryLifeHolidayWidgets.swift": "6b707a6c7e62af092957652a6d1cbf40ef4291898ab3c5e382db9b05d2c48a26",
+      "scripts/android-widget-suite-fixtures/main.swift": "fa99cb62b0c118506f249773b00dcdae94b2e4ed0f30c64f7b365f2c2cd41016",
+      "scripts/generate-android-widget-suite-fixtures.mjs": "113a4836f4abbb6a45ef352a3a650bf35a88e09b73fd3410baaded47fc700a7a"
+    }
+  }
+}

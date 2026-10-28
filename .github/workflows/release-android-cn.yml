@@ -1,0 +1,291 @@
+name: Android CN Release Candidate
+
+# The default is an unsigned candidate. Optional signing is isolated from all
+# selected source code and protected by an API-verified reviewer environment.
+# Draft Release creation is another opt-in job. Never publishes or deploys.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/release-android-cn.yml'
+      - 'scripts/android-cn-release.py'
+      - 'scripts/test_android_cn_release.py'
+      - 'scripts/android-cn-signing.py'
+      - 'scripts/test_android_cn_signing.py'
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Full public commit SHA containing CN (main or existing android-cn-v* tag)
+        required: true
+        type: string
+      version_code:
+        description: Independent CN versionCode, greater than every existing CN release tag
+        required: true
+        type: string
+      sign:
+        description: Request protected isolated signing (requires independent environment reviewer)
+        default: false
+        type: boolean
+      draft:
+        description: Create a new GitHub Draft Release after signing (requires sign=true)
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-android-cn-candidate
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: CN release helper checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s scripts -p 'test_android_cn_*.py' -v
+  source:
+    name: Public immutable CN source
+    needs: checks
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: tooling
+          persist-credentials: false
+      - name: Validate input syntax before checkout
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          python3 - <<'PY'
+          import importlib.util, os
+          spec = importlib.util.spec_from_file_location('cn', 'tooling/scripts/android-cn-release.py')
+          cn = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(cn)
+          cn.validate_sha(os.environ['SOURCE_SHA'])
+          cn.validate_code(os.environ['VERSION_CODE'])
+          PY
+      - name: Require signing before Draft Release
+        env:
+          SIGN: ${{ inputs.sign }}
+          DRAFT: ${{ inputs.draft }}
+        run: test "$DRAFT" != true || test "$SIGN" = true
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_sha }}
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate source, CN implementation and monotonic version
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          python3 tooling/scripts/android-cn-release.py prepare \
+            --source source --sha "$SOURCE_SHA" --code "$VERSION_CODE" \
+            --repository "$GITHUB_REPOSITORY" --output source-record.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-cn-source-record
+          path: source-record.json
+          if-no-files-found: error
+          retention-days: 14
+
+  build:
+    name: Unsigned CN candidate (do not distribute)
+    needs: source
+    runs-on: ubuntu-latest
+    env:
+      # Public receipt-verification configuration only. No signing material.
+      ORG_GRADLE_PROJECT_doneatCnLicensePublicKeys: ${{ vars.DONEAT_CN_LICENSE_PUBLIC_KEYS }}
+      ORG_GRADLE_PROJECT_doneatCnLicenseAudience: com.rainif.doneat.cn
+      ORG_GRADLE_PROJECT_doneatVersionCode: ${{ inputs.version_code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: tooling
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_sha }}
+          path: source
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-cn-source-record
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - name: Install locked Android SDK
+        run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Check source versions and generated resources
+        working-directory: source
+        run: |
+          npm run check:version
+          node scripts/generate-android-strings.mjs --check
+      - name: Validate production public trust
+        run: |
+          python3 - <<'PY'
+          import importlib.util, os
+          spec = importlib.util.spec_from_file_location('cn', 'tooling/scripts/android-cn-release.py')
+          cn = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(cn)
+          cn.validate_trust(os.environ['ORG_GRADLE_PROJECT_doneatCnLicensePublicKeys'])
+          PY
+      - name: CN unit suites, lint and unsigned builds
+        working-directory: source/src-mobile/android
+        run: |
+          ./gradlew -PdoneatChannel=cn :core:domain:test :core:data:test \
+            :core:designsystem:testDebugUnitTest :app:testDebugUnitTest \
+            :app:lintDebug :app:assembleDebug :app:lintRelease :app:assembleRelease \
+            --no-daemon --console=plain
+          ./gradlew -PdoneatChannel=cn :app:dependencies \
+            --configuration releaseRuntimeClasspath --no-daemon --console=plain \
+            > "$GITHUB_WORKSPACE/cn-dependencies.txt"
+      - name: Verify identity, isolation and source mapping
+        run: |
+          python3 tooling/scripts/android-cn-release.py package --unsigned \
+            --source source --metadata source-record.json \
+            --build-tools "$ANDROID_HOME/build-tools/36.0.0" \
+            --dependencies cn-dependencies.txt --workflow-sha "$GITHUB_SHA" \
+            --run-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --output candidate
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-cn-unsigned-candidate
+          path: candidate/*
+          if-no-files-found: error
+          retention-days: 30
+
+  protection:
+    name: Verify existing signing protection (no secrets)
+    needs: build
+    if: inputs.sign
+    runs-on: ubuntu-latest
+    outputs:
+      environment_id: ${{ steps.protection.outputs.environment_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Require reviewers, prevent self-review and main-only policy
+        id: protection
+        run: python3 scripts/android-cn-signing.py preflight --repository "$GITHUB_REPOSITORY"
+
+  sign:
+    name: Isolated CN APK signing (trusted main tooling only)
+    needs: [build, protection]
+    if: inputs.sign
+    runs-on: ubuntu-latest
+    environment: android-cn-release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Only this main workflow's immutable tooling, never inputs.source_sha.
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: scripts
+      - name: Recheck same environment protection after reviewer approval
+        env:
+          ENVIRONMENT_ID: ${{ needs.protection.outputs.environment_id }}
+        run: python3 scripts/android-cn-signing.py preflight --repository "$GITHUB_REPOSITORY" --expected-id "$ENVIRONMENT_ID"
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-cn-unsigned-candidate
+          path: unsigned
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-cn-source-record
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager 'build-tools;36.0.0'
+      - name: Validate inert artifact before making signing secrets available
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          python3 scripts/android-cn-signing.py verify --candidate unsigned --source-record source-record.json \
+            --source-sha "$SOURCE_SHA" --code "$VERSION_CODE" --workflow-sha "$GITHUB_SHA" \
+            --repository "$GITHUB_REPOSITORY" --run-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --build-tools "$ANDROID_HOME/build-tools/36.0.0"
+      - name: Sign only with official SDK apksigner and pinned certificate
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION_CODE: ${{ inputs.version_code }}
+          CN_KEYSTORE_BASE64: ${{ secrets.ANDROID_CN_UPLOAD_KEYSTORE_BASE64 }}
+          CN_STORE_PASSWORD: ${{ secrets.ANDROID_CN_UPLOAD_STORE_PASSWORD }}
+          CN_KEY_ALIAS: ${{ secrets.ANDROID_CN_UPLOAD_KEY_ALIAS }}
+          CN_KEY_PASSWORD: ${{ secrets.ANDROID_CN_UPLOAD_KEY_PASSWORD }}
+        run: |
+          python3 scripts/android-cn-signing.py sign --candidate unsigned --source-record source-record.json \
+            --source-sha "$SOURCE_SHA" --code "$VERSION_CODE" --workflow-sha "$GITHUB_SHA" \
+            --repository "$GITHUB_REPOSITORY" --run-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --build-tools "$ANDROID_HOME/build-tools/36.0.0" --output signed
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-cn-signed-candidate
+          path: signed/*
+          if-no-files-found: error
+          retention-days: 30
+
+  draft:
+    name: New GitHub Draft Release only
+    needs: sign
+    if: inputs.sign && inputs.draft
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-cn-signed-candidate
+          path: signed
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-cn-source-record
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager 'build-tools;36.0.0'
+      - name: Reverify signed bytes and immutable source target
+        id: candidate
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          python3 scripts/android-cn-signing.py verify --signed --candidate signed --source-record source-record.json \
+            --source-sha "$SOURCE_SHA" --code "$VERSION_CODE" --workflow-sha "$GITHUB_SHA" \
+            --repository "$GITHUB_REPOSITORY" --run-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --build-tools "$ANDROID_HOME/build-tools/36.0.0" --tag-request "$RUNNER_TEMP/cn-tag.json"
+      - name: Create exclusive source tag and new draft without replacing assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.candidate.outputs.tag }}
+        run: |
+          set -euo pipefail
+          # GitHub atomically rejects an existing ref. No force/update call.
+          gh api --method POST "repos/$GH_REPO/git/refs" --input "$RUNNER_TEMP/cn-tag.json" > /dev/null
+          gh release create "$RELEASE_TAG" --draft --verify-tag \
+            --title "DoneAt $RELEASE_TAG" --notes-file signed/RELEASE.md signed/*

@@ -25,6 +25,10 @@
     <string name="allowExactReminders">Consenti promemoria esatti</string>
     <string name="alternatingCurrentWeek">Questa settimana</string>
     <string name="amount">Importo</string>
+    <string name="androidWidgetGalleryIntro">Scegli un widget per vedere i tuoi turni nella schermata Home.</string>
+    <string name="androidWidgetGalleryPin">Aggiungi widget</string>
+    <string name="androidWidgetGalleryPinUnavailable">Aggiungi questo widget dal selettore di widget della schermata Home.</string>
+    <string name="androidWidgetGalleryStepsHome">Tieni premuta un’area vuota della schermata Home, apri Widget e scegli DoneAt. Le dimensioni disponibili dipendono dal launcher.</string>
     <string name="annualBonus">Bonus di fine anno</string>
     <string name="annualBonusMonths">Mesi di bonus</string>
     <string name="appearanceSection">Aspetto</string>

@@ -25,6 +25,10 @@
     <string name="allowExactReminders">Autoriser les rappels exacts</string>
     <string name="alternatingCurrentWeek">Cette semaine</string>
     <string name="amount">Montant</string>
+    <string name="androidWidgetGalleryIntro">Choisissez un widget pour voir vos horaires sur l’écran d’accueil.</string>
+    <string name="androidWidgetGalleryPin">Ajouter le widget</string>
+    <string name="androidWidgetGalleryPinUnavailable">Ajoutez ce widget depuis le sélecteur de widgets de l’écran d’accueil.</string>
+    <string name="androidWidgetGalleryStepsHome">Appuyez longuement sur une zone vide de l’écran d’accueil, ouvrez Widgets et choisissez DoneAt. Les tailles disponibles dépendent de votre lanceur.</string>
     <string name="annualBonus">Prime de fin d’année</string>
     <string name="annualBonusMonths">Mois de prime</string>
     <string name="appearanceSection">Apparence</string>

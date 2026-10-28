@@ -25,6 +25,10 @@
     <string name="allowExactReminders">अचूक स्मरणपत्रांना परवानगी द्या</string>
     <string name="alternatingCurrentWeek">हा आठवडा</string>
     <string name="amount">रक्कम</string>
+    <string name="androidWidgetGalleryIntro">होम स्क्रीनवर तुमचे वेळापत्रक पाहण्यासाठी विजेट निवडा.</string>
+    <string name="androidWidgetGalleryPin">विजेट जोडा</string>
+    <string name="androidWidgetGalleryPinUnavailable">हे विजेट होम स्क्रीनवरील विजेट निवड मेनूमधून जोडा.</string>
+    <string name="androidWidgetGalleryStepsHome">होम स्क्रीनवरील रिकाम्या जागेवर दाबून ठेवा, विजेट उघडा आणि DoneAt निवडा. उपलब्ध आकार तुमच्या लाँचरवर अवलंबून असतात.</string>
     <string name="annualBonus">वर्षअखेरीचा बोनस</string>
     <string name="annualBonusMonths">बोनसचे महिने</string>
     <string name="appearanceSection">स्वरूप</string>

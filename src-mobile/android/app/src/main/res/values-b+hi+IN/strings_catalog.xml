@@ -25,6 +25,10 @@
     <string name="allowExactReminders">सटीक रिमाइंडर की अनुमति दें</string>
     <string name="alternatingCurrentWeek">यह सप्ताह</string>
     <string name="amount">राशि</string>
+    <string name="androidWidgetGalleryIntro">होम स्क्रीन पर अपना शेड्यूल देखने के लिए कोई विजेट चुनें।</string>
+    <string name="androidWidgetGalleryPin">विजेट जोड़ें</string>
+    <string name="androidWidgetGalleryPinUnavailable">इस विजेट को होम स्क्रीन के विजेट चयन मेन्यू से जोड़ें।</string>
+    <string name="androidWidgetGalleryStepsHome">होम स्क्रीन पर खाली जगह को दबाकर रखें, विजेट खोलें और DoneAt चुनें। उपलब्ध आकार आपके लॉन्चर पर निर्भर करते हैं।</string>
     <string name="annualBonus">साल के अंत का बोनस</string>
     <string name="annualBonusMonths">बोनस के महीने</string>
     <string name="appearanceSection">रूप</string>

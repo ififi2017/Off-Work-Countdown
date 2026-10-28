@@ -25,6 +25,10 @@
     <string name="allowExactReminders">正確なリマインダーを許可</string>
     <string name="alternatingCurrentWeek">今週</string>
     <string name="amount">金額</string>
+    <string name="androidWidgetGalleryIntro">ウィジェットを選んで、ホーム画面で勤務予定を確認しましょう。</string>
+    <string name="androidWidgetGalleryPin">ウィジェットを追加</string>
+    <string name="androidWidgetGalleryPinUnavailable">ホーム画面のウィジェット一覧から、このウィジェットを追加してください。</string>
+    <string name="androidWidgetGalleryStepsHome">ホーム画面の何もない場所を長押しし、「ウィジェット」から DoneAt を選びます。使えるサイズはホームアプリによって異なります。</string>
     <string name="annualBonus">年末賞与</string>
     <string name="annualBonusMonths">賞与月数</string>
     <string name="appearanceSection">外観</string>

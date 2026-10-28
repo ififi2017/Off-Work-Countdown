@@ -25,6 +25,10 @@
     <string name="allowExactReminders">Permitir recordatorios exactos</string>
     <string name="alternatingCurrentWeek">Esta semana</string>
     <string name="amount">Monto</string>
+    <string name="androidWidgetGalleryIntro">Elige un widget para ver tus turnos en la pantalla de inicio.</string>
+    <string name="androidWidgetGalleryPin">Añadir widget</string>
+    <string name="androidWidgetGalleryPinUnavailable">Añade este widget desde el selector de widgets de la pantalla de inicio.</string>
+    <string name="androidWidgetGalleryStepsHome">Mantén pulsada una zona vacía de la pantalla de inicio, abre Widgets y elige DoneAt. Los tamaños disponibles dependen de tu lanzador.</string>
     <string name="annualBonus">Bono de fin de año</string>
     <string name="annualBonusMonths">Meses de bono</string>
     <string name="appearanceSection">Apariencia</string>

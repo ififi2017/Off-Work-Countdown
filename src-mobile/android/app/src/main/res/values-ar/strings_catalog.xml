@@ -25,6 +25,10 @@
     <string name="allowExactReminders">السماح بالتذكيرات الدقيقة</string>
     <string name="alternatingCurrentWeek">هذا الأسبوع</string>
     <string name="amount">المبلغ</string>
+    <string name="androidWidgetGalleryIntro">اختر أداة لعرض جدول عملك على الشاشة الرئيسية.</string>
+    <string name="androidWidgetGalleryPin">إضافة أداة</string>
+    <string name="androidWidgetGalleryPinUnavailable">أضف هذه الأداة من قائمة الأدوات على الشاشة الرئيسية.</string>
+    <string name="androidWidgetGalleryStepsHome">اضغط مطولًا على مساحة فارغة في الشاشة الرئيسية، وافتح الأدوات، ثم اختر DoneAt. تعتمد الأحجام المتاحة على تطبيق الشاشة الرئيسية.</string>
     <string name="annualBonus">مكافأة نهاية العام</string>
     <string name="annualBonusMonths">أشهر المكافأة</string>
     <string name="appearanceSection">المظهر</string>

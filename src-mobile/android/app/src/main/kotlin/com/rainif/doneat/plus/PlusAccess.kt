@@ -110,10 +110,18 @@ class PlusAccess(private val context: Context) {
     }
     fun purchase(activity: Activity, offer: PlusOffer) { scope.launch { repository.purchase(activity, offer) } }
 
-    /** What's New may offer an unopened gift without consuming its 24-hour window. */
+    /** Merely offering an unopened gift never consumes its window. */
     fun inviteLifetimeOffer(source: LifetimeOfferSource, nowMs: Long = System.currentTimeMillis()) {
         if (_lifetimeOffer.value != null || !canInviteLifetime) return
         updateLifetimeOffer(LifetimeOffer(source, nowMs))
+    }
+
+    /** The update gift replaces only unopened or ended legacy invitations, once per device. */
+    fun inviteUpdateGift(nowMs: Long = System.currentTimeMillis()) {
+        if (!canInviteLifetime) return
+        val previous = _lifetimeOffer.value
+        val next = LifetimeOffer.updateGift(previous, nowMs)
+        if (next != previous) updateLifetimeOffer(next)
     }
 
     fun claimLifetimeOffer(nowMs: Long = System.currentTimeMillis()) {

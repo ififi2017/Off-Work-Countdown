@@ -25,6 +25,10 @@
     <string name="allowExactReminders">Allow exact reminders</string>
     <string name="alternatingCurrentWeek">This week</string>
     <string name="amount">Amount</string>
+    <string name="androidWidgetGalleryIntro">Choose a widget to see your schedule on your Home Screen.</string>
+    <string name="androidWidgetGalleryPin">Add widget</string>
+    <string name="androidWidgetGalleryPinUnavailable">Add this widget from your Home Screen’s widget picker.</string>
+    <string name="androidWidgetGalleryStepsHome">Touch and hold an empty area on your Home Screen, open Widgets, and choose DoneAt. Available sizes depend on your launcher.</string>
     <string name="annualBonus">Year-end bonus</string>
     <string name="annualBonusMonths">Bonus months</string>
     <string name="appearanceSection">Appearance</string>

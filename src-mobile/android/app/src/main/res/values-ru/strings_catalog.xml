@@ -25,6 +25,10 @@
     <string name="allowExactReminders">Разрешить точные напоминания</string>
     <string name="alternatingCurrentWeek">Эта неделя</string>
     <string name="amount">Сумма</string>
+    <string name="androidWidgetGalleryIntro">Выберите виджет, чтобы видеть расписание на главном экране.</string>
+    <string name="androidWidgetGalleryPin">Добавить виджет</string>
+    <string name="androidWidgetGalleryPinUnavailable">Добавьте этот виджет через меню виджетов на главном экране.</string>
+    <string name="androidWidgetGalleryStepsHome">Нажмите и удерживайте пустое место на главном экране, откройте «Виджеты» и выберите DoneAt. Доступные размеры зависят от лаунчера.</string>
     <string name="annualBonus">Премия по итогам года</string>
     <string name="annualBonusMonths">Месяцы премии</string>
     <string name="appearanceSection">Оформление</string>

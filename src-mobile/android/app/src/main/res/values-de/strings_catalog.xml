@@ -25,6 +25,10 @@
     <string name="allowExactReminders">Exakte Erinnerungen erlauben</string>
     <string name="alternatingCurrentWeek">Diese Woche</string>
     <string name="amount">Betrag</string>
+    <string name="androidWidgetGalleryIntro">Wähle ein Widget, um deinen Dienstplan auf dem Startbildschirm zu sehen.</string>
+    <string name="androidWidgetGalleryPin">Widget hinzufügen</string>
+    <string name="androidWidgetGalleryPinUnavailable">Füge dieses Widget über die Widget-Auswahl deines Startbildschirms hinzu.</string>
+    <string name="androidWidgetGalleryStepsHome">Halte eine freie Stelle auf deinem Startbildschirm gedrückt, öffne „Widgets“ und wähle DoneAt. Die verfügbaren Größen hängen von deinem Launcher ab.</string>
     <string name="annualBonus">Jahresendbonus</string>
     <string name="annualBonusMonths">Bonusmonate</string>
     <string name="appearanceSection">Darstellung</string>

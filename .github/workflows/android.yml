@@ -11,6 +11,7 @@ on:
       - 'scripts/generate-android-strings*'
       - 'lib/**'
       - 'src-mobile/ios/App/App/Native/Models/**'
+      - 'src-mobile/ios/App/App/Native/Widgets/**'
       - 'scripts/generate-android-*-fixtures*'
       - 'scripts/android-*-fixtures/**'
       - 'scripts/check-android-record-roundtrip.mjs'
@@ -36,7 +37,7 @@ jobs:
           fi
           # 与上面 push 的 paths 保持一致。
           if git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD | grep -qE \
-            '^(src-mobile/android/|src-mobile/ios/Shared/|docs/android/synthetic-archives/|src-mobile/ios/App/App/Localizable\.xcstrings$|scripts/generate-android-|lib/|src-mobile/ios/App/App/Native/Models/|scripts/android-.*-fixtures/|scripts/check-android-record-roundtrip\.mjs$|\.github/workflows/android\.yml$)'; then
+            '^(src-mobile/android/|src-mobile/ios/Shared/|docs/android/synthetic-archives/|src-mobile/ios/App/App/Localizable\.xcstrings$|scripts/generate-android-|lib/|src-mobile/ios/App/App/Native/(Models|Widgets)/|scripts/android-.*-fixtures/|scripts/check-android-record-roundtrip\.mjs$|\.github/workflows/android\.yml$)'; then
             echo "android=true" >> "$GITHUB_OUTPUT"
           else
             echo "android=false" >> "$GITHUB_OUTPUT"
@@ -65,6 +66,9 @@ jobs:
       - name: Generated strings are current
         working-directory: .
         run: node scripts/generate-android-strings.mjs --check
+      - name: Widget scalar oracle sources are current
+        working-directory: .
+        run: node scripts/generate-android-widget-suite-fixtures.mjs --check-sources
       - name: Unit tests, lint and builds
         run: ./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease --console=plain
       - name: Reject pre-release Compose/Material3 in release

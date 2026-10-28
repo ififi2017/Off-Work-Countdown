@@ -25,6 +25,10 @@
     <string name="allowExactReminders">允許精確提醒</string>
     <string name="alternatingCurrentWeek">本週</string>
     <string name="amount">金額</string>
+    <string name="androidWidgetGalleryIntro">揀一款小工具，喺主畫面睇返你嘅更表。</string>
+    <string name="androidWidgetGalleryPin">加入小工具</string>
+    <string name="androidWidgetGalleryPinUnavailable">請喺主畫面嘅小工具選單加入呢款小工具。</string>
+    <string name="androidWidgetGalleryStepsHome">長按主畫面嘅空白位置，開啟「小工具」，再揀 DoneAt。可用尺寸視乎你用緊嘅桌面程式。</string>
     <string name="annualBonus">年終獎金</string>
     <string name="annualBonusMonths">獎金月數</string>
     <string name="appearanceSection">外觀</string>

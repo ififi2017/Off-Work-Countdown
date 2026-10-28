@@ -211,7 +211,7 @@ class MainActivity : FragmentActivity() {
             return
         }
         val report = intent?.data?.toString()?.let(com.rainif.doneat.core.domain.records.CycleReportPeriod::fromUrl)
-        val tab = (if (report != null) "records" else intent?.getStringExtra(EXTRA_TAB))?.takeIf { it in setOf("timer", "focus", "records", "settings") } ?: return
+        val tab = (if (report != null) "records" else intent?.getStringExtra(EXTRA_TAB))?.takeIf { it in setOf("timer", "focus", "records", "settings", "plus") } ?: return
         intent?.removeExtra(EXTRA_TAB)
         if (report != null) intent.data = null
         val graph = (application as DoneAtApplication).graph

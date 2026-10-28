@@ -842,3 +842,15 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 产品仓（Web）：19 语 `getAppPlatforms` 加 Android；`getAppNoteMobile`、Desktop 设置页 `downloadMobileApp`、作息预设页 `iosCta` / `webBoundary` 改为同时指向 iOS 与 Android；工时计算器平台行与 README / README_CN 加 Google Play 入口。下载按钮仍去官网下载页，Web 不直接放商店徽章。
 - 官网仓：下载章、下载页和首页收尾加官方 Google Play 徽章（19 语，顺序 App Store → Google Play → Microsoft Store；国内站不显示）；平台行去掉“即将推出”；门厅标题／描述、JSON-LD 加 Android；19 语下载／FAQ／About／隐私去掉“测试阶段”说法并补系统要求 Android 8.0+。数据处理范围不变，Play Data safety 无需随此改动重填。
 
+
+### iOS 3.2.3 小组件增量与设置修复（2026-10-29）
+
+- 用户明确要求同步 Android 小组件。固定 iOS 参考 main `ffd91597`，独立工作树与 `codex/android-323-widget-parity` 分支开发，原产品工作区未提交内容及官网保持不动。新增大数字／圆环／时间线／详细倒计时，周概览、排班、年度、周末、节假日、汇总、人生、专注共 12 个 provider；保留旧 3 个 provider。设置与更新介绍可进入原生预览并请求桌面添加，使用真实本地数据。
+- 沿用现有排班／记录／专注引擎；新增快照严格不含薪资，按当前已验证权益及精确到期时间读取并脱敏。首次安装尚无 career periods 时，仅为小组件临时解析已提交作息，保留例外／请假，不写伪造历史。专注加时／停止经内部 Glance 回调并复核当前会话和权益。只为已安装类型安排刷新，倒计时系统 chronometer、静态日历按日界、动态汇总按分钟刷新。
+- 欢迎页旧逐帧目标动画导致滚动滞后，改为直接跟随完整布局坐标，跨页面宿主才平滑纠偏；保留减少动态效果。致谢四项默认折叠，点击展开源链接与完整许可证。同步 3.2.3 更新介绍与七天一次性更新礼物，保留未到期旧礼物，不因重复启动续期。Android 新增说明19语；发布说明另存 draft，不覆盖已发布文案。
+- 新增 Swift 实际编译 oracle 与来源 hash 校验，验证周有效工时、DST 年度进度及人生标量；Kotlin 回归覆盖首次排班、过期／撤销权益、畸形时间、未来专注不误判运行、过期按钮及刷新频率。
+- UI 环境：Pixel 10 Pro Android 模拟器 `emulator-5580`、360×640 dp、隔离 `com.rainif.doneat.parityqa`；没有操作已连接真机。欢迎页滑动510px，说明和数字均移动510px，间距101px恒定。实际 Launcher 已添加旧倒计时、周概览与排班：周内16h／2工作日、当前29日、9–17班次符合首次配置；旧小号底部百分比／边界时间完整。致谢实际确认默认四项折叠，Backdrop展开可读全文。主 Agent 独立看图核对上述结果。截图与环境记录已归档到 `qa/2026-10-29-android323/`。
+- CN：公开独立源码仍停留 `android-cn-v3.2.1-7`（`6c87cb6f`），不是 main 中的 flavor。新增手动候选／签名／Draft Release 流水线；源构建无 secrets，受保护签名 runner 只运行可信 main 工具，草稿写权限独立。初版自动审批因源码构建与凭证边界拒绝；修订的隔离方案已获准。远端没有 CN 独立 secrets／环境，审核人仍待用户指定，未运行签名、未修改 GitHub 配置、未打 tag、未创建或发布 Release。不能声称 CN 3.2.3 已上线；操作见 `cn-release-ci.md`。
+- 非本轮：Apple Watch／动态岛／控制中心等平台专属表面不移植；Wear OS、Drive 同步不擅自扩展。iOS 未改代码，仅无头构建，不做 iOS 手动 UI。未做真实支付、完整19语视觉与 TalkBack 验收。
+- 协作：三个子 Agent 实际均使用 GPT-6.1 Sol / High，负责差异与 domain、欢迎页与小组件 UI、CN CI；主 Agent 集成并独立复核测试／截图。
+- 自动验证：Android四模块共779测试（domain468、data96、designsystem13、app202），零失败／错误／跳过；共享 npm53文件580测试、npm lint、版本一致性检查、CN33测试通过。19语生成资源检查与实际 Swift重新编译oracle检查通过。`check:ios`及无头 iOS Simulator构建通过。Android lint为0错误／56警告／4提示；最终地区周末变更后的四模块测试、lint、Debug与R8 Release全套门禁通过（2m9s）。

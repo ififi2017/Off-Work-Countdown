@@ -25,6 +25,10 @@
     <string name="allowExactReminders">อนุญาตการแจ้งเตือนแบบตรงเวลา</string>
     <string name="alternatingCurrentWeek">สัปดาห์นี้</string>
     <string name="amount">จำนวนเงิน</string>
+    <string name="androidWidgetGalleryIntro">เลือกวิดเจ็ตเพื่อดูตารางงานบนหน้าจอหลัก</string>
+    <string name="androidWidgetGalleryPin">เพิ่มวิดเจ็ต</string>
+    <string name="androidWidgetGalleryPinUnavailable">เพิ่มวิดเจ็ตนี้จากเมนูเลือกวิดเจ็ตบนหน้าจอหลัก</string>
+    <string name="androidWidgetGalleryStepsHome">แตะพื้นที่ว่างบนหน้าจอหลักค้างไว้ เปิดวิดเจ็ต แล้วเลือก DoneAt ขนาดที่ใช้ได้ขึ้นอยู่กับลอนเชอร์ของคุณ</string>
     <string name="annualBonus">โบนัสสิ้นปี</string>
     <string name="annualBonusMonths">จำนวนเดือนโบนัส</string>
     <string name="appearanceSection">ลักษณะ</string>

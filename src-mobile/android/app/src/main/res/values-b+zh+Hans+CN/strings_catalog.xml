@@ -25,6 +25,10 @@
     <string name="allowExactReminders">允许精确提醒</string>
     <string name="alternatingCurrentWeek">本周</string>
     <string name="amount">金额</string>
+    <string name="androidWidgetGalleryIntro">选择一款小组件，在主屏幕查看排班。</string>
+    <string name="androidWidgetGalleryPin">添加小组件</string>
+    <string name="androidWidgetGalleryPinUnavailable">请在主屏幕的小组件选择器中添加这款小组件。</string>
+    <string name="androidWidgetGalleryStepsHome">长按主屏幕空白处，打开“小组件”，然后选择 DoneAt。可用尺寸取决于你使用的桌面应用。</string>
     <string name="annualBonus">年终奖</string>
     <string name="annualBonusMonths">年终奖月数</string>
     <string name="appearanceSection">外观</string>

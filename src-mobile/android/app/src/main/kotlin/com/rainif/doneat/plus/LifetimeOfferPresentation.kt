@@ -1,5 +1,8 @@
 package com.rainif.doneat.plus
 
+import android.icu.text.MeasureFormat
+import android.icu.util.Measure
+import android.icu.util.TimeUnit
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -161,7 +164,11 @@ internal fun LifetimeOfferCardContent(
             }
             if (savings != null) Text(savings, style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-            Text(stringResource(if (invitation.source == LifetimeOfferSource.UPDATE_321) R.string.plusOfferWelcomeBack else R.string.plusOfferWelcome),
+            Text(stringResource(when (invitation.source) {
+                LifetimeOfferSource.UPDATE_323 -> R.string.plusGiftSubtitle
+                LifetimeOfferSource.UPDATE_321 -> R.string.plusOfferWelcomeBack
+                LifetimeOfferSource.ONBOARDING -> R.string.plusOfferWelcome
+            }),
                 style = MaterialTheme.typography.bodyMedium)
             FlowRow(Modifier.onGloballyPositioned { coordinates ->
                 val bounds = coordinates.boundsInWindow()
@@ -173,7 +180,8 @@ internal fun LifetimeOfferCardContent(
                     style = MaterialTheme.typography.bodyLarge.copy(textDecoration = TextDecoration.LineThrough, fontFeatureSettings = "tnum"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Text(stringResource(R.string.plusOfferTerms), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(if (invitation.source == LifetimeOfferSource.UPDATE_323) R.string.plusOfferTermsWeek else R.string.plusOfferTerms),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (deadline != null) {
                 val accessibilityDeadline = Strings.plusOfferDeadline(resources, deadline)
                 FlowRow(Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = accessibilityDeadline },
@@ -192,27 +200,28 @@ internal fun LifetimeOfferCardContent(
     }
 }
 
-/** Persistent timer entry exists only after the priced reveal has started its countdown. */
+/** The wrapped update gift stays on the timer; its clock starts only after a priced reveal. */
 @Composable
 fun LifetimeOfferToolbarButton(plus: PlusAccess, onOpen: () -> Unit, modifier: Modifier = Modifier) {
     val offer by plus.lifetimeOffer.collectAsStateWithLifecycle()
     val store by plus.state.collectAsStateWithLifecycle()
     val authorized by plus.authorized.collectAsStateWithLifecycle()
     val invitation = offer ?: return
-    if (invitation.claimedAtMs == null || authorized || !plus.canOfferLifetime) return
+    if (authorized || !plus.canOfferLifetime) return
     val now = observeOfferClock(plus)
-    if (!invitation.isActive(now)) return
+    if (invitation.claimedAtMs != null && !invitation.isActive(now)) return
     val locale = LocalConfiguration.current.locales[0]
     val res = LocalResources.current
     val title = stringResource(R.string.plusOfferTitle)
-    val deadline = Strings.plusOfferDeadline(res, offerDeadline(invitation.expiresAtMs!!, locale))
+    val deadline = invitation.expiresAtMs?.let { Strings.plusOfferDeadline(res, offerDeadline(it, locale)) }
     val savings = store.discountedLifetimeOffer?.let { savingsLabel(it, locale) }?.let { Strings.plusOfferSavings(res, it) } ?: title
-    TextButton(onClick = onOpen, modifier = modifier.semantics { contentDescription = "$title. $deadline" }) {
+    TextButton(onClick = onOpen, modifier = modifier.semantics { contentDescription = if (deadline == null) title else "$title. $deadline" }) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
             OfferGiftIcon(size = DoneAtOfferTokens.toolbarGiftSize)
             Column {
                 Text(savings, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-                Text(offerDuration(invitation.remainingMs(now), locale), style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"))
+                if (invitation.claimedAtMs != null) Text(offerDuration(invitation.remainingMs(now), locale),
+                    style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"))
             }
         }
     }
@@ -313,6 +322,8 @@ internal fun savingsLabel(price: PlusOffer, locale: Locale): String? {
 
 private fun offerDuration(ms: Long, locale: Locale): String {
     val seconds = (ms / 1_000).coerceAtLeast(0)
+    if (seconds >= 86_400) return MeasureFormat.getInstance(locale, MeasureFormat.FormatWidth.NARROW)
+        .formatMeasures(Measure(seconds / 86_400, TimeUnit.DAY), Measure(seconds % 86_400 / 3_600, TimeUnit.HOUR))
     val format = NumberFormat.getIntegerInstance(locale).apply { minimumIntegerDigits = 2; isGroupingUsed = false }
     return "${format.format(seconds / 3600)}:${format.format(seconds % 3600 / 60)}:${format.format(seconds % 60)}"
 }
