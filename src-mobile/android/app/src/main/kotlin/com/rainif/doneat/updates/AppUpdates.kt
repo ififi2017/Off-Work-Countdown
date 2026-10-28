@@ -16,6 +16,7 @@ data class AndroidRelease(
     val versionCode: Long,
     val versionName: String,
     val minSdk: Int,
+    val releaseNotes: Map<String, String> = emptyMap(),
 )
 
 sealed interface UpdateResult {
@@ -39,6 +40,8 @@ object AppUpdates {
         require(release.versionCode > 0 && release.minSdk in 26..100)
         require(Regex("[0-9]+(?:\\.[0-9]+){1,3}(?:[-+][A-Za-z0-9.-]+)?").matches(release.versionName))
         require(release.versionName.length <= 40)
+        require(release.releaseNotes.size <= 2 && release.releaseNotes.keys.all { it in setOf("en", "zh-CN") })
+        require(release.releaseNotes.values.all { it.length <= 3000 && it.none { c -> c.isISOControl() && c != '\n' && c != '\t' } })
         return when {
             release.versionCode <= installedCode -> UpdateResult.Current
             release.minSdk > sdk -> UpdateResult.Incompatible

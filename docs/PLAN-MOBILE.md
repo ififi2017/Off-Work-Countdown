@@ -459,3 +459,7 @@ iOS 自由排班增加选择班次后的日期点选与涂抹，重复操作恢�
 ### 2026-10-28 Android update and About increment
 
 CN 3.2.1(6) adds a user-triggered HTTPS update check with explicit official-page download confirmation; Play uses its store update page. Update metadata contains no device or purchase identifiers. About adopts the explicitly requested latest iOS studio artwork and owner-provided APP registration. Detailed verification and publication status remains in `docs/android/progress.md`.
+
+### CN build 7 update reminder
+
+User-approved on 2026-10-28: after setup, CN foreground launch/resume can request public Cloudflare version metadata and bounded English/Simplified Chinese release notes at most once per 24 hours. No identifiers, work data, receipts or background worker. Same-version automatic reminders are throttled to seven days; manual checking stays available. Download/install remains user initiated. Local throttle preferences are outside backup allowlists. Matching disclosure lives at doneat.com.cn/android/privacy.

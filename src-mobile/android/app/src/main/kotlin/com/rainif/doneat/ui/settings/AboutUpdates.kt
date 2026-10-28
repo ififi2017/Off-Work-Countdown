@@ -22,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.content.pm.PackageInfoCompat
 import com.rainif.doneat.BuildConfig
 import com.rainif.doneat.R
-import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.components.ActionRow
 import com.rainif.doneat.ui.components.SettingsGroup
 import com.rainif.doneat.updates.AppUpdates
@@ -107,13 +106,7 @@ fun AboutUpdates() {
     }
     val available = result as? UpdateResult.Available
     if (showDialog && available != null) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            icon = { Icon(Icons.Outlined.SystemUpdateAlt, contentDescription = null) },
-            title = { Text(stringResource(R.string.androidUpdateAvailable)) },
-            text = { Text(Strings.androidUpdateMessage(androidx.compose.ui.platform.LocalResources.current, "${available.release.versionName} (${available.release.versionCode})")) },
-            confirmButton = { Button(onClick = { showDialog = false; openUrl(context, AppUpdates.DOWNLOAD_PAGE) }) { Text(stringResource(R.string.androidUpdateDownload)) } },
-            dismissButton = { TextButton(onClick = { showDialog = false }) { Text(stringResource(R.string.cancel)) } },
-        )
+        com.rainif.doneat.updates.UpdateDialog(available.release, onDismiss = { showDialog = false })
     }
+    com.rainif.doneat.updates.ReleaseHistory()
 }
