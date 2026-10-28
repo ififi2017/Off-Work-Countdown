@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BarChart
@@ -71,18 +70,13 @@ fun WhatsNewScreen(graph: AppGraph, onDismiss: () -> Unit, continuing: Boolean =
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(Modifier.fillMaxSize().safeDrawingPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Column(Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(DoneAtSpacing.xl), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xl)) {
+                Column(Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
                         Text("DoneAt ${ReleaseNotesPolicy.CURRENT}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
-                        Text(stringResource(R.string.whatsNewTitle), Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.whatsNewWidgetsTitle), Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                     }
-                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
-                        Row(Modifier.padding(horizontal = DoneAtSpacing.m, vertical = DoneAtSpacing.xs), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.Widgets, null, Modifier.size(DoneAtSpacing.l), tint = MaterialTheme.colorScheme.primary)
-                            Text(stringResource(R.string.whatsNewWidgetsTitle), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                    Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.m + DoneAtSpacing.s)) {
+                    com.rainif.doneat.widget.WidgetReleasePreview(graph)
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         ReleaseFeature(Icons.Outlined.Widgets, R.string.whatsNewHomeTitle, R.string.whatsNewHomeBody, largeText)
                         ReleaseFeature(Icons.Outlined.BarChart, R.string.widgetSuiteYearName, R.string.widgetSuiteYearDescription, largeText)
                         ReleaseFeature(Icons.Outlined.Star, R.string.widgetSuiteSummaryName, R.string.widgetSuiteSummaryDescription, largeText)
@@ -106,7 +100,7 @@ private fun ReleaseFeature(symbol: ImageVector, title: Int, body: Int, largeText
         if (!largeText) Icon(symbol, null, Modifier.size(DoneAtSpacing.xl), tint = MaterialTheme.colorScheme.primary)
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
             Text(stringResource(title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text(stringResource(body), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

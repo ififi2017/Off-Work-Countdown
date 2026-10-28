@@ -12,6 +12,8 @@
             android:name=".gallery.ParityGalleryActivity"
             android:exported="true"
             android:label="DoneAt parity gallery" />
+        <activity android:name=".gallery.WidgetRenderGalleryActivity"
+            android:exported="true" android:label="Isolated widget rendering QA" />
     </application>
 
 </manifest>

@@ -25,6 +25,8 @@
     <string name="allowExactReminders">正確なリマインダーを許可</string>
     <string name="alternatingCurrentWeek">今週</string>
     <string name="amount">金額</string>
+    <string name="androidPlusMonthlyPlanDetail">月ごとのお支払い。いつでも解約できます。</string>
+    <string name="androidPlusYearlyPlanDetail">年ごとのお支払い。いつでも解約できます。</string>
     <string name="androidWidgetGalleryIntro">ウィジェットを選んで、ホーム画面で勤務予定を確認しましょう。</string>
     <string name="androidWidgetGalleryPin">ウィジェットを追加</string>
     <string name="androidWidgetGalleryPinUnavailable">ホーム画面のウィジェット一覧から、このウィジェットを追加してください。</string>

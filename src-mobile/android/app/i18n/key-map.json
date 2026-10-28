@@ -202,6 +202,14 @@
     "amount": {
       "resource": "string/amount"
     },
+    "androidPlusMonthlyPlanDetail": {
+      "resource": "string/androidPlusMonthlyPlanDetail",
+      "androidOnly": true
+    },
+    "androidPlusYearlyPlanDetail": {
+      "resource": "string/androidPlusYearlyPlanDetail",
+      "androidOnly": true
+    },
     "androidWidgetGalleryIntro": {
       "resource": "string/androidWidgetGalleryIntro",
       "androidOnly": true

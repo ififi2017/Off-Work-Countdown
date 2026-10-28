@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Consenti promemoria esatti</string>
     <string name="alternatingCurrentWeek">Questa settimana</string>
     <string name="amount">Importo</string>
+    <string name="androidPlusMonthlyPlanDetail">Pagamento mensile. Annulla quando vuoi.</string>
+    <string name="androidPlusYearlyPlanDetail">Pagamento annuale. Annulla quando vuoi.</string>
     <string name="androidWidgetGalleryIntro">Scegli un widget per vedere i tuoi turni nella schermata Home.</string>
     <string name="androidWidgetGalleryPin">Aggiungi widget</string>
     <string name="androidWidgetGalleryPinUnavailable">Aggiungi questo widget dal selettore di widget della schermata Home.</string>

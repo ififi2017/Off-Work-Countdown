@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Permitir lembretes exatos</string>
     <string name="alternatingCurrentWeek">Esta semana</string>
     <string name="amount">Valor</string>
+    <string name="androidPlusMonthlyPlanDetail">Cobrança mensal. Cancele quando quiser.</string>
+    <string name="androidPlusYearlyPlanDetail">Cobrança anual. Cancele quando quiser.</string>
     <string name="androidWidgetGalleryIntro">Escolha um widget para ver os seus turnos no ecrã inicial.</string>
     <string name="androidWidgetGalleryPin">Adicionar widget</string>
     <string name="androidWidgetGalleryPinUnavailable">Adicione este widget no seletor de widgets do ecrã inicial.</string>

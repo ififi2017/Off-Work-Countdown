@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Exakte Erinnerungen erlauben</string>
     <string name="alternatingCurrentWeek">Diese Woche</string>
     <string name="amount">Betrag</string>
+    <string name="androidPlusMonthlyPlanDetail">Monatliche Zahlung. Jederzeit kündbar.</string>
+    <string name="androidPlusYearlyPlanDetail">Jährliche Zahlung. Jederzeit kündbar.</string>
     <string name="androidWidgetGalleryIntro">Wähle ein Widget, um deinen Dienstplan auf dem Startbildschirm zu sehen.</string>
     <string name="androidWidgetGalleryPin">Widget hinzufügen</string>
     <string name="androidWidgetGalleryPinUnavailable">Füge dieses Widget über die Widget-Auswahl deines Startbildschirms hinzu.</string>

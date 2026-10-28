@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Tam zamanlı hatırlatıcılara izin ver</string>
     <string name="alternatingCurrentWeek">Bu hafta</string>
     <string name="amount">Tutar</string>
+    <string name="androidPlusMonthlyPlanDetail">Aylık faturalandırılır. İstediğiniz zaman iptal edin.</string>
+    <string name="androidPlusYearlyPlanDetail">Yıllık faturalandırılır. İstediğiniz zaman iptal edin.</string>
     <string name="androidWidgetGalleryIntro">Çalışma programını ana ekranda görmek için bir widget seç.</string>
     <string name="androidWidgetGalleryPin">Widget ekle</string>
     <string name="androidWidgetGalleryPinUnavailable">Bu widget’ı ana ekranındaki widget seçicisinden ekle.</string>

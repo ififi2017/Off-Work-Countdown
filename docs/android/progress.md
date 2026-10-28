@@ -855,3 +855,13 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 协作：三个子 Agent 实际均使用 GPT-6.1 Sol / High，负责差异与 domain、欢迎页与小组件 UI、CN CI；主 Agent 集成并独立复核测试／截图。
 - 自动验证：Android四模块共779测试（domain468、data96、designsystem13、app202），零失败／错误／跳过；共享 npm53文件580测试、npm lint、版本一致性检查、CN34测试通过。19语生成资源检查与实际 Swift重新编译oracle检查通过。`check:ios`及无头 iOS Simulator构建通过。Android lint为0错误／56警告／4提示；最终地区周末变更后的四模块测试、lint、Debug与R8 Release全套门禁通过（2m9s）。
 - 所有者追问自审批限制后，移除本轮新增的强制双人限制：允许 `prevent_self_review=false`，仍要求真实手动审批、main-only与隔离签名；新增允许本人审批测试，主 Agent独立重跑34项全部通过。远端环境仍未创建。
+
+### 用户设计稿校正（2026-10-29）
+
+用户指出首版小组件视觉未遵循 iOS 设计，并提供「DoneAt 3.3 小组件设计.html」及「DoneAt 3.2.3 付费墙与新功能方案.html」。此前 `qa/2026-10-29-android323` 的小组件截图仅证明旧实现的功能，**不作为最终视觉验收**。按用户稿分别重做各组件 Small/Medium/Large、G/H 付费墙与礼物、D 更新介绍和 F 的 Android 支持表面；原始稿不上传仓库。静态视觉/数据边界核对见 `qa/android-widget-design-audit-2026-10-29.md`。业务规则、真实 Play 价格/资格、薪资脱敏与权益到期不因稿内示例改变。新增调试图像导出入口仅允许 `.parityqa`，只读当前快照或明确标识的合成渲染样例，不写入排班/权益或桌面状态。最终构建和截图结果如下。
+
+
+- 已按各类型/尺寸重做独立构图：竖向时间轴、分段环、详情双栏、周日块、排班月历、统计柱图、人生年月点阵、假期连续日块与Focus操作区。预览/桌面共享绘制与计时位置，原生Chronometer保留秒更新；新功能页使用相同renderer。
+- 付费墙使用G六页轮播/纵向方案和H礼物动作；D更新介绍、F引导小组件组合同步。真实商店价格、资格、一次性礼物有效期及Android支持范围不变。稿里的Apple系统入口未虚构成Android能力。
+- 最终视觉证据见 `qa/2026-10-29-android-design/README.md`：四组152张样例输出合成图、真实桌面秒计时两帧、付费墙方案、新功能页和只读引导。主 Agent 独立看图并修复数字截断/200%字号；未覆盖的运行时验收明确留在README，不能称全矩阵已通过。
+- 全套Android779测试、Debug/R8 Release、Lint通过；最后Focus字体修复再跑app202测试与Lint/两种构建。Lint0错误、66警告、4提示；新增主要是Canvas KTX建议和显式RTL物理对齐提示。字符串生成器14项与生成检查通过。未发布/未合并，继续使用draft PR344。

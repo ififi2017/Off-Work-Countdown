@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Autoriser les rappels exacts</string>
     <string name="alternatingCurrentWeek">Cette semaine</string>
     <string name="amount">Montant</string>
+    <string name="androidPlusMonthlyPlanDetail">Facturation mensuelle. Résiliation à tout moment.</string>
+    <string name="androidPlusYearlyPlanDetail">Facturation annuelle. Résiliation à tout moment.</string>
     <string name="androidWidgetGalleryIntro">Choisissez un widget pour voir vos horaires sur l’écran d’accueil.</string>
     <string name="androidWidgetGalleryPin">Ajouter le widget</string>
     <string name="androidWidgetGalleryPinUnavailable">Ajoutez ce widget depuis le sélecteur de widgets de l’écran d’accueil.</string>

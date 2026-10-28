@@ -29,12 +29,15 @@ import java.util.Locale
 import kotlin.math.max
 import kotlin.math.roundToInt
 
+internal data class WidgetSuiteRenderState(val kind: DoneAtWidgetKind, val snapshot: WidgetSuiteSnapshot?, val nowMs: Long)
+
 internal data class WidgetCardDay(val label: String, val work: Boolean, val today: Boolean = false, val holiday: Boolean = false, val description: String = label)
 internal data class WidgetCardBar(val label: String, val fraction: Float, val current: Boolean)
 internal data class WidgetCard(
     val title: String, val headline: String, val caption: String = "", val facts: List<String> = emptyList(),
     val progress: Double? = null, val days: List<WidgetCardDay> = emptyList(), val bars: List<WidgetCardBar> = emptyList(),
     val ring: Boolean = false, val locked: Boolean = false,
+    val suite: WidgetSuiteRenderState? = null, val nativeFocusTimer: Boolean = false,
 ) {
     val description get() = (listOf(title, headline, caption) + facts + days.map { it.description }).filter { it.isNotBlank() }.joinToString(". ")
 }
@@ -49,8 +52,14 @@ internal fun widgetSuiteCard(context: Context, kind: DoneAtWidgetKind, raw: Widg
     fun count(n: Int) = text.count(n)
     fun hours(ms: Long) = text.hours(ms / 3_600_000.0)
     val title = t(kind.titleRes)
-    fun empty(message: Int = R.string.widgetSuiteOpenToRefresh) = WidgetCard(title, t(message), t(R.string.widgetSuiteOpenDoneAt))
-    fun lock(promise: Int) = WidgetCard(title, "Plus", t(promise), listOf(t(R.string.widgetSuiteLearnPlus)), locked = true)
+    val render = WidgetSuiteRenderState(kind, snapshot, nowMs)
+    fun empty(message: Int = R.string.widgetSuiteOpenToRefresh) = WidgetCard(title, t(message), t(R.string.widgetSuiteOpenDoneAt), suite = render)
+    fun lock(promise: Int) = WidgetCard(title, "Plus", t(promise), listOf(t(R.string.widgetSuiteLearnPlus)), locked = true, suite = render)
+    if (snapshot == null && kind == DoneAtWidgetKind.YEAR) {
+        val progress = WidgetCalendarProgress.at(nowMs, ZoneId.systemDefault(), java.time.temporal.WeekFields.of(locale).firstDayOfWeek)
+        return WidgetCard(title, java.text.NumberFormat.getPercentInstance(locale).format(progress.year),
+            count(Instant.ofEpochMilli(nowMs).atZone(ZoneId.systemDefault()).year), listOf(t(R.string.widgetSuiteDaysLeft, count(progress.daysLeftInYear))), suite = render)
+    }
     if (snapshot == null) return if (kind.plus) lock(when (kind) {
         DoneAtWidgetKind.SUMMARY -> R.string.widgetSuiteSummaryPromise
         DoneAtWidgetKind.LIFE -> R.string.widgetSuiteLifePromise
@@ -65,7 +74,7 @@ internal fun widgetSuiteCard(context: Context, kind: DoneAtWidgetKind, raw: Widg
         val day = LocalDate.parse(d.dayKey)
         WidgetCardDay(count(day.dayOfMonth), d.isWork, day == today, d.kind == WidgetCalendarDayKind.HOLIDAY || d.kind == WidgetCalendarDayKind.LEAVE, date(d.startMs) + " · " + (d.title ?: t(if (d.isWork) R.string.widgetSuiteWork else R.string.widgetSuiteRest)))
     }
-    return when (kind) {
+    val result = when (kind) {
         DoneAtWidgetKind.WEEK -> {
             val week = snapshot.calendar.week(nowMs)
             if (week.isEmpty()) empty(R.string.widgetSuiteNoScheduleMessage) else {
@@ -75,7 +84,9 @@ internal fun widgetSuiteCard(context: Context, kind: DoneAtWidgetKind, raw: Widg
             }
         }
         DoneAtWidgetKind.ROSTER -> {
-            val current = snapshot.calendar.day(nowMs) ?: return empty(R.string.widgetSuiteNoScheduleMessage)
+            val todayDay = snapshot.calendar.day(nowMs) ?: return empty(R.string.widgetSuiteNoScheduleMessage)
+            val current = if (todayDay.isWork && (todayDay.endAtMs ?: 0) > nowMs) todayDay else
+                snapshot.calendar.days.firstOrNull { it.dayKey == today.plusDays(1).toString() } ?: todayDay
             val month = snapshot.calendar.days.filter { it.dayKey.startsWith(today.toString().take(7)) }
             val leading = month.firstOrNull()?.let { (LocalDate.parse(it.dayKey).dayOfWeek.value - snapshot.calendar.firstDayOfWeek + 7) % 7 } ?: 0
             val status = current.title ?: t(if (current.isWork) R.string.widgetSuiteWork else R.string.widgetSuiteRest)
@@ -111,9 +122,10 @@ internal fun widgetSuiteCard(context: Context, kind: DoneAtWidgetKind, raw: Widg
             val period = snapshot.summary.period(WidgetSummaryPeriodKind.WEEK) ?: return empty()
             if (today.toString() !in period.startDayKey..period.endDayKey) return empty()
             val maxBar = period.bars.maxOfOrNull { it.valueMs }?.coerceAtLeast(1) ?: 1
-            val facts = mutableListOf(t(R.string.widgetSuiteWorkdayCount, count(period.workdays)), t(R.string.widgetSuiteOvertime) + " · " + hours(period.overtimeMs))
-            snapshot.summary.periods.filter { it.kind != WidgetSummaryPeriodKind.WEEK }.forEach { facts += it.title + " · " + hours(it.workedMs(snapshot.summary.liveSegments, snapshot.generatedAtMs, nowMs)) }
-            period.comparison?.let(facts::add)
+            val facts = snapshot.summary.periods.flatMap { item ->
+                listOf(item.title + " · " + hours(item.workedMs(snapshot.summary.liveSegments, snapshot.generatedAtMs, nowMs)),
+                    t(R.string.widgetSuiteWorkdayCount, count(item.workdays)), t(R.string.widgetSuiteOvertime) + " · " + hours(item.overtimeMs)) + listOfNotNull(item.comparison)
+            }
             WidgetCard(title, hours(period.workedMs(snapshot.summary.liveSegments, snapshot.generatedAtMs, nowMs)), period.title, facts,
                 period.progress, bars = period.bars.map { WidgetCardBar(it.label, (it.valueMs.toDouble() / maxBar).toFloat(), it.state == WidgetSummaryBarState.CURRENT) })
         }
@@ -143,10 +155,12 @@ internal fun widgetSuiteCard(context: Context, kind: DoneAtWidgetKind, raw: Widg
         }
         else -> empty()
     }
+    return result.copy(suite = render)
 }
 
 /** Shared rendered preview: launcher and gallery use the same data, typography and chart geometry. */
 internal fun widgetCardBitmap(context: Context, card: WidgetCard, size: DpSize): Bitmap {
+    if (card.suite != null) return WidgetSuitePainter(context, card, size).render()
     val density = context.resources.displayMetrics.density
     val width = (size.width.value * density).roundToInt().coerceAtLeast(1)
     val height = (size.height.value * density).roundToInt().coerceAtLeast(1)
@@ -234,84 +248,4 @@ internal fun widgetCardBitmap(context: Context, card: WidgetCard, size: DpSize):
         }
     }
     return image
-}
-
-
-/** Draw only already-resolved segment geometry; no schedule is calculated in the widget. */
-internal fun widgetSegmentArtwork(context: Context, width: Dp, height: Dp, segments: List<WidgetTimeSegment>, progress: Double, ring: Boolean): Bitmap {
-    val density = context.resources.displayMetrics.density
-    val w = width.value.coerceAtLeast(1f)
-    val h = height.value.coerceAtLeast(1f)
-    val bitmap = createBitmap((w * density).roundToInt().coerceAtLeast(1), (h * density).roundToInt().coerceAtLeast(1))
-    val canvas = Canvas(bitmap).apply { scale(density, density) }
-    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    val track = ContextCompat.getColor(context, R.color.widget_track)
-    val accent = ContextCompat.getColor(context, R.color.widget_accent)
-    val values = segments.filter { it.durationMs > 0 }
-    val total = values.sumOf { it.durationMs }.coerceAtLeast(1).toDouble()
-    val completed = total * progress.coerceIn(0.0, 1.0)
-    if (ring) {
-        val stroke = 7f
-        val bounds = RectF(stroke / 2, stroke / 2, w - stroke / 2, h - stroke / 2)
-        paint.style = Paint.Style.STROKE; paint.strokeWidth = stroke; paint.strokeCap = Paint.Cap.ROUND
-        if (values.isEmpty()) { paint.color = track; canvas.drawOval(bounds, paint) }
-        var offset = 0.0
-        values.forEach { segment ->
-            val start = -90f + (offset / total * 360).toFloat()
-            val sweep = (segment.durationMs / total * 360).toFloat()
-            val gap = if (values.size > 1) minOf(6f, sweep / 3) else 0f
-            paint.color = track; canvas.drawArc(bounds, start + gap / 2, (sweep - gap).coerceAtLeast(0f), false, paint)
-            val fill = ((completed - offset) / segment.durationMs).coerceIn(0.0, 1.0).toFloat()
-            if (fill > 0) { paint.color = accent; canvas.drawArc(bounds, start + gap / 2, (sweep - gap) * fill, false, paint) }
-            offset += segment.durationMs
-        }
-    } else {
-        val start = values.firstOrNull()?.startMs ?: 0
-        val end = values.lastOrNull()?.endMs ?: 1
-        val span = (end - start).coerceAtLeast(1).toDouble()
-        var offset = 0.0
-        values.forEach { segment ->
-            val left = ((segment.startMs - start) / span * w).toFloat()
-            val right = ((segment.endMs - start) / span * w).toFloat()
-            paint.color = track; canvas.drawRoundRect(left, h / 2 - 5, right, h / 2 + 5, 3f, 3f, paint)
-            val fill = ((completed - offset) / segment.durationMs).coerceIn(0.0, 1.0).toFloat()
-            if (fill > 0) { paint.color = accent; canvas.drawRoundRect(left, h / 2 - 5, left + (right - left) * fill, h / 2 + 5, 3f, 3f, paint) }
-            offset += segment.durationMs
-        }
-        if (values.isEmpty()) { paint.color = track; canvas.drawRoundRect(0f, h / 2 - 5, w, h / 2 + 5, 3f, 3f, paint) }
-    }
-    return bitmap
-}
-
-
-/** Static gallery sample of the live native Chronometer layout, using the visitor's current snapshot. */
-internal fun widgetCountdownPreviewBitmap(context: Context, kind: DoneAtWidgetKind, snapshot: WidgetSnapshot?, suite: WidgetSuiteSnapshot?, nowMs: Long, size: DpSize): Bitmap {
-    val entry = snapshot?.entry(nowMs)
-    val res = context.resources
-    val label = entry?.let { e -> when (e.labelKey) {
-        "widgetRestDay" -> R.string.widgetRestDay; "nextShiftLabelShort" -> R.string.nextShiftLabelShort
-        "extendedBreak" -> R.string.extendedBreak; "lunchInProgress" -> R.string.lunchInProgress
-        "widgetWorking" -> R.string.widgetWorking; "overtime" -> R.string.overtime
-        "offWorkToday" -> R.string.offWorkToday; else -> R.string.countdownNotStarted
-    } } ?: R.string.countdownNotStarted
-    val ms = entry?.countdownValueAtDateMs?.coerceAtLeast(0) ?: 0
-    val seconds = ms / 1000
-    val locale = res.configuration.locales[0]
-    val number = java.text.NumberFormat.getIntegerInstance(locale).apply { isGroupingUsed = false }
-    fun two(value: Long) = number.format(value).padStart(2, number.format(0).first())
-    val value = number.format(seconds / 3600) + ":" + two(seconds / 60 % 60)
-    val upcoming = snapshot?.upcoming.orEmpty().filter { it.dateMs > nowMs }.take(4)
-    val card = WidgetCard(res.getString(if (kind == DoneAtWidgetKind.CLASSIC) R.string.app_name else kind.titleRes),
-        if (entry == null) res.getString(R.string.countdownNotStarted) else value,
-        res.getString(label), if (kind == DoneAtWidgetKind.DETAIL || kind == DoneAtWidgetKind.CLASSIC) upcoming.map { it.title + " · " + it.detail } else emptyList(),
-        progress = entry?.progressAtDate?.div(100), ring = kind == DoneAtWidgetKind.RING)
-    val base = widgetCardBitmap(context, card, size)
-    if (kind == DoneAtWidgetKind.TIMELINE || kind == DoneAtWidgetKind.RING) {
-        val density = res.displayMetrics.density
-        val width = if (kind == DoneAtWidgetKind.RING) minOf(90f, size.width.value - 32) else size.width.value - 32
-        val height = if (kind == DoneAtWidgetKind.RING) width else 24f
-        val artwork = widgetSegmentArtwork(context, Dp(width), Dp(height), suite?.countdownSegments.orEmpty(), entry?.progressAtDate?.div(100) ?: 0.0, kind == DoneAtWidgetKind.RING)
-        Canvas(base).drawBitmap(artwork, 16 * density, (size.height.value - height - 16) * density, null)
-    }
-    return base
 }

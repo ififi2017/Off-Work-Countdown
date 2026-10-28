@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Izinkan pengingat tepat waktu</string>
     <string name="alternatingCurrentWeek">Minggu ini</string>
     <string name="amount">Jumlah</string>
+    <string name="androidPlusMonthlyPlanDetail">Ditagih setiap bulan. Batalkan kapan saja.</string>
+    <string name="androidPlusYearlyPlanDetail">Ditagih setiap tahun. Batalkan kapan saja.</string>
     <string name="androidWidgetGalleryIntro">Pilih widget untuk melihat jadwal kerja di layar utama.</string>
     <string name="androidWidgetGalleryPin">Tambahkan widget</string>
     <string name="androidWidgetGalleryPinUnavailable">Tambahkan widget ini melalui pemilih widget di layar utama.</string>

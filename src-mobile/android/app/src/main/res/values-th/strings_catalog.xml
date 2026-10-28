@@ -25,6 +25,8 @@
     <string name="allowExactReminders">อนุญาตการแจ้งเตือนแบบตรงเวลา</string>
     <string name="alternatingCurrentWeek">สัปดาห์นี้</string>
     <string name="amount">จำนวนเงิน</string>
+    <string name="androidPlusMonthlyPlanDetail">เรียกเก็บเงินรายเดือน ยกเลิกได้ทุกเมื่อ</string>
+    <string name="androidPlusYearlyPlanDetail">เรียกเก็บเงินรายปี ยกเลิกได้ทุกเมื่อ</string>
     <string name="androidWidgetGalleryIntro">เลือกวิดเจ็ตเพื่อดูตารางงานบนหน้าจอหลัก</string>
     <string name="androidWidgetGalleryPin">เพิ่มวิดเจ็ต</string>
     <string name="androidWidgetGalleryPinUnavailable">เพิ่มวิดเจ็ตนี้จากเมนูเลือกวิดเจ็ตบนหน้าจอหลัก</string>

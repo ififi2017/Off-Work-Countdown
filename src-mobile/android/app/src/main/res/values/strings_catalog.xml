@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Allow exact reminders</string>
     <string name="alternatingCurrentWeek">This week</string>
     <string name="amount">Amount</string>
+    <string name="androidPlusMonthlyPlanDetail">Billed monthly. Cancel anytime.</string>
+    <string name="androidPlusYearlyPlanDetail">Billed yearly. Cancel anytime.</string>
     <string name="androidWidgetGalleryIntro">Choose a widget to see your schedule on your Home Screen.</string>
     <string name="androidWidgetGalleryPin">Add widget</string>
     <string name="androidWidgetGalleryPinUnavailable">Add this widget from your Home Screen’s widget picker.</string>

@@ -25,6 +25,8 @@
     <string name="allowExactReminders">允許精確提醒</string>
     <string name="alternatingCurrentWeek">本週</string>
     <string name="amount">金額</string>
+    <string name="androidPlusMonthlyPlanDetail">按月訂閱，隨時取消</string>
+    <string name="androidPlusYearlyPlanDetail">按年訂閱，隨時取消</string>
     <string name="androidWidgetGalleryIntro">揀一款小工具，喺主畫面睇返你嘅更表。</string>
     <string name="androidWidgetGalleryPin">加入小工具</string>
     <string name="androidWidgetGalleryPinUnavailable">請喺主畫面嘅小工具選單加入呢款小工具。</string>

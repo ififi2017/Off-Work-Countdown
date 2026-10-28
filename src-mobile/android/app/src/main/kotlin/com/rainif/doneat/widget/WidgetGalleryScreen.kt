@@ -3,9 +3,7 @@ package com.rainif.doneat.widget
 import android.appwidget.AppWidgetManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -91,7 +89,7 @@ private fun WidgetGalleryItem(kind: DoneAtWidgetKind, suite: WidgetSuiteSnapshot
                               pinSupported: Boolean, open: (Route) -> Unit) {
     val context = LocalContext.current
     var sizeIndex by remember(kind) { mutableIntStateOf(if (kind.defaultSize.height >= 250.dp) 2 else if (kind.defaultSize.width >= 220.dp) 1 else 0) }
-    val allSizes = listOf(DpSize(150.dp, 150.dp), DpSize(260.dp, 150.dp), DpSize(260.dp, 290.dp))
+    val allSizes = listOf(DpSize(170.dp, 170.dp), DpSize(364.dp, 170.dp), DpSize(364.dp, 382.dp))
     val supportedIndices = if (kind == DoneAtWidgetKind.DETAIL) listOf(1, 2) else listOf(0, 1, 2)
     val size = allSizes[sizeIndex]
     val card = remember(kind, suite, now, context) { widgetSuiteCard(context, kind, suite, now) }
@@ -115,10 +113,11 @@ private fun WidgetGalleryItem(kind: DoneAtWidgetKind, suite: WidgetSuiteSnapshot
                 }
             }
         }
-        Box(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainerHighest, MaterialTheme.shapes.large)
-            .padding(DoneAtSpacing.m).horizontalScroll(rememberScrollState()), contentAlignment = Alignment.Center) {
+        BoxWithConstraints(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainerHighest, MaterialTheme.shapes.large)
+            .padding(DoneAtSpacing.m), contentAlignment = Alignment.Center) {
+            val previewScale = minOf(1f, maxWidth.value / size.width.value)
             Image(bitmap.asImageBitmap(), if (kind.countdown) stringResource(kind.titleRes) else card.description,
-                Modifier.size(size.width, size.height))
+                Modifier.size(size.width * previewScale, size.height * previewScale))
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             if (kind.plus && card.locked) TextButton({ open(Route.Plus) }) { Text(stringResource(R.string.widgetSuiteLearnPlus)) }

@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Permitir recordatorios exactos</string>
     <string name="alternatingCurrentWeek">Esta semana</string>
     <string name="amount">Monto</string>
+    <string name="androidPlusMonthlyPlanDetail">Pago mensual. Cancela cuando quieras.</string>
+    <string name="androidPlusYearlyPlanDetail">Pago anual. Cancela cuando quieras.</string>
     <string name="androidWidgetGalleryIntro">Elige un widget para ver tus turnos en la pantalla de inicio.</string>
     <string name="androidWidgetGalleryPin">Añadir widget</string>
     <string name="androidWidgetGalleryPinUnavailable">Añade este widget desde el selector de widgets de la pantalla de inicio.</string>

@@ -25,6 +25,8 @@
     <string name="allowExactReminders">允许精确提醒</string>
     <string name="alternatingCurrentWeek">本周</string>
     <string name="amount">金额</string>
+    <string name="androidPlusMonthlyPlanDetail">按月订阅，随时取消</string>
+    <string name="androidPlusYearlyPlanDetail">按年订阅，随时取消</string>
     <string name="androidWidgetGalleryIntro">选择一款小组件，在主屏幕查看排班。</string>
     <string name="androidWidgetGalleryPin">添加小组件</string>
     <string name="androidWidgetGalleryPinUnavailable">请在主屏幕的小组件选择器中添加这款小组件。</string>

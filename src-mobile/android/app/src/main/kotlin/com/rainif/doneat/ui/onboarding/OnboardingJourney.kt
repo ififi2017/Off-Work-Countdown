@@ -326,57 +326,69 @@ internal fun GlanceJourneyPage(projection: SetupProjection?, now: Double, onBack
     }
 }
 
-/** Small widget layout: Header, phase Badge, Countdown, Progress and Boundary. */
+/** Home-screen composition from the supplied design, driven by the unsaved setup projection. */
 @Composable
 private fun GlanceWidgetScene(projection: SetupProjection?, now: Double, anchor: (JourneyClockAnchor) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val text = projectionText(projection)
     val locale = LocalResources.current.configuration.locales[0]
-    val zone = projection?.input?.zone ?: ZoneId.systemDefault()
     val before = projection != null && now < projection.snapshot.startAtMs
     val progress = if (projection == null || before) 0f else (projection.snapshot.progress / 100).toFloat().coerceIn(0f, 1f)
-    Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge, color = scheme.secondaryContainer) {
-        Column(Modifier.background(Brush.linearGradient(listOf(scheme.secondaryContainer, scheme.primaryContainer)))
-            .padding(DoneAtSpacing.l), horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
-            Text(Instant.ofEpochMilli(now.toLong()).atZone(zone).format(DateTimeFormatter.ofPattern(
-                DateFormat.getBestDateTimePattern(locale, "EEEEMMMd"), locale)),
-                style = MaterialTheme.typography.bodyMedium, color = scheme.onSecondaryContainer,
-                textAlign = TextAlign.Center)
-            Surface(Modifier.widthIn(max = 248.dp).fillMaxWidth(), shape = MaterialTheme.shapes.large,
-                color = scheme.surfaceContainerLowest) {
-                Column(Modifier.padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                        DoneAtBrandMark(Modifier.size(20.dp))
-                        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+    val largeText = LocalDensity.current.fontScale >= 1.5f
+    Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge, color = scheme.surfaceContainerHighest) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (projection != null) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Surface(Modifier.weight(1f).heightIn(min = 140.dp), shape = MaterialTheme.shapes.large, color = scheme.surfaceContainerLowest) {
+                    Box(Modifier.padding(12.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(progress = { progress }, Modifier.size(if (largeText) 96.dp else 112.dp),
+                            strokeWidth = 9.dp, trackColor = scheme.primary.copy(alpha = .16f), gapSize = 3.dp)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text.duration(projection.remainingMs(now)), style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold, maxLines = 1)
+                            Text(java.text.NumberFormat.getPercentInstance(locale).format(progress),
+                                style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                        }
+                    }
+                }
+                Surface(Modifier.weight(1f).heightIn(min = 140.dp), shape = MaterialTheme.shapes.large, color = scheme.surfaceContainerLowest) {
+                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(stringResource(R.string.widgetSuiteRosterName), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
+                        Text(stringResource(R.string.startTime), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                        Text(text.time(projection.snapshot.startAtMs), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.endTime), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                        Text(text.time(projection.snapshot.endAtMs), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = scheme.primary)
+                    }
+                }
+            }
+            Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, color = scheme.surfaceContainerLowest) {
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(if (before) R.string.nextShiftLabelShort else R.string.widgetWorking),
+                            Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
+                        if (projection != null) Text(text.time(if (before) projection.snapshot.startAtMs else projection.snapshot.endAtMs),
+                            style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
                     }
                     if (projection != null) {
-                        Surface(shape = MaterialTheme.shapes.large, color = scheme.primaryContainer) {
-                            Row(Modifier.padding(horizontal = DoneAtSpacing.s, vertical = DoneAtSpacing.xs),
-                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                                Box(Modifier.size(6.dp).background(scheme.primary, androidx.compose.foundation.shape.CircleShape))
-                                Text(stringResource(if (before) R.string.nextShiftLabelShort else R.string.widgetWorking), style = MaterialTheme.typography.labelSmall)
-                            }
-                        }
                         JourneyClockSlot(JourneyClockHost.WIDGET, anchor)
-                        Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(7.dp),
-                                drawStopIndicator = {})
-                            Row(Modifier.fillMaxWidth()) {
-                                Text(java.text.NumberFormat.getPercentInstance(locale).format(progress), style = MaterialTheme.typography.labelSmall, color = scheme.primary)
-                                Spacer(Modifier.weight(1f))
-                                Text(text.time(if (before) projection.snapshot.startAtMs else projection.snapshot.endAtMs), style = MaterialTheme.typography.labelSmall)
-                            }
-                        }
+                        LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(7.dp), drawStopIndicator = {})
                     } else Text(stringResource(R.string.scheduleManualTimer), style = MaterialTheme.typography.titleMedium)
                 }
             }
-            // Launcher context is decoration, not fictitious interactive apps.
-            Row(Modifier.clearAndSetSemantics {}, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
-                listOf(Icons.Outlined.CalendarMonth, Icons.Outlined.Email, Icons.Outlined.Settings).forEach { icon ->
-                    Surface(Modifier.size(40.dp), shape = androidx.compose.foundation.shape.CircleShape,
-                        color = scheme.surface.copy(alpha = .6f)) {
-                        Box(contentAlignment = Alignment.Center) { Icon(icon, null, Modifier.size(20.dp), tint = scheme.onSurfaceVariant) }
+            if (projection != null) Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, color = scheme.surfaceContainerLowest) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(stringResource(R.string.workdaysLabel), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        val first = java.time.temporal.WeekFields.of(locale).firstDayOfWeek
+                        repeat(7) { offset ->
+                            val day = first.plus(offset.toLong())
+                            val work = day.value % 7 in projection.input.workdays
+                            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                                Text(day.getDisplayName(TextStyle.NARROW_STANDALONE, locale), style = MaterialTheme.typography.labelSmall)
+                                Box(Modifier.fillMaxWidth().height(24.dp).background(
+                                    if (work) scheme.primary.copy(alpha = .24f) else scheme.surfaceContainerHigh,
+                                    androidx.compose.foundation.shape.RoundedCornerShape(6.dp)))
+                            }
+                        }
                     }
                 }
             }

@@ -25,6 +25,8 @@
     <string name="allowExactReminders">السماح بالتذكيرات الدقيقة</string>
     <string name="alternatingCurrentWeek">هذا الأسبوع</string>
     <string name="amount">المبلغ</string>
+    <string name="androidPlusMonthlyPlanDetail">فوترة شهرية. يمكنك الإلغاء في أي وقت.</string>
+    <string name="androidPlusYearlyPlanDetail">فوترة سنوية. يمكنك الإلغاء في أي وقت.</string>
     <string name="androidWidgetGalleryIntro">اختر أداة لعرض جدول عملك على الشاشة الرئيسية.</string>
     <string name="androidWidgetGalleryPin">إضافة أداة</string>
     <string name="androidWidgetGalleryPinUnavailable">أضف هذه الأداة من قائمة الأدوات على الشاشة الرئيسية.</string>

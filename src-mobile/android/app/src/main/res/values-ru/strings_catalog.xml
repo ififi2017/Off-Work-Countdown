@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Разрешить точные напоминания</string>
     <string name="alternatingCurrentWeek">Эта неделя</string>
     <string name="amount">Сумма</string>
+    <string name="androidPlusMonthlyPlanDetail">Оплата раз в месяц. Отмена в любое время.</string>
+    <string name="androidPlusYearlyPlanDetail">Оплата раз в год. Отмена в любое время.</string>
     <string name="androidWidgetGalleryIntro">Выберите виджет, чтобы видеть расписание на главном экране.</string>
     <string name="androidWidgetGalleryPin">Добавить виджет</string>
     <string name="androidWidgetGalleryPinUnavailable">Добавьте этот виджет через меню виджетов на главном экране.</string>

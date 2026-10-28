@@ -25,6 +25,8 @@
     <string name="allowExactReminders">정확한 알림 허용</string>
     <string name="alternatingCurrentWeek">이번 주</string>
     <string name="amount">금액</string>
+    <string name="androidPlusMonthlyPlanDetail">매월 결제되며 언제든 해지할 수 있어요.</string>
+    <string name="androidPlusYearlyPlanDetail">매년 결제되며 언제든 해지할 수 있어요.</string>
     <string name="androidWidgetGalleryIntro">위젯을 선택해 홈 화면에서 근무 일정을 확인하세요.</string>
     <string name="androidWidgetGalleryPin">위젯 추가</string>
     <string name="androidWidgetGalleryPinUnavailable">홈 화면의 위젯 선택 메뉴에서 이 위젯을 추가하세요.</string>

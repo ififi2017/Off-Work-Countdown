@@ -6,6 +6,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.os.SystemClock
+import android.util.TypedValue
+import android.widget.RemoteViews
+import androidx.compose.ui.graphics.Color
+import androidx.glance.unit.ColorProvider
 import android.os.LocaleList
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.DpSize
@@ -38,6 +43,7 @@ enum class DoneAtWidgetKind(val titleRes: Int, val plus: Boolean = false) {
 
     val countdown get() = ordinal <= DETAIL.ordinal
     val defaultSize get() = when (this) {
+        WEEK -> DpSize(364.dp, 170.dp)
         DETAIL, ROSTER -> DpSize(220.dp, 250.dp)
         SUMMARY, LIFE, FOCUS -> DpSize(220.dp, 150.dp)
         else -> DpSize(150.dp, 150.dp)
@@ -84,23 +90,41 @@ class DoneAtSuiteWidget(private val kind: DoneAtWidgetKind) : GlanceAppWidget() 
             val card = remember(kind, safe, now, localized) { widgetSuiteCard(localized, kind, safe, now) }
             LaunchedEffect(tick, snapshot) { WidgetRefresh.scheduleSuite(context, snapshot, now) }
             val size = LocalSize.current
-            val current = safe?.focus?.current(now)?.takeIf { !it.isBreak }
-            val controls = kind == DoneAtWidgetKind.FOCUS && current != null &&
-                (size.width >= 220.dp || size.height >= 250.dp)
-            val imageSize = if (controls) DpSize(size.width, (size.height - 44.dp).coerceAtLeast(80.dp)) else size
-            val bitmap = remember(card, imageSize, localized) { widgetCardBitmap(localized, card, imageSize) }
-            Column(GlanceModifier.fillMaxSize().appWidgetBackground().background(ImageProvider(R.drawable.widget_preview_background)).cornerRadius(22.dp)
+            val current = safe?.focus?.current(now)
+            val focusRunning = kind == DoneAtWidgetKind.FOCUS && current != null
+            val controls = focusRunning && current?.isBreak == false && size.width >= 220.dp
+            val paintCard = if (focusRunning) card.copy(nativeFocusTimer = true) else card
+            val bitmap = remember(paintCard, size, localized) { widgetCardBitmap(localized, paintCard, size) }
+            Box(GlanceModifier.fillMaxSize().appWidgetBackground().background(ImageProvider(R.drawable.widget_preview_background)).cornerRadius(22.dp)
                 .clickable(actionStartActivity(Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, if (card.locked) "plus" else kind.tab)))) {
-                Image(ImageProvider(bitmap), card.description, GlanceModifier.fillMaxWidth().defaultWeight())
+                Image(ImageProvider(bitmap), card.description, GlanceModifier.fillMaxSize())
+                if (focusRunning && current != null) {
+                    val timerWidth = WidgetFocusLayout.timerWidth(size.width.value, size.width < 220.dp || current.isBreak)
+                    val views = RemoteViews(localized.packageName, R.layout.widget_countdown).apply {
+                        setTextViewTextSize(R.id.widget_countdown, TypedValue.COMPLEX_UNIT_SP,
+                            widgetFocusTimerFont(localized, widgetFocusClockText(localized, current.endMs - now), timerWidth, size.width < 220.dp))
+                        setChronometer(R.id.widget_countdown, SystemClock.elapsedRealtime() + (current.endMs - now).coerceAtLeast(0), null, true)
+                        setChronometerCountDown(R.id.widget_countdown, true)
+                    }
+                    Box(GlanceModifier.fillMaxSize().padding(start = WidgetFocusLayout.INSET.dp, top = WidgetFocusLayout.TIMER_TOP.dp)) {
+                        AndroidRemoteViews(views, GlanceModifier.width(timerWidth.dp).height(44.dp))
+                    }
+                }
                 if (controls && current != null) {
-                    Row(GlanceModifier.fillMaxWidth().height(44.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Button("+", actionRunCallback<WidgetFocusActionCallback>(
-                            actionParametersOf(WidgetFocusActionCallback.ACTION to "add", WidgetFocusActionCallback.START to current.startMs)),
-                            GlanceModifier.defaultWeight().height(44.dp).semantics { contentDescription = localized.getString(R.string.widgetSuiteFocusAdd) }, style = TextStyle(fontSize = 20.sp))
-                        Spacer(GlanceModifier.width(8.dp))
-                        Button("■", actionRunCallback<WidgetFocusActionCallback>(
-                            actionParametersOf(WidgetFocusActionCallback.ACTION to "stop", WidgetFocusActionCallback.START to current.startMs)),
-                            GlanceModifier.defaultWeight().height(44.dp).semantics { contentDescription = localized.getString(R.string.widgetSuiteFocusStop) }, style = TextStyle(fontSize = 18.sp))
+                    Column(GlanceModifier.fillMaxSize().padding(start = WidgetFocusLayout.buttonStart(size.width.value).dp, top = WidgetFocusLayout.BUTTON_TOP.dp, end = 16.dp)) {
+                        Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            val colors = ButtonDefaults.buttonColors(backgroundColor = ColorProvider(Color.Transparent),
+                                contentColor = ColorProvider(Color(androidx.core.content.ContextCompat.getColor(localized, R.color.widget_primary))))
+                            Button("+", actionRunCallback<WidgetFocusActionCallback>(
+                                actionParametersOf(WidgetFocusActionCallback.ACTION to "add", WidgetFocusActionCallback.START to current.startMs)),
+                                GlanceModifier.size(44.dp).cornerRadius(22.dp).semantics { contentDescription = localized.getString(R.string.widgetSuiteFocusAdd) },
+                                style = TextStyle(fontSize = 20.sp), colors = colors, maxLines = 1)
+                            Spacer(GlanceModifier.width(8.dp))
+                            Button("■", actionRunCallback<WidgetFocusActionCallback>(
+                                actionParametersOf(WidgetFocusActionCallback.ACTION to "stop", WidgetFocusActionCallback.START to current.startMs)),
+                                GlanceModifier.size(44.dp).cornerRadius(22.dp).semantics { contentDescription = localized.getString(R.string.widgetSuiteFocusStop) },
+                                style = TextStyle(fontSize = 18.sp), colors = colors, maxLines = 1)
+                        }
                     }
                 }
             }

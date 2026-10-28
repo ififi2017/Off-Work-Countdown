@@ -25,6 +25,8 @@
     <string name="allowExactReminders">Cho phép lời nhắc chính xác</string>
     <string name="alternatingCurrentWeek">Tuần này</string>
     <string name="amount">Số tiền</string>
+    <string name="androidPlusMonthlyPlanDetail">Thanh toán hằng tháng. Hủy bất cứ lúc nào.</string>
+    <string name="androidPlusYearlyPlanDetail">Thanh toán hằng năm. Hủy bất cứ lúc nào.</string>
     <string name="androidWidgetGalleryIntro">Chọn tiện ích để xem lịch làm việc trên màn hình chính.</string>
     <string name="androidWidgetGalleryPin">Thêm tiện ích</string>
     <string name="androidWidgetGalleryPinUnavailable">Thêm tiện ích này từ trình chọn tiện ích trên màn hình chính.</string>

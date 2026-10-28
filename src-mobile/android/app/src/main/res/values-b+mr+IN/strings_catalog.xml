@@ -25,6 +25,8 @@
     <string name="allowExactReminders">अचूक स्मरणपत्रांना परवानगी द्या</string>
     <string name="alternatingCurrentWeek">हा आठवडा</string>
     <string name="amount">रक्कम</string>
+    <string name="androidPlusMonthlyPlanDetail">मासिक बिलिंग. कधीही रद्द करा.</string>
+    <string name="androidPlusYearlyPlanDetail">वार्षिक बिलिंग. कधीही रद्द करा.</string>
     <string name="androidWidgetGalleryIntro">होम स्क्रीनवर तुमचे वेळापत्रक पाहण्यासाठी विजेट निवडा.</string>
     <string name="androidWidgetGalleryPin">विजेट जोडा</string>
     <string name="androidWidgetGalleryPinUnavailable">हे विजेट होम स्क्रीनवरील विजेट निवड मेनूमधून जोडा.</string>
