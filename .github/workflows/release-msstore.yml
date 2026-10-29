@@ -19,9 +19,8 @@ on:
         description: Submit the package to the Microsoft Store
         type: boolean
         default: false
-  push:
-    tags:
-      - "desktop-v*"
+  # This isolated 3.2.4 test branch only creates a GitHub draft.
+  # Store submission stays manual until reporter verification.
 
 permissions:
   contents: read
