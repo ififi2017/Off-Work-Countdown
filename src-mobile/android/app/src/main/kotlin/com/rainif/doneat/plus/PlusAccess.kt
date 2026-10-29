@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
+enum class PlusStatus { UNCONFIGURED, LOADING, FREE, SUBSCRIBED, LIFETIME, PENDING, OFFLINE, ERROR }
 enum class PlusPlan { MONTHLY, YEARLY, LIFETIME }
 data class PlusOffer(
     val plan: PlusPlan, val price: String, val offerToken: String, val sevenDayTrial: Boolean = false,
@@ -30,12 +31,20 @@ data class PlusStoreState(val status: PlusStatus = PlusStatus.LOADING, val offer
     val busy: Boolean = false, val hasPurchasedBefore: Boolean = false, val operationFailed: Boolean = false,
     val hasActiveSubscription: Boolean = status == PlusStatus.SUBSCRIBED,
     val verifiedSubscriptionExpiresAtMs: Long? = null,
+    val verifiedAuthorizationUntilMs: Long? = null,
     val discountedLifetimeOffer: PlusOffer? = null,
     val currentEntitlementsVerified: Boolean = false) {
     val authorized: Boolean get() = status == PlusStatus.SUBSCRIBED || status == PlusStatus.LIFETIME
 
+    /** Paid CN surfaces are bounded even when their signed plan is lifetime. */
+    internal fun hasCurrentCnLease(nowMs: Long): Boolean = authorized &&
+        (verifiedAuthorizationUntilMs ?: 0L) > nowMs
+
     /** Callers pass now explicitly. A client cache age must never stand in for Google's expiry. */
     fun shiftAlarmAuthorization(nowMs: Long): ShiftAlarmAuthorization = when {
+        BuildConfig.CN_CHANNEL && hasCurrentCnLease(nowMs) ->
+            ShiftAlarmAuthorization.VerifiedUntil(verifiedAuthorizationUntilMs!!)
+        BuildConfig.CN_CHANNEL -> ShiftAlarmAuthorization.Unavailable
         status == PlusStatus.LIFETIME -> ShiftAlarmAuthorization.Lifetime
         status == PlusStatus.SUBSCRIBED && (verifiedSubscriptionExpiresAtMs ?: 0) > nowMs ->
             ShiftAlarmAuthorization.VerifiedUntil(verifiedSubscriptionExpiresAtMs!!)
@@ -46,7 +55,7 @@ data class PlusStoreState(val status: PlusStatus = PlusStatus.LOADING, val offer
 /** The sole purchase gate shared by every paid screen. */
 class PlusAccess(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val repository = PlayBillingRepository(context.applicationContext, scope)
+    internal val repository = createChannelRepository(context.applicationContext, scope)
     val reviewAccess = ReviewAccessRepository(context.applicationContext, scope)
     private val offerStore = LifetimeOfferStore(context.applicationContext)
     private val introStore = DeviceLocalPlusIntroStore(context.applicationContext.noBackupFilesDir.toPath().resolve("plus-intro-321"))
@@ -56,15 +65,15 @@ class PlusAccess(private val context: Context) {
     private var offerExpiry: Job? = null
     private var lastOfferPersistedAtMs = _lifetimeOffer.value?.latestObservedAtMs ?: 0L
     val state: StateFlow<PlusStoreState> = repository.state
-    private val _authorized = MutableStateFlow(repository.state.value.authorized || PlusDebugOverride.read(context))
+    private val _authorized = MutableStateFlow(repository.authorizedNow() || (!BuildConfig.CN_CHANNEL && PlusDebugOverride.read(context)))
     val authorized: StateFlow<Boolean> = _authorized.asStateFlow()
     private val _collectsObservations = MutableStateFlow(_authorized.value || !repository.state.value.hasPurchasedBefore)
     /** Mirrors iOS until D-07 changes: free users collect, lapsed buyers pause. */
     val collectsObservations: StateFlow<Boolean> = _collectsObservations.asStateFlow()
 
-    val canInviteLifetime: Boolean get() = offerStore.isUsable && !_authorized.value &&
+    val canInviteLifetime: Boolean get() = !BuildConfig.CN_CHANNEL && offerStore.isUsable && !_authorized.value &&
         LifetimeOfferPolicy.canInvite(state.value)
-    val canOfferLifetime: Boolean get() = offerStore.isUsable && !_authorized.value &&
+    val canOfferLifetime: Boolean get() = !BuildConfig.CN_CHANNEL && offerStore.isUsable && !_authorized.value &&
         LifetimeOfferPolicy.canOffer(state.value, effectiveOfferNow())
     val hasAvailableLifetimeOffer: Boolean get() = canOfferLifetime &&
         _lifetimeOffer.value?.let { it.claimedAtMs == null || it.isActive(effectiveOfferNow()) } == true
@@ -73,38 +82,49 @@ class PlusAccess(private val context: Context) {
         observeLifetimeOffer()
         scheduleOfferExpiry()
         scope.launch { combine(repository.state, reviewAccess.state) { store, _ -> store }.collect {
-            val granted = it.authorized || reviewAccess.verifiedExpiry(System.currentTimeMillis()) != null || PlusDebugOverride.read(context)
+            val granted = isAuthorizedNow()
             _authorized.value = granted
-            if ((it.authorized || PlusDebugOverride.read(context)) && introState.value.loaded && (!introState.value.seen || introState.value.writeFailed)) introStore.markSeen()
+            if (shouldMarkIntroSeen() && introState.value.loaded && (!introState.value.seen || introState.value.writeFailed)) introStore.markSeen()
             _collectsObservations.value = granted || !it.hasPurchasedBefore
         } }
-        if (BuildConfig.PLAY_BILLING_PUBLIC_KEY.isNotBlank()) scope.launch { repository.refresh() }
+        if (BuildConfig.CN_CHANNEL || BuildConfig.PLAY_BILLING_PUBLIC_KEY.isNotBlank()) scope.launch { repository.refresh() }
     }
 
     /** Seed once after the initial archive read; later completing a fresh setup must retain unseen. */
     suspend fun initializeIntro(existingSetup: Boolean) {
         introStore.initialize(existingSetup)
-        if (state.value.authorized || PlusDebugOverride.read(context)) introStore.markSeen()
+        if (shouldMarkIntroSeen()) introStore.markSeen()
     }
     suspend fun markIntroSeen() = introStore.markSeen()
 
-    fun isAuthorizedNow(): Boolean = state.value.authorized || reviewAccess.verifiedExpiry(System.currentTimeMillis()) != null || PlusDebugOverride.read(context)
+    private fun shouldMarkIntroSeen(): Boolean = if (BuildConfig.CN_CHANNEL) repository.authorizedNow()
+        else state.value.authorized || PlusDebugOverride.read(context)
+
+    fun isAuthorizedNow(): Boolean = if (BuildConfig.CN_CHANNEL) repository.authorizedNow() else
+        state.value.authorized || reviewAccess.verifiedExpiry(System.currentTimeMillis()) != null || PlusDebugOverride.read(context)
     fun revalidateLocalAccess() {
         _authorized.value = isAuthorizedNow()
         _collectsObservations.value = _authorized.value || !state.value.hasPurchasedBefore
     }
-    fun onForeground(value: Boolean) = reviewAccess.onForeground(value)
+    fun onForeground(value: Boolean) {
+        if (BuildConfig.CN_CHANNEL) {
+            revalidateLocalAccess()
+            if (value) scope.launch { repository.refresh() }
+        } else reviewAccess.onForeground(value)
+    }
     fun shiftAlarmAuthorization(nowMs: Long): ShiftAlarmAuthorization {
+        if (BuildConfig.CN_CHANNEL && !repository.authorizedNow()) return ShiftAlarmAuthorization.Unavailable
         val paid = state.value.shiftAlarmAuthorization(nowMs)
         if (paid != ShiftAlarmAuthorization.Unavailable) return paid
+        if (BuildConfig.CN_CHANNEL) return ShiftAlarmAuthorization.Unavailable
         return reviewAccess.verifiedExpiry(nowMs)?.let(ShiftAlarmAuthorization::VerifiedUntil) ?: ShiftAlarmAuthorization.Unavailable
     }
-    fun refresh() { reviewAccess.refresh(); scope.launch { repository.refresh() } }
+    fun refresh() { if (!BuildConfig.CN_CHANNEL) reviewAccess.refresh(); scope.launch { repository.refresh() } }
     fun restore() { scope.launch { repository.refresh() } }
 
     /** Intro cancellation waits for current Play entitlements and real eligible prices before any reveal. */
     suspend fun refreshAndRevealLifetimeOffer(source: LifetimeOfferSource): Boolean {
-        if (_authorized.value || !offerStore.isUsable) return false
+        if (BuildConfig.CN_CHANNEL || _authorized.value || !offerStore.isUsable) return false
         repository.refresh()
         return revealLifetimeOffer(source)
     }
@@ -182,11 +202,18 @@ class PlusAccess(private val context: Context) {
         }
     }
     fun setDebugAuthorized(value: Boolean) {
-        if (!PlusDebugOverride.AVAILABLE) return
+        if (BuildConfig.CN_CHANNEL || !PlusDebugOverride.AVAILABLE) return
         PlusDebugOverride.write(context, value)
         _authorized.value = value || state.value.authorized || reviewAccess.verifiedExpiry(System.currentTimeMillis()) != null
         _collectsObservations.value = _authorized.value || !state.value.hasPurchasedBefore
     }
 
     private companion object { const val OFFER_OBSERVATION_SAVE_MS = 60_000L }
+}
+
+internal interface ChannelPlusRepository {
+    val state: StateFlow<PlusStoreState>
+    fun authorizedNow(): Boolean = state.value.authorized
+    suspend fun refresh(): Boolean
+    suspend fun purchase(activity: Activity, offer: PlusOffer, lifetimeOfferActive: (() -> Boolean)? = null)
 }

@@ -87,6 +87,31 @@ class FocusStoreTest {
         assertNull("one of two pomodoros leaves the task open", records.state.value.focusTasks.single().completedAtMs)
     }
 
+    @Test fun expiredCurrentProofRefusesStartsAndPlanningDespiteAStaleAuthorizedFlow() = runTest {
+        val records = records()
+        val flow = MutableStateFlow(true)
+        var currentProof = true
+        val focus = FocusStore(records, session, flow, folder.root.toPath().resolve("device/current-proof.json"), ::newId,
+            io = UnconfinedTestDispatcher(testScheduler), currentAuthorized = { currentProof })
+        val placed = focus.plan { state, planning ->
+            planning.createInBlock(state, "Write", at(9, 0).toLong(), at(9, 5), pomodoros = 2)
+        } as FocusPlacement.Placed
+        val before = records.state.value
+        currentProof = false
+        assertTrue("The UI flow has not received the expiry yet", flow.value)
+        assertFalse(focus.environment().isAuthorized)
+        assertFalse(focus.start(placed.taskID, at(9, 5)))
+        assertFalse(focus.addAndStart("Must not be saved", 1, FocusTaskIcon.FOCUS, false, at(9, 5)))
+        assertFalse(focus.updateAndStart(placed.taskID, 3, at(9, 5)))
+        assertEquals(FocusPlacement.Locked, focus.plan { state, planning ->
+            planning.createInNextEmptyBlock(state, "Must not be planned", at(9, 5))
+        })
+        focus.edit { state, planning -> planning.markBlockAsBreak(state, at(9, 0).toLong(), at(9, 5)) }
+        assertEquals(before, records.state.value)
+        currentProof = true
+        assertTrue(focus.start(placed.taskID, at(9, 5)))
+    }
+
     @Test fun stoppingByHandEndsTheBlockWithoutCompletingIt() = runTest {
         val records = records()
         val focus = store(records)

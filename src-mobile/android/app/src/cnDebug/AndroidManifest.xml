@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <!-- Keep the shared debug galleries when selecting the CN-specific debug manifest. -->
+    <application android:label="DoneAt Widget QA" tools:replace="android:label"
+        android:networkSecurityConfig="@xml/cn_debug_network">
+        <activity android:name=".gallery.DesignGalleryActivity" android:exported="true" android:label="DoneAt design gallery" />
+        <activity android:name=".gallery.ParityGalleryActivity" android:exported="true" android:label="DoneAt parity gallery" />
+        <activity android:name=".gallery.WidgetRenderGalleryActivity" android:exported="true" android:label="Isolated widget rendering QA" />
+        <activity android:name=".gallery.WidgetHostGalleryActivity" android:exported="true" android:label="DoneAt widget QA" />
+        <activity android:name=".plus.CnMembershipDebugActivity" android:exported="true" android:label="DoneAt CN membership debug" />
+    </application>
+</manifest>

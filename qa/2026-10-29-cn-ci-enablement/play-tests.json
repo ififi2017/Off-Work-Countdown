@@ -1,0 +1,26 @@
+{
+  "app": {
+    "tests": 224,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "core/domain": {
+    "tests": 468,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "core/data": {
+    "tests": 97,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "core/designsystem": {
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

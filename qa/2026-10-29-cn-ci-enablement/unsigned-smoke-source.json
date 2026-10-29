@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "channel": "cn",
+  "applicationId": "com.rainif.doneat.cn",
+  "versionName": "3.2.1",
+  "versionCode": 8,
+  "sourceCommit": "6c87cb6fe377e65b1764e4793bf9a30f7ccd3138",
+  "sourceUrl": "https://github.com/ififi2017/Off-Work-Countdown/tree/6c87cb6fe377e65b1764e4793bf9a30f7ccd3138",
+  "repository": "ififi2017/Off-Work-Countdown",
+  "tag": "android-cn-v3.2.1-8"
+}

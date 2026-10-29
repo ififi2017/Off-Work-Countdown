@@ -84,6 +84,7 @@ import java.time.Instant
  */
 @Composable
 fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
+    com.rainif.doneat.updates.AutomaticUpdateReminder()
     val reportStageChanged by rememberUpdatedState(onReportStageChanged)
     DisposableEffect(Unit) { onDispose { reportStageChanged(false) } }
     val device by graph.settings.device.collectAsStateWithLifecycle()

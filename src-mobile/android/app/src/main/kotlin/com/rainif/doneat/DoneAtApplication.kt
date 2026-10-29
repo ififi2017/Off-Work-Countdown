@@ -84,7 +84,9 @@ class AppGraph(app: Application) {
     }
 
     /** Focus runs on the same archive; its queue of planned starts is device-local, beside the session. */
-    val focus = FocusStore(records, sessions.session, plus.authorized, files.resolve("device/focus-queue.json"), newId, { app.getString(R.string.focusTaskTitle) })
+    val focus = FocusStore(records, sessions.session, plus.authorized, files.resolve("device/focus-queue.json"), newId,
+        { app.getString(R.string.focusTaskTitle) },
+        currentAuthorized = { if (BuildConfig.CN_CHANNEL) plus.isAuthorizedNow() else plus.authorized.value })
     /** A sentence a focus editor leaves for the Focus page to show after it closes. */
     val focusNotice = MutableStateFlow<String?>(null)
     /** The usual-day editor's working copy, shared with the task page it opens. */

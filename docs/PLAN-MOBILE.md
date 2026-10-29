@@ -490,6 +490,7 @@ iOS 自由排班增加选择班次后的日期点选与涂抹，重复操作恢�
 - [x] 欢迎流程跟手、致谢折叠与更新说明／七天礼物同步。
 - [x] CN 无密钥候选构建工作流、源码和 APK 对应关系检查及回归测试；未签名、未创建 Release、未发布。
 - [x] CN 受保护签名与 Draft Release 工作流代码：改为无密钥构建、独立可信工具签名、独立草稿上传，修订方案已通过自动审批。
-- [ ] CN 实际启用：配置独立签名 secrets、受保护环境及审核人，并准备包含本轮功能的公开 CN 源；未运行签名、未创建 Release。详见 [CN CI](android/cn-release-ci.md)。
+- [x] CN CI 实际启用：独立签名 secrets、本人审批环境及 main-only 策略已配置；历史公开 CN 源的云端 unsigned 端到端运行已通过。详见 [CN CI](android/cn-release-ci.md)。
+- [ ] 新版 CN 源已整合到 PR344，待审查合并与正式签名验收；未创建 Release、未发布。
 
 - [x] 按用户两份HTML重做小组件、付费墙、更新介绍与引导；模拟器样例/真实桌面证据及未覆盖项见 [设计验收](../qa/2026-10-29-android-design/README.md)。

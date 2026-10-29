@@ -871,3 +871,11 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 用户明确授权真机及测试签名包；Pixel 10 Pro / Android 17 安装独立 `com.rainif.doneat.parityqa`，未覆盖正式版数据。修复宽/大倒计时固定小画布留白、套件大卡内容偏移与过小、原生 Chronometer 等宽数字测量不一致导致尾数裁切；调整最小伸缩尺寸。
 - 真机原生宿主检查13种组件38个尺寸组合（186×208、390×180、390×390 dp），另有9个锁定态；实际 Pixel Launcher 验证2×2圆环。中文浅色38个合成样例补充人生有数据/休假方案/专注队列布局，不能当作真实用户记录或全部桌面操作证明。证据与限制见 `qa/2026-10-29-android-device-widgets/README.md`。
 - Android四模块779测试、lint、Debug与R8 Release通过；最终计时字体改动后再跑app测试/lint/两类构建。Lint0错误、73警告、4提示；版本检查和无头iOS构建通过。未做iOS视觉、支付、闹钟、全19语/所有厂商验收。继续draft PR344，未发布。
+
+### CN CI 启用与新版源集成（2026-10-29）
+
+- 用户要求直接协助启用。已配置 `android-cn-release`、ififi2017本人审批（允许self-review）、唯一main分支、四个独立CN签名secrets及公共key变量；原本机CN证书和公钥pin核对一致，值经stdin传递未写入日志/仓库。真实保护preflight通过。
+- 仅CI PR345合并main；首跑遇setup-android默认tools包已移除，PR346修复后云端run40800770044全成功。下载unsigned候选通过SDK身份/未签名/校验和/独立源码记录复核。用旧3.2.1公开源/code8做smoke，不是新版发布；未签名、未打tag、未建Release、未改国内站或触发Play发布。
+- 基于公开CN tag -7单独移植渠道/授权/更新，不拿原工作区未提交混杂改动；当前3.2.3 UI、小组件和致谢折叠由两渠道共享。Play源码/测试移至专属源集，CN不包含Billing/Review，保留旧CN备案与激活流程。CN即时授权门禁补齐Focus写入、报告、widgets/通知到期。源码保留在PR344，未合并发版。
+- Play802 / CN790单测全部通过；两渠道双lint、Debug及R8 Release APK/AAB通过，缺CN生产公钥的Release负测正确拒绝。CNRelease包名com.rainif.doneat.cn /3.2.3/code8且unsigned。npm580、字符串生成、CN34测试、版本及无头iOS构建通过；iOS规则固定ffd91597未推进，标准drift69条历史提交，本轮无新增规则漂移。CN新增PR回归job只用公共key，不接触签名secret。
+- Pixel真机独立.cn.ciqa会员页和展开激活表单布局通过，未提交激活/试用；临时包已移除，不覆盖既有应用。记录见 `qa/2026-10-29-cn-ci-enablement/README.md`；签名CI本身、正式激活/续期及覆盖升级尚未验收。

@@ -79,16 +79,23 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
     val configuration = LocalConfiguration.current
     val records = rememberRecordsContext(graph)
     val period = remember(route) { CycleReportPeriod(CycleReportKind.valueOf(route.kind), route.startDayKey, route.endDayKey, route.timeZoneIdentifier) }
-    val authorized by graph.plus.authorized.collectAsStateWithLifecycle()
+    val cachedAuthorized by graph.plus.authorized.collectAsStateWithLifecycle()
+    val authorized = cachedAuthorized && (!com.rainif.doneat.BuildConfig.CN_CHANNEL || graph.plus.isAuthorizedNow())
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val preferences by graph.settings.preferences.collectAsStateWithLifecycle()
     var snapshot by remember(route) { mutableStateOf<CycleReportSnapshot?>(null) }
     var loaded by remember(route) { mutableStateOf(false) }
     LaunchedEffect(route, authorized) {
-        if (authorized && !loaded) {
+        if (authorized && !loaded && (!com.rainif.doneat.BuildConfig.CN_CHANNEL || graph.plus.isAuthorizedNow())) {
             val source = records
-            snapshot = withContext(Dispatchers.Default) { source.queries.cycleReportSnapshot(period, source.nowMs) }
-            loaded = true
+            val result = withContext(Dispatchers.Default) { source.queries.cycleReportSnapshot(period, source.nowMs) }
+            if (!com.rainif.doneat.BuildConfig.CN_CHANNEL || graph.plus.isAuthorizedNow()) {
+                snapshot = result
+                loaded = true
+            }
+        } else if (!authorized && com.rainif.doneat.BuildConfig.CN_CHANNEL) {
+            snapshot = null
+            loaded = false
         }
     }
     var includeIncome by remember(route) { mutableStateOf(!device.hideEarnings) }
@@ -123,7 +130,16 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
         totalElapsed.longValue = next.clockMs
         player = next
     }
-    fun play() { setPlayer(player.replay()); mode = "playing" }
+    fun canOpenReportNow(): Boolean {
+        if (!com.rainif.doneat.BuildConfig.CN_CHANNEL || graph.plus.isAuthorizedNow()) return true
+        snapshot = null
+        loaded = false
+        mode = "setup"
+        graph.plus.revalidateLocalAccess()
+        unlock()
+        return false
+    }
+    fun play() { if (canOpenReportNow()) { setPlayer(player.replay()); mode = "playing" } }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var foreground by remember(lifecycle) { mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) }
     DisposableEffect(lifecycle) {
@@ -289,7 +305,7 @@ fun CycleReportScreen(graph: AppGraph, route: Route.CycleReport, back: () -> Uni
                         Spacer(Modifier.width(DoneAtSpacing.s))
                         Text(stringResource(R.string.reportPlay), fontWeight = FontWeight.Bold)
                     }
-                    FilledTonalButton(onClick = { mode = "reading" }, enabled = ready, modifier = Modifier.fillMaxWidth().padding(top = DoneAtSpacing.s).heightIn(min = DoneAtReportLayout.controlSize), colors = ButtonDefaults.filledTonalButtonColors(containerColor = DoneAtReportPalette.control, contentColor = DoneAtReportPalette.ink)) { Text(stringResource(R.string.reportRead), fontWeight = FontWeight.SemiBold) }
+                    FilledTonalButton(onClick = { if (canOpenReportNow()) mode = "reading" }, enabled = ready, modifier = Modifier.fillMaxWidth().padding(top = DoneAtSpacing.s).heightIn(min = DoneAtReportLayout.controlSize), colors = ButtonDefaults.filledTonalButtonColors(containerColor = DoneAtReportPalette.control, contentColor = DoneAtReportPalette.ink)) { Text(stringResource(R.string.reportRead), fontWeight = FontWeight.SemiBold) }
                     }
                 }
             }

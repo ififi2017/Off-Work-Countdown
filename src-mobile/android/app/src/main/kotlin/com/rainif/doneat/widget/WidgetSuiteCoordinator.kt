@@ -32,7 +32,7 @@ object WidgetSuiteCoordinator {
 
     fun access(context: Context, graph: AppGraph, nowMs: Long): WidgetAccess {
         // The existing debug-only purchase stand-in is absent in release builds.
-        if (com.rainif.doneat.plus.PlusDebugOverride.AVAILABLE && com.rainif.doneat.plus.PlusDebugOverride.read(context)) return WidgetAccess(true)
+        if (!com.rainif.doneat.BuildConfig.CN_CHANNEL && com.rainif.doneat.plus.PlusDebugOverride.AVAILABLE && com.rainif.doneat.plus.PlusDebugOverride.read(context)) return WidgetAccess(true)
         return when (val proof = graph.plus.shiftAlarmAuthorization(nowMs)) {
         ShiftAlarmAuthorization.Lifetime -> WidgetAccess(true)
         is ShiftAlarmAuthorization.VerifiedUntil -> WidgetAccess(true, proof.expiresAtMs)

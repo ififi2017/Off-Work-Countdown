@@ -118,22 +118,35 @@ repository variable because unsigned builds need only its public key material.
 The signer job has read-only contents permission, and its only checkout is
 `github.sha` from the main workflow, never `inputs.source_sha`.
 
-### Operational status (read-only inspection, 2026-10-29)
+### Operational status (2026-10-29)
 
-The repository currently has only `Preview` and `Production` environments;
-both report empty `protection_rules` and null `deployment_branch_policy`.
-`android-cn-release` and its independent `ANDROID_CN_UPLOAD_*` secrets are
-not configured. Existing `ANDROID_UPLOAD_*` values belong to Play and must
-not be reused. A signing dispatch therefore fails its secret-free preflight
-before any environment job or signing step. The code/tests do not make this
-a live release service.
+At the owner's request, `android-cn-release` is configured with reviewer
+`ififi2017`, `prevent_self_review=false`, and exactly one allowed deployment
+branch, `main`. The four independent CN environment secrets and the repository
+public-key variable are configured. The original local certificate and public
+trust fingerprints were checked against the pins below before uploading via
+stdin; secret values were not logged. The workflow's real public-API preflight
+passes against this environment. Existing Play credentials are unchanged.
 
-To activate later, the owner must separately configure the exact environment
-and required-reviewer/main-branch protections above, supply those four CN
-secrets, confirm the public-key repository variable, and choose a reviewed
-immutable source containing CN. Current product `main` has no CN channel, so
-a new 3.2.3 CN release also needs source integration first. No environment,
-secret, live release, Play configuration or hosting was changed here.
+The CI-only enabling change contains no Android app/resource edits, so it does
+not match the Play release workflow's automatic push paths. New 3.2.3 CN app
+source integration is separate; historical tags build historical app versions,
+not the new widgets. Workflow dispatch, signing and release results must be
+recorded separately after they actually run. A configured secret name and a
+passing protection check do not prove a signed release build succeeded.
+
+CI was enabled through PR345, then PR346 fixed setup-android's obsolete default
+`tools` package by explicitly requesting `platform-tools`. The first attempt
+40800062473 failed before Gradle/signing. Run
+[40800770044](https://github.com/ififi2017/Off-Work-Countdown/actions/runs/40800770044)
+then passed end-to-end with the historical 3.2.1 CN source
+`6c87cb6fe377e65b1764e4793bf9a30f7ccd3138`, code 8, `sign=false`, `draft=false`.
+Downloaded artifacts passed the same independent identity/checksum/source gate.
+This is an unsigned smoke artifact, not a distributed 3.2.1 update or a 3.2.3
+release; no tag, Release, signature, hosting change or Play release was made.
+Signing credentials are configured but have not yet been exercised by a CI
+signing run. The first signing run still requires the owner's environment
+approval. New 3.2.3 source is reviewed separately in PR344.
 
 The existing production CN signer certificate SHA-256 is
 `2554fa47d4cb553bf22c1d8821769ca2c27381821c65fe68af835a9336bcd41b`.

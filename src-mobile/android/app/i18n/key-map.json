@@ -202,12 +202,55 @@
     "amount": {
       "resource": "string/amount"
     },
+    "androidAppFiling": {
+      "resource": "string/androidAppFiling",
+      "androidOnly": true
+    },
+    "androidCheckUpdates": {
+      "resource": "string/androidCheckUpdates",
+      "androidOnly": true
+    },
+    "androidCheckingUpdates": {
+      "resource": "string/androidCheckingUpdates",
+      "androidOnly": true
+    },
     "androidPlusMonthlyPlanDetail": {
       "resource": "string/androidPlusMonthlyPlanDetail",
       "androidOnly": true
     },
     "androidPlusYearlyPlanDetail": {
       "resource": "string/androidPlusYearlyPlanDetail",
+      "androidOnly": true
+    },
+    "androidUpdateAvailable": {
+      "resource": "string/androidUpdateAvailable",
+      "androidOnly": true
+    },
+    "androidUpdateCurrent": {
+      "resource": "string/androidUpdateCurrent",
+      "androidOnly": true
+    },
+    "androidUpdateDownload": {
+      "resource": "string/androidUpdateDownload",
+      "androidOnly": true
+    },
+    "androidUpdateFailed": {
+      "resource": "string/androidUpdateFailed",
+      "androidOnly": true
+    },
+    "androidUpdateIncompatible": {
+      "resource": "string/androidUpdateIncompatible",
+      "androidOnly": true
+    },
+    "androidUpdateMessage": {
+      "resource": "string/androidUpdateMessage",
+      "params": [
+        "version"
+      ],
+      "androidOnly": true
+    },
+    "androidUpdatePlay": {
+      "resource": "string/androidUpdatePlay",
       "androidOnly": true
     },
     "androidWidgetGalleryIntro": {
@@ -363,6 +406,160 @@
     },
     "close": {
       "resource": "string/close"
+    },
+    "cnAccessVerified": {
+      "resource": "string/cnAccessVerified",
+      "androidOnly": true
+    },
+    "cnBuy": {
+      "resource": "string/cnBuy",
+      "androidOnly": true
+    },
+    "cnCheckResult": {
+      "resource": "string/cnCheckResult",
+      "androidOnly": true
+    },
+    "cnCheckingAccess": {
+      "resource": "string/cnCheckingAccess",
+      "androidOnly": true
+    },
+    "cnCodeHelp": {
+      "resource": "string/cnCodeHelp",
+      "androidOnly": true
+    },
+    "cnConfirm": {
+      "resource": "string/cnConfirm",
+      "androidOnly": true
+    },
+    "cnConnectionHelp": {
+      "resource": "string/cnConnectionHelp",
+      "androidOnly": true
+    },
+    "cnDaysRemaining": {
+      "resource": "string/cnDaysRemaining",
+      "androidOnly": true
+    },
+    "cnDebugConnectionHelp": {
+      "resource": "string/cnDebugConnectionHelp",
+      "androidOnly": true
+    },
+    "cnExpiry": {
+      "resource": "string/cnExpiry",
+      "params": [
+        "date"
+      ],
+      "androidOnly": true
+    },
+    "cnFaq": {
+      "resource": "string/cnFaq",
+      "androidOnly": true
+    },
+    "cnHaveCode": {
+      "resource": "string/cnHaveCode",
+      "androidOnly": true
+    },
+    "cnInactive": {
+      "resource": "string/cnInactive",
+      "androidOnly": true
+    },
+    "cnLicenseCode": {
+      "resource": "string/cnLicenseCode",
+      "androidOnly": true
+    },
+    "cnLicenseUnavailable": {
+      "resource": "string/cnLicenseUnavailable",
+      "androidOnly": true
+    },
+    "cnNoAutomaticCharge": {
+      "resource": "string/cnNoAutomaticCharge",
+      "androidOnly": true
+    },
+    "cnOperationNotFound": {
+      "resource": "string/cnOperationNotFound",
+      "androidOnly": true
+    },
+    "cnPendingNotice": {
+      "resource": "string/cnPendingNotice",
+      "androidOnly": true
+    },
+    "cnPreview": {
+      "resource": "string/cnPreview",
+      "androidOnly": true
+    },
+    "cnPurchaseBody": {
+      "resource": "string/cnPurchaseBody",
+      "androidOnly": true
+    },
+    "cnPurchaseTitle": {
+      "resource": "string/cnPurchaseTitle",
+      "androidOnly": true
+    },
+    "cnRecoverPending": {
+      "resource": "string/cnRecoverPending",
+      "androidOnly": true
+    },
+    "cnRedeem": {
+      "resource": "string/cnRedeem",
+      "androidOnly": true
+    },
+    "cnRefresh": {
+      "resource": "string/cnRefresh",
+      "androidOnly": true
+    },
+    "cnRequestFailed": {
+      "resource": "string/cnRequestFailed",
+      "androidOnly": true
+    },
+    "cnRetryOriginal": {
+      "resource": "string/cnRetryOriginal",
+      "androidOnly": true
+    },
+    "cnServiceUnconfigured": {
+      "resource": "string/cnServiceUnconfigured",
+      "androidOnly": true
+    },
+    "cnStartTrial": {
+      "resource": "string/cnStartTrial",
+      "androidOnly": true
+    },
+    "cnStatusExpired": {
+      "resource": "string/cnStatusExpired",
+      "androidOnly": true
+    },
+    "cnStatusReplaced": {
+      "resource": "string/cnStatusReplaced",
+      "androidOnly": true
+    },
+    "cnStatusRevoked": {
+      "resource": "string/cnStatusRevoked",
+      "androidOnly": true
+    },
+    "cnTransferRemaining": {
+      "resource": "string/cnTransferRemaining",
+      "params": [
+        "count"
+      ],
+      "androidOnly": true
+    },
+    "cnTransferWarning": {
+      "resource": "string/cnTransferWarning",
+      "androidOnly": true
+    },
+    "cnTrialNotice": {
+      "resource": "string/cnTrialNotice",
+      "androidOnly": true
+    },
+    "cnTrialPlan": {
+      "resource": "string/cnTrialPlan",
+      "androidOnly": true
+    },
+    "cnTrialUnavailable": {
+      "resource": "string/cnTrialUnavailable",
+      "androidOnly": true
+    },
+    "cnUsingSavedAccess": {
+      "resource": "string/cnUsingSavedAccess",
+      "androidOnly": true
     },
     "comingUp": {
       "resource": "string/comingUp"

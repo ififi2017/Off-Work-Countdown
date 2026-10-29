@@ -215,7 +215,7 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: Devic
             SettingsGroup(stringResource(R.string.aboutSection)) {
                 NavigationRow(stringResource(R.string.aboutProject), { open(Route.About) }, Icons.Outlined.Info)
                 RowDivider()
-                ActionRow(stringResource(R.string.rateAppGooglePlay), {
+                ActionRow(stringResource(if (com.rainif.doneat.BuildConfig.CN_CHANNEL) R.string.cnFaq else R.string.rateAppGooglePlay), {
                     ReviewCoordinator.get(context).disableAutomatic()
                     openPlayListing(context)
                 }, Icons.Outlined.RateReview, Icons.AutoMirrored.Outlined.OpenInNew)
@@ -265,6 +265,10 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: Devic
 
 /** The Play listing: the store app when present, the web page otherwise. Never the in-app review card, which may not appear. */
 fun openPlayListing(context: Context) {
+    if (com.rainif.doneat.BuildConfig.CN_CHANNEL) {
+        openUrl(context, "https://doneat.com.cn/android/faq")
+        return
+    }
     val id = context.packageName
     try {
         context.startActivity(Intent(Intent.ACTION_VIEW, "market://details?id=$id".toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -363,7 +367,9 @@ fun HealthScreen(p: SyncedPreferences, edit: EditPreferences, onBack: () -> Unit
 @Composable
 fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Composable () -> Unit = {}) {
     val context = LocalContext.current
-    val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "" }
+    val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).let {
+        if (com.rainif.doneat.BuildConfig.CN_CHANNEL) "${it.versionName} (${androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(it)})" else it.versionName
+    } }.getOrNull() ?: "" }
     DoneAtPage(stringResource(R.string.aboutProject), onBack, stringResource(R.string.settings)) {
         SettingsGroup {
             Column(
@@ -379,17 +385,25 @@ fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Compos
         }
         SettingsGroup {
             NavigationRow(stringResource(R.string.acknowledgements), { open(Route.Acknowledgements) }, Icons.AutoMirrored.Outlined.MenuBook)
-            RowDivider(inset = false)
-            NavigationRow(stringResource(R.string.reviewAccessTitle), { open(Route.ReviewAccess) }, Icons.Outlined.RateReview)
+            if (!com.rainif.doneat.BuildConfig.CN_CHANNEL) {
+                RowDivider(inset = false)
+                NavigationRow(stringResource(R.string.reviewAccessTitle), { open(Route.ReviewAccess) }, Icons.Outlined.RateReview)
+            }
         }
         SettingsGroup {
-            ActionRow(stringResource(R.string.privacyPolicy), { openUrl(context, "https://doneat.app/privacy") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+            ActionRow(stringResource(R.string.privacyPolicy), { openUrl(context, if (com.rainif.doneat.BuildConfig.CN_CHANNEL) "https://doneat.com.cn/android/privacy" else "https://doneat.app/privacy") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
             RowDivider(inset = false)
             ActionRow(stringResource(R.string.githubRepository), { openUrl(context, "https://github.com/ififi2017/Off-Work-Countdown") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
             RowDivider(inset = false)
-            ActionRow(stringResource(R.string.visitOfficialWebsite), { openUrl(context, "https://doneat.app/") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+            ActionRow(stringResource(R.string.visitOfficialWebsite), { openUrl(context, if (com.rainif.doneat.BuildConfig.CN_CHANNEL) "https://doneat.com.cn/android/buy" else "https://doneat.app/") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
             RowDivider(inset = false)
             ActionRow(stringResource(R.string.downloadDesktopApp), { openUrl(context, "https://doneat.app/download") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+        }
+        if (com.rainif.doneat.BuildConfig.CN_CHANNEL) {
+            AboutUpdates()
+            SettingsGroup(stringResource(R.string.androidAppFiling)) {
+                ActionRow("沪ICP备2026055302号-2A", { openUrl(context, "https://beian.miit.gov.cn/") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+            }
         }
         debugSection()
     }
