@@ -13,7 +13,7 @@ Integrated only CN channel/authorization/update behavior from public `android-cn
 - Play: 802 tests (468 domain, 97 data, 13 design system, 224 app), zero failures/errors/skips; Debug and Release lint, APK and R8 AAB pass.
 - CN: 790 tests (same shared suites, 212 app), zero failures/errors/skips; both lint variants, Debug and unsigned Release APK/AAB pass. Release identity is `com.rainif.doneat.cn`, 3.2.3/code8; no Play Billing/Review dependencies or debug components. Missing production trust rejects preReleaseBuild.
 - Lint has zero errors: Play Debug/Release 75/69 warnings, CN Debug/Release 74/68 warnings, four hints each. Full warning counts are retained rather than reported as a clean lint run.
-- Shared npm 580 tests, Android string generation check, 34 CN helper tests, version consistency and headless iOS Simulator build pass. Fixed iOS reference remains `ffd91597`; baseline drift command returned 69 historical commits, no new shared-rule commits since this task's pinned reference. No iOS manual visual testing.
+- Final merged-tree npm 616 tests, Android string generation check, 34 CN helper tests, version consistency and headless iOS Simulator build pass. Fixed iOS reference remains `ffd91597`; baseline drift command returned 69 historical commits, no new shared-rule commits since this task's pinned reference. No iOS manual visual testing.
 - Regression fixes revalidate CN proof when Focus writes, reports load/play/read, widget controls run, and paid notifications deliver; tests exercise expired proof with a stale authorized UI flow. Play's previous authorization behavior is preserved. Independent read-only review confirmed these fixes.
 
 ## Physical device scope

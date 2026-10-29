@@ -1,0 +1,41 @@
+{
+  "releaseMetadata": "package: name='com.rainif.doneat.cn' versionCode='8' versionName='3.2.3' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+  "unsignedApkVerified": true,
+  "tests": {
+    "app": {
+      "tests": 212,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core/domain": {
+      "tests": 468,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core/data": {
+      "tests": 97,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core/designsystem": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "sha256": {
+    "cn/apk/release/app-release-unsigned.apk": "594deaa31af1d5928b8be40692f6cb300b424dcd4d43865d33f0041ed03b0d6b",
+    "cn/apk/debug/app-debug.apk": "06e52fc1b729761abae071a5250946fe1049207ba33bd6fd430f74c8a86719c9",
+    "cn/bundle/release/app-release.aab": "b520a81f2ece04f8de57eebc05fe903616b3ab9b18f0c052a1e6e7f95952f587"
+  },
+  "noGooglePlayBillingReviewOrGmsConfirmed": true,
+  "unsignedAabVerified": true,
+  "upstreamCnReferenceTag": "android-cn-v3.2.1-7",
+  "upstreamCnReferenceCommit": "6c87cb6fe377e65b1764e4793bf9a30f7ccd3138",
+  "integratedSourceCommit": "4a8013ead8801c71207a8c327f95702a37cb1bdb",
+  "buildPurpose": "Local unsigned worktree validation; source recorded in integratedSourceCommit, not a distributed release."
+}
