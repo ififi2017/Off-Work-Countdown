@@ -99,20 +99,10 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - manifest.json
-     * - sw.js (Service Worker)
-     * - workbox-*.js (Workbox files)
-     * - locales
-     * - robots.txt
-     * - sitemap.xml
-     * - baidu_verify_codeva-SXZydSeYe0.html
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|emoji|robots.txt|sitemap.xml|llms.txt|baidu_verify_codeva-SXZydSeYe0.html).*)",
+    // Exclude no-op requests before invoking the function. Returning next()
+    // inside middleware still consumes Active CPU, even for a cached page.
+    // Keep locales literal: Next statically analyses matcher at build time.
+    // middleware.test.ts checks every supported locale so this cannot drift.
+    "/((?!api|_next|static|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|licenses/|emoji|robots.txt|sitemap.xml|llms.txt|baidu_verify_codeva-SXZydSeYe0.html|(?:en|zh-CN|zh-TW|zh-HK|ja|ko|fr|de|es|it|pt|ru|hi-IN|mr-IN|tr|ar|th|id|vi)(?:/|$)|.*\\.[a-zA-Z0-9]+$).*)",
   ],
 };
