@@ -3,6 +3,7 @@ package com.rainif.doneat.ui.settings
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +24,8 @@ import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
@@ -33,7 +36,10 @@ import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material.icons.outlined.RateReview
 import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.AlertDialog
@@ -56,6 +62,9 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.expand
+import androidx.compose.ui.semantics.collapse
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -194,6 +203,8 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: Devic
                 NavigationRow(stringResource(R.string.theme), { open(Route.Theme) }, Icons.Outlined.Contrast, SettingsLabels.theme(p.theme))
                 RowDivider()
                 NavigationRow(stringResource(R.string.chooselanguage), { open(Route.Language) }, Icons.Outlined.Language, SettingsLabels.language(p.languageOverride))
+                RowDivider()
+                NavigationRow(stringResource(R.string.widgetGalleryTitle), { open(Route.WidgetGallery) }, Icons.Outlined.Widgets)
             }
             SettingsGroup(stringResource(R.string.recordsDataSection)) {
                 NavigationRow(stringResource(R.string.calendarWeekStart), { choosingWeekStart = true }, Icons.Outlined.CalendarToday,
@@ -204,7 +215,7 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: Devic
             SettingsGroup(stringResource(R.string.aboutSection)) {
                 NavigationRow(stringResource(R.string.aboutProject), { open(Route.About) }, Icons.Outlined.Info)
                 RowDivider()
-                ActionRow(stringResource(R.string.rateAppGooglePlay), {
+                ActionRow(stringResource(if (com.rainif.doneat.BuildConfig.CN_CHANNEL) R.string.cnFaq else R.string.rateAppGooglePlay), {
                     ReviewCoordinator.get(context).disableAutomatic()
                     openPlayListing(context)
                 }, Icons.Outlined.RateReview, Icons.AutoMirrored.Outlined.OpenInNew)
@@ -254,6 +265,10 @@ fun SettingsHomeScreen(p: SyncedPreferences, records: RecordState, device: Devic
 
 /** The Play listing: the store app when present, the web page otherwise. Never the in-app review card, which may not appear. */
 fun openPlayListing(context: Context) {
+    if (com.rainif.doneat.BuildConfig.CN_CHANNEL) {
+        openUrl(context, "https://doneat.com.cn/android/faq")
+        return
+    }
     val id = context.packageName
     try {
         context.startActivity(Intent(Intent.ACTION_VIEW, "market://details?id=$id".toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -352,7 +367,9 @@ fun HealthScreen(p: SyncedPreferences, edit: EditPreferences, onBack: () -> Unit
 @Composable
 fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Composable () -> Unit = {}) {
     val context = LocalContext.current
-    val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "" }
+    val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).let {
+        if (com.rainif.doneat.BuildConfig.CN_CHANNEL) "${it.versionName} (${androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(it)})" else it.versionName
+    } }.getOrNull() ?: "" }
     DoneAtPage(stringResource(R.string.aboutProject), onBack, stringResource(R.string.settings)) {
         SettingsGroup {
             Column(
@@ -368,17 +385,25 @@ fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Compos
         }
         SettingsGroup {
             NavigationRow(stringResource(R.string.acknowledgements), { open(Route.Acknowledgements) }, Icons.AutoMirrored.Outlined.MenuBook)
-            RowDivider(inset = false)
-            NavigationRow(stringResource(R.string.reviewAccessTitle), { open(Route.ReviewAccess) }, Icons.Outlined.RateReview)
+            if (!com.rainif.doneat.BuildConfig.CN_CHANNEL) {
+                RowDivider(inset = false)
+                NavigationRow(stringResource(R.string.reviewAccessTitle), { open(Route.ReviewAccess) }, Icons.Outlined.RateReview)
+            }
         }
         SettingsGroup {
-            ActionRow(stringResource(R.string.privacyPolicy), { openUrl(context, "https://doneat.app/privacy") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+            ActionRow(stringResource(R.string.privacyPolicy), { openUrl(context, if (com.rainif.doneat.BuildConfig.CN_CHANNEL) "https://doneat.com.cn/android/privacy" else "https://doneat.app/privacy") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
             RowDivider(inset = false)
             ActionRow(stringResource(R.string.githubRepository), { openUrl(context, "https://github.com/ififi2017/Off-Work-Countdown") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
             RowDivider(inset = false)
-            ActionRow(stringResource(R.string.visitOfficialWebsite), { openUrl(context, "https://doneat.app/") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+            ActionRow(stringResource(R.string.visitOfficialWebsite), { openUrl(context, if (com.rainif.doneat.BuildConfig.CN_CHANNEL) "https://doneat.com.cn/android/buy" else "https://doneat.app/") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
             RowDivider(inset = false)
             ActionRow(stringResource(R.string.downloadDesktopApp), { openUrl(context, "https://doneat.app/download") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+        }
+        if (com.rainif.doneat.BuildConfig.CN_CHANNEL) {
+            AboutUpdates()
+            SettingsGroup(stringResource(R.string.androidAppFiling)) {
+                ActionRow("沪ICP备2026055302号-2A", { openUrl(context, "https://beian.miit.gov.cn/") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+            }
         }
         debugSection()
     }
@@ -400,15 +425,31 @@ fun AcknowledgementsScreen(onBack: () -> Unit) {
     }
     DoneAtPage(stringResource(R.string.acknowledgements), onBack, stringResource(R.string.aboutProject)) {
         (libraryLicenses + attributions).forEach { (name, url, license) ->
+            var expanded by rememberSaveable(name, url) { mutableStateOf(false) }
             SettingsGroup {
-                ActionRow(name, { openUrl(context, url) }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
-                RowDivider(inset = false)
-                Text(
-                    license,
-                    modifier = Modifier.padding(DoneAtSpacing.l),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ListItem(
+                    headlineContent = { Text(name) },
+                    trailingContent = {
+                        Icon(if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                            contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    },
+                    colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                    modifier = Modifier.clickable(role = Role.Button) { expanded = !expanded }
+                        .semantics {
+                            if (expanded) collapse { expanded = false; true }
+                            else expand { expanded = true; true }
+                        },
                 )
+                if (expanded) {
+                    RowDivider(inset = false)
+                    ActionRow(url, { openUrl(context, url) }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
+                    Text(
+                        license,
+                        modifier = Modifier.padding(DoneAtSpacing.l),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

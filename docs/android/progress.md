@@ -842,3 +842,40 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 产品仓（Web）：19 语 `getAppPlatforms` 加 Android；`getAppNoteMobile`、Desktop 设置页 `downloadMobileApp`、作息预设页 `iosCta` / `webBoundary` 改为同时指向 iOS 与 Android；工时计算器平台行与 README / README_CN 加 Google Play 入口。下载按钮仍去官网下载页，Web 不直接放商店徽章。
 - 官网仓：下载章、下载页和首页收尾加官方 Google Play 徽章（19 语，顺序 App Store → Google Play → Microsoft Store；国内站不显示）；平台行去掉“即将推出”；门厅标题／描述、JSON-LD 加 Android；19 语下载／FAQ／About／隐私去掉“测试阶段”说法并补系统要求 Android 8.0+。数据处理范围不变，Play Data safety 无需随此改动重填。
 
+
+### iOS 3.2.3 小组件增量与设置修复（2026-10-29）
+
+- 用户明确要求同步 Android 小组件。固定 iOS 参考 main `ffd91597`，独立工作树与 `codex/android-323-widget-parity` 分支开发，原产品工作区未提交内容及官网保持不动。新增大数字／圆环／时间线／详细倒计时，周概览、排班、年度、周末、节假日、汇总、人生、专注共 12 个 provider；保留旧 3 个 provider。设置与更新介绍可进入原生预览并请求桌面添加，使用真实本地数据。
+- 沿用现有排班／记录／专注引擎；新增快照严格不含薪资，按当前已验证权益及精确到期时间读取并脱敏。首次安装尚无 career periods 时，仅为小组件临时解析已提交作息，保留例外／请假，不写伪造历史。专注加时／停止经内部 Glance 回调并复核当前会话和权益。只为已安装类型安排刷新，倒计时系统 chronometer、静态日历按日界、动态汇总按分钟刷新。
+- 欢迎页旧逐帧目标动画导致滚动滞后，改为直接跟随完整布局坐标，跨页面宿主才平滑纠偏；保留减少动态效果。致谢四项默认折叠，点击展开源链接与完整许可证。同步 3.2.3 更新介绍与七天一次性更新礼物，保留未到期旧礼物，不因重复启动续期。Android 新增说明19语；发布说明另存 draft，不覆盖已发布文案。
+- 新增 Swift 实际编译 oracle 与来源 hash 校验，验证周有效工时、DST 年度进度及人生标量；Kotlin 回归覆盖首次排班、过期／撤销权益、畸形时间、未来专注不误判运行、过期按钮及刷新频率。
+- UI 环境：Pixel 10 Pro Android 模拟器 `emulator-5580`、360×640 dp、隔离 `com.rainif.doneat.parityqa`；没有操作已连接真机。欢迎页滑动510px，说明和数字均移动510px，间距101px恒定。实际 Launcher 已添加旧倒计时、周概览与排班：周内16h／2工作日、当前29日、9–17班次符合首次配置；旧小号底部百分比／边界时间完整。致谢实际确认默认四项折叠，Backdrop展开可读全文。主 Agent 独立看图核对上述结果。截图与环境记录已归档到 `qa/2026-10-29-android323/`。
+- CN：公开独立源码仍停留 `android-cn-v3.2.1-7`（`6c87cb6f`），不是 main 中的 flavor。新增手动候选／签名／Draft Release 流水线；源构建无 secrets，受保护签名 runner 只运行可信 main 工具，草稿写权限独立。初版自动审批因源码构建与凭证边界拒绝；修订的隔离方案已获准。远端没有 CN 独立 secrets／环境，允许同一所有者触发并人工审批，无需第二账号，未运行签名、未修改 GitHub 配置、未打 tag、未创建或发布 Release。不能声称 CN 3.2.3 已上线；操作见 `cn-release-ci.md`。
+- 非本轮：Apple Watch／动态岛／控制中心等平台专属表面不移植；Wear OS、Drive 同步不擅自扩展。iOS 未改代码，仅无头构建，不做 iOS 手动 UI。未做真实支付、完整19语视觉与 TalkBack 验收。
+- 协作：三个子 Agent 实际均使用 GPT-6.1 Sol / High，负责差异与 domain、欢迎页与小组件 UI、CN CI；主 Agent 集成并独立复核测试／截图。
+- 自动验证：Android四模块共779测试（domain468、data96、designsystem13、app202），零失败／错误／跳过；共享 npm53文件580测试、npm lint、版本一致性检查、CN34测试通过。19语生成资源检查与实际 Swift重新编译oracle检查通过。`check:ios`及无头 iOS Simulator构建通过。Android lint为0错误／56警告／4提示；最终地区周末变更后的四模块测试、lint、Debug与R8 Release全套门禁通过（2m9s）。
+- 所有者追问自审批限制后，移除本轮新增的强制双人限制：允许 `prevent_self_review=false`，仍要求真实手动审批、main-only与隔离签名；新增允许本人审批测试，主 Agent独立重跑34项全部通过。远端环境仍未创建。
+
+### 用户设计稿校正（2026-10-29）
+
+用户指出首版小组件视觉未遵循 iOS 设计，并提供「DoneAt 3.3 小组件设计.html」及「DoneAt 3.2.3 付费墙与新功能方案.html」。此前 `qa/2026-10-29-android323` 的小组件截图仅证明旧实现的功能，**不作为最终视觉验收**。按用户稿分别重做各组件 Small/Medium/Large、G/H 付费墙与礼物、D 更新介绍和 F 的 Android 支持表面；原始稿不上传仓库。静态视觉/数据边界核对见 `qa/android-widget-design-audit-2026-10-29.md`。业务规则、真实 Play 价格/资格、薪资脱敏与权益到期不因稿内示例改变。新增调试图像导出入口仅允许 `.parityqa`，只读当前快照或明确标识的合成渲染样例，不写入排班/权益或桌面状态。最终构建和截图结果如下。
+
+
+- 已按各类型/尺寸重做独立构图：竖向时间轴、分段环、详情双栏、周日块、排班月历、统计柱图、人生年月点阵、假期连续日块与Focus操作区。预览/桌面共享绘制与计时位置，原生Chronometer保留秒更新；新功能页使用相同renderer。
+- 付费墙使用G六页轮播/纵向方案和H礼物动作；D更新介绍、F引导小组件组合同步。真实商店价格、资格、一次性礼物有效期及Android支持范围不变。稿里的Apple系统入口未虚构成Android能力。
+- 最终视觉证据见 `qa/2026-10-29-android-design/README.md`：四组152张样例输出合成图、真实桌面秒计时两帧、付费墙方案、新功能页和只读引导。主 Agent 独立看图并修复数字截断/200%字号；未覆盖的运行时验收明确留在README，不能称全矩阵已通过。
+- 全套Android779测试、Debug/R8 Release、Lint通过；最后Focus字体修复再跑app202测试与Lint/两种构建。Lint0错误、66警告、4提示；新增主要是Canvas KTX建议和显式RTL物理对齐提示。字符串生成器14项与生成检查通过。未发布/未合并，继续使用draft PR344。
+
+### 真机小组件尺寸修正（2026-10-29）
+
+- 用户明确授权真机及测试签名包；Pixel 10 Pro / Android 17 安装独立 `com.rainif.doneat.parityqa`，未覆盖正式版数据。修复宽/大倒计时固定小画布留白、套件大卡内容偏移与过小、原生 Chronometer 等宽数字测量不一致导致尾数裁切；调整最小伸缩尺寸。
+- 真机原生宿主检查13种组件38个尺寸组合（186×208、390×180、390×390 dp），另有9个锁定态；实际 Pixel Launcher 验证2×2圆环。中文浅色38个合成样例补充人生有数据/休假方案/专注队列布局，不能当作真实用户记录或全部桌面操作证明。证据与限制见 `qa/2026-10-29-android-device-widgets/README.md`。
+- Android四模块779测试、lint、Debug与R8 Release通过；最终计时字体改动后再跑app测试/lint/两类构建。Lint0错误、73警告、4提示；版本检查和无头iOS构建通过。未做iOS视觉、支付、闹钟、全19语/所有厂商验收。继续draft PR344，未发布。
+
+### CN CI 启用与新版源集成（2026-10-29）
+
+- 用户要求直接协助启用。已配置 `android-cn-release`、ififi2017本人审批（允许self-review）、唯一main分支、四个独立CN签名secrets及公共key变量；原本机CN证书和公钥pin核对一致，值经stdin传递未写入日志/仓库。真实保护preflight通过。
+- 仅CI PR345合并main；首跑遇setup-android默认tools包已移除，PR346修复后云端run40800770044全成功。下载unsigned候选通过SDK身份/未签名/校验和/独立源码记录复核。用旧3.2.1公开源/code8做smoke，不是新版发布；未签名、未打tag、未建Release、未改国内站或触发Play发布。
+- 基于公开CN tag -7单独移植渠道/授权/更新，不拿原工作区未提交混杂改动；当前3.2.3 UI、小组件和致谢折叠由两渠道共享。Play源码/测试移至专属源集，CN不包含Billing/Review，保留旧CN备案与激活流程。CN即时授权门禁补齐Focus写入、报告、widgets/通知到期。源码保留在PR344，未合并发版。
+- Play802 / CN790单测全部通过；两渠道双lint、Debug及R8 Release APK/AAB通过，缺CN生产公钥的Release负测正确拒绝。CNRelease包名com.rainif.doneat.cn /3.2.3/code8且unsigned。合入main后npm616、字符串生成、CN34测试、版本及无头iOS构建通过；iOS规则固定ffd91597未推进，标准drift69条历史提交，本轮无新增规则漂移。CN新增PR回归job只用公共key，不接触签名secret。
+- Pixel真机独立.cn.ciqa会员页和展开激活表单布局通过，未提交激活/试用；临时包已移除，不覆盖既有应用。记录见 `qa/2026-10-29-cn-ci-enablement/README.md`；签名CI本身、正式激活/续期及覆盖升级尚未验收。

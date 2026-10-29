@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 
 /** Play data is the only entitlement input. The signed offline cache lives under noBackup. */
-internal class PlayBillingRepository(private val context: Context, private val scope: CoroutineScope) {
+internal class PlayBillingRepository(private val context: Context, private val scope: CoroutineScope) : ChannelPlusRepository {
     private companion object { val billingMutex = Mutex() }
     private val subscription = BuildConfig.PLUS_SUBSCRIPTION_PRODUCT
     private val lifetime = BuildConfig.PLUS_LIFETIME_PRODUCT
@@ -66,7 +66,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
     private val serverRequired = BuildConfig.BILLING_API_PUBLIC_KEYS.isNotBlank()
     private val purchasing = AtomicBoolean(false)
     private val _state = MutableStateFlow(PlusStoreState(if (configured) PlusStatus.LOADING else PlusStatus.UNCONFIGURED))
-    val state: StateFlow<PlusStoreState> = _state.asStateFlow()
+    override val state: StateFlow<PlusStoreState> = _state.asStateFlow()
     private var verifiedAtMs = 0L
     private var hasPurchasedBefore = false
     private var proofs = listOf<Proof>()
@@ -93,7 +93,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
         }
     }
 
-    suspend fun refresh(): Boolean = try { billingMutex.withLock {
+    override suspend fun refresh(): Boolean = try { billingMutex.withLock {
         loadCache() // A WorkManager instance may have updated the same no-backup proof file.
         server.load()
         val billing = client ?: return@withLock false
@@ -145,7 +145,7 @@ internal class PlayBillingRepository(private val context: Context, private val s
         false
     }
 
-    suspend fun purchase(activity: Activity, offer: PlusOffer, lifetimeOfferActive: (() -> Boolean)? = null) {
+    override suspend fun purchase(activity: Activity, offer: PlusOffer, lifetimeOfferActive: (() -> Boolean)?) {
         if (!purchasing.compareAndSet(false, true)) return
         try {
             // A lifetime invitation requires a current entitlement query too, never just a cached free state.
@@ -361,3 +361,5 @@ class PlusBillingRetryWorker(context: Context, params: WorkerParameters) : Corou
         }
     }
 }
+
+internal fun createChannelRepository(context: Context, scope: CoroutineScope): ChannelPlusRepository = PlayBillingRepository(context, scope)

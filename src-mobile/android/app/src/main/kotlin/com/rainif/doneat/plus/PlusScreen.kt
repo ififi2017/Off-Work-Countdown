@@ -72,6 +72,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,8 +86,11 @@ import androidx.compose.ui.semantics.collapse
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.currentStateAsState
 import com.rainif.doneat.AppGraph
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtPrimaryButton
@@ -109,10 +113,22 @@ fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
 private fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
     pendingAction: PlusPendingAction? = null, dismissLabel: Int?,
     onAuthorized: (PlusPendingAction) -> Unit = {}) {
+    if (com.rainif.doneat.BuildConfig.CN_CHANNEL) {
+        CnMembershipScreen(graph, onBack, pendingAction, onAuthorized)
+        return
+    }
     val authorized by graph.plus.authorized.collectAsStateWithLifecycle()
     val store by graph.plus.state.collectAsStateWithLifecycle()
     val reviewAccess by graph.plus.reviewAccess.state.collectAsStateWithLifecycle()
     val lifetimeOffer by graph.plus.lifetimeOffer.collectAsStateWithLifecycle()
+    val offerNow = if (lifetimeOffer != null) observeOfferClock(graph.plus) else 0L
+    val lifetimePrice = store.discountedLifetimeOffer?.takeIf { graph.plus.hasAvailableLifetimeOffer }
+    var offerPriceVisible by remember(lifetimePrice?.offerToken) { mutableStateOf(false) }
+    val lifecycleState by androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    LaunchedEffect(lifetimePrice, lifetimeOffer?.claimedAtMs, offerPriceVisible, lifecycleState) {
+        if (lifetimePrice != null && offerPriceVisible && lifecycleState == androidx.lifecycle.Lifecycle.State.RESUMED &&
+            lifetimeOffer?.claimedAtMs == null) graph.plus.claimLifetimeOffer()
+    }
     val activity = LocalContext.current.activity()
     val authorizedAtPresentation = rememberSaveable { authorized }
     LaunchedEffect(Unit) { graph.plus.refresh() }
@@ -133,8 +149,10 @@ private fun PlusScreen(graph: AppGraph, onBack: () -> Unit,
             is PlusPendingAction.LeavePlan, PlusPendingAction.ShiftAlarms -> PlusDemoKind.REST
             else -> PlusDemoKind.REPORTS
         },
-        offerCard = { LifetimeOfferCard(graph.plus) },
         showsLifetimeOffer = lifetimeOffer != null && graph.plus.hasAvailableLifetimeOffer,
+        lifetimePrice = lifetimePrice, lifetimeInvitation = lifetimeOffer, offerNowMs = offerNow,
+        onOfferPriceVisible = { offerPriceVisible = true },
+        onLifetimePurchase = { price -> activity?.let { graph.plus.purchaseLifetimeOffer(it, price) } },
         backLabel = dismissLabel ?: when (pendingAction) {
             is PlusPendingAction.FocusCreate, PlusPendingAction.FocusHome -> R.string.focusTitle
             is PlusPendingAction.RecordsDay, PlusPendingAction.RecordsLifeEdit, PlusPendingAction.RecordsCharts -> R.string.recordsTab
@@ -190,32 +208,42 @@ internal fun PlusPage(
     offerCard: (@Composable () -> Unit)? = null,
     initialFeature: PlusDemoKind = PlusDemoKind.REPORTS,
     title: Int = R.string.onboardingPlusShowcaseTitle,
+    lifetimePrice: PlusOffer? = null,
+    lifetimeInvitation: LifetimeOffer? = null,
+    offerNowMs: Long = 0L,
+    onOfferPriceVisible: () -> Unit = {},
+    onLifetimePurchase: (PlusOffer) -> Unit = onPurchase,
 ) {
-    var selectedPlan by rememberSaveable { mutableStateOf(PlusPlan.YEARLY) }
+    var selectedPlan by rememberSaveable { mutableStateOf(if (lifetimePrice != null) PlusPlan.LIFETIME else PlusPlan.YEARLY) }
     val scroll = rememberScrollState()
-    val scope = rememberCoroutineScope()
-    val reduced = LocalDoneAtMotion.current.reduced
-    var viewport by remember { mutableStateOf(Rect.Zero) }
-    var pricingBounds by remember { mutableStateOf(Rect.Zero) }
-    val pricingVisible = viewport.height > 0f && pricingBounds.height > 0f &&
-        (minOf(viewport.bottom, pricingBounds.bottom) - maxOf(viewport.top, pricingBounds.top)) / pricingBounds.height >= .15f
     LaunchedEffect(authorized) { scroll.scrollTo(0) }
-    val offers = listOf(PlusPlan.YEARLY, PlusPlan.MONTHLY, PlusPlan.LIFETIME)
-        .mapNotNull { plan -> store.offers.firstOrNull { it.plan == plan } }
+    LaunchedEffect(authorized) { if (authorized) GiftOfferMotion.fromToolbar = false }
+    val offers = listOf(PlusPlan.YEARLY, PlusPlan.LIFETIME, PlusPlan.MONTHLY)
+        .mapNotNull { plan -> if (plan == PlusPlan.LIFETIME) lifetimePrice ?: store.offers.firstOrNull { it.plan == plan }
+            else store.offers.firstOrNull { it.plan == plan } }
     val selected = selectVisiblePlusOffer(offers, selectedPlan)
+    LaunchedEffect(lifetimePrice?.offerToken) { if (lifetimePrice != null) selectedPlan = PlusPlan.LIFETIME }
     LaunchedEffect(selected?.plan) { selected?.let { selectedPlan = it.plan } }
+    fun closePage() {
+        if (!authorized && lifetimePrice != null) GiftOfferMotion.returnToToolbar()
+        onBack()
+    }
+    BackHandler { closePage() }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(Modifier.safeDrawingPadding().padding(bottom = LocalDoneAtBottomBarPadding.current)) {
-            Box(Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
+            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.page),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary.copy(alpha = .10f)) {
+                    Text(stringResource(R.string.plusSettings), Modifier.padding(horizontal = DoneAtSpacing.m, vertical = DoneAtSpacing.xs),
+                        style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                }
+                IconButton(onClick = ::closePage) {
                     Icon(if (backLabel == R.string.close) Icons.Outlined.Close else Icons.AutoMirrored.Outlined.ArrowBack,
                         stringResource(backLabel))
                 }
-                Text(stringResource(R.string.plusSettings), Modifier.align(Alignment.Center).padding(horizontal = 48.dp),
-                    style = MaterialTheme.typography.titleMedium)
             }
             Column(
-                Modifier.fillMaxSize().weight(1f).onGloballyPositioned { viewport = it.boundsInWindow() }.verticalScroll(scroll),
+                Modifier.fillMaxWidth().weight(1f).verticalScroll(scroll),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = if (authorized) Arrangement.Center else Arrangement.Top,
             ) {
@@ -226,33 +254,25 @@ internal fun PlusPage(
                     if (authorized) {
                         PlusSubscriberThankYou(store, playsCelebrationOnAppear, onContinue,
                             onManage = { onOpenUrl("https://play.google.com/store/account/subscriptions") })
-                    } else Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary.copy(alpha = .12f)) {
-                            Row(Modifier.padding(horizontal = DoneAtSpacing.m, vertical = DoneAtSpacing.xs),
-                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                                Icon(Icons.Outlined.Star, null, Modifier.size(DoneAtSpacing.l), tint = MaterialTheme.colorScheme.primary)
-                                Text(stringResource(R.string.plusSection), style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-                            }
-                        }
+                    } else if (lifetimePrice != null && lifetimeInvitation != null) {
+                        LifetimeOfferHeader(lifetimeInvitation)
+                    } else if (title != R.string.onboardingPlusShowcaseTitle) Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
                         Text(stringResource(title),
-                            Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineSmall,
+                            Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold)
-                        Text(stringResource(R.string.plusStoryBody),
-                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     if (!authorized) PlusFeatureStage(initialSelection = initialFeature)
-                    if (!authorized) Column(Modifier.fillMaxWidth().onGloballyPositioned { pricingBounds = Rect(it.positionInWindow(), Size(it.size.width.toFloat(), it.size.height.toFloat())) },
-                        verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
-                        if (showsLifetimeOffer) offerCard?.invoke()
-                        val regularPlans: @Composable () -> Unit = {
-                            if (store.status == PlusStatus.FREE && selected != null) {
-                                PlusPurchasePlans(offers, selected, store.busy, canPurchase,
-                                    onSelection = { selectedPlan = it }, onPurchase = onPurchase)
+                    if (!authorized) Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                        if (store.status == PlusStatus.FREE && selected != null) {
+                            Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+                                offers.forEach { offer ->
+                                    val special = lifetimePrice != null && offer == lifetimePrice
+                                    PlusPlanCard(offer, selected.plan == offer.plan, !store.busy, Modifier.fillMaxWidth(),
+                                        invitation = lifetimeInvitation.takeIf { special }, nowMs = offerNowMs,
+                                        onPriceVisible = if (special) onOfferPriceVisible else ({})) { selectedPlan = offer.plan }
+                                }
                             }
                         }
-                        if (showsLifetimeOffer) PlusDisclosure(R.string.plusSeePlans, regularPlans)
-                        else regularPlans()
                         if (!authorized && (store.status == PlusStatus.LOADING || store.busy)) {
                             Box(Modifier.fillMaxWidth()) {
                                 CircularProgressIndicator(Modifier.align(Alignment.Center).size(DoneAtSpacing.xl))
@@ -276,34 +296,48 @@ internal fun PlusPage(
                         }
                     }
                     if (!authorized) PlusDisclosure(R.string.plusAllBenefits) { PlusBenefits() }
-                    if (!authorized && store.status != PlusStatus.UNCONFIGURED) {
-                        TextButton(onClick = onRestore, enabled = !store.busy, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                            Text(stringResource(R.string.plusRestore), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
                     if (!authorized && store.hasPurchasedBefore) {
                         TextButton(onClick = { onOpenUrl("https://play.google.com/store/account/subscriptions") },
                             modifier = Modifier.align(Alignment.CenterHorizontally)) {
                             Text(stringResource(R.string.plusManage))
                         }
                     }
-                    if ((!authorized && offers.any { it.plan != PlusPlan.LIFETIME }) || store.status == PlusStatus.SUBSCRIBED) {
-                        Text(stringResource(if (authorized) R.string.plusAutoRenew else R.string.plusAndroidRenewalNotice), style = MaterialTheme.typography.bodySmall,
+                    if (store.status == PlusStatus.SUBSCRIBED) {
+                        Text(stringResource(R.string.plusAutoRenew), style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        TextButton(onClick = { onOpenUrl("https://doneat.app/privacy") }) { Text(stringResource(R.string.plusPrivacy)) }
-                        TextButton(onClick = { onOpenUrl("https://play.google.com/about/play-terms/") }) { Text(stringResource(R.string.plusTerms)) }
                     }
                 }
             }
-            if (!authorized && !pricingVisible) {
-                DoneAtPrimaryButton(stringResource(R.string.plusSeePlans), onClick = {
-                    scope.launch {
-                        val target = (scroll.value + pricingBounds.top - viewport.top).toInt().coerceAtLeast(0)
-                        if (reduced) scroll.scrollTo(target) else scroll.animateScrollTo(target)
+            if (!authorized) {
+                Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp) {
+                    Column(Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = DoneAtSpacing.page, vertical = DoneAtSpacing.s),
+                        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+                        if (selected != null && store.status == PlusStatus.FREE) {
+                            val cta = stringResource(when {
+                                showsPlusTrialTimeline(selected) -> R.string.plusStartTrialShort
+                                selected.plan == PlusPlan.LIFETIME -> R.string.plusBuyLifetime
+                                else -> R.string.plusSubscribe
+                            }) + if (showsPlusTrialTimeline(selected)) "" else " · ${selected.price}"
+                            DoneAtPrimaryButton(cta, onClick = {
+                                if (lifetimePrice != null && selected == lifetimePrice) onLifetimePurchase(selected) else onPurchase(selected)
+                            }, modifier = Modifier.fillMaxWidth().onGloballyPositioned {
+                                if (selected == lifetimePrice) onOfferPriceVisible()
+                            }, enabled = canPurchase && !store.busy)
+                            Text(if (selected == lifetimePrice && lifetimeInvitation != null)
+                                stringResource(if (lifetimeInvitation.source == LifetimeOfferSource.UPDATE_323) R.string.plusOfferTermsWeek else R.string.plusOfferTerms)
+                            else if (showsPlusTrialTimeline(selected)) Strings.plusTrialThen(LocalResources.current, selected.price)
+                            else stringResource(if (selected.plan == PlusPlan.LIFETIME) R.string.plusLifetimeOnce else R.string.plusAndroidRenewalNotice),
+                                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                        }
+                        FlowRow(horizontalArrangement = Arrangement.Center) {
+                            if (store.status != PlusStatus.UNCONFIGURED) TextButton(onClick = onRestore, enabled = !store.busy) {
+                                Text(stringResource(R.string.plusRestore), style = MaterialTheme.typography.labelSmall)
+                            }
+                            TextButton(onClick = { onOpenUrl("https://play.google.com/about/play-terms/") }) { Text(stringResource(R.string.plusTerms), style = MaterialTheme.typography.labelSmall) }
+                            TextButton(onClick = { onOpenUrl("https://doneat.app/privacy") }) { Text(stringResource(R.string.plusPrivacy), style = MaterialTheme.typography.labelSmall) }
+                        }
                     }
-                }, modifier = Modifier.fillMaxWidth().padding(horizontal = DoneAtSpacing.page, vertical = DoneAtSpacing.s))
+                }
             }
         }
     }
@@ -475,7 +509,9 @@ private fun PlusBenefits() {
 }
 
 @Composable
-private fun PlusPlanCard(offer: PlusOffer, selected: Boolean, enabled: Boolean, modifier: Modifier, onClick: () -> Unit) {
+private fun PlusPlanCard(offer: PlusOffer, selected: Boolean, enabled: Boolean, modifier: Modifier,
+                         invitation: LifetimeOffer? = null, nowMs: Long = 0L,
+                         onPriceVisible: () -> Unit = {}, onClick: () -> Unit) {
     val label = when (offer.plan) {
         PlusPlan.MONTHLY -> R.string.plusMonthly
         PlusPlan.YEARLY -> R.string.plusYearly
@@ -489,15 +525,33 @@ private fun PlusPlanCard(offer: PlusOffer, selected: Boolean, enabled: Boolean, 
         border = BorderStroke(if (selected) 2.dp else 1.dp,
             if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
     ) {
-        Column(Modifier.padding(DoneAtSpacing.m), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                Text(stringResource(label), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                Icon(if (selected) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked, null,
-                    Modifier.size(DoneAtSpacing.l), tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(Modifier.padding(horizontal = DoneAtSpacing.m, vertical = DoneAtSpacing.s).heightIn(min = 46.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
+            Icon(if (selected) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked, null,
+                Modifier.size(DoneAtSpacing.xl), tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs)) {
+                Text(stringResource(if (invitation != null) R.string.plusOfferTitle else label),
+                    style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                if (invitation?.expiresAtMs != null) Text(Strings.plusOfferEndsIn(LocalResources.current,
+                    offerDuration(invitation.remainingMs(nowMs), LocalResources.current.configuration.locales[0])),
+                    style = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.primary)
+                else Text(stringResource(when {
+                    showsPlusTrialTimeline(offer) -> R.string.plusTrialBadge
+                    offer.plan == PlusPlan.LIFETIME -> R.string.plusLifetimeOnce
+                    offer.plan == PlusPlan.YEARLY -> R.string.androidPlusYearlyPlanDetail
+                    else -> R.string.androidPlusMonthlyPlanDetail
+                }), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Text(offer.price, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-            if (showsPlusTrialTimeline(offer)) Text(stringResource(R.string.plusTrialBadge), style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary)
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xxs)) {
+                Text(offer.price, Modifier.onGloballyPositioned { c ->
+                    val bounds = c.boundsInWindow()
+                    if (bounds.height > 0 && bounds.bottom > 0 && bounds.top < c.findRootCoordinates().size.height) onPriceVisible()
+                }, style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"), fontWeight = FontWeight.Bold)
+                if (invitation != null) offer.regularPrice?.let {
+                    Text(it, style = MaterialTheme.typography.labelSmall.copy(textDecoration = TextDecoration.LineThrough, fontFeatureSettings = "tnum"),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
         }
     }
 }

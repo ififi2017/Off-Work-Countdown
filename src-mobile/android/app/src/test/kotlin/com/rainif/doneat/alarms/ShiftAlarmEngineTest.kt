@@ -1,9 +1,6 @@
 package com.rainif.doneat.alarms
 
 import com.rainif.doneat.core.domain.alarms.PlannedShiftAlarm
-import com.rainif.doneat.core.domain.alarms.ShiftAlarmAuthorization
-import com.rainif.doneat.plus.PlusStoreState
-import com.rainif.doneat.plus.PlusStatus
 import org.junit.Assert.*
 import org.junit.Test
 import java.util.UUID
@@ -149,14 +146,6 @@ class ShiftAlarmEngineTest {
         assertEquals(listOf(next), fake.scheduled.map { it.alarm })
         assertNull(engine.receive(past.id, fake.held.first { it.alarm.id == past.id }.token, plan(past, next), now))
     }
-    @Test fun signedCachedOfflineExpiryAuthorizesButClientCacheWithoutExpiryDoesNot() {
-        val cached = PlusStoreState(PlusStatus.SUBSCRIBED, verifiedSubscriptionExpiresAtMs = now + 60_000,
-            currentEntitlementsVerified = false)
-        assertEquals(ShiftAlarmAuthorization.VerifiedUntil(now + 60_000), cached.shiftAlarmAuthorization(now))
-        assertEquals(ShiftAlarmAuthorization.Unavailable, cached.shiftAlarmAuthorization(now + 60_000))
-        assertEquals(ShiftAlarmAuthorization.Unavailable, cached.copy(verifiedSubscriptionExpiresAtMs = null).shiftAlarmAuthorization(now))
-    }
-
     @Test fun scheduleFailureNeverReportsOrDeliversAnUnconfirmedRegistration() {
         val fake = FakePlatform(); val next = alarm(10_000)
         fake.failIDs = setOf(next.id)

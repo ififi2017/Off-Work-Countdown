@@ -23,6 +23,7 @@ locale and validation rules apply.
 
 ## Architecture
 
+- Channel selection uses `-PdoneatChannel=cn`; the default stays Play. Shared UI/widgets remain in `src/main`, Play Billing/Review implementations and tests live in `src/play`/`src/testPlay`, and activation-code implementations/tests in `src/cn`/`src/testCn`. CN signing and public trust are independent; see [CN CI](../android/cn-release-ci.md).
 - Kotlin, Jetpack Compose, atomic JSON archive (D-13), java.time. No WebView, Capacitor, Flutter,
   React Native or runtime JavaScript. `:core:domain` is pure JVM: no
   `android.*`, Room, Compose or Billing, and no hidden `Instant.now()`.
@@ -188,3 +189,5 @@ rejects pre-release Compose/Material3 in the release classpath (D-12).
 
 Cover every module's tests before calling a suite complete; device-only
 behaviour (alarms, widgets, backup restore, purchases) needs device evidence.
+
+Channel changes must run the same Gradle checks for both Play and CN. CN Release requires the production public-key configuration (no signing secrets for tests); CI has a separate `Android CN tests` job and rejects Play Billing/Review dependencies. Run channels sequentially in a local checkout because they share build output paths.

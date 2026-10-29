@@ -1,0 +1,1 @@
+{"deployment_branch_policy":{"custom_branch_policies":true,"protected_branches":false},"id":25637430994,"name":"android-cn-release","protection_rules":[{"prevent_self_review":false,"reviewers":[{"id":33808161,"login":"ififi2017","type":"User"}],"type":"required_reviewers"},{"prevent_self_review":null,"reviewers":[],"type":"branch_policy"}]}

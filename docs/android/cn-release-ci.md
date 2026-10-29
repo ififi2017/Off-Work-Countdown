@@ -135,6 +135,19 @@ not the new widgets. Workflow dispatch, signing and release results must be
 recorded separately after they actually run. A configured secret name and a
 passing protection check do not prove a signed release build succeeded.
 
+CI was enabled through PR345, then PR346 fixed setup-android's obsolete default
+`tools` package by explicitly requesting `platform-tools`. The first attempt
+40800062473 failed before Gradle/signing. Run
+[40800770044](https://github.com/ififi2017/Off-Work-Countdown/actions/runs/40800770044)
+then passed end-to-end with the historical 3.2.1 CN source
+`6c87cb6fe377e65b1764e4793bf9a30f7ccd3138`, code 8, `sign=false`, `draft=false`.
+Downloaded artifacts passed the same independent identity/checksum/source gate.
+This is an unsigned smoke artifact, not a distributed 3.2.1 update or a 3.2.3
+release; no tag, Release, signature, hosting change or Play release was made.
+Signing credentials are configured but have not yet been exercised by a CI
+signing run. The first signing run still requires the owner's environment
+approval. New 3.2.3 source is reviewed separately in PR344.
+
 The existing production CN signer certificate SHA-256 is
 `2554fa47d4cb553bf22c1d8821769ca2c27381821c65fe68af835a9336bcd41b`.
 After signing, verify that exact signer with `apksigner`, retain the signed

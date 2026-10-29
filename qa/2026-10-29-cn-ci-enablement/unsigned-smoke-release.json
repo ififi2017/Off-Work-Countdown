@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "channel": "cn",
+  "applicationId": "com.rainif.doneat.cn",
+  "versionName": "3.2.1",
+  "versionCode": 8,
+  "sourceCommit": "6c87cb6fe377e65b1764e4793bf9a30f7ccd3138",
+  "sourceUrl": "https://github.com/ififi2017/Off-Work-Countdown/tree/6c87cb6fe377e65b1764e4793bf9a30f7ccd3138",
+  "repository": "ififi2017/Off-Work-Countdown",
+  "tag": "android-cn-v3.2.1-8",
+  "signingStatus": "unsigned-do-not-distribute",
+  "signingCertificateSha256": null,
+  "licenseAudience": "com.rainif.doneat.cn",
+  "licensePublicKeySpkiSha256": {
+    "cn-prod-2026-01": "b9f8951659ef9951c2e0a55911ff3699483bf6228eb98590626ba3f1c1125c4b"
+  },
+  "workflowCommit": "0d1d46c5954ae0fb468ee71e4ef89be442f69865",
+  "workflowRun": "https://github.com/ififi2017/Off-Work-Countdown/actions/runs/40800770044",
+  "artifacts": {
+    "DoneAt-Android-CN-3.2.1-8-mapping.txt": "8841ff45250dd5adfeb1cd0f24146a2cc2a7e916456480ac36fbc70c3b12c033",
+    "DoneAt-Android-CN-3.2.1-8-source.tar.gz": "07b969dbdc5344c8e08b57ed6a8652387c5840f82ab132b6e0a8ffec2dbf399a",
+    "DoneAt-Android-CN-3.2.1-8.unsigned.apk": "145a52f31a35a9dcf455c659b5b0124654b7eaf8bca9fd9f0aca42f634c15924"
+  }
+}

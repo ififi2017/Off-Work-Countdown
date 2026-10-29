@@ -4,7 +4,7 @@ package com.rainif.doneat.ui.release
 data class ReleaseNotesState(val loaded: Boolean = false, val seenRelease: String? = null, val writeFailed: Boolean = false)
 
 object ReleaseNotesPolicy {
-    const val CURRENT = "3.2.2"
+    const val CURRENT = "3.2.3"
 
     fun shouldPresent(loaded: Boolean, onboardingComplete: Boolean, seenRelease: String?): Boolean =
         loaded && onboardingComplete && seenRelease != CURRENT
@@ -19,5 +19,5 @@ object ReleaseNotesPolicy {
 
     fun mayInviteUpdateOffer(authorized: Boolean, free: Boolean, verified: Boolean, activeSubscription: Boolean,
                             release: String = CURRENT): Boolean =
-        release == "3.2.1" && !authorized && free && verified && !activeSubscription
+        release == CURRENT && !authorized && free && verified && !activeSubscription
 }

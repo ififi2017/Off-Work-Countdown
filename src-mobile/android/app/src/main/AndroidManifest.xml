@@ -107,10 +107,62 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_info_large" />
         </receiver>
 
+        <!-- Salary-free widget suite and countdown styles; legacy receivers above stay stable. -->
+        <receiver android:name=".widget.DoneAtWidgetBigReceiver" android:exported="true" android:label="@string/widgetStyleBigName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_big" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtWidgetRingReceiver" android:exported="true" android:label="@string/widgetStyleRingName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_ring" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtWidgetTimelineReceiver" android:exported="true" android:label="@string/widgetStyleTimelineName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_timeline" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtWidgetDetailReceiver" android:exported="true" android:label="@string/widgetStyleDetailName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_detail" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtWeekWidgetReceiver" android:exported="true" android:label="@string/widgetSuiteWeekName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_week" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtRosterWidgetReceiver" android:exported="true" android:label="@string/widgetSuiteRosterName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_roster" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtYearWidgetReceiver" android:exported="true" android:label="@string/widgetSuiteYearName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_year" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtWeekendWidgetReceiver" android:exported="true" android:label="@string/widgetSuiteWeekendName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_weekend" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtHolidayWidgetReceiver" android:exported="true" android:label="@string/widgetSuiteHolidayName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_holiday" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtSummaryWidgetReceiver" android:exported="true" android:label="@string/widgetSuiteSummaryName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_summary" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtLifeWidgetReceiver" android:exported="true" android:label="@string/widgetSuiteLifeName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_life" />
+        </receiver>
+        <receiver android:name=".widget.DoneAtFocusWidgetReceiver" android:exported="true" android:label="@string/widgetSuiteFocusName">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/doneat_widget_focus" />
+        </receiver>
+
         <!-- Not exported: only the widget's own refresh alarm reaches it. -->
         <receiver
             android:name=".widget.WidgetRefreshReceiver"
-            android:exported="false" />
+            android:exported="false">
+            <intent-filter><action android:name="android.intent.action.LOCALE_CHANGED" /></intent-filter>
+        </receiver>
 
         <!-- Not exported: only the countdown notification's own alarm reaches it. -->
         <receiver

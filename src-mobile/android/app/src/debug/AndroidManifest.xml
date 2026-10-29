@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
-    <application>
+    <application android:label="DoneAt Widget QA" tools:replace="android:label">
         <!-- Debug only (T04): the design-token gallery. Exported so `adb shell am start` can open it; absent from release. -->
         <activity
             android:name=".gallery.DesignGalleryActivity"
@@ -12,6 +12,9 @@
             android:name=".gallery.ParityGalleryActivity"
             android:exported="true"
             android:label="DoneAt parity gallery" />
+        <activity android:name=".gallery.WidgetRenderGalleryActivity"
+            android:exported="true" android:label="Isolated widget rendering QA" />
+        <activity android:name=".gallery.WidgetHostGalleryActivity" android:exported="true" android:label="DoneAt widget QA" />
     </application>
 
 </manifest>

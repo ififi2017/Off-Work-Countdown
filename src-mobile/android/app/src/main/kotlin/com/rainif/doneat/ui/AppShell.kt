@@ -84,6 +84,7 @@ import java.time.Instant
  */
 @Composable
 fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
+    com.rainif.doneat.updates.AutomaticUpdateReminder()
     val reportStageChanged by rememberUpdatedState(onReportStageChanged)
     DisposableEffect(Unit) { onDispose { reportStageChanged(false) } }
     val device by graph.settings.device.collectAsStateWithLifecycle()
@@ -137,8 +138,11 @@ fun AppShell(graph: AppGraph, onReportStageChanged: (Boolean) -> Unit = {}) {
     val requestedTab by graph.requestedTab.collectAsStateWithLifecycle()
     LaunchedEffect(requestedTab) {
         requestedTab?.let { name ->
-            val tab = tabFromStoredName(name)
-            stacks.getValue(tab).let { s -> while (s.size > 1) s.removeAt(s.lastIndex) }
+            val tab = if (name == "plus") AppTab.SETTINGS else tabFromStoredName(name)
+            stacks.getValue(tab).let { s ->
+                while (s.size > 1) s.removeAt(s.lastIndex)
+                if (name == "plus") s.add(Route.Plus)
+            }
             select(tab)
             graph.requestedTab.value = null
         }
@@ -435,6 +439,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph,
             com.rainif.doneat.review.ReviewDebugSection()
         }
         Route.Acknowledgements -> AcknowledgementsScreen(back)
+        Route.WidgetGallery -> com.rainif.doneat.widget.WidgetGalleryScreen(graph, back, open)
         is Route.Leave -> com.rainif.doneat.ui.leave.LeaveScreen(graph, key.fromRecords, open, back)
         is Route.LeaveBalanceEdit -> com.rainif.doneat.ui.leave.LeaveBalanceEditScreen(graph, key.balanceID, key.guided, back) {
             // A first balance set up from Records opens the time off page in the editor's place.

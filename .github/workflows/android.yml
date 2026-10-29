@@ -11,6 +11,7 @@ on:
       - 'scripts/generate-android-strings*'
       - 'lib/**'
       - 'src-mobile/ios/App/App/Native/Models/**'
+      - 'src-mobile/ios/App/App/Native/Widgets/**'
       - 'scripts/generate-android-*-fixtures*'
       - 'scripts/android-*-fixtures/**'
       - 'scripts/check-android-record-roundtrip.mjs'
@@ -36,7 +37,7 @@ jobs:
           fi
           # 与上面 push 的 paths 保持一致。
           if git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD | grep -qE \
-            '^(src-mobile/android/|src-mobile/ios/Shared/|docs/android/synthetic-archives/|src-mobile/ios/App/App/Localizable\.xcstrings$|scripts/generate-android-|lib/|src-mobile/ios/App/App/Native/Models/|scripts/android-.*-fixtures/|scripts/check-android-record-roundtrip\.mjs$|\.github/workflows/android\.yml$)'; then
+            '^(src-mobile/android/|src-mobile/ios/Shared/|docs/android/synthetic-archives/|src-mobile/ios/App/App/Localizable\.xcstrings$|scripts/generate-android-|lib/|src-mobile/ios/App/App/Native/(Models|Widgets)/|scripts/android-.*-fixtures/|scripts/check-android-record-roundtrip\.mjs$|\.github/workflows/android\.yml$)'; then
             echo "android=true" >> "$GITHUB_OUTPUT"
           else
             echo "android=false" >> "$GITHUB_OUTPUT"
@@ -65,6 +66,9 @@ jobs:
       - name: Generated strings are current
         working-directory: .
         run: node scripts/generate-android-strings.mjs --check
+      - name: Widget scalar oracle sources are current
+        working-directory: .
+        run: node scripts/generate-android-widget-suite-fixtures.mjs --check-sources
       - name: Unit tests, lint and builds
         run: ./gradlew :core:domain:test :core:data:test :core:designsystem:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease --console=plain
       - name: Reject pre-release Compose/Material3 in release
@@ -72,5 +76,42 @@ jobs:
           ./gradlew :app:dependencies --configuration releaseRuntimeClasspath -q > deps.txt
           if grep -E 'androidx\.compose[^ ]*:[0-9.]+-(alpha|beta|rc)' deps.txt; then
             echo "D-12: release must use stable Compose/Material3" >&2
+            exit 1
+          fi
+
+  cn:
+    name: Android CN tests
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      # Public verification material only; PR builds never receive signing keys.
+      ORG_GRADLE_PROJECT_doneatCnLicensePublicKeys: ${{ vars.DONEAT_CN_LICENSE_PUBLIC_KEYS }}
+      ORG_GRADLE_PROJECT_doneatCnLicenseAudience: com.rainif.doneat.cn
+    defaults:
+      run:
+        working-directory: src-mobile/android
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: CN unit tests, lint and unsigned builds
+        run: >-
+          ./gradlew -PdoneatChannel=cn :core:domain:test :core:data:test
+          :core:designsystem:testDebugUnitTest :app:testDebugUnitTest
+          :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease
+          --max-workers=1 --console=plain
+      - name: Reject Play dependencies and pre-release Compose in CN
+        run: |
+          ./gradlew -PdoneatChannel=cn :app:dependencies --configuration releaseRuntimeClasspath -q > deps.txt
+          if grep -E 'com\.android\.billingclient:|com\.google\.android\.play:review|androidx\.compose[^ ]*:[0-9.]+-(alpha|beta|rc)' deps.txt; then
+            echo "CN release must exclude Play Billing/Review and use stable Compose/Material3" >&2
             exit 1
           fi

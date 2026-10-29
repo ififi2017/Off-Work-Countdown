@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,14 +24,18 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
@@ -50,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import com.rainif.doneat.R
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.plus.PlusDemoKind
@@ -135,23 +139,27 @@ internal fun JourneyScaffold(title: String, subtitle: String?, onBack: (() -> Un
                              onFinish: () -> Unit, exploreLabel: String, onExplore: () -> Unit,
                              header: (@Composable () -> Unit)? = null,
                              content: @Composable ColumnScope.() -> Unit) {
+    var clockViewport by remember { mutableStateOf<Rect?>(null) }
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
             if (onBack != null) IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.onboardingBack))
             }
         }
-        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
-            .padding(horizontal = DoneAtSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally,
+        Column(Modifier.weight(1f).fillMaxWidth()
+            .onGloballyPositioned { clockViewport = it.boundsInRoot() }
+            .verticalScroll(rememberScrollState()).padding(horizontal = DoneAtSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
-            header?.invoke()
-            Text(title, Modifier.widthIn(max = 560.dp).semantics { heading() },
-                style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            if (subtitle != null) Text(subtitle, Modifier.widthIn(max = 560.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
-            Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l),
-                horizontalAlignment = Alignment.CenterHorizontally, content = content)
-            Spacer(Modifier.height(DoneAtSpacing.m))
+            CompositionLocalProvider(LocalJourneyClockViewport provides clockViewport) {
+                header?.invoke()
+                Text(title, Modifier.widthIn(max = 560.dp).semantics { heading() },
+                    style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                if (subtitle != null) Text(subtitle, Modifier.widthIn(max = 560.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l),
+                    horizontalAlignment = Alignment.CenterHorizontally, content = content)
+                Spacer(Modifier.height(DoneAtSpacing.m))
+            }
         }
         Column(Modifier.widthIn(max = 560.dp).fillMaxWidth().align(Alignment.CenterHorizontally)
             .padding(horizontal = DoneAtSpacing.xl, vertical = DoneAtSpacing.s), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -172,7 +180,7 @@ private fun projectionText(projection: SetupProjection?): TimerText {
 @Composable
 internal fun ReadyJourneyPage(p: SyncedPreferences, projection: SetupProjection?, now: Double,
                              onBack: (() -> Unit)?, finishing: Boolean, onFinish: () -> Unit,
-                             onExplore: () -> Unit, onPrivacy: () -> Unit, anchor: (Rect) -> Unit) {
+                             onExplore: () -> Unit, onPrivacy: () -> Unit, anchor: (JourneyClockAnchor) -> Unit) {
     val text = projectionText(projection)
     val resources = LocalResources.current
     val locale = resources.configuration.locales[0]
@@ -197,7 +205,7 @@ internal fun ReadyJourneyPage(p: SyncedPreferences, projection: SetupProjection?
                     HorizontalDivider()
                     Text(stringResource(if (now < shift.startAtMs) R.string.nextShiftLabelShort else R.string.timeLeftCaption),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    JourneyClockSlot(anchor)
+                    JourneyClockSlot(JourneyClockHost.READY, anchor)
                 }
             }
             Text(stringResource(R.string.comingUp), Modifier.fillMaxWidth(), style = MaterialTheme.typography.labelMedium,
@@ -233,34 +241,61 @@ internal fun ReadyJourneyPage(p: SyncedPreferences, projection: SetupProjection?
     }
 }
 
+private val LocalJourneyClockViewport = compositionLocalOf<Rect?> { null }
+
 @Composable
-internal fun JourneyClockSlot(anchor: (Rect) -> Unit) {
-    Box(Modifier.fillMaxWidth().height(58.dp).clearAndSetSemantics {}.onGloballyPositioned { anchor(it.boundsInRoot()) })
+internal fun JourneyClockSlot(host: JourneyClockHost, anchor: (JourneyClockAnchor) -> Unit) {
+    val viewport = LocalJourneyClockViewport.current
+    var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    fun report(position: LayoutCoordinates?) {
+        if (position?.isAttached == true && viewport != null) {
+            // boundsInRoot clips the slot at the scroll viewport. Its clipped
+            // width/centre must never become the countdown's layout geometry.
+            anchor(JourneyClockAnchor(host, Rect(position.positionInRoot(), position.size.toSize()), viewport))
+        }
+    }
+    SideEffect { report(coordinates) }
+    Box(Modifier.fillMaxWidth().height(58.dp).clearAndSetSemantics {}.onGloballyPositioned {
+        coordinates = it
+        report(it)
+    })
 }
+
+private class JourneyClockFrame { var bounds: Rect? = null }
 
 /** A single countdown stays alive and moves between Ready and the Android system surfaces. */
 @Composable
-internal fun JourneyClockOverlay(projection: SetupProjection, now: Double, anchor: Rect?, root: Offset,
-                                 opacity: Float, entranceX: Float, continuity: Boolean, previewEndAtMs: Double?) {
+internal fun JourneyClockOverlay(projection: SetupProjection, now: Double, anchor: JourneyClockAnchor?, root: Offset,
+                                 opacity: Float, entranceX: Float, previewEndAtMs: Double?) {
     anchor ?: return
     val density = LocalDensity.current
     val reduced = LocalDoneAtMotion.current.reduced || onboardingTouchExplorationEnabled()
-    // Initial entrance follows the incoming page's measured slot and shared
-    // opacity. Ready <-> Glance keeps the existing persistent-clock geometry
-    // interpolation, and reduced motion never moves it.
-    val spec = DoneAtOnboardingTokens.continuity<Float>(reduced || !continuity)
-    val x by animateFloatAsState(anchor.left - root.x, spec, label = "journeyClockX")
-    val y by animateFloatAsState(anchor.top - root.y, spec, label = "journeyClockY")
-    val width by animateFloatAsState(anchor.width, spec, label = "journeyClockWidth")
+    val frame = remember { JourneyClockFrame() }
+    // Only changing the host starts a morph. The destination remains live, so
+    // dragging/flinging the page moves the clock by the exact same delta even
+    // while a Ready/widget/notification hand-off is still animating.
+    val morph = remember(anchor.host) { JourneyClockMorph(frame.bounds, anchor.bounds) }
+    val progress = remember(anchor.host, reduced) { Animatable(if (reduced || frame.bounds == null) 1f else 0f) }
+    LaunchedEffect(progress) { progress.animateTo(1f, DoneAtOnboardingTokens.continuity(reduced)) }
+    val bounds = morph.bounds(anchor.bounds, progress.value)
+    SideEffect { frame.bounds = bounds }
     val text = projectionText(projection)
     // NotificationCompat's WORK chronometer uses the snapshot's absolute end;
     // the widget keeps SetupProjection's start/work-remaining countdown rule.
     val ms = previewEndAtMs?.let { (it - now).coerceAtLeast(0.0) } ?: projection.remainingMs(now)
-    val size by animateFloatAsState((anchor.width / density.density / density.fontScale / 6.1f).coerceIn(20f, 40f), spec, label = "journeyClockSize")
-    Box(Modifier.offset { IntOffset(x.roundToInt(), y.roundToInt()) }.width(with(density) { width.toDp() })
-        .height(58.dp).graphicsLayer { alpha = opacity; translationX = entranceX }, contentAlignment = Alignment.Center) {
-        CompositionLocalProvider(LocalDoneAtMotion provides remember(reduced) { DoneAtMotion(reduced) }) {
-            DoneAtCountdown(text.duration(ms), text.duration(ms), style = MaterialTheme.typography.headlineLarge.copy(fontSize = size.sp, fontWeight = FontWeight.Bold))
+    val size = (bounds.width / density.density / density.fontScale / 6.1f).coerceIn(20f, 40f)
+    val viewport = anchor.viewport
+    // The shared overlay lives outside the scroll container; restore that
+    // container's clipping so digits cannot paint over the pinned controls.
+    Box(Modifier.absoluteOffset { IntOffset((viewport.left - root.x).roundToInt(), (viewport.top - root.y).roundToInt()) }
+        .size(with(density) { viewport.width.toDp() }, with(density) { viewport.height.toDp() }).clipToBounds()) {
+        Box(Modifier.align(AbsoluteAlignment.TopLeft)
+            .absoluteOffset { IntOffset((bounds.left - viewport.left).roundToInt(), (bounds.top - viewport.top).roundToInt()) }
+            .width(with(density) { bounds.width.coerceAtLeast(0f).toDp() }).height(58.dp)
+            .graphicsLayer { alpha = opacity; translationX = entranceX }, contentAlignment = Alignment.Center) {
+            CompositionLocalProvider(LocalDoneAtMotion provides remember(reduced) { DoneAtMotion(reduced) }) {
+                DoneAtCountdown(text.duration(ms), text.duration(ms), style = MaterialTheme.typography.headlineLarge.copy(fontSize = size.sp, fontWeight = FontWeight.Bold))
+            }
         }
     }
 }
@@ -268,7 +303,7 @@ internal fun JourneyClockOverlay(projection: SetupProjection, now: Double, ancho
 @Composable
 internal fun GlanceJourneyPage(projection: SetupProjection?, now: Double, onBack: (() -> Unit)?, finishing: Boolean,
                               onFinish: () -> Unit, onExplore: () -> Unit, onClockTargetChanged: (Double?) -> Unit,
-                              anchor: (Rect) -> Unit) {
+                              anchor: (JourneyClockAnchor) -> Unit) {
     var notification by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(notification, projection?.snapshot?.endAtMs) {
         onClockTargetChanged(if (notification) projection?.snapshot?.endAtMs else null)
@@ -284,64 +319,76 @@ internal fun GlanceJourneyPage(projection: SetupProjection?, now: Double, onBack
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
             listOf(R.string.onboardingWidgetSurface, R.string.onboardingOngoingSurface).forEachIndexed { index, key ->
                 SegmentedButton(notification == (index == 1), { notification = index == 1 }, SegmentedButtonDefaults.itemShape(index, 2)) {
-                    Text(stringResource(key), textAlign = TextAlign.Center)
+                    Text(stringResource(key), style = MaterialTheme.typography.labelMedium, maxLines = 2, textAlign = TextAlign.Center)
                 }
             }
         }
     }
 }
 
-/** Small widget layout: Header, phase Badge, Countdown, Progress and Boundary. */
+/** Home-screen composition from the supplied design, driven by the unsaved setup projection. */
 @Composable
-private fun GlanceWidgetScene(projection: SetupProjection?, now: Double, anchor: (Rect) -> Unit) {
+private fun GlanceWidgetScene(projection: SetupProjection?, now: Double, anchor: (JourneyClockAnchor) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val text = projectionText(projection)
     val locale = LocalResources.current.configuration.locales[0]
-    val zone = projection?.input?.zone ?: ZoneId.systemDefault()
     val before = projection != null && now < projection.snapshot.startAtMs
     val progress = if (projection == null || before) 0f else (projection.snapshot.progress / 100).toFloat().coerceIn(0f, 1f)
-    Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge, color = scheme.secondaryContainer) {
-        Column(Modifier.background(Brush.linearGradient(listOf(scheme.secondaryContainer, scheme.primaryContainer)))
-            .padding(DoneAtSpacing.l), horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
-            Text(Instant.ofEpochMilli(now.toLong()).atZone(zone).format(DateTimeFormatter.ofPattern(
-                DateFormat.getBestDateTimePattern(locale, "EEEEMMMd"), locale)),
-                style = MaterialTheme.typography.bodyMedium, color = scheme.onSecondaryContainer,
-                textAlign = TextAlign.Center)
-            Surface(Modifier.widthIn(max = 248.dp).fillMaxWidth(), shape = MaterialTheme.shapes.large,
-                color = scheme.surfaceContainerLowest) {
-                Column(Modifier.padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-                        DoneAtBrandMark(Modifier.size(20.dp))
-                        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+    val largeText = LocalDensity.current.fontScale >= 1.5f
+    Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge, color = scheme.surfaceContainerHighest) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (projection != null) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Surface(Modifier.weight(1f).heightIn(min = 140.dp), shape = MaterialTheme.shapes.large, color = scheme.surfaceContainerLowest) {
+                    Box(Modifier.padding(12.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(progress = { progress }, Modifier.size(if (largeText) 96.dp else 112.dp),
+                            strokeWidth = 9.dp, trackColor = scheme.primary.copy(alpha = .16f), gapSize = 3.dp)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text.duration(projection.remainingMs(now)), style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold, maxLines = 1)
+                            Text(java.text.NumberFormat.getPercentInstance(locale).format(progress),
+                                style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                        }
+                    }
+                }
+                Surface(Modifier.weight(1f).heightIn(min = 140.dp), shape = MaterialTheme.shapes.large, color = scheme.surfaceContainerLowest) {
+                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(stringResource(R.string.widgetSuiteRosterName), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
+                        Text(stringResource(R.string.startTime), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                        Text(text.time(projection.snapshot.startAtMs), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.endTime), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                        Text(text.time(projection.snapshot.endAtMs), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = scheme.primary)
+                    }
+                }
+            }
+            Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, color = scheme.surfaceContainerLowest) {
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(if (before) R.string.nextShiftLabelShort else R.string.widgetWorking),
+                            Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
+                        if (projection != null) Text(text.time(if (before) projection.snapshot.startAtMs else projection.snapshot.endAtMs),
+                            style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
                     }
                     if (projection != null) {
-                        Surface(shape = MaterialTheme.shapes.large, color = scheme.primaryContainer) {
-                            Row(Modifier.padding(horizontal = DoneAtSpacing.s, vertical = DoneAtSpacing.xs),
-                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                                Box(Modifier.size(6.dp).background(scheme.primary, androidx.compose.foundation.shape.CircleShape))
-                                Text(stringResource(if (before) R.string.nextShiftLabelShort else R.string.widgetWorking), style = MaterialTheme.typography.labelSmall)
-                            }
-                        }
-                        JourneyClockSlot(anchor)
-                        Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(7.dp),
-                                drawStopIndicator = {})
-                            Row(Modifier.fillMaxWidth()) {
-                                Text(java.text.NumberFormat.getPercentInstance(locale).format(progress), style = MaterialTheme.typography.labelSmall, color = scheme.primary)
-                                Spacer(Modifier.weight(1f))
-                                Text(text.time(if (before) projection.snapshot.startAtMs else projection.snapshot.endAtMs), style = MaterialTheme.typography.labelSmall)
-                            }
-                        }
+                        JourneyClockSlot(JourneyClockHost.WIDGET, anchor)
+                        LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(7.dp), drawStopIndicator = {})
                     } else Text(stringResource(R.string.scheduleManualTimer), style = MaterialTheme.typography.titleMedium)
                 }
             }
-            // Launcher context is decoration, not fictitious interactive apps.
-            Row(Modifier.clearAndSetSemantics {}, horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
-                listOf(Icons.Outlined.CalendarMonth, Icons.Outlined.Email, Icons.Outlined.Settings).forEach { icon ->
-                    Surface(Modifier.size(40.dp), shape = androidx.compose.foundation.shape.CircleShape,
-                        color = scheme.surface.copy(alpha = .6f)) {
-                        Box(contentAlignment = Alignment.Center) { Icon(icon, null, Modifier.size(20.dp), tint = scheme.onSurfaceVariant) }
+            if (projection != null) Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, color = scheme.surfaceContainerLowest) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(stringResource(R.string.workdaysLabel), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        val first = java.time.temporal.WeekFields.of(locale).firstDayOfWeek
+                        repeat(7) { offset ->
+                            val day = first.plus(offset.toLong())
+                            val work = day.value % 7 in projection.input.workdays
+                            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                                Text(day.getDisplayName(TextStyle.NARROW_STANDALONE, locale), style = MaterialTheme.typography.labelSmall)
+                                Box(Modifier.fillMaxWidth().height(24.dp).background(
+                                    if (work) scheme.primary.copy(alpha = .24f) else scheme.surfaceContainerHigh,
+                                    androidx.compose.foundation.shape.RoundedCornerShape(6.dp)))
+                            }
+                        }
                     }
                 }
             }
@@ -351,7 +398,7 @@ private fun GlanceWidgetScene(projection: SetupProjection?, now: Double, anchor:
 
 /** Android notification shade, matching OngoingCoordinator's WORK title/icon/chronometer. */
 @Composable
-private fun GlanceNotificationScene(projection: SetupProjection?, now: Double, anchor: (Rect) -> Unit) {
+private fun GlanceNotificationScene(projection: SetupProjection?, now: Double, anchor: (JourneyClockAnchor) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val text = projectionText(projection)
     Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge, color = scheme.surfaceContainerHighest) {
@@ -372,7 +419,7 @@ private fun GlanceNotificationScene(projection: SetupProjection?, now: Double, a
                     if (projection != null) {
                         Text("${stringResource(R.string.endTime)} ${text.time(projection.snapshot.endAtMs)}",
                             style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                        Box(Modifier.widthIn(max = 180.dp)) { JourneyClockSlot(anchor) }
+                        Box(Modifier.widthIn(max = 180.dp)) { JourneyClockSlot(JourneyClockHost.NOTIFICATION, anchor) }
                     } else Text(stringResource(R.string.scheduleManualTimer), style = MaterialTheme.typography.titleMedium)
                 }
             }

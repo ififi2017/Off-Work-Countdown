@@ -18,6 +18,51 @@ class LifetimeOfferTest {
         assertFalse(offer.isActive(now + 1_000_000))
     }
 
+    @Test fun updateGiftLastsAWeekFromOpeningAndCannotRestartAfterExpiryOrRollback() {
+        val wrapped = LifetimeOffer.updateGift(null, now)
+        assertEquals(LifetimeOfferSource.UPDATE_323, wrapped.source)
+        assertNull(wrapped.expiresAtMs)
+        val opened = wrapped.claim(now + 1_000)
+        val deadline = now + 1_000 + LifetimeOffer.UPDATE_DURATION_MS
+        assertEquals(deadline, opened.expiresAtMs)
+        assertTrue(opened.isActive(deadline - 1))
+        assertTrue(LifetimeOfferPolicy.canPurchase(free, opened, discount, now + 2 * LifetimeOffer.DURATION_MS))
+        assertFalse(opened.isActive(deadline))
+        val expired = opened.observe(deadline)
+        assertEquals(expired, LifetimeOffer.updateGift(expired, deadline + 1))
+        assertEquals(expired, LifetimeOffer.updateGift(expired, now - 1))
+        assertFalse(expired.claim(now).isActive(now))
+        assertEquals(deadline, expired.expiresAtMs)
+        assertFalse(LifetimeOfferPolicy.canPurchase(free, expired, discount, now))
+    }
+
+    @Test fun updateGiftReplacesUnopenedOrExpiredLegacyOffersButKeepsActiveDeadlines() {
+        for (source in listOf(LifetimeOfferSource.ONBOARDING, LifetimeOfferSource.UPDATE_321)) {
+            val old = LifetimeOffer(source, now)
+            val unopened = LifetimeOffer.updateGift(old, now + 100)
+            assertEquals(LifetimeOfferSource.UPDATE_323, unopened.source)
+            assertNull(unopened.claimedAtMs)
+            val running = old.claim(now)
+            assertEquals(running, LifetimeOffer.updateGift(running, now + 100))
+            assertEquals(now + LifetimeOffer.DURATION_MS, running.expiresAtMs)
+            val ended = running.observe(now + LifetimeOffer.DURATION_MS)
+            val newGift = LifetimeOffer.updateGift(ended, now - 100)
+            assertEquals(LifetimeOfferSource.UPDATE_323, newGift.source)
+            assertEquals(ended.latestObservedAtMs, newGift.latestObservedAtMs)
+            assertNull(newGift.claimedAtMs)
+        }
+    }
+
+    @Test fun storedTimestampValidationUsesSourceDurationAndRejectsOverflowOrInvalidOrdering() {
+        val lastValid = Long.MAX_VALUE - LifetimeOffer.UPDATE_DURATION_MS
+        assertTrue(LifetimeOffer(LifetimeOfferSource.UPDATE_323, lastValid, lastValid).hasValidTimestamps())
+        assertFalse(LifetimeOffer(LifetimeOfferSource.UPDATE_323, lastValid + 1, lastValid + 1).hasValidTimestamps())
+        assertTrue(LifetimeOffer(LifetimeOfferSource.UPDATE_321, lastValid + 1, lastValid + 1).hasValidTimestamps())
+        assertFalse(LifetimeOffer(LifetimeOfferSource.UPDATE_323, -1).hasValidTimestamps())
+        assertFalse(LifetimeOffer(LifetimeOfferSource.UPDATE_323, now, -1).hasValidTimestamps())
+        assertFalse(LifetimeOffer(LifetimeOfferSource.UPDATE_323, now, now + 1).hasValidTimestamps())
+    }
+
     @Test fun pricedRevealStartsExactly24HoursAndNeverRestarts() {
         val first = LifetimeOffer(LifetimeOfferSource.ONBOARDING, now).claim(now)
         val reopened = first.claim(now + 120_000)

@@ -195,7 +195,7 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
     }
     var rootOrigin by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
     var rootWidth by remember { mutableStateOf(0f) }
-    var clockAnchor by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    var clockAnchor by remember { mutableStateOf<JourneyClockAnchor?>(null) }
     var clockPreviewEndAtMs by remember { mutableStateOf<Double?>(null) }
     val workName = stringResource(R.string.extendedDefaultWorkShift)
     val restName = stringResource(R.string.extendedDefaultRest)
@@ -272,8 +272,8 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
             ) { current ->
                 val back = if (current == SetupPage.WELCOME) null else { { go(SetupPage.entries[current.ordinal - 1]) } }
                 var contentOrigin by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
-                val anchor: (androidx.compose.ui.geometry.Rect) -> Unit = { measured ->
-                    if (page == current) clockAnchor = measured.translate(rootOrigin - contentOrigin)
+                val anchor: (JourneyClockAnchor) -> Unit = { measured ->
+                    if (page == current) clockAnchor = measured.translated(rootOrigin - contentOrigin)
                 }
                 // Normalize the slot into page-local geometry before the shared
                 // entrance offset is applied to the independent persistent clock.
@@ -322,7 +322,6 @@ fun SetupFlow(graph: AppGraph, offerContent: (@Composable (Boolean) -> Unit)? = 
                 JourneyClockOverlay(projection, now, clockAnchor, rootOrigin, clockOpacity,
                     entranceX = if (quietJourney) 0f else clockEntrance * (rootWidth.toInt() / 12) *
                         (if (forward) 1f else -1f) * direction * (if (page in listOf(SetupPage.READY, SetupPage.GLANCE)) 1f else -1f),
-                    continuity = pageTransition.currentState in listOf(SetupPage.READY, SetupPage.GLANCE) && page in listOf(SetupPage.READY, SetupPage.GLANCE),
                     previewEndAtMs = clockPreviewEndAtMs)
             }
         }

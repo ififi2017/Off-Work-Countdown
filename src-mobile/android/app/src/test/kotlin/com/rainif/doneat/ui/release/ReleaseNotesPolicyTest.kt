@@ -12,7 +12,7 @@ class ReleaseNotesPolicyTest {
     }
 
     @Test fun `existing and restored setup shows introduction until continue is saved`() {
-        for (seen in listOf(null, "3.1.8", "3.1.9", "3.2.0", "3.2.1")) {
+        for (seen in listOf(null, "3.1.8", "3.1.9", "3.2.0", "3.2.1", "3.2.2")) {
             assertTrue(ReleaseNotesPolicy.shouldPresent(true, true, seen))
             assertFalse(ReleaseNotesPolicy.marksSeenOnInitialLoad(true))
             val saved = ReleaseNotesPolicy.afterMarkSeen(ReleaseNotesState(true, seen), persisted = true)
@@ -44,8 +44,8 @@ class ReleaseNotesPolicyTest {
     }
 
     @Test fun `only verified free non subscribers are invited without claiming a gift`() {
-        assertTrue(ReleaseNotesPolicy.mayInviteUpdateOffer(false, true, true, false, release = "3.2.1"))
-        assertFalse(ReleaseNotesPolicy.mayInviteUpdateOffer(false, true, true, false))
+        assertTrue(ReleaseNotesPolicy.mayInviteUpdateOffer(false, true, true, false))
+        assertFalse(ReleaseNotesPolicy.mayInviteUpdateOffer(false, true, true, false, release = "3.2.1"))
         assertFalse(ReleaseNotesPolicy.mayInviteUpdateOffer(true, true, true, false))
         assertFalse(ReleaseNotesPolicy.mayInviteUpdateOffer(false, false, true, false))
         assertFalse(ReleaseNotesPolicy.mayInviteUpdateOffer(false, true, false, false))

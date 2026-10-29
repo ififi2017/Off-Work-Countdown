@@ -62,6 +62,7 @@ class OngoingCoordinator(
     fun start() {
         scope.launch {
             combine(sessions.session, records.state, settings.device, authorized, focus.queue) { _, _, _, _, _ -> Unit }
+                .combine(plus.state) { _, _ -> Unit }
                 .debounce(300)
                 .collectLatest { apply() }
         }
@@ -78,7 +79,8 @@ class OngoingCoordinator(
         val focusPlanned = device.focusOngoingEnabled && plus.isAuthorizedNow() && focus.queue.value.isNotEmpty()
         val work = if (device.ongoingEnabled && !focusPlanned) OngoingPlan.workWindow(session, now, device.ongoingLeadMinutes) else null
         val decision = OngoingPlan.choose(work, phase, now)
-        val reviewUntil = if (decision?.surface != OngoingSurface.WORK && !plus.state.value.authorized) plus.reviewAccess.verifiedExpiry(now.toLong()) else null
+        val reviewUntil = paidOngoingDeadline(decision?.surface, plus.state.value,
+            if (!plus.state.value.authorized) plus.reviewAccess.verifiedExpiry(now.toLong()) else null)
         if (decision == null || !ReminderNotifier.canPost(context)) {
             NotificationManagerCompat.from(context).cancel(TAG, ID)
             shown = null
@@ -165,6 +167,14 @@ class OngoingCoordinator(
             context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
     }
+}
+
+/** The OS timeout and next redraw both stop a paid CN surface at its current lease. */
+internal fun paidOngoingDeadline(surface: OngoingSurface?, store: com.rainif.doneat.plus.PlusStoreState,
+    reviewExpiryMs: Long?): Long? = when {
+    surface == null || surface == OngoingSurface.WORK -> null
+    com.rainif.doneat.BuildConfig.CN_CHANNEL -> store.verifiedAuthorizationUntilMs
+    else -> reviewExpiryMs
 }
 
 /** The next change in the countdown notification: a window opening, a phase or a shift ending. Not exported. */

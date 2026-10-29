@@ -147,6 +147,10 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
     val device by graph.settings.device.collectAsStateWithLifecycle()
     val records by graph.records.state.collectAsStateWithLifecycle()
     val authorized by graph.plus.authorized.collectAsStateWithLifecycle()
+    val offerState by graph.plus.state.collectAsStateWithLifecycle()
+    LaunchedEffect(authorized, offerState.status, offerState.currentEntitlementsVerified, offerState.hasActiveSubscription) {
+        graph.plus.inviteUpdateGift()
+    }
     // One tick per second, on the second, while the screen is started; resuming recomputes from the clock.
     val now by remember { timerTicks() }.collectAsStateWithLifecycle(System.currentTimeMillis().toDouble())
 

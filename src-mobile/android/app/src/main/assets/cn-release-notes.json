@@ -1,0 +1,26 @@
+[
+  {
+    "schemaVersion": 1,
+    "applicationId": "com.rainif.doneat.cn",
+    "channel": "cn",
+    "versionCode": 7,
+    "versionName": "3.2.1",
+    "minSdk": 26,
+    "releaseNotes": {
+      "zh-CN": "• 新增启动后的版本检查，有新版时提醒你；同一版本的提醒最多每七天出现一次。\n• 更新提示展示本次改进，关于页可离线查看更新日志。\n• 检查结果在原行显示，页面不再跳动。\n• 关于页统一工作室品牌样式，展示 APP 备案信息。",
+      "en": "• Check for updates on launch and receive a reminder when a new version is available, at most once per week for the same version.\n• Read release notes in the update prompt or offline in About.\n• Update status stays in its row without shifting the page.\n• About uses the studio branding and displays the app registration."
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "applicationId": "com.rainif.doneat.cn",
+    "channel": "cn",
+    "versionCode": 6,
+    "versionName": "3.2.1",
+    "minSdk": 26,
+    "releaseNotes": {
+      "zh-CN": "• 新增手动检查更新和官方下载入口。\n• 关于页新增工作室品牌与 APP 备案信息。",
+      "en": "• Added manual update checks and the official download link.\n• Added studio branding and app registration in About."
+    }
+  }
+]

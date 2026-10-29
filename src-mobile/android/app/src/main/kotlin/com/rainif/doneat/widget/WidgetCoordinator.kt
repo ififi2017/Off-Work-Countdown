@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.LocaleList
 import android.text.format.DateFormat
+import com.rainif.doneat.R
 import com.rainif.doneat.core.data.SessionStore
 import com.rainif.doneat.core.data.RecordStore
 import com.rainif.doneat.core.data.FocusStore
@@ -56,7 +57,8 @@ class WidgetCoordinator(
     @OptIn(FlowPreview::class)
     fun start() {
         scope.launch {
-            combine(sessions.session, records.state, authorized) { _, _, _ -> Unit }.debounce(500).collectLatest { refresh() }
+            combine(sessions.session, records.state, authorized,
+                (context.applicationContext as com.rainif.doneat.DoneAtApplication).graph.settings.device, focus.queue) { _, _, _, _, _ -> Unit }.debounce(500).collectLatest { refresh() }
         }
         scope.launch {
             try {
@@ -71,6 +73,7 @@ class WidgetCoordinator(
 
     /** Recomposes now: launch, foreground, and a clock or time-zone change. */
     suspend fun refresh() = mutex.withLock {
+        val suiteChanged = WidgetSuiteCoordinator.publish(context)
         val snapshot = withContext(Dispatchers.Default) { compose() }
         // Every snapshot starts "now": its first interval's figures and the one-year expiry move with the clock.
         // Only its boundaries, labels, the later intervals and the rows say whether anything changed.
@@ -81,7 +84,10 @@ class WidgetCoordinator(
                 if (i == 0) e.copy(dateMs = 0, countdownValueAtDateMs = 0, remainingEffectiveMsAtDateMs = 0, progressAtDate = 0.0) else e
             },
         ).encode()
-        if (content == published && file(context).exists()) return@withLock
+        if (content == published && file(context).exists()) {
+            if (suiteChanged) WidgetSignals.redraw(context)
+            return@withLock
+        }
         withContext(Dispatchers.IO) { write(context, snapshot.encode()) }
         published = content
         WidgetSignals.redraw(context)
@@ -111,7 +117,11 @@ class WidgetCoordinator(
                     milestonesEnabled = prefs.notificationMode == "milestones",
                 )
             },
-            words = { event -> timelineWords(event, res, text, session, now.toDouble(), currentSnapshot = currentSnapshot).let { (title, detail) -> title to detail.orEmpty() } },
+            words = { event ->
+                timelineWords(event, res, text, session, now.toDouble(), currentSnapshot = currentSnapshot).let { (title, detail) ->
+                    title to widgetTimelineDetail(event.kind, event.overtime, detail.orEmpty(), res.getString(R.string.overtime))
+                }
+            },
             focusEvents = if (plus.isAuthorizedNow()) focusTimeline.events(state, environment.shift(now.toDouble()), now.toDouble()) else emptyList(),
             futureFocus = { shift -> if (plus.isAuthorizedNow()) focusTimeline.plannedEvents(state, shift.segments, shift.startAtMs) else emptyList() },
         )

@@ -108,6 +108,9 @@ jobs:
       - name: Generated strings are current
         run: node scripts/generate-android-strings.mjs --check
 
+      - name: Widget scalar oracle sources are current
+        run: node scripts/generate-android-widget-suite-fixtures.mjs --check-sources
+
       # 除试用 offer 外全部必填（docs/android/play-console-preparation.md）。
       - name: Require Play billing configuration
         run: |

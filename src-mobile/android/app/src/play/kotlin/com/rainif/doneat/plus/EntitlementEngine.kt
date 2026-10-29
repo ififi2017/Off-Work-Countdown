@@ -12,7 +12,6 @@ internal data class VerifiedPurchase(
     val firstPurchasedSeenAtMs: Long,
 )
 
-enum class PlusStatus { UNCONFIGURED, LOADING, FREE, SUBSCRIBED, LIFETIME, PENDING, OFFLINE, ERROR }
 
 internal object EntitlementEngine {
     const val ACK_WINDOW_MS = 3L * 24 * 60 * 60 * 1000

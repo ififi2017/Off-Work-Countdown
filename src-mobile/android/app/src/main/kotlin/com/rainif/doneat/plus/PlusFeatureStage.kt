@@ -11,6 +11,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -29,6 +34,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalConfiguration
@@ -60,53 +66,149 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.text.NumberFormat
+import kotlinx.coroutines.launch
+import com.rainif.doneat.core.domain.widget.*
+import com.rainif.doneat.widget.DoneAtWidgetKind
+import com.rainif.doneat.widget.widgetCardBitmap
+import com.rainif.doneat.widget.widgetSuiteCard
 
 /** Shared illustrative modules; they never start a session or write a record. */
 enum class PlusDemoKind { RECORDS, REPORTS, FOCUS, REST }
 
-/** Purchase stays manual: three tabs share the onboarding demos without an autoplaying price page. */
+private enum class PlusFeaturePage(val caption: Int) {
+    REPORTS(R.string.onboardingPlusReportsTitle), RECORDS(R.string.onboardingPlusRecordsTitle),
+    LIFE(R.string.plusBenefitLife), REST(R.string.onboardingPlusRestTitle),
+    FOCUS(R.string.onboardingPlusFocusTitle), WIDGETS(R.string.plusWidgetsSlideTitle),
+}
+
+/** Manual paging only; the price page never auto-advances while someone decides. */
 @Composable
 fun PlusFeatureStage(modifier: Modifier = Modifier, initialSelection: PlusDemoKind = PlusDemoKind.REPORTS, showsFocus: Boolean = true) {
-    val choices = if (showsFocus) listOf(PlusDemoKind.REPORTS, PlusDemoKind.REST, PlusDemoKind.FOCUS)
-        else listOf(PlusDemoKind.REPORTS, PlusDemoKind.REST)
-    var selected by rememberSaveable { mutableStateOf(initialSelection.takeIf { it in choices } ?: PlusDemoKind.REPORTS) }
+    val choices = remember(showsFocus) { PlusFeaturePage.entries.filter { showsFocus || it != PlusFeaturePage.FOCUS } }
+    val initialPage = when (initialSelection) {
+        PlusDemoKind.REPORTS -> PlusFeaturePage.REPORTS
+        PlusDemoKind.RECORDS -> PlusFeaturePage.RECORDS
+        PlusDemoKind.FOCUS -> PlusFeaturePage.FOCUS
+        PlusDemoKind.REST -> PlusFeaturePage.REST
+    }
+    val pager = rememberPagerState(initialPage = choices.indexOf(initialPage).coerceAtLeast(0)) { choices.size }
+    val scope = rememberCoroutineScope()
     val still = showcaseStill()
-    val stacked = LocalDensity.current.fontScale >= 1.5f
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
-        @Composable
-        fun tab(kind: PlusDemoKind, modifier: Modifier) {
-            val fullLabel = stringResource(when (kind) {
-                PlusDemoKind.REST -> R.string.leavePlanAction
-                PlusDemoKind.FOCUS -> R.string.plusBenefitFocus
-                else -> R.string.reportEntryTitle
-            })
-            TextButton(onClick = { selected = kind }, modifier = modifier.semantics {
-                this.selected = selected == kind
-                contentDescription = fullLabel
-            }) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
-                    Icon(when (kind) { PlusDemoKind.REST -> Icons.Outlined.WbTwilight; PlusDemoKind.FOCUS -> Icons.Outlined.Timer; else -> Icons.Outlined.BarChart }, null, tint = if (selected == kind) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(stringResource(when (kind) { PlusDemoKind.REST -> R.string.leavePlanAction; PlusDemoKind.FOCUS -> R.string.plusBenefitFocus; else -> R.string.reportEntryShort }),
-                        modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
-                        color = if (selected == kind) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
+        HorizontalPager(pager, Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) { index ->
+            PlusCarouselScene(choices[index])
+        }
+        Text(stringResource(choices[pager.currentPage].caption), Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            choices.forEachIndexed { index, page ->
+                val label = stringResource(page.caption)
+                Box(Modifier.size(32.dp).semantics { selected = index == pager.currentPage; contentDescription = label }
+                    .clickable { scope.launch { if (still) pager.scrollToPage(index) else pager.animateScrollToPage(index) } },
+                    contentAlignment = Alignment.Center) {
+                    Box(Modifier.size(if (index == pager.currentPage) 18.dp else 7.dp, 7.dp)
+                        .background(if (index == pager.currentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, CircleShape))
                 }
             }
         }
-        if (stacked) Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-            choices.forEach { kind -> tab(kind, Modifier.fillMaxWidth().background(
-                if (selected == kind) MaterialTheme.colorScheme.primary.copy(alpha = .10f) else Color.Transparent, MaterialTheme.shapes.medium)) }
-        } else Row(horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
-            choices.forEach { kind -> tab(kind, Modifier.weight(1f).background(
-                if (selected == kind) MaterialTheme.colorScheme.primary.copy(alpha = .10f) else Color.Transparent, MaterialTheme.shapes.medium)) }
-        }
-        AnimatedContent(selected, transitionSpec = {
-            val duration = if (still) DoneAtMotion.REDUCED_MS else DoneAtMotion.SELECTION_MS
-            (fadeIn(tween(duration)) togetherWith fadeOut(tween(duration))).using(null)
-        }, label = "plusFeatureStage") { kind -> PlusFeatureDemo(kind, isActive = kind == selected) }
-        Text(stringResource(when (selected) { PlusDemoKind.REST -> R.string.onboardingPlusRestTitle; PlusDemoKind.FOCUS -> R.string.onboardingPlusFocusTitle; else -> R.string.onboardingPlusReportsTitle }),
-            Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
         Text(stringResource(R.string.plusIllustration), Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** Compact, explicitly illustrative scenes. No account, purchase, schedule or record is mutated. */
+@Composable
+private fun PlusCarouselScene(page: PlusFeaturePage) {
+    if (page == PlusFeaturePage.REPORTS) {
+        ReportsFeatureDemo(1f, Modifier.fillMaxWidth())
+        return
+    }
+    if (page == PlusFeaturePage.WIDGETS) {
+        PlusWidgetsScene()
+        return
+    }
+    val palette = DoneAtReportPalette
+    val text = demoText()
+    val locale = LocalConfiguration.current.locales[0]
+    Column(Modifier.fillMaxWidth().heightIn(min = DoneAtOfferTokens.reportMinimumHeight)
+        .background(Brush.verticalGradient(listOf(palette.plum, palette.deep)), MaterialTheme.shapes.large)
+        .padding(DoneAtSpacing.l), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.m)) {
+        Text(stringResource(when (page) {
+            PlusFeaturePage.RECORDS -> R.string.reportYearly
+            PlusFeaturePage.LIFE -> R.string.lifeProfileTitle
+            PlusFeaturePage.REST -> R.string.leaveTitle
+            else -> R.string.onboardingPlusFocusTask
+        }), style = MaterialTheme.typography.labelLarge, color = palette.cream.copy(alpha = .75f))
+        if (page == PlusFeaturePage.FOCUS) {
+            Box(Modifier.fillMaxWidth().height(170.dp), contentAlignment = Alignment.Center) {
+                Canvas(Modifier.size(156.dp).clearAndSetSemantics {}) {
+                    val width = DoneAtSpacing.s.toPx()
+                    drawCircle(palette.control, radius = size.minDimension / 2 - width, style = Stroke(width))
+                    drawArc(palette.orange, -90f, 235f, false, Offset(width, width),
+                        Size(size.width - 2 * width, size.height - 2 * width), style = Stroke(width, cap = androidx.compose.ui.graphics.StrokeCap.Round))
+                }
+                Text("18:24", style = MaterialTheme.typography.headlineLarge.copy(fontFeatureSettings = "tnum"),
+                    fontWeight = FontWeight.Bold, color = palette.cream)
+            }
+        } else {
+            Text(when (page) {
+                PlusFeaturePage.RECORDS -> text.hours(1_846.0)
+                PlusFeaturePage.LIFE -> NumberFormat.getPercentInstance(locale).format(.38)
+                else -> Strings.leaveDaysOff(LocalResources.current, 9)
+            }, style = MaterialTheme.typography.headlineLarge, color = palette.orange, fontWeight = FontWeight.Bold)
+            Canvas(Modifier.fillMaxWidth().height(132.dp).clearAndSetSemantics {}) {
+                val columns = when (page) { PlusFeaturePage.RECORDS -> 52; PlusFeaturePage.LIFE -> 24; else -> 7 }
+                val count = when (page) { PlusFeaturePage.RECORDS -> 364; PlusFeaturePage.LIFE -> 240; else -> 14 }
+                val rows = (count + columns - 1) / columns
+                val cellWidth = size.width / columns
+                val cellHeight = size.height / rows
+                for (i in 0 until count) {
+                    val color = when (page) {
+                        PlusFeaturePage.RECORDS -> if (i % 7 >= 5) palette.control else palette.orange.copy(alpha = .35f + (i % 3) * .3f)
+                        PlusFeaturePage.LIFE -> if (i < 91) palette.orange else if (i == 91) palette.cream else palette.control
+                        else -> if (i in 7..10) palette.orange else if (i >= 5) palette.hot.copy(alpha = .4f) else palette.control
+                    }
+                    val inset = if (columns > 24) 1f else DoneAtSpacing.xxs.toPx()
+                    val box = Size((cellWidth - inset * 2).coerceAtLeast(1f), (cellHeight - inset * 2).coerceAtLeast(1f))
+                    if (page == PlusFeaturePage.LIFE) drawCircle(color, minOf(box.width, box.height) / 2,
+                        Offset((i % columns + .5f) * cellWidth, (i / columns + .5f) * cellHeight))
+                    else drawRoundRect(color, Offset(i % columns * cellWidth + inset, i / columns * cellHeight + inset), box,
+                        CornerRadius(minOf(DoneAtSpacing.xs.toPx(), box.width / 3)))
+                }
+            }
+        }
+    }
+}
+
+/** Uses the launcher renderer with salary-free sample payloads, rather than unrelated marketing cards. */
+@Composable
+private fun PlusWidgetsScene() {
+    val context = LocalContext.current
+    val locale = LocalConfiguration.current.locales[0].toLanguageTag()
+    val now = remember { LocalDate.of(2026, 10, 19).atTime(15, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }
+    val access = WidgetAccess(true)
+    val snapshot = remember(locale, now) {
+        val midnight = LocalDate.of(2026, 10, 19).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val today = kotlin.math.floor(midnight / 86_400_000.0 + .5).toLong()
+        WidgetSuiteSnapshot(generatedAtMs = now, locale = locale, timeZoneIdentifier = ZoneId.systemDefault().id,
+            calendar = WidgetCalendarPayload(ZoneId.systemDefault().id, 1, WidgetCalendarScheduleKind.NONE),
+            summary = WidgetSummaryPayload(access, listOf(WidgetSummaryPeriod(WidgetSummaryPeriodKind.WEEK, "", null,
+                "2026-10-19", "2026-10-25", 31_600L * 3_600, 2 * 3_600_000L, 4, 5, 1, .8,
+                listOf(8.0, 8.0, 8.0, 7.6, 0.0).mapIndexed { i, hours -> WidgetSummaryBar((i + 1).toString(),
+                    (hours * 3_600_000).toLong(), if (i == 3) WidgetSummaryBarState.CURRENT else WidgetSummaryBarState.PAST) }))),
+            life = WidgetLifePayload(access, bornDay = today - 11_470, careerStartDay = today - 3_400, retirementDay = today + 10_400),
+            holiday = WidgetHolidayPayload(WidgetAccess.LOCKED), focus = WidgetFocusPayload(access))
+    }
+    Surface(Modifier.fillMaxWidth().heightIn(min = DoneAtOfferTokens.reportMinimumHeight),
+        shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerHighest) {
+        Row(Modifier.padding(DoneAtSpacing.m), horizontalArrangement = Arrangement.spacedBy(DoneAtSpacing.s), verticalAlignment = Alignment.CenterVertically) {
+            listOf(DoneAtWidgetKind.SUMMARY, DoneAtWidgetKind.LIFE).forEach { kind ->
+                val bitmap = remember(context, snapshot, kind) {
+                    widgetCardBitmap(context, widgetSuiteCard(context, kind, snapshot, now), androidx.compose.ui.unit.DpSize(170.dp, 170.dp))
+                }
+                Image(bitmap.asImageBitmap(), stringResource(kind.titleRes), Modifier.weight(1f).aspectRatio(1f))
+            }
+        }
     }
 }
 

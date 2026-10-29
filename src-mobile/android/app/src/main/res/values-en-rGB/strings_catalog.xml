@@ -5,6 +5,7 @@
     <string name="accentColorFooter">Colours adapt to light and dark themes to keep text clear.</string>
     <string name="accentCustom">Custom colour</string>
     <string name="accentHex">HEX colour</string>
+    <string name="androidWidgetGalleryIntro">Choose a widget to see your rota on your Home Screen.</string>
     <string name="appleWatchPrivacyNote">After syncing, your Watch follows your saved rota, even offline. Salary and work records stay on your iPhone.</string>
     <string name="debugScenarioManual">Manual rota · ask about today</string>
     <string name="extendedColor">Colour</string>

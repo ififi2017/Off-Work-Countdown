@@ -55,6 +55,7 @@ class FocusStore(
     private val newId: () -> String,
     private val defaultTaskTitle: () -> String = { "Focus" },
     private val io: CoroutineDispatcher = Dispatchers.IO,
+    private val currentAuthorized: () -> Boolean = { authorized.value },
 ) {
     private val mutex = Mutex()
     private val _nextAction = MutableStateFlow(FocusNextAction.NONE)
@@ -70,7 +71,7 @@ class FocusStore(
         private set
 
     fun environment(state: RecordState = records.state.value) =
-        SessionFocusEnvironment(session.value, state, authorized.value, _queue.value, newId)
+        SessionFocusEnvironment(session.value, state, currentAuthorized(), _queue.value, newId)
 
     fun engine(state: RecordState = records.state.value) = FocusEngine(environment(state))
     fun planning(state: RecordState = records.state.value) = FocusPlanning(environment(state), defaultTaskTitle())

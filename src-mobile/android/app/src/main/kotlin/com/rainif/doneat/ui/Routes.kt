@@ -31,6 +31,7 @@ sealed interface Route : NavKey {
     @Serializable data object ReviewAccess : Route
     @Serializable data object About : Route
     @Serializable data object Acknowledgements : Route
+    @Serializable data object WidgetGallery : Route
 
     /** Records: one day, and the list of every recorded day by year and month. */
     @Serializable data class RecordsDay(val dayKey: String) : Route
