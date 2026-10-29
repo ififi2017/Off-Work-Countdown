@@ -1,6 +1,30 @@
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { middleware } from "./middleware";
+import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
+import { config, middleware } from "./middleware";
+import { locales } from "./i18n-config";
+
+describe("locale middleware invocation boundary", () => {
+  const matches = (url: string) => unstable_doesMiddlewareMatch({ config, nextConfig: {}, url });
+
+  it.each(locales)("does not invoke middleware for %s pages", (locale) => {
+    for (const suffix of ["", "/", "/996", "/work-hours-calculator", "/missing"]) {
+      expect(matches(`https://off.rainif.com/${locale}${suffix}`)).toBe(false);
+    }
+  });
+
+  it.each(["/", "/?s=0900-1800", "/faq", "/996", "/xx/faq", "/english", "/en-US"])(
+    "still negotiates language for %s", (path) => {
+      expect(matches(`https://off.rainif.com${path}`)).toBe(true);
+    }
+  );
+
+  it.each(["/api/e", "/_next/static/a.js", "/_next/image?url=x", "/static/a", "/licenses/LICENSE", "/showcase/demo.MP4", "/fonts/GeistVF.woff", "/icon-maskable-512x512.png", "/manifest.json?lang=de", "/locales/en/translation.json"])(
+    "does not invoke middleware for resource %s", (path) => {
+      expect(matches(`https://off.rainif.com${path}`)).toBe(false);
+    }
+  );
+});
 
 describe("locale redirect", () => {
   it("sends the root to the browser language, keeps the query and declares Vary", () => {
