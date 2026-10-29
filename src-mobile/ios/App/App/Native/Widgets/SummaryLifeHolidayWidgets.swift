@@ -820,7 +820,7 @@ struct HolidayWidgetView: View {
                                                 "days": WidgetSuiteFormat.count(HolidayMath.daysUntil(holiday.startMs, from: entry.date), locale: locale)]))
                     .font(.headline).lineLimit(1).minimumScaleFactor(0.7)
             } else {
-                Text(t("widgetSuiteHolidayRegionMissing")).font(.caption).lineLimit(2)
+                Text(t("widgetSuiteHolidayRegionMissing")).font(.caption).lineLimit(3).minimumScaleFactor(0.7)
             }
             if payload.access.isUnlocked(atMs: WidgetSuiteTime.ms(entry.date)),
                let remaining = payload.labels["remaining"], !remaining.isEmpty {

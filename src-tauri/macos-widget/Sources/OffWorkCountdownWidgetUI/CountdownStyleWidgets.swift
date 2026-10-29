@@ -668,33 +668,61 @@ public struct CountdownDetailView: View {
 
     private func upcomingList(limit: Int, compact: Bool) -> some View {
         let items = Array(upcoming.prefix(limit))
-        let locale = Locale(identifier: model.locale)
         return VStack(alignment: .leading, spacing: compact ? 7 : 9) {
             Text(WidgetCopy.text("comingUp", locale: model.locale))
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
-            ForEach(items) { item in
-                HStack(spacing: 7) {
-                    Image(systemName: Self.glyph(item))
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(CountdownStylePalette.accent)
-                        .frame(width: 14)
-                    Text(Self.when(item.dateMs + model.offset, now: model.entry.date, locale: locale))
-                        .font(.caption.weight(.semibold).monospacedDigit())
-                    Text(item.title)
-                        .font(.caption)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    if !compact, !item.detail.isEmpty {
-                        Spacer(minLength: 4)
-                        Text(item.detail).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-                    }
+            if compact {
+                // The medium column is narrow. "13:30 午休" fits on one row;
+                // "Fri 6:23 AM Clock-in" does not, and the time used to wrap
+                // to "Fri / 6:23 AM". When any row is too wide, every row
+                // puts its title under a one-line time instead.
+                ViewThatFits(in: .horizontal) {
+                    upcomingRows(items, compact: true, stacked: false)
+                    upcomingRows(items, compact: true, stacked: true)
                 }
+            } else {
+                upcomingRows(items, compact: false, stacked: false)
             }
             if items.isEmpty {
                 Text(WidgetCopy.text("widgetOpenToRefresh", locale: model.locale))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func upcomingRows(_ items: [WidgetUpcomingItem], compact: Bool, stacked: Bool) -> some View {
+        let locale = Locale(identifier: model.locale)
+        return VStack(alignment: .leading, spacing: compact ? 7 : 9) {
+            ForEach(items) { item in
+                let when = Text(Self.when(item.dateMs + model.offset, now: model.entry.date, locale: locale))
+                    .font(.caption.weight(.semibold).monospacedDigit())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                let title = Text(item.title)
+                    .font(.caption)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                HStack(spacing: 7) {
+                    Image(systemName: Self.glyph(item))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(CountdownStylePalette.accent)
+                        .frame(width: 14)
+                    if stacked {
+                        VStack(alignment: .leading, spacing: 0) {
+                            when
+                            title.foregroundStyle(.secondary)
+                        }
+                    } else {
+                        when.layoutPriority(1)
+                        title
+                    }
+                    if !compact, !item.detail.isEmpty {
+                        Spacer(minLength: 4)
+                        Text(item.detail).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                    }
+                }
             }
         }
     }

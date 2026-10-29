@@ -939,6 +939,7 @@ public struct OffWorkCountdownWidgetView: View {
                 Text("\(roundedProgress(progress))%")
                     .font(.caption2.weight(.bold).monospacedDigit())
                     .foregroundStyle(accentColor)
+                    .fixedSize()
                 Spacer(minLength: 4)
                 boundaryTime(snapshotEntry)
             }
@@ -1263,6 +1264,9 @@ public struct OffWorkCountdownWidgetView: View {
     @ViewBuilder
     private func boundaryTime(_ snapshotEntry: WidgetTimelineEntry) -> some View {
         if let nextBoundaryAtMs = snapshotEntry.nextBoundaryAtMs {
+            // English "1:39 PM" is far wider than "13:39"; beside the
+            // percentage on a small widget it was cut to "1:39…". Shrink
+            // it instead.
             HStack(spacing: 4) {
                 Image(systemName: "clock")
                     .font(.system(size: 9, weight: .semibold))
@@ -1271,6 +1275,8 @@ public struct OffWorkCountdownWidgetView: View {
                     style: .time
                 )
                 .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
             }
             .font(.caption2.weight(.medium))
             .foregroundStyle(.secondary)

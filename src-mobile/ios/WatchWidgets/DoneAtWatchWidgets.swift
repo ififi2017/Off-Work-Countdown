@@ -312,6 +312,21 @@ private struct DoneAtWatchWidgetView: View {
     static let circularClockHeight: CGFloat = 17
     /// Above this the circular and inline clocks show hours and minutes only.
     static let secondsThresholdMs: Int64 = 3_600_000
+    /// How far a minute entry's timestamp may miss its mark through
+    /// millisecond truncation and still be read as landing on it.
+    static let minuteMarkToleranceMs: Int64 = 5
+
+    /// Whole minutes left, rounded down, for an entry that stays on screen
+    /// until the next minute mark. The clock is read just after the entry's
+    /// date: an entry at exactly 1:15:00 left stays up until the 1:14:00
+    /// entry, so it reads "1:14" — the floor of everything it is on screen
+    /// for. Reading "1:15" there would run a minute ahead for that minute.
+    /// One that is a few milliseconds early (1:15:00.003) is the same mark.
+    /// An entry between marks (1:15:33) reads "1:15" until the 1:15:00
+    /// entry replaces it.
+    static func shownMinutes(_ remainingMs: Int64) -> Int64 {
+        max(0, remainingMs - 1 - minuteMarkToleranceMs) / 60_000
+    }
 
     /// The circular and inline clock, at most five characters: "1:15" or
     /// "12:34" above an hour (seconds dropped, minutes not rounded up, no
@@ -321,12 +336,10 @@ private struct DoneAtWatchWidgetView: View {
     /// countdown reaches one hour so the clock switches style there.
     private func circularCountdown(_ value: WatchDisplayContent) -> Text? {
         guard value.phase == .working || value.phase == .overtime, let end = timerEnd(value) else { return nil }
-        if let remaining = value.remainingMs, remaining > Self.secondsThresholdMs {
+        if let remaining = value.remainingMs, remaining > Self.secondsThresholdMs + Self.minuteMarkToleranceMs {
             guard entry.minuteClock else { return countdown(value) }
-            // Minute entries land on the minute; a few milliseconds of
-            // timestamp rounding short of it still count as that minute.
-            let minutes = (remaining + 5) / 60_000
-            return Text(Duration.seconds(minutes * 60), format: .time(pattern: .hourMinute(padHourToLength: 1)))
+            return Text(Duration.seconds(Self.shownMinutes(remaining) * 60),
+                        format: .time(pattern: .hourMinute(padHourToLength: 1)))
         }
         return Text(timerInterval: min(entry.date.addingTimeInterval(-3_600), end)...end, countsDown: true, showsHours: false)
     }
