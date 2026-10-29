@@ -50,13 +50,32 @@ private struct DoneAtWatchProvider: TimelineProvider {
             let package = await cache.currentPackage()
             // WidgetKit renders every entry up front. Only boundaries and 5%
             // progress steps get one; the countdown clocks run by themselves.
-            let entries = WatchDisplayProjection.timelineDates(for: package, from: now).map {
-                let nowMs = Int64($0.timeIntervalSince1970 * 1_000)
-                return DoneAtWatchEntry(date: $0, display: WatchDisplayProjection.project(package, nowMs: nowMs),
+            func entry(_ date: Date) -> DoneAtWatchEntry {
+                let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
+                return DoneAtWatchEntry(date: date, display: WatchDisplayProjection.project(package, nowMs: nowMs),
                                         segments: WatchCountdownSegments.segments(package, nowMs: nowMs).map { [$0.0, $0.1] })
+            }
+            let dates = WatchDisplayProjection.timelineDates(for: package, from: now)
+            var entries = dates.map(entry)
+            // The circular clock drops seconds above an hour, so it needs an
+            // entry where a countdown reaches the last hour before the next one.
+            let marks = entries.indices.compactMap { index -> Date? in
+                guard let mark = Self.lastHourMark(entries[index]) else { return nil }
+                let next = entries.indices.contains(index + 1) ? entries[index + 1].date : .distantFuture
+                return mark < next ? mark : nil
+            }
+            if !marks.isEmpty {
+                entries = Array(Set(dates + marks)).sorted().map(entry)
             }
             completion(.init(entries: entries, policy: .after(now.addingTimeInterval(3_600))))
         }
+    }
+
+    /// When a running countdown in this entry falls to one hour.
+    static func lastHourMark(_ entry: DoneAtWatchEntry) -> Date? {
+        guard case .content(let value) = entry.display, value.phase == .working || value.phase == .overtime,
+              let remaining = value.remainingMs, remaining > DoneAtWatchWidgetView.secondsThresholdMs else { return nil }
+        return entry.date.addingTimeInterval(Double(remaining - DoneAtWatchWidgetView.secondsThresholdMs) / 1_000)
     }
 
     /// A hint that the shift window is when this complication matters. watchOS
@@ -129,15 +148,25 @@ private struct DoneAtWatchWidgetView: View {
     @ViewBuilder private func circular(_ value: WatchDisplayContent) -> some View {
         let presentation = value.presentation
         if let progress = value.progress, let phase = value.phase, phase != .before {
+            GeometryReader { proxy in
+            // The ring's stroke ends a line width inside the square it is drawn in.
+            let inner = max(0, min(proxy.size.width, proxy.size.height) - 2 * Self.circularRingWidth)
             ZStack {
                 WatchSegmentRing(weights: weights, progress: WatchDisplayFormat.steppedProgress(progress) / 100,
-                                 lineWidth: 4.5)
+                                 lineWidth: Self.circularRingWidth)
                 VStack(spacing: 0) {
-                    if let countdown = countdown(value) {
+                    if let countdown = circularCountdown(value) {
+                        // One line no wider than 70% of the ring's inner
+                        // diameter. A live timer does not report a narrower
+                        // width, so the frame is fixed; the fixed line height
+                        // keeps the footnote in place when the clock scales.
                         countdown
                             .font(.system(size: 14, weight: .bold, design: .rounded))
                             .monospacedDigit()
+                            .lineLimit(1)
                             .minimumScaleFactor(0.6)
+                            .multilineTextAlignment(.center)
+                            .frame(width: inner * 0.7, height: Self.circularClockHeight)
                     } else {
                         Image(systemName: WatchDisplayFormat.symbol(for: phase))
                             .font(.system(size: 13, weight: .semibold))
@@ -150,6 +179,8 @@ private struct DoneAtWatchWidgetView: View {
                     }
                 }
                 .padding(5)
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(WatchDisplayFormat.label(for: phase, presentation))
@@ -190,14 +221,18 @@ private struct DoneAtWatchWidgetView: View {
                 }
                 if let progress = value.progress {
                     HStack(spacing: 6) {
+                        // The bar keeps room for its segments; a long footnote
+                        // (German, overtime) scales rather than covering it.
                         segmentBar(progress: WatchDisplayFormat.steppedProgress(progress) / 100,
                                    finished: phase == .finished)
+                            .frame(minWidth: 28)
                         if phase != .finished, let footnote {
                             Text(footnote)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
-                                .fixedSize(horizontal: true, vertical: false)
+                                .minimumScaleFactor(0.7)
+                                .layoutPriority(1)
                         }
                     }
                 }
@@ -232,6 +267,25 @@ private struct DoneAtWatchWidgetView: View {
     private func timerEnd(_ value: WatchDisplayContent) -> Date? {
         guard let remaining = value.remainingMs, remaining > 0 else { return nil }
         return entry.date.addingTimeInterval(Double(remaining) / 1_000)
+    }
+
+    static let circularRingWidth: CGFloat = 4.5
+    /// The 14 pt clock's line height, kept when it scales down to fit.
+    static let circularClockHeight: CGFloat = 17
+    /// Above this the circular clock shows hours and minutes only.
+    static let secondsThresholdMs: Int64 = 3_600_000
+
+    /// The circular face's clock, at most five characters: "1:15" or
+    /// "12:34" above an hour (seconds dropped, minutes not rounded up), "15:33"
+    /// within it. Both run live; the provider adds an entry where a countdown
+    /// reaches one hour so the clock switches style there.
+    private func circularCountdown(_ value: WatchDisplayContent) -> Text? {
+        guard value.phase == .working || value.phase == .overtime, let end = timerEnd(value) else { return nil }
+        if let remaining = value.remainingMs, remaining > Self.secondsThresholdMs {
+            return Text(.durationOffset(to: end),
+                        format: .time(pattern: .hourMinute(padHourToLength: 1, roundSeconds: .down)))
+        }
+        return Text(timerInterval: min(entry.date.addingTimeInterval(-3_600), end)...end, countsDown: true, showsHours: false)
     }
 
     /// A system countdown while work runs. Entries only come at boundaries and
