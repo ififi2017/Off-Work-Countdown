@@ -10,6 +10,7 @@ import {
   cycleDayOf,
   defaultScheduleSettings,
   fixedHoursFromPlan,
+  newShiftType,
   paintingDays,
   parseScheduleSettings,
   resizingCycle,
@@ -99,6 +100,30 @@ describe("schedule settings and timer consumers", () => {
     expect(result.settings.plan).toBeNull();
     expect(seedPlan(fixed, today, names, result.settings.fixedTypes).shiftTypes.map((type) => type.id)).toEqual(plan.shiftTypes.map((type) => type.id));
   });
+  it.each(["work", "rest"] as const)("retains a new unassigned %s shift after saving and reloading (#348)", (kind) => {
+    const plan = seedPlan(fixed, today, names);
+    const added: ShiftType = {
+      ...newShiftType(plan, fixed), name: "Custom shift", kind,
+      startMinutes: 840, endMinutes: 1320,
+    };
+    const next = upsertingShiftType(plan, added, today);
+    const saved = settingsForPlan(next);
+    const reloaded = parseScheduleSettings(JSON.stringify(saved.settings));
+    expect(reloaded.plan?.shiftTypes).toContainEqual(added);
+    expect(scheduleMode(reloaded)).toBe("weekly");
+    // Adding a type must not change the existing week's working hours.
+    for (let offset = 0; offset < 7; offset += 1) {
+      const key = addDays(today, offset);
+      expect(resolveScheduleDay(reloaded.plan!, key)).toEqual(resolveScheduleDay(plan, key));
+    }
+    const assigned = assigningCycleDay(reloaded.plan!, 5, added.id);
+    const assignedReload = parseScheduleSettings(JSON.stringify(settingsForPlan(assigned).settings));
+    expect(resolveScheduleDay(assignedReload.plan!, "2026-10-03").shiftTypeID).toBe(added.id);
+    // Removing the assignment must not silently remove the saved type either.
+    const unassigned = assigningCycleDay(assignedReload.plan!, 5, plan.rule!.days[5]);
+    expect(settingsForPlan(unassigned).settings.plan?.shiftTypes).toContainEqual(added);
+  });
+
   it("keeps a plan once a weekly cycle uses a second work shift", () => {
     const plan = seedPlan(fixed, today, names);
     const half: ShiftType = { ...plan.shiftTypes[0], id: "HALF", name: "Half", endMinutes: 720, breakEnabled: false };
