@@ -274,8 +274,12 @@ export function settingsForPlan(
     ...(holidayRegion !== undefined ? { holidayRegion } : {}),
   };
   const fixed = fixedHoursFromPlan(plan);
-  if (!fixed) return { settings: { manual: false, plan, ...kept }, fixed: null };
-  const used = new Set(plan.rule!.days);
+  const used = new Set(plan.rule?.days);
+  // A newly saved type has no assigned day yet. Folding would discard it,
+  // and seedPlan can only restore the fixed work/rest pair (#348).
+  if (!fixed || plan.shiftTypes.some((type) => !used.has(type.id))) {
+    return { settings: { manual: false, plan, ...kept }, fixed: null };
+  }
   return { settings: { manual: false, plan: null, fixedTypes: plan.shiftTypes.filter((type) => used.has(type.id)), ...kept }, fixed };
 }
 
