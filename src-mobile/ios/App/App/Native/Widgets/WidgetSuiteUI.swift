@@ -126,11 +126,13 @@ struct WidgetSuiteHeader: View {
                     .foregroundStyle(WidgetSuitePalette.accentText)
                     .widgetAccentable()
             }
+            // "Until the weekend" beside its symbol filled a small widget
+            // and lost its last word at 0.8.
             Text(title)
                 .font(.footnote.weight(.semibold))
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
-            Spacer(minLength: 4)
+                .minimumScaleFactor(0.7)
+            Spacer(minLength: trailing == nil ? 0 : 4)
             if let trailing {
                 Text(trailing)
                     .font(.caption)
@@ -194,11 +196,14 @@ struct WidgetSuiteEmpty: View {
             Label(title, systemImage: symbol)
                 .font(.footnote.weight(.semibold))
                 .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            // Three lines, shrinking rather than cutting a sentence that
+            // tells the user what to do.
             Text(message)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(3)
-                .minimumScaleFactor(0.85)
+                .minimumScaleFactor(0.7)
             Spacer(minLength: 0)
             if let action {
                 Text(action)

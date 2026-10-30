@@ -184,12 +184,14 @@ private struct WatchWeekView: View {
                 default:
                     VStack(alignment: .leading, spacing: 2) {
                         HStack {
+                            // The title stays whole; the finish time scales first.
                             Text(text.t("widgetSuiteThisWeek")).font(.caption2.weight(.semibold)).foregroundStyle(.orange)
+                                .lineLimit(1).fixedSize(horizontal: true, vertical: false)
                                 .widgetAccentable()
                             Spacer(minLength: 2)
                             if let finish = figures.finishMs {
                                 Text(text.t("widgetSuiteFinishAt", ["time": "\(text.weekday(finish)) \(text.time(finish))"]))
-                                    .font(.caption2).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.7)
+                                    .font(.caption2).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.6)
                             }
                         }
                         if figures.remainingMs == 0, figures.totalMs > 0 {
