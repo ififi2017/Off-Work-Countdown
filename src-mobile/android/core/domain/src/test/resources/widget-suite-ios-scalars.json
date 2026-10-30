@@ -83,7 +83,7 @@
     "sourceHashes": {
       "src-mobile/ios/App/App/Native/Widgets/WidgetSuiteContract.swift": "65155ed3d90d2fc61b9528425f7dc7383eaf4530a124033dc1a1b644d2e7e628",
       "src-mobile/ios/App/App/Native/Widgets/WeekRosterWidgets.swift": "daf3b9dc56dbab490481c53a747f7bf922d438552d3c0bc5f2489a88efa6f50d",
-      "src-mobile/ios/App/App/Native/Widgets/SummaryLifeHolidayWidgets.swift": "6b707a6c7e62af092957652a6d1cbf40ef4291898ab3c5e382db9b05d2c48a26",
+      "src-mobile/ios/App/App/Native/Widgets/SummaryLifeHolidayWidgets.swift": "857f9b52dcc17e303cfc309fec2b99ca728974f74b0209d288681ead1e440928",
       "scripts/android-widget-suite-fixtures/main.swift": "fa99cb62b0c118506f249773b00dcdae94b2e4ed0f30c64f7b365f2c2cd41016",
       "scripts/generate-android-widget-suite-fixtures.mjs": "113a4836f4abbb6a45ef352a3a650bf35a88e09b73fd3410baaded47fc700a7a"
     }
