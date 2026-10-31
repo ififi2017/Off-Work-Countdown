@@ -75,7 +75,7 @@ export function getSalaryContent(page: ToolPage): SalaryContent {
         `例如月薪21,750元，按21.75折算为每天${money({ amount: "21750" })}、每小时${money({ amount: "21750" }, 1)}；如果同月实际工作22天、每天8小时，均摊为每天${money({ amount: "21750", purpose: "worked-time" })}、每小时${money({ amount: "21750", purpose: "worked-time" }, 1)}。两个结果回答不同问题。`,
       ] }, { heading: "参考的适用范围", paragraphs: [
         "本页只演示该通知所述的工资折算，不提供请假扣薪、法定加班费、税后收入或个案合规结论。需要这些结论时，应结合自己的工资构成、合同和适用规定核对。",
-        "原始通知、通知日期和本次来源核验日期见下方。来源核验与页面文案审核分开记录；页面只有完成发布审核才进入公开工具目录和搜索清单。",
+        "原始通知、通知日期和本次来源核验日期见下方。",
       ] }],
       examples: [example("月薪21,750元，21.75×8参考", { amount: "21750" }), example("同月21,750元，实际22天×8小时", { amount: "21750", purpose: "worked-time" })],
     };

@@ -56,7 +56,7 @@ export default async function SalaryPage({ params }: { params: Promise<PageParam
       <h2 id="source-heading" className="text-base font-semibold">21.75计薪参考：来源与适用范围</h2>
       <p className="mt-3 text-sm leading-7 text-gray-600 dark:text-gray-300">{cnPayReference.appliesTo}。{cnPayReference.exclusions}</p>
       <a href={cnPayReference.sourceUrls[0]} rel="noopener noreferrer" className={`mt-3 inline-block text-sm leading-6 ${linkClass}`}>{cnPayReference.title}（中国政府网）</a>
-      <p className="mt-2 text-xs leading-6 text-gray-500 dark:text-gray-400">通知落款：<time dateTime={cnPayReference.noticeDate}>2025年1月1日</time> · 来源核验：<time dateTime={cnPayReference.reviewedAt}>2026年10月31日</time> · 此日期不代表页面文案已完成人工审核。</p>
+      <p className="mt-2 text-xs leading-6 text-gray-500 dark:text-gray-400">通知落款：<time dateTime={cnPayReference.noticeDate}>2025年1月1日</time> · 来源核验：<time dateTime={cnPayReference.reviewedAt}>2026年10月31日</time></p>
     </section>}
     <section className="mt-10 border-t border-gray-200 pt-6 dark:border-gray-800">
       <h2 className="text-base font-semibold">{zh ? "继续用其他工具" : "Related tools"}</h2>
