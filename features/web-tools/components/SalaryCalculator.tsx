@@ -1,10 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { ToolPage } from "../catalog/pages";
 import { calculateDisplay, formatMoney, initialCalculatorState, type CalculatorState } from "../content/calculator";
 
 const controlClass = "mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-base text-gray-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white";
+
+function CalculatorSelect<T extends string>({ label, value, onValueChange, options, help }: {
+  label: string;
+  value: T;
+  onValueChange: (value: T) => void;
+  options: { value: T; label: string }[];
+  help?: string;
+}) {
+  const id = useId();
+  return <div className="min-w-0 text-sm font-medium text-gray-700 dark:text-gray-200">
+    <label htmlFor={id}>{label}</label>
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger id={id} aria-describedby={help ? `${id}-help` : undefined} className={`${controlClass} h-auto min-h-11 gap-3 text-left font-normal focus:ring-orange-500/20 focus:ring-offset-0 [&>span]:min-w-0 [&>span]:truncate [&>svg]:shrink-0`}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] rounded-lg border-gray-200 bg-white text-gray-900 shadow-lg dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 motion-reduce:animate-none" collisionPadding={12}>
+        {options.map((option) => <SelectItem key={option.value} value={option.value} className="rounded-md py-2.5 pr-3 text-sm focus:bg-orange-50 focus:text-orange-950 data-[state=checked]:text-orange-700 dark:focus:bg-orange-950/50 dark:focus:text-orange-100 dark:data-[state=checked]:text-orange-300">{option.label}</SelectItem>)}
+      </SelectContent>
+    </Select>
+    {help && <p id={`${id}-help`} className="mt-1.5 text-xs font-normal leading-5 text-gray-500 dark:text-gray-400">{help}</p>}
+  </div>;
+}
 
 export function SalaryCalculator({ page }: { page: ToolPage }) {
   const zh = page.lang === "zh-CN";
@@ -29,20 +52,16 @@ export function SalaryCalculator({ page }: { page: ToolPage }) {
     </div>
     <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">{zh ? "金额只保留在当前页面，不保存、不写入链接。以下均为税前金额。" : "Your amounts stay in this page. They are not saved or added to the link. All amounts are before deductions."}</p>
     <div className="mt-6 grid gap-5 sm:grid-cols-2">
-      {zh && <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">计算口径
-        <select value={state.purpose} onChange={(event) => change("purpose", event.target.value as CalculatorState["purpose"])} className={controlClass}>
-          <option value="jurisdiction-reference">21.75计薪参考</option>
-          <option value="worked-time">实际工作量均摊</option>
-          <option value="annualized">年化与周期换算</option>
-        </select>
-      </label>}
-      {state.purpose === "annualized" && <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{zh ? "输入收入类型" : "Income to convert"}
-        <select value={state.incomeKind} onChange={(event) => { const kind = event.target.value as CalculatorState["incomeKind"]; setState((previous) => ({ ...previous, incomeKind: kind, amount: "" })); }} className={controlClass}>
-          <option value="hourly">{zh ? "时薪" : "Hourly rate"}</option>
-          <option value="annual">{zh ? "年收入" : "Annual income"}</option>
-          <option value="monthly">{zh ? "基础月薪" : "Base monthly salary"}</option>
-        </select>
-      </label>}
+      {zh && <CalculatorSelect label="计算口径" value={state.purpose} onValueChange={(value) => change("purpose", value)} options={[
+        { value: "jurisdiction-reference", label: "21.75计薪参考" },
+        { value: "worked-time", label: "实际工作量均摊" },
+        { value: "annualized", label: "年化与周期换算" },
+      ]} />}
+      {state.purpose === "annualized" && <CalculatorSelect label={zh ? "输入收入类型" : "Income to convert"} value={state.incomeKind} onValueChange={(incomeKind) => setState((previous) => ({ ...previous, incomeKind, amount: "" }))} options={[
+        { value: "hourly", label: zh ? "时薪" : "Hourly rate" },
+        { value: "annual", label: zh ? "年收入" : "Annual income" },
+        { value: "monthly", label: zh ? "基础月薪" : "Base monthly salary" },
+      ]} />}
       {numberField("amount", amountLabel)}
       {state.purpose === "annualized" && <>
         {numberField("hours", zh ? "每周付薪小时" : "Paid hours per week", zh ? "按合同和付薪安排填写，不含无薪休息。" : "Use your paid schedule, excluding unpaid breaks.")}
@@ -58,10 +77,10 @@ export function SalaryCalculator({ page }: { page: ToolPage }) {
         {numberField("days", "同月实际或预计工作天数")}
         {numberField("dailyHours", "每天实际劳动小时", "扣除全部休息后填写。9:00–18:00、休息1小时，可填8。固定月薪不会因修改此项自动减少。")}
       </>}
-      {state.purpose !== "jurisdiction-reference" && <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{zh ? "显示币种" : "Display currency"}
-        <select className={controlClass} value={state.currency} onChange={(event) => change("currency", event.target.value as CalculatorState["currency"])}><option value="CNY">CNY · {zh ? "人民币" : "Chinese yuan"}</option><option value="USD">USD · US dollar</option></select>
-        <span className="mt-1.5 block text-xs font-normal leading-5 text-gray-500 dark:text-gray-400">{zh ? "只改变金额标识，不换汇、不改变市场规则。" : "Changes the currency label only. No exchange-rate conversion or change of market rules."}</span>
-      </label>}
+      {state.purpose !== "jurisdiction-reference" && <CalculatorSelect label={zh ? "显示币种" : "Display currency"} value={state.currency} onValueChange={(value) => change("currency", value)} options={[
+        { value: "CNY", label: `CNY · ${zh ? "人民币" : "Chinese yuan"}` },
+        { value: "USD", label: "USD · US dollar" },
+      ]} help={zh ? "只改变金额标识，不换汇、不改变市场规则。" : "Changes the currency label only. No exchange-rate conversion or change of market rules."} />}
     </div>
     {state.purpose === "jurisdiction-reference" && <p className="mt-5 rounded-lg bg-gray-50 px-4 py-3 text-sm leading-6 text-gray-600 dark:bg-gray-800 dark:text-gray-300">参考分母固定为每月21.75个计薪日、每天8小时。想按自己的天数和工时计算，请切换到「实际工作量均摊」。</p>}
     <div className="mt-7 border-t border-gray-200 pt-5 dark:border-gray-700" aria-live="polite" aria-atomic="true">
