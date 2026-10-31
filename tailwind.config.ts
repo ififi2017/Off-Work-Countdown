@@ -6,6 +6,9 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    ...(process.env.BUILD_TARGET === "desktop" || process.env.BUILD_TARGET === "mobile"
+      ? []
+      : ["./features/web-tools/**/*.{ts,tsx}"]),
   ],
   theme: {
     extend: {

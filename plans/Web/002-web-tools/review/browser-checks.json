@@ -1,0 +1,295 @@
+{
+  "environment": "Codex in-app browser on macOS; 390x844 and 1280x800; light/dark via existing app theme control",
+  "checks": [
+    {
+      "path": "/zh-CN/salary/cn",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "税前工资换算器",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/salary/cn/monthly-to-daily",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "月薪换日薪：一天工资怎么算",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/salary/cn/monthly-to-hourly",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "月薪换时薪：每小时收入怎么算",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/salary/cn/workdays-21-75",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "21.75天怎么算：计薪日与工作日的区别",
+      "width": 390
+    },
+    {
+      "path": "/en/salary/us",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "Gross salary calculator",
+      "width": 390
+    },
+    {
+      "path": "/en/salary/us/hourly-to-annual",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "Hourly to annual salary calculator",
+      "width": 390
+    },
+    {
+      "path": "/en/salary/us/annual-to-hourly",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "Annual salary to hourly calculator",
+      "width": 390
+    },
+    {
+      "path": "/en/salary/us/biweekly-paycheck",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "Biweekly gross pay calculator",
+      "width": 390
+    },
+    {
+      "path": "/en/tools",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "Work hours and gross pay tools",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/tools",
+      "robots": "noindex, nofollow",
+      "scrollWidth": 390,
+      "theme": "dark",
+      "title": "工时与税前工资工具库",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/salary/cn",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "税前工资换算器",
+      "width": 1280
+    },
+    {
+      "path": "/zh-CN/salary/cn/monthly-to-daily",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "月薪换日薪：一天工资怎么算",
+      "width": 1280
+    },
+    {
+      "path": "/zh-CN/salary/cn/monthly-to-hourly",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "月薪换时薪：每小时收入怎么算",
+      "width": 1280
+    },
+    {
+      "path": "/zh-CN/salary/cn/workdays-21-75",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "21.75天怎么算：计薪日与工作日的区别",
+      "width": 1280
+    },
+    {
+      "path": "/en/salary/us",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "Gross salary calculator",
+      "width": 1280
+    },
+    {
+      "path": "/en/salary/us/hourly-to-annual",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "Hourly to annual salary calculator",
+      "width": 1280
+    },
+    {
+      "path": "/en/salary/us/annual-to-hourly",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "Annual salary to hourly calculator",
+      "width": 1280
+    },
+    {
+      "path": "/en/salary/us/biweekly-paycheck",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "Biweekly gross pay calculator",
+      "width": 1280
+    },
+    {
+      "path": "/en/tools",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "Work hours and gross pay tools",
+      "width": 1280
+    },
+    {
+      "path": "/zh-CN/tools",
+      "scrollWidth": 1280,
+      "theme": "",
+      "title": "工时与税前工资工具库",
+      "width": 1280
+    },
+    {
+      "path": "/zh-CN/salary/cn",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "税前工资换算器",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/salary/cn/monthly-to-daily",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "月薪换日薪：一天工资怎么算",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/salary/cn/monthly-to-hourly",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "月薪换时薪：每小时收入怎么算",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/salary/cn/workdays-21-75",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "21.75天怎么算：计薪日与工作日的区别",
+      "width": 390
+    },
+    {
+      "path": "/en/salary/us",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "Gross salary calculator",
+      "width": 390
+    },
+    {
+      "path": "/en/salary/us/hourly-to-annual",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "Hourly to annual salary calculator",
+      "width": 390
+    },
+    {
+      "path": "/en/salary/us/annual-to-hourly",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "Annual salary to hourly calculator",
+      "width": 390
+    },
+    {
+      "path": "/en/salary/us/biweekly-paycheck",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "Biweekly gross pay calculator",
+      "width": 390
+    },
+    {
+      "path": "/en/tools",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "Work hours and gross pay tools",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/tools",
+      "scrollWidth": 390,
+      "theme": "",
+      "title": "工时与税前工资工具库",
+      "width": 390
+    },
+    {
+      "path": "/zh-CN/salary/cn",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "税前工资换算器",
+      "width": 1280
+    },
+    {
+      "path": "/zh-CN/salary/cn/monthly-to-daily",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "月薪换日薪：一天工资怎么算",
+      "width": 1280
+    },
+    {
+      "path": "/zh-CN/salary/cn/monthly-to-hourly",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "月薪换时薪：每小时收入怎么算",
+      "width": 1280
+    },
+    {
+      "path": "/zh-CN/salary/cn/workdays-21-75",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "21.75天怎么算：计薪日与工作日的区别",
+      "width": 1280
+    },
+    {
+      "path": "/en/salary/us",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "Gross salary calculator",
+      "width": 1280
+    },
+    {
+      "path": "/en/salary/us/hourly-to-annual",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "Hourly to annual salary calculator",
+      "width": 1280
+    },
+    {
+      "path": "/en/salary/us/annual-to-hourly",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "Annual salary to hourly calculator",
+      "width": 1280
+    },
+    {
+      "path": "/en/salary/us/biweekly-paycheck",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "Biweekly gross pay calculator",
+      "width": 1280
+    },
+    {
+      "path": "/en/tools",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "Work hours and gross pay tools",
+      "width": 1280
+    },
+    {
+      "path": "/zh-CN/tools",
+      "scrollWidth": 1280,
+      "theme": "dark",
+      "title": "工时与税前工资工具库",
+      "width": 1280
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import { presetLocales } from "@/lib/content-locales";
 import { presetSlugs } from "@/lib/presets";
 import { webAppAlternates, webAppPageUrl } from "@/lib/site-urls";
 import { WORK_HOURS_CALCULATOR_SLUG } from "@/lib/work-hours";
+import { getPublicPages, getPageAlternates, pageUrl } from "@/features/web-tools/catalog/pages";
 
 // Web 构建按 Next.js metadata 约定静态生成 sitemap。桌面构建不把普通
 // `.ts` 识别为路由，因此该文件不会进入 Tauri 静态导出。
@@ -39,5 +40,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
     ...presetEntries,
     ...calculatorEntries,
+    ...getPublicPages().map((page) => ({
+      url: pageUrl(page),
+      alternates: { languages: getPageAlternates(page) },
+    })),
   ];
 }

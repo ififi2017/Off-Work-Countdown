@@ -15,6 +15,7 @@ import { localizedSocialMetadata } from "@/lib/server/metadata";
 import { getPresetCopy } from "@/lib/server/presets";
 import { webAppAlternates, webAppPageUrl } from "@/lib/site-urls";
 import { WORK_HOURS_CALCULATOR_SLUG } from "@/lib/work-hours";
+import { getDirectoryPage } from "@/features/web-tools/catalog/pages";
 
 // 工时计算器：独立于倒计时的 Web 小工具（仅 Web 构建；`.web.tsx` 不进桌面导出）。
 // 界面文案短，19 种语言都有；预设页也支持 19 种语言，可以互链。
@@ -79,6 +80,7 @@ export default async function WorkHoursCalculatorPage({
   const hasPresets = presetLocales.includes(lang as PresetLocale);
   const presetCopy = hasPresets ? await getPresetCopy(lang) : null;
   const pageUrl = webAppPageUrl(lang, WORK_HOURS_CALCULATOR_SLUG);
+  const toolsDirectory = getDirectoryPage(lang);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -143,6 +145,14 @@ export default async function WorkHoursCalculatorPage({
         <div className="mt-8">
           <WorkHoursCalculator lang={lang} copy={copy} />
         </div>
+
+        {toolsDirectory && (
+          <p className="mt-6 text-sm">
+            <Link href={toolsDirectory.path} className="text-orange-700 underline underline-offset-4 dark:text-orange-300">
+              {toolsDirectory.title}
+            </Link>
+          </p>
+        )}
 
         <section className="mt-12">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">

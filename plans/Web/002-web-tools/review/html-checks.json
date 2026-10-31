@@ -1,0 +1,72 @@
+[
+  {
+    "path": "/en/salary/us",
+    "readable_characters_without_scripts": 4783,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  },
+  {
+    "path": "/en/salary/us/annual-to-hourly",
+    "readable_characters_without_scripts": 4639,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  },
+  {
+    "path": "/en/salary/us/biweekly-paycheck",
+    "readable_characters_without_scripts": 4348,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  },
+  {
+    "path": "/en/salary/us/hourly-to-annual",
+    "readable_characters_without_scripts": 4698,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  },
+  {
+    "path": "/zh-CN/salary/cn",
+    "readable_characters_without_scripts": 1678,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  },
+  {
+    "path": "/zh-CN/salary/cn/monthly-to-daily",
+    "readable_characters_without_scripts": 1571,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  },
+  {
+    "path": "/zh-CN/salary/cn/monthly-to-hourly",
+    "readable_characters_without_scripts": 1678,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  },
+  {
+    "path": "/zh-CN/salary/cn/workdays-21-75",
+    "readable_characters_without_scripts": 1535,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  },
+  {
+    "path": "/en/tools",
+    "readable_characters_without_scripts": 1927,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  },
+  {
+    "path": "/zh-CN/tools",
+    "readable_characters_without_scripts": 653,
+    "draft_noindex": true,
+    "self_canonical": true,
+    "no_draft_alternates": true
+  }
+]
