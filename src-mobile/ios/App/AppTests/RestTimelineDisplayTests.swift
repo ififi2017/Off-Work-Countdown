@@ -16,6 +16,23 @@ struct RestTimelineDisplayTests {
         }
     }
 
+    @Test("Rest header breaks only at the localized semantic separator")
+    func restHeader() {
+        for language in NativeLocalizer.supportedLanguages {
+            let model = makeModel(phase: .before, target: 146_340_000,
+                                  labelKey: "widgetRestDay", locale: language.id)
+            let clauses = WidgetCopy.text("widgetRestDay", locale: language.id).components(separatedBy: " · ")
+            #expect(clauses.count == 2)
+            #expect(model.timelineLabel == clauses.joined(separator: "\n"))
+            #expect(!model.timelineLabel.contains(" · "))
+        }
+        let chinese = makeModel(phase: .before, target: 146_340_000,
+                                labelKey: "widgetRestDay", locale: "zh-CN")
+        #expect(chinese.timelineLabel == "好好休息\n距离下次上班")
+        let before = makeModel(phase: .before, target: 3_600_000)
+        #expect(before.timelineLabel == before.label)
+    }
+
     @Test("Before shift without today's segments retains its real target", arguments: [Int64(3_600_000), Int64(146_340_000)])
     func before(target: Int64) {
         let model = makeModel(phase: .before, target: target)
@@ -52,13 +69,13 @@ struct RestTimelineDisplayTests {
         }
     }
 
-    private func makeModel(phase: WidgetTimelinePhase, target: Int64?) -> CountdownStyleModel {
+    private func makeModel(phase: WidgetTimelinePhase, target: Int64?, labelKey: String = "countdownNotStarted", locale: String = "en") -> CountdownStyleModel {
         let entry = WidgetTimelineEntry(dateMs: 0, validUntilMs: 200_000_000, phase: phase,
-            labelKey: "countdownNotStarted", countdownKind: .shiftStarts,
+            labelKey: labelKey, countdownKind: .shiftStarts,
             countdownValueAtDateMs: target ?? 0, countdownTargetAtMs: target,
             remainingEffectiveMsAtDateMs: 0, progressAtDate: 36.1, nextBoundaryAtMs: target)
         return CountdownStyleModel(entry: CountdownStyleEntry(base: OffWorkCountdownWidgetEntry(
-            date: Date(timeIntervalSince1970: 0), snapshotEntry: entry, locale: "en", upcoming: []), segments: []))
+            date: Date(timeIntervalSince1970: 0), snapshotEntry: entry, locale: locale, upcoming: []), segments: []))
     }
 }
 

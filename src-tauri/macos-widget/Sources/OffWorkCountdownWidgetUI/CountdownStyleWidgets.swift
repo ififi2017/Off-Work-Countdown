@@ -70,6 +70,14 @@ struct CountdownStyleModel {
             ?? WidgetCopy.text("countdownNotStarted", locale: locale)
     }
 
+    /// Rest copy has two semantic clauses in every locale. Break at its
+    /// localized separator rather than letting a narrow card split a clause.
+    var timelineLabel: String {
+        guard snapshotEntry?.labelKey == "widgetRestDay" else { return label }
+        return WidgetCopy.text("widgetRestDay", locale: locale)
+            .replacingOccurrences(of: " · ", with: "\n")
+    }
+
     var isCounting: Bool { timerEnd != nil && (phase == .working || phase == .break || phase == .before) }
 
     /// When the countdown reaches zero, in real time. Work counts down
@@ -437,7 +445,8 @@ public struct CountdownTimelineView: View {
     public var body: some View {
         let segments = model.entry.segments
         VStack(alignment: .leading, spacing: 8) {
-            Label(model.label, systemImage: "calendar.day.timeline.left")
+            Label(model.timelineLabel, systemImage: "calendar.day.timeline.left")
+                .multilineTextAlignment(.leading)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
