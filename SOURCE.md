@@ -40,3 +40,12 @@ For a GitHub fork, set `DONEAT_SOURCE_REPOSITORY` to its HTTPS repository URL
 when building locally; GitHub Actions uses `GITHUB_REPOSITORY` by default.
 Other source hosts must adapt the tree/archive URL format in
 `scripts/prepare-license-notices.mjs` to their actual source endpoint.
+
+## Internal TestFlight source record — iOS 3.2.5 (286)
+
+- Channel: internal TestFlight group Test only; no App Store or external beta review submission.
+- Corresponding covered source: https://github.com/ififi2017/Off-Work-Countdown/commit/f411442b370beaf73a6a4fda257fadb6d6bb5959
+- Source archive: https://github.com/ififi2017/Off-Work-Countdown/archive/f411442b370beaf73a6a4fda257fadb6d6bb5959.tar.gz
+- Scope: localized two-line rest-day Timeline header with next-shift countdown/date, and About App filing 沪ICP备2026055302号-2A shown only for system region CN regardless of app language.
+- Build recipe: default AirBuild Xcode 27.2, `airbuild-xcode archive -project src-mobile/ios/App/App.xcodeproj -scheme App -archivePath .airbuild/artifacts/DoneAt-3.2.5-286.xcarchive CURRENT_PROJECT_VERSION=286` with managed signing for the app, iPhone widget, Watch app and Watch widgets. All shipping marketing versions are 3.2.5. The untracked worktree manifest overrides build 286 globally; tracked `CURRENT_PROJECT_VERSION=2` retains the Xcode Cloud convention.
+- This record identifies the intended artifact, not processing or distribution success; those are verified against App Store Connect after upload. The subsequent record-only commit does not change covered executable source.
