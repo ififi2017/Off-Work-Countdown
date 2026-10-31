@@ -1,9 +1,10 @@
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   appKeyReferences,
+  appHostedWidgetKeyReferences,
   catalogProblems,
   englishProblems,
   iosStringProblems,
@@ -357,6 +358,7 @@ describe("iOS string catalog checks", () => {
       catalog.strings.watchListed = catalog.strings.greeting;
       const problems = namedKeyProblems(catalog, {
         appSources: [join(root, "app")],
+        appHostedWidgetSources: [],
         watchSources: [join(root, "watch")],
         watchKeys: ["watchListed"],
         unseenOnPurpose: {},
@@ -374,7 +376,7 @@ describe("iOS string catalog checks", () => {
     it("accept a key listed as seen elsewhere, and flag the listing once it is stale", () => {
       const root = mkdtempSync(join(tmpdir(), "ios-strings-"));
       writeFileSync(join(root, "View.swift"), 'text.t("greeting"); text.strings("tips")');
-      const options = { appSources: [root], watchSources: [], watchKeys: [] };
+      const options = { appSources: [root], appHostedWidgetSources: [], watchSources: [], watchKeys: [] };
       expect(namedKeyProblems(good(), { ...options, unseenOnPurpose: { workdays: "used by …" } })).toEqual([]);
       expect(namedKeyProblems(good(), { ...options, unseenOnPurpose: { workdays: "…", greeting: "…", gone: "…" } })).toEqual([
         "UNSEEN_ON_PURPOSE lists greeting, which is now seen; remove it.",
@@ -417,4 +419,20 @@ describe("iOS string catalog checks", () => {
       ]);
     });
   });
+});
+
+it("checks app-hosted style copy, not extension-only configuration descriptions", () => {
+  expect(appHostedWidgetKeyReferences(`
+    public struct Example: Widget { var body: some WidgetConfiguration {
+      WidgetCopy.text("extensionOnly", locale: locale)
+    } }
+    struct ExampleView: View { Text(WidgetCopy.text("countdownNotStarted", locale: locale)) }
+  `).map(({key}) => key)).toEqual(["countdownNotStarted"]);
+});
+
+it("rejects a missing app-hosted fallback even when extension JSON still contains it", () => {
+  const catalog = JSON.parse(readFileSync("src-mobile/ios/App/App/Localizable.xcstrings", "utf8"));
+  delete catalog.strings.countdownNotStarted;
+  expect(namedKeyProblems(catalog).some(problem =>
+    problem.includes('asks for "countdownNotStarted"'))).toBe(true);
 });

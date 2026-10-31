@@ -417,6 +417,7 @@
     <string name="leaveDayLeave">Phép</string>
     <string name="leaveDayRest">Nghỉ</string>
     <plurals name="leaveDaysOff">
+        <item quantity="one">Nghỉ liền %d ngày</item>
         <item quantity="other">Nghỉ liền %d ngày</item>
     </plurals>
     <string name="leaveDaysUnit">ngày</string>
@@ -480,6 +481,7 @@
     <string name="leaveTrialNotice">Một lần tìm thành công hiển thị một nhóm kế hoạch sẽ dùng một lượt miễn phí. Không có kết quả thì không bị trừ; đổi kế hoạch, ngày, tháng hoặc xem chi tiết cũng không dùng thêm lượt.</string>
     <string name="leaveTrialSaveFailed">Không thể hiển thị các kế hoạch. Vui lòng thử lại.</string>
     <plurals name="leaveTrialsLeft">
+        <item quantity="one">Còn %d lượt tìm kế hoạch nghỉ miễn phí</item>
         <item quantity="other">Còn %d lượt tìm kế hoạch nghỉ miễn phí</item>
     </plurals>
     <string name="leaveTrialsUsedUp">Bạn đã dùng hết lượt tìm kế hoạch nghỉ miễn phí. Đăng ký Plus để tiếp tục tạo kế hoạch.</string>
@@ -927,6 +929,7 @@
     <string name="recordsMarkMakeup">Ghi là ngày làm bù</string>
     <string name="recordsMarkRest">Ghi là ngày nghỉ</string>
     <plurals name="recordsMonthWorkdays">
+        <item quantity="one">%d ngày làm việc</item>
         <item quantity="other">%d ngày làm việc</item>
     </plurals>
     <string name="recordsNextPeriod">Kỳ sau</string>

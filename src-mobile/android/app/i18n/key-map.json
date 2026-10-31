@@ -571,8 +571,7 @@
       "resource": "string/continue_"
     },
     "countdownNotStarted": {
-      "resource": "string/countdownNotStarted",
-      "androidOnly": true
+      "resource": "string/countdownNotStarted"
     },
     "cycleEndSummaryNotificationBody": {
       "resource": "string/cycleEndSummaryNotificationBody",
@@ -4625,8 +4624,7 @@
       "resource": "string/widgetGalleryWatchTitle"
     },
     "widgetOpenToRefresh": {
-      "resource": "string/widgetOpenToRefresh",
-      "androidOnly": true
+      "resource": "string/widgetOpenToRefresh"
     },
     "widgetPickerLarge": {
       "resource": "string/widgetPickerLarge",

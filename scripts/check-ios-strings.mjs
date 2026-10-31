@@ -542,6 +542,19 @@ export const widgetKeyReferences = (source) => {
   return found;
 };
 
+// These shared style views also render in Settings, without extension JSON.
+// Widget configuration descriptions are extension-only, not gallery copy.
+export const appHostedWidgetKeyReferences = (source) => {
+  const widgetDeclarations = /public struct \w+: Widget \{/g;
+  for (const match of [...source.matchAll(widgetDeclarations)].reverse()) {
+    const end = scanTo(source, match.index + match[0].length, false);
+    source = source.slice(0, match.index)
+      + source.slice(match.index, end + 1).replace(/[^\n]/g, " ")
+      + source.slice(end + 1);
+  }
+  return widgetKeyReferences(source);
+};
+
 const lineOf = (source, index) => source.slice(0, index).split("\n").length;
 
 const referencesIn = (roots, extract) =>
@@ -561,6 +574,7 @@ export const namedKeyProblems = (
   catalog,
   {
     appSources = APP_SOURCES,
+    appHostedWidgetSources = ["src-tauri/macos-widget/Sources/OffWorkCountdownWidgetUI/CountdownStyleWidgets.swift"],
     watchSources = WATCH_SOURCES,
     watchKeys = watchLocalizationKeys,
     unseenOnPurpose = UNSEEN_ON_PURPOSE,
@@ -569,7 +583,8 @@ export const namedKeyProblems = (
   const strings = catalog.strings ?? {};
   const problems = new Set();
   const asked = new Set(watchKeys);
-  for (const { key, pool, where } of referencesIn(appSources, appKeyReferences)) {
+  for (const { key, pool, where } of [...referencesIn(appSources, appKeyReferences),
+    ...referencesIn(appHostedWidgetSources, appHostedWidgetKeyReferences)]) {
     asked.add(key);
     if (pool ? `${key}.1` in strings : key in strings) continue;
     problems.add(`${where} asks for "${key}", which Localizable.xcstrings does not have.`);

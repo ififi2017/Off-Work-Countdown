@@ -40,6 +40,11 @@ struct AboutView<DebugMenu: View>: View {
                         Text(verbatim: "\(text.t("version")) \(version)")
                             .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
+                        if let filing = AppFiling.number() {
+                            Text(verbatim: filing)
+                                .font(.subheadline)
+                                .foregroundStyle(OWCDesign.secondary)
+                        }
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 18)
@@ -239,5 +244,14 @@ private struct HolidayLicenseView: View {
         .background(OWCDesign.page)
         .navigationTitle(text.t("openSourceLicenses"))
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// System region, deliberately independent of the app's language environment.
+enum AppFiling {
+    static func number(systemLocale: Locale = .autoupdatingCurrent) -> String? {
+        guard systemLocale.region?.identifier == "CN" else { return nil }
+        // Same App filing recorded in Android SettingsScreens.kt (not the website ICP).
+        return "沪ICP备2026055302号-2A"
     }
 }

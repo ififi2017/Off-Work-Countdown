@@ -94,6 +94,14 @@ struct CountdownStyleModel {
         return Date(timeIntervalSince1970: Double(target + offset) / 1_000)
     }
 
+    /// A missing current shift on a rest day is not an idle countdown.
+    var timelineWaitingTarget: Date? {
+        guard phase == .before,
+              let target = snapshotEntry?.countdownTargetAtMs,
+              target > entry.base.logicalNowMs else { return nil }
+        return targetTime
+    }
+
     var progress: Double { min(1, max(0, (snapshotEntry?.progressAtDate ?? 0) / 100)) }
 
     /// Lunch is a gap only while the shift is under way; before clock-in the
@@ -432,14 +440,29 @@ public struct CountdownTimelineView: View {
             Label(model.label, systemImage: "calendar.day.timeline.left")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
             if let first = segments.first, let last = segments.last, last.endAtMs > first.startAtMs {
                 CountdownDayAxis(segments: segments, nowMs: model.entry.base.logicalNowMs,
                                  offset: model.offset, locale: Locale(identifier: model.locale))
             } else {
                 Spacer(minLength: 0)
-                Text(WidgetCopy.text("countdownNotStarted", locale: model.locale))
-                    .font(.footnote.weight(.semibold))
+                if let target = model.timelineWaitingTarget, let range = model.timerRange {
+                    CountdownHoursMinutes(range: range)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                    Text(CountdownDetailView.when(Int64(target.timeIntervalSince1970 * 1_000),
+                                                  now: model.entry.date, locale: Locale(identifier: model.locale)))
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                } else {
+                    Text(model.label)
+                        .font(.footnote.weight(.semibold))
+                }
                 Spacer(minLength: 0)
             }
         }
