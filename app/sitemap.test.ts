@@ -19,7 +19,7 @@ describe("web sitemap", () => {
     }
   });
 
-  it("points the home x-default at the root and every other x-default at /en", () => {
+  it("uses the root for home and a published equivalent for content", () => {
     const defaults = new Set(
       sitemap().flatMap((entry) => {
         const languages = entry.alternates?.languages ?? {};
@@ -33,7 +33,7 @@ describe("web sitemap", () => {
     expect(defaults.has("https://off.rainif.com/en/work-hours-calculator")).toBe(true);
     expect(
       [...defaults]
-        .filter((url) => url !== "https://off.rainif.com/")
+        .filter((url) => url !== "https://off.rainif.com/" && !url.includes("/salary/"))
         .every((url) => url.startsWith("https://off.rainif.com/en/"))
     ).toBe(true);
   });

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { pageRegistry, getBuildPages, getPublicPages, getSalaryPage, getDirectoryPage, getPageAlternates } from "./pages";
+import { pageRegistry, getBuildPages, getPublicPages, getSalaryPage, getDirectoryPage, getPageAlternates, type ToolPage } from "./pages";
 import sitemap from "@/app/sitemap";
 
 beforeEach(() => {
@@ -9,6 +9,26 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("Web tool publication boundary", () => {
+  it("keeps future drafts preview-only even with the production override", () => {
+    const draft: ToolPage = { ...pageRegistry[0], id: "future-draft", path: "/zh-CN/salary/cn/future-draft", slug: ["future-draft"], status: "draft", contentReviewedAt: null };
+    const registry = pageRegistry as ToolPage[];
+    registry.push(draft);
+    try {
+      vi.stubEnv("VERCEL_ENV", "preview");
+      expect(getBuildPages()).toContain(draft);
+      expect(getPublicPages()).not.toContain(draft);
+      expect(getPageAlternates(draft)).toEqual({});
+      expect(sitemap().some((entry) => entry.url.endsWith(draft.path))).toBe(false);
+      vi.stubEnv("VERCEL_ENV", "production");
+      vi.stubEnv("WEB_TOOLS_PREVIEW", "1");
+      expect(getBuildPages()).not.toContain(draft);
+    } finally { registry.pop(); }
+  });
+
+  it("links equivalent directories without treating CN and US rules as translations", () => {
+    expect(getPageAlternates("en-tools")).toEqual({ en: "https://off.rainif.com/en/tools", "zh-CN": "https://off.rainif.com/zh-CN/tools", "x-default": "https://off.rainif.com/en/tools" });
+    expect(getPageAlternates("cn-overview")).toEqual({ "zh-CN": "https://off.rainif.com/zh-CN/salary/cn", "x-default": "https://off.rainif.com/zh-CN/salary/cn" });
+  });
   it("keeps unreviewed pages out of normal routes and the public sitemap", () => {
     vi.stubEnv("WEB_TOOLS_PREVIEW", "");
     expect(getBuildPages()).toEqual(getPublicPages());
@@ -17,8 +37,8 @@ describe("Web tool publication boundary", () => {
       expect(sitemap().some((entry) => entry.url.endsWith(page.path))).toBe(false);
       expect(getPageAlternates(page)).toEqual({});
     }
-    expect(getSalaryPage("en", "us")).toBeUndefined();
-    expect(getDirectoryPage("zh-CN")).toBeUndefined();
+    expect(getSalaryPage("en", "us")?.status).toBe("published");
+    expect(getDirectoryPage("zh-CN")?.status).toBe("published");
   });
 
   it.each([
@@ -27,7 +47,7 @@ describe("Web tool publication boundary", () => {
     { vercelEnv: "preview", flag: "1" },
     { vercelEnv: "development", flag: "1" },
     { vercelEnv: "", flag: "1" },
-  ])("exposes only review candidates without indexing them for $vercelEnv / flag=$flag", ({ vercelEnv, flag }) => {
+  ])("exposes the approved batch for $vercelEnv / flag=$flag", ({ vercelEnv, flag }) => {
     vi.stubEnv("VERCEL_ENV", vercelEnv);
     vi.stubEnv("WEB_TOOLS_PREVIEW", flag);
     // Next production-mode builds are also used for Vercel previews.
@@ -39,10 +59,10 @@ describe("Web tool publication boundary", () => {
     expect(getSalaryPage("en", "cn")).toBeUndefined();
     expect(getSalaryPage("ja", "us")).toBeUndefined();
     expect(getSalaryPage("en", "us", ["nonexistent"])).toBeUndefined();
-    expect(getPublicPages()).toHaveLength(0);
+    expect(getPublicPages()).toHaveLength(10);
     for (const page of getBuildPages()) {
-      expect(sitemap().some((entry) => entry.url.endsWith(page.path))).toBe(false);
-      expect(getPageAlternates(page)).toEqual({});
+      expect(sitemap().some((entry) => entry.url.endsWith(page.path))).toBe(true);
+      expect(getPageAlternates(page)["x-default"]).toBeDefined();
     }
   });
 
@@ -50,12 +70,12 @@ describe("Web tool publication boundary", () => {
     vi.stubEnv("VERCEL_ENV", "production");
     vi.stubEnv("WEB_TOOLS_PREVIEW", flag);
     expect(getBuildPages()).toEqual(getPublicPages());
-    expect(getBuildPages()).toHaveLength(0);
-    expect(getSalaryPage("en", "us")).toBeUndefined();
-    expect(getDirectoryPage("zh-CN")).toBeUndefined();
+    expect(getBuildPages()).toHaveLength(10);
+    expect(getSalaryPage("en", "us")?.status).toBe("published");
+    expect(getDirectoryPage("zh-CN")?.status).toBe("published");
     for (const page of pageRegistry) {
-      expect(sitemap().some((entry) => entry.url.endsWith(page.path))).toBe(false);
-      expect(getPageAlternates(page.id)).toEqual({});
+      expect(sitemap().some((entry) => entry.url.endsWith(page.path))).toBe(true);
+      expect(getPageAlternates(page.id)["x-default"]).toBeDefined();
     }
   });
 
@@ -79,8 +99,8 @@ describe("Web tool publication boundary", () => {
     expect(new Set(pageRegistry.map((page) => page.path)).size).toBe(pageRegistry.length);
     for (const page of pageRegistry) {
       expect(page.path).toMatch(/^\/(en|zh-CN)\/(tools|salary\/(cn|us)(\/[-a-z0-9]+)?)$/);
-      expect(page.status).toBe("draft");
-      expect(page.contentReviewedAt).toBeNull();
+      expect(page.status).toBe("published");
+      expect(page.contentReviewedAt).toBe("2026-10-31");
     }
   });
 });

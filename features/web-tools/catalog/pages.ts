@@ -31,10 +31,10 @@ function salary(lang: ToolLanguage, market: ToolMarket, tool: SalaryTool, title:
     title, description, equivalenceKey: `${market}-${tool}`, toolId: "gross-salary",
     purpose: market === "cn" ? (tool === "monthly-to-hourly" ? "worked-time" : "jurisdiction-reference") : "annualized",
     calculationVersion: CALCULATION_VERSION, sourcesReviewedAt: market === "cn" ? "2026-10-31" : null,
-    relatedPageIds: [], status: "draft", contentReviewedAt: null };
+    relatedPageIds: [], status: "published", contentReviewedAt: "2026-10-31" };
 }
 
-/** Review candidates, never an implicit publication queue. Human approval promotes an entry. */
+/** Initial CN/US batch approved for release by the user on 2026-10-31. */
 export const pageRegistry: readonly ToolPage[] = [
   salary("zh-CN", "cn", "overview", "税前工资换算器", "换算月薪、年收入、日薪和时薪，区分年化换算、实际工时均摊与中国大陆21.75计薪参考。"),
   salary("zh-CN", "cn", "monthly-to-daily", "月薪换日薪：一天工资怎么算", "按21.75计薪日参考或自己填写的实际工作天数，将税前月薪换算为每天的金额。"),
@@ -48,7 +48,7 @@ export const pageRegistry: readonly ToolPage[] = [
     id: `${lang}-tools`, kind: "directory", lang, slug: [], path: `/${lang}/tools`,
     title: lang === "en" ? "Work hours and gross pay tools" : "工时与税前工资工具库",
     description: lang === "en" ? "Calculate work hours, compare shift patterns and convert gross pay in your browser. Choose a tool and its calculation basis." : "在浏览器中计算工时、查看常见班次并换算税前工资，按问题选择工具和计算口径。",
-    equivalenceKey: "tools-directory", toolId: "tools-directory", purpose: "directory", calculationVersion: CALCULATION_VERSION, sourcesReviewedAt: null, relatedPageIds: [], status: "draft", contentReviewedAt: null,
+    equivalenceKey: "tools-directory", toolId: "tools-directory", purpose: "directory", calculationVersion: CALCULATION_VERSION, sourcesReviewedAt: null, relatedPageIds: [], status: "published", contentReviewedAt: "2026-10-31",
   })),
 ];
 for (const page of pageRegistry) {
