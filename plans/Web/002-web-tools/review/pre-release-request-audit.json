@@ -1,0 +1,30 @@
+{
+  "environment": "Node 24.22.2, macOS 27.0.1, clean origin/main-based branch, VERCEL_ENV=preview",
+  "scope": "Local same-origin HTTP requests only; no external browser traffic or remote production telemetry capture",
+  "startedAt": "2026-10-31T06:00:03.631Z",
+  "finishedAt": "2026-10-31T06:01:18.900Z",
+  "totalRequests": 186,
+  "methods": {
+    "GET": 186
+  },
+  "requestsWithBody": 0,
+  "matchedProbeData": 0,
+  "baselineRequests": 170,
+  "newRequestsDuringEnglishInput": 0,
+  "scenarios": [
+    "English monthly income, 13 salary months and extra cash bonus",
+    "Navigate to related tool",
+    "Chinese reference amount",
+    "Reload restores default amount"
+  ],
+  "browserAssertions": {
+    "inputAbsentFromUrl": true,
+    "inputAbsentFromMetadata": true,
+    "reloadRestoresDefault": true
+  },
+  "limits": [
+    "Same-origin requests only; direct external requests are not captured",
+    "Local Vercel telemetry endpoints do not reproduce hosted production analytics",
+    "No new analytics events or aggregate-ingestion claims"
+  ]
+}

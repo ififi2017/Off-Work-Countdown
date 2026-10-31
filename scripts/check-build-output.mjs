@@ -63,6 +63,13 @@ if (target === "web") {
   if (existsSync("out/showcase")) {
     fail("Web-only App showcase images leaked into the desktop export: out/showcase");
   }
+  // Salary tools are Web-only even when draft previews are enabled.
+  const salaryLeaks = filesUnder("out").filter((path) =>
+    /(?:^|[\\/])(?:salary|tools)(?:[\\/.]|$)/.test(path)
+  );
+  if (salaryLeaks.length) {
+    fail(`Web salary routes leaked into Desktop export:\n${salaryLeaks.join("\n")}`);
+  }
   console.log("Desktop export excludes Web handlers and includes main/mini pages.");
 } else if (target === "mobile") {
   const leaked = webRouteManifests.filter((path) => existsSync(path));

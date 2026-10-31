@@ -1,5 +1,7 @@
 # Web 001 — 双域 SEO 优化计划（off.rainif.com + doneat.app）
 
+2026-10-31 新增独立 Web 工资与工时工具库实施，见 [Web 002 执行计划](002-web-tools/PLAN.md) 和用户提供的 [v3 规范](002-web-tools/SPEC-v3.md)。首批 CN/US 工资页为待人工审核的预览稿；本计划既有 SEO 工作与双域分工继续保留。
+
 - **Status**: IN PROGRESS — 2026-09-25 §7 五项均已拍板；产品仓 P1-1、P1-2、P1-4、P1-5、P1-6、P2-1 与官网 P1-8、P1-9、P1-11 已于 2026-09-25 合并到两仓 `main`；P1-12 由用户在 Cloudflare 完成
 - **起草**: 2026-09-25
 - **数据来源**: Google Search Console 导出（两个属性，最近 3 个月，截至 2026-09-22）；Bing Webmaster 概览（两个属性，2026-09-09 至 09-22，只有每日汇总）
