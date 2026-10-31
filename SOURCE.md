@@ -49,3 +49,12 @@ Other source hosts must adapt the tree/archive URL format in
 - Scope: localized two-line rest-day Timeline header with next-shift countdown/date, and About App filing 沪ICP备2026055302号-2A shown only for system region CN regardless of app language.
 - Build recipe: default AirBuild Xcode 27.2, `airbuild-xcode archive -project src-mobile/ios/App/App.xcodeproj -scheme App -archivePath .airbuild/artifacts/DoneAt-3.2.5-286.xcarchive CURRENT_PROJECT_VERSION=286` with managed signing for the app, iPhone widget, Watch app and Watch widgets. All shipping marketing versions are 3.2.5. The untracked worktree manifest overrides build 286 globally; tracked `CURRENT_PROJECT_VERSION=2` retains the Xcode Cloud convention.
 - This record identifies the intended artifact, not processing or distribution success; those are verified against App Store Connect after upload. The subsequent record-only commit does not change covered executable source.
+
+## Internal TestFlight source record — iOS 3.2.5 (287)
+
+- Channel: internal TestFlight group Test only; no App Store or external beta review submission.
+- Corresponding covered source: https://github.com/ififi2017/Off-Work-Countdown/commit/5be1d804a32ceeac93490d1b15370c53b06ba81f
+- Source archive: https://github.com/ififi2017/Off-Work-Countdown/archive/5be1d804a32ceeac93490d1b15370c53b06ba81f.tar.gz
+- Scope: About displays the installed marketing version and actual CFBundleVersion, retaining the localized two-line rest-day Timeline header and next-shift countdown/date, and the system-region-CN-only About App filing 沪ICP备2026055302号-2A.
+- Build recipe: default AirBuild Xcode 27.2, `airbuild-xcode archive -project src-mobile/ios/App/App.xcodeproj -scheme App -archivePath .airbuild/artifacts/DoneAt-3.2.5-287.xcarchive CURRENT_PROJECT_VERSION=287` with managed signing for the app, iPhone widget, Watch app and Watch widgets. All shipping marketing versions are 3.2.5. The untracked worktree manifest overrides build 287 globally; tracked `CURRENT_PROJECT_VERSION=2` retains the Xcode Cloud convention.
+- This record identifies the intended artifact, not processing or distribution success; those are verified against App Store Connect after upload. This record-only commit does not change covered executable source.
