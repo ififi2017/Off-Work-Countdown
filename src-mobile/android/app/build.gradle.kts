@@ -34,8 +34,8 @@ android {
         minSdk = 26
         targetSdk = 36
         // Play uploads need a higher code each time; the release workflow passes one in.
-        versionCode = providers.gradleProperty("doneatVersionCode").orNull?.toInt() ?: if (cnChannel) 8 else 5
-        versionName = "3.2.4"
+        versionCode = providers.gradleProperty("doneatVersionCode").orNull?.toInt() ?: if (cnChannel) 10 else 5
+        versionName = "3.2.5"
         // Public Play configuration only. Empty values keep the store unavailable.
         val plusProduct = providers.gradleProperty("doneatPlusSubscriptionProduct").orElse("").get()
         val lifetimeProduct = providers.gradleProperty("doneatPlusLifetimeProduct").orElse("").get()

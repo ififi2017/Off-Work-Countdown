@@ -3,6 +3,30 @@
     "schemaVersion": 1,
     "applicationId": "com.rainif.doneat.cn",
     "channel": "cn",
+    "versionCode": 10,
+    "versionName": "3.2.5",
+    "minSdk": 26,
+    "releaseNotes": {
+      "zh-CN": "• 修复休息倒计时的进度气泡在接近起点或终点时被截断的问题，百分比与指针现在可完整显示。",
+      "en": "• Fixed the rest countdown progress bubble being clipped near either end of the bar. The percentage and pointer now remain fully visible."
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "applicationId": "com.rainif.doneat.cn",
+    "channel": "cn",
+    "versionCode": 9,
+    "versionName": "3.2.3",
+    "minSdk": 26,
+    "releaseNotes": {
+      "zh-CN": "• 新增多种桌面小组件，查看下班倒计时、工时汇总、人生、专注、假期，以及大小周与排班周概览；可在应用内预览和添加。\n• 优化小组件的默认尺寸、布局与倒计时显示，适配 Android 启动器。\n• 更新首次欢迎页与小组件介绍，修复欢迎页时间滚动显示。\n• 致谢内容默认折叠，可按需展开查看。",
+      "en": "• Add Home Screen widgets for shift countdowns, work-hour summaries, life, focus, holidays, and alternating-week or roster overviews. Preview and add them in the app.\n• Improve default widget sizes, layouts, and countdown rendering for Android launchers.\n• Refresh the welcome screens and widget introduction, and fix the rolling time display during setup.\n• Keep acknowledgements collapsed until you choose to expand them."
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "applicationId": "com.rainif.doneat.cn",
+    "channel": "cn",
     "versionCode": 7,
     "versionName": "3.2.1",
     "minSdk": 26,
