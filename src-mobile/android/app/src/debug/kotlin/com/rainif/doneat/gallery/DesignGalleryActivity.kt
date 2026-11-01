@@ -113,6 +113,14 @@ class DesignGalleryActivity : ComponentActivity() {
             }
             SystemBarsFollowTheme(dark)
             DoneAtTheme(themeMode = mode, dynamicColor = dynamic, accentColor = accent, reducedMotion = reduced) {
+                if (intent.getStringExtra("screen") == "about") {
+                    val density = LocalDensity.current
+                    CompositionLocalProvider(LocalDensity provides Density(density.density,
+                        intent.getFloatExtra("fontScale", density.fontScale))) {
+                        com.rainif.doneat.ui.settings.AboutScreen(open = {}, onBack = { finish() })
+                    }
+                    return@DoneAtTheme
+                }
                 if (intent.getStringExtra("screen") == "progress") {
                     Surface(Modifier.fillMaxSize()) {
                         Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(DoneAtSpacing.xl),

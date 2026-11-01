@@ -3,6 +3,18 @@
     "schemaVersion": 1,
     "applicationId": "com.rainif.doneat.cn",
     "channel": "cn",
+    "versionCode": 11,
+    "versionName": "3.2.5",
+    "minSdk": 26,
+    "releaseNotes": {
+      "zh-CN": "• 关于页同步 iOS 的 fi_niaR Studio 品牌字标，适配浅色、深色及大字号；减少动画时光标保持常亮。",
+      "en": "• Updated About with the iOS fi_niaR Studio wordmark, supporting light and dark themes and larger text. The cursor stays lit with reduced motion."
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "applicationId": "com.rainif.doneat.cn",
+    "channel": "cn",
     "versionCode": 10,
     "versionName": "3.2.5",
     "minSdk": 26,
