@@ -888,3 +888,9 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - Local CN 790 tests passed (zero failures/errors/skips), lintDebug and assembleDebug passed. GitHub Play/CN tests, lint and release builds passed; local version check, check:ios and headless iOS Simulator build passed. The user's existing simulator was preserved; no iOS visual testing was performed.
 - Play CI run41317101157 uploaded 3.2.5 (146) to alpha with status completed. This is not evidence of Google review approval or public production availability.
 - Cloudflare APK and latest feed now serve CN10; domestic download page and changelog updated via site PR49. Source tag, archive, release metadata and SHA256 records retained. No Apple/Desktop binaries were published.
+
+### 2026-11-01 · iOS studio wordmark parity
+
+- Explicit user request ports the current iOS AboutView StudioMark only; scheduling baseline unchanged. Play/CN About now use the same Geist Mono Bold vector outlines, blue chevron and 1.1-second blinking cursor. Reduced motion keeps the cursor lit; artwork scales with font size and remains physically left-to-right with one accessibility label.
+- Product version and channel version-code configuration remain unchanged at the user's request. Already published immutable APK assets are not overwritten by this source change.
+- Added read-only debug About gallery for whole-page light/dark/large-font/reduced-motion inspection. Version check and incremental headless iOS build passed; Android validation and Pixel acceptance recorded below on completion.
