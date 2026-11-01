@@ -880,8 +880,11 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - Play802 / CN790单测全部通过；两渠道双lint、Debug及R8 Release APK/AAB通过，缺CN生产公钥的Release负测正确拒绝。CNRelease包名com.rainif.doneat.cn /3.2.3/code8且unsigned。合入main后npm616、字符串生成、CN34测试、版本及无头iOS构建通过；iOS规则固定ffd91597未推进，标准drift69条历史提交，本轮无新增规则漂移。CN新增PR回归job只用公共key，不接触签名secret。
 - Pixel真机独立.cn.ciqa会员页和展开激活表单布局通过，未提交激活/试用；临时包已移除，不覆盖既有应用。记录见 `qa/2026-10-29-cn-ci-enablement/README.md`；签名CI本身、正式激活/续期及覆盖升级尚未验收。
 
-### 2026-11-01 · Progress bubble clipping / 3.2.5 candidate
+### 2026-11-01 · Progress bubble clipping / 3.2.5 release
 
 - Pixel report: the rest countdown's 72% group opacity used a layout-sized offscreen layer, clipping the percentage bubble near either endpoint. The meter now owns the group-opacity layer and expands its drawing bounds for bubble/pointer overhang, retaining grouped blending, exact pointer position and layout size. Debug gallery `screen=progress` covers 0%, 4.2%, 50%, 95.8%, 100% without changing user records.
 - Based on main `bdc3c2a5`, which includes the shipped CN 3.2.3 widget work. Target CN version is 3.2.5 (10), above public 3.2.3 (9); production trust/signing identity remain unchanged. Play uses the normal GitHub CI release flow. Product version metadata remains synchronized; this task does not publish Apple/Desktop binaries.
-- Validation and publication evidence will be recorded after completion.
+- Released CN 3.2.5 (10) from merged source `9954272f4c5bdd9aa222c28aa1d3d54f4c467538` ([PR352](https://github.com/ififi2017/Off-Work-Countdown/pull/352)). Existing CN certificate/public trust retained. Pixel upgraded in place with data retained; real rest screen at 97.6–97.7% and synthetic endpoint gallery passed light/dark visual inspection. Evidence: `qa/2026-11-01-android-progress/README.md`.
+- Local CN 790 tests passed (zero failures/errors/skips), lintDebug and assembleDebug passed. GitHub Play/CN tests, lint and release builds passed; local version check, check:ios and headless iOS Simulator build passed. The user's existing simulator was preserved; no iOS visual testing was performed.
+- Play CI run41317101157 uploaded 3.2.5 (146) to alpha with status completed. This is not evidence of Google review approval or public production availability.
+- Cloudflare APK and latest feed now serve CN10; domestic download page and changelog updated via site PR49. Source tag, archive, release metadata and SHA256 records retained. No Apple/Desktop binaries were published.
