@@ -76,7 +76,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.graphics.Color
@@ -542,7 +541,7 @@ private fun RestSurface(session: ShiftSession, shift: ShiftSnapshot, now: Double
         PhasePill(Icons.Outlined.Hotel, stringResource(R.string.widgetRestDay))
         Hero(remaining, null, text, null, muted = true)
         Box(Modifier.padding(horizontal = DoneAtSpacing.xl).padding(top = DoneAtSpacing.s)) {
-            DoneAtProgressMeter(session.countdownToClockInProgress(shift), stringResource(R.string.progress), Modifier.alpha(0.72f), locale = text.locale)
+            DoneAtProgressMeter(session.countdownToClockInProgress(shift), stringResource(R.string.progress), locale = text.locale, opacity = 0.72f)
         }
     }, summary = {
         Column(Modifier.padding(horizontal = DoneAtSpacing.page).padding(top = DoneAtSpacing.section)) {

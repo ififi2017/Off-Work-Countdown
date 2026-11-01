@@ -113,6 +113,18 @@ class DesignGalleryActivity : ComponentActivity() {
             }
             SystemBarsFollowTheme(dark)
             DoneAtTheme(themeMode = mode, dynamicColor = dynamic, accentColor = accent, reducedMotion = reduced) {
+                if (intent.getStringExtra("screen") == "progress") {
+                    Surface(Modifier.fillMaxSize()) {
+                        Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(DoneAtSpacing.xl),
+                            verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xl)) {
+                            Text("Rest progress · edge clipping regression")
+                            for (value in listOf(0.0, 4.2, 50.0, 95.8, 100.0)) {
+                                DoneAtProgressMeter(value, "Rest progress", opacity = 0.72f)
+                            }
+                        }
+                    }
+                    return@DoneAtTheme
+                }
                 if (intent.getStringExtra("screen") == "theme") {
                     val prefs = com.rainif.doneat.core.domain.settings.PreferencesRules.defaults("UTC", 0.0).copy(
                         theme = when (mode) { ThemeMode.LIGHT -> "light"; ThemeMode.DARK -> "dark"; else -> "auto" })

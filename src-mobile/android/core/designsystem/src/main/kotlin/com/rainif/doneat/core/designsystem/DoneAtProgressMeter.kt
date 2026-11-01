@@ -15,10 +15,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.LocalConfiguration
@@ -92,6 +94,8 @@ fun DoneAtProgressMeter(
     paused: Boolean = false,
     /** Defaults to the app's current locale (its per-app language), not the system's. */
     locale: Locale? = null,
+    /** Group opacity with room for the overhanging bubble; Modifier.alpha clips that room. */
+    opacity: Float = 1f,
 ) {
     val numberLocale = locale ?: LocalConfiguration.current.locales[0]
     val scheme = MaterialTheme.colorScheme
@@ -100,6 +104,7 @@ fun DoneAtProgressMeter(
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer()
+    val opacityPaint = remember(opacity) { Paint().apply { alpha = opacity.coerceIn(0f, 1f) } }
 
     val (fill, onFill) = when {
         paused -> scheme.onSurfaceVariant to scheme.surface
@@ -147,38 +152,50 @@ fun DoneAtProgressMeter(
         fun x(value: Float) = if (rtl) size.width - value else value
         val fillWidth = maxOf(8.dp.toPx(), place.targetX)
 
-        drawRoundRect(track, Offset(0f, barTop), Size(size.width, barHeight), radius)
-        if (sweep != null) {
-            clipRect(0f, barTop, size.width, barTop + barHeight) {
-                val bandWidth = size.width * 0.42f
-                val left = size.width * sweep + (size.width - bandWidth) / 2
-                drawRect(
-                    Brush.horizontalGradient(listOf(Color.Transparent, sweepColor, Color.Transparent), startX = left, endX = left + bandWidth),
-                    Offset(left, barTop), Size(bandWidth, barHeight),
-                )
-            }
+        // Keep group alpha (including overlapping text/pointer) without the layout-sized
+        // offscreen buffer created by Modifier.alpha. Endpoint geometry can extend by
+        // half the bubble height plus half the pointer width, beyond allowedOverflow.
+        val translucent = opacityPaint.alpha < 1f
+        if (translucent) {
+            val outset = maxOf(ALLOWED_OVERFLOW.toPx(), (bubbleHeight + pointerWidth) / 2) + 1.dp.toPx()
+            drawContext.canvas.saveLayer(Rect(-outset, -1.dp.toPx(), size.width + outset, size.height + 1.dp.toPx()), opacityPaint)
         }
-        drawRoundRect(barFill, Offset(minOf(x(0f), x(fillWidth)), barTop), Size(fillWidth, barHeight), radius)
+        try {
+            drawRoundRect(track, Offset(0f, barTop), Size(size.width, barHeight), radius)
+            if (sweep != null) {
+                clipRect(0f, barTop, size.width, barTop + barHeight) {
+                    val bandWidth = size.width * 0.42f
+                    val left = size.width * sweep + (size.width - bandWidth) / 2
+                    drawRect(
+                        Brush.horizontalGradient(listOf(Color.Transparent, sweepColor, Color.Transparent), startX = left, endX = left + bandWidth),
+                        Offset(left, barTop), Size(bandWidth, barHeight),
+                    )
+                }
+            }
+            drawRoundRect(barFill, Offset(minOf(x(0f), x(fillWidth)), barTop), Size(fillWidth, barHeight), radius)
 
-        // Bubble, then the pointer tucked 0.5 dp under it so the two read as one shape.
-        val bubbleLeft = minOf(x(place.bubbleX), x(place.bubbleX + bubbleWidth))
-        val bubbleTop = barTop - BUBBLE_GAP.toPx() - bubbleHeight - POINTER_HEIGHT.toPx()
-        drawRoundRect(fill, Offset(bubbleLeft, bubbleTop), Size(bubbleWidth, bubbleHeight), CornerRadius(bubbleHeight / 2))
-        val pointerTop = bubbleTop + bubbleHeight - 0.5.dp.toPx()
-        val tip = x(place.targetX)
-        drawPath(
-            Path().apply {
-                moveTo(tip - pointerWidth / 2, pointerTop)
-                lineTo(tip + pointerWidth / 2, pointerTop)
-                lineTo(tip, pointerTop + POINTER_HEIGHT.toPx() + 0.5.dp.toPx())
-                close()
-            },
-            fill,
-        )
-        drawText(
-            measured,
-            topLeft = Offset(bubbleLeft + (bubbleWidth - measured.size.width) / 2, bubbleTop + (bubbleHeight - measured.size.height) / 2),
-        )
+            // Bubble, then the pointer tucked 0.5 dp under it so the two read as one shape.
+            val bubbleLeft = minOf(x(place.bubbleX), x(place.bubbleX + bubbleWidth))
+            val bubbleTop = barTop - BUBBLE_GAP.toPx() - bubbleHeight - POINTER_HEIGHT.toPx()
+            drawRoundRect(fill, Offset(bubbleLeft, bubbleTop), Size(bubbleWidth, bubbleHeight), CornerRadius(bubbleHeight / 2))
+            val pointerTop = bubbleTop + bubbleHeight - 0.5.dp.toPx()
+            val tip = x(place.targetX)
+            drawPath(
+                Path().apply {
+                    moveTo(tip - pointerWidth / 2, pointerTop)
+                    lineTo(tip + pointerWidth / 2, pointerTop)
+                    lineTo(tip, pointerTop + POINTER_HEIGHT.toPx() + 0.5.dp.toPx())
+                    close()
+                },
+                fill,
+            )
+            drawText(
+                measured,
+                topLeft = Offset(bubbleLeft + (bubbleWidth - measured.size.width) / 2, bubbleTop + (bubbleHeight - measured.size.height) / 2),
+            )
+        } finally {
+            if (translucent) drawContext.canvas.restore()
+        }
     }
 }
 

@@ -879,3 +879,9 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 基于公开CN tag -7单独移植渠道/授权/更新，不拿原工作区未提交混杂改动；当前3.2.3 UI、小组件和致谢折叠由两渠道共享。Play源码/测试移至专属源集，CN不包含Billing/Review，保留旧CN备案与激活流程。CN即时授权门禁补齐Focus写入、报告、widgets/通知到期。源码保留在PR344，未合并发版。
 - Play802 / CN790单测全部通过；两渠道双lint、Debug及R8 Release APK/AAB通过，缺CN生产公钥的Release负测正确拒绝。CNRelease包名com.rainif.doneat.cn /3.2.3/code8且unsigned。合入main后npm616、字符串生成、CN34测试、版本及无头iOS构建通过；iOS规则固定ffd91597未推进，标准drift69条历史提交，本轮无新增规则漂移。CN新增PR回归job只用公共key，不接触签名secret。
 - Pixel真机独立.cn.ciqa会员页和展开激活表单布局通过，未提交激活/试用；临时包已移除，不覆盖既有应用。记录见 `qa/2026-10-29-cn-ci-enablement/README.md`；签名CI本身、正式激活/续期及覆盖升级尚未验收。
+
+### 2026-11-01 · Progress bubble clipping / 3.2.5 candidate
+
+- Pixel report: the rest countdown's 72% group opacity used a layout-sized offscreen layer, clipping the percentage bubble near either endpoint. The meter now owns the group-opacity layer and expands its drawing bounds for bubble/pointer overhang, retaining grouped blending, exact pointer position and layout size. Debug gallery `screen=progress` covers 0%, 4.2%, 50%, 95.8%, 100% without changing user records.
+- Based on main `bdc3c2a5`, which includes the shipped CN 3.2.3 widget work. Target CN version is 3.2.5 (10), above public 3.2.3 (9); production trust/signing identity remain unchanged. Play uses the normal GitHub CI release flow. Product version metadata remains synchronized; this task does not publish Apple/Desktop binaries.
+- Validation and publication evidence will be recorded after completion.
