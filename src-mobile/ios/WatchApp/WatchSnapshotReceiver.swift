@@ -80,9 +80,13 @@ final class WatchSnapshotReceiver: NSObject {
                 session.sendMessageData(data, replyHandler: reply, errorHandler: { @Sendable _ in failed() })
             },
             reloadWidgets: {
-                WidgetCenter.shared.reloadTimelines(ofKind: "DoneAtWatchWidget")
-                // A new package can move the shift window the Smart Stack hint describes.
-                WidgetCenter.shared.invalidateRelevance(ofKind: "DoneAtWatchWidget")
+                for kind in WatchWidgetKind.allCases {
+                    WidgetCenter.shared.reloadTimelines(ofKind: kind.rawValue)
+                    // A new package can also move the Smart Stack shift windows.
+                    if kind.providesRelevance {
+                        WidgetCenter.shared.invalidateRelevance(ofKind: kind.rawValue)
+                    }
+                }
             }
         )
         super.init()

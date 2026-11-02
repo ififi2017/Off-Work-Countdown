@@ -5,12 +5,34 @@ nonisolated enum WatchSnapshotContract {
     /// V5 requires annual shift ranges; V6 adopted leave (plan 020). V1–V5
     /// remain readable.
     static let scheduleSchemaVersion = 6
+    /// Wire admission and disk restoration must accept the same versions.
+    /// Otherwise the Watch app can show a received package that its widgets
+    /// reject when they reopen the shared cache in a separate process.
+    static let supportedSchemaVersions = schemaVersion...scheduleSchemaVersion
+    static let supportedScheduleSchemaVersions = 2...scheduleSchemaVersion
     static let maximumEncodedBytes = 2 * 1_024 * 1_024
     static let maximumContextBytes = 48 * 1_024
     static let maximumJSONInteger: UInt64 = 9_007_199_254_740_991
     static let maximumJSONTimestamp = Int64(maximumJSONInteger)
     static let maximumIdentifierBytes = 128
     static let maximumRetiredGenerations = 64
+}
+
+/// Every complication reads the shared cache, so every kind must be reloaded
+/// after a package is persisted, including timelines still showing no data.
+nonisolated enum WatchWidgetKind: String, CaseIterable {
+    case countdown = "DoneAtWatchWidget"
+    case week = "DoneAtWatchWeek"
+    case shift = "DoneAtWatchShift"
+    case holiday = "DoneAtWatchHoliday"
+    case upNext = "DoneAtWatchUpNext"
+
+    var providesRelevance: Bool {
+        switch self {
+        case .countdown, .upNext: true
+        case .week, .shift, .holiday: false
+        }
+    }
 }
 
 nonisolated struct WatchSnapshotPackageV1: Codable, Equatable, Sendable {
@@ -34,7 +56,7 @@ nonisolated struct WatchSnapshotPackageV1: Codable, Equatable, Sendable {
         try container.encode(revision, forKey: .revision)
         try container.encode(generatedAtMs, forKey: .generatedAtMs)
         try container.encode(expiresAtMs, forKey: .expiresAtMs)
-        if (2...6).contains(schemaVersion) {
+        if WatchSnapshotContract.supportedScheduleSchemaVersions.contains(schemaVersion) {
             try container.encodeIfPresent(schedule, forKey: .schedule)
         } else {
             try container.encode(access, forKey: .access)
@@ -48,7 +70,7 @@ nonisolated struct WatchSnapshotPackageV1: Codable, Equatable, Sendable {
         revision = try values.decode(UInt64.self, forKey: .revision)
         generatedAtMs = try values.decode(Int64.self, forKey: .generatedAtMs)
         expiresAtMs = try values.decode(Int64.self, forKey: .expiresAtMs)
-        if (2...6).contains(schemaVersion) {
+        if WatchSnapshotContract.supportedScheduleSchemaVersions.contains(schemaVersion) {
             access = .init(schemaVersion: 1, revision: 0, verifiedAtMs: 0, status: .free, validUntilMs: nil)
             content = nil
             schedule = try values.decode(WatchScheduleV2.self, forKey: .schedule)
@@ -152,13 +174,13 @@ nonisolated enum WatchSnapshotDecoderV1 {
     static func decode(_ data: Data) throws -> WatchSnapshotPackageV1 {
         guard data.count <= WatchSnapshotContract.maximumEncodedBytes else { throw WatchSnapshotDecodeError.oversized }
         if let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
-           let schema = object["schemaVersion"] as? Int, ![1, 2, 3, 4, 5, 6].contains(schema) {
+           let schema = object["schemaVersion"] as? Int, !WatchSnapshotContract.supportedSchemaVersions.contains(schema) {
             throw WatchSnapshotDecodeError.unsupportedSchema
         }
         guard let package = try? JSONDecoder().decode(WatchSnapshotPackageV1.self, from: data) else {
             throw WatchSnapshotDecodeError.malformed
         }
-        guard [1, 2, 3, 4, 5, 6].contains(package.schemaVersion),
+        guard WatchSnapshotContract.supportedSchemaVersions.contains(package.schemaVersion),
               package.access.schemaVersion == WatchSnapshotContract.schemaVersion else {
             throw WatchSnapshotDecodeError.unsupportedSchema
         }
@@ -169,7 +191,7 @@ nonisolated enum WatchSnapshotDecoderV1 {
 
 nonisolated extension WatchSnapshotPackageV1 {
     var isValid: Bool {
-        guard [1, 2, 3, 4, 5, 6].contains(schemaVersion),
+        guard WatchSnapshotContract.supportedSchemaVersions.contains(schemaVersion),
               access.schemaVersion == WatchSnapshotContract.schemaVersion,
               sourceGeneration.isValidWatchIdentifier,
               revision <= WatchSnapshotContract.maximumJSONInteger,
@@ -178,7 +200,7 @@ nonisolated extension WatchSnapshotPackageV1 {
               access.verifiedAtMs <= generatedAtMs,
               access.isValid else { return false }
 
-        if (2...6).contains(schemaVersion) {
+        if WatchSnapshotContract.supportedScheduleSchemaVersions.contains(schemaVersion) {
             if schemaVersion < 5, schedule?.usesAnnualDateRanges == true { return false }
             if schemaVersion < 6, schedule?.usesLeave == true { return false }
             if schemaVersion < 4, schedule?.configuration.extendedSchedule?.clearedFromDayKey != nil {
@@ -409,7 +431,7 @@ nonisolated enum WatchSnapshotOrderEvaluator {
         guard state.revision.map({ package.revision > $0 }) ?? false else {
             return .init(decision: .rejectStaleRevision, proposedState: nil)
         }
-        if (2...6).contains(package.schemaVersion) {
+        if WatchSnapshotContract.supportedScheduleSchemaVersions.contains(package.schemaVersion) {
             var proposed = state
             proposed.revision = package.revision
             proposed.acceptedAccess = package.access

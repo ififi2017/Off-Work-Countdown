@@ -4,6 +4,56 @@ import Testing
 
 @Suite("Watch snapshot pairing cache")
 struct WatchSnapshotCacheTests {
+    @Test("Every supported wire version remains readable by a fresh widget cache", arguments: [1, 2, 3, 4, 5, 6])
+    func supportedSchemasSurviveReopen(schemaVersion: Int) async throws {
+        let file = temporaryFile()
+        defer { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
+        let value = schemaVersion == 1 ? package() : schedulePackage(schemaVersion: schemaVersion)
+        #expect(try WatchSnapshotDecoderV1.decode(encoded(value)) == value)
+        let receiverCache = await WatchSnapshotCache.open(fileURL: file, newPairingSession: "pair")
+        #expect(await pair(value, cache: receiverCache) == .accepted)
+        #expect(await receiverCache.currentPackage() == value)
+        let persisted = try Data(contentsOf: file)
+
+        // The widget has no receiver's in-memory package. Reopen exactly the
+        // bytes already on disk, without a new delivery or a cache migration.
+        let widgetCache = await WatchSnapshotCache.open(fileURL: file, newPairingSession: "unused")
+        #expect(await widgetCache.loadState() == .ready)
+        let restored = await widgetCache.currentPackage()
+        #expect(restored == value)
+        let hello = await widgetCache.makePairingHello(nonce: "after-restart")
+        #expect(hello.pairingSession == "pair")
+        #expect(hello.acceptedGeneration == value.sourceGeneration)
+        #expect(try Data(contentsOf: file) == persisted)
+
+        let now = schemaVersion == 1 ? Int64(1_000) :
+            Int64(ISO8601DateFormatter().date(from: "2026-11-02T10:00:00Z")!.timeIntervalSince1970 * 1_000)
+        let display = WatchDisplayProjection.project(restored, nowMs: now)
+        #expect(display == WatchDisplayProjection.project(value, nowMs: now))
+        guard case .content(let content) = display else {
+            Issue.record("A persisted supported package must not become waiting after reopen")
+            return
+        }
+        if schemaVersion != 1 { #expect(content.phase == .working) }
+    }
+
+    @Test("The publisher's current schema upgrades a legacy cache and still renders after reopen")
+    func currentSchemaUpgradeSurvivesReopen() async throws {
+        let file = temporaryFile()
+        defer { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
+        let cache = await WatchSnapshotCache.open(fileURL: file, newPairingSession: "pair")
+        #expect(await pair(package(), cache: cache) == .accepted)
+        let current = schedulePackage(schemaVersion: WatchSnapshotContract.scheduleSchemaVersion, revision: 2)
+        #expect(await cache.receiveApplicationContext(encoded(current)) == .accepted)
+
+        let reopened = await WatchSnapshotCache.open(fileURL: file)
+        #expect(await reopened.loadState() == .ready)
+        #expect(await reopened.currentPackage() == current)
+        #expect(await reopened.receiveApplicationContext(encoded(current)) == .duplicate)
+        #expect(await reopened.receiveApplicationContext(encoded(package(revision: 3))) == .rejected(.rejectInvalidPackage))
+        #expect(await reopened.currentPackage() == current)
+    }
+
     @Test("Only a live pairing challenge may establish or replace a generation")
     func challengeAdmission() async throws {
         let file = temporaryFile()
@@ -195,14 +245,14 @@ struct WatchSnapshotCacheTests {
         #expect(await pair(package(), cache: cache) == .accepted)
     }
 
-    @Test("A future package schema is distinguished from damaged JSON")
-    func incompatibleRecovery() async throws {
+    @Test("An unsupported package schema is distinguished from damaged JSON", arguments: [0, 7, 99])
+    func incompatibleRecovery(schemaVersion: Int) async throws {
         let file = temporaryFile()
         defer { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
         try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
         let object: [String: Any] = [
             "pairingSession": "pair",
-            "package": ["schemaVersion": 99],
+            "package": ["schemaVersion": schemaVersion],
             "order": ["retiredGenerations": []]
         ]
         try JSONSerialization.data(withJSONObject: object).write(to: file)
@@ -251,6 +301,22 @@ struct WatchSnapshotCacheTests {
 
     private func temporaryFile() -> URL {
         FileManager.default.temporaryDirectory.appending(path: "WatchCache-\(UUID().uuidString)/snapshot.json")
+    }
+
+    private func schedulePackage(schemaVersion: Int, revision: UInt64 = 1) -> WatchSnapshotPackageV1 {
+        let presentation = package().content!.presentation
+        let schedule = WatchScheduleV2(
+            configuration: .init(startTime: "09:00", endTime: "17:00", nowMs: 0, workdays: [1, 2, 3, 4, 5],
+                schedule: .init(mode: "classic", referenceWeekStartMs: nil, referenceWeekType: nil,
+                    singleWeekendWorkday: nil, rotationAnchorMs: nil, rotationWorkDays: nil, rotationRestDays: nil),
+                breakStartTime: "12:00", breakDurationMinutes: 60, overtimeEndAtMs: nil,
+                forcedWorkdayStartMs: nil, timeZoneIdentifier: "UTC"),
+            automaticallyRuns: true, isConfigured: true, currentShift: nil, currentUntilMs: 0,
+            presentation: presentation)
+        return .init(schemaVersion: schemaVersion, sourceGeneration: "a", revision: revision,
+            generatedAtMs: 100, expiresAtMs: WatchSnapshotContract.maximumJSONTimestamp,
+            access: .init(schemaVersion: 1, revision: 0, verifiedAtMs: 0, status: .free, validUntilMs: nil),
+            content: nil, schedule: schedule)
     }
 
     private func package(generation: String = "a", revision: UInt64 = 1) -> WatchSnapshotPackageV1 {

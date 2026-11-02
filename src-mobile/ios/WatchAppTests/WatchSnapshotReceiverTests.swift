@@ -58,8 +58,8 @@ struct WatchSnapshotReceiverTests {
         #expect(restoredTransport.reloads == 2)
     }
 
-    @Test("A paired V1 cache upgrades to free V2 and cannot be downgraded by a late V1 package")
-    func v1ToV2Upgrade() async throws {
+    @Test("A paired V1 cache upgrades to a free schedule and restores offline", arguments: [2, 6])
+    func v1ToScheduleUpgrade(schemaVersion: Int) async throws {
         let file = temporaryFile()
         defer { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
         let transport = RecordingTransport()
@@ -73,20 +73,26 @@ struct WatchSnapshotReceiverTests {
         request.reply(pairingReply(package(revision: 1), hello: hello))
         await waitUntil { model.package?.revision == 1 && receiver.pendingDeliveryCountForTesting == 0 }
 
-        let upgrade = v2Package(revision: 3)
+        let upgrade = schedulePackage(revision: 3, schemaVersion: schemaVersion)
         await receiver.receiveContext(encoded(upgrade))
         #expect(model.package == upgrade)
         #expect(model.package?.access.status == .free)
 
         let restoredModel = WatchAppModel()
-        let restoredTransport = RecordingTransport()
+        let restoredTransport = RecordingTransport(ready: false)
         defer { withExtendedLifetime(restoredTransport) {} }
         let restored = WatchSnapshotReceiver(
             model: restoredModel, cacheURL: file, transport: restoredTransport.value)
         await restored.start()
         #expect(restoredModel.package == upgrade)
-        #expect(restoredModel.package?.schemaVersion == 2)
+        #expect(restoredModel.package?.schemaVersion == schemaVersion)
         #expect(restoredTransport.reloads == 1)
+        #expect(restoredTransport.sent.isEmpty)
+
+        // The widget independently reads the same file without contacting iPhone.
+        let widgetCache = await WatchSnapshotCache.open(fileURL: file)
+        #expect(await widgetCache.loadState() == .ready)
+        #expect(await widgetCache.currentPackage() == upgrade)
 
         await restored.receiveContext(encoded(package(revision: 4)))
         #expect(restoredModel.package == upgrade)
@@ -224,7 +230,7 @@ struct WatchSnapshotReceiverTests {
         )
     }
 
-    private func v2Package(revision: UInt64) -> WatchSnapshotPackageV1 {
+    private func schedulePackage(revision: UInt64, schemaVersion: Int) -> WatchSnapshotPackageV1 {
         let presentation = WatchPresentationV1(
             localeIdentifier: "en", timeZoneIdentifier: "UTC", workingLabel: "Working",
             lunchLabel: "Break", restingLabel: "Resting", overtimeLabel: "Overtime",
@@ -242,7 +248,7 @@ struct WatchSnapshotReceiverTests {
             automaticallyRuns: true, isConfigured: true,
             currentShift: nil, currentUntilMs: 0, presentation: presentation)
         return .init(
-            schemaVersion: 2, sourceGeneration: "phone", revision: revision,
+            schemaVersion: schemaVersion, sourceGeneration: "phone", revision: revision,
             generatedAtMs: 100, expiresAtMs: WatchSnapshotContract.maximumJSONTimestamp,
             access: .init(
                 schemaVersion: 1, revision: 0, verifiedAtMs: 0,
