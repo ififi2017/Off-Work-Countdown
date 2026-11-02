@@ -497,3 +497,11 @@ iOS 自由排班增加选择班次后的日期点选与涂抹，重复操作恢�
 - [ ] 新版 CN 源已整合到 PR344，待审查合并与正式签名验收；未创建 Release、未发布。
 
 - [x] 按用户两份HTML重做小组件、付费墙、更新介绍与引导；模拟器样例/真实桌面证据及未覆盖项见 [设计验收](../qa/2026-10-29-android-design/README.md)。
+
+### 2026-11-02 Watch 表盘等待 iPhone：TestFlight 修复候选
+
+- [x] 统一 Watch 收包与缓存重读的 schema 支持范围，修复 schema 6 收包后 App 正常、表盘独立读盘却得到空包的问题；已有缓存无需删除或迁移。
+- [x] 五种 Watch 组件统一 kind 定义，收包落盘、启动恢复与回前台时刷新全部组件，并更新相关 Smart Stack relevance。
+- [x] 补充 schema 1–6 落盘重读、旧缓存升级、未知版本拒绝和离线恢复回归用例。
+- [x] `check:ios`、`check:ios-strings`、`check:version`、iOS 构建及未签名真机 Release 构建通过；iOS 98 次、watchOS 27 次测试执行通过（含参数化用例），全程最多一个模拟器。
+- [ ] TestFlight 真机反馈；不据代码修复声明用户问题已解决。未上传、未做模拟器视觉验收。构建、验证与试用步骤见 [修复记录](reviews/2026-11-02-watch-cache-testflight.md)。
