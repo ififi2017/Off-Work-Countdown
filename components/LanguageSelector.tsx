@@ -69,7 +69,9 @@ export function LanguageSelector({
 
     const currentPath = window.location.pathname.split("/").slice(2).join("/");
     const newPath = `/${lng}${currentPath ? `/${currentPath}` : ""}`;
-    router.push(newPath);
+    // A Web share/preset is still the same shift after changing language.
+    // Keep its source so an overtime session cannot become the visitor's own.
+    router.push(`${newPath}${window.location.search}`);
   };
 
   return (
