@@ -170,6 +170,7 @@ import type { DesktopUpdateCandidate } from "@/lib/desktop-updater";
 import { startSecondTick } from "@/lib/second-tick";
 import { localDateKey } from "@/lib/desktop-stats";
 import { buildWebCountdownStartShift } from "./web-countdown-start";
+import { webOvertimePresentation } from "./web-overtime-presentation";
 import {
   clearWebOvertimeSession,
   readWebOvertimeSession,
@@ -1304,6 +1305,41 @@ export function OffWorkCountdown({
       ? configuredDailySalary *
         calculateTimelinePayRatio(activeShift, Date.now())
       : null;
+
+  const overtimeNumberFormats = useMemo(() => {
+    const make = (options: Intl.NumberFormatOptions) => {
+      try {
+        return new Intl.NumberFormat(lang, options);
+      } catch {
+        return new Intl.NumberFormat(undefined, options);
+      }
+    };
+    return {
+      rate: make({ minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      percent: make({ maximumFractionDigits: 1 }),
+    };
+  }, [lang]);
+  const overtimePresentation = IS_WEB_BUILD
+    ? webOvertimePresentation(activeShift, Date.now(), configuredDailySalary, hideEarnings)
+    : null;
+  const elapsedOvertimeSeconds = overtimePresentation
+    ? Math.floor(overtimePresentation.elapsedOvertimeMs / 1000)
+    : 0;
+  const overtimeInfo = overtimePresentation ? {
+    elapsed: t("webOvertimeElapsed", {
+      time: t("timeLeft", {
+        hours: Math.floor(elapsedOvertimeSeconds / 3600),
+        minutes: Math.floor((elapsedOvertimeSeconds % 3600) / 60).toString().padStart(2, "0"),
+        seconds: (elapsedOvertimeSeconds % 60).toString().padStart(2, "0"),
+      }),
+    }),
+    unpaidRate: overtimePresentation.unpaidHourlyRate !== null && overtimePresentation.unpaidRateDecreasePercent !== null
+      ? t("webOvertimeUnpaidRate", {
+          rate: overtimeNumberFormats.rate.format(overtimePresentation.unpaidHourlyRate),
+          percent: overtimeNumberFormats.percent.format(overtimePresentation.unpaidRateDecreasePercent),
+        })
+      : undefined,
+  } : undefined;
 
   // 将 UI 的运行状态镜像为一个原子快照。Rust 与迷你窗只比较、累加前端已
   // 解析好的绝对 segments，不需要理解跨夜班次、工作日等业务规则。
@@ -3490,6 +3526,7 @@ export function OffWorkCountdown({
                   <PeriodSummary
                     lang={lang}
                     note={t("summaryEstimateNote")}
+                    overtimeInfo={overtimeInfo}
                     rows={summaryRows}
                     hideEarnings={hideEarnings}
                     compact={IS_DESKTOP_BUILD}

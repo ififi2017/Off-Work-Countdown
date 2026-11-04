@@ -255,6 +255,8 @@
   "comingUp": "接下來",
   "todaysShift": "今天的班次",
   "shiftEnded": "班次已結束",
+  "webOvertimeElapsed": "已加班：{{time}}",
+  "webOvertimeUnpaidRate": "若加班沒有額外報酬，實際時薪會是 {{rate}}（低 {{percent}}%）。",
   "overtimeUntil": "加班到 {{time}}",
   "lunchBackAt": "恢復時間",
   "inTime": "還有 {{time}}",

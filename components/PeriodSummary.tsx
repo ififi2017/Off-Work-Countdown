@@ -17,6 +17,11 @@ interface PeriodSummaryProps {
   hideEarnings: boolean;
   compact?: boolean;
   mobile?: boolean;
+  /** Web-only overtime context; the paid earnings estimate remains unchanged. */
+  overtimeInfo?: {
+    elapsed: string;
+    unpaidRate?: string;
+  };
   currentEarnings?: {
     label: string;
     value: string;
@@ -34,6 +39,7 @@ export function PeriodSummary({
   compact = false,
   mobile = false,
   currentEarnings,
+  overtimeInfo,
 }: PeriodSummaryProps) {
   // 天数与小时用 Intl 的 unit 样式：复数形式、小数分隔符、各语言写法都由它处理，
   // 不需要为 19 种语言各写一遍「天」「小时」。
@@ -73,6 +79,12 @@ export function PeriodSummary({
       }`}
     >
       <p className="text-xs text-gray-500 dark:text-gray-400">{note}</p>
+      {overtimeInfo && (
+        <div className="mt-1 min-w-0 space-y-0.5 text-xs tabular-nums text-gray-500 [overflow-wrap:anywhere] dark:text-gray-400">
+          <p>{overtimeInfo.elapsed}</p>
+          {!hideEarnings && overtimeInfo.unpaidRate && <p>{overtimeInfo.unpaidRate}</p>}
+        </div>
+      )}
       {currentEarnings && (
         <div className="mt-2 flex items-center justify-between gap-3 border-b border-gray-200/70 pb-2 dark:border-gray-700/70">
           <span className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">

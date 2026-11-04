@@ -255,6 +255,8 @@
   "comingUp": "ถัดไป",
   "todaysShift": "กะวันนี้",
   "shiftEnded": "จบกะแล้ว",
+  "webOvertimeElapsed": "เวลาที่ทำงานล่วงเวลา: {{time}}",
+  "webOvertimeUnpaidRate": "หากไม่ได้รับค่าล่วงเวลา อัตราค่าจ้างต่อชั่วโมงที่แท้จริงจะอยู่ที่ {{rate}} (ต่ำลง {{percent}}%)",
   "overtimeUntil": "ทำโอทีถึง {{time}}",
   "lunchBackAt": "กลับมาเวลา",
   "inTime": "อีก {{time}}",

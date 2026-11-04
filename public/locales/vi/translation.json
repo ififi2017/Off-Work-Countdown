@@ -255,6 +255,8 @@
   "comingUp": "Sắp tới",
   "todaysShift": "Ca hôm nay",
   "shiftEnded": "Ca đã kết thúc",
+  "webOvertimeElapsed": "Thời gian làm thêm đã thực hiện: {{time}}",
+  "webOvertimeUnpaidRate": "Nếu không được trả lương làm thêm, mức lương giờ thực tế của bạn sẽ là {{rate}} (thấp hơn {{percent}}%).",
   "overtimeUntil": "Tăng ca đến {{time}}",
   "lunchBackAt": "Trở lại lúc",
   "inTime": "sau {{time}}",

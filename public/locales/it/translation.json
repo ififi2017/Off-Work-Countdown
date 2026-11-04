@@ -255,6 +255,8 @@
   "comingUp": "In arrivo",
   "todaysShift": "Turno di oggi",
   "shiftEnded": "Turno finito",
+  "webOvertimeElapsed": "Straordinari lavorati: {{time}}",
+  "webOvertimeUnpaidRate": "Se gli straordinari non sono pagati, la tua tariffa oraria effettiva sarebbe {{rate}} ({{percent}}% in meno).",
   "overtimeUntil": "Straordinario fino alle {{time}}",
   "lunchBackAt": "Si riprende alle",
   "inTime": "tra {{time}}",

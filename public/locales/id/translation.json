@@ -255,6 +255,8 @@
   "comingUp": "Berikutnya",
   "todaysShift": "Shift hari ini",
   "shiftEnded": "Shift selesai",
+  "webOvertimeElapsed": "Lembur yang sudah dikerjakan: {{time}}",
+  "webOvertimeUnpaidRate": "Jika lembur tidak dibayar, upah efektif per jam Anda akan menjadi {{rate}} ({{percent}}% lebih rendah).",
   "overtimeUntil": "Lembur sampai {{time}}",
   "lunchBackAt": "Kembali pukul",
   "inTime": "dalam {{time}}",

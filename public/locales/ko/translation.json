@@ -255,6 +255,8 @@
   "comingUp": "다음 일정",
   "todaysShift": "오늘 근무",
   "shiftEnded": "근무 종료",
+  "webOvertimeElapsed": "초과 근무 시간: {{time}}",
+  "webOvertimeUnpaidRate": "초과 근무 수당이 지급되지 않는다면, 실질 시급은 {{rate}}입니다({{percent}}% 낮음).",
   "overtimeUntil": "{{time}}까지 연장 근무",
   "lunchBackAt": "복귀 시각",
   "inTime": "{{time}} 후",

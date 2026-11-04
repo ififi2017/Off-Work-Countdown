@@ -255,6 +255,8 @@
   "comingUp": "À venir",
   "todaysShift": "Journée d'aujourd'hui",
   "shiftEnded": "Journée terminée",
+  "webOvertimeElapsed": "Heures supplémentaires effectuées : {{time}}",
+  "webOvertimeUnpaidRate": "Si les heures supplémentaires ne sont pas payées, votre taux horaire effectif serait de {{rate}} ({{percent}} % de moins).",
   "overtimeUntil": "Heures sup. jusqu'à {{time}}",
   "lunchBackAt": "Reprise à",
   "inTime": "dans {{time}}",

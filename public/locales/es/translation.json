@@ -255,6 +255,8 @@
   "comingUp": "A continuación",
   "todaysShift": "Jornada de hoy",
   "shiftEnded": "Jornada terminada",
+  "webOvertimeElapsed": "Horas extra trabajadas: {{time}}",
+  "webOvertimeUnpaidRate": "Si las horas extra no se pagan, tu tarifa efectiva por hora sería {{rate}} ({{percent}} % menos).",
   "overtimeUntil": "Horas extra hasta las {{time}}",
   "lunchBackAt": "Vuelta a las",
   "inTime": "en {{time}}",
