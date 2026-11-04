@@ -9,12 +9,15 @@ Expose the existing PC overtime workflow on off.rainif.com. The DoneAt brand sit
 - [x] URL-specific sessions isolated in sessionStorage; own session remains in localStorage. No salary fields in the snapshot or share URL.
 - [x] Reminder re-arm and pending old celebration reset when extending.
 - [x] Responsive wrapping and distinct accessible time selectors.
-- [x] 18 new persistence/rule integration tests; existing countdown and sharing rules reused unchanged.
+- [x] 27 new persistence/rule integration tests; existing countdown and sharing rules reused unchanged.
 - [x] macOS in-app browser: own and shared OT, reload, language switch preserving query, isolation, return/reset, ended shift reactivated, daily earnings above original daily amount.
 - [x] Browser layout: 19 locales at 390×844 dark; Arabic and long labels at 320×700 light; English desktop at 1280×800. No horizontal overflow in measured pages/dialogs. Screenshot inspection of HK/TW/English; automated DOM geometry for remaining languages, not native-language review.
-- [x] Final lint, full tests (57 files / 697 tests), Web build/output and Desktop export/output checks passed using Node 24.
-- [ ] GitHub PR and Vercel preview verification.
+- [x] Final lint, full tests (58 files / 706 tests), Web build/output and Desktop export/output checks after the overnight-start fix.
+- [x] GitHub PR #357 and initial Vercel preview verification (2958bd60): HK add overtime and refresh restoration.
+- [ ] Updated preview verification after the overnight-start fix.
 - [ ] Merge and production verification.
+
+- [x] Opening 22:00–06:00 at 07:00 selects the just-ended overnight shift, including shared URLs, so overtime can be added. Day shifts before their start retain the existing validation. Nine regression cases cover this orchestration using existing shared rules.
 
 ## Persistence behavior
 

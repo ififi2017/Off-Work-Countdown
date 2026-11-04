@@ -169,6 +169,7 @@ import {
 import type { DesktopUpdateCandidate } from "@/lib/desktop-updater";
 import { startSecondTick } from "@/lib/second-tick";
 import { localDateKey } from "@/lib/desktop-stats";
+import { buildWebCountdownStartShift } from "./web-countdown-start";
 import {
   clearWebOvertimeSession,
   readWebOvertimeSession,
@@ -978,7 +979,9 @@ export function OffWorkCountdown({
     setEndTime(shift.end);
     // 与 handleStart 同样的处理：落地时若已不足 15 分钟就不再提醒，
     // 免得页面刚打开就弹「还有十五分钟」。
-    const timeline = savedOvertime?.shift ?? buildShiftTimeline(shift.start, shift.end, new Date());
+    const timeline = savedOvertime?.shift ?? (IS_WEB_BUILD
+      ? buildWebCountdownStartShift(shift.start, shift.end, new Date())
+      : buildShiftTimeline(shift.start, shift.end, new Date()));
     const endAtMs = getShiftEndAtMs(timeline);
     reminderFiredRef.current = endAtMs - Date.now() <= REMINDER_LEAD_MS;
     setActiveShift({
@@ -1902,7 +1905,9 @@ export function OffWorkCountdown({
     }
 
     const now = new Date();
-    let shift = buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
+    let shift = IS_WEB_BUILD
+      ? buildWebCountdownStartShift(startTime, endTime, now, shiftBuildOptions)
+      : buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
     // 排班的休息日没有当天班次可计时：刚结束的夜班仍算今天，否则从下一班开始。
     if (roster) {
       const ended = findEndedShiftOnEndCalendarDay({ startTime, endTime, nowMs: now.getTime(), workdays, schedule, options: shiftBuildOptions });
