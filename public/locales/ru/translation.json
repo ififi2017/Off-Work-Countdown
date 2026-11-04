@@ -255,6 +255,8 @@
   "comingUp": "Далее",
   "todaysShift": "Сегодняшняя смена",
   "shiftEnded": "Смена окончена",
+  "webOvertimeElapsed": "Отработано сверхурочно: {{time}}",
+  "webOvertimeUnpaidRate": "Если сверхурочная работа не оплачивается, фактическая почасовая ставка составит {{rate}} (на {{percent}}% ниже).",
   "overtimeUntil": "Переработка до {{time}}",
   "lunchBackAt": "Возврат в",
   "inTime": "через {{time}}",

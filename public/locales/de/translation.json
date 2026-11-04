@@ -255,6 +255,8 @@
   "comingUp": "Als Nächstes",
   "todaysShift": "Heutige Schicht",
   "shiftEnded": "Schicht beendet",
+  "webOvertimeElapsed": "Geleistete Überstunden: {{time}}",
+  "webOvertimeUnpaidRate": "Wenn Überstunden unbezahlt bleiben, läge dein effektiver Stundenlohn bei {{rate}} ({{percent}} % weniger).",
   "overtimeUntil": "Überstunden bis {{time}}",
   "lunchBackAt": "Zurück um",
   "inTime": "in {{time}}",

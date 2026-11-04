@@ -255,6 +255,8 @@
   "comingUp": "この後の予定",
   "todaysShift": "今日のシフト",
   "shiftEnded": "シフト終了",
+  "webOvertimeElapsed": "残業時間：{{time}}",
+  "webOvertimeUnpaidRate": "残業代が支払われない場合、実質時給は{{rate}}となり、{{percent}}%下がります。",
   "overtimeUntil": "{{time}} まで残業",
   "lunchBackAt": "再開時刻",
   "inTime": "あと {{time}}",

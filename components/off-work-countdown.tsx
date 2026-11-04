@@ -169,6 +169,14 @@ import {
 import type { DesktopUpdateCandidate } from "@/lib/desktop-updater";
 import { startSecondTick } from "@/lib/second-tick";
 import { localDateKey } from "@/lib/desktop-stats";
+import { buildWebCountdownStartShift } from "./web-countdown-start";
+import { webOvertimePresentation } from "./web-overtime-presentation";
+import {
+  clearWebOvertimeSession,
+  readWebOvertimeSession,
+  webOvertimeStorageKey,
+  writeWebOvertimeSession,
+} from "./web-overtime-session";
 
 /** 下班前多久提醒。与 translation.json 里 "reminder" 的文案保持一致。 */
 const REMINDER_LEAD_MS = 15 * 60 * 1000;
@@ -465,6 +473,15 @@ export function OffWorkCountdown({
     useState(false);
   const [overtimeDialogOpen, setOvertimeDialogOpen] = useState(false);
   const [overtimeEndTime, setOvertimeEndTime] = useState("19:00");
+  const [webOvertimeRestored, setWebOvertimeRestored] = useState(false);
+  const webOvertimeUrlShiftRef = useRef<ReturnType<typeof decodeShift>>(null);
+  const webOvertimeStorage = () =>
+    webOvertimeUrlShiftRef.current ? window.sessionStorage : window.localStorage;
+  const clearCurrentWebOvertime = () => {
+    if (IS_WEB_BUILD) clearWebOvertimeSession(
+      webOvertimeStorage, webOvertimeStorageKey(webOvertimeUrlShiftRef.current)
+    );
+  };
   const [microBreakEnabled, setMicroBreakEnabled] = useState(false);
   const [microBreakIntervalMinutes, setMicroBreakIntervalMinutes] = useState(60);
   const [miniSkin, setMiniSkin] = useState<DesktopMiniSkin>("woodfish");
@@ -935,13 +952,37 @@ export function OffWorkCountdown({
 
     const params = new URLSearchParams(window.location.search);
     const shift = decodeShift(params.get("s"));
-    if (!shift) return;
+    webOvertimeUrlShiftRef.current = shift;
+    const savedOvertime = IS_WEB_BUILD
+      ? readWebOvertimeSession(
+          () => shift ? window.sessionStorage : window.localStorage,
+          webOvertimeStorageKey(shift),
+          Date.now(),
+          shift ?? {
+            start: getLocalStorageItem("startTime", "09:00"),
+            end: getLocalStorageItem("endTime", "18:00"),
+          }
+        )
+      : null;
+    setWebOvertimeRestored(true);
+    if (!shift) {
+      if (savedOvertime) {
+        setStartTime(savedOvertime.startTime);
+        setEndTime(savedOvertime.endTime);
+        setActiveShift(savedOvertime.shift);
+        reminderFiredRef.current = getShiftEndAtMs(savedOvertime.shift) - Date.now() <= REMINDER_LEAD_MS;
+        setShowCountdown(true);
+      }
+      return;
+    }
 
     setStartTime(shift.start);
     setEndTime(shift.end);
     // 与 handleStart 同样的处理：落地时若已不足 15 分钟就不再提醒，
     // 免得页面刚打开就弹「还有十五分钟」。
-    const timeline = buildShiftTimeline(shift.start, shift.end, new Date());
+    const timeline = savedOvertime?.shift ?? (IS_WEB_BUILD
+      ? buildWebCountdownStartShift(shift.start, shift.end, new Date())
+      : buildShiftTimeline(shift.start, shift.end, new Date()));
     const endAtMs = getShiftEndAtMs(timeline);
     reminderFiredRef.current = endAtMs - Date.now() <= REMINDER_LEAD_MS;
     setActiveShift({
@@ -960,6 +1001,17 @@ export function OffWorkCountdown({
           : "preset_start"
     );
   }, [isMounted]);
+
+  // Only an explicit overtime extension resumes on Web. Keep the absolute
+  // timeline: rebuilding from clock settings would lose overtime across midnight.
+  useEffect(() => {
+    if (!IS_WEB_BUILD || !webOvertimeRestored || !showCountdown || !activeShift?.overtimeEndAtMs) return;
+    writeWebOvertimeSession(
+      () => webOvertimeUrlShiftRef.current ? window.sessionStorage : window.localStorage,
+      webOvertimeStorageKey(webOvertimeUrlShiftRef.current),
+      { startTime, endTime, shift: activeShift }
+    );
+  }, [webOvertimeRestored, showCountdown, activeShift, startTime, endTime]);
 
   useEffect(() => {
     if (!isMounted) return;
@@ -1253,6 +1305,41 @@ export function OffWorkCountdown({
       ? configuredDailySalary *
         calculateTimelinePayRatio(activeShift, Date.now())
       : null;
+
+  const overtimeNumberFormats = useMemo(() => {
+    const make = (options: Intl.NumberFormatOptions) => {
+      try {
+        return new Intl.NumberFormat(lang, options);
+      } catch {
+        return new Intl.NumberFormat(undefined, options);
+      }
+    };
+    return {
+      rate: make({ minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      percent: make({ maximumFractionDigits: 1 }),
+    };
+  }, [lang]);
+  const overtimePresentation = IS_WEB_BUILD
+    ? webOvertimePresentation(activeShift, Date.now(), configuredDailySalary, hideEarnings)
+    : null;
+  const elapsedOvertimeSeconds = overtimePresentation
+    ? Math.floor(overtimePresentation.elapsedOvertimeMs / 1000)
+    : 0;
+  const overtimeInfo = overtimePresentation ? {
+    elapsed: t("webOvertimeElapsed", {
+      time: t("timeLeft", {
+        hours: Math.floor(elapsedOvertimeSeconds / 3600),
+        minutes: Math.floor((elapsedOvertimeSeconds % 3600) / 60).toString().padStart(2, "0"),
+        seconds: (elapsedOvertimeSeconds % 60).toString().padStart(2, "0"),
+      }),
+    }),
+    unpaidRate: overtimePresentation.unpaidHourlyRate !== null && overtimePresentation.unpaidRateDecreasePercent !== null
+      ? t("webOvertimeUnpaidRate", {
+          rate: overtimeNumberFormats.rate.format(overtimePresentation.unpaidHourlyRate),
+          percent: overtimeNumberFormats.percent.format(overtimePresentation.unpaidRateDecreasePercent),
+        })
+      : undefined,
+  } : undefined;
 
   // 将 UI 的运行状态镜像为一个原子快照。Rust 与迷你窗只比较、累加前端已
   // 解析好的绝对 segments，不需要理解跨夜班次、工作日等业务规则。
@@ -1854,7 +1941,9 @@ export function OffWorkCountdown({
     }
 
     const now = new Date();
-    let shift = buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
+    let shift = IS_WEB_BUILD
+      ? buildWebCountdownStartShift(startTime, endTime, now, shiftBuildOptions)
+      : buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
     // 排班的休息日没有当天班次可计时：刚结束的夜班仍算今天，否则从下一班开始。
     if (roster) {
       const ended = findEndedShiftOnEndCalendarDay({ startTime, endTime, nowMs: now.getTime(), workdays, schedule, options: shiftBuildOptions });
@@ -1879,6 +1968,7 @@ export function OffWorkCountdown({
 
     if (startTime && endTime) {
       setFormError("");
+      clearCurrentWebOvertime();
       // 开始时距下班已不足 15 分钟的话，直接标记为已提醒——否则倒计时的第一个
       // tick 就会立刻弹出「还有十五分钟」，而用户是刚点的开始，这属于打扰。
       reminderFiredRef.current = endAtMs - now.getTime() <= REMINDER_LEAD_MS;
@@ -2251,6 +2341,8 @@ export function OffWorkCountdown({
   };
 
   const handleReturn = () => {
+    clearCurrentWebOvertime();
+    setOvertimeDialogOpen(false);
     if (IS_DESKTOP_BUILD) {
       void stopDesktopCountdown(
         lang,
@@ -2305,8 +2397,10 @@ export function OffWorkCountdown({
     const extended = extendShiftWithOvertime(activeShift, overtimeEndAtMs);
     if (extended === activeShift) return;
     setActiveShift(extended);
+    reminderFiredRef.current = overtimeEndAtMs - Date.now() <= REMINDER_LEAD_MS;
     completionTrackedRef.current = false;
     celebratedShiftRef.current = null;
+    celebrationPendingRef.current = null;
     setOvertimeDialogOpen(false);
   };
 
@@ -2317,6 +2411,7 @@ export function OffWorkCountdown({
   // 「换成我的时间」：把 URL 里别人的班次换回访问者本地保存的设置。
   // 同时清掉 query，避免刷新或分享当前页时又把别人的班次带上。
   const exitSharedView = () => {
+    webOvertimeUrlShiftRef.current = null;
     setIsSharedView(false);
     setStartTime(getLocalStorageItem("startTime", "09:00"));
     setEndTime(getLocalStorageItem("endTime", "18:00"));
@@ -2328,6 +2423,8 @@ export function OffWorkCountdown({
   const handleUseOwnHours = () => {
     // 分享闭环的关键转化点：接收者从「看别人的班次」变成「设自己的」。
     track("share_convert");
+    clearCurrentWebOvertime();
+    setOvertimeDialogOpen(false);
     exitSharedView();
     setShowCountdown(false);
     setShowBeforeShiftStatus(false);
@@ -2753,14 +2850,16 @@ export function OffWorkCountdown({
             </div>
           </DialogContent>
         </Dialog>
+        </>
+      )}
         <Dialog open={overtimeDialogOpen} onOpenChange={setOvertimeDialogOpen}>
-          <DialogContent className="max-w-[360px] rounded-2xl p-5">
+          <DialogContent dir={isRtl ? "rtl" : "ltr"} className="w-[calc(100%-2rem)] max-w-[360px] rounded-2xl p-5">
             <DialogHeader className="text-start">
-              <DialogTitle>{t("overtimeTitle")}</DialogTitle>
+              <DialogTitle className="pr-5">{t("overtimeTitle")}</DialogTitle>
               <DialogDescription>{t("overtimeDescription")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
-              <Label>{t("overtimeEndTime")}</Label>
+              <Label id="overtime-end-label">{t("overtimeEndTime")}</Label>
               <div className="grid grid-cols-2 gap-2" dir="ltr">
                 <Select
                   value={overtimeEndTime.split(":")[0]}
@@ -2770,7 +2869,7 @@ export function OffWorkCountdown({
                     )
                   }
                 >
-                  <SelectTrigger className="h-10 rounded-xl bg-background">
+                  <SelectTrigger aria-label={`${t("overtimeEndTime")} · ${new Intl.NumberFormat(lang, { style: "unit", unit: "hour", unitDisplay: "long" }).format(1)}`} className="h-10 rounded-xl bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -2789,11 +2888,11 @@ export function OffWorkCountdown({
                     )
                   }
                 >
-                  <SelectTrigger className="h-10 rounded-xl bg-background">
+                  <SelectTrigger aria-label={`${t("overtimeEndTime")} · ${new Intl.NumberFormat(lang, { style: "unit", unit: "minute", unitDisplay: "long" }).format(1)}`} className="h-10 rounded-xl bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {["00", "15", "30", "45"].map((minute) => (
+                    {Array.from({ length: 60 }, (_, minute) => String(minute).padStart(2, "0")).map((minute) => (
                       <SelectItem key={minute} value={minute}>{minute}</SelectItem>
                     ))}
                   </SelectContent>
@@ -2803,7 +2902,7 @@ export function OffWorkCountdown({
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {t("overtimeNoMultiplier")}
             </p>
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-wrap justify-end gap-2 [&>button]:h-auto [&>button]:min-h-10 [&>button]:max-w-full [&>button]:whitespace-normal">
               <Button variant="outline" onClick={() => setOvertimeDialogOpen(false)}>
                 {t("notNow")}
               </Button>
@@ -2816,8 +2915,6 @@ export function OffWorkCountdown({
             </div>
           </DialogContent>
         </Dialog>
-        </>
-      )}
 
       {hasOverlayTitleBar && (
         <div
@@ -3429,6 +3526,7 @@ export function OffWorkCountdown({
                   <PeriodSummary
                     lang={lang}
                     note={t("summaryEstimateNote")}
+                    overtimeInfo={overtimeInfo}
                     rows={summaryRows}
                     hideEarnings={hideEarnings}
                     compact={IS_DESKTOP_BUILD}
@@ -3545,7 +3643,7 @@ export function OffWorkCountdown({
                   opacity: 0,
                   transition: { duration: FLOW_EXIT_SECONDS },
                 }}
-                className={`flex gap-2 whitespace-nowrap ${IS_MOBILE_BUILD ? "w-full" : ""}`}
+                className={`flex gap-2 ${IS_WEB_BUILD ? "w-full flex-wrap justify-center [&>button]:min-w-0 [&>button]:h-auto [&>button]:min-h-10 [&>button]:max-w-full [&>button]:whitespace-normal [&>button]:break-words [&>button>svg]:shrink-0" : "whitespace-nowrap"} ${IS_MOBILE_BUILD ? "w-full" : ""}`}
               >
                 <Button
                   variant="outline"
@@ -3560,13 +3658,12 @@ export function OffWorkCountdown({
                 >
                   <ArrowLeft className="me-2 h-4 w-4" /> {t("return")}
                 </Button>
-                {IS_STATIC_SHELL_BUILD && (
                   <Button
                     variant="outline"
                     className={
                       IS_MOBILE_BUILD
                         ? "h-12 flex-1 rounded-2xl bg-white/80 px-3 shadow-sm backdrop-blur-xl dark:bg-gray-900/80"
-                        : "h-9 rounded-lg px-3"
+                        : IS_WEB_BUILD ? "rounded-lg px-3" : "h-9 rounded-lg px-3"
                     }
                     onClick={openOvertimeDialog}
                   >
@@ -3574,7 +3671,6 @@ export function OffWorkCountdown({
                       ? t("adjustOvertime")
                       : t("overtime")}
                   </Button>
-                )}
                 <ShareButton
                   timeLeft={timeLeft}
                   progress={progress}

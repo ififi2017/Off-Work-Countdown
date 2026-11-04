@@ -255,6 +255,8 @@
   "comingUp": "التالي",
   "todaysShift": "دوام اليوم",
   "shiftEnded": "انتهى الدوام",
+  "webOvertimeElapsed": "العمل الإضافي المنجَز: {{time}}",
+  "webOvertimeUnpaidRate": "إذا لم يُدفع أجر العمل الإضافي، فسيكون أجرك الفعلي بالساعة {{rate}} (أقل بنسبة {{percent}}%).",
   "overtimeUntil": "عمل إضافي حتى {{time}}",
   "lunchBackAt": "العودة في",
   "inTime": "بعد {{time}}",

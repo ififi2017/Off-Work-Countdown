@@ -255,6 +255,8 @@
   "comingUp": "Coming up",
   "todaysShift": "Today's shift",
   "shiftEnded": "Shift ended",
+  "webOvertimeElapsed": "Overtime worked: {{time}}",
+  "webOvertimeUnpaidRate": "If overtime is unpaid, your effective hourly rate is {{rate}} ({{percent}}% lower).",
   "overtimeUntil": "Overtime until {{time}}",
   "lunchBackAt": "Back at",
   "inTime": "in {{time}}",

@@ -255,6 +255,8 @@
   "comingUp": "आगे",
   "todaysShift": "आज की शिफ़्ट",
   "shiftEnded": "शिफ़्ट ख़त्म",
+  "webOvertimeElapsed": "किया गया ओवरटाइम: {{time}}",
+  "webOvertimeUnpaidRate": "अगर ओवरटाइम का भुगतान न हो, तो आपकी प्रभावी प्रति घंटा दर {{rate}} होगी ({{percent}}% कम)।",
   "overtimeUntil": "{{time}} तक ओवरटाइम",
   "lunchBackAt": "वापसी",
   "inTime": "{{time}} में",

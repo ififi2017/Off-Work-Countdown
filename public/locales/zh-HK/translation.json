@@ -255,6 +255,8 @@
   "comingUp": "跟住落嚟",
   "todaysShift": "今日嘅班次",
   "shiftEnded": "班次已完結",
+  "webOvertimeElapsed": "已加班：{{time}}",
+  "webOvertimeUnpaidRate": "若冇加班費，實際時薪跌至 {{rate}}（低咗 {{percent}}%）。",
   "overtimeUntil": "加班到 {{time}}",
   "lunchBackAt": "返嚟時間",
   "inTime": "仲有 {{time}}",

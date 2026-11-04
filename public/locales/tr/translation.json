@@ -255,6 +255,8 @@
   "comingUp": "Sırada",
   "todaysShift": "Bugünkü vardiya",
   "shiftEnded": "Vardiya bitti",
+  "webOvertimeElapsed": "Yapılan fazla mesai: {{time}}",
+  "webOvertimeUnpaidRate": "Fazla mesai ücreti ödenmezse, etkili saatlik ücretiniz {{rate}} olur (%{{percent}} daha düşük).",
   "overtimeUntil": "{{time}} saatine kadar mesai",
   "lunchBackAt": "Dönüş saati",
   "inTime": "{{time}} sonra",
