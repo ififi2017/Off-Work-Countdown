@@ -285,7 +285,15 @@ class CivilZone(
         }
         val overtimeEndAtMs = options.overtimeEndAtMs?.takeIf { it > plannedEndAtMs }
         if (overtimeEndAtMs != null) {
-            segments = segments.dropLast(1) + segments.last().copy(endAtMs = overtimeEndAtMs)
+            val overtimeStartAtMs = options.overtimeStartAtMs
+            segments = if (overtimeStartAtMs != null && overtimeStartAtMs.isFinite() &&
+                overtimeStartAtMs > plannedEndAtMs && overtimeStartAtMs < overtimeEndAtMs
+            ) {
+                // Plan 024: overtime after a rest is its own segment; the gap is a break.
+                segments + ShiftSegment(overtimeStartAtMs, overtimeEndAtMs)
+            } else {
+                segments.dropLast(1) + segments.last().copy(endAtMs = overtimeEndAtMs)
+            }
         }
         return ShiftTimeline(segments, plannedEndAtMs, overtimeEndAtMs)
     }

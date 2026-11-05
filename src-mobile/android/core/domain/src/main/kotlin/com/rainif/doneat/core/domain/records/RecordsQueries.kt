@@ -3,6 +3,7 @@ package com.rainif.doneat.core.domain.records
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.schedule.CivilZone
+import com.rainif.doneat.core.domain.schedule.CountedOvertime
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
@@ -395,7 +396,7 @@ class RecordsQueries(
             date = date,
             appearance = appearance,
             workMs = share.workMs,
-            overtimeMs = share.overtimeMs,
+            overtimeMs = countedOvertimeMs(share.overtimeMs, resolution, previous),
             breakMs = share.breakMs,
             freeMs = share.freeMs,
             observationCount = observationIndex[resolution.dayKey]?.size ?: 0,
@@ -498,7 +499,8 @@ class RecordsQueries(
             val day = byKey[cell.dayKey] ?: return@mapNotNull null
             val contributors = listOfNotNull(previousDay(day, byKey), day).filter { it.dayKey in counted }
             if (contributors.isEmpty()) return@mapNotNull null
-            val allocation = dayAllocation(day, contributors, nowMs)
+            val measured = dayAllocation(day, contributors, nowMs)
+            val allocation = measured.copy(overtimeMs = countedOvertimeMs(measured.overtimeMs, day, previousDay(day, byKey)))
             // A neighbouring record alone does not make this a covered day.
             if (day.dayKey !in recordedKeys && allocation.workMs <= 0 && allocation.overtimeMs <= 0 && allocation.breakMs <= 0) return@mapNotNull null
             allocation
@@ -607,6 +609,7 @@ class RecordsQueries(
             },
             isActiveAnchor = activeAnchorDayKey == day.dayKey,
             overtimePayMultiplier = if (actualKind == null) null else overtimePayMultiplier(day),
+            overtimeCountedMs = if (actualKind == null) null else overtimeCountedMs(day),
         )
     }
 
@@ -623,7 +626,12 @@ class RecordsQueries(
             val cell = cells[contributor.dayKey] ?: dayCell(contributor, null, nowMs, revealingAll = true)
             val input = recordsSummaryDay(contributor, cell) ?: return@mapNotNull null
             if (input.actualKind == null) return@mapNotNull null
-            input.copy(resolvedSegments = clip(input.resolvedSegments), overtimeSegments = clip(input.overtimeSegments))
+            // Plan 024: the counted hours belong to the whole declaration, so a civil-day piece takes its share.
+            val clippedOvertime = clip(input.overtimeSegments)
+            val fullLength = input.overtimeSegments.sumOf { it.endAtMs - it.startAtMs }
+            val pieceLength = clippedOvertime.sumOf { it.endAtMs - it.startAtMs }
+            val counted = input.overtimeCountedMs?.takeIf { fullLength > 0 }?.let { it * pieceLength / fullLength }
+            input.copy(resolvedSegments = clip(input.resolvedSegments), overtimeSegments = clippedOvertime, overtimeCountedMs = counted)
         }
         val actual = SummaryRules.recordsActualForecast(SummaryRules.ActualForecastInput(inputs, listOf(day.dayKey),
             null, nowMs, null, zone))
@@ -792,6 +800,24 @@ class RecordsQueries(
         return listOfNotNull(RecordsOvertime.declaredSegment(latest, r, avoidingRegularWork = true))
     }
 
+    /** Plan 024: the hours the day's latest declaration counts, if it names any. */
+    fun overtimeCountedMs(r: DayResolution): Double? = RecordsOvertime.declaredCountedMs(latestOvertimeDeclaration(r.dayKey))
+
+    /** Plan 024: counted / measured overtime for a day (1 without an override). */
+    fun overtimeCountScale(r: DayResolution): Double {
+        val counted = overtimeCountedMs(r) ?: return 1.0
+        val segment = overtimeSegments(r).firstOrNull() ?: return 1.0
+        return CountedOvertime.scale(segment.endAtMs - segment.startAtMs, counted)
+    }
+
+    /** Measured overtime milliseconds on [r]'s cell as counted ones; an overnight spill takes the previous day's factor when this day has none. */
+    private fun countedOvertimeMs(measured: Long, r: DayResolution, previous: DayResolution?): Long {
+        if (measured <= 0) return measured
+        var scale = overtimeCountScale(r)
+        if (scale == 1.0 && previous != null) scale = overtimeCountScale(previous)
+        return if (scale == 1.0) measured else kotlin.math.round(measured * scale).toLong()
+    }
+
     /** Plan 024: the pay multiplier the day's latest declaration chose; 1 when it names none. */
     fun overtimePayMultiplier(r: DayResolution): Double = RecordsOvertime.declaredPayMultiplier(latestOvertimeDeclaration(r.dayKey))
 
@@ -927,7 +953,9 @@ object RecordsOvertime {
         if (observation.kind != WorkObservationKind.OVERTIME_DECLARED) return null
         val json = observation.valueData?.let(FoundationCompat::base64)?.toString(Charsets.UTF_8) ?: return null
         val end = number(json, "overtimeEndAtMs") ?: return null
-        var start = number(json, "plannedEndAtMs") ?: day.baseScheduleSegments.maxOfOrNull { it.endAtMs } ?: return null
+        // Plan 024: an overtime that began after a rest names its own start.
+        var start = number(json, "overtimeStartAtMs")?.takeIf { it.isFinite() }
+            ?: number(json, "plannedEndAtMs") ?: day.baseScheduleSegments.maxOfOrNull { it.endAtMs } ?: return null
         if (avoidingRegularWork) day.segments.maxOfOrNull { it.endAtMs }?.let { start = max(start, it) }
         if (!start.isFinite() || !end.isFinite() || end <= start) return null
         return ShiftSegment(start, end)
@@ -943,6 +971,13 @@ object RecordsOvertime {
         if (observation == null || observation.kind != WorkObservationKind.OVERTIME_DECLARED) return 1.0
         val json = observation.valueData?.let(FoundationCompat::base64)?.toString(Charsets.UTF_8) ?: return 1.0
         return OvertimePay.normalized(number(json, "payMultiplier"))
+    }
+
+    /** Plan 024: the hours a declaration counts (iOS `RecordsMetrics.declaredCountedMs`); null when it names none or an invalid one. */
+    fun declaredCountedMs(observation: WorkObservation?): Double? {
+        if (observation == null || observation.kind != WorkObservationKind.OVERTIME_DECLARED) return null
+        val json = observation.valueData?.let(FoundationCompat::base64)?.toString(Charsets.UTF_8) ?: return null
+        return CountedOvertime.normalized(number(json, "countedMs"))
     }
 
     /** A JSON number, as `JSONDecoder` reads a `Double`; a string or null is absent. */

@@ -4,6 +4,7 @@ import com.rainif.doneat.core.domain.salary.SalaryRules
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.schedule.CivilZone
+import com.rainif.doneat.core.domain.schedule.CountedOvertime
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
 import com.rainif.doneat.core.domain.schedule.OvertimePay
@@ -334,6 +335,8 @@ object SummaryRules {
         val isActiveAnchor: Boolean,
         /** Plan 024: the multiplier of the day's latest overtime declaration (0 = unpaid); null or invalid is 1. */
         val overtimePayMultiplier: Double? = null,
+        /** Plan 024: the hours the day's latest declaration counts, replacing the measured overtime; null or outside 0..24 h is the measured one. */
+        val overtimeCountedMs: Double? = null,
     )
 
     data class ActualForecastInput(
@@ -397,9 +400,16 @@ object SummaryRules {
             }
             val elapsedRegular = regular.map { ShiftSegment(it.startAtMs, min(it.endAtMs, asOfMs)) }
             val elapsedOvertime = day.overtimeSegments.map { ShiftSegment(it.startAtMs, min(it.endAtMs, asOfMs)) }
-            val workedMs = mergedDuration(elapsedRegular + elapsedOvertime)
+            val measuredWorkedMs = mergedDuration(elapsedRegular + elapsedOvertime)
             val regularMs = mergedDuration(elapsedRegular)
-            actualOvertimeMs += max(0.0, workedMs - regularMs)
+            // Plan 024: counted hours replace the measured overtime length.
+            val countScale = CountedOvertime.scale(
+                max(0.0, mergedDuration(regular + day.overtimeSegments) - mergedDuration(regular)),
+                day.overtimeCountedMs,
+            )
+            val overtimeMs = max(0.0, measuredWorkedMs - regularMs) * countScale
+            val workedMs = if (countScale == 1.0) measuredWorkedMs else regularMs + overtimeMs
+            actualOvertimeMs += if (countScale == 1.0) max(0.0, workedMs - regularMs) else overtimeMs
             val multiplier = OvertimePay.normalized(day.overtimePayMultiplier ?: 1.0)
             if (workedMs > 0) {
                 actualDays += 1
@@ -410,12 +420,13 @@ object SummaryRules {
                 }
             }
             if (day.isActiveAnchor || kind == ActualKind.SCHEDULED) {
-                val futureMs = mergedDuration((day.resolvedSegments + day.overtimeSegments).map { ShiftSegment(max(it.startAtMs, asOfMs), it.endAtMs) })
+                val futureAllMs = mergedDuration((day.resolvedSegments + day.overtimeSegments).map { ShiftSegment(max(it.startAtMs, asOfMs), it.endAtMs) })
+                val futureRegularMs = mergedDuration(day.resolvedSegments.map { ShiftSegment(max(it.startAtMs, asOfMs), it.endAtMs) })
+                val futureMs = if (countScale == 1.0) futureAllMs else futureRegularMs + max(0.0, futureAllMs - futureRegularMs) * countScale
                 if (futureMs > 0) {
                     if (workedMs <= 0) forecastDays += 1
                     forecastMs += futureMs
                     if (!usesFixedMonthlyPay) {
-                        val futureRegularMs = mergedDuration(day.resolvedSegments.map { ShiftSegment(max(it.startAtMs, asOfMs), it.endAtMs) })
                         val paidFutureMs = weightedOvertimeMs(futureMs, futureRegularMs, multiplier)
                         forecastPay += (rate ?: 0.0) * (if (plannedMs > 0) paidFutureMs / plannedMs else if (workedMs <= 0) 1.0 else 0.0)
                     }

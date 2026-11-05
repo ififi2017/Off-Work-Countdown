@@ -287,6 +287,7 @@ class ShiftSession(val state: SessionState, val env: SessionEnvironment) {
             zone = countdownZone,
             overtimeEndAtMs = if (apply) state.overtimeEndAtMs else null,
             forcedWorkdayStartMs = if (apply) forcedWorkdayStartMs else null,
+            overtimeStartAtMs = if (apply) state.overtimeStartAtMs else null,
         )
         return pinningCurrentShift(input, fixesStart = startMinutes != null || earlyStart, fixesEnd = endMinutes != null)
     }

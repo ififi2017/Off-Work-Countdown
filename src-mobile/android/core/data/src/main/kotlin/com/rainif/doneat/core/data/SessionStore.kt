@@ -211,6 +211,8 @@ internal object SessionStateJson {
             "todayOverride" to (s.todayOverride?.let(::kept) ?: JsonNull),
             "forcedWorkdayDate" to s.forcedWorkdayDate.json(),
             "overtimeEndAtMs" to s.overtimeEndAtMs.json(),
+            "overtimePayMultiplier" to s.overtimePayMultiplier.json(),
+            "overtimeStartAtMs" to s.overtimeStartAtMs.json(),
             "activeCountdownEndAtMs" to s.activeCountdownEndAtMs.json(),
         ),
     ).toString()
@@ -229,6 +231,8 @@ internal object SessionStateJson {
         todayOverride = (o["todayOverride"] as? JsonObject)?.let { runCatching { kept(it) }.getOrNull() },
         forcedWorkdayDate = o.str("forcedWorkdayDate"),
         overtimeEndAtMs = o.num("overtimeEndAtMs"),
+        overtimePayMultiplier = o.num("overtimePayMultiplier"),
+        overtimeStartAtMs = o.num("overtimeStartAtMs"),
         activeCountdownEndAtMs = o.num("activeCountdownEndAtMs"),
     )
 

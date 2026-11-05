@@ -56,6 +56,8 @@ data class ScheduleRuleInput(
     val zone: ZoneId,
     val overtimeEndAtMs: Double? = null,
     val forcedWorkdayStartMs: Double? = null,
+    /** Plan 024: when the overtime starts; null (or at/before the planned end) stretches the last segment. */
+    val overtimeStartAtMs: Double? = null,
 ) {
     val startTime get() = hours.startTime
     val endTime get() = hours.endTime
@@ -67,8 +69,9 @@ data class ShiftOptions(
     val breakStartTime: String?,
     val breakDurationMinutes: Int,
     val overtimeEndAtMs: Double? = null,
+    val overtimeStartAtMs: Double? = null,
 ) {
-    fun withoutOvertime() = copy(overtimeEndAtMs = null)
+    fun withoutOvertime() = copy(overtimeEndAtMs = null, overtimeStartAtMs = null)
 
     companion object {
         // `|| null` in the TypeScript: an empty break or a 0 instant means none.
@@ -76,6 +79,7 @@ data class ShiftOptions(
             breakStartTime = input.hours.breakStartTime?.takeIf { it.isNotEmpty() },
             breakDurationMinutes = input.hours.breakDurationMinutes,
             overtimeEndAtMs = input.overtimeEndAtMs?.takeIf { it != 0.0 },
+            overtimeStartAtMs = input.overtimeStartAtMs?.takeIf { it != 0.0 },
         )
     }
 }
@@ -120,10 +124,13 @@ data class ShiftTimeline(
                 ) return false
                 previousEnd = segment.endAtMs
             }
-            return plannedEndAtMs > startAtMs &&
-                plannedEndAtMs > last.startAtMs &&
-                plannedEndAtMs <= last.endAtMs &&
-                endAtMs == last.endAtMs
+            if (plannedEndAtMs <= startAtMs || endAtMs != last.endAtMs) return false
+            if (plannedEndAtMs > last.startAtMs && plannedEndAtMs <= last.endAtMs) return true
+            // Plan 024: overtime appended after a gap. The planned end closes the
+            // second-to-last segment and the last one starts after it.
+            if (overtimeEndAtMs == null || segments.size < 2) return false
+            val before = segments[segments.size - 2]
+            return plannedEndAtMs > before.startAtMs && plannedEndAtMs == before.endAtMs && last.startAtMs > plannedEndAtMs
         }
 
     val durationMs: Double
@@ -209,6 +216,26 @@ data class OvertimeRateComparison(
     val unpaidHourlyRate: Double?,
     val unpaidRateDecreasePercent: Double?,
 )
+
+/**
+ * Plan 024: the hours a declaration counts, replacing the measured overtime
+ * length in statistics and pay (`normalizeCountedOvertimeMs` and
+ * `overtimeCountScale` in `lib/summary.ts`).
+ */
+object CountedOvertime {
+    const val MAXIMUM_MS = 24.0 * 3_600_000
+
+    /** Null unless finite and 0 to 24 hours. */
+    fun normalized(value: Double?): Double? =
+        value?.takeIf { it.isFinite() && it >= 0 && it <= MAXIMUM_MS }
+
+    /** counted / full measured length; 1 without a valid counted value or any measured overtime to scale. */
+    fun scale(fullMeasuredMs: Double, countedMs: Double?): Double {
+        val counted = normalized(countedMs) ?: return 1.0
+        if (!fullMeasuredMs.isFinite() || fullMeasuredMs <= 0) return 1.0
+        return counted / fullMeasuredMs
+    }
+}
 
 /** Plan 024: the pay multiplier for effective time beyond the planned end. */
 object OvertimePay {
