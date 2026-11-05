@@ -108,18 +108,26 @@ struct MonthlyDailyPayView: View {
     private func monthGrid(_ pay: MonthlyDailyPay, calendar: Calendar) -> some View {
         let symbols = calendar.veryShortStandaloneWeekdaySymbols
         let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
-        return LazyVGrid(columns: columns, spacing: 6) {
-            ForEach(0..<7, id: \.self) { column in
-                Text(symbols[(calendar.firstWeekday - 1 + column) % 7])
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(OWCDesign.tertiary)
-                    .accessibilityHidden(true)
+        // Headers, blanks and days used to share one grid with overlapping Int
+        // ids (0–6, 0–n, 1–31), so SwiftUI dropped days 1–6 as duplicates.
+        // Keep the headers in their own row and give blanks negative ids.
+        return VStack(spacing: 6) {
+            HStack(spacing: 0) {
+                ForEach(0..<7, id: \.self) { column in
+                    Text(symbols[(calendar.firstWeekday - 1 + column) % 7])
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(OWCDesign.tertiary)
+                        .frame(maxWidth: .infinity)
+                        .accessibilityHidden(true)
+                }
             }
-            ForEach(0..<pay.leadingBlanks, id: \.self) { _ in
-                Color.clear.frame(height: 34)
-            }
-            ForEach(pay.days) { day in
-                dayCell(day)
+            LazyVGrid(columns: columns, spacing: 6) {
+                ForEach(-pay.leadingBlanks..<0, id: \.self) { _ in
+                    Color.clear.frame(height: 34)
+                }
+                ForEach(pay.days) { day in
+                    dayCell(day)
+                }
             }
         }
     }

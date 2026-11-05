@@ -651,7 +651,8 @@ struct SalaryDesignView: View {
 
     private func monthName(_ pay: MonthlyDailyPay) -> String {
         Date(timeIntervalSince1970: pay.current.startMs / 1_000).formatted(
-            Date.FormatStyle(locale: shifts.preferences.locale, timeZone: pay.timeZone).month(.wide)
+            // Abbreviated reads "11月" in Chinese (not "十一月") and "Nov" in English.
+            Date.FormatStyle(locale: shifts.preferences.locale, timeZone: pay.timeZone).month(.abbreviated)
         )
     }
 
