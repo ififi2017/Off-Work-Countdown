@@ -254,12 +254,18 @@ private struct RunningTimerDesignView: View {
 
                         if !timelineExpanded {
                             VStack(alignment: .leading, spacing: 0) {
-                                if shifts.session.followsSchedule(at: now) {
-                                    OWCSectionHeader(title: shifts.text.t("summaryEstimateNote"))
+                                VStack(alignment: .leading, spacing: 0) {
+                                    if shifts.session.followsSchedule(at: now) {
+                                        OWCSectionHeader(title: shifts.text.t("summaryEstimateNote"))
+                                    }
+                                    summaryCard
                                 }
-                                summaryCard
+                                .padding(.horizontal, OWCDesign.pageInset)
+                                // Plan 024: how this overtime is paid, under the card.
+                                if overtime {
+                                    OvertimeEarningsNotes(shifts: shifts, snapshot: snapshot, now: now)
+                                }
                             }
-                            .padding(.horizontal, OWCDesign.pageInset)
                             .padding(.top, 22)
                             .transition(summaryTransition)
                         }
@@ -338,11 +344,19 @@ private struct RunningTimerDesignView: View {
 
     private var summaryCard: some View {
         OWCGroupCard {
-            OWCRow(icon: "clock", title: shifts.text.t("todaysShift"), isLast: !shifts.session.presentationSalaryEnabled && !shifts.session.followsSchedule(at: now)) {
+            OWCRow(icon: "clock", title: shifts.text.t("todaysShift"), isLast: !overtime && !shifts.session.presentationSalaryEnabled && !shifts.session.followsSchedule(at: now)) {
                 Text(verbatim: "\(shifts.text.formatTime(snapshot.startDate)) – \(shifts.text.formatTime(snapshot.endDate))")
                     .font(.body.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
                     .environment(\.layoutDirection, .leftToRight)
+            }
+            if overtime {
+            // Effective time worked past the planned clock-off, from the shared rules.
+            OWCRow(icon: "stopwatch", title: shifts.text.t("overtimeWorked"), isLast: !shifts.session.presentationSalaryEnabled && !shifts.session.followsSchedule(at: now)) {
+                Text(shifts.text.formatDuration(snapshot.timeline.overtimeElapsedMs(at: now.timeIntervalSince1970 * 1_000)))
+                    .font(.body.weight(.semibold).monospacedDigit())
+                    .environment(\.layoutDirection, .leftToRight)
+            }
             }
             if shifts.session.presentationSalaryEnabled {
             OWCRow(icon: "banknote", title: shifts.text.t("moneyEarned"), isLast: !shifts.session.followsSchedule(at: now)) {

@@ -276,9 +276,24 @@ struct OvertimeDesignView: View {
     private var nowMs: Double { now.timeIntervalSince1970 * 1_000 }
     private var overtimeElapsedMs: Double { snapshot.timeline.overtimeElapsedMs(at: nowMs) }
 
-    /// What the card above assumes about overtime pay. Figures come only from
-    /// the shared rules, and none appears while earnings are hidden.
-    @ViewBuilder private var overtimeNotes: some View {
+    /// What the card above assumes about overtime pay.
+    private var overtimeNotes: some View {
+        OvertimeEarningsNotes(shifts: shifts, snapshot: snapshot, now: now)
+    }
+}
+
+/// What the running card assumes about overtime pay: the multiplier note,
+/// or for unpaid overtime the effective hourly rate. Figures come only from
+/// the shared rules, and none appears while earnings are hidden.
+struct OvertimeEarningsNotes: View {
+    let shifts: ShiftSessionStore
+    let snapshot: NativeShiftSnapshot
+    let now: Date
+
+    private var earned: Double? { snapshot.earnedSoFar }
+    private var nowMs: Double { now.timeIntervalSince1970 * 1_000 }
+
+    var body: some View {
         let multiplier = shifts.session.effectiveOvertimePayMultiplier
         let showsMoney = shifts.session.presentationSalaryEnabled && !shifts.preferences.hideEarnings
         let comparison = showsMoney

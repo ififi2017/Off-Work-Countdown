@@ -147,7 +147,10 @@ struct OffWorkCountdownRootView: View {
                         wide: .form, compact: .automatic,
                         usesWideSizing: usesWideSheetSizing
                     ))
-                    .presentationDetents(usesWideSheetSizing ? [.large] : [.medium])
+                    // The pay choice (plan 024) sits under the wheel; at
+                    // `.medium` it was below the fold with nothing hinting
+                    // that the sheet scrolls.
+                    .presentationDetents([.large])
                     .presentationCornerRadius(26)
                     .presentationDragIndicator(.visible)
             }
