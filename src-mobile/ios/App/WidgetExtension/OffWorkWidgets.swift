@@ -1128,8 +1128,7 @@ enum UpdateAnnouncement {
         defaults.set(true, forKey: handledKey)
         let locale = snapshot?.locale ?? WidgetCopy.currentLocaleIdentifier
         let fireDate = Self.fireDate(snapshot: snapshot, now: now)
-        let center = UNUserNotificationCenter.current()
-        center.getNotificationSettings { settings in
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional, .ephemeral: break
             default: return
@@ -1141,7 +1140,7 @@ enum UpdateAnnouncement {
             content.interruptionLevel = .passive
             let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-            center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)) { error in
+            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)) { error in
                 if let error {
                     log.error("Update note not scheduled: \(error.localizedDescription, privacy: .public)")
                 } else {

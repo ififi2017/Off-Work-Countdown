@@ -311,7 +311,7 @@ private struct DoneAtWatchWidgetView: View {
     /// The 14 pt clock's line height, kept when it scales down to fit.
     static let circularClockHeight: CGFloat = 17
     /// Above this the circular and inline clocks show hours and minutes only.
-    static let secondsThresholdMs: Int64 = 3_600_000
+    nonisolated static let secondsThresholdMs: Int64 = 3_600_000
     /// How far a minute entry's timestamp may miss its mark through
     /// millisecond truncation and still be read as landing on it.
     static let minuteMarkToleranceMs: Int64 = 5
