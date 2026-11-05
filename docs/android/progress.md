@@ -902,3 +902,9 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - CN candidate run41323487297 succeeded; official local signing helper independently verified source record, APK identity, certificate and checksums. CN3.2.5(11) APK SHA256 `67de1e6c9248b6f9bd43adf9f05bdd028ad14c983f87cd9cf9acd11dab83bbb6`, 6,671,723bytes; certificate unchanged. Source/archive/checksum assets under tag `android-cn-v3.2.5-11`.
 - Pixel official package upgraded in place from10 to11; package manager confirms3.2.5(11). After the owner unlocked the device, the official CN11 About screen was visually verified: version3.2.5(11), complete outlined studio wordmark, blue chevron/cursor and unclipped layout. Screenshot: `qa/2026-11-01-android-studio/production-cn11.png`. Earlier shared debug About UI separately passed standard light and200% dark/reduced-motion checks.
 - Site PR50 merged after CN/global SEO and Vercel checks passed. Local Astro check/build, domestic links/release metadata and China filing/SEO checks passed. Five origin pages match the build and existing other Chinese pages remain byte-identical; public download page body matches. Public APK digest and latest feed11 verified. Cloudflare staging `0049bddb-ca3d-4062-b948-faf58f69a991`, live feed11 `a37c30c3-b2ed-43b0-9a11-c255fef408fb`; prior immutable downloads retained.
+
+### 2026-11-05 · 中国大陆 2027 年正式假期（3.2.5）
+
+- 逐项核对国务院国办发明电〔2026〕10号；共享模板改用 holiday-cn 固定提交 `a91748e8` 的正式数据，撤下 2027 年推测标识。29 个休息日、5 个补班日与已获准预测一致；手动排班、已保存方案、历史记录和其他地区不变。
+- 规定共享路径漂移只读检查为 71 条（最新 `08dbfd22`，最早 `a6a6c382`）。本轮仅纳入用户指定的正式假期，不推进冻结规则源或其他授权增量。
+- 自动检查、构建及后续上传状态见[更新记录](../reviews/2026-11-05-cn-2027-official-holidays.md)；未据共享数据完成声明商店已上架。

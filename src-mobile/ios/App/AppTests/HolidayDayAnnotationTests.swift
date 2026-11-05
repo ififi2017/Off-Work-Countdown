@@ -12,10 +12,21 @@ struct HolidayDayAnnotationTests {
         #expect(makeup.name == holiday.name)
         #expect(!holiday.isMakeupWorkday)
         #expect(makeup.isMakeupWorkday)
-        #expect(holiday.isEstimated && makeup.isEstimated)
+        #expect(!holiday.isEstimated && !makeup.isEstimated)
         let official = try #require(HolidayDayAnnotation.make(dayKey: "2026-10-10", region: "CN", language: "zh-CN"))
         #expect(official.name == "国庆节")
         #expect(official.isMakeupWorkday && !official.isEstimated)
+    }
+
+    @Test("Synthetic predictions label both holidays and makeup workdays")
+    func predictedAnnotations() throws {
+        let json = #"{"schemaVersion":1,"datasetVersion":"test","names":[{"zh-CN":"春节"}],"regions":{"CN":{"coveredFromYear":2027,"coveredThroughYear":2027,"estimatedYears":[2027],"days":[[20270205,0,0],[20270214,1,0]]}}}"#
+        let calendar = try HolidayCalendar(data: Data(json.utf8))
+        let holiday = try #require(HolidayDayAnnotation.make(dayKey: "2027-02-05", region: "CN", language: "zh-CN", calendar: calendar))
+        let makeup = try #require(HolidayDayAnnotation.make(dayKey: "2027-02-14", region: "CN", language: "zh-CN", calendar: calendar))
+        #expect(holiday.name == "春节" && makeup.name == holiday.name)
+        #expect(!holiday.isMakeupWorkday && makeup.isMakeupWorkday)
+        #expect(holiday.isEstimated && makeup.isEstimated)
     }
 
     @Test("Other regions show their own holiday names and no makeup label")
