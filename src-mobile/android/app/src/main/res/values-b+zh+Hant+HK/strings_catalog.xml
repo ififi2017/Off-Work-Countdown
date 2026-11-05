@@ -593,6 +593,7 @@
     <string name="liveActivityScheduleNote">我哋會為呢一班安排提醒；專注模式同系統限制可能影響佢幾時顯示。</string>
     <string name="liveActivityStartTime">開始時間</string>
     <string name="lockScreenLiveActivity">喺鎖定畫面顯示</string>
+    <string name="logOvertimeTitle">補記加班</string>
     <string name="lunchBackAt">返嚟時間</string>
     <string name="lunchBreak">午休</string>
     <string name="lunchDuration">時長</string>

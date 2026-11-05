@@ -597,6 +597,7 @@
     <string name="liveActivityScheduleNote">Programmeremo il promemoria per questo turno. Le modalità Full Immersion e i limiti di sistema possono cambiarne il momento di visualizzazione.</string>
     <string name="liveActivityStartTime">Ora di inizio</string>
     <string name="lockScreenLiveActivity">Mostra sulla schermata di blocco</string>
+    <string name="logOvertimeTitle">Registra straordinario</string>
     <string name="lunchBackAt">Si riprende alle</string>
     <string name="lunchBreak">Pausa pranzo</string>
     <string name="lunchDuration">Durata</string>

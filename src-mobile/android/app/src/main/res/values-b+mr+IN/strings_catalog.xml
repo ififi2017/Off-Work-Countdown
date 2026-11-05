@@ -595,6 +595,7 @@
     <string name="liveActivityScheduleNote">आम्ही या शिफ्टसाठी स्मरणपत्र शेड्यूल करू. फोकस मोड आणि सिस्टीम मर्यादा ते कधी दिसेल हे बदलू शकतात.</string>
     <string name="liveActivityStartTime">सुरुवातीची वेळ</string>
     <string name="lockScreenLiveActivity">लॉक स्क्रीनवर दाखवा</string>
+    <string name="logOvertimeTitle">ओव्हरटाइम नोंदवा</string>
     <string name="lunchBackAt">परत</string>
     <string name="lunchBreak">दुपारची सुट्टी</string>
     <string name="lunchDuration">कालावधी</string>

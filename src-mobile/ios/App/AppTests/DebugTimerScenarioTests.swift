@@ -197,6 +197,23 @@ func debugSeedSampleRecordsIsIdempotent() {
     }
 }
 
+/// The overtime sheet reads the timer's clock, so this capture scenario must
+/// open it on the scenario's 15:00 overtime rather than the device's real day.
+@Test("Overtime capture scenario opens the sheet on its own overtime")
+@MainActor
+func overtimeScenarioOpensSheetOnVirtualOvertime() throws {
+    try withDebugStore { store in
+        let realAnchor = Date(timeIntervalSince1970: 1_700_000_000)
+        store.debug.activateDebugTimerScenario(.overtime, at: realAnchor)
+        let now = store.session.timerDate(from: realAnchor)
+        let snapshot = try #require(store.session.snapshot(at: now))
+        let end = try #require(snapshot.overtimeEndDate)
+        #expect(Calendar.current.component(.hour, from: end) == 15)
+        #expect(Calendar.current.isDate(end, inSameDayAs: now))
+        #expect(OvertimeSheetMode(hasOvertime: true, plannedEnd: snapshot.plannedEndDate, now: now) == .adjust)
+    }
+}
+
 @MainActor
 private func withDebugStore(
     _ body: (AppRuntime) throws -> Void

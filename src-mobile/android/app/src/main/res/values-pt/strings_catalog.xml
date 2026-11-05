@@ -597,6 +597,7 @@
     <string name="liveActivityScheduleNote">Vamos agendar o lembrete deste turno. Modos de foco e limites do sistema podem alterar quando ele aparece.</string>
     <string name="liveActivityStartTime">Hora de início</string>
     <string name="lockScreenLiveActivity">Mostrar na tela bloqueada</string>
+    <string name="logOvertimeTitle">Registar hora extra</string>
     <string name="lunchBackAt">Retorno às</string>
     <string name="lunchBreak">Intervalo de almoço</string>
     <string name="lunchDuration">Duração</string>

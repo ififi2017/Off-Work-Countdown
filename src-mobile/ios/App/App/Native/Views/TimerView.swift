@@ -7,6 +7,9 @@ struct OvertimeSheet: View {
     @State private var endDate = Date.now
     @State private var confirmed = false
     @State private var saving = false
+    /// Fixed when the sheet opens, so the title cannot flip while it is up
+    /// (for example when the planned clock-off passes mid-edit).
+    @State private var mode = OvertimeSheetMode.add
 
     var body: some View {
         NavigationStack {
@@ -38,7 +41,7 @@ struct OvertimeSheet: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
                 }
-                Button(shifts.text.t("confirmOvertime")) {
+                Button(shifts.text.t(mode.confirmKey)) {
                     let command = shifts.applyOvertime(date: endDate)
                     saving = true
                     Task {
@@ -53,7 +56,7 @@ struct OvertimeSheet: View {
             }
             .disabled(saving)
             .interactiveDismissDisabled(saving)
-            .navigationTitle(shifts.text.t("overtimeTitle"))
+            .navigationTitle(shifts.text.t(mode.titleKey))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -62,22 +65,71 @@ struct OvertimeSheet: View {
                 }
             }
             .onAppear {
-                let existing = shifts.session.overtimeEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) }
+                let now = timerNow
+                let snapshot = shifts.session.snapshot(at: now)
+                // Read the existing end from the snapshot, not the stored
+                // session field: it is what the timer is showing, including
+                // a DEBUG scenario's overtime on its virtual clock.
+                let existing = snapshot?.overtimeEndDate
+                mode = OvertimeSheetMode(
+                    hasOvertime: existing != nil,
+                    plannedEnd: snapshot?.plannedEndDate,
+                    now: now
+                )
                 // After clock-off this becomes a retrospective record and
                 // defaults to now, so someone who actually stayed late can
                 // save the time already worked without adding another forced
                 // 15-minute block.
-                endDate = max(minimumDate, existing ?? .now)
+                endDate = max(minimumDate, existing ?? now)
             }
             .sensoryFeedback(.impact(weight: .medium), trigger: confirmed)
         }
     }
 
+    /// The timer's clock: the device time, or a DEBUG scenario's virtual time.
+    private var timerNow: Date { shifts.session.timerDate(from: .now) }
+
     private var minimumDate: Date {
-        let planned = shifts.session.snapshot()?.plannedEndDate ?? .now
+        let now = timerNow
+        let planned = shifts.session.snapshot(at: now)?.plannedEndDate ?? now
         // An overtime end cannot precede either the planned clock-off or the
         // device's current time. There is deliberately no minimum duration.
-        return max(planned, .now)
+        return max(planned, now)
+    }
+}
+
+/// What the overtime sheet is doing, which decides its title and button.
+/// The timer's entry button already says "Adjust overtime" once overtime is
+/// set; the sheet it opens must not then say "Add overtime".
+nonisolated enum OvertimeSheetMode: Equatable, Sendable {
+    /// No overtime yet and the shift is still running.
+    case add
+    /// Overtime is already set; this moves its end.
+    case adjust
+    /// No overtime yet but the planned clock-off has passed: recording time
+    /// already worked, so "Start overtime" would be wrong.
+    case log
+
+    init(hasOvertime: Bool, plannedEnd: Date?, now: Date) {
+        if hasOvertime {
+            self = .adjust
+        } else if let plannedEnd, now >= plannedEnd {
+            self = .log
+        } else {
+            self = .add
+        }
+    }
+
+    var titleKey: String {
+        switch self {
+        case .add: "overtimeTitle"
+        case .adjust: "adjustOvertime"
+        case .log: "logOvertimeTitle"
+        }
+    }
+
+    var confirmKey: String {
+        self == .add ? "confirmOvertime" : "saveAction"
     }
 }
 

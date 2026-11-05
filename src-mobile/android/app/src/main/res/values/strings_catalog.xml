@@ -595,6 +595,7 @@
     <string name="liveActivityScheduleNote">We\'ll schedule the reminder for this shift. Focus modes and system limits may affect when it appears.</string>
     <string name="liveActivityStartTime">Start time</string>
     <string name="lockScreenLiveActivity">Show on Lock Screen</string>
+    <string name="logOvertimeTitle">Log overtime</string>
     <string name="lunchBackAt">Back at</string>
     <string name="lunchBreak">Lunch break</string>
     <string name="lunchDuration">Duration</string>

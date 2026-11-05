@@ -593,6 +593,7 @@
     <string name="liveActivityScheduleNote">이번 근무의 알림을 예약합니다. 집중 모드나 시스템 제한에 따라 표시 시각이 달라질 수 있습니다.</string>
     <string name="liveActivityStartTime">시작 시간</string>
     <string name="lockScreenLiveActivity">잠금 화면에 표시</string>
+    <string name="logOvertimeTitle">초과 근무 기록</string>
     <string name="lunchBackAt">복귀 시각</string>
     <string name="lunchBreak">점심시간</string>
     <string name="lunchDuration">소요 시간</string>

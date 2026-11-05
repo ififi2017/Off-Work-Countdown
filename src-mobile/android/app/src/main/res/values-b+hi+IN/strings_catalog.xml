@@ -595,6 +595,7 @@
     <string name="liveActivityScheduleNote">हम इस शिफ़्ट का रिमाइंडर शेड्यूल करेंगे। फ़ोकस मोड और सिस्टम की सीमाएँ उसके दिखने का समय बदल सकती हैं।</string>
     <string name="liveActivityStartTime">शुरू होने का समय</string>
     <string name="lockScreenLiveActivity">लॉक स्क्रीन पर दिखाएँ</string>
+    <string name="logOvertimeTitle">ओवरटाइम दर्ज करें</string>
     <string name="lunchBackAt">वापसी</string>
     <string name="lunchBreak">दोपहर का अवकाश</string>
     <string name="lunchDuration">अवधि</string>

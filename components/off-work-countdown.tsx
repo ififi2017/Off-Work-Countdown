@@ -473,6 +473,9 @@ export function OffWorkCountdown({
     useState(false);
   const [overtimeDialogOpen, setOvertimeDialogOpen] = useState(false);
   const [overtimeEndTime, setOvertimeEndTime] = useState("19:00");
+  // Captured on open: the entry button already reads "Adjust overtime" when
+  // overtime is set, so the dialog it opens must say the same.
+  const [overtimeDialogAdjusts, setOvertimeDialogAdjusts] = useState(false);
   const [webOvertimeRestored, setWebOvertimeRestored] = useState(false);
   const webOvertimeUrlShiftRef = useRef<ReturnType<typeof decodeShift>>(null);
   const webOvertimeStorage = () =>
@@ -2383,6 +2386,7 @@ export function OffWorkCountdown({
         .toString()
         .padStart(2, "0")}`
     );
+    setOvertimeDialogAdjusts(Boolean(activeShift.overtimeEndAtMs));
     setOvertimeDialogOpen(true);
   };
 
@@ -2855,7 +2859,9 @@ export function OffWorkCountdown({
         <Dialog open={overtimeDialogOpen} onOpenChange={setOvertimeDialogOpen}>
           <DialogContent dir={isRtl ? "rtl" : "ltr"} className="w-[calc(100%-2rem)] max-w-[360px] rounded-2xl p-5">
             <DialogHeader className="text-start">
-              <DialogTitle className="pr-5">{t("overtimeTitle")}</DialogTitle>
+              <DialogTitle className="pr-5">
+                {t(overtimeDialogAdjusts ? "adjustOvertime" : "overtimeTitle")}
+              </DialogTitle>
               <DialogDescription>{t("overtimeDescription")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
@@ -2910,7 +2916,7 @@ export function OffWorkCountdown({
                 onClick={confirmOvertime}
                 disabled={!overtimeCandidateIsValid}
               >
-                {t("confirmOvertime")}
+                {t(overtimeDialogAdjusts ? "saveAction" : "confirmOvertime")}
               </Button>
             </div>
           </DialogContent>

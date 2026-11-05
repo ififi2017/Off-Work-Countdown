@@ -595,6 +595,7 @@
     <string name="liveActivityScheduleNote">Bu vardiya için hatırlatıcıyı planlayacağız. Odak modları ve sistem sınırları, ne zaman görüneceğini etkileyebilir.</string>
     <string name="liveActivityStartTime">Başlangıç zamanı</string>
     <string name="lockScreenLiveActivity">Kilit ekranında göster</string>
+    <string name="logOvertimeTitle">Fazla mesaiyi kaydet</string>
     <string name="lunchBackAt">Dönüş saati</string>
     <string name="lunchBreak">Öğle molası</string>
     <string name="lunchDuration">Süre</string>

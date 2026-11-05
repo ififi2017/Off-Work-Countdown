@@ -599,6 +599,7 @@
     <string name="liveActivityScheduleNote">Мы запланируем напоминание для этой смены. Режимы фокусирования и системные ограничения могут повлиять на время его показа.</string>
     <string name="liveActivityStartTime">Время начала</string>
     <string name="lockScreenLiveActivity">Показывать на экране блокировки</string>
+    <string name="logOvertimeTitle">Записать переработку</string>
     <string name="lunchBackAt">Возврат в</string>
     <string name="lunchBreak">Обеденный перерыв</string>
     <string name="lunchDuration">Длительность</string>

@@ -354,12 +354,15 @@ function OvertimeSheet({
 }) {
   const { t } = useTranslation();
   const valid = app.view.plannedEndAtMs > 0;
+  // Fixed on open: the entry button already says "Adjust overtime" then.
+  const [adjusts] = useState(() => app.view.overtimeEndAtMs !== null);
+  const title = t(adjusts ? "adjustOvertime" : "overtimeTitle");
 
   return (
-    <IosSheet onClose={onClose} label={t("overtimeTitle")}>
+    <IosSheet onClose={onClose} label={title}>
       <div className="px-5 pb-1">
         <span className="text-[20px] font-bold tracking-[-0.02em] text-[var(--ios-title)]">
-          {t("overtimeTitle")}
+          {title}
         </span>
         <p className="mt-1 text-[15px] text-[var(--ios-label-2)]">
           {t("overtimeDescription")}
@@ -381,7 +384,7 @@ function OvertimeSheet({
             if (app.applyOvertime(value)) onClose();
           }}
         >
-          {t("confirmOvertime")}
+          {t(adjusts ? "saveAction" : "confirmOvertime")}
         </IosButton>
       </div>
     </IosSheet>

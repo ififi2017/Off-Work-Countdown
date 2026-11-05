@@ -595,6 +595,7 @@
     <string name="liveActivityScheduleNote">Wir planen die Erinnerung für diese Schicht. Fokus-Modi und Systemgrenzen können beeinflussen, wann sie erscheint.</string>
     <string name="liveActivityStartTime">Startzeit</string>
     <string name="lockScreenLiveActivity">Auf dem Sperrbildschirm anzeigen</string>
+    <string name="logOvertimeTitle">Überstunden nachtragen</string>
     <string name="lunchBackAt">Zurück um</string>
     <string name="lunchBreak">Mittagspause</string>
     <string name="lunchDuration">Dauer</string>
