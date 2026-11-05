@@ -1,6 +1,7 @@
 package com.rainif.doneat.core.domain.records
 
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedule
+import com.rainif.doneat.core.domain.schedule.OvertimePay
 import com.rainif.doneat.core.domain.schedule.RosterDay
 import com.rainif.doneat.core.domain.schedule.ShiftSegment
 
@@ -279,6 +280,10 @@ data class SyncedPreferences(
     val monthlyWorkingDays: Double,
     val annualBonusEnabled: Boolean,
     val annualBonusMonths: Double,
+    /** How a monthly salary becomes daily pay (plan 024): `fixed` or `scheduledMonth`. Absent in older archives. */
+    val dailySalaryBasis: String = "fixed",
+    /** Plan 024: default overtime pay multiplier (0 = unpaid, else 0.5 to 5 in tenths). Absent in older archives. */
+    val overtimePayMultiplier: Double = 1.0,
     val notificationMode: String,
     val cycleEndSummaryNotificationEnabled: Boolean,
     val lunchStartReminderEnabled: Boolean,
@@ -307,6 +312,8 @@ data class SyncedPreferences(
             FoundationCompat.isValidTimeZone(recordsTimeZoneIdentifier) &&
             monthlyWorkingDays.isFinite() && monthlyWorkingDays > 0 &&
             annualBonusMonths.isFinite() && annualBonusMonths >= 0 &&
+            dailySalaryBasis in DAILY_SALARY_BASES &&
+            OvertimePay.normalized(overtimePayMultiplier) == overtimePayMultiplier &&
             microBreakIntervalMinutes in 1..720 &&
             (languageOverride == null || languageOverride in SUPPORTED_LANGUAGES) &&
             editedAtMs.isFinite() &&
@@ -321,6 +328,7 @@ data class SyncedPreferences(
         val SCHEDULE_MODES = setOf("classic", "alternating", "rotation", "off")
         val WEEK_TYPES = setOf("single", "double")
         val SALARY_TYPES = setOf("monthly", "daily")
+        val DAILY_SALARY_BASES = setOf("fixed", "scheduledMonth")
         val NOTIFICATION_MODES = setOf("off", "simple", "milestones")
         val THEMES = setOf("auto", "light", "dark")
     }

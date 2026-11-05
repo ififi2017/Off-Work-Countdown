@@ -59,6 +59,8 @@ object ReminderRules {
             val breakStartAtMs = segments[index].endAtMs
             val breakEndAtMs = segments[index + 1].startAtMs
             if (breakEndAtMs <= breakStartAtMs) continue
+            // Plan 024: the rest before overtime is not lunch.
+            if (breakStartAtMs >= shift.plannedEndAtMs) continue
 
             val startBody = if (inputs.lunchStartEnabled) nonEmpty(inputs.lunchStartBody) else null
             reminders += Reminder(

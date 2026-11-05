@@ -888,7 +888,7 @@ final class RecordsQueries {
             date: date,
             appearance: appearance,
             workMs: share.workMs,
-            overtimeMs: share.overtimeMs,
+            overtimeMs: countedOvertimeMs(share.overtimeMs, on: resolution, previous: previous),
             breakMs: share.breakMs,
             freeMs: share.freeMs,
             observationCount: (observationIndex()[resolution.dayKey] ?? []).count,
@@ -924,7 +924,8 @@ final class RecordsQueries {
                 .compactMap { $0 }
                 .filter { counted.contains($0.dayKey) }
             guard !contributors.isEmpty else { return nil }
-            let allocation = dayAllocation(day, contributedBy: contributors, now: now)
+            var allocation = dayAllocation(day, contributedBy: contributors, now: now)
+            allocation.overtimeMs = countedOvertimeMs(allocation.overtimeMs, on: day, previous: previousDay(before: day, in: byKey))
             // A neighbouring record alone does not make this a covered day.
             // Keep only actual spillover, or a record/correction on this date.
             guard recordedKeys.contains(day.dayKey)
@@ -1017,12 +1018,13 @@ final class RecordsQueries {
         }
         let today = recordsCalendar.startOfDay(for: now)
         let visibleKeys = Set(cells.map(\.dayKey))
-        let completedScheduledWorkdays = days.filter { day in
+        let completedScheduledDays = days.filter { day in
             guard visibleKeys.contains(day.dayKey), day.baseScheduleIsWorkday else { return false }
             let date = RecordJSON.date(fromDayKey: day.dayKey, calendar: recordsCalendar)
                 ?? day.shiftAnchorDate
             return recordsCalendar.startOfDay(for: date) < today
-        }.count
+        }
+        let completedScheduledWorkdays = completedScheduledDays.count
         let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
             ? "recordsSleepFromHealth"
             : "recordsSleepEstimated"
@@ -1033,6 +1035,7 @@ final class RecordsQueries {
             wakingFreeMs: combined.wakingFreeMs,
             estimatedIncome: recordsIncome(
                 completedWorkdays: completedScheduledWorkdays,
+                completedDayKeys: completedScheduledDays.map(\.dayKey),
                 at: now
             ),
             completedScheduledWorkdays: completedScheduledWorkdays,
@@ -1098,6 +1101,8 @@ final class RecordsQueries {
                 resolvedSegments: day.segments,
                 plannedSegments: day.baseScheduleSegments,
                 overtimeSegments: actualKind == nil ? [] : overtimeSegments(on: day),
+                overtimePayMultiplier: actualKind == nil ? nil : overtimePayMultiplier(on: day),
+                overtimeCountedMs: actualKind == nil ? nil : overtimeCountedMs(on: day),
                 observations: observations,
                 isActiveAnchor: activeAnchorDayKey == day.dayKey
             )
@@ -1265,13 +1270,47 @@ final class RecordsQueries {
         return isInsideLifeWorkProjection(date, now: now) ? .lifeProjection : .scheduleEstimate
     }
 
-    func overtimeSegments(on resolution: DayResolution) -> [NativeShiftSegment] {
-        let latest = (observationIndex()[resolution.dayKey] ?? [])
+    /// The day's newest overtime declaration, the only one that counts.
+    private func latestOvertimeDeclaration(onDayKey dayKey: String) -> WorkObservation? {
+        (observationIndex()[dayKey] ?? [])
             .filter { $0.kind == .overtimeDeclared }
             .max { lhs, rhs in
                 if lhs.occurredAt != rhs.occurredAt { return lhs.occurredAt < rhs.occurredAt }
                 return lhs.eventID.uuidString < rhs.eventID.uuidString
             }
+    }
+
+    /// Plan 024: the pay multiplier the day's latest overtime declaration
+    /// chose; 1 when it names none (older declarations) or there is none.
+    func overtimePayMultiplier(on resolution: DayResolution) -> Double {
+        RecordsMetrics.declaredPayMultiplier(latestOvertimeDeclaration(onDayKey: resolution.dayKey))
+    }
+
+    /// Plan 024: the hours the day's latest declaration counts, if it names any.
+    func overtimeCountedMs(on resolution: DayResolution) -> Double? {
+        RecordsMetrics.declaredCountedMs(latestOvertimeDeclaration(onDayKey: resolution.dayKey))
+    }
+
+    /// Plan 024: counted / measured overtime for a day (1 without an override).
+    func overtimeCountScale(on resolution: DayResolution) -> Double {
+        guard let counted = overtimeCountedMs(on: resolution),
+              let segment = overtimeSegments(on: resolution).first else { return 1 }
+        return CountedOvertime.scale(fullMeasuredMs: segment.endAtMs - segment.startAtMs, countedMs: counted)
+    }
+
+    /// Plan 024: measured overtime milliseconds shown on `resolution`'s cell,
+    /// turned into counted ones. An overnight spill from the day before takes
+    /// that day's factor when this day has none.
+    private func countedOvertimeMs(_ measured: Int64, on resolution: DayResolution, previous: DayResolution?) -> Int64 {
+        guard measured > 0 else { return measured }
+        var scale = overtimeCountScale(on: resolution)
+        if scale == 1, let previous { scale = overtimeCountScale(on: previous) }
+        guard scale != 1 else { return measured }
+        return Int64((Double(measured) * scale).rounded())
+    }
+
+    func overtimeSegments(on resolution: DayResolution) -> [NativeShiftSegment] {
+        let latest = latestOvertimeDeclaration(onDayKey: resolution.dayKey)
         guard let latest,
               let segment = RecordsMetrics.declaredOvertimeSegment(
                 observation: latest,
@@ -1331,7 +1370,8 @@ final class RecordsQueries {
             appearance: cell.appearance,
             sourceKey: sourceKey,
             regularWorkMs: canvas.allocation.workMs,
-            overtimeMs: canvas.allocation.overtimeMs,
+            // Plan 024: counted hours; the canvas keeps drawing the real period.
+            overtimeMs: countedOvertimeMs(canvas.allocation.overtimeMs, on: resolution, previous: previous),
             breakMs: canvas.allocation.breakMs,
             sleepMs: canvas.allocation.sleepMs,
             freeMs: canvas.allocation.freeMs,
@@ -1440,9 +1480,27 @@ final class RecordsQueries {
     /// Records and the timer intentionally answer different questions. Records
     /// counts completed base-schedule workdays at the current salary, leaving
     /// today's partial shift and declared overtime to the timer.
-    func recordsIncome(completedWorkdays: Int, at date: Date = .now) -> Double? {
+    ///
+    /// Under the scheduled-month basis each completed day is paid at its own
+    /// civil month's daily pay, so `completedDayKeys` groups them by month.
+    func recordsIncome(completedWorkdays: Int, completedDayKeys: [String] = [], at date: Date = .now) -> Double? {
         guard presentationSalaryEnabled, let input = rulesInput(at: date) else { return nil }
-        return SummaryRules.recordsIncome(completedWorkdays: completedWorkdays, rules: input)
+        var counts: [String: (anchorMs: Double, count: Int)] = [:]
+        if input.usesScheduledMonthBasis {
+            for key in completedDayKeys {
+                guard let day = RecordJSON.date(fromDayKey: key, calendar: recordsCalendar) else { continue }
+                let month = String(key.prefix(7))
+                let existing = counts[month]
+                counts[month] = (
+                    existing?.anchorMs ?? recordsCalendar.startOfDay(for: day).timeIntervalSince1970 * 1_000,
+                    (existing?.count ?? 0) + 1
+                )
+            }
+        }
+        let months = counts.sorted { $0.key < $1.key }.map {
+            NativeMonthWorkdayCount(anchorMs: $0.value.anchorMs, count: $0.value.count)
+        }
+        return SummaryRules.recordsIncome(completedWorkdays: completedWorkdays, rules: input, completedByMonth: months)
     }
 
     /// The window is entirely a property of the life profile — `now` is not

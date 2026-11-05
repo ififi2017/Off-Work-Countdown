@@ -3,11 +3,15 @@ import {
   buildShiftTimeline,
   civilDateKey,
   civilDateAtMs,
+  civilMonthStartMs,
+  getDailySalary,
   getPlannedShiftDurationMs,
   getMonthlySalaryEquivalent,
   isScheduledWorkday,
   isScheduledWorkdayInZone,
+  normalizeOvertimePayMultiplier,
   startOfCivilDayMs,
+  type DailySalaryBasis,
   type WorkScheduleConfig,
 } from "./countdown";
 import { resolveScheduleDay } from "./extended-schedule";
@@ -82,6 +86,17 @@ export interface RecordsActualForecastDay {
   plannedSegments: RecordsSummarySegment[];
   /** Immutable declarations can overlap, so the shared rule unions them. */
   overtimeSegments: RecordsSummarySegment[];
+  /**
+   * Plan 024: the pay multiplier the day's latest overtime declaration chose
+   * (0 = unpaid). Omitted or invalid means 1, the original hourly rate.
+   */
+  overtimePayMultiplier?: number | null;
+  /**
+   * Plan 024: the hours the day's latest overtime declaration counts, which
+   * replace the measured overtime length in statistics and pay. Omitted or
+   * invalid (not 0 to 24 hours) means the measured length.
+   */
+  overtimeCountedMs?: number | null;
   observations: RecordsSummaryObservation[];
   /** Whether this civil date owns the currently running shift. */
   isActiveAnchor: boolean;
@@ -275,6 +290,41 @@ export function projectLifetimeGrossIncome(params: {
 }
 
 /**
+ * Plan 024: worked time with the part beyond the regular segments (the
+ * overtime) scaled by the day's multiplier. 1 returns `totalMs` untouched.
+ */
+export function weightedOvertimeMs(
+  totalMs: number,
+  regularMs: number,
+  multiplier: number
+): number {
+  if (multiplier === 1) return totalMs;
+  const regular = Math.min(totalMs, regularMs);
+  return regular + multiplier * (totalMs - regular);
+}
+
+/** The longest hours count a declaration may carry. */
+export const MAX_COUNTED_OVERTIME_MS = 24 * 3_600_000;
+
+/** Plan 024: the counted overtime as stored; null unless finite and 0...24h. */
+export function normalizeCountedOvertimeMs(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  if (value < 0 || value > MAX_COUNTED_OVERTIME_MS) return null;
+  return value;
+}
+
+/**
+ * Plan 024: the factor that turns a day's measured overtime into its counted
+ * overtime: counted / full measured length. 1 without a valid counted value
+ * or when there is no measured overtime to scale.
+ */
+export function overtimeCountScale(fullMeasuredMs: number, countedMs: unknown): number {
+  const counted = normalizeCountedOvertimeMs(countedMs);
+  if (counted === null || !Number.isFinite(fullMeasuredMs) || fullMeasuredMs <= 0) return 1;
+  return counted / fullMeasuredMs;
+}
+
+/**
  * Split recorded/corrected work from schedule estimates for one visible
  * period. One logical day can enter only one side; actual always wins.
  */
@@ -334,27 +384,51 @@ export function summarizeRecordsActualAndForecast(params: {
         ...segment,
         endAtMs: Math.min(segment.endAtMs, params.asOfMs),
       }));
-      const workedMs = mergedSegmentDuration([...elapsedRegular, ...elapsedOvertime]);
-      actualOvertimeMs += Math.max(0, workedMs - mergedSegmentDuration(elapsedRegular));
+      const measuredWorkedMs = mergedSegmentDuration([...elapsedRegular, ...elapsedOvertime]);
+      const regularMs = mergedSegmentDuration(elapsedRegular);
+      // Plan 024: counted hours replace the measured overtime length.
+      const countScale = overtimeCountScale(
+        Math.max(
+          0,
+          mergedSegmentDuration([...regularSegments, ...day.overtimeSegments]) -
+            mergedSegmentDuration(regularSegments),
+        ),
+        day.overtimeCountedMs,
+      );
+      const overtimeMs = Math.max(0, measuredWorkedMs - regularMs) * countScale;
+      const workedMs = countScale === 1 ? measuredWorkedMs : regularMs + overtimeMs;
+      actualOvertimeMs += countScale === 1 ? Math.max(0, workedMs - regularMs) : overtimeMs;
+      const multiplier = normalizeOvertimePayMultiplier(day.overtimePayMultiplier ?? 1);
       if (workedMs > 0) {
         actualDays += 1;
         actualMs += workedMs;
         if (!usesFixedMonthlyPay) {
-          actualPay += (rate ?? 0) * (plannedMs > 0 ? workedMs / plannedMs : 1);
+          const paidMs = weightedOvertimeMs(workedMs, regularMs, multiplier);
+          actualPay += (rate ?? 0) * (plannedMs > 0 ? paidMs / plannedMs : 1);
         }
       }
       if (day.isActiveAnchor || day.actualKind === "scheduled") {
-        const futureMs = mergedSegmentDuration(
+        const futureAllMs = mergedSegmentDuration(
           [...day.resolvedSegments, ...day.overtimeSegments].map(segment => ({
             ...segment,
             startAtMs: Math.max(segment.startAtMs, params.asOfMs),
           })),
         );
+        const futureRegularMs = mergedSegmentDuration(
+          day.resolvedSegments.map(segment => ({
+            ...segment,
+            startAtMs: Math.max(segment.startAtMs, params.asOfMs),
+          })),
+        );
+        const futureMs = countScale === 1
+          ? futureAllMs
+          : futureRegularMs + Math.max(0, futureAllMs - futureRegularMs) * countScale;
         if (futureMs > 0) {
           if (workedMs <= 0) forecastDays += 1;
           forecastMs += futureMs;
           if (!usesFixedMonthlyPay) {
-            forecastPay += (rate ?? 0) * (plannedMs > 0 ? futureMs / plannedMs : (workedMs <= 0 ? 1 : 0));
+            const paidFutureMs = weightedOvertimeMs(futureMs, futureRegularMs, multiplier);
+            forecastPay += (rate ?? 0) * (plannedMs > 0 ? paidFutureMs / plannedMs : (workedMs <= 0 ? 1 : 0));
           }
         }
       }
@@ -582,6 +656,102 @@ export function countScheduledWorkdays(
 }
 
 /**
+ * Scheduled workdays in the civil month containing `anchorMs`, in `timeZone`
+ * (the runtime's zone when omitted). Same day test as `countScheduledWorkdays`,
+ * so extended-schedule holidays and makeup days count, and manual (`off`)
+ * mode has none.
+ */
+export function countScheduledWorkdaysInMonth(params: {
+  anchorMs: number;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  timeZone?: string | null;
+}): number {
+  const { anchorMs, workdays, schedule } = params;
+  const timeZone = params.timeZone?.trim() || undefined;
+  return countScheduledWorkdays(
+    new Date(civilMonthStartMs(anchorMs, timeZone, 0)),
+    new Date(civilMonthStartMs(anchorMs, timeZone, 1)),
+    workdays,
+    schedule,
+    timeZone
+  );
+}
+
+/** The salary fields the month-basis rules read. */
+export interface MonthBasisSalary {
+  amount: string;
+  type: "monthly" | "daily";
+  monthlyWorkingDays: number;
+  annualBonusMonths: number;
+  basis?: DailySalaryBasis | null;
+}
+
+/** Whether pay divides each civil month by its own scheduled workdays. */
+export function usesScheduledMonthBasis(salary: MonthBasisSalary): boolean {
+  return salary.basis === "scheduledMonth" && salary.type === "monthly";
+}
+
+/**
+ * Daily pay for the civil month containing `anchorMs`. Daily salaries and the
+ * `fixed` basis are exactly `getDailySalary`; `scheduledMonth` divides by that
+ * month's scheduled workdays, falling back to the fixed setting without any.
+ */
+export function dailySalaryInMonth(params: {
+  salary: MonthBasisSalary;
+  anchorMs: number;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  timeZone?: string | null;
+}): number | null {
+  const { salary, anchorMs, workdays, schedule, timeZone } = params;
+  const count = usesScheduledMonthBasis(salary)
+    ? countScheduledWorkdaysInMonth({ anchorMs, workdays, schedule, timeZone })
+    : null;
+  return getDailySalary(
+    salary.amount,
+    salary.type,
+    salary.monthlyWorkingDays,
+    salary.annualBonusMonths,
+    count
+  );
+}
+
+/**
+ * Records income under the `scheduledMonth` basis: each month's completed
+ * workdays at that month's own daily pay. `months` lists every civil month that
+ * has completed days, by any instant inside it.
+ */
+export function completedWorkdayIncomeByMonth(params: {
+  months: { anchorMs: number; count: number }[];
+  salary: MonthBasisSalary;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  timeZone?: string | null;
+}): number | null {
+  const { months, salary, workdays, schedule, timeZone } = params;
+  if (months.length === 0) {
+    return completedWorkdayIncome(
+      0,
+      getDailySalary(
+        salary.amount,
+        salary.type,
+        salary.monthlyWorkingDays,
+        salary.annualBonusMonths
+      )
+    );
+  }
+  let total = 0;
+  for (const { anchorMs, count } of months) {
+    const daily = dailySalaryInMonth({ salary, anchorMs, workdays, schedule, timeZone });
+    if (daily === null) return null;
+    const days = Number.isFinite(count) ? Math.max(0, Math.trunc(count)) : 0;
+    total += days * daily;
+  }
+  return Number.isFinite(total) ? total : null;
+}
+
+/**
  * 汇总从 periodStart 到此刻的工作量。
  *
  * 当前班次单独计算：只有它的开班日是工作日、且落在当前周期时才计入，
@@ -602,6 +772,12 @@ export function summarize(params: {
   /** 班次进度百分比 0–100，来自正在运行的倒计时。 */
   todayProgress: number;
   dailySalary: number | null;
+  /**
+   * With the `scheduledMonth` basis on a monthly salary, earnings are summed
+   * month by month (completed days at each month's daily pay, then today's
+   * ratio at today's month) and `dailySalary` is not used.
+   */
+  salary?: MonthBasisSalary | null;
   /** 当前班次实际有效工时；用于午休与加班，未提供时按计划有效时长。 */
   todayEffectiveHours?: number;
   /** 当前班次按原日薪线性外推的计薪比例；可因加班超过 1。 */
@@ -619,6 +795,7 @@ export function summarize(params: {
     plannedDailyHours,
     todayProgress,
     dailySalary,
+    salary,
     todayEffectiveHours,
     todayPayRatio,
     timeZone,
@@ -678,9 +855,30 @@ export function summarize(params: {
     ? Math.max(0, todayPayRatio ?? todayFraction)
     : 0;
 
-  return {
-    days,
-    hours,
-    earnings: earningsForRatio(dailySalary, completed + earningsFraction),
-  };
+  let earnings = earningsForRatio(dailySalary, completed + earningsFraction);
+  if (salary && usesScheduledMonthBasis(salary)) {
+    const endMs = currentShiftCoversAsOfDay ? shiftDayMs : asOfDayMs;
+    let total = 0;
+    let missing = false;
+    for (let cursor = periodDayMs; cursor < endMs; ) {
+      const monthEnd = civilMonthStartMs(cursor, timeZone, 1);
+      const count = countScheduledWorkdays(
+        new Date(cursor),
+        new Date(Math.min(endMs, monthEnd)),
+        workdays,
+        schedule,
+        timeZone
+      );
+      const daily = dailySalaryInMonth({ salary, anchorMs: cursor, workdays, schedule, timeZone });
+      if (daily === null) missing = true;
+      else total += count * daily;
+      cursor = monthEnd;
+    }
+    const todayDaily = dailySalaryInMonth({ salary, anchorMs: endMs, workdays, schedule, timeZone });
+    if (todayDaily === null) missing = true;
+    else total += Math.max(0, earningsFraction) * todayDaily;
+    earnings = !missing && Number.isFinite(total) ? total : null;
+  }
+
+  return { days, hours, earnings };
 }

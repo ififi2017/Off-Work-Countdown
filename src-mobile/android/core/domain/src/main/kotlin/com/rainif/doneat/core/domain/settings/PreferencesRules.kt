@@ -42,6 +42,8 @@ object PreferencesRules {
         monthlyWorkingDays = 22.0,
         annualBonusEnabled = false,
         annualBonusMonths = 1.0,
+        dailySalaryBasis = "fixed",
+        overtimePayMultiplier = 1.0,
         notificationMode = "off",
         cycleEndSummaryNotificationEnabled = false,
         lunchStartReminderEnabled = false,

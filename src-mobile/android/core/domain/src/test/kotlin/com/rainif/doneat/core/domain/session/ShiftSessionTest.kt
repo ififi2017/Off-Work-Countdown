@@ -528,6 +528,77 @@ class ShiftSessionTest {
         assertNull(OngoingPlan.nextChangeAtMs(null, null, now))
     }
 
+    @Test fun `a declaration pins the shift's overtime pay multiplier and clearing drops it`() {
+        val h = Harness()
+        h.prefs = h.prefs.copy(overtimePayMultiplier = 2.0)
+        h.run { start(h.state, at(24, 10)) }
+        assertNull(h.state.overtimePayMultiplier)
+        assertEquals(2.0, h.session.effectiveOvertimePayMultiplier, 0.0)
+
+        // The default applies when the sheet names none, and is pinned to the shift.
+        assertTrue(h.run { applyOvertime(h.state, at(24, 19), at(24, 16)) })
+        assertEquals(2.0, h.state.overtimePayMultiplier)
+        h.prefs = h.prefs.copy(overtimePayMultiplier = 3.0)
+        assertEquals(2.0, h.session.effectiveOvertimePayMultiplier, 0.0)
+        assertEquals("{\"overtimeEndAtMs\":${at(24, 19).toLong()},\"plannedEndAtMs\":${at(24, 17).toLong()},\"payMultiplier\":2}",
+            String(Base64.getDecoder().decode(h.records.observations.last().valueData)))
+
+        // Repeating it changes nothing; a different choice is a new declaration, and 0 is unpaid.
+        assertFalse(h.run { applyOvertime(h.state, at(24, 19), at(24, 16)) })
+        assertTrue(h.run { applyOvertime(h.state, at(24, 19), at(24, 17), payMultiplier = 0.0) })
+        assertEquals(0.0, h.state.overtimePayMultiplier)
+        assertTrue(String(Base64.getDecoder().decode(h.records.observations.last().valueData)).endsWith(",\"payMultiplier\":0}"))
+        val paid = h.session.snapshot(at(24, 18))!!
+        assertEquals(1.0, paid.payRatio, 0.0)
+
+        // An invalid choice is the usual rate, which is not written.
+        assertTrue(h.run { applyOvertime(h.state, at(24, 19), at(24, 17, 30), payMultiplier = 9.0) })
+        assertEquals(1.0, h.state.overtimePayMultiplier)
+        assertEquals("{\"overtimeEndAtMs\":${at(24, 19).toLong()},\"plannedEndAtMs\":${at(24, 17).toLong()}}",
+            String(Base64.getDecoder().decode(h.records.observations.last().valueData)))
+
+        assertTrue(h.run { clearOvertime(h.state, at(24, 18)) })
+        assertNull(h.state.overtimeEndAtMs)
+        assertNull(h.state.overtimePayMultiplier)
+    }
+
+    @Test fun `overtime after a rest is its own segment, is written, persists in the state and clears`() {
+        val h = Harness()
+        h.run { start(h.state, at(24, 10)) }
+        assertTrue(h.run { applyOvertime(h.state, at(24, 20), at(24, 16), startAtMs = at(24, 17, 30)) })
+        assertEquals(at(24, 17, 30), h.state.overtimeStartAtMs)
+        assertEquals(
+            "{\"overtimeEndAtMs\":${at(24, 20).toLong()},\"plannedEndAtMs\":${at(24, 17).toLong()},\"overtimeStartAtMs\":${at(24, 17, 30).toLong()}}",
+            String(Base64.getDecoder().decode(h.records.observations.last().valueData)),
+        )
+        val snapshot = h.session.snapshot(at(24, 17, 10))!!
+        assertEquals(2, snapshot.segments.size)
+        assertEquals(at(24, 17, 30), snapshot.activeBreakEndAtMs)
+        assertEquals(at(24, 17), snapshot.plannedEndAtMs, 0.0)
+        assertEquals(at(24, 20), snapshot.endAtMs, 0.0)
+        assertEquals(snapshot.plannedDurationMs + 2.5 * 3_600_000, snapshot.durationMs, 0.0)
+
+        // A start at or before the planned end is no rest; repeating it changes nothing else.
+        assertTrue(h.run { applyOvertime(h.state, at(24, 20), at(24, 17), startAtMs = at(24, 17)) })
+        assertNull(h.state.overtimeStartAtMs)
+        assertFalse(h.run { applyOvertime(h.state, at(24, 20), at(24, 17, 5), startAtMs = at(24, 16, 45)) })
+
+        assertTrue(h.run { applyOvertime(h.state, at(24, 20), at(24, 17, 10), startAtMs = at(24, 18)) })
+        assertTrue(h.run { clearOvertime(h.state, at(24, 18)) })
+        assertNull(h.state.overtimeStartAtMs)
+    }
+
+    @Test fun `earned so far follows the shift's overtime multiplier`() {
+        val h = Harness()
+        h.prefs = h.prefs.copy(salaryEnabled = true, salaryType = "daily", salaryAmount = "800")
+        h.run { start(h.state, at(24, 10)) }
+        h.run { applyOvertime(h.state, at(24, 19), at(24, 16), payMultiplier = 1.5) }
+        val now = at(24, 19)
+        assertEquals(800.0 * (8 + 1.5 * 2) / 8, h.snapshot(now).earnedSoFar!!, 1e-9)
+        h.run { applyOvertime(h.state, at(24, 19), at(24, 16), payMultiplier = 0.0) }
+        assertEquals(800.0, h.snapshot(now).earnedSoFar!!, 1e-9)
+    }
+
     private companion object {
         const val ZONE = "UTC"
     }

@@ -10,17 +10,43 @@ enum class SalaryType(val raw: String) {
     }
 }
 
+/**
+ * How a monthly salary becomes daily pay (`DailySalaryBasis` in
+ * `lib/countdown.ts`). `fixed` divides by the configured monthly working days;
+ * `scheduledMonth` divides each civil month by its own scheduled workdays. A
+ * daily salary ignores it.
+ */
+enum class DailySalaryBasis(val raw: String) {
+    FIXED("fixed"),
+    SCHEDULED_MONTH("scheduledMonth");
+
+    companion object {
+        /** Anything unknown or absent is the fixed divisor, as for archives written before the basis existed. */
+        fun fromRaw(raw: String?) = entries.firstOrNull { it.raw == raw } ?: FIXED
+    }
+}
+
 /** The salary fields as stored: the amount stays the text the user typed. */
 data class SalarySettings(
     val amount: String,
     val type: SalaryType,
     val monthlyWorkingDays: Double,
     val annualBonusMonths: Double,
-)
+    val dailySalaryBasis: DailySalaryBasis = DailySalaryBasis.FIXED,
+    /** Plan 024: pay multiplier for overtime (0 = unpaid). 1 is the original hourly rate. */
+    val overtimePayMultiplier: Double = 1.0,
+) {
+    /** Whether pay divides each civil month by its own scheduled workdays. */
+    val usesScheduledMonthBasis: Boolean
+        get() = dailySalaryBasis == DailySalaryBasis.SCHEDULED_MONTH && type == SalaryType.MONTHLY
+}
 
 object SalaryRules {
-    /** Daily pay (`getDailySalary` in `lib/countdown.ts`), or null when the settings give none. */
-    fun dailySalary(settings: SalarySettings): Double? {
+    /**
+     * Daily pay (`getDailySalary` in `lib/countdown.ts`), or null when the settings give none.
+     * [scheduledMonthDays] replaces the fixed divisor when it is at least 1.
+     */
+    fun dailySalary(settings: SalarySettings, scheduledMonthDays: Int? = null): Double? {
         if (JavaScriptNumber.trim(settings.amount).isEmpty()) return null
         val parsed = JavaScriptNumber.parse(settings.amount)
         if (!parsed.isFinite() || parsed < 0) return null
@@ -28,7 +54,7 @@ object SalaryRules {
         if (!bonus.isFinite() || bonus < 0) return null
         val multiplier = 1 + bonus / 12
         if (settings.type == SalaryType.DAILY) return (parsed * multiplier).takeIf { it.isFinite() }
-        val days = settings.monthlyWorkingDays
+        val days = scheduledMonthDays?.takeIf { it >= 1 }?.toDouble() ?: settings.monthlyWorkingDays
         if (!days.isFinite() || days <= 0 || days > 31) return null
         return ((parsed / days) * multiplier).takeIf { it.isFinite() }
     }

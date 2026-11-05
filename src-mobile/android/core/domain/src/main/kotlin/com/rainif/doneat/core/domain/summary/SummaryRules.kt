@@ -4,8 +4,10 @@ import com.rainif.doneat.core.domain.salary.SalaryRules
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.schedule.CivilZone
+import com.rainif.doneat.core.domain.schedule.CountedOvertime
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
+import com.rainif.doneat.core.domain.schedule.OvertimePay
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
 import com.rainif.doneat.core.domain.schedule.ShiftSegment
 import com.rainif.doneat.core.domain.schedule.WallClock
@@ -47,6 +49,11 @@ object SummaryRules {
         val zone: ZoneId,
         /** Decides which days count and how long each is, when switched on. */
         val extended: ExtendedSchedulePlan? = null,
+        /**
+         * With the scheduled-month basis on a monthly salary, earnings are summed
+         * month by month and [dailySalary] is not used.
+         */
+        val salary: SalarySettings? = null,
     )
 
     data class PeriodSummary(val days: Double, val hours: Double, val earnings: Double?)
@@ -77,7 +84,64 @@ object SummaryRules {
         val todayPay = if (todayCounts) max(0.0, input.todayPayRatio) else 0.0
         // An extended roster sums each day's own hours; one daily figure cannot describe it.
         val hours = (extendedHours ?: (completed * input.plannedDailyHours)) + todayHours
-        return PeriodSummary(completed + todayFraction, hours, earnings(input.dailySalary, completed + todayPay))
+        var periodEarnings = earnings(input.dailySalary, completed + todayPay)
+        if (input.salary?.usesScheduledMonthBasis == true) {
+            periodEarnings = scheduledMonthEarnings(input.salary, input, zone, periodDayMs, if (coversAsOfDay) shiftDayMs else asOfDayMs, todayPay)
+        }
+        return PeriodSummary(completed + todayFraction, hours, periodEarnings)
+    }
+
+    /**
+     * Pay for `[fromMs, toMs)` split at civil month starts: each month's completed
+     * scheduled days at that month's daily pay, then today's ratio at the daily pay
+     * of the month [toMs] falls in (`summarize` in `lib/summary.ts`).
+     */
+    private fun scheduledMonthEarnings(salary: SalarySettings, input: SummaryInput, zone: CivilZone, fromMs: Double, toMs: Double, todayPay: Double): Double? {
+        val usesExtended = input.extended != null
+        fun daily(anchorMs: Double) = dailySalaryInMonth(salary, anchorMs, input.workdays, input.schedule, usesExtended, zone)
+        var total = 0.0
+        var missing = false
+        var cursor = fromMs
+        while (cursor < toMs) {
+            val monthEnd = zone.monthStartMs(cursor, 1)
+            val count = scheduledWorkdayCount(cursor, min(toMs, monthEnd), input.workdays, input.schedule, usesExtended, zone)
+            val rate = daily(cursor)
+            if (rate == null) missing = true else total += count.toDouble() * rate
+            cursor = monthEnd
+        }
+        val todayRate = daily(toMs)
+        if (todayRate == null) missing = true else total += max(0.0, todayPay) * todayRate
+        return if (!missing && total.isFinite()) total else null
+    }
+
+    /**
+     * Scheduled workdays in `[fromMs, toMs)`, by the same day test as [summarize]: an
+     * extended schedule assigns rest itself, so the manual-mode shortcut applies only
+     * without one (`countScheduledWorkdays`).
+     */
+    fun scheduledWorkdayCount(fromMs: Double, toMs: Double, workdays: List<Int>, schedule: WorkSchedule, usesExtended: Boolean, zone: CivilZone): Int {
+        if (!usesExtended && schedule.mode == ScheduleMode.OFF) return 0
+        var cursor = zone.startOfCivilDayMs(fromMs)
+        val end = zone.startOfCivilDayMs(toMs)
+        var count = 0
+        while (cursor < end) {
+            if (zone.isScheduledWorkdayInZone(cursor, workdays, schedule)) count++
+            cursor = zone.addCivilDaysMs(cursor, 1)
+        }
+        return count
+    }
+
+    /** Scheduled workdays in the civil month containing [anchorMs] (`countScheduledWorkdaysInMonth`). */
+    fun scheduledWorkdaysInMonth(anchorMs: Double, workdays: List<Int>, schedule: WorkSchedule, usesExtended: Boolean, zone: CivilZone): Int =
+        scheduledWorkdayCount(zone.monthStartMs(anchorMs, 0), zone.monthStartMs(anchorMs, 1), workdays, schedule, usesExtended, zone)
+
+    /**
+     * Daily pay for the civil month containing [anchorMs] (`dailySalaryInMonth`): the fixed
+     * setting, or under the scheduled-month basis that month's scheduled workday count.
+     */
+    fun dailySalaryInMonth(salary: SalarySettings, anchorMs: Double, workdays: List<Int>, schedule: WorkSchedule, usesExtended: Boolean, zone: CivilZone): Double? {
+        val count = if (salary.usesScheduledMonthBasis) scheduledWorkdaysInMonth(anchorMs, workdays, schedule, usesExtended, zone) else null
+        return SalaryRules.dailySalary(salary, count)
     }
 
     /** Completed scheduled days in `[fromMs, toMs)`, with their hours under an extended schedule. */
@@ -100,12 +164,35 @@ object SummaryRules {
 
     // Salary
 
-    /** Completed scheduled workdays at the daily pay; today's partial shift belongs to the live summary. */
-    fun recordsIncome(completedWorkdays: Int, salary: SalarySettings): Double? =
-        earnings(SalaryRules.dailySalary(salary), max(0, completedWorkdays).toDouble())
+    /** Completed scheduled workdays in one civil month, named by any instant in it. */
+    data class MonthWorkdays(val anchorMs: Double, val count: Int)
+
+    /** What the scheduled-month basis needs to count a month's workdays. */
+    data class MonthContext(val workdays: List<Int>, val schedule: WorkSchedule, val zone: ZoneId, val extended: ExtendedSchedulePlan? = null)
+
+    /**
+     * Completed scheduled workdays at the daily pay; today's partial shift belongs to the live
+     * summary. Under the scheduled-month basis the days arrive grouped by civil month
+     * ([months], `completedWorkdayIncomeByMonth`), each at its own month's daily pay; without
+     * a [context] to count them in, the fixed divisor applies.
+     */
+    fun recordsIncome(completedWorkdays: Int, salary: SalarySettings, months: List<MonthWorkdays> = emptyList(), context: MonthContext? = null): Double? {
+        val fixedDaily = SalaryRules.dailySalary(salary)
+        if (!salary.usesScheduledMonthBasis || context == null) return earnings(fixedDaily, max(0, completedWorkdays).toDouble())
+        if (months.isEmpty()) return earnings(fixedDaily, 0.0)
+        val zone = CivilZone(context.zone, context.extended?.let(::ExtendedScheduleResolver))
+        var total = 0.0
+        for (month in months) {
+            val daily = dailySalaryInMonth(salary, month.anchorMs, context.workdays, context.schedule, context.extended != null, zone) ?: return null
+            total += max(0, month.count).toDouble() * daily
+        }
+        return total.takeIf { it.isFinite() }
+    }
 
     /** The monthly gross a daily or monthly setting amounts to, used to seed the life profile. */
     fun salaryMonthlyEquivalent(salary: SalarySettings): Double? {
+        // A scheduled-month salary is already the nominal monthly amount; only the bonus share is added.
+        if (salary.usesScheduledMonthBasis) return SalaryRules.dailySalary(salary.copy(monthlyWorkingDays = 1.0))
         val days = salary.monthlyWorkingDays
         if (!days.isFinite() || days <= 0 || days > 31) return null
         return SalaryRules.dailySalary(salary)?.let { it * days }?.takeIf { it.isFinite() }
@@ -246,6 +333,10 @@ object SummaryRules {
         val observations: List<Observation>,
         /** The day owning the running shift: an unmatched start closes at `asOfMs`. */
         val isActiveAnchor: Boolean,
+        /** Plan 024: the multiplier of the day's latest overtime declaration (0 = unpaid); null or invalid is 1. */
+        val overtimePayMultiplier: Double? = null,
+        /** Plan 024: the hours the day's latest declaration counts, replacing the measured overtime; null or outside 0..24 h is the measured one. */
+        val overtimeCountedMs: Double? = null,
     )
 
     data class ActualForecastInput(
@@ -260,6 +351,16 @@ object SummaryRules {
 
     data class Part(val days: Double, val hours: Double, val earnings: Double?)
     data class ActualForecast(val actualOvertimeHours: Double, val actual: Part, val forecast: Part, val total: Part)
+
+    /**
+     * Plan 024: worked time with the part beyond the regular segments scaled by
+     * the day's overtime multiplier (`weightedOvertimeMs` in `lib/summary.ts`).
+     */
+    fun weightedOvertimeMs(totalMs: Double, regularMs: Double, multiplier: Double): Double {
+        if (multiplier == 1.0) return totalMs
+        val regular = min(totalMs, regularMs)
+        return regular + multiplier * (totalMs - regular)
+    }
 
     /**
      * Recorded or corrected work against schedule estimates for one visible
@@ -299,20 +400,35 @@ object SummaryRules {
             }
             val elapsedRegular = regular.map { ShiftSegment(it.startAtMs, min(it.endAtMs, asOfMs)) }
             val elapsedOvertime = day.overtimeSegments.map { ShiftSegment(it.startAtMs, min(it.endAtMs, asOfMs)) }
-            val workedMs = mergedDuration(elapsedRegular + elapsedOvertime)
-            actualOvertimeMs += max(0.0, workedMs - mergedDuration(elapsedRegular))
+            val measuredWorkedMs = mergedDuration(elapsedRegular + elapsedOvertime)
+            val regularMs = mergedDuration(elapsedRegular)
+            // Plan 024: counted hours replace the measured overtime length.
+            val countScale = CountedOvertime.scale(
+                max(0.0, mergedDuration(regular + day.overtimeSegments) - mergedDuration(regular)),
+                day.overtimeCountedMs,
+            )
+            val overtimeMs = max(0.0, measuredWorkedMs - regularMs) * countScale
+            val workedMs = if (countScale == 1.0) measuredWorkedMs else regularMs + overtimeMs
+            actualOvertimeMs += if (countScale == 1.0) max(0.0, workedMs - regularMs) else overtimeMs
+            val multiplier = OvertimePay.normalized(day.overtimePayMultiplier ?: 1.0)
             if (workedMs > 0) {
                 actualDays += 1
                 actualMs += workedMs
-                if (!usesFixedMonthlyPay) actualPay += (rate ?: 0.0) * (if (plannedMs > 0) workedMs / plannedMs else 1.0)
+                if (!usesFixedMonthlyPay) {
+                    val paidMs = weightedOvertimeMs(workedMs, regularMs, multiplier)
+                    actualPay += (rate ?: 0.0) * (if (plannedMs > 0) paidMs / plannedMs else 1.0)
+                }
             }
             if (day.isActiveAnchor || kind == ActualKind.SCHEDULED) {
-                val futureMs = mergedDuration((day.resolvedSegments + day.overtimeSegments).map { ShiftSegment(max(it.startAtMs, asOfMs), it.endAtMs) })
+                val futureAllMs = mergedDuration((day.resolvedSegments + day.overtimeSegments).map { ShiftSegment(max(it.startAtMs, asOfMs), it.endAtMs) })
+                val futureRegularMs = mergedDuration(day.resolvedSegments.map { ShiftSegment(max(it.startAtMs, asOfMs), it.endAtMs) })
+                val futureMs = if (countScale == 1.0) futureAllMs else futureRegularMs + max(0.0, futureAllMs - futureRegularMs) * countScale
                 if (futureMs > 0) {
                     if (workedMs <= 0) forecastDays += 1
                     forecastMs += futureMs
                     if (!usesFixedMonthlyPay) {
-                        forecastPay += (rate ?: 0.0) * (if (plannedMs > 0) futureMs / plannedMs else if (workedMs <= 0) 1.0 else 0.0)
+                        val paidFutureMs = weightedOvertimeMs(futureMs, futureRegularMs, multiplier)
+                        forecastPay += (rate ?: 0.0) * (if (plannedMs > 0) paidFutureMs / plannedMs else if (workedMs <= 0) 1.0 else 0.0)
                     }
                 }
             }

@@ -5,6 +5,7 @@ import com.rainif.doneat.core.domain.records.FoundationCompat.uuid
 import com.rainif.doneat.core.domain.schedule.AnnualShiftDateRange
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedule
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleContent
+import com.rainif.doneat.core.domain.schedule.OvertimePay
 import com.rainif.doneat.core.domain.schedule.RosterDay
 import com.rainif.doneat.core.domain.schedule.ShiftCycleRule
 import com.rainif.doneat.core.domain.schedule.ShiftSegment
@@ -211,6 +212,10 @@ object RecordJson {
             salaryAmount = o.str("salaryAmount"), salaryEnabled = o.bool("salaryEnabled"),
             salaryType = choice("salaryType", SyncedPreferences.SALARY_TYPES),
             monthlyWorkingDays = o.num("monthlyWorkingDays"), annualBonusEnabled = o.bool("annualBonusEnabled"), annualBonusMonths = o.num("annualBonusMonths"),
+            dailySalaryBasis = o.optStr("dailySalaryBasis")?.also { if (it !in SyncedPreferences.DAILY_SALARY_BASES) throw IllegalArgumentException("dailySalaryBasis") } ?: "fixed",
+            overtimePayMultiplier = o.optNum("overtimePayMultiplier")?.also {
+                if (OvertimePay.normalized(it) != it) throw IllegalArgumentException("overtimePayMultiplier")
+            } ?: 1.0,
             notificationMode = choice("notificationMode", SyncedPreferences.NOTIFICATION_MODES),
             cycleEndSummaryNotificationEnabled = o.bool("cycleEndSummaryNotificationEnabled"),
             lunchStartReminderEnabled = o.bool("lunchStartReminderEnabled"), lunchEndReminderEnabled = o.bool("lunchEndReminderEnabled"),
@@ -1071,7 +1076,11 @@ object RecordJson {
         "rotationAnchorMs" to p.rotationAnchorMs, "lunchEnabled" to p.lunchEnabled, "lunchStartMinutes" to p.lunchStartMinutes,
         "lunchDurationMinutes" to p.lunchDurationMinutes, "recordsTimeZoneIdentifier" to p.recordsTimeZoneIdentifier, "salaryAmount" to p.salaryAmount,
         "salaryEnabled" to p.salaryEnabled, "salaryType" to p.salaryType, "monthlyWorkingDays" to p.monthlyWorkingDays,
-        "annualBonusEnabled" to p.annualBonusEnabled, "annualBonusMonths" to p.annualBonusMonths, "notificationMode" to p.notificationMode,
+        "annualBonusEnabled" to p.annualBonusEnabled, "annualBonusMonths" to p.annualBonusMonths,
+        // Left out while `fixed`, so archives of users who never chose it stay what they were.
+        "dailySalaryBasis" to p.dailySalaryBasis.takeIf { it != "fixed" },
+        "overtimePayMultiplier" to p.overtimePayMultiplier.takeIf { it != 1.0 },
+        "notificationMode" to p.notificationMode,
         "cycleEndSummaryNotificationEnabled" to p.cycleEndSummaryNotificationEnabled, "lunchStartReminderEnabled" to p.lunchStartReminderEnabled,
         "lunchEndReminderEnabled" to p.lunchEndReminderEnabled, "microBreakEnabled" to p.microBreakEnabled,
         "microBreakIntervalMinutes" to p.microBreakIntervalMinutes, "theme" to p.theme, "languageOverride" to p.languageOverride,

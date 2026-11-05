@@ -20,6 +20,10 @@ import {
   resolveOvertimeEndAtMs,
   suggestOvertimeEndAtMs,
   getDailySalary,
+  resolveMonthlyDivisor,
+  normalizeOvertimePayMultiplier,
+  overtimeElapsedMs,
+  overtimeRateComparison,
   getMonthlySalaryEquivalent,
   getShiftLengthHours,
   DEFAULT_MONTHLY_WORKING_DAYS,
@@ -221,6 +225,37 @@ describe("segmented shift timeline", () => {
     expect(getShiftDurationMs(extended)).toBe(10 * hour);
   });
 
+  it("keeps the planned segment and appends one when overtime starts after a rest", () => {
+    const base = buildShiftTimeline("09:00", "18:00", day(10), {
+      breakStartTime: "12:00",
+      breakDurationMinutes: 60,
+    });
+    const extended = extendShiftWithOvertime(base, at(21), at(18, 30));
+    expect(extended.plannedEndAtMs).toBe(at(18));
+    expect(extended.overtimeEndAtMs).toBe(at(21));
+    expect(extended.segments).toHaveLength(3);
+    expect(extended.segments[1]).toEqual(base.segments[1]);
+    expect(extended.segments[2]).toEqual({ startAtMs: at(18, 30), endAtMs: at(21) });
+    expect(isValidShiftTimeline(extended)).toBe(true);
+    // 8 planned hours + 2.5 counted overtime hours; the 30 minute rest is a break.
+    expect(getShiftDurationMs(extended)).toBe(10.5 * hour);
+    expect(getShiftElapsedMs(extended, at(18, 15))).toBe(8 * hour);
+    expect(getActiveBreakEndAtMs(extended, at(18, 15))).toBe(at(18, 30));
+    expect(overtimeElapsedMs(extended, at(19, 30))).toBe(1 * hour);
+    expect(calculateTimelinePayRatio(extended, at(21), 2)).toBe((8 + 2 * 2.5) / 8);
+  });
+
+  it("stretches the last segment when the overtime start is not after the planned end", () => {
+    const base = buildShiftTimeline("09:00", "18:00", day(10), {
+      breakStartTime: "12:00",
+      breakDurationMinutes: 60,
+    });
+    const plain = extendShiftWithOvertime(base, at(20));
+    for (const start of [undefined, null, at(17), at(18), at(20), at(21)]) {
+      expect(extendShiftWithOvertime(base, at(20), start)).toEqual(plain);
+    }
+  });
+
   it("suggests a future quarter-hour when overtime is added after work", () => {
     const shift = buildShiftTimeline("09:00", "18:00", day(12));
     expect(new Date(suggestOvertimeEndAtMs(shift, at(23, 52))).getHours()).toBe(1);
@@ -316,6 +351,24 @@ describe("segmented shift timeline", () => {
       afterMs: day(19).getTime(),
       schedule: { mode: "off" },
     })).toBeNull();
+  });
+});
+
+describe("scheduled-month divisor", () => {
+  it("replaces the fixed days only when it is at least one", () => {
+    expect(getDailySalary("22000", "monthly", 22, 0, 20)).toBe(1100);
+    expect(getDailySalary("22000", "monthly", 22, 0, 0)).toBe(1000);
+    expect(getDailySalary("22000", "monthly", 0, 0, 20)).toBe(1100);
+    expect(getDailySalary("500", "daily", 22, 0, 20)).toBe(500);
+    expect(getDailySalary("abc", "monthly", 22, 0, 20)).toBeNull();
+  });
+
+  it("resolves the divisor and the nominal monthly equivalent", () => {
+    expect(resolveMonthlyDivisor(21.75, "scheduledMonth", 19)).toBe(19);
+    expect(resolveMonthlyDivisor(21.75, "scheduledMonth", 0)).toBe(21.75);
+    expect(resolveMonthlyDivisor(21.75, "fixed", 19)).toBe(21.75);
+    expect(getMonthlySalaryEquivalent("12000", "monthly", 0, 3, "scheduledMonth")).toBe(15000);
+    expect(getMonthlySalaryEquivalent("12000", "monthly", 0, 3)).toBeNull();
   });
 });
 
@@ -798,5 +851,42 @@ describe("zoned civil time resolution", () => {
       "America/Los_Angeles"
     );
     expect(bounds.start.toISOString()).toBe("2026-11-01T08:30:00.000Z");
+  });
+});
+
+describe("overtime pay multiplier (plan 024)", () => {
+  const hourMs = 3_600_000;
+  const at = (hour: number, minute = 0) => new Date(2026, 10, 4, hour, minute).getTime();
+  const shift = () => buildShiftTimeline("09:00", "17:00", new Date(at(10)), { breakStartTime: "12:00", breakDurationMinutes: 60 });
+
+  it("accepts 0 and 0.5 to 5 in tenths, anything else is 1", () => {
+    for (const value of [0, 0.5, 1, 1.5, 2.7, 5]) expect(normalizeOvertimePayMultiplier(value)).toBe(value);
+    for (const value of [-1, 0.3, 0.05, 5.1, 10, 1.55, Number.NaN, Infinity, null, "2", undefined]) {
+      expect(normalizeOvertimePayMultiplier(value)).toBe(1);
+    }
+  });
+
+  it("scales only the effective time beyond the planned end", () => {
+    const extended = extendShiftWithOvertime(shift(), at(19));
+    // 7 effective planned hours (lunch excluded), 2 hours of overtime elapsed.
+    expect(calculateTimelinePayRatio(extended, at(19))).toBe(9 / 7);
+    expect(calculateTimelinePayRatio(extended, at(19), 1)).toBe(9 / 7);
+    expect(calculateTimelinePayRatio(extended, at(19), 0)).toBe(1);
+    expect(calculateTimelinePayRatio(extended, at(19), 1.5)).toBe((7 + 3) / 7);
+    expect(calculateTimelinePayRatio(extended, at(14), 0)).toBe(calculateTimelinePayRatio(extended, at(14)));
+    expect(calculateTimelinePayRatio(extended, at(19), 0.3)).toBe(calculateTimelinePayRatio(extended, at(19)));
+    expect(overtimeElapsedMs(extended, at(19))).toBe(2 * hourMs);
+    expect(overtimeElapsedMs(extended, at(12))).toBe(0);
+    expect(overtimeElapsedMs(shift(), at(19))).toBe(0);
+  });
+
+  it("compares against pay that ignores overtime", () => {
+    const extended = extendShiftWithOvertime(shift(), at(19));
+    const comparison = overtimeRateComparison(extended, at(19), 700)!;
+    expect(comparison.elapsedOvertimeMs).toBe(2 * hourMs);
+    expect(comparison.unpaidHourlyRate).toBeCloseTo(700 / 9);
+    expect(comparison.unpaidRateDecreasePercent).toBeCloseTo((1 - 7 / 9) * 100);
+    expect(overtimeRateComparison(extended, at(19), null)!.unpaidHourlyRate).toBeNull();
+    expect(overtimeRateComparison(shift(), at(19), 700)).toBeNull();
   });
 });

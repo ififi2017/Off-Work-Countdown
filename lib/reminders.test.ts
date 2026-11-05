@@ -110,6 +110,23 @@ describe("buildShiftReminders 里程碑", () => {
     expect(byId(reminders, "milestone:100").atMs).toBe(1_500);
   });
 
+  it("加班前的休息（计划 024）不是午休，不发午休提醒", () => {
+    // 9000 原定下班，休息到 9500，再加班到 11000。
+    const restThenOvertime: ShiftTimeline = {
+      segments: [
+        { startAtMs: 0, endAtMs: 3_000 },
+        { startAtMs: 4_000, endAtMs: 9_000 },
+        { startAtMs: 9_500, endAtMs: 11_000 },
+      ],
+      plannedEndAtMs: 9_000,
+      overtimeEndAtMs: 11_000,
+    };
+    const reminders = buildShiftReminders(restThenOvertime, withoutMicroBreaks());
+    const breaks = reminders.filter((r) => r.kind === "breakStart" || r.kind === "breakEnd");
+    expect(breaks.map((r) => r.atMs).sort((a, b) => a - b)).toEqual([3_000, 4_000]);
+    expect(byId(reminders, "milestone:100").atMs).toBe(11_000);
+  });
+
   it("simple 模式只让 100% 出声，其余仍在列表里占位", () => {
     const reminders = buildShiftReminders(
       simpleShift,

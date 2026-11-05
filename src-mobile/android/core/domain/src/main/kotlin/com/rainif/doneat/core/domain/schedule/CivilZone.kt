@@ -92,6 +92,15 @@ class CivilZone(
 
     fun startOfCivilDayMs(ms: Double) = utcMs(civil(ms).dayNumber, WallClock.MIDNIGHT)
 
+    /** Civil midnight on the first day of the month containing [ms], [offset] months later (`civilMonthStartMs`). */
+    fun monthStartMs(ms: Double, offset: Int = 0): Double {
+        val reading = civil(ms)
+        val index = reading.year * 12 + (reading.month - 1) + offset
+        val year = Math.floorDiv(index, 12)
+        val month = index - year * 12 + 1
+        return utcMs(dayNumber(year, month, 1), WallClock.MIDNIGHT)
+    }
+
     /** Same wall-clock minute `days` civil days later; seconds are dropped. */
     fun addCivilDaysMs(ms: Double, days: Int): Double {
         val reading = civil(ms)
@@ -276,7 +285,15 @@ class CivilZone(
         }
         val overtimeEndAtMs = options.overtimeEndAtMs?.takeIf { it > plannedEndAtMs }
         if (overtimeEndAtMs != null) {
-            segments = segments.dropLast(1) + segments.last().copy(endAtMs = overtimeEndAtMs)
+            val overtimeStartAtMs = options.overtimeStartAtMs
+            segments = if (overtimeStartAtMs != null && overtimeStartAtMs.isFinite() &&
+                overtimeStartAtMs > plannedEndAtMs && overtimeStartAtMs < overtimeEndAtMs
+            ) {
+                // Plan 024: overtime after a rest is its own segment; the gap is a break.
+                segments + ShiftSegment(overtimeStartAtMs, overtimeEndAtMs)
+            } else {
+                segments.dropLast(1) + segments.last().copy(endAtMs = overtimeEndAtMs)
+            }
         }
         return ShiftTimeline(segments, plannedEndAtMs, overtimeEndAtMs)
     }

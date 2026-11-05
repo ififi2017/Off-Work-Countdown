@@ -61,4 +61,6 @@ nonisolated struct ScheduleRuleInput: Codable, Equatable, Sendable {
     /// Plan 018 P8's extended schedule, when the user has one switched on.
     /// `nil` keeps every rule on the fixed-hours path it took before.
     var extendedSchedule: ExtendedSchedulePlan? = nil
+    /// Plan 024: when the overtime starts; `nil` stretches the last segment.
+    var overtimeStartAtMs: Double? = nil
 }

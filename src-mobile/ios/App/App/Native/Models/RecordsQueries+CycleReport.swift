@@ -80,7 +80,29 @@ extension RecordsQueries {
             ))
         }
         let headline = recordsHeadline(cells: cells, days: resolved, now: now)
-        return (cells, resolved, CycleReportFigures(headline: headline))
+        var figures = CycleReportFigures(headline: headline)
+        figures.paidOvertimeMs = reportPaidOvertimeMs(cells: cells, days: resolved, overtimeMs: figures.overtimeMs)
+        return (cells, resolved, figures)
+    }
+
+    /// Plan 024: the overtime in `overtimeMs` re-priced by each day's declared
+    /// multiplier. `nil` when every day with overtime paid at the usual rate,
+    /// so reports without a custom multiplier are untouched.
+    private func reportPaidOvertimeMs(cells: [RecordsDayCell], days: [DayResolution], overtimeMs: Int64) -> Int64? {
+        let byKey = Dictionary(days.map { ($0.dayKey, $0) }, uniquingKeysWith: { first, _ in first })
+        var scaled = 0.0
+        var plain = 0.0
+        var priced = false
+        for cell in cells where !cell.isFuture && cell.overtimeMs > 0 {
+            guard let day = byKey[cell.dayKey] else { continue }
+            let multiplier = overtimePayMultiplier(on: day)
+            if multiplier == 1 { continue }
+            priced = true
+            plain += Double(cell.overtimeMs)
+            scaled += Double(cell.overtimeMs) * multiplier
+        }
+        guard priced else { return nil }
+        return max(0, Int64((Double(overtimeMs) - plain + scaled).rounded()))
     }
 
     // MARK: Insights

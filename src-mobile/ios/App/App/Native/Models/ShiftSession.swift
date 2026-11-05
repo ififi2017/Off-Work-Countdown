@@ -111,6 +111,8 @@ final class ShiftSession {
         static let legacyForceToday = "ios.native.forceToday"
         static let forcedWorkdayDate = "ios.native.forcedWorkdayDate"
         static let overtimeEndAtMs = "ios.native.overtimeEndAtMs"
+        static let overtimePayMultiplier = "ios.native.sessionOvertimePayMultiplier"
+        static let overtimeStartAtMs = "ios.native.overtimeStartAtMs"
         static let earlyStartAtMs = "ios.native.earlyStartAtMs"
         static let earlyStartUntilMs = "ios.native.earlyStartUntilMs"
         static let todayScheduleOverride = "ios.native.todayScheduleOverride"
@@ -225,8 +227,33 @@ final class ShiftSession {
     var overtimeEndAtMs: Double? {
         didSet {
             if let overtimeEndAtMs { defaults.set(overtimeEndAtMs, forKey: Key.overtimeEndAtMs) }
-            else { defaults.removeObject(forKey: Key.overtimeEndAtMs) }
+            else {
+                defaults.removeObject(forKey: Key.overtimeEndAtMs)
+                // The per-shift pay choice goes with the overtime it priced.
+                if overtimePayMultiplier != nil { overtimePayMultiplier = nil }
+                if overtimeStartAtMs != nil { overtimeStartAtMs = nil }
+            }
         }
+    }
+    /// Plan 024: when this shift's overtime starts, after a rest. `nil` means
+    /// right at the planned end. Cleared together with `overtimeEndAtMs`.
+    var overtimeStartAtMs: Double? {
+        didSet {
+            if let overtimeStartAtMs { defaults.set(overtimeStartAtMs, forKey: Key.overtimeStartAtMs) }
+            else { defaults.removeObject(forKey: Key.overtimeStartAtMs) }
+        }
+    }
+    /// Plan 024: this shift's overtime pay multiplier (0 = unpaid). `nil` uses
+    /// the preference. Cleared together with `overtimeEndAtMs`.
+    var overtimePayMultiplier: Double? {
+        didSet {
+            if let overtimePayMultiplier { defaults.set(overtimePayMultiplier, forKey: Key.overtimePayMultiplier) }
+            else { defaults.removeObject(forKey: Key.overtimePayMultiplier) }
+        }
+    }
+    /// The multiplier overtime is paid at now: this shift's choice, else the preference.
+    var effectiveOvertimePayMultiplier: Double {
+        OvertimePay.normalized(overtimePayMultiplier ?? preferences.overtimePayMultiplier)
     }
     var debugPresentationToken: String {
 #if DEBUG
@@ -318,6 +345,8 @@ final class ShiftSession {
         let storedForcedDate = defaults.string(forKey: Key.forcedWorkdayDate)
         forcedWorkdayDate = storedForcedDate ?? (defaults.bool(forKey: Key.legacyForceToday) ? Self.dayKey(for: .now) : nil)
         overtimeEndAtMs = defaults.object(forKey: Key.overtimeEndAtMs) as? Double
+        overtimePayMultiplier = defaults.object(forKey: Key.overtimePayMultiplier) as? Double
+        overtimeStartAtMs = defaults.object(forKey: Key.overtimeStartAtMs) as? Double
         earlyOffAtMs = defaults.object(forKey: Key.earlyOffAtMs) as? Double
         earlyOffShiftEndAtMs = defaults.object(forKey: Key.earlyOffShiftEndAtMs) as? Double
         earlyOffSnapshot = Self.decodeEarlyOffSnapshot(from: defaults)
@@ -561,7 +590,10 @@ final class ShiftSession {
             annualBonusMonths: preferences.annualBonusEnabled ? preferences.annualBonusMonths : 0,
             forcedWorkdayStartMs: applyOverride ? forcedWorkdayStartMs : nil,
             timeZoneIdentifier: rulesTimeZoneIdentifier,
-            extendedSchedule: extendedSchedulePlan(at: date, using: source)
+            extendedSchedule: extendedSchedulePlan(at: date, using: source),
+            dailySalaryBasis: preferences.dailySalaryBasis,
+            overtimePayMultiplier: applyOverride ? effectiveOvertimePayMultiplier : nil,
+            overtimeStartAtMs: applyOverride ? overtimeStartAtMs : nil
         )
         return pinningCurrentShift(
             applyingLeave(to: input),
@@ -646,7 +678,8 @@ final class ShiftSession {
                     for: change.extendedContent ?? preferences.extendedScheduleContent,
                     applying: change.rosterEdits
                 )
-                : nil
+                : nil,
+            dailySalaryBasis: preferences.dailySalaryBasis
         ))
     }
     /// Whether the explicit Save action needs the second choice about today.
@@ -1136,8 +1169,21 @@ final class ShiftSession {
             todayEffectiveHours: snapshot.durationMs / 3_600_000,
             todayPayRatio: snapshot.payRatio,
             timeZoneIdentifier: preferences.recordsTimeZoneIdentifier,
-            extendedSchedule: plan
+            extendedSchedule: plan,
+            salary: monthBasisSalary(at: asOf)
         ))
+    }
+    /// The salary fields the scheduled-month summary needs, or `nil` while the
+    /// fixed divisor applies (the snapshot's daily pay then stands for every day).
+    private func monthBasisSalary(at date: Date) -> NativeMonthBasisSalary? {
+        guard preferences.dailySalaryBasis == .scheduledMonth, preferences.salaryType == .monthly else { return nil }
+        return NativeMonthBasisSalary(
+            amount: preferences.salaryEnabled ? preferences.salaryAmount : "",
+            type: preferences.salaryType.rawValue,
+            monthlyWorkingDays: preferences.monthlyWorkingDays,
+            annualBonusMonths: preferences.annualBonusEnabled ? preferences.annualBonusMonths : 0,
+            basis: .scheduledMonth
+        )
     }
     static func dayKey(for date: Date, timeZone: TimeZone = .current) -> String {
         var calendar = Calendar(identifier: .gregorian)

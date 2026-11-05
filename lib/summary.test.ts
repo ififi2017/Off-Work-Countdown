@@ -2,9 +2,14 @@ import { describe, it, expect } from "vitest";
 import { zonedWeekStartMs, zonedYearStartMs } from "./countdown";
 import {
   completedWorkdayIncome,
+  completedWorkdayIncomeByMonth,
   countScheduledWorkdays,
+  countScheduledWorkdaysInMonth,
+  dailySalaryInMonth,
   countWorkdays,
   earningsForRatio,
+  normalizeCountedOvertimeMs,
+  overtimeCountScale,
   projectLifetimeGrossIncome,
   startOfWeek,
   startOfYear,
@@ -866,5 +871,162 @@ describe("Records calendar-month salary", () => {
       salaryRules: { ...monthlyRules, salaryType: "daily", salaryAmount: "500" },
     });
     expect(result.total.earnings).toBe(days.length * 500);
+  });
+});
+
+describe("scheduled-month daily pay (plan 024)", () => {
+  const zone = "Asia/Shanghai";
+  const salary = {
+    amount: "22000",
+    type: "monthly" as const,
+    monthlyWorkingDays: 22,
+    annualBonusMonths: 0,
+    basis: "scheduledMonth" as const,
+  };
+  const classic = { mode: "classic" as const };
+  const off = { mode: "off" as const };
+  const utc = (y: number, m: number, d: number) => Date.UTC(y, m - 1, d, 4);
+
+  it("counts a civil month's scheduled workdays in the given zone", () => {
+    const count = (m: number, schedule = classic) =>
+      countScheduledWorkdaysInMonth({ anchorMs: utc(2026, m, 15), workdays: MON_TO_FRI, schedule, timeZone: zone });
+    expect(count(2)).toBe(20);
+    expect(count(3)).toBe(22);
+    expect(count(3, off)).toBe(0);
+  });
+
+  it("divides each month by its own count, and falls back without one", () => {
+    const daily = (m: number, schedule = classic) =>
+      dailySalaryInMonth({ salary, anchorMs: utc(2026, m, 15), workdays: MON_TO_FRI, schedule, timeZone: zone });
+    expect(daily(2)).toBe(22000 / 20);
+    expect(daily(3)).toBe(22000 / 22);
+    expect(daily(3, off)).toBe(22000 / 22);
+    expect(
+      dailySalaryInMonth({ salary: { ...salary, basis: "fixed" }, anchorMs: utc(2026, 2, 15), workdays: MON_TO_FRI, schedule: classic, timeZone: zone })
+    ).toBe(22000 / 22);
+  });
+
+  it("splits a summary at the month boundary", () => {
+    const base = {
+      periodStart: new Date(utc(2026, 2, 26)),
+      asOf: new Date(utc(2026, 3, 3)),
+      workdays: MON_TO_FRI,
+      schedule: classic,
+      currentShiftStart: new Date(Date.UTC(2026, 2, 3, 1)),
+      currentShiftEnd: new Date(Date.UTC(2026, 2, 3, 9)),
+      plannedDailyHours: 8,
+      todayProgress: 50,
+      dailySalary: 1000,
+      todayEffectiveHours: 8,
+      todayPayRatio: 0.5,
+      timeZone: zone,
+    };
+    // Feb 26, 27 (Thu, Fri) at 22000/20, Mar 2 (Mon) at 22000/22, then half of Mar 3.
+    expect(summarize({ ...base, salary }).earnings).toBe(2 * 1100 + 1000 + 500);
+    expect(summarize(base).earnings).toBe(3.5 * 1000);
+    expect(summarize({ ...base, salary: { ...salary, basis: "fixed" } }).earnings).toBe(3.5 * 1000);
+  });
+
+  it("sums records income per month", () => {
+    const months = [
+      { anchorMs: utc(2026, 2, 10), count: 10 },
+      { anchorMs: utc(2026, 3, 10), count: 4 },
+    ];
+    expect(
+      completedWorkdayIncomeByMonth({ months, salary, workdays: MON_TO_FRI, schedule: classic, timeZone: zone })
+    ).toBe(10 * 1100 + 4 * 1000);
+  });
+});
+
+describe("overtime pay multiplier in Records (plan 024)", () => {
+  const hour = 3_600_000;
+  const day = (multiplier?: number | null, asOfHours = 24) => summarizeRecordsActualAndForecast({
+    dailySalary: 800,
+    asOfMs: asOfHours * hour,
+    days: [{
+      actualKind: "scheduled" as const,
+      resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+      plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+      overtimeSegments: [{ startAtMs: 17 * hour, endAtMs: 19 * hour }],
+      ...(multiplier === undefined ? {} : { overtimePayMultiplier: multiplier }),
+      observations: [],
+      isActiveAnchor: false,
+    }],
+  });
+
+  it("multiplies only the overtime part of a day", () => {
+    expect(day().actual.earnings).toBe(1000);
+    expect(day(1).actual.earnings).toBe(1000);
+    expect(day(0).actual.earnings).toBe(800);
+    expect(day(1.5).actual.earnings).toBe(1100);
+    expect(day(2).actual.earnings).toBe(1200);
+    expect(day(0.3).actual.earnings).toBe(1000);
+    expect(day(0).actual.hours).toBe(10);
+    expect(day(0).actualOvertimeHours).toBe(2);
+  });
+
+  it("applies the multiplier to overtime still ahead of now", () => {
+    const running = (multiplier: number) => summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      asOfMs: 18 * hour,
+      days: [{
+        actualKind: "scheduled" as const,
+        resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+        plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+        overtimeSegments: [{ startAtMs: 17 * hour, endAtMs: 20 * hour }],
+        overtimePayMultiplier: multiplier,
+        observations: [],
+        isActiveAnchor: true,
+      }],
+    });
+    expect(running(2).actual.earnings).toBe(1000);
+    expect(running(0).forecast.earnings).toBe(0);
+    expect(running(2).forecast.earnings).toBe(400);
+  });
+});
+
+describe("counted overtime hours in Records (plan 024)", () => {
+  const hour = 3_600_000;
+  const run = (counted?: number | null, multiplier?: number, asOfHours = 24) => summarizeRecordsActualAndForecast({
+    dailySalary: 800,
+    asOfMs: asOfHours * hour,
+    days: [{
+      actualKind: "scheduled" as const,
+      resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+      plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+      overtimeSegments: [{ startAtMs: 18 * hour, endAtMs: 21 * hour }],
+      ...(counted === undefined ? {} : { overtimeCountedMs: counted }),
+      ...(multiplier === undefined ? {} : { overtimePayMultiplier: multiplier }),
+      observations: [],
+      isActiveAnchor: false,
+    }],
+  });
+
+  it("validates the stored value", () => {
+    for (const value of [0, 1, 1.5 * hour, 24 * hour]) expect(normalizeCountedOvertimeMs(value)).toBe(value);
+    for (const value of [-1, 24 * hour + 1, Number.NaN, Infinity, null, "1", undefined]) {
+      expect(normalizeCountedOvertimeMs(value)).toBeNull();
+    }
+    expect(overtimeCountScale(3 * hour, 1.5 * hour)).toBe(0.5);
+    expect(overtimeCountScale(0, hour)).toBe(1);
+    expect(overtimeCountScale(3 * hour, null)).toBe(1);
+  });
+
+  it("replaces the measured overtime in hours and pay", () => {
+    expect(run().actualOvertimeHours).toBe(3);
+    expect(run().actual.earnings).toBe(800 * 11 / 8);
+    expect(run(2.5 * hour).actualOvertimeHours).toBe(2.5);
+    expect(run(2.5 * hour).actual.hours).toBe(10.5);
+    expect(run(2.5 * hour).actual.earnings).toBe(800 * 10.5 / 8);
+    expect(run(2.5 * hour, 2).actual.earnings).toBe(800 * (8 + 5) / 8);
+    expect(run(0).actualOvertimeHours).toBe(0);
+    expect(run(0).actual.earnings).toBe(800);
+    expect(run(4 * hour).actualOvertimeHours).toBe(4);
+    expect(run(-1).actualOvertimeHours).toBe(3);
+    expect(run(25 * hour).actualOvertimeHours).toBe(3);
+  });
+
+  it("scales overtime that is still in progress", () => {
+    expect(run(1.5 * hour, undefined, 19.5).actualOvertimeHours).toBe(0.75);
   });
 });

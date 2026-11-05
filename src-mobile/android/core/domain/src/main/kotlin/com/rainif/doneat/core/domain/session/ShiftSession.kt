@@ -7,6 +7,7 @@ import com.rainif.doneat.core.domain.records.SnapshotHours
 import com.rainif.doneat.core.domain.records.SyncedPreferences
 import com.rainif.doneat.core.domain.records.TimerDayMarks
 import com.rainif.doneat.core.domain.records.portionsByDay
+import com.rainif.doneat.core.domain.salary.DailySalaryBasis
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedule
@@ -15,6 +16,7 @@ import com.rainif.doneat.core.domain.schedule.ExtendedScheduleDayHours
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.schedule.LeavePortion
+import com.rainif.doneat.core.domain.schedule.OvertimePay
 import com.rainif.doneat.core.domain.schedule.RosterDay
 import com.rainif.doneat.core.domain.schedule.ScheduleHours
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
@@ -160,7 +162,13 @@ class ShiftSession(val state: SessionState, val env: SessionEnvironment) {
             type = SalaryType.fromRaw(prefs.salaryType),
             monthlyWorkingDays = prefs.monthlyWorkingDays,
             annualBonusMonths = if (prefs.annualBonusEnabled) prefs.annualBonusMonths else 0.0,
+            dailySalaryBasis = DailySalaryBasis.fromRaw(prefs.dailySalaryBasis),
+            overtimePayMultiplier = effectiveOvertimePayMultiplier,
         )
+
+    /** The multiplier overtime is paid at now: this shift's choice, else the preference (plan 024). */
+    val effectiveOvertimePayMultiplier: Double
+        get() = OvertimePay.normalized(state.overtimePayMultiplier ?: prefs.overtimePayMultiplier)
 
     /** A new manual run adopts the device's zone when it differs from Records. */
     fun timeZoneIdentifierForWriting(startingNewSession: Boolean = false): String =
@@ -279,6 +287,7 @@ class ShiftSession(val state: SessionState, val env: SessionEnvironment) {
             zone = countdownZone,
             overtimeEndAtMs = if (apply) state.overtimeEndAtMs else null,
             forcedWorkdayStartMs = if (apply) forcedWorkdayStartMs else null,
+            overtimeStartAtMs = if (apply) state.overtimeStartAtMs else null,
         )
         return pinningCurrentShift(input, fixesStart = startMinutes != null || earlyStart, fixesEnd = endMinutes != null)
     }
@@ -462,6 +471,7 @@ class ShiftSession(val state: SessionState, val env: SessionEnvironment) {
                 todayPayRatio = snapshot.payRatio,
                 zone = recordsZone,
                 extended = plan,
+                salary = salary.takeIf { it.usesScheduledMonthBasis },
             ),
         )
     }

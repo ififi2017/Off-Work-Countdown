@@ -17,6 +17,17 @@ nonisolated struct RecordsPeriodMetrics: Equatable, Sendable {
 nonisolated struct OvertimeDeclarationPayload: Codable, Equatable, Sendable {
     var overtimeEndAtMs: Double
     var plannedEndAtMs: Double?
+    /// Plan 024: the pay multiplier chosen with this declaration (0 = unpaid).
+    /// Omitted for 1 and in older archives, so those stay byte-for-byte what
+    /// they were; readers without the key ignore it.
+    var payMultiplier: Double? = nil
+    /// Plan 024: when the overtime started, after a rest. Omitted when it
+    /// began at the planned end and in older archives; readers without the key
+    /// ignore it.
+    var overtimeStartAtMs: Double? = nil
+    /// Plan 024: the hours this declaration counts (0...24 h), replacing the
+    /// measured length in statistics and pay. Omitted means the measured one.
+    var countedMs: Double? = nil
 }
 
 nonisolated enum RecordsMetrics {
@@ -82,7 +93,14 @@ nonisolated enum RecordsMetrics {
               let payload = try? JSONDecoder().decode(OvertimeDeclarationPayload.self, from: data)
         else { return nil }
         let legacyPlannedEnd = day.baseScheduleSegments.map(\.endAtMs).max()
-        guard var start = payload.plannedEndAtMs ?? legacyPlannedEnd else { return nil }
+        var start: Double
+        if let declaredStart = payload.overtimeStartAtMs, declaredStart.isFinite {
+            start = declaredStart
+        } else if let planned = payload.plannedEndAtMs ?? legacyPlannedEnd {
+            start = planned
+        } else {
+            return nil
+        }
         if avoidingRegularWork, let regularEnd = day.segments.map(\.endAtMs).max() {
             start = max(start, regularEnd)
         }
@@ -91,6 +109,26 @@ nonisolated enum RecordsMetrics {
               payload.overtimeEndAtMs > start
         else { return nil }
         return NativeShiftSegment(startAtMs: start, endAtMs: payload.overtimeEndAtMs)
+    }
+
+    /// Plan 024: the pay multiplier an overtime declaration carries
+    /// (`OvertimePay.normalized`); 1 when it names none.
+    static func declaredPayMultiplier(_ observation: WorkObservation?) -> Double {
+        guard let observation, observation.kind == .overtimeDeclared,
+              let data = observation.valueData,
+              let payload = try? JSONDecoder().decode(OvertimeDeclarationPayload.self, from: data)
+        else { return OvertimePay.defaultMultiplier }
+        return OvertimePay.normalized(payload.payMultiplier)
+    }
+
+    /// Plan 024: the hours a declaration counts; `nil` when it names none or
+    /// an invalid one, which leaves the measured overtime length.
+    static func declaredCountedMs(_ observation: WorkObservation?) -> Double? {
+        guard let observation, observation.kind == .overtimeDeclared,
+              let data = observation.valueData,
+              let payload = try? JSONDecoder().decode(OvertimeDeclarationPayload.self, from: data)
+        else { return nil }
+        return CountedOvertime.normalized(payload.countedMs)
     }
 
     private static func civilDayStart(for day: DayResolution, calendar: Calendar) -> Date {

@@ -39,13 +39,8 @@ nonisolated enum ScheduleRules {
         let shift = resolveCurrentShift(input, zone)
         let nextShift = nextShift(after: shift, input, zone)
         let clockIn = countdownProjection(input, shift: shift, nextShift: nextShift, zone)
-        let dailySalary = SalaryRules.dailySalary(
-            amount: input.salaryAmount,
-            type: input.salaryType,
-            monthlyWorkingDays: input.monthlyWorkingDays,
-            annualBonusMonths: input.annualBonusMonths
-        )
-        let payRatio = shift.payRatio(at: input.nowMs)
+        let dailySalary = SalaryRules.dailySalary(rules: input, anchorMs: shift.startAtMs, zone)
+        let payRatio = shift.payRatio(at: input.nowMs, overtimeMultiplier: OvertimePay.normalized(input.overtimePayMultiplier))
         return NativeShiftSnapshot(
             segments: shift.segments,
             startAtMs: shift.startAtMs,
@@ -264,11 +259,30 @@ nonisolated enum ScheduleRules {
 
 /// Daily pay from the salary settings (`getDailySalary` in `lib/countdown.ts`).
 nonisolated enum SalaryRules {
+    /// Daily pay for the civil month containing `anchorMs`
+    /// (`dailySalaryInMonth` in `lib/summary.ts`): the fixed setting, or under
+    /// the scheduled-month basis that month's scheduled workday count.
+    static func dailySalary(rules input: NativeRulesInput, anchorMs: Double, _ zone: CivilZone) -> Double? {
+        let count = input.usesScheduledMonthBasis
+            ? zone.scheduledWorkdaysInMonth(anchorMs: anchorMs, workdays: input.workdays, schedule: input.schedule)
+            : nil
+        return dailySalary(
+            amount: input.salaryAmount,
+            type: input.salaryType,
+            monthlyWorkingDays: input.monthlyWorkingDays,
+            annualBonusMonths: input.annualBonusMonths,
+            scheduledMonthDays: count
+        )
+    }
+
+    /// `scheduledMonthDays` replaces `monthlyWorkingDays` as the divisor when
+    /// it is at least 1 (`resolveMonthlyDivisor`); omitted, nothing changes.
     static func dailySalary(
         amount: String,
         type: String,
         monthlyWorkingDays: Double,
-        annualBonusMonths: Double
+        annualBonusMonths: Double,
+        scheduledMonthDays: Int? = nil
     ) -> Double? {
         guard !JavaScriptNumber.trim(amount).isEmpty else { return nil }
         let parsed = JavaScriptNumber.parse(amount)
@@ -279,8 +293,9 @@ nonisolated enum SalaryRules {
             let daily = parsed * multiplier
             return daily.isFinite ? daily : nil
         }
-        guard monthlyWorkingDays.isFinite, monthlyWorkingDays > 0, monthlyWorkingDays <= 31 else { return nil }
-        let daily = (parsed / monthlyWorkingDays) * multiplier
+        let divisor = scheduledMonthDays.flatMap { $0 >= 1 ? Double($0) : nil } ?? monthlyWorkingDays
+        guard divisor.isFinite, divisor > 0, divisor <= 31 else { return nil }
+        let daily = (parsed / divisor) * multiplier
         return daily.isFinite ? daily : nil
     }
 }

@@ -123,22 +123,28 @@ nonisolated struct ShiftOptions: Sendable {
     var breakStartTime: String?
     var breakDurationMinutes: Int
     var overtimeEndAtMs: Double?
+    /// Plan 024: when the overtime starts. At or before the planned end (or
+    /// `nil`) the last segment is stretched; later, a segment is appended.
+    var overtimeStartAtMs: Double?
 
-    init(breakStartTime: String?, breakDurationMinutes: Int, overtimeEndAtMs: Double? = nil) {
+    init(breakStartTime: String?, breakDurationMinutes: Int, overtimeEndAtMs: Double? = nil, overtimeStartAtMs: Double? = nil) {
         self.breakStartTime = breakStartTime?.isEmpty == false ? breakStartTime : nil
         self.breakDurationMinutes = breakDurationMinutes
         self.overtimeEndAtMs = overtimeEndAtMs
+        self.overtimeStartAtMs = overtimeStartAtMs
     }
 
     init(_ input: ScheduleRuleInput) {
         breakStartTime = input.breakStartTime?.isEmpty == false ? input.breakStartTime : nil
         breakDurationMinutes = input.breakDurationMinutes
         overtimeEndAtMs = input.overtimeEndAtMs == 0 ? nil : input.overtimeEndAtMs
+        overtimeStartAtMs = input.overtimeStartAtMs == 0 ? nil : input.overtimeStartAtMs
     }
 
     var withoutOvertime: ShiftOptions {
         var copy = self
         copy.overtimeEndAtMs = nil
+        copy.overtimeStartAtMs = nil
         return copy
     }
 }
@@ -164,10 +170,15 @@ nonisolated struct ShiftTimeline: Equatable, Sendable {
             else { return false }
             previousEnd = segment.endAtMs
         }
-        return plannedEndAtMs > startAtMs
-            && plannedEndAtMs > last.startAtMs
-            && plannedEndAtMs <= last.endAtMs
-            && endAtMs == last.endAtMs
+        guard plannedEndAtMs > startAtMs, endAtMs == last.endAtMs else { return false }
+        if plannedEndAtMs > last.startAtMs && plannedEndAtMs <= last.endAtMs { return true }
+        // Plan 024: overtime appended after a gap. The planned end closes the
+        // second-to-last segment and the last one starts after it.
+        guard overtimeEndAtMs != nil, segments.count >= 2 else { return false }
+        let before = segments[segments.count - 2]
+        return plannedEndAtMs > before.startAtMs
+            && plannedEndAtMs == before.endAtMs
+            && last.startAtMs > plannedEndAtMs
     }
 
     var durationMs: Double {
@@ -196,10 +207,47 @@ nonisolated struct ShiftTimeline: Equatable, Sendable {
     }
 
     /// Linear pay ratio: 1 at the planned end, above 1 in overtime.
-    func payRatio(at nowMs: Double) -> Double {
+    /// `overtimeMultiplier` (plan 024) scales the effective time beyond the
+    /// planned end; 1 is exactly `elapsed / planned`
+    /// (`calculateTimelinePayRatio` in `lib/countdown.ts`).
+    func payRatio(at nowMs: Double, overtimeMultiplier: Double = OvertimePay.defaultMultiplier) -> Double {
         let planned = plannedDurationMs
         guard planned > 0 else { return 0 }
-        return max(0, elapsedMs(at: nowMs) / planned)
+        let elapsed = elapsedMs(at: nowMs)
+        let multiplier = OvertimePay.normalized(overtimeMultiplier)
+        if multiplier == 1 { return max(0, elapsed / planned) }
+        let regular = min(elapsed, planned)
+        return max(0, (regular + multiplier * (elapsed - regular)) / planned)
+    }
+
+    /// Effective time worked beyond the planned end (`overtimeElapsedMs`).
+    func overtimeElapsedMs(at nowMs: Double) -> Double {
+        guard overtimeEndAtMs != nil, nowMs.isFinite else { return 0 }
+        let planned = plannedDurationMs
+        guard planned.isFinite, planned > 0 else { return 0 }
+        let elapsed = elapsedMs(at: nowMs)
+        guard elapsed.isFinite else { return 0 }
+        return max(0, elapsed - planned)
+    }
+
+    /// The "if overtime is unpaid" comparison (`overtimeRateComparison`):
+    /// daily pay over every effective hour so far, and how far below the usual
+    /// hourly rate that is. `nil` outside overtime.
+    func overtimeRateComparison(dailySalary: Double?, at nowMs: Double) -> OvertimeRateComparison? {
+        guard overtimeEndAtMs != nil, nowMs.isFinite else { return nil }
+        let planned = plannedDurationMs
+        guard planned.isFinite, planned > 0 else { return nil }
+        let elapsed = elapsedMs(at: nowMs)
+        guard elapsed.isFinite else { return nil }
+        let overtime = max(0, elapsed - planned)
+        var result = OvertimeRateComparison(elapsedOvertimeMs: overtime, unpaidHourlyRate: nil, unpaidRateDecreasePercent: nil)
+        guard overtime > 0, let dailySalary, dailySalary.isFinite, dailySalary > 0 else { return result }
+        let rate = dailySalary / (elapsed / 3_600_000)
+        let decrease = (1 - 1 / payRatio(at: nowMs)) * 100
+        guard rate.isFinite, decrease.isFinite else { return result }
+        result.unpaidHourlyRate = rate
+        result.unpaidRateDecreasePercent = decrease
+        return result
     }
 
     /// The end of the gap between segments that `nowMs` falls in, if any.
@@ -339,6 +387,40 @@ nonisolated final class CivilZone {
 
     func startOfCivilDayMs(_ ms: Double) -> Double {
         utcMs(dayNumber: civil(ms).dayNumber, Clock(hour: 0, minute: 0))
+    }
+
+    /// Civil midnight on the first day of the month containing `ms`, `offset`
+    /// months later (`civilMonthStartMs`).
+    func monthStartMs(_ ms: Double, offset: Int = 0) -> Double {
+        let reading = civil(ms)
+        let index = reading.year * 12 + (reading.month - 1) + offset
+        let year = Int((Double(index) / 12).rounded(.down))
+        let month = index - year * 12 + 1
+        return utcMs(dayNumber: Self.dayNumber(year: year, month: month, day: 1), Clock(hour: 0, minute: 0))
+    }
+
+    /// Scheduled workdays in `[fromMs, toMs)`, by the same day test as the
+    /// period summary: an extended schedule assigns rest itself, so the
+    /// manual-mode shortcut applies only without one (`countScheduledWorkdays`).
+    func scheduledWorkdayCount(fromMs: Double, toMs: Double, workdays: [Int], schedule: NativeWorkSchedule) -> Int {
+        if extended == nil, schedule.mode == "off" { return 0 }
+        var cursor = startOfCivilDayMs(fromMs)
+        let end = startOfCivilDayMs(toMs)
+        var count = 0
+        while cursor < end {
+            if isScheduledWorkdayInZone(cursor, workdays, schedule) { count += 1 }
+            cursor = addCivilDaysMs(cursor, 1)
+        }
+        return count
+    }
+
+    /// Scheduled workdays in the civil month containing `anchorMs`
+    /// (`countScheduledWorkdaysInMonth`), the divisor of that month's daily pay.
+    func scheduledWorkdaysInMonth(anchorMs: Double, workdays: [Int], schedule: NativeWorkSchedule) -> Int {
+        scheduledWorkdayCount(
+            fromMs: monthStartMs(anchorMs, offset: 0), toMs: monthStartMs(anchorMs, offset: 1),
+            workdays: workdays, schedule: schedule
+        )
     }
 
     /// Same wall-clock minute `days` civil days later; seconds are dropped.
@@ -547,7 +629,12 @@ nonisolated final class CivilZone {
         }
         let overtimeEndAtMs = options.overtimeEndAtMs.flatMap { $0 > plannedEndAtMs ? $0 : nil }
         if let overtimeEndAtMs, let last = segments.last {
-            segments[segments.count - 1] = NativeShiftSegment(startAtMs: last.startAtMs, endAtMs: overtimeEndAtMs)
+            if let overtimeStartAtMs = options.overtimeStartAtMs,
+               overtimeStartAtMs.isFinite, overtimeStartAtMs > plannedEndAtMs, overtimeStartAtMs < overtimeEndAtMs {
+                segments.append(NativeShiftSegment(startAtMs: overtimeStartAtMs, endAtMs: overtimeEndAtMs))
+            } else {
+                segments[segments.count - 1] = NativeShiftSegment(startAtMs: last.startAtMs, endAtMs: overtimeEndAtMs)
+            }
         }
         return ShiftTimeline(segments: segments, plannedEndAtMs: plannedEndAtMs, overtimeEndAtMs: overtimeEndAtMs)
     }
@@ -625,4 +712,46 @@ nonisolated final class CivilZone {
         let month = monthIndex < 10 ? monthIndex + 3 : monthIndex - 9
         return (yearOfEra + era * 400 + (month <= 2 ? 1 : 0), month, day)
     }
+}
+
+/// Plan 024: the pay multiplier for effective time beyond the planned end.
+nonisolated enum OvertimePay {
+    static let defaultMultiplier = 1.0
+
+    /// 0 (unpaid) or 0.5 to 5 in 0.1 steps; anything else is 1
+    /// (`normalizeOvertimePayMultiplier` in `lib/countdown.ts`).
+    static func normalized(_ value: Double?) -> Double {
+        guard let value, value.isFinite else { return defaultMultiplier }
+        let tenths = (value * 10).rounded(.toNearestOrAwayFromZero)
+        guard abs(value * 10 - tenths) <= 1e-9 else { return defaultMultiplier }
+        if tenths == 0 { return 0 }
+        guard tenths >= 5, tenths <= 50 else { return defaultMultiplier }
+        return tenths / 10
+    }
+}
+
+/// Plan 024: the hours a declaration counts, replacing the measured overtime
+/// length in statistics and pay. Mirrors `normalizeCountedOvertimeMs` and
+/// `overtimeCountScale` in `lib/summary.ts`.
+nonisolated enum CountedOvertime {
+    static let maximumMs = 24.0 * 3_600_000
+
+    /// `nil` unless finite and 0 to 24 hours.
+    static func normalized(_ value: Double?) -> Double? {
+        guard let value, value.isFinite, value >= 0, value <= maximumMs else { return nil }
+        return value
+    }
+
+    /// counted / full measured length; 1 without a valid counted value or any
+    /// measured overtime to scale.
+    static func scale(fullMeasuredMs: Double, countedMs: Double?) -> Double {
+        guard let counted = normalized(countedMs), fullMeasuredMs.isFinite, fullMeasuredMs > 0 else { return 1 }
+        return counted / fullMeasuredMs
+    }
+}
+
+nonisolated struct OvertimeRateComparison: Equatable, Sendable {
+    var elapsedOvertimeMs: Double
+    var unpaidHourlyRate: Double?
+    var unpaidRateDecreasePercent: Double?
 }

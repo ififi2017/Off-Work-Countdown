@@ -3,9 +3,11 @@ package com.rainif.doneat.core.domain.records
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.schedule.CivilZone
+import com.rainif.doneat.core.domain.schedule.CountedOvertime
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
+import com.rainif.doneat.core.domain.schedule.OvertimePay
 import com.rainif.doneat.core.domain.schedule.ScheduleHours
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
 import com.rainif.doneat.core.domain.schedule.ScheduleRules
@@ -394,7 +396,7 @@ class RecordsQueries(
             date = date,
             appearance = appearance,
             workMs = share.workMs,
-            overtimeMs = share.overtimeMs,
+            overtimeMs = countedOvertimeMs(share.overtimeMs, resolution, previous),
             breakMs = share.breakMs,
             freeMs = share.freeMs,
             observationCount = observationIndex[resolution.dayKey]?.size ?: 0,
@@ -455,19 +457,30 @@ class RecordsQueries(
         }
         val today = today(nowMs)
         val visible = cells.map { it.dayKey }.toSet()
-        val completedScheduledWorkdays = days.count { it.dayKey in visible && it.baseScheduleIsWorkday && date(it.dayKey).isBefore(today) }
+        val completedDays = days.filter { it.dayKey in visible && it.baseScheduleIsWorkday && date(it.dayKey).isBefore(today) }
+        val completedScheduledWorkdays = completedDays.size
         return RecordsHeadlineSummary(
             workdays = recordedKeys.size,
             regularWorkMs = combined.workMs,
             overtimeMs = combined.overtimeMs,
             wakingFreeMs = combined.wakingFreeMs,
-            estimatedIncome = salary?.let { SummaryRules.recordsIncome(completedScheduledWorkdays, it) },
+            estimatedIncome = salary?.let { estimatedIncome(it, completedScheduledWorkdays, completedDays.map { day -> day.dayKey }) },
             completedScheduledWorkdays = completedScheduledWorkdays,
             allocationDays = periodShares.size,
             allocation = TimeAllocationShare.combining(periodShares),
             sleepFromHealth = sleepFromHealth,
             actualForecast = actualForecast,
         )
+    }
+
+    /** Completed workdays at the current salary; the scheduled-month basis pays each civil month at its own daily rate. */
+    private fun estimatedIncome(salary: SalarySettings, completedWorkdays: Int, completedDayKeys: List<String>): Double? {
+        val hours = currentHours?.scheduleHours()?.takeIf { salary.usesScheduledMonthBasis }
+            ?: return SummaryRules.recordsIncome(completedWorkdays, salary)
+        val months = completedDayKeys.groupBy { it.take(7) }.toSortedMap().map { (_, keys) ->
+            SummaryRules.MonthWorkdays(date(keys.first()).atStartOfDay(zone).toInstant().toEpochMilli().toDouble(), keys.size)
+        }
+        return SummaryRules.recordsIncome(completedWorkdays, salary, months, SummaryRules.MonthContext(hours.workdays, hours.schedule, zone))
     }
 
     /**
@@ -486,7 +499,8 @@ class RecordsQueries(
             val day = byKey[cell.dayKey] ?: return@mapNotNull null
             val contributors = listOfNotNull(previousDay(day, byKey), day).filter { it.dayKey in counted }
             if (contributors.isEmpty()) return@mapNotNull null
-            val allocation = dayAllocation(day, contributors, nowMs)
+            val measured = dayAllocation(day, contributors, nowMs)
+            val allocation = measured.copy(overtimeMs = countedOvertimeMs(measured.overtimeMs, day, previousDay(day, byKey)))
             // A neighbouring record alone does not make this a covered day.
             if (day.dayKey !in recordedKeys && allocation.workMs <= 0 && allocation.overtimeMs <= 0 && allocation.breakMs <= 0) return@mapNotNull null
             allocation
@@ -594,6 +608,8 @@ class RecordsQueries(
                 }
             },
             isActiveAnchor = activeAnchorDayKey == day.dayKey,
+            overtimePayMultiplier = if (actualKind == null) null else overtimePayMultiplier(day),
+            overtimeCountedMs = if (actualKind == null) null else overtimeCountedMs(day),
         )
     }
 
@@ -610,7 +626,12 @@ class RecordsQueries(
             val cell = cells[contributor.dayKey] ?: dayCell(contributor, null, nowMs, revealingAll = true)
             val input = recordsSummaryDay(contributor, cell) ?: return@mapNotNull null
             if (input.actualKind == null) return@mapNotNull null
-            input.copy(resolvedSegments = clip(input.resolvedSegments), overtimeSegments = clip(input.overtimeSegments))
+            // Plan 024: the counted hours belong to the whole declaration, so a civil-day piece takes its share.
+            val clippedOvertime = clip(input.overtimeSegments)
+            val fullLength = input.overtimeSegments.sumOf { it.endAtMs - it.startAtMs }
+            val pieceLength = clippedOvertime.sumOf { it.endAtMs - it.startAtMs }
+            val counted = input.overtimeCountedMs?.takeIf { fullLength > 0 }?.let { it * pieceLength / fullLength }
+            input.copy(resolvedSegments = clip(input.resolvedSegments), overtimeSegments = clippedOvertime, overtimeCountedMs = counted)
         }
         val actual = SummaryRules.recordsActualForecast(SummaryRules.ActualForecastInput(inputs, listOf(day.dayKey),
             null, nowMs, null, zone))
@@ -627,7 +648,7 @@ class RecordsQueries(
             activeAnchorDayKey, currentHours, firstDayOfWeek).cycleReportSnapshot(period, nowMs)
         val days = displayDays(period.startDate.minusDays(1), period.endDate, nowMs)
         val cells = cells(days, period.startDate, nowMs)
-        val figures = CycleReportFigures.fromHeadline(headline(cells, days, nowMs))
+        val headlineFigures = CycleReportFigures.fromHeadline(headline(cells, days, nowMs))
         val resolutionIndex = days.withIndex().associate { it.value.dayKey to it.index }
         val cellsByKey = cells.associateBy { it.dayKey }
         val reportDays = cells.map { cell ->
@@ -644,6 +665,22 @@ class RecordsQueries(
             }
             CycleReportDay(cell.dayKey, cell.date, kind, maxOf(0L, elapsed.workedMs - elapsed.overtimeMs), elapsed.overtimeMs, cell.isToday)
         }
+
+        // Plan 024: re-price each day's overtime by its declared multiplier. Null leaves reports without a custom one untouched.
+        var pricedPlain = 0.0
+        var pricedScaled = 0.0
+        var priced = false
+        for (reportDay in reportDays) {
+            if (reportDay.kind == CycleReportDayKind.UPCOMING || reportDay.overtimeMs <= 0) continue
+            val multiplier = overtimePayMultiplier(days[resolutionIndex.getValue(reportDay.dayKey)])
+            if (multiplier == 1.0) continue
+            priced = true
+            pricedPlain += reportDay.overtimeMs
+            pricedScaled += reportDay.overtimeMs * multiplier
+        }
+        val figures = if (priced) headlineFigures.copy(
+            paidOvertimeMs = maxOf(0L, kotlin.math.round(headlineFigures.overtimeMs - pricedPlain + pricedScaled).toLong()),
+        ) else headlineFigures
 
         var longest = 0
         var longestStart: Int? = null
@@ -696,8 +733,7 @@ class RecordsQueries(
         } else null
         val pay = figures.income?.let { income ->
             val perHour = if (figures.workedMs >= 3_600_000) income / (figures.workedMs / 3_600_000.0) else null
-            val extra = if (salary?.type != SalaryType.MONTHLY && figures.overtimeMs >= 900_000 && figures.workedMs > 0)
-                income * figures.overtimeMs / figures.workedMs else null
+            val extra = CycleReportPay.overtimeExtra(figures, income, overtimeIsPaid = salary?.type != SalaryType.MONTHLY)
             CycleReportPay(income, perHour, extra)
         }
         return CycleReportSnapshot(period, reportDays, figures, reportDays.count { it.kind == CycleReportDayKind.REST },
@@ -753,14 +789,37 @@ class RecordsQueries(
 
     // Days
 
+    /** The day's newest overtime declaration, the only one that counts. */
+    private fun latestOvertimeDeclaration(dayKey: String): WorkObservation? = observationIndex[dayKey].orEmpty()
+        .filter { it.kind == WorkObservationKind.OVERTIME_DECLARED }
+        .maxWithOrNull(compareBy<WorkObservation> { it.occurredAtMs }.thenBy { it.eventID })
+
     /** The latest overtime declared on a day, starting no earlier than its regular work ends. */
     fun overtimeSegments(r: DayResolution): List<ShiftSegment> {
-        val latest = observationIndex[r.dayKey].orEmpty()
-            .filter { it.kind == WorkObservationKind.OVERTIME_DECLARED }
-            .maxWithOrNull(compareBy<WorkObservation> { it.occurredAtMs }.thenBy { it.eventID })
-            ?: return emptyList()
+        val latest = latestOvertimeDeclaration(r.dayKey) ?: return emptyList()
         return listOfNotNull(RecordsOvertime.declaredSegment(latest, r, avoidingRegularWork = true))
     }
+
+    /** Plan 024: the hours the day's latest declaration counts, if it names any. */
+    fun overtimeCountedMs(r: DayResolution): Double? = RecordsOvertime.declaredCountedMs(latestOvertimeDeclaration(r.dayKey))
+
+    /** Plan 024: counted / measured overtime for a day (1 without an override). */
+    fun overtimeCountScale(r: DayResolution): Double {
+        val counted = overtimeCountedMs(r) ?: return 1.0
+        val segment = overtimeSegments(r).firstOrNull() ?: return 1.0
+        return CountedOvertime.scale(segment.endAtMs - segment.startAtMs, counted)
+    }
+
+    /** Measured overtime milliseconds on [r]'s cell as counted ones; an overnight spill takes the previous day's factor when this day has none. */
+    private fun countedOvertimeMs(measured: Long, r: DayResolution, previous: DayResolution?): Long {
+        if (measured <= 0) return measured
+        var scale = overtimeCountScale(r)
+        if (scale == 1.0 && previous != null) scale = overtimeCountScale(previous)
+        return if (scale == 1.0) measured else kotlin.math.round(measured * scale).toLong()
+    }
+
+    /** Plan 024: the pay multiplier the day's latest declaration chose; 1 when it names none. */
+    fun overtimePayMultiplier(r: DayResolution): Double = RecordsOvertime.declaredPayMultiplier(latestOvertimeDeclaration(r.dayKey))
 
     /** The source of a neighbouring shift reaching into the day on screen. */
     private fun shiftSource(r: DayResolution, nowMs: Double): RecordsDaySource {
@@ -894,10 +953,31 @@ object RecordsOvertime {
         if (observation.kind != WorkObservationKind.OVERTIME_DECLARED) return null
         val json = observation.valueData?.let(FoundationCompat::base64)?.toString(Charsets.UTF_8) ?: return null
         val end = number(json, "overtimeEndAtMs") ?: return null
-        var start = number(json, "plannedEndAtMs") ?: day.baseScheduleSegments.maxOfOrNull { it.endAtMs } ?: return null
+        // Plan 024: an overtime that began after a rest names its own start.
+        var start = number(json, "overtimeStartAtMs")?.takeIf { it.isFinite() }
+            ?: number(json, "plannedEndAtMs") ?: day.baseScheduleSegments.maxOfOrNull { it.endAtMs } ?: return null
         if (avoidingRegularWork) day.segments.maxOfOrNull { it.endAtMs }?.let { start = max(start, it) }
         if (!start.isFinite() || !end.isFinite() || end <= start) return null
         return ShiftSegment(start, end)
+    }
+
+    /**
+     * Plan 024: the pay multiplier a declaration carries (iOS
+     * `RecordsMetrics.declaredPayMultiplier`); 1 when it names none or an
+     * invalid one. Readers ignore keys they do not know, so older payloads and
+     * older readers are unaffected.
+     */
+    fun declaredPayMultiplier(observation: WorkObservation?): Double {
+        if (observation == null || observation.kind != WorkObservationKind.OVERTIME_DECLARED) return 1.0
+        val json = observation.valueData?.let(FoundationCompat::base64)?.toString(Charsets.UTF_8) ?: return 1.0
+        return OvertimePay.normalized(number(json, "payMultiplier"))
+    }
+
+    /** Plan 024: the hours a declaration counts (iOS `RecordsMetrics.declaredCountedMs`); null when it names none or an invalid one. */
+    fun declaredCountedMs(observation: WorkObservation?): Double? {
+        if (observation == null || observation.kind != WorkObservationKind.OVERTIME_DECLARED) return null
+        val json = observation.valueData?.let(FoundationCompat::base64)?.toString(Charsets.UTF_8) ?: return null
+        return CountedOvertime.normalized(number(json, "countedMs"))
     }
 
     /** A JSON number, as `JSONDecoder` reads a `Double`; a string or null is absent. */

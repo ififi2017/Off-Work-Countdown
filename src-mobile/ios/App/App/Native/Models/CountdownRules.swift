@@ -32,6 +32,11 @@ nonisolated struct NativeShiftSnapshot: Codable, Hashable, Sendable {
     var nextShiftStartDate: Date? { nextShiftStartAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
     var nextShiftEndDate: Date? { nextShiftEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
 
+    /// The shared timeline behind this snapshot, for the rules that read it.
+    var timeline: ShiftTimeline {
+        ShiftTimeline(segments: segments, plannedEndAtMs: plannedEndAtMs, overtimeEndAtMs: overtimeEndAtMs)
+    }
+
     func isBeforeStart(at now: Date) -> Bool {
         now.timeIntervalSince1970 * 1_000 < startAtMs
     }
@@ -134,14 +139,35 @@ nonisolated struct NativeRulesInput: Codable, Equatable, Sendable {
     /// Plan 018 P8's extended schedule, when the user has one switched on.
     /// `nil` keeps every rule on the fixed-hours path it took before.
     var extendedSchedule: ExtendedSchedulePlan? = nil
+    /// Plan 024: how a monthly salary becomes daily pay. `nil` is `fixed`.
+    var dailySalaryBasis: DailySalaryBasis? = nil
+    /// Plan 024: pay multiplier for effective time past the planned end.
+    /// `nil` is 1, the original hourly rate; 0 is unpaid overtime.
+    var overtimePayMultiplier: Double? = nil
+    /// Plan 024: when the overtime starts; `nil` stretches the last segment.
+    var overtimeStartAtMs: Double? = nil
+}
+
+/// How a monthly salary becomes daily pay (`DailySalaryBasis` in
+/// `lib/countdown.ts`). `fixed` divides by the configured monthly working
+/// days; `scheduledMonth` divides each civil month by its own scheduled
+/// workdays. A daily salary ignores it.
+nonisolated enum DailySalaryBasis: String, Codable, Hashable, Sendable, CaseIterable {
+    case fixed
+    case scheduledMonth
 }
 
 nonisolated extension NativeRulesInput {
+    /// Whether pay divides each civil month by its own scheduled workdays.
+    var usesScheduledMonthBasis: Bool {
+        dailySalaryBasis == .scheduledMonth && salaryType == "monthly"
+    }
+
     var scheduleInput: ScheduleRuleInput {
         ScheduleRuleInput(startTime: startTime, endTime: endTime, nowMs: nowMs,
                           workdays: workdays, schedule: schedule, breakStartTime: breakStartTime,
                           breakDurationMinutes: breakDurationMinutes, overtimeEndAtMs: overtimeEndAtMs,
                           forcedWorkdayStartMs: forcedWorkdayStartMs, timeZoneIdentifier: timeZoneIdentifier,
-                          extendedSchedule: extendedSchedule)
+                          extendedSchedule: extendedSchedule, overtimeStartAtMs: overtimeStartAtMs)
     }
 }

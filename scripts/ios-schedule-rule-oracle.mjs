@@ -76,6 +76,7 @@ const ORACLE_BODY = `
       breakStartTime: input.breakStartTime || null,
       breakDurationMinutes: input.breakDurationMinutes || 0,
       overtimeEndAtMs: input.overtimeEndAtMs || null,
+      overtimeStartAtMs: input.overtimeStartAtMs || null,
     };
   }
 
@@ -120,6 +121,16 @@ const ORACLE_BODY = `
       return ended;
     }
     return live;
+  }
+
+  function monthBasisSalary(input) {
+    return {
+      amount: String(input.salaryAmount ?? ""),
+      type: input.salaryType,
+      monthlyWorkingDays: input.monthlyWorkingDays,
+      annualBonusMonths: input.annualBonusMonths || 0,
+      basis: input.dailySalaryBasis || null,
+    };
   }
 
   function startOfLocalDayMs(date, timeZone) {
@@ -288,13 +299,18 @@ const ORACLE_BODY = `
       const shift = resolveCurrentShift(input);
       const nextShift = nextShiftAfter(input, shift);
       const clockIn = countdownProjection(input, shift, nextShift);
-      const dailySalary = countdown.getDailySalary(
-        String(input.salaryAmount ?? ""),
-        input.salaryType,
-        input.monthlyWorkingDays,
-        input.annualBonusMonths || 0
+      const dailySalary = summary.dailySalaryInMonth({
+        salary: monthBasisSalary(input),
+        anchorMs: countdown.getShiftStartAtMs(shift),
+        workdays: input.workdays,
+        schedule: input.schedule || null,
+        timeZone: inputTimeZone(input),
+      });
+      const payRatio = countdown.calculateTimelinePayRatio(
+        shift,
+        input.nowMs,
+        input.overtimePayMultiplier ?? 1
       );
-      const payRatio = countdown.calculateTimelinePayRatio(shift, input.nowMs);
       return JSON.stringify({
         segments: shift.segments,
         startAtMs: countdown.getShiftStartAtMs(shift),
@@ -473,14 +489,39 @@ const ORACLE_BODY = `
         plannedDailyHours: input.plannedDailyHours,
         todayProgress: input.todayProgress,
         dailySalary: input.dailySalary,
+        salary: input.salary || null,
         todayEffectiveHours: input.todayEffectiveHours,
         todayPayRatio: input.todayPayRatio,
         timeZone,
       }));
     },
 
+    scheduledWorkdaysInMonth(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({
+        count: summary.countScheduledWorkdaysInMonth({
+          anchorMs: Number(input.anchorMs),
+          workdays: input.workdays,
+          schedule: input.schedule || null,
+          timeZone: inputTimeZone(input),
+        }),
+      });
+    },
+
     recordsIncome(inputJSON) {
       const input = JSON.parse(inputJSON);
+      const salary = monthBasisSalary(input);
+      if (summary.usesScheduledMonthBasis(salary)) {
+        return JSON.stringify({
+          earnings: summary.completedWorkdayIncomeByMonth({
+            months: input.completedByMonth || [],
+            salary,
+            workdays: input.workdays,
+            schedule: input.schedule || null,
+            timeZone: inputTimeZone(input),
+          }),
+        });
+      }
       const dailySalary = countdown.getDailySalary(
         String(input.salaryAmount ?? ""),
         input.salaryType,
@@ -502,13 +543,47 @@ const ORACLE_BODY = `
           String(input.salaryAmount ?? ""),
           input.salaryType,
           input.monthlyWorkingDays,
-          input.annualBonusMonths || 0
+          input.annualBonusMonths || 0,
+          input.dailySalaryBasis || null
         ),
       });
     },
 
     lifetimeIncome(inputJSON) {
       return JSON.stringify(summary.projectLifetimeGrossIncome(JSON.parse(inputJSON)));
+    },
+
+    // Plan 024 phase 3: the elapsed overtime and the "if unpaid" comparison.
+    overtimePay(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      const shift = resolveCurrentShift(input);
+      const dailySalary = summary.dailySalaryInMonth({
+        salary: monthBasisSalary(input),
+        anchorMs: countdown.getShiftStartAtMs(shift),
+        workdays: input.workdays,
+        schedule: input.schedule || null,
+        timeZone: inputTimeZone(input),
+      });
+      return JSON.stringify({
+        overtimeElapsedMs: countdown.overtimeElapsedMs(shift, input.nowMs),
+        comparison: countdown.overtimeRateComparison(shift, input.nowMs, dailySalary),
+      });
+    },
+
+    normalizeOvertimePayMultiplier(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({ value: countdown.normalizeOvertimePayMultiplier(input.value) });
+    },
+
+    // Plan 024 phase 4: the counted-hours override and its scale.
+    normalizeCountedOvertimeMs(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({ value: summary.normalizeCountedOvertimeMs(input.value) });
+    },
+
+    overtimeCountScale(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({ value: summary.overtimeCountScale(input.fullMs, input.countedMs) });
     },
 
     recordsActualForecast(inputJSON) {

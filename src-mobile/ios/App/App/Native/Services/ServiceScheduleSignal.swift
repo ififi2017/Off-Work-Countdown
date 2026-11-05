@@ -50,7 +50,7 @@ struct ServiceScheduleSignal: Equatable, Sendable {
             "\(shifts.session.earlyStartAtMs ?? 0)",
             shifts.session.forcedWorkdayKey ?? "",
             "\(shifts.preferences.annualBonusEnabled)-\(shifts.preferences.annualBonusMonths)",
-            "\(shifts.preferences.salaryEnabled)-\(shifts.preferences.salaryAmount)-\(shifts.preferences.salaryType.rawValue)-\(shifts.preferences.monthlyWorkingDays)",
+            "\(shifts.preferences.salaryEnabled)-\(shifts.preferences.salaryAmount)-\(shifts.preferences.salaryType.rawValue)-\(shifts.preferences.monthlyWorkingDays)-\(shifts.preferences.dailySalaryBasis.rawValue)-\(shifts.preferences.overtimePayMultiplier)",
             "\(shifts.preferences.liveActivityEnabled)-\(shifts.preferences.liveActivityLeadMinutes)",
             "\(shifts.preferences.focusLiveActivityEnabled)-\(shifts.focus.focusNotificationsEnabled)",
             // Alarms follow the lead times and the exact entitlement window,

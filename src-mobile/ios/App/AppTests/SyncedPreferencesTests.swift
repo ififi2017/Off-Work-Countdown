@@ -106,6 +106,54 @@ func syncedPreferencesMergeIndependentFields() {
 }
 
 @MainActor
+@Test("The daily-pay basis merges as its own field and defaults to fixed")
+func dailySalaryBasisMergesAndDefaults() throws {
+    let baseline = sampleSyncedPreferences()
+    #expect(baseline.dailySalaryBasis == .fixed)
+    var local = baseline
+    local.dailySalaryBasis = .scheduledMonth
+    local.editCount = 2
+    var server = baseline
+    server.monthlyWorkingDays = 20
+    server.editCount = 2
+    let merged = RecordsSyncConflict.mergeSyncedPreferences(local: local, server: server, baseline: baseline)
+    #expect(merged.dailySalaryBasis == .scheduledMonth)
+    #expect(merged.monthlyWorkingDays == 20)
+
+    // A row written before the basis existed has no key and reads as fixed; the
+    // fixed default is not written back, so such rows stay byte for byte as they were.
+    let encoder = JSONEncoder()
+    let fixedData = try encoder.encode(baseline)
+    var object = try #require(JSONSerialization.jsonObject(with: fixedData) as? [String: Any])
+    #expect(object["dailySalaryBasis"] == nil)
+    #expect(try JSONDecoder().decode(SyncedPreferences.self, from: fixedData).dailySalaryBasis == .fixed)
+
+    let chosenData = try encoder.encode(local)
+    object = try #require(JSONSerialization.jsonObject(with: chosenData) as? [String: Any])
+    #expect(object["dailySalaryBasis"] as? String == "scheduledMonth")
+    #expect(try JSONDecoder().decode(SyncedPreferences.self, from: chosenData).dailySalaryBasis == .scheduledMonth)
+}
+
+@MainActor
+@Test("The daily-pay basis persists in the device store and reaches the shared rules")
+func dailySalaryBasisPersists() throws {
+    let suite = "SyncedPreferences.\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defaults.set(true, forKey: "ios.native.onboardingComplete")
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = AppRuntime(defaults: defaults, records: records)
+    #expect(store.preferences.dailySalaryBasis == .fixed)
+    store.preferences.applyPreferences { $0.dailySalaryBasis = .scheduledMonth }
+    #expect(defaults.string(forKey: "ios.native.dailySalaryBasis") == "scheduledMonth")
+    #expect(records.state.syncedPreferences?.dailySalaryBasis == .scheduledMonth)
+    #expect(store.session.rulesInput(at: .now).dailySalaryBasis == .scheduledMonth)
+
+    let relaunched = AppRuntime(defaults: defaults, records: RecordCoordinator.inMemory())
+    #expect(relaunched.preferences.dailySalaryBasis == .scheduledMonth)
+}
+
+@MainActor
 @Test("Backup JSON includes shared salary settings but excludes device security state")
 func backupIncludesSyncedPreferencesOnly() throws {
     var state = RecordState()

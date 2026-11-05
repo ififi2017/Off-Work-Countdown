@@ -1236,6 +1236,7 @@ struct RecordsDesignView: View {
         var salaryType: SalaryType
         var salaryAmount: String
         var monthlyWorkingDays: Double
+        var dailySalaryBasis: DailySalaryBasis
         var annualBonusEnabled: Bool
         var annualBonusMonths: Double
         var hours: ScheduleHoursConfiguration
@@ -1254,6 +1255,7 @@ struct RecordsDesignView: View {
             salaryType: preferences.salaryType,
             salaryAmount: preferences.salaryAmount,
             monthlyWorkingDays: preferences.monthlyWorkingDays,
+            dailySalaryBasis: preferences.dailySalaryBasis,
             annualBonusEnabled: preferences.annualBonusEnabled,
             annualBonusMonths: preferences.annualBonusMonths,
             hours: hours

@@ -214,6 +214,10 @@ nonisolated struct CycleReportFigures: Equatable, Sendable {
     var overtimeMs: Int64
     /// Pay estimated by the existing salary rules; `nil` without a salary.
     var income: Double?
+    /// Plan 024: the overtime that was paid, in milliseconds at the usual rate
+    /// (each day's overtime × its declared multiplier). `nil` while every
+    /// day's overtime was paid at the usual rate, which is `overtimeMs`.
+    var paidOvertimeMs: Int64? = nil
 
     var hasData: Bool { workdays > 0 || workedMs > 0 }
 

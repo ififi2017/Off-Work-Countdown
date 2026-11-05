@@ -181,7 +181,14 @@ nonisolated struct CycleReportPay: Equatable, Sendable {
         let perHour = hours >= 1 ? total / hours : nil
         var extra: Double?
         if overtimeIsPaid, figures.overtimeMs >= 15 * 60_000, figures.workedMs > 0 {
-            extra = total * Double(figures.overtimeMs) / Double(figures.workedMs)
+            if let paid = figures.paidOvertimeMs {
+                // Overtime priced by declared multipliers: its share of the
+                // pay-weighted time. Unpaid overtime adds nothing.
+                let weighted = Double(figures.workedMs - figures.overtimeMs + paid)
+                if paid > 0, weighted > 0 { extra = total * Double(paid) / weighted }
+            } else {
+                extra = total * Double(figures.overtimeMs) / Double(figures.workedMs)
+            }
         }
         return Self(total: total, perHour: perHour, overtimeExtra: extra)
     }

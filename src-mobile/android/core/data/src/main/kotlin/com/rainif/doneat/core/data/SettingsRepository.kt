@@ -1,6 +1,7 @@
 package com.rainif.doneat.core.data
 
 import com.rainif.doneat.core.domain.records.SyncedPreferences
+import com.rainif.doneat.core.domain.schedule.OvertimePay
 import com.rainif.doneat.core.domain.settings.PreferencesRules
 import com.rainif.doneat.core.domain.settings.SetupProjection
 import com.rainif.doneat.core.domain.session.ScheduleSave
@@ -192,7 +193,9 @@ internal object PreferencesJson {
             "recordsTimeZoneIdentifier" to JsonPrimitive(p.recordsTimeZoneIdentifier), "salaryAmount" to JsonPrimitive(p.salaryAmount),
             "salaryEnabled" to JsonPrimitive(p.salaryEnabled), "salaryType" to JsonPrimitive(p.salaryType),
             "monthlyWorkingDays" to JsonPrimitive(p.monthlyWorkingDays), "annualBonusEnabled" to JsonPrimitive(p.annualBonusEnabled),
-            "annualBonusMonths" to JsonPrimitive(p.annualBonusMonths), "notificationMode" to JsonPrimitive(p.notificationMode),
+            "annualBonusMonths" to JsonPrimitive(p.annualBonusMonths), "dailySalaryBasis" to JsonPrimitive(p.dailySalaryBasis),
+            "overtimePayMultiplier" to JsonPrimitive(p.overtimePayMultiplier),
+            "notificationMode" to JsonPrimitive(p.notificationMode),
             "cycleEndSummaryNotificationEnabled" to JsonPrimitive(p.cycleEndSummaryNotificationEnabled),
             "lunchStartReminderEnabled" to JsonPrimitive(p.lunchStartReminderEnabled),
             "lunchEndReminderEnabled" to JsonPrimitive(p.lunchEndReminderEnabled),
@@ -215,7 +218,11 @@ internal object PreferencesJson {
             recordsTimeZoneIdentifier = p("recordsTimeZoneIdentifier").content, salaryAmount = p("salaryAmount").content,
             salaryEnabled = p("salaryEnabled").content.toBooleanStrict(), salaryType = p("salaryType").content,
             monthlyWorkingDays = p("monthlyWorkingDays").content.toDouble(), annualBonusEnabled = p("annualBonusEnabled").content.toBooleanStrict(),
-            annualBonusMonths = p("annualBonusMonths").content.toDouble(), notificationMode = p("notificationMode").content,
+            annualBonusMonths = p("annualBonusMonths").content.toDouble(),
+            dailySalaryBasis = (o["dailySalaryBasis"] as? JsonPrimitive)?.contentOrNull ?: "fixed",
+            overtimePayMultiplier = (o["overtimePayMultiplier"] as? JsonPrimitive)?.contentOrNull?.toDoubleOrNull()
+                ?.takeIf { OvertimePay.normalized(it) == it } ?: 1.0,
+            notificationMode = p("notificationMode").content,
             cycleEndSummaryNotificationEnabled = p("cycleEndSummaryNotificationEnabled").content.toBooleanStrict(),
             lunchStartReminderEnabled = p("lunchStartReminderEnabled").content.toBooleanStrict(),
             lunchEndReminderEnabled = p("lunchEndReminderEnabled").content.toBooleanStrict(),

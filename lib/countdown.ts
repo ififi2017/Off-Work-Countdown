@@ -77,6 +77,12 @@ export interface ShiftBuildOptions {
   breakStartTime?: string | null;
   breakDurationMinutes?: number;
   overtimeEndAtMs?: number | null;
+  /**
+   * Plan 024: when the overtime starts. Omitted, or at/before the planned end,
+   * the last segment is stretched; later, a separate segment [start, end] is
+   * appended and the gap before it is a break.
+   */
+  overtimeStartAtMs?: number | null;
 }
 
 export type WorkScheduleMode = "classic" | "alternating" | "rotation" | "off";
@@ -185,6 +191,31 @@ export function findNextRestDate(params: {
   return null;
 }
 
+/**
+ * Plan 024: overtime that starts after the planned end becomes its own segment
+ * (the gap is a break); otherwise the last segment is stretched to the end.
+ */
+function applyOvertimeToSegments(
+  segments: ShiftSegment[],
+  plannedEndAtMs: number,
+  overtimeEndAtMs: number,
+  overtimeStartAtMs: number | null | undefined
+): ShiftSegment[] {
+  if (
+    typeof overtimeStartAtMs === "number" &&
+    Number.isFinite(overtimeStartAtMs) &&
+    overtimeStartAtMs > plannedEndAtMs &&
+    overtimeStartAtMs < overtimeEndAtMs
+  ) {
+    return [...segments, { startAtMs: overtimeStartAtMs, endAtMs: overtimeEndAtMs }];
+  }
+  return segments.map((segment, index) =>
+    index === segments.length - 1
+      ? { ...segment, endAtMs: overtimeEndAtMs }
+      : segment
+  );
+}
+
 function buildTimelineFromBounds(
   start: Date,
   end: Date,
@@ -220,10 +251,11 @@ function buildTimelineFromBounds(
       ? options.overtimeEndAtMs
       : null;
   if (overtimeEndAtMs !== null) {
-    segments = segments.map((segment, index) =>
-      index === segments.length - 1
-        ? { ...segment, endAtMs: overtimeEndAtMs }
-        : segment
+    segments = applyOvertimeToSegments(
+      segments,
+      plannedEndAtMs,
+      overtimeEndAtMs,
+      options.overtimeStartAtMs
     );
   }
 
@@ -245,17 +277,19 @@ export function buildShiftTimeline(
 
 export function extendShiftWithOvertime(
   shift: ShiftTimeline,
-  overtimeEndAtMs: number
+  overtimeEndAtMs: number,
+  overtimeStartAtMs?: number | null
 ): ShiftTimeline {
   if (!isValidShiftTimeline(shift) || overtimeEndAtMs <= shift.plannedEndAtMs) {
     return shift;
   }
   return {
     ...shift,
-    segments: shift.segments.map((segment, index) =>
-      index === shift.segments.length - 1
-        ? { ...segment, endAtMs: overtimeEndAtMs }
-        : segment
+    segments: applyOvertimeToSegments(
+      shift.segments,
+      shift.plannedEndAtMs,
+      overtimeEndAtMs,
+      overtimeStartAtMs
     ),
     overtimeEndAtMs,
   };
@@ -424,11 +458,23 @@ export function isValidShiftTimeline(shift: ShiftTimeline): boolean {
   const startAtMs = getShiftStartAtMs(shift);
   const endAtMs = getShiftEndAtMs(shift);
   const lastSegment = shift.segments[shift.segments.length - 1];
-  return (
-    shift.plannedEndAtMs > startAtMs &&
+  if (shift.plannedEndAtMs <= startAtMs || endAtMs !== lastSegment.endAtMs) {
+    return false;
+  }
+  if (
     shift.plannedEndAtMs > lastSegment.startAtMs &&
-    shift.plannedEndAtMs <= lastSegment.endAtMs &&
-    endAtMs === shift.segments[shift.segments.length - 1].endAtMs
+    shift.plannedEndAtMs <= lastSegment.endAtMs
+  ) {
+    return true;
+  }
+  // Plan 024: overtime appended after a gap. The planned end closes the
+  // second-to-last segment, and the last one starts after it.
+  if (shift.overtimeEndAtMs === null || shift.segments.length < 2) return false;
+  const before = shift.segments[shift.segments.length - 2];
+  return (
+    shift.plannedEndAtMs > before.startAtMs &&
+    shift.plannedEndAtMs === before.endAtMs &&
+    lastSegment.startAtMs > shift.plannedEndAtMs
   );
 }
 
@@ -505,17 +551,105 @@ export function calculateTimelineProgress(
   );
 }
 
+/** The default and the "paid at the usual rate" overtime multiplier. */
+export const DEFAULT_OVERTIME_PAY_MULTIPLIER = 1;
+
+/**
+ * Plan 024: the overtime pay multiplier as stored. 0 means unpaid overtime;
+ * otherwise 0.5 to 5 in 0.1 steps. Anything else (NaN, negative, 0.3, 5.1,
+ * 1.55, non-numbers) falls back to 1, the original hourly rate.
+ */
+export function normalizeOvertimePayMultiplier(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return DEFAULT_OVERTIME_PAY_MULTIPLIER;
+  }
+  const tenths = Math.round(value * 10);
+  if (Math.abs(value * 10 - tenths) > 1e-9) return DEFAULT_OVERTIME_PAY_MULTIPLIER;
+  if (tenths === 0) return 0;
+  if (tenths < 5 || tenths > 50) return DEFAULT_OVERTIME_PAY_MULTIPLIER;
+  return tenths / 10;
+}
+
 /**
  * 按原时薪线性外推的计薪比例。正常班次结束为 1；发生加班时可以大于 1。
  * 午休不在 segments 内，所以休息期间 elapsed 保持不变。
+ *
+ * `overtimeMultiplier` (plan 024) scales the effective time beyond the planned
+ * end: (elapsed up to plannedEnd + m × elapsed beyond it) / planned duration.
+ * 1 (the default) is bit-for-bit the unscaled `elapsed / planned`.
  */
 export function calculateTimelinePayRatio(
   shift: ShiftTimeline,
-  nowMs: number
+  nowMs: number,
+  overtimeMultiplier: number = DEFAULT_OVERTIME_PAY_MULTIPLIER
 ): number {
   const plannedDuration = getPlannedShiftDurationMs(shift);
   if (plannedDuration <= 0) return 0;
-  return Math.max(0, getShiftElapsedMs(shift, nowMs) / plannedDuration);
+  const elapsed = getShiftElapsedMs(shift, nowMs);
+  const multiplier = normalizeOvertimePayMultiplier(overtimeMultiplier);
+  if (multiplier === 1) return Math.max(0, elapsed / plannedDuration);
+  const regular = Math.min(elapsed, plannedDuration);
+  return Math.max(0, (regular + multiplier * (elapsed - regular)) / plannedDuration);
+}
+
+/**
+ * Effective time worked beyond the planned end at `nowMs` (lunch gaps and
+ * overnight runs are already excluded by the segments). 0 outside overtime.
+ */
+export function overtimeElapsedMs(shift: ShiftTimeline | null, nowMs: number): number {
+  if (!shift?.overtimeEndAtMs || !Number.isFinite(nowMs)) return 0;
+  const planned = getPlannedShiftDurationMs(shift);
+  if (!Number.isFinite(planned) || planned <= 0) return 0;
+  const elapsed = getShiftElapsedMs(shift, nowMs);
+  if (!Number.isFinite(elapsed)) return 0;
+  return Math.max(0, elapsed - planned);
+}
+
+export interface OvertimeRateComparison {
+  elapsedOvertimeMs: number;
+  /** Daily pay spread over every effective hour worked so far, or null. */
+  unpaidHourlyRate: number | null;
+  /** How much lower that rate is than the planned-hours rate, in percent. */
+  unpaidRateDecreasePercent: number | null;
+}
+
+/**
+ * The "if overtime is unpaid" comparison: the fixed daily amount over the
+ * effective hours elapsed, and how far below the usual hourly rate that is.
+ * Null when the shift is not in overtime. The rate fields are null while the
+ * overtime is zero-length or there is no usable daily salary.
+ */
+export function overtimeRateComparison(
+  shift: ShiftTimeline | null,
+  nowMs: number,
+  dailySalary: number | null
+): OvertimeRateComparison | null {
+  if (!shift?.overtimeEndAtMs || !Number.isFinite(nowMs)) return null;
+  const plannedMs = getPlannedShiftDurationMs(shift);
+  if (!Number.isFinite(plannedMs) || plannedMs <= 0) return null;
+  const elapsedMs = getShiftElapsedMs(shift, nowMs);
+  if (!Number.isFinite(elapsedMs)) return null;
+  const elapsedOvertimeMs = Math.max(0, elapsedMs - plannedMs);
+  const result: OvertimeRateComparison = {
+    elapsedOvertimeMs,
+    unpaidHourlyRate: null,
+    unpaidRateDecreasePercent: null,
+  };
+  if (
+    elapsedOvertimeMs === 0 ||
+    dailySalary === null ||
+    !Number.isFinite(dailySalary) ||
+    dailySalary <= 0
+  ) {
+    return result;
+  }
+  // Lunch is already excluded and elapsedMs already stops at the effective end.
+  const hourlyRate = dailySalary / (elapsedMs / (60 * 60 * 1000));
+  const decreasePercent = (1 - 1 / calculateTimelinePayRatio(shift, nowMs)) * 100;
+  if (!Number.isFinite(hourlyRate) || !Number.isFinite(decreasePercent)) return result;
+  result.unpaidHourlyRate = hourlyRate;
+  result.unpaidRateDecreasePercent = decreasePercent;
+  return result;
 }
 
 // Percentage of the shift already worked, clamped to [0, 100].
@@ -572,11 +706,44 @@ export function isWorkday(shiftStart: Date, workdays: number[]): boolean {
 
 export const DEFAULT_MONTHLY_WORKING_DAYS = 21.75;
 
+/**
+ * How a monthly salary becomes daily pay. `fixed` divides by the configured
+ * monthly working days; `scheduledMonth` divides each civil month by its own
+ * scheduled workday count. Daily salaries ignore it.
+ */
+export type DailySalaryBasis = "fixed" | "scheduledMonth";
+
+/**
+ * The monthly divisor for one month: its scheduled workday count when the
+ * basis asks for it and there is at least one, otherwise the fixed setting
+ * (a manual-mode schedule or a month with no workdays has no count to use).
+ */
+export function resolveMonthlyDivisor(
+  monthlyWorkingDays: number,
+  basis: DailySalaryBasis | null | undefined,
+  scheduledWorkdays: number | null | undefined
+): number {
+  if (
+    basis === "scheduledMonth" &&
+    typeof scheduledWorkdays === "number" &&
+    Number.isFinite(scheduledWorkdays) &&
+    scheduledWorkdays >= 1
+  ) {
+    return scheduledWorkdays;
+  }
+  return monthlyWorkingDays;
+}
+
+/**
+ * `scheduledMonthDays` replaces `monthlyWorkingDays` as the divisor when it is
+ * at least 1 (see `resolveMonthlyDivisor`); omitted, nothing changes.
+ */
 export function getDailySalary(
   amount: string,
   type: "monthly" | "daily",
   monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS,
-  annualBonusMonths: number = 0
+  annualBonusMonths: number = 0,
+  scheduledMonthDays?: number | null
 ): number | null {
   if (!amount.trim()) return null;
   const parsed = Number(amount);
@@ -589,24 +756,37 @@ export function getDailySalary(
     const daily = parsed * annualizedMultiplier;
     return Number.isFinite(daily) ? daily : null;
   }
+  const divisor = resolveMonthlyDivisor(
+    monthlyWorkingDays,
+    scheduledMonthDays == null ? null : "scheduledMonth",
+    scheduledMonthDays
+  );
   if (
-    !Number.isFinite(monthlyWorkingDays) ||
-    monthlyWorkingDays <= 0 ||
-    monthlyWorkingDays > 31
+    !Number.isFinite(divisor) ||
+    divisor <= 0 ||
+    divisor > 31
   ) {
     return null;
   }
-  const daily = (parsed / monthlyWorkingDays) * annualizedMultiplier;
+  const daily = (parsed / divisor) * annualizedMultiplier;
   return Number.isFinite(daily) ? daily : null;
 }
 
-/** Monthly gross equivalent used when a daily setting seeds the life profile. */
+/**
+ * Monthly gross equivalent used when a daily setting seeds the life profile.
+ * With the `scheduledMonth` basis a monthly salary is already the nominal
+ * amount, so only the bonus share is added.
+ */
 export function getMonthlySalaryEquivalent(
   amount: string,
   type: "monthly" | "daily",
   monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS,
-  annualBonusMonths: number = 0
+  annualBonusMonths: number = 0,
+  basis?: DailySalaryBasis | null
 ): number | null {
+  if (basis === "scheduledMonth" && type === "monthly") {
+    return getDailySalary(amount, "monthly", 1, annualBonusMonths);
+  }
   if (
     !Number.isFinite(monthlyWorkingDays) ||
     monthlyWorkingDays <= 0 ||
@@ -616,6 +796,29 @@ export function getMonthlySalaryEquivalent(
   if (daily === null) return null;
   const monthly = daily * monthlyWorkingDays;
   return Number.isFinite(monthly) ? monthly : null;
+}
+
+/**
+ * Civil midnight on the first day of the month containing `ms`, shifted by
+ * `monthOffset` months, in `timeZone` (the runtime's zone when omitted).
+ */
+export function civilMonthStartMs(
+  ms: number,
+  timeZone?: string | null,
+  monthOffset = 0
+): number {
+  const zone = timeZone?.trim();
+  const civil = zone
+    ? zonedCivil(ms, zone)
+    : (() => {
+        const date = new Date(ms);
+        return { year: date.getFullYear(), month: date.getMonth() + 1 };
+      })();
+  const index = civil.year * 12 + (civil.month - 1) + monthOffset;
+  const year = Math.floor(index / 12);
+  const month = index - year * 12 + 1;
+  if (!zone) return new Date(year, month - 1, 1, 0, 0, 0, 0).getTime();
+  return zonedTimeToUtcMs(year, month, 1, 0, 0, zone);
 }
 
 export interface ScheduleDayExpansion {

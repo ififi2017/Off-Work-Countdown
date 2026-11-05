@@ -4,12 +4,19 @@ import UIKit
 struct OvertimeSheet: View {
     let shifts: ShiftSessionStore
     @Environment(\.dismiss) private var dismiss
-    @State private var endDate = Date.now
+    /// How the overtime is chosen and what follows from it (plan 024 phase 4).
+    @State private var plan = OvertimeSheetPlan(plannedEnd: .now, now: .now, untilDate: .now)
     @State private var confirmed = false
     @State private var saving = false
     /// Fixed when the sheet opens, so the title cannot flip while it is up
     /// (for example when the planned clock-off passes mid-edit).
     @State private var mode = OvertimeSheetMode.add
+    /// Plan 024: how this overtime is paid. The wheel's choice, not yet saved.
+    @State private var isPaid = true
+    @State private var multiplier = 1.0
+    @State private var showsCustomMultiplier = false
+
+    private var text: AppText { shifts.text }
 
     var body: some View {
         NavigationStack {
@@ -22,27 +29,39 @@ struct OvertimeSheet: View {
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text(shifts.text.t("overtimeDescription"))
+                        Text(text.t("overtimeDescription"))
                             .font(.callout)
                             .foregroundStyle(OWCDesign.secondary)
-                        DatePicker(
-                            shifts.text.t("overtimeEndTime"),
-                            selection: $endDate,
-                            in: minimumDate...,
-                            displayedComponents: .hourAndMinute
-                        )
-                        .datePickerStyle(.wheel)
+                        Picker(text.t("overtimeEndTime"), selection: entryBinding) {
+                            Text(text.t("overtimeModeEnd")).tag(OvertimeSheetPlan.Entry.until)
+                            Text(text.t("overtimeModeDuration")).tag(OvertimeSheetPlan.Entry.duration)
+                        }
+                        .pickerStyle(.segmented)
                         .labelsHidden()
-                        .frame(maxWidth: .infinity)
-                        Label(shifts.text.t("overtimeNoMultiplier"), systemImage: "info.circle")
+                        endChooser
+                        restCard
+                        Label(periodSummary, systemImage: "clock")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(OWCDesign.primary)
+                            .opacity(plan.countedMs > 0 ? 1 : 0)
+                        OvertimePayCard(
+                            text: text, isPaid: $isPaid, multiplier: $multiplier, showsCustom: $showsCustomMultiplier
+                        )
+                        Label(payFootnote, systemImage: "info.circle")
                             .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
                 }
-                Button(shifts.text.t(mode.confirmKey)) {
-                    let command = shifts.applyOvertime(date: endDate)
+                Button(text.t(mode.confirmKey)) {
+                    plan.now = timerNow
+                    plan.settle()
+                    let command = shifts.applyOvertime(
+                        date: plan.endDate,
+                        payMultiplier: isPaid ? multiplier : 0,
+                        startDate: plan.overtimeStart
+                    )
                     saving = true
                     Task {
                         defer { saving = false }
@@ -52,16 +71,17 @@ struct OvertimeSheet: View {
                     }
                 }
                 .buttonStyle(OWCPrimaryButtonStyle())
+                .disabled(!plan.isValid)
                 .padding(20)
             }
             .disabled(saving)
             .interactiveDismissDisabled(saving)
-            .navigationTitle(shifts.text.t(mode.titleKey))
+            .navigationTitle(text.t(mode.titleKey))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: { Image(systemName: "xmark") }
-                        .accessibilityLabel(shifts.text.t("close"))
+                        .accessibilityLabel(text.t("close"))
                 }
             }
             .onAppear {
@@ -76,26 +96,118 @@ struct OvertimeSheet: View {
                     plannedEnd: snapshot?.plannedEndDate,
                     now: now
                 )
+                let plannedEnd = snapshot?.plannedEndDate ?? now
+                var next = OvertimeSheetPlan(plannedEnd: plannedEnd, now: now, untilDate: now)
+                // Overtime that began after a rest is its own last segment.
+                if existing != nil, let last = snapshot?.segments.last, last.startAtMs > (snapshot?.plannedEndAtMs ?? .infinity) {
+                    let restMs = last.startAtMs - (snapshot?.plannedEndAtMs ?? last.startAtMs)
+                    next.restMinutes = OvertimeRestChoices.nearest(to: restMs / 60_000)
+                }
                 // After clock-off this becomes a retrospective record and
                 // defaults to now, so someone who actually stayed late can
                 // save the time already worked without adding another forced
                 // 15-minute block.
-                endDate = max(minimumDate, existing ?? now)
+                next.untilDate = max(next.minimumEnd, existing ?? now)
+                next.settle()
+                plan = next
+                let current = shifts.session.effectiveOvertimePayMultiplier
+                let preferred = shifts.preferences.overtimePayMultiplier
+                isPaid = current > 0
+                multiplier = current > 0 ? current : (preferred > 0 ? preferred : 1)
+                showsCustomMultiplier = isPaid && !OvertimePayChoices.isPreset(multiplier)
+            }
+            .onChange(of: plan.restMinutes) {
+                plan.now = timerNow
+                plan.settle()
             }
             .sensoryFeedback(.impact(weight: .medium), trigger: confirmed)
         }
     }
 
+    private var entryBinding: Binding<OvertimeSheetPlan.Entry> {
+        Binding(get: { plan.entry }, set: { entry in
+            plan.now = timerNow
+            plan.select(entry)
+        })
+    }
+
+    /// The end as a clock time, or as how long the overtime lasts.
+    @ViewBuilder
+    private var endChooser: some View {
+        switch plan.entry {
+        case .until:
+            DatePicker(
+                text.t("overtimeEndTime"),
+                selection: $plan.untilDate,
+                in: plan.minimumEnd...,
+                displayedComponents: .hourAndMinute
+            )
+            .datePickerStyle(.wheel)
+            .labelsHidden()
+            .frame(maxWidth: .infinity)
+        case .duration:
+            Picker(text.t("overtimeDurationLabel"), selection: $plan.durationMinutes) {
+                ForEach(plan.durationChoices, id: \.self) { minutes in
+                    Text(text.formatRelativeDuration(Double(minutes) * 60_000)).tag(minutes)
+                }
+            }
+            .pickerStyle(.wheel)
+            .labelsHidden()
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    /// A rest before the overtime starts, for dinner say; it is a break, not
+    /// overtime, so it is left out of what the overtime counts.
+    private var restCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            OWCGroupCard {
+                OWCRow(title: text.t("overtimeRestRow"), isLast: true) {
+                    HStack(spacing: 6) {
+                        Text(restLabel(plan.restMinutes))
+                            .font(.body.monospacedDigit())
+                            .foregroundStyle(OWCDesign.secondary)
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(OWCDesign.tertiary)
+                    }
+                }
+                .owcRowMenu(accessibilityLabel: "\(text.t("overtimeRestRow")), \(restLabel(plan.restMinutes))") {
+                    Picker(text.t("overtimeRestRow"), selection: $plan.restMinutes) {
+                        ForEach(OvertimeRestChoices.minutes, id: \.self) { minutes in
+                            Text(restLabel(minutes)).tag(minutes)
+                        }
+                    }
+                }
+            }
+            Text(text.t("overtimeRestFootnote"))
+                .font(.footnote)
+                .foregroundStyle(OWCDesign.secondary)
+                .padding(.horizontal, 4)
+        }
+    }
+
+    private func restLabel(_ minutes: Int) -> String {
+        minutes == 0 ? text.t("overtimeRestNone") : text.formatRelativeDuration(Double(minutes) * 60_000)
+    }
+
+    /// "Overtime 18:30-21:00, 2 h 30 m counted".
+    private var periodSummary: String {
+        text.t("overtimePeriodSummary", values: [
+            "start": text.formatTime(plan.startDate),
+            "end": text.formatTime(plan.endDate),
+            "duration": text.formatRelativeDuration(plan.countedMs),
+        ])
+    }
+
+    private var payFootnote: String {
+        if !isPaid { return text.t("overtimeUnpaidSheetNote") }
+        if multiplier == 1 { return text.t("overtimeNoMultiplier") }
+        return text.t("overtimeMultiplierNote", values: ["multiplier": text.formatDecimal(multiplier)])
+    }
+
     /// The timer's clock: the device time, or a DEBUG scenario's virtual time.
     private var timerNow: Date { shifts.session.timerDate(from: .now) }
-
-    private var minimumDate: Date {
-        let now = timerNow
-        let planned = shifts.session.snapshot(at: now)?.plannedEndDate ?? now
-        // An overtime end cannot precede either the planned clock-off or the
-        // device's current time. There is deliberately no minimum duration.
-        return max(planned, now)
-    }
 }
 
 /// What the overtime sheet is doing, which decides its title and button.

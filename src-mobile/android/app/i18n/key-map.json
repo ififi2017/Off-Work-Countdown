@@ -594,6 +594,12 @@
     "daily": {
       "resource": "string/daily"
     },
+    "dailySalaryBasisScheduledMonth": {
+      "resource": "string/dailySalaryBasisScheduledMonth"
+    },
+    "dailySalaryBasisScheduledMonthNote": {
+      "resource": "string/dailySalaryBasisScheduledMonthNote"
+    },
     "dark": {
       "resource": "string/dark"
     },
@@ -2331,6 +2337,15 @@
     "monthly": {
       "resource": "string/monthly"
     },
+    "monthlyDailyPayNote": {
+      "resource": "string/monthlyDailyPayNote"
+    },
+    "monthlyDailyPayTitle": {
+      "resource": "string/monthlyDailyPayTitle"
+    },
+    "monthlyDailyPayUpcoming": {
+      "resource": "string/monthlyDailyPayUpcoming"
+    },
     "monthlyWorkingDays": {
       "resource": "string/monthlyWorkingDays"
     },
@@ -2621,14 +2636,70 @@
     "overtime": {
       "resource": "string/overtime"
     },
+    "overtimeDefaultNote": {
+      "resource": "string/overtimeDefaultNote"
+    },
+    "overtimeDefaultRow": {
+      "resource": "string/overtimeDefaultRow"
+    },
+    "overtimeDefaultUsual": {
+      "resource": "string/overtimeDefaultUsual"
+    },
     "overtimeDescription": {
       "resource": "string/overtimeDescription"
+    },
+    "overtimeDurationLabel": {
+      "resource": "string/overtimeDurationLabel"
     },
     "overtimeEndTime": {
       "resource": "string/overtimeEndTime"
     },
+    "overtimeModeDuration": {
+      "resource": "string/overtimeModeDuration"
+    },
+    "overtimeModeEnd": {
+      "resource": "string/overtimeModeEnd"
+    },
+    "overtimeMultiplierCustom": {
+      "resource": "string/overtimeMultiplierCustom"
+    },
+    "overtimeMultiplierNote": {
+      "resource": "string/overtimeMultiplierNote",
+      "params": [
+        "multiplier"
+      ]
+    },
+    "overtimeMultiplierRow": {
+      "resource": "string/overtimeMultiplierRow"
+    },
     "overtimeNoMultiplier": {
       "resource": "string/overtimeNoMultiplier"
+    },
+    "overtimePayPaid": {
+      "resource": "string/overtimePayPaid"
+    },
+    "overtimePayRow": {
+      "resource": "string/overtimePayRow"
+    },
+    "overtimePayUnpaid": {
+      "resource": "string/overtimePayUnpaid"
+    },
+    "overtimePeriodSummary": {
+      "resource": "string/overtimePeriodSummary",
+      "params": [
+        "start",
+        "end",
+        "duration"
+      ]
+    },
+    "overtimeRestFootnote": {
+      "resource": "string/overtimeRestFootnote"
+    },
+    "overtimeRestNone": {
+      "resource": "string/overtimeRestNone"
+    },
+    "overtimeRestRow": {
+      "resource": "string/overtimeRestRow"
     },
     "overtimeTimeLeftCaption": {
       "resource": "string/overtimeTimeLeftCaption"
@@ -2636,11 +2707,28 @@
     "overtimeTitle": {
       "resource": "string/overtimeTitle"
     },
+    "overtimeUnpaidNote": {
+      "resource": "string/overtimeUnpaidNote",
+      "params": [
+        "amount",
+        "rate",
+        "percent"
+      ]
+    },
+    "overtimeUnpaidSheetNote": {
+      "resource": "string/overtimeUnpaidSheetNote"
+    },
+    "overtimeUnpaidShort": {
+      "resource": "string/overtimeUnpaidShort"
+    },
     "overtimeUntil": {
       "resource": "string/overtimeUntil",
       "params": [
         "time"
       ]
+    },
+    "overtimeWorked": {
+      "resource": "string/overtimeWorked"
     },
     "pausedUntil": {
       "resource": "string/pausedUntil",
@@ -3479,11 +3567,29 @@
         "duration"
       ]
     },
+    "recordsOvertimeCounted": {
+      "resource": "string/recordsOvertimeCounted"
+    },
+    "recordsOvertimeCountedSubtitle": {
+      "resource": "string/recordsOvertimeCountedSubtitle",
+      "params": [
+        "duration"
+      ]
+    },
+    "recordsOvertimeFootnote": {
+      "resource": "string/recordsOvertimeFootnote"
+    },
+    "recordsOvertimePeriod": {
+      "resource": "string/recordsOvertimePeriod"
+    },
     "recordsOvertimeRecorded": {
       "resource": "string/recordsOvertimeRecorded"
     },
     "recordsOvertimeRecordedLife": {
       "resource": "string/recordsOvertimeRecordedLife"
+    },
+    "recordsOvertimeUseMeasured": {
+      "resource": "string/recordsOvertimeUseMeasured"
     },
     "recordsOwnerAuthReason": {
       "resource": "string/recordsOwnerAuthReason"
@@ -3547,6 +3653,9 @@
     },
     "recordsSectionKind": {
       "resource": "string/recordsSectionKind"
+    },
+    "recordsSectionOvertime": {
+      "resource": "string/recordsSectionOvertime"
     },
     "recordsSeeThisDay": {
       "resource": "string/recordsSeeThisDay"
@@ -4119,6 +4228,12 @@
     "scheduleRotationDescription": {
       "resource": "string/scheduleRotationDescription"
     },
+    "scheduledMonthWorkdays": {
+      "resource": "string/scheduledMonthWorkdays",
+      "params": [
+        "count"
+      ]
+    },
     "settings": {
       "resource": "string/settings"
     },
@@ -4503,6 +4618,13 @@
     },
     "watchWidgetDescription": {
       "resource": "string/watchWidgetDescription"
+    },
+    "webOvertimeUnpaidRate": {
+      "resource": "string/webOvertimeUnpaidRate",
+      "params": [
+        "rate",
+        "percent"
+      ]
     },
     "weekdayRange": {
       "resource": "string/weekdayRange",
