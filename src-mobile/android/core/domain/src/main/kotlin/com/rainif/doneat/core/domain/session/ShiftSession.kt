@@ -16,6 +16,7 @@ import com.rainif.doneat.core.domain.schedule.ExtendedScheduleDayHours
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.schedule.LeavePortion
+import com.rainif.doneat.core.domain.schedule.OvertimePay
 import com.rainif.doneat.core.domain.schedule.RosterDay
 import com.rainif.doneat.core.domain.schedule.ScheduleHours
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
@@ -162,7 +163,12 @@ class ShiftSession(val state: SessionState, val env: SessionEnvironment) {
             monthlyWorkingDays = prefs.monthlyWorkingDays,
             annualBonusMonths = if (prefs.annualBonusEnabled) prefs.annualBonusMonths else 0.0,
             dailySalaryBasis = DailySalaryBasis.fromRaw(prefs.dailySalaryBasis),
+            overtimePayMultiplier = effectiveOvertimePayMultiplier,
         )
+
+    /** The multiplier overtime is paid at now: this shift's choice, else the preference (plan 024). */
+    val effectiveOvertimePayMultiplier: Double
+        get() = OvertimePay.normalized(state.overtimePayMultiplier ?: prefs.overtimePayMultiplier)
 
     /** A new manual run adopts the device's zone when it differs from Records. */
     fun timeZoneIdentifierForWriting(startingNewSession: Boolean = false): String =

@@ -352,6 +352,32 @@ class RecordsQueriesTest {
         assertNull("a string is not a number", RecordsOvertime.declaredSegment(observation("2026-09-14", WorkObservationKind.OVERTIME_DECLARED, 16, quoted), day, true))
     }
 
+    @Test fun aDeclaredPayMultiplierIsReadAndOlderPayloadsAreTheUsualRate() {
+        fun declared(json: String) = observation("2026-09-14", WorkObservationKind.OVERTIME_DECLARED, 16, FoundationCompat.base64(json.toByteArray()))
+        val end = ms("2026-09-14", 18).toLong()
+        assertEquals(1.0, RecordsOvertime.declaredPayMultiplier(declared("""{"overtimeEndAtMs":$end}""")), 0.0)
+        assertEquals(1.5, RecordsOvertime.declaredPayMultiplier(declared("""{"overtimeEndAtMs":$end,"payMultiplier":1.5}""")), 0.0)
+        assertEquals(0.0, RecordsOvertime.declaredPayMultiplier(declared("""{"overtimeEndAtMs":$end,"payMultiplier":0}""")), 0.0)
+        assertEquals(1.0, RecordsOvertime.declaredPayMultiplier(declared("""{"overtimeEndAtMs":$end,"payMultiplier":7.3}""")), 0.0)
+        assertEquals(1.0, RecordsOvertime.declaredPayMultiplier(declared("""{"overtimeEndAtMs":$end,"payMultiplier":"2"}""")), 0.0)
+        assertEquals(1.0, RecordsOvertime.declaredPayMultiplier(null), 0.0)
+        // A reader that ignores the key still reads the segment.
+        val day = DayResolution(
+            "2026-09-14", DayResolutionLayer.OVERRIDE, "p", "s", true, listOf(ShiftSegmentOf("2026-09-14", 9.0, 17.0)),
+            baseScheduleIsWorkday = true, baseScheduleSegments = listOf(segment("2026-09-14", 9, 17)),
+        )
+        val segment = RecordsOvertime.declaredSegment(declared("""{"overtimeEndAtMs":$end,"plannedEndAtMs":${ms("2026-09-14", 17).toLong()},"payMultiplier":2}"""), day, true)!!
+        assertEquals(ms("2026-09-14", 18), segment.endAtMs, 0.0)
+    }
+
+    @Test fun cycleReportOvertimeExtraFollowsTheDeclaredMultipliers() {
+        val plain = CycleReportFigures(5, 44 * 3_600_000L, 4 * 3_600_000L, 4_800.0)
+        assertEquals(4_800.0 * 4 / 44, CycleReportPay.overtimeExtra(plain, 4_800.0, overtimeIsPaid = true)!!, 1e-9)
+        assertNull(CycleReportPay.overtimeExtra(plain, 4_800.0, overtimeIsPaid = false))
+        assertEquals(4_800.0 * 6 / 46, CycleReportPay.overtimeExtra(plain.copy(paidOvertimeMs = 6 * 3_600_000L), 4_800.0, overtimeIsPaid = true)!!, 1e-9)
+        assertNull(CycleReportPay.overtimeExtra(plain.copy(paidOvertimeMs = 0), 4_800.0, overtimeIsPaid = true))
+    }
+
     @Test fun withoutPlusOnlyTheLastSevenDaysAreRevealedAndNoSummaryIsBuilt() {
         val q = queries(seeded(), authorized = false)
         val (first, last) = q.window(RecordsScale.MONTH, LocalDate.parse("2026-09-16"))

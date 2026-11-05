@@ -6,6 +6,7 @@ import com.rainif.doneat.core.domain.schedule.CivilZone
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedulePlan
 import com.rainif.doneat.core.domain.schedule.ExtendedScheduleResolver
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
+import com.rainif.doneat.core.domain.schedule.OvertimePay
 import com.rainif.doneat.core.domain.schedule.ScheduleHours
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
 import com.rainif.doneat.core.domain.schedule.ScheduleRules
@@ -605,6 +606,7 @@ class RecordsQueries(
                 }
             },
             isActiveAnchor = activeAnchorDayKey == day.dayKey,
+            overtimePayMultiplier = if (actualKind == null) null else overtimePayMultiplier(day),
         )
     }
 
@@ -638,7 +640,7 @@ class RecordsQueries(
             activeAnchorDayKey, currentHours, firstDayOfWeek).cycleReportSnapshot(period, nowMs)
         val days = displayDays(period.startDate.minusDays(1), period.endDate, nowMs)
         val cells = cells(days, period.startDate, nowMs)
-        val figures = CycleReportFigures.fromHeadline(headline(cells, days, nowMs))
+        val headlineFigures = CycleReportFigures.fromHeadline(headline(cells, days, nowMs))
         val resolutionIndex = days.withIndex().associate { it.value.dayKey to it.index }
         val cellsByKey = cells.associateBy { it.dayKey }
         val reportDays = cells.map { cell ->
@@ -655,6 +657,22 @@ class RecordsQueries(
             }
             CycleReportDay(cell.dayKey, cell.date, kind, maxOf(0L, elapsed.workedMs - elapsed.overtimeMs), elapsed.overtimeMs, cell.isToday)
         }
+
+        // Plan 024: re-price each day's overtime by its declared multiplier. Null leaves reports without a custom one untouched.
+        var pricedPlain = 0.0
+        var pricedScaled = 0.0
+        var priced = false
+        for (reportDay in reportDays) {
+            if (reportDay.kind == CycleReportDayKind.UPCOMING || reportDay.overtimeMs <= 0) continue
+            val multiplier = overtimePayMultiplier(days[resolutionIndex.getValue(reportDay.dayKey)])
+            if (multiplier == 1.0) continue
+            priced = true
+            pricedPlain += reportDay.overtimeMs
+            pricedScaled += reportDay.overtimeMs * multiplier
+        }
+        val figures = if (priced) headlineFigures.copy(
+            paidOvertimeMs = maxOf(0L, kotlin.math.round(headlineFigures.overtimeMs - pricedPlain + pricedScaled).toLong()),
+        ) else headlineFigures
 
         var longest = 0
         var longestStart: Int? = null
@@ -707,8 +725,7 @@ class RecordsQueries(
         } else null
         val pay = figures.income?.let { income ->
             val perHour = if (figures.workedMs >= 3_600_000) income / (figures.workedMs / 3_600_000.0) else null
-            val extra = if (salary?.type != SalaryType.MONTHLY && figures.overtimeMs >= 900_000 && figures.workedMs > 0)
-                income * figures.overtimeMs / figures.workedMs else null
+            val extra = CycleReportPay.overtimeExtra(figures, income, overtimeIsPaid = salary?.type != SalaryType.MONTHLY)
             CycleReportPay(income, perHour, extra)
         }
         return CycleReportSnapshot(period, reportDays, figures, reportDays.count { it.kind == CycleReportDayKind.REST },
@@ -764,14 +781,19 @@ class RecordsQueries(
 
     // Days
 
+    /** The day's newest overtime declaration, the only one that counts. */
+    private fun latestOvertimeDeclaration(dayKey: String): WorkObservation? = observationIndex[dayKey].orEmpty()
+        .filter { it.kind == WorkObservationKind.OVERTIME_DECLARED }
+        .maxWithOrNull(compareBy<WorkObservation> { it.occurredAtMs }.thenBy { it.eventID })
+
     /** The latest overtime declared on a day, starting no earlier than its regular work ends. */
     fun overtimeSegments(r: DayResolution): List<ShiftSegment> {
-        val latest = observationIndex[r.dayKey].orEmpty()
-            .filter { it.kind == WorkObservationKind.OVERTIME_DECLARED }
-            .maxWithOrNull(compareBy<WorkObservation> { it.occurredAtMs }.thenBy { it.eventID })
-            ?: return emptyList()
+        val latest = latestOvertimeDeclaration(r.dayKey) ?: return emptyList()
         return listOfNotNull(RecordsOvertime.declaredSegment(latest, r, avoidingRegularWork = true))
     }
+
+    /** Plan 024: the pay multiplier the day's latest declaration chose; 1 when it names none. */
+    fun overtimePayMultiplier(r: DayResolution): Double = RecordsOvertime.declaredPayMultiplier(latestOvertimeDeclaration(r.dayKey))
 
     /** The source of a neighbouring shift reaching into the day on screen. */
     private fun shiftSource(r: DayResolution, nowMs: Double): RecordsDaySource {
@@ -909,6 +931,18 @@ object RecordsOvertime {
         if (avoidingRegularWork) day.segments.maxOfOrNull { it.endAtMs }?.let { start = max(start, it) }
         if (!start.isFinite() || !end.isFinite() || end <= start) return null
         return ShiftSegment(start, end)
+    }
+
+    /**
+     * Plan 024: the pay multiplier a declaration carries (iOS
+     * `RecordsMetrics.declaredPayMultiplier`); 1 when it names none or an
+     * invalid one. Readers ignore keys they do not know, so older payloads and
+     * older readers are unaffected.
+     */
+    fun declaredPayMultiplier(observation: WorkObservation?): Double {
+        if (observation == null || observation.kind != WorkObservationKind.OVERTIME_DECLARED) return 1.0
+        val json = observation.valueData?.let(FoundationCompat::base64)?.toString(Charsets.UTF_8) ?: return 1.0
+        return OvertimePay.normalized(number(json, "payMultiplier"))
     }
 
     /** A JSON number, as `JSONDecoder` reads a `Double`; a string or null is absent. */

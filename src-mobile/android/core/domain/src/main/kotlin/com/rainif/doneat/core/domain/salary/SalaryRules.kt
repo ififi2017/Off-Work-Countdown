@@ -33,6 +33,8 @@ data class SalarySettings(
     val monthlyWorkingDays: Double,
     val annualBonusMonths: Double,
     val dailySalaryBasis: DailySalaryBasis = DailySalaryBasis.FIXED,
+    /** Plan 024: pay multiplier for overtime (0 = unpaid). 1 is the original hourly rate. */
+    val overtimePayMultiplier: Double = 1.0,
 ) {
     /** Whether pay divides each civil month by its own scheduled workdays. */
     val usesScheduledMonthBasis: Boolean

@@ -52,5 +52,8 @@ class SharedRuleFixturesTest {
         listOf("snapshots", "summaries", "recordsIncome", "monthlyEquivalent", "monthCounts").forEach {
             assertTrue("missing monthBasis.$it", data.getValue("monthBasis").jsonObject.getValue(it).jsonArray.isNotEmpty())
         }
+        listOf("normalize", "snapshots", "forecasts").forEach {
+            assertTrue("missing overtimePay.$it", data.getValue("overtimePay").jsonObject.getValue(it).jsonArray.isNotEmpty())
+        }
     }
 }

@@ -148,11 +148,49 @@ data class ShiftTimeline(
         return max(0.0, min(100.0, elapsedMs(nowMs) / duration * 100))
     }
 
-    /** Linear: 1 at the planned end, above 1 in overtime at the original rate. */
-    fun payRatio(nowMs: Double): Double {
+    /**
+     * Linear: 1 at the planned end, above 1 in overtime. [overtimeMultiplier]
+     * (plan 024) scales the effective time beyond the planned end; 1 is exactly
+     * `elapsed / planned` (`calculateTimelinePayRatio` in `lib/countdown.ts`).
+     */
+    fun payRatio(nowMs: Double, overtimeMultiplier: Double = OvertimePay.DEFAULT_MULTIPLIER): Double {
         val planned = plannedDurationMs
         if (planned <= 0) return 0.0
-        return max(0.0, elapsedMs(nowMs) / planned)
+        val elapsed = elapsedMs(nowMs)
+        val multiplier = OvertimePay.normalized(overtimeMultiplier)
+        if (multiplier == 1.0) return max(0.0, elapsed / planned)
+        val regular = min(elapsed, planned)
+        return max(0.0, (regular + multiplier * (elapsed - regular)) / planned)
+    }
+
+    /** Effective time worked beyond the planned end (`overtimeElapsedMs`). */
+    fun overtimeElapsedMs(nowMs: Double): Double {
+        if (overtimeEndAtMs == null || !nowMs.isFinite()) return 0.0
+        val planned = plannedDurationMs
+        if (!planned.isFinite() || planned <= 0) return 0.0
+        val elapsed = elapsedMs(nowMs)
+        if (!elapsed.isFinite()) return 0.0
+        return max(0.0, elapsed - planned)
+    }
+
+    /**
+     * The "if overtime is unpaid" comparison (`overtimeRateComparison`): daily
+     * pay over every effective hour so far, and how far below the usual hourly
+     * rate that is. Null outside overtime.
+     */
+    fun overtimeRateComparison(dailySalary: Double?, nowMs: Double): OvertimeRateComparison? {
+        if (overtimeEndAtMs == null || !nowMs.isFinite()) return null
+        val planned = plannedDurationMs
+        if (!planned.isFinite() || planned <= 0) return null
+        val elapsed = elapsedMs(nowMs)
+        if (!elapsed.isFinite()) return null
+        val overtime = max(0.0, elapsed - planned)
+        val none = OvertimeRateComparison(overtime, null, null)
+        if (overtime <= 0 || dailySalary == null || !dailySalary.isFinite() || dailySalary <= 0) return none
+        val rate = dailySalary / (elapsed / 3_600_000)
+        val decrease = (1 - 1 / payRatio(nowMs)) * 100
+        if (!rate.isFinite() || !decrease.isFinite()) return none
+        return OvertimeRateComparison(overtime, rate, decrease)
     }
 
     /** The end of the gap between segments that `nowMs` falls in, if any. */
@@ -163,6 +201,30 @@ data class ShiftTimeline(
             if (gapEnd > gapStart && nowMs >= gapStart && nowMs < gapEnd) return gapEnd
         }
         return null
+    }
+}
+
+data class OvertimeRateComparison(
+    val elapsedOvertimeMs: Double,
+    val unpaidHourlyRate: Double?,
+    val unpaidRateDecreasePercent: Double?,
+)
+
+/** Plan 024: the pay multiplier for effective time beyond the planned end. */
+object OvertimePay {
+    const val DEFAULT_MULTIPLIER = 1.0
+
+    /**
+     * 0 (unpaid) or 0.5 to 5 in 0.1 steps; anything else is 1
+     * (`normalizeOvertimePayMultiplier` in `lib/countdown.ts`).
+     */
+    fun normalized(value: Double?): Double {
+        if (value == null || !value.isFinite()) return DEFAULT_MULTIPLIER
+        val tenths = Math.round(value * 10).toDouble()
+        if (kotlin.math.abs(value * 10 - tenths) > 1e-9) return DEFAULT_MULTIPLIER
+        if (tenths == 0.0) return 0.0
+        if (tenths < 5 || tenths > 50) return DEFAULT_MULTIPLIER
+        return tenths / 10
     }
 }
 

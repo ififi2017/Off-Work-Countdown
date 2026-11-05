@@ -22,7 +22,7 @@ object ScheduleRules {
         val dailySalary = SummaryRules.dailySalaryInMonth(
             salary, shift.startAtMs, input.workdays, input.schedule, input.hours.extended != null, zone,
         )
-        val payRatio = shift.payRatio(input.nowMs)
+        val payRatio = shift.payRatio(input.nowMs, OvertimePay.normalized(salary.overtimePayMultiplier))
         return ShiftSnapshot(
             segments = shift.segments,
             startAtMs = shift.startAtMs,

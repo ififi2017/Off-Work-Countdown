@@ -78,7 +78,18 @@ data class CycleReportPeriod(val kind: CycleReportKind, val startDayKey: String,
     }
 }
 
-data class CycleReportFigures(val workdays: Int = 0, val workedMs: Long = 0, val overtimeMs: Long = 0, val income: Double? = null) {
+data class CycleReportFigures(
+    val workdays: Int = 0,
+    val workedMs: Long = 0,
+    val overtimeMs: Long = 0,
+    val income: Double? = null,
+    /**
+     * Plan 024: the overtime that was paid, in milliseconds at the usual rate
+     * (each day's overtime x its declared multiplier). Null while every day's
+     * overtime was paid at the usual rate, which is [overtimeMs].
+     */
+    val paidOvertimeMs: Long? = null,
+) {
     val hasData get() = workdays > 0 || workedMs > 0
     companion object {
         fun fromHeadline(h: RecordsHeadlineSummary?): CycleReportFigures {
@@ -96,7 +107,18 @@ data class CycleReportOvertime(val days: List<CycleReportDay>, val dayCount: Int
 data class CycleReportNextBreak(val startDayKey: String, val startDate: LocalDate, val length: Int, val daysAway: Int) { val endDate get() = startDate.plusDays(length.toLong() - 1) }
 data class CycleReportAhead(val leaveUsedHalfDays: Int, val leaveRemainingHalfDays: Int?, val leaveEntitledHalfDays: Int?, val nextBreak: CycleReportNextBreak?, val horizon: List<Boolean>, val isHistorical: Boolean)
 data class CycleReportFocus(val rounds: Int, val focusedMs: Long, val perDay: List<Int>, val bestDayIndex: Int, val topIcon: FocusTaskIcon?)
-data class CycleReportPay(val total: Double, val perHour: Double?, val overtimeExtra: Double?)
+data class CycleReportPay(val total: Double, val perHour: Double?, val overtimeExtra: Double?) {
+    companion object {
+        /** The part of the total that overtime added, or null where it adds nothing (iOS `CycleReportPay.make`). */
+        fun overtimeExtra(figures: CycleReportFigures, income: Double, overtimeIsPaid: Boolean): Double? {
+            if (!overtimeIsPaid || figures.overtimeMs < 900_000 || figures.workedMs <= 0) return null
+            val paid = figures.paidOvertimeMs ?: return income * figures.overtimeMs / figures.workedMs
+            // Overtime priced by declared multipliers: its share of the pay-weighted time.
+            val weighted = (figures.workedMs - figures.overtimeMs + paid).toDouble()
+            return if (paid > 0 && weighted > 0) income * paid / weighted else null
+        }
+    }
+}
 data class CycleReportMonth(val period: CycleReportPeriod, val figures: CycleReportFigures, val restDayCount: Int, val focusRounds: Int)
 data class CycleReportSnapshot(
     val period: CycleReportPeriod, val days: List<CycleReportDay>, val figures: CycleReportFigures,

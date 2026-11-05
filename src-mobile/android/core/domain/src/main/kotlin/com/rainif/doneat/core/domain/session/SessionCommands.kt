@@ -4,6 +4,7 @@ import com.rainif.doneat.core.domain.records.DayOverride
 import com.rainif.doneat.core.domain.records.FoundationCompat
 import com.rainif.doneat.core.domain.records.SnapshotHours
 import com.rainif.doneat.core.domain.records.WorkObservationKind
+import com.rainif.doneat.core.domain.schedule.OvertimePay
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
 import kotlin.math.floor
 
@@ -153,7 +154,7 @@ class SessionCommands(private val env: SessionEnvironment, private val newId: ()
     fun cancelManualTiming(state: SessionState, nowMs: Double): SessionResult {
         if (state.forcedWorkdayDate == null) return rejected(state)
         val previous = session(state).projectedDayOverride(nowMs)
-        val s = state.copy(forcedWorkdayDate = null, overtimeEndAtMs = null).clearingEarlyClockOff().clearingEarlyClockIn()
+        val s = state.copy(forcedWorkdayDate = null).clearingOvertime().clearingEarlyClockOff().clearingEarlyClockIn()
         val next = withActiveBoundary(s, nowMs)
         val current = session(next).projectedDayOverride(nowMs)
         val effects = if (previous != null || current != null) listOf(SessionRecordEffect.ReplaceProjectedOverride(previous, current)) else emptyList()
@@ -169,20 +170,24 @@ class SessionCommands(private val env: SessionEnvironment, private val newId: ()
     }
 
     private fun stoppedUnscheduled(state: SessionState) = state.copy(
-        countdownStarted = false, forcedWorkdayDate = null, activeCountdownEndAtMs = null, overtimeEndAtMs = null,
-    ).clearingEarlyClockIn().clearingEarlyClockOff().clearingSessionTimeZone()
+        countdownStarted = false, forcedWorkdayDate = null, activeCountdownEndAtMs = null,
+    ).clearingOvertime().clearingEarlyClockIn().clearingEarlyClockOff().clearingSessionTimeZone()
 
     /**
      * Sets or moves the overtime end. After an early clock-off it means "I
      * wasn't done", so the clock-off is taken back.
      */
-    fun applyOvertime(state: SessionState, endAtMs: Double, declaredAtMs: Double): SessionResult {
-        if (!endAtMs.isFinite() || (state.overtimeEndAtMs == endAtMs && state.earlyOffAtMs == null)) return rejected(state)
-        var s = started(state).copy(overtimeEndAtMs = endAtMs, activeCountdownEndAtMs = endAtMs)
+    fun applyOvertime(state: SessionState, endAtMs: Double, declaredAtMs: Double, payMultiplier: Double? = null): SessionResult {
+        // Plan 024: the choice is pinned to the shift so the declaration and the timer agree.
+        val multiplier = OvertimePay.normalized(payMultiplier ?: session(state).effectiveOvertimePayMultiplier)
+        if (!endAtMs.isFinite() ||
+            (state.overtimeEndAtMs == endAtMs && state.earlyOffAtMs == null && session(state).effectiveOvertimePayMultiplier == multiplier)
+        ) return rejected(state)
+        var s = started(state).copy(overtimeEndAtMs = endAtMs, overtimePayMultiplier = multiplier, activeCountdownEndAtMs = endAtMs)
         if (s.sessionTimeZone != null) s = s.copy(sessionTimeZoneUntilMs = endAtMs)
         s = s.clearingEarlyClockOff()
         val planned = session(s).snapshot(declaredAtMs)?.plannedEndAtMs
-        val payload = FoundationCompat.base64(overtimePayload(endAtMs, planned).toByteArray(Charsets.UTF_8))
+        val payload = FoundationCompat.base64(overtimePayload(endAtMs, planned, multiplier.takeIf { it != 1.0 }).toByteArray(Charsets.UTF_8))
         return SessionResult(
             true, s, listOfNotNull(observation(s, WorkObservationKind.OVERTIME_DECLARED, declaredAtMs, payload)), revokedCompletion = true,
         )
@@ -190,7 +195,7 @@ class SessionCommands(private val env: SessionEnvironment, private val newId: ()
 
     fun clearOvertime(state: SessionState, nowMs: Double): SessionResult {
         if (state.overtimeEndAtMs == null) return rejected(state)
-        val s = state.copy(overtimeEndAtMs = null)
+        val s = state.clearingOvertime()
         return SessionResult(true, if (s.countdownStarted) withActiveBoundary(s, nowMs) else s)
     }
 
@@ -223,7 +228,7 @@ class SessionCommands(private val env: SessionEnvironment, private val newId: ()
 
         val zone = current.countdownZone
         if (current.followsSchedule(nowMs)) {
-            s.overtimeEndAtMs?.let { end -> if (nowMs >= ShiftSession.startOfNextDayMs(end, zone)) s = s.copy(overtimeEndAtMs = null) }
+            s.overtimeEndAtMs?.let { end -> if (nowMs >= ShiftSession.startOfNextDayMs(end, zone)) s = s.clearingOvertime() }
             // Everything below compares against a shift; without one nothing is deleted.
             val shift = session(s).snapshot(nowMs) ?: return changed(state, s)
             if (s.forcedWorkdayDate != null && !session(s).isForcedWorkday(shift)) s = s.copy(forcedWorkdayDate = null)
@@ -249,10 +254,12 @@ class SessionCommands(private val env: SessionEnvironment, private val newId: ()
 
     companion object {
         /** iOS `OvertimeDeclarationPayload`; integral instants are written without a fraction, as `JSONEncoder` does. */
-        fun overtimePayload(overtimeEndAtMs: Double, plannedEndAtMs: Double?): String {
+        fun overtimePayload(overtimeEndAtMs: Double, plannedEndAtMs: Double?, payMultiplier: Double? = null): String {
             fun number(v: Double) = if (v == floor(v) && kotlin.math.abs(v) < 1e15) v.toLong().toString() else v.toString()
             val planned = plannedEndAtMs?.let { ",\"plannedEndAtMs\":${number(it)}" } ?: ""
-            return "{\"overtimeEndAtMs\":${number(overtimeEndAtMs)}$planned}"
+            // Plan 024: written only when it is not the usual rate, so older readers and archives are unaffected.
+            val pay = payMultiplier?.let { ",\"payMultiplier\":${number(it)}" } ?: ""
+            return "{\"overtimeEndAtMs\":${number(overtimeEndAtMs)}$planned$pay}"
         }
     }
 }

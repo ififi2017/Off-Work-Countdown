@@ -16,6 +16,8 @@ Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 
 | reminders | 320 | `ScheduleRules.reminders`（`ReminderRules`） | 全部通过（逐条 + 摘要） | T14 |
 | summaries、recordsIncome、monthlyEquivalent、lifetimeIncome、actualForecast | 322 / 80 / 32 / 160 / 120 | `SummaryRules` | 全部通过 | T09 |
 | watch | 1064 | — | 不在首发（Wear 延后，D-05） | T27 |
+| monthBasis（计划 024 阶段 2） | snapshots、summaries、recordsIncome、monthlyEquivalent、monthCounts | `MonthBasisFixtureTest` | 全部通过 | — |
+| overtimePay（计划 024 阶段 3：加班倍数） | normalize 21 / snapshots 1,592 / forecasts 120 | `OvertimePayFixtureTest`（`OvertimePay`、`ShiftTimeline.payRatio` / `overtimeElapsedMs` / `overtimeRateComparison`、`recordsActualForecast` 的当日倍数） | 全部通过 | — |
 
 ## 有效性验证
 

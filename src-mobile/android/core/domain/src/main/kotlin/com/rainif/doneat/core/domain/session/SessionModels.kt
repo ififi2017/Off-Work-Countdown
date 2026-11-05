@@ -71,9 +71,16 @@ data class SessionState(
     /** Rest-day manual timing, keyed on the day the shift starts. */
     val forcedWorkdayDate: String? = null,
     val overtimeEndAtMs: Double? = null,
+    /**
+     * Plan 024: this shift's overtime pay multiplier (0 = unpaid). Null uses
+     * the preference. Cleared together with [overtimeEndAtMs].
+     */
+    val overtimePayMultiplier: Double? = null,
     /** The end of the run being counted, so an unscheduled run resets after its end day. */
     val activeCountdownEndAtMs: Double? = null,
 ) {
+    fun clearingOvertime() = copy(overtimeEndAtMs = null, overtimePayMultiplier = null)
+
     fun clearingEarlyClockOff() = copy(earlyOffAtMs = null, earlyOffShiftEndAtMs = null, earlyOffSnapshot = null)
 
     fun clearingEarlyClockIn() = copy(earlyStartAtMs = null, earlyStartUntilMs = null)

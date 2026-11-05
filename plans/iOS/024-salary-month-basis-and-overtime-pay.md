@@ -33,6 +33,8 @@
 
 **偏好**：默认倍数 `overtimePayMultiplier`，默认 1。0 表示不计薪；其余允许 0.5–5，步长 0.1。
 
+**状态（2026-11-05）**：规则（`lib/countdown.ts` 的 `normalizeOvertimePayMultiplier`、`calculateTimelinePayRatio(…, multiplier)`、`overtimeElapsedMs`、`overtimeRateComparison`；`lib/summary.ts` 的当日倍数）、Swift、Kotlin 与 iOS 界面已落地，fixtures 新增 `overtimePay` 段。网页端沿用 1（不读取新偏好），`webOvertimePresentation` 改为调用 `overtimeRateComparison`。Android 只读写并保留偏好、会话覆盖与声明里的 `payMultiplier`，不新增界面。
+
 **按班次覆盖**：倍数随会话保存（iOS `ShiftSession`、Android `SessionState`、Web 会话快照），并写入 `overtimeDeclared` 观测的可选键 `payMultiplier`。
 
 **规则**

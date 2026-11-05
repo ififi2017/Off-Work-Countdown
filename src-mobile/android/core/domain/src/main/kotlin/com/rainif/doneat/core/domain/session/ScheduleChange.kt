@@ -607,7 +607,7 @@ object ScheduleSave {
         fun started(x: SessionState) = if (x.countdownStarted) x else x.copy(countdownStarted = true, sessionId = newId())
         fun boundary(x: SessionState) = x.copy(activeCountdownEndAtMs = ShiftSession(x, newEnv).snapshot(nowMs)?.endAtMs)
         if (decision == ScheduleDecision.APPLY_TO_TODAY) {
-            s = s.copy(todayOverride = null, overtimeEndAtMs = null).clearingEarlyClockOff().clearingEarlyClockIn()
+            s = s.copy(todayOverride = null).clearingOvertime().clearingEarlyClockOff().clearingEarlyClockIn()
             // Hours never cancel rest-day manual timing; once today is a workday the mark is redundant.
             if (ShiftSession(s, newEnv).snapshot(nowMs)?.isWorkday == true) s = s.copy(forcedWorkdayDate = null)
             s = when {
