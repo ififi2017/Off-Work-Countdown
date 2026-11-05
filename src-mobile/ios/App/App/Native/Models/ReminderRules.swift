@@ -84,6 +84,8 @@ nonisolated enum ReminderRules {
             let breakStartAtMs = segments[index].endAtMs
             let breakEndAtMs = segments[index + 1].startAtMs
             guard breakEndAtMs > breakStartAtMs else { continue }
+            // Plan 024: the rest before overtime is not lunch.
+            guard breakStartAtMs < shift.plannedEndAtMs else { continue }
 
             let startBody = inputs.lunchStartEnabled ? nonEmpty(inputs.lunchStartBody) : nil
             reminders.append(NativeReminder(

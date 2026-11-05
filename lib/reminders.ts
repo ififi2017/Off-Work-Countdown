@@ -281,6 +281,9 @@ export function buildShiftReminders(
     const breakStartAtMs = shift.segments[index].endAtMs;
     const breakEndAtMs = shift.segments[index + 1].startAtMs;
     if (breakEndAtMs <= breakStartAtMs) continue;
+    // Plan 024: a rest before overtime (start after the planned end) is a
+    // gap too, but it is not lunch; never send lunch reminders for it.
+    if (breakStartAtMs >= shift.plannedEndAtMs) continue;
 
     const startBody = inputs.lunchStartEnabled ? inputs.lunchStartBody : "";
     reminders.push({
