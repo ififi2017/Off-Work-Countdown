@@ -32,6 +32,11 @@ nonisolated struct NativeShiftSnapshot: Codable, Hashable, Sendable {
     var nextShiftStartDate: Date? { nextShiftStartAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
     var nextShiftEndDate: Date? { nextShiftEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
 
+    /// The shared timeline behind this snapshot, for the rules that read it.
+    var timeline: ShiftTimeline {
+        ShiftTimeline(segments: segments, plannedEndAtMs: plannedEndAtMs, overtimeEndAtMs: overtimeEndAtMs)
+    }
+
     func isBeforeStart(at now: Date) -> Bool {
         now.timeIntervalSince1970 * 1_000 < startAtMs
     }
@@ -136,6 +141,9 @@ nonisolated struct NativeRulesInput: Codable, Equatable, Sendable {
     var extendedSchedule: ExtendedSchedulePlan? = nil
     /// Plan 024: how a monthly salary becomes daily pay. `nil` is `fixed`.
     var dailySalaryBasis: DailySalaryBasis? = nil
+    /// Plan 024: pay multiplier for effective time past the planned end.
+    /// `nil` is 1, the original hourly rate; 0 is unpaid overtime.
+    var overtimePayMultiplier: Double? = nil
 }
 
 /// How a monthly salary becomes daily pay (`DailySalaryBasis` in

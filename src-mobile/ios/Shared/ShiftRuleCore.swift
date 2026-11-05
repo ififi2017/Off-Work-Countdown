@@ -196,10 +196,47 @@ nonisolated struct ShiftTimeline: Equatable, Sendable {
     }
 
     /// Linear pay ratio: 1 at the planned end, above 1 in overtime.
-    func payRatio(at nowMs: Double) -> Double {
+    /// `overtimeMultiplier` (plan 024) scales the effective time beyond the
+    /// planned end; 1 is exactly `elapsed / planned`
+    /// (`calculateTimelinePayRatio` in `lib/countdown.ts`).
+    func payRatio(at nowMs: Double, overtimeMultiplier: Double = OvertimePay.defaultMultiplier) -> Double {
         let planned = plannedDurationMs
         guard planned > 0 else { return 0 }
-        return max(0, elapsedMs(at: nowMs) / planned)
+        let elapsed = elapsedMs(at: nowMs)
+        let multiplier = OvertimePay.normalized(overtimeMultiplier)
+        if multiplier == 1 { return max(0, elapsed / planned) }
+        let regular = min(elapsed, planned)
+        return max(0, (regular + multiplier * (elapsed - regular)) / planned)
+    }
+
+    /// Effective time worked beyond the planned end (`overtimeElapsedMs`).
+    func overtimeElapsedMs(at nowMs: Double) -> Double {
+        guard overtimeEndAtMs != nil, nowMs.isFinite else { return 0 }
+        let planned = plannedDurationMs
+        guard planned.isFinite, planned > 0 else { return 0 }
+        let elapsed = elapsedMs(at: nowMs)
+        guard elapsed.isFinite else { return 0 }
+        return max(0, elapsed - planned)
+    }
+
+    /// The "if overtime is unpaid" comparison (`overtimeRateComparison`):
+    /// daily pay over every effective hour so far, and how far below the usual
+    /// hourly rate that is. `nil` outside overtime.
+    func overtimeRateComparison(dailySalary: Double?, at nowMs: Double) -> OvertimeRateComparison? {
+        guard overtimeEndAtMs != nil, nowMs.isFinite else { return nil }
+        let planned = plannedDurationMs
+        guard planned.isFinite, planned > 0 else { return nil }
+        let elapsed = elapsedMs(at: nowMs)
+        guard elapsed.isFinite else { return nil }
+        let overtime = max(0, elapsed - planned)
+        var result = OvertimeRateComparison(elapsedOvertimeMs: overtime, unpaidHourlyRate: nil, unpaidRateDecreasePercent: nil)
+        guard overtime > 0, let dailySalary, dailySalary.isFinite, dailySalary > 0 else { return result }
+        let rate = dailySalary / (elapsed / 3_600_000)
+        let decrease = (1 - 1 / payRatio(at: nowMs)) * 100
+        guard rate.isFinite, decrease.isFinite else { return result }
+        result.unpaidHourlyRate = rate
+        result.unpaidRateDecreasePercent = decrease
+        return result
     }
 
     /// The end of the gap between segments that `nowMs` falls in, if any.
@@ -659,4 +696,26 @@ nonisolated final class CivilZone {
         let month = monthIndex < 10 ? monthIndex + 3 : monthIndex - 9
         return (yearOfEra + era * 400 + (month <= 2 ? 1 : 0), month, day)
     }
+}
+
+/// Plan 024: the pay multiplier for effective time beyond the planned end.
+nonisolated enum OvertimePay {
+    static let defaultMultiplier = 1.0
+
+    /// 0 (unpaid) or 0.5 to 5 in 0.1 steps; anything else is 1
+    /// (`normalizeOvertimePayMultiplier` in `lib/countdown.ts`).
+    static func normalized(_ value: Double?) -> Double {
+        guard let value, value.isFinite else { return defaultMultiplier }
+        let tenths = (value * 10).rounded(.toNearestOrAwayFromZero)
+        guard abs(value * 10 - tenths) <= 1e-9 else { return defaultMultiplier }
+        if tenths == 0 { return 0 }
+        guard tenths >= 5, tenths <= 50 else { return defaultMultiplier }
+        return tenths / 10
+    }
+}
+
+nonisolated struct OvertimeRateComparison: Equatable, Sendable {
+    var elapsedOvertimeMs: Double
+    var unpaidHourlyRate: Double?
+    var unpaidRateDecreasePercent: Double?
 }

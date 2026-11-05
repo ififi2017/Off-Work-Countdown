@@ -139,7 +139,10 @@ final class ShiftSessionStore {
             if kind == .overtimeDeclared, let overtimeEndAtMs = self.session.overtimeEndAtMs {
                 valueData = try? JSONEncoder().encode(OvertimeDeclarationPayload(
                     overtimeEndAtMs: overtimeEndAtMs,
-                    plannedEndAtMs: shift?.plannedEndAtMs
+                    plannedEndAtMs: shift?.plannedEndAtMs,
+                    payMultiplier: self.session.effectiveOvertimePayMultiplier == 1
+                        ? nil
+                        : self.session.effectiveOvertimePayMultiplier
                 ))
             }
             let zone = self.session.writingTimeZone()
@@ -800,14 +803,19 @@ final class ShiftSessionStore {
     }
 
     @discardableResult
-    func applyOvertime(date: Date, declaredAt: Date = .now) -> RecordCommand<Bool> {
+    func applyOvertime(date: Date, declaredAt: Date = .now, payMultiplier: Double? = nil) -> RecordCommand<Bool> {
         records.submitCommand { [self] in
             let endAtMs = date.timeIntervalSince1970 * 1_000
+            let multiplier = OvertimePay.normalized(payMultiplier ?? session.effectiveOvertimePayMultiplier)
             guard !records.blocksWrites, endAtMs.isFinite,
-                  session.overtimeEndAtMs != endAtMs || session.earlyOffAtMs != nil else { return false }
+                  session.overtimeEndAtMs != endAtMs || session.earlyOffAtMs != nil
+                    || session.effectiveOvertimePayMultiplier != multiplier else { return false }
             return records.withBatchedWrites {
                 let revokedCompletionAtMs = self.session.earlyOffAtMs ?? activeCountdownEndAtMs
                 self.session.overtimeEndAtMs = date.timeIntervalSince1970 * 1_000
+                // Pinned for this shift so the declaration and the timer agree
+                // even if the default changes before the shift ends.
+                self.session.overtimePayMultiplier = multiplier
                 self.session.countdownStarted = true
                 activeCountdownEndAtMs = self.session.overtimeEndAtMs
                 if self.session.sessionTimeZoneIdentifier != nil {

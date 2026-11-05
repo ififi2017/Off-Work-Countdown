@@ -313,6 +313,14 @@ nonisolated enum SummaryRules {
 
     // MARK: - Records actual and forecast
 
+    /// Plan 024: worked time with the part beyond the regular segments scaled
+    /// by the day's overtime multiplier (`weightedOvertimeMs` in `lib/summary.ts`).
+    static func weightedOvertimeMs(_ totalMs: Double, regularMs: Double, multiplier: Double) -> Double {
+        if multiplier == 1 { return totalMs }
+        let regular = min(totalMs, regularMs)
+        return regular + multiplier * (totalMs - regular)
+    }
+
     /// Recorded or corrected work against schedule estimates for one visible
     /// period. A day enters only one side, and actual always wins.
     static func recordsActualForecast(input: NativeRecordsActualForecastInput) -> NativeRecordsActualForecastSummary {
@@ -351,12 +359,15 @@ nonisolated enum SummaryRules {
             let elapsedRegular = regular.map { NativeShiftSegment(startAtMs: $0.startAtMs, endAtMs: min($0.endAtMs, asOfMs)) }
             let elapsedOvertime = day.overtimeSegments.map { NativeShiftSegment(startAtMs: $0.startAtMs, endAtMs: min($0.endAtMs, asOfMs)) }
             let workedMs = mergedDuration(elapsedRegular + elapsedOvertime)
-            actualOvertimeMs += max(0, workedMs - mergedDuration(elapsedRegular))
+            let regularMs = mergedDuration(elapsedRegular)
+            actualOvertimeMs += max(0, workedMs - regularMs)
+            let multiplier = OvertimePay.normalized(day.overtimePayMultiplier ?? 1)
             if workedMs > 0 {
                 actualDays += 1
                 actualMs += workedMs
                 if !usesFixedMonthlyPay {
-                    actualPay += (rate ?? 0) * (plannedMs > 0 ? workedMs / plannedMs : 1)
+                    let paidMs = weightedOvertimeMs(workedMs, regularMs: regularMs, multiplier: multiplier)
+                    actualPay += (rate ?? 0) * (plannedMs > 0 ? paidMs / plannedMs : 1)
                 }
             }
             if day.isActiveAnchor || kind == "scheduled" {
@@ -367,7 +378,11 @@ nonisolated enum SummaryRules {
                     if workedMs <= 0 { forecastDays += 1 }
                     forecastMs += futureMs
                     if !usesFixedMonthlyPay {
-                        forecastPay += (rate ?? 0) * (plannedMs > 0 ? futureMs / plannedMs : (workedMs <= 0 ? 1 : 0))
+                        let futureRegularMs = mergedDuration(day.resolvedSegments.map {
+                            NativeShiftSegment(startAtMs: max($0.startAtMs, asOfMs), endAtMs: $0.endAtMs)
+                        })
+                        let paidFutureMs = weightedOvertimeMs(futureMs, regularMs: futureRegularMs, multiplier: multiplier)
+                        forecastPay += (rate ?? 0) * (plannedMs > 0 ? paidFutureMs / plannedMs : (workedMs <= 0 ? 1 : 0))
                     }
                 }
             }
@@ -602,6 +617,8 @@ nonisolated struct NativeRecordsActualForecastDay: Codable, Sendable {
     let resolvedSegments: [NativeShiftSegment]
     let plannedSegments: [NativeShiftSegment]
     let overtimeSegments: [NativeShiftSegment]
+    /// Plan 024: the multiplier of the day's latest overtime declaration.
+    var overtimePayMultiplier: Double? = nil
     let observations: [NativeRecordsSummaryObservation]
     let isActiveAnchor: Bool
 }

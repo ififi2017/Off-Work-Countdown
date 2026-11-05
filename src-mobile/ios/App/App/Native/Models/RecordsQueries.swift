@@ -1100,6 +1100,7 @@ final class RecordsQueries {
                 resolvedSegments: day.segments,
                 plannedSegments: day.baseScheduleSegments,
                 overtimeSegments: actualKind == nil ? [] : overtimeSegments(on: day),
+                overtimePayMultiplier: actualKind == nil ? nil : overtimePayMultiplier(on: day),
                 observations: observations,
                 isActiveAnchor: activeAnchorDayKey == day.dayKey
             )
@@ -1267,13 +1268,24 @@ final class RecordsQueries {
         return isInsideLifeWorkProjection(date, now: now) ? .lifeProjection : .scheduleEstimate
     }
 
-    func overtimeSegments(on resolution: DayResolution) -> [NativeShiftSegment] {
-        let latest = (observationIndex()[resolution.dayKey] ?? [])
+    /// The day's newest overtime declaration, the only one that counts.
+    private func latestOvertimeDeclaration(onDayKey dayKey: String) -> WorkObservation? {
+        (observationIndex()[dayKey] ?? [])
             .filter { $0.kind == .overtimeDeclared }
             .max { lhs, rhs in
                 if lhs.occurredAt != rhs.occurredAt { return lhs.occurredAt < rhs.occurredAt }
                 return lhs.eventID.uuidString < rhs.eventID.uuidString
             }
+    }
+
+    /// Plan 024: the pay multiplier the day's latest overtime declaration
+    /// chose; 1 when it names none (older declarations) or there is none.
+    func overtimePayMultiplier(on resolution: DayResolution) -> Double {
+        RecordsMetrics.declaredPayMultiplier(latestOvertimeDeclaration(onDayKey: resolution.dayKey))
+    }
+
+    func overtimeSegments(on resolution: DayResolution) -> [NativeShiftSegment] {
+        let latest = latestOvertimeDeclaration(onDayKey: resolution.dayKey)
         guard let latest,
               let segment = RecordsMetrics.declaredOvertimeSegment(
                 observation: latest,

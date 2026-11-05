@@ -17,6 +17,10 @@ nonisolated struct RecordsPeriodMetrics: Equatable, Sendable {
 nonisolated struct OvertimeDeclarationPayload: Codable, Equatable, Sendable {
     var overtimeEndAtMs: Double
     var plannedEndAtMs: Double?
+    /// Plan 024: the pay multiplier chosen with this declaration (0 = unpaid).
+    /// Omitted for 1 and in older archives, so those stay byte-for-byte what
+    /// they were; readers without the key ignore it.
+    var payMultiplier: Double? = nil
 }
 
 nonisolated enum RecordsMetrics {
@@ -91,6 +95,16 @@ nonisolated enum RecordsMetrics {
               payload.overtimeEndAtMs > start
         else { return nil }
         return NativeShiftSegment(startAtMs: start, endAtMs: payload.overtimeEndAtMs)
+    }
+
+    /// Plan 024: the pay multiplier an overtime declaration carries
+    /// (`OvertimePay.normalized`); 1 when it names none.
+    static func declaredPayMultiplier(_ observation: WorkObservation?) -> Double {
+        guard let observation, observation.kind == .overtimeDeclared,
+              let data = observation.valueData,
+              let payload = try? JSONDecoder().decode(OvertimeDeclarationPayload.self, from: data)
+        else { return OvertimePay.defaultMultiplier }
+        return OvertimePay.normalized(payload.payMultiplier)
     }
 
     private static func civilDayStart(for day: DayResolution, calendar: Calendar) -> Date {

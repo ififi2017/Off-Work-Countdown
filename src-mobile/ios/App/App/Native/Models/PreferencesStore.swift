@@ -46,6 +46,7 @@ final class PreferencesStore {
         static let salaryType = "ios.native.salaryType"
         static let monthlyWorkingDays = "ios.native.monthlyWorkingDays"
         static let dailySalaryBasis = "ios.native.dailySalaryBasis"
+        static let overtimePayMultiplier = "ios.native.overtimePayMultiplier"
         static let annualBonusEnabled = "ios.native.annualBonusEnabled"
         static let annualBonusMonths = "ios.native.annualBonusMonths"
         static let hideEarnings = "hideEarnings"
@@ -88,6 +89,8 @@ final class PreferencesStore {
     private(set) var salaryType: SalaryType
     private(set) var monthlyWorkingDays: Double
     private(set) var dailySalaryBasis: DailySalaryBasis
+    /// Plan 024: default pay multiplier for overtime (0 = unpaid, else 0.5-5).
+    private(set) var overtimePayMultiplier: Double
     private(set) var annualBonusEnabled: Bool
     private(set) var annualBonusMonths: Double
     private(set) var notificationMode: OffWorkNotificationMode
@@ -319,6 +322,7 @@ final class PreferencesStore {
         salaryType = SalaryType(rawValue: defaults.string(forKey: Key.salaryType) ?? "monthly") ?? .monthly
         monthlyWorkingDays = defaults.object(forKey: Key.monthlyWorkingDays) == nil ? 22 : defaults.double(forKey: Key.monthlyWorkingDays)
         dailySalaryBasis = DailySalaryBasis(rawValue: defaults.string(forKey: Key.dailySalaryBasis) ?? "") ?? .fixed
+        overtimePayMultiplier = OvertimePay.normalized(defaults.object(forKey: Key.overtimePayMultiplier) as? Double)
         annualBonusEnabled = defaults.bool(forKey: Key.annualBonusEnabled)
         let storedBonusMonths = defaults.object(forKey: Key.annualBonusMonths) == nil ? 1 : defaults.double(forKey: Key.annualBonusMonths)
         annualBonusMonths = max(0, storedBonusMonths)
@@ -395,6 +399,7 @@ final class PreferencesStore {
             annualBonusEnabled: annualBonusEnabled,
             annualBonusMonths: annualBonusMonths,
             dailySalaryBasis: dailySalaryBasis,
+            overtimePayMultiplier: overtimePayMultiplier,
             notificationMode: notificationMode,
             cycleEndSummaryNotificationEnabled: cycleEndSummaryNotificationEnabled,
             lunchStartReminderEnabled: lunchStartReminderEnabled,
@@ -486,6 +491,11 @@ final class PreferencesStore {
         if dailySalaryBasis != preferences.dailySalaryBasis {
             dailySalaryBasis = preferences.dailySalaryBasis
             defaults.set(dailySalaryBasis.rawValue, forKey: Key.dailySalaryBasis)
+        }
+        let storedMultiplier = OvertimePay.normalized(preferences.overtimePayMultiplier)
+        if overtimePayMultiplier != storedMultiplier {
+            overtimePayMultiplier = storedMultiplier
+            defaults.set(storedMultiplier, forKey: Key.overtimePayMultiplier)
         }
         if annualBonusEnabled != preferences.annualBonusEnabled {
             annualBonusEnabled = preferences.annualBonusEnabled

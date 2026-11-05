@@ -336,6 +336,54 @@ struct ScheduleRuleFixtureTests {
         #expect(basis.monthCounts.filter { $0.sc == manual }.allSatisfy { $0.expected == 0 })
     }
 
+    @Test("Overtime pay multiplier: pay ratio, earned so far, elapsed overtime, unpaid comparison, Records")
+    func overtimePay() throws {
+        let file = try Self.fixtures()
+        let pay = file.overtimePay
+        var mismatches: [String] = []
+        func record(_ message: @autoclosure () -> String) {
+            if mismatches.count < 5 { mismatches.append(message()) }
+        }
+
+        for fixture in pay.normalize {
+            let actual = OvertimePay.normalized(fixture.value)
+            if actual != fixture.expected { record("normalize \(String(describing: fixture.value)): expected \(fixture.expected), actual \(actual)") }
+        }
+        for fixture in pay.snapshots {
+            let scenario = pay.scenarios[fixture.sc]
+            let actual = ScheduleRules.snapshot(input: pay.rules(scenario, nowMs: fixture.now, salary: pay.salaries[fixture.s],
+                                                                 overtimeEndAtMs: fixture.ot, multiplier: fixture.m))
+            let expected = fixture.expected
+            let timeline = actual.timeline
+            let elapsed = timeline.overtimeElapsedMs(at: fixture.now)
+            let comparison = timeline.overtimeRateComparison(dailySalary: actual.dailySalary, at: fixture.now)
+            let comparisonMatches: Bool
+            if let expectedComparison = expected.comparison {
+                comparisonMatches = comparison?.elapsedOvertimeMs == expectedComparison.elapsedOvertimeMs
+                    && comparison?.unpaidHourlyRate == expectedComparison.unpaidHourlyRate
+                    && comparison?.unpaidRateDecreasePercent == expectedComparison.unpaidRateDecreasePercent
+            } else {
+                comparisonMatches = comparison == nil
+            }
+            if actual.dailySalary != expected.dailySalary || actual.earnedSoFar != expected.earnedSoFar
+                || actual.payRatio != expected.payRatio || elapsed != expected.overtimeElapsedMs || !comparisonMatches {
+                record("snapshot \(scenario.id) salary \(fixture.s) m \(fixture.m) ot \(String(describing: fixture.ot)) at \(fixture.now): expected \(expected), actual earned \(String(describing: actual.earnedSoFar)) ratio \(actual.payRatio) elapsed \(elapsed) comparison \(String(describing: comparison))")
+            }
+        }
+        for fixture in pay.forecasts {
+            let actual = SummaryRules.recordsActualForecast(input: fixture.input)
+            if actual != fixture.expected {
+                record("records \(pay.scenarios[fixture.sc].id)\nexpected \(fixture.expected)\nactual   \(actual)")
+            }
+        }
+        #expect(mismatches.isEmpty, "\(mismatches.joined(separator: "\n"))")
+        #expect(pay.snapshots.count >= 1_000)
+        #expect(pay.forecasts.count >= 100)
+        // The multiplier matters: the same overtime pays differently.
+        let ratios = Set(pay.snapshots.filter { $0.sc == 1 && $0.s == 0 && $0.expected.overtimeElapsedMs > 0 }.map(\.expected.payRatio))
+        #expect(ratios.count > 10)
+    }
+
     // MARK: - Fixture file
 
     private static func fixtures() throws -> ScheduleRuleFixtureFile {
@@ -729,6 +777,89 @@ struct ScheduleRuleFixtureFile: Decodable {
         }
     }
 
+    /// Plan 024 phase 3: the overtime pay multiplier.
+    struct OvertimePayFixtures: Decodable {
+        struct Scenario: Decodable {
+            let id: String
+            let startTime: String
+            let endTime: String
+            let breakStartTime: String?
+            let breakDurationMinutes: Int
+            let zone: String
+            let workdays: [Int]
+            let schedule: NativeWorkSchedule
+        }
+
+        struct Salary: Decodable {
+            let salaryAmount: String
+            let salaryType: String
+            let monthlyWorkingDays: Double
+            let annualBonusMonths: Double
+            let dailySalaryBasis: DailySalaryBasis
+        }
+
+        struct NormalizeCase: Decodable {
+            let value: Double?
+            let expected: Double
+        }
+
+        struct Comparison: Decodable {
+            let elapsedOvertimeMs: Double
+            let unpaidHourlyRate: Double?
+            let unpaidRateDecreasePercent: Double?
+        }
+
+        struct Expected: Decodable {
+            let dailySalary: Double?
+            let earnedSoFar: Double?
+            let payRatio: Double
+            let overtimeElapsedMs: Double
+            let comparison: Comparison?
+        }
+
+        struct SnapshotCase: Decodable {
+            let sc: Int
+            let s: Int
+            let m: Double
+            let ot: Double?
+            let now: Double
+            let expected: Expected
+        }
+
+        struct ForecastCase: Decodable {
+            let sc: Int
+            let input: NativeRecordsActualForecastInput
+            let expected: NativeRecordsActualForecastSummary
+        }
+
+        let scenarios: [Scenario]
+        let salaries: [Salary]
+        let normalize: [NormalizeCase]
+        let snapshots: [SnapshotCase]
+        let forecasts: [ForecastCase]
+
+        func rules(_ scenario: Scenario, nowMs: Double, salary: Salary, overtimeEndAtMs: Double?, multiplier: Double) -> NativeRulesInput {
+            NativeRulesInput(
+                startTime: scenario.startTime,
+                endTime: scenario.endTime,
+                nowMs: nowMs,
+                workdays: scenario.workdays,
+                schedule: scenario.schedule,
+                breakStartTime: scenario.breakStartTime,
+                breakDurationMinutes: scenario.breakDurationMinutes,
+                overtimeEndAtMs: overtimeEndAtMs,
+                salaryAmount: salary.salaryAmount,
+                salaryType: salary.salaryType,
+                monthlyWorkingDays: salary.monthlyWorkingDays,
+                annualBonusMonths: salary.annualBonusMonths,
+                forcedWorkdayStartMs: nil,
+                timeZoneIdentifier: scenario.zone,
+                dailySalaryBasis: salary.dailySalaryBasis,
+                overtimePayMultiplier: multiplier
+            )
+        }
+    }
+
     let version: Int
     let profiles: [Profile]
     let salaries: [Salary]
@@ -748,6 +879,7 @@ struct ScheduleRuleFixtureFile: Decodable {
     let lifetimeIncome: [LifetimeIncomeCase]
     let actualForecast: [ActualForecastCase]
     let monthBasis: MonthBasis
+    let overtimePay: OvertimePayFixtures
 
     func input(
         _ profile: Profile,

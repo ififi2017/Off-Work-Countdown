@@ -493,6 +493,7 @@ enum RecordsSyncConflict {
             annualBonusEnabled: take(local.annualBonusEnabled, server.annualBonusEnabled, baseline?.annualBonusEnabled),
             annualBonusMonths: take(local.annualBonusMonths, server.annualBonusMonths, baseline?.annualBonusMonths),
             dailySalaryBasis: take(local.dailySalaryBasis, server.dailySalaryBasis, baseline?.dailySalaryBasis),
+            overtimePayMultiplier: take(local.overtimePayMultiplier, server.overtimePayMultiplier, baseline?.overtimePayMultiplier),
             notificationMode: take(local.notificationMode, server.notificationMode, baseline?.notificationMode),
             cycleEndSummaryNotificationEnabled: take(local.cycleEndSummaryNotificationEnabled, server.cycleEndSummaryNotificationEnabled, baseline?.cycleEndSummaryNotificationEnabled),
             lunchStartReminderEnabled: take(local.lunchStartReminderEnabled, server.lunchStartReminderEnabled, baseline?.lunchStartReminderEnabled),

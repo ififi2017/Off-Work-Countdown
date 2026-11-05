@@ -111,6 +111,7 @@ final class ShiftSession {
         static let legacyForceToday = "ios.native.forceToday"
         static let forcedWorkdayDate = "ios.native.forcedWorkdayDate"
         static let overtimeEndAtMs = "ios.native.overtimeEndAtMs"
+        static let overtimePayMultiplier = "ios.native.sessionOvertimePayMultiplier"
         static let earlyStartAtMs = "ios.native.earlyStartAtMs"
         static let earlyStartUntilMs = "ios.native.earlyStartUntilMs"
         static let todayScheduleOverride = "ios.native.todayScheduleOverride"
@@ -225,8 +226,24 @@ final class ShiftSession {
     var overtimeEndAtMs: Double? {
         didSet {
             if let overtimeEndAtMs { defaults.set(overtimeEndAtMs, forKey: Key.overtimeEndAtMs) }
-            else { defaults.removeObject(forKey: Key.overtimeEndAtMs) }
+            else {
+                defaults.removeObject(forKey: Key.overtimeEndAtMs)
+                // The per-shift pay choice goes with the overtime it priced.
+                if overtimePayMultiplier != nil { overtimePayMultiplier = nil }
+            }
         }
+    }
+    /// Plan 024: this shift's overtime pay multiplier (0 = unpaid). `nil` uses
+    /// the preference. Cleared together with `overtimeEndAtMs`.
+    var overtimePayMultiplier: Double? {
+        didSet {
+            if let overtimePayMultiplier { defaults.set(overtimePayMultiplier, forKey: Key.overtimePayMultiplier) }
+            else { defaults.removeObject(forKey: Key.overtimePayMultiplier) }
+        }
+    }
+    /// The multiplier overtime is paid at now: this shift's choice, else the preference.
+    var effectiveOvertimePayMultiplier: Double {
+        OvertimePay.normalized(overtimePayMultiplier ?? preferences.overtimePayMultiplier)
     }
     var debugPresentationToken: String {
 #if DEBUG
@@ -318,6 +335,7 @@ final class ShiftSession {
         let storedForcedDate = defaults.string(forKey: Key.forcedWorkdayDate)
         forcedWorkdayDate = storedForcedDate ?? (defaults.bool(forKey: Key.legacyForceToday) ? Self.dayKey(for: .now) : nil)
         overtimeEndAtMs = defaults.object(forKey: Key.overtimeEndAtMs) as? Double
+        overtimePayMultiplier = defaults.object(forKey: Key.overtimePayMultiplier) as? Double
         earlyOffAtMs = defaults.object(forKey: Key.earlyOffAtMs) as? Double
         earlyOffShiftEndAtMs = defaults.object(forKey: Key.earlyOffShiftEndAtMs) as? Double
         earlyOffSnapshot = Self.decodeEarlyOffSnapshot(from: defaults)
@@ -562,7 +580,8 @@ final class ShiftSession {
             forcedWorkdayStartMs: applyOverride ? forcedWorkdayStartMs : nil,
             timeZoneIdentifier: rulesTimeZoneIdentifier,
             extendedSchedule: extendedSchedulePlan(at: date, using: source),
-            dailySalaryBasis: preferences.dailySalaryBasis
+            dailySalaryBasis: preferences.dailySalaryBasis,
+            overtimePayMultiplier: applyOverride ? effectiveOvertimePayMultiplier : nil
         )
         return pinningCurrentShift(
             applyingLeave(to: input),

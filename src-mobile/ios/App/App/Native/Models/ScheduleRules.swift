@@ -40,7 +40,7 @@ nonisolated enum ScheduleRules {
         let nextShift = nextShift(after: shift, input, zone)
         let clockIn = countdownProjection(input, shift: shift, nextShift: nextShift, zone)
         let dailySalary = SalaryRules.dailySalary(rules: input, anchorMs: shift.startAtMs, zone)
-        let payRatio = shift.payRatio(at: input.nowMs)
+        let payRatio = shift.payRatio(at: input.nowMs, overtimeMultiplier: OvertimePay.normalized(input.overtimePayMultiplier))
         return NativeShiftSnapshot(
             segments: shift.segments,
             startAtMs: shift.startAtMs,
