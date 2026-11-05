@@ -26,7 +26,38 @@ struct LeavePlanGroupTests {
 
     @Test("A rolling year keeps every date but consolidates ordinary weekends")
     func rollingYear() throws {
-        let proposals = DebugLeavePlanner.proposals()
+        let work = UUID()
+        let rest = UUID()
+        let types = [(work, ShiftType.Kind.work), (rest, ShiftType.Kind.rest)].map { id, kind in
+            ShiftType(id: id, name: kind == .work ? "Office" : "Rest", kind: kind,
+                      startMinutes: 540, endMinutes: 1020, breakEnabled: false,
+                      breakStartMinutes: 720, breakDurationMinutes: 0, colorHex: "#FF7A00", isArchived: false)
+        }
+        let plan = ExtendedSchedulePlan(
+            shiftTypes: types,
+            rule: ShiftCycleRule(preset: .weekly, anchorDayKey: "2026-09-21",
+                                 days: [work, work, work, work, work, rest, rest]),
+            handSetDays: [:], holidayRegionIdentifier: "CN"
+        )
+        let configuration = ScheduleHoursConfiguration(
+            startTime: "09:00", endTime: "17:00", workdays: [1, 2, 3, 4, 5],
+            schedule: NativeWorkSchedule(mode: "classic", referenceWeekStartMs: nil, referenceWeekType: nil,
+                                        singleWeekendWorkday: nil, rotationAnchorMs: nil,
+                                        rotationWorkDays: nil, rotationRestDays: nil),
+            breakStartTime: nil, breakDurationMinutes: 0, extendedSchedule: plan
+        )
+        let first = try #require(ExtendedScheduleResolver.dayNumber(dayKey: "2026-09-21"))
+        let zone = try #require(TimeZone(identifier: "Asia/Shanghai"))
+        // Keep mixed exact/predicted caveats independent of official bundle metadata.
+        let days = LeavePlannerSchedule.days(
+            configuration: configuration, range: first...(first + 364), timeZone: zone,
+            holidayEstimation: { year, region in year == 2027 && region == "CN" }
+        )
+        let proposals = LeavePlanner.proposals(days: days, query: .init(
+            goal: .leaveAtMost(halfDays: 10), fromDayNumber: first, throughDayNumber: first + 364,
+            nowMs: CivilZone(timeZone: zone).utcMs(dayNumber: first, Clock(hour: 0, minute: 0)),
+            budgets: [.init(id: UUID(), availableHalfDays: 10, validFromDayNumber: nil, validThroughDayNumber: nil)]
+        ))
         let groups = LeavePlanGroup.make(from: proposals)
         #expect(proposals.count > 200)
         #expect(groups.count < proposals.count / 2)

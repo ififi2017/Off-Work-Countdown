@@ -20,7 +20,7 @@ it("shows Brazilian holidays in Portuguese when the source uses a regional local
   expect(dataset.names[independenceDay[2]].pt).toBe("Independência do Brasil");
 });
 
-it("ships exactly the approved 2027 estimate, with five makeup days and no nine-day National Day", () => {
+it("ships exactly the official 2027 calendar, with 29 days off and five makeup days", () => {
   const data = dataset();
   const range = (first, last, name) => Array.from({ length: last - first + 1 }, (_, offset) => [first + offset, 0, name]);
   const expected = [
@@ -34,9 +34,12 @@ it("ships exactly the approved 2027 estimate, with five makeup days and no nine-
     [20270926, 1, "国庆节"], [20271009, 1, "国庆节"],
   ].sort(([a], [b]) => a - b);
   expect(chinaYear(data, 2027)).toEqual(expected);
+  expect(expected).toHaveLength(34);
+  expect(expected.filter(([, work]) => work === 0)).toHaveLength(29);
   expect(expected.filter(([, work]) => work === 1)).toHaveLength(5);
-  expect(data.regions.CN).toMatchObject({ coveredFromYear: 2007, coveredThroughYear: 2027, estimatedYears: [2027] });
-  expect(Object.values(data.regions).filter((region) => region.estimatedYears)).toHaveLength(1);
+  expect(data.regions.CN).toMatchObject({ coveredFromYear: 2007, coveredThroughYear: 2027 });
+  expect(data.regions.CN).not.toHaveProperty("estimatedYears");
+  expect(Object.values(data.regions).filter((region) => region.estimatedYears)).toHaveLength(0);
 });
 
 it("keeps every confirmed 2026 date, workday flag and name unchanged", () => {
@@ -45,13 +48,13 @@ it("keeps every confirmed 2026 date, workday flag and name unchanged", () => {
   expect(createHash("sha256").update(canonical).digest("hex")).toBe("5131c0e44359e2f2911147f91cf553178c56bf3f521371533f3f38c9c70bfae3");
 });
 
-it("exports estimate metadata and preserves unchanged upstream region revisions", () => {
+it("exports official coverage without estimate metadata and preserves unchanged upstream region revisions", () => {
   const data = dataset();
   const files = desktopHolidayFiles();
   const cn = JSON.parse(files.get("CN.json"));
   const index = JSON.parse(files.get("index.json"));
-  expect(cn.estimatedYears).toEqual([2027]);
-  expect(index.estimatedYears).toEqual({ CN: [2027] });
+  expect(cn).not.toHaveProperty("estimatedYears");
+  expect(index).not.toHaveProperty("estimatedYears");
   expect(cn.datasetVersion).toBe(data.datasetVersion);
   expect(index.datasetVersion).toBe(data.datasetVersion);
   expect(JSON.parse(files.get("US.json")).datasetVersion).toBe(data.baseDatasetVersion);

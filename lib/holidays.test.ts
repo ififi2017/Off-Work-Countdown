@@ -19,29 +19,43 @@ describe("desktop holiday calendars", () => {
     expect(overrides["20261001"]).toBe(false);
     expect(holidayDay(cn, "2026-10-20", "zh-CN")).toBeNull();
   });
-  it("warns where the data stops, like iOS", () => {
+  it("warns only about the next uncovered year after the official 2027 update", () => {
     const cn = read<HolidayRegion>("CN.json");
+    expect(cn).not.toHaveProperty("estimatedYears");
     expect(holidayCoverageWarning(cn, 2026, 11)).toBeNull();
-    expect(holidayCoverageWarning(cn, 2026, 12)).toEqual({ key: "holidayEstimatedYearWarning", year: 2027 });
-    expect(holidayCoverageWarning(cn, 2027, 1)).toEqual({ key: "holidayEstimatedYearWarning", year: 2027 });
-    expect(holidayCoverageWarning(cn, 2027, 12)).toEqual({ key: "holidayEstimatedYearWarning", year: 2027 });
+    expect(holidayCoverageWarning(cn, 2026, 12)).toBeNull();
+    for (let month = 1; month < 12; month += 1) {
+      expect(holidayCoverageWarning(cn, 2027, month)).toBeNull();
+    }
+    expect(holidayCoverageWarning(cn, 2027, 12)).toEqual({ key: "holidayCoverageNextYearWarning", year: 2028 });
     expect(holidayCoverageWarning(cn, 2028, 1)).toEqual({ key: "holidayCoverageYearWarning", year: 2028 });
-    // Removing prediction metadata when official data replaces it removes its warning.
-    const official = { ...cn, estimatedYears: [] };
-    expect(holidayCoverageWarning(official, 2027, 1)).toBeNull();
+  });
+  it("retains explicit estimate warnings for synthetic predicted coverage", () => {
+    const predicted = { coveredFromYear: 2026, coveredThroughYear: 2027, estimatedYears: [2027] };
+    expect(holidayCoverageWarning(predicted, 2026, 11)).toBeNull();
+    expect(holidayCoverageWarning(predicted, 2026, 12)).toEqual({ key: "holidayEstimatedYearWarning", year: 2027 });
+    expect(holidayCoverageWarning(predicted, 2027, 1)).toEqual({ key: "holidayEstimatedYearWarning", year: 2027 });
+    expect(holidayCoverageWarning(predicted, 2027, 12)).toEqual({ key: "holidayEstimatedYearWarning", year: 2027 });
+    expect(holidayCoverageWarning(predicted, 2028, 1)).toEqual({ key: "holidayCoverageYearWarning", year: 2028 });
+    const official = { coveredFromYear: 2026, coveredThroughYear: 2027 };
     expect(holidayCoverageWarning(official, 2026, 12)).toBeNull();
+    expect(holidayCoverageWarning(official, 2027, 1)).toBeNull();
     expect(holidayCoverageWarning(official, 2027, 12)).toEqual({ key: "holidayCoverageNextYearWarning", year: 2028 });
   });
-  it("applies the predicted calendar and all five makeup days without extending National Day", () => {
+  it("applies all 34 official dates without extending National Day", () => {
     const cn = read<HolidayRegion>("CN.json");
+    const range = (first: number, last: number) => Array.from({ length: last - first + 1 }, (_, offset) => String(first + offset));
+    const rest = [
+      ...range(20270101, 20270103), ...range(20270205, 20270213),
+      ...range(20270403, 20270405), ...range(20270501, 20270505),
+      "20270609", "20270915", ...range(20271001, 20271007),
+    ];
+    const makeup = ["20270131", "20270214", "20270508", "20270926", "20271009"];
+    const expected = Object.fromEntries([...rest.map((date) => [date, false]), ...makeup.map((date) => [date, true])]);
     const overrides = holidayOverrides(cn);
-    expect(cn.estimatedYears).toEqual([2027]);
-    for (const date of ["20270131", "20270214", "20270508", "20270926", "20271009"]) {
-      expect(overrides[date]).toBe(true);
-    }
-    for (const date of ["20270101", "20270205", "20270213", "20270405", "20270505", "20270609", "20270915", "20271007"]) {
-      expect(overrides[date]).toBe(false);
-    }
+    expect(Object.fromEntries(Object.entries(overrides).filter(([date]) => date.startsWith("2027")))).toEqual(expected);
+    expect(rest).toHaveLength(29);
+    expect(makeup).toHaveLength(5);
     expect(overrides["20271008"]).toBeUndefined();
     expect(overrides["20271010"]).toBeUndefined();
   });
