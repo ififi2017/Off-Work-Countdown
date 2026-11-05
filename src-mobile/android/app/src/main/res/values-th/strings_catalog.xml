@@ -593,6 +593,7 @@
     <string name="liveActivityScheduleNote">เราจะตั้งเวลาแจ้งเตือนสำหรับกะนี้ โหมดโฟกัสและข้อจำกัดของระบบอาจเปลี่ยนเวลาที่การแจ้งเตือนปรากฏ</string>
     <string name="liveActivityStartTime">เวลาเริ่ม</string>
     <string name="lockScreenLiveActivity">แสดงบนหน้าจอล็อก</string>
+    <string name="logOvertimeTitle">บันทึกล่วงเวลา</string>
     <string name="lunchBackAt">กลับมาเวลา</string>
     <string name="lunchBreak">พักกลางวัน</string>
     <string name="lunchDuration">ระยะเวลา</string>

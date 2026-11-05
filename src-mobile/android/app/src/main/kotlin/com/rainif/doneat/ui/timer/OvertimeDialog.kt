@@ -43,9 +43,15 @@ fun OvertimeDialog(session: ShiftSession, text: TimerText, dark: Boolean, onDism
         maxOf(session.snapshot(now)?.plannedEndAtMs ?: now, now)
     }
     var endAtMs by remember { mutableDoubleStateOf(maxOf(minimum, session.state.overtimeEndAtMs ?: minimum)) }
+    // Fixed on open, like iOS `OvertimeSheetMode`: the entry button already
+    // says "Adjust overtime" once overtime is set.
+    val mode = remember {
+        val now = System.currentTimeMillis().toDouble()
+        OvertimeDialogs.mode(session.state.overtimeEndAtMs != null, session.snapshot(now)?.plannedEndAtMs, now)
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.overtimeTitle)) },
+        title = { Text(stringResource(mode.title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
                 Text(stringResource(R.string.overtimeDescription), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -65,12 +71,28 @@ fun OvertimeDialog(session: ShiftSession, text: TimerText, dark: Boolean, onDism
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { onConfirm(endAtMs) }) { Text(stringResource(R.string.confirmOvertime)) } },
+        confirmButton = { TextButton(onClick = { onConfirm(endAtMs) }) { Text(stringResource(mode.confirm)) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) } },
     )
 }
 
+/** What the dialog is doing; decides its title and confirm label. */
+internal enum class OvertimeDialogMode(val title: Int, val confirm: Int) {
+    /** No overtime yet and the shift is still running. */
+    Add(R.string.overtimeTitle, R.string.confirmOvertime),
+    /** Overtime is already set; this moves its end. */
+    Adjust(R.string.adjustOvertime, R.string.saveAction),
+    /** No overtime yet, planned clock-off passed: recording time already worked. */
+    Log(R.string.logOvertimeTitle, R.string.saveAction),
+}
+
 internal object OvertimeDialogs {
+    fun mode(hasOvertime: Boolean, plannedEndAtMs: Double?, nowMs: Double): OvertimeDialogMode = when {
+        hasOvertime -> OvertimeDialogMode.Adjust
+        plannedEndAtMs != null && nowMs >= plannedEndAtMs -> OvertimeDialogMode.Log
+        else -> OvertimeDialogMode.Add
+    }
+
     /**
      * The first moment at the picked clock reading that is not before
      * [minimumMs]: later today, or tomorrow once today's has passed, so an

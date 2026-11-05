@@ -593,6 +593,7 @@
     <string name="liveActivityScheduleNote">このシフトのリマインダーを予約します。集中モードやシステムの制限により、表示されるタイミングが変わることがあります。</string>
     <string name="liveActivityStartTime">開始時刻</string>
     <string name="lockScreenLiveActivity">ロック画面に表示</string>
+    <string name="logOvertimeTitle">残業を記録</string>
     <string name="lunchBackAt">再開時刻</string>
     <string name="lunchBreak">昼休み</string>
     <string name="lunchDuration">長さ</string>

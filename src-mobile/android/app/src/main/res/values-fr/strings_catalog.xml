@@ -597,6 +597,7 @@
     <string name="liveActivityScheduleNote">Nous programmerons le rappel pour cette journée. Les modes de concentration et les limites du système peuvent modifier le moment où il apparaît.</string>
     <string name="liveActivityStartTime">Heure de début</string>
     <string name="lockScreenLiveActivity">Afficher sur l\'écran verrouillé</string>
+    <string name="logOvertimeTitle">Noter des heures sup.</string>
     <string name="lunchBackAt">Reprise à</string>
     <string name="lunchBreak">Pause déjeuner</string>
     <string name="lunchDuration">Durée</string>

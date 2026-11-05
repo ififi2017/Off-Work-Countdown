@@ -593,6 +593,7 @@
     <string name="liveActivityScheduleNote">Chúng tôi sẽ lên lịch nhắc cho ca này. Chế độ tập trung và giới hạn hệ thống có thể ảnh hưởng thời điểm hiển thị.</string>
     <string name="liveActivityStartTime">Giờ bắt đầu</string>
     <string name="lockScreenLiveActivity">Hiển thị trên Màn hình khóa</string>
+    <string name="logOvertimeTitle">Ghi lại giờ làm thêm</string>
     <string name="lunchBackAt">Trở lại lúc</string>
     <string name="lunchBreak">Nghỉ trưa</string>
     <string name="lunchDuration">Thời lượng</string>

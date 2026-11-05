@@ -593,6 +593,7 @@
     <string name="liveActivityScheduleNote">Kami akan menjadwalkan pengingat untuk shift ini. Mode fokus dan batasan sistem dapat memengaruhi waktu tampilnya.</string>
     <string name="liveActivityStartTime">Waktu mulai</string>
     <string name="lockScreenLiveActivity">Tampilkan di Layar Terkunci</string>
+    <string name="logOvertimeTitle">Catat lembur</string>
     <string name="lunchBackAt">Kembali pukul</string>
     <string name="lunchBreak">Istirahat makan siang</string>
     <string name="lunchDuration">Durasi</string>

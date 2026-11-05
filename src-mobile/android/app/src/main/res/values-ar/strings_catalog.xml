@@ -603,6 +603,7 @@
     <string name="liveActivityScheduleNote">سنجدول التذكير لهذا الدوام. قد تؤثر أوضاع التركيز وقيود النظام في وقت ظهوره.</string>
     <string name="liveActivityStartTime">وقت البدء</string>
     <string name="lockScreenLiveActivity">إظهاره على شاشة القفل</string>
+    <string name="logOvertimeTitle">تسجيل وقت إضافي</string>
     <string name="lunchBackAt">العودة في</string>
     <string name="lunchBreak">استراحة الغداء</string>
     <string name="lunchDuration">المدة</string>

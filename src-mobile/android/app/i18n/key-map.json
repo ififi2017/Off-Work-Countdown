@@ -2231,6 +2231,9 @@
     "lockScreenLiveActivity": {
       "resource": "string/lockScreenLiveActivity"
     },
+    "logOvertimeTitle": {
+      "resource": "string/logOvertimeTitle"
+    },
     "lunchBackAt": {
       "resource": "string/lunchBackAt"
     },
