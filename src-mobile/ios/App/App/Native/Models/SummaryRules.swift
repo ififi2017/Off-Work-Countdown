@@ -358,9 +358,16 @@ nonisolated enum SummaryRules {
                 : intersect(observedWorkSegments(day.observations, asOfMs: asOfMs, closesOpen: day.isActiveAnchor), day.resolvedSegments)
             let elapsedRegular = regular.map { NativeShiftSegment(startAtMs: $0.startAtMs, endAtMs: min($0.endAtMs, asOfMs)) }
             let elapsedOvertime = day.overtimeSegments.map { NativeShiftSegment(startAtMs: $0.startAtMs, endAtMs: min($0.endAtMs, asOfMs)) }
-            let workedMs = mergedDuration(elapsedRegular + elapsedOvertime)
+            let measuredWorkedMs = mergedDuration(elapsedRegular + elapsedOvertime)
             let regularMs = mergedDuration(elapsedRegular)
-            actualOvertimeMs += max(0, workedMs - regularMs)
+            // Plan 024: counted hours replace the measured overtime length.
+            let countScale = CountedOvertime.scale(
+                fullMeasuredMs: max(0, mergedDuration(regular + day.overtimeSegments) - mergedDuration(regular)),
+                countedMs: day.overtimeCountedMs
+            )
+            let overtimeMs = max(0, measuredWorkedMs - regularMs) * countScale
+            let workedMs = countScale == 1 ? measuredWorkedMs : regularMs + overtimeMs
+            actualOvertimeMs += countScale == 1 ? max(0, workedMs - regularMs) : overtimeMs
             let multiplier = OvertimePay.normalized(day.overtimePayMultiplier ?? 1)
             if workedMs > 0 {
                 actualDays += 1
@@ -371,16 +378,19 @@ nonisolated enum SummaryRules {
                 }
             }
             if day.isActiveAnchor || kind == "scheduled" {
-                let futureMs = mergedDuration((day.resolvedSegments + day.overtimeSegments).map {
+                let futureAllMs = mergedDuration((day.resolvedSegments + day.overtimeSegments).map {
                     NativeShiftSegment(startAtMs: max($0.startAtMs, asOfMs), endAtMs: $0.endAtMs)
                 })
+                let futureRegularMs = mergedDuration(day.resolvedSegments.map {
+                    NativeShiftSegment(startAtMs: max($0.startAtMs, asOfMs), endAtMs: $0.endAtMs)
+                })
+                let futureMs = countScale == 1
+                    ? futureAllMs
+                    : futureRegularMs + max(0, futureAllMs - futureRegularMs) * countScale
                 if futureMs > 0 {
                     if workedMs <= 0 { forecastDays += 1 }
                     forecastMs += futureMs
                     if !usesFixedMonthlyPay {
-                        let futureRegularMs = mergedDuration(day.resolvedSegments.map {
-                            NativeShiftSegment(startAtMs: max($0.startAtMs, asOfMs), endAtMs: $0.endAtMs)
-                        })
                         let paidFutureMs = weightedOvertimeMs(futureMs, regularMs: futureRegularMs, multiplier: multiplier)
                         forecastPay += (rate ?? 0) * (plannedMs > 0 ? paidFutureMs / plannedMs : (workedMs <= 0 ? 1 : 0))
                     }
@@ -619,6 +629,9 @@ nonisolated struct NativeRecordsActualForecastDay: Codable, Sendable {
     let overtimeSegments: [NativeShiftSegment]
     /// Plan 024: the multiplier of the day's latest overtime declaration.
     var overtimePayMultiplier: Double? = nil
+    /// Plan 024: the hours the day's latest declaration counts, replacing the
+    /// measured overtime length. `nil` or outside 0...24 h is the measured one.
+    var overtimeCountedMs: Double? = nil
     let observations: [NativeRecordsSummaryObservation]
     let isActiveAnchor: Bool
 }

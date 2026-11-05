@@ -142,7 +142,8 @@ final class ShiftSessionStore {
                     plannedEndAtMs: shift?.plannedEndAtMs,
                     payMultiplier: self.session.effectiveOvertimePayMultiplier == 1
                         ? nil
-                        : self.session.effectiveOvertimePayMultiplier
+                        : self.session.effectiveOvertimePayMultiplier,
+                    overtimeStartAtMs: self.session.overtimeStartAtMs
                 ))
             }
             let zone = self.session.writingTimeZone()
@@ -803,12 +804,26 @@ final class ShiftSessionStore {
     }
 
     @discardableResult
-    func applyOvertime(date: Date, declaredAt: Date = .now, payMultiplier: Double? = nil) -> RecordCommand<Bool> {
+    func applyOvertime(
+        date: Date,
+        declaredAt: Date = .now,
+        payMultiplier: Double? = nil,
+        startDate: Date? = nil
+    ) -> RecordCommand<Bool> {
         records.submitCommand { [self] in
             let endAtMs = date.timeIntervalSince1970 * 1_000
             let multiplier = OvertimePay.normalized(payMultiplier ?? session.effectiveOvertimePayMultiplier)
+            // Plan 024: a start at or before the planned end is the same as none.
+            let plannedEndAtMs = session.snapshot(at: declaredAt)?.plannedEndAtMs
+            let startAtMs: Double? = startDate
+                .map { $0.timeIntervalSince1970 * 1_000 }
+                .flatMap { start in
+                    guard start.isFinite, start < endAtMs, let plannedEndAtMs, start > plannedEndAtMs else { return nil }
+                    return start
+                }
             guard !records.blocksWrites, endAtMs.isFinite,
                   session.overtimeEndAtMs != endAtMs || session.earlyOffAtMs != nil
+                    || session.overtimeStartAtMs != startAtMs
                     || session.effectiveOvertimePayMultiplier != multiplier else { return false }
             return records.withBatchedWrites {
                 let revokedCompletionAtMs = self.session.earlyOffAtMs ?? activeCountdownEndAtMs
@@ -816,6 +831,7 @@ final class ShiftSessionStore {
                 // Pinned for this shift so the declaration and the timer agree
                 // even if the default changes before the shift ends.
                 self.session.overtimePayMultiplier = multiplier
+                self.session.overtimeStartAtMs = startAtMs
                 self.session.countdownStarted = true
                 activeCountdownEndAtMs = self.session.overtimeEndAtMs
                 if self.session.sessionTimeZoneIdentifier != nil {

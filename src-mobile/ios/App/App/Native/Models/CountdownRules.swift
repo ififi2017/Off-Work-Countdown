@@ -144,6 +144,8 @@ nonisolated struct NativeRulesInput: Codable, Equatable, Sendable {
     /// Plan 024: pay multiplier for effective time past the planned end.
     /// `nil` is 1, the original hourly rate; 0 is unpaid overtime.
     var overtimePayMultiplier: Double? = nil
+    /// Plan 024: when the overtime starts; `nil` stretches the last segment.
+    var overtimeStartAtMs: Double? = nil
 }
 
 /// How a monthly salary becomes daily pay (`DailySalaryBasis` in
@@ -166,6 +168,6 @@ nonisolated extension NativeRulesInput {
                           workdays: workdays, schedule: schedule, breakStartTime: breakStartTime,
                           breakDurationMinutes: breakDurationMinutes, overtimeEndAtMs: overtimeEndAtMs,
                           forcedWorkdayStartMs: forcedWorkdayStartMs, timeZoneIdentifier: timeZoneIdentifier,
-                          extendedSchedule: extendedSchedule)
+                          extendedSchedule: extendedSchedule, overtimeStartAtMs: overtimeStartAtMs)
     }
 }

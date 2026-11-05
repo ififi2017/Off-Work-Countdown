@@ -888,7 +888,7 @@ final class RecordsQueries {
             date: date,
             appearance: appearance,
             workMs: share.workMs,
-            overtimeMs: share.overtimeMs,
+            overtimeMs: countedOvertimeMs(share.overtimeMs, on: resolution, previous: previous),
             breakMs: share.breakMs,
             freeMs: share.freeMs,
             observationCount: (observationIndex()[resolution.dayKey] ?? []).count,
@@ -924,7 +924,8 @@ final class RecordsQueries {
                 .compactMap { $0 }
                 .filter { counted.contains($0.dayKey) }
             guard !contributors.isEmpty else { return nil }
-            let allocation = dayAllocation(day, contributedBy: contributors, now: now)
+            var allocation = dayAllocation(day, contributedBy: contributors, now: now)
+            allocation.overtimeMs = countedOvertimeMs(allocation.overtimeMs, on: day, previous: previousDay(before: day, in: byKey))
             // A neighbouring record alone does not make this a covered day.
             // Keep only actual spillover, or a record/correction on this date.
             guard recordedKeys.contains(day.dayKey)
@@ -1101,6 +1102,7 @@ final class RecordsQueries {
                 plannedSegments: day.baseScheduleSegments,
                 overtimeSegments: actualKind == nil ? [] : overtimeSegments(on: day),
                 overtimePayMultiplier: actualKind == nil ? nil : overtimePayMultiplier(on: day),
+                overtimeCountedMs: actualKind == nil ? nil : overtimeCountedMs(on: day),
                 observations: observations,
                 isActiveAnchor: activeAnchorDayKey == day.dayKey
             )
@@ -1282,6 +1284,29 @@ final class RecordsQueries {
     /// chose; 1 when it names none (older declarations) or there is none.
     func overtimePayMultiplier(on resolution: DayResolution) -> Double {
         RecordsMetrics.declaredPayMultiplier(latestOvertimeDeclaration(onDayKey: resolution.dayKey))
+    }
+
+    /// Plan 024: the hours the day's latest declaration counts, if it names any.
+    func overtimeCountedMs(on resolution: DayResolution) -> Double? {
+        RecordsMetrics.declaredCountedMs(latestOvertimeDeclaration(onDayKey: resolution.dayKey))
+    }
+
+    /// Plan 024: counted / measured overtime for a day (1 without an override).
+    func overtimeCountScale(on resolution: DayResolution) -> Double {
+        guard let counted = overtimeCountedMs(on: resolution),
+              let segment = overtimeSegments(on: resolution).first else { return 1 }
+        return CountedOvertime.scale(fullMeasuredMs: segment.endAtMs - segment.startAtMs, countedMs: counted)
+    }
+
+    /// Plan 024: measured overtime milliseconds shown on `resolution`'s cell,
+    /// turned into counted ones. An overnight spill from the day before takes
+    /// that day's factor when this day has none.
+    private func countedOvertimeMs(_ measured: Int64, on resolution: DayResolution, previous: DayResolution?) -> Int64 {
+        guard measured > 0 else { return measured }
+        var scale = overtimeCountScale(on: resolution)
+        if scale == 1, let previous { scale = overtimeCountScale(on: previous) }
+        guard scale != 1 else { return measured }
+        return Int64((Double(measured) * scale).rounded())
     }
 
     func overtimeSegments(on resolution: DayResolution) -> [NativeShiftSegment] {

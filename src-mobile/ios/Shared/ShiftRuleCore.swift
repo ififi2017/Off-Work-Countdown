@@ -123,22 +123,28 @@ nonisolated struct ShiftOptions: Sendable {
     var breakStartTime: String?
     var breakDurationMinutes: Int
     var overtimeEndAtMs: Double?
+    /// Plan 024: when the overtime starts. At or before the planned end (or
+    /// `nil`) the last segment is stretched; later, a segment is appended.
+    var overtimeStartAtMs: Double?
 
-    init(breakStartTime: String?, breakDurationMinutes: Int, overtimeEndAtMs: Double? = nil) {
+    init(breakStartTime: String?, breakDurationMinutes: Int, overtimeEndAtMs: Double? = nil, overtimeStartAtMs: Double? = nil) {
         self.breakStartTime = breakStartTime?.isEmpty == false ? breakStartTime : nil
         self.breakDurationMinutes = breakDurationMinutes
         self.overtimeEndAtMs = overtimeEndAtMs
+        self.overtimeStartAtMs = overtimeStartAtMs
     }
 
     init(_ input: ScheduleRuleInput) {
         breakStartTime = input.breakStartTime?.isEmpty == false ? input.breakStartTime : nil
         breakDurationMinutes = input.breakDurationMinutes
         overtimeEndAtMs = input.overtimeEndAtMs == 0 ? nil : input.overtimeEndAtMs
+        overtimeStartAtMs = input.overtimeStartAtMs == 0 ? nil : input.overtimeStartAtMs
     }
 
     var withoutOvertime: ShiftOptions {
         var copy = self
         copy.overtimeEndAtMs = nil
+        copy.overtimeStartAtMs = nil
         return copy
     }
 }
@@ -164,10 +170,15 @@ nonisolated struct ShiftTimeline: Equatable, Sendable {
             else { return false }
             previousEnd = segment.endAtMs
         }
-        return plannedEndAtMs > startAtMs
-            && plannedEndAtMs > last.startAtMs
-            && plannedEndAtMs <= last.endAtMs
-            && endAtMs == last.endAtMs
+        guard plannedEndAtMs > startAtMs, endAtMs == last.endAtMs else { return false }
+        if plannedEndAtMs > last.startAtMs && plannedEndAtMs <= last.endAtMs { return true }
+        // Plan 024: overtime appended after a gap. The planned end closes the
+        // second-to-last segment and the last one starts after it.
+        guard overtimeEndAtMs != nil, segments.count >= 2 else { return false }
+        let before = segments[segments.count - 2]
+        return plannedEndAtMs > before.startAtMs
+            && plannedEndAtMs == before.endAtMs
+            && last.startAtMs > plannedEndAtMs
     }
 
     var durationMs: Double {
@@ -618,7 +629,12 @@ nonisolated final class CivilZone {
         }
         let overtimeEndAtMs = options.overtimeEndAtMs.flatMap { $0 > plannedEndAtMs ? $0 : nil }
         if let overtimeEndAtMs, let last = segments.last {
-            segments[segments.count - 1] = NativeShiftSegment(startAtMs: last.startAtMs, endAtMs: overtimeEndAtMs)
+            if let overtimeStartAtMs = options.overtimeStartAtMs,
+               overtimeStartAtMs.isFinite, overtimeStartAtMs > plannedEndAtMs, overtimeStartAtMs < overtimeEndAtMs {
+                segments.append(NativeShiftSegment(startAtMs: overtimeStartAtMs, endAtMs: overtimeEndAtMs))
+            } else {
+                segments[segments.count - 1] = NativeShiftSegment(startAtMs: last.startAtMs, endAtMs: overtimeEndAtMs)
+            }
         }
         return ShiftTimeline(segments: segments, plannedEndAtMs: plannedEndAtMs, overtimeEndAtMs: overtimeEndAtMs)
     }
@@ -711,6 +727,26 @@ nonisolated enum OvertimePay {
         if tenths == 0 { return 0 }
         guard tenths >= 5, tenths <= 50 else { return defaultMultiplier }
         return tenths / 10
+    }
+}
+
+/// Plan 024: the hours a declaration counts, replacing the measured overtime
+/// length in statistics and pay. Mirrors `normalizeCountedOvertimeMs` and
+/// `overtimeCountScale` in `lib/summary.ts`.
+nonisolated enum CountedOvertime {
+    static let maximumMs = 24.0 * 3_600_000
+
+    /// `nil` unless finite and 0 to 24 hours.
+    static func normalized(_ value: Double?) -> Double? {
+        guard let value, value.isFinite, value >= 0, value <= maximumMs else { return nil }
+        return value
+    }
+
+    /// counted / full measured length; 1 without a valid counted value or any
+    /// measured overtime to scale.
+    static func scale(fullMeasuredMs: Double, countedMs: Double?) -> Double {
+        guard let counted = normalized(countedMs), fullMeasuredMs.isFinite, fullMeasuredMs > 0 else { return 1 }
+        return counted / fullMeasuredMs
     }
 }
 

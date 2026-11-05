@@ -112,6 +112,7 @@ final class ShiftSession {
         static let forcedWorkdayDate = "ios.native.forcedWorkdayDate"
         static let overtimeEndAtMs = "ios.native.overtimeEndAtMs"
         static let overtimePayMultiplier = "ios.native.sessionOvertimePayMultiplier"
+        static let overtimeStartAtMs = "ios.native.overtimeStartAtMs"
         static let earlyStartAtMs = "ios.native.earlyStartAtMs"
         static let earlyStartUntilMs = "ios.native.earlyStartUntilMs"
         static let todayScheduleOverride = "ios.native.todayScheduleOverride"
@@ -230,7 +231,16 @@ final class ShiftSession {
                 defaults.removeObject(forKey: Key.overtimeEndAtMs)
                 // The per-shift pay choice goes with the overtime it priced.
                 if overtimePayMultiplier != nil { overtimePayMultiplier = nil }
+                if overtimeStartAtMs != nil { overtimeStartAtMs = nil }
             }
+        }
+    }
+    /// Plan 024: when this shift's overtime starts, after a rest. `nil` means
+    /// right at the planned end. Cleared together with `overtimeEndAtMs`.
+    var overtimeStartAtMs: Double? {
+        didSet {
+            if let overtimeStartAtMs { defaults.set(overtimeStartAtMs, forKey: Key.overtimeStartAtMs) }
+            else { defaults.removeObject(forKey: Key.overtimeStartAtMs) }
         }
     }
     /// Plan 024: this shift's overtime pay multiplier (0 = unpaid). `nil` uses
@@ -336,6 +346,7 @@ final class ShiftSession {
         forcedWorkdayDate = storedForcedDate ?? (defaults.bool(forKey: Key.legacyForceToday) ? Self.dayKey(for: .now) : nil)
         overtimeEndAtMs = defaults.object(forKey: Key.overtimeEndAtMs) as? Double
         overtimePayMultiplier = defaults.object(forKey: Key.overtimePayMultiplier) as? Double
+        overtimeStartAtMs = defaults.object(forKey: Key.overtimeStartAtMs) as? Double
         earlyOffAtMs = defaults.object(forKey: Key.earlyOffAtMs) as? Double
         earlyOffShiftEndAtMs = defaults.object(forKey: Key.earlyOffShiftEndAtMs) as? Double
         earlyOffSnapshot = Self.decodeEarlyOffSnapshot(from: defaults)
@@ -581,7 +592,8 @@ final class ShiftSession {
             timeZoneIdentifier: rulesTimeZoneIdentifier,
             extendedSchedule: extendedSchedulePlan(at: date, using: source),
             dailySalaryBasis: preferences.dailySalaryBasis,
-            overtimePayMultiplier: applyOverride ? effectiveOvertimePayMultiplier : nil
+            overtimePayMultiplier: applyOverride ? effectiveOvertimePayMultiplier : nil,
+            overtimeStartAtMs: applyOverride ? overtimeStartAtMs : nil
         )
         return pinningCurrentShift(
             applyingLeave(to: input),
