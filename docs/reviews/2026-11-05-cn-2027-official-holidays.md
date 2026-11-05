@@ -26,12 +26,17 @@ iOS、Watch 和 Android 使用同一份 `HolidayTemplates.json`；Web/Desktop �
 - [x] 使用固定 wheel 和上游文件两次完整生成，字节一致；所有名称、中国历史日期和其他 248 个地区与原始模板一致。Web/Desktop 仅两份文件更新。
 - [x] 数据校验、Desktop 导出一致性、各端版本 3.2.5 一致性检查。
 - [x] 完整 Vitest：59 个文件、721 项通过；lint、iOS 文案及 TypeScript/iOS/Android 规则 fixture 检查通过。Android extended fixture 按真实 Swift 重新生成，只有 `holidayDataset` 与来源哈希更新，所有规则答案不变。
-- [x] iOS 无界面 simulator build（含 App、Widget、Watch）通过。
-- [ ] iOS 节假日／日期标注／请假规划自动测试执行。
-- [ ] Android 四模块测试、lint 与 Debug/Release 构建。
+- [x] iOS 无界面 simulator build（含 App、Widget、Watch）通过。另直接编译并执行真实 Swift 核心，验证 2027 年正式覆盖、34 个日期/5 个补班日、节日与补班标注均无推测、2028 年未覆盖。该直接检查不代替 AppTests 的模拟器执行。
+- [ ] iOS AppTests 执行未通过：节假日／日期标注／请假规划／分组测试均编译成功，但两次运行各等待约五分钟仍未启动任何用例，已结束运行。未把编译成功、零项测试或中断当作通过；全程最多一个模拟器，没有手动视觉验收。
+- [x] Android 四模块单测共 807 项通过（domain 469、data 97、design-system 13、app 228），逐份 JUnit XML 核对失败/错误/跳过均为 0。
+- [x] Android 全部门禁成功（6m20s、188 tasks）：四模块测试、`lintDebug`、`assembleDebug`、`assembleRelease`。lint 为 0 error、75 warning、4 hint；保留已有告警。iOS 构建产物与 Android Debug/Release APK 中的日历 SHA256 均精确匹配锁定输出。
 
 没有执行 iOS 模拟器视觉验收或真机升级验证。本轮通过 Xcode MCP 打开工程时，连接要求本机授权，因此使用仓库已规定的 CLI 无界面构建/自动测试；未把接口授权失败写成构建失败。
 
 Android 漂移命令只读核对 `9252fdfd..origin/main` 的共享规则路径，共 71 条，最新 `08dbfd22`、最早 `a6a6c382`。本轮只更新获授权的正式假期数据与测试，不推进冻结源或移植其他主干规则。
 
 测试子任务使用工具明确配置的 GPT-6.1 Sol / High，主代理审查并集成；主代理会话未提供可独立核对的底层模型名称。发布状态将在实际证据取得后记录，不以本地检查代替上传、审核或上架。
+
+Web build 与 `check:build:web` 已通过。PR [#362](https://github.com/ififi2017/Off-Work-Countdown/pull/362) 的 [Vercel 预览](https://off-work-30-git-codex-cn-holidays-2027-ififi2017s-projects.vercel.app)已生成；不据预览部署状态声明生产发布。
+
+本地日志：`/private/tmp/doneat-cn2027-tests-final.log`、`doneat-cn2027-web-build.log`、`doneat-cn2027-ios-build.log`、`doneat-cn2027-ios-tests-final.log`、`doneat-cn2027-android-final.log`（均在 `/private/tmp/`）。Swift 直接检查输出为 `/private/tmp/doneat-cn2027-swift-smoke/output.log`。PR 仍未合并；没有上传或发布商店包。
