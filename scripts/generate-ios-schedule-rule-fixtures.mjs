@@ -496,6 +496,123 @@ function monthBasisFixtures() {
   return { scenarios: monthScenarios, salaries: monthBasisSalaries, snapshots, summaries, recordsIncome, monthlyEquivalent, monthCounts };
 }
 
+// Plan 024 phase 3 (`overtimePayMultiplier`). Self-contained, like the month
+// basis section, so older sections keep their indices and bytes.
+const overtimeMultipliers = [0, 0.5, 1, 1.5, 2, 2.7, 5, 0.3, 5.1, -1, 1.55];
+const overtimeSalaries = [
+  { salaryAmount: "500", salaryType: "daily", monthlyWorkingDays: 22, annualBonusMonths: 0, dailySalaryBasis: "fixed" },
+  { salaryAmount: "22000", salaryType: "monthly", monthlyWorkingDays: 22, annualBonusMonths: 2, dailySalaryBasis: "fixed" },
+  { salaryAmount: "", salaryType: "monthly", monthlyWorkingDays: 22, annualBonusMonths: 0, dailySalaryBasis: "fixed" },
+];
+const overtimeScenarios = [
+  { id: "day-no-lunch", ...hours[1], zone: "Asia/Shanghai", base: Date.UTC(2026, 10, 4, 3) },
+  { id: "day-lunch", ...hours[0], zone: "Asia/Shanghai", base: Date.UTC(2026, 10, 4, 6) },
+  { id: "overnight-shift", ...hours[2], zone: "Asia/Shanghai", base: Date.UTC(2026, 10, 4, 15) },
+  { id: "new-york-lunch", ...hours[0], zone: "America/New_York", base: Date.UTC(2026, 10, 4, 18) },
+].map(({ id, startTime, endTime, breakStartTime, breakDurationMinutes, zone, base }) => ({
+  id, startTime, endTime, breakStartTime, breakDurationMinutes, zone, base,
+  workdays: [0, 1, 2, 3, 4, 5, 6], schedule: { mode: "classic" },
+}));
+
+function overtimeRules(scenario, nowMs, salary, extra = {}) {
+  return {
+    startTime: scenario.startTime,
+    endTime: scenario.endTime,
+    nowMs,
+    workdays: scenario.workdays,
+    schedule: scenario.schedule,
+    breakStartTime: scenario.breakStartTime,
+    breakDurationMinutes: scenario.breakDurationMinutes,
+    overtimeEndAtMs: extra.overtimeEndAtMs ?? null,
+    ...overtimeSalaries[salary],
+    forcedWorkdayStartMs: null,
+    timeZoneIdentifier: scenario.zone,
+    ...(extra.overtimePayMultiplier === undefined ? {} : { overtimePayMultiplier: extra.overtimePayMultiplier }),
+  };
+}
+
+function overtimePayFixtures() {
+  const snapshots = [];
+  const forecasts = [];
+  const normalize = [0, 0.5, 0.1, 0.4, 0.6, 1, 1.5, 2.5, 3.14, 4.9, 5, 5.01, 5.1, 10, -0.5, -1, 1e-9, 0.30000000000000004, 0.1 + 0.2 + 1.2, null, 0.05]
+    .map((value) => ({ value, expected: call("normalizeOvertimePayMultiplier", { value }).value }));
+
+  overtimeScenarios.forEach((scenario, sc) => {
+    const planned = call("snapshot", overtimeRules(scenario, scenario.base, 0));
+    const plannedEnd = planned.plannedEndAtMs;
+    for (const otMinutes of [45, 180, 540]) {
+      const ot = plannedEnd + otMinutes * minute;
+      const offsets = [-30 * minute, 0, 20 * minute, otMinutes * minute / 2, otMinutes * minute - 1, otMinutes * minute];
+      overtimeSalaries.forEach((_, s) => {
+        overtimeMultipliers.forEach((m, mi) => {
+          // Not every combination: rotate the offsets so the file stays small
+          // while each multiplier meets every salary, length and offset.
+          offsets.forEach((offset, oi) => {
+            if ((mi + oi + s) % 2 !== 0 && otMinutes !== 180) return;
+            const nowMs = plannedEnd + offset + (oi % 2 === 1 ? 0.25 : 0);
+            const rules = overtimeRules(scenario, nowMs, s, { overtimeEndAtMs: ot, overtimePayMultiplier: m });
+            const snapshot = call("snapshot", rules);
+            const extra = call("overtimePay", rules);
+            snapshots.push({
+              sc, s, m, ot, now: nowMs,
+              expected: {
+                dailySalary: snapshot.dailySalary, earnedSoFar: snapshot.earnedSoFar, payRatio: snapshot.payRatio,
+                overtimeElapsedMs: extra.overtimeElapsedMs, comparison: extra.comparison,
+              },
+            });
+          });
+        });
+      });
+    }
+    // Overtime beyond the declared end, and no overtime at all.
+    for (const m of [0, 1.5]) {
+      const rules = overtimeRules(scenario, plannedEnd + hour, 0, { overtimePayMultiplier: m });
+      const snapshot = call("snapshot", rules);
+      const extra = call("overtimePay", rules);
+      snapshots.push({ sc, s: 0, m, ot: null, now: plannedEnd + hour, expected: {
+        dailySalary: snapshot.dailySalary, earnedSoFar: snapshot.earnedSoFar, payRatio: snapshot.payRatio,
+        overtimeElapsedMs: extra.overtimeElapsedMs, comparison: extra.comparison,
+      } });
+    }
+
+    // Records: scheduled / corrected / observed days with declared overtime,
+    // one running day whose overtime reaches past "now".
+    for (const kind of ["scheduled", "corrected", "observed"]) {
+      for (const m of [undefined, 0, 1, 1.5, 3]) {
+        for (const asOfOffset of [-90 * minute, 5 * hour]) {
+          const segments = planned.segments;
+          const first = segments[0];
+          const last = segments[segments.length - 1];
+          const input = {
+            days: [{
+              dayKey: "2026-11-04",
+              actualKind: kind,
+              resolvedSegments: segments,
+              plannedSegments: segments,
+              overtimeSegments: [
+                { startAtMs: last.endAtMs, endAtMs: last.endAtMs + 90 * minute },
+                { startAtMs: last.endAtMs + 60 * minute, endAtMs: last.endAtMs + 150 * minute },
+              ],
+              ...(m === undefined ? {} : { overtimePayMultiplier: m }),
+              observations: kind === "observed"
+                ? [{ kind: "started", occurredAtMs: first.startAtMs + 5 * minute }, { kind: "stopped", occurredAtMs: last.endAtMs - 10 * minute }]
+                : [],
+              isActiveAnchor: asOfOffset < 0,
+            }],
+            periodDayKeys: ["2026-11-04"],
+            dailySalary: call("snapshot", overtimeRules(scenario, scenario.base, 0)).dailySalary,
+            asOfMs: last.endAtMs + asOfOffset,
+            salaryRules: overtimeRules(scenario, last.endAtMs + asOfOffset, 0),
+          };
+          forecasts.push({ sc, input, expected: call("recordsActualForecast", input) });
+        }
+      }
+    }
+  });
+
+  return { multipliers: overtimeMultipliers, salaries: overtimeSalaries, scenarios: overtimeScenarios, normalize, snapshots, forecasts };
+}
+
 /**
  * The fixture body as JSON text. iOS embeds it in Swift (below); Android
  * copies it verbatim (scripts/generate-android-rule-fixtures.mjs), so both
@@ -801,6 +918,7 @@ export function createScheduleRuleFixtureJson() {
   const section = (name, rows) =>
     `"${name}":[\n${rows.map((row) => JSON.stringify(row)).join(",\n")}\n]`;
   const monthBasis = monthBasisFixtures();
+  const overtimePay = overtimePayFixtures();
   const json = `{"version":3,
 "generator":"scripts/generate-ios-schedule-rule-fixtures.mjs",
 ${section("profiles", profiles)},
@@ -822,6 +940,9 @@ ${section("lifetimeIncome", lifetimeIncome)},
 ${section("actualForecast", actualForecast)},
 "monthBasis":{
 ${Object.entries(monthBasis).map(([name, rows]) => section(name, rows)).join(",\n")}
+},
+"overtimePay":{
+${Object.entries(overtimePay).map(([name, rows]) => section(name, rows)).join(",\n")}
 }
 }`;
   return json;

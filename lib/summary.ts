@@ -9,6 +9,7 @@ import {
   getMonthlySalaryEquivalent,
   isScheduledWorkday,
   isScheduledWorkdayInZone,
+  normalizeOvertimePayMultiplier,
   startOfCivilDayMs,
   type DailySalaryBasis,
   type WorkScheduleConfig,
@@ -85,6 +86,11 @@ export interface RecordsActualForecastDay {
   plannedSegments: RecordsSummarySegment[];
   /** Immutable declarations can overlap, so the shared rule unions them. */
   overtimeSegments: RecordsSummarySegment[];
+  /**
+   * Plan 024: the pay multiplier the day's latest overtime declaration chose
+   * (0 = unpaid). Omitted or invalid means 1, the original hourly rate.
+   */
+  overtimePayMultiplier?: number | null;
   observations: RecordsSummaryObservation[];
   /** Whether this civil date owns the currently running shift. */
   isActiveAnchor: boolean;
@@ -278,6 +284,20 @@ export function projectLifetimeGrossIncome(params: {
 }
 
 /**
+ * Plan 024: worked time with the part beyond the regular segments (the
+ * overtime) scaled by the day's multiplier. 1 returns `totalMs` untouched.
+ */
+export function weightedOvertimeMs(
+  totalMs: number,
+  regularMs: number,
+  multiplier: number
+): number {
+  if (multiplier === 1) return totalMs;
+  const regular = Math.min(totalMs, regularMs);
+  return regular + multiplier * (totalMs - regular);
+}
+
+/**
  * Split recorded/corrected work from schedule estimates for one visible
  * period. One logical day can enter only one side; actual always wins.
  */
@@ -338,12 +358,15 @@ export function summarizeRecordsActualAndForecast(params: {
         endAtMs: Math.min(segment.endAtMs, params.asOfMs),
       }));
       const workedMs = mergedSegmentDuration([...elapsedRegular, ...elapsedOvertime]);
-      actualOvertimeMs += Math.max(0, workedMs - mergedSegmentDuration(elapsedRegular));
+      const regularMs = mergedSegmentDuration(elapsedRegular);
+      actualOvertimeMs += Math.max(0, workedMs - regularMs);
+      const multiplier = normalizeOvertimePayMultiplier(day.overtimePayMultiplier ?? 1);
       if (workedMs > 0) {
         actualDays += 1;
         actualMs += workedMs;
         if (!usesFixedMonthlyPay) {
-          actualPay += (rate ?? 0) * (plannedMs > 0 ? workedMs / plannedMs : 1);
+          const paidMs = weightedOvertimeMs(workedMs, regularMs, multiplier);
+          actualPay += (rate ?? 0) * (plannedMs > 0 ? paidMs / plannedMs : 1);
         }
       }
       if (day.isActiveAnchor || day.actualKind === "scheduled") {
@@ -353,11 +376,18 @@ export function summarizeRecordsActualAndForecast(params: {
             startAtMs: Math.max(segment.startAtMs, params.asOfMs),
           })),
         );
+        const futureRegularMs = mergedSegmentDuration(
+          day.resolvedSegments.map(segment => ({
+            ...segment,
+            startAtMs: Math.max(segment.startAtMs, params.asOfMs),
+          })),
+        );
         if (futureMs > 0) {
           if (workedMs <= 0) forecastDays += 1;
           forecastMs += futureMs;
           if (!usesFixedMonthlyPay) {
-            forecastPay += (rate ?? 0) * (plannedMs > 0 ? futureMs / plannedMs : (workedMs <= 0 ? 1 : 0));
+            const paidFutureMs = weightedOvertimeMs(futureMs, futureRegularMs, multiplier);
+            forecastPay += (rate ?? 0) * (plannedMs > 0 ? paidFutureMs / plannedMs : (workedMs <= 0 ? 1 : 0));
           }
         }
       }

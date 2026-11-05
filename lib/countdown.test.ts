@@ -21,6 +21,9 @@ import {
   suggestOvertimeEndAtMs,
   getDailySalary,
   resolveMonthlyDivisor,
+  normalizeOvertimePayMultiplier,
+  overtimeElapsedMs,
+  overtimeRateComparison,
   getMonthlySalaryEquivalent,
   getShiftLengthHours,
   DEFAULT_MONTHLY_WORKING_DAYS,
@@ -817,5 +820,42 @@ describe("zoned civil time resolution", () => {
       "America/Los_Angeles"
     );
     expect(bounds.start.toISOString()).toBe("2026-11-01T08:30:00.000Z");
+  });
+});
+
+describe("overtime pay multiplier (plan 024)", () => {
+  const hourMs = 3_600_000;
+  const at = (hour: number, minute = 0) => new Date(2026, 10, 4, hour, minute).getTime();
+  const shift = () => buildShiftTimeline("09:00", "17:00", new Date(at(10)), { breakStartTime: "12:00", breakDurationMinutes: 60 });
+
+  it("accepts 0 and 0.5 to 5 in tenths, anything else is 1", () => {
+    for (const value of [0, 0.5, 1, 1.5, 2.7, 5]) expect(normalizeOvertimePayMultiplier(value)).toBe(value);
+    for (const value of [-1, 0.3, 0.05, 5.1, 10, 1.55, Number.NaN, Infinity, null, "2", undefined]) {
+      expect(normalizeOvertimePayMultiplier(value)).toBe(1);
+    }
+  });
+
+  it("scales only the effective time beyond the planned end", () => {
+    const extended = extendShiftWithOvertime(shift(), at(19));
+    // 7 effective planned hours (lunch excluded), 2 hours of overtime elapsed.
+    expect(calculateTimelinePayRatio(extended, at(19))).toBe(9 / 7);
+    expect(calculateTimelinePayRatio(extended, at(19), 1)).toBe(9 / 7);
+    expect(calculateTimelinePayRatio(extended, at(19), 0)).toBe(1);
+    expect(calculateTimelinePayRatio(extended, at(19), 1.5)).toBe((7 + 3) / 7);
+    expect(calculateTimelinePayRatio(extended, at(14), 0)).toBe(calculateTimelinePayRatio(extended, at(14)));
+    expect(calculateTimelinePayRatio(extended, at(19), 0.3)).toBe(calculateTimelinePayRatio(extended, at(19)));
+    expect(overtimeElapsedMs(extended, at(19))).toBe(2 * hourMs);
+    expect(overtimeElapsedMs(extended, at(12))).toBe(0);
+    expect(overtimeElapsedMs(shift(), at(19))).toBe(0);
+  });
+
+  it("compares against pay that ignores overtime", () => {
+    const extended = extendShiftWithOvertime(shift(), at(19));
+    const comparison = overtimeRateComparison(extended, at(19), 700)!;
+    expect(comparison.elapsedOvertimeMs).toBe(2 * hourMs);
+    expect(comparison.unpaidHourlyRate).toBeCloseTo(700 / 9);
+    expect(comparison.unpaidRateDecreasePercent).toBeCloseTo((1 - 7 / 9) * 100);
+    expect(overtimeRateComparison(extended, at(19), null)!.unpaidHourlyRate).toBeNull();
+    expect(overtimeRateComparison(shift(), at(19), 700)).toBeNull();
   });
 });

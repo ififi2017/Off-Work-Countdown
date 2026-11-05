@@ -305,7 +305,11 @@ const ORACLE_BODY = `
         schedule: input.schedule || null,
         timeZone: inputTimeZone(input),
       });
-      const payRatio = countdown.calculateTimelinePayRatio(shift, input.nowMs);
+      const payRatio = countdown.calculateTimelinePayRatio(
+        shift,
+        input.nowMs,
+        input.overtimePayMultiplier ?? 1
+      );
       return JSON.stringify({
         segments: shift.segments,
         startAtMs: countdown.getShiftStartAtMs(shift),
@@ -546,6 +550,28 @@ const ORACLE_BODY = `
 
     lifetimeIncome(inputJSON) {
       return JSON.stringify(summary.projectLifetimeGrossIncome(JSON.parse(inputJSON)));
+    },
+
+    // Plan 024 phase 3: the elapsed overtime and the "if unpaid" comparison.
+    overtimePay(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      const shift = resolveCurrentShift(input);
+      const dailySalary = summary.dailySalaryInMonth({
+        salary: monthBasisSalary(input),
+        anchorMs: countdown.getShiftStartAtMs(shift),
+        workdays: input.workdays,
+        schedule: input.schedule || null,
+        timeZone: inputTimeZone(input),
+      });
+      return JSON.stringify({
+        overtimeElapsedMs: countdown.overtimeElapsedMs(shift, input.nowMs),
+        comparison: countdown.overtimeRateComparison(shift, input.nowMs, dailySalary),
+      });
+    },
+
+    normalizeOvertimePayMultiplier(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({ value: countdown.normalizeOvertimePayMultiplier(input.value) });
     },
 
     recordsActualForecast(inputJSON) {

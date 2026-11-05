@@ -505,17 +505,105 @@ export function calculateTimelineProgress(
   );
 }
 
+/** The default and the "paid at the usual rate" overtime multiplier. */
+export const DEFAULT_OVERTIME_PAY_MULTIPLIER = 1;
+
+/**
+ * Plan 024: the overtime pay multiplier as stored. 0 means unpaid overtime;
+ * otherwise 0.5 to 5 in 0.1 steps. Anything else (NaN, negative, 0.3, 5.1,
+ * 1.55, non-numbers) falls back to 1, the original hourly rate.
+ */
+export function normalizeOvertimePayMultiplier(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return DEFAULT_OVERTIME_PAY_MULTIPLIER;
+  }
+  const tenths = Math.round(value * 10);
+  if (Math.abs(value * 10 - tenths) > 1e-9) return DEFAULT_OVERTIME_PAY_MULTIPLIER;
+  if (tenths === 0) return 0;
+  if (tenths < 5 || tenths > 50) return DEFAULT_OVERTIME_PAY_MULTIPLIER;
+  return tenths / 10;
+}
+
 /**
  * 按原时薪线性外推的计薪比例。正常班次结束为 1；发生加班时可以大于 1。
  * 午休不在 segments 内，所以休息期间 elapsed 保持不变。
+ *
+ * `overtimeMultiplier` (plan 024) scales the effective time beyond the planned
+ * end: (elapsed up to plannedEnd + m × elapsed beyond it) / planned duration.
+ * 1 (the default) is bit-for-bit the unscaled `elapsed / planned`.
  */
 export function calculateTimelinePayRatio(
   shift: ShiftTimeline,
-  nowMs: number
+  nowMs: number,
+  overtimeMultiplier: number = DEFAULT_OVERTIME_PAY_MULTIPLIER
 ): number {
   const plannedDuration = getPlannedShiftDurationMs(shift);
   if (plannedDuration <= 0) return 0;
-  return Math.max(0, getShiftElapsedMs(shift, nowMs) / plannedDuration);
+  const elapsed = getShiftElapsedMs(shift, nowMs);
+  const multiplier = normalizeOvertimePayMultiplier(overtimeMultiplier);
+  if (multiplier === 1) return Math.max(0, elapsed / plannedDuration);
+  const regular = Math.min(elapsed, plannedDuration);
+  return Math.max(0, (regular + multiplier * (elapsed - regular)) / plannedDuration);
+}
+
+/**
+ * Effective time worked beyond the planned end at `nowMs` (lunch gaps and
+ * overnight runs are already excluded by the segments). 0 outside overtime.
+ */
+export function overtimeElapsedMs(shift: ShiftTimeline | null, nowMs: number): number {
+  if (!shift?.overtimeEndAtMs || !Number.isFinite(nowMs)) return 0;
+  const planned = getPlannedShiftDurationMs(shift);
+  if (!Number.isFinite(planned) || planned <= 0) return 0;
+  const elapsed = getShiftElapsedMs(shift, nowMs);
+  if (!Number.isFinite(elapsed)) return 0;
+  return Math.max(0, elapsed - planned);
+}
+
+export interface OvertimeRateComparison {
+  elapsedOvertimeMs: number;
+  /** Daily pay spread over every effective hour worked so far, or null. */
+  unpaidHourlyRate: number | null;
+  /** How much lower that rate is than the planned-hours rate, in percent. */
+  unpaidRateDecreasePercent: number | null;
+}
+
+/**
+ * The "if overtime is unpaid" comparison: the fixed daily amount over the
+ * effective hours elapsed, and how far below the usual hourly rate that is.
+ * Null when the shift is not in overtime. The rate fields are null while the
+ * overtime is zero-length or there is no usable daily salary.
+ */
+export function overtimeRateComparison(
+  shift: ShiftTimeline | null,
+  nowMs: number,
+  dailySalary: number | null
+): OvertimeRateComparison | null {
+  if (!shift?.overtimeEndAtMs || !Number.isFinite(nowMs)) return null;
+  const plannedMs = getPlannedShiftDurationMs(shift);
+  if (!Number.isFinite(plannedMs) || plannedMs <= 0) return null;
+  const elapsedMs = getShiftElapsedMs(shift, nowMs);
+  if (!Number.isFinite(elapsedMs)) return null;
+  const elapsedOvertimeMs = Math.max(0, elapsedMs - plannedMs);
+  const result: OvertimeRateComparison = {
+    elapsedOvertimeMs,
+    unpaidHourlyRate: null,
+    unpaidRateDecreasePercent: null,
+  };
+  if (
+    elapsedOvertimeMs === 0 ||
+    dailySalary === null ||
+    !Number.isFinite(dailySalary) ||
+    dailySalary <= 0
+  ) {
+    return result;
+  }
+  // Lunch is already excluded and elapsedMs already stops at the effective end.
+  const hourlyRate = dailySalary / (elapsedMs / (60 * 60 * 1000));
+  const decreasePercent = (1 - 1 / calculateTimelinePayRatio(shift, nowMs)) * 100;
+  if (!Number.isFinite(hourlyRate) || !Number.isFinite(decreasePercent)) return result;
+  result.unpaidHourlyRate = hourlyRate;
+  result.unpaidRateDecreasePercent = decreasePercent;
+  return result;
 }
 
 // Percentage of the shift already worked, clamped to [0, 100].

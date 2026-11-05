@@ -935,3 +935,50 @@ describe("scheduled-month daily pay (plan 024)", () => {
     ).toBe(10 * 1100 + 4 * 1000);
   });
 });
+
+describe("overtime pay multiplier in Records (plan 024)", () => {
+  const hour = 3_600_000;
+  const day = (multiplier?: number | null, asOfHours = 24) => summarizeRecordsActualAndForecast({
+    dailySalary: 800,
+    asOfMs: asOfHours * hour,
+    days: [{
+      actualKind: "scheduled" as const,
+      resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+      plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+      overtimeSegments: [{ startAtMs: 17 * hour, endAtMs: 19 * hour }],
+      ...(multiplier === undefined ? {} : { overtimePayMultiplier: multiplier }),
+      observations: [],
+      isActiveAnchor: false,
+    }],
+  });
+
+  it("multiplies only the overtime part of a day", () => {
+    expect(day().actual.earnings).toBe(1000);
+    expect(day(1).actual.earnings).toBe(1000);
+    expect(day(0).actual.earnings).toBe(800);
+    expect(day(1.5).actual.earnings).toBe(1100);
+    expect(day(2).actual.earnings).toBe(1200);
+    expect(day(0.3).actual.earnings).toBe(1000);
+    expect(day(0).actual.hours).toBe(10);
+    expect(day(0).actualOvertimeHours).toBe(2);
+  });
+
+  it("applies the multiplier to overtime still ahead of now", () => {
+    const running = (multiplier: number) => summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      asOfMs: 18 * hour,
+      days: [{
+        actualKind: "scheduled" as const,
+        resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+        plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+        overtimeSegments: [{ startAtMs: 17 * hour, endAtMs: 20 * hour }],
+        overtimePayMultiplier: multiplier,
+        observations: [],
+        isActiveAnchor: true,
+      }],
+    });
+    expect(running(2).actual.earnings).toBe(1000);
+    expect(running(0).forecast.earnings).toBe(0);
+    expect(running(2).forecast.earnings).toBe(400);
+  });
+});
