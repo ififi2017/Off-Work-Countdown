@@ -1017,12 +1017,13 @@ final class RecordsQueries {
         }
         let today = recordsCalendar.startOfDay(for: now)
         let visibleKeys = Set(cells.map(\.dayKey))
-        let completedScheduledWorkdays = days.filter { day in
+        let completedScheduledDays = days.filter { day in
             guard visibleKeys.contains(day.dayKey), day.baseScheduleIsWorkday else { return false }
             let date = RecordJSON.date(fromDayKey: day.dayKey, calendar: recordsCalendar)
                 ?? day.shiftAnchorDate
             return recordsCalendar.startOfDay(for: date) < today
-        }.count
+        }
+        let completedScheduledWorkdays = completedScheduledDays.count
         let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
             ? "recordsSleepFromHealth"
             : "recordsSleepEstimated"
@@ -1033,6 +1034,7 @@ final class RecordsQueries {
             wakingFreeMs: combined.wakingFreeMs,
             estimatedIncome: recordsIncome(
                 completedWorkdays: completedScheduledWorkdays,
+                completedDayKeys: completedScheduledDays.map(\.dayKey),
                 at: now
             ),
             completedScheduledWorkdays: completedScheduledWorkdays,
@@ -1440,9 +1442,27 @@ final class RecordsQueries {
     /// Records and the timer intentionally answer different questions. Records
     /// counts completed base-schedule workdays at the current salary, leaving
     /// today's partial shift and declared overtime to the timer.
-    func recordsIncome(completedWorkdays: Int, at date: Date = .now) -> Double? {
+    ///
+    /// Under the scheduled-month basis each completed day is paid at its own
+    /// civil month's daily pay, so `completedDayKeys` groups them by month.
+    func recordsIncome(completedWorkdays: Int, completedDayKeys: [String] = [], at date: Date = .now) -> Double? {
         guard presentationSalaryEnabled, let input = rulesInput(at: date) else { return nil }
-        return SummaryRules.recordsIncome(completedWorkdays: completedWorkdays, rules: input)
+        var counts: [String: (anchorMs: Double, count: Int)] = [:]
+        if input.usesScheduledMonthBasis {
+            for key in completedDayKeys {
+                guard let day = RecordJSON.date(fromDayKey: key, calendar: recordsCalendar) else { continue }
+                let month = String(key.prefix(7))
+                let existing = counts[month]
+                counts[month] = (
+                    existing?.anchorMs ?? recordsCalendar.startOfDay(for: day).timeIntervalSince1970 * 1_000,
+                    (existing?.count ?? 0) + 1
+                )
+            }
+        }
+        let months = counts.sorted { $0.key < $1.key }.map {
+            NativeMonthWorkdayCount(anchorMs: $0.value.anchorMs, count: $0.value.count)
+        }
+        return SummaryRules.recordsIncome(completedWorkdays: completedWorkdays, rules: input, completedByMonth: months)
     }
 
     /// The window is entirely a property of the life profile — `now` is not

@@ -67,6 +67,9 @@ nonisolated struct SyncedPreferences: Codable, Equatable, Sendable {
     var monthlyWorkingDays: Double
     var annualBonusEnabled: Bool
     var annualBonusMonths: Double
+    /// Plan 024. Absent from archives written before it, and omitted again while
+    /// `fixed`, so those stay byte-for-byte what they were.
+    var dailySalaryBasis: DailySalaryBasis = .fixed
 
     var notificationMode: OffWorkNotificationMode
     var cycleEndSummaryNotificationEnabled: Bool
@@ -129,7 +132,7 @@ nonisolated struct SyncedPreferences: Codable, Equatable, Sendable {
         case rotationWorkDays, rotationRestDays, rotationAnchorMs
         case lunchEnabled, lunchStartMinutes, lunchDurationMinutes, recordsTimeZoneIdentifier
         case salaryAmount, salaryEnabled, salaryType, monthlyWorkingDays
-        case annualBonusEnabled, annualBonusMonths
+        case annualBonusEnabled, annualBonusMonths, dailySalaryBasis
         case notificationMode, cycleEndSummaryNotificationEnabled
         case lunchStartReminderEnabled, lunchEndReminderEnabled
         case microBreakEnabled, microBreakIntervalMinutes
@@ -161,6 +164,7 @@ extension SyncedPreferences {
         monthlyWorkingDays = try values.decode(Double.self, forKey: .monthlyWorkingDays)
         annualBonusEnabled = try values.decode(Bool.self, forKey: .annualBonusEnabled)
         annualBonusMonths = try values.decode(Double.self, forKey: .annualBonusMonths)
+        dailySalaryBasis = try values.decodeIfPresent(DailySalaryBasis.self, forKey: .dailySalaryBasis) ?? .fixed
         notificationMode = try values.decode(OffWorkNotificationMode.self, forKey: .notificationMode)
         cycleEndSummaryNotificationEnabled = try values.decode(Bool.self, forKey: .cycleEndSummaryNotificationEnabled)
         lunchStartReminderEnabled = try values.decode(Bool.self, forKey: .lunchStartReminderEnabled)
@@ -201,6 +205,7 @@ extension SyncedPreferences {
         try values.encode(monthlyWorkingDays, forKey: .monthlyWorkingDays)
         try values.encode(annualBonusEnabled, forKey: .annualBonusEnabled)
         try values.encode(annualBonusMonths, forKey: .annualBonusMonths)
+        if dailySalaryBasis != .fixed { try values.encode(dailySalaryBasis, forKey: .dailySalaryBasis) }
         try values.encode(notificationMode, forKey: .notificationMode)
         try values.encode(cycleEndSummaryNotificationEnabled, forKey: .cycleEndSummaryNotificationEnabled)
         try values.encode(lunchStartReminderEnabled, forKey: .lunchStartReminderEnabled)

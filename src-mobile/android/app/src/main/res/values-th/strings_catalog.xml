@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">หลังจบช่วงวันทำงานตามตารางแต่ละช่วง ดูสรุปเวลางานตามตาราง การแก้ไข และเวลาล่วงเวลาที่บันทึกไว้ได้ด้วย Plus</string>
     <string name="cycleEndSummaryNotificationTitle">สรุปเมื่อจบรอบงาน</string>
     <string name="daily">รายวัน</string>
+    <string name="dailySalaryBasisScheduledMonth">ตามตารางงานของเดือน</string>
+    <string name="dailySalaryBasisScheduledMonthNote">แต่ละเดือนจะหารด้วยจำนวนวันทำงานตามตารางของเดือนนั้น โดยนับวันหยุดนักขัตฤกษ์และวันทำงานชดเชยแล้ว การลาไม่ทำให้จำนวนวันเปลี่ยน</string>
     <string name="dark">มืด</string>
     <string name="daysShort">%1$s วัน</string>
     <string name="daysUntilRest">ถึงวันพัก</string>
@@ -626,6 +628,9 @@
     <string name="minutesUnit">นาที</string>
     <string name="moneyEarned">รายได้ที่ได้รับวันนี้</string>
     <string name="monthly">รายเดือน</string>
+    <string name="monthlyDailyPayNote">เงินเดือนเท่าเดิม เดือนที่มีวันทำงานน้อยจึงได้ค่าจ้างต่อวันสูงกว่า ข้อมูลนี้จะอัปเดตเมื่อคุณเปลี่ยนตารางงานหรือวันหยุด</string>
+    <string name="monthlyDailyPayTitle">ค่าจ้างรายวันแต่ละเดือน</string>
+    <string name="monthlyDailyPayUpcoming">เดือนถัดไป</string>
     <string name="monthlyWorkingDays">วันทำงานต่อเดือน</string>
     <string name="moodCelebrating">ฉลอง</string>
     <string name="moodCoffee">ต้องการกาแฟ</string>
@@ -1125,6 +1130,7 @@
     <string name="schedulePaintStartHint">เลือกกะ แล้วแตะหรือลากผ่านวันที่</string>
     <string name="scheduleRotation">รอบทำงาน/พัก</string>
     <string name="scheduleRotationDescription">ทำซ้ำจำนวนวันทำงานและวันพักที่กำหนดเอง</string>
+    <string name="scheduledMonthWorkdays">%1$s วันทำงาน</string>
     <string name="settings">การตั้งค่า</string>
     <string name="shareButton">แชร์</string>
     <string name="shareComposerNote">เปิดแผ่นแชร์ของระบบพร้อมแนบรูปภาพและลิงก์</string>

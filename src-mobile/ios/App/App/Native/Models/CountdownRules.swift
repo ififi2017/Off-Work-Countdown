@@ -134,9 +134,25 @@ nonisolated struct NativeRulesInput: Codable, Equatable, Sendable {
     /// Plan 018 P8's extended schedule, when the user has one switched on.
     /// `nil` keeps every rule on the fixed-hours path it took before.
     var extendedSchedule: ExtendedSchedulePlan? = nil
+    /// Plan 024: how a monthly salary becomes daily pay. `nil` is `fixed`.
+    var dailySalaryBasis: DailySalaryBasis? = nil
+}
+
+/// How a monthly salary becomes daily pay (`DailySalaryBasis` in
+/// `lib/countdown.ts`). `fixed` divides by the configured monthly working
+/// days; `scheduledMonth` divides each civil month by its own scheduled
+/// workdays. A daily salary ignores it.
+nonisolated enum DailySalaryBasis: String, Codable, Hashable, Sendable, CaseIterable {
+    case fixed
+    case scheduledMonth
 }
 
 nonisolated extension NativeRulesInput {
+    /// Whether pay divides each civil month by its own scheduled workdays.
+    var usesScheduledMonthBasis: Bool {
+        dailySalaryBasis == .scheduledMonth && salaryType == "monthly"
+    }
+
     var scheduleInput: ScheduleRuleInput {
         ScheduleRuleInput(startTime: startTime, endTime: endTime, nowMs: nowMs,
                           workdays: workdays, schedule: schedule, breakStartTime: breakStartTime,

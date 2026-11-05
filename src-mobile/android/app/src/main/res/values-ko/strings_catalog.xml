@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">예정된 연속 근무가 끝날 때마다 예정 근무, 변경 사항, 기록된 초과 근무를 요약해 보여 줍니다(Plus에서 이용 가능).</string>
     <string name="cycleEndSummaryNotificationTitle">근무 주기 종료 요약</string>
     <string name="daily">일급</string>
+    <string name="dailySalaryBasisScheduledMonth">월별 근무표 기준</string>
+    <string name="dailySalaryBasisScheduledMonthNote">매달 그달 근무표의 근무일 수로 나눕니다. 공휴일과 대체 근무일이 반영되며, 휴가를 써도 일수는 바뀌지 않습니다.</string>
     <string name="dark">다크</string>
     <string name="daysShort">%1$s일</string>
     <string name="daysUntilRest">휴무일까지</string>
@@ -626,6 +628,9 @@
     <string name="minutesUnit">분</string>
     <string name="moneyEarned">오늘 번 금액</string>
     <string name="monthly">월급</string>
+    <string name="monthlyDailyPayNote">월급은 그대로이므로 근무일이 적은 달일수록 일급이 높아집니다. 근무표나 공휴일을 바꾸면 여기에도 반영됩니다.</string>
+    <string name="monthlyDailyPayTitle">월별 일급</string>
+    <string name="monthlyDailyPayUpcoming">앞으로의 달</string>
     <string name="monthlyWorkingDays">월 근무일수</string>
     <string name="moodCelebrating">축하</string>
     <string name="moodCoffee">커피 필요</string>
@@ -1125,6 +1130,7 @@
     <string name="schedulePaintStartHint">근무를 선택한 뒤 날짜를 탭하거나 쓸어주세요.</string>
     <string name="scheduleRotation">근무/휴무 순환</string>
     <string name="scheduleRotationDescription">근무일과 휴무일 수를 반복합니다.</string>
+    <string name="scheduledMonthWorkdays">%1$s일 근무</string>
     <string name="settings">설정</string>
     <string name="shareButton">공유</string>
     <string name="shareComposerNote">이미지와 링크가 첨부된 시스템 공유 시트를 엽니다.</string>

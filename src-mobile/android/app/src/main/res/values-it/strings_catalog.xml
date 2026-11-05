@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">Dopo ogni serie di giorni programmati, trovi un riepilogo del lavoro previsto, delle modifiche e degli straordinari registrati, disponibile con Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Riepilogo di fine ciclo</string>
     <string name="daily">Giornaliero</string>
+    <string name="dailySalaryBasisScheduledMonth">In base ai turni del mese</string>
+    <string name="dailySalaryBasisScheduledMonthNote">Ogni mese viene diviso per i suoi giorni lavorativi in turno, con festività e giorni di recupero inclusi. Le assenze non cambiano il numero di giorni.</string>
     <string name="dark">Scuro</string>
     <string name="daysShort">%1$s g</string>
     <string name="daysUntilRest">Al giorno di riposo</string>
@@ -630,6 +632,9 @@
     <string name="minutesUnit">min</string>
     <string name="moneyEarned">Guadagno di oggi</string>
     <string name="monthly">Mensile</string>
+    <string name="monthlyDailyPayNote">Lo stipendio mensile non cambia, quindi i mesi con meno giorni lavorativi rendono di più al giorno. Si aggiorna quando modifichi turni o festività.</string>
+    <string name="monthlyDailyPayTitle">Paga giornaliera per mese</string>
+    <string name="monthlyDailyPayUpcoming">Prossimi mesi</string>
     <string name="monthlyWorkingDays">Giorni lavorativi al mese</string>
     <string name="moodCelebrating">In festa</string>
     <string name="moodCoffee">Serve caffè</string>
@@ -1131,6 +1136,7 @@
     <string name="schedulePaintStartHint">Scegli un turno, poi tocca le date o scorri su di esse.</string>
     <string name="scheduleRotation">Rotazione lavoro/riposo</string>
     <string name="scheduleRotationDescription">Ripeti i giorni di lavoro e di riposo.</string>
+    <string name="scheduledMonthWorkdays">%1$s giorni lavorativi</string>
     <string name="settings">Impostazioni</string>
     <string name="shareButton">Condividi</string>
     <string name="shareComposerNote">Apre il pannello di condivisione di sistema con immagine e link allegati.</string>

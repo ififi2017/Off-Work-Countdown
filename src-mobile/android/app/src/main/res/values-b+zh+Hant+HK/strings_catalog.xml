@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">每段排班結束後，查看計劃工時、調整記錄同已記錄嘅加班摘要（Plus 會員可用）。</string>
     <string name="cycleEndSummaryNotificationTitle">週期結束總結</string>
     <string name="daily">日薪</string>
+    <string name="dailySalaryBasisScheduledMonth">按當月排班</string>
+    <string name="dailySalaryBasisScheduledMonthNote">每個月按當月排班的上班日重新折算，法定假日和調休已計入，請假不影響天數。</string>
     <string name="dark">深色</string>
     <string name="daysShort">%1$s 日</string>
     <string name="daysUntilRest">距離休息日</string>
@@ -626,6 +628,9 @@
     <string name="minutesUnit">分鐘</string>
     <string name="moneyEarned">今日已賺</string>
     <string name="monthly">月薪</string>
+    <string name="monthlyDailyPayNote">月薪不變，上班日少的月份日薪更高。改動排班或假期後，這裡會跟着更新。</string>
+    <string name="monthlyDailyPayTitle">每月日薪</string>
+    <string name="monthlyDailyPayUpcoming">接下來幾個月</string>
     <string name="monthlyWorkingDays">每月計薪天數</string>
     <string name="moodCelebrating">慶祝</string>
     <string name="moodCoffee">想飲咖啡</string>
@@ -1125,6 +1130,7 @@
     <string name="schedulePaintStartHint">選擇班次，再點一下或滑過日期。</string>
     <string name="scheduleRotation">輪班輪休</string>
     <string name="scheduleRotationDescription">按自訂工作日數與休息日數循環。</string>
+    <string name="scheduledMonthWorkdays">%1$s 個上班日</string>
     <string name="settings">設定</string>
     <string name="shareButton">分享</string>
     <string name="shareComposerNote">將同時開啟附有圖片和連結的系統分享面板。</string>

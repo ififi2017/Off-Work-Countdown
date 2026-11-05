@@ -169,6 +169,7 @@ object Strings {
     fun rotationRestdayOption(res: Resources, day: String): String = res.getString(R.string.rotationRestdayOption, day)
     fun rotationStartDay(res: Resources, day: String): String = res.getString(R.string.rotationStartDay, day)
     fun rotationWorkdayOption(res: Resources, day: String): String = res.getString(R.string.rotationWorkdayOption, day)
+    fun scheduledMonthWorkdays(res: Resources, count: String): String = res.getString(R.string.scheduledMonthWorkdays, count)
     fun shareLunchText(res: Resources, time: String): String = res.getString(R.string.shareLunchText, time)
     fun shareText(res: Resources, time: String): String = res.getString(R.string.shareText, time)
     fun shareUntilStartText(res: Resources, time: String): String = res.getString(R.string.shareUntilStartText, time)

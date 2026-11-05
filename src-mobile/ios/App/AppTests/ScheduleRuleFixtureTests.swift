@@ -264,6 +264,78 @@ struct ScheduleRuleFixtureTests {
         )
     }
 
+    @Test("Scheduled-month daily pay: snapshots, summaries, Records income and month counts")
+    func scheduledMonthBasis() throws {
+        let file = try Self.fixtures()
+        let basis = file.monthBasis
+        var mismatches: [String] = []
+        func record(_ message: @autoclosure () -> String) {
+            if mismatches.count < 5 { mismatches.append(message()) }
+        }
+
+        for fixture in basis.snapshots {
+            let scenario = basis.scenarios[fixture.sc]
+            let actual = ScheduleRules.snapshot(input: basis.rules(scenario, nowMs: fixture.now, salary: basis.salaries[fixture.s]))
+            let expected = fixture.expected
+            if actual.dailySalary != expected.dailySalary || actual.earnedSoFar != expected.earnedSoFar
+                || actual.payRatio != expected.payRatio || actual.startAtMs != expected.startAtMs
+                || actual.isWorkday != expected.isWorkday {
+                record("snapshot \(scenario.id) salary \(fixture.s) at \(fixture.now): expected \(expected), actual daily \(String(describing: actual.dailySalary)) earned \(String(describing: actual.earnedSoFar)) ratio \(actual.payRatio) start \(actual.startAtMs) workday \(actual.isWorkday)")
+            }
+        }
+        for fixture in basis.summaries {
+            let scenario = basis.scenarios[fixture.sc]
+            var input = fixture.input
+            input.extendedSchedule = scenario.plan
+            let actual = SummaryRules.summarize(input: input)
+            if actual != fixture.expected {
+                record("summary \(scenario.id) \(input.period) at \(input.asOfMs)\nexpected \(fixture.expected)\nactual   \(actual)")
+            }
+        }
+        for fixture in basis.recordsIncome {
+            let scenario = basis.scenarios[fixture.sc]
+            let rules = basis.rules(scenario, nowMs: 0, salary: basis.salaries[fixture.s])
+            let actual = SummaryRules.recordsIncome(
+                completedWorkdays: fixture.completedWorkdays, rules: rules, completedByMonth: fixture.completedByMonth
+            )
+            if actual != fixture.expected {
+                record("records income \(scenario.id) salary \(fixture.s) months \(fixture.m): expected \(String(describing: fixture.expected)), actual \(String(describing: actual))")
+            }
+        }
+        for fixture in basis.monthlyEquivalent {
+            let rules = basis.rules(basis.scenarios[0], nowMs: 0, salary: basis.salaries[fixture.s], salaryType: fixture.type)
+            if SummaryRules.salaryMonthlyEquivalent(input: rules) != fixture.expected {
+                record("monthly equivalent salary \(fixture.s) as \(fixture.type)")
+            }
+        }
+        for fixture in basis.monthCounts {
+            let scenario = basis.scenarios[fixture.sc]
+            let zone = CivilZone(identifier: scenario.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: scenario.plan))
+            let actual = zone.scheduledWorkdaysInMonth(
+                anchorMs: fixture.anchorMs, workdays: scenario.workdays, schedule: scenario.schedule
+            )
+            if actual != fixture.expected {
+                record("month count \(scenario.id) at \(fixture.anchorMs): expected \(fixture.expected), actual \(actual)")
+            }
+        }
+        #expect(mismatches.isEmpty, "\(mismatches.joined(separator: "\n"))")
+        #expect(basis.snapshots.count >= 400)
+        #expect(basis.summaries.count >= 60)
+        // The point of the basis: different months of one schedule pay differently,
+        // a holiday run moves a month's count, and a manual schedule falls back.
+        let counts = basis.monthCounts.filter { $0.sc == 0 }.map(\.expected)
+        #expect(Set(counts).count > 1)
+        let goldenWeek = try #require(basis.scenarios.firstIndex { $0.id == "shanghai-golden-week" })
+        let plain = try #require(basis.scenarios.firstIndex { $0.id == "shanghai-weekdays" })
+        func count(_ scenario: Int, month: Int) -> Int? {
+            basis.monthCounts.filter { $0.sc == scenario }[month].expected
+        }
+        #expect(count(goldenWeek, month: 9) == 18 && count(plain, month: 9) == 22)
+        #expect(count(goldenWeek, month: 8) == 23 && count(plain, month: 8) == 22)
+        let manual = try #require(basis.scenarios.firstIndex { $0.id == "shanghai-manual" })
+        #expect(basis.monthCounts.filter { $0.sc == manual }.allSatisfy { $0.expected == 0 })
+    }
+
     // MARK: - Fixture file
 
     private static func fixtures() throws -> ScheduleRuleFixtureFile {
@@ -537,6 +609,126 @@ struct ScheduleRuleFixtureFile: Decodable {
         let expected: NativeRecordsActualForecastSummary
     }
 
+    /// Plan 024: scheduled-month daily pay. Each case names its scenario.
+    struct MonthBasis: Decodable {
+        struct Scenario: Decodable {
+            struct Extended: Decodable { let handSet: [String: String] }
+            let id: String
+            let startTime: String
+            let endTime: String
+            let workdays: [Int]
+            let schedule: NativeWorkSchedule
+            let breakStartTime: String?
+            let breakDurationMinutes: Int
+            let timeZoneIdentifier: String
+            let extended: Extended?
+
+            /// Hand-set work and rest days laid over the weekday pattern.
+            var plan: ExtendedSchedulePlan? {
+                guard let extended else { return nil }
+                let work = UUID(uuidString: "11111111-1111-4111-8111-111111111111")!
+                let rest = UUID(uuidString: "22222222-2222-4222-8222-222222222222")!
+                func type(_ id: UUID, _ name: String, _ kind: ShiftType.Kind) -> ShiftType {
+                    ShiftType(id: id, name: name, kind: kind, startMinutes: 540, endMinutes: 1_020, breakEnabled: true,
+                              breakStartMinutes: 720, breakDurationMinutes: 60, colorHex: "#3366CC", isArchived: false)
+                }
+                return ExtendedSchedulePlan(
+                    shiftTypes: [type(work, "Day", .work), type(rest, "Rest", .rest)],
+                    rule: nil,
+                    handSetDays: extended.handSet.mapValues { $0 == "work" ? work : rest },
+                    fallsBackToBaseSchedule: true
+                )
+            }
+        }
+
+        struct Salary: Decodable {
+            let salaryAmount: String
+            let salaryType: String
+            let monthlyWorkingDays: Double
+            let annualBonusMonths: Double
+            let dailySalaryBasis: DailySalaryBasis
+        }
+
+        struct SnapshotCase: Decodable {
+            struct Expected: Decodable {
+                let dailySalary: Double?
+                let earnedSoFar: Double?
+                let payRatio: Double
+                let startAtMs: Double
+                let isWorkday: Bool
+
+                init(from decoder: any Decoder) throws {
+                    var row = try decoder.unkeyedContainer()
+                    dailySalary = try row.decodeNil() ? nil : row.decode(Double.self)
+                    earnedSoFar = try row.decodeNil() ? nil : row.decode(Double.self)
+                    payRatio = try row.decode(Double.self)
+                    startAtMs = try row.decode(Double.self)
+                    isWorkday = try row.decode(Bool.self)
+                }
+            }
+            let sc: Int
+            let s: Int
+            let now: Double
+            let expected: Expected
+        }
+
+        struct SummaryCase: Decodable {
+            let sc: Int
+            let input: NativeSummaryInput
+            let expected: NativePeriodSummary
+        }
+
+        struct RecordsIncomeCase: Decodable {
+            let sc: Int
+            let s: Int
+            let m: Int
+            let completedWorkdays: Int
+            let completedByMonth: [NativeMonthWorkdayCount]
+            let expected: Double?
+        }
+
+        struct MonthlyEquivalentCase: Decodable {
+            let s: Int
+            let type: String
+            let expected: Double?
+        }
+
+        struct MonthCountCase: Decodable {
+            let sc: Int
+            let anchorMs: Double
+            let expected: Int
+        }
+
+        let scenarios: [Scenario]
+        let salaries: [Salary]
+        let snapshots: [SnapshotCase]
+        let summaries: [SummaryCase]
+        let recordsIncome: [RecordsIncomeCase]
+        let monthlyEquivalent: [MonthlyEquivalentCase]
+        let monthCounts: [MonthCountCase]
+
+        func rules(_ scenario: Scenario, nowMs: Double, salary: Salary, salaryType: String? = nil) -> NativeRulesInput {
+            NativeRulesInput(
+                startTime: scenario.startTime,
+                endTime: scenario.endTime,
+                nowMs: nowMs,
+                workdays: scenario.workdays,
+                schedule: scenario.schedule,
+                breakStartTime: scenario.breakStartTime,
+                breakDurationMinutes: scenario.breakDurationMinutes,
+                overtimeEndAtMs: nil,
+                salaryAmount: salary.salaryAmount,
+                salaryType: salaryType ?? salary.salaryType,
+                monthlyWorkingDays: salary.monthlyWorkingDays,
+                annualBonusMonths: salary.annualBonusMonths,
+                forcedWorkdayStartMs: nil,
+                timeZoneIdentifier: scenario.timeZoneIdentifier,
+                extendedSchedule: scenario.plan,
+                dailySalaryBasis: salary.dailySalaryBasis
+            )
+        }
+    }
+
     let version: Int
     let profiles: [Profile]
     let salaries: [Salary]
@@ -555,6 +747,7 @@ struct ScheduleRuleFixtureFile: Decodable {
     let monthlyEquivalent: [MonthlyEquivalentCase]
     let lifetimeIncome: [LifetimeIncomeCase]
     let actualForecast: [ActualForecastCase]
+    let monthBasis: MonthBasis
 
     func input(
         _ profile: Profile,

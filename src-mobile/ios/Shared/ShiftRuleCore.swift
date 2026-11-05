@@ -341,6 +341,40 @@ nonisolated final class CivilZone {
         utcMs(dayNumber: civil(ms).dayNumber, Clock(hour: 0, minute: 0))
     }
 
+    /// Civil midnight on the first day of the month containing `ms`, `offset`
+    /// months later (`civilMonthStartMs`).
+    func monthStartMs(_ ms: Double, offset: Int = 0) -> Double {
+        let reading = civil(ms)
+        let index = reading.year * 12 + (reading.month - 1) + offset
+        let year = Int((Double(index) / 12).rounded(.down))
+        let month = index - year * 12 + 1
+        return utcMs(dayNumber: Self.dayNumber(year: year, month: month, day: 1), Clock(hour: 0, minute: 0))
+    }
+
+    /// Scheduled workdays in `[fromMs, toMs)`, by the same day test as the
+    /// period summary: an extended schedule assigns rest itself, so the
+    /// manual-mode shortcut applies only without one (`countScheduledWorkdays`).
+    func scheduledWorkdayCount(fromMs: Double, toMs: Double, workdays: [Int], schedule: NativeWorkSchedule) -> Int {
+        if extended == nil, schedule.mode == "off" { return 0 }
+        var cursor = startOfCivilDayMs(fromMs)
+        let end = startOfCivilDayMs(toMs)
+        var count = 0
+        while cursor < end {
+            if isScheduledWorkdayInZone(cursor, workdays, schedule) { count += 1 }
+            cursor = addCivilDaysMs(cursor, 1)
+        }
+        return count
+    }
+
+    /// Scheduled workdays in the civil month containing `anchorMs`
+    /// (`countScheduledWorkdaysInMonth`), the divisor of that month's daily pay.
+    func scheduledWorkdaysInMonth(anchorMs: Double, workdays: [Int], schedule: NativeWorkSchedule) -> Int {
+        scheduledWorkdayCount(
+            fromMs: monthStartMs(anchorMs, offset: 0), toMs: monthStartMs(anchorMs, offset: 1),
+            workdays: workdays, schedule: schedule
+        )
+    }
+
     /// Same wall-clock minute `days` civil days later; seconds are dropped.
     func addCivilDaysMs(_ ms: Double, _ days: Int) -> Double {
         let reading = civil(ms)

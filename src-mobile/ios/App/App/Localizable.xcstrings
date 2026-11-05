@@ -146919,6 +146919,720 @@
           }
         }
       }
+    },
+    "dailySalaryBasisScheduledMonth": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حسب جدول الشهر"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach Monatsplan"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By monthly schedule"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Según el horario del mes"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selon le planning du mois"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "महीने के शेड्यूल के अनुसार"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesuai jadwal bulan itu"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In base ai turni del mese"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月ごとのシフトで計算"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "월별 근무표 기준"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "महिन्याच्या वेळापत्रकानुसार"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conforme a escala do mês"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "По графику месяца"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตามตารางงานของเดือน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayın çalışma planına göre"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theo lịch làm việc của tháng"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按当月排班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按當月排班"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "依當月排班"
+          }
+        }
+      }
+    },
+    "dailySalaryBasisScheduledMonthNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُقسَّم كل شهر على عدد أيام العمل المجدولة فيه، مع احتساب العطلات الرسمية وأيام التعويض. أخذ إجازة لا يغيّر عدد الأيام."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jeder Monat wird durch seine eigenen Arbeitstage geteilt; gesetzliche Feiertage und Ausgleichstage sind berücksichtigt. Urlaub ändert die Anzahl der Tage nicht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each month is divided by its own scheduled workdays, with public holidays and make-up days counted. Taking time off doesn't change the number of days."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada mes se divide entre sus propios días de trabajo programados, con festivos y días de recuperación incluidos. Tomarte días libres no cambia el número de días."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chaque mois est divisé par ses propres jours travaillés prévus, jours fériés et jours de rattrapage compris. Poser des congés ne change pas le nombre de jours."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हर महीने को उसी महीने के निर्धारित कार्यदिवसों से भाग दिया जाता है। सार्वजनिक छुट्टियाँ और बदले के कार्यदिवस गिने जाते हैं। छुट्टी लेने से दिनों की संख्या नहीं बदलती।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setiap bulan dibagi dengan hari kerja terjadwalnya sendiri, termasuk hari libur nasional dan hari kerja pengganti. Cuti tidak mengubah jumlah harinya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni mese viene diviso per i suoi giorni lavorativi in turno, con festività e giorni di recupero inclusi. Le assenze non cambiano il numero di giorni."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月ごとに、その月のシフトで決まった勤務日数で割ります。祝日や振替出勤も反映され、休みを取っても日数は変わりません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "매달 그달 근무표의 근무일 수로 나눕니다. 공휴일과 대체 근무일이 반영되며, 휴가를 써도 일수는 바뀌지 않습니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रत्येक महिन्याला त्याच महिन्याच्या नियोजित कामाच्या दिवसांनी भागले जाते. सार्वजनिक सुट्ट्या आणि बदली कामाचे दिवस मोजले जातात. रजा घेतल्याने दिवसांची संख्या बदलत नाही."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada mês é dividido pelos seus próprios dias de trabalho da escala, com feriados e dias de compensação incluídos. Tirar folga não altera o número de dias."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каждый месяц делится на число его рабочих дней по графику, с учётом праздников и переносов. Отпуск и отгулы не меняют количество дней."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แต่ละเดือนจะหารด้วยจำนวนวันทำงานตามตารางของเดือนนั้น โดยนับวันหยุดนักขัตฤกษ์และวันทำงานชดเชยแล้ว การลาไม่ทำให้จำนวนวันเปลี่ยน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her ay, kendi planlı iş günlerine bölünür; resmi tatiller ve telafi günleri hesaba katılır. İzin almak gün sayısını değiştirmez."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mỗi tháng được chia cho số ngày làm việc theo lịch của chính tháng đó, đã tính cả ngày lễ và ngày làm bù. Nghỉ phép không làm thay đổi số ngày."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每个月按当月排班的上班日重新折算，法定假日和调休已计入，请假不影响天数。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每個月按當月排班的上班日重新折算，法定假日和調休已計入，請假不影響天數。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每個月依當月排班的上班日重新折算，法定假日與調休已計入，請假不影響天數。"
+          }
+        }
+      }
+    },
+    "scheduledMonthWorkdays": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} أيام عمل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} Arbeitstage"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} workdays"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} días de trabajo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} jours de travail"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} कार्यदिवस"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} hari kerja"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} giorni lavorativi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}}勤務日"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}}일 근무"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} कामाचे दिवस"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} dias de trabalho"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Рабочих дней: {{count}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} วันทำงาน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} iş günü"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} ngày làm việc"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} 个上班日"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} 個上班日"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{count}} 個上班日"
+          }
+        }
+      }
+    },
+    "monthlyDailyPayTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأجر اليومي لكل شهر"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tagesverdienst pro Monat"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily pay by month"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pago diario por mes"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paie journalière par mois"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "महीने के अनुसार दैनिक वेतन"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaji harian per bulan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paga giornaliera per mese"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月ごとの日給"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "월별 일급"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "महिन्यानुसार दैनिक पगार"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diária por mês"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дневной заработок по месяцам"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ค่าจ้างรายวันแต่ละเดือน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aylara göre günlük kazanç"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lương ngày theo tháng"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每月日薪"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每月日薪"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每月日薪"
+          }
+        }
+      }
+    },
+    "monthlyDailyPayUpcoming": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأشهر القادمة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kommende Monate"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coming months"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximos meses"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mois à venir"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आने वाले महीने"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulan-bulan berikutnya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prossimi mesi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今後の月"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "앞으로의 달"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "येणारे महिने"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximos meses"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ближайшие месяцы"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เดือนถัดไป"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gelecek aylar"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Các tháng sắp tới"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接下来几个月"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接下來幾個月"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接下來幾個月"
+          }
+        }
+      }
+    },
+    "monthlyDailyPayNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يبقى الراتب الشهري كما هو، لذلك يكون الأجر اليومي أعلى في الأشهر الأقل أيام عمل. يتحدّث هذا عند تغيير جدولك أو العطلات."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Monatsgehalt bleibt gleich, daher bringt ein Monat mit weniger Arbeitstagen pro Tag mehr. Das aktualisiert sich, wenn du Schichtplan oder Feiertage änderst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monthly pay stays the same, so months with fewer workdays pay more per day. This updates when you change your schedule or holidays."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El sueldo mensual no cambia, así que los meses con menos días de trabajo pagan más por día. Se actualiza cuando cambias tu horario o los festivos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le salaire mensuel reste le même : un mois comptant moins de jours travaillés rapporte donc plus par jour. Cette page se met à jour quand vous modifiez votre planning ou les jours fériés."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मासिक वेतन वही रहता है, इसलिए कम कार्यदिवसों वाले महीनों में रोज़ का वेतन ज़्यादा होता है। शेड्यूल या छुट्टियाँ बदलने पर यह अपने आप अपडेट हो जाता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaji bulanan tetap sama, jadi bulan dengan hari kerja lebih sedikit membayar lebih besar per hari. Ini diperbarui saat kamu mengubah jadwal atau hari libur."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo stipendio mensile non cambia, quindi i mesi con meno giorni lavorativi rendono di più al giorno. Si aggiorna quando modifichi turni o festività."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月給は変わらないため、勤務日が少ない月ほど日給は高くなります。シフトや祝日を変更すると、ここも更新されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "월급은 그대로이므로 근무일이 적은 달일수록 일급이 높아집니다. 근무표나 공휴일을 바꾸면 여기에도 반영됩니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मासिक पगार तोच राहतो, त्यामुळे कमी कामाचे दिवस असलेल्या महिन्यांत दिवसाचा पगार जास्त असतो. वेळापत्रक किंवा सुट्ट्या बदलल्यावर हे आपोआप अपडेट होते."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O salário mensal continua o mesmo, então meses com menos dias de trabalho rendem mais por dia. Isto se atualiza quando você altera a escala ou os feriados."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Месячная зарплата не меняется, поэтому в месяцах с меньшим числом рабочих дней один день оплачивается выше. Данные обновятся, когда вы измените график или праздники."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เงินเดือนเท่าเดิม เดือนที่มีวันทำงานน้อยจึงได้ค่าจ้างต่อวันสูงกว่า ข้อมูลนี้จะอัปเดตเมื่อคุณเปลี่ยนตารางงานหรือวันหยุด"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aylık maaş aynı kalır; bu yüzden iş günü az olan aylarda günlük kazanç daha yüksektir. Çalışma planını veya tatilleri değiştirdiğinde burası güncellenir."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lương tháng giữ nguyên nên tháng ít ngày làm việc hơn sẽ có lương ngày cao hơn. Mục này tự cập nhật khi bạn đổi lịch làm việc hoặc ngày nghỉ lễ."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月薪不变，上班日少的月份日薪更高。改动排班或节假日后，这里会跟着更新。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月薪不變，上班日少的月份日薪更高。改動排班或假期後，這裡會跟着更新。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月薪不變，上班日少的月份日薪較高。調整排班或假日後，這裡會跟著更新。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

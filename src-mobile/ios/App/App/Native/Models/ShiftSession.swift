@@ -561,7 +561,8 @@ final class ShiftSession {
             annualBonusMonths: preferences.annualBonusEnabled ? preferences.annualBonusMonths : 0,
             forcedWorkdayStartMs: applyOverride ? forcedWorkdayStartMs : nil,
             timeZoneIdentifier: rulesTimeZoneIdentifier,
-            extendedSchedule: extendedSchedulePlan(at: date, using: source)
+            extendedSchedule: extendedSchedulePlan(at: date, using: source),
+            dailySalaryBasis: preferences.dailySalaryBasis
         )
         return pinningCurrentShift(
             applyingLeave(to: input),
@@ -646,7 +647,8 @@ final class ShiftSession {
                     for: change.extendedContent ?? preferences.extendedScheduleContent,
                     applying: change.rosterEdits
                 )
-                : nil
+                : nil,
+            dailySalaryBasis: preferences.dailySalaryBasis
         ))
     }
     /// Whether the explicit Save action needs the second choice about today.
@@ -1136,8 +1138,21 @@ final class ShiftSession {
             todayEffectiveHours: snapshot.durationMs / 3_600_000,
             todayPayRatio: snapshot.payRatio,
             timeZoneIdentifier: preferences.recordsTimeZoneIdentifier,
-            extendedSchedule: plan
+            extendedSchedule: plan,
+            salary: monthBasisSalary(at: asOf)
         ))
+    }
+    /// The salary fields the scheduled-month summary needs, or `nil` while the
+    /// fixed divisor applies (the snapshot's daily pay then stands for every day).
+    private func monthBasisSalary(at date: Date) -> NativeMonthBasisSalary? {
+        guard preferences.dailySalaryBasis == .scheduledMonth, preferences.salaryType == .monthly else { return nil }
+        return NativeMonthBasisSalary(
+            amount: preferences.salaryEnabled ? preferences.salaryAmount : "",
+            type: preferences.salaryType.rawValue,
+            monthlyWorkingDays: preferences.monthlyWorkingDays,
+            annualBonusMonths: preferences.annualBonusEnabled ? preferences.annualBonusMonths : 0,
+            basis: .scheduledMonth
+        )
     }
     static func dayKey(for date: Date, timeZone: TimeZone = .current) -> String {
         var calendar = Calendar(identifier: .gregorian)

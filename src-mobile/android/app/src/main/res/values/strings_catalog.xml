@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">After each run of scheduled workdays, see a summary of planned work, changes, and recorded overtime—available with Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Cycle-end summary</string>
     <string name="daily">Daily</string>
+    <string name="dailySalaryBasisScheduledMonth">By monthly schedule</string>
+    <string name="dailySalaryBasisScheduledMonthNote">Each month is divided by its own scheduled workdays, with public holidays and make-up days counted. Taking time off doesn\'t change the number of days.</string>
     <string name="dark">Dark</string>
     <string name="daysShort">%1$s d</string>
     <string name="daysUntilRest">Until rest day</string>
@@ -628,6 +630,9 @@
     <string name="minutesUnit">min</string>
     <string name="moneyEarned">Money Earned Today</string>
     <string name="monthly">Monthly</string>
+    <string name="monthlyDailyPayNote">Monthly pay stays the same, so months with fewer workdays pay more per day. This updates when you change your schedule or holidays.</string>
+    <string name="monthlyDailyPayTitle">Daily pay by month</string>
+    <string name="monthlyDailyPayUpcoming">Coming months</string>
     <string name="monthlyWorkingDays">Working days per month</string>
     <string name="moodCelebrating">Celebrating</string>
     <string name="moodCoffee">Need coffee</string>
@@ -1128,6 +1133,7 @@
     <string name="schedulePaintStartHint">Choose a shift, then tap or swipe dates.</string>
     <string name="scheduleRotation">Work/rest rotation</string>
     <string name="scheduleRotationDescription">A repeating run of work and rest days.</string>
+    <string name="scheduledMonthWorkdays">%1$s workdays</string>
     <string name="settings">Settings</string>
     <string name="shareButton">Share</string>
     <string name="shareComposerNote">Opens the system share sheet with the image and link attached.</string>

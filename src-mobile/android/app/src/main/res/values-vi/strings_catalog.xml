@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">Sau mỗi chuỗi ngày làm việc theo lịch, hãy xem tóm tắt thời gian theo lịch, các thay đổi và tăng ca đã ghi với Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Tóm tắt cuối chu kỳ</string>
     <string name="daily">Lương ngày</string>
+    <string name="dailySalaryBasisScheduledMonth">Theo lịch làm việc của tháng</string>
+    <string name="dailySalaryBasisScheduledMonthNote">Mỗi tháng được chia cho số ngày làm việc theo lịch của chính tháng đó, đã tính cả ngày lễ và ngày làm bù. Nghỉ phép không làm thay đổi số ngày.</string>
     <string name="dark">Tối</string>
     <string name="daysShort">%1$s ngày</string>
     <string name="daysUntilRest">Đến ngày nghỉ</string>
@@ -626,6 +628,9 @@
     <string name="minutesUnit">phút</string>
     <string name="moneyEarned">Số tiền đã kiếm hôm nay</string>
     <string name="monthly">Lương tháng</string>
+    <string name="monthlyDailyPayNote">Lương tháng giữ nguyên nên tháng ít ngày làm việc hơn sẽ có lương ngày cao hơn. Mục này tự cập nhật khi bạn đổi lịch làm việc hoặc ngày nghỉ lễ.</string>
+    <string name="monthlyDailyPayTitle">Lương ngày theo tháng</string>
+    <string name="monthlyDailyPayUpcoming">Các tháng sắp tới</string>
     <string name="monthlyWorkingDays">Số ngày làm việc mỗi tháng</string>
     <string name="moodCelebrating">Ăn mừng</string>
     <string name="moodCoffee">Cần cà phê</string>
@@ -1125,6 +1130,7 @@
     <string name="schedulePaintStartHint">Chọn một ca, rồi chạm hoặc vuốt qua các ngày.</string>
     <string name="scheduleRotation">Chu kỳ làm/nghỉ</string>
     <string name="scheduleRotationDescription">Lặp lại ngày làm và ngày nghỉ.</string>
+    <string name="scheduledMonthWorkdays">%1$s ngày làm việc</string>
     <string name="settings">Cài đặt</string>
     <string name="shareButton">Chia sẻ</string>
     <string name="shareComposerNote">Mở bảng chia sẻ của hệ thống kèm theo hình ảnh và liên kết.</string>

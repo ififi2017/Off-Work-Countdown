@@ -492,6 +492,7 @@ enum RecordsSyncConflict {
             monthlyWorkingDays: take(local.monthlyWorkingDays, server.monthlyWorkingDays, baseline?.monthlyWorkingDays),
             annualBonusEnabled: take(local.annualBonusEnabled, server.annualBonusEnabled, baseline?.annualBonusEnabled),
             annualBonusMonths: take(local.annualBonusMonths, server.annualBonusMonths, baseline?.annualBonusMonths),
+            dailySalaryBasis: take(local.dailySalaryBasis, server.dailySalaryBasis, baseline?.dailySalaryBasis),
             notificationMode: take(local.notificationMode, server.notificationMode, baseline?.notificationMode),
             cycleEndSummaryNotificationEnabled: take(local.cycleEndSummaryNotificationEnabled, server.cycleEndSummaryNotificationEnabled, baseline?.cycleEndSummaryNotificationEnabled),
             lunchStartReminderEnabled: take(local.lunchStartReminderEnabled, server.lunchStartReminderEnabled, baseline?.lunchStartReminderEnabled),

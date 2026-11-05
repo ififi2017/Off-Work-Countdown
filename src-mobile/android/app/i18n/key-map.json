@@ -594,6 +594,12 @@
     "daily": {
       "resource": "string/daily"
     },
+    "dailySalaryBasisScheduledMonth": {
+      "resource": "string/dailySalaryBasisScheduledMonth"
+    },
+    "dailySalaryBasisScheduledMonthNote": {
+      "resource": "string/dailySalaryBasisScheduledMonthNote"
+    },
     "dark": {
       "resource": "string/dark"
     },
@@ -2330,6 +2336,15 @@
     },
     "monthly": {
       "resource": "string/monthly"
+    },
+    "monthlyDailyPayNote": {
+      "resource": "string/monthlyDailyPayNote"
+    },
+    "monthlyDailyPayTitle": {
+      "resource": "string/monthlyDailyPayTitle"
+    },
+    "monthlyDailyPayUpcoming": {
+      "resource": "string/monthlyDailyPayUpcoming"
     },
     "monthlyWorkingDays": {
       "resource": "string/monthlyWorkingDays"
@@ -4118,6 +4133,12 @@
     },
     "scheduleRotationDescription": {
       "resource": "string/scheduleRotationDescription"
+    },
+    "scheduledMonthWorkdays": {
+      "resource": "string/scheduledMonthWorkdays",
+      "params": [
+        "count"
+      ]
     },
     "settings": {
       "resource": "string/settings"

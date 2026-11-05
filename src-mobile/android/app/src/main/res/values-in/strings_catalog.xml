@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">Setelah setiap rangkaian hari kerja terjadwal, lihat ringkasan kerja terjadwal, perubahan, dan lembur tercatat—tersedia dengan Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Ringkasan akhir siklus</string>
     <string name="daily">Harian</string>
+    <string name="dailySalaryBasisScheduledMonth">Sesuai jadwal bulan itu</string>
+    <string name="dailySalaryBasisScheduledMonthNote">Setiap bulan dibagi dengan hari kerja terjadwalnya sendiri, termasuk hari libur nasional dan hari kerja pengganti. Cuti tidak mengubah jumlah harinya.</string>
     <string name="dark">Gelap</string>
     <string name="daysShort">%1$s hr</string>
     <string name="daysUntilRest">Hingga hari libur</string>
@@ -626,6 +628,9 @@
     <string name="minutesUnit">mnt</string>
     <string name="moneyEarned">Uang yang didapat hari ini</string>
     <string name="monthly">Bulanan</string>
+    <string name="monthlyDailyPayNote">Gaji bulanan tetap sama, jadi bulan dengan hari kerja lebih sedikit membayar lebih besar per hari. Ini diperbarui saat kamu mengubah jadwal atau hari libur.</string>
+    <string name="monthlyDailyPayTitle">Gaji harian per bulan</string>
+    <string name="monthlyDailyPayUpcoming">Bulan-bulan berikutnya</string>
     <string name="monthlyWorkingDays">Hari kerja per bulan</string>
     <string name="moodCelebrating">Merayakan</string>
     <string name="moodCoffee">Butuh kopi</string>
@@ -1125,6 +1130,7 @@
     <string name="schedulePaintStartHint">Pilih giliran, lalu ketuk atau usap tanggal.</string>
     <string name="scheduleRotation">Rotasi kerja/libur</string>
     <string name="scheduleRotationDescription">Ulangi hari kerja dan hari libur.</string>
+    <string name="scheduledMonthWorkdays">%1$s hari kerja</string>
     <string name="settings">Pengaturan</string>
     <string name="shareButton">Bagikan</string>
     <string name="shareComposerNote">Membuka lembar berbagi sistem dengan gambar dan tautan terlampir.</string>

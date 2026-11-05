@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">Após cada sequência de dias de trabalho programados, veja um resumo do trabalho previsto, das alterações e das horas extra registadas, disponível no Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Resumo do fim do ciclo</string>
     <string name="daily">Diário</string>
+    <string name="dailySalaryBasisScheduledMonth">Conforme a escala do mês</string>
+    <string name="dailySalaryBasisScheduledMonthNote">Cada mês é dividido pelos seus próprios dias de trabalho da escala, com feriados e dias de compensação incluídos. Tirar folga não altera o número de dias.</string>
     <string name="dark">Escuro</string>
     <string name="daysShort">%1$s d</string>
     <string name="daysUntilRest">Até o dia de folga</string>
@@ -630,6 +632,9 @@
     <string name="minutesUnit">min</string>
     <string name="moneyEarned">Dinheiro ganho hoje</string>
     <string name="monthly">Mensal</string>
+    <string name="monthlyDailyPayNote">O salário mensal continua o mesmo, então meses com menos dias de trabalho rendem mais por dia. Isto se atualiza quando você altera a escala ou os feriados.</string>
+    <string name="monthlyDailyPayTitle">Diária por mês</string>
+    <string name="monthlyDailyPayUpcoming">Próximos meses</string>
     <string name="monthlyWorkingDays">Dias úteis por mês</string>
     <string name="moodCelebrating">Comemorando</string>
     <string name="moodCoffee">Preciso de café</string>
@@ -1131,6 +1136,7 @@
     <string name="schedulePaintStartHint">Escolha um turno e toque nas datas ou deslize sobre elas.</string>
     <string name="scheduleRotation">Rotação trabalho/folga</string>
     <string name="scheduleRotationDescription">Repita os dias de trabalho e de folga.</string>
+    <string name="scheduledMonthWorkdays">%1$s dias de trabalho</string>
     <string name="settings">Definições</string>
     <string name="shareButton">Compartilhar</string>
     <string name="shareComposerNote">Abre a folha de partilha do sistema com a imagem e a ligação anexadas.</string>

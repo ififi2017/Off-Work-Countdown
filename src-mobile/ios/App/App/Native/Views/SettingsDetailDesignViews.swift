@@ -218,6 +218,9 @@ struct SalaryDesignView: View {
     /// method holds that same struct. `@State` reads through its storage box,
     /// so it is current.
     @State private var lockGeneration = 0
+    /// The "Daily pay by month" page. It shows salary, so it is closed whenever
+    /// the page locks, in the same transaction.
+    @State private var showsMonthlyPay = false
 
     var body: some View {
         Group {
@@ -226,6 +229,9 @@ struct SalaryDesignView: View {
             } else {
                 locked
             }
+        }
+        .navigationDestination(isPresented: $showsMonthlyPay) {
+            MonthlyDailyPayView(shifts: shifts)
         }
         .task { await unlock() }
         // Hide on UIKit's event, not on `scenePhase`.
@@ -246,6 +252,7 @@ struct SalaryDesignView: View {
         )) { _ in
             unlocked = false
             focusedField = nil
+            closeMonthlyPay()
         }
         // Backgrounding additionally voids an authentication still in flight:
         // its result can no longer be attributed to whoever holds the phone.
@@ -257,8 +264,15 @@ struct SalaryDesignView: View {
         )) { _ in
             unlocked = false
             focusedField = nil
+            closeMonthlyPay()
             lockGeneration += 1
         }
+    }
+
+    private func closeMonthlyPay() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) { showsMonthlyPay = false }
     }
 
     /// Laid out by hand rather than with `ContentUnavailableView`: that view
@@ -363,6 +377,11 @@ struct SalaryDesignView: View {
         // take one snapshot and derive every salary value from that same
         // result instead of resolving the shift separately for each row.
         let preview = salaryPreview(from: shifts.session.snapshot())
+        let rules = shifts.session.rulesInput(at: .now)
+        let scheduledMonth = MonthlyDailyPay.make(
+            rules: rules, now: .now, firstWeekday: shifts.preferences.recordsCalendar.firstWeekday
+        )
+        let thisMonthWorkdays = MonthlyDailyPay.scheduledWorkdaysThisMonth(rules: rules, now: .now)
 
         return OWCContentSizedScrollView {
             VStack(spacing: 0) {
@@ -424,12 +443,15 @@ struct SalaryDesignView: View {
                 .owcPlainDivider()
 
                 if shifts.preferences.salaryType == .monthly {
+                    let basisText = shifts.preferences.dailySalaryBasis == .scheduledMonth
+                        ? shifts.text.t("dailySalaryBasisScheduledMonth")
+                        : Int(shifts.preferences.monthlyWorkingDays).formatted()
                     HStack {
                         Text(shifts.text.t("monthlyWorkingDays"))
                             .font(.body)
                             .foregroundStyle(OWCDesign.primary)
                         Spacer()
-                        Text(Int(shifts.preferences.monthlyWorkingDays).formatted())
+                        Text(basisText)
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                         // A menu, not a push: the up/down chevron the other
@@ -440,12 +462,22 @@ struct SalaryDesignView: View {
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 56)
-                    .owcRowMenu(accessibilityLabel: shifts.text.t("monthlyWorkingDays") + ", "
-                                + Int(shifts.preferences.monthlyWorkingDays).formatted()) {
+                    .owcRowMenu(accessibilityLabel: shifts.text.t("monthlyWorkingDays") + ", " + basisText) {
                         Picker(shifts.text.t("monthlyWorkingDays"), selection: Binding(
-                            get: { Int(shifts.preferences.monthlyWorkingDays) },
-                            set: { value in shifts.preferences.applyPreferences { $0.monthlyWorkingDays = Double(value) } }
+                            // 0 stands for "by the month's schedule"; real day counts start at 15.
+                            get: { shifts.preferences.dailySalaryBasis == .scheduledMonth ? 0 : Int(shifts.preferences.monthlyWorkingDays) },
+                            set: { value in
+                                shifts.preferences.applyPreferences {
+                                    if value == 0 {
+                                        $0.dailySalaryBasis = .scheduledMonth
+                                    } else {
+                                        $0.dailySalaryBasis = .fixed
+                                        $0.monthlyWorkingDays = Double(value)
+                                    }
+                                }
+                            }
                         )) {
+                            Text("\(shifts.text.t("dailySalaryBasisScheduledMonth")) · \(thisMonthWorkdays.formatted())").tag(0)
                             ForEach(15...31, id: \.self) { value in
                                 Text(value.formatted()).tag(value)
                             }
@@ -495,6 +527,9 @@ struct SalaryDesignView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 22)
 
+            if scheduledMonth != nil {
+                detailFooter(shifts.text.t("dailySalaryBasisScheduledMonthNote"))
+            }
             detailFooter(shifts.text.t("salaryPrivacyNote"))
 
             VStack(alignment: .leading, spacing: 6) {
@@ -515,10 +550,31 @@ struct SalaryDesignView: View {
             VStack(alignment: .leading, spacing: 0) {
                 OWCSectionHeader(title: shifts.text.t("derivedFromThis"))
                 OWCGroupCard {
-                    OWCRow(title: shifts.text.t("perWorkday")) {
-                        Text(shifts.text.moneyText(preview.dailySalary))
-                            .font(.body.monospacedDigit())
-                            .foregroundStyle(OWCDesign.secondary)
+                    if let scheduledMonth {
+                        Button { showsMonthlyPay = true } label: {
+                            OWCRow(
+                                title: shifts.text.t("perWorkday"),
+                                subtitle: "\(monthName(scheduledMonth)) · \(shifts.text.t("scheduledMonthWorkdays", values: ["count": shifts.text.formatCount(scheduledMonth.current.workdayCount)]))",
+                                centersVertically: true
+                            ) {
+                                HStack(spacing: 6) {
+                                    Text(shifts.text.moneyText(preview.dailySalary))
+                                        .font(.body.monospacedDigit())
+                                        .foregroundStyle(OWCDesign.secondary)
+                                    Image(systemName: "chevron.right")
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundStyle(OWCDesign.tertiary)
+                                        .accessibilityHidden(true)
+                                }
+                            }
+                        }
+                        .buttonStyle(OWCRowButtonStyle())
+                    } else {
+                        OWCRow(title: shifts.text.t("perWorkday")) {
+                            Text(shifts.text.moneyText(preview.dailySalary))
+                                .font(.body.monospacedDigit())
+                                .foregroundStyle(OWCDesign.secondary)
+                        }
                     }
                     OWCRow(title: shifts.text.t("perEffectiveHour"), isLast: true) {
                         Text(shifts.text.moneyText(preview.hourlySalary))
@@ -591,6 +647,12 @@ struct SalaryDesignView: View {
             "\(shifts.text.formatDuration($0.plannedDurationMs, includeSeconds: false)) · \(shifts.text.t("lunchPauseNoteNoSalary"))"
         } ?? shifts.text.t("lunchPauseNoteNoSalary")
         return (dailySalary, earnedNow, hourlySalary, effectiveTimeNote)
+    }
+
+    private func monthName(_ pay: MonthlyDailyPay) -> String {
+        Date(timeIntervalSince1970: pay.current.startMs / 1_000).formatted(
+            Date.FormatStyle(locale: shifts.preferences.locale, timeZone: pay.timeZone).month(.wide)
+        )
     }
 
     private static func bonusText(_ value: Double) -> String {

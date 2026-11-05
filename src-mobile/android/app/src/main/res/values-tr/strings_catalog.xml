@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">Planlanan her çalışma günü dizisinin ardından planlanan çalışma, değişiklikler ve kayıtlı fazla mesai özetini görün; Plus ile kullanılabilir.</string>
     <string name="cycleEndSummaryNotificationTitle">Döngü sonu özeti</string>
     <string name="daily">Günlük</string>
+    <string name="dailySalaryBasisScheduledMonth">Ayın çalışma planına göre</string>
+    <string name="dailySalaryBasisScheduledMonthNote">Her ay, kendi planlı iş günlerine bölünür; resmi tatiller ve telafi günleri hesaba katılır. İzin almak gün sayısını değiştirmez.</string>
     <string name="dark">Koyu</string>
     <string name="daysShort">%1$s g</string>
     <string name="daysUntilRest">İzin gününe kalan</string>
@@ -628,6 +630,9 @@
     <string name="minutesUnit">dk</string>
     <string name="moneyEarned">Bugün kazanılan para</string>
     <string name="monthly">Aylık</string>
+    <string name="monthlyDailyPayNote">Aylık maaş aynı kalır; bu yüzden iş günü az olan aylarda günlük kazanç daha yüksektir. Çalışma planını veya tatilleri değiştirdiğinde burası güncellenir.</string>
+    <string name="monthlyDailyPayTitle">Aylara göre günlük kazanç</string>
+    <string name="monthlyDailyPayUpcoming">Gelecek aylar</string>
     <string name="monthlyWorkingDays">Aylık çalışma günü</string>
     <string name="moodCelebrating">Kutlama</string>
     <string name="moodCoffee">Kahve lazım</string>
@@ -1128,6 +1133,7 @@
     <string name="schedulePaintStartHint">Bir vardiya seçin, ardından tarihlere dokunun veya üzerlerinde parmağınızı kaydırın.</string>
     <string name="scheduleRotation">Çalışma/izin döngüsü</string>
     <string name="scheduleRotationDescription">Çalışma ve izin günü sayılarını tekrarlayın.</string>
+    <string name="scheduledMonthWorkdays">%1$s iş günü</string>
     <string name="settings">Ayarlar</string>
     <string name="shareButton">Paylaş</string>
     <string name="shareComposerNote">Görsel ve bağlantı eklenmiş olarak sistem paylaşım sayfasını açar.</string>

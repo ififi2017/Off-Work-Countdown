@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">Tras cada serie de días programados, verás un resumen del trabajo planificado, los cambios y las horas extra registradas, disponible con Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Resumen de fin de ciclo</string>
     <string name="daily">Diario</string>
+    <string name="dailySalaryBasisScheduledMonth">Según el horario del mes</string>
+    <string name="dailySalaryBasisScheduledMonthNote">Cada mes se divide entre sus propios días de trabajo programados, con festivos y días de recuperación incluidos. Tomarte días libres no cambia el número de días.</string>
     <string name="dark">Oscuro</string>
     <string name="daysShort">%1$s d</string>
     <string name="daysUntilRest">Hasta el día libre</string>
@@ -630,6 +632,9 @@
     <string name="minutesUnit">min</string>
     <string name="moneyEarned">Dinero ganado hoy</string>
     <string name="monthly">Mensual</string>
+    <string name="monthlyDailyPayNote">El sueldo mensual no cambia, así que los meses con menos días de trabajo pagan más por día. Se actualiza cuando cambias tu horario o los festivos.</string>
+    <string name="monthlyDailyPayTitle">Pago diario por mes</string>
+    <string name="monthlyDailyPayUpcoming">Próximos meses</string>
     <string name="monthlyWorkingDays">Días laborables al mes</string>
     <string name="moodCelebrating">Celebrando</string>
     <string name="moodCoffee">Necesito café</string>
@@ -1131,6 +1136,7 @@
     <string name="schedulePaintStartHint">Elige un turno y toca o desliza sobre las fechas.</string>
     <string name="scheduleRotation">Rotación trabajo/descanso</string>
     <string name="scheduleRotationDescription">Repite tus días de trabajo y de descanso.</string>
+    <string name="scheduledMonthWorkdays">%1$s días de trabajo</string>
     <string name="settings">Ajustes</string>
     <string name="shareButton">Compartir</string>
     <string name="shareComposerNote">Abre el panel del sistema para compartir con la imagen y el enlace adjuntos.</string>

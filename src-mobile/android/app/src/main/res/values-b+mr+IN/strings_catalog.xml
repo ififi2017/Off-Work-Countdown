@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">नियोजित कामाच्या दिवसांच्या प्रत्येक सलग कालावधीनंतर नियोजित काम, बदल आणि नोंदवलेल्या ओव्हरटाइमचा सारांश पाहा—हे फक्त Plus मध्ये उपलब्ध आहे.</string>
     <string name="cycleEndSummaryNotificationTitle">कार्यचक्र समाप्तीचा सारांश</string>
     <string name="daily">दैनंदिन</string>
+    <string name="dailySalaryBasisScheduledMonth">महिन्याच्या वेळापत्रकानुसार</string>
+    <string name="dailySalaryBasisScheduledMonthNote">प्रत्येक महिन्याला त्याच महिन्याच्या नियोजित कामाच्या दिवसांनी भागले जाते. सार्वजनिक सुट्ट्या आणि बदली कामाचे दिवस मोजले जातात. रजा घेतल्याने दिवसांची संख्या बदलत नाही.</string>
     <string name="dark">डार्क</string>
     <string name="daysShort">%1$s दिवस</string>
     <string name="daysUntilRest">सुट्टीपर्यंत</string>
@@ -628,6 +630,9 @@
     <string name="minutesUnit">मि.</string>
     <string name="moneyEarned">आज कमावलेली रक्कम</string>
     <string name="monthly">मासिक</string>
+    <string name="monthlyDailyPayNote">मासिक पगार तोच राहतो, त्यामुळे कमी कामाचे दिवस असलेल्या महिन्यांत दिवसाचा पगार जास्त असतो. वेळापत्रक किंवा सुट्ट्या बदलल्यावर हे आपोआप अपडेट होते.</string>
+    <string name="monthlyDailyPayTitle">महिन्यानुसार दैनिक पगार</string>
+    <string name="monthlyDailyPayUpcoming">येणारे महिने</string>
     <string name="monthlyWorkingDays">दरमहा कामाचे दिवस</string>
     <string name="moodCelebrating">उत्सव</string>
     <string name="moodCoffee">कॉफी हवी</string>
@@ -1128,6 +1133,7 @@
     <string name="schedulePaintStartHint">शिफ्ट निवडा, मग तारखांवर टॅप करा किंवा बोट फिरवा.</string>
     <string name="scheduleRotation">काम/विश्रांती चक्र</string>
     <string name="scheduleRotationDescription">कामाचे आणि सुट्टीचे दिवस पुन्हा वापरा.</string>
+    <string name="scheduledMonthWorkdays">%1$s कामाचे दिवस</string>
     <string name="settings">सेटिंग्ज</string>
     <string name="shareButton">शेअर करा</string>
     <string name="shareComposerNote">प्रतिमा आणि लिंकसह सिस्टीम शेअर शीट उघडते.</string>

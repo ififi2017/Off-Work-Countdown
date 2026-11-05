@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">Après chaque série de jours planifiés, retrouvez un résumé du temps prévu, des changements et des heures supplémentaires enregistrées, avec Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Bilan de fin de cycle</string>
     <string name="daily">Journalier</string>
+    <string name="dailySalaryBasisScheduledMonth">Selon le planning du mois</string>
+    <string name="dailySalaryBasisScheduledMonthNote">Chaque mois est divisé par ses propres jours travaillés prévus, jours fériés et jours de rattrapage compris. Poser des congés ne change pas le nombre de jours.</string>
     <string name="dark">Sombre</string>
     <string name="daysShort">%1$s j</string>
     <string name="daysUntilRest">Avant le jour de repos</string>
@@ -630,6 +632,9 @@
     <string name="minutesUnit">min</string>
     <string name="moneyEarned">Gains du jour</string>
     <string name="monthly">Mensuel</string>
+    <string name="monthlyDailyPayNote">Le salaire mensuel reste le même : un mois comptant moins de jours travaillés rapporte donc plus par jour. Cette page se met à jour quand vous modifiez votre planning ou les jours fériés.</string>
+    <string name="monthlyDailyPayTitle">Paie journalière par mois</string>
+    <string name="monthlyDailyPayUpcoming">Mois à venir</string>
     <string name="monthlyWorkingDays">Jours travaillés par mois</string>
     <string name="moodCelebrating">En fête</string>
     <string name="moodCoffee">Besoin de café</string>
@@ -1131,6 +1136,7 @@
     <string name="schedulePaintStartHint">Choisissez un horaire, puis touchez les dates ou faites glisser votre doigt dessus.</string>
     <string name="scheduleRotation">Rotation travail/repos</string>
     <string name="scheduleRotationDescription">Un cycle de jours travaillés et de repos.</string>
+    <string name="scheduledMonthWorkdays">%1$s jours de travail</string>
     <string name="settings">Paramètres</string>
     <string name="shareButton">Partager</string>
     <string name="shareComposerNote">Ouvre la feuille de partage du système avec l’image et le lien.</string>

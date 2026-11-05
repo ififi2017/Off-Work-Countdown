@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">После каждой серии запланированных рабочих дней смотрите итог плановой работы, изменений и записанных переработок — функция Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">Итоги рабочего цикла</string>
     <string name="daily">Дневная</string>
+    <string name="dailySalaryBasisScheduledMonth">По графику месяца</string>
+    <string name="dailySalaryBasisScheduledMonthNote">Каждый месяц делится на число его рабочих дней по графику, с учётом праздников и переносов. Отпуск и отгулы не меняют количество дней.</string>
     <string name="dark">Тёмная</string>
     <string name="daysShort">%1$s дн.</string>
     <string name="daysUntilRest">До выходного</string>
@@ -632,6 +634,9 @@
     <string name="minutesUnit">мин</string>
     <string name="moneyEarned">Заработано сегодня</string>
     <string name="monthly">Месячная</string>
+    <string name="monthlyDailyPayNote">Месячная зарплата не меняется, поэтому в месяцах с меньшим числом рабочих дней один день оплачивается выше. Данные обновятся, когда вы измените график или праздники.</string>
+    <string name="monthlyDailyPayTitle">Дневной заработок по месяцам</string>
+    <string name="monthlyDailyPayUpcoming">Ближайшие месяцы</string>
     <string name="monthlyWorkingDays">Рабочих дней в месяце</string>
     <string name="moodCelebrating">Праздную</string>
     <string name="moodCoffee">Нужен кофе</string>
@@ -1134,6 +1139,7 @@
     <string name="schedulePaintStartHint">Выберите смену, затем нажмите на даты или проведите по ним.</string>
     <string name="scheduleRotation">Цикл работы и отдыха</string>
     <string name="scheduleRotationDescription">Повторяйте рабочие и выходные дни.</string>
+    <string name="scheduledMonthWorkdays">Рабочих дней: %1$s</string>
     <string name="settings">Настройки</string>
     <string name="shareButton">Поделиться</string>
     <string name="shareComposerNote">Открывает системное меню «Поделиться» с изображением и ссылкой.</string>

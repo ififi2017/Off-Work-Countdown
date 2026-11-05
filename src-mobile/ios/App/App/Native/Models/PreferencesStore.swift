@@ -45,6 +45,7 @@ final class PreferencesStore {
         static let salaryEnabled = "ios.native.salaryEnabled"
         static let salaryType = "ios.native.salaryType"
         static let monthlyWorkingDays = "ios.native.monthlyWorkingDays"
+        static let dailySalaryBasis = "ios.native.dailySalaryBasis"
         static let annualBonusEnabled = "ios.native.annualBonusEnabled"
         static let annualBonusMonths = "ios.native.annualBonusMonths"
         static let hideEarnings = "hideEarnings"
@@ -86,6 +87,7 @@ final class PreferencesStore {
     private(set) var salaryEnabled: Bool
     private(set) var salaryType: SalaryType
     private(set) var monthlyWorkingDays: Double
+    private(set) var dailySalaryBasis: DailySalaryBasis
     private(set) var annualBonusEnabled: Bool
     private(set) var annualBonusMonths: Double
     private(set) var notificationMode: OffWorkNotificationMode
@@ -316,6 +318,7 @@ final class PreferencesStore {
         salaryEnabled = defaults.bool(forKey: Key.salaryEnabled)
         salaryType = SalaryType(rawValue: defaults.string(forKey: Key.salaryType) ?? "monthly") ?? .monthly
         monthlyWorkingDays = defaults.object(forKey: Key.monthlyWorkingDays) == nil ? 22 : defaults.double(forKey: Key.monthlyWorkingDays)
+        dailySalaryBasis = DailySalaryBasis(rawValue: defaults.string(forKey: Key.dailySalaryBasis) ?? "") ?? .fixed
         annualBonusEnabled = defaults.bool(forKey: Key.annualBonusEnabled)
         let storedBonusMonths = defaults.object(forKey: Key.annualBonusMonths) == nil ? 1 : defaults.double(forKey: Key.annualBonusMonths)
         annualBonusMonths = max(0, storedBonusMonths)
@@ -391,6 +394,7 @@ final class PreferencesStore {
             monthlyWorkingDays: monthlyWorkingDays,
             annualBonusEnabled: annualBonusEnabled,
             annualBonusMonths: annualBonusMonths,
+            dailySalaryBasis: dailySalaryBasis,
             notificationMode: notificationMode,
             cycleEndSummaryNotificationEnabled: cycleEndSummaryNotificationEnabled,
             lunchStartReminderEnabled: lunchStartReminderEnabled,
@@ -478,6 +482,10 @@ final class PreferencesStore {
         if monthlyWorkingDays != preferences.monthlyWorkingDays {
             monthlyWorkingDays = preferences.monthlyWorkingDays
             defaults.set(monthlyWorkingDays, forKey: Key.monthlyWorkingDays)
+        }
+        if dailySalaryBasis != preferences.dailySalaryBasis {
+            dailySalaryBasis = preferences.dailySalaryBasis
+            defaults.set(dailySalaryBasis.rawValue, forKey: Key.dailySalaryBasis)
         }
         if annualBonusEnabled != preferences.annualBonusEnabled {
             annualBonusEnabled = preferences.annualBonusEnabled

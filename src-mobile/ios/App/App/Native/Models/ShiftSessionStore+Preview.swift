@@ -327,6 +327,7 @@ nonisolated extension NativeRulesInput {
               breakDurationMinutes: breakDurationMinutes, overtimeEndAtMs: overtimeEndAtMs,
               salaryAmount: salaryAmount, salaryType: salaryType, monthlyWorkingDays: monthlyWorkingDays,
               annualBonusMonths: annualBonusMonths, forcedWorkdayStartMs: forcedWorkdayStartMs,
-              timeZoneIdentifier: timeZoneIdentifier, extendedSchedule: extendedSchedule)
+              timeZoneIdentifier: timeZoneIdentifier, extendedSchedule: extendedSchedule,
+              dailySalaryBasis: dailySalaryBasis)
     }
 }

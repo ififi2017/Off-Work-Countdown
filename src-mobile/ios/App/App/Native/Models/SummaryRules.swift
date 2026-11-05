@@ -47,11 +47,49 @@ nonisolated enum SummaryRules {
         // night shifts, so an extended schedule sums each day's own effective
         // hours. Without one this is the same product it always was.
         let hours: Double = (scheduled.hours ?? completed * input.plannedDailyHours) + todayHours
+        var periodEarnings = earnings(input.dailySalary, ratio: completed + todayPay)
+        if let salary = input.salary, salary.usesScheduledMonthBasis {
+            periodEarnings = scheduledMonthEarnings(
+                salary, input, zone,
+                fromMs: periodDayMs, toMs: coversAsOfDay ? shiftDayMs : asOfDayMs, todayPay: todayPay
+            )
+        }
         return NativePeriodSummary(
             days: completed + todayFraction,
             hours: hours,
-            earnings: earnings(input.dailySalary, ratio: completed + todayPay)
+            earnings: periodEarnings
         )
+    }
+
+    /// Pay for `[fromMs, toMs)` split at civil month starts: each month's
+    /// completed scheduled days at that month's daily pay, then today's ratio at
+    /// the daily pay of the month `toMs` falls in (`summarize` in `lib/summary.ts`).
+    private static func scheduledMonthEarnings(
+        _ salary: NativeMonthBasisSalary,
+        _ input: NativeSummaryInput,
+        _ zone: CivilZone,
+        fromMs: Double,
+        toMs: Double,
+        todayPay: Double
+    ) -> Double? {
+        func daily(_ anchorMs: Double) -> Double? {
+            salary.dailySalary(
+                count: zone.scheduledWorkdaysInMonth(anchorMs: anchorMs, workdays: input.workdays, schedule: input.schedule)
+            )
+        }
+        var total = 0.0
+        var missing = false
+        var cursor = fromMs
+        while cursor < toMs {
+            let monthEnd = zone.monthStartMs(cursor, offset: 1)
+            let count = zone.scheduledWorkdayCount(
+                fromMs: cursor, toMs: min(toMs, monthEnd), workdays: input.workdays, schedule: input.schedule
+            )
+            if let rate = daily(cursor) { total += Double(count) * rate } else { missing = true }
+            cursor = monthEnd
+        }
+        if let rate = daily(toMs) { total += max(0, todayPay) * rate } else { missing = true }
+        return !missing && total.isFinite ? total : nil
     }
 
     /// Completed scheduled days in `[fromMs, toMs)`, and their effective hours
@@ -87,22 +125,48 @@ nonisolated enum SummaryRules {
 
     /// Completed scheduled workdays at the configured daily pay. Today's partial
     /// shift and overtime belong to the timer's live summary instead.
-    static func recordsIncome(completedWorkdays: Int, rules: NativeRulesInput) -> Double? {
-        earnings(
-            SalaryRules.dailySalary(
-                amount: rules.salaryAmount,
-                type: rules.salaryType,
-                monthlyWorkingDays: rules.monthlyWorkingDays,
-                annualBonusMonths: rules.annualBonusMonths
-            ),
-            ratio: Double(max(0, completedWorkdays))
+    ///
+    /// Under the scheduled-month basis the days arrive grouped by civil month
+    /// (`completedByMonth`, `completedWorkdayIncomeByMonth`), each month at its
+    /// own daily pay; otherwise only the total matters.
+    static func recordsIncome(
+        completedWorkdays: Int,
+        rules: NativeRulesInput,
+        completedByMonth: [NativeMonthWorkdayCount] = []
+    ) -> Double? {
+        let fixedDaily = SalaryRules.dailySalary(
+            amount: rules.salaryAmount,
+            type: rules.salaryType,
+            monthlyWorkingDays: rules.monthlyWorkingDays,
+            annualBonusMonths: rules.annualBonusMonths
         )
+        guard rules.usesScheduledMonthBasis else {
+            return earnings(fixedDaily, ratio: Double(max(0, completedWorkdays)))
+        }
+        if completedByMonth.isEmpty { return earnings(fixedDaily, ratio: 0) }
+        let zone = CivilZone(identifier: rules.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: rules.extendedSchedule))
+        var total = 0.0
+        for month in completedByMonth {
+            guard let daily = SalaryRules.dailySalary(rules: rules, anchorMs: month.anchorMs, zone) else { return nil }
+            total += Double(max(0, month.count)) * daily
+        }
+        return total.isFinite ? total : nil
     }
 
     /// The monthly gross a daily or monthly setting amounts to, used to seed
     /// the life profile.
     static func salaryMonthlyEquivalent(input: NativeRulesInput) -> Double? {
-        monthlyEquivalent(
+        // A scheduled-month salary is already the nominal monthly amount; only
+        // the bonus share is added.
+        if input.usesScheduledMonthBasis {
+            return SalaryRules.dailySalary(
+                amount: input.salaryAmount,
+                type: "monthly",
+                monthlyWorkingDays: 1,
+                annualBonusMonths: input.annualBonusMonths
+            )
+        }
+        return monthlyEquivalent(
             amount: input.salaryAmount,
             type: input.salaryType,
             monthlyWorkingDays: input.monthlyWorkingDays,
@@ -470,6 +534,34 @@ nonisolated struct NativeSummaryInput: Codable, Sendable {
     /// Plan 018 P8's extended schedule, when the user has one switched on. It
     /// decides which days count and how long each of them is.
     var extendedSchedule: ExtendedSchedulePlan? = nil
+    /// Plan 024: with the scheduled-month basis, earnings are summed month by
+    /// month and `dailySalary` is not used.
+    var salary: NativeMonthBasisSalary? = nil
+}
+
+/// The salary fields the scheduled-month rules read (`MonthBasisSalary` in
+/// `lib/summary.ts`).
+nonisolated struct NativeMonthBasisSalary: Codable, Hashable, Sendable {
+    let amount: String
+    let type: String
+    let monthlyWorkingDays: Double
+    let annualBonusMonths: Double
+    let basis: DailySalaryBasis?
+
+    var usesScheduledMonthBasis: Bool { basis == .scheduledMonth && type == "monthly" }
+
+    func dailySalary(count: Int) -> Double? {
+        SalaryRules.dailySalary(
+            amount: amount, type: type, monthlyWorkingDays: monthlyWorkingDays,
+            annualBonusMonths: annualBonusMonths, scheduledMonthDays: usesScheduledMonthBasis ? count : nil
+        )
+    }
+}
+
+/// Completed scheduled workdays in one civil month, named by any instant in it.
+nonisolated struct NativeMonthWorkdayCount: Codable, Hashable, Sendable {
+    let anchorMs: Double
+    let count: Int
 }
 
 nonisolated struct NativeLifetimeIncomeSummary: Codable, Hashable, Sendable {

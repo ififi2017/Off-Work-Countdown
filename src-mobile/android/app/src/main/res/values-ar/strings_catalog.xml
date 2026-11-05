@@ -127,6 +127,8 @@
     <string name="cycleEndSummaryNotificationNote">بعد كل سلسلة من أيام العمل المجدولة، اطلع على ملخص وقت العمل المخطط والتعديلات والعمل الإضافي المسجل — متاح مع Plus.</string>
     <string name="cycleEndSummaryNotificationTitle">ملخص نهاية دورة العمل</string>
     <string name="daily">يومي</string>
+    <string name="dailySalaryBasisScheduledMonth">حسب جدول الشهر</string>
+    <string name="dailySalaryBasisScheduledMonthNote">يُقسَّم كل شهر على عدد أيام العمل المجدولة فيه، مع احتساب العطلات الرسمية وأيام التعويض. أخذ إجازة لا يغيّر عدد الأيام.</string>
     <string name="dark">داكن</string>
     <string name="daysShort">%1$s ي</string>
     <string name="daysUntilRest">حتى يوم الراحة</string>
@@ -636,6 +638,9 @@
     <string name="minutesUnit">د</string>
     <string name="moneyEarned">الأجر المكتسب اليوم</string>
     <string name="monthly">شهري</string>
+    <string name="monthlyDailyPayNote">يبقى الراتب الشهري كما هو، لذلك يكون الأجر اليومي أعلى في الأشهر الأقل أيام عمل. يتحدّث هذا عند تغيير جدولك أو العطلات.</string>
+    <string name="monthlyDailyPayTitle">الأجر اليومي لكل شهر</string>
+    <string name="monthlyDailyPayUpcoming">الأشهر القادمة</string>
     <string name="monthlyWorkingDays">أيام العمل في الشهر</string>
     <string name="moodCelebrating">احتفال</string>
     <string name="moodCoffee">بحاجة لقهوة</string>
@@ -1140,6 +1145,7 @@
     <string name="schedulePaintStartHint">اختر وردية، ثم اضغط على التواريخ أو مرّر إصبعك عليها.</string>
     <string name="scheduleRotation">دورة العمل والراحة</string>
     <string name="scheduleRotationDescription">كرّر عددًا مخصصًا من أيام العمل والراحة.</string>
+    <string name="scheduledMonthWorkdays">%1$s أيام عمل</string>
     <string name="settings">الإعدادات</string>
     <string name="shareButton">مشاركة</string>
     <string name="shareComposerNote">يفتح لوحة المشاركة في النظام مع إرفاق الصورة والرابط.</string>
