@@ -20,9 +20,6 @@ import com.rainif.doneat.core.domain.schedule.WorkSchedule
 import com.rainif.doneat.core.domain.session.SessionEnvironment
 import com.rainif.doneat.core.domain.session.SessionState
 import com.rainif.doneat.core.domain.session.ShiftSession
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -48,6 +45,18 @@ class LeavePlannerTest {
             HolidayCalendar.parse(File(System.getProperty("owc.holidayTemplates")).readText())
         }
 
+        // Standalone prediction fixture: estimate regressions must survive official bundle updates.
+        val predictedJson = """{
+            "schemaVersion": 1, "datasetVersion": "predicted-fixture", "names": [{"en": "Holiday"}],
+            "regions": {"CN": {"coveredFromYear": 2026, "coveredThroughYear": 2027,
+                "estimatedYears": [2027], "days": [
+                    [20270101,0,0],[20270102,0,0],[20270103,0,0],[20270131,1,0],
+                    [20270205,0,0],[20270206,0,0],[20270207,0,0],[20270208,0,0],[20270209,0,0],
+                    [20270210,0,0],[20270211,0,0],[20270212,0,0],[20270213,0,0],[20270214,1,0]
+                ]}}
+        }"""
+        val predictedHolidays: HolidayCalendar by lazy { HolidayCalendar.parse(predictedJson) }
+
         val officeType = ShiftType(office, "Office", ShiftType.Kind.WORK, 9 * 60, 18 * 60, true, 12 * 60, 60, "#FF7A00", false)
         val restType = ShiftType(rest, "Rest", ShiftType.Kind.REST, 9 * 60, 18 * 60, false, 12 * 60, 0, "#777777", false)
         val nightType = ShiftType(night, "Night", ShiftType.Kind.WORK, 22 * 60, 6 * 60, false, 0, 0, "#3366FF", false)
@@ -62,7 +71,10 @@ class LeavePlannerTest {
         fun seg(key: String, from: Int, to: Int) = ShiftSegment(instant(key, from), instant(key, to))
 
         /** Monday-Friday of [workType], weekends off, optionally on a holiday region. */
-        fun weeklyPlan(workType: ShiftType = officeType, region: String? = null, handSet: Map<String, UUID> = emptyMap()) =
+        fun weeklyPlan(
+            workType: ShiftType = officeType, region: String? = null, handSet: Map<String, UUID> = emptyMap(),
+            calendar: HolidayCalendar = holidays,
+        ) =
             ExtendedSchedulePlan(
                 shiftTypes = listOf(workType, restType),
                 rule = ShiftCycleRule(
@@ -71,7 +83,7 @@ class LeavePlannerTest {
                 ),
                 handSetDays = handSet,
                 holidayRegionIdentifier = region,
-                holidays = holidays,
+                holidays = calendar,
             )
 
         fun hours(plan: ExtendedSchedulePlan?) =
@@ -86,9 +98,10 @@ class LeavePlannerTest {
             budgets: List<LeaveBudget>,
             zone: String = SHANGHAI,
             maximumProposals: Int = Int.MAX_VALUE,
+            calendar: HolidayCalendar = holidays,
         ): List<LeavePlanProposal> {
             val range = dayNumber(from)..dayNumber(through)
-            val days = LeavePlannerSchedule.days(hours(plan), range, ZoneId.of(zone), holidays)
+            val days = LeavePlannerSchedule.days(hours(plan), range, ZoneId.of(zone), calendar)
             return LeavePlanner.proposals(days, LeavePlanner.Query(goal, range.first, range.last, now, budgets, maximumProposals))
         }
 
@@ -214,7 +227,10 @@ class LeavePlannerTest {
         val first = dayNumber("2026-09-21")
         val range = first..first + 364
         val work = officeType.copy(endMinutes = 1020, breakEnabled = false, breakDurationMinutes = 0)
-        val days = LeavePlannerSchedule.days(hours(weeklyPlan(work, "CN")), range, ZoneId.of(SHANGHAI), holidays)
+        // Keep exact and predicted dates in one group independently of official bundle updates.
+        val days = LeavePlannerSchedule.days(
+            hours(weeklyPlan(work, "CN", calendar = predictedHolidays)), range, ZoneId.of(SHANGHAI), predictedHolidays,
+        )
         val proposals = LeavePlanner.proposals(days, LeavePlanner.Query(
             LeavePlanner.Goal.LeaveAtMost(10), range.first, range.last, instant("2026-09-21", 0), listOf(budget(halfDays = 10)),
         ))
@@ -420,9 +436,9 @@ class LeavePlannerTest {
     }
 
     @Test fun `predicted holidays resolve rest and makeup days with explicit caveats even on hand set days`() {
-        val plan = weeklyPlan(region = "CN", handSet = mapOf("2027-01-02" to office))
+        val plan = weeklyPlan(region = "CN", handSet = mapOf("2027-01-02" to office), calendar = predictedHolidays)
         val range = dayNumber("2026-12-31")..dayNumber("2027-02-14")
-        val days = LeavePlannerSchedule.days(hours(plan), range, ZoneId.of(SHANGHAI), holidays)
+        val days = LeavePlannerSchedule.days(hours(plan), range, ZoneId.of(SHANGHAI), predictedHolidays)
         val newYear = days.first { it.dayKey == "2027-01-01" }
         assertTrue(newYear.isHoliday)
         assertTrue(newYear.segments.isEmpty())
@@ -435,8 +451,8 @@ class LeavePlannerTest {
         assertTrue(days.first { it.dayKey == "2026-12-31" }.caveats.isEmpty())
 
         val result = proposals(
-            weeklyPlan(region = "CN"), LeavePlanner.Goal.RestAtLeast(9), "2027-02-05", "2027-02-13",
-            instant("2027-01-01", 10), listOf(budget(halfDays = 20)),
+            weeklyPlan(region = "CN", calendar = predictedHolidays), LeavePlanner.Goal.RestAtLeast(9), "2027-02-05", "2027-02-13",
+            instant("2027-01-01", 10), listOf(budget(halfDays = 20)), calendar = predictedHolidays,
         )
         assertEquals(0, result.first().costHalfDays)
         assertEquals(9, result.first().fullRestDays)
@@ -444,30 +460,33 @@ class LeavePlannerTest {
     }
 
     @Test fun `formal replacement clears planner prediction caveats while keeping holiday resolution`() {
-        val root = Json.parseToJsonElement(File(System.getProperty("owc.holidayTemplates")).readText()).jsonObject
-        val regions = root.getValue("regions").jsonObject
-        val formalRegions = JsonObject(regions.mapValues { (_, region) -> JsonObject(region.jsonObject - "estimatedYears") })
-        val formal = HolidayCalendar.parse(JsonObject(root + ("regions" to formalRegions)).toString())
-        val plan = ExtendedSchedulePlan(
-            shiftTypes = listOf(officeType, restType), rule = weeklyPlan(region = "CN").rule,
-            handSetDays = emptyMap(), holidayRegionIdentifier = "CN", holidays = formal,
-        )
+        val formal = HolidayCalendar.parse(predictedJson.replace("\"estimatedYears\": [2027],", ""))
+        val plan = weeklyPlan(region = "CN", calendar = formal)
         val days = LeavePlannerSchedule.days(hours(plan), dayNumber("2027-01-01")..dayNumber("2027-01-03"), ZoneId.of(SHANGHAI), formal)
         assertTrue(days.first { it.dayKey == "2027-01-01" }.isHoliday)
         assertTrue(days.all { it.caveats.isEmpty() })
     }
 
+    @Test fun `official bundled holidays and manual assignments have no prediction caveats`() {
+        val plan = weeklyPlan(region = "CN", handSet = mapOf("2027-01-02" to office))
+        val days = LeavePlannerSchedule.days(hours(plan), dayNumber("2026-12-01")..dayNumber("2027-12-31"), ZoneId.of(SHANGHAI), holidays)
+        assertTrue(days.first { it.dayKey == "2027-01-01" }.isHoliday)
+        assertTrue(days.first { it.dayKey == "2027-01-02" }.segments.isNotEmpty())
+        assertTrue(days.filter { it.dayKey < "2028-01-01" }.all { it.caveats.isEmpty() })
+    }
+
     @Test fun `planning range notices distinguish predictions from missing holidays and inactive calendars`() {
-        fun session(enabled: Boolean, region: String = "CN") = ShiftSession(SessionState(), SessionEnvironment(
+        fun session(enabled: Boolean, region: String = "CN", calendar: HolidayCalendar = holidays) = ShiftSession(SessionState(), SessionEnvironment(
             PreferencesRules.defaults(SHANGHAI, 0.0), true,
             ExtendedSchedule(enabled, ExtendedScheduleContent(listOf(officeType, restType), weeklyPlan().rule, region)),
-            emptyList(), holidays, SHANGHAI,
+            emptyList(), calendar, SHANGHAI,
         ))
-        val range = dayNumber("2026-12-31")..dayNumber("2027-01-03")
-        assertEquals(listOf(2027), LeavePlanning.estimatedHolidayYears(session(true), range, holidays))
+        val range = dayNumber("2026-12-01")..dayNumber("2027-12-31")
+        assertTrue(LeavePlanning.estimatedHolidayYears(session(true), range, holidays).isEmpty())
         assertTrue(LeavePlanning.missingMainlandHolidayYears(session(true), range, holidays).isEmpty())
-        assertTrue(LeavePlanning.estimatedHolidayYears(session(false), range, holidays).isEmpty())
-        assertTrue(LeavePlanning.estimatedHolidayYears(session(true, "US"), range, holidays).isEmpty())
+        assertEquals(listOf(2027), LeavePlanning.estimatedHolidayYears(session(true, calendar = predictedHolidays), range, predictedHolidays))
+        assertTrue(LeavePlanning.estimatedHolidayYears(session(false, calendar = predictedHolidays), range, predictedHolidays).isEmpty())
+        assertTrue(LeavePlanning.estimatedHolidayYears(session(true, "US", predictedHolidays), range, predictedHolidays).isEmpty())
         val missing = dayNumber("2028-01-01")..dayNumber("2028-01-03")
         assertTrue(LeavePlanning.estimatedHolidayYears(session(true), missing, holidays).isEmpty())
         assertEquals(listOf(2028), LeavePlanning.missingMainlandHolidayYears(session(true), missing, holidays))

@@ -32,7 +32,7 @@ struct HolidayTemplateTests {
         let calendar = HolidayCalendar.shared
         #expect(calendar.covers(year: 2026, regionIdentifier: "CN"))
         #expect(calendar.covers(year: 2027, regionIdentifier: "CN"))
-        #expect(calendar.isEstimated(year: 2027, regionIdentifier: "CN"))
+        #expect(!calendar.isEstimated(year: 2027, regionIdentifier: "CN"))
         #expect(!calendar.isEstimated(year: 2026, regionIdentifier: "CN"))
         #expect(!calendar.covers(year: 2028, regionIdentifier: "CN"))
         #expect(calendar.day(dayKey: "2027-01-01", regionIdentifier: "CN")?.isWorkday == false)
@@ -46,6 +46,22 @@ struct HolidayTemplateTests {
         #expect(!japan.isWorkday)
         #expect(japan.name(language: "ja") == "建国記念の日")
         #expect(calendar.defaultRegionIdentifier(locale: Locale(identifier: "en_US")) == "US")
+    }
+
+    @Test("Official 2027 calendar contains exactly 29 days off and five makeup days")
+    func exactOfficialDates() throws {
+        let restDates = Array(20270101...20270103) + Array(20270205...20270213)
+            + Array(20270403...20270405) + Array(20270501...20270505)
+            + [20270609, 20270915] + Array(20271001...20271007)
+        let makeupDates = [20270131, 20270214, 20270508, 20270926, 20271009]
+        var expected = Dictionary(uniqueKeysWithValues: restDates.map { ($0, false) })
+        for date in makeupDates { expected[date] = true }
+        let actual = HolidayCalendar.shared.workdayOverrides(regionIdentifier: "CN")
+            .filter { $0.key / 10_000 == 2027 }
+        #expect(restDates.count == 29)
+        #expect(makeupDates.count == 5)
+        #expect(actual.count == 34)
+        #expect(actual == expected)
     }
 
     @Test("Taiwan's Traditional Chinese name follows the app language",
@@ -73,8 +89,8 @@ struct HolidayTemplateTests {
         #expect(day.name(language: "fr") == "Founders Day")
     }
 
-    @Test("Predicted holidays and makeup days resolve through the same schedule as official data")
-    func predictedCalendar() throws {
+    @Test("Official 2027 holidays and makeup days resolve through the schedule")
+    func officialCalendar() throws {
         let plan = ExtendedSchedulePlan(
             shiftTypes: [Self.workType, Self.restType],
             rule: ShiftCycleRule(preset: .rotation, anchorDayKey: "2027-01-01", days: [Self.work]),

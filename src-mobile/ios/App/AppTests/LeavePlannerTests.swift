@@ -447,7 +447,7 @@ struct LeavePlannerTests {
         )
         let newYearsEve = try #require(days.first { $0.dayKey == "2027-12-31" })
         let newYearsDay = try #require(days.first { $0.dayKey == "2028-01-03" })
-        #expect(newYearsEve.caveats == [.holidaysEstimated(year: 2027)])
+        #expect(newYearsEve.caveats.isEmpty)
         // An uncovered Monday follows the roster; no holiday is guessed.
         #expect(!newYearsDay.segments.isEmpty)
         #expect(!newYearsDay.isHoliday)
@@ -476,24 +476,26 @@ struct LeavePlannerTests {
         let range = try Self.dayNumber("2027-02-01")...Self.dayNumber("2027-02-20")
         let configuration = Self.configuration(plan: Self.weeklyPlan(region: "CN"))
         let zone = try #require(TimeZone(identifier: Self.shanghai))
-        let days = LeavePlannerSchedule.days(configuration: configuration, range: range, timeZone: zone)
+        let days = LeavePlannerSchedule.days(
+            configuration: configuration, range: range, timeZone: zone,
+            holidayEstimation: { year, region in year == 2027 && region == "CN" }
+        )
         let first = try #require(days.first { $0.dayKey == "2027-02-05" })
         #expect(first.segments.isEmpty && first.isHoliday)
         #expect(first.caveats == [.holidaysEstimated(year: 2027)])
         let makeup = try #require(days.first { $0.dayKey == "2027-02-14" })
         #expect(!makeup.segments.isEmpty && !makeup.isHoliday)
         #expect(makeup.caveats == [.holidaysEstimated(year: 2027)])
-        let proposals = try Self.proposals(
-            plan: Self.weeklyPlan(region: "CN"), goal: .restAtLeast(days: 9),
-            from: "2027-02-05", through: "2027-02-13", now: Self.instant("2027-02-01", hour: 10),
+        let proposals = try LeavePlanner.proposals(days: days, query: .init(
+            goal: .restAtLeast(days: 9), fromDayNumber: Self.dayNumber("2027-02-05"),
+            throughDayNumber: Self.dayNumber("2027-02-13"), nowMs: Self.instant("2027-02-01", hour: 10),
             budgets: [Self.budget(halfDays: 20)]
-        )
+        ))
         let best = try #require(proposals.first)
         #expect(best.fullRestDays == 9 && best.costHalfDays == 0)
         #expect(best.caveats == [.holidaysEstimated(year: 2027)])
         let official = LeavePlannerSchedule.days(
-            configuration: configuration, range: range, timeZone: zone,
-            holidayEstimation: { _, _ in false }
+            configuration: configuration, range: range, timeZone: zone
         )
         #expect(official.allSatisfy { $0.caveats.isEmpty })
         let disabled = LeavePlannerSchedule.days(
@@ -506,6 +508,15 @@ struct LeavePlannerTests {
             range: range, timeZone: zone
         )
         #expect(!(try #require(handSet.first { $0.dayKey == "2027-02-05" })).segments.isEmpty)
+        #expect(handSet.allSatisfy { $0.caveats.isEmpty })
+        let predictedHandSet = LeavePlannerSchedule.days(
+            configuration: Self.configuration(plan: Self.weeklyPlan(region: "CN", handSet: ["2027-02-05": Self.office])),
+            range: range, timeZone: zone,
+            holidayEstimation: { year, region in year == 2027 && region == "CN" }
+        )
+        let assigned = try #require(predictedHandSet.first { $0.dayKey == "2027-02-05" })
+        #expect(!assigned.segments.isEmpty)
+        #expect(assigned.caveats == [.holidaysEstimated(year: 2027)])
     }
 
     @Test("Adopted leave over fixed hours is not an estimate")

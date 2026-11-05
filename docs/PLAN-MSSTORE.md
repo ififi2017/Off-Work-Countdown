@@ -1253,3 +1253,8 @@ APPLE_ID / APPLE_PASSWORD / APPLE_TEAM_ID
 ## 2026-10-04 源码许可证切换
 
 新修订的项目源码采用 MPL-2.0；已发布的 MIT 版本及原有授权不撤销。品牌、指定素材和第三方资源按根目录 `LICENSING.md` / `ASSETS.md` / `TRADEMARKS.md` 区分。独立商业分支允许，不能冒充官方。发行前依 `SOURCE.md` 保存并公开对应平台、版本、build number 的源码提交；商店中已有二进制的许可不因本次 PR 自动改变。实施与验证记录见 `docs/reviews/2026-10-04-licensing-transition.md`。
+
+## 2026-11-05 中国大陆 2027 年正式假期（3.2.5）
+
+- [x] Desktop 离线 CN 日历与索引改用国务院正式安排，撤下预测提示；34 个日期与此前预测一致，其他地区导出不变。
+- [ ] 新包上传与商店审核/上架。数据、检查及发布证据见[更新记录](reviews/2026-11-05-cn-2027-official-holidays.md)。
