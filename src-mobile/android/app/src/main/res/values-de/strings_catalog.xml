@@ -722,7 +722,10 @@
     <string name="overtimeDefaultRow">Überstunden-Standard</string>
     <string name="overtimeDefaultUsual">Normaler Stundensatz (1×)</string>
     <string name="overtimeDescription">Wähle ein späteres Ende für diese Schicht.</string>
+    <string name="overtimeDurationLabel">Dauer der Überstunden</string>
     <string name="overtimeEndTime">Endzeit</string>
+    <string name="overtimeModeDuration">Dauer</string>
+    <string name="overtimeModeEnd">Bis</string>
     <string name="overtimeMultiplierCustom">Benutzerdefiniert…</string>
     <string name="overtimeMultiplierNote">Überstunden werden mit dem %1$s-Fachen deines normalen Stundensatzes geschätzt.</string>
     <string name="overtimeMultiplierRow">Faktor</string>
@@ -730,6 +733,10 @@
     <string name="overtimePayPaid">Bezahlt</string>
     <string name="overtimePayRow">Diese Überstunden</string>
     <string name="overtimePayUnpaid">Unbezahlt</string>
+    <string name="overtimePeriodSummary">Überstunden %1$s–%2$s · %3$s angerechnet</string>
+    <string name="overtimeRestFootnote">Zum Beispiel fürs Abendessen. Zählt nicht als Überstunden.</string>
+    <string name="overtimeRestNone">Keine Pause</string>
+    <string name="overtimeRestRow">Zuerst Pause</string>
     <string name="overtimeTimeLeftCaption">bis zum eingestellten Überstundenende</string>
     <string name="overtimeTitle">Überstunden hinzufügen</string>
     <string name="overtimeUnpaidNote">Diese Überstunden sind unbezahlt, daher bleibt dein Verdienst heute bei %1$s. Auf die tatsächlich gearbeiteten Stunden gerechnet liegt dein Stundenlohn heute bei %2$s – %3$s %% weniger als sonst.</string>
@@ -970,8 +977,14 @@
     <string name="recordsOperationUnsupportedVersion">Diese Sicherung stammt aus einer neueren Version. Aktualisiere die App vor dem Import.</string>
     <string name="recordsOvertime">Überstunden</string>
     <string name="recordsOvertimeAmount">%1$s Überstunden</string>
+    <string name="recordsOvertimeCounted">Angerechnete Stunden</string>
+    <string name="recordsOvertimeCountedSubtitle">%1$s laut Zeitraum</string>
+    <string name="recordsOvertimeFootnote">Stundenstatistik, Zeitraumberichte und Einkommen beruhen auf den angerechneten Stunden. Die Zeitleiste zeigt weiterhin, wann du tatsächlich gearbeitet hast.</string>
+    <string name="recordsOvertimePeriod">Zeitraum</string>
     <string name="recordsOvertimeRecorded">Erfasste Überstunden</string>
     <string name="recordsOvertimeRecordedLife">Erfasste Überstunden insgesamt</string>
+    <string name="recordsOvertimeSave">Überstunden speichern</string>
+    <string name="recordsOvertimeUseMeasured">Nach Zeitraum rechnen</string>
     <string name="recordsOwnerAuthReason">Bestätige, dass du es bist, um fortzufahren</string>
     <string name="recordsPayTitle">Erwarteter Lohn · %1$s</string>
     <string name="recordsPlanned">Geplant</string>
@@ -989,6 +1002,7 @@
     <string name="recordsScaleYear">Jahr</string>
     <string name="recordsSectionHours">Zeiten</string>
     <string name="recordsSectionKind">Dieser Tag</string>
+    <string name="recordsSectionOvertime">Überstunden</string>
     <string name="recordsSeeThisDay">Diesen Tag ansehen</string>
     <string name="recordsSeeThisMonth">Diesen Monat ansehen</string>
     <string name="recordsShareOfDay">Anteil an 24 Stunden</string>

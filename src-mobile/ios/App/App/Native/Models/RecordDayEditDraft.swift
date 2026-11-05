@@ -50,6 +50,9 @@ final class RecordDayEditDraft: Identifiable {
     let loadedStart: Int
     let loadedEnd: Int
     let hasStoredOverride: Bool
+    /// Plan 024 phase 4: the day's overtime as the records show it when the
+    /// editor opens. The overtime section saves on its own.
+    let overtime: RecordOvertimeState
     var startMinutes: Int { didSet { noteEdit(from: oldValue, to: startMinutes) } }
     var endMinutes: Int { didSet { noteEdit(from: oldValue, to: endMinutes) } }
     var kind: Kind { didSet { noteEdit(from: oldValue, to: kind) } }
@@ -62,6 +65,7 @@ final class RecordDayEditDraft: Identifiable {
         self.dayKey = dayKey
         calendar = queries.recordsCalendar
         let resolution = queries.resolvedDay(dayKey: dayKey)
+        overtime = RecordOvertimeState.load(dayKey: dayKey, queries: queries)
         func minutes(_ milliseconds: Double?, fallback: Int) -> Int {
             guard let milliseconds else { return fallback }
             let date = Date(timeIntervalSince1970: milliseconds / 1_000)

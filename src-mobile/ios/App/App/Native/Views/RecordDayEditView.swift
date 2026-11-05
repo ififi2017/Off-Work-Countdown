@@ -90,6 +90,8 @@ struct RecordDayEditView: View {
                     .padding(.horizontal, OWCDesign.pageInset)
                     .padding(.top, 22)
 
+                RecordOvertimeSection(dayKey: draft.dayKey, loaded: draft.overtime, actions: actions)
+
                 if draft.loadedKind != .customHours || draft.hasStoredOverride {
                     OWCSectionHeader(title: text.t("syncDangerZone"))
                         .padding(.horizontal, OWCDesign.pageInset)

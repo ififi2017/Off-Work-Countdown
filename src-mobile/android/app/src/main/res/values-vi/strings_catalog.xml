@@ -720,7 +720,10 @@
     <string name="overtimeDefaultRow">Mặc định làm thêm</string>
     <string name="overtimeDefaultUsual">Lương giờ thường (1×)</string>
     <string name="overtimeDescription">Chọn giờ kết thúc muộn hơn cho ca này.</string>
+    <string name="overtimeDurationLabel">Thời lượng làm thêm</string>
     <string name="overtimeEndTime">Giờ kết thúc</string>
+    <string name="overtimeModeDuration">Bao lâu</string>
+    <string name="overtimeModeEnd">Đến mấy giờ</string>
     <string name="overtimeMultiplierCustom">Tùy chỉnh…</string>
     <string name="overtimeMultiplierNote">Giờ làm thêm được ước tính bằng %1$s× mức lương giờ thường.</string>
     <string name="overtimeMultiplierRow">Hệ số</string>
@@ -728,6 +731,10 @@
     <string name="overtimePayPaid">Có lương</string>
     <string name="overtimePayRow">Lần làm thêm này</string>
     <string name="overtimePayUnpaid">Không lương</string>
+    <string name="overtimePeriodSummary">Làm thêm %1$s–%2$s · tính %3$s</string>
+    <string name="overtimeRestFootnote">Ví dụ ăn tối. Không tính vào giờ làm thêm.</string>
+    <string name="overtimeRestNone">Không nghỉ</string>
+    <string name="overtimeRestRow">Nghỉ trước</string>
     <string name="overtimeTimeLeftCaption">đến hết giờ tăng ca đã đặt</string>
     <string name="overtimeTitle">Thêm giờ làm thêm</string>
     <string name="overtimeUnpaidNote">Giờ làm thêm này không được trả lương nên khoản kiếm được hôm nay dừng ở %1$s. Tính theo số giờ thực tế đã làm, lương giờ hôm nay là %2$s, thấp hơn bình thường %3$s%%.</string>
@@ -967,8 +974,14 @@
     <string name="recordsOperationUnsupportedVersion">Bản sao lưu được tạo bằng phiên bản mới hơn. Hãy cập nhật ứng dụng trước khi nhập.</string>
     <string name="recordsOvertime">Tăng ca</string>
     <string name="recordsOvertimeAmount">Tăng ca %1$s</string>
+    <string name="recordsOvertimeCounted">Giờ được tính</string>
+    <string name="recordsOvertimeCountedSubtitle">Theo khung giờ: %1$s</string>
+    <string name="recordsOvertimeFootnote">Thống kê giờ, báo cáo theo kỳ và thu nhập đều dựa trên giờ được tính. Dòng thời gian vẫn hiển thị khung giờ bạn thực sự làm việc.</string>
+    <string name="recordsOvertimePeriod">Khung giờ</string>
     <string name="recordsOvertimeRecorded">Tăng ca đã ghi</string>
     <string name="recordsOvertimeRecordedLife">Tổng tăng ca đã ghi</string>
+    <string name="recordsOvertimeSave">Lưu giờ làm thêm</string>
+    <string name="recordsOvertimeUseMeasured">Tính theo khung giờ</string>
     <string name="recordsOwnerAuthReason">Xác nhận đó là bạn để tiếp tục</string>
     <string name="recordsPayTitle">Lương dự kiến · %1$s</string>
     <string name="recordsPlanned">Dự kiến</string>
@@ -986,6 +999,7 @@
     <string name="recordsScaleYear">Năm</string>
     <string name="recordsSectionHours">Giờ</string>
     <string name="recordsSectionKind">Ngày này</string>
+    <string name="recordsSectionOvertime">Làm thêm</string>
     <string name="recordsSeeThisDay">Xem ngày này</string>
     <string name="recordsSeeThisMonth">Xem tháng này</string>
     <string name="recordsShareOfDay">Phần trong 24 giờ</string>

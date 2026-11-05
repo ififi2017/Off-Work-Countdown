@@ -720,7 +720,10 @@
     <string name="overtimeDefaultRow">초과 근무 기본값</string>
     <string name="overtimeDefaultUsual">평소 시급 (1×)</string>
     <string name="overtimeDescription">이번 근무의 종료 시간을 늦춥니다.</string>
+    <string name="overtimeDurationLabel">초과 근무 시간</string>
     <string name="overtimeEndTime">종료 시간</string>
+    <string name="overtimeModeDuration">시간 길이</string>
+    <string name="overtimeModeEnd">종료 시각</string>
     <string name="overtimeMultiplierCustom">직접 설정…</string>
     <string name="overtimeMultiplierNote">초과 근무는 평소 시급의 %1$s배로 추산합니다.</string>
     <string name="overtimeMultiplierRow">배율</string>
@@ -728,6 +731,10 @@
     <string name="overtimePayPaid">유급</string>
     <string name="overtimePayRow">이번 초과 근무</string>
     <string name="overtimePayUnpaid">무급</string>
+    <string name="overtimePeriodSummary">초과 근무 %1$s–%2$s · %3$s 반영</string>
+    <string name="overtimeRestFootnote">예: 저녁 식사. 초과 근무 시간에 포함되지 않아요.</string>
+    <string name="overtimeRestNone">휴식 없음</string>
+    <string name="overtimeRestRow">먼저 휴식</string>
     <string name="overtimeTimeLeftCaption">설정한 연장 근무 종료까지</string>
     <string name="overtimeTitle">초과 근무 추가</string>
     <string name="overtimeUnpaidNote">이 초과 근무는 무급이라 오늘 번 돈은 %1$s에서 멈춥니다. 실제 근무 시간으로 계산하면 오늘 시급은 %2$s로, 평소보다 %3$s%% 낮습니다.</string>
@@ -967,8 +974,14 @@
     <string name="recordsOperationUnsupportedVersion">이 백업은 더 새로운 버전에서 만들어졌습니다. 가져오기 전에 앱을 업데이트하세요.</string>
     <string name="recordsOvertime">초과 근무</string>
     <string name="recordsOvertimeAmount">초과 근무 %1$s</string>
+    <string name="recordsOvertimeCounted">반영 시간</string>
+    <string name="recordsOvertimeCountedSubtitle">시간대 기준 %1$s</string>
+    <string name="recordsOvertimeFootnote">시간 통계, 기간 리포트, 수입은 ‘반영 시간’을 기준으로 계산해요. 타임라인에는 실제로 일한 시간대가 그대로 표시돼요.</string>
+    <string name="recordsOvertimePeriod">시간대</string>
     <string name="recordsOvertimeRecorded">기록된 초과근무</string>
     <string name="recordsOvertimeRecordedLife">지금까지 기록한 초과 근무</string>
+    <string name="recordsOvertimeSave">초과 근무 저장</string>
+    <string name="recordsOvertimeUseMeasured">시간대대로 계산</string>
     <string name="recordsOwnerAuthReason">계속하려면 본인인지 확인해 주세요</string>
     <string name="recordsPayTitle">%1$s 예상 급여</string>
     <string name="recordsPlanned">예정</string>
@@ -986,6 +999,7 @@
     <string name="recordsScaleYear">년</string>
     <string name="recordsSectionHours">시간</string>
     <string name="recordsSectionKind">이 날</string>
+    <string name="recordsSectionOvertime">초과 근무</string>
     <string name="recordsSeeThisDay">이 날 보기</string>
     <string name="recordsSeeThisMonth">이번 달 보기</string>
     <string name="recordsShareOfDay">하루 24시간 중</string>

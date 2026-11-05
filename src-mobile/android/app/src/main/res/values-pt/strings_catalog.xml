@@ -724,7 +724,10 @@
     <string name="overtimeDefaultRow">Horas extra por omissão</string>
     <string name="overtimeDefaultUsual">Taxa horária habitual (1×)</string>
     <string name="overtimeDescription">Escolha um horário de saída mais tarde.</string>
+    <string name="overtimeDurationLabel">Duração da hora extra</string>
     <string name="overtimeEndTime">Horário de saída</string>
+    <string name="overtimeModeDuration">Por quanto tempo</string>
+    <string name="overtimeModeEnd">Até</string>
     <string name="overtimeMultiplierCustom">Personalizado…</string>
     <string name="overtimeMultiplierNote">As horas extra são estimadas a %1$s× a sua taxa horária habitual.</string>
     <string name="overtimeMultiplierRow">Multiplicador</string>
@@ -732,6 +735,10 @@
     <string name="overtimePayPaid">Pagas</string>
     <string name="overtimePayRow">Estas horas extra</string>
     <string name="overtimePayUnpaid">Não pagas</string>
+    <string name="overtimePeriodSummary">Hora extra %1$s–%2$s · %3$s contadas</string>
+    <string name="overtimeRestFootnote">Por exemplo, para jantar. Não conta como hora extra.</string>
+    <string name="overtimeRestNone">Sem descanso</string>
+    <string name="overtimeRestRow">Descansar antes</string>
     <string name="overtimeTimeLeftCaption">até o fim das horas extra definidas</string>
     <string name="overtimeTitle">Adicionar hora extra</string>
     <string name="overtimeUnpaidNote">Estas horas extra não são pagas, por isso o ganho de hoje fica em %1$s. Pelas horas realmente trabalhadas, o seu valor por hora hoje é %2$s, %3$s%% abaixo do habitual.</string>
@@ -973,8 +980,14 @@
     <string name="recordsOperationUnsupportedVersion">Esta cópia foi criada numa versão mais recente. Atualize a app antes de a importar.</string>
     <string name="recordsOvertime">Hora extra</string>
     <string name="recordsOvertimeAmount">%1$s de hora extra</string>
+    <string name="recordsOvertimeCounted">Horas contadas</string>
+    <string name="recordsOvertimeCountedSubtitle">%1$s pelo período</string>
+    <string name="recordsOvertimeFootnote">As estatísticas de horas, os relatórios de período e os rendimentos usam as horas contadas. A linha do tempo continua mostrando o tempo realmente trabalhado.</string>
+    <string name="recordsOvertimePeriod">Período</string>
     <string name="recordsOvertimeRecorded">Horas extra registadas</string>
     <string name="recordsOvertimeRecordedLife">Horas extras registradas no total</string>
+    <string name="recordsOvertimeSave">Guardar hora extra</string>
+    <string name="recordsOvertimeUseMeasured">Contar pelo período</string>
     <string name="recordsOwnerAuthReason">Confirme que é você para continuar</string>
     <string name="recordsPayTitle">Salário previsto · %1$s</string>
     <string name="recordsPlanned">Planejado</string>
@@ -992,6 +1005,7 @@
     <string name="recordsScaleYear">Ano</string>
     <string name="recordsSectionHours">Horário</string>
     <string name="recordsSectionKind">Este dia</string>
+    <string name="recordsSectionOvertime">Hora extra</string>
     <string name="recordsSeeThisDay">Ver este dia</string>
     <string name="recordsSeeThisMonth">Ver este mês</string>
     <string name="recordsShareOfDay">Parte das 24 horas</string>

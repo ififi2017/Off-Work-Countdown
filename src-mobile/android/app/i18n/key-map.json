@@ -2648,8 +2648,17 @@
     "overtimeDescription": {
       "resource": "string/overtimeDescription"
     },
+    "overtimeDurationLabel": {
+      "resource": "string/overtimeDurationLabel"
+    },
     "overtimeEndTime": {
       "resource": "string/overtimeEndTime"
+    },
+    "overtimeModeDuration": {
+      "resource": "string/overtimeModeDuration"
+    },
+    "overtimeModeEnd": {
+      "resource": "string/overtimeModeEnd"
     },
     "overtimeMultiplierCustom": {
       "resource": "string/overtimeMultiplierCustom"
@@ -2674,6 +2683,23 @@
     },
     "overtimePayUnpaid": {
       "resource": "string/overtimePayUnpaid"
+    },
+    "overtimePeriodSummary": {
+      "resource": "string/overtimePeriodSummary",
+      "params": [
+        "start",
+        "end",
+        "duration"
+      ]
+    },
+    "overtimeRestFootnote": {
+      "resource": "string/overtimeRestFootnote"
+    },
+    "overtimeRestNone": {
+      "resource": "string/overtimeRestNone"
+    },
+    "overtimeRestRow": {
+      "resource": "string/overtimeRestRow"
     },
     "overtimeTimeLeftCaption": {
       "resource": "string/overtimeTimeLeftCaption"
@@ -3541,11 +3567,32 @@
         "duration"
       ]
     },
+    "recordsOvertimeCounted": {
+      "resource": "string/recordsOvertimeCounted"
+    },
+    "recordsOvertimeCountedSubtitle": {
+      "resource": "string/recordsOvertimeCountedSubtitle",
+      "params": [
+        "duration"
+      ]
+    },
+    "recordsOvertimeFootnote": {
+      "resource": "string/recordsOvertimeFootnote"
+    },
+    "recordsOvertimePeriod": {
+      "resource": "string/recordsOvertimePeriod"
+    },
     "recordsOvertimeRecorded": {
       "resource": "string/recordsOvertimeRecorded"
     },
     "recordsOvertimeRecordedLife": {
       "resource": "string/recordsOvertimeRecordedLife"
+    },
+    "recordsOvertimeSave": {
+      "resource": "string/recordsOvertimeSave"
+    },
+    "recordsOvertimeUseMeasured": {
+      "resource": "string/recordsOvertimeUseMeasured"
     },
     "recordsOwnerAuthReason": {
       "resource": "string/recordsOwnerAuthReason"
@@ -3609,6 +3656,9 @@
     },
     "recordsSectionKind": {
       "resource": "string/recordsSectionKind"
+    },
+    "recordsSectionOvertime": {
+      "resource": "string/recordsSectionOvertime"
     },
     "recordsSeeThisDay": {
       "resource": "string/recordsSeeThisDay"

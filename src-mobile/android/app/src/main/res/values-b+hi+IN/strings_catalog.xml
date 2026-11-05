@@ -722,7 +722,10 @@
     <string name="overtimeDefaultRow">ओवरटाइम डिफ़ॉल्ट</string>
     <string name="overtimeDefaultUsual">सामान्य प्रति घंटा दर (1×)</string>
     <string name="overtimeDescription">इस शिफ्ट के लिए बाद का समाप्ति समय चुनें।</string>
+    <string name="overtimeDurationLabel">ओवरटाइम की अवधि</string>
     <string name="overtimeEndTime">समाप्ति समय</string>
+    <string name="overtimeModeDuration">कितनी देर</string>
+    <string name="overtimeModeEnd">कब तक</string>
     <string name="overtimeMultiplierCustom">कस्टम…</string>
     <string name="overtimeMultiplierNote">ओवरटाइम का अनुमान आपकी सामान्य प्रति घंटा दर के %1$s× पर लगाया जाता है।</string>
     <string name="overtimeMultiplierRow">गुणक</string>
@@ -730,6 +733,10 @@
     <string name="overtimePayPaid">भुगतान सहित</string>
     <string name="overtimePayRow">यह ओवरटाइम</string>
     <string name="overtimePayUnpaid">बिना भुगतान</string>
+    <string name="overtimePeriodSummary">ओवरटाइम %1$s–%2$s · %3$s गिना जाएगा</string>
+    <string name="overtimeRestFootnote">जैसे रात का खाना। इसे ओवरटाइम में नहीं गिना जाता।</string>
+    <string name="overtimeRestNone">विराम नहीं</string>
+    <string name="overtimeRestRow">पहले विराम</string>
     <string name="overtimeTimeLeftCaption">आपके तय ओवरटाइम के अंत तक</string>
     <string name="overtimeTitle">ओवरटाइम जोड़ें</string>
     <string name="overtimeUnpaidNote">यह ओवरटाइम बिना भुगतान का है, इसलिए आज की कमाई %1$s पर रुकी है। वास्तव में काम किए गए घंटों के हिसाब से आज की प्रति घंटा दर %2$s है, जो सामान्य से %3$s%% कम है।</string>
@@ -970,8 +977,14 @@
     <string name="recordsOperationUnsupportedVersion">यह बैकअप नए संस्करण में बनाया गया था। आयात करने से पहले ऐप अपडेट करें।</string>
     <string name="recordsOvertime">अधिक समय</string>
     <string name="recordsOvertimeAmount">ओवरटाइम %1$s</string>
+    <string name="recordsOvertimeCounted">गिने गए घंटे</string>
+    <string name="recordsOvertimeCountedSubtitle">समय अवधि के अनुसार %1$s</string>
+    <string name="recordsOvertimeFootnote">घंटों के आँकड़े, अवधि रिपोर्ट और आय गिने गए घंटों पर आधारित होती हैं। टाइमलाइन में काम पर बिताया वास्तविक समय ही दिखता है।</string>
+    <string name="recordsOvertimePeriod">समय अवधि</string>
     <string name="recordsOvertimeRecorded">दर्ज ओवरटाइम</string>
     <string name="recordsOvertimeRecordedLife">अब तक दर्ज ओवरटाइम</string>
+    <string name="recordsOvertimeSave">ओवरटाइम सहेजें</string>
+    <string name="recordsOvertimeUseMeasured">समय अवधि के अनुसार गिनें</string>
     <string name="recordsOwnerAuthReason">आगे बढ़ने के लिए पुष्टि करें कि आप हैं</string>
     <string name="recordsPayTitle">अनुमानित वेतन · %1$s</string>
     <string name="recordsPlanned">योजना</string>
@@ -989,6 +1002,7 @@
     <string name="recordsScaleYear">वर्ष</string>
     <string name="recordsSectionHours">घंटे</string>
     <string name="recordsSectionKind">यह दिन</string>
+    <string name="recordsSectionOvertime">ओवरटाइम</string>
     <string name="recordsSeeThisDay">यह दिन देखें</string>
     <string name="recordsSeeThisMonth">यह महीना देखें</string>
     <string name="recordsShareOfDay">24 घंटों में हिस्सा</string>

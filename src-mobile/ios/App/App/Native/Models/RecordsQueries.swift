@@ -1370,7 +1370,8 @@ final class RecordsQueries {
             appearance: cell.appearance,
             sourceKey: sourceKey,
             regularWorkMs: canvas.allocation.workMs,
-            overtimeMs: canvas.allocation.overtimeMs,
+            // Plan 024: counted hours; the canvas keeps drawing the real period.
+            overtimeMs: countedOvertimeMs(canvas.allocation.overtimeMs, on: resolution, previous: previous),
             breakMs: canvas.allocation.breakMs,
             sleepMs: canvas.allocation.sleepMs,
             freeMs: canvas.allocation.freeMs,

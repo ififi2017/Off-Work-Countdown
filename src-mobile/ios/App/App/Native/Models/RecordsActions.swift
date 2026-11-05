@@ -47,6 +47,34 @@ final class RecordsActions {
         return true
     }
 
+    /// Plan 024 phase 4: records a day's overtime — its period, the hours that
+    /// count and how it is paid — as a new `overtimeDeclared` observation. The
+    /// latest declaration on a day is the one that counts; earlier ones stay.
+    @discardableResult
+    func declareOvertime(dayKey: String, state: RecordOvertimeState, declaredAt: Date = .now) -> RecordCommand<Bool> {
+        records.submitCommand { [self] in
+            guard canMutateRecordedDay(dayKey), records.captureEnabled, state.isValid,
+                  OvertimePay.normalized(state.payMultiplier) == state.payMultiplier,
+                  state.countedMs.map({ CountedOvertime.normalized($0) != nil }) ?? true,
+                  let date = RecordJSON.date(fromDayKey: dayKey, calendar: preferences.recordsCalendar),
+                  let valueData = try? JSONEncoder().encode(state.payload)
+            else { return false }
+            records.withBatchedWrites {
+                records.ensureSeeded(hours: currentHours(date), at: date, timeZone: preferences.recordsTimeZone)
+                records.recordObservation(
+                    kind: .overtimeDeclared,
+                    eventID: UUID(),
+                    shiftAnchorDate: preferences.recordsCalendar.startOfDay(for: date),
+                    occurredAt: declaredAt,
+                    snapshotID: records.currentSnapshotID(on: date) ?? UUID(),
+                    valueData: valueData,
+                    timeZoneIdentifier: preferences.recordsTimeZoneIdentifier
+                )
+            }
+            return true
+        }
+    }
+
     @discardableResult
     func applyDayWrite(
         _ write: DayRecordWrite,

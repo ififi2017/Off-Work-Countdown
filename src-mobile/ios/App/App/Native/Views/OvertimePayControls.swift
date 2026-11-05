@@ -47,3 +47,59 @@ struct OvertimeMultiplierStepperRow: View {
         }
     }
 }
+
+/// This overtime's pay: paid or not, and at what multiple of the usual rate.
+/// The overtime sheet and the Records day editor share it.
+struct OvertimePayCard: View {
+    let text: AppText
+    @Binding var isPaid: Bool
+    @Binding var multiplier: Double
+    @Binding var showsCustom: Bool
+
+    var body: some View {
+        OWCGroupCard {
+            OWCRow(title: text.t("overtimePayRow"), isLast: !isPaid) {
+                Picker(text.t("overtimePayRow"), selection: $isPaid) {
+                    Text(text.t("overtimePayPaid")).tag(true)
+                    Text(text.t("overtimePayUnpaid")).tag(false)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxWidth: 190)
+            }
+            if isPaid {
+                OWCRow(title: text.t("overtimeMultiplierRow"), isLast: !showsCustom) {
+                    HStack(spacing: 6) {
+                        Text(text.multiplierLabel(multiplier))
+                            .font(.body.monospacedDigit())
+                            .foregroundStyle(OWCDesign.secondary)
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(OWCDesign.tertiary)
+                    }
+                }
+                .owcRowMenu(accessibilityLabel: "\(text.t("overtimeMultiplierRow")), \(text.multiplierLabel(multiplier))") {
+                    Picker(text.t("overtimeMultiplierRow"), selection: Binding(
+                        get: { showsCustom ? OvertimePayChoices.customTag : OvertimePayChoices.tenths(multiplier) },
+                        set: { tag in
+                            if tag == OvertimePayChoices.customTag {
+                                showsCustom = true
+                            } else {
+                                showsCustom = false
+                                multiplier = OvertimePayChoices.multiplier(tenths: tag)
+                            }
+                        }
+                    )) {
+                        ForEach(OvertimePayChoices.presets, id: \.self) { preset in
+                            Text(text.multiplierLabel(preset)).tag(OvertimePayChoices.tenths(preset))
+                        }
+                        Text(text.t("overtimeMultiplierCustom")).tag(OvertimePayChoices.customTag)
+                    }
+                }
+                if showsCustom {
+                    OvertimeMultiplierStepperRow(text: text, multiplier: $multiplier, isLast: true)
+                }
+            }
+        }
+    }
+}

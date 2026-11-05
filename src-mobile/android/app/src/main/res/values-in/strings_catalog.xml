@@ -720,7 +720,10 @@
     <string name="overtimeDefaultRow">Default lembur</string>
     <string name="overtimeDefaultUsual">Tarif per jam biasa (1×)</string>
     <string name="overtimeDescription">Pilih waktu selesai yang lebih lambat.</string>
+    <string name="overtimeDurationLabel">Lama lembur</string>
     <string name="overtimeEndTime">Waktu selesai</string>
+    <string name="overtimeModeDuration">Berapa lama</string>
+    <string name="overtimeModeEnd">Sampai</string>
     <string name="overtimeMultiplierCustom">Kustom…</string>
     <string name="overtimeMultiplierNote">Lembur diperkirakan dengan %1$s× tarif per jam biasa.</string>
     <string name="overtimeMultiplierRow">Pengali</string>
@@ -728,6 +731,10 @@
     <string name="overtimePayPaid">Dibayar</string>
     <string name="overtimePayRow">Lembur ini</string>
     <string name="overtimePayUnpaid">Tidak dibayar</string>
+    <string name="overtimePeriodSummary">Lembur %1$s–%2$s · dihitung %3$s</string>
+    <string name="overtimeRestFootnote">Misalnya untuk makan malam. Tidak dihitung sebagai lembur.</string>
+    <string name="overtimeRestNone">Tanpa istirahat</string>
+    <string name="overtimeRestRow">Istirahat dulu</string>
     <string name="overtimeTimeLeftCaption">hingga lembur yang Anda atur berakhir</string>
     <string name="overtimeTitle">Tambah lembur</string>
     <string name="overtimeUnpaidNote">Lembur ini tidak dibayar, jadi penghasilan hari ini berhenti di %1$s. Berdasarkan jam kerja yang sebenarnya, upah per jam hari ini %2$s, %3$s%% lebih rendah dari biasanya.</string>
@@ -967,8 +974,14 @@
     <string name="recordsOperationUnsupportedVersion">Cadangan ini dibuat dengan versi yang lebih baru. Perbarui app sebelum mengimpor.</string>
     <string name="recordsOvertime">Lembur</string>
     <string name="recordsOvertimeAmount">Lembur %1$s</string>
+    <string name="recordsOvertimeCounted">Jam yang dihitung</string>
+    <string name="recordsOvertimeCountedSubtitle">%1$s sesuai rentang waktu</string>
+    <string name="recordsOvertimeFootnote">Statistik jam, laporan periode, dan penghasilan memakai jam yang dihitung. Lini masa tetap menampilkan waktu kerja yang sebenarnya.</string>
+    <string name="recordsOvertimePeriod">Rentang waktu</string>
     <string name="recordsOvertimeRecorded">Lembur tercatat</string>
     <string name="recordsOvertimeRecordedLife">Total lembur tercatat</string>
+    <string name="recordsOvertimeSave">Simpan lembur</string>
+    <string name="recordsOvertimeUseMeasured">Hitung sesuai rentang waktu</string>
     <string name="recordsOwnerAuthReason">Konfirmasi ini memang kamu untuk lanjut</string>
     <string name="recordsPayTitle">Perkiraan gaji · %1$s</string>
     <string name="recordsPlanned">Terencana</string>
@@ -986,6 +999,7 @@
     <string name="recordsScaleYear">Tahun</string>
     <string name="recordsSectionHours">Jam</string>
     <string name="recordsSectionKind">Hari ini</string>
+    <string name="recordsSectionOvertime">Lembur</string>
     <string name="recordsSeeThisDay">Lihat hari ini</string>
     <string name="recordsSeeThisMonth">Lihat bulan ini</string>
     <string name="recordsShareOfDay">Bagian dari 24 jam</string>

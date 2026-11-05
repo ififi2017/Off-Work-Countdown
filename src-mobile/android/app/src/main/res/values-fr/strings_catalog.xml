@@ -724,7 +724,10 @@
     <string name="overtimeDefaultRow">Heures sup. par défaut</string>
     <string name="overtimeDefaultUsual">Taux horaire habituel (1×)</string>
     <string name="overtimeDescription">Choisissez une heure de fin plus tardive.</string>
+    <string name="overtimeDurationLabel">Durée des heures sup.</string>
     <string name="overtimeEndTime">Heure de fin</string>
+    <string name="overtimeModeDuration">Durée</string>
+    <string name="overtimeModeEnd">Jusqu’à</string>
     <string name="overtimeMultiplierCustom">Personnalisé…</string>
     <string name="overtimeMultiplierNote">Les heures supplémentaires sont estimées à %1$s× votre taux horaire habituel.</string>
     <string name="overtimeMultiplierRow">Coefficient</string>
@@ -732,6 +735,10 @@
     <string name="overtimePayPaid">Payées</string>
     <string name="overtimePayRow">Ces heures sup.</string>
     <string name="overtimePayUnpaid">Non payées</string>
+    <string name="overtimePeriodSummary">Heures sup. %1$s–%2$s · %3$s comptées</string>
+    <string name="overtimeRestFootnote">Par exemple pour dîner. Non compté dans les heures sup.</string>
+    <string name="overtimeRestNone">Pas de pause</string>
+    <string name="overtimeRestRow">Pause avant</string>
     <string name="overtimeTimeLeftCaption">avant la fin des heures supplémentaires définie</string>
     <string name="overtimeTitle">Ajouter des heures sup.</string>
     <string name="overtimeUnpaidNote">Ces heures supplémentaires ne sont pas payées : ce que vous avez gagné aujourd\'hui reste à %1$s. Sur les heures réellement travaillées, votre taux horaire du jour est de %2$s, soit %3$s %% de moins que d\'habitude.</string>
@@ -973,8 +980,14 @@
     <string name="recordsOperationUnsupportedVersion">Cette sauvegarde vient d’une version plus récente. Mettez l’app à jour avant de l’importer.</string>
     <string name="recordsOvertime">Heures supp.</string>
     <string name="recordsOvertimeAmount">%1$s d’heures sup.</string>
+    <string name="recordsOvertimeCounted">Heures comptées</string>
+    <string name="recordsOvertimeCountedSubtitle">%1$s selon la plage</string>
+    <string name="recordsOvertimeFootnote">Les statistiques d’heures, les bilans de période et les revenus s’appuient sur les heures comptées. La frise montre toujours le temps réellement passé au travail.</string>
+    <string name="recordsOvertimePeriod">Plage</string>
     <string name="recordsOvertimeRecorded">Heures sup. enregistrées</string>
     <string name="recordsOvertimeRecordedLife">Heures sup. enregistrées au total</string>
+    <string name="recordsOvertimeSave">Enregistrer les heures sup.</string>
+    <string name="recordsOvertimeUseMeasured">Compter selon la plage</string>
     <string name="recordsOwnerAuthReason">Confirmez que c’est bien vous pour continuer</string>
     <string name="recordsPayTitle">Salaire prévu · %1$s</string>
     <string name="recordsPlanned">Prévu</string>
@@ -992,6 +1005,7 @@
     <string name="recordsScaleYear">Année</string>
     <string name="recordsSectionHours">Horaires</string>
     <string name="recordsSectionKind">Ce jour</string>
+    <string name="recordsSectionOvertime">Heures sup.</string>
     <string name="recordsSeeThisDay">Voir ce jour</string>
     <string name="recordsSeeThisMonth">Voir ce mois</string>
     <string name="recordsShareOfDay">Part des 24 heures</string>

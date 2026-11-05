@@ -720,7 +720,10 @@
     <string name="overtimeDefaultRow">残業のデフォルト</string>
     <string name="overtimeDefaultUsual">通常の時給（1×）</string>
     <string name="overtimeDescription">この勤務の終了時刻を延長します。</string>
+    <string name="overtimeDurationLabel">残業時間</string>
     <string name="overtimeEndTime">終了時刻</string>
+    <string name="overtimeModeDuration">時間数</string>
+    <string name="overtimeModeEnd">終了時刻</string>
     <string name="overtimeMultiplierCustom">カスタム…</string>
     <string name="overtimeMultiplierNote">残業は通常の時給の%1$s倍で概算します。</string>
     <string name="overtimeMultiplierRow">倍率</string>
@@ -728,6 +731,10 @@
     <string name="overtimePayPaid">有給</string>
     <string name="overtimePayRow">この残業</string>
     <string name="overtimePayUnpaid">無給</string>
+    <string name="overtimePeriodSummary">残業 %1$s–%2$s · %3$sを計上</string>
+    <string name="overtimeRestFootnote">たとえば夕食など。残業時間には含まれません。</string>
+    <string name="overtimeRestNone">休憩なし</string>
+    <string name="overtimeRestRow">先に休憩</string>
     <string name="overtimeTimeLeftCaption">設定した残業終了まで</string>
     <string name="overtimeTitle">残業を追加</string>
     <string name="overtimeUnpaidNote">この残業は無給のため、本日の収入は%1$sのままです。実際に働いた時間で計算すると、本日の時給は%2$sで、普段より%3$s%%低くなります。</string>
@@ -967,8 +974,14 @@
     <string name="recordsOperationUnsupportedVersion">このバックアップは新しいバージョンで作成されています。読み込む前にアプリを更新してください。</string>
     <string name="recordsOvertime">残業</string>
     <string name="recordsOvertimeAmount">残業 %1$s</string>
+    <string name="recordsOvertimeCounted">計上時間</string>
+    <string name="recordsOvertimeCountedSubtitle">時間帯どおりなら%1$s</string>
+    <string name="recordsOvertimeFootnote">時間の集計、期間レポート、収入は「計上時間」で計算します。タイムラインには実際に勤務した時間帯がそのまま表示されます。</string>
+    <string name="recordsOvertimePeriod">時間帯</string>
     <string name="recordsOvertimeRecorded">記録した残業</string>
     <string name="recordsOvertimeRecordedLife">これまでに記録した残業</string>
+    <string name="recordsOvertimeSave">残業を保存</string>
+    <string name="recordsOvertimeUseMeasured">時間帯どおりに計算</string>
     <string name="recordsOwnerAuthReason">続けるには本人確認が必要です</string>
     <string name="recordsPayTitle">%1$sの見込み給与</string>
     <string name="recordsPlanned">予定</string>
@@ -986,6 +999,7 @@
     <string name="recordsScaleYear">年</string>
     <string name="recordsSectionHours">時間</string>
     <string name="recordsSectionKind">この日</string>
+    <string name="recordsSectionOvertime">残業</string>
     <string name="recordsSeeThisDay">この日を見る</string>
     <string name="recordsSeeThisMonth">この月を見る</string>
     <string name="recordsShareOfDay">24時間に占める割合</string>

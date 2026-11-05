@@ -724,7 +724,10 @@
     <string name="overtimeDefaultRow">Straordinario predefinito</string>
     <string name="overtimeDefaultUsual">Tariffa oraria abituale (1×)</string>
     <string name="overtimeDescription">Scegli un orario di fine più tardi.</string>
+    <string name="overtimeDurationLabel">Durata dello straordinario</string>
     <string name="overtimeEndTime">Ora di fine</string>
+    <string name="overtimeModeDuration">Per quanto</string>
+    <string name="overtimeModeEnd">Fino alle</string>
     <string name="overtimeMultiplierCustom">Personalizzato…</string>
     <string name="overtimeMultiplierNote">Lo straordinario è stimato a %1$s× la tua tariffa oraria abituale.</string>
     <string name="overtimeMultiplierRow">Moltiplicatore</string>
@@ -732,6 +735,10 @@
     <string name="overtimePayPaid">Pagato</string>
     <string name="overtimePayRow">Questo straordinario</string>
     <string name="overtimePayUnpaid">Non pagato</string>
+    <string name="overtimePeriodSummary">Straordinario %1$s–%2$s · conteggiate %3$s</string>
+    <string name="overtimeRestFootnote">Per esempio per la cena. Non conta come straordinario.</string>
+    <string name="overtimeRestNone">Nessuna pausa</string>
+    <string name="overtimeRestRow">Prima una pausa</string>
     <string name="overtimeTimeLeftCaption">al termine dello straordinario impostato</string>
     <string name="overtimeTitle">Aggiungi straordinario</string>
     <string name="overtimeUnpaidNote">Questo straordinario non è pagato, quindi il guadagnato di oggi resta a %1$s. Sulle ore realmente lavorate, la tua tariffa oraria di oggi è %2$s, il %3$s%% in meno del solito.</string>
@@ -973,8 +980,14 @@
     <string name="recordsOperationUnsupportedVersion">Questo backup è stato creato da una versione più recente. Aggiorna l’app prima di importarlo.</string>
     <string name="recordsOvertime">Straordinari</string>
     <string name="recordsOvertimeAmount">%1$s di straordinario</string>
+    <string name="recordsOvertimeCounted">Ore conteggiate</string>
+    <string name="recordsOvertimeCountedSubtitle">%1$s secondo la fascia</string>
+    <string name="recordsOvertimeFootnote">Statistiche delle ore, report periodici e reddito usano le ore conteggiate. La linea del tempo mostra comunque il tempo effettivamente lavorato.</string>
+    <string name="recordsOvertimePeriod">Fascia</string>
     <string name="recordsOvertimeRecorded">Straordinari registrati</string>
     <string name="recordsOvertimeRecordedLife">Straordinari registrati in tutto</string>
+    <string name="recordsOvertimeSave">Salva straordinario</string>
+    <string name="recordsOvertimeUseMeasured">Conta secondo la fascia</string>
     <string name="recordsOwnerAuthReason">Conferma che sei tu per continuare</string>
     <string name="recordsPayTitle">Stipendio previsto · %1$s</string>
     <string name="recordsPlanned">Pianificato</string>
@@ -992,6 +1005,7 @@
     <string name="recordsScaleYear">Anno</string>
     <string name="recordsSectionHours">Orario</string>
     <string name="recordsSectionKind">Questo giorno</string>
+    <string name="recordsSectionOvertime">Straordinario</string>
     <string name="recordsSeeThisDay">Vedi questo giorno</string>
     <string name="recordsSeeThisMonth">Vedi questo mese</string>
     <string name="recordsShareOfDay">Quota delle 24 ore</string>

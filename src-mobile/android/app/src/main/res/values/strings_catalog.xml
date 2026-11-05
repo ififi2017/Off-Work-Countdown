@@ -722,7 +722,10 @@
     <string name="overtimeDefaultRow">Overtime default</string>
     <string name="overtimeDefaultUsual">Usual hourly rate (1×)</string>
     <string name="overtimeDescription">Choose a later finish time for this shift.</string>
+    <string name="overtimeDurationLabel">Overtime length</string>
     <string name="overtimeEndTime">Finish time</string>
+    <string name="overtimeModeDuration">For how long</string>
+    <string name="overtimeModeEnd">Until</string>
     <string name="overtimeMultiplierCustom">Custom…</string>
     <string name="overtimeMultiplierNote">Overtime is estimated at %1$s× your usual hourly rate.</string>
     <string name="overtimeMultiplierRow">Multiplier</string>
@@ -730,6 +733,10 @@
     <string name="overtimePayPaid">Paid</string>
     <string name="overtimePayRow">This overtime</string>
     <string name="overtimePayUnpaid">Unpaid</string>
+    <string name="overtimePeriodSummary">Overtime %1$s–%2$s · %3$s counted</string>
+    <string name="overtimeRestFootnote">For dinner, say. It is not counted as overtime.</string>
+    <string name="overtimeRestNone">No rest</string>
+    <string name="overtimeRestRow">Rest first</string>
     <string name="overtimeTimeLeftCaption">left of the overtime you set</string>
     <string name="overtimeTitle">Add overtime</string>
     <string name="overtimeUnpaidNote">This overtime is unpaid, so today\'s earnings stay at %1$s. Over the hours you actually worked, today\'s hourly rate is %2$s, %3$s%% lower than usual.</string>
@@ -970,8 +977,14 @@
     <string name="recordsOperationUnsupportedVersion">This backup was made by a newer version. Update the app before importing it.</string>
     <string name="recordsOvertime">Overtime</string>
     <string name="recordsOvertimeAmount">%1$s overtime</string>
+    <string name="recordsOvertimeCounted">Counted hours</string>
+    <string name="recordsOvertimeCountedSubtitle">%1$s by the period</string>
+    <string name="recordsOvertimeFootnote">Hour totals, period reports and income use the counted hours. The timeline still shows the time you were actually at work.</string>
+    <string name="recordsOvertimePeriod">Period</string>
     <string name="recordsOvertimeRecorded">Overtime recorded</string>
     <string name="recordsOvertimeRecordedLife">Lifetime overtime recorded</string>
+    <string name="recordsOvertimeSave">Save overtime</string>
+    <string name="recordsOvertimeUseMeasured">Count by period</string>
     <string name="recordsOwnerAuthReason">Confirm it is you to continue</string>
     <string name="recordsPayTitle">Forecast pay · %1$s</string>
     <string name="recordsPlanned">Planned</string>
@@ -989,6 +1002,7 @@
     <string name="recordsScaleYear">Year</string>
     <string name="recordsSectionHours">Hours</string>
     <string name="recordsSectionKind">This day</string>
+    <string name="recordsSectionOvertime">Overtime</string>
     <string name="recordsSeeThisDay">See this day</string>
     <string name="recordsSeeThisMonth">See this month</string>
     <string name="recordsShareOfDay">Share of 24 hours</string>

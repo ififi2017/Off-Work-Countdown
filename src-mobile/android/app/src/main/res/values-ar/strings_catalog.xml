@@ -730,7 +730,10 @@
     <string name="overtimeDefaultRow">الافتراضي للعمل الإضافي</string>
     <string name="overtimeDefaultUsual">الأجر المعتاد بالساعة (1×)</string>
     <string name="overtimeDescription">اختر وقت انتهاء لاحقًا لهذه الوردية.</string>
+    <string name="overtimeDurationLabel">مدة العمل الإضافي</string>
     <string name="overtimeEndTime">وقت الانتهاء</string>
+    <string name="overtimeModeDuration">المدة</string>
+    <string name="overtimeModeEnd">حتى الساعة</string>
     <string name="overtimeMultiplierCustom">مخصّص…</string>
     <string name="overtimeMultiplierNote">يُقدَّر العمل الإضافي بـ %1$s× من أجرك المعتاد بالساعة.</string>
     <string name="overtimeMultiplierRow">المضاعف</string>
@@ -738,6 +741,10 @@
     <string name="overtimePayPaid">مدفوع</string>
     <string name="overtimePayRow">هذا العمل الإضافي</string>
     <string name="overtimePayUnpaid">غير مدفوع</string>
+    <string name="overtimePeriodSummary">العمل الإضافي %1$s–%2$s · يُحتسب %3$s</string>
+    <string name="overtimeRestFootnote">مثل العشاء، ولا يُحتسب ضمن ساعات العمل الإضافي.</string>
+    <string name="overtimeRestNone">بدون راحة</string>
+    <string name="overtimeRestRow">راحة أولاً</string>
     <string name="overtimeTimeLeftCaption">حتى نهاية الوقت الإضافي الذي حددته</string>
     <string name="overtimeTitle">إضافة وقت إضافي</string>
     <string name="overtimeUnpaidNote">هذا العمل الإضافي غير مدفوع، لذا يتوقف ما كسبته اليوم عند %1$s. بحساب ساعات العمل الفعلية، أجرك بالساعة اليوم %2$s، أي أقل بنسبة %3$s%% من المعتاد.</string>
@@ -982,8 +989,14 @@
     <string name="recordsOperationUnsupportedVersion">أُنشئت هذه النسخة الاحتياطية بإصدار أحدث. حدّث التطبيق قبل استيرادها.</string>
     <string name="recordsOvertime">وقت إضافي</string>
     <string name="recordsOvertimeAmount">عمل إضافي %1$s</string>
+    <string name="recordsOvertimeCounted">الساعات المحتسبة</string>
+    <string name="recordsOvertimeCountedSubtitle">%1$s حسب الفترة</string>
+    <string name="recordsOvertimeFootnote">تعتمد إحصاءات الساعات وتقارير الفترات والدخل على الساعات المحتسبة. وما زال الجدول الزمني يعرض وقت العمل الفعلي.</string>
+    <string name="recordsOvertimePeriod">الفترة</string>
     <string name="recordsOvertimeRecorded">العمل الإضافي المسجّل</string>
     <string name="recordsOvertimeRecordedLife">إجمالي العمل الإضافي المسجل</string>
+    <string name="recordsOvertimeSave">حفظ العمل الإضافي</string>
+    <string name="recordsOvertimeUseMeasured">احتسب حسب الفترة</string>
     <string name="recordsOwnerAuthReason">أكّد أنك أنت للمتابعة</string>
     <string name="recordsPayTitle">الأجر المتوقع · %1$s</string>
     <string name="recordsPlanned">مخطط</string>
@@ -1001,6 +1014,7 @@
     <string name="recordsScaleYear">سنة</string>
     <string name="recordsSectionHours">الساعات</string>
     <string name="recordsSectionKind">هذا اليوم</string>
+    <string name="recordsSectionOvertime">العمل الإضافي</string>
     <string name="recordsSeeThisDay">عرض هذا اليوم</string>
     <string name="recordsSeeThisMonth">عرض هذا الشهر</string>
     <string name="recordsShareOfDay">الحصة من 24 ساعة</string>

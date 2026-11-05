@@ -722,7 +722,10 @@
     <string name="overtimeDefaultRow">Fazla mesai varsayılanı</string>
     <string name="overtimeDefaultUsual">Normal saatlik ücret (1×)</string>
     <string name="overtimeDescription">Bu vardiya için daha geç bir bitiş seçin.</string>
+    <string name="overtimeDurationLabel">Fazla mesai süresi</string>
     <string name="overtimeEndTime">Bitiş saati</string>
+    <string name="overtimeModeDuration">Ne kadar süre</string>
+    <string name="overtimeModeEnd">Saat kaça kadar</string>
     <string name="overtimeMultiplierCustom">Özel…</string>
     <string name="overtimeMultiplierNote">Fazla mesai, normal saatlik ücretinizin %1$s× katı olarak tahmin edilir.</string>
     <string name="overtimeMultiplierRow">Katsayı</string>
@@ -730,6 +733,10 @@
     <string name="overtimePayPaid">Ücretli</string>
     <string name="overtimePayRow">Bu fazla mesai</string>
     <string name="overtimePayUnpaid">Ücretsiz</string>
+    <string name="overtimePeriodSummary">Fazla mesai %1$s–%2$s · %3$s sayılır</string>
+    <string name="overtimeRestFootnote">Örneğin akşam yemeği için. Fazla mesaiye sayılmaz.</string>
+    <string name="overtimeRestNone">Mola yok</string>
+    <string name="overtimeRestRow">Önce mola</string>
     <string name="overtimeTimeLeftCaption">ayarladığınız fazla mesainin bitmesine</string>
     <string name="overtimeTitle">Fazla mesai ekle</string>
     <string name="overtimeUnpaidNote">Bu fazla mesai ücretsiz, bu yüzden bugünkü kazancınız %1$s üzerinde kalıyor. Gerçekten çalıştığınız saatlere göre bugünün saatlik ücreti %2$s; bu, normalden %%%3$s düşük.</string>
@@ -970,8 +977,14 @@
     <string name="recordsOperationUnsupportedVersion">Bu yedek daha yeni bir sürümde oluşturuldu. İçe aktarmadan önce uygulamayı güncelleyin.</string>
     <string name="recordsOvertime">Mesai</string>
     <string name="recordsOvertimeAmount">%1$s fazla mesai</string>
+    <string name="recordsOvertimeCounted">Sayılan saatler</string>
+    <string name="recordsOvertimeCountedSubtitle">Zaman aralığına göre %1$s</string>
+    <string name="recordsOvertimeFootnote">Saat istatistikleri, dönem raporları ve gelir, sayılan saatlere göre hesaplanır. Zaman çizelgesi ise fiilen çalıştığın zamanı göstermeye devam eder.</string>
+    <string name="recordsOvertimePeriod">Zaman aralığı</string>
     <string name="recordsOvertimeRecorded">Kaydedilen fazla mesai</string>
     <string name="recordsOvertimeRecordedLife">Kaydedilen toplam fazla mesai</string>
+    <string name="recordsOvertimeSave">Fazla mesaiyi kaydet</string>
+    <string name="recordsOvertimeUseMeasured">Zaman aralığına göre say</string>
     <string name="recordsOwnerAuthReason">Devam etmek için sen olduğunu doğrula</string>
     <string name="recordsPayTitle">Tahmini maaş · %1$s</string>
     <string name="recordsPlanned">Planlı</string>
@@ -989,6 +1002,7 @@
     <string name="recordsScaleYear">Yıl</string>
     <string name="recordsSectionHours">Saatler</string>
     <string name="recordsSectionKind">Bu gün</string>
+    <string name="recordsSectionOvertime">Fazla mesai</string>
     <string name="recordsSeeThisDay">Bu günü gör</string>
     <string name="recordsSeeThisMonth">Bu ayı görüntüle</string>
     <string name="recordsShareOfDay">24 saatin içindeki payı</string>
