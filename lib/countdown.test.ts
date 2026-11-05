@@ -20,6 +20,7 @@ import {
   resolveOvertimeEndAtMs,
   suggestOvertimeEndAtMs,
   getDailySalary,
+  resolveMonthlyDivisor,
   getMonthlySalaryEquivalent,
   getShiftLengthHours,
   DEFAULT_MONTHLY_WORKING_DAYS,
@@ -316,6 +317,24 @@ describe("segmented shift timeline", () => {
       afterMs: day(19).getTime(),
       schedule: { mode: "off" },
     })).toBeNull();
+  });
+});
+
+describe("scheduled-month divisor", () => {
+  it("replaces the fixed days only when it is at least one", () => {
+    expect(getDailySalary("22000", "monthly", 22, 0, 20)).toBe(1100);
+    expect(getDailySalary("22000", "monthly", 22, 0, 0)).toBe(1000);
+    expect(getDailySalary("22000", "monthly", 0, 0, 20)).toBe(1100);
+    expect(getDailySalary("500", "daily", 22, 0, 20)).toBe(500);
+    expect(getDailySalary("abc", "monthly", 22, 0, 20)).toBeNull();
+  });
+
+  it("resolves the divisor and the nominal monthly equivalent", () => {
+    expect(resolveMonthlyDivisor(21.75, "scheduledMonth", 19)).toBe(19);
+    expect(resolveMonthlyDivisor(21.75, "scheduledMonth", 0)).toBe(21.75);
+    expect(resolveMonthlyDivisor(21.75, "fixed", 19)).toBe(21.75);
+    expect(getMonthlySalaryEquivalent("12000", "monthly", 0, 3, "scheduledMonth")).toBe(15000);
+    expect(getMonthlySalaryEquivalent("12000", "monthly", 0, 3)).toBeNull();
   });
 });
 

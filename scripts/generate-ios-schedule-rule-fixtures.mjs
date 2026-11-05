@@ -338,6 +338,164 @@ function lifetimeIncomeCases() {
   });
 }
 
+
+// Plan 024 phase 2 (`dailySalaryBasis`). Self-contained so the sections above
+// keep their indices and bytes: every case carries its own scenario.
+const monthBasisSalaries = [
+  { salaryAmount: "22000", salaryType: "monthly", monthlyWorkingDays: 22, annualBonusMonths: 2, dailySalaryBasis: "scheduledMonth" },
+  { salaryAmount: "12000.5", salaryType: "monthly", monthlyWorkingDays: 21.75, annualBonusMonths: 0, dailySalaryBasis: "scheduledMonth" },
+  // The fixed divisor is unusable, but every month has its own.
+  { salaryAmount: "9000", salaryType: "monthly", monthlyWorkingDays: 0, annualBonusMonths: 0, dailySalaryBasis: "scheduledMonth" },
+  // A daily salary ignores the basis.
+  { salaryAmount: "500", salaryType: "daily", monthlyWorkingDays: 22, annualBonusMonths: 1.5, dailySalaryBasis: "scheduledMonth" },
+  { salaryAmount: "abc", salaryType: "monthly", monthlyWorkingDays: 22, annualBonusMonths: 0, dailySalaryBasis: "scheduledMonth" },
+  { salaryAmount: " 18000 ", salaryType: "monthly", monthlyWorkingDays: 22, annualBonusMonths: 0, dailySalaryBasis: "fixed" },
+];
+
+const WORK_TYPE_ID = "11111111-1111-4111-8111-111111111111";
+const REST_TYPE_ID = "22222222-2222-4222-8222-222222222222";
+
+// A weekday holiday run and two makeup days laid over a weekday pattern.
+const goldenWeek = {
+  handSet: {
+    "2026-09-27": "work",
+    "2026-10-01": "rest", "2026-10-02": "rest", "2026-10-05": "rest", "2026-10-06": "rest", "2026-10-07": "rest",
+    "2026-10-10": "work",
+  },
+};
+
+const monthScenarios = [
+  { id: "shanghai-weekdays", hours: hours[0], pattern: schedules[0], zone: "Asia/Shanghai" },
+  { id: "new-york-weekdays", hours: hours[1], pattern: schedules[0], zone: "America/New_York" },
+  { id: "berlin-weekends", hours: hours[0], pattern: schedules[2], zone: "Europe/Berlin" },
+  { id: "lord-howe-rotation", hours: hours[0], pattern: schedules[6], zone: "Australia/Lord_Howe" },
+  { id: "shanghai-overnight", hours: hours[2], pattern: schedules[0], zone: "Asia/Shanghai" },
+  { id: "shanghai-manual", hours: hours[0], pattern: schedules[9], zone: "Asia/Shanghai" },
+  { id: "utc-no-workdays", hours: hours[0], pattern: schedules[1], zone: "UTC" },
+  { id: "shanghai-golden-week", hours: hours[0], pattern: schedules[0], zone: "Asia/Shanghai", extended: goldenWeek },
+  { id: "santiago-tue-thu", hours: hours[0], pattern: schedules[3], zone: "America/Santiago" },
+  { id: "kolkata-alternating", hours: hours[0], pattern: schedules[4], zone: "Asia/Kolkata" },
+].map(({ id, hours: clock, pattern, zone, extended }) => ({
+  id,
+  startTime: clock.startTime,
+  endTime: clock.endTime,
+  workdays: pattern.workdays,
+  schedule: pattern.schedule,
+  breakStartTime: clock.breakStartTime,
+  breakDurationMinutes: clock.breakDurationMinutes,
+  timeZoneIdentifier: zone,
+  extended: extended ?? null,
+}));
+
+function monthExtendedPlan(extended) {
+  if (!extended) return null;
+  const type = (id, name, kind) => ({
+    id, name, kind, startMinutes: 540, endMinutes: 1020, breakEnabled: true, breakStartMinutes: 720,
+    breakDurationMinutes: 60, colorHex: "#3366CC", isArchived: false, annualDateRange: null,
+  });
+  return {
+    shiftTypes: [type(WORK_TYPE_ID, "Day", "work"), type(REST_TYPE_ID, "Rest", "rest")],
+    rule: null,
+    handSetDays: Object.fromEntries(Object.entries(extended.handSet).map(([key, kind]) => [key, kind === "work" ? WORK_TYPE_ID : REST_TYPE_ID])),
+    fallsBackToBaseSchedule: true,
+  };
+}
+
+function monthRules(scenario, nowMs, salary) {
+  const plan = monthExtendedPlan(scenario.extended);
+  return {
+    startTime: scenario.startTime,
+    endTime: scenario.endTime,
+    nowMs,
+    workdays: scenario.workdays,
+    schedule: plan ? { ...scenario.schedule, extendedSchedule: plan } : scenario.schedule,
+    breakStartTime: scenario.breakStartTime,
+    breakDurationMinutes: scenario.breakDurationMinutes,
+    overtimeEndAtMs: null,
+    ...monthBasisSalaries[salary],
+    forcedWorkdayStartMs: null,
+    timeZoneIdentifier: scenario.timeZoneIdentifier,
+  };
+}
+
+// Month ends and starts, a shift that begins in one month and ends in the next,
+// and the days around the golden-week holiday and makeup days.
+const monthInstants = [
+  Date.UTC(2026, 1, 28, 4), Date.UTC(2026, 2, 1, 5), Date.UTC(2026, 7, 31, 15), Date.UTC(2026, 8, 1, 2),
+  Date.UTC(2026, 8, 30, 4), Date.UTC(2026, 9, 1, 4), Date.UTC(2026, 9, 9, 4), Date.UTC(2026, 9, 10, 4),
+];
+
+function monthBasisFixtures() {
+  const snapshots = [];
+  const summaries = [];
+  const recordsIncome = [];
+  const monthlyEquivalent = [];
+  const monthCounts = [];
+
+  monthScenarios.forEach((scenario, sc) => {
+    monthInstants.forEach((nowMs, k) => {
+      monthBasisSalaries.forEach((_, s) => {
+        const snapshot = call("snapshot", monthRules(scenario, nowMs, s));
+        snapshots.push({ sc, s, now: nowMs, expected: [snapshot.dailySalary, snapshot.earnedSoFar, snapshot.payRatio, snapshot.startAtMs, snapshot.isWorkday] });
+      });
+
+      const salaryIndex = (sc + k) % 4 === 3 ? 5 : (sc + k) % 3;
+      const snapshot = call("snapshot", monthRules(scenario, nowMs, salaryIndex));
+      const row = monthBasisSalaries[salaryIndex];
+      const asOfMs = k % 4 === 3 ? nowMs + 2 * day + 5 * hour : nowMs;
+      const rules = monthRules(scenario, nowMs, salaryIndex);
+      const input = {
+        period: k % 3 === 1 ? "year" : "week",
+        // A window that begins in an earlier month than it ends.
+        ...(k % 3 !== 1 ? { periodStartMs: asOfMs - (k % 2 === 0 ? 40 : 11) * day - 7 * hour } : {}),
+        asOfMs,
+        workdays: scenario.workdays,
+        schedule: scenario.schedule,
+        currentShiftStartMs: snapshot.startAtMs,
+        currentShiftEndMs: snapshot.endAtMs,
+        plannedDailyHours: snapshot.plannedDurationMs / hour,
+        todayProgress: Math.min(100, snapshot.progress),
+        dailySalary: snapshot.dailySalary,
+        salary: { amount: row.salaryAmount, type: row.salaryType, monthlyWorkingDays: row.monthlyWorkingDays, annualBonusMonths: row.annualBonusMonths, basis: row.dailySalaryBasis },
+        todayEffectiveHours: snapshot.durationMs / hour,
+        todayPayRatio: snapshot.payRatio,
+        timeZoneIdentifier: scenario.timeZoneIdentifier,
+      };
+      const oracleInput = { ...input, schedule: rules.schedule };
+      summaries.push({ sc, input, expected: call("summarize", oracleInput) });
+    });
+
+    const anchors = [Date.UTC(2026, 1, 10, 4), Date.UTC(2026, 7, 12, 4), Date.UTC(2026, 8, 14, 4), Date.UTC(2026, 9, 20, 4)];
+    const months = [[], [{ anchorMs: anchors[0], count: 12 }], [{ anchorMs: anchors[1], count: 3 }, { anchorMs: anchors[2], count: 9 }, { anchorMs: anchors[3], count: 20 }], [{ anchorMs: anchors[2], count: -4 }, { anchorMs: anchors[3], count: 2 }]];
+    monthBasisSalaries.forEach((_, s) => {
+      months.forEach((completedByMonth, m) => {
+        const completedWorkdays = completedByMonth.reduce((total, entry) => total + entry.count, 0);
+        recordsIncome.push({
+          sc, s, m, completedWorkdays, completedByMonth,
+          expected: call("recordsIncome", { ...monthRules(scenario, 0, s), completedWorkdays, completedByMonth }).earnings,
+        });
+      });
+      for (const type of ["monthly", "daily"]) {
+        if (sc !== 0) continue;
+        monthlyEquivalent.push({
+          s, type,
+          expected: call("salaryMonthlyEquivalent", { ...monthRules(scenario, 0, s), salaryType: type }).amount,
+        });
+      }
+    });
+
+    for (let month = 0; month < 12; month += 1) {
+      const anchorMs = Date.UTC(2026, month, 1, 12);
+      monthCounts.push({
+        sc, anchorMs,
+        expected: call("scheduledWorkdaysInMonth", { anchorMs, workdays: scenario.workdays, schedule: monthRules(scenario, 0, 0).schedule, timeZoneIdentifier: scenario.timeZoneIdentifier }).count,
+      });
+    }
+  });
+
+  return { scenarios: monthScenarios, salaries: monthBasisSalaries, snapshots, summaries, recordsIncome, monthlyEquivalent, monthCounts };
+}
+
 /**
  * The fixture body as JSON text. iOS embeds it in Swift (below); Android
  * copies it verbatim (scripts/generate-android-rule-fixtures.mjs), so both
@@ -642,6 +800,7 @@ export function createScheduleRuleFixtureJson() {
 
   const section = (name, rows) =>
     `"${name}":[\n${rows.map((row) => JSON.stringify(row)).join(",\n")}\n]`;
+  const monthBasis = monthBasisFixtures();
   const json = `{"version":3,
 "generator":"scripts/generate-ios-schedule-rule-fixtures.mjs",
 ${section("profiles", profiles)},
@@ -660,7 +819,10 @@ ${section("summaries", summaries)},
 ${section("recordsIncome", recordsIncome)},
 ${section("monthlyEquivalent", monthlyEquivalent)},
 ${section("lifetimeIncome", lifetimeIncome)},
-${section("actualForecast", actualForecast)}
+${section("actualForecast", actualForecast)},
+"monthBasis":{
+${Object.entries(monthBasis).map(([name, rows]) => section(name, rows)).join(",\n")}
+}
 }`;
   return json;
 }

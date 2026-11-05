@@ -2,7 +2,10 @@ import { describe, it, expect } from "vitest";
 import { zonedWeekStartMs, zonedYearStartMs } from "./countdown";
 import {
   completedWorkdayIncome,
+  completedWorkdayIncomeByMonth,
   countScheduledWorkdays,
+  countScheduledWorkdaysInMonth,
+  dailySalaryInMonth,
   countWorkdays,
   earningsForRatio,
   projectLifetimeGrossIncome,
@@ -866,5 +869,69 @@ describe("Records calendar-month salary", () => {
       salaryRules: { ...monthlyRules, salaryType: "daily", salaryAmount: "500" },
     });
     expect(result.total.earnings).toBe(days.length * 500);
+  });
+});
+
+describe("scheduled-month daily pay (plan 024)", () => {
+  const zone = "Asia/Shanghai";
+  const salary = {
+    amount: "22000",
+    type: "monthly" as const,
+    monthlyWorkingDays: 22,
+    annualBonusMonths: 0,
+    basis: "scheduledMonth" as const,
+  };
+  const classic = { mode: "classic" as const };
+  const off = { mode: "off" as const };
+  const utc = (y: number, m: number, d: number) => Date.UTC(y, m - 1, d, 4);
+
+  it("counts a civil month's scheduled workdays in the given zone", () => {
+    const count = (m: number, schedule = classic) =>
+      countScheduledWorkdaysInMonth({ anchorMs: utc(2026, m, 15), workdays: MON_TO_FRI, schedule, timeZone: zone });
+    expect(count(2)).toBe(20);
+    expect(count(3)).toBe(22);
+    expect(count(3, off)).toBe(0);
+  });
+
+  it("divides each month by its own count, and falls back without one", () => {
+    const daily = (m: number, schedule = classic) =>
+      dailySalaryInMonth({ salary, anchorMs: utc(2026, m, 15), workdays: MON_TO_FRI, schedule, timeZone: zone });
+    expect(daily(2)).toBe(22000 / 20);
+    expect(daily(3)).toBe(22000 / 22);
+    expect(daily(3, off)).toBe(22000 / 22);
+    expect(
+      dailySalaryInMonth({ salary: { ...salary, basis: "fixed" }, anchorMs: utc(2026, 2, 15), workdays: MON_TO_FRI, schedule: classic, timeZone: zone })
+    ).toBe(22000 / 22);
+  });
+
+  it("splits a summary at the month boundary", () => {
+    const base = {
+      periodStart: new Date(utc(2026, 2, 26)),
+      asOf: new Date(utc(2026, 3, 3)),
+      workdays: MON_TO_FRI,
+      schedule: classic,
+      currentShiftStart: new Date(Date.UTC(2026, 2, 3, 1)),
+      currentShiftEnd: new Date(Date.UTC(2026, 2, 3, 9)),
+      plannedDailyHours: 8,
+      todayProgress: 50,
+      dailySalary: 1000,
+      todayEffectiveHours: 8,
+      todayPayRatio: 0.5,
+      timeZone: zone,
+    };
+    // Feb 26, 27 (Thu, Fri) at 22000/20, Mar 2 (Mon) at 22000/22, then half of Mar 3.
+    expect(summarize({ ...base, salary }).earnings).toBe(2 * 1100 + 1000 + 500);
+    expect(summarize(base).earnings).toBe(3.5 * 1000);
+    expect(summarize({ ...base, salary: { ...salary, basis: "fixed" } }).earnings).toBe(3.5 * 1000);
+  });
+
+  it("sums records income per month", () => {
+    const months = [
+      { anchorMs: utc(2026, 2, 10), count: 10 },
+      { anchorMs: utc(2026, 3, 10), count: 4 },
+    ];
+    expect(
+      completedWorkdayIncomeByMonth({ months, salary, workdays: MON_TO_FRI, schedule: classic, timeZone: zone })
+    ).toBe(10 * 1100 + 4 * 1000);
   });
 });

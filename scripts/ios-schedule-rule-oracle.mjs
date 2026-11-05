@@ -122,6 +122,16 @@ const ORACLE_BODY = `
     return live;
   }
 
+  function monthBasisSalary(input) {
+    return {
+      amount: String(input.salaryAmount ?? ""),
+      type: input.salaryType,
+      monthlyWorkingDays: input.monthlyWorkingDays,
+      annualBonusMonths: input.annualBonusMonths || 0,
+      basis: input.dailySalaryBasis || null,
+    };
+  }
+
   function startOfLocalDayMs(date, timeZone) {
     return countdown.startOfCivilDayMs(
       date instanceof Date ? date.getTime() : Number(date),
@@ -288,12 +298,13 @@ const ORACLE_BODY = `
       const shift = resolveCurrentShift(input);
       const nextShift = nextShiftAfter(input, shift);
       const clockIn = countdownProjection(input, shift, nextShift);
-      const dailySalary = countdown.getDailySalary(
-        String(input.salaryAmount ?? ""),
-        input.salaryType,
-        input.monthlyWorkingDays,
-        input.annualBonusMonths || 0
-      );
+      const dailySalary = summary.dailySalaryInMonth({
+        salary: monthBasisSalary(input),
+        anchorMs: countdown.getShiftStartAtMs(shift),
+        workdays: input.workdays,
+        schedule: input.schedule || null,
+        timeZone: inputTimeZone(input),
+      });
       const payRatio = countdown.calculateTimelinePayRatio(shift, input.nowMs);
       return JSON.stringify({
         segments: shift.segments,
@@ -473,14 +484,39 @@ const ORACLE_BODY = `
         plannedDailyHours: input.plannedDailyHours,
         todayProgress: input.todayProgress,
         dailySalary: input.dailySalary,
+        salary: input.salary || null,
         todayEffectiveHours: input.todayEffectiveHours,
         todayPayRatio: input.todayPayRatio,
         timeZone,
       }));
     },
 
+    scheduledWorkdaysInMonth(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({
+        count: summary.countScheduledWorkdaysInMonth({
+          anchorMs: Number(input.anchorMs),
+          workdays: input.workdays,
+          schedule: input.schedule || null,
+          timeZone: inputTimeZone(input),
+        }),
+      });
+    },
+
     recordsIncome(inputJSON) {
       const input = JSON.parse(inputJSON);
+      const salary = monthBasisSalary(input);
+      if (summary.usesScheduledMonthBasis(salary)) {
+        return JSON.stringify({
+          earnings: summary.completedWorkdayIncomeByMonth({
+            months: input.completedByMonth || [],
+            salary,
+            workdays: input.workdays,
+            schedule: input.schedule || null,
+            timeZone: inputTimeZone(input),
+          }),
+        });
+      }
       const dailySalary = countdown.getDailySalary(
         String(input.salaryAmount ?? ""),
         input.salaryType,
@@ -502,7 +538,8 @@ const ORACLE_BODY = `
           String(input.salaryAmount ?? ""),
           input.salaryType,
           input.monthlyWorkingDays,
-          input.annualBonusMonths || 0
+          input.annualBonusMonths || 0,
+          input.dailySalaryBasis || null
         ),
       });
     },

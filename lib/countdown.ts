@@ -572,11 +572,44 @@ export function isWorkday(shiftStart: Date, workdays: number[]): boolean {
 
 export const DEFAULT_MONTHLY_WORKING_DAYS = 21.75;
 
+/**
+ * How a monthly salary becomes daily pay. `fixed` divides by the configured
+ * monthly working days; `scheduledMonth` divides each civil month by its own
+ * scheduled workday count. Daily salaries ignore it.
+ */
+export type DailySalaryBasis = "fixed" | "scheduledMonth";
+
+/**
+ * The monthly divisor for one month: its scheduled workday count when the
+ * basis asks for it and there is at least one, otherwise the fixed setting
+ * (a manual-mode schedule or a month with no workdays has no count to use).
+ */
+export function resolveMonthlyDivisor(
+  monthlyWorkingDays: number,
+  basis: DailySalaryBasis | null | undefined,
+  scheduledWorkdays: number | null | undefined
+): number {
+  if (
+    basis === "scheduledMonth" &&
+    typeof scheduledWorkdays === "number" &&
+    Number.isFinite(scheduledWorkdays) &&
+    scheduledWorkdays >= 1
+  ) {
+    return scheduledWorkdays;
+  }
+  return monthlyWorkingDays;
+}
+
+/**
+ * `scheduledMonthDays` replaces `monthlyWorkingDays` as the divisor when it is
+ * at least 1 (see `resolveMonthlyDivisor`); omitted, nothing changes.
+ */
 export function getDailySalary(
   amount: string,
   type: "monthly" | "daily",
   monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS,
-  annualBonusMonths: number = 0
+  annualBonusMonths: number = 0,
+  scheduledMonthDays?: number | null
 ): number | null {
   if (!amount.trim()) return null;
   const parsed = Number(amount);
@@ -589,24 +622,37 @@ export function getDailySalary(
     const daily = parsed * annualizedMultiplier;
     return Number.isFinite(daily) ? daily : null;
   }
+  const divisor = resolveMonthlyDivisor(
+    monthlyWorkingDays,
+    scheduledMonthDays == null ? null : "scheduledMonth",
+    scheduledMonthDays
+  );
   if (
-    !Number.isFinite(monthlyWorkingDays) ||
-    monthlyWorkingDays <= 0 ||
-    monthlyWorkingDays > 31
+    !Number.isFinite(divisor) ||
+    divisor <= 0 ||
+    divisor > 31
   ) {
     return null;
   }
-  const daily = (parsed / monthlyWorkingDays) * annualizedMultiplier;
+  const daily = (parsed / divisor) * annualizedMultiplier;
   return Number.isFinite(daily) ? daily : null;
 }
 
-/** Monthly gross equivalent used when a daily setting seeds the life profile. */
+/**
+ * Monthly gross equivalent used when a daily setting seeds the life profile.
+ * With the `scheduledMonth` basis a monthly salary is already the nominal
+ * amount, so only the bonus share is added.
+ */
 export function getMonthlySalaryEquivalent(
   amount: string,
   type: "monthly" | "daily",
   monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS,
-  annualBonusMonths: number = 0
+  annualBonusMonths: number = 0,
+  basis?: DailySalaryBasis | null
 ): number | null {
+  if (basis === "scheduledMonth" && type === "monthly") {
+    return getDailySalary(amount, "monthly", 1, annualBonusMonths);
+  }
   if (
     !Number.isFinite(monthlyWorkingDays) ||
     monthlyWorkingDays <= 0 ||
@@ -616,6 +662,29 @@ export function getMonthlySalaryEquivalent(
   if (daily === null) return null;
   const monthly = daily * monthlyWorkingDays;
   return Number.isFinite(monthly) ? monthly : null;
+}
+
+/**
+ * Civil midnight on the first day of the month containing `ms`, shifted by
+ * `monthOffset` months, in `timeZone` (the runtime's zone when omitted).
+ */
+export function civilMonthStartMs(
+  ms: number,
+  timeZone?: string | null,
+  monthOffset = 0
+): number {
+  const zone = timeZone?.trim();
+  const civil = zone
+    ? zonedCivil(ms, zone)
+    : (() => {
+        const date = new Date(ms);
+        return { year: date.getFullYear(), month: date.getMonth() + 1 };
+      })();
+  const index = civil.year * 12 + (civil.month - 1) + monthOffset;
+  const year = Math.floor(index / 12);
+  const month = index - year * 12 + 1;
+  if (!zone) return new Date(year, month - 1, 1, 0, 0, 0, 0).getTime();
+  return zonedTimeToUtcMs(year, month, 1, 0, 0, zone);
 }
 
 export interface ScheduleDayExpansion {

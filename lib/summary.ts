@@ -3,11 +3,14 @@ import {
   buildShiftTimeline,
   civilDateKey,
   civilDateAtMs,
+  civilMonthStartMs,
+  getDailySalary,
   getPlannedShiftDurationMs,
   getMonthlySalaryEquivalent,
   isScheduledWorkday,
   isScheduledWorkdayInZone,
   startOfCivilDayMs,
+  type DailySalaryBasis,
   type WorkScheduleConfig,
 } from "./countdown";
 import { resolveScheduleDay } from "./extended-schedule";
@@ -582,6 +585,102 @@ export function countScheduledWorkdays(
 }
 
 /**
+ * Scheduled workdays in the civil month containing `anchorMs`, in `timeZone`
+ * (the runtime's zone when omitted). Same day test as `countScheduledWorkdays`,
+ * so extended-schedule holidays and makeup days count, and manual (`off`)
+ * mode has none.
+ */
+export function countScheduledWorkdaysInMonth(params: {
+  anchorMs: number;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  timeZone?: string | null;
+}): number {
+  const { anchorMs, workdays, schedule } = params;
+  const timeZone = params.timeZone?.trim() || undefined;
+  return countScheduledWorkdays(
+    new Date(civilMonthStartMs(anchorMs, timeZone, 0)),
+    new Date(civilMonthStartMs(anchorMs, timeZone, 1)),
+    workdays,
+    schedule,
+    timeZone
+  );
+}
+
+/** The salary fields the month-basis rules read. */
+export interface MonthBasisSalary {
+  amount: string;
+  type: "monthly" | "daily";
+  monthlyWorkingDays: number;
+  annualBonusMonths: number;
+  basis?: DailySalaryBasis | null;
+}
+
+/** Whether pay divides each civil month by its own scheduled workdays. */
+export function usesScheduledMonthBasis(salary: MonthBasisSalary): boolean {
+  return salary.basis === "scheduledMonth" && salary.type === "monthly";
+}
+
+/**
+ * Daily pay for the civil month containing `anchorMs`. Daily salaries and the
+ * `fixed` basis are exactly `getDailySalary`; `scheduledMonth` divides by that
+ * month's scheduled workdays, falling back to the fixed setting without any.
+ */
+export function dailySalaryInMonth(params: {
+  salary: MonthBasisSalary;
+  anchorMs: number;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  timeZone?: string | null;
+}): number | null {
+  const { salary, anchorMs, workdays, schedule, timeZone } = params;
+  const count = usesScheduledMonthBasis(salary)
+    ? countScheduledWorkdaysInMonth({ anchorMs, workdays, schedule, timeZone })
+    : null;
+  return getDailySalary(
+    salary.amount,
+    salary.type,
+    salary.monthlyWorkingDays,
+    salary.annualBonusMonths,
+    count
+  );
+}
+
+/**
+ * Records income under the `scheduledMonth` basis: each month's completed
+ * workdays at that month's own daily pay. `months` lists every civil month that
+ * has completed days, by any instant inside it.
+ */
+export function completedWorkdayIncomeByMonth(params: {
+  months: { anchorMs: number; count: number }[];
+  salary: MonthBasisSalary;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  timeZone?: string | null;
+}): number | null {
+  const { months, salary, workdays, schedule, timeZone } = params;
+  if (months.length === 0) {
+    return completedWorkdayIncome(
+      0,
+      getDailySalary(
+        salary.amount,
+        salary.type,
+        salary.monthlyWorkingDays,
+        salary.annualBonusMonths
+      )
+    );
+  }
+  let total = 0;
+  for (const { anchorMs, count } of months) {
+    const daily = dailySalaryInMonth({ salary, anchorMs, workdays, schedule, timeZone });
+    if (daily === null) return null;
+    const days = Number.isFinite(count) ? Math.max(0, Math.trunc(count)) : 0;
+    total += days * daily;
+  }
+  return Number.isFinite(total) ? total : null;
+}
+
+/**
  * 汇总从 periodStart 到此刻的工作量。
  *
  * 当前班次单独计算：只有它的开班日是工作日、且落在当前周期时才计入，
@@ -602,6 +701,12 @@ export function summarize(params: {
   /** 班次进度百分比 0–100，来自正在运行的倒计时。 */
   todayProgress: number;
   dailySalary: number | null;
+  /**
+   * With the `scheduledMonth` basis on a monthly salary, earnings are summed
+   * month by month (completed days at each month's daily pay, then today's
+   * ratio at today's month) and `dailySalary` is not used.
+   */
+  salary?: MonthBasisSalary | null;
   /** 当前班次实际有效工时；用于午休与加班，未提供时按计划有效时长。 */
   todayEffectiveHours?: number;
   /** 当前班次按原日薪线性外推的计薪比例；可因加班超过 1。 */
@@ -619,6 +724,7 @@ export function summarize(params: {
     plannedDailyHours,
     todayProgress,
     dailySalary,
+    salary,
     todayEffectiveHours,
     todayPayRatio,
     timeZone,
@@ -678,9 +784,30 @@ export function summarize(params: {
     ? Math.max(0, todayPayRatio ?? todayFraction)
     : 0;
 
-  return {
-    days,
-    hours,
-    earnings: earningsForRatio(dailySalary, completed + earningsFraction),
-  };
+  let earnings = earningsForRatio(dailySalary, completed + earningsFraction);
+  if (salary && usesScheduledMonthBasis(salary)) {
+    const endMs = currentShiftCoversAsOfDay ? shiftDayMs : asOfDayMs;
+    let total = 0;
+    let missing = false;
+    for (let cursor = periodDayMs; cursor < endMs; ) {
+      const monthEnd = civilMonthStartMs(cursor, timeZone, 1);
+      const count = countScheduledWorkdays(
+        new Date(cursor),
+        new Date(Math.min(endMs, monthEnd)),
+        workdays,
+        schedule,
+        timeZone
+      );
+      const daily = dailySalaryInMonth({ salary, anchorMs: cursor, workdays, schedule, timeZone });
+      if (daily === null) missing = true;
+      else total += count * daily;
+      cursor = monthEnd;
+    }
+    const todayDaily = dailySalaryInMonth({ salary, anchorMs: endMs, workdays, schedule, timeZone });
+    if (todayDaily === null) missing = true;
+    else total += Math.max(0, earningsFraction) * todayDaily;
+    earnings = !missing && Number.isFinite(total) ? total : null;
+  }
+
+  return { days, hours, earnings };
 }
