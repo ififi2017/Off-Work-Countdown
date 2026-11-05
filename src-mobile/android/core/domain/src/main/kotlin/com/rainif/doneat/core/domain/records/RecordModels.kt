@@ -279,6 +279,8 @@ data class SyncedPreferences(
     val monthlyWorkingDays: Double,
     val annualBonusEnabled: Boolean,
     val annualBonusMonths: Double,
+    /** How a monthly salary becomes daily pay (plan 024): `fixed` or `scheduledMonth`. Absent in older archives. */
+    val dailySalaryBasis: String = "fixed",
     val notificationMode: String,
     val cycleEndSummaryNotificationEnabled: Boolean,
     val lunchStartReminderEnabled: Boolean,
@@ -307,6 +309,7 @@ data class SyncedPreferences(
             FoundationCompat.isValidTimeZone(recordsTimeZoneIdentifier) &&
             monthlyWorkingDays.isFinite() && monthlyWorkingDays > 0 &&
             annualBonusMonths.isFinite() && annualBonusMonths >= 0 &&
+            dailySalaryBasis in DAILY_SALARY_BASES &&
             microBreakIntervalMinutes in 1..720 &&
             (languageOverride == null || languageOverride in SUPPORTED_LANGUAGES) &&
             editedAtMs.isFinite() &&
@@ -321,6 +324,7 @@ data class SyncedPreferences(
         val SCHEDULE_MODES = setOf("classic", "alternating", "rotation", "off")
         val WEEK_TYPES = setOf("single", "double")
         val SALARY_TYPES = setOf("monthly", "daily")
+        val DAILY_SALARY_BASES = setOf("fixed", "scheduledMonth")
         val NOTIFICATION_MODES = setOf("off", "simple", "milestones")
         val THEMES = setOf("auto", "light", "dark")
     }

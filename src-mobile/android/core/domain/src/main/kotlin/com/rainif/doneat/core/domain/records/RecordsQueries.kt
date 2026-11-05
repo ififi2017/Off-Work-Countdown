@@ -455,19 +455,30 @@ class RecordsQueries(
         }
         val today = today(nowMs)
         val visible = cells.map { it.dayKey }.toSet()
-        val completedScheduledWorkdays = days.count { it.dayKey in visible && it.baseScheduleIsWorkday && date(it.dayKey).isBefore(today) }
+        val completedDays = days.filter { it.dayKey in visible && it.baseScheduleIsWorkday && date(it.dayKey).isBefore(today) }
+        val completedScheduledWorkdays = completedDays.size
         return RecordsHeadlineSummary(
             workdays = recordedKeys.size,
             regularWorkMs = combined.workMs,
             overtimeMs = combined.overtimeMs,
             wakingFreeMs = combined.wakingFreeMs,
-            estimatedIncome = salary?.let { SummaryRules.recordsIncome(completedScheduledWorkdays, it) },
+            estimatedIncome = salary?.let { estimatedIncome(it, completedScheduledWorkdays, completedDays.map { day -> day.dayKey }) },
             completedScheduledWorkdays = completedScheduledWorkdays,
             allocationDays = periodShares.size,
             allocation = TimeAllocationShare.combining(periodShares),
             sleepFromHealth = sleepFromHealth,
             actualForecast = actualForecast,
         )
+    }
+
+    /** Completed workdays at the current salary; the scheduled-month basis pays each civil month at its own daily rate. */
+    private fun estimatedIncome(salary: SalarySettings, completedWorkdays: Int, completedDayKeys: List<String>): Double? {
+        val hours = currentHours?.scheduleHours()?.takeIf { salary.usesScheduledMonthBasis }
+            ?: return SummaryRules.recordsIncome(completedWorkdays, salary)
+        val months = completedDayKeys.groupBy { it.take(7) }.toSortedMap().map { (_, keys) ->
+            SummaryRules.MonthWorkdays(date(keys.first()).atStartOfDay(zone).toInstant().toEpochMilli().toDouble(), keys.size)
+        }
+        return SummaryRules.recordsIncome(completedWorkdays, salary, months, SummaryRules.MonthContext(hours.workdays, hours.schedule, zone))
     }
 
     /**

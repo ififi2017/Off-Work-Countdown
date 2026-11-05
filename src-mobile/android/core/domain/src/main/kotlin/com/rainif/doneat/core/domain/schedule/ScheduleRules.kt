@@ -1,7 +1,7 @@
 package com.rainif.doneat.core.domain.schedule
 
-import com.rainif.doneat.core.domain.salary.SalaryRules
 import com.rainif.doneat.core.domain.salary.SalarySettings
+import com.rainif.doneat.core.domain.summary.SummaryRules
 import java.time.ZoneId
 import kotlin.math.max
 import kotlin.math.min
@@ -19,7 +19,9 @@ object ScheduleRules {
         val shift = resolveCurrentShift(input, zone)
         val nextShift = nextShift(shift, input, zone)
         val clockIn = countdownProjection(input, shift, nextShift, zone)
-        val dailySalary = SalaryRules.dailySalary(salary)
+        val dailySalary = SummaryRules.dailySalaryInMonth(
+            salary, shift.startAtMs, input.workdays, input.schedule, input.hours.extended != null, zone,
+        )
         val payRatio = shift.payRatio(input.nowMs)
         return ShiftSnapshot(
             segments = shift.segments,

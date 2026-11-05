@@ -12,6 +12,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -169,6 +170,27 @@ class RecordsTransferTest {
             assertEquals(amount, saved.salaryAmount)
             assertNull(amount, SalaryRules.dailySalary(SalarySettings(saved.salaryAmount, SalaryType.fromRaw(saved.salaryType), saved.monthlyWorkingDays, saved.annualBonusMonths)))
         }
+    }
+
+    @Test fun theDailyPayBasisSurvivesBackupAndAnOldArchiveReadsAsFixed() = runTest {
+        // An archive written before the basis existed has no key.
+        val root = Json.parseToJsonElement(archive("v6.json").decodeToString()).jsonObject
+        val preferences = root.getValue("syncedPreferences").jsonObject
+        assertNull(preferences["dailySalaryBasis"])
+        val old = store()
+        assertNotNull(RecordsTransfer.commit(old, archive("v6.json")))
+        assertEquals("fixed", old.state.value.syncedPreferences!!.dailySalaryBasis)
+        val exportedFixed = Json.parseToJsonElement(RecordsTransfer.export(old.state.value, true, now, "Asia/Shanghai")).jsonObject
+        assertNull("fixed is not written back", exportedFixed.getValue("syncedPreferences").jsonObject["dailySalaryBasis"])
+
+        // A choice made on iOS comes back out of a backup unchanged.
+        Files.deleteIfExists(folder.root.toPath().resolve("records.json"))
+        val chosen = JsonObject(root + ("syncedPreferences" to JsonObject(preferences + ("dailySalaryBasis" to JsonPrimitive("scheduledMonth"))))).toString().toByteArray()
+        val records = store()
+        assertNotNull(RecordsTransfer.commit(records, chosen))
+        assertEquals("scheduledMonth", store().state.value.syncedPreferences!!.dailySalaryBasis)
+        val exported = Json.parseToJsonElement(RecordsTransfer.export(records.state.value, true, now, "Asia/Shanghai")).jsonObject
+        assertEquals("scheduledMonth", exported.getValue("syncedPreferences").jsonObject.getValue("dailySalaryBasis").jsonPrimitive.content)
     }
 
     @Test fun deletingRecordsKeepsTheSettings() = runTest {

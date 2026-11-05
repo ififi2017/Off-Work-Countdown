@@ -7,6 +7,7 @@ import com.rainif.doneat.core.domain.records.SnapshotHours
 import com.rainif.doneat.core.domain.records.SyncedPreferences
 import com.rainif.doneat.core.domain.records.TimerDayMarks
 import com.rainif.doneat.core.domain.records.portionsByDay
+import com.rainif.doneat.core.domain.salary.DailySalaryBasis
 import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import com.rainif.doneat.core.domain.schedule.ExtendedSchedule
@@ -160,6 +161,7 @@ class ShiftSession(val state: SessionState, val env: SessionEnvironment) {
             type = SalaryType.fromRaw(prefs.salaryType),
             monthlyWorkingDays = prefs.monthlyWorkingDays,
             annualBonusMonths = if (prefs.annualBonusEnabled) prefs.annualBonusMonths else 0.0,
+            dailySalaryBasis = DailySalaryBasis.fromRaw(prefs.dailySalaryBasis),
         )
 
     /** A new manual run adopts the device's zone when it differs from Records. */
@@ -462,6 +464,7 @@ class ShiftSession(val state: SessionState, val env: SessionEnvironment) {
                 todayPayRatio = snapshot.payRatio,
                 zone = recordsZone,
                 extended = plan,
+                salary = salary.takeIf { it.usesScheduledMonthBasis },
             ),
         )
     }
