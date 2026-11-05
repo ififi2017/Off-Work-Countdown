@@ -980,7 +980,6 @@
     <string name="recordsOvertimePeriod">Rentang waktu</string>
     <string name="recordsOvertimeRecorded">Lembur tercatat</string>
     <string name="recordsOvertimeRecordedLife">Total lembur tercatat</string>
-    <string name="recordsOvertimeSave">Simpan lembur</string>
     <string name="recordsOvertimeUseMeasured">Hitung sesuai rentang waktu</string>
     <string name="recordsOwnerAuthReason">Konfirmasi ini memang kamu untuk lanjut</string>
     <string name="recordsPayTitle">Perkiraan gaji · %1$s</string>

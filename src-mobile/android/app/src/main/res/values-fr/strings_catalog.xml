@@ -986,7 +986,6 @@
     <string name="recordsOvertimePeriod">Plage</string>
     <string name="recordsOvertimeRecorded">Heures sup. enregistrées</string>
     <string name="recordsOvertimeRecordedLife">Heures sup. enregistrées au total</string>
-    <string name="recordsOvertimeSave">Enregistrer les heures sup.</string>
     <string name="recordsOvertimeUseMeasured">Compter selon la plage</string>
     <string name="recordsOwnerAuthReason">Confirmez que c’est bien vous pour continuer</string>
     <string name="recordsPayTitle">Salaire prévu · %1$s</string>

@@ -983,7 +983,6 @@
     <string name="recordsOvertimePeriod">Period</string>
     <string name="recordsOvertimeRecorded">Overtime recorded</string>
     <string name="recordsOvertimeRecordedLife">Lifetime overtime recorded</string>
-    <string name="recordsOvertimeSave">Save overtime</string>
     <string name="recordsOvertimeUseMeasured">Count by period</string>
     <string name="recordsOwnerAuthReason">Confirm it is you to continue</string>
     <string name="recordsPayTitle">Forecast pay · %1$s</string>

@@ -980,7 +980,6 @@
     <string name="recordsOvertimePeriod">Khung giờ</string>
     <string name="recordsOvertimeRecorded">Tăng ca đã ghi</string>
     <string name="recordsOvertimeRecordedLife">Tổng tăng ca đã ghi</string>
-    <string name="recordsOvertimeSave">Lưu giờ làm thêm</string>
     <string name="recordsOvertimeUseMeasured">Tính theo khung giờ</string>
     <string name="recordsOwnerAuthReason">Xác nhận đó là bạn để tiếp tục</string>
     <string name="recordsPayTitle">Lương dự kiến · %1$s</string>

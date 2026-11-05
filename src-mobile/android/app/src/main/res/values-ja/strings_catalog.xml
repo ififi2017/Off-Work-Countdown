@@ -980,7 +980,6 @@
     <string name="recordsOvertimePeriod">時間帯</string>
     <string name="recordsOvertimeRecorded">記録した残業</string>
     <string name="recordsOvertimeRecordedLife">これまでに記録した残業</string>
-    <string name="recordsOvertimeSave">残業を保存</string>
     <string name="recordsOvertimeUseMeasured">時間帯どおりに計算</string>
     <string name="recordsOwnerAuthReason">続けるには本人確認が必要です</string>
     <string name="recordsPayTitle">%1$sの見込み給与</string>

@@ -980,7 +980,6 @@
     <string name="recordsOvertimePeriod">时段</string>
     <string name="recordsOvertimeRecorded">已记录加班</string>
     <string name="recordsOvertimeRecordedLife">一生已记录加班</string>
-    <string name="recordsOvertimeSave">保存加班</string>
     <string name="recordsOvertimeUseMeasured">按时段计算</string>
     <string name="recordsOwnerAuthReason">请确认是你本人，然后继续</string>
     <string name="recordsPayTitle">%1$s预计薪资</string>

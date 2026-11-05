@@ -983,7 +983,6 @@
     <string name="recordsOvertimePeriod">Zaman aralığı</string>
     <string name="recordsOvertimeRecorded">Kaydedilen fazla mesai</string>
     <string name="recordsOvertimeRecordedLife">Kaydedilen toplam fazla mesai</string>
-    <string name="recordsOvertimeSave">Fazla mesaiyi kaydet</string>
     <string name="recordsOvertimeUseMeasured">Zaman aralığına göre say</string>
     <string name="recordsOwnerAuthReason">Devam etmek için sen olduğunu doğrula</string>
     <string name="recordsPayTitle">Tahmini maaş · %1$s</string>

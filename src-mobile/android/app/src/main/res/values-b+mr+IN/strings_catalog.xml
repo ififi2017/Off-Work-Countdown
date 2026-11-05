@@ -983,7 +983,6 @@
     <string name="recordsOvertimePeriod">कालावधी</string>
     <string name="recordsOvertimeRecorded">नोंदवलेला ओव्हरटाइम</string>
     <string name="recordsOvertimeRecordedLife">आतापर्यंत नोंदवलेला ओव्हरटाइम</string>
-    <string name="recordsOvertimeSave">ओव्हरटाइम जतन करा</string>
     <string name="recordsOvertimeUseMeasured">कालावधीनुसार मोजा</string>
     <string name="recordsOwnerAuthReason">पुढे जाण्यासाठी तुम्हीच आहात हे सिद्ध करा</string>
     <string name="recordsPayTitle">अपेक्षित पगार · %1$s</string>

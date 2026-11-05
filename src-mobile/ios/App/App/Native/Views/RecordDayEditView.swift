@@ -35,6 +35,28 @@ struct RecordDayEditView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
 
+    /// Plan 024: the day's overtime is edited here too and saved by the same
+    /// Save, so there is one place where changes are kept or thrown away.
+    @State private var overtime: RecordOvertimeState
+    @State private var overtimeExpanded: Bool
+    private let overtimeBaseline: RecordOvertimeState
+
+    init(draft: RecordDayEditDraft, actions: RecordsActions) {
+        self.draft = draft
+        self.actions = actions
+        let initial = RecordOvertimeSection.initialState(loaded: draft.overtime, actions: actions)
+        _overtime = State(initialValue: initial)
+        _overtimeExpanded = State(initialValue: draft.overtime.hasDeclaration)
+        overtimeBaseline = initial
+    }
+
+    /// A new declaration counts as a change once the section is opened.
+    private var overtimeChanged: Bool {
+        overtimeExpanded && (overtime != overtimeBaseline || !overtimeBaseline.hasDeclaration)
+    }
+
+    private var hasChanges: Bool { draft.hasChanges || overtimeChanged }
+
     var body: some View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -84,13 +106,13 @@ struct RecordDayEditView: View {
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
 
+                RecordOvertimeSection(state: $overtime, isExpanded: $overtimeExpanded, actions: actions)
+
                 Button(text.t("saveAction"), action: save)
                     .buttonStyle(OWCPrimaryButtonStyle())
-                    .disabled(!draft.hasChanges)
+                    .disabled(!hasChanges || (overtimeChanged && !overtime.isValid))
                     .padding(.horizontal, OWCDesign.pageInset)
                     .padding(.top, 22)
-
-                RecordOvertimeSection(dayKey: draft.dayKey, loaded: draft.overtime, actions: actions)
 
                 if draft.loadedKind != .customHours || draft.hasStoredOverride {
                     OWCSectionHeader(title: text.t("syncDangerZone"))
@@ -122,7 +144,7 @@ struct RecordDayEditView: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button(text.t("cancel")) {
-                    if draft.hasChanges {
+                    if hasChanges {
                         draft.confirmsDiscard = true
                     } else {
                         dismiss()
@@ -132,7 +154,7 @@ struct RecordDayEditView: View {
         }
         .environment(\.timeZone, draft.calendar.timeZone)
         .environment(\.calendar, draft.calendar)
-        .interactiveDismissDisabled(draft.hasChanges)
+        .interactiveDismissDisabled(hasChanges)
         .confirmationDialog(text.t("recordsDiscardEdits"), isPresented: $draft.confirmsDiscard, titleVisibility: .visible) {
             Button(text.t("recordsDiscardEdits"), role: .destructive) { dismiss() }
             Button(text.t("cancel"), role: .cancel) {}
@@ -181,16 +203,29 @@ struct RecordDayEditView: View {
     /// One Save, at the end. Every one of the six buttons used to write
     /// straight through on tap, so there was no way to change your mind and no
     /// sign that anything had happened.
+    /// The day's hours and its overtime are separate records (a day override
+    /// and an `overtimeDeclared` observation); each is written only when it
+    /// changed, in that order, and the editor closes once both succeeded.
     private func save() {
         let submission = draft.submission
-        let command = actions.applyDayWrite(
-            submission.write,
-            dayKey: submission.dayKey,
-            startMinutes: submission.startMinutes,
-            endMinutes: submission.endMinutes
-        )
+        let dayCommand: RecordCommand<Bool>? = draft.hasChanges
+            ? actions.applyDayWrite(
+                submission.write,
+                dayKey: submission.dayKey,
+                startMinutes: submission.startMinutes,
+                endMinutes: submission.endMinutes
+            )
+            : nil
+        let overtimeCommand: RecordCommand<Bool>? = overtimeChanged && overtime.isValid
+            ? actions.declareOvertime(dayKey: draft.dayKey, state: overtime)
+            : nil
         Task { @MainActor in
-            guard await command.value, draft.stillMatches(submission) else { return }
+            if let dayCommand {
+                guard await dayCommand.value, draft.stillMatches(submission) else { return }
+            }
+            if let overtimeCommand {
+                guard await overtimeCommand.value else { return }
+            }
             savedFeedback += 1
             dismiss()
         }

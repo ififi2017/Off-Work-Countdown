@@ -980,7 +980,6 @@
     <string name="recordsOvertimePeriod">ช่วงเวลา</string>
     <string name="recordsOvertimeRecorded">ล่วงเวลาที่บันทึกไว้</string>
     <string name="recordsOvertimeRecordedLife">โอทีที่บันทึกทั้งหมด</string>
-    <string name="recordsOvertimeSave">บันทึกล่วงเวลา</string>
     <string name="recordsOvertimeUseMeasured">นับตามช่วงเวลา</string>
     <string name="recordsOwnerAuthReason">ยืนยันว่าเป็นคุณเพื่อไปต่อ</string>
     <string name="recordsPayTitle">ค่าจ้างคาดการณ์ · %1$s</string>

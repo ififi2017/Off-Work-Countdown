@@ -980,7 +980,6 @@
     <string name="recordsOvertimePeriod">시간대</string>
     <string name="recordsOvertimeRecorded">기록된 초과근무</string>
     <string name="recordsOvertimeRecordedLife">지금까지 기록한 초과 근무</string>
-    <string name="recordsOvertimeSave">초과 근무 저장</string>
     <string name="recordsOvertimeUseMeasured">시간대대로 계산</string>
     <string name="recordsOwnerAuthReason">계속하려면 본인인지 확인해 주세요</string>
     <string name="recordsPayTitle">%1$s 예상 급여</string>

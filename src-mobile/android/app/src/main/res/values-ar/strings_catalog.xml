@@ -995,7 +995,6 @@
     <string name="recordsOvertimePeriod">الفترة</string>
     <string name="recordsOvertimeRecorded">العمل الإضافي المسجّل</string>
     <string name="recordsOvertimeRecordedLife">إجمالي العمل الإضافي المسجل</string>
-    <string name="recordsOvertimeSave">حفظ العمل الإضافي</string>
     <string name="recordsOvertimeUseMeasured">احتسب حسب الفترة</string>
     <string name="recordsOwnerAuthReason">أكّد أنك أنت للمتابعة</string>
     <string name="recordsPayTitle">الأجر المتوقع · %1$s</string>

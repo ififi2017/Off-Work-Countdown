@@ -989,7 +989,6 @@
     <string name="recordsOvertimePeriod">Период</string>
     <string name="recordsOvertimeRecorded">Записанные переработки</string>
     <string name="recordsOvertimeRecordedLife">Всего записано переработки</string>
-    <string name="recordsOvertimeSave">Сохранить переработку</string>
     <string name="recordsOvertimeUseMeasured">Считать по периоду</string>
     <string name="recordsOwnerAuthReason">Подтвердите, что это вы, чтобы продолжить</string>
     <string name="recordsPayTitle">Ожидаемая оплата · %1$s</string>

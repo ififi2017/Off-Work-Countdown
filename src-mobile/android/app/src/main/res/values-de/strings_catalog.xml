@@ -983,7 +983,6 @@
     <string name="recordsOvertimePeriod">Zeitraum</string>
     <string name="recordsOvertimeRecorded">Erfasste Überstunden</string>
     <string name="recordsOvertimeRecordedLife">Erfasste Überstunden insgesamt</string>
-    <string name="recordsOvertimeSave">Überstunden speichern</string>
     <string name="recordsOvertimeUseMeasured">Nach Zeitraum rechnen</string>
     <string name="recordsOwnerAuthReason">Bestätige, dass du es bist, um fortzufahren</string>
     <string name="recordsPayTitle">Erwarteter Lohn · %1$s</string>

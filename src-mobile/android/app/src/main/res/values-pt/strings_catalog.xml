@@ -986,7 +986,6 @@
     <string name="recordsOvertimePeriod">Período</string>
     <string name="recordsOvertimeRecorded">Horas extra registadas</string>
     <string name="recordsOvertimeRecordedLife">Horas extras registradas no total</string>
-    <string name="recordsOvertimeSave">Guardar hora extra</string>
     <string name="recordsOvertimeUseMeasured">Contar pelo período</string>
     <string name="recordsOwnerAuthReason">Confirme que é você para continuar</string>
     <string name="recordsPayTitle">Salário previsto · %1$s</string>

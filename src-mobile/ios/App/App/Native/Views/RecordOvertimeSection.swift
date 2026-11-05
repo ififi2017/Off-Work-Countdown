@@ -1,47 +1,46 @@
 import SwiftUI
 
 /// Plan 024 phase 4: a past day's overtime in the Records day editor — the
-/// period, the hours that count and how it is paid. It saves on its own with
-/// a new declaration, apart from the day's hours above it.
+/// period, the hours that count and how it is paid. The editor owns the state
+/// and saves it together with the day's hours behind its single Save button.
 struct RecordOvertimeSection: View {
-    let dayKey: String
+    @Binding var state: RecordOvertimeState
+    @Binding var isExpanded: Bool
     let actions: RecordsActions
 
-    @State private var state: RecordOvertimeState
-    @State private var baseline: RecordOvertimeState
-    @State private var isExpanded: Bool
     @State private var isPaid: Bool
     @State private var multiplier: Double
     @State private var showsCustomMultiplier: Bool
-    @State private var saving = false
-    @State private var savedFeedback = 0
 
     private var text: AppText { actions.text }
     private var calendar: Calendar { actions.preferences.recordsCalendar }
 
-    init(dayKey: String, loaded: RecordOvertimeState, actions: RecordsActions) {
-        self.dayKey = dayKey
+    init(state: Binding<RecordOvertimeState>, isExpanded: Binding<Bool>, actions: RecordsActions) {
+        _state = state
+        _isExpanded = isExpanded
         self.actions = actions
-        var initial = loaded
-        if !loaded.hasDeclaration {
-            // A new declaration starts from the default pay choice.
-            initial.payMultiplier = OvertimePay.normalized(actions.preferences.overtimePayMultiplier)
-        }
+        let initial = state.wrappedValue
         let paid = initial.payMultiplier > 0
         let shown = paid ? initial.payMultiplier : (actions.preferences.overtimePayMultiplier > 0 ? actions.preferences.overtimePayMultiplier : 1)
-        _state = State(initialValue: initial)
-        _baseline = State(initialValue: initial)
-        _isExpanded = State(initialValue: loaded.hasDeclaration)
         _isPaid = State(initialValue: paid)
         _multiplier = State(initialValue: shown)
         _showsCustomMultiplier = State(initialValue: paid && !OvertimePayChoices.isPreset(shown))
+    }
+
+    /// The state a day without a declaration starts from: the default pay choice.
+    static func initialState(loaded: RecordOvertimeState, actions: RecordsActions) -> RecordOvertimeState {
+        var initial = loaded
+        if !loaded.hasDeclaration {
+            initial.payMultiplier = OvertimePay.normalized(actions.preferences.overtimePayMultiplier)
+        }
+        return initial
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             OWCSectionHeader(title: text.t("recordsSectionOvertime"))
                 .padding(.horizontal, OWCDesign.pageInset)
-                .padding(.top, 26)
+                .padding(.top, 22)
             if isExpanded {
                 editor
             } else {
@@ -54,7 +53,6 @@ struct RecordOvertimeSection: View {
                 .padding(.horizontal, OWCDesign.pageInset)
             }
         }
-        .sensoryFeedback(.success, trigger: savedFeedback)
         .onChange(of: isPaid) { applyPay() }
         .onChange(of: multiplier) { applyPay() }
     }
@@ -100,16 +98,11 @@ struct RecordOvertimeSection: View {
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
                 .padding(.horizontal, 4)
-            Button(text.t("recordsOvertimeSave"), action: save)
-                .buttonStyle(OWCSecondaryButtonStyle())
-                .disabled(!hasChanges || !state.isValid || saving)
         }
         .padding(.horizontal, OWCDesign.pageInset)
         .environment(\.timeZone, calendar.timeZone)
         .environment(\.calendar, calendar)
     }
-
-    private var hasChanges: Bool { state != baseline || !baseline.hasDeclaration }
 
     private var startBinding: Binding<Date> {
         Binding(
@@ -138,20 +131,5 @@ struct RecordOvertimeSection: View {
 
     private func applyPay() {
         state.payMultiplier = isPaid ? OvertimePay.normalized(multiplier) : 0
-    }
-
-    private func save() {
-        let submitted = state
-        let command = actions.declareOvertime(dayKey: dayKey, state: submitted)
-        saving = true
-        Task { @MainActor in
-            defer { saving = false }
-            guard await command.value else { return }
-            var saved = submitted
-            saved.hasDeclaration = true
-            baseline = saved
-            state = saved
-            savedFeedback += 1
-        }
     }
 }

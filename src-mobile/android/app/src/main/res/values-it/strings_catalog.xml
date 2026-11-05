@@ -986,7 +986,6 @@
     <string name="recordsOvertimePeriod">Fascia</string>
     <string name="recordsOvertimeRecorded">Straordinari registrati</string>
     <string name="recordsOvertimeRecordedLife">Straordinari registrati in tutto</string>
-    <string name="recordsOvertimeSave">Salva straordinario</string>
     <string name="recordsOvertimeUseMeasured">Conta secondo la fascia</string>
     <string name="recordsOwnerAuthReason">Conferma che sei tu per continuare</string>
     <string name="recordsPayTitle">Stipendio previsto · %1$s</string>
