@@ -8,6 +8,8 @@ import {
   dailySalaryInMonth,
   countWorkdays,
   earningsForRatio,
+  normalizeCountedOvertimeMs,
+  overtimeCountScale,
   projectLifetimeGrossIncome,
   startOfWeek,
   startOfYear,
@@ -980,5 +982,51 @@ describe("overtime pay multiplier in Records (plan 024)", () => {
     expect(running(2).actual.earnings).toBe(1000);
     expect(running(0).forecast.earnings).toBe(0);
     expect(running(2).forecast.earnings).toBe(400);
+  });
+});
+
+describe("counted overtime hours in Records (plan 024)", () => {
+  const hour = 3_600_000;
+  const run = (counted?: number | null, multiplier?: number, asOfHours = 24) => summarizeRecordsActualAndForecast({
+    dailySalary: 800,
+    asOfMs: asOfHours * hour,
+    days: [{
+      actualKind: "scheduled" as const,
+      resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+      plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+      overtimeSegments: [{ startAtMs: 18 * hour, endAtMs: 21 * hour }],
+      ...(counted === undefined ? {} : { overtimeCountedMs: counted }),
+      ...(multiplier === undefined ? {} : { overtimePayMultiplier: multiplier }),
+      observations: [],
+      isActiveAnchor: false,
+    }],
+  });
+
+  it("validates the stored value", () => {
+    for (const value of [0, 1, 1.5 * hour, 24 * hour]) expect(normalizeCountedOvertimeMs(value)).toBe(value);
+    for (const value of [-1, 24 * hour + 1, Number.NaN, Infinity, null, "1", undefined]) {
+      expect(normalizeCountedOvertimeMs(value)).toBeNull();
+    }
+    expect(overtimeCountScale(3 * hour, 1.5 * hour)).toBe(0.5);
+    expect(overtimeCountScale(0, hour)).toBe(1);
+    expect(overtimeCountScale(3 * hour, null)).toBe(1);
+  });
+
+  it("replaces the measured overtime in hours and pay", () => {
+    expect(run().actualOvertimeHours).toBe(3);
+    expect(run().actual.earnings).toBe(800 * 11 / 8);
+    expect(run(2.5 * hour).actualOvertimeHours).toBe(2.5);
+    expect(run(2.5 * hour).actual.hours).toBe(10.5);
+    expect(run(2.5 * hour).actual.earnings).toBe(800 * 10.5 / 8);
+    expect(run(2.5 * hour, 2).actual.earnings).toBe(800 * (8 + 5) / 8);
+    expect(run(0).actualOvertimeHours).toBe(0);
+    expect(run(0).actual.earnings).toBe(800);
+    expect(run(4 * hour).actualOvertimeHours).toBe(4);
+    expect(run(-1).actualOvertimeHours).toBe(3);
+    expect(run(25 * hour).actualOvertimeHours).toBe(3);
+  });
+
+  it("scales overtime that is still in progress", () => {
+    expect(run(1.5 * hour, undefined, 19.5).actualOvertimeHours).toBe(0.75);
   });
 });

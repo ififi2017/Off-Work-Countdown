@@ -91,6 +91,12 @@ export interface RecordsActualForecastDay {
    * (0 = unpaid). Omitted or invalid means 1, the original hourly rate.
    */
   overtimePayMultiplier?: number | null;
+  /**
+   * Plan 024: the hours the day's latest overtime declaration counts, which
+   * replace the measured overtime length in statistics and pay. Omitted or
+   * invalid (not 0 to 24 hours) means the measured length.
+   */
+  overtimeCountedMs?: number | null;
   observations: RecordsSummaryObservation[];
   /** Whether this civil date owns the currently running shift. */
   isActiveAnchor: boolean;
@@ -297,6 +303,27 @@ export function weightedOvertimeMs(
   return regular + multiplier * (totalMs - regular);
 }
 
+/** The longest hours count a declaration may carry. */
+export const MAX_COUNTED_OVERTIME_MS = 24 * 3_600_000;
+
+/** Plan 024: the counted overtime as stored; null unless finite and 0...24h. */
+export function normalizeCountedOvertimeMs(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  if (value < 0 || value > MAX_COUNTED_OVERTIME_MS) return null;
+  return value;
+}
+
+/**
+ * Plan 024: the factor that turns a day's measured overtime into its counted
+ * overtime: counted / full measured length. 1 without a valid counted value
+ * or when there is no measured overtime to scale.
+ */
+export function overtimeCountScale(fullMeasuredMs: number, countedMs: unknown): number {
+  const counted = normalizeCountedOvertimeMs(countedMs);
+  if (counted === null || !Number.isFinite(fullMeasuredMs) || fullMeasuredMs <= 0) return 1;
+  return counted / fullMeasuredMs;
+}
+
 /**
  * Split recorded/corrected work from schedule estimates for one visible
  * period. One logical day can enter only one side; actual always wins.
@@ -357,9 +384,20 @@ export function summarizeRecordsActualAndForecast(params: {
         ...segment,
         endAtMs: Math.min(segment.endAtMs, params.asOfMs),
       }));
-      const workedMs = mergedSegmentDuration([...elapsedRegular, ...elapsedOvertime]);
+      const measuredWorkedMs = mergedSegmentDuration([...elapsedRegular, ...elapsedOvertime]);
       const regularMs = mergedSegmentDuration(elapsedRegular);
-      actualOvertimeMs += Math.max(0, workedMs - regularMs);
+      // Plan 024: counted hours replace the measured overtime length.
+      const countScale = overtimeCountScale(
+        Math.max(
+          0,
+          mergedSegmentDuration([...regularSegments, ...day.overtimeSegments]) -
+            mergedSegmentDuration(regularSegments),
+        ),
+        day.overtimeCountedMs,
+      );
+      const overtimeMs = Math.max(0, measuredWorkedMs - regularMs) * countScale;
+      const workedMs = countScale === 1 ? measuredWorkedMs : regularMs + overtimeMs;
+      actualOvertimeMs += countScale === 1 ? Math.max(0, workedMs - regularMs) : overtimeMs;
       const multiplier = normalizeOvertimePayMultiplier(day.overtimePayMultiplier ?? 1);
       if (workedMs > 0) {
         actualDays += 1;
@@ -370,7 +408,7 @@ export function summarizeRecordsActualAndForecast(params: {
         }
       }
       if (day.isActiveAnchor || day.actualKind === "scheduled") {
-        const futureMs = mergedSegmentDuration(
+        const futureAllMs = mergedSegmentDuration(
           [...day.resolvedSegments, ...day.overtimeSegments].map(segment => ({
             ...segment,
             startAtMs: Math.max(segment.startAtMs, params.asOfMs),
@@ -382,6 +420,9 @@ export function summarizeRecordsActualAndForecast(params: {
             startAtMs: Math.max(segment.startAtMs, params.asOfMs),
           })),
         );
+        const futureMs = countScale === 1
+          ? futureAllMs
+          : futureRegularMs + Math.max(0, futureAllMs - futureRegularMs) * countScale;
         if (futureMs > 0) {
           if (workedMs <= 0) forecastDays += 1;
           forecastMs += futureMs;

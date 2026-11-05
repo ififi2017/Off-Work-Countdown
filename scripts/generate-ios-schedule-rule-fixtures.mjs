@@ -613,6 +613,95 @@ function overtimePayFixtures() {
   return { multipliers: overtimeMultipliers, salaries: overtimeSalaries, scenarios: overtimeScenarios, normalize, snapshots, forecasts };
 }
 
+// Plan 024 phase 4 (`overtimeStartAtMs`, `countedMs`). Self-contained, like the
+// sections before it, so older sections keep their indices and bytes.
+function overtimeStartFixtures() {
+  const snapshots = [];
+  const forecasts = [];
+  const multipliers = [1, 0, 1.5];
+  const salaryIndexes = [0, 1];
+  const normalizeCounted = [0, 1, 30 * minute, 90 * minute, 24 * hour, 24 * hour + 1, 25 * hour, -1, -0.5, 0.5, 1e-9, NaN, null]
+    .map((value) => ({ value, expected: call("normalizeCountedOvertimeMs", { value }).value }));
+  const scales = [];
+  for (const fullMs of [0, 1, 45 * minute, 90 * minute, 3 * hour, 9 * hour, -hour]) {
+    for (const countedMs of [null, 0, 15 * minute, 45 * minute, 90 * minute, 2.5 * hour, 24 * hour, 25 * hour, -1]) {
+      scales.push({ fullMs, countedMs, expected: call("overtimeCountScale", { fullMs, countedMs }).value });
+    }
+  }
+
+  overtimeScenarios.forEach((scenario, sc) => {
+    const planned = call("snapshot", overtimeRules(scenario, scenario.base, 0));
+    const plannedEnd = planned.plannedEndAtMs;
+    for (const otMinutes of [45, 180, 540]) {
+      const ot = plannedEnd + otMinutes * minute;
+      // Rest before the overtime; null/-30/0 stretch the last segment, a start
+      // at or past the end does too; the rest append a segment.
+      const starts = [null, -30, 0, 15, 30, 45, 60, otMinutes, otMinutes + 30];
+      starts.forEach((restMinutes, ri) => {
+        const st = restMinutes === null ? null : plannedEnd + restMinutes * minute;
+        const offsets = [-30 * minute, 0, 10 * minute, 20 * minute, 40 * minute, otMinutes * minute / 2, otMinutes * minute - 1, otMinutes * minute];
+        offsets.forEach((offset, oi) => {
+          salaryIndexes.forEach((s, si) => {
+            const m = multipliers[(ri + oi + si) % multipliers.length];
+            const nowMs = plannedEnd + offset + (oi % 2 === 1 ? 0.25 : 0);
+            const rules = overtimeRules(scenario, nowMs, s, { overtimeEndAtMs: ot, overtimePayMultiplier: m });
+            if (st !== null) rules.overtimeStartAtMs = st;
+            const snapshot = call("snapshot", rules);
+            const extra = call("overtimePay", rules);
+            snapshots.push({
+              sc, s, m, ot, st, now: nowMs,
+              expected: {
+                segments: snapshot.segments, durationMs: snapshot.durationMs, elapsedMs: snapshot.elapsedMs,
+                remainingMs: snapshot.remainingMs, progress: snapshot.progress, payRatio: snapshot.payRatio,
+                activeBreakEndAtMs: snapshot.activeBreakEndAtMs, dailySalary: snapshot.dailySalary,
+                earnedSoFar: snapshot.earnedSoFar, overtimeElapsedMs: extra.overtimeElapsedMs, comparison: extra.comparison,
+              },
+            });
+          });
+        });
+      });
+    }
+
+    // Records: counted hours against measured overtime, with and without a gap
+    // before the overtime, for scheduled / corrected / observed days.
+    for (const kind of ["scheduled", "corrected", "observed"]) {
+      for (const counted of [undefined, null, 0, 30 * minute, 90 * minute, 4 * hour, 24 * hour, 25 * hour, -1]) {
+        for (const multiplier of [undefined, 1.5, 0]) {
+          for (const [gap, length] of [[0, 90], [30, 90], [45, 150]]) {
+            for (const asOfOffset of [-90 * minute, 20 * minute, 5 * hour]) {
+              const segments = planned.segments;
+              const first = segments[0];
+              const last = segments[segments.length - 1];
+              const input = {
+                days: [{
+                  dayKey: "2026-11-04",
+                  actualKind: kind,
+                  resolvedSegments: segments,
+                  plannedSegments: segments,
+                  overtimeSegments: [{ startAtMs: last.endAtMs + gap * minute, endAtMs: last.endAtMs + (gap + length) * minute }],
+                  ...(multiplier === undefined ? {} : { overtimePayMultiplier: multiplier }),
+                  ...(counted === undefined ? {} : { overtimeCountedMs: counted }),
+                  observations: kind === "observed"
+                    ? [{ kind: "started", occurredAtMs: first.startAtMs + 5 * minute }, { kind: "stopped", occurredAtMs: last.endAtMs - 10 * minute }]
+                    : [],
+                  isActiveAnchor: asOfOffset < 0,
+                }],
+                periodDayKeys: ["2026-11-04"],
+                dailySalary: call("snapshot", overtimeRules(scenario, scenario.base, 0)).dailySalary,
+                asOfMs: last.endAtMs + asOfOffset,
+                salaryRules: overtimeRules(scenario, last.endAtMs + asOfOffset, 0),
+              };
+              forecasts.push({ sc, input, expected: call("recordsActualForecast", input) });
+            }
+          }
+        }
+      }
+    }
+  });
+
+  return { multipliers, salaries: overtimeSalaries, scenarios: overtimeScenarios, normalizeCounted, scales, snapshots, forecasts };
+}
+
 /**
  * The fixture body as JSON text. iOS embeds it in Swift (below); Android
  * copies it verbatim (scripts/generate-android-rule-fixtures.mjs), so both
@@ -919,6 +1008,7 @@ export function createScheduleRuleFixtureJson() {
     `"${name}":[\n${rows.map((row) => JSON.stringify(row)).join(",\n")}\n]`;
   const monthBasis = monthBasisFixtures();
   const overtimePay = overtimePayFixtures();
+  const overtimeStart = overtimeStartFixtures();
   const json = `{"version":3,
 "generator":"scripts/generate-ios-schedule-rule-fixtures.mjs",
 ${section("profiles", profiles)},
@@ -943,6 +1033,9 @@ ${Object.entries(monthBasis).map(([name, rows]) => section(name, rows)).join(",\
 },
 "overtimePay":{
 ${Object.entries(overtimePay).map(([name, rows]) => section(name, rows)).join(",\n")}
+},
+"overtimeStart":{
+${Object.entries(overtimeStart).map(([name, rows]) => section(name, rows)).join(",\n")}
 }
 }`;
   return json;

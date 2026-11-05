@@ -76,6 +76,7 @@ const ORACLE_BODY = `
       breakStartTime: input.breakStartTime || null,
       breakDurationMinutes: input.breakDurationMinutes || 0,
       overtimeEndAtMs: input.overtimeEndAtMs || null,
+      overtimeStartAtMs: input.overtimeStartAtMs || null,
     };
   }
 
@@ -572,6 +573,17 @@ const ORACLE_BODY = `
     normalizeOvertimePayMultiplier(inputJSON) {
       const input = JSON.parse(inputJSON);
       return JSON.stringify({ value: countdown.normalizeOvertimePayMultiplier(input.value) });
+    },
+
+    // Plan 024 phase 4: the counted-hours override and its scale.
+    normalizeCountedOvertimeMs(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({ value: summary.normalizeCountedOvertimeMs(input.value) });
+    },
+
+    overtimeCountScale(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({ value: summary.overtimeCountScale(input.fullMs, input.countedMs) });
     },
 
     recordsActualForecast(inputJSON) {

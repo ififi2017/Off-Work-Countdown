@@ -77,6 +77,12 @@ export interface ShiftBuildOptions {
   breakStartTime?: string | null;
   breakDurationMinutes?: number;
   overtimeEndAtMs?: number | null;
+  /**
+   * Plan 024: when the overtime starts. Omitted, or at/before the planned end,
+   * the last segment is stretched; later, a separate segment [start, end] is
+   * appended and the gap before it is a break.
+   */
+  overtimeStartAtMs?: number | null;
 }
 
 export type WorkScheduleMode = "classic" | "alternating" | "rotation" | "off";
@@ -185,6 +191,31 @@ export function findNextRestDate(params: {
   return null;
 }
 
+/**
+ * Plan 024: overtime that starts after the planned end becomes its own segment
+ * (the gap is a break); otherwise the last segment is stretched to the end.
+ */
+function applyOvertimeToSegments(
+  segments: ShiftSegment[],
+  plannedEndAtMs: number,
+  overtimeEndAtMs: number,
+  overtimeStartAtMs: number | null | undefined
+): ShiftSegment[] {
+  if (
+    typeof overtimeStartAtMs === "number" &&
+    Number.isFinite(overtimeStartAtMs) &&
+    overtimeStartAtMs > plannedEndAtMs &&
+    overtimeStartAtMs < overtimeEndAtMs
+  ) {
+    return [...segments, { startAtMs: overtimeStartAtMs, endAtMs: overtimeEndAtMs }];
+  }
+  return segments.map((segment, index) =>
+    index === segments.length - 1
+      ? { ...segment, endAtMs: overtimeEndAtMs }
+      : segment
+  );
+}
+
 function buildTimelineFromBounds(
   start: Date,
   end: Date,
@@ -220,10 +251,11 @@ function buildTimelineFromBounds(
       ? options.overtimeEndAtMs
       : null;
   if (overtimeEndAtMs !== null) {
-    segments = segments.map((segment, index) =>
-      index === segments.length - 1
-        ? { ...segment, endAtMs: overtimeEndAtMs }
-        : segment
+    segments = applyOvertimeToSegments(
+      segments,
+      plannedEndAtMs,
+      overtimeEndAtMs,
+      options.overtimeStartAtMs
     );
   }
 
@@ -245,17 +277,19 @@ export function buildShiftTimeline(
 
 export function extendShiftWithOvertime(
   shift: ShiftTimeline,
-  overtimeEndAtMs: number
+  overtimeEndAtMs: number,
+  overtimeStartAtMs?: number | null
 ): ShiftTimeline {
   if (!isValidShiftTimeline(shift) || overtimeEndAtMs <= shift.plannedEndAtMs) {
     return shift;
   }
   return {
     ...shift,
-    segments: shift.segments.map((segment, index) =>
-      index === shift.segments.length - 1
-        ? { ...segment, endAtMs: overtimeEndAtMs }
-        : segment
+    segments: applyOvertimeToSegments(
+      shift.segments,
+      shift.plannedEndAtMs,
+      overtimeEndAtMs,
+      overtimeStartAtMs
     ),
     overtimeEndAtMs,
   };
@@ -424,11 +458,23 @@ export function isValidShiftTimeline(shift: ShiftTimeline): boolean {
   const startAtMs = getShiftStartAtMs(shift);
   const endAtMs = getShiftEndAtMs(shift);
   const lastSegment = shift.segments[shift.segments.length - 1];
-  return (
-    shift.plannedEndAtMs > startAtMs &&
+  if (shift.plannedEndAtMs <= startAtMs || endAtMs !== lastSegment.endAtMs) {
+    return false;
+  }
+  if (
     shift.plannedEndAtMs > lastSegment.startAtMs &&
-    shift.plannedEndAtMs <= lastSegment.endAtMs &&
-    endAtMs === shift.segments[shift.segments.length - 1].endAtMs
+    shift.plannedEndAtMs <= lastSegment.endAtMs
+  ) {
+    return true;
+  }
+  // Plan 024: overtime appended after a gap. The planned end closes the
+  // second-to-last segment, and the last one starts after it.
+  if (shift.overtimeEndAtMs === null || shift.segments.length < 2) return false;
+  const before = shift.segments[shift.segments.length - 2];
+  return (
+    shift.plannedEndAtMs > before.startAtMs &&
+    shift.plannedEndAtMs === before.endAtMs &&
+    lastSegment.startAtMs > shift.plannedEndAtMs
   );
 }
 

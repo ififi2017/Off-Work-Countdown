@@ -225,6 +225,37 @@ describe("segmented shift timeline", () => {
     expect(getShiftDurationMs(extended)).toBe(10 * hour);
   });
 
+  it("keeps the planned segment and appends one when overtime starts after a rest", () => {
+    const base = buildShiftTimeline("09:00", "18:00", day(10), {
+      breakStartTime: "12:00",
+      breakDurationMinutes: 60,
+    });
+    const extended = extendShiftWithOvertime(base, at(21), at(18, 30));
+    expect(extended.plannedEndAtMs).toBe(at(18));
+    expect(extended.overtimeEndAtMs).toBe(at(21));
+    expect(extended.segments).toHaveLength(3);
+    expect(extended.segments[1]).toEqual(base.segments[1]);
+    expect(extended.segments[2]).toEqual({ startAtMs: at(18, 30), endAtMs: at(21) });
+    expect(isValidShiftTimeline(extended)).toBe(true);
+    // 8 planned hours + 2.5 counted overtime hours; the 30 minute rest is a break.
+    expect(getShiftDurationMs(extended)).toBe(10.5 * hour);
+    expect(getShiftElapsedMs(extended, at(18, 15))).toBe(8 * hour);
+    expect(getActiveBreakEndAtMs(extended, at(18, 15))).toBe(at(18, 30));
+    expect(overtimeElapsedMs(extended, at(19, 30))).toBe(1 * hour);
+    expect(calculateTimelinePayRatio(extended, at(21), 2)).toBe((8 + 2 * 2.5) / 8);
+  });
+
+  it("stretches the last segment when the overtime start is not after the planned end", () => {
+    const base = buildShiftTimeline("09:00", "18:00", day(10), {
+      breakStartTime: "12:00",
+      breakDurationMinutes: 60,
+    });
+    const plain = extendShiftWithOvertime(base, at(20));
+    for (const start of [undefined, null, at(17), at(18), at(20), at(21)]) {
+      expect(extendShiftWithOvertime(base, at(20), start)).toEqual(plain);
+    }
+  });
+
   it("suggests a future quarter-hour when overtime is added after work", () => {
     const shift = buildShiftTimeline("09:00", "18:00", day(12));
     expect(new Date(suggestOvertimeEndAtMs(shift, at(23, 52))).getHours()).toBe(1);
