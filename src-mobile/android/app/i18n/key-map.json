@@ -2636,14 +2636,44 @@
     "overtime": {
       "resource": "string/overtime"
     },
+    "overtimeDefaultNote": {
+      "resource": "string/overtimeDefaultNote"
+    },
+    "overtimeDefaultRow": {
+      "resource": "string/overtimeDefaultRow"
+    },
+    "overtimeDefaultUsual": {
+      "resource": "string/overtimeDefaultUsual"
+    },
     "overtimeDescription": {
       "resource": "string/overtimeDescription"
     },
     "overtimeEndTime": {
       "resource": "string/overtimeEndTime"
     },
+    "overtimeMultiplierCustom": {
+      "resource": "string/overtimeMultiplierCustom"
+    },
+    "overtimeMultiplierNote": {
+      "resource": "string/overtimeMultiplierNote",
+      "params": [
+        "multiplier"
+      ]
+    },
+    "overtimeMultiplierRow": {
+      "resource": "string/overtimeMultiplierRow"
+    },
     "overtimeNoMultiplier": {
       "resource": "string/overtimeNoMultiplier"
+    },
+    "overtimePayPaid": {
+      "resource": "string/overtimePayPaid"
+    },
+    "overtimePayRow": {
+      "resource": "string/overtimePayRow"
+    },
+    "overtimePayUnpaid": {
+      "resource": "string/overtimePayUnpaid"
     },
     "overtimeTimeLeftCaption": {
       "resource": "string/overtimeTimeLeftCaption"
@@ -2651,11 +2681,28 @@
     "overtimeTitle": {
       "resource": "string/overtimeTitle"
     },
+    "overtimeUnpaidNote": {
+      "resource": "string/overtimeUnpaidNote",
+      "params": [
+        "amount",
+        "rate",
+        "percent"
+      ]
+    },
+    "overtimeUnpaidSheetNote": {
+      "resource": "string/overtimeUnpaidSheetNote"
+    },
+    "overtimeUnpaidShort": {
+      "resource": "string/overtimeUnpaidShort"
+    },
     "overtimeUntil": {
       "resource": "string/overtimeUntil",
       "params": [
         "time"
       ]
+    },
+    "overtimeWorked": {
+      "resource": "string/overtimeWorked"
     },
     "pausedUntil": {
       "resource": "string/pausedUntil",
@@ -4524,6 +4571,13 @@
     },
     "watchWidgetDescription": {
       "resource": "string/watchWidgetDescription"
+    },
+    "webOvertimeUnpaidRate": {
+      "resource": "string/webOvertimeUnpaidRate",
+      "params": [
+        "rate",
+        "percent"
+      ]
     },
     "weekdayRange": {
       "resource": "string/weekdayRange",

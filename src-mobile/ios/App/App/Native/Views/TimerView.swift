@@ -10,6 +10,10 @@ struct OvertimeSheet: View {
     /// Fixed when the sheet opens, so the title cannot flip while it is up
     /// (for example when the planned clock-off passes mid-edit).
     @State private var mode = OvertimeSheetMode.add
+    /// Plan 024: how this overtime is paid. The wheel's choice, not yet saved.
+    @State private var isPaid = true
+    @State private var multiplier = 1.0
+    @State private var showsCustomMultiplier = false
 
     var body: some View {
         NavigationStack {
@@ -34,7 +38,8 @@ struct OvertimeSheet: View {
                         .datePickerStyle(.wheel)
                         .labelsHidden()
                         .frame(maxWidth: .infinity)
-                        Label(shifts.text.t("overtimeNoMultiplier"), systemImage: "info.circle")
+                        payCard
+                        Label(payFootnote, systemImage: "info.circle")
                             .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -42,7 +47,7 @@ struct OvertimeSheet: View {
                     .padding(.top, 20)
                 }
                 Button(shifts.text.t(mode.confirmKey)) {
-                    let command = shifts.applyOvertime(date: endDate)
+                    let command = shifts.applyOvertime(date: endDate, payMultiplier: isPaid ? multiplier : 0)
                     saving = true
                     Task {
                         defer { saving = false }
@@ -81,9 +86,68 @@ struct OvertimeSheet: View {
                 // save the time already worked without adding another forced
                 // 15-minute block.
                 endDate = max(minimumDate, existing ?? now)
+                let current = shifts.session.effectiveOvertimePayMultiplier
+                let preferred = shifts.preferences.overtimePayMultiplier
+                isPaid = current > 0
+                multiplier = current > 0 ? current : (preferred > 0 ? preferred : 1)
+                showsCustomMultiplier = isPaid && !OvertimePayChoices.isPreset(multiplier)
             }
             .sensoryFeedback(.impact(weight: .medium), trigger: confirmed)
         }
+    }
+
+    /// This overtime's pay: paid or not, and at what multiple of the usual rate.
+    private var payCard: some View {
+        OWCGroupCard {
+            OWCRow(title: shifts.text.t("overtimePayRow"), isLast: !isPaid) {
+                Picker(shifts.text.t("overtimePayRow"), selection: $isPaid) {
+                    Text(shifts.text.t("overtimePayPaid")).tag(true)
+                    Text(shifts.text.t("overtimePayUnpaid")).tag(false)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxWidth: 190)
+            }
+            if isPaid {
+                OWCRow(title: shifts.text.t("overtimeMultiplierRow"), isLast: !showsCustomMultiplier) {
+                    HStack(spacing: 6) {
+                        Text(shifts.text.multiplierLabel(multiplier))
+                            .font(.body.monospacedDigit())
+                            .foregroundStyle(OWCDesign.secondary)
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(OWCDesign.tertiary)
+                    }
+                }
+                .owcRowMenu(accessibilityLabel: "\(shifts.text.t("overtimeMultiplierRow")), \(shifts.text.multiplierLabel(multiplier))") {
+                    Picker(shifts.text.t("overtimeMultiplierRow"), selection: Binding(
+                        get: { showsCustomMultiplier ? OvertimePayChoices.customTag : OvertimePayChoices.tenths(multiplier) },
+                        set: { tag in
+                            if tag == OvertimePayChoices.customTag {
+                                showsCustomMultiplier = true
+                            } else {
+                                showsCustomMultiplier = false
+                                multiplier = OvertimePayChoices.multiplier(tenths: tag)
+                            }
+                        }
+                    )) {
+                        ForEach(OvertimePayChoices.presets, id: \.self) { preset in
+                            Text(shifts.text.multiplierLabel(preset)).tag(OvertimePayChoices.tenths(preset))
+                        }
+                        Text(shifts.text.t("overtimeMultiplierCustom")).tag(OvertimePayChoices.customTag)
+                    }
+                }
+                if showsCustomMultiplier {
+                    OvertimeMultiplierStepperRow(text: shifts.text, multiplier: $multiplier, isLast: true)
+                }
+            }
+        }
+    }
+
+    private var payFootnote: String {
+        if !isPaid { return shifts.text.t("overtimeUnpaidSheetNote") }
+        if multiplier == 1 { return shifts.text.t("overtimeNoMultiplier") }
+        return shifts.text.t("overtimeMultiplierNote", values: ["multiplier": shifts.text.formatDecimal(multiplier)])
     }
 
     /// The timer's clock: the device time, or a DEBUG scenario's virtual time.

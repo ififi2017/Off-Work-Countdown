@@ -221,6 +221,8 @@ struct SalaryDesignView: View {
     /// The "Daily pay by month" page. It shows salary, so it is closed whenever
     /// the page locks, in the same transaction.
     @State private var showsMonthlyPay = false
+    /// Plan 024: the "Custom…" stepper for the overtime default, once chosen.
+    @State private var showsCustomOvertimeDefault = false
 
     var body: some View {
         Group {
@@ -587,6 +589,8 @@ struct SalaryDesignView: View {
             .padding(.top, 20)
 
             detailFooter(preview.effectiveTimeNote)
+
+            overtimeDefaultSection
             }
                 Spacer(minLength: 8)
             }
@@ -620,6 +624,77 @@ struct SalaryDesignView: View {
         .sensoryFeedback(.selection, trigger: shifts.preferences.salaryEnabled)
         .sensoryFeedback(.selection, trigger: shifts.preferences.annualBonusEnabled)
         .sensoryFeedback(.selection, trigger: shifts.preferences.hideEarnings)
+    }
+
+    /// Plan 024: how overtime is paid unless a given overtime says otherwise.
+    private var overtimeDefaultSection: some View {
+        let preferred = shifts.preferences.overtimePayMultiplier
+        let isCustom = showsCustomOvertimeDefault || (preferred > 0 && !OvertimePayChoices.isPreset(preferred))
+        let valueText: String
+        if preferred == 0 {
+            valueText = shifts.text.t("overtimePayUnpaid")
+        } else if preferred == 1 {
+            valueText = shifts.text.t("overtimeDefaultUsual")
+        } else {
+            valueText = shifts.text.multiplierLabel(preferred)
+        }
+        let rowTitle = shifts.text.t("overtimeDefaultRow")
+        return VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+            OWCSectionHeader(title: shifts.text.t("overtime"))
+            OWCGroupCard {
+                HStack {
+                    Text(rowTitle)
+                        .font(.body)
+                        .foregroundStyle(OWCDesign.primary)
+                    Spacer()
+                    Text(valueText)
+                        .font(.body.monospacedDigit())
+                        .foregroundStyle(OWCDesign.secondary)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(OWCDesign.tertiary)
+                }
+                .padding(.horizontal, 16)
+                .frame(height: 56)
+                .owcRowMenu(accessibilityLabel: "\(rowTitle), \(valueText)") {
+                    Picker(rowTitle, selection: Binding(
+                        get: { isCustom ? OvertimePayChoices.customTag : OvertimePayChoices.tenths(preferred) },
+                        set: { tag in
+                            if tag == OvertimePayChoices.customTag {
+                                showsCustomOvertimeDefault = true
+                                if preferred == 0 { shifts.preferences.applyPreferences { $0.overtimePayMultiplier = 1 } }
+                            } else {
+                                showsCustomOvertimeDefault = false
+                                let value = OvertimePayChoices.multiplier(tenths: tag)
+                                shifts.preferences.applyPreferences { $0.overtimePayMultiplier = value }
+                            }
+                        }
+                    )) {
+                        Text(shifts.text.t("overtimeDefaultUsual")).tag(10)
+                        Text(shifts.text.t("overtimePayUnpaid")).tag(0)
+                        ForEach(OvertimePayChoices.presets.dropFirst(), id: \.self) { preset in
+                            Text(shifts.text.multiplierLabel(preset)).tag(OvertimePayChoices.tenths(preset))
+                        }
+                        Text(shifts.text.t("overtimeMultiplierCustom")).tag(OvertimePayChoices.customTag)
+                    }
+                }
+                if isCustom, preferred > 0 {
+                    OvertimeMultiplierStepperRow(
+                        text: shifts.text,
+                        multiplier: Binding(
+                            get: { preferred },
+                            set: { value in shifts.preferences.applyPreferences { $0.overtimePayMultiplier = value } }
+                        ),
+                        isLast: true
+                    )
+                }
+            }
+            }
+            .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.top, 20)
+            detailFooter(shifts.text.t("overtimeDefaultNote"))
+        }
     }
 
     private func salaryPreview(

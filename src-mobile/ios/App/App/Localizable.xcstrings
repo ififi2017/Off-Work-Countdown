@@ -147633,6 +147633,1672 @@
           }
         }
       }
+    },
+    "overtimeWorked": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "العمل الإضافي المنجز"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geleistete Überstunden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overtime worked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas extra trabajadas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heures sup. effectuées"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "किया गया ओवरटाइम"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sudah lembur"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Straordinario svolto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "残業時間"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초과 근무 시간"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "केलेला ओव्हरटाइम"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas extra feitas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отработано сверхурочно"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทำล่วงเวลาไปแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yapılan fazla mesai"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã làm thêm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已加班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已加班"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已加班"
+          }
+        }
+      }
+    },
+    "overtimeUnpaidNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هذا العمل الإضافي غير مدفوع، لذا يتوقف ما كسبته اليوم عند {{amount}}. بحساب ساعات العمل الفعلية، أجرك بالساعة اليوم {{rate}}، أي أقل بنسبة {{percent}}% من المعتاد."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Überstunden sind unbezahlt, daher bleibt dein Verdienst heute bei {{amount}}. Auf die tatsächlich gearbeiteten Stunden gerechnet liegt dein Stundenlohn heute bei {{rate}} – {{percent}} % weniger als sonst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This overtime is unpaid, so today's earnings stay at {{amount}}. Over the hours you actually worked, today's hourly rate is {{rate}}, {{percent}}% lower than usual."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estas horas extra no se pagan, así que lo ganado hoy se queda en {{amount}}. Según las horas realmente trabajadas, tu tarifa por hora de hoy es {{rate}}, un {{percent}} % menos de lo habitual."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ces heures supplémentaires ne sont pas payées : ce que vous avez gagné aujourd'hui reste à {{amount}}. Sur les heures réellement travaillées, votre taux horaire du jour est de {{rate}}, soit {{percent}} % de moins que d'habitude."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यह ओवरटाइम बिना भुगतान का है, इसलिए आज की कमाई {{amount}} पर रुकी है। वास्तव में काम किए गए घंटों के हिसाब से आज की प्रति घंटा दर {{rate}} है, जो सामान्य से {{percent}}% कम है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lembur ini tidak dibayar, jadi penghasilan hari ini berhenti di {{amount}}. Berdasarkan jam kerja yang sebenarnya, upah per jam hari ini {{rate}}, {{percent}}% lebih rendah dari biasanya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo straordinario non è pagato, quindi il guadagnato di oggi resta a {{amount}}. Sulle ore realmente lavorate, la tua tariffa oraria di oggi è {{rate}}, il {{percent}}% in meno del solito."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この残業は無給のため、本日の収入は{{amount}}のままです。実際に働いた時間で計算すると、本日の時給は{{rate}}で、普段より{{percent}}%低くなります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 초과 근무는 무급이라 오늘 번 돈은 {{amount}}에서 멈춥니다. 실제 근무 시간으로 계산하면 오늘 시급은 {{rate}}로, 평소보다 {{percent}}% 낮습니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हा ओव्हरटाइम बिनपगारी आहे, म्हणून आजची कमाई {{amount}} वरच थांबते. प्रत्यक्ष काम केलेल्या तासांनुसार आजचा तासाचा दर {{rate}} आहे, जो नेहमीपेक्षा {{percent}}% कमी आहे."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estas horas extra não são pagas, por isso o ganho de hoje fica em {{amount}}. Pelas horas realmente trabalhadas, o seu valor por hora hoje é {{rate}}, {{percent}}% abaixo do habitual."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта переработка не оплачивается, поэтому заработок за сегодня остаётся на уровне {{amount}}. По фактически отработанным часам сегодняшняя почасовая ставка — {{rate}}, это на {{percent}}% ниже обычной."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล่วงเวลานี้ไม่คิดค่าจ้าง รายได้วันนี้จึงหยุดอยู่ที่ {{amount}} เมื่อคิดตามชั่วโมงที่ทำงานจริง ค่าจ้างต่อชั่วโมงของวันนี้คือ {{rate}} ต่ำกว่าปกติ {{percent}}%"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu fazla mesai ücretsiz, bu yüzden bugünkü kazancınız {{amount}} üzerinde kalıyor. Gerçekten çalıştığınız saatlere göre bugünün saatlik ücreti {{rate}}; bu, normalden %{{percent}} düşük."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ làm thêm này không được trả lương nên khoản kiếm được hôm nay dừng ở {{amount}}. Tính theo số giờ thực tế đã làm, lương giờ hôm nay là {{rate}}, thấp hơn bình thường {{percent}}%."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这段加班不计薪，今日已赚停在 {{amount}}。按实际工作时长，今天的时薪是 {{rate}}，比平时低 {{percent}}%。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呢段加班唔計薪，今日已賺停喺 {{amount}}。按實際工作時數計，今日嘅時薪係 {{rate}}，比平時低 {{percent}}%。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這段加班不計薪，今日已賺停在 {{amount}}。按實際工作時數計算，今天的時薪是 {{rate}}，比平時低 {{percent}}%。"
+          }
+        }
+      }
+    },
+    "overtimeUnpaidShort": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هذا العمل الإضافي غير مدفوع."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Überstunden sind unbezahlt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This overtime is unpaid."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estas horas extra no se pagan."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ces heures supplémentaires ne sont pas payées."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यह ओवरटाइम बिना भुगतान का है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lembur ini tidak dibayar."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo straordinario non è pagato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この残業は無給です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 초과 근무는 무급입니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हा ओव्हरटाइम बिनपगारी आहे."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estas horas extra não são pagas."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта переработка не оплачивается."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล่วงเวลานี้ไม่คิดค่าจ้าง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu fazla mesai ücretsiz."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ làm thêm này không được trả lương."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这段加班不计薪。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呢段加班唔計薪。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這段加班不計薪。"
+          }
+        }
+      }
+    },
+    "overtimeMultiplierNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُقدَّر العمل الإضافي بـ {{multiplier}}× من أجرك المعتاد بالساعة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überstunden werden mit dem {{multiplier}}-Fachen deines normalen Stundensatzes geschätzt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overtime is estimated at {{multiplier}}× your usual hourly rate."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las horas extra se estiman a {{multiplier}}× tu tarifa por hora habitual."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les heures supplémentaires sont estimées à {{multiplier}}× votre taux horaire habituel."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओवरटाइम का अनुमान आपकी सामान्य प्रति घंटा दर के {{multiplier}}× पर लगाया जाता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lembur diperkirakan dengan {{multiplier}}× tarif per jam biasa."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo straordinario è stimato a {{multiplier}}× la tua tariffa oraria abituale."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "残業は通常の時給の{{multiplier}}倍で概算します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초과 근무는 평소 시급의 {{multiplier}}배로 추산합니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओव्हरटाइम तुमच्या नेहमीच्या तासाच्या दराच्या {{multiplier}}× ने अंदाजित केला जातो."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As horas extra são estimadas a {{multiplier}}× a sua taxa horária habitual."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переработка оценивается по {{multiplier}}× от вашей обычной почасовой ставки."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ประมาณค่าล่วงเวลาที่ {{multiplier}}× ของค่าจ้างต่อชั่วโมงปกติ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fazla mesai, normal saatlik ücretinizin {{multiplier}}× katı olarak tahmin edilir."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ làm thêm được ước tính bằng {{multiplier}}× mức lương giờ thường."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班按平时时薪的 {{multiplier}} 倍估算。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班按平時時薪嘅 {{multiplier}} 倍估算。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班按平時時薪的 {{multiplier}} 倍估算。"
+          }
+        }
+      }
+    },
+    "overtimePayRow": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هذا العمل الإضافي"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Überstunden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This overtime"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estas horas extra"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ces heures sup."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यह ओवरटाइम"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lembur ini"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo straordinario"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この残業"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이번 초과 근무"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हा ओव्हरटाइम"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estas horas extra"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта переработка"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล่วงเวลาครั้งนี้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu fazla mesai"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lần làm thêm này"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这段加班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呢段加班"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這段加班"
+          }
+        }
+      }
+    },
+    "overtimePayPaid": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مدفوع"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bezahlt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paid"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con pago"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Payées"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "भुगतान सहित"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dibayar"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pagato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有給"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "유급"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पगारी"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pagas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оплачивается"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คิดค่าจ้าง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ücretli"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Có lương"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "计薪"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "計薪"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "計薪"
+          }
+        }
+      }
+    },
+    "overtimePayUnpaid": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غير مدفوع"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unbezahlt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unpaid"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin pago"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non payées"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बिना भुगतान"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak dibayar"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non pagato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無給"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "무급"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बिनपगारी"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não pagas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не оплачивается"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่คิดค่าจ้าง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ücretsiz"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không lương"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不计薪"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "唔計薪"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不計薪"
+          }
+        }
+      }
+    },
+    "overtimeMultiplierRow": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المضاعف"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faktor"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Multiplier"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Multiplicador"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coefficient"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "गुणक"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pengali"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moltiplicatore"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倍率"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "배율"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "गुणक"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Multiplicador"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Коэффициент"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตัวคูณ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Katsayı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hệ số"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倍数"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倍數"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "倍數"
+          }
+        }
+      }
+    },
+    "overtimeMultiplierCustom": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مخصّص…"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Benutzerdefiniert…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personalizado…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personnalisé…"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कस्टम…"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kustom…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personalizzato…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カスタム…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "직접 설정…"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कस्टम…"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personalizado…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свой…"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำหนดเอง…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Özel…"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tùy chỉnh…"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自定义…"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自訂…"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自訂…"
+          }
+        }
+      }
+    },
+    "overtimeUnpaidSheetNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يظل العمل الإضافي غير المدفوع محسوبًا ضمن ساعاتك وتقاريرك، لكنه لا يضيف شيئًا إلى أجرك."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unbezahlte Überstunden zählen weiterhin zu deinen Stunden und Berichten, erhöhen aber nicht deinen Verdienst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unpaid overtime still counts toward your hours and reports, but adds nothing to your pay."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las horas extra sin pago siguen contando en tus horas e informes, pero no suman a lo que ganas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Des heures supplémentaires non payées comptent toujours dans vos heures et vos bilans, mais n'ajoutent rien à votre paie."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बिना भुगतान का ओवरटाइम भी आपके घंटों और रिपोर्ट में गिना जाता है, पर कमाई में कुछ नहीं जोड़ता।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lembur yang tidak dibayar tetap dihitung dalam jam kerja dan laporan, tetapi tidak menambah penghasilan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo straordinario non pagato conta comunque nelle ore e nei report, ma non aumenta la paga."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無給の残業も労働時間とレポートには含まれますが、収入には加算されません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "무급 초과 근무도 근무 시간과 리포트에는 포함되지만 수입에는 더해지지 않습니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बिनपगारी ओव्हरटाइमही तुमच्या तासांत आणि अहवालांत मोजला जातो, पण कमाईत काही भर घालत नाही."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas extra não pagas continuam a contar nas suas horas e relatórios, mas não somam ao que ganha."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неоплачиваемая переработка по-прежнему входит в часы и отчёты, но не добавляет денег к заработку."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล่วงเวลาที่ไม่คิดค่าจ้างยังนับรวมในชั่วโมงทำงานและรายงาน แต่ไม่เพิ่มรายได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ücretsiz fazla mesai yine de saatlerinize ve raporlarınıza sayılır, ancak kazancınıza bir şey eklemez."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ làm thêm không lương vẫn được tính vào giờ làm và báo cáo, nhưng không cộng vào thu nhập."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不计薪的加班仍会计入工时和报告，只是不增加收入。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "唔計薪嘅加班照樣計入工時同報告，只係唔會增加收入。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不計薪的加班仍會計入工時和報告，只是不會增加收入。"
+          }
+        }
+      }
+    },
+    "overtimeDefaultRow": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الافتراضي للعمل الإضافي"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überstunden-Standard"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overtime default"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas extra por defecto"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heures sup. par défaut"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओवरटाइम डिफ़ॉल्ट"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default lembur"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Straordinario predefinito"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "残業のデフォルト"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초과 근무 기본값"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओव्हरटाइम डिफॉल्ट"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas extra por omissão"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переработка по умолчанию"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ค่าเริ่มต้นของล่วงเวลา"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fazla mesai varsayılanı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mặc định làm thêm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班默认"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班預設"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班預設"
+          }
+        }
+      }
+    },
+    "overtimeDefaultUsual": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأجر المعتاد بالساعة (1×)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normaler Stundensatz (1×)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usual hourly rate (1×)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarifa por hora habitual (1×)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taux horaire habituel (1×)"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सामान्य प्रति घंटा दर (1×)"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarif per jam biasa (1×)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tariffa oraria abituale (1×)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通常の時給（1×）"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "평소 시급 (1×)"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नेहमीचा तासाचा दर (1×)"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taxa horária habitual (1×)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обычная почасовая ставка (1×)"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ค่าจ้างต่อชั่วโมงปกติ (1×)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal saatlik ücret (1×)"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lương giờ thường (1×)"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按平时时薪 (1×)"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按平時時薪 (1×)"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按平時時薪 (1×)"
+          }
+        }
+      }
+    },
+    "overtimeDefaultNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يظل العمل الإضافي محسوبًا ضمن ساعاتك وتقاريرك. يمكنك تغيير ذلك لكل مرة على حدة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überstunden zählen weiterhin zu deinen Stunden und Berichten. Die Vergütung lässt sich bei jeder Überstunde einzeln ändern."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overtime still counts toward your hours and reports. You can change it for each overtime."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las horas extra siguen contando en tus horas e informes. Puedes cambiarlo en cada hora extra."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les heures supplémentaires comptent toujours dans vos heures et vos bilans. Vous pouvez le modifier pour chaque heure sup."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओवरटाइम फिर भी आपके घंटों और रिपोर्ट में गिना जाता है। हर ओवरटाइम के लिए इसे अलग से बदला जा सकता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lembur tetap dihitung dalam jam kerja dan laporan. Anda tetap bisa mengubahnya untuk setiap lembur."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo straordinario conta comunque nelle ore e nei report. Puoi cambiarlo per ogni straordinario."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "残業は引き続き労働時間とレポートに含まれます。残業ごとに個別に変更できます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초과 근무는 계속 근무 시간과 리포트에 포함됩니다. 초과 근무할 때마다 따로 바꿀 수 있습니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओव्हरटाइम तरीही तुमच्या तासांत आणि अहवालांत मोजला जातो. प्रत्येक ओव्हरटाइमसाठी हे स्वतंत्रपणे बदलता येते."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As horas extra continuam a contar nas suas horas e relatórios. Pode alterar isto em cada hora extra."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переработка по-прежнему входит в часы и отчёты. Для каждой переработки это можно изменить отдельно."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล่วงเวลายังนับรวมในชั่วโมงทำงานและรายงานตามปกติ และเปลี่ยนแยกได้ในแต่ละครั้งที่ทำล่วงเวลา"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fazla mesai yine de saatlerinize ve raporlarınıza sayılır. Her fazla mesai için ayrıca değiştirebilirsiniz."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ làm thêm vẫn được tính vào giờ làm và báo cáo. Bạn có thể đổi riêng cho từng lần làm thêm."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班照常计入工时和报告。每次加班时仍可单独改。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班照常計入工時同報告。每次加班時都可以單獨改。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班照常計入工時和報告。每次加班時仍可單獨更改。"
+          }
+        }
+      }
+    },
+    "webOvertimeUnpaidRate": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إذا لم يُدفع أجر العمل الإضافي، فسيكون أجرك الفعلي بالساعة {{rate}} (أقل بنسبة {{percent}}%)."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wenn Überstunden unbezahlt bleiben, läge dein effektiver Stundenlohn bei {{rate}} ({{percent}} % weniger)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If overtime is unpaid, your effective hourly rate is {{rate}} ({{percent}}% lower)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si las horas extra no se pagan, tu tarifa efectiva por hora sería {{rate}} ({{percent}} % menos)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si les heures supplémentaires ne sont pas payées, votre taux horaire effectif serait de {{rate}} ({{percent}} % de moins)."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अगर ओवरटाइम का भुगतान न हो, तो आपकी प्रभावी प्रति घंटा दर {{rate}} होगी ({{percent}}% कम)।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jika lembur tidak dibayar, upah efektif per jam Anda akan menjadi {{rate}} ({{percent}}% lebih rendah)."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se gli straordinari non sono pagati, la tua tariffa oraria effettiva sarebbe {{rate}} ({{percent}}% in meno)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "残業代が支払われない場合、実質時給は{{rate}}となり、{{percent}}%下がります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초과 근무 수당이 지급되지 않는다면, 실질 시급은 {{rate}}입니다({{percent}}% 낮음)."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओव्हरटाइमचे पैसे मिळाले नाहीत, तर तुमचा प्रभावी तासाचा दर {{rate}} असेल ({{percent}}% कमी)."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se as horas extra não forem pagas, o seu valor efetivo por hora seria {{rate}} ({{percent}}% a menos)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если сверхурочная работа не оплачивается, фактическая почасовая ставка составит {{rate}} (на {{percent}}% ниже)."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หากไม่ได้รับค่าล่วงเวลา อัตราค่าจ้างต่อชั่วโมงที่แท้จริงจะอยู่ที่ {{rate}} (ต่ำลง {{percent}}%)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fazla mesai ücreti ödenmezse, etkili saatlik ücretiniz {{rate}} olur (%{{percent}} daha düşük)."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nếu không được trả lương làm thêm, mức lương giờ thực tế của bạn sẽ là {{rate}} (thấp hơn {{percent}}%)."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "若加班没有额外报酬，实际时薪会是 {{rate}}（低 {{percent}}%）。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "若冇加班費，實際時薪跌至 {{rate}}（低咗 {{percent}}%）。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "若加班沒有額外報酬，實際時薪會是 {{rate}}（低 {{percent}}%）。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

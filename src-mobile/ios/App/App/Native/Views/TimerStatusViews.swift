@@ -203,12 +203,17 @@ struct OvertimeDesignView: View {
                         if !timelineExpanded {
                             VStack(alignment: .leading, spacing: 0) {
                                 OWCGroupCard {
-                                    OWCRow(icon: "clock", title: shifts.text.t("shiftEnded"), isLast: !shifts.session.presentationSalaryEnabled) {
+                                    OWCRow(icon: "clock", title: shifts.text.t("shiftEnded")) {
                                         Text(verbatim: "\(shifts.text.formatTime(snapshot.plannedEndDate)) · \(shifts.text.t("timeAgo", values: ["time": shifts.text.formatRelativeDuration(now.timeIntervalSince(snapshot.plannedEndDate) * 1_000)]))")
                                             .font(.subheadline.monospacedDigit())
                                             .foregroundStyle(OWCDesign.secondary)
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.72)
+                                    }
+                                    OWCRow(icon: "stopwatch", title: shifts.text.t("overtimeWorked"), isLast: !shifts.session.presentationSalaryEnabled) {
+                                        Text(shifts.text.formatDuration(overtimeElapsedMs))
+                                            .font(.body.weight(.semibold).monospacedDigit())
+                                            .environment(\.layoutDirection, .leftToRight)
                                     }
                                     if shifts.session.presentationSalaryEnabled {
                                         OWCRow(icon: "banknote", title: shifts.text.t("moneyEarned"), isLast: true) {
@@ -220,7 +225,7 @@ struct OvertimeDesignView: View {
                                 .padding(.horizontal, OWCDesign.pageInset)
                                 .padding(.top, 30)
 
-                                detailNote(shifts.text.t("overtimeNoMultiplier"))
+                                overtimeNotes
                             }
                             .transition(summaryTransition)
                         }
@@ -267,6 +272,44 @@ struct OvertimeDesignView: View {
     }
 
     private var earned: Double? { snapshot.earnedSoFar }
+
+    private var nowMs: Double { now.timeIntervalSince1970 * 1_000 }
+    private var overtimeElapsedMs: Double { snapshot.timeline.overtimeElapsedMs(at: nowMs) }
+
+    /// What the card above assumes about overtime pay. Figures come only from
+    /// the shared rules, and none appears while earnings are hidden.
+    @ViewBuilder private var overtimeNotes: some View {
+        let multiplier = shifts.session.effectiveOvertimePayMultiplier
+        let showsMoney = shifts.session.presentationSalaryEnabled && !shifts.preferences.hideEarnings
+        let comparison = showsMoney
+            ? snapshot.timeline.overtimeRateComparison(dailySalary: snapshot.dailySalary, at: nowMs)
+            : nil
+        let rate = comparison?.unpaidHourlyRate
+        let percent = comparison?.unpaidRateDecreasePercent
+        if multiplier == 0 {
+            if let rate, let percent {
+                detailNote(shifts.text.t("overtimeUnpaidNote", values: [
+                    "amount": shifts.text.moneyText(earned),
+                    "rate": shifts.text.moneyText(rate),
+                    "percent": shifts.text.formatDecimal(percent),
+                ]))
+            } else {
+                detailNote(shifts.text.t("overtimeUnpaidShort"))
+            }
+        } else if multiplier == 1 {
+            detailNote(shifts.text.t("overtimeNoMultiplier"))
+            if let rate, let percent {
+                detailNote(shifts.text.t("webOvertimeUnpaidRate", values: [
+                    "rate": shifts.text.moneyText(rate),
+                    "percent": shifts.text.formatDecimal(percent),
+                ]))
+            }
+        } else {
+            detailNote(shifts.text.t("overtimeMultiplierNote", values: [
+                "multiplier": shifts.text.formatDecimal(multiplier),
+            ]))
+        }
+    }
 }
 
 private func detailNote(_ text: String) -> some View {
