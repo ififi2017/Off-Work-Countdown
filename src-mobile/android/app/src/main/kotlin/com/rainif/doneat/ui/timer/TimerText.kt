@@ -26,7 +26,7 @@ class TimerText(
     private val res: Resources,
     val locale: Locale,
     private val use24Hour: Boolean,
-    private val hideEarnings: Boolean,
+    val hideEarnings: Boolean,
     private val zone: ZoneId = ZoneId.systemDefault(),
 ) {
     private val timeFormat = DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, if (use24Hour) "Hm" else "hm"), locale)

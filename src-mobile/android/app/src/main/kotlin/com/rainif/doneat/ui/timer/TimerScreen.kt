@@ -117,6 +117,7 @@ import com.rainif.doneat.core.domain.session.heroRemainingMs
 import com.rainif.doneat.core.domain.session.isBeforeStart
 import com.rainif.doneat.core.domain.session.isOnBreak
 import com.rainif.doneat.core.domain.session.isOvertimeActive
+import com.rainif.doneat.core.domain.session.timeline
 import com.rainif.doneat.core.domain.settings.PreferencesRules
 import com.rainif.doneat.core.domain.summary.SummaryRules
 import com.rainif.doneat.l10n.Strings
@@ -323,14 +324,14 @@ fun TimerScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -
             text = text,
             dark = appIsDark(),
             onDismiss = { showOvertime = false },
-            onConfirm = { endAtMs ->
+            onConfirm = { endAtMs, payMultiplier, startAtMs ->
                 val previousEnd = session.state.earlyOffAtMs ?: snapshot?.endAtMs
                 perform({
                     showOvertime = false
                     // A new completion boundary: the later clock-off celebrates again.
                     graph.lastCelebratedEndAtMs = 0.0
                     previousEnd?.let { graph.reviews.revokeCompletion(it.toLong(), session.recordsZone) }
-                }) { applyOvertime(it, endAtMs, System.currentTimeMillis().toDouble()) }
+                }) { applyOvertime(it, endAtMs, System.currentTimeMillis().toDouble(), payMultiplier, startAtMs) }
             },
         )
     }
@@ -408,12 +409,19 @@ private fun RunningSurface(
                 if (follows) SectionHeader(stringResource(R.string.summaryEstimateNote))
                 Card {
                     InfoRow(Icons.Outlined.Schedule, stringResource(R.string.todaysShift), text.timeRange(shift.startAtMs, shift.endAtMs))
+                    if (overtime) {
+                        // Effective time worked past the planned clock-off, from the shared rules.
+                        Divider()
+                        InfoRow(Icons.Outlined.Timer, stringResource(R.string.overtimeWorked), text.duration(shift.timeline.overtimeElapsedMs(now)), emphasized = true)
+                    }
                     if (session.env.preferences.salaryEnabled) {
                         Divider()
                         InfoRow(Icons.Outlined.Payments, stringResource(R.string.moneyEarned), text.money(shift.earnedSoFar), emphasized = true)
                     }
                     if (follows) SummaryRows(session, now, shift, text)
                 }
+                // Plan 024: how this overtime is paid, under the card.
+                if (overtime) OvertimeEarningsNotes(session, shift, now, text)
             }
         }, secondary = {
             Column(Modifier.padding(horizontal = DoneAtSpacing.page)) {
@@ -725,6 +733,47 @@ private fun summaryText(summary: SummaryRules.PeriodSummary?, session: ShiftSess
     summary ?: return "—"
     val base = "${text.days(summary.days)} · ${text.hours(summary.hours)}"
     return if (session.env.preferences.salaryEnabled) "$base · ${text.money(summary.earnings)}" else base
+}
+
+/**
+ * What the running card assumes about overtime pay (iOS `OvertimeEarningsNotes`):
+ * the multiplier note, or for unpaid overtime the effective hourly rate. Figures
+ * come only from the shared rules, and none appears while earnings are hidden.
+ */
+@Composable
+private fun OvertimeEarningsNotes(session: ShiftSession, shift: ShiftSnapshot, now: Double, text: TimerText) {
+    val res = LocalResources.current
+    val multiplier = session.effectiveOvertimePayMultiplier
+    val showsMoney = session.env.preferences.salaryEnabled && !text.hideEarnings
+    val comparison = if (showsMoney) shift.timeline.overtimeRateComparison(shift.dailySalary, now) else null
+    val rate = comparison?.unpaidHourlyRate
+    val percent = comparison?.unpaidRateDecreasePercent
+    val notes = buildList {
+        when {
+            multiplier == 0.0 -> add(
+                if (rate != null && percent != null) {
+                    Strings.overtimeUnpaidNote(res, text.money(shift.earnedSoFar), text.money(rate), decimal(percent, text.locale))
+                } else {
+                    res.getString(R.string.overtimeUnpaidShort)
+                },
+            )
+            multiplier == 1.0 -> {
+                add(res.getString(R.string.overtimeNoMultiplier))
+                if (rate != null && percent != null) add(Strings.webOvertimeUnpaidRate(res, text.money(rate), decimal(percent, text.locale)))
+            }
+            else -> add(Strings.overtimeMultiplierNote(res, decimal(multiplier, text.locale)))
+        }
+    }
+    Column(Modifier.padding(top = DoneAtSpacing.s), verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs)) {
+        notes.forEach { note ->
+            Text(
+                note,
+                Modifier.padding(horizontal = DoneAtSpacing.l),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 /** "Coming up": the next few rows, with the rest one tap away. */

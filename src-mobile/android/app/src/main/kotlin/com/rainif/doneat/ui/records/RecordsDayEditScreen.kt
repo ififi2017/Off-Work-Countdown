@@ -54,6 +54,16 @@ import com.rainif.doneat.ui.components.SettingsGroup
 import com.rainif.doneat.ui.onboarding.rememberTimePicker
 import com.rainif.doneat.ui.timer.Haptics
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.outlined.AddCircleOutline
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalResources
+import com.rainif.doneat.core.domain.records.RecordOvertimeState
+import com.rainif.doneat.core.domain.schedule.CountedOvertime
+import com.rainif.doneat.l10n.Strings
+import com.rainif.doneat.ui.timer.OvertimePayCard
+import com.rainif.doneat.ui.timer.OvertimePayDraft
+import com.rainif.doneat.ui.timer.StepperRow
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -87,13 +97,24 @@ fun RecordsDayEditScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit) {
     val view = LocalView.current
     val pickTime = rememberTimePicker()
     val stored by graph.dayEditDraft.collectAsStateWithLifecycle()
+    val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
     LaunchedEffect(dayKey) {
         if (graph.dayEditDraft.value?.dayKey != dayKey) {
             val day = LocalDate.parse(dayKey)
             graph.dayEditDraft.value = DayEditDraft.load(dayKey, context.queries.state, context.queries.resolvedDays(day, day).firstOrNull(), context.queries.zone.id)
         }
     }
+    // Plan 024: the day's overtime is edited here too and saved by the same Save,
+    // so there is one place where changes are kept or thrown away.
+    val baseline = remember(dayKey) {
+        RecordOvertimeState.load(dayKey, context.queries, prefs.overtimePayMultiplier)
+    }
+    var overtime by rememberSaveable(dayKey, stateSaver = OvertimeStateSaver) { mutableStateOf(baseline) }
+    var overtimeExpanded by rememberSaveable(dayKey) { mutableStateOf(baseline.hasDeclaration) }
     val draft = stored?.takeIf { it.dayKey == dayKey } ?: return
+    // A new declaration counts as a change once the section is opened.
+    val overtimeChanged = overtimeExpanded && (overtime != baseline || !baseline.hasDeclaration)
+    val hasChanges = draft.hasChanges || overtimeChanged
     fun update(next: DayEditDraft) { graph.dayEditDraft.value = next }
     fun leave() {
         onBack()
@@ -102,12 +123,16 @@ fun RecordsDayEditScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit) {
     var confirmsClear by remember { mutableStateOf(false) }
     var pendingKind by remember { mutableStateOf<DayEditDraft.Kind?>(null) }
     fun back() {
-        if (draft.hasChanges) confirmsDiscard = true else leave()
+        if (hasChanges) confirmsDiscard = true else leave()
     }
-    BackHandler(enabled = draft.hasChanges) { confirmsDiscard = true }
+    BackHandler(enabled = hasChanges) { confirmsDiscard = true }
 
-    /** Writes [write] for the draft's day; the page closes only if [submission] still describes the draft on screen. */
-    fun save(submission: DayEditDraft.Submission, write: DayRecordWrite = submission.write) {
+    /**
+     * Writes [write] for the draft's day; the page closes only if [submission] still describes the draft on screen.
+     * The day's hours and its overtime are separate records (a day override and an `overtimeDeclared`
+     * observation); each is written only when it changed, in that order.
+     */
+    fun save(submission: DayEditDraft.Submission, write: DayRecordWrite = submission.write, writesDay: Boolean = true, declared: RecordOvertimeState? = null) {
         scope.launch {
             val now = graph.nowMs()
             val session = graph.sessions.session.value
@@ -119,9 +144,15 @@ fun RecordsDayEditScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit) {
                 currentHours = { session.hoursConfiguration(now) },
                 newId = graph.newId,
             )
-            val saved = RecordsEditing.save(graph.records, submission.copy(write = write), editContext)
-            // A result that no longer matches the draft on screen belongs to an edit the user has moved past.
-            if (saved && graph.dayEditDraft.value?.stillMatches(submission) == true) {
+            if (writesDay) {
+                val saved = RecordsEditing.save(graph.records, submission.copy(write = write), editContext)
+                // A result that no longer matches the draft on screen belongs to an edit the user has moved past.
+                if (!saved || graph.dayEditDraft.value?.stillMatches(submission) != true) return@launch
+            }
+            val declaredSaved = declared == null || RecordsEditing.declareOvertime(
+                graph.records, dayKey, declared, editContext, graph.plus.collectsObservations.value,
+            )
+            if (declaredSaved) {
                 Haptics.confirm(view)
                 leave()
             }
@@ -158,9 +189,19 @@ fun RecordsDayEditScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit) {
                 ChoiceRow(text.string(title), draft.kind == kind, { select(kind) }, icon)
             }
         }
+        RecordOvertimeSection(
+            overtime, overtimeExpanded, text, prefs.overtimePayMultiplier,
+            onExpand = { overtimeExpanded = true }, onChange = { overtime = it },
+        )
         Button(
-            onClick = { save(draft.submission) },
-            enabled = draft.hasChanges,
+            onClick = {
+                save(
+                    draft.submission,
+                    writesDay = draft.hasChanges,
+                    declared = overtime.takeIf { overtimeChanged && it.isSavable },
+                )
+            },
+            enabled = hasChanges && !(overtimeChanged && !overtime.isSavable),
             modifier = Modifier.fillMaxWidth().padding(horizontal = DoneAtSpacing.page).heightIn(min = 52.dp),
         ) { Text(text.string(R.string.saveAction)) }
         if (draft.loadedKind != DayEditDraft.Kind.CUSTOM_HOURS || draft.hasStoredOverride) {
@@ -219,6 +260,86 @@ fun RecordsDayEditScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit) {
             dismissButton = { TextButton(onClick = { confirmsClear = false }) { Text(text.string(R.string.cancelAction)) } },
         )
     }
+}
+
+/** Keeps an unsaved overtime edit across a configuration change. */
+private val OvertimeStateSaver = listSaver<RecordOvertimeState, Any?>(
+    save = { listOf(it.hasDeclaration, it.startAtMs, it.endAtMs, it.countedMs, it.payMultiplier, it.regularEndAtMs, it.plannedEndAtMs) },
+    restore = {
+        RecordOvertimeState(it[0] as Boolean, it[1] as Double, it[2] as Double, it[3] as Double?, it[4] as Double, it[5] as Double?, it[6] as Double?)
+    },
+)
+
+/**
+ * Plan 024 phase 4 (iOS `RecordOvertimeSection`): a past day's overtime — the
+ * period, the hours that count and how it is paid. The editor owns the state
+ * and saves it with the day's hours behind its single Save.
+ */
+@Composable
+private fun RecordOvertimeSection(
+    state: RecordOvertimeState,
+    expanded: Boolean,
+    text: RecordsText,
+    preferredMultiplier: Double,
+    onExpand: () -> Unit,
+    onChange: (RecordOvertimeState) -> Unit,
+) {
+    val res = LocalResources.current
+    val pickTime = rememberTimePicker()
+    val zone = text.zone
+    if (!expanded) {
+        SettingsGroup(title = text.string(R.string.recordsSectionOvertime)) {
+            ListItem(
+                headlineContent = { Text(text.string(R.string.overtimeTitle)) },
+                leadingContent = { Icon(Icons.Outlined.AddCircleOutline, null) },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                modifier = Modifier.clickable(role = Role.Button, onClick = onExpand),
+            )
+        }
+        return
+    }
+    var pay by remember { mutableStateOf(OvertimePayDraft.of(state.payMultiplier, preferredMultiplier)) }
+    SettingsGroup(title = text.string(R.string.recordsSectionOvertime)) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = DoneAtSpacing.l, end = DoneAtSpacing.s),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Outlined.Schedule, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text.string(R.string.recordsOvertimePeriod), Modifier.weight(1f).padding(horizontal = DoneAtSpacing.l), style = MaterialTheme.typography.bodyLarge)
+            TextButton(onClick = { pickTime(RecordOvertimeState.minutesOf(state.startAtMs, zone)) { onChange(state.withStart(it, zone)) } }) {
+                Text(text.time(state.startAtMs), style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"))
+            }
+            Text("–", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TextButton(onClick = { pickTime(RecordOvertimeState.minutesOf(state.endAtMs, zone)) { onChange(state.withEnd(it, zone)) } }) {
+                Text(text.time(state.endAtMs), style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"))
+            }
+        }
+        RowDivider(inset = false)
+        val counted = state.effectiveCountedMs
+        StepperRow(
+            title = text.string(R.string.recordsOvertimeCounted),
+            value = text.duration(counted),
+            supporting = Strings.recordsOvertimeCountedSubtitle(res, text.duration(state.measuredMs)),
+            canDecrement = counted > 0,
+            canIncrement = counted < CountedOvertime.MAXIMUM_MS,
+            onDecrement = { onChange(state.copy(countedMs = state.steppedCountedMs(-1))) },
+            onIncrement = { onChange(state.copy(countedMs = state.steppedCountedMs(1))) },
+        )
+        if (state.countedMs != null) {
+            RowDivider(inset = false)
+            ListItem(
+                headlineContent = { Text(text.string(R.string.recordsOvertimeUseMeasured)) },
+                leadingContent = { Icon(Icons.AutoMirrored.Outlined.Undo, null) },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                modifier = Modifier.clickable(role = Role.Button) { onChange(state.copy(countedMs = null)) },
+            )
+        }
+    }
+    OvertimePayCard(pay, text.locale, { next ->
+        pay = next
+        onChange(state.copy(payMultiplier = next.payMultiplier))
+    }, Modifier.padding(horizontal = DoneAtSpacing.page))
+    PageFooter(text.string(R.string.recordsOvertimeFootnote))
 }
 
 @Composable
