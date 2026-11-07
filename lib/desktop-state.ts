@@ -1,6 +1,7 @@
 import {
   calculateTimelineProgress,
   calculateTimelinePayRatio,
+  normalizeOvertimePayMultiplier,
   getShiftStartAtMs,
   getShiftEndAtMs,
   getShiftRemainingMs,
@@ -86,6 +87,11 @@ export interface DesktopCountdownState extends ShiftTimeline {
   showSalary: boolean;
   hideEarnings: boolean;
   dailySalary: number | null;
+  /**
+   * Plan 024: how this shift's overtime is paid (0 = unpaid; see
+   * `normalizeOvertimePayMultiplier`). Snapshots written before it read as 1.
+   */
+  overtimePayMultiplier: number;
   lang: string;
   countdownNotStarted: string;
   nextShiftLabel: string;
@@ -155,6 +161,7 @@ const EMPTY_STATE: DesktopCountdownState = {
   showSalary: false,
   hideEarnings: false,
   dailySalary: null,
+  overtimePayMultiplier: 1,
   lang: "en",
   countdownNotStarted: "Countdown not started",
   nextShiftLabel: "Next shift in __TIME__",
@@ -396,6 +403,7 @@ export function normalizeDesktopCountdownState(
     ...current,
     segments: Array.isArray(current.segments) ? current.segments : [],
     overtimeEndAtMs: current.overtimeEndAtMs ?? null,
+    overtimePayMultiplier: normalizeOvertimePayMultiplier(current.overtimePayMultiplier),
     notificationMode:
       current.notificationMode ?? (reminder ? "simple" : "off"),
     notificationTitles: {
@@ -621,7 +629,7 @@ export function getDesktopCountdownView(
   }
   const earned =
     state.showSalary && !state.hideEarnings && state.dailySalary !== null
-      ? state.dailySalary * calculateTimelinePayRatio(state, nowMs)
+      ? state.dailySalary * calculateTimelinePayRatio(state, nowMs, state.overtimePayMultiplier)
       : null;
 
   return {

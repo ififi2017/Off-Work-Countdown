@@ -203,4 +203,23 @@ describe("desktop countdown state", () => {
     expect(migrated).not.toHaveProperty("endAtMs");
     expect(migrated).not.toHaveProperty("reminder");
   });
+
+  it("pays the Mini Timer's overtime at the snapshot's multiplier and reads old snapshots as 1", () => {
+    const base = {
+      segments: [{ startAtMs: 0, endAtMs: 12_000 }],
+      plannedEndAtMs: 10_000,
+      overtimeEndAtMs: 12_000,
+      running: true,
+      showSalary: true,
+      hideEarnings: false,
+      dailySalary: 100,
+    };
+    expect(normalizeDesktopCountdownState(base).overtimePayMultiplier).toBe(1);
+    expect(getDesktopCountdownView(normalizeDesktopCountdownState(base), 12_000).earned).toBeCloseTo(120, 9);
+    const doubled = normalizeDesktopCountdownState({ ...base, overtimePayMultiplier: 2 });
+    expect(getDesktopCountdownView(doubled, 12_000).earned).toBeCloseTo(140, 9);
+    const unpaid = normalizeDesktopCountdownState({ ...base, overtimePayMultiplier: 0 });
+    expect(getDesktopCountdownView(unpaid, 12_000).earned).toBeCloseTo(100, 9);
+    expect(normalizeDesktopCountdownState({ ...base, overtimePayMultiplier: 0.3 }).overtimePayMultiplier).toBe(1);
+  });
 });

@@ -230,6 +230,9 @@ struct CountdownState {
     show_salary: bool,
     hide_earnings: bool,
     daily_salary: Option<f64>,
+    /// Plan 024：前端按共享规则规范化后的加班计薪倍数（0 = 不计薪）。
+    /// 旧快照没有这个字段时为 None，按原时薪（1 倍）处理。
+    overtime_pay_multiplier: Option<f64>,
     lang: String,
     countdown_not_started: String,
     next_shift_label: String,
@@ -897,7 +900,16 @@ fn countdown_pay_ratio(state: &CountdownState, now_ms: i64) -> f64 {
             (now_ms - segment.start_at_ms).clamp(0, segment.end_at_ms - segment.start_at_ms)
         })
         .sum();
-    (elapsed as f64 / planned_duration as f64).max(0.0)
+    // 加班部分按前端给定的倍数计薪：(计划内已过 + 倍数 × 超出部分) / 计划时长。
+    // 倍数只在这里相乘，不在 Rust 里推导它的取值规则；1 倍与旧公式完全一致。
+    let multiplier = state
+        .overtime_pay_multiplier
+        .filter(|value| value.is_finite() && *value >= 0.0)
+        .unwrap_or(1.0);
+    let regular = elapsed.min(planned_duration);
+    let ratio =
+        (regular as f64 + multiplier * (elapsed - regular) as f64) / planned_duration as f64;
+    ratio.max(0.0)
 }
 
 /// 只对前端给出的绝对 segments 求和，不推导跨夜、工作日、午休或加班规则。
@@ -2560,6 +2572,33 @@ mod format_tests {
             ..Default::default()
         };
         assert!((countdown_pay_ratio(&state, 12_000) - 1.2).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn overtime_salary_follows_the_supplied_multiplier() {
+        // Plan 024：前端给出的倍数只作用于超出计划的部分；旧快照没有倍数时按 1 倍。
+        let mut state = CountdownState {
+            segments: vec![ShiftSegment {
+                start_at_ms: 0,
+                end_at_ms: 12_000,
+            }],
+            planned_end_at_ms: 10_000,
+            overtime_end_at_ms: Some(12_000),
+            running: true,
+            overtime_pay_multiplier: Some(2.0),
+            ..Default::default()
+        };
+        assert!((countdown_pay_ratio(&state, 12_000) - 1.4).abs() < 1e-12);
+        assert!((countdown_pay_ratio(&state, 5_000) - 0.5).abs() < 1e-12);
+        state.overtime_pay_multiplier = Some(0.0);
+        assert!((countdown_pay_ratio(&state, 12_000) - 1.0).abs() < 1e-12);
+        state.overtime_pay_multiplier = Some(f64::NAN);
+        assert!((countdown_pay_ratio(&state, 12_000) - 1.2).abs() < 1e-12);
+        let legacy: CountdownState = serde_json::from_str(
+            r#"{"segments":[{"startAtMs":0,"endAtMs":12000}],"plannedEndAtMs":10000,"overtimeEndAtMs":12000,"running":true}"#,
+        )
+        .unwrap();
+        assert!((countdown_pay_ratio(&legacy, 12_000) - 1.2).abs() < 1e-12);
     }
 
     #[test]
