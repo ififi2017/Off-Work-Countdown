@@ -100,6 +100,8 @@ import {
   serializeWorkdays,
   isScheduledWorkday,
   findEndedShiftOnEndCalendarDay,
+  normalizeOvertimePayMultiplier,
+  type DailySalaryBasis,
 } from "@/lib/countdown";
 import { resolveScheduleDay } from "@/lib/extended-schedule";
 import { defaultScheduleSettings, parseScheduleSettings, scheduleMode, scheduleModeKeys, seedPlan, workScheduleConfig, SCHEDULE_STORAGE_KEY, type FixedHours, type ScheduleSettings } from "@/lib/schedule-settings";
@@ -108,7 +110,21 @@ import { ScheduleEditor, hoursLabel } from "./ScheduleEditor";
 import { WorkdaySelector } from "./WorkdaySelector";
 import { PeriodSummary } from "./PeriodSummary";
 import { DesktopStatsPage } from "./DesktopStatsPage";
-import { summarize, startOfWeek, startOfYear } from "@/lib/summary";
+import { summarize, startOfWeek, startOfYear, dailySalaryInMonth, countScheduledWorkdaysInMonth } from "@/lib/summary";
+import {
+  OVERTIME_PAY_PRESETS,
+  OVERTIME_REST_MINUTES,
+  nearestOvertimeDuration,
+  nearestOvertimeRest,
+  overtimeDurationChoices,
+  overtimeMinimumEndMs,
+  overtimePayChoice,
+  overtimePayChoiceMultiplier,
+  overtimeStartForSession,
+  overtimeStartMs,
+  existingOvertimeRestMinutes,
+  withoutOvertime,
+} from "./overtime-sheet-plan";
 import { useTranslation } from "react-i18next";
 import { decodeShift } from "@/lib/share";
 import { track } from "@/lib/track";
@@ -276,6 +292,13 @@ interface SalarySettingsProps {
   onSalaryAmountChange: (value: string) => void;
   monthlyWorkingDays: string;
   onMonthlyWorkingDaysChange: (value: string) => void;
+  /** Plan 024: divide each month by its own scheduled workdays. */
+  dailySalaryBasis: DailySalaryBasis;
+  onDailySalaryBasisChange: (value: DailySalaryBasis) => void;
+  scheduledWorkdaysThisMonth: number;
+  /** How overtime is paid unless a given overtime says otherwise (0 = unpaid). */
+  overtimePayDefault: number;
+  onOvertimePayDefaultChange: (value: number) => void;
   maskAmountField: boolean;
   onMaskAmountFieldChange: (masked: boolean) => void;
 }
@@ -292,10 +315,26 @@ function SalarySettings({
   onSalaryAmountChange,
   monthlyWorkingDays,
   onMonthlyWorkingDaysChange,
+  dailySalaryBasis,
+  onDailySalaryBasisChange,
+  scheduledWorkdaysThisMonth,
+  overtimePayDefault,
+  onOvertimePayDefaultChange,
   maskAmountField,
   onMaskAmountFieldChange,
 }: SalarySettingsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const byMonth = dailySalaryBasis === "scheduledMonth";
+  const [customDefault, setCustomDefault] = useState(false);
+  const isCustomDefault =
+    customDefault || (overtimePayDefault > 0 && !(OVERTIME_PAY_PRESETS as readonly number[]).includes(overtimePayDefault));
+  const multiplierText = (value: number) => {
+    try {
+      return `${new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(value)}×`;
+    } catch {
+      return `${value}×`;
+    }
+  };
 
   return (
     <section
@@ -364,23 +403,96 @@ function SalarySettings({
             </div>
             {salaryType === "monthly" && (
               <div className="space-y-1.5">
-                <Label className="text-xs dark:text-gray-400">
-                  {t("monthlyWorkingDays")}
-                </Label>
-                <input
-                  type="number"
-                  min="1"
-                  max="31"
-                  step="0.25"
-                  className="w-full rounded-md border bg-background p-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                  value={monthlyWorkingDays}
-                  onChange={(event) =>
-                    onMonthlyWorkingDaysChange(event.target.value)
-                  }
-                  placeholder={DEFAULT_MONTHLY_WORKING_DAYS.toString()}
-                />
+                <div className="flex items-center justify-between gap-3">
+                  <Label className="text-xs dark:text-gray-400">
+                    {t("monthlyWorkingDays")}
+                  </Label>
+                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                    {t("dailySalaryBasisScheduledMonth")}
+                    <Switch
+                      checked={byMonth}
+                      onCheckedChange={(on) => onDailySalaryBasisChange(on ? "scheduledMonth" : "fixed")}
+                      aria-label={t("dailySalaryBasisScheduledMonth")}
+                    />
+                  </label>
+                </div>
+                {byMonth ? (
+                  <>
+                    <p className="rounded-md border bg-background p-2 text-sm tabular-nums dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                      {t("scheduledMonthWorkdays", { count: scheduledWorkdaysThisMonth })}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {t("dailySalaryBasisScheduledMonthNote")}
+                    </p>
+                  </>
+                ) : (
+                  <input
+                    type="number"
+                    min="1"
+                    max="31"
+                    step="0.25"
+                    className="w-full rounded-md border bg-background p-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    value={monthlyWorkingDays}
+                    onChange={(event) =>
+                      onMonthlyWorkingDaysChange(event.target.value)
+                    }
+                    placeholder={DEFAULT_MONTHLY_WORKING_DAYS.toString()}
+                    aria-label={t("monthlyWorkingDays")}
+                  />
+                )}
               </div>
             )}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <Label className="text-xs dark:text-gray-400">{t("overtimeDefaultRow")}</Label>
+                <Select
+                  value={isCustomDefault ? "custom" : overtimePayDefault === 0 ? "unpaid" : String(overtimePayDefault)}
+                  onValueChange={(value) => {
+                    if (value === "custom") {
+                      setCustomDefault(true);
+                      if (overtimePayDefault === 0 || (OVERTIME_PAY_PRESETS as readonly number[]).includes(overtimePayDefault)) {
+                        onOvertimePayDefaultChange(1.2);
+                      }
+                      return;
+                    }
+                    setCustomDefault(false);
+                    onOvertimePayDefaultChange(value === "unpaid" ? 0 : Number(value));
+                  }}
+                >
+                  <SelectTrigger aria-label={t("overtimeDefaultRow")} className="h-9 w-auto min-w-28 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">{t("overtimeDefaultUsual")}</SelectItem>
+                    <SelectItem value="unpaid">{t("overtimePayUnpaid")}</SelectItem>
+                    {OVERTIME_PAY_PRESETS.slice(1).map((preset) => (
+                      <SelectItem key={preset} value={String(preset)}>{multiplierText(preset)}</SelectItem>
+                    ))}
+                    <SelectItem value="custom">{t("overtimeMultiplierCustom")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {isCustomDefault && overtimePayDefault > 0 && (
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor={`overtime-default-custom-${anchor ?? "main"}`} className="text-xs dark:text-gray-400">{t("overtimeMultiplierRow")}</Label>
+                  <input
+                    id={`overtime-default-custom-${anchor ?? "main"}`}
+                    type="number"
+                    min="0.5"
+                    max="5"
+                    step="0.1"
+                    inputMode="decimal"
+                    className="w-24 rounded-md border bg-background p-1.5 text-end text-sm tabular-nums dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    defaultValue={overtimePayDefault}
+                    onBlur={(event) => {
+                      const value = normalizeOvertimePayMultiplier(Number(event.target.value.replace(",", ".")));
+                      onOvertimePayDefaultChange(value === 0 ? 1 : value);
+                    }}
+                  />
+                </div>
+              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("overtimeDefaultNote")}</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -446,6 +558,12 @@ export function OffWorkCountdown({
     DEFAULT_MONTHLY_WORKING_DAYS.toString()
   );
   const [showSalary, setShowSalary] = useState(false);
+  // Plan 024: how a monthly salary becomes daily pay, and how overtime is paid
+  // unless a given overtime says otherwise (0 = unpaid).
+  const [dailySalaryBasis, setDailySalaryBasis] = useState<DailySalaryBasis>("fixed");
+  const [overtimePayDefault, setOvertimePayDefault] = useState(1);
+  /** This shift's overtime pay choice; only read while the shift has overtime. */
+  const [shiftOvertimeMultiplier, setShiftOvertimeMultiplier] = useState<number | null>(null);
   // 是否运行在没有浏览器外壳的容器里——PWA 独立窗口与 Tauri 桌面端同属此列，
   // 二者都应当去掉浏览器版的外边距、让内容铺满窗口。
   //
@@ -476,6 +594,15 @@ export function OffWorkCountdown({
   // Captured on open: the entry button already reads "Adjust overtime" when
   // overtime is set, so the dialog it opens must say the same.
   const [overtimeDialogAdjusts, setOvertimeDialogAdjusts] = useState(false);
+  const [overtimeEntry, setOvertimeEntry] = useState<"until" | "duration">("until");
+  const [overtimeRestMinutes, setOvertimeRestMinutes] = useState(0);
+  const [overtimeDurationMinutes, setOvertimeDurationMinutes] = useState(60);
+  const [overtimePayChoiceValue, setOvertimePayChoiceValue] = useState("1");
+  const [overtimePayCustom, setOvertimePayCustom] = useState("1.2");
+  /** How this shift's overtime is paid: its own choice, else the default. */
+  const effectiveOvertimeMultiplier = activeShift?.overtimeEndAtMs
+    ? shiftOvertimeMultiplier ?? overtimePayDefault
+    : overtimePayDefault;
   const [webOvertimeRestored, setWebOvertimeRestored] = useState(false);
   const webOvertimeUrlShiftRef = useRef<ReturnType<typeof decodeShift>>(null);
   const webOvertimeStorage = () =>
@@ -705,6 +832,12 @@ export function OffWorkCountdown({
       const storedSalaryType = getLocalStorageItem("salaryType", "monthly");
       setSalaryType(storedSalaryType === "daily" ? "daily" : "monthly");
       setSalaryAmount(getLocalStorageItem("salaryAmount", ""));
+      setDailySalaryBasis(
+        getLocalStorageItem("dailySalaryBasis", "fixed") === "scheduledMonth" ? "scheduledMonth" : "fixed"
+      );
+      setOvertimePayDefault(
+        normalizeOvertimePayMultiplier(Number(getLocalStorageItem("overtimePayMultiplier", "1")))
+      );
       const storedMonthlyWorkingDays = Number(
         getLocalStorageItem(
           "monthlyWorkingDays",
@@ -813,6 +946,7 @@ export function OffWorkCountdown({
           plannedEndAtMs: state.plannedEndAtMs,
           overtimeEndAtMs: state.overtimeEndAtMs,
         });
+        setShiftOvertimeMultiplier(state.overtimeEndAtMs ? state.overtimePayMultiplier : null);
         setDesktopNotificationMode(state.notificationMode);
         reminderFiredRef.current =
           getShiftEndAtMs(state) - Date.now() <= REMINDER_LEAD_MS;
@@ -973,6 +1107,7 @@ export function OffWorkCountdown({
         setStartTime(savedOvertime.startTime);
         setEndTime(savedOvertime.endTime);
         setActiveShift(savedOvertime.shift);
+        setShiftOvertimeMultiplier(savedOvertime.payMultiplier ?? null);
         reminderFiredRef.current = getShiftEndAtMs(savedOvertime.shift) - Date.now() <= REMINDER_LEAD_MS;
         setShowCountdown(true);
       }
@@ -983,6 +1118,7 @@ export function OffWorkCountdown({
     setEndTime(shift.end);
     // 与 handleStart 同样的处理：落地时若已不足 15 分钟就不再提醒，
     // 免得页面刚打开就弹「还有十五分钟」。
+    setShiftOvertimeMultiplier(savedOvertime?.payMultiplier ?? null);
     const timeline = savedOvertime?.shift ?? (IS_WEB_BUILD
       ? buildWebCountdownStartShift(shift.start, shift.end, new Date())
       : buildShiftTimeline(shift.start, shift.end, new Date()));
@@ -1012,9 +1148,9 @@ export function OffWorkCountdown({
     writeWebOvertimeSession(
       () => webOvertimeUrlShiftRef.current ? window.sessionStorage : window.localStorage,
       webOvertimeStorageKey(webOvertimeUrlShiftRef.current),
-      { startTime, endTime, shift: activeShift }
+      { startTime, endTime, shift: activeShift, payMultiplier: effectiveOvertimeMultiplier }
     );
-  }, [webOvertimeRestored, showCountdown, activeShift, startTime, endTime]);
+  }, [webOvertimeRestored, showCountdown, activeShift, startTime, endTime, effectiveOvertimeMultiplier]);
 
   useEffect(() => {
     if (!isMounted) return;
@@ -1072,6 +1208,8 @@ export function OffWorkCountdown({
   usePersistedSetting("salaryType", salaryType, settingsLoaded);
   usePersistedSetting("salaryAmount", salaryAmount, settingsLoaded);
   usePersistedSetting("monthlyWorkingDays", monthlyWorkingDays, settingsLoaded);
+  usePersistedSetting("dailySalaryBasis", dailySalaryBasis, settingsLoaded);
+  usePersistedSetting("overtimePayMultiplier", String(overtimePayDefault), settingsLoaded);
   usePersistedSetting("showSalary", String(showSalary), settingsLoaded);
   usePersistedSetting("hideEarnings", String(hideEarnings), settingsLoaded);
   usePersistedSetting("lunchEnabled", String(lunchEnabled), settingsLoaded);
@@ -1154,6 +1292,12 @@ export function OffWorkCountdown({
           }
           break;
         }
+        case "dailySalaryBasis":
+          setDailySalaryBasis(newValue === "scheduledMonth" ? "scheduledMonth" : "fixed");
+          break;
+        case "overtimePayMultiplier":
+          setOvertimePayDefault(normalizeOvertimePayMultiplier(Number(newValue)));
+          break;
         case "showSalary":
           setShowSalary(enabled);
           break;
@@ -1287,18 +1431,39 @@ export function OffWorkCountdown({
     return shift.segments.length > 1;
   }, [lunchEnabled, startTime, endTime, shiftBuildOptions, storedRoster]);
 
+  const monthBasisSalary = useMemo(() => ({
+    amount: salaryAmount,
+    type: salaryType,
+    monthlyWorkingDays: monthlyWorkingDays.trim() ? Number(monthlyWorkingDays) : DEFAULT_MONTHLY_WORKING_DAYS,
+    annualBonusMonths: 0,
+    basis: dailySalaryBasis,
+  }), [salaryAmount, salaryType, monthlyWorkingDays, dailySalaryBasis]);
+  /** This month's scheduled workdays: the count the "By monthly schedule" option shows. */
+  const scheduledWorkdaysThisMonth = useMemo(
+    () => (isMounted ? countScheduledWorkdaysInMonth({ anchorMs: Date.now(), workdays, schedule }) : 0),
+    // calendarDateKey changes at local midnight, so a new month recounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isMounted, workdays, schedule, calendarDateKey]
+  );
+
   const getDailySalary = useCallback(() => {
     // 空输入是用户删掉旧值、准备重输时的正常中间态，placeholder 也约定此时
     // 采用默认计薪天数。其他非空非法值仍交给计算层拒绝。
     const workingDays = monthlyWorkingDays.trim()
       ? Number(monthlyWorkingDays)
       : undefined;
-    return calculateDailySalary(
-      salaryAmount,
-      salaryType,
-      workingDays
-    );
-  }, [salaryAmount, salaryType, monthlyWorkingDays]);
+    if (dailySalaryBasis !== "scheduledMonth" || salaryType !== "monthly") {
+      return calculateDailySalary(salaryAmount, salaryType, workingDays);
+    }
+    // Plan 024: the month the current shift starts in, divided by its own
+    // scheduled workdays (lib/summary.ts `dailySalaryInMonth`).
+    return dailySalaryInMonth({
+      salary: monthBasisSalary,
+      anchorMs: activeShift ? getShiftStartAtMs(activeShift) : Date.now(),
+      workdays,
+      schedule,
+    });
+  }, [salaryAmount, salaryType, monthlyWorkingDays, dailySalaryBasis, activeShift, workdays, schedule, monthBasisSalary]);
 
   const configuredDailySalary = showSalary ? getDailySalary() : null;
   // 收益完全由当前班次快照与当前设置推导，不保留一份会跨“返回/重新开始”
@@ -1306,7 +1471,7 @@ export function OffWorkCountdown({
   const moneyEarned =
     activeShift && configuredDailySalary !== null
       ? configuredDailySalary *
-        calculateTimelinePayRatio(activeShift, Date.now())
+        calculateTimelinePayRatio(activeShift, Date.now(), effectiveOvertimeMultiplier)
       : null;
 
   const overtimeNumberFormats = useMemo(() => {
@@ -1322,12 +1487,42 @@ export function OffWorkCountdown({
       percent: make({ maximumFractionDigits: 1 }),
     };
   }, [lang]);
-  const overtimePresentation = IS_WEB_BUILD
-    ? webOvertimePresentation(activeShift, Date.now(), configuredDailySalary, hideEarnings)
-    : null;
+  // "18:30" in the interface language, and "1 h 15 m"-style lengths for the overtime dialog.
+  const formatClock = (atMs: number) => {
+    try {
+      return new Intl.DateTimeFormat(lang, { hour: "2-digit", minute: "2-digit" }).format(new Date(atMs));
+    } catch {
+      return new Date(atMs).toTimeString().slice(0, 5);
+    }
+  };
+  const formatOvertimeLength = (ms: number) => {
+    const totalMinutes = Math.max(0, Math.round(ms / 60_000));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const unit = (value: number, kind: "hour" | "minute") => {
+      try {
+        return new Intl.NumberFormat(lang, { style: "unit", unit: kind, unitDisplay: "short" }).format(value);
+      } catch {
+        return `${value} ${kind === "hour" ? "h" : "min"}`;
+      }
+    };
+    if (hours === 0) return unit(minutes, "minute");
+    return minutes === 0 ? unit(hours, "hour") : `${unit(hours, "hour")} ${unit(minutes, "minute")}`;
+  };
+
+  // Overtime context below the summary on Web and Desktop: time worked past
+  // the planned clock-off, and a note matching how this overtime is paid
+  // (iOS `OvertimeEarningsNotes`). Figures come from the shared rules.
+  const overtimePresentation = webOvertimePresentation(activeShift, Date.now(), configuredDailySalary, hideEarnings);
   const elapsedOvertimeSeconds = overtimePresentation
     ? Math.floor(overtimePresentation.elapsedOvertimeMs / 1000)
     : 0;
+  const overtimeRateValues = overtimePresentation?.unpaidHourlyRate != null && overtimePresentation.unpaidRateDecreasePercent != null
+    ? {
+        rate: overtimeNumberFormats.rate.format(overtimePresentation.unpaidHourlyRate),
+        percent: overtimeNumberFormats.percent.format(overtimePresentation.unpaidRateDecreasePercent),
+      }
+    : null;
   const overtimeInfo = overtimePresentation ? {
     elapsed: t("webOvertimeElapsed", {
       time: t("timeLeft", {
@@ -1336,12 +1531,16 @@ export function OffWorkCountdown({
         seconds: (elapsedOvertimeSeconds % 60).toString().padStart(2, "0"),
       }),
     }),
-    unpaidRate: overtimePresentation.unpaidHourlyRate !== null && overtimePresentation.unpaidRateDecreasePercent !== null
-      ? t("webOvertimeUnpaidRate", {
-          rate: overtimeNumberFormats.rate.format(overtimePresentation.unpaidHourlyRate),
-          percent: overtimeNumberFormats.percent.format(overtimePresentation.unpaidRateDecreasePercent),
-        })
-      : undefined,
+    unpaidRate:
+      effectiveOvertimeMultiplier === 0
+        ? overtimeRateValues && moneyEarned !== null
+          ? t("overtimeUnpaidNote", { amount: moneyEarned.toFixed(2), ...overtimeRateValues })
+          : t("overtimeUnpaidShort")
+        : effectiveOvertimeMultiplier === 1
+          ? overtimeRateValues
+            ? t("webOvertimeUnpaidRate", overtimeRateValues)
+            : undefined
+          : t("overtimeMultiplierNote", { multiplier: overtimeNumberFormats.percent.format(effectiveOvertimeMultiplier) }),
   } : undefined;
 
   // 将 UI 的运行状态镜像为一个原子快照。Rust 与迷你窗只比较、累加前端已
@@ -1445,6 +1644,7 @@ export function OffWorkCountdown({
             showSalary,
             hideEarnings,
             dailySalary: configuredDailySalary,
+            overtimePayMultiplier: effectiveOvertimeMultiplier,
             lang,
             countdownNotStarted: t("countdownNotStarted"),
             // 这句既用于“本班尚未开始”，也用于“等待下一班”，用不带“下一班”
@@ -1521,6 +1721,7 @@ export function OffWorkCountdown({
     showSalary,
     hideEarnings,
     configuredDailySalary,
+    effectiveOvertimeMultiplier,
     workdays,
     schedule,
     storedRoster,
@@ -1596,6 +1797,7 @@ export function OffWorkCountdown({
         activeShiftRef.current = nextShift;
         completionTrackedRef.current = false;
         setActiveShift(nextShift);
+        setShiftOvertimeMultiplier(state.overtimeEndAtMs ? state.overtimePayMultiplier : null);
         setShowCountdown(true);
       }
     })
@@ -2379,27 +2581,52 @@ export function OffWorkCountdown({
 
   const openOvertimeDialog = () => {
     if (!activeShift) return;
-    const suggested = new Date(suggestOvertimeEndAtMs(activeShift, Date.now()));
+    const now = Date.now();
+    const suggested = new Date(suggestOvertimeEndAtMs(activeShift, now));
     setOvertimeEndTime(
       `${suggested.getHours().toString().padStart(2, "0")}:${suggested
         .getMinutes()
         .toString()
         .padStart(2, "0")}`
     );
+    // Plan 024: reopen with the rest, length and pay this overtime already has.
+    const rest = existingOvertimeRestMinutes(activeShift);
+    setOvertimeEntry("until");
+    setOvertimeRestMinutes(rest);
+    const choices = overtimeDurationChoices(activeShift.plannedEndAtMs, rest, now);
+    setOvertimeDurationMinutes(
+      nearestOvertimeDuration(choices, overtimeStartMs(activeShift.plannedEndAtMs, rest), getShiftEndAtMs(activeShift))
+    );
+    const multiplier = effectiveOvertimeMultiplier;
+    setOvertimePayChoiceValue(overtimePayChoice(multiplier));
+    setOvertimePayCustom(String(multiplier > 0 && overtimePayChoice(multiplier) === "custom" ? multiplier : 1.2));
     setOvertimeDialogAdjusts(Boolean(activeShift.overtimeEndAtMs));
     setOvertimeDialogOpen(true);
   };
 
+  /** The end the dialog's choices name, or null when it is not valid yet. */
+  const overtimeCandidateEndAtMs = (nowMs: number): number | null => {
+    if (!activeShift) return null;
+    const minimum = overtimeMinimumEndMs(activeShift.plannedEndAtMs, overtimeRestMinutes, nowMs);
+    const end =
+      overtimeEntry === "duration"
+        ? overtimeStartMs(activeShift.plannedEndAtMs, overtimeRestMinutes) + overtimeDurationMinutes * 60_000
+        : resolveOvertimeEndAtMs(activeShift, overtimeEndTime, nowMs);
+    return end !== null && end >= minimum && end > activeShift.plannedEndAtMs ? end : null;
+  };
+
   const confirmOvertime = () => {
     if (!activeShift) return;
-    const overtimeEndAtMs = resolveOvertimeEndAtMs(
-      activeShift,
-      overtimeEndTime,
-      Date.now()
-    );
+    const overtimeEndAtMs = overtimeCandidateEndAtMs(Date.now());
     if (overtimeEndAtMs === null) return;
-    const extended = extendShiftWithOvertime(activeShift, overtimeEndAtMs);
-    if (extended === activeShift) return;
+    const extended = extendShiftWithOvertime(
+      withoutOvertime(activeShift),
+      overtimeEndAtMs,
+      overtimeStartForSession(activeShift.plannedEndAtMs, overtimeRestMinutes)
+    );
+    const multiplier = overtimePayChoiceMultiplier(overtimePayChoiceValue, overtimePayCustom);
+    if (extended.overtimeEndAtMs === null) return;
+    setShiftOvertimeMultiplier(multiplier);
     setActiveShift(extended);
     reminderFiredRef.current = overtimeEndAtMs - Date.now() <= REMINDER_LEAD_MS;
     completionTrackedRef.current = false;
@@ -2408,9 +2635,7 @@ export function OffWorkCountdown({
     setOvertimeDialogOpen(false);
   };
 
-  const overtimeCandidateIsValid =
-    activeShift !== null &&
-    resolveOvertimeEndAtMs(activeShift, overtimeEndTime, Date.now()) !== null;
+  const overtimeCandidateIsValid = overtimeCandidateEndAtMs(Date.now()) !== null;
 
   // 「换成我的时间」：把 URL 里别人的班次换回访问者本地保存的设置。
   // 同时清掉 query，避免刷新或分享当前页时又把别人的班次带上。
@@ -2547,7 +2772,8 @@ export function OffWorkCountdown({
       dailySalary: configuredDailySalary,
       todayEffectiveHours:
         getShiftDurationMs(summaryShift) / (60 * 60 * 1000),
-      todayPayRatio: calculateTimelinePayRatio(summaryShift, Date.now()),
+      todayPayRatio: calculateTimelinePayRatio(summaryShift, Date.now(), effectiveOvertimeMultiplier),
+      salary: showSalary && dailySalaryBasis === "scheduledMonth" ? monthBasisSalary : null,
     };
     return [
       {
@@ -2571,6 +2797,10 @@ export function OffWorkCountdown({
     configuredDailySalary,
     activeShift,
     calendarDateKey,
+    effectiveOvertimeMultiplier,
+    showSalary,
+    dailySalaryBasis,
+    monthBasisSalary,
     t,
   ]);
 
@@ -2864,8 +3094,39 @@ export function OffWorkCountdown({
               </DialogTitle>
               <DialogDescription>{t("overtimeDescription")}</DialogDescription>
             </DialogHeader>
-            <div className="space-y-2">
-              <Label id="overtime-end-label">{t("overtimeEndTime")}</Label>
+            {/* Plan 024: until a clock time or for how long, a rest first, and how it is paid. */}
+            <div className="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800" role="radiogroup" aria-label={t("overtimeEndTime")}>
+              {(["until", "duration"] as const).map((entry) => (
+                <button
+                  key={entry}
+                  type="button"
+                  role="radio"
+                  aria-checked={overtimeEntry === entry}
+                  onClick={() => {
+                    if (entry === overtimeEntry || !activeShift) return;
+                    const now = Date.now();
+                    if (entry === "duration") {
+                      const current = overtimeCandidateEndAtMs(now) ?? getShiftEndAtMs(activeShift);
+                      const choices = overtimeDurationChoices(activeShift.plannedEndAtMs, overtimeRestMinutes, now);
+                      setOvertimeDurationMinutes(
+                        nearestOvertimeDuration(choices, overtimeStartMs(activeShift.plannedEndAtMs, overtimeRestMinutes), current)
+                      );
+                    }
+                    setOvertimeEntry(entry);
+                  }}
+                  className={`min-h-9 rounded-lg px-2 text-sm transition-colors ${
+                    overtimeEntry === entry
+                      ? "bg-white font-medium text-gray-900 shadow-sm dark:bg-gray-600 dark:text-white"
+                      : "text-gray-600 dark:text-gray-300"
+                  }`}
+                >
+                  {t(entry === "until" ? "overtimeModeEnd" : "overtimeModeDuration")}
+                </button>
+              ))}
+            </div>
+            {overtimeEntry === "until" ? (
+              <div className="space-y-2">
+                <Label id="overtime-end-label">{t("overtimeEndTime")}</Label>
               <div className="grid grid-cols-2 gap-2" dir="ltr">
                 <Select
                   value={overtimeEndTime.split(":")[0]}
@@ -2904,9 +3165,102 @@ export function OffWorkCountdown({
                   </SelectContent>
                 </Select>
               </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>{t("overtimeDurationLabel")}</Label>
+                <Select
+                  value={String(overtimeDurationMinutes)}
+                  onValueChange={(minutes) => setOvertimeDurationMinutes(Number(minutes))}
+                >
+                  <SelectTrigger aria-label={t("overtimeDurationLabel")} className="h-10 rounded-xl bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeShift && overtimeDurationChoices(activeShift.plannedEndAtMs, overtimeRestMinutes, Date.now()).map((minutes) => (
+                      <SelectItem key={minutes} value={String(minutes)}>{formatOvertimeLength(minutes * 60_000)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <Label>{t("overtimeRestRow")}</Label>
+                <Select
+                  value={String(overtimeRestMinutes)}
+                  onValueChange={(minutes) => setOvertimeRestMinutes(Number(minutes))}
+                >
+                  <SelectTrigger aria-label={t("overtimeRestRow")} className="h-9 w-auto min-w-28 rounded-xl bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {OVERTIME_REST_MINUTES.map((minutes) => (
+                      <SelectItem key={minutes} value={String(minutes)}>
+                        {minutes === 0 ? t("overtimeRestNone") : formatOvertimeLength(minutes * 60_000)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("overtimeRestFootnote")}</p>
+            </div>
+            {activeShift && overtimeCandidateEndAtMs(Date.now()) !== null && (
+              <p className="text-sm font-medium tabular-nums text-gray-800 dark:text-gray-100">
+                {t("overtimePeriodSummary", {
+                  start: formatClock(overtimeStartMs(activeShift.plannedEndAtMs, overtimeRestMinutes)),
+                  end: formatClock(overtimeCandidateEndAtMs(Date.now())!),
+                  duration: formatOvertimeLength(
+                    overtimeCandidateEndAtMs(Date.now())! - overtimeStartMs(activeShift.plannedEndAtMs, overtimeRestMinutes)
+                  ),
+                })}
+              </p>
+            )}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <Label>{t("overtimePayRow")}</Label>
+                <Select value={overtimePayChoiceValue} onValueChange={setOvertimePayChoiceValue}>
+                  <SelectTrigger aria-label={t("overtimePayRow")} className="h-9 w-auto min-w-28 rounded-xl bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {OVERTIME_PAY_PRESETS.map((preset) => (
+                      <SelectItem key={preset} value={String(preset)}>
+                        {`${overtimeNumberFormats.percent.format(preset)}×`}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">{t("overtimeMultiplierCustom")}</SelectItem>
+                    <SelectItem value="unpaid">{t("overtimePayUnpaid")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {overtimePayChoiceValue === "custom" && (
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="overtime-multiplier-custom" className="text-xs dark:text-gray-400">{t("overtimeMultiplierRow")}</Label>
+                  <input
+                    id="overtime-multiplier-custom"
+                    type="number"
+                    min="0.5"
+                    max="5"
+                    step="0.1"
+                    inputMode="decimal"
+                    className="w-24 rounded-md border bg-background p-1.5 text-end text-sm tabular-nums dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    value={overtimePayCustom}
+                    onChange={(event) => setOvertimePayCustom(event.target.value)}
+                  />
+                </div>
+              )}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {t("overtimeNoMultiplier")}
+              {overtimePayChoiceValue === "unpaid"
+                ? t("overtimeUnpaidSheetNote")
+                : overtimePayChoiceMultiplier(overtimePayChoiceValue, overtimePayCustom) === 1
+                  ? t("overtimeNoMultiplier")
+                  : t("overtimeMultiplierNote", {
+                      multiplier: overtimeNumberFormats.percent.format(
+                        overtimePayChoiceMultiplier(overtimePayChoiceValue, overtimePayCustom)
+                      ),
+                    })}
             </p>
             <div className="flex flex-wrap justify-end gap-2 [&>button]:h-auto [&>button]:min-h-10 [&>button]:max-w-full [&>button]:whitespace-normal">
               <Button variant="outline" onClick={() => setOvertimeDialogOpen(false)}>
@@ -3450,6 +3804,11 @@ export function OffWorkCountdown({
                     salaryAmount={salaryAmount}
                     onSalaryAmountChange={setSalaryAmount}
                     monthlyWorkingDays={monthlyWorkingDays}
+                    dailySalaryBasis={dailySalaryBasis}
+                    onDailySalaryBasisChange={setDailySalaryBasis}
+                    scheduledWorkdaysThisMonth={scheduledWorkdaysThisMonth}
+                    overtimePayDefault={overtimePayDefault}
+                    onOvertimePayDefaultChange={setOvertimePayDefault}
                     onMonthlyWorkingDaysChange={setMonthlyWorkingDays}
                     maskAmountField={maskAmountField}
                     onMaskAmountFieldChange={setMaskAmountField}
@@ -4220,6 +4579,11 @@ export function OffWorkCountdown({
                     salaryAmount={salaryAmount}
                     onSalaryAmountChange={setSalaryAmount}
                     monthlyWorkingDays={monthlyWorkingDays}
+                    dailySalaryBasis={dailySalaryBasis}
+                    onDailySalaryBasisChange={setDailySalaryBasis}
+                    scheduledWorkdaysThisMonth={scheduledWorkdaysThisMonth}
+                    overtimePayDefault={overtimePayDefault}
+                    onOvertimePayDefaultChange={setOvertimePayDefault}
                     onMonthlyWorkingDaysChange={setMonthlyWorkingDays}
                     maskAmountField={maskAmountField}
                     onMaskAmountFieldChange={setMaskAmountField}

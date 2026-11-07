@@ -1,4 +1,5 @@
 import {
+  normalizeOvertimePayMultiplier,
   getShiftEndAtMs,
   getShiftStartAtMs,
   isValidShiftTimeline,
@@ -15,6 +16,8 @@ export interface WebOvertimeSession {
   startTime: string;
   endTime: string;
   shift: ShiftTimeline;
+  /** Plan 024: this overtime's pay multiple (0 = unpaid). Older sessions read as 1. */
+  payMultiplier?: number;
 }
 
 // Shared/preset runs are scoped to their URL and tab; they never overwrite the
@@ -79,6 +82,9 @@ export function readWebOvertimeSession(
         plannedEndAtMs: shift.plannedEndAtMs,
         overtimeEndAtMs: shift.overtimeEndAtMs,
       },
+      ...(normalizeOvertimePayMultiplier(value.payMultiplier ?? 1) === 1
+        ? {}
+        : { payMultiplier: normalizeOvertimePayMultiplier(value.payMultiplier) }),
     };
   } catch {
     clearWebOvertimeSession(storage, key);
@@ -92,7 +98,7 @@ export function writeWebOvertimeSession(
   session: WebOvertimeSession,
 ): void {
   try {
-    const { startTime, endTime, shift } = session;
+    const { startTime, endTime, shift, payMultiplier } = session;
     storage().setItem(key, JSON.stringify({
       version: 1,
       startTime,
@@ -102,6 +108,7 @@ export function writeWebOvertimeSession(
         plannedEndAtMs: shift.plannedEndAtMs,
         overtimeEndAtMs: shift.overtimeEndAtMs,
       },
+      ...(payMultiplier === undefined || payMultiplier === 1 ? {} : { payMultiplier }),
     }));
   } catch {
     // Continue the countdown in memory when storage is full or unavailable.

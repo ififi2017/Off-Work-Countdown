@@ -171,4 +171,15 @@ describe("Web overtime session", () => {
       expect(() => clearWebOvertimeSession(storage, WEB_OVERTIME_STORAGE_KEY)).not.toThrow();
     }
   });
+
+  it("keeps this overtime's pay multiple and reads older sessions as the usual rate", () => {
+    const { storage, values } = memoryStorage();
+    writeWebOvertimeSession(storage, WEB_OVERTIME_STORAGE_KEY, { ...dayOvertime(), payMultiplier: 1.5 });
+    expect(readWebOvertimeSession(storage, WEB_OVERTIME_STORAGE_KEY, at(5, 18), ownHours)!.payMultiplier).toBe(1.5);
+    writeWebOvertimeSession(storage, WEB_OVERTIME_STORAGE_KEY, { ...dayOvertime(), payMultiplier: 0 });
+    expect(readWebOvertimeSession(storage, WEB_OVERTIME_STORAGE_KEY, at(5, 18), ownHours)!.payMultiplier).toBe(0);
+    writeWebOvertimeSession(storage, WEB_OVERTIME_STORAGE_KEY, { ...dayOvertime(), payMultiplier: 1 });
+    expect(values.get(WEB_OVERTIME_STORAGE_KEY)).not.toContain("payMultiplier");
+    expect(readWebOvertimeSession(storage, WEB_OVERTIME_STORAGE_KEY, at(5, 18), ownHours)!.payMultiplier).toBeUndefined();
+  });
 });
