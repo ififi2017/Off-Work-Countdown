@@ -66,6 +66,33 @@ object RecordEdits {
         }
     }
 
+    /**
+     * Plan 024 phase 4 (iOS `RecordsActions.declareOvertime`): records a day's
+     * overtime — its period, the hours that count and how it is paid — as a new
+     * `overtimeDeclared` observation. The latest declaration on a day counts;
+     * earlier ones stay. [capturesObservations] mirrors iOS `captureEnabled`.
+     */
+    fun declareOvertime(
+        state: RecordState,
+        dayKey: String,
+        overtime: RecordOvertimeState,
+        context: RecordEditContext,
+        capturesObservations: Boolean,
+    ): Pair<RecordState, Boolean> {
+        if (!canMutate(dayKey, context) || !capturesObservations || !overtime.isSavable) return state to false
+        val zone = FoundationCompat.timeZoneIdentifier(context.recordsTimeZone) ?: context.recordsTimeZone
+        val effect = com.rainif.doneat.core.domain.session.SessionRecordEffect.Observation(
+            kind = WorkObservationKind.OVERTIME_DECLARED,
+            eventId = context.newId(),
+            occurredAtMs = context.nowMs,
+            anchorDayKey = dayKey,
+            timeZoneIdentifier = zone,
+            valueData = FoundationCompat.base64(overtime.payload.toByteArray(Charsets.UTF_8)),
+            hours = context.currentHours(),
+        )
+        return com.rainif.doneat.core.domain.session.SessionRecords.recordObservation(state, effect, context) to true
+    }
+
     private fun canMutate(dayKey: String, context: RecordEditContext) =
         context.canEdit && FoundationCompat.canonicalDayKey(dayKey) == dayKey
 

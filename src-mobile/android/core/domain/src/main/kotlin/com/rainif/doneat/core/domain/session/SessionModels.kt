@@ -142,6 +142,10 @@ fun ShiftSnapshot.isBeforeStart(nowMs: Double) = nowMs < startAtMs
 
 val ShiftSnapshot.isOnBreak get() = activeBreakEndAtMs != null
 
+/** The shift the snapshot was read from, for the shared overtime figures (iOS `snapshot.timeline`). */
+val ShiftSnapshot.timeline: com.rainif.doneat.core.domain.schedule.ShiftTimeline
+    get() = com.rainif.doneat.core.domain.schedule.ShiftTimeline(segments, plannedEndAtMs, overtimeEndAtMs)
+
 fun ShiftSnapshot.isOvertimeActive(nowMs: Double) = overtimeEndAtMs != null && nowMs >= plannedEndAtMs
 
 /**
