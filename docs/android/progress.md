@@ -908,3 +908,13 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 逐项核对国务院国办发明电〔2026〕10号；共享模板改用 holiday-cn 固定提交 `a91748e8` 的正式数据，撤下 2027 年推测标识。29 个休息日、5 个补班日与已获准预测一致；手动排班、已保存方案、历史记录和其他地区不变。
 - 规定共享路径漂移只读检查为 71 条（最新 `08dbfd22`，最早 `a6a6c382`）。本轮仅纳入用户指定的正式假期，不推进冻结规则源或其他授权增量。
 - 自动检查、构建及后续上传状态见[更新记录](../reviews/2026-11-05-cn-2027-official-holidays.md)；未据共享数据完成声明商店已上架。
+
+### 2026-11-07 · iOS 3.2.5 薪资与加班界面同步（Play / CN）
+
+- 用户明确要求把 iOS 3.2.5 的改动同步到 Android Play 与 CN。对照 Android 3.2.5 发布后的 main：#358 加班文案与 #362 中国大陆 2027 正式假期已在 Android；#350/#356/#363 只涉及 iOS/Watch 小组件；需补的是 #364（计划 024）在 Android 只落了规则、没有界面的部分。
+- 本轮补齐界面（两渠道共用 `main` 源集）：加班对话框新增「到几点 / 加多久」、先休息（0/15/30/45/60 分钟）、时段与计入工时摘要、计薪 / 不计薪与倍数（1×、1.5×、2×、3×、自订 0.5–5×）；计时页加班中显示「已加班」和计薪附注（不计薪给出实际时薪，隐藏薪资时不出现金额）；薪资设置的「每月计薪天数」首项为「按当月排班 · 本月天数」，「每个工作日」进入「每月日薪」页（本月日历与后三个月，随薪资页一同上锁）；新增「加班默认」；记录的编辑某天新增加班区块（时段、15 分钟步进的计入工时、计薪方式），与当天工时共用一个保存。
+- 纯逻辑放在 `:core:domain`（`OvertimeSheetPlan`、`RecordOvertimeState`、`MonthlyDailyPay`、`RecordEdits.declareOvertime`），只调用已有的共享规则，不新增公式；新增 iOS 对应用例的 Kotlin 测试。ModalBottomSheet 在当前 BOM 仍为实验 API，按 D-12 继续用稳定的 AlertDialog。
+- CN 默认 versionCode 升到 12，并补 `cn-release-notes.json` 双语说明；versionName 仍为 3.2.5。Play 版本号由 CI 传入，说明取自 PR 标题。尚未签名、上传或发布任何渠道。
+- 漂移只读检查为 73 条（最新 `a6294635`）。本轮按用户授权纳入 #364 的 Android 界面，规则源已随 #364 同步，不另行推进冻结基线。验证结果见下条更新。
+- 验证（本机，Temurin 25.0.3 arm64，因 Android Studio 当前缺 JBR）：Play `:core:domain:test`、`:core:data:test`、`:core:designsystem:testDebugUnitTest`、`:app:testDebugUnitTest`、`lintDebug`、`assembleDebug`、`assembleRelease` 通过；CN `testDebugUnitTest`、`lintDebug`、`assembleDebug` 通过（domain 496 / data 99 / designsystem 13 / app 216，零失败）。`npm test` 737/738 通过，唯一失败是与 Gradle 并行时 Android 规则 fixture 检查超时，单独重跑通过；`check:version` 3.2.5 对齐。未改 iOS 源码，未跑 iOS 无头构建；尚未在真机或模拟器做目视检查。
+- Pixel 10 Pro 实机（独立调试包 `com.rainif.doneat.ot325`，未覆盖已装的 Play / CN / `.cn.debug`）：加班对话框、计时页加班行与计薪附注、薪资「按当月排班」与「每月日薪」页、加班默认、记录编辑某天加班均按预期，浅色 / 深色通过。修正两处：对话框内「这段加班」窄宽度断字（窄或大字号时改为上下排）；浅色对话框内卡片与底色同为白色（改用 `surface`）。未查 200% 字号、其他语言和 CN 渠道实机包。记录见 `qa/2026-11-07-android-325-overtime/README.md`。

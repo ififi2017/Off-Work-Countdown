@@ -79,6 +79,13 @@ import com.rainif.doneat.ui.components.SettingsGroup
 import com.rainif.doneat.ui.components.SwitchRow
 import com.rainif.doneat.ui.timer.EarningsGate
 import com.rainif.doneat.ui.timer.TimerText
+import com.rainif.doneat.ui.timer.MenuRow
+import com.rainif.doneat.ui.timer.MultiplierStepperRow
+import com.rainif.doneat.ui.timer.multiplierLabel
+import com.rainif.doneat.core.domain.salary.DailySalaryBasis
+import com.rainif.doneat.core.domain.session.OvertimePayChoices
+import com.rainif.doneat.core.domain.summary.MonthlyDailyPay
+import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -176,6 +183,23 @@ private fun SalaryContent(graph: AppGraph, onBack: () -> Unit) {
     fun edit(change: (com.rainif.doneat.core.domain.records.SyncedPreferences) -> com.rainif.doneat.core.domain.records.SyncedPreferences) =
         scope.launch { graph.settings.edit(change) }
 
+    // Plan 024: the scheduled-month basis and the page that explains it. The page
+    // is part of this unlocked content, so locking the salary page also leaves it.
+    val now = System.currentTimeMillis().toDouble()
+    val firstWeekday = device.calendarFirstDay(text.locale)
+    // Recomputed when the settings or session change, not on every keystroke in the amount field.
+    val (scheduledMonth, thisMonthWorkdays) = remember(session, firstWeekday) {
+        val rules = session.rulesInput(now)
+        MonthlyDailyPay.make(rules, session.salary, firstWeekday.value % 7) to MonthlyDailyPay.scheduledWorkdaysThisMonth(rules)
+    }
+    var showsMonthlyPay by rememberSaveable { mutableStateOf(false) }
+    var showsCustomOvertimeDefault by rememberSaveable { mutableStateOf(false) }
+    if (showsMonthlyPay && scheduledMonth != null && prefs.salaryEnabled) {
+        BackHandler { showsMonthlyPay = false }
+        MonthlyDailyPayPage(scheduledMonth, text, firstWeekday) { showsMonthlyPay = false }
+        return
+    }
+
     DoneAtPage(stringResource(R.string.salarySettings), onBack, stringResource(R.string.settings)) {
         SettingsGroup {
             SwitchRow(stringResource(R.string.enableSalary), prefs.salaryEnabled, { on -> edit { it.copy(salaryEnabled = on) } }, supporting = stringResource(R.string.enableSalaryDescriptionLocal))
@@ -205,15 +229,23 @@ private fun SalaryContent(graph: AppGraph, onBack: () -> Unit) {
                 if (prefs.salaryType == "monthly") {
                     RowDivider()
                     var open by remember { mutableStateOf(false) }
+                    val byMonth = prefs.dailySalaryBasis == DailySalaryBasis.SCHEDULED_MONTH.raw
+                    val basisLabel = stringResource(R.string.dailySalaryBasisScheduledMonth)
                     Box {
                         com.rainif.doneat.ui.components.NavigationRow(
-                            stringResource(R.string.monthlyWorkingDays), { open = true }, value = text.count(prefs.monthlyWorkingDays.toInt()),
+                            stringResource(R.string.monthlyWorkingDays), { open = true },
+                            value = if (byMonth) basisLabel else text.count(prefs.monthlyWorkingDays.toInt()),
                         )
                         DropdownMenu(open, { open = false }) {
+                            // "By monthly schedule" comes first, with this month's count; real day counts start at 15.
+                            DropdownMenuItem(text = { Text("$basisLabel · ${text.count(thisMonthWorkdays)}") }, onClick = {
+                                open = false
+                                edit { it.copy(dailySalaryBasis = DailySalaryBasis.SCHEDULED_MONTH.raw) }
+                            })
                             (15..31).forEach { days ->
                                 DropdownMenuItem(text = { Text(text.count(days)) }, onClick = {
                                     open = false
-                                    edit { it.copy(monthlyWorkingDays = days.toDouble()) }
+                                    edit { it.copy(dailySalaryBasis = DailySalaryBasis.FIXED.raw, monthlyWorkingDays = days.toDouble()) }
                                 })
                             }
                         }
@@ -230,9 +262,9 @@ private fun SalaryContent(graph: AppGraph, onBack: () -> Unit) {
                 RowDivider()
                 SwitchRow(stringResource(R.string.hideSalary), device.hideEarnings, { on -> scope.launch { graph.settings.updateDevice { it.copy(hideEarnings = on) } } })
             }
+            if (scheduledMonth != null) SettingsFooter(stringResource(R.string.dailySalaryBasisScheduledMonthNote))
             SettingsFooter(stringResource(R.string.salaryPrivacyNoteLocal))
 
-            val now = System.currentTimeMillis().toDouble()
             val shift = session.snapshot(now)
             val daily = shift?.dailySalary
             val earned = if (shift != null && daily != null) daily * shift.payRatio else null
@@ -244,9 +276,20 @@ private fun SalaryContent(graph: AppGraph, onBack: () -> Unit) {
                 }
             }
             SettingsGroup(title = stringResource(R.string.derivedFromThis), footer = shift?.let { "${text.relativeDuration(it.plannedDurationMs)} · ${stringResource(R.string.lunchPauseNoteNoSalary)}" } ?: stringResource(R.string.lunchPauseNoteNoSalary)) {
-                com.rainif.doneat.ui.components.ValueRow(stringResource(R.string.perWorkday), text.money(daily))
+                if (scheduledMonth != null) {
+                    com.rainif.doneat.ui.components.NavigationRow(
+                        stringResource(R.string.perWorkday), { showsMonthlyPay = true }, value = text.money(daily),
+                        supporting = "${shortMonthName(scheduledMonth.current.startMs, scheduledMonth.zone, text)} · " +
+                            Strings.scheduledMonthWorkdays(LocalResources.current, text.count(scheduledMonth.current.workdayCount)),
+                    )
+                } else {
+                    com.rainif.doneat.ui.components.ValueRow(stringResource(R.string.perWorkday), text.money(daily))
+                }
                 RowDivider()
                 com.rainif.doneat.ui.components.ValueRow(stringResource(R.string.perEffectiveHour), text.money(hourly))
+            }
+            OvertimeDefaultGroup(prefs.overtimePayMultiplier, showsCustomOvertimeDefault, text, { showsCustomOvertimeDefault = it }) { value ->
+                edit { it.copy(overtimePayMultiplier = value) }
             }
         }
         Spacer(Modifier.heightIn(min = DoneAtSpacing.l))
@@ -326,6 +369,48 @@ internal fun NumberField(
         if (invalid) {
             Text(validation, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(top = DoneAtSpacing.xs), textAlign = TextAlign.End)
+        }
+    }
+}
+
+/**
+ * Plan 024: how overtime is paid unless a given overtime says otherwise
+ * (iOS `overtimeDefaultSection`): the usual rate, unpaid, a preset multiple or
+ * a custom one stepped in tenths.
+ */
+@Composable
+private fun OvertimeDefaultGroup(
+    preferred: Double,
+    showsCustom: Boolean,
+    text: TimerText,
+    onShowsCustom: (Boolean) -> Unit,
+    onChange: (Double) -> Unit,
+) {
+    val isCustom = showsCustom || (preferred > 0 && !OvertimePayChoices.isPreset(preferred))
+    val usual = stringResource(R.string.overtimeDefaultUsual)
+    val unpaid = stringResource(R.string.overtimePayUnpaid)
+    // Usual (1×), unpaid, then the other presets and "Custom…".
+    val values = listOf(1.0, 0.0) + OvertimePayChoices.presets.drop(1)
+    val labels = listOf(usual, unpaid) + OvertimePayChoices.presets.drop(1).map { multiplierLabel(it, text.locale) } +
+        stringResource(R.string.overtimeMultiplierCustom)
+    val valueText = when (preferred) {
+        0.0 -> unpaid
+        1.0 -> usual
+        else -> multiplierLabel(preferred, text.locale)
+    }
+    SettingsGroup(title = stringResource(R.string.overtime), footer = stringResource(R.string.overtimeDefaultNote)) {
+        MenuRow(stringResource(R.string.overtimeDefaultRow), valueText, labels, if (isCustom) values.size else values.indexOf(preferred)) { index ->
+            if (index == values.size) {
+                onShowsCustom(true)
+                if (preferred == 0.0) onChange(1.0)
+            } else {
+                onShowsCustom(false)
+                onChange(values[index])
+            }
+        }
+        if (isCustom && preferred > 0) {
+            RowDivider(inset = false)
+            MultiplierStepperRow(preferred, text.locale, onChange)
         }
     }
 }

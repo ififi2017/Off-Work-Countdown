@@ -61,4 +61,6 @@ object DoneAtRecordsStyle {
     const val estimateStrokeOpacity = .55f
     /** iOS secondary tint (~60%) with the month grid's additional 55% opacity. */
     const val calendarEstimateTintOpacity = .33f
+    /** A scheduled workday's disc in the monthly pay calendar (iOS `recordsWork.opacity(0.16)`). */
+    const val workdayFillOpacity = .16f
 }

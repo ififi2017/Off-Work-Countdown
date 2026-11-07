@@ -3,6 +3,18 @@
     "schemaVersion": 1,
     "applicationId": "com.rainif.doneat.cn",
     "channel": "cn",
+    "versionCode": 12,
+    "versionName": "3.2.5",
+    "minSdk": 26,
+    "releaseNotes": {
+      "zh-CN": "• 月薪可按当月排班的上班天数折算日薪，新增「每月日薪」页查看本月日历与后三个月。\n• 加班可选计薪或不计薪，并设定倍数（1×、1.5×、2×、3× 或自订）；薪资设置新增加班默认。\n• 加班可选择「到几点」或「加多久」，并可先休息再开始；计时页显示已加班时长和计薪说明。\n• 记录中可为某天补记或修改加班时段、计入工时和计薪方式。",
+      "en": "• Monthly pay can be divided by each month's scheduled workdays, with a new Daily pay by month page showing this month and the next three.\n• Choose whether overtime is paid and at what multiple (1×, 1.5×, 2×, 3× or custom), with a default in Salary settings.\n• Set overtime until a time or for how long, with an optional rest first. The timer shows overtime worked and how it is paid.\n• Add or edit a past day's overtime in Records: its period, counted hours and pay."
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "applicationId": "com.rainif.doneat.cn",
+    "channel": "cn",
     "versionCode": 11,
     "versionName": "3.2.5",
     "minSdk": 26,
