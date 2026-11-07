@@ -82,7 +82,8 @@ export function PeriodSummary({
       {overtimeInfo && (
         <div className="mt-1 min-w-0 space-y-0.5 text-xs tabular-nums text-gray-500 [overflow-wrap:anywhere] dark:text-gray-400">
           <p>{overtimeInfo.elapsed}</p>
-          {!hideEarnings && overtimeInfo.unpaidRate && <p>{overtimeInfo.unpaidRate}</p>}
+          {/* The caller already leaves amounts out while earnings are hidden. */}
+          {overtimeInfo.unpaidRate && <p>{overtimeInfo.unpaidRate}</p>}
         </div>
       )}
       {currentEarnings && (
