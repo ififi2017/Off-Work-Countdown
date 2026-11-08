@@ -88,7 +88,9 @@ final class WorkplaceAutomationCoordinator {
         case .enterInner:
             match = WorkplaceAutomationRules.matchArrival(at: event.proposedTime, among: shifts)
         case .exitOuter:
-            guard WorkplaceAutomationRules.leavesAllWorkplaces(
+            // A person saying they finished is not a location report: being
+            // inside a saved workplace does not overrule them.
+            guard event.source == .userConfirmation || WorkplaceAutomationRules.leavesAllWorkplaces(
                 exitingWorkplace: event.workplaceID, inside: insideBefore
             ) else { return finish(event.id, .ignored, now: now) }
             match = WorkplaceAutomationRules.matchExit(at: event.proposedTime, among: shifts)
@@ -130,6 +132,9 @@ final class WorkplaceAutomationCoordinator {
         case .exitOuter:
             boundary = .end
             switch WorkplaceAutomationRules.assessExit(at: event.proposedTime, for: shift) {
+            case .temporaryAbsence where event.source == .userConfirmation:
+                // Ending early is the person's call (§3.1), never a sensor's.
+                time = event.proposedTime
             case .temporaryAbsence:
                 return finish(event.id, .ignored, now: now)
             case .needsReview(let reason):

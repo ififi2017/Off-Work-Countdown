@@ -329,6 +329,57 @@
     "auto": {
       "resource": "string/auto"
     },
+    "automationConfirmEndPrompt": {
+      "resource": "string/automationConfirmEndPrompt"
+    },
+    "automationConfirmStartPrompt": {
+      "resource": "string/automationConfirmStartPrompt"
+    },
+    "automationIntentConfirmEnd": {
+      "resource": "string/automationIntentConfirmEnd"
+    },
+    "automationIntentConfirmEndDescription": {
+      "resource": "string/automationIntentConfirmEndDescription"
+    },
+    "automationIntentConfirmStart": {
+      "resource": "string/automationIntentConfirmStart"
+    },
+    "automationIntentConfirmStartDescription": {
+      "resource": "string/automationIntentConfirmStartDescription"
+    },
+    "automationIntentRecordArrival": {
+      "resource": "string/automationIntentRecordArrival"
+    },
+    "automationIntentRecordArrivalDescription": {
+      "resource": "string/automationIntentRecordArrivalDescription"
+    },
+    "automationIntentRecordDeparture": {
+      "resource": "string/automationIntentRecordDeparture"
+    },
+    "automationIntentRecordDepartureDescription": {
+      "resource": "string/automationIntentRecordDepartureDescription"
+    },
+    "automationResultAlreadyApplied": {
+      "resource": "string/automationResultAlreadyApplied"
+    },
+    "automationResultApplied": {
+      "resource": "string/automationResultApplied"
+    },
+    "automationResultNeedsPlus": {
+      "resource": "string/automationResultNeedsPlus"
+    },
+    "automationResultNeedsReview": {
+      "resource": "string/automationResultNeedsReview"
+    },
+    "automationResultNoChange": {
+      "resource": "string/automationResultNoChange"
+    },
+    "automationResultRecorded": {
+      "resource": "string/automationResultRecorded"
+    },
+    "automationResultUnavailable": {
+      "resource": "string/automationResultUnavailable"
+    },
     "biometrics": {
       "resource": "string/biometrics"
     },

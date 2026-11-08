@@ -115,6 +115,9 @@ final class AppRuntime {
             text: text, currentHours: { session.hoursConfiguration(at: $0) })
     }()
 
+    /// Plan 021: the single write path for workplace automation.
+    private(set) lazy var workplaceAutomation = WorkplaceAutomationCoordinator.live(actions: recordActions)
+
     private(set) lazy var shifts = ShiftSessionStore(
         session: session, records: records, queries: queries,
         focus: focus, plus: plus, defaults: defaults
