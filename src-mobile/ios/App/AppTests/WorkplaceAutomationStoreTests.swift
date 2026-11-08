@@ -117,13 +117,16 @@ struct WorkplaceAutomationStoreTests {
         let recentEvent = Self.event(.exitOuter, workplace: workplace, receivedAt: recent)
         state.record(oldEvent)
         state.record(recentEvent)
+        func shift(_ key: String) -> AutomationShift {
+            AutomationShift(shiftKey: key, anchorDayKey: "2026-01-01", plannedStart: old, plannedEnd: recent, segments: [])
+        }
         state.upsert(WorkTimeProposal(
-            id: UUID(), shiftKey: "old", sourceEventIDs: [oldEvent.id], proposedStart: old,
-            proposedEnd: nil, status: .pendingReview, reasons: [.automaticApplyOff], createdAt: old
+            id: UUID(), shift: shift("old"), boundary: .start, proposedTime: old, sourceEventIDs: [oldEvent.id],
+            status: .pendingReview, reasons: [.automaticApplyOff], createdAt: old
         ))
         state.upsert(WorkTimeProposal(
-            id: UUID(), shiftKey: "recent", sourceEventIDs: [recentEvent.id], proposedStart: nil,
-            proposedEnd: recent, status: .pendingReview, reasons: [.automaticApplyOff], createdAt: recent
+            id: UUID(), shift: shift("recent"), boundary: .end, proposedTime: recent, sourceEventIDs: [recentEvent.id],
+            status: .pendingReview, reasons: [.automaticApplyOff], createdAt: recent
         ))
         state.prune(now: Self.now)
         #expect(state.proposals.map(\.shiftKey) == ["recent"])

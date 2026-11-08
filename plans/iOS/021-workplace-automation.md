@@ -929,6 +929,17 @@ cd src-mobile/android
 - 测试：`WorkplaceAutomationRulesTests` 16 项、`WorkplaceAutomationStoreTests` 11 项，iPhone 18 Pro 模拟器（iOS 27.1）无头运行 27 项全部通过，完整 `AppTests` 81 个套件 1060 项串行通过；`check:ios`、`check:ios-strings` 通过。
 - **未做**：尚未接入 `NotificationService`（通知额度在 I2 有监控开关后接入，未开启时额度不变）、统一班次命令与 `DayOverride` 写入、`WorkTimeProvenance` 实体与 schema 8、快捷指令、`CLMonitor`、UI 与文案；无 UI 改动，未做视觉检查；P0 真机实测未开始。
 
+### 2026-11-08 · P1b 统一命令与 `DayOverride` 写入
+
+- 分支 `claude/ios-330-automation-commands`，叠在 P1a（PR #368）之上。
+- 新增 `Native/Services/WorkplaceAutomationCoordinator.swift`：地理围栏、快捷指令与复核列表共用的唯一写入入口。`receive` 先把事件写入本机存储，再判定、再经 `RecordsActions` 写 `DayOverride.customSegments`，最后存回执；`applyReviewed` 单条／批量采用（每条独立回执、共同 `batchID`，重复点击不重复应用）；`dismiss` 仅留参考；`undo` 带版本检查的补偿并抑制该班次；`holdForManualChange` 供人工修改时调用。
+- `RecordsActions` 新增 `writeAutomationSegments`／`restoreAutomationOverride`：不经 Records 页的 Plus 门禁（§3.14 历史纠错保护，自动写入由调用方检查 `canAutoApplyAutomation`）；当日行在自动化上次写入后被人改过（`editCount` 不符）即为冲突、不覆盖；仅复核列表中用户明确采用时可替换人工版本。
+- 规则：迟到按实际到达、按原计划下班，晚离开延长末段；掐点／正点的一天不写记录；午间离开只留痕；早到即使开启自动应用也须用户确认；离开 A 仍在 B 内不算离开；人工修改后的后续自动事件忽略并保留参考。
+- 崩溃窗口：事件信封保存失败则不碰记录；记录已写而回执未存时，重试发现当日已是相同工作段，返回 `alreadyApplied` 且后续离开仍可延长。损坏的自动化文件不被覆盖。
+- `WorkTimeProposal` 改为按班次边界（上班／下班）记录，并保存当时的计划班次，日后复核不依赖当天排班；`AutomationShift` 增加 `anchorDayKey`。
+- 测试：新增 `WorkplaceAutomationCoordinatorTests` 13 项；三个自动化套件共 40 项通过，完整 `AppTests` 82 个套件 1073 项串行通过（iPhone 18 Pro 模拟器 iOS 27.1，无头）；`check:ios`、`check:ios-strings` 通过。
+- **未做**：从现有排班生成 `AutomationShift` 的适配器（随 I1／I2 接入）、`WorkTimeProvenance` 同步实体与 schema 8（C1）、通知额度接入、外勤／出差／居家范围设置的存储、上班后 30 分钟询问与缺失结束核对的通知排程、UI 与文案；无 UI 改动，未做视觉检查。
+
 后续记录格式沿用 019：`日期 · 批次`，列出实现范围、实际通过的测试及数量、失败项、未验证项、证据路径、关联 PR；不能只写“已完成自动上下班”。
 
 ## 10. 参考资料

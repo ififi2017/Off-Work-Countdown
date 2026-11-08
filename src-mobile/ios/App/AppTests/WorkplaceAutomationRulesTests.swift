@@ -21,6 +21,7 @@ struct WorkplaceAutomationRulesTests {
     private static func dayShift(_ day: Int = 9) -> AutomationShift {
         AutomationShift(
             shiftKey: "2026-11-\(String(format: "%02d", day))#day",
+            anchorDayKey: "2026-11-\(String(format: "%02d", day))",
             plannedStart: at(day, 9),
             plannedEnd: at(day, 18),
             segments: [
@@ -34,6 +35,7 @@ struct WorkplaceAutomationRulesTests {
     private static func nightShift(_ day: Int = 9) -> AutomationShift {
         AutomationShift(
             shiftKey: "2026-11-\(String(format: "%02d", day))#night",
+            anchorDayKey: "2026-11-\(String(format: "%02d", day))",
             plannedStart: at(day, 22),
             plannedEnd: at(day + 1, 6),
             segments: [NativeShiftSegment(startAtMs: ms(at(day, 22)), endAtMs: ms(at(day + 1, 6)))]
@@ -80,10 +82,10 @@ struct WorkplaceAutomationRulesTests {
     @Test("Two shifts that could both own an arrival start nothing")
     func ambiguousArrival() {
         let early = AutomationShift(
-            shiftKey: "a", plannedStart: Self.at(9, 8), plannedEnd: Self.at(9, 12), segments: []
+            shiftKey: "a", anchorDayKey: "2026-11-09", plannedStart: Self.at(9, 8), plannedEnd: Self.at(9, 12), segments: []
         )
         let late = AutomationShift(
-            shiftKey: "b", plannedStart: Self.at(9, 9), plannedEnd: Self.at(9, 17), segments: []
+            shiftKey: "b", anchorDayKey: "2026-11-09", plannedStart: Self.at(9, 9), plannedEnd: Self.at(9, 17), segments: []
         )
         #expect(WorkplaceAutomationRules.matchArrival(at: Self.at(9, 8, 30), among: [early, late]) == .ambiguous)
     }
