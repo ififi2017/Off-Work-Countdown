@@ -480,6 +480,20 @@ final class NotificationService {
         await center.removePending(Array(existing.subtracting(desired)))
     }
 
+    /// Submits an arrival or departure notice right away (§3.8). It sits
+    /// outside the `owc.automation.` prefix, so planning the questions
+    /// never removes it, and it never counts against the scheduled budget.
+    func postArrivalNotice(_ notice: WorkplaceArrivalNotice, text: AppText, formattedTime: String) async {
+        guard status == .allowed else { return }
+        let content = UNMutableNotificationContent()
+        content.title = text.t("automationUITitle")
+        content.body = text.t(notice.bodyKey, values: ["time": formattedTime])
+        content.sound = nil
+        content.interruptionLevel = .passive
+        content.userInfo = ["route": AppRoute.workplaceAutomationReview.rawValue]
+        try? await shiftCenter.add(UNNotificationRequest(identifier: notice.identifier, content: content, trigger: nil))
+    }
+
     /// Clears after any in-flight add has completed, so stopping cannot leave
     /// behind a notification that arrives after the clear's initial read.
     func clearShiftNotifications() async {

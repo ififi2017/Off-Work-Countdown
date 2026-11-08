@@ -62,6 +62,7 @@
     <string name="applyToToday">Đổi cả hôm nay</string>
     <string name="auto">Hệ thống</string>
     <string name="automationActionJustEarly">Chỉ đến sớm</string>
+    <string name="automationActionMovedHere">Từ nơi làm việc khác đến</string>
     <string name="automationActionNotWorking">Không làm việc</string>
     <string name="automationActionRecordExtra">Ghi là làm thêm</string>
     <string name="automationActionStartedWork">Đã bắt đầu làm việc</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">Báo cho DoneAt biết bạn đã đến chỗ làm. Dùng trong một mục tự động hóa cá nhân, chẳng hạn khi đến một địa điểm hoặc kết nối Wi-Fi.</string>
     <string name="automationIntentRecordDeparture">Ghi lại lúc rời chỗ làm</string>
     <string name="automationIntentRecordDepartureDescription">Báo cho DoneAt biết bạn đã rời chỗ làm. Dùng trong một mục tự động hóa cá nhân, chẳng hạn khi rời một địa điểm hoặc tắt một chế độ Tập trung.</string>
+    <string name="automationNoticeArrivedApplied">Đã ghi giờ vào làm lúc %1$s.</string>
+    <string name="automationNoticeArrivedRecorded">Đã ghi nhận bạn đến lúc %1$s. Giờ làm giữ nguyên cho đến khi bạn xác nhận.</string>
+    <string name="automationNoticeLeftApplied">Đã ghi giờ tan làm lúc %1$s.</string>
+    <string name="automationNoticeLeftRecorded">Đã ghi nhận bạn rời đi lúc %1$s. Giờ làm giữ nguyên cho đến khi bạn xác nhận.</string>
     <string name="automationPromptEarlyVisit">Bạn đến sớm. Bạn đã bắt đầu làm việc chưa?</string>
     <string name="automationPromptExtraVisit">Ghi lần ghé này là làm thêm giờ chứ?</string>
     <string name="automationPromptLateArrival">Đã ghi nhận bạn đến muộn hơn một chút. Tiếp tục ghi như thường lệ hôm nay chứ?</string>
@@ -133,6 +138,11 @@
     <string name="automationUIIntro">DoneAt nhận biết khi bạn đến hoặc rời nơi làm việc và ghi lại giờ làm của bạn. Tính năng này tắt cho đến khi bạn bật.</string>
     <string name="automationUILeaveRange">Tính là rời đi khi xa hơn %1$s m</string>
     <string name="automationUILocationFailed">Không tìm thấy vị trí của bạn. Hãy thử lại gần cửa sổ hoặc ở ngoài trời.</string>
+    <string name="automationUIMonitorLastEvent">Phát hiện gần nhất: %1$s.</string>
+    <string name="automationUIMonitorLocationOff">Dịch vụ định vị đang tắt. Bạn có thể bật trong Cài đặt &gt; Quyền riêng tư &amp; Bảo mật.</string>
+    <string name="automationUIMonitorProblem">iOS chưa thể bắt đầu theo dõi các nơi làm việc của bạn. Hãy thử tắt rồi bật lại Tự động hóa nơi làm việc.</string>
+    <string name="automationUIMonitorStarting">Đang chuẩn bị theo dõi các nơi làm việc của bạn. Có thể mất một chút thời gian.</string>
+    <string name="automationUIMonitorWatching">Đang theo dõi lúc bạn đến và rời đi.</string>
     <string name="automationUINoLocationYet">Chạm vào “Dùng vị trí hiện tại” để đặt nơi làm việc này lên bản đồ.</string>
     <string name="automationUINoteChangedByYou">Bạn đã tự thay đổi ngày này</string>
     <string name="automationUINoteEarlyStart">Đến sớm — chỉ tính sau khi bạn xác nhận</string>
@@ -140,7 +150,11 @@
     <string name="automationUINoteLateDetection">Phát hiện muộn nên giờ có thể chưa chính xác</string>
     <string name="automationUINoteLeftEarly">Rời đi trước giờ kết thúc dự kiến</string>
     <string name="automationUINoteRecordsUnavailable">Không thể cập nhật các bản ghi của bạn. Hãy thử lại.</string>
+    <string name="automationUINotifyArrivals">Thông báo khi đến và rời đi</string>
+    <string name="automationUINotifyArrivalsNote">Một thông báo yên lặng cho bạn biết đã ghi gì. Việc phát hiện vẫn hoạt động dù tắt.</string>
     <string name="automationUIPaused">Đã tạm dừng</string>
+    <string name="automationUIPausedShift">Đã tạm dừng cho %1$s</string>
+    <string name="automationUIPausedShiftNote">Bạn đã sửa ca này nên tính năng tự động giữ nguyên như vậy.</string>
     <string name="automationUIPlanned">Dự kiến %1$s</string>
     <string name="automationUIPreviewIntro">Giờ làm của những ngày này sẽ thay đổi như hiển thị. Bạn có thể hoàn tác sau đó.</string>
     <string name="automationUIPreviewTitle">Chấp nhận các giờ này?</string>
@@ -149,6 +163,7 @@
     <string name="automationUIRangeNote">Phạm vi rời đi lớn hơn 100 m, nên đi lại gần ranh giới sẽ không bị tính là ra vào.</string>
     <string name="automationUIRecentSection">Đã chấp nhận gần đây</string>
     <string name="automationUIRecordingSection">Ghi lại</string>
+    <string name="automationUIResume">Tiếp tục</string>
     <string name="automationUIReviewEmpty">Không có gì cần xem lại</string>
     <string name="automationUIReviewEmptyNote">Giờ đến và rời đi được phát hiện sẽ hiện ở đây trước.</string>
     <string name="automationUIReviewIntro">Những giờ này chưa thay đổi giờ làm của bạn. Hãy chấp nhận những giờ đúng.</string>

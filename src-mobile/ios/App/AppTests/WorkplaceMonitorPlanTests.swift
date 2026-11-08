@@ -1,0 +1,172 @@
+import Foundation
+import Testing
+@testable import App
+
+/// Plan 021 §I2: which circles the system holds, how registrations are kept
+/// in line across launches and edits, and what a condition change means.
+@Suite("Workplace monitor plan")
+nonisolated struct WorkplaceMonitorPlanTests {
+    private static let now = Date(timeIntervalSince1970: 1_794_211_200)
+
+    private static func state(workplaces: Int = 1, monitoring: Bool = true) -> WorkplaceAutomationState {
+        var state = WorkplaceAutomationState()
+        state.settings.isMonitoringEnabled = monitoring
+        for index in 0..<workplaces {
+            _ = try? state.addWorkplace(name: "Place \(index)", latitude: 31 + Double(index) / 100, longitude: 121)
+        }
+        return state
+    }
+
+    @Test("Identifiers are alphanumeric, round-trip, and carry the generation")
+    func identifiers() throws {
+        let id = UUID()
+        let identifier = WorkplaceMonitorPlan.identifier(workplaceID: id, generation: 12, ring: .outer)
+        #expect(identifier.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber) })
+        let parsed = try #require(WorkplaceMonitorPlan.parse(identifier))
+        #expect(parsed.workplaceID == id)
+        #expect(parsed.generation == 12)
+        #expect(parsed.ring == .outer)
+    }
+
+    @Test("Foreign or damaged identifiers are not workplaces", arguments: [
+        "", "DoneAtWorkplaceProbe", "W1234", "WZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZG1i",
+        "W00000000000000000000000000000000G1x", "W00000000000000000000000000000000Gi",
+    ])
+    func rejects(_ identifier: String) {
+        #expect(WorkplaceMonitorPlan.parse(identifier) == nil)
+    }
+
+    @Test("Two circles per enabled workplace; paused ones are not watched")
+    func wanted() throws {
+        var state = Self.state(workplaces: 2)
+        let paused = state.workplaces[1].id
+        try state.updateWorkplace(paused, isEnabled: false)
+        let wanted = WorkplaceMonitorPlan.wantedConditions(state: state, canCollect: true)
+        #expect(wanted.count == 2)
+        #expect(Set(wanted.map(\.ring)) == [.inner, .outer])
+        let place = state.workplaces[0]
+        #expect(wanted.first { $0.ring == .inner }?.radius == place.innerRadius)
+        #expect(wanted.first { $0.ring == .outer }?.radius == place.outerRadius)
+        #expect(!wanted.contains { $0.workplaceID == paused })
+    }
+
+    @Test("Nothing is watched when automation is off, without Plus or without places")
+    func inactive() {
+        #expect(WorkplaceMonitorPlan.wantedConditions(state: Self.state(monitoring: false), canCollect: true).isEmpty)
+        #expect(WorkplaceMonitorPlan.wantedConditions(state: Self.state(), canCollect: false).isEmpty)
+        #expect(WorkplaceMonitorPlan.wantedConditions(state: Self.state(workplaces: 0), canCollect: true).isEmpty)
+        #expect(!WorkplaceMonitorPlan.isActive(state: Self.state(workplaces: 0), canCollect: true))
+    }
+
+    @Test("Five workplaces fit in ten circles")
+    func fivePlaces() {
+        #expect(WorkplaceMonitorPlan.wantedConditions(state: Self.state(workplaces: 5), canCollect: true).count == 10)
+    }
+
+    @Test("A relaunch keeps what the system holds and adds nothing twice")
+    func reconcileKeeps() {
+        let wanted = WorkplaceMonitorPlan.wantedConditions(state: Self.state(workplaces: 2), canCollect: true)
+        let plan = WorkplaceMonitorPlan.reconcile(registered: Set(wanted.map(\.identifier)), wanted: wanted)
+        #expect(plan.remove.isEmpty)
+        #expect(plan.add.isEmpty)
+    }
+
+    @Test("Moving a workplace replaces its circles; others stay; strangers go")
+    func reconcileEdit() throws {
+        var state = Self.state(workplaces: 2)
+        let before = WorkplaceMonitorPlan.wantedConditions(state: state, canCollect: true)
+        let moved = state.workplaces[0].id
+        try state.updateWorkplace(moved, latitude: 32)
+        let after = WorkplaceMonitorPlan.wantedConditions(state: state, canCollect: true)
+        let plan = WorkplaceMonitorPlan.reconcile(registered: Set(before.map(\.identifier) + ["Stranger1"]), wanted: after)
+        #expect(Set(plan.remove) == Set(before.filter { $0.workplaceID == moved }.map(\.identifier) + ["Stranger1"]))
+        #expect(plan.add.count == 2)
+        #expect(plan.add.allSatisfy { $0.workplaceID == moved && $0.latitude == 32 })
+    }
+
+    @Test("Only the inner circle filling and the outer one emptying are crossings")
+    func events() throws {
+        let id = UUID()
+        let inner = WorkplaceMonitorPlan.identifier(workplaceID: id, generation: 3, ring: .inner)
+        let outer = WorkplaceMonitorPlan.identifier(workplaceID: id, generation: 3, ring: .outer)
+        func event(_ identifier: String, _ state: WorkplaceConditionState) -> AutomationEvent? {
+            WorkplaceMonitorPlan.event(identifier: identifier, state: state, observedAt: Self.now,
+                                       receivedAt: Self.now.addingTimeInterval(40), isInitialState: false)
+        }
+        let arrival = try #require(event(inner, .satisfied))
+        #expect(arrival.type == .enterInner)
+        #expect(arrival.workplaceID == id)
+        #expect(arrival.registrationGeneration == 3)
+        #expect(arrival.source == .nativeGeofence)
+        #expect(arrival.observedAt == Self.now)
+        #expect(arrival.timestampBasis == .systemObservation)
+        #expect(event(outer, .unsatisfied)?.type == .exitOuter)
+        #expect(event(inner, .unsatisfied) == nil)
+        #expect(event(outer, .satisfied) == nil)
+        // Unknown is never a departure.
+        #expect(event(outer, .unknown) == nil)
+        #expect(event(inner, .unknown) == nil)
+        #expect(event("Stranger1", .satisfied) == nil)
+    }
+
+    @Test("A missing or impossible observation time falls back to receipt time")
+    func observationTime() throws {
+        let identifier = WorkplaceMonitorPlan.identifier(workplaceID: UUID(), generation: 1, ring: .inner)
+        let missing = try #require(WorkplaceMonitorPlan.event(
+            identifier: identifier, state: .satisfied, observedAt: nil, receivedAt: Self.now, isInitialState: false
+        ))
+        #expect(missing.observedAt == nil)
+        #expect(missing.timestampBasis == .callbackReceipt)
+        let future = try #require(WorkplaceMonitorPlan.event(
+            identifier: identifier, state: .satisfied, observedAt: Self.now.addingTimeInterval(3_600),
+            receivedAt: Self.now, isInitialState: false
+        ))
+        #expect(future.observedAt == nil)
+        #expect(WorkplaceMonitorPlan.event(
+            identifier: identifier, state: .satisfied, observedAt: Self.now, receivedAt: Self.now, isInitialState: true
+        )?.isInitialState == true)
+    }
+
+    @Test("A circle's first report is its baseline, once")
+    func baseline() {
+        var state = WorkplaceAutomationState()
+        state.awaitBaseline(["A", "B"])
+        let first = state.takeBaseline("A")
+        let second = state.takeBaseline("A")
+        #expect(first)
+        #expect(!second)
+        state.keepBaseline(only: ["C"])
+        #expect(state.awaitingBaseline.isEmpty)
+    }
+
+    @Test("An edited region's late event is stale for the coordinator")
+    @MainActor
+    func staleGeneration() throws {
+        var state = Self.state()
+        let place = state.workplaces[0]
+        let identifier = WorkplaceMonitorPlan.identifier(workplaceID: place.id, generation: place.registrationGeneration, ring: .inner)
+        try state.updateWorkplace(place.id, innerRadius: 300)
+        let event = try #require(WorkplaceMonitorPlan.event(
+            identifier: identifier, state: .satisfied, observedAt: Self.now, receivedAt: Self.now, isInitialState: false
+        ))
+        let disposition = WorkplaceAutomationRules.disposition(
+            for: event, now: Self.now, currentGeneration: state.workplace(place.id)?.registrationGeneration,
+            settings: state.settings, canCollect: true, canAutoApply: true, isManuallySuppressed: false
+        )
+        #expect(disposition == .ignore(.staleRegistration))
+    }
+
+    @Test("System flags map to the problems the settings page explains")
+    func problems() {
+        #expect(WorkplaceMonitorStatus.problems(
+            authorizationDenied: false, deniedGlobally: true, restricted: false, alwaysDenied: true,
+            accuracyLimited: true, conditionLimitExceeded: true, conditionUnsupported: false, persistenceUnavailable: false
+        ) == [.locationOff, .needsAlways, .needsPreciseLocation, .tooManyRegions])
+        #expect(WorkplaceMonitorStatus.problems(
+            authorizationDenied: false, deniedGlobally: false, restricted: false, alwaysDenied: false,
+            accuracyLimited: false, conditionLimitExceeded: false, conditionUnsupported: false, persistenceUnavailable: false
+        ).isEmpty)
+        #expect(!WorkplaceMonitorStatus().isRegistered)
+        #expect(WorkplaceMonitorStatus(registeredCount: 2, wantedCount: 2).isRegistered)
+    }
+}

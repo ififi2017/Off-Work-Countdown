@@ -62,6 +62,7 @@
     <string name="applyToToday">오늘도 변경</string>
     <string name="auto">시스템</string>
     <string name="automationActionJustEarly">일찍 도착만 함</string>
+    <string name="automationActionMovedHere">다른 근무지에서 이동</string>
     <string name="automationActionNotWorking">근무 중 아님</string>
     <string name="automationActionRecordExtra">초과 근무로 기록</string>
     <string name="automationActionStartedWork">근무 시작함</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">DoneAt에 출근했다고 알려요. 특정 장소에 도착하거나 Wi-Fi에 연결될 때 같은 개인용 자동화에서 사용하세요.</string>
     <string name="automationIntentRecordDeparture">퇴근 기록</string>
     <string name="automationIntentRecordDepartureDescription">DoneAt에 퇴근했다고 알려요. 특정 장소를 떠나거나 집중 모드를 끌 때 같은 개인용 자동화에서 사용하세요.</string>
+    <string name="automationNoticeArrivedApplied">%1$s에 출근이 기록되었어요.</string>
+    <string name="automationNoticeArrivedRecorded">%1$s 도착을 기록해 두었어요. 확인하기 전까지 근무 시간은 그대로예요.</string>
+    <string name="automationNoticeLeftApplied">%1$s에 퇴근이 기록되었어요.</string>
+    <string name="automationNoticeLeftRecorded">%1$s 출발을 기록해 두었어요. 확인하기 전까지 근무 시간은 그대로예요.</string>
     <string name="automationPromptEarlyVisit">일찍 도착하셨네요. 근무를 시작하셨나요?</string>
     <string name="automationPromptExtraVisit">이번 방문을 초과 근무로 기록할까요?</string>
     <string name="automationPromptLateArrival">평소보다 조금 늦게 도착한 것으로 기록됐어요. 오늘도 평소처럼 기록할까요?</string>
@@ -133,6 +138,11 @@
     <string name="automationUIIntro">DoneAt이 근무지에 도착하거나 떠나는 것을 알아채고 근무 시간을 기록해 줘요. 직접 켜기 전에는 꺼져 있어요.</string>
     <string name="automationUILeaveRange">%1$sm 밖으로 나가면 떠난 것으로 봐요</string>
     <string name="automationUILocationFailed">위치를 찾을 수 없어요. 창가나 야외에서 다시 시도해 보세요.</string>
+    <string name="automationUIMonitorLastEvent">마지막 감지: %1$s.</string>
+    <string name="automationUIMonitorLocationOff">위치 서비스가 꺼져 있어요. 설정 &gt; 개인정보 보호 및 보안에서 켤 수 있어요.</string>
+    <string name="automationUIMonitorProblem">iOS에서 근무지 감지를 시작하지 못했어요. 근무지 자동화를 껐다가 다시 켜 보세요.</string>
+    <string name="automationUIMonitorStarting">근무지 감지를 준비하는 중이에요. 잠시 걸릴 수 있어요.</string>
+    <string name="automationUIMonitorWatching">도착과 출발을 지켜보는 중이에요.</string>
     <string name="automationUINoLocationYet">“현재 위치 사용”을 탭해 지도에 근무지를 표시하세요.</string>
     <string name="automationUINoteChangedByYou">직접 수정한 날이에요</string>
     <string name="automationUINoteEarlyStart">일찍 도착함 — 확인하면 반영돼요</string>
@@ -140,7 +150,11 @@
     <string name="automationUINoteLateDetection">늦게 감지되어 시간이 정확하지 않을 수 있어요</string>
     <string name="automationUINoteLeftEarly">예정된 종료 시간보다 일찍 떠남</string>
     <string name="automationUINoteRecordsUnavailable">기록을 업데이트하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="automationUINotifyArrivals">도착 및 출발 시 알림</string>
+    <string name="automationUINotifyArrivalsNote">조용한 알림으로 기록된 내용을 알려 드려요. 꺼도 감지는 계속돼요.</string>
     <string name="automationUIPaused">일시 중지됨</string>
+    <string name="automationUIPausedShift">%1$s 일시 중지됨</string>
+    <string name="automationUIPausedShiftNote">이 근무를 직접 수정하셨기 때문에 자동화는 그대로 두어요.</string>
     <string name="automationUIPlanned">예정 %1$s</string>
     <string name="automationUIPreviewIntro">해당 날짜의 근무 시간이 표시된 대로 바뀌어요. 나중에 실행 취소할 수 있어요.</string>
     <string name="automationUIPreviewTitle">이 시간을 적용할까요?</string>
@@ -149,6 +163,7 @@
     <string name="automationUIRangeNote">떠남 범위는 도착 범위보다 100m 더 넓어서, 경계 근처를 걸어도 드나든 것으로 처리되지 않아요.</string>
     <string name="automationUIRecentSection">최근 적용</string>
     <string name="automationUIRecordingSection">기록</string>
+    <string name="automationUIResume">다시 시작</string>
     <string name="automationUIReviewEmpty">확인할 항목이 없어요</string>
     <string name="automationUIReviewEmptyNote">감지된 도착 및 출발 시간이 먼저 여기에 표시돼요.</string>
     <string name="automationUIReviewIntro">이 시간들은 아직 근무 시간에 반영되지 않았어요. 맞는 시간을 적용하세요.</string>
