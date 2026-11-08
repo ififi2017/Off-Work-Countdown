@@ -65,6 +65,10 @@
 	<true/>
 	<key>NSAlarmKitUsageDescription</key>
 	<string>DoneAt rings before each shift, at the time you choose, to wake you up.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>DoneAt notices when you arrive at or leave a saved workplace, even when the app is closed, to help record your work hours. Workplace locations stay on this device.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>DoneAt uses your location to save where you are now as a workplace. Workplace locations stay on this device.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Face ID keeps your salary figures private on this device.</string>
 	<key>NSSupportsLiveActivities</key>

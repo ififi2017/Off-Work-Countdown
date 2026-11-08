@@ -2,3 +2,5 @@
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID giữ dữ liệu lương của bạn riêng tư trên thiết bị này.";
 "NSAlarmKitUsageDescription" = "DoneAt reo trước mỗi ca vào giờ bạn chọn để đánh thức bạn.";
+"NSLocationWhenInUseUsageDescription" = "DoneAt dùng vị trí của bạn để lưu nơi bạn đang ở làm nơi làm việc. Vị trí nơi làm việc chỉ lưu trên thiết bị này.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "DoneAt nhận biết khi bạn đến hoặc rời một nơi làm việc đã lưu, kể cả khi ứng dụng đã đóng, để giúp ghi lại giờ làm của bạn. Vị trí nơi làm việc chỉ lưu trên thiết bị này.";

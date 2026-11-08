@@ -28,6 +28,11 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
         }
         // Before launch returns, so a tap that cold-starts the app is seen.
         UNUserNotificationCenter.current().delegate = self
+#if DEBUG
+        // Plan 021 P0: a geofence crossing can launch the app in the
+        // background; the probe's monitor must exist before launch returns.
+        WorkplaceProbe.shared.resumeAfterLaunch()
+#endif
         Task { _ = try? await AppRuntime.loadShared() }
         return true
     }

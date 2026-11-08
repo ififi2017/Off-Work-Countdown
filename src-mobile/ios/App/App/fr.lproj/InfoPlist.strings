@@ -2,3 +2,5 @@
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID garde vos données de salaire privées sur cet appareil.";
 "NSAlarmKitUsageDescription" = "DoneAt sonne avant chaque service, à l’heure que vous choisissez, pour vous réveiller.";
+"NSLocationWhenInUseUsageDescription" = "DoneAt utilise votre position pour enregistrer l’endroit où vous êtes comme lieu de travail. Les lieux de travail restent sur cet appareil.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "DoneAt détecte quand vous arrivez à un lieu de travail enregistré ou le quittez, même app fermée, pour vous aider à noter vos heures. Les lieux de travail restent sur cet appareil.";

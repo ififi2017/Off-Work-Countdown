@@ -940,6 +940,14 @@ cd src-mobile/android
 - 测试：新增 `WorkplaceAutomationCoordinatorTests` 13 项；三个自动化套件共 40 项通过，完整 `AppTests` 82 个套件 1073 项串行通过（iPhone 18 Pro 模拟器 iOS 27.1，无头）；`check:ios`、`check:ios-strings` 通过。
 - **未做**：从现有排班生成 `AutomationShift` 的适配器（随 I1／I2 接入）、`WorkTimeProvenance` 同步实体与 schema 8（C1）、通知额度接入、外勤／出差／居家范围设置的存储、上班后 30 分钟询问与缺失结束核对的通知排程、UI 与文案；无 UI 改动，未做视觉检查。
 
+### 2026-11-08 · P0 真机探针（仅 DEBUG）
+
+- 分支 `claude/ios-330-p0-probe`，叠在 P1b 之上。
+- 新增 `Native/Services/WorkplaceProbe.swift`、`WorkplaceProbeLog.swift` 与 `Native/Views/DebugWorkplaceProbeView.swift`，全部 `#if DEBUG`；调试菜单新增“计划 021 · P0 → 工作地点探针”。`AppDelegate` 在 `didFinishLaunching` 返回前恢复 `CLServiceSession(authorization: .always)` 与 `CLMonitor`。探针记录事件、系统诊断、前后台与锁屏状态、授权与精度，不写工时、不发通知；文件排除备份，导出不含坐标。
+- `Info.plist` 新增 `NSLocationWhenInUseUsageDescription`、`NSLocationAlwaysAndWhenInUseUsageDescription`，20 个 `InfoPlist.strings`（19 语言 + es-MX）同步翻译；`UIBackgroundModes` 未改。Release 构建不含探针代码，但含这两条用途说明（I2 也需要）。
+- 新增 `docs/reviews/021-workplace-automation-capability.md`：平台基线、探针用法、§8.2 验证矩阵（全部未验证）与结论对 I2 的影响。
+- 测试：`WorkplaceProbeLogTests` 5 项；完整 `AppTests` 83 个套件 1078 项串行通过；Release 模拟器构建通过；`check:ios`、`check:ios-strings` 通过。探针界面未做视觉检查，真机验证待用户进行。
+
 后续记录格式沿用 019：`日期 · 批次`，列出实现范围、实际通过的测试及数量、失败项、未验证项、证据路径、关联 PR；不能只写“已完成自动上下班”。
 
 ## 10. 参考资料
