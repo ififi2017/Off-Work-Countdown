@@ -219,6 +219,16 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         proposals.first { $0.id == id }
     }
 
+    /// Whether this device still holds the adopted detection behind a records
+    /// day's boundary (§3.11). A synced or restored day without it is shown
+    /// as a historical source, never as re-checked here.
+    func hasAdoptedDetection(dayKey: String, boundary: WorkTimeBoundary, at time: Date) -> Bool {
+        proposals.contains {
+            $0.isAdopted && $0.shift.anchorDayKey == dayKey && $0.boundary == boundary
+                && abs($0.proposedTime.timeIntervalSince(time)) < 1
+        }
+    }
+
     /// The adopted time for a shift boundary, latest first.
     func adoptedTime(shiftKey: String, boundary: WorkTimeBoundary) -> Date? {
         proposals
