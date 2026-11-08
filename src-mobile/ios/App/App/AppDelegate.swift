@@ -28,6 +28,9 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
         }
         // Before launch returns, so a tap that cold-starts the app is seen.
         UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().setNotificationCategories(
+            WorkplaceAutomationNotificationPlan.categories(localizer: localizer, locale: locale)
+        )
 #if DEBUG
         // Plan 021 P0: a geofence crossing can launch the app in the
         // background; the probe's monitor must exist before launch returns.
@@ -113,6 +116,24 @@ extension OffWorkCountdownApplicationDelegate: UNUserNotificationCenterDelegate 
         let userInfo = response.notification.request.content.userInfo
         let link = userInfo["url"] as? String
         let routeName = userInfo["route"] as? String
+        // A visit question answered from the notification itself: do the
+        // work before telling the system the action is complete.
+        let action = response.actionIdentifier
+        if action == WorkplaceAutomationNotificationPlan.startedWorkAction
+            || action == WorkplaceAutomationNotificationPlan.notWorkingAction,
+           let visitID = (userInfo[WorkplaceAutomationNotificationPlan.visitIDKey] as? String).flatMap(UUID.init) {
+            // Called once, on the main actor, after the answer is saved.
+            nonisolated(unsafe) let completionHandler = completionHandler
+            Task { @MainActor in
+                if let runtime = try? await AppRuntime.loadShared() {
+                    _ = await runtime.workplaceAutomation.answerVisit(
+                        visitID, startedWork: action == WorkplaceAutomationNotificationPlan.startedWorkAction
+                    )
+                }
+                completionHandler()
+            }
+            return
+        }
         completionHandler()
         Task { @MainActor in
             // A report names the exact period it closed, so a tap days later

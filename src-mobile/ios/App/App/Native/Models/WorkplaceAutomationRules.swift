@@ -358,6 +358,11 @@ nonisolated enum WorkplaceAutomationRules {
         return mergeTouching(segments.filter { $0.endAtMs > $0.startAtMs })
     }
 
+    /// Joins overlapping or touching segments after sorting them.
+    static func union(_ segments: [NativeShiftSegment]) -> [NativeShiftSegment] {
+        mergeTouching(segments.filter { $0.endAtMs > $0.startAtMs }.sorted { $0.startAtMs < $1.startAtMs })
+    }
+
     private static func mergeTouching(_ segments: [NativeShiftSegment]) -> [NativeShiftSegment] {
         var merged: [NativeShiftSegment] = []
         for segment in segments.sorted(by: { $0.startAtMs < $1.startAtMs }) {

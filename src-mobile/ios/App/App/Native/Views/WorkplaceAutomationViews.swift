@@ -31,6 +31,9 @@ struct WorkplaceAutomationSettingsContent: View {
     var onOpenSystemSettings: () -> Void = {}
     var onAddWorkplace: () -> Void = {}
     var onOpenWorkplace: (SavedWorkplace) -> Void = { _ in }
+    var contexts: [AutomationContextItem] = []
+    var onAddContext: () -> Void = {}
+    var onDeleteContext: (UUID) -> Void = { _ in }
 
     private var isOn: Bool { settings.isMonitoringEnabled && isPlus }
     private var isFull: Bool { workplaces.count >= WorkplaceAutomation.maximumWorkplaces }
@@ -63,6 +66,7 @@ struct WorkplaceAutomationSettingsContent: View {
                         .padding(.top, OWCDesign.sectionGap)
                     workplacesSection
                     recordingSection
+                    contextSection
                 }
                 reviewSection
                 shortcutsSection
@@ -181,6 +185,39 @@ struct WorkplaceAutomationSettingsContent: View {
                 .labelsHidden()
             }
         }
+    }
+
+    // MARK: Work status
+
+    @ViewBuilder private var contextSection: some View {
+        OWCSectionHeader(title: text.t("automationUIContextSection"))
+            .padding(.top, OWCDesign.sectionGap)
+        OWCGroupCard {
+            NavigationLink(value: AppRoute.workplaceAutomationStatus) {
+                OWCRow(icon: "checkmark.circle", title: text.t("automationStatusTitle")) {
+                    OWCDetailAccessory(text: nil)
+                }
+            }
+            .buttonStyle(OWCRowButtonStyle())
+            ForEach(contexts) { item in
+                OWCRow(icon: item.context.symbol, title: text.t(item.context.labelKey), subtitle: item.range) {
+                    Menu {
+                        Button(role: .destructive) { onDeleteContext(item.id) } label: {
+                            Label(text.t("automationUIDeleteContext"), systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.body)
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
+                }
+            }
+            Button(action: onAddContext) {
+                OWCRow(icon: "plus", title: text.t("automationUIAddContext"), isLast: true) { EmptyView() }
+            }
+            .buttonStyle(OWCRowButtonStyle())
+        }
+        footnote(text.t("automationUIContextNote"))
     }
 
     // MARK: Review and Shortcuts
@@ -385,6 +422,13 @@ struct AutomationReviewChange: Identifiable, Equatable {
     let dayTitle: String
     let before: String
     let after: String
+}
+
+/// A saved range of days away from the office, as the settings page lists it.
+struct AutomationContextItem: Identifiable, Equatable {
+    let id: UUID
+    let context: WorkDayContext
+    let range: String
 }
 
 /// A recently adopted time that can still be undone.
