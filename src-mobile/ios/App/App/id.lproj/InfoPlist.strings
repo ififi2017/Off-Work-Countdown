@@ -2,3 +2,5 @@
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID menjaga data gaji Anda tetap privat di perangkat ini.";
 "NSAlarmKitUsageDescription" = "DoneAt berbunyi sebelum setiap sif, pada waktu pilihanmu, untuk membangunkanmu.";
+"NSLocationWhenInUseUsageDescription" = "DoneAt memakai lokasimu untuk menyimpan tempatmu sekarang sebagai tempat kerja. Lokasi tempat kerja tetap di perangkat ini.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "DoneAt mengetahui saat kamu tiba di atau meninggalkan tempat kerja yang disimpan, bahkan saat aplikasi tertutup, untuk membantu mencatat jam kerjamu. Lokasi tempat kerja tetap di perangkat ini.";

@@ -70,6 +70,18 @@ struct DebugMenuView: View {
                 }
 
                 Section {
+                    NavigationLink {
+                        DebugWorkplaceProbeView()
+                    } label: {
+                        Label(String("工作地点探针"), systemImage: "location.viewfinder")
+                    }
+                } header: {
+                    Text(verbatim: "计划 021 · P0")
+                } footer: {
+                    Text(verbatim: "仅 Debug。在真机上记录地理围栏事件，不写工时、不发通知。Release 构建没有这个入口。")
+                }
+
+                Section {
                     Toggle(isOn: $ignoreReviewThresholds) {
                         Label("忽略评分门槛", systemImage: "star.bubble")
                     }

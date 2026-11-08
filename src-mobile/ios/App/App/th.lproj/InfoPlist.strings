@@ -2,3 +2,5 @@
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID ช่วยปกป้องข้อมูลเงินเดือนของคุณบนเครื่องนี้";
 "NSAlarmKitUsageDescription" = "DoneAt จะดังก่อนแต่ละกะตามเวลาที่คุณเลือกเพื่อปลุกคุณ";
+"NSLocationWhenInUseUsageDescription" = "DoneAt ใช้ตำแหน่งของคุณเพื่อบันทึกสถานที่ที่คุณอยู่ตอนนี้เป็นที่ทำงาน ตำแหน่งที่ทำงานจะอยู่ในอุปกรณ์นี้เท่านั้น";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "DoneAt จะรู้เมื่อคุณมาถึงหรือออกจากที่ทำงานที่บันทึกไว้ แม้ปิดแอปอยู่ เพื่อช่วยบันทึกชั่วโมงทำงานของคุณ ตำแหน่งที่ทำงานจะอยู่ในอุปกรณ์นี้เท่านั้น";
