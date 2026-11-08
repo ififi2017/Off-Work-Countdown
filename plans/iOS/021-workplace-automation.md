@@ -920,6 +920,15 @@ cd src-mobile/android
 - 未改源码、构建、测试或发布。同日用户批准 §0.2 第 4 项隐私例外，已写入 `AGENTS.md`。
 - 同日用户确认 §0.3：通知额度预留 3 个、自动化存储与 `DayOverride` 的边界、`workTimeProvenance` 实体与 Android 只读保留。
 
+### 2026-11-08 · P1a 纯规则与本机存储（3.3.0 开发开始）
+
+- 基线 `origin/main` `e4d63c3a`，分支 `claude/ios-330-automation-contracts`。
+- 新增 `Native/Models/WorkplaceAutomationRules.swift`：§3.1 实现默认常量（5 地点、到达匹配 −120／+180 分钟、6 小时自动延续、15 分钟事件时效、90 天参考、200／300 米双圈）；唯一班次匹配（含跨夜离开归前一班）；早到／掐点／晚到判定（§3.9 的 08:20／08:30／08:50 边界）；临时外出与加班离开；上班后 30 分钟询问的内容判定（外勤／出差／居家／全天请假不问）；多地点聚合；自动应用／待复核／忽略的决定（监控开关、注册代次、初始基线、人工抑制、休息、观察时间缺失或过旧、权益、自动应用开关；用户确认不受开关限制）；按计划段裁剪并保留午休、加班延长末段的建议工作段；`WorkplaceAutomationNotificationPlan` 3 个名额（未开启监控时为 0）与 identifier。
+- 新增 `Native/Services/WorkplaceAutomationStore.swift`：本机专用状态（地点、事件、建议、命令回执、所在地点集合、按班次身份的人工抑制、单调递增的注册代次）；第 6 个地点拒绝、停用仍占名额；事件与回执按 ID 幂等；90 天清理；文件 `completeFileProtectionUntilFirstUserAuthentication`，文件与目录 `isExcludedFromBackup`；损坏或更新版本的文件报 `unreadable` 且不覆盖。
+- `PlusEntitlement` 新增 `canCollectAutomation`／`canAutoApplyAutomation`（仅有效 Plus，不沿用 `shouldCollectObservations` 的未购买例外）与 `canReviewExistingAutomation`（始终可复核纠错）。
+- 测试：`WorkplaceAutomationRulesTests` 16 项、`WorkplaceAutomationStoreTests` 11 项，iPhone 18 Pro 模拟器（iOS 27.1）无头运行 27 项全部通过，完整 `AppTests` 81 个套件 1060 项串行通过；`check:ios`、`check:ios-strings` 通过。
+- **未做**：尚未接入 `NotificationService`（通知额度在 I2 有监控开关后接入，未开启时额度不变）、统一班次命令与 `DayOverride` 写入、`WorkTimeProvenance` 实体与 schema 8、快捷指令、`CLMonitor`、UI 与文案；无 UI 改动，未做视觉检查；P0 真机实测未开始。
+
 后续记录格式沿用 019：`日期 · 批次`，列出实现范围、实际通过的测试及数量、失败项、未验证项、证据路径、关联 PR；不能只写“已完成自动上下班”。
 
 ## 10. 参考资料

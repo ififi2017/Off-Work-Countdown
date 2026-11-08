@@ -200,6 +200,13 @@ enum PlusEntitlementDecision {
             return snapshot.subscription == nil && snapshot.lifetime == nil
         }
     }
+
+    /// Workplace automation (plan 021 §3.14) is Plus only: unlike timer
+    /// observations, a skip-the-paywall user does not collect it.
+    static func collectsAutomation(authorization: PlusAuthorization) -> Bool {
+        if case .authorized = authorization { return true }
+        return false
+    }
 }
 
 enum PlusPendingAction: Equatable, Sendable {
@@ -488,6 +495,18 @@ final class PlusEntitlement {
             snapshot: cachedSnapshot
         )
     }
+
+    /// New workplace detection and its notifications (plan 021 §3.14).
+    var canCollectAutomation: Bool {
+        PlusEntitlementDecision.collectsAutomation(authorization: authorization)
+    }
+
+    /// Detected times may change records without a tap only while Plus is on.
+    var canAutoApplyAutomation: Bool { canCollectAutomation }
+
+    /// Reviewing, adopting, correcting or undoing what automation already
+    /// produced stays open after Plus ends, so nothing becomes uncorrectable.
+    var canReviewExistingAutomation: Bool { true }
 
     init(
         defaults: UserDefaults = .standard,
