@@ -929,6 +929,36 @@ cd src-mobile/android
 - 测试：`WorkplaceAutomationRulesTests` 16 项、`WorkplaceAutomationStoreTests` 11 项，iPhone 18 Pro 模拟器（iOS 27.1）无头运行 27 项全部通过，完整 `AppTests` 81 个套件 1060 项串行通过；`check:ios`、`check:ios-strings` 通过。
 - **未做**：尚未接入 `NotificationService`（通知额度在 I2 有监控开关后接入，未开启时额度不变）、统一班次命令与 `DayOverride` 写入、`WorkTimeProvenance` 实体与 schema 8、快捷指令、`CLMonitor`、UI 与文案；无 UI 改动，未做视觉检查；P0 真机实测未开始。
 
+### 2026-11-08 · P1b 统一命令与 `DayOverride` 写入
+
+- 分支 `claude/ios-330-automation-commands`，叠在 P1a（PR #368）之上。
+- 新增 `Native/Services/WorkplaceAutomationCoordinator.swift`：地理围栏、快捷指令与复核列表共用的唯一写入入口。`receive` 先把事件写入本机存储，再判定、再经 `RecordsActions` 写 `DayOverride.customSegments`，最后存回执；`applyReviewed` 单条／批量采用（每条独立回执、共同 `batchID`，重复点击不重复应用）；`dismiss` 仅留参考；`undo` 带版本检查的补偿并抑制该班次；`holdForManualChange` 供人工修改时调用。
+- `RecordsActions` 新增 `writeAutomationSegments`／`restoreAutomationOverride`：不经 Records 页的 Plus 门禁（§3.14 历史纠错保护，自动写入由调用方检查 `canAutoApplyAutomation`）；当日行在自动化上次写入后被人改过（`editCount` 不符）即为冲突、不覆盖；仅复核列表中用户明确采用时可替换人工版本。
+- 规则：迟到按实际到达、按原计划下班，晚离开延长末段；掐点／正点的一天不写记录；午间离开只留痕；早到即使开启自动应用也须用户确认；离开 A 仍在 B 内不算离开；人工修改后的后续自动事件忽略并保留参考。
+- 崩溃窗口：事件信封保存失败则不碰记录；记录已写而回执未存时，重试发现当日已是相同工作段，返回 `alreadyApplied` 且后续离开仍可延长。损坏的自动化文件不被覆盖。
+- `WorkTimeProposal` 改为按班次边界（上班／下班）记录，并保存当时的计划班次，日后复核不依赖当天排班；`AutomationShift` 增加 `anchorDayKey`。
+- 测试：新增 `WorkplaceAutomationCoordinatorTests` 13 项；三个自动化套件共 40 项通过，完整 `AppTests` 82 个套件 1073 项串行通过（iPhone 18 Pro 模拟器 iOS 27.1，无头）；`check:ios`、`check:ios-strings` 通过。
+- **未做**：从现有排班生成 `AutomationShift` 的适配器（随 I1／I2 接入）、`WorkTimeProvenance` 同步实体与 schema 8（C1）、通知额度接入、外勤／出差／居家范围设置的存储、上班后 30 分钟询问与缺失结束核对的通知排程、UI 与文案；无 UI 改动，未做视觉检查。
+
+### 2026-11-08 · P0 真机探针（仅 DEBUG）
+
+- 分支 `claude/ios-330-p0-probe`，叠在 P1b 之上。
+- 新增 `Native/Services/WorkplaceProbe.swift`、`WorkplaceProbeLog.swift` 与 `Native/Views/DebugWorkplaceProbeView.swift`，全部 `#if DEBUG`；调试菜单新增“计划 021 · P0 → 工作地点探针”。`AppDelegate` 在 `didFinishLaunching` 返回前恢复 `CLServiceSession(authorization: .always)` 与 `CLMonitor`。探针记录事件、系统诊断、前后台与锁屏状态、授权与精度，不写工时、不发通知；文件排除备份，导出不含坐标。
+- `Info.plist` 新增 `NSLocationWhenInUseUsageDescription`、`NSLocationAlwaysAndWhenInUseUsageDescription`，20 个 `InfoPlist.strings`（19 语言 + es-MX）同步翻译；`UIBackgroundModes` 未改。Release 构建不含探针代码，但含这两条用途说明（I2 也需要）。
+- 新增 `docs/reviews/021-workplace-automation-capability.md`：平台基线、探针用法、§8.2 验证矩阵（全部未验证）与结论对 I2 的影响。
+- 测试：`WorkplaceProbeLogTests` 5 项；完整 `AppTests` 83 个套件 1078 项串行通过；Release 模拟器构建通过；`check:ios`、`check:ios-strings` 通过。探针界面未做视觉检查，真机验证待用户进行。
+
+### 2026-11-08 · C1 来源摘要同步（schema 8）
+
+- 分支 `claude/ios-330-provenance-sync`，叠在 P1b（PR #369，已含 #370 探针）之上。
+- 新增 `Native/Models/WorkTimeProvenance.swift`：`RecordEntityType.workTimeProvenance`，每个归属日一行（iCloud 记录名 `prov.<dayKey>`，对应 `day.<dayKey>`），行内按边界（上班／下班）各一条：采用时间、来源类型、`observedAt?`、`receivedAt`、`appliedAt`、采用方式（自动／复核）、`batchID?`、规则版本、证据等级（系统观察时间／仅回调时间／外部动作／本人确认）、判定原因（原样保留字符串）。不含坐标、SSID、地点名称或围栏标识；`WorkTimeBoundary` 移入此文件，使记录编解码不依赖自动化存储。
+- “定位认证”只在显示时推导：`WorkTimeProvenance.verification(of:provenance:override:)` 比较采用时间与当前 `DayOverride` 的首段开始／末段结束；不一致、已清除或无覆盖时为“自动检测后手动调整”。尚无界面调用（UI 批次接入）。
+- `RecordJSON.schemaVersion` 7 → 8（接受 1…8），`RecordsSyncIdentity.entityTypeRevision` 3 → 4，`supportsFieldMerge = false`（整行胜负）；导入／导出、编辑戳、墓碑与复活、冲突中心（整版选择）、首次恢复判断都纳入该实体。3.2.x 读 v8 备份报未知版本；旧版 iCloud 客户端跳过未知实体，升级后修订号变大会完整重拉一次。
+- 写入：`WorkplaceAutomationCoordinator.adopt` 在写入前从建议与来源事件拷贝最小摘要，`RecordsActions.writeAutomationSegments` 在同一次档案保存中写 `DayOverride` 与来源行；崩溃重试若当日段已存在只补缺失的摘要。回执另存写入前的来源行与其编辑号，撤销（§3.6）时与 `DayOverride` 同批恢复：此前无来源行则写墓碑，来源行之后被改动（如用户已删除证据）则不动。清除 `DayOverride` 保留来源行；新增 `RecordsActions.deleteWorkTimeProvenance` 删除证据并写墓碑，日工时不变。人工修改不回写来源摘要。
+- Android（同版只读保留）：`RecordJson` 读写 schema 8、接受 1…8，新增 `WorkTimeProvenance` 模型、合并／墓碑／导出与冲突中心标题，不实现定位、不展示也不编辑。合成档案新增 `v8.json`，`illegal-v8` 改为 `illegal-v9`；记录 fixture 由 Swift 编解码重新生成，新增 31 例（含未知来源／边界／证据只拒该行、未知原因保留、坐标等未知字段丢弃、合并／墓碑／恢复）。`docs/android/wire-contract.md` §3.15、`baseline.md` 与 Android 规范同步。
+- 测试：iOS 新增 `WorkTimeProvenanceTests` 7 项、`WorkplaceAutomationCoordinatorTests` 新增 7 项（写入与隐私、复核采用、人工修改与清除后保留、撤销恢复／墓碑、删除证据、崩溃窗口），`RecordSchemaCompatibilityTests` 新增 v8 保留与未知顶层键跳过、各版本循环扩到 1…8、拒绝 v9；Android 新增 `RecordsTransferTest.workTimeProvenanceSurvivesImportAndExportUnchanged`，版本循环扩到 1…8。完整 `AppTests` 84 个套件 1093 项串行通过（iPhone 18 Pro 模拟器 iOS 27.1，无头）；`check:ios`、`check:ios-strings`、`npm test`（744 项）、`check:android-record-fixtures` 与合成档案检查通过；Android Play `:core:domain:test`（496）、`:core:data:test`（100）、`:core:designsystem:testDebugUnitTest`（13）、`:app:testDebugUnitTest`（228）、`lintDebug`、`assembleDebug`、`assembleRelease` 通过（Temurin 25.0.3 arm64，本机 Android Studio 缺 JBR）。CN 渠道未单独跑（未改渠道代码）。
+- **未做**：来源摘要与“定位认证”的界面、删除证据入口与文案（无新增本地化键）；账户切换、离线重试与删除传播只沿用现有通用同步机制，未做专项真机／CloudKit 验证；App Store 隐私标签与官网隐私页未改；未做视觉检查。
+
 后续记录格式沿用 019：`日期 · 批次`，列出实现范围、实际通过的测试及数量、失败项、未验证项、证据路径、关联 PR；不能只写“已完成自动上下班”。
 
 ## 10. 参考资料

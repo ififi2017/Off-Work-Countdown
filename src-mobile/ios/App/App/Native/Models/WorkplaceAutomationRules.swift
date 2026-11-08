@@ -64,9 +64,11 @@ nonisolated struct WorkplaceAutomationSettings: Codable, Equatable, Sendable {
 
 /// One planned shift as the schedule rules resolved it. The automation never
 /// derives its own schedule; callers build this from the existing snapshot.
-nonisolated struct AutomationShift: Equatable, Sendable {
+nonisolated struct AutomationShift: Codable, Equatable, Sendable {
     /// Stable identity: anchor day plus plan identity (§3.2).
     var shiftKey: String
+    /// The records day the shift belongs to (its start day, `YYYY-MM-DD`).
+    var anchorDayKey: String
     var plannedStart: Date
     var plannedEnd: Date
     /// Effective working segments, breaks already removed.
@@ -162,6 +164,10 @@ nonisolated enum AutomationReviewReason: String, Codable, Sendable {
     case beyondAutomaticWindow
     case earlyStartNeedsConfirmation
     case leftBeforePlannedEnd
+    /// The person changed the day after automation last wrote it.
+    case recordChangedByPerson
+    /// Records are locked or damaged; nothing was written.
+    case recordsUnavailable
 }
 
 nonisolated enum AutomationIgnoreReason: String, Codable, Sendable {
@@ -173,6 +179,8 @@ nonisolated enum AutomationIgnoreReason: String, Codable, Sendable {
     case noShift
     case ambiguousShift
     case restDayContext
+    /// Leaving before the planned end is only a trace (§3.10).
+    case temporaryAbsence
 }
 
 nonisolated enum AutomationDisposition: Equatable, Sendable {

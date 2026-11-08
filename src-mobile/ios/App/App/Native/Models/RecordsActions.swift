@@ -213,6 +213,155 @@ final class RecordsActions {
         }
     }
 
+    /// Plan 021: adopts workplace-automation times as the day's segments.
+    ///
+    /// Unlike a Records page edit this does not ask for Plus: adopting or
+    /// correcting results automation already produced stays open after Plus
+    /// ends (§3.14). New automatic writes are gated on `canAutoApplyAutomation`
+    /// by the caller. A row the person changed since automation last wrote it
+    /// (`expectedEditCount`) is never overwritten: that is a conflict. Only a
+    /// reviewed adoption, the person's explicit choice, passes
+    /// `replacingPersonEdits`.
+    ///
+    /// `provenance` is the adopted boundary's minimal summary (C1). It is
+    /// written in the same archive save as the override, so the day never
+    /// holds adopted times without their source or the other way round.
+    @discardableResult
+    func writeAutomationSegments(
+        dayKey: String,
+        segments: [NativeShiftSegment],
+        expectedEditCount: Int?,
+        replacingPersonEdits: Bool = false,
+        provenance: WorkTimeProvenance.Boundary? = nil
+    ) -> RecordCommand<AutomationDayWriteResult> {
+        records.submitCommand { [self] in
+            guard !records.blocksWrites, records.captureEnabled, !segments.isEmpty,
+                  segments.allSatisfy({ $0.endAtMs > $0.startAtMs }),
+                  let date = RecordJSON.date(fromDayKey: dayKey, calendar: preferences.recordsCalendar)
+            else { return .unavailable }
+            let current = liveOverride(dayKey)
+            let currentProvenance = liveProvenance(dayKey)
+            if let current, current.kind == .customSegments, current.segments == segments {
+                // A retry after the app stopped mid-command: both were saved
+                // together, so only a summary that is genuinely missing is added.
+                if let provenance, currentProvenance?.boundary(provenance.boundary)?.time != provenance.time {
+                    records.withBatchedWrites {
+                        records.upsertWorkTimeProvenance(
+                            adoptedProvenance(provenance, onto: currentProvenance, dayKey: dayKey)
+                        )
+                    }
+                }
+                return .unchanged(editCount: current.editCount)
+            }
+            if !replacingPersonEdits {
+                if let current, current.editCount != expectedEditCount { return .conflict }
+                if current == nil, expectedEditCount != nil { return .conflict }
+            }
+            records.withBatchedWrites {
+                records.ensureSeeded(hours: currentHours(date), at: date, timeZone: preferences.recordsTimeZone)
+                records.upsertOverride(
+                    DayOverride(
+                        dayKey: dayKey,
+                        shiftAnchorDate: date,
+                        kind: .customSegments,
+                        segments: segments,
+                        timeZoneIdentifier: preferences.recordsTimeZoneIdentifier
+                    )
+                )
+                if let provenance {
+                    records.upsertWorkTimeProvenance(
+                        adoptedProvenance(provenance, onto: currentProvenance, dayKey: dayKey)
+                    )
+                }
+            }
+            guard let written = liveOverride(dayKey) else { return .unavailable }
+            let provenanceWrite = provenance.flatMap { _ in
+                liveProvenance(dayKey).map {
+                    AutomationProvenanceWrite(previous: currentProvenance, editCount: $0.editCount)
+                }
+            }
+            return .written(previous: current, editCount: written.editCount, provenance: provenanceWrite)
+        }
+    }
+
+    /// Undoes one automation write by putting back the row it replaced, only
+    /// while the row is still exactly what automation wrote (§3.6).
+    ///
+    /// The day's provenance goes back to what it was before the write too,
+    /// unless it changed since (for example the person deleted the evidence).
+    @discardableResult
+    func restoreAutomationOverride(
+        dayKey: String,
+        previous: DayOverride?,
+        expectedEditCount: Int,
+        provenance: AutomationProvenanceWrite? = nil
+    ) -> RecordCommand<AutomationDayWriteResult> {
+        records.submitCommand { [self] in
+            guard !records.blocksWrites, records.captureEnabled,
+                  let date = RecordJSON.date(fromDayKey: dayKey, calendar: preferences.recordsCalendar)
+            else { return .unavailable }
+            guard let current = liveOverride(dayKey), current.editCount == expectedEditCount else { return .conflict }
+            let restored = previous ?? DayOverride(
+                dayKey: dayKey,
+                shiftAnchorDate: date,
+                kind: .cleared,
+                segments: [],
+                timeZoneIdentifier: preferences.recordsTimeZoneIdentifier
+            )
+            records.withBatchedWrites {
+                records.upsertOverride(restored)
+                if let provenance, liveProvenance(dayKey)?.editCount == provenance.editCount {
+                    if let earlier = provenance.previous {
+                        records.upsertWorkTimeProvenance(earlier)
+                    } else {
+                        records.erase(.workTimeProvenance, key: dayKey)
+                    }
+                }
+            }
+            guard let written = records.state.overrides.first(where: { $0.dayKey == dayKey }) else {
+                return .unavailable
+            }
+            return .written(previous: current, editCount: written.editCount)
+        }
+    }
+
+    /// Deletes the automation evidence for a day (§3.7). The tombstone reaches
+    /// other devices; the day's adopted times stay as they are.
+    @discardableResult
+    func deleteWorkTimeProvenance(dayKey: String) -> RecordCommand<Bool> {
+        records.submitCommand { [self] in
+            guard !records.blocksWrites, liveProvenance(dayKey) != nil else { return false }
+            records.erase(.workTimeProvenance, key: dayKey)
+            return true
+        }
+    }
+
+    private func liveProvenance(_ dayKey: String) -> WorkTimeProvenance? {
+        guard !records.state.isErased(.workTimeProvenance, key: dayKey) else { return nil }
+        return records.state.workTimeProvenance.first { $0.dayKey == dayKey }
+    }
+
+    private func adoptedProvenance(
+        _ entry: WorkTimeProvenance.Boundary,
+        onto current: WorkTimeProvenance?,
+        dayKey: String
+    ) -> WorkTimeProvenance {
+        (current ?? WorkTimeProvenance(
+            dayKey: dayKey,
+            boundaries: [],
+            timeZoneIdentifier: preferences.recordsTimeZoneIdentifier
+        )).adopting(entry)
+    }
+
+    /// The day's override unless it was erased or cleared back to the plan.
+    private func liveOverride(_ dayKey: String) -> DayOverride? {
+        guard !records.state.isErased(.dayOverride, key: dayKey),
+              let row = records.state.overrides.first(where: { $0.dayKey == dayKey }),
+              row.kind != .cleared
+        else { return nil }
+        return row
+    }
+
     @discardableResult
     func confirmDayAsScheduled(dayKey: String) -> RecordCommand<Bool> {
         records.submitCommand { [self] in
@@ -264,4 +413,23 @@ final class RecordsActions {
         }
     }
 
+}
+
+/// What happened to a workplace-automation record write.
+nonisolated enum AutomationDayWriteResult: Equatable, Sendable {
+    /// Written; `previous` and `provenance` are what an undo puts back.
+    case written(previous: DayOverride?, editCount: Int, provenance: AutomationProvenanceWrite? = nil)
+    /// The day already has exactly these segments.
+    case unchanged(editCount: Int)
+    /// The person changed the day since automation last wrote it.
+    case conflict
+    /// Records are locked, damaged or the day is invalid.
+    case unavailable
+}
+
+/// The provenance row an automation write replaced, and the edit count it
+/// left, so an undo restores it only while it is still that write's version.
+nonisolated struct AutomationProvenanceWrite: Codable, Equatable, Sendable {
+    var previous: WorkTimeProvenance?
+    var editCount: Int
 }

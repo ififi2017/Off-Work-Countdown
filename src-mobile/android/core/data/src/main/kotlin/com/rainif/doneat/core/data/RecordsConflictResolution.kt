@@ -88,6 +88,7 @@ object RecordsConflictResolution {
             RecordEntityType.ROSTER_DAY -> "rosterDays"
             RecordEntityType.LEAVE_BALANCE -> "leaveBalances"
             RecordEntityType.LEAVE_DAY -> "leaveDays"
+            RecordEntityType.WORK_TIME_PROVENANCE -> "workTimeProvenance"
         }
         val value = document.getValue(name)
         return (if (value is JsonArray) value.single() else value).jsonObject
@@ -108,6 +109,7 @@ object RecordsConflictResolution {
         RecordEntityType.ROSTER_DAY -> s.rosterDays.firstOrNull { it.dayKey == c.logicalKey }
         RecordEntityType.LEAVE_BALANCE -> s.leaveBalances.firstOrNull { it.id == c.logicalKey }
         RecordEntityType.LEAVE_DAY -> s.leaveDays.firstOrNull { it.dayKey == c.logicalKey }
+        RecordEntityType.WORK_TIME_PROVENANCE -> s.workTimeProvenance.firstOrNull { it.dayKey == c.logicalKey }
     }
 
     private fun editCount(row: Any): Int = when (row) {
@@ -125,6 +127,7 @@ object RecordsConflictResolution {
         is com.rainif.doneat.core.domain.schedule.RosterDay -> row.editCount
         is com.rainif.doneat.core.domain.records.LeaveBalance -> row.editCount
         is com.rainif.doneat.core.domain.records.LeaveDay -> row.editCount
+        is com.rainif.doneat.core.domain.records.WorkTimeProvenance -> row.editCount
         else -> error("unknown conflict row")
     }
 
@@ -145,6 +148,7 @@ object RecordsConflictResolution {
             RecordEntityType.ROSTER_DAY -> s.rosterDays.indexOfFirst { it.dayKey == key }.takeIf { it >= 0 }?.let { i -> s.copy(rosterDays = s.rosterDays.toMutableList().also { it[i] = it[i].copy(editCount = count, editedAtMs = now, editTieBreaker = tie) }) }
             RecordEntityType.LEAVE_BALANCE -> s.leaveBalances.indexOfFirst { it.id == key }.takeIf { it >= 0 }?.let { i -> s.copy(leaveBalances = s.leaveBalances.toMutableList().also { it[i] = it[i].copy(editCount = count, editedAtMs = now, editTieBreaker = tie) }) }
             RecordEntityType.LEAVE_DAY -> s.leaveDays.indexOfFirst { it.dayKey == key }.takeIf { it >= 0 }?.let { i -> s.copy(leaveDays = s.leaveDays.toMutableList().also { it[i] = it[i].copy(editCount = count, editedAtMs = now, editTieBreaker = tie) }) }
+            RecordEntityType.WORK_TIME_PROVENANCE -> s.workTimeProvenance.indexOfFirst { it.dayKey == key }.takeIf { it >= 0 }?.let { i -> s.copy(workTimeProvenance = s.workTimeProvenance.toMutableList().also { it[i] = it[i].copy(editCount = count, editedAtMs = now, editTieBreaker = tie) }) }
         }
     }
 }
