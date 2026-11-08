@@ -1,4 +1,4 @@
-#if DEBUG
+#if DEBUG || WORKPLACE_PROBE
 import CoreLocation
 import UIKit
 

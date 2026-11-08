@@ -10,6 +10,11 @@ struct AboutView<DebugMenu: View>: View {
 #if DEBUG
     @State private var debugUnlockCount = 0
     @State private var showsDebugMenu = false
+#elseif WORKPLACE_PROBE
+    // Plan 021 P0 internal TestFlight build: the probe alone, never the
+    // whole debug menu with its reset and seeding tools.
+    @State private var probeUnlockCount = 0
+    @State private var showsWorkplaceProbe = false
 #endif
 
     var body: some View {
@@ -30,6 +35,16 @@ struct AboutView<DebugMenu: View>: View {
                             )
                             .accessibilityAction(named: Text(text.t("debugMenu"))) {
                                 registerDebugLongPress()
+                            }
+#elseif WORKPLACE_PROBE
+                        Text(verbatim: OWCBrand.shortName)
+                            .font(.title2.bold())
+                            .contentShape(Rectangle())
+                            .onLongPressGesture(minimumDuration: 0.55, maximumDistance: 24) {
+                                probeUnlockCount += 1
+                                guard probeUnlockCount >= 2 else { return }
+                                probeUnlockCount = 0
+                                showsWorkplaceProbe = true
                             }
 #else
                         Text(verbatim: OWCBrand.shortName)
@@ -99,6 +114,11 @@ struct AboutView<DebugMenu: View>: View {
             debugMenu
         }
         .onAppear(perform: presentDebugMenuForQAIfRequested)
+#elseif WORKPLACE_PROBE
+        .sensoryFeedback(.selection, trigger: probeUnlockCount)
+        .sheet(isPresented: $showsWorkplaceProbe) {
+            NavigationStack { DebugWorkplaceProbeView() }
+        }
 #endif
     }
 

@@ -947,6 +947,7 @@ cd src-mobile/android
 - `Info.plist` 新增 `NSLocationWhenInUseUsageDescription`、`NSLocationAlwaysAndWhenInUseUsageDescription`，20 个 `InfoPlist.strings`（19 语言 + es-MX）同步翻译；`UIBackgroundModes` 未改。Release 构建不含探针代码，但含这两条用途说明（I2 也需要）。
 - 新增 `docs/reviews/021-workplace-automation-capability.md`：平台基线、探针用法、§8.2 验证矩阵（全部未验证）与结论对 I2 的影响。
 - 测试：`WorkplaceProbeLogTests` 5 项；完整 `AppTests` 83 个套件 1078 项串行通过；Release 模拟器构建通过；`check:ios`、`check:ios-strings` 通过。探针界面未做视觉检查，真机验证待用户进行。
+- 同日补充内部 TestFlight 探针版：探针改为 `DEBUG || WORKPLACE_PROBE` 编译；带旗标的 Release 建置在“关于”页长按“DoneAt”两次只打开探针页（不开放调试菜单），并显示“内部测试版，不得送审”横幅；做法与禁止送审写入 `docs/agent-guides/releases.md`。验证：带旗标 Release 模拟器构建通过且二进制含探针，普通 Release 二进制不含任何探针符号，完整 `AppTests` 1078 项通过。
 
 后续记录格式沿用 019：`日期 · 批次`，列出实现范围、实际通过的测试及数量、失败项、未验证项、证据路径、关联 PR；不能只写“已完成自动上下班”。
 
