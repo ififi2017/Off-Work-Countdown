@@ -28,18 +28,29 @@ nonisolated enum WorkTimeProposalStatus: String, Codable, Sendable {
     case superseded
 }
 
-/// A reviewable suggestion built from one or more events (§3.4).
+nonisolated enum WorkTimeBoundary: String, Codable, Sendable {
+    case start
+    case end
+}
+
+/// A reviewable suggestion for one boundary of one shift (§3.4). It keeps
+/// the planned shift it was made against, so reviewing it weeks later does
+/// not depend on today's schedule.
 nonisolated struct WorkTimeProposal: Codable, Equatable, Identifiable, Sendable {
     var id: UUID
-    var shiftKey: String
+    var shift: AutomationShift
+    var boundary: WorkTimeBoundary
+    var proposedTime: Date
     var sourceEventIDs: [UUID]
-    var proposedStart: Date?
-    var proposedEnd: Date?
     var status: WorkTimeProposalStatus
     var reasons: [AutomationReviewReason]
     var createdAt: Date
     var resolvedAt: Date?
+    var batchID: UUID?
     var rulesVersion: Int = WorkplaceAutomation.rulesVersion
+
+    var shiftKey: String { shift.shiftKey }
+    var isAdopted: Bool { status == .autoApplied || status == .manuallyApplied }
 }
 
 /// The structured result every automation command reports (§3.3).
@@ -58,7 +69,13 @@ nonisolated struct AutomationCommandReceipt: Codable, Equatable, Sendable {
     var commandID: UUID
     var outcome: AutomationCommandOutcome
     var completedAt: Date
-    var batchID: UUID?
+    var batchID: UUID? = nil
+    /// Set when the command wrote a day: what an undo needs.
+    var dayKey: String? = nil
+    var shiftKey: String? = nil
+    var previousOverride: DayOverride? = nil
+    var writtenEditCount: Int? = nil
+    var undoneAt: Date? = nil
 }
 
 nonisolated enum WorkplaceAutomationError: Error, Equatable {
@@ -82,6 +99,9 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
     private(set) var suppressedShiftKeys: [String: Date] = [:]
     /// Monotonic across edits and deletions so a generation never repeats.
     private(set) var lastRegistrationGeneration = 0
+    /// The day row's `editCount` right after automation last wrote it. A
+    /// different count means the person or another device changed the day.
+    private(set) var adoptedEditCounts: [String: Int] = [:]
 
     var canAddWorkplace: Bool { workplaces.count < WorkplaceAutomation.maximumWorkplaces }
 
@@ -184,6 +204,29 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         }
     }
 
+    func proposal(_ id: UUID) -> WorkTimeProposal? {
+        proposals.first { $0.id == id }
+    }
+
+    /// The adopted time for a shift boundary, latest first.
+    func adoptedTime(shiftKey: String, boundary: WorkTimeBoundary) -> Date? {
+        proposals
+            .filter { $0.shiftKey == shiftKey && $0.boundary == boundary && $0.isAdopted }
+            .max { ($0.resolvedAt ?? $0.createdAt) < ($1.resolvedAt ?? $1.createdAt) }?
+            .proposedTime
+    }
+
+    /// A newer suggestion for the same boundary replaces a pending one.
+    mutating func supersedePending(shiftKey: String, boundary: WorkTimeBoundary, at date: Date) {
+        for index in proposals.indices
+        where proposals[index].shiftKey == shiftKey
+            && proposals[index].boundary == boundary
+            && proposals[index].status == .pendingReview {
+            proposals[index].status = .superseded
+            proposals[index].resolvedAt = date
+        }
+    }
+
     var pendingProposals: [WorkTimeProposal] {
         proposals.filter { $0.status == .pendingReview }.sorted { $0.createdAt < $1.createdAt }
     }
@@ -200,6 +243,17 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         if let existing = self.receipt(for: receipt.commandID) { return existing }
         receipts.append(receipt)
         return receipt
+    }
+
+    mutating func markUndone(commandID: UUID, at date: Date) {
+        guard let index = receipts.firstIndex(where: { $0.commandID == commandID }) else { return }
+        receipts[index].undoneAt = date
+    }
+
+    func adoptedEditCount(dayKey: String) -> Int? { adoptedEditCounts[dayKey] }
+
+    mutating func setAdoptedEditCount(_ count: Int?, dayKey: String) {
+        adoptedEditCounts[dayKey] = count
     }
 
     // MARK: Manual priority

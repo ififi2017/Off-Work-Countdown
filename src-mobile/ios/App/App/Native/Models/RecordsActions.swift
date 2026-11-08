@@ -213,6 +213,89 @@ final class RecordsActions {
         }
     }
 
+    /// Plan 021: adopts workplace-automation times as the day's segments.
+    ///
+    /// Unlike a Records page edit this does not ask for Plus: adopting or
+    /// correcting results automation already produced stays open after Plus
+    /// ends (§3.14). New automatic writes are gated on `canAutoApplyAutomation`
+    /// by the caller. A row the person changed since automation last wrote it
+    /// (`expectedEditCount`) is never overwritten: that is a conflict. Only a
+    /// reviewed adoption, the person's explicit choice, passes
+    /// `replacingPersonEdits`.
+    @discardableResult
+    func writeAutomationSegments(
+        dayKey: String,
+        segments: [NativeShiftSegment],
+        expectedEditCount: Int?,
+        replacingPersonEdits: Bool = false
+    ) -> RecordCommand<AutomationDayWriteResult> {
+        records.submitCommand { [self] in
+            guard !records.blocksWrites, records.captureEnabled, !segments.isEmpty,
+                  segments.allSatisfy({ $0.endAtMs > $0.startAtMs }),
+                  let date = RecordJSON.date(fromDayKey: dayKey, calendar: preferences.recordsCalendar)
+            else { return .unavailable }
+            let current = liveOverride(dayKey)
+            if let current, current.kind == .customSegments, current.segments == segments {
+                return .unchanged(editCount: current.editCount)
+            }
+            if !replacingPersonEdits {
+                if let current, current.editCount != expectedEditCount { return .conflict }
+                if current == nil, expectedEditCount != nil { return .conflict }
+            }
+            records.withBatchedWrites {
+                records.ensureSeeded(hours: currentHours(date), at: date, timeZone: preferences.recordsTimeZone)
+                records.upsertOverride(
+                    DayOverride(
+                        dayKey: dayKey,
+                        shiftAnchorDate: date,
+                        kind: .customSegments,
+                        segments: segments,
+                        timeZoneIdentifier: preferences.recordsTimeZoneIdentifier
+                    )
+                )
+            }
+            guard let written = liveOverride(dayKey) else { return .unavailable }
+            return .written(previous: current, editCount: written.editCount)
+        }
+    }
+
+    /// Undoes one automation write by putting back the row it replaced, only
+    /// while the row is still exactly what automation wrote (§3.6).
+    @discardableResult
+    func restoreAutomationOverride(
+        dayKey: String,
+        previous: DayOverride?,
+        expectedEditCount: Int
+    ) -> RecordCommand<AutomationDayWriteResult> {
+        records.submitCommand { [self] in
+            guard !records.blocksWrites, records.captureEnabled,
+                  let date = RecordJSON.date(fromDayKey: dayKey, calendar: preferences.recordsCalendar)
+            else { return .unavailable }
+            guard let current = liveOverride(dayKey), current.editCount == expectedEditCount else { return .conflict }
+            let restored = previous ?? DayOverride(
+                dayKey: dayKey,
+                shiftAnchorDate: date,
+                kind: .cleared,
+                segments: [],
+                timeZoneIdentifier: preferences.recordsTimeZoneIdentifier
+            )
+            records.withBatchedWrites { records.upsertOverride(restored) }
+            guard let written = records.state.overrides.first(where: { $0.dayKey == dayKey }) else {
+                return .unavailable
+            }
+            return .written(previous: current, editCount: written.editCount)
+        }
+    }
+
+    /// The day's override unless it was erased or cleared back to the plan.
+    private func liveOverride(_ dayKey: String) -> DayOverride? {
+        guard !records.state.isErased(.dayOverride, key: dayKey),
+              let row = records.state.overrides.first(where: { $0.dayKey == dayKey }),
+              row.kind != .cleared
+        else { return nil }
+        return row
+    }
+
     @discardableResult
     func confirmDayAsScheduled(dayKey: String) -> RecordCommand<Bool> {
         records.submitCommand { [self] in
@@ -264,4 +347,16 @@ final class RecordsActions {
         }
     }
 
+}
+
+/// What happened to a workplace-automation record write.
+nonisolated enum AutomationDayWriteResult: Equatable, Sendable {
+    /// Written; `previous` is what an undo puts back.
+    case written(previous: DayOverride?, editCount: Int)
+    /// The day already has exactly these segments.
+    case unchanged(editCount: Int)
+    /// The person changed the day since automation last wrote it.
+    case conflict
+    /// Records are locked, damaged or the day is invalid.
+    case unavailable
 }
