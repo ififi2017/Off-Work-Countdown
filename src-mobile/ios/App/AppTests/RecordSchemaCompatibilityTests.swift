@@ -35,6 +35,7 @@ import Testing
 //    `rosterDays`.
 //  - Plan 020 P2a bumped schemaVersion 6 -> 7: added `leaveBalances` and
 //    `leaveDays`.
+//  - Plan 021 C1 bumped schemaVersion 7 -> 8: added `workTimeProvenance`.
 //
 // IMPORTANT — schema version 2 does not exist in this history. No commit
 // ever set `RecordJSON.schemaVersion` (or the export path) to 2; the number
@@ -351,6 +352,29 @@ private func fullState() -> RecordState {
             editTieBreaker: id(24)
         )
     ]
+    state.workTimeProvenance = [
+        WorkTimeProvenance(
+            dayKey: "2026-08-27",
+            boundaries: [
+                .init(
+                    boundary: .start, time: day.addingTimeInterval(9 * 3_600 + 600), source: .nativeGeofence,
+                    observedAt: day.addingTimeInterval(9 * 3_600 + 600), receivedAt: day.addingTimeInterval(9 * 3_600 + 660),
+                    appliedAt: day.addingTimeInterval(20 * 3_600), appliedBy: .reviewed, batchID: id(25),
+                    rulesVersion: 1, evidenceLevel: .systemObservation, reasons: ["automaticApplyOff"]
+                ),
+                .init(
+                    boundary: .end, time: day.addingTimeInterval(18 * 3_600), source: .appIntentAutomation,
+                    observedAt: nil, receivedAt: day.addingTimeInterval(18 * 3_600 + 60),
+                    appliedAt: day.addingTimeInterval(18 * 3_600 + 60), appliedBy: .automatic, batchID: nil,
+                    rulesVersion: 1, evidenceLevel: .externalAction, reasons: []
+                ),
+            ],
+            timeZoneIdentifier: "UTC",
+            editedAt: day,
+            editCount: 1,
+            editTieBreaker: id(26)
+        )
+    ]
 
     return state
 }
@@ -445,6 +469,10 @@ private func downgraded(_ object: [String: Any], to version: Int) -> [String: An
     if version < 7 {
         result["leaveBalances"] = nil
         result["leaveDays"] = nil
+    }
+
+    if version < 8 {
+        result["workTimeProvenance"] = nil
     }
 
     return result
@@ -701,13 +729,39 @@ func schemaVersion7DocumentPreservesLeave() throws {
     #expect(state.leaveBalances == fullState().leaveBalances)
     #expect(state.leaveDays == fullState().leaveDays)
     #expect(state.rosterDays == fullState().rosterDays)
+    #expect(state.workTimeProvenance.isEmpty)
+}
+
+@MainActor
+@Test("Schema v8 documents preserve workplace automation provenance exactly")
+func schemaVersion8DocumentPreservesProvenance() throws {
+    let (state, report) = try importDowngraded(try baseDocumentObject(), version: 8)
+    #expect(report.rejected.isEmpty)
+    #expect(state.workTimeProvenance == fullState().workTimeProvenance)
+    #expect(state.leaveDays == fullState().leaveDays)
+    #expect(state.overrides == fullState().overrides)
+}
+
+@MainActor
+@Test("Keys an older build does not know are ignored, so a future entity never blocks its import")
+func unknownEntityKeysAreSkippedByOlderReaders() throws {
+    // What 3.2.x sees in a v8 file, minus the version gate: `workTimeProvenance`
+    // is just an unknown key. Simulate the same for a key no build knows yet.
+    var object = try baseDocumentObject()
+    object["aFutureEntity"] = [["dayKey": "2026-08-27", "anything": 1]]
+    let document = try RecordJSON.decode(try JSONSerialization.data(withJSONObject: object))
+    var state = RecordState()
+    let report = try RecordJSON.apply(document, to: &state, mode: .skipErased)
+    #expect(report.rejected.isEmpty)
+    #expect(state.workTimeProvenance == fullState().workTimeProvenance)
+    #expect(state.overrides.count == 1)
 }
 
 // MARK: - Cross-version guarantees
 
 @MainActor
 @Test(
-    "Every accepted schema version (1-7) imports without dropping a row, and re-exports at the current schemaVersion idempotently"
+    "Every accepted schema version (1-8) imports without dropping a row, and re-exports at the current schemaVersion idempotently"
 )
 func everyAcceptedSchemaVersionReexportsIdempotentlyWithoutDroppingRows() throws {
     let baseObject = try baseDocumentObject()
@@ -737,6 +791,10 @@ func everyAcceptedSchemaVersionReexportsIdempotentlyWithoutDroppingRows() throws
         #expect(imported.rosterDays.count == (version >= 6 ? 1 : 0), "v\(version): rosterDay count")
         #expect(imported.leaveBalances.count == (version >= 7 ? 1 : 0), "v\(version): leaveBalance count")
         #expect(imported.leaveDays.count == (version >= 7 ? 1 : 0), "v\(version): leaveDay count")
+        #expect(
+            imported.workTimeProvenance.count == (version >= 8 ? 1 : 0),
+            "v\(version): workTimeProvenance count"
+        )
 
         // Re-export always writes the current schema version...
         var state = imported
@@ -786,7 +844,7 @@ func coldArchiveWithOlderSchemaReopens() throws {
 }
 
 @MainActor
-@Test("Schema versions outside 1...7 are rejected without mutating existing state")
+@Test("Schema versions outside 1...8 are rejected without mutating existing state")
 func outOfRangeSchemaVersionsAreRejectedWithoutMutatingState() throws {
     var state = fullState()
     let before = state
@@ -803,14 +861,14 @@ func outOfRangeSchemaVersionsAreRejectedWithoutMutatingState() throws {
     }
     #expect(state == before)
 
-    document.schemaVersion = 8
+    document.schemaVersion = 9
     do {
         _ = try RecordJSON.apply(document, to: &state, mode: .skipErased)
-        Issue.record("Expected schemaVersion 8 to be rejected")
+        Issue.record("Expected schemaVersion 9 to be rejected")
     } catch RecordJSONError.unknownSchemaVersion(let version) {
-        #expect(version == 8)
+        #expect(version == 9)
     } catch {
-        Issue.record("Unexpected error for schemaVersion 8: \(error)")
+        Issue.record("Unexpected error for schemaVersion 9: \(error)")
     }
     #expect(state == before)
 

@@ -28,11 +28,6 @@ nonisolated enum WorkTimeProposalStatus: String, Codable, Sendable {
     case superseded
 }
 
-nonisolated enum WorkTimeBoundary: String, Codable, Sendable {
-    case start
-    case end
-}
-
 /// A reviewable suggestion for one boundary of one shift (§3.4). It keeps
 /// the planned shift it was made against, so reviewing it weeks later does
 /// not depend on today's schedule.
@@ -75,6 +70,8 @@ nonisolated struct AutomationCommandReceipt: Codable, Equatable, Sendable {
     var shiftKey: String? = nil
     var previousOverride: DayOverride? = nil
     var writtenEditCount: Int? = nil
+    /// The day's provenance before this write (C1), for undo.
+    var provenanceWrite: AutomationProvenanceWrite? = nil
     var undoneAt: Date? = nil
 }
 
@@ -202,6 +199,10 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         } else {
             proposals.append(proposal)
         }
+    }
+
+    func event(_ id: UUID) -> AutomationEvent? {
+        events.first { $0.id == id }
     }
 
     func proposal(_ id: UUID) -> WorkTimeProposal? {

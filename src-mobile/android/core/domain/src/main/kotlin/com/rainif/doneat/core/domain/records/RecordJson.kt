@@ -22,7 +22,7 @@ import java.util.Locale
 import java.util.UUID
 
 /**
- * The records backup document (schema 7, reading 1–7): the Kotlin port of iOS
+ * The records backup document (schema 8, reading 1–8): the Kotlin port of iOS
  * `RecordJSON`, held to its answers by `record-json-fixtures.json`.
  *
  * Two layers, as in Swift: [decode] is strict like `Codable` — a missing key,
@@ -32,8 +32,8 @@ import java.util.UUID
  * the archive, and entitlements never come from a backup.
  */
 object RecordJson {
-    const val SCHEMA_VERSION = 7
-    val ACCEPTED_SCHEMA_VERSIONS = 1..7
+    const val SCHEMA_VERSION = 8
+    val ACCEPTED_SCHEMA_VERSIONS = 1..8
 
     sealed class Error(message: String) : Exception(message) {
         class UnknownSchemaVersion(val version: Int) : Error("unknown schema version $version")
@@ -159,6 +159,14 @@ object RecordJson {
             str("dayKey"); str("portion"); arr("uses").forEach { u -> u.obj().apply { str("balanceID"); int("halfDays") } }; optStr("planID")
             str("timeZoneIdentifier"); num("editedAtMs"); int("editCount"); str("editTieBreaker")
         } }
+        // Plan 021 C1. Enum-like values are plain strings, so a newer one rejects only its row.
+        o.optArr("workTimeProvenance")?.forEach { it.obj().apply {
+            str("dayKey"); arr("boundaries").forEach { b -> b.obj().apply {
+                str("boundary"); num("timeMs"); str("source"); optNum("observedAtMs"); num("receivedAtMs"); num("appliedAtMs")
+                str("appliedBy"); optStr("batchID"); int("rulesVersion"); str("evidenceLevel"); arr("reasons").forEach { reason -> reason.string() }
+            } }
+            str("timeZoneIdentifier"); num("editedAtMs"); int("editCount"); str("editTieBreaker")
+        } }
     }
 
     // Typed values that `Codable` decodes itself (a bad UUID or enum fails the document).
@@ -271,6 +279,7 @@ object RecordJson {
         private val rosterDays = Rows(state.rosterDays) { it.dayKey }
         private val leaveBalances = Rows(state.leaveBalances) { it.id }
         private val leaveDays = Rows(state.leaveDays) { it.dayKey }
+        private val provenance = Rows(state.workTimeProvenance) { it.dayKey }
         private val observations = Rows(state.observations) { it.eventID }
         private val focusTasks = Rows(state.focusTasks) { it.id }
         private val focusSessions = Rows(state.focusSessions) { it.id }
@@ -377,6 +386,14 @@ object RecordJson {
                     existing = { leaveDays[incoming.dayKey] },
                     insert = { s, v -> val next = remapLeave(v); leaveDays.add(next); s to next },
                     replace = { s, v -> val next = remapLeave(v); leaveDays.replace(next); s to next },
+                )
+            }
+            for (dto in root.optArr("workTimeProvenance").orEmpty().map { it.obj() }) {
+                val incoming = workTimeProvenance(dto) ?: run { reject(RecordEntityType.WORK_TIME_PROVENANCE, dto.str("dayKey")); null } ?: continue
+                merge(incoming, RecordEntityType.WORK_TIME_PROVENANCE, incoming.dayKey,
+                    existing = { provenance[incoming.dayKey] },
+                    insert = { s, v -> provenance.add(v); s to v },
+                    replace = { s, v -> provenance.replace(v); s to v },
                 )
             }
             for (dto in root.arr("workObservations").map { it.obj() }) {
@@ -494,6 +511,7 @@ object RecordJson {
                 rosterDays = rosterDays.all(),
                 leaveBalances = leaveBalances.all(),
                 leaveDays = leaveDays.all().map { d -> if (remapReferences) remapLeave(d) else d },
+                workTimeProvenance = provenance.all(),
                 observations = observations.all().map { o -> if (remapReferences) snapshotIDMap[o.scheduleSnapshotID]?.let { o.copy(scheduleSnapshotID = it) } ?: o else o },
                 focusTasks = focusTasks.all(),
                 focusSessions = focusSessions.all().map { f -> if (remapReferences) f.taskID?.let { taskIDMap[it] }?.let { f.copy(taskID = it) } ?: f else f },
@@ -841,6 +859,23 @@ object RecordJson {
         return day.takeIf { it.isValid }
     }
 
+    private fun workTimeProvenance(o: JsonObject): WorkTimeProvenance? {
+        val tie = uuid(o.str("editTieBreaker")) ?: return null
+        val editedAtMs = o.num("editedAtMs")
+        if (!editedAtMs.isFinite()) return null
+        val boundaries = o.arr("boundaries").map { element ->
+            val b = element.obj()
+            WorkTimeProvenance.Boundary(
+                boundary = b.str("boundary"), timeMs = b.num("timeMs"), source = b.str("source"), observedAtMs = b.optNum("observedAtMs"),
+                receivedAtMs = b.num("receivedAtMs"), appliedAtMs = b.num("appliedAtMs"), appliedBy = b.str("appliedBy"),
+                batchID = b.optStr("batchID")?.let { uuid(it) ?: return null }, rulesVersion = b.int("rulesVersion"),
+                evidenceLevel = b.str("evidenceLevel"), reasons = b.arr("reasons").map { it.string() },
+            )
+        }
+        val row = WorkTimeProvenance(o.str("dayKey"), boundaries, o.str("timeZoneIdentifier"), editedAtMs, o.int("editCount"), tie)
+        return row.takeIf { it.isValid }
+    }
+
     // Merge ranking
 
     private fun editCount(value: Any): Int = when (value) {
@@ -858,6 +893,7 @@ object RecordJson {
         is RosterDay -> value.editCount
         is LeaveBalance -> value.editCount
         is LeaveDay -> value.editCount
+        is WorkTimeProvenance -> value.editCount
         else -> error("not a record: $value")
     }
 
@@ -876,6 +912,7 @@ object RecordJson {
         is RosterDay -> value.editTieBreaker
         is LeaveBalance -> value.editTieBreaker
         is LeaveDay -> value.editTieBreaker
+        is WorkTimeProvenance -> value.editTieBreaker
         else -> error("not a record: $value")
     }
 
@@ -894,6 +931,7 @@ object RecordJson {
         is RosterDay -> value.dayKey
         is LeaveBalance -> value.id
         is LeaveDay -> value.dayKey
+        is WorkTimeProvenance -> value.dayKey
         else -> error("not a record: $value")
     }
 
@@ -933,6 +971,7 @@ object RecordJson {
             RecordEntityType.ROSTER_DAY -> state.copy(rosterDays = drop(state.rosterDays) { it.dayKey == key })
             RecordEntityType.LEAVE_BALANCE -> state.copy(leaveBalances = drop(state.leaveBalances) { same(it.id) })
             RecordEntityType.LEAVE_DAY -> state.copy(leaveDays = drop(state.leaveDays) { it.dayKey == key })
+            RecordEntityType.WORK_TIME_PROVENANCE -> state.copy(workTimeProvenance = drop(state.workTimeProvenance) { it.dayKey == key })
         }
         val existing = next.erased.indexOfFirst { it.entityType == type && it.logicalKey == key }
         next = if (existing >= 0) {
@@ -947,7 +986,7 @@ object RecordJson {
 
     private val encoder = Json { prettyPrint = false }
 
-    /** A schema-7 document of [state]. Absent optionals are omitted, as Swift's encoder does. */
+    /** A schema-8 document of [state]. Absent optionals are omitted, as Swift's encoder does. */
     fun export(state: RecordState, exportedAtMs: Double, timeZoneIdentifier: String, calendarIdentifier: String): String {
         val root = buildJsonObject {
             put("schemaVersion", SCHEMA_VERSION)
@@ -1012,6 +1051,14 @@ object RecordJson {
                 obj("dayKey" to d.dayKey, "portion" to d.portion, "uses" to JsonArray(d.uses.map { obj("balanceID" to it.balanceID, "halfDays" to it.halfDays) }),
                     "planID" to d.planID, "timeZoneIdentifier" to d.timeZoneIdentifier, "editedAtMs" to d.editedAtMs,
                     "editCount" to d.editCount, "editTieBreaker" to d.editTieBreaker)
+            }))
+            put("workTimeProvenance", JsonArray(state.workTimeProvenance.map { p ->
+                obj("dayKey" to p.dayKey, "boundaries" to JsonArray(p.boundaries.map { b ->
+                    obj("boundary" to b.boundary, "timeMs" to b.timeMs, "source" to b.source, "observedAtMs" to b.observedAtMs,
+                        "receivedAtMs" to b.receivedAtMs, "appliedAtMs" to b.appliedAtMs, "appliedBy" to b.appliedBy, "batchID" to b.batchID,
+                        "rulesVersion" to b.rulesVersion, "evidenceLevel" to b.evidenceLevel, "reasons" to JsonArray(b.reasons.map(::JsonPrimitive)))
+                }), "timeZoneIdentifier" to p.timeZoneIdentifier, "editedAtMs" to p.editedAtMs,
+                    "editCount" to p.editCount, "editTieBreaker" to p.editTieBreaker)
             }))
         }
         return encoder.encodeToString(JsonObject.serializer(), root)

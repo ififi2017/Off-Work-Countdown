@@ -50,7 +50,7 @@ private struct RecordChangeDomains: OptionSet {
     init(_ type: RecordEntityType) {
         switch type {
         case .careerPeriod, .scheduleSnapshot, .calendarException, .dayOverride, .workObservation,
-             .extendedSchedule, .rosterDay, .leaveBalance, .leaveDay:
+             .extendedSchedule, .rosterDay, .leaveBalance, .leaveDay, .workTimeProvenance:
             self = .history
         case .focusTask, .focusSession, .focusPlanningConfiguration:
             self = .focus
@@ -1200,6 +1200,37 @@ final class RecordCoordinator {
         persist(changes: .history)
     }
 
+    /// The automation summary for one day (plan 021 C1). Written only by
+    /// `RecordsActions` in the same batch as the day's override; deleting the
+    /// evidence is `erase(.workTimeProvenance, key:)`, which leaves a tombstone.
+    func upsertWorkTimeProvenance(_ draft: WorkTimeProvenance, at date: Date = .now) {
+        preconditionRawWriteAdmission()
+        guard !blocksWrites, draft.isValid else { return }
+        if !state.isErased(.workTimeProvenance, key: draft.dayKey),
+           let current = state.workTimeProvenance.first(where: { $0.dayKey == draft.dayKey }),
+           RecordIncomingValue.workTimeProvenance(current)
+               .hasSameBusinessContent(as: .workTimeProvenance(draft)) { return }
+        let revokedErase = state.clearErased(.workTimeProvenance, key: draft.dayKey)
+        var next = draft
+        next.editTieBreaker = UUID()
+        next.editedAt = date
+        let index: Int
+        if let existing = state.workTimeProvenance.firstIndex(where: { $0.dayKey == draft.dayKey }) {
+            next.editCount = state.workTimeProvenance[existing].editCount + 1
+            state.workTimeProvenance[existing] = next
+            index = existing
+        } else {
+            next.editCount = max(next.editCount, 0) + 1
+            state.workTimeProvenance.append(next)
+            index = state.workTimeProvenance.count - 1
+        }
+        reviveAboveTombstone(&state.workTimeProvenance[index].editCount, over: revokedErase)
+        let row = state.workTimeProvenance[index]
+        markDirty(.workTimeProvenance, key: row.dayKey, editCount: row.editCount, tie: row.editTieBreaker,
+                  revokeErase: revokedErase != nil)
+        persist(changes: .history)
+    }
+
     @discardableResult
     func commitSyncState(
         _ update: @escaping @MainActor (inout SyncLocalState, RecordState) -> Void
@@ -1573,6 +1604,12 @@ final class RecordCoordinator {
             target.leaveDays[index].editTieBreaker = UUID()
             target.leaveDays[index].editedAt = date
             return (target.leaveDays[index].editCount, target.leaveDays[index].editTieBreaker)
+        case .workTimeProvenance:
+            guard let index = target.workTimeProvenance.firstIndex(where: { $0.dayKey == key }) else { return nil }
+            target.workTimeProvenance[index].editCount = max(target.workTimeProvenance[index].editCount + 1, atLeastEditCount)
+            target.workTimeProvenance[index].editTieBreaker = UUID()
+            target.workTimeProvenance[index].editedAt = date
+            return (target.workTimeProvenance[index].editCount, target.workTimeProvenance[index].editTieBreaker)
         }
     }
 
@@ -1599,6 +1636,8 @@ final class RecordCoordinator {
             return (.leaveBalance, balance.id.uuidString, balance.editCount)
         case .leaveDay(let day):
             return (.leaveDay, day.dayKey, day.editCount)
+        case .workTimeProvenance(let row):
+            return (.workTimeProvenance, row.dayKey, row.editCount)
         }
     }
 

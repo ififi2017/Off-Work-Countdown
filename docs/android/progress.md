@@ -918,3 +918,9 @@ PR #313继续保持draft；未合并、未发布生产。现有main自动alpha�
 - 漂移只读检查为 73 条（最新 `a6294635`）。本轮按用户授权纳入 #364 的 Android 界面，规则源已随 #364 同步，不另行推进冻结基线。验证结果见下条更新。
 - 验证（本机，Temurin 25.0.3 arm64，因 Android Studio 当前缺 JBR）：Play `:core:domain:test`、`:core:data:test`、`:core:designsystem:testDebugUnitTest`、`:app:testDebugUnitTest`、`lintDebug`、`assembleDebug`、`assembleRelease` 通过；CN `testDebugUnitTest`、`lintDebug`、`assembleDebug` 通过（domain 496 / data 99 / designsystem 13 / app 216，零失败）。`npm test` 737/738 通过，唯一失败是与 Gradle 并行时 Android 规则 fixture 检查超时，单独重跑通过；`check:version` 3.2.5 对齐。未改 iOS 源码，未跑 iOS 无头构建；尚未在真机或模拟器做目视检查。
 - Pixel 10 Pro 实机（独立调试包 `com.rainif.doneat.ot325`，未覆盖已装的 Play / CN / `.cn.debug`）：加班对话框、计时页加班行与计薪附注、薪资「按当月排班」与「每月日薪」页、加班默认、记录编辑某天加班均按预期，浅色 / 深色通过。修正两处：对话框内「这段加班」窄宽度断字（窄或大字号时改为上下排）；浅色对话框内卡片与底色同为白色（改用 `surface`）。未查 200% 字号、其他语言和 CN 渠道实机包。记录见 `qa/2026-11-07-android-325-overtime/README.md`。
+
+### 2026-11-08 · iOS 3.3.0 计划 021 C1：schema 8 只读保留来源摘要
+
+- iOS 3.3.0 新增 `workTimeProvenance` 实体（工作地点自动化采用时间的最小来源摘要，无坐标／SSID／地点名）并把 `RecordJSON` 升到 schema 8。Android 同版只读取并原样保留：`RecordJson` 读写 8、接受 1…8，新增 `WorkTimeProvenance` 模型、合并／墓碑／导出与冲突中心标题；不实现定位，不展示或编辑。字段见 `wire-contract.md` §3.15。
+- 合成档案新增 `v8.json`，`illegal-v8` 改为 `illegal-v9`；记录 fixture 由 Swift 重新生成（150 份文档，新增 31 例），`RecordJsonFixtureTest.everyCaseMatchesSwift` 通过。新增 `RecordsTransferTest.workTimeProvenanceSurvivesImportAndExportUnchanged`。
+- 验证（Play，Temurin 25.0.3 arm64）：domain 496 / data 100 / designsystem 13 / app 228 零失败，`lintDebug`、`assembleDebug`、`assembleRelease` 通过；未改渠道代码，CN 未单独跑；无界面改动，未做实机检查。冻结基线不推进。
