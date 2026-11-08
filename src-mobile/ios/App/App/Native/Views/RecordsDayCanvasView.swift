@@ -19,8 +19,10 @@ struct RecordsDayCanvasView: View {
     @State private var model: RecordsDayCanvasModel?
     @State private var isLoading = true
     @State private var choosesShift = false
+    @State private var showsSources = false
     @State private var nowTick = Date()
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(WorkplaceAutomationCoordinator.self) private var automation: WorkplaceAutomationCoordinator?
 
     private struct LoadRequest: Equatable {
         var dayKey: String
@@ -47,6 +49,11 @@ struct RecordsDayCanvasView: View {
                         band(model)
                         conclusion(model)
                         segments(model)
+                        if let sources = workTimeSources {
+                            WorkTimeSourceCard(summary: sources, text: text, formatTime: queries.formatRecordsTime) {
+                                showsSources = true
+                            }
+                        }
                         observations(model)
                         RecordsFocusHistoryCard(focus: focus, text: text, dayKey: dayKey)
                         conflictCard
@@ -83,6 +90,17 @@ struct RecordsDayCanvasView: View {
                 nowTick = value
             }
         }
+        .sheet(isPresented: $showsSources) {
+            if let sources = workTimeSources {
+                WorkTimeSourceSheet(
+                    summary: sources,
+                    text: text,
+                    formatTime: queries.formatRecordsTime,
+                    formatDateTime: { "\(queries.formatRecordsMonthDay($0)) \(queries.formatRecordsTime($0))" },
+                    remove: { await actions.deleteWorkTimeProvenance(dayKey: dayKey).value }
+                )
+            }
+        }
         .confirmationDialog(
             text.t("recordsChooseShift"),
             isPresented: $choosesShift,
@@ -92,6 +110,19 @@ struct RecordsDayCanvasView: View {
                 Button(shiftLabel(shift)) { scene.openDayEditor(dayKey: shift.anchorDayKey, actions: actions, queries: queries) }
             }
             Button(text.t("cancel"), role: .cancel) {}
+        }
+    }
+
+    /// Read live, so an adoption, a hand edit or a synced change shows at once.
+    private var workTimeSources: WorkTimeVerificationSummary? {
+        let state = records.state
+        guard let provenance = state.workTimeProvenance.first(where: { $0.dayKey == dayKey }) else { return nil }
+        let automationState = automation?.state
+        return WorkTimeVerificationSummary.make(
+            provenance: provenance,
+            override: state.overrides.first { $0.dayKey == dayKey }
+        ) { boundary, time in
+            automationState?.hasAdoptedDetection(dayKey: dayKey, boundary: boundary, at: time) ?? false
         }
     }
 

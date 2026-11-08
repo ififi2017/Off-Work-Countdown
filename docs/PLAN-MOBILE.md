@@ -39,6 +39,8 @@ watchOS 代码不复制这些规则，只消费 iPhone 的投影。
 
 ## 1. 当前进度
 
+2026-11-08：iOS 3.3.0 开始开发 [Plan 021 工作地点自动化](../plans/iOS/021-workplace-automation.md)（Plus）。已合入 main：本机自动化存储与统一命令（检测与采用分离，采用写入既有 `DayOverride.customSegments`）、早到／晚到／非工作时段到访与上班状态询问、外勤／出差／居家范围、快捷指令动作、设置与批量复核界面，以及随私人 CloudKit 同步的最小来源实体（记录 schema 8）。坐标、围栏状态、原始事件与待复核建议只存本机且不进备份。原生地理围栏（I2）在 DEBUG 入口后开发，P0 真机实测进行中；设置入口在 P0 结论前不在 Release 显示，Android／Siri／Wi-Fi 不在 3.3.0 范围。
+
 2026-10-08 入口与文案收尾：记录月历的规划休假／播放月报紧凑分组，请假摘要下的全部方案／可选日期减少上下留白；预测说明缩短为两段真实换行，保持官方通知与更新承诺。记录月历无工作横条的格子保留固定槽，消除 2、6 号与相邻日期的高低差。验证见[本轮记录](reviews/2026-10-08-records-action-spacing.md)。
 
 2026-10-08 月历收尾：请假月历统一日期／节名槽位，仅为实际格内图标保留图例；预测提醒垂直居中并随摘要、月历渐入。记录月历日期／节名／横条等间隔，普通字号按列宽接近方格，大字号可增高。截图与验证见[月历对齐记录](reviews/2026-10-08-calendar-cell-alignment.md)。
@@ -67,6 +69,7 @@ watchOS 代码不复制这些规则，只消费 iPhone 的投影。
 | P6 | Xcode Cloud、TestFlight、商店截图与审核材料 | 🟡 3.1.8 截图/Preview 已上传，官网隐私已切 doneat.app；正式送审仍待人工 |
 | W0–W3 | 免费 Apple Watch App、独立排班与表盘组件 | 🔵 V2 已实现，验收进行中 |
 | X1 | iPhone 与 iPad 的可选跨设备同步 | ⚪ 技术决策保留，当前不实施 |
+| L0 | 工作地点自动化（Plan 021，3.3.0，Plus） | 🟡 规则、命令、快捷指令、复核界面与来源同步已合入；P0 真机实测进行中，原生围栏仅 DEBUG |
 | A0 | Android 原生客户端 | 🟢 已在 [Google Play](https://play.google.com/store/apps/details?id=com.rainif.doneat) 公开上架（2026-10-19 所有者确认），后续见 Android 进度 |
 
 2026-09-05 分支验收：专注画布已补回「专注 → 休息 → 下一轮」操作，修复晚开始越格、
@@ -270,6 +273,7 @@ P4/P5 的真机验收状态不因此改为完成。
   与上面三个文件相同的「上班时段 + 中途休息 + 是否上班」，再交给 CivilZone，不构成第二套排班算法。
   排班页（018 P8-c1b）把班次类型与规律作为草稿，与工时一起保存、一起询问是否用于今天；
   ExtendedScheduleEditing.swift 只做草稿变换，初始规律由共享规则展开现有排班得到，不另写星期或轮班公式。
+- WorkplaceAutomationRules.swift（Plan 021）：iOS 专有的工作地点自动化判定（到达／离开匹配班次、早到／掐点／晚到、状态询问、采用段与空档）。Swift 是规格，共用 fixture 存于 Android `core/domain` 测试资源，由 `npm run generate:workplace-automation-fixtures` 编译进 AppTests；Android A1 直接读取同一 JSON。它只消费既有规则解析出的班次，不推导排班；写入经 `WorkplaceAutomationCoordinator` 与 `RecordsActions`。
 - 其余 Swift 代码只传入设置并渲染绝对结果，不在这四个文件之外重新实现“今天是否上班”
   “轮班第几天”或薪资计算。
 
@@ -284,6 +288,7 @@ Watch V2 与 iPhone 编译同一份 `Shared/` 无薪资排班核心，按持久�
 | 薪资 | 仅主 App 私有存储 | 禁止 | 默认禁止 |
 | 通知设置 | 主 App 配置 | 主 App 负责预约 | Watch 只显示必要状态 |
 | 主题/语言 | 本机设置 | 投影必要显示值 | 投影紧凑显示值 |
+| 工作地点自动化（Plan 021） | 坐标、围栏状态、原始事件、待复核建议只存本机且不进备份；仅已采用工时的最小来源随私人 CloudKit 同步 | 禁止 | 禁止 |
 
 iOS App Group 只承担同一台设备上主 App 与 extension 之间的 salary-free 文件投影。
 App Group 不能用于 iPhone 和 iPad 跨设备同步，也不能让 iPad 与 Apple Watch 建立配对通信。
