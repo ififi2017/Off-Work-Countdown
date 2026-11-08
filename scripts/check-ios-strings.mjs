@@ -43,6 +43,9 @@ export const INTENTIONAL_DIVERGENCE = {};
 export const SAME_AS_ENGLISH_ON_PURPOSE = {
   // Apple uses the same localized platform term in these languages.
   onboardingWidgetSurface: ["de", "fr", "es", "pt"],
+  // The metre symbol is "m" in these languages.
+  automationUIRadius: ["de", "es", "fr", "id", "it", "ja", "pt", "tr", "vi"],
+  automationUIWorkplaceName: ["de"],
   // Brand, product and platform names
   plusSection: "*",
   plusSettings: "*",
@@ -96,9 +99,7 @@ export const UNSEEN_ON_PURPOSE = {
   widgetSuiteIntentStartCountdown: "FocusControlWidgets.swift",
   // Plan 021 I1 Shortcuts actions: App Intents needs titles and descriptions
   // as literals. Used in Native/Services/WorkplaceAutomationIntents.swift.
-  automationIntentRecordArrival: "WorkplaceAutomationIntents.swift",
   automationIntentRecordArrivalDescription: "WorkplaceAutomationIntents.swift",
-  automationIntentRecordDeparture: "WorkplaceAutomationIntents.swift",
   automationIntentRecordDepartureDescription: "WorkplaceAutomationIntents.swift",
   automationIntentConfirmStart: "WorkplaceAutomationIntents.swift",
   automationIntentConfirmStartDescription: "WorkplaceAutomationIntents.swift",

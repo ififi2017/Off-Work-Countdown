@@ -117,6 +117,7 @@ final class AppRuntime {
 
     /// Plan 021: the single write path for workplace automation.
     private(set) lazy var workplaceAutomation = WorkplaceAutomationCoordinator.live(actions: recordActions)
+    private(set) lazy var workplaceLocation = WorkplaceLocationService()
 
     private(set) lazy var shifts = ShiftSessionStore(
         session: session, records: records, queries: queries,

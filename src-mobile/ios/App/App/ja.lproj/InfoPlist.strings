@@ -2,3 +2,5 @@
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "Face ID は、この端末に保存された給与情報を他人に見られないよう保護します。";
 "NSAlarmKitUsageDescription" = "DoneAt は各シフトの前、選んだ時刻に鳴ってあなたを起こします。";
+"NSLocationWhenInUseUsageDescription" = "DoneAt は、いまいる場所を勤務先として保存するために位置情報を使います。勤務先の位置はこの端末にのみ保存されます。";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "アプリを閉じていても、保存した勤務先への到着や出発を DoneAt が検知し、勤務時間の記録に役立てます。勤務先の位置はこの端末にのみ保存されます。";

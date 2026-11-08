@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 /// Plan 021 P1: the single entry point that turns automation events and
 /// review answers into record writes (§3.3).
@@ -15,13 +16,14 @@ import Foundation
 /// app dies in between, the retry finds the day already holding the same
 /// segments and reports `alreadyApplied`.
 @MainActor
+@Observable
 final class WorkplaceAutomationCoordinator {
     private(set) var state: WorkplaceAutomationState
     /// False when the automation file exists but cannot be read. Nothing is
     /// written then, so the file is never replaced by an empty one.
-    let isAvailable: Bool
-    private let actions: RecordsActions
-    private let persist: (WorkplaceAutomationState) throws -> Void
+    @ObservationIgnored let isAvailable: Bool
+    @ObservationIgnored private let actions: RecordsActions
+    @ObservationIgnored private let persist: (WorkplaceAutomationState) throws -> Void
 
     init(
         actions: RecordsActions,
@@ -246,7 +248,41 @@ final class WorkplaceAutomationCoordinator {
         _ = update { $0.suppress(shiftKey: shiftKey, at: now) }
     }
 
+    /// What each day would hold after adopting these suggestions, in the
+    /// order they were given (§3.12 preview). Uses the same rule as adoption.
+    func previewSegments(for proposalIDs: [UUID]) -> [(shift: AutomationShift, segments: [NativeShiftSegment])] {
+        var order: [String] = []
+        var byShift: [String: [WorkTimeProposal]] = [:]
+        for id in proposalIDs {
+            guard let proposal = state.proposal(id), proposal.status == .pendingReview else { continue }
+            if byShift[proposal.shiftKey] == nil { order.append(proposal.shiftKey) }
+            byShift[proposal.shiftKey, default: []].append(proposal)
+        }
+        return order.compactMap { key in
+            guard let proposals = byShift[key], let shift = proposals.first?.shift else { return nil }
+            return (shift, Self.segments(for: shift, adopting: proposals, state: state))
+        }
+    }
+
     // MARK: Private
+
+    /// A boundary comes from the suggestion being adopted, else from what
+    /// automation already adopted for this shift, else from the plan.
+    private static func segments(
+        for shift: AutomationShift,
+        adopting proposals: [WorkTimeProposal],
+        state: WorkplaceAutomationState
+    ) -> [NativeShiftSegment] {
+        func time(_ boundary: WorkTimeBoundary, planned: Date) -> Date {
+            proposals.last { $0.boundary == boundary }?.proposedTime
+                ?? state.adoptedTime(shiftKey: shift.shiftKey, boundary: boundary)
+                ?? planned
+        }
+        return WorkplaceAutomationRules.proposedSegments(
+            for: shift, start: time(.start, planned: shift.plannedStart), end: time(.end, planned: shift.plannedEnd)
+        )
+    }
+
 
     private func adopt(
         _ proposal: WorkTimeProposal,
@@ -256,13 +292,7 @@ final class WorkplaceAutomationCoordinator {
         now: Date
     ) async -> AutomationCommandOutcome {
         let shift = proposal.shift
-        let start = proposal.boundary == .start
-            ? proposal.proposedTime
-            : state.adoptedTime(shiftKey: shift.shiftKey, boundary: .start) ?? shift.plannedStart
-        let end = proposal.boundary == .end
-            ? proposal.proposedTime
-            : state.adoptedTime(shiftKey: shift.shiftKey, boundary: .end) ?? shift.plannedEnd
-        let segments = WorkplaceAutomationRules.proposedSegments(for: shift, start: start, end: end)
+        let segments = Self.segments(for: shift, adopting: [proposal], state: state)
 
         var adopted = proposal
         adopted.status = status

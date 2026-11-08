@@ -2,3 +2,5 @@
 "CFBundleName" = "DoneAt";
 "NSFaceIDUsageDescription" = "面容 ID 用于保护本机上的薪资数据不被他人看到。";
 "NSAlarmKitUsageDescription" = "DoneAt 会在每个班次开始前、你设定的时间响铃叫醒你。";
+"NSLocationWhenInUseUsageDescription" = "DoneAt 使用你的位置，把当前所在地保存为工作地点。工作地点的位置只保存在本机。";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "即使 App 已关闭，DoneAt 也能在你到达或离开已保存的工作地点时察觉，帮你记录工时。工作地点的位置只保存在本机。";

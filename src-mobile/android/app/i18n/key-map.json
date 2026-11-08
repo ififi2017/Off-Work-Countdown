@@ -380,6 +380,227 @@
     "automationResultUnavailable": {
       "resource": "string/automationResultUnavailable"
     },
+    "automationUIAccessOff": {
+      "resource": "string/automationUIAccessOff"
+    },
+    "automationUIAccessOffNote": {
+      "resource": "string/automationUIAccessOffNote"
+    },
+    "automationUIAccessPrecise": {
+      "resource": "string/automationUIAccessPrecise"
+    },
+    "automationUIAccessPreciseNote": {
+      "resource": "string/automationUIAccessPreciseNote"
+    },
+    "automationUIAccessReady": {
+      "resource": "string/automationUIAccessReady"
+    },
+    "automationUIAccessReadyNote": {
+      "resource": "string/automationUIAccessReadyNote"
+    },
+    "automationUIAccessRequest": {
+      "resource": "string/automationUIAccessRequest"
+    },
+    "automationUIAccessRequestNote": {
+      "resource": "string/automationUIAccessRequestNote"
+    },
+    "automationUIAccessWhileUsing": {
+      "resource": "string/automationUIAccessWhileUsing"
+    },
+    "automationUIAccessWhileUsingNote": {
+      "resource": "string/automationUIAccessWhileUsingNote"
+    },
+    "automationUIAddWorkplace": {
+      "resource": "string/automationUIAddWorkplace"
+    },
+    "automationUIApplyOne": {
+      "resource": "string/automationUIApplyOne"
+    },
+    "automationUIApplySelected": {
+      "resource": "string/automationUIApplySelected",
+      "params": [
+        "count"
+      ]
+    },
+    "automationUIArrivalRange": {
+      "resource": "string/automationUIArrivalRange"
+    },
+    "automationUIAskAfter": {
+      "resource": "string/automationUIAskAfter"
+    },
+    "automationUIAskAfterNote": {
+      "resource": "string/automationUIAskAfterNote"
+    },
+    "automationUIAutoApply": {
+      "resource": "string/automationUIAutoApply"
+    },
+    "automationUIAutoApplyNote": {
+      "resource": "string/automationUIAutoApplyNote"
+    },
+    "automationUIDeleteWorkplace": {
+      "resource": "string/automationUIDeleteWorkplace"
+    },
+    "automationUIDeleteWorkplaceNote": {
+      "resource": "string/automationUIDeleteWorkplaceNote"
+    },
+    "automationUIDeselectAll": {
+      "resource": "string/automationUIDeselectAll"
+    },
+    "automationUIDismissOne": {
+      "resource": "string/automationUIDismissOne"
+    },
+    "automationUIDismissSelected": {
+      "resource": "string/automationUIDismissSelected"
+    },
+    "automationUIEndAt": {
+      "resource": "string/automationUIEndAt",
+      "params": [
+        "time"
+      ]
+    },
+    "automationUIIntro": {
+      "resource": "string/automationUIIntro"
+    },
+    "automationUILeaveRange": {
+      "resource": "string/automationUILeaveRange",
+      "params": [
+        "meters"
+      ]
+    },
+    "automationUILocationFailed": {
+      "resource": "string/automationUILocationFailed"
+    },
+    "automationUINoLocationYet": {
+      "resource": "string/automationUINoLocationYet"
+    },
+    "automationUINoteChangedByYou": {
+      "resource": "string/automationUINoteChangedByYou"
+    },
+    "automationUINoteEarlyStart": {
+      "resource": "string/automationUINoteEarlyStart"
+    },
+    "automationUINoteFarFromPlan": {
+      "resource": "string/automationUINoteFarFromPlan"
+    },
+    "automationUINoteLateDetection": {
+      "resource": "string/automationUINoteLateDetection"
+    },
+    "automationUINoteLeftEarly": {
+      "resource": "string/automationUINoteLeftEarly"
+    },
+    "automationUINoteRecordsUnavailable": {
+      "resource": "string/automationUINoteRecordsUnavailable"
+    },
+    "automationUIPaused": {
+      "resource": "string/automationUIPaused"
+    },
+    "automationUIPlanned": {
+      "resource": "string/automationUIPlanned",
+      "params": [
+        "time"
+      ]
+    },
+    "automationUIPreviewIntro": {
+      "resource": "string/automationUIPreviewIntro"
+    },
+    "automationUIPreviewTitle": {
+      "resource": "string/automationUIPreviewTitle"
+    },
+    "automationUIPrivacy": {
+      "resource": "string/automationUIPrivacy"
+    },
+    "automationUIRadius": {
+      "resource": "string/automationUIRadius",
+      "params": [
+        "meters"
+      ]
+    },
+    "automationUIRangeNote": {
+      "resource": "string/automationUIRangeNote"
+    },
+    "automationUIRecentSection": {
+      "resource": "string/automationUIRecentSection"
+    },
+    "automationUIRecordingSection": {
+      "resource": "string/automationUIRecordingSection"
+    },
+    "automationUIReviewEmpty": {
+      "resource": "string/automationUIReviewEmpty"
+    },
+    "automationUIReviewEmptyNote": {
+      "resource": "string/automationUIReviewEmptyNote"
+    },
+    "automationUIReviewIntro": {
+      "resource": "string/automationUIReviewIntro"
+    },
+    "automationUIReviewTitle": {
+      "resource": "string/automationUIReviewTitle"
+    },
+    "automationUISelect": {
+      "resource": "string/automationUISelect"
+    },
+    "automationUISelectAll": {
+      "resource": "string/automationUISelectAll"
+    },
+    "automationUIShortcutsNote": {
+      "resource": "string/automationUIShortcutsNote",
+      "params": [
+        "arrive",
+        "leave"
+      ]
+    },
+    "automationUIShortcutsSection": {
+      "resource": "string/automationUIShortcutsSection"
+    },
+    "automationUIShortcutsTitle": {
+      "resource": "string/automationUIShortcutsTitle"
+    },
+    "automationUISourceLocation": {
+      "resource": "string/automationUISourceLocation"
+    },
+    "automationUISourceShortcuts": {
+      "resource": "string/automationUISourceShortcuts"
+    },
+    "automationUIStartAt": {
+      "resource": "string/automationUIStartAt",
+      "params": [
+        "time"
+      ]
+    },
+    "automationUITitle": {
+      "resource": "string/automationUITitle"
+    },
+    "automationUIUndo": {
+      "resource": "string/automationUIUndo"
+    },
+    "automationUIUndoConflict": {
+      "resource": "string/automationUIUndoConflict"
+    },
+    "automationUIUseCurrentLocation": {
+      "resource": "string/automationUIUseCurrentLocation"
+    },
+    "automationUIUseCurrentLocationNote": {
+      "resource": "string/automationUIUseCurrentLocationNote"
+    },
+    "automationUIWorkplaceEnabled": {
+      "resource": "string/automationUIWorkplaceEnabled"
+    },
+    "automationUIWorkplaceLimit": {
+      "resource": "string/automationUIWorkplaceLimit"
+    },
+    "automationUIWorkplaceName": {
+      "resource": "string/automationUIWorkplaceName"
+    },
+    "automationUIWorkplaceNamePlaceholder": {
+      "resource": "string/automationUIWorkplaceNamePlaceholder"
+    },
+    "automationUIWorkplaces": {
+      "resource": "string/automationUIWorkplaces",
+      "params": [
+        "count",
+        "max"
+      ]
+    },
     "biometrics": {
       "resource": "string/biometrics"
     },
@@ -3096,6 +3317,9 @@
     },
     "plusWidgetsSlideTitle": {
       "resource": "string/plusWidgetsSlideTitle"
+    },
+    "plusWorkplaceAutomationLocked": {
+      "resource": "string/plusWorkplaceAutomationLocked"
     },
     "plusYearly": {
       "resource": "string/plusYearly"

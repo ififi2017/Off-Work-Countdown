@@ -90,7 +90,7 @@ struct PaywallView: View {
         switch reason {
         case .focus: .focus
         case .leavePlanning, .shiftAlarms: .rest
-        case .charts, .life, .historyEdit, .sync: .records
+        case .charts, .life, .historyEdit, .sync, .workplaceAutomation: .records
         case .intro, .cycleEndSummaryNotifications: .reports
         }
     }
@@ -809,6 +809,7 @@ extension PlusPaywallReason {
         case .cycleEndSummaryNotifications: "plusReportsLocked"
         case .leavePlanning: "plusLeaveLocked"
         case .shiftAlarms: "plusShiftAlarmsLocked"
+        case .workplaceAutomation: "plusWorkplaceAutomationLocked"
         }
     }
 }
