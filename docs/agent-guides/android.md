@@ -106,14 +106,14 @@ locale and validation rules apply.
 
 ## Data, purchases and privacy
 
-- User backups are `RecordJSON` schemaVersion 7, accepting 1–7. Records live
+- User backups are `RecordJSON` schemaVersion 8, accepting 1–8. Records live
   as iOS keeps them (D-13): an in-memory `RecordState` saved by
   `:core:data`'s `RecordStore` as one atomically replaced `RecordLocalFile`
-  (the v7 document plus tombstones). Every write is encoded, read back and
+  (the v8 document plus tombstones). Every write is encoded, read back and
   only then published; a damaged file blocks writes and is quarantined, never
   overwritten. No Room tables.
 - `npm run generate:android-record-fixtures` (macOS) compiles the real iOS
-  `RecordJSON` and records its answers for 88 documents; `npm test` fails when
+  `RecordJSON` and records its answers for 150 documents; `npm test` fails when
   that Swift or the case list changes.
 - Android Auto Backup and device transfer include the business database (as
   iOS includes its main store in iCloud device backup). The rules
@@ -140,7 +140,7 @@ locale and validation rules apply.
   Configuring `doneatBillingApiPublicKeys` enables Android server verification;
   failures use only still-valid signed evidence, never a local boolean or guessed
   expiry. Empty configuration preserves the previous client-only build. Keep
-  receipts in `noBackupFilesDir`, outside schema 7. See the service runbook for
+  receipts in `noBackupFilesDir`, outside schema 8. See the service runbook for
   deployment, privacy and Play license-test gates before enabling production.
 - Reminders are absolute alarms registered up front (`Reminders`, `ReminderSync`),
   never a foreground service or a polling worker. Exact timing needs the
@@ -158,7 +158,7 @@ locale and validation rules apply.
   reports, ongoing and widgets keep their existing non-FGS architecture.
   Reuse `shiftAlarmAuthorization(now)`: still-valid signed offline exact expiry
   is allowed; ordinary Play cache without a verified expiry is unavailable.
-  Alarm choices stay device-local outside schema 7 and backup. See
+  Alarm choices stay device-local outside schema 8 and backup. See
   `docs/android/shift-alarm-platform.md`. Code/fake-platform tests do not prove
   ringing, lock-screen, background, permission or reboot behaviour; this task
   explicitly forbids device alarm/lock-screen tests.

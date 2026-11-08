@@ -16,7 +16,7 @@ const models = "src-mobile/ios/App/App/Native/Models";
 export const swiftInputs = [
   "RecordJSON", "CareerPeriod", "CalendarException", "DayOverride", "WorkObservation", "LifeProfile",
   "FocusModels", "FocusPlanner", "SyncedPreferences", "RecordIncomingValue+Content", "RecordsSyncAdapter",
-  "LeaveBalance", "LeaveDay", "LeavePlanner",
+  "LeaveBalance", "LeaveDay", "LeavePlanner", "WorkTimeProvenance",
 ].map((name) => `${models}/${name}.swift`).concat([
   "src-mobile/ios/App/App/Native/Services/NativeLocalizer.swift",
   "src-mobile/ios/Shared/ExtendedSchedule.swift",
@@ -52,6 +52,7 @@ export function recordSourceHashes() {
 const read = (name) => readFileSync(resolve(archives, name), "utf8");
 const v6 = () => JSON.parse(read("v6.json"));
 const v7 = () => JSON.parse(read("v7.json"));
+const v8 = () => JSON.parse(read("v8.json"));
 const text = (value) => JSON.stringify(value);
 
 /** A mutated copy of the synthetic v6 archive. */
@@ -68,13 +69,20 @@ function variant7(edit) {
   return text(doc);
 }
 
+/** A mutated copy of the synthetic v8 archive, for plan 021's provenance rows. */
+function variant8(edit) {
+  const doc = v8();
+  edit(doc);
+  return text(doc);
+}
+
 const MS_2001 = 978_307_200;
 
 export function recordCases() {
   const cases = [];
   const add = (name, input, extra = {}) => cases.push({ name, input, ...extra });
 
-  for (const file of ["v1.json", "v2.json", "v3.json", "v4.json", "v5.json", "v6.json", "v7.json", "illegal-v0.json", "illegal-v8.json",
+  for (const file of ["v1.json", "v2.json", "v3.json", "v4.json", "v5.json", "v6.json", "v7.json", "v8.json", "illegal-v0.json", "illegal-v9.json",
     "illegal-invalid-date-v6.json", "illegal-purchase-injected-v6.json", "illegal-not-json.txt"]) {
     add(`archive/${file}`, read(file));
   }
@@ -255,6 +263,37 @@ export function recordCases() {
   add("doc/leave-use-wrong-type", variant7((d) => { d.leaveDays[0].uses[0].halfDays = "1"; }));
   add("doc/leave-kind-missing", variant7((d) => { delete d.leaveBalances[0].kind; }));
 
+  // Workplace automation provenance (schema 8, plan 021 C1): read and kept as written.
+  const boundary = (d, i = 0) => d.workTimeProvenance[0].boundaries[i];
+  add("prov/unknown-source", variant8((d) => { boundary(d).source = "wifiFromANewerBuild"; }));
+  add("prov/unknown-boundary", variant8((d) => { boundary(d).boundary = "lunch"; }));
+  add("prov/unknown-applied-by", variant8((d) => { boundary(d).appliedBy = "siri"; }));
+  add("prov/unknown-evidence", variant8((d) => { boundary(d).evidenceLevel = "certified"; }));
+  add("prov/duplicate-boundary", variant8((d) => { boundary(d, 1).boundary = "start"; }));
+  add("prov/no-boundaries", variant8((d) => { d.workTimeProvenance[0].boundaries = []; }));
+  add("prov/too-many-boundaries", variant8((d) => {
+    d.workTimeProvenance[0].boundaries = Array.from({ length: 9 }, (_, i) => ({ ...boundary(d), boundary: i % 2 ? "end" : "start" }));
+  }));
+  add("prov/rules-version-zero", variant8((d) => { boundary(d).rulesVersion = 0; }));
+  add("prov/bad-batch-id", variant8((d) => { boundary(d).batchID = "batch"; }));
+  add("prov/lowercase-ids", variant8((d) => {
+    boundary(d).batchID = "0000000a-0000-0000-0000-0000000000bc";
+    d.workTimeProvenance[0].editTieBreaker = "0000000a-0000-0000-0000-0000000000cd";
+  }));
+  add("prov/empty-reason", variant8((d) => { boundary(d).reasons = [""]; }));
+  add("prov/reason-graphemes", variant8((d) => { boundary(d).reasons = ["👨‍👩‍👧".repeat(64)]; }));
+  add("prov/reason-too-long", variant8((d) => { boundary(d).reasons = ["r".repeat(65)]; }));
+  add("prov/too-many-reasons", variant8((d) => { boundary(d).reasons = Array.from({ length: 17 }, () => "staleEvent"); }));
+  add("prov/unknown-reason-kept", variant8((d) => { boundary(d).reasons = ["aReasonFromANewerBuild"]; }));
+  add("prov/bad-zone", variant8((d) => { d.workTimeProvenance[0].timeZoneIdentifier = "Nope/Nope"; }));
+  add("prov/bad-key", variant8((d) => { d.workTimeProvenance[0].dayKey = "2026-8-27"; }));
+  add("prov/negative-count", variant8((d) => { d.workTimeProvenance[0].editCount = -1; }));
+  add("prov/unknown-field-dropped", variant8((d) => { boundary(d).latitude = 31.2; boundary(d).ssid = "Office"; }));
+  add("doc/prov-time-wrong-type", variant8((d) => { boundary(d).timeMs = "09:10"; }));
+  add("doc/prov-reasons-missing", variant8((d) => { delete boundary(d).reasons; }));
+  add("doc/prov-rules-version-fraction", variant8((d) => { boundary(d).rulesVersion = 1.5; }));
+  add("doc/prov-not-array", variant8((d) => { d.workTimeProvenance = {}; }));
+
   // Merging into an existing archive.
   const base = read("v6.json");
   const newer = variant((d) => { d.dayOverrides[0].note = "Edited elsewhere"; d.dayOverrides[0].editCount = 5; });
@@ -285,6 +324,14 @@ export function recordCases() {
   add("merge/leave-erased-skipped", base7, { base: base7, erase: [["leaveDay", "2026-08-26"], ["leaveBalance", "00000000-0000-0000-0000-000000000021"]], mode: "skipErased" });
   add("merge/leave-day-erased-restored", base7, { base: base7, erase: [["leaveDay", "2026-08-26"]], mode: "restoreErased" });
   add("merge/leave-into-v6", base7, { base, mode: "skipErased" });
+  const base8 = read("v8.json");
+  add("merge/prov-identical", base8, { base: base8, mode: "skipErased" });
+  add("merge/prov-newer-kept-local", variant8((d) => { boundary(d).appliedBy = "automatic"; d.workTimeProvenance[0].editCount = 3; }), { base: base8, mode: "skipErased" });
+  add("merge/prov-newer-by-stamp", variant8((d) => { d.workTimeProvenance[0].boundaries.pop(); d.workTimeProvenance[0].editCount = 3; }), { base: base8, mode: "resolveByEditStamp" });
+  add("merge/prov-erased-skipped", base8, { base: base8, erase: [["workTimeProvenance", "2026-08-27"]], mode: "skipErased" });
+  add("merge/prov-erased-restored", base8, { base: base8, erase: [["workTimeProvenance", "2026-08-27"]], mode: "restoreErased" });
+  add("merge/prov-into-v7", base8, { base: base7, mode: "skipErased" });
+  add("merge/prov-kept-when-override-erased", base8, { base: base8, erase: [["dayOverride", "2026-08-24"]], mode: "skipErased" });
   // Snapshot hours as Records stores them (ScheduleHoursCodec): decoded, re-encoded with sorted keys, fingerprinted.
   const hours = (name, value) => cases.push({ name: `hours/${name}`, kind: "hours", input: typeof value === "string" ? value : text(value) });
   const classic = { startTime: "09:00", endTime: "17:00", workdays: [1, 2, 3, 4, 5], schedule: { mode: "classic" }, breakStartTime: "12:00", breakDurationMinutes: 60 };

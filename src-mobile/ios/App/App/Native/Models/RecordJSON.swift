@@ -16,6 +16,8 @@ nonisolated enum RecordEntityType: String, Codable, Sendable, CaseIterable {
     case rosterDay
     case leaveBalance
     case leaveDay
+    /// Plan 021 C1: how workplace automation arrived at a day's adopted times.
+    case workTimeProvenance
 }
 
 /// Local tombstone so a later import cannot resurrect a permanently deleted
@@ -67,6 +69,7 @@ nonisolated enum RecordIncomingValue: Equatable, Sendable {
     case rosterDay(RosterDay)
     case leaveBalance(LeaveBalance)
     case leaveDay(LeaveDay)
+    case workTimeProvenance(WorkTimeProvenance)
 }
 
 nonisolated struct RecordImportConflict: Equatable, Sendable {
@@ -124,6 +127,7 @@ struct RecordState: Equatable, Sendable {
     var rosterDays: [RosterDay] = []
     var leaveBalances: [LeaveBalance] = []
     var leaveDays: [LeaveDay] = []
+    var workTimeProvenance: [WorkTimeProvenance] = []
     var recordsStartedOn: Date?
     var erased: [ErasedID] = []
     var sync = SyncLocalState.empty
@@ -198,6 +202,8 @@ struct RecordState: Equatable, Sendable {
             leaveBalances.removeAll { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame }
         case .leaveDay:
             leaveDays.removeAll { $0.dayKey == key }
+        case .workTimeProvenance:
+            workTimeProvenance.removeAll { $0.dayKey == key }
         }
         if let index = erased.firstIndex(where: {
             $0.entityType == type && $0.logicalKey == key
@@ -224,8 +230,8 @@ struct RecordState: Equatable, Sendable {
 /// calendar; instants are Unix milliseconds so a timezone shift cannot move a
 /// day. Exports are user-triggered backups and include their synced settings.
 nonisolated enum RecordJSON {
-    nonisolated static let schemaVersion = 7
-    nonisolated static let acceptedSchemaVersions = 1...7
+    nonisolated static let schemaVersion = 8
+    nonisolated static let acceptedSchemaVersions = 1...8
 
     nonisolated static func export(
         _ state: RecordState,
@@ -269,7 +275,8 @@ nonisolated enum RecordJSON {
             extendedSchedule: state.extendedSchedule.map(ExtendedScheduleDTO.init),
             rosterDays: state.rosterDays.map(RosterDayDTO.init),
             leaveBalances: state.leaveBalances.map(LeaveBalanceDTO.init),
-            leaveDays: state.leaveDays.map(LeaveDayDTO.init)
+            leaveDays: state.leaveDays.map(LeaveDayDTO.init),
+            workTimeProvenance: state.workTimeProvenance.map(WorkTimeProvenanceDTO.init)
         )
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
@@ -310,6 +317,7 @@ nonisolated enum RecordJSON {
         var leaveBalancesByID = index(state.leaveBalances, \.id)
         var leaveDaysByKey = index(state.leaveDays, \.dayKey)
         var leaveBalanceIDMap: [UUID: UUID] = [:]
+        var provenanceByKey = index(state.workTimeProvenance, \.dayKey)
         var observationsByID = index(state.observations, \.eventID)
         var tasksByID = index(state.focusTasks, \.id)
         var sessionsByID = index(state.focusSessions, \.id)
@@ -555,6 +563,34 @@ nonisolated enum RecordJSON {
                         archive.leaveDays[index] = next
                     }
                     return next
+                }
+            )
+        }
+
+        for dto in document.workTimeProvenance ?? [] {
+            guard let incoming = dto.value() else {
+                report.rejected.append(RecordImportRejection(entityType: .workTimeProvenance, logicalKey: dto.dayKey))
+                continue
+            }
+            merge(
+                incoming,
+                type: .workTimeProvenance,
+                key: incoming.dayKey,
+                mode: mode,
+                state: &state,
+                report: &report,
+                existing: { archive in provenanceByKey[incoming.dayKey].map { archive.workTimeProvenance[$0] } },
+                incomingValue: { .workTimeProvenance($0) },
+                insert: { archive, value in
+                    provenanceByKey[value.dayKey] = archive.workTimeProvenance.count
+                    archive.workTimeProvenance.append(value)
+                    return value
+                },
+                replace: { archive, value in
+                    if let index = provenanceByKey[value.dayKey] {
+                        archive.workTimeProvenance[index] = value
+                    }
+                    return value
                 }
             )
         }
@@ -897,6 +933,12 @@ nonisolated enum RecordJSON {
             } else {
                 state.leaveDays.append(day)
             }
+        case .workTimeProvenance(let row):
+            if let index = state.workTimeProvenance.firstIndex(where: { $0.dayKey == row.dayKey }) {
+                state.workTimeProvenance[index] = row
+            } else {
+                state.workTimeProvenance.append(row)
+            }
         }
     }
 
@@ -999,6 +1041,7 @@ nonisolated enum RecordJSON {
         case .rosterDay(let day): day.dayKey
         case .leaveBalance(let balance): balance.id.uuidString
         case .leaveDay(let day): day.dayKey
+        case .workTimeProvenance(let row): row.dayKey
         }
     }
 
@@ -1019,6 +1062,7 @@ nonisolated enum RecordJSON {
         case .rosterDay(let day): day.editCount
         case .leaveBalance(let balance): balance.editCount
         case .leaveDay(let day): day.editCount
+        case .workTimeProvenance(let row): row.editCount
         }
     }
 
@@ -1041,6 +1085,7 @@ nonisolated enum RecordJSON {
         case .rosterDay(let day): day.editTieBreaker
         case .leaveBalance(let balance): balance.editTieBreaker
         case .leaveDay(let day): day.editTieBreaker
+        case .workTimeProvenance(let row): row.editTieBreaker
         }
     }
 
@@ -1182,6 +1227,8 @@ nonisolated struct RecordJSONDocument: Codable, Equatable, Sendable {
     /// Schema 7 (plan 020). Absent from older documents.
     var leaveBalances: [LeaveBalanceDTO]? = nil
     var leaveDays: [LeaveDayDTO]? = nil
+    /// Schema 8 (plan 021 C1). Absent from older documents.
+    var workTimeProvenance: [WorkTimeProvenanceDTO]? = nil
 }
 
 nonisolated struct CareerPeriodDTO: Codable, Equatable, Sendable {
