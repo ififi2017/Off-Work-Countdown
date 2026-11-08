@@ -2,7 +2,7 @@
 
 - **状态**：DRAFT（2026-11-09）。待 P0 真机结论与所有者审定后才能发布；本文件不授权提交审核、不修改官网或 App Store Connect。
 - **适用范围**：iOS 3.3.0 的工作地点自动化（[Plan 021](../../plans/iOS/021-workplace-automation.md)）。Android／Siri／Wi-Fi 不在本版。
-- **依据**：main（P1／I1／C1／U1 已合入）与待合并的 #376（定位认证标识与移除来源）、#377（I2 原生监控）。两者合并后须按最终代码再核对本文件一次。
+- **依据**：main 上的 P1／I1／C1／U1、#376（定位认证标识与移除来源）、#377（I2 原生监控）与 #380（删除自动化数据）。提交审核前须按最终 archive 再核对本文件一次。
 - **官网**：长文由官网仓库维护，只有英文与简体中文两版（`lib/content-locales.ts`）。下文是交给官网 PR 的源文案，沿用 [Android 隐私补充](../android/privacy-policy-addition.md) 的做法；不要直接把本文件当作已发布政策。
 
 ## 0. 发布前必须解决或确认的事项
@@ -12,8 +12,8 @@
 | B1 | P0 结论写入 `docs/reviews/021-workplace-automation-capability.md`，确认关闭 App、冷启动与锁屏时能否收到到离事件 | 定位用途说明与审核备注都写了 “即使 App 已关闭”；若划掉 App 后不可靠，20 个 `InfoPlist.strings` 与本文件须一并改写 |
 | B2 | 决定 Release 是否显示设置入口（`WorkplaceAutomation.showsSettingsEntry`） | 目前只在 DEBUG 显示；审核员看不到入口就无法复现，提交前必须打开 |
 | B3 | 是否需要 `UIBackgroundModes` 的 `location` | I3 要求只按实际依赖配置；`CLMonitor` + `CLServiceSession` 预期不需要，以 P0 结果为准，并在 PR 写明 |
-| B4 | **缺少“删除自动化数据”入口** | 现在只能逐个删除工作地点（移除坐标）；已记录的到离事件与未采用建议只在 90 天后自动清理，关闭自动化不会删除。隐私页的删除说明会因此不完整。建议在设置页加入“删除自动化数据”（清空本机自动化文件、移除系统监控条件，不动已采用工时与其来源） |
-| B5 | #376、#377 合并 | 隐私页提到的“移除来源详情”和到离通知来自这两个 PR |
+| B4 | ✅ 已由 #380 加入“删除自动化数据”（原为：缺少该入口） | 现在只能逐个删除工作地点（移除坐标）；已记录的到离事件与未采用建议只在 90 天后自动清理，关闭自动化不会删除。隐私页的删除说明会因此不完整。建议在设置页加入“删除自动化数据”（清空本机自动化文件、移除系统监控条件，不动已采用工时与其来源） |
+| B5 | ✅ #376、#377 已合入 | 隐私页提到的“移除来源详情”和到离通知来自这两个 PR |
 | B6 | 最终 archive 核对 | 确认没有新增 SDK、网络请求或诊断上传，App 隐私标签结论才成立（§3） |
 
 ## 1. 官网隐私页源文案
@@ -38,7 +38,7 @@ A detected time changes your hours only when you adopt it, or when you turn on a
 
 Shortcuts actions for arriving and leaving work don't use DoneAt's location access; the Shortcuts automation you set up decides when to run them. Notifications about arrivals, departures and questions never include a workplace name, an address or pay.
 
-**Update “Deleting your data”:** add: “On iPhone, deleting a workplace removes its location from DoneAt. [B4: Delete Automation Data removes saved workplaces, events and pending times from the device.] Turning Workplace Automation off stops monitoring. Adopted work times and their source details stay in your records until you change or delete them; uninstalling removes everything stored on the device.”
+**Update “Deleting your data”:** add: “On iPhone, deleting a workplace removes its location from DoneAt. Delete Automation Data in Workplace Automation settings removes saved workplaces, events, pending times and days away from the office from the device and turns automation off. Turning Workplace Automation off stops monitoring. Adopted work times and their source details stay in your records until you change or delete them; uninstalling removes everything stored on the device.”
 
 **Update “Third-party services”, Apple bullet:** add “, and Location Services for Workplace Automation when you turn it on”.
 
@@ -64,7 +64,7 @@ Shortcuts actions for arriving and leaving work don't use DoneAt's location acce
 
 上班与下班的快捷指令动作不使用 DoneAt 的定位权限，由你设置的快捷指令自动化决定何时执行。到达、离开与询问的通知不包含工作地点名称、地址或薪资。
 
-**“删除你的数据”新增：**“在 iPhone 上，删除工作地点会从 DoneAt 移除它的位置。［B4：“删除自动化数据”会从设备上移除已保存的工作地点、事件与待复核时间。］关闭工作地点自动化会停止监控。已采用的工时及其来源摘要会保留在记录中，直到你修改或删除；卸载会移除设备上保存的所有内容。”
+**“删除你的数据”新增：**“在 iPhone 上，删除工作地点会从 DoneAt 移除它的位置。工作地点自动化设置中的“删除自动化数据”会从设备上移除已保存的工作地点、事件、待复核时间与不在办公室的日子，并关闭自动化。关闭工作地点自动化会停止监控。已采用的工时及其来源摘要会保留在记录中，直到你修改或删除；卸载会移除设备上保存的所有内容。”
 
 **“第三方服务”的 Apple 一项补充：**“，以及你开启工作地点自动化时使用的定位服务”。
 
@@ -124,7 +124,9 @@ Shortcuts actions for arriving and leaving work don't use DoneAt's location acce
 >
 > To turn it off: switch off Workplace Automation (monitoring stops and all regions are removed), or delete a workplace, or revoke location access in iOS Settings. Existing records are kept.
 >
-> [B2/B4 定稿后补：入口位置、删除自动化数据入口；若提供审核演示视频，须为真实 Release 行为，不使用调试注入。]
+> To delete everything automation keeps on the device, use Delete Automation Data at the bottom of the same page.
+>
+> [B2 定稿后补：入口位置；若提供审核演示视频，须为真实 Release 行为，不使用调试注入。]
 
 ## 3. App 隐私标签复核
 
