@@ -959,6 +959,16 @@ cd src-mobile/android
 - 测试：iOS 新增 `WorkTimeProvenanceTests` 7 项、`WorkplaceAutomationCoordinatorTests` 新增 7 项（写入与隐私、复核采用、人工修改与清除后保留、撤销恢复／墓碑、删除证据、崩溃窗口），`RecordSchemaCompatibilityTests` 新增 v8 保留与未知顶层键跳过、各版本循环扩到 1…8、拒绝 v9；Android 新增 `RecordsTransferTest.workTimeProvenanceSurvivesImportAndExportUnchanged`，版本循环扩到 1…8。完整 `AppTests` 84 个套件 1093 项串行通过（iPhone 18 Pro 模拟器 iOS 27.1，无头）；`check:ios`、`check:ios-strings`、`npm test`（744 项）、`check:android-record-fixtures` 与合成档案检查通过；Android Play `:core:domain:test`（496）、`:core:data:test`（100）、`:core:designsystem:testDebugUnitTest`（13）、`:app:testDebugUnitTest`（228）、`lintDebug`、`assembleDebug`、`assembleRelease` 通过（Temurin 25.0.3 arm64，本机 Android Studio 缺 JBR）。CN 渠道未单独跑（未改渠道代码）。
 - **未做**：来源摘要与“定位认证”的界面、删除证据入口与文案（无新增本地化键）；账户切换、离线重试与删除传播只沿用现有通用同步机制，未做专项真机／CloudKit 验证；App Store 隐私标签与官网隐私页未改；未做视觉检查。
 
+### 2026-11-08 · I1 快捷指令与排班适配
+
+- 分支 `claude/ios-330-shortcuts`，叠在 P1b（PR #369）之上。
+- 排班适配：`RecordsQueries.automationShifts(around:)` 用 Records 的三层解析给出前一天到后一天的计划班次；节假日／调休与请假决定是否有班，标记为不上班的日子没有班次；当日覆盖不参与计算，因为那是自动化写入的采用值，计划仍是加班基准。
+- `AppRuntime.workplaceAutomation` 持有唯一的 `WorkplaceAutomationCoordinator`。
+- 新增 `Native/Services/WorkplaceAutomationIntents.swift`：“记录到达公司”“记录离开公司”（个人自动化上报，规则与地理围栏事件相同：默认待复核、早到须本人确认、提前离开只留痕）；“确认已开始上班”“确认已下班”（先 `requestConfirmation`，再按用户声明写入，可提前下班，不受“仍在工作地点内”影响）。均 `supportedModes = .background`，每次执行重新检查 Plus，不请求定位、不导入地点、不带薪资。Shortcuts 事件以执行时刻为观察时间，`timestampBasis = .callbackReceipt` 如实标明。
+- 文案：17 个新键 19 语言写入 `Localizable.xcstrings`；8 个 Intent 标题／描述登记在 `check-ios-strings.mjs` 的 `UNSEEN_ON_PURPOSE`；Android 资源由 `generate:android-strings` 同步（仅新增）。
+- 测试：新增 `WorkplaceAutomationShortcutsTests` 6 项；完整 `AppTests` 83 个套件 1079 项串行通过；Android 全套 Gradle 检查（四模块测试、lint、Debug／Release 组装）通过；`check:ios`、`check:ios-strings` 通过。
+- **未做**：复核列表与设置页（U1，届时加“接收快捷指令上报”开关）；系统快捷指令里的引导与真机执行（锁屏、个人自动化“立即运行”）未验证；App Shortcuts／Siri 短语属 S1，不在 3.3.0。
+
 后续记录格式沿用 019：`日期 · 批次`，列出实现范围、实际通过的测试及数量、失败项、未验证项、证据路径、关联 PR；不能只写“已完成自动上下班”。
 
 ## 10. 参考资料

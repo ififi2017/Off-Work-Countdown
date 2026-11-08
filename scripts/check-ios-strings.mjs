@@ -94,6 +94,16 @@ export const UNSEEN_ON_PURPOSE = {
   widgetSuiteControlFocusDescription: "FocusControlWidgets.swift",
   widgetSuiteControlWorking: "FocusControlWidgets.swift",
   widgetSuiteIntentStartCountdown: "FocusControlWidgets.swift",
+  // Plan 021 I1 Shortcuts actions: App Intents needs titles and descriptions
+  // as literals. Used in Native/Services/WorkplaceAutomationIntents.swift.
+  automationIntentRecordArrival: "WorkplaceAutomationIntents.swift",
+  automationIntentRecordArrivalDescription: "WorkplaceAutomationIntents.swift",
+  automationIntentRecordDeparture: "WorkplaceAutomationIntents.swift",
+  automationIntentRecordDepartureDescription: "WorkplaceAutomationIntents.swift",
+  automationIntentConfirmStart: "WorkplaceAutomationIntents.swift",
+  automationIntentConfirmStartDescription: "WorkplaceAutomationIntents.swift",
+  automationIntentConfirmEnd: "WorkplaceAutomationIntents.swift",
+  automationIntentConfirmEndDescription: "WorkplaceAutomationIntents.swift",
 };
 
 /// Languages whose singular differs from the plural. Everyone else has one

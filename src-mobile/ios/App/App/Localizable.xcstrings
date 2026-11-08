@@ -150846,6 +150846,2029 @@
           }
         }
       }
+    },
+    "automationIntentRecordArrival": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تسجيل الوصول إلى العمل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ankunft bei der Arbeit erfassen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record Arrival at Work"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrar llegada al trabajo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer l’arrivée au travail"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम पर पहुँचना दर्ज करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catat tiba di kantor"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra arrivo al lavoro"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "出社を記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출근 기록"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कामावर पोहोचल्याची नोंद करा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registar chegada ao trabalho"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отметить приход на работу"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกการมาถึงที่ทำงาน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İşe varışı kaydet"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi lại lúc đến chỗ làm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录到达公司"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記錄到達公司"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記錄抵達公司"
+          }
+        }
+      }
+    },
+    "automationIntentRecordArrivalDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُعلم DoneAt بأنك وصلت إلى العمل. استخدمه في أتمتة شخصية، مثل الوصول إلى مكان ما أو الاتصال بشبكة Wi-Fi."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teilt DoneAt mit, dass du bei der Arbeit angekommen bist. Nutze es in einer persönlichen Automation, etwa beim Ankommen an einem Ort oder beim Verbinden mit einem WLAN."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tells DoneAt you’ve arrived at work. Use it in a personal automation, such as arriving at a place or joining a Wi-Fi network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisa a DoneAt de que has llegado al trabajo. Úsalo en una automatización personal, como al llegar a un lugar o conectarte a una red Wi-Fi."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indique à DoneAt que vous êtes arrivé au travail. À utiliser dans une automatisation personnelle, par exemple en arrivant à un lieu ou en rejoignant un réseau Wi-Fi."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt को बताता है कि आप काम पर पहुँच गए हैं। इसे किसी पर्सनल ऑटोमेशन में इस्तेमाल करें, जैसे किसी जगह पहुँचने या Wi-Fi से जुड़ने पर।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memberi tahu DoneAt bahwa kamu sudah tiba di kantor. Gunakan dalam otomatisasi pribadi, misalnya saat tiba di suatu lokasi atau tersambung ke Wi-Fi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comunica a DoneAt che sei arrivato al lavoro. Usalo in un’automazione personale, ad esempio quando arrivi in un luogo o ti connetti a una rete Wi-Fi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "出社したことを DoneAt に伝えます。場所への到着や Wi-Fi への接続などの個人用オートメーションで使えます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt에 출근했다고 알려요. 특정 장소에 도착하거나 Wi-Fi에 연결될 때 같은 개인용 자동화에서 사용하세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुम्ही कामावर पोहोचलात हे DoneAt ला कळवते. एखाद्या ठिकाणी पोहोचल्यावर किंवा Wi-Fi शी जोडल्यावर अशा वैयक्तिक ऑटोमेशनमध्ये वापरा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indica ao DoneAt que chegou ao trabalho. Use numa automatização pessoal, por exemplo ao chegar a um local ou ao ligar-se a uma rede Wi-Fi."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сообщает DoneAt, что вы пришли на работу. Используйте в личной автоматизации, например при прибытии в место или подключении к сети Wi-Fi."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แจ้ง DoneAt ว่าคุณมาถึงที่ทำงานแล้ว ใช้ในระบบอัตโนมัติส่วนตัว เช่น เมื่อมาถึงสถานที่หรือเชื่อมต่อ Wi-Fi"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt'e işe vardığını bildirir. Bir yere varınca veya bir Wi-Fi ağına bağlanınca gibi kişisel bir otomasyonda kullan."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Báo cho DoneAt biết bạn đã đến chỗ làm. Dùng trong một mục tự động hóa cá nhân, chẳng hạn khi đến một địa điểm hoặc kết nối Wi-Fi."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "告诉 DoneAt 你已到达公司。可用在个人自动化中，例如到达某地或连接某个 Wi-Fi 时。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "話畀 DoneAt 知你已經到咗公司。可以用喺個人自動化，例如到達某個地方或者連上某個 Wi-Fi 嗰陣。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "告訴 DoneAt 你已抵達公司。可用在個人自動化中，例如抵達某地或連上某個 Wi-Fi 時。"
+          }
+        }
+      }
+    },
+    "automationIntentRecordDeparture": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تسجيل مغادرة العمل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verlassen der Arbeit erfassen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record Leaving Work"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrar salida del trabajo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer le départ du travail"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम से निकलना दर्ज करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catat pulang dari kantor"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra uscita dal lavoro"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退社を記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "퇴근 기록"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम सोडल्याची नोंद करा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registar saída do trabalho"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отметить уход с работы"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกการออกจากที่ทำงาน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İşten çıkışı kaydet"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi lại lúc rời chỗ làm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录离开公司"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記錄離開公司"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記錄離開公司"
+          }
+        }
+      }
+    },
+    "automationIntentRecordDepartureDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُعلم DoneAt بأنك غادرت العمل. استخدمه في أتمتة شخصية، مثل مغادرة مكان ما أو إيقاف وضع تركيز."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teilt DoneAt mit, dass du die Arbeit verlassen hast. Nutze es in einer persönlichen Automation, etwa beim Verlassen eines Orts oder beim Ausschalten eines Fokus."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tells DoneAt you’ve left work. Use it in a personal automation, such as leaving a place or turning off a Focus."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisa a DoneAt de que has salido del trabajo. Úsalo en una automatización personal, como al salir de un lugar o desactivar un modo de concentración."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indique à DoneAt que vous avez quitté le travail. À utiliser dans une automatisation personnelle, par exemple en quittant un lieu ou en désactivant un mode de concentration."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt को बताता है कि आप काम से निकल गए हैं। इसे किसी पर्सनल ऑटोमेशन में इस्तेमाल करें, जैसे किसी जगह से निकलने या फ़ोकस बंद करने पर।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memberi tahu DoneAt bahwa kamu sudah meninggalkan kantor. Gunakan dalam otomatisasi pribadi, misalnya saat meninggalkan suatu lokasi atau mematikan mode Fokus."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comunica a DoneAt che hai lasciato il lavoro. Usalo in un’automazione personale, ad esempio quando lasci un luogo o disattivi una modalità Full immersion."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退社したことを DoneAt に伝えます。場所からの出発や集中モードのオフなどの個人用オートメーションで使えます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt에 퇴근했다고 알려요. 특정 장소를 떠나거나 집중 모드를 끌 때 같은 개인용 자동화에서 사용하세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुम्ही कामावरून निघालात हे DoneAt ला कळवते. एखाद्या ठिकाणाहून निघाल्यावर किंवा फोकस बंद केल्यावर अशा वैयक्तिक ऑटोमेशनमध्ये वापरा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indica ao DoneAt que saiu do trabalho. Use numa automatização pessoal, por exemplo ao sair de um local ou ao desativar um modo de foco."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сообщает DoneAt, что вы ушли с работы. Используйте в личной автоматизации, например при уходе из места или выключении режима фокусирования."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แจ้ง DoneAt ว่าคุณออกจากที่ทำงานแล้ว ใช้ในระบบอัตโนมัติส่วนตัว เช่น เมื่อออกจากสถานที่หรือปิดโหมดโฟกัส"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt'e işten çıktığını bildirir. Bir yerden ayrılınca veya bir Odak'ı kapatınca gibi kişisel bir otomasyonda kullan."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Báo cho DoneAt biết bạn đã rời chỗ làm. Dùng trong một mục tự động hóa cá nhân, chẳng hạn khi rời một địa điểm hoặc tắt một chế độ Tập trung."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "告诉 DoneAt 你已离开公司。可用在个人自动化中，例如离开某地或关闭某个专注模式时。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "話畀 DoneAt 知你已經離開公司。可以用喺個人自動化，例如離開某個地方或者關閉某個專注模式嗰陣。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "告訴 DoneAt 你已離開公司。可用在個人自動化中，例如離開某地或關閉某個專注模式時。"
+          }
+        }
+      }
+    },
+    "automationIntentConfirmStart": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تأكيد بدء العمل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arbeitsbeginn bestätigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm Work Started"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar inicio de jornada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmer le début du travail"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम शुरू होने की पुष्टि करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konfirmasi mulai kerja"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conferma inizio lavoro"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "勤務開始を確認"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무 시작 확인"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम सुरू झाल्याची पुष्टी करा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar início do trabalho"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подтвердить начало работы"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยืนยันว่าเริ่มงานแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İşe başladığını onayla"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xác nhận đã bắt đầu làm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认已开始上班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認已經開工"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認已開始上班"
+          }
+        }
+      }
+    },
+    "automationIntentConfirmStartDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يسجّل أنك بدأت العمل الآن بعد تأكيدك."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erfasst nach deiner Bestätigung, dass du jetzt mit der Arbeit begonnen hast."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records that you started work now, after you confirm."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra que has empezado a trabajar ahora, después de que lo confirmes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistre que vous commencez à travailler maintenant, après votre confirmation."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपकी पुष्टि के बाद दर्ज करता है कि आपने अभी काम शुरू किया।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mencatat bahwa kamu mulai bekerja sekarang, setelah kamu konfirmasi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra che hai iniziato a lavorare ora, dopo la tua conferma."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認後、いま勤務を開始したことを記録します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인하면 지금 근무를 시작했다고 기록해요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमच्या पुष्टीनंतर, तुम्ही आत्ता काम सुरू केल्याची नोंद करते."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regista que começou a trabalhar agora, depois de confirmar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После подтверждения отмечает, что вы начали работу сейчас."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกว่าคุณเริ่มงานตอนนี้ หลังจากคุณยืนยัน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onayladıktan sonra şu an işe başladığını kaydeder."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi lại rằng bạn bắt đầu làm việc lúc này, sau khi bạn xác nhận."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认后，记录你现在开始上班。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認之後，記錄你而家開工。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認後，記錄你現在開始上班。"
+          }
+        }
+      }
+    },
+    "automationIntentConfirmEnd": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تأكيد انتهاء العمل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arbeitsende bestätigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm Work Finished"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar fin de jornada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmer la fin du travail"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम ख़त्म होने की पुष्टि करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konfirmasi selesai kerja"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conferma fine lavoro"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "勤務終了を確認"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무 종료 확인"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम संपल्याची पुष्टी करा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar fim do trabalho"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подтвердить окончание работы"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยืนยันว่าเลิกงานแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İşi bitirdiğini onayla"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xác nhận đã tan làm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认已下班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認已經收工"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認已下班"
+          }
+        }
+      }
+    },
+    "automationIntentConfirmEndDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يسجّل أنك أنهيت العمل الآن بعد تأكيدك."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erfasst nach deiner Bestätigung, dass du jetzt Feierabend hast."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records that you finished work now, after you confirm."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra que has terminado de trabajar ahora, después de que lo confirmes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistre que vous terminez votre travail maintenant, après votre confirmation."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपकी पुष्टि के बाद दर्ज करता है कि आपने अभी काम ख़त्म किया।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mencatat bahwa kamu selesai bekerja sekarang, setelah kamu konfirmasi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra che hai finito di lavorare ora, dopo la tua conferma."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認後、いま勤務を終えたことを記録します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인하면 지금 근무를 마쳤다고 기록해요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमच्या पुष्टीनंतर, तुम्ही आत्ता काम संपवल्याची नोंद करते."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regista que terminou o trabalho agora, depois de confirmar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После подтверждения отмечает, что вы закончили работу сейчас."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกว่าคุณเลิกงานตอนนี้ หลังจากคุณยืนยัน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onayladıktan sonra şu an işi bitirdiğini kaydeder."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi lại rằng bạn tan làm lúc này, sau khi bạn xác nhận."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认后，记录你现在下班。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認之後，記錄你而家收工。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認後，記錄你現在下班。"
+          }
+        }
+      }
+    },
+    "automationConfirmStartPrompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هل تريد تسجيل أنك بدأت العمل الآن؟"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erfassen, dass du jetzt mit der Arbeit begonnen hast?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record that you started work now?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Registrar que has empezado a trabajar ahora?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer que vous commencez à travailler maintenant ?"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "दर्ज करें कि आपने अभी काम शुरू किया?"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catat bahwa kamu mulai bekerja sekarang?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrare che hai iniziato a lavorare ora?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "いま勤務を開始したと記録しますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금 근무를 시작했다고 기록할까요?"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुम्ही आत्ता काम सुरू केल्याची नोंद करायची?"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registar que começou a trabalhar agora?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отметить, что вы начали работу сейчас?"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกว่าคุณเริ่มงานตอนนี้ไหม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şu an işe başladığın kaydedilsin mi?"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi lại rằng bạn bắt đầu làm việc lúc này?"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录你现在开始上班吗？"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記錄你而家開工？"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要記錄你現在開始上班嗎？"
+          }
+        }
+      }
+    },
+    "automationConfirmEndPrompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هل تريد تسجيل أنك أنهيت العمل الآن؟"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erfassen, dass du jetzt Feierabend hast?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record that you finished work now?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Registrar que has terminado de trabajar ahora?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer que vous terminez votre travail maintenant ?"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "दर्ज करें कि आपने अभी काम ख़त्म किया?"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catat bahwa kamu selesai bekerja sekarang?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrare che hai finito di lavorare ora?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "いま勤務を終えたと記録しますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금 근무를 마쳤다고 기록할까요?"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुम्ही आत्ता काम संपवल्याची नोंद करायची?"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registar que terminou o trabalho agora?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отметить, что вы закончили работу сейчас?"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกว่าคุณเลิกงานตอนนี้ไหม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şu an işi bitirdiğin kaydedilsin mi?"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi lại rằng bạn tan làm lúc này?"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录你现在下班吗？"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記錄你而家收工？"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要記錄你現在下班嗎？"
+          }
+        }
+      }
+    },
+    "automationResultApplied": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم. حُدِّث وقت العمل لهذه المناوبة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fertig. Die Arbeitszeit dieser Schicht ist aktualisiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done. This shift’s work time is updated."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo. Se ha actualizado el horario de este turno."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "C’est fait. L’horaire de ce service est mis à jour."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हो गया। इस शिफ़्ट का काम का समय अपडेट हो गया।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selesai. Waktu kerja sif ini sudah diperbarui."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fatto. L’orario di questo turno è aggiornato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完了しました。このシフトの勤務時間を更新しました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "완료했어요. 이 근무의 근무 시간을 업데이트했어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "झाले. या शिफ्टची कामाची वेळ अपडेट झाली."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto. O horário deste turno foi atualizado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово. Рабочее время этой смены обновлено."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เรียบร้อย อัปเดตเวลาทำงานของกะนี้แล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tamam. Bu vardiyanın çalışma süresi güncellendi."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xong. Đã cập nhật giờ làm của ca này."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好了，这个班次的工作时间已更新。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搞掂，呢更嘅工作時間已經更新。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好了，這個班次的工作時間已更新。"
+          }
+        }
+      }
+    },
+    "automationResultAlreadyApplied": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لدى DoneAt هذا الوقت بالفعل."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt hat diese Zeit bereits."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt already has this time."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt ya tiene esta hora."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt a déjà cet horaire."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt में यह समय पहले से है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt sudah punya waktu ini."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt ha già questo orario."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt にはすでにこの時刻があります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt에 이미 이 시간이 있어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt मध्ये ही वेळ आधीच आहे."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O DoneAt já tem esta hora."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В DoneAt уже есть это время."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt มีเวลานี้อยู่แล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt'te bu saat zaten var."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt đã có thời gian này."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 已有这个时间。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 已經有呢個時間。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 已經有這個時間。"
+          }
+        }
+      }
+    },
+    "automationResultRecorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حُفظ في DoneAt. لن تتغير ساعاتك إلا بعد مراجعتك."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In DoneAt gespeichert. Deine Stunden ändern sich erst, wenn du es prüfst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved in DoneAt. Your hours change only after you review it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado en DoneAt. Tus horas solo cambian después de que lo revises."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistré dans DoneAt. Vos heures ne changent qu’après votre vérification."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt में सहेजा गया। आपके समीक्षा करने के बाद ही घंटे बदलेंगे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tersimpan di DoneAt. Jam kerjamu baru berubah setelah kamu meninjaunya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvato in DoneAt. Le tue ore cambiano solo dopo che lo controlli."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt に保存しました。確認するまで勤務時間は変わりません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt에 저장했어요. 확인한 뒤에만 근무 시간이 바뀌어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt मध्ये जतन केले. तुम्ही तपासल्यानंतरच तास बदलतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado no DoneAt. As suas horas só mudam depois de rever."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранено в DoneAt. Часы изменятся только после вашей проверки."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกไว้ใน DoneAt แล้ว ชั่วโมงทำงานจะเปลี่ยนหลังจากคุณตรวจสอบเท่านั้น"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt'e kaydedildi. Saatlerin ancak sen inceledikten sonra değişir."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã lưu vào DoneAt. Giờ làm chỉ thay đổi sau khi bạn xem lại."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存到 DoneAt，你确认后才会改动工时。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已經儲存到 DoneAt，你確認之後先會改工時。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已儲存到 DoneAt，你確認後才會變更工時。"
+          }
+        }
+      }
+    },
+    "automationResultNeedsReview": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حُفظ للمراجعة. تبقى تعديلاتك على هذه المناوبة كما هي."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Prüfen gespeichert. Deine eigenen Änderungen an dieser Schicht bleiben, wie sie sind."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved for review. Your own changes to this shift stay as they are."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado para revisar. Tus propios cambios en este turno se mantienen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistré pour vérification. Vos propres modifications de ce service restent telles quelles."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "समीक्षा के लिए सहेजा गया। इस शिफ़्ट में आपके अपने बदलाव जैसे हैं वैसे रहेंगे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tersimpan untuk ditinjau. Perubahan yang kamu buat sendiri pada sif ini tetap seperti semula."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvato da controllare. Le modifiche che hai fatto a questo turno restano invariate."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認待ちとして保存しました。このシフトに加えた変更はそのままです。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "검토 대기로 저장했어요. 이 근무에 직접 바꾼 내용은 그대로 유지돼요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तपासणीसाठी जतन केले. या शिफ्टमध्ये तुम्ही केलेले बदल तसेच राहतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado para rever. As alterações que fez a este turno ficam como estão."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранено для проверки. Ваши изменения в этой смене останутся как есть."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกไว้เพื่อตรวจสอบแล้ว การแก้ไขของคุณในกะนี้ยังคงเหมือนเดิม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İncelemen için kaydedildi. Bu vardiyada kendi yaptığın değişiklikler olduğu gibi kalır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã lưu để xem lại. Những thay đổi bạn tự làm cho ca này vẫn giữ nguyên."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存待复核，你对这个班次的修改保持不变。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已經儲存待覆核，你對呢更嘅修改會保持不變。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已儲存待覆核，你對這個班次的修改維持不變。"
+          }
+        }
+      }
+    },
+    "automationResultNoChange": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم التسجيل. لا حاجة لتغيير ساعاتك الآن."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notiert. An deinen Stunden muss gerade nichts geändert werden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noted. Nothing in your hours needs to change right now."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anotado. Por ahora no hace falta cambiar tus horas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "C’est noté. Rien à changer dans vos heures pour l’instant."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नोट कर लिया। अभी आपके घंटों में कुछ बदलने की ज़रूरत नहीं है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sudah dicatat. Saat ini jam kerjamu tidak perlu diubah."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annotato. Per ora non c’è niente da cambiare nelle tue ore."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記録しました。いまのところ勤務時間の変更はありません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록했어요. 지금은 근무 시간을 바꿀 필요가 없어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नोंद केली. सध्या तुमच्या तासांमध्ये काही बदलण्याची गरज नाही."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registado. Para já, não é preciso mudar as suas horas."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отмечено. Сейчас менять часы не нужно."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จดไว้แล้ว ตอนนี้ไม่ต้องเปลี่ยนชั่วโมงทำงาน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not edildi. Şu an saatlerinde bir şey değişmesi gerekmiyor."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã ghi nhận. Hiện chưa cần thay đổi giờ làm của bạn."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已记下，目前工时不需要变动。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記低咗，而家工時唔使改。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記下，目前工時不需要變動。"
+          }
+        }
+      }
+    },
+    "automationResultUnavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذّر على DoneAt الحفظ الآن. حاول مرة أخرى بعد قليل."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt konnte das gerade nicht speichern. Versuch es gleich noch einmal."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt couldn’t save this right now. Please try again in a moment."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt no ha podido guardarlo ahora. Vuelve a intentarlo en un momento."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt n’a pas pu enregistrer pour le moment. Réessayez dans un instant."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt अभी इसे सहेज नहीं सका। कृपया थोड़ी देर बाद फिर कोशिश करें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt belum bisa menyimpannya sekarang. Coba lagi sebentar lagi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt non è riuscito a salvare adesso. Riprova tra un attimo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt はいま保存できませんでした。少し待ってからもう一度お試しください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금은 DoneAt에 저장할 수 없어요. 잠시 후 다시 시도해 주세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt आत्ता हे जतन करू शकले नाही. थोड्या वेळाने पुन्हा प्रयत्न करा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O DoneAt não conseguiu guardar agora. Tente novamente daqui a pouco."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt не удалось сохранить это сейчас. Попробуйте ещё раз чуть позже."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt ยังบันทึกไม่ได้ในตอนนี้ โปรดลองอีกครั้งในอีกสักครู่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt bunu şu an kaydedemedi. Birazdan tekrar dene."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt chưa lưu được lúc này. Vui lòng thử lại sau giây lát."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 暂时无法保存，请稍后再试。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 暫時儲存唔到，請遲啲再試。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 暫時無法儲存，請稍後再試。"
+          }
+        }
+      }
+    },
+    "automationResultNeedsPlus": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تسجيل أوقات العمل من الاختصارات جزء من DoneAt Plus."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arbeitszeiten über Kurzbefehle zu erfassen ist Teil von DoneAt Plus."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording work times from Shortcuts is part of DoneAt Plus."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrar horas de trabajo desde Atajos forma parte de DoneAt Plus."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer vos heures depuis Raccourcis fait partie de DoneAt Plus."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शॉर्टकट्स से काम के घंटे दर्ज करना DoneAt Plus का हिस्सा है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mencatat jam kerja dari Pintasan termasuk dalam DoneAt Plus."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrare gli orari di lavoro da Comandi Rapidi fa parte di DoneAt Plus."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ショートカットからの勤務時間の記録は DoneAt Plus の機能です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단축어로 근무 시간을 기록하는 기능은 DoneAt Plus에 포함돼요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शॉर्टकट्समधून कामाचे तास नोंदवणे DoneAt Plus चा भाग आहे."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registar horas de trabalho a partir dos Atalhos faz parte do DoneAt Plus."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отметки рабочего времени через «Команды» входят в DoneAt Plus."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การบันทึกเวลาทำงานจากคำสั่งลัดเป็นส่วนหนึ่งของ DoneAt Plus"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kestirmeler'den çalışma saati kaydetmek DoneAt Plus'ın parçasıdır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi giờ làm từ Phím tắt là một phần của DoneAt Plus."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从快捷指令记录上下班时间属于 DoneAt Plus。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用捷徑記錄上落班時間屬於 DoneAt Plus。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從捷徑記錄上下班時間屬於 DoneAt Plus。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
