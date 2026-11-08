@@ -4161,6 +4161,81 @@
     "recordsUnrecorded": {
       "resource": "string/recordsUnrecorded"
     },
+    "recordsVerifyAdjustedNote": {
+      "resource": "string/recordsVerifyAdjustedNote",
+      "params": [
+        "time"
+      ]
+    },
+    "recordsVerifyAdopted": {
+      "resource": "string/recordsVerifyAdopted"
+    },
+    "recordsVerifyAdoptedAutomatically": {
+      "resource": "string/recordsVerifyAdoptedAutomatically",
+      "params": [
+        "time"
+      ]
+    },
+    "recordsVerifyAdoptedByYou": {
+      "resource": "string/recordsVerifyAdoptedByYou",
+      "params": [
+        "time"
+      ]
+    },
+    "recordsVerifyDetected": {
+      "resource": "string/recordsVerifyDetected"
+    },
+    "recordsVerifyDetectedUnknown": {
+      "resource": "string/recordsVerifyDetectedUnknown"
+    },
+    "recordsVerifyHeadlinePartial": {
+      "resource": "string/recordsVerifyHeadlinePartial"
+    },
+    "recordsVerifyHeadlineSources": {
+      "resource": "string/recordsVerifyHeadlineSources"
+    },
+    "recordsVerifyHeadlineVerified": {
+      "resource": "string/recordsVerifyHeadlineVerified"
+    },
+    "recordsVerifyHistorical": {
+      "resource": "string/recordsVerifyHistorical"
+    },
+    "recordsVerifyHistoricalNote": {
+      "resource": "string/recordsVerifyHistoricalNote"
+    },
+    "recordsVerifyMarkAdjusted": {
+      "resource": "string/recordsVerifyMarkAdjusted"
+    },
+    "recordsVerifyMarkDetected": {
+      "resource": "string/recordsVerifyMarkDetected"
+    },
+    "recordsVerifyMarkLocation": {
+      "resource": "string/recordsVerifyMarkLocation"
+    },
+    "recordsVerifyMarkPerson": {
+      "resource": "string/recordsVerifyMarkPerson"
+    },
+    "recordsVerifyMarkShortcut": {
+      "resource": "string/recordsVerifyMarkShortcut"
+    },
+    "recordsVerifyNote": {
+      "resource": "string/recordsVerifyNote"
+    },
+    "recordsVerifyReceived": {
+      "resource": "string/recordsVerifyReceived"
+    },
+    "recordsVerifyRemove": {
+      "resource": "string/recordsVerifyRemove"
+    },
+    "recordsVerifyRemoveConfirm": {
+      "resource": "string/recordsVerifyRemoveConfirm"
+    },
+    "recordsVerifySheetTitle": {
+      "resource": "string/recordsVerifySheetTitle"
+    },
+    "recordsVerifyShortcutNote": {
+      "resource": "string/recordsVerifyShortcutNote"
+    },
     "recordsWorkRegular": {
       "resource": "string/recordsWorkRegular"
     },
