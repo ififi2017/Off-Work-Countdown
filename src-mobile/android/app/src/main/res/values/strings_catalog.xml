@@ -62,6 +62,7 @@
     <string name="applyToToday">Change today too</string>
     <string name="auto">System</string>
     <string name="automationActionJustEarly">Just Arrived Early</string>
+    <string name="automationActionMovedHere">Came From Another Workplace</string>
     <string name="automationActionNotWorking">Not Working</string>
     <string name="automationActionRecordExtra">Record as Extra Work</string>
     <string name="automationActionStartedWork">Started Work</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">Tells DoneAt you’ve arrived at work. Use it in a personal automation, such as arriving at a place or joining a Wi-Fi network.</string>
     <string name="automationIntentRecordDeparture">Record Leaving Work</string>
     <string name="automationIntentRecordDepartureDescription">Tells DoneAt you’ve left work. Use it in a personal automation, such as leaving a place or turning off a Focus.</string>
+    <string name="automationNoticeArrivedApplied">Clock-in recorded at %1$s.</string>
+    <string name="automationNoticeArrivedRecorded">Arrival at %1$s noted. Your hours stay the same until you confirm.</string>
+    <string name="automationNoticeLeftApplied">Clock-out recorded at %1$s.</string>
+    <string name="automationNoticeLeftRecorded">Departure at %1$s noted. Your hours stay the same until you confirm.</string>
     <string name="automationPromptEarlyVisit">You arrived early. Have you started work?</string>
     <string name="automationPromptExtraVisit">Record this visit as extra work?</string>
     <string name="automationPromptLateArrival">Recorded a slightly later arrival. Keep recording today as usual?</string>
@@ -135,6 +140,11 @@
     <string name="automationUIIntro">DoneAt notices when you arrive at or leave your workplaces and records your work times. It stays off until you turn it on.</string>
     <string name="automationUILeaveRange">Leaving counts beyond %1$s m</string>
     <string name="automationUILocationFailed">Couldn’t find your location. Try again near a window or outside.</string>
+    <string name="automationUIMonitorLastEvent">Last noticed: %1$s.</string>
+    <string name="automationUIMonitorLocationOff">Location Services are off. Turn them on in Settings &gt; Privacy &amp; Security.</string>
+    <string name="automationUIMonitorProblem">iOS couldn’t start watching your workplaces. Try turning Workplace Automation off and on again.</string>
+    <string name="automationUIMonitorStarting">Getting ready to watch your workplaces. This can take a moment.</string>
+    <string name="automationUIMonitorWatching">Watching for arrivals and departures.</string>
     <string name="automationUINoLocationYet">Tap “Use Current Location” to place this workplace on the map.</string>
     <string name="automationUINoteChangedByYou">You’ve changed this day yourself</string>
     <string name="automationUINoteEarlyStart">Arrived early — counts once you confirm</string>
@@ -142,7 +152,11 @@
     <string name="automationUINoteLateDetection">Detected late, so the time may be off</string>
     <string name="automationUINoteLeftEarly">Left before the planned end</string>
     <string name="automationUINoteRecordsUnavailable">Your records couldn’t be updated. Try again.</string>
+    <string name="automationUINotifyArrivals">Notify on Arrival and Departure</string>
+    <string name="automationUINotifyArrivalsNote">A quiet notification says what was recorded. Detection works either way.</string>
     <string name="automationUIPaused">Paused</string>
+    <string name="automationUIPausedShift">Paused for %1$s</string>
+    <string name="automationUIPausedShiftNote">You changed this shift, so automation leaves it as it is.</string>
     <string name="automationUIPlanned">Planned %1$s</string>
     <string name="automationUIPreviewIntro">Your hours for these days will change as shown. You can undo it afterwards.</string>
     <string name="automationUIPreviewTitle">Adopt These Times?</string>
@@ -151,6 +165,7 @@
     <string name="automationUIRangeNote">The leaving range is 100 m larger, so walking near the edge isn’t counted as coming and going.</string>
     <string name="automationUIRecentSection">Recently Adopted</string>
     <string name="automationUIRecordingSection">Recording</string>
+    <string name="automationUIResume">Resume</string>
     <string name="automationUIReviewEmpty">Nothing to Review</string>
     <string name="automationUIReviewEmptyNote">Detected arrival and departure times show up here first.</string>
     <string name="automationUIReviewIntro">These times haven’t changed your hours yet. Adopt the ones that are right.</string>

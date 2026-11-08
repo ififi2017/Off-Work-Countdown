@@ -332,6 +332,9 @@
     "automationActionJustEarly": {
       "resource": "string/automationActionJustEarly"
     },
+    "automationActionMovedHere": {
+      "resource": "string/automationActionMovedHere"
+    },
     "automationActionNotWorking": {
       "resource": "string/automationActionNotWorking"
     },
@@ -382,6 +385,30 @@
     },
     "automationIntentRecordDepartureDescription": {
       "resource": "string/automationIntentRecordDepartureDescription"
+    },
+    "automationNoticeArrivedApplied": {
+      "resource": "string/automationNoticeArrivedApplied",
+      "params": [
+        "time"
+      ]
+    },
+    "automationNoticeArrivedRecorded": {
+      "resource": "string/automationNoticeArrivedRecorded",
+      "params": [
+        "time"
+      ]
+    },
+    "automationNoticeLeftApplied": {
+      "resource": "string/automationNoticeLeftApplied",
+      "params": [
+        "time"
+      ]
+    },
+    "automationNoticeLeftRecorded": {
+      "resource": "string/automationNoticeLeftRecorded",
+      "params": [
+        "time"
+      ]
     },
     "automationPromptEarlyVisit": {
       "resource": "string/automationPromptEarlyVisit"
@@ -560,6 +587,24 @@
     "automationUILocationFailed": {
       "resource": "string/automationUILocationFailed"
     },
+    "automationUIMonitorLastEvent": {
+      "resource": "string/automationUIMonitorLastEvent",
+      "params": [
+        "time"
+      ]
+    },
+    "automationUIMonitorLocationOff": {
+      "resource": "string/automationUIMonitorLocationOff"
+    },
+    "automationUIMonitorProblem": {
+      "resource": "string/automationUIMonitorProblem"
+    },
+    "automationUIMonitorStarting": {
+      "resource": "string/automationUIMonitorStarting"
+    },
+    "automationUIMonitorWatching": {
+      "resource": "string/automationUIMonitorWatching"
+    },
     "automationUINoLocationYet": {
       "resource": "string/automationUINoLocationYet"
     },
@@ -581,8 +626,23 @@
     "automationUINoteRecordsUnavailable": {
       "resource": "string/automationUINoteRecordsUnavailable"
     },
+    "automationUINotifyArrivals": {
+      "resource": "string/automationUINotifyArrivals"
+    },
+    "automationUINotifyArrivalsNote": {
+      "resource": "string/automationUINotifyArrivalsNote"
+    },
     "automationUIPaused": {
       "resource": "string/automationUIPaused"
+    },
+    "automationUIPausedShift": {
+      "resource": "string/automationUIPausedShift",
+      "params": [
+        "shift"
+      ]
+    },
+    "automationUIPausedShiftNote": {
+      "resource": "string/automationUIPausedShiftNote"
     },
     "automationUIPlanned": {
       "resource": "string/automationUIPlanned",
@@ -613,6 +673,9 @@
     },
     "automationUIRecordingSection": {
       "resource": "string/automationUIRecordingSection"
+    },
+    "automationUIResume": {
+      "resource": "string/automationUIResume"
     },
     "automationUIReviewEmpty": {
       "resource": "string/automationUIReviewEmpty"

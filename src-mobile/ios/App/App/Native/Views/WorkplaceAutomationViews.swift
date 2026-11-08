@@ -17,6 +17,19 @@ enum WorkplaceLocationAccess: Equatable {
 
 // MARK: - Settings
 
+/// One line about native monitoring under the "Always" access row.
+struct AutomationMonitorNote: Equatable {
+    var text: String
+    var isProblem = false
+}
+
+/// A shift automation leaves alone because the person changed it.
+struct AutomationPausedItem: Identifiable, Equatable {
+    /// The shift key.
+    var id: String
+    var title: String
+}
+
 struct WorkplaceAutomationSettingsContent: View {
     let text: AppText
     let isPlus: Bool
@@ -34,6 +47,13 @@ struct WorkplaceAutomationSettingsContent: View {
     var contexts: [AutomationContextItem] = []
     var onAddContext: () -> Void = {}
     var onDeleteContext: (UUID) -> Void = { _ in }
+    /// What monitoring is doing, once access is "Always" (§I2). Nil keeps
+    /// the general note.
+    var monitorNote: AutomationMonitorNote? = nil
+    var onToggleNotify: (Bool) -> Void = { _ in }
+    /// Shifts the person paused automation for by changing them.
+    var pausedShifts: [AutomationPausedItem] = []
+    var onResume: (String) -> Void = { _ in }
     /// Whether there is device data to delete; the row is hidden otherwise.
     var hasDeviceData = false
     var onDeleteData: () -> Void = {}
@@ -69,6 +89,7 @@ struct WorkplaceAutomationSettingsContent: View {
                 if isOn {
                     accessCard
                         .padding(.top, OWCDesign.sectionGap)
+                    pausedSection
                     workplacesSection
                     recordingSection
                     contextSection
@@ -110,8 +131,10 @@ struct WorkplaceAutomationSettingsContent: View {
                 }
                 .buttonStyle(OWCRowButtonStyle())
             case .always:
-                OWCRow(icon: "location.fill", title: text.t("automationUIAccessReady"),
-                       subtitle: text.t("automationUIAccessReadyNote"), isLast: true, centersVertically: true) {
+                OWCRow(icon: monitorNote?.isProblem == true ? "exclamationmark.triangle" : "location.fill",
+                       title: text.t("automationUIAccessReady"),
+                       subtitle: monitorNote?.text ?? text.t("automationUIAccessReadyNote"),
+                       isLast: true, centersVertically: true) {
                     EmptyView()
                 }
             }
@@ -179,6 +202,12 @@ struct WorkplaceAutomationSettingsContent: View {
                        isOn: Binding(get: { settings.appliesDetectedTimesAutomatically }, set: onToggleAutoApply))
                     .labelsHidden()
             }
+            OWCRow(title: text.t("automationUINotifyArrivals"), subtitle: text.t("automationUINotifyArrivalsNote"),
+                   centersVertically: true) {
+                Toggle(text.t("automationUINotifyArrivals"),
+                       isOn: Binding(get: { settings.notifiesArrivalsAndDepartures }, set: onToggleNotify))
+                    .labelsHidden()
+            }
             OWCRow(title: text.t("automationUIAskAfter"), subtitle: text.t("automationUIAskAfterNote"),
                    isLast: true, centersVertically: true) {
                 Picker(text.t("automationUIAskAfter"),
@@ -190,6 +219,26 @@ struct WorkplaceAutomationSettingsContent: View {
                 .pickerStyle(.menu)
                 .labelsHidden()
             }
+        }
+    }
+
+    // MARK: Paused shifts
+
+    @ViewBuilder private var pausedSection: some View {
+        if !pausedShifts.isEmpty {
+            OWCGroupCard {
+                ForEach(Array(pausedShifts.enumerated()), id: \.element.id) { index, item in
+                    OWCRow(icon: "pause.circle",
+                           title: text.t("automationUIPausedShift", values: ["shift": item.title]),
+                           subtitle: text.t("automationUIPausedShiftNote"),
+                           isLast: index == pausedShifts.count - 1, centersVertically: true) {
+                        Button(text.t("automationUIResume")) { onResume(item.id) }
+                            .font(.subheadline)
+                            .buttonStyle(.borderless)
+                    }
+                }
+            }
+            .padding(.top, 12)
         }
     }
 
@@ -738,6 +787,8 @@ private enum WorkplaceAutomationPreviewFixtures {
             text: WorkplaceAutomationPreviewFixtures.text(), isPlus: true, access: .always,
             settings: WorkplaceAutomationSettings(isMonitoringEnabled: true),
             workplaces: WorkplaceAutomationPreviewFixtures.workplaces(2), pendingCount: 4,
+            monitorNote: AutomationMonitorNote(text: "正在留意到達與離開。上次偵測：上午 9:06"),
+            pausedShifts: [AutomationPausedItem(id: "2026-11-09#a", title: "11月9日 週一 9:00–18:00")],
             hasDeviceData: true
         )
     }

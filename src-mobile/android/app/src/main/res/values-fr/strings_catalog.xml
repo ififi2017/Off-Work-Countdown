@@ -62,6 +62,7 @@
     <string name="applyToToday">Modifier aujourd’hui aussi</string>
     <string name="auto">Système</string>
     <string name="automationActionJustEarly">Juste en avance</string>
+    <string name="automationActionMovedHere">Vient d’un autre lieu</string>
     <string name="automationActionNotWorking">Je ne travaille pas</string>
     <string name="automationActionRecordExtra">Enregistrer en heures supplémentaires</string>
     <string name="automationActionStartedWork">Travail commencé</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">Indique à DoneAt que vous êtes arrivé au travail. À utiliser dans une automatisation personnelle, par exemple en arrivant à un lieu ou en rejoignant un réseau Wi-Fi.</string>
     <string name="automationIntentRecordDeparture">Enregistrer le départ du travail</string>
     <string name="automationIntentRecordDepartureDescription">Indique à DoneAt que vous avez quitté le travail. À utiliser dans une automatisation personnelle, par exemple en quittant un lieu ou en désactivant un mode de concentration.</string>
+    <string name="automationNoticeArrivedApplied">Arrivée enregistrée à %1$s.</string>
+    <string name="automationNoticeArrivedRecorded">Arrivée à %1$s notée. Vos heures restent inchangées jusqu’à votre confirmation.</string>
+    <string name="automationNoticeLeftApplied">Départ enregistré à %1$s.</string>
+    <string name="automationNoticeLeftRecorded">Départ à %1$s noté. Vos heures restent inchangées jusqu’à votre confirmation.</string>
     <string name="automationPromptEarlyVisit">Vous êtes en avance. Avez-vous commencé à travailler ?</string>
     <string name="automationPromptExtraVisit">Enregistrer cette visite comme heures supplémentaires ?</string>
     <string name="automationPromptLateArrival">Une arrivée un peu plus tardive a été enregistrée. Continuer l’enregistrement comme d’habitude aujourd’hui ?</string>
@@ -135,6 +140,11 @@
     <string name="automationUIIntro">DoneAt détecte quand vous arrivez à vos lieux de travail ou les quittez, et enregistre vos heures. Désactivé tant que vous ne l’activez pas.</string>
     <string name="automationUILeaveRange">Départ au-delà de %1$s m</string>
     <string name="automationUILocationFailed">Position introuvable. Réessayez près d’une fenêtre ou à l’extérieur.</string>
+    <string name="automationUIMonitorLastEvent">Dernière détection : %1$s.</string>
+    <string name="automationUIMonitorLocationOff">Les services de localisation sont désactivés. Activez-les dans Réglages &gt; Confidentialité et sécurité.</string>
+    <string name="automationUIMonitorProblem">iOS n’a pas pu démarrer la surveillance de vos lieux de travail. Essayez de désactiver puis de réactiver l’Automatisation du lieu de travail.</string>
+    <string name="automationUIMonitorStarting">Préparation de la surveillance de vos lieux de travail. Cela peut prendre un instant.</string>
+    <string name="automationUIMonitorWatching">Surveillance des arrivées et des départs.</string>
     <string name="automationUINoLocationYet">Touchez « Utiliser la position actuelle » pour placer ce lieu de travail sur la carte.</string>
     <string name="automationUINoteChangedByYou">Vous avez modifié ce jour vous-même</string>
     <string name="automationUINoteEarlyStart">Arrivée en avance : comptée après votre confirmation</string>
@@ -142,7 +152,11 @@
     <string name="automationUINoteLateDetection">Détecté tardivement : l’heure peut être inexacte</string>
     <string name="automationUINoteLeftEarly">Parti avant la fin prévue</string>
     <string name="automationUINoteRecordsUnavailable">Vos enregistrements n’ont pas pu être mis à jour. Réessayez.</string>
+    <string name="automationUINotifyArrivals">Notifier à l’arrivée et au départ</string>
+    <string name="automationUINotifyArrivalsNote">Une notification discrète indique ce qui a été enregistré. La détection fonctionne dans les deux cas.</string>
     <string name="automationUIPaused">En pause</string>
+    <string name="automationUIPausedShift">En pause pour %1$s</string>
+    <string name="automationUIPausedShiftNote">Vous avez modifié ce poste, l’automatisation le laisse donc tel quel.</string>
     <string name="automationUIPlanned">Prévu à %1$s</string>
     <string name="automationUIPreviewIntro">Vos heures pour ces jours changeront comme indiqué. Vous pourrez annuler ensuite.</string>
     <string name="automationUIPreviewTitle">Adopter ces heures ?</string>
@@ -151,6 +165,7 @@
     <string name="automationUIRangeNote">La zone de départ est plus grande de 100 m, pour qu’une promenade près du bord ne compte pas comme une arrivée ou un départ.</string>
     <string name="automationUIRecentSection">Adoptées récemment</string>
     <string name="automationUIRecordingSection">Enregistrement</string>
+    <string name="automationUIResume">Reprendre</string>
     <string name="automationUIReviewEmpty">Rien à vérifier</string>
     <string name="automationUIReviewEmptyNote">Les heures d’arrivée et de départ détectées apparaissent d’abord ici.</string>
     <string name="automationUIReviewIntro">Ces heures n’ont pas encore modifié vos horaires. Adoptez celles qui sont justes.</string>

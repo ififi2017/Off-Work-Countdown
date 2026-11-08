@@ -62,6 +62,7 @@
     <string name="applyToToday">غيّر اليوم أيضًا</string>
     <string name="auto">حسب النظام</string>
     <string name="automationActionJustEarly">وصلت مبكرًا فقط</string>
+    <string name="automationActionMovedHere">جئت من مكان عمل آخر</string>
     <string name="automationActionNotWorking">لا أعمل</string>
     <string name="automationActionRecordExtra">تسجيل كعمل إضافي</string>
     <string name="automationActionStartedWork">بدأت العمل</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">يُعلم DoneAt بأنك وصلت إلى العمل. استخدمه في أتمتة شخصية، مثل الوصول إلى مكان ما أو الاتصال بشبكة Wi-Fi.</string>
     <string name="automationIntentRecordDeparture">تسجيل مغادرة العمل</string>
     <string name="automationIntentRecordDepartureDescription">يُعلم DoneAt بأنك غادرت العمل. استخدمه في أتمتة شخصية، مثل مغادرة مكان ما أو إيقاف وضع تركيز.</string>
+    <string name="automationNoticeArrivedApplied">تم تسجيل بدء العمل عند %1$s.</string>
+    <string name="automationNoticeArrivedRecorded">تم تسجيل الوصول عند %1$s. ستبقى ساعاتك كما هي إلى أن تؤكد.</string>
+    <string name="automationNoticeLeftApplied">تم تسجيل انتهاء العمل عند %1$s.</string>
+    <string name="automationNoticeLeftRecorded">تم تسجيل المغادرة عند %1$s. ستبقى ساعاتك كما هي إلى أن تؤكد.</string>
     <string name="automationPromptEarlyVisit">وصلتَ مبكرًا. هل بدأت العمل؟</string>
     <string name="automationPromptExtraVisit">تسجيل هذه الزيارة كعمل إضافي؟</string>
     <string name="automationPromptLateArrival">سُجّل وصول متأخر قليلًا. هل تتابع التسجيل اليوم كالمعتاد؟</string>
@@ -135,6 +140,11 @@
     <string name="automationUIIntro">يكتشف DoneAt وصولك إلى أماكن عملك أو مغادرتها ويسجّل أوقات عملك. يبقى متوقفًا حتى تشغّله.</string>
     <string name="automationUILeaveRange">تُحتسب المغادرة بعد %1$s م</string>
     <string name="automationUILocationFailed">تعذّر تحديد موقعك. حاول مرة أخرى قرب نافذة أو في الخارج.</string>
+    <string name="automationUIMonitorLastEvent">آخر رصد: %1$s.</string>
+    <string name="automationUIMonitorLocationOff">خدمات الموقع متوقفة. فعّلها من الإعدادات &gt; الخصوصية والأمان.</string>
+    <string name="automationUIMonitorProblem">تعذّر على iOS بدء مراقبة أماكن عملك. جرّب إيقاف أتمتة مكان العمل ثم تشغيلها من جديد.</string>
+    <string name="automationUIMonitorStarting">نستعد لمراقبة أماكن عملك. قد يستغرق ذلك لحظة.</string>
+    <string name="automationUIMonitorWatching">نراقب الوصول والمغادرة.</string>
     <string name="automationUINoLocationYet">اضغط على «استخدام الموقع الحالي» لوضع مكان العمل هذا على الخريطة.</string>
     <string name="automationUINoteChangedByYou">لقد غيّرت هذا اليوم بنفسك</string>
     <string name="automationUINoteEarlyStart">وصلت مبكرًا — يُحتسب بعد تأكيدك</string>
@@ -142,7 +152,11 @@
     <string name="automationUINoteLateDetection">اكتُشف متأخرًا، وقد يكون الوقت غير دقيق</string>
     <string name="automationUINoteLeftEarly">غادرت قبل نهاية الوقت المخطط</string>
     <string name="automationUINoteRecordsUnavailable">تعذّر تحديث سجلاتك. حاول مرة أخرى.</string>
+    <string name="automationUINotifyArrivals">إشعار عند الوصول والمغادرة</string>
+    <string name="automationUINotifyArrivalsNote">إشعار هادئ يخبرك بما تم تسجيله. يعمل الرصد في الحالتين.</string>
     <string name="automationUIPaused">موقوف مؤقتًا</string>
+    <string name="automationUIPausedShift">متوقف مؤقتًا: %1$s</string>
+    <string name="automationUIPausedShiftNote">لقد غيّرت هذه الوردية، لذا تتركها الأتمتة كما هي.</string>
     <string name="automationUIPlanned">مخطط %1$s</string>
     <string name="automationUIPreviewIntro">ستتغير ساعاتك في هذه الأيام كما هو موضح. يمكنك التراجع بعد ذلك.</string>
     <string name="automationUIPreviewTitle">اعتماد هذه الأوقات؟</string>
@@ -151,6 +165,7 @@
     <string name="automationUIRangeNote">نطاق المغادرة أكبر بمقدار 100 م، حتى لا يُحتسب التجوّل قرب الحدّ على أنه ذهاب وإياب.</string>
     <string name="automationUIRecentSection">اعتُمدت مؤخرًا</string>
     <string name="automationUIRecordingSection">التسجيل</string>
+    <string name="automationUIResume">استئناف</string>
     <string name="automationUIReviewEmpty">لا شيء للمراجعة</string>
     <string name="automationUIReviewEmptyNote">تظهر هنا أولًا أوقات الوصول والمغادرة المكتشفة.</string>
     <string name="automationUIReviewIntro">لم تغيّر هذه الأوقات ساعاتك بعد. اعتمد الأوقات الصحيحة.</string>

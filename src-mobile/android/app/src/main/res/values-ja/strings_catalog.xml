@@ -62,6 +62,7 @@
     <string name="applyToToday">今日も変更</string>
     <string name="auto">システム</string>
     <string name="automationActionJustEarly">早く着いただけ</string>
+    <string name="automationActionMovedHere">別の勤務先から移動</string>
     <string name="automationActionNotWorking">仕事していない</string>
     <string name="automationActionRecordExtra">残業として記録</string>
     <string name="automationActionStartedWork">仕事を始めた</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">出社したことを DoneAt に伝えます。場所への到着や Wi-Fi への接続などの個人用オートメーションで使えます。</string>
     <string name="automationIntentRecordDeparture">退社を記録</string>
     <string name="automationIntentRecordDepartureDescription">退社したことを DoneAt に伝えます。場所からの出発や集中モードのオフなどの個人用オートメーションで使えます。</string>
+    <string name="automationNoticeArrivedApplied">%1$sに出勤を記録しました。</string>
+    <string name="automationNoticeArrivedRecorded">%1$sの到着を控えました。確認するまで勤務時間は変わりません。</string>
+    <string name="automationNoticeLeftApplied">%1$sに退勤を記録しました。</string>
+    <string name="automationNoticeLeftRecorded">%1$sの出発を控えました。確認するまで勤務時間は変わりません。</string>
     <string name="automationPromptEarlyVisit">早めに到着しました。仕事は始めましたか？</string>
     <string name="automationPromptExtraVisit">この訪問を残業として記録しますか？</string>
     <string name="automationPromptLateArrival">少し遅い到着を記録しました。今日はいつもどおり記録を続けますか？</string>
@@ -135,6 +140,11 @@
     <string name="automationUIIntro">勤務先への到着と退出をDoneAtが検知して、勤務時間を記録します。オンにするまでは使われません。</string>
     <string name="automationUILeaveRange">%1$s m以上離れると退出とみなす</string>
     <string name="automationUILocationFailed">現在地を取得できませんでした。窓の近くや屋外でもう一度お試しください。</string>
+    <string name="automationUIMonitorLastEvent">最後の検出：%1$s。</string>
+    <string name="automationUIMonitorLocationOff">位置情報サービスがオフです。「設定」&gt;「プライバシーとセキュリティ」でオンにできます。</string>
+    <string name="automationUIMonitorProblem">iOSが勤務先の見守りを開始できませんでした。勤務先の自動記録をオフにして、もう一度オンにしてみてください。</string>
+    <string name="automationUIMonitorStarting">勤務先の見守りを準備しています。少しお待ちください。</string>
+    <string name="automationUIMonitorWatching">到着と退出を見守っています。</string>
     <string name="automationUINoLocationYet">「現在地を使用」をタップして、この勤務先を地図上に設定します。</string>
     <string name="automationUINoteChangedByYou">この日はあなた自身が変更しています</string>
     <string name="automationUINoteEarlyStart">早く到着しました — 確認後に反映されます</string>
@@ -142,7 +152,11 @@
     <string name="automationUINoteLateDetection">検知が遅れたため、時刻がずれている可能性があります</string>
     <string name="automationUINoteLeftEarly">予定の終了前に退出</string>
     <string name="automationUINoteRecordsUnavailable">記録を更新できませんでした。もう一度お試しください。</string>
+    <string name="automationUINotifyArrivals">到着時と退出時に通知</string>
+    <string name="automationUINotifyArrivalsNote">静かな通知で記録内容をお知らせします。オフでも検出は行われます。</string>
     <string name="automationUIPaused">一時停止中</string>
+    <string name="automationUIPausedShift">%1$sを一時停止中</string>
+    <string name="automationUIPausedShiftNote">このシフトを変更したため、自動記録はそのままにしています。</string>
     <string name="automationUIPlanned">予定 %1$s</string>
     <string name="automationUIPreviewIntro">これらの日の勤務時間が表示のとおりに変わります。あとで取り消すこともできます。</string>
     <string name="automationUIPreviewTitle">これらの時刻を反映しますか？</string>
@@ -151,6 +165,7 @@
     <string name="automationUIRangeNote">退出範囲は100 m広く、境界付近を歩いても出入りとして数えられません。</string>
     <string name="automationUIRecentSection">最近反映したもの</string>
     <string name="automationUIRecordingSection">記録</string>
+    <string name="automationUIResume">再開</string>
     <string name="automationUIReviewEmpty">確認する項目はありません</string>
     <string name="automationUIReviewEmptyNote">検知した到着・退出の時刻は、まずここに表示されます。</string>
     <string name="automationUIReviewIntro">これらの時刻はまだ勤務時間に反映されていません。合っているものを反映してください。</string>

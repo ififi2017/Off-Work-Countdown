@@ -62,6 +62,7 @@
     <string name="applyToToday">Ubah hari ini juga</string>
     <string name="auto">Sistem</string>
     <string name="automationActionJustEarly">Hanya Datang Awal</string>
+    <string name="automationActionMovedHere">Dari Tempat Kerja Lain</string>
     <string name="automationActionNotWorking">Tidak Bekerja</string>
     <string name="automationActionRecordExtra">Catat sebagai Kerja Tambahan</string>
     <string name="automationActionStartedWork">Sudah Mulai Kerja</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">Memberi tahu DoneAt bahwa kamu sudah tiba di kantor. Gunakan dalam otomatisasi pribadi, misalnya saat tiba di suatu lokasi atau tersambung ke Wi-Fi.</string>
     <string name="automationIntentRecordDeparture">Catat pulang dari kantor</string>
     <string name="automationIntentRecordDepartureDescription">Memberi tahu DoneAt bahwa kamu sudah meninggalkan kantor. Gunakan dalam otomatisasi pribadi, misalnya saat meninggalkan suatu lokasi atau mematikan mode Fokus.</string>
+    <string name="automationNoticeArrivedApplied">Jam masuk tercatat pukul %1$s.</string>
+    <string name="automationNoticeArrivedRecorded">Kedatangan pukul %1$s dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi.</string>
+    <string name="automationNoticeLeftApplied">Jam pulang tercatat pukul %1$s.</string>
+    <string name="automationNoticeLeftRecorded">Kepergian pukul %1$s dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi.</string>
     <string name="automationPromptEarlyVisit">Kamu datang lebih awal. Sudahkah kamu mulai bekerja?</string>
     <string name="automationPromptExtraVisit">Catat kunjungan ini sebagai kerja tambahan?</string>
     <string name="automationPromptLateArrival">Kedatangan yang sedikit lebih lambat telah tercatat. Lanjutkan pencatatan hari ini seperti biasa?</string>
@@ -135,6 +140,11 @@
     <string name="automationUIIntro">DoneAt mendeteksi saat Anda tiba di atau meninggalkan tempat kerja dan mencatat jam kerja Anda. Tetap nonaktif sampai Anda mengaktifkannya.</string>
     <string name="automationUILeaveRange">Dianggap pergi jika lebih dari %1$s m</string>
     <string name="automationUILocationFailed">Lokasi Anda tidak ditemukan. Coba lagi di dekat jendela atau di luar ruangan.</string>
+    <string name="automationUIMonitorLastEvent">Terakhir terdeteksi: %1$s.</string>
+    <string name="automationUIMonitorLocationOff">Layanan Lokasi mati. Nyalakan di Pengaturan &gt; Privasi &amp; Keamanan.</string>
+    <string name="automationUIMonitorProblem">iOS tidak dapat mulai memantau tempat kerjamu. Coba matikan lalu nyalakan lagi Otomatisasi Tempat Kerja.</string>
+    <string name="automationUIMonitorStarting">Menyiapkan pemantauan tempat kerjamu. Ini mungkin butuh sejenak.</string>
+    <string name="automationUIMonitorWatching">Memantau kedatangan dan kepergian.</string>
     <string name="automationUINoLocationYet">Ketuk “Gunakan Lokasi Saat Ini” untuk menempatkan tempat kerja ini di peta.</string>
     <string name="automationUINoteChangedByYou">Anda sendiri yang mengubah hari ini</string>
     <string name="automationUINoteEarlyStart">Tiba lebih awal — dihitung setelah Anda konfirmasi</string>
@@ -142,7 +152,11 @@
     <string name="automationUINoteLateDetection">Terdeteksi terlambat, waktunya mungkin kurang tepat</string>
     <string name="automationUINoteLeftEarly">Pergi sebelum jam selesai yang direncanakan</string>
     <string name="automationUINoteRecordsUnavailable">Catatan Anda tidak dapat diperbarui. Coba lagi.</string>
+    <string name="automationUINotifyArrivals">Beri Tahu Saat Tiba dan Pergi</string>
+    <string name="automationUINotifyArrivalsNote">Notifikasi senyap memberi tahu apa yang dicatat. Deteksi tetap berjalan di kedua kondisi.</string>
     <string name="automationUIPaused">Dijeda</string>
+    <string name="automationUIPausedShift">Dijeda untuk %1$s</string>
+    <string name="automationUIPausedShiftNote">Kamu mengubah shift ini, jadi otomatisasi membiarkannya apa adanya.</string>
     <string name="automationUIPlanned">Direncanakan %1$s</string>
     <string name="automationUIPreviewIntro">Jam kerja Anda pada hari-hari ini akan berubah seperti ditampilkan. Anda dapat mengurungkannya setelahnya.</string>
     <string name="automationUIPreviewTitle">Terima Waktu Ini?</string>
@@ -151,6 +165,7 @@
     <string name="automationUIRangeNote">Jangkauan kepergian 100 m lebih besar, sehingga berjalan di dekat batas tidak dihitung sebagai datang dan pergi.</string>
     <string name="automationUIRecentSection">Baru Diterima</string>
     <string name="automationUIRecordingSection">Pencatatan</string>
+    <string name="automationUIResume">Lanjutkan</string>
     <string name="automationUIReviewEmpty">Tidak Ada yang Perlu Ditinjau</string>
     <string name="automationUIReviewEmptyNote">Waktu kedatangan dan kepulangan yang terdeteksi muncul di sini lebih dulu.</string>
     <string name="automationUIReviewIntro">Waktu ini belum mengubah jam kerja Anda. Terima yang sudah benar.</string>

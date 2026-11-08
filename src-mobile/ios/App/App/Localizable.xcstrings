@@ -164056,6 +164056,1791 @@
         }
       }
     },
+    "automationNoticeArrivedApplied": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم تسجيل بدء العمل عند {{time}}."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arbeitsbeginn um {{time}} erfasst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock-in recorded at {{time}}."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada registrada a las {{time}}."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivée enregistrée à {{time}}."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} पर काम शुरू करने का समय दर्ज हुआ।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jam masuk tercatat pukul {{time}}."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrata registrata alle {{time}}."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}に出勤を記録しました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}에 출근이 기록되었어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} वाजता कामाची सुरुवात नोंदवली."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada registada às {{time}}."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приход зафиксирован в {{time}}."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกเวลาเข้างาน {{time}} แล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giriş {{time}} olarak kaydedildi."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã ghi giờ vào làm lúc {{time}}."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已记录上班时间 {{time}}。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記錄返工時間 {{time}}。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記錄上班時間 {{time}}。"
+          }
+        }
+      }
+    },
+    "automationNoticeLeftApplied": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم تسجيل انتهاء العمل عند {{time}}."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arbeitsende um {{time}} erfasst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock-out recorded at {{time}}."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salida registrada a las {{time}}."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Départ enregistré à {{time}}."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} पर काम खत्म करने का समय दर्ज हुआ।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jam pulang tercatat pukul {{time}}."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uscita registrata alle {{time}}."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}に退勤を記録しました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}에 퇴근이 기록되었어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} वाजता कामाचा शेवट नोंदवला."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saída registada às {{time}}."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уход зафиксирован в {{time}}."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกเวลาออกงาน {{time}} แล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çıkış {{time}} olarak kaydedildi."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã ghi giờ tan làm lúc {{time}}."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已记录下班时间 {{time}}。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記錄放工時間 {{time}}。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記錄下班時間 {{time}}。"
+          }
+        }
+      }
+    },
+    "automationNoticeArrivedRecorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم تسجيل الوصول عند {{time}}. ستبقى ساعاتك كما هي إلى أن تؤكد."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ankunft um {{time}} vermerkt. Deine Arbeitszeiten bleiben unverändert, bis du bestätigst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrival at {{time}} noted. Your hours stay the same until you confirm."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llegada a las {{time}} anotada. Tus horas no cambiarán hasta que confirmes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivée à {{time}} notée. Vos heures restent inchangées jusqu’à votre confirmation."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} पर पहुँचना नोट किया गया। आपके पुष्टि करने तक आपके घंटे वैसे ही रहेंगे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kedatangan pukul {{time}} dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivo alle {{time}} annotato. Le tue ore restano invariate finché non confermi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}の到着を控えました。確認するまで勤務時間は変わりません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 도착을 기록해 두었어요. 확인하기 전까지 근무 시간은 그대로예요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} वाजता आगमन नोंदवले. तुम्ही पुष्टी करेपर्यंत तुमचे तास तसेच राहतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chegada às {{time}} anotada. As suas horas mantêm-se até confirmar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Прибытие в {{time}} отмечено. Ваши часы не изменятся, пока вы не подтвердите."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จดบันทึกการมาถึงเวลา {{time}} แล้ว ชั่วโมงทำงานของคุณจะไม่เปลี่ยนจนกว่าคุณจะยืนยัน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} varışı not edildi. Onaylayana kadar çalışma saatlerin aynı kalır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã ghi nhận bạn đến lúc {{time}}. Giờ làm giữ nguyên cho đến khi bạn xác nhận."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已记下 {{time}} 到达。你确认之前，工时不会改变。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記下 {{time}} 到達。你確認之前，工時不會改變。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記下 {{time}} 抵達。你確認之前，工時不會改變。"
+          }
+        }
+      }
+    },
+    "automationNoticeLeftRecorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم تسجيل المغادرة عند {{time}}. ستبقى ساعاتك كما هي إلى أن تؤكد."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abreise um {{time}} vermerkt. Deine Arbeitszeiten bleiben unverändert, bis du bestätigst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Departure at {{time}} noted. Your hours stay the same until you confirm."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salida a las {{time}} anotada. Tus horas no cambiarán hasta que confirmes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Départ à {{time}} noté. Vos heures restent inchangées jusqu’à votre confirmation."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} पर निकलना नोट किया गया। आपके पुष्टि करने तक आपके घंटे वैसे ही रहेंगे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kepergian pukul {{time}} dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partenza alle {{time}} annotata. Le tue ore restano invariate finché non confermi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}の出発を控えました。確認するまで勤務時間は変わりません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 출발을 기록해 두었어요. 확인하기 전까지 근무 시간은 그대로예요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} वाजता निघणे नोंदवले. तुम्ही पुष्टी करेपर्यंत तुमचे तास तसेच राहतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saída às {{time}} anotada. As suas horas mantêm-se até confirmar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уход в {{time}} отмечен. Ваши часы не изменятся, пока вы не подтвердите."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จดบันทึกการออกเวลา {{time}} แล้ว ชั่วโมงทำงานของคุณจะไม่เปลี่ยนจนกว่าคุณจะยืนยัน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} ayrılışı not edildi. Onaylayana kadar çalışma saatlerin aynı kalır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã ghi nhận bạn rời đi lúc {{time}}. Giờ làm giữ nguyên cho đến khi bạn xác nhận."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已记下 {{time}} 离开。你确认之前，工时不会改变。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記下 {{time}} 離開。你確認之前，工時不會改變。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記下 {{time}} 離開。你確認之前，工時不會改變。"
+          }
+        }
+      }
+    },
+    "automationActionMovedHere": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جئت من مكان عمل آخر"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Von anderem Arbeitsort"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Came From Another Workplace"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vengo de otro lugar de trabajo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vient d’un autre lieu"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "दूसरे कार्यस्थल से आया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dari Tempat Kerja Lain"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vengo da un altro posto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "別の勤務先から移動"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다른 근무지에서 이동"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "दुसऱ्या कामाच्या ठिकाणाहून आलो"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vim de outro local de trabalho"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пришёл с другого места работы"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "มาจากที่ทำงานอื่น"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başka İş Yerinden Geldim"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Từ nơi làm việc khác đến"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从另一个工作地点过来"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從另一個工作地點過來"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從另一個工作地點過來"
+          }
+        }
+      }
+    },
+    "automationUINotifyArrivals": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إشعار عند الوصول والمغادرة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei Ankunft und Abgang benachrichtigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notify on Arrival and Departure"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisar al llegar y al salir"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifier à l’arrivée et au départ"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पहुँचने और निकलने पर सूचित करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beri Tahu Saat Tiba dan Pergi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvisa all’arrivo e alla partenza"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到着時と退出時に通知"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도착 및 출발 시 알림"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पोहोचताना आणि निघताना सूचित करा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notificar à chegada e à saída"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уведомлять о приходе и уходе"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แจ้งเตือนเมื่อมาถึงและออก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varış ve Ayrılışta Bildir"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thông báo khi đến và rời đi"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到达和离开时通知"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到達和離開時通知"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "抵達和離開時通知"
+          }
+        }
+      }
+    },
+    "automationUINotifyArrivalsNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إشعار هادئ يخبرك بما تم تسجيله. يعمل الرصد في الحالتين."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine leise Mitteilung sagt dir, was erfasst wurde. Die Erkennung funktioniert in beiden Fällen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quiet notification says what was recorded. Detection works either way."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una notificación discreta te dice qué se registró. La detección funciona igualmente."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une notification discrète indique ce qui a été enregistré. La détection fonctionne dans les deux cas."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एक शांत सूचना बताती है कि क्या दर्ज हुआ। पहचान दोनों स्थितियों में काम करती है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifikasi senyap memberi tahu apa yang dicatat. Deteksi tetap berjalan di kedua kondisi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una notifica discreta ti dice cosa è stato registrato. Il rilevamento funziona comunque."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "静かな通知で記録内容をお知らせします。オフでも検出は行われます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조용한 알림으로 기록된 내용을 알려 드려요. 꺼도 감지는 계속돼요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शांत सूचना काय नोंदवले ते सांगते. शोध दोन्ही प्रकारे सुरू राहतो."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma notificação discreta indica o que foi registado. A deteção funciona em ambos os casos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тихое уведомление сообщит, что записано. Определение работает в любом случае."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การแจ้งเตือนแบบเงียบจะบอกว่าบันทึกอะไรไว้ การตรวจจับยังทำงานตามปกติแม้ปิดไว้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessiz bir bildirim neyin kaydedildiğini söyler. Algılama her iki durumda da çalışır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Một thông báo yên lặng cho bạn biết đã ghi gì. Việc phát hiện vẫn hoạt động dù tắt."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以静默通知告诉你记录了什么。关闭后仍会照常检测。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以靜音通知告訴你記錄了甚麼。關閉後仍會照常偵測。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以安靜的通知告訴你記錄了什麼。關閉後仍會照常偵測。"
+          }
+        }
+      }
+    },
+    "automationUIMonitorWatching": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نراقب الوصول والمغادرة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ankunft und Abgang werden beobachtet."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watching for arrivals and departures."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atento a tus llegadas y salidas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Surveillance des arrivées et des départs."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पहुँचने और निकलने पर नज़र रखी जा रही है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memantau kedatangan dan kepergian."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In ascolto di arrivi e partenze."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到着と退出を見守っています。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도착과 출발을 지켜보는 중이에요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पोहोचणे आणि निघणे यावर लक्ष ठेवले जात आहे."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A acompanhar chegadas e saídas."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отслеживаем приход и уход."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำลังคอยดูการมาถึงและการออก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varış ve ayrılışlar izleniyor."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang theo dõi lúc bạn đến và rời đi."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在留意到达和离开。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在留意到達和離開。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在留意抵達和離開。"
+          }
+        }
+      }
+    },
+    "automationUIMonitorLastEvent": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "آخر رصد: {{time}}."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zuletzt erkannt: {{time}}."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last noticed: {{time}}."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Último aviso: {{time}}."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dernière détection : {{time}}."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आख़िरी बार पहचाना गया: {{time}}।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terakhir terdeteksi: {{time}}."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultimo rilevamento: {{time}}."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最後の検出：{{time}}。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마지막 감지: {{time}}."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शेवटचे आढळले: {{time}}."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última deteção: {{time}}."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последнее срабатывание: {{time}}."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตรวจพบล่าสุด: {{time}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son algılanan: {{time}}."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phát hiện gần nhất: {{time}}."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次检测：{{time}}。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次偵測：{{time}}。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次偵測：{{time}}。"
+          }
+        }
+      }
+    },
+    "automationUIMonitorStarting": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نستعد لمراقبة أماكن عملك. قد يستغرق ذلك لحظة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Überwachung deiner Arbeitsorte wird vorbereitet. Das kann einen Moment dauern."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Getting ready to watch your workplaces. This can take a moment."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparándonos para vigilar tus lugares de trabajo. Puede tardar un momento."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Préparation de la surveillance de vos lieux de travail. Cela peut prendre un instant."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपके कार्यस्थलों पर नज़र रखने की तैयारी हो रही है। इसमें थोड़ा समय लग सकता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menyiapkan pemantauan tempat kerjamu. Ini mungkin butuh sejenak."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stiamo preparando il monitoraggio dei tuoi luoghi di lavoro. Può servire un momento."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "勤務先の見守りを準備しています。少しお待ちください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무지 감지를 준비하는 중이에요. 잠시 걸릴 수 있어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमच्या कामाच्या ठिकाणांवर लक्ष ठेवण्याची तयारी सुरू आहे. थोडा वेळ लागू शकतो."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A preparar o acompanhamento dos seus locais de trabalho. Pode demorar um momento."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовимся следить за вашими местами работы. Это может занять немного времени."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำลังเตรียมดูแลที่ทำงานของคุณ อาจใช้เวลาสักครู่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İş yerlerini izlemeye hazırlanılıyor. Bu biraz sürebilir."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang chuẩn bị theo dõi các nơi làm việc của bạn. Có thể mất một chút thời gian."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在准备留意你的工作地点，可能需要一点时间。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在準備留意你的工作地點，可能需要一點時間。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在準備留意你的工作地點，可能需要一點時間。"
+          }
+        }
+      }
+    },
+    "automationUIMonitorProblem": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذّر على iOS بدء مراقبة أماكن عملك. جرّب إيقاف أتمتة مكان العمل ثم تشغيلها من جديد."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS konnte die Überwachung deiner Arbeitsorte nicht starten. Schalte die Arbeitsort-Automatik aus und wieder ein."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS couldn’t start watching your workplaces. Try turning Workplace Automation off and on again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS no pudo empezar a vigilar tus lugares de trabajo. Prueba a desactivar y volver a activar la Automatización del lugar de trabajo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS n’a pas pu démarrer la surveillance de vos lieux de travail. Essayez de désactiver puis de réactiver l’Automatisation du lieu de travail."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS आपके कार्यस्थलों पर नज़र रखना शुरू नहीं कर सका। कार्यस्थल ऑटोमेशन को बंद करके फिर से चालू करके देखें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS tidak dapat mulai memantau tempat kerjamu. Coba matikan lalu nyalakan lagi Otomatisasi Tempat Kerja."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS non è riuscito ad avviare il monitoraggio dei tuoi luoghi di lavoro. Prova a disattivare e riattivare l’Automazione del luogo di lavoro."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOSが勤務先の見守りを開始できませんでした。勤務先の自動記録をオフにして、もう一度オンにしてみてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS에서 근무지 감지를 시작하지 못했어요. 근무지 자동화를 껐다가 다시 켜 보세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS तुमच्या कामाच्या ठिकाणांवर लक्ष ठेवणे सुरू करू शकले नाही. कामाच्या ठिकाणांचे ऑटोमेशन बंद करून पुन्हा चालू करून पहा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O iOS não conseguiu começar a acompanhar os seus locais de trabalho. Experimente desativar e voltar a ativar a Automação do local de trabalho."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS не удалось начать отслеживание ваших мест работы. Попробуйте выключить и снова включить автоматизацию рабочих мест."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS เริ่มดูแลที่ทำงานของคุณไม่ได้ ลองปิดแล้วเปิดระบบอัตโนมัติสถานที่ทำงานอีกครั้ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS iş yerlerini izlemeye başlayamadı. İş Yeri Otomasyonu’nu kapatıp tekrar açmayı dene."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS chưa thể bắt đầu theo dõi các nơi làm việc của bạn. Hãy thử tắt rồi bật lại Tự động hóa nơi làm việc."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS 暂时无法开始留意你的工作地点。可以试试关闭再重新开启工作地点自动化。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS 暫時無法開始留意你的工作地點。可以試試關閉再重新開啟工作地點自動化。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS 暫時無法開始留意你的工作地點。可以試試關閉再重新開啟工作地點自動化。"
+          }
+        }
+      }
+    },
+    "automationUIMonitorLocationOff": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خدمات الموقع متوقفة. فعّلها من الإعدادات > الخصوصية والأمان."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ortungsdienste sind ausgeschaltet. Aktiviere sie unter Einstellungen > Datenschutz & Sicherheit."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location Services are off. Turn them on in Settings > Privacy & Security."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los Servicios de localización están desactivados. Actívalos en Ajustes > Privacidad y seguridad."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les services de localisation sont désactivés. Activez-les dans Réglages > Confidentialité et sécurité."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्थान सेवाएँ बंद हैं। उन्हें सेटिंग > गोपनीयता और सुरक्षा में चालू करें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layanan Lokasi mati. Nyalakan di Pengaturan > Privasi & Keamanan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I Servizi di localizzazione sono disattivati. Attivali in Impostazioni > Privacy e sicurezza."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置情報サービスがオフです。「設定」>「プライバシーとセキュリティ」でオンにできます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치 서비스가 꺼져 있어요. 설정 > 개인정보 보호 및 보안에서 켤 수 있어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्थान सेवा बंद आहेत. त्या सेटिंग्ज > गोपनीयता आणि सुरक्षा येथे चालू करा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os Serviços de localização estão desativados. Ative-os em Definições > Privacidade e segurança."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Службы геолокации выключены. Включите их в разделе «Настройки» > «Конфиденциальность и безопасность»."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บริการหาตำแหน่งปิดอยู่ เปิดได้ที่ การตั้งค่า > ความเป็นส่วนตัวและความปลอดภัย"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konum Servisleri kapalı. Bunları Ayarlar > Gizlilik ve Güvenlik bölümünden açabilirsin."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dịch vụ định vị đang tắt. Bạn có thể bật trong Cài đặt > Quyền riêng tư & Bảo mật."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定位服务已关闭。可在“设置”>“隐私与安全性”中开启。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定位服務已關閉。可在「設定」>「私隱與安全性」中開啟。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定位服務已關閉。可在「設定」>「隱私權與安全性」中開啟。"
+          }
+        }
+      }
+    },
+    "automationUIPausedShift": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متوقف مؤقتًا: {{shift}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausiert für {{shift}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused for {{shift}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En pausa para {{shift}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En pause pour {{shift}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} के लिए रुका हुआ"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dijeda untuk {{shift}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In pausa per {{shift}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}}を一時停止中"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} 일시 중지됨"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} साठी थांबवले"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Em pausa para {{shift}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приостановлено для {{shift}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หยุดชั่วคราวสำหรับ {{shift}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} için duraklatıldı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã tạm dừng cho {{shift}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已暂停：{{shift}}"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已暫停：{{shift}}"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已暫停：{{shift}}"
+          }
+        }
+      }
+    },
+    "automationUIPausedShiftNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لقد غيّرت هذه الوردية، لذا تتركها الأتمتة كما هي."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast diese Schicht geändert, deshalb lässt die Automatik sie unverändert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You changed this shift, so automation leaves it as it is."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiaste este turno, así que la automatización lo deja como está."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous avez modifié ce poste, l’automatisation le laisse donc tel quel."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपने यह शिफ़्ट बदली है, इसलिए ऑटोमेशन इसे जैसा है वैसा ही रखता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu mengubah shift ini, jadi otomatisasi membiarkannya apa adanya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai modificato questo turno, quindi l’automazione lo lascia com’è."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このシフトを変更したため、自動記録はそのままにしています。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 근무를 직접 수정하셨기 때문에 자동화는 그대로 두어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुम्ही ही शिफ्ट बदलली आहे, म्हणून ऑटोमेशन ती आहे तशीच ठेवते."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alterou este turno, por isso a automação deixa-o como está."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы изменили эту смену, поэтому автоматизация оставляет её как есть."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คุณแก้ไขกะนี้แล้ว ระบบอัตโนมัติจึงปล่อยไว้ตามเดิม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu vardiyayı değiştirdin, bu yüzden otomasyon onu olduğu gibi bırakır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn đã sửa ca này nên tính năng tự động giữ nguyên như vậy."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你修改过这个班次，所以自动化不会再改动它。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你修改過這個班次，所以自動化不會再更改它。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你修改過這個班次，所以自動化不會再更動它。"
+          }
+        }
+      }
+    },
+    "automationUIResume": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استئناف"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fortsetzen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resume"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reanudar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reprendre"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "फिर शुरू करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lanjutkan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riprendi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再開"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 시작"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पुन्हा सुरू करा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retomar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Возобновить"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทำต่อ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sürdür"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiếp tục"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢復"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢復"
+          }
+        }
+      }
+    },
     "automationUIDeleteData": {
       "extractionState": "manual",
       "localizations": {

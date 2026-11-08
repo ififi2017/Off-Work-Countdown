@@ -62,6 +62,7 @@
     <string name="applyToToday">Изменить и сегодня</string>
     <string name="auto">Системная</string>
     <string name="automationActionJustEarly">Просто пришёл(ла) раньше</string>
+    <string name="automationActionMovedHere">Пришёл с другого места работы</string>
     <string name="automationActionNotWorking">Не работаю</string>
     <string name="automationActionRecordExtra">Записать как переработку</string>
     <string name="automationActionStartedWork">Начал(а) работу</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">Сообщает DoneAt, что вы пришли на работу. Используйте в личной автоматизации, например при прибытии в место или подключении к сети Wi-Fi.</string>
     <string name="automationIntentRecordDeparture">Отметить уход с работы</string>
     <string name="automationIntentRecordDepartureDescription">Сообщает DoneAt, что вы ушли с работы. Используйте в личной автоматизации, например при уходе из места или выключении режима фокусирования.</string>
+    <string name="automationNoticeArrivedApplied">Приход зафиксирован в %1$s.</string>
+    <string name="automationNoticeArrivedRecorded">Прибытие в %1$s отмечено. Ваши часы не изменятся, пока вы не подтвердите.</string>
+    <string name="automationNoticeLeftApplied">Уход зафиксирован в %1$s.</string>
+    <string name="automationNoticeLeftRecorded">Уход в %1$s отмечен. Ваши часы не изменятся, пока вы не подтвердите.</string>
     <string name="automationPromptEarlyVisit">Вы пришли раньше. Вы уже приступили к работе?</string>
     <string name="automationPromptExtraVisit">Записать этот визит как переработку?</string>
     <string name="automationPromptLateArrival">Записан немного более поздний приход. Продолжить запись сегодня как обычно?</string>
@@ -135,6 +140,11 @@
     <string name="automationUIIntro">DoneAt замечает, когда вы приходите на работу или уходите, и записывает рабочее время. Пока вы не включите функцию, она отключена.</string>
     <string name="automationUILeaveRange">Уход засчитывается за пределами %1$s м</string>
     <string name="automationUILocationFailed">Не удалось определить местоположение. Попробуйте ещё раз у окна или на улице.</string>
+    <string name="automationUIMonitorLastEvent">Последнее срабатывание: %1$s.</string>
+    <string name="automationUIMonitorLocationOff">Службы геолокации выключены. Включите их в разделе «Настройки» &gt; «Конфиденциальность и безопасность».</string>
+    <string name="automationUIMonitorProblem">iOS не удалось начать отслеживание ваших мест работы. Попробуйте выключить и снова включить автоматизацию рабочих мест.</string>
+    <string name="automationUIMonitorStarting">Готовимся следить за вашими местами работы. Это может занять немного времени.</string>
+    <string name="automationUIMonitorWatching">Отслеживаем приход и уход.</string>
     <string name="automationUINoLocationYet">Нажмите «Использовать текущее местоположение», чтобы отметить рабочее место на карте.</string>
     <string name="automationUINoteChangedByYou">Вы сами изменили этот день</string>
     <string name="automationUINoteEarlyStart">Пришли раньше — засчитается после подтверждения</string>
@@ -142,7 +152,11 @@
     <string name="automationUINoteLateDetection">Определено с опозданием, время может быть неточным</string>
     <string name="automationUINoteLeftEarly">Ушли раньше планового конца</string>
     <string name="automationUINoteRecordsUnavailable">Не удалось обновить ваши записи. Попробуйте ещё раз.</string>
+    <string name="automationUINotifyArrivals">Уведомлять о приходе и уходе</string>
+    <string name="automationUINotifyArrivalsNote">Тихое уведомление сообщит, что записано. Определение работает в любом случае.</string>
     <string name="automationUIPaused">Приостановлено</string>
+    <string name="automationUIPausedShift">Приостановлено для %1$s</string>
+    <string name="automationUIPausedShiftNote">Вы изменили эту смену, поэтому автоматизация оставляет её как есть.</string>
     <string name="automationUIPlanned">По плану: %1$s</string>
     <string name="automationUIPreviewIntro">Ваши часы за эти дни изменятся, как показано. Позже это можно отменить.</string>
     <string name="automationUIPreviewTitle">Принять это время?</string>
@@ -151,6 +165,7 @@
     <string name="automationUIRangeNote">Радиус ухода на 100 м больше, поэтому прогулка у границы не считается выходом и входом.</string>
     <string name="automationUIRecentSection">Недавно принятые</string>
     <string name="automationUIRecordingSection">Запись</string>
+    <string name="automationUIResume">Возобновить</string>
     <string name="automationUIReviewEmpty">Нечего проверять</string>
     <string name="automationUIReviewEmptyNote">Найденное время прихода и ухода сначала появляется здесь.</string>
     <string name="automationUIReviewIntro">Это время пока не изменило ваши часы. Примите то, что указано верно.</string>
