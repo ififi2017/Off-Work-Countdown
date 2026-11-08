@@ -111,6 +111,16 @@ final class NotificationService {
         )
     }
 
+    /// Plan 021: what workplace automation wants waiting in the queue. Set
+    /// once the coordinator exists; absent, automation reserves nothing.
+    struct AutomationPromptSource {
+        var isMonitoringEnabled: @MainActor () -> Bool
+        var prompts: @MainActor (Date) -> [AutomationPrompt]
+        var text: AppText
+    }
+
+    var automationSource: AutomationPromptSource?
+
     private let shiftCenter: ShiftCenter
     private var scheduleGeneration = 0
     private var pendingShiftOperation: Task<Void, Never>?
@@ -291,6 +301,8 @@ final class NotificationService {
         await refresh()
         await reconcileCycleReports(shifts: shifts, now: now, generation: generation)
         guard generation == scheduleGeneration else { return }
+        await reconcileAutomationPrompts(now: now, generation: generation)
+        guard generation == scheduleGeneration else { return }
         let center = shiftCenter
         let pending = await center.pendingIDs()
         let existingIdentifiers = Set(
@@ -322,9 +334,12 @@ final class NotificationService {
             snapshot: snapshot,
             at: now
         )
-        // iOS keeps 64 pending requests: focus timers (2), the alarm refresh (1)
-        // and the report notifications leave the shift reminders the rest.
-        let shiftBudget = 60 - CycleReportNotificationPlan.reservedSlots
+        // iOS keeps 64 pending requests: focus timers (2), the alarm refresh (1),
+        // the report notifications and automation's questions leave the shift
+        // reminders the rest.
+        let shiftBudget = WorkplaceAutomationNotificationPlan.shiftReminderBudget(
+            isMonitoringEnabled: automationSource?.isMonitoringEnabled() ?? false
+        )
         let desired = Array((essential + health).prefix(schedulesLiveActivityFallback ? shiftBudget - 1 : shiftBudget))
         let fallbackIdentifier = schedulesLiveActivityFallback
             ? snapshot.map { "owc.shift.live.end.\(Int64($0.endAtMs))" } : nil
@@ -423,6 +438,45 @@ final class NotificationService {
             }
         }
         guard allSucceeded, generation == scheduleGeneration else { return }
+        await center.removePending(Array(existing.subtracting(desired)))
+    }
+
+    /// Leaves exactly automation's planned questions under `owc.automation.`.
+    /// Each replaces itself by identifier; stale ones go after the adds.
+    private func reconcileAutomationPrompts(now: Date, generation: Int) async {
+        let center = shiftCenter
+        let prefix = WorkplaceAutomationNotificationPlan.identifierPrefix
+        let existing = Set(await center.pendingIDs().filter { $0.hasPrefix(prefix) })
+        guard generation == scheduleGeneration else { return }
+        let wanted = status == .allowed ? automationSource.map { $0.prompts(now) } ?? [] : []
+        var desired = Set<String>()
+        for prompt in wanted where prompt.fireAt > now {
+            guard generation == scheduleGeneration, let text = automationSource?.text else { return }
+            let content = UNMutableNotificationContent()
+            content.title = text.t("automationUITitle")
+            content.body = text.t(prompt.bodyKey)
+            content.sound = .default
+            var userInfo: [String: String] = ["route": prompt.route.rawValue]
+            if let visitID = prompt.visitID {
+                userInfo[WorkplaceAutomationNotificationPlan.visitIDKey] = visitID.uuidString
+            }
+            content.userInfo = userInfo
+            if let category = prompt.categoryIdentifier { content.categoryIdentifier = category }
+            let components = Calendar.current.dateComponents(
+                [.year, .month, .day, .hour, .minute, .second], from: prompt.fireAt
+            )
+            do {
+                try await center.add(UNNotificationRequest(
+                    identifier: prompt.identifier,
+                    content: content,
+                    trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+                ))
+                desired.insert(prompt.identifier)
+            } catch {
+                // Retried by the next reschedule.
+            }
+        }
+        guard generation == scheduleGeneration else { return }
         await center.removePending(Array(existing.subtracting(desired)))
     }
 

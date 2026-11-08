@@ -99,6 +99,16 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
     /// The day row's `editCount` right after automation last wrote it. A
     /// different count means the person or another device changed the day.
     private(set) var adoptedEditCounts: [String: Int] = [:]
+    /// Field work, business trips, remote work and rest by day range (§3.10).
+    private(set) var contexts: [WorkContextRange] = []
+    /// Shifts whose status the person already settled; never asked again.
+    private(set) var settledShiftKeys: [String: WorkdayStatusAnswer] = [:]
+    /// Early and off-shift arrivals waiting for, or answered by, the person.
+    private(set) var visits: [AutomationVisit] = []
+    /// Exits before a shift's planned end with no return yet, kept out of
+    /// the review list. A return clears one; once the shift is over it
+    /// becomes a review item (§3.9 missing end).
+    private(set) var earlyExits: [String: WorkTimeProposal] = [:]
 
     var canAddWorkplace: Bool { workplaces.count < WorkplaceAutomation.maximumWorkplaces }
 
@@ -271,6 +281,52 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         suppressedShiftKeys[shiftKey] != nil
     }
 
+    // MARK: Work status
+
+    /// The context for a day: the latest range covering it, else regular.
+    func context(for dayKey: String) -> WorkDayContext {
+        contexts.last { $0.contains(dayKey) }?.context ?? .regular
+    }
+
+    /// A newer range wins over the days it covers; older ones are trimmed
+    /// rather than deleted so their other days keep their context.
+    mutating func setContext(_ context: WorkDayContext, from firstDayKey: String, through lastDayKey: String) {
+        let range = WorkContextRange(id: UUID(), context: context, firstDayKey: min(firstDayKey, lastDayKey),
+                                     lastDayKey: max(firstDayKey, lastDayKey))
+        contexts = contexts.flatMap { $0.removing(range) }
+        if context != .regular { contexts.append(range) }
+    }
+
+    mutating func removeContext(_ id: UUID) {
+        contexts.removeAll { $0.id == id }
+    }
+
+    func statusAnswer(shiftKey: String) -> WorkdayStatusAnswer? { settledShiftKeys[shiftKey] }
+
+    mutating func settleStatus(shiftKey: String, answer: WorkdayStatusAnswer) {
+        settledShiftKeys[shiftKey] = answer
+    }
+
+    // MARK: Visits
+
+    func visit(_ id: UUID) -> AutomationVisit? { visits.first { $0.id == id } }
+
+    mutating func upsert(_ visit: AutomationVisit) {
+        if let index = visits.firstIndex(where: { $0.id == visit.id }) {
+            visits[index] = visit
+        } else {
+            visits.append(visit)
+        }
+    }
+
+    /// The visit still open at a workplace, if any: unanswered or working.
+    var openVisit: AutomationVisit? {
+        visits.last { $0.leftAt == nil && ($0.status == .waiting || $0.status == .working) }
+    }
+
+    mutating func recordEarlyExit(_ candidate: WorkTimeProposal) { earlyExits[candidate.shiftKey] = candidate }
+    mutating func clearEarlyExit(shiftKey: String) { earlyExits.removeValue(forKey: shiftKey) }
+
     // MARK: Retention
 
     /// Drops what is older than the retention window. Unadopted references
@@ -284,7 +340,102 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         }
         receipts.removeAll { $0.completedAt < cutoff }
         suppressedShiftKeys = suppressedShiftKeys.filter { $0.value >= cutoff }
+        visits.removeAll { $0.arrivedAt < cutoff }
+        let cutoffKey = RecordJSON.dayKey(cutoff, calendar: Calendar(identifier: .gregorian))
+        contexts.removeAll { $0.lastDayKey < cutoffKey }
+        settledShiftKeys = settledShiftKeys.filter { String($0.key.prefix(10)) >= cutoffKey }
     }
+}
+
+nonisolated extension WorkplaceAutomationState {
+    private enum CodingKeys: String, CodingKey {
+        case version, settings, workplaces, events, proposals, receipts, insideWorkplaceIDs
+        case suppressedShiftKeys, lastRegistrationGeneration, adoptedEditCounts
+        case contexts, settledShiftKeys, visits, earlyExits
+    }
+
+    /// Fields added after the first internal builds decode as empty.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        version = try container.decode(Int.self, forKey: .version)
+        settings = try container.decode(WorkplaceAutomationSettings.self, forKey: .settings)
+        workplaces = try container.decode([SavedWorkplace].self, forKey: .workplaces)
+        events = try container.decode([AutomationEvent].self, forKey: .events)
+        proposals = try container.decode([WorkTimeProposal].self, forKey: .proposals)
+        receipts = try container.decode([AutomationCommandReceipt].self, forKey: .receipts)
+        insideWorkplaceIDs = try container.decode(Set<UUID>.self, forKey: .insideWorkplaceIDs)
+        suppressedShiftKeys = try container.decode([String: Date].self, forKey: .suppressedShiftKeys)
+        lastRegistrationGeneration = try container.decode(Int.self, forKey: .lastRegistrationGeneration)
+        adoptedEditCounts = try container.decode([String: Int].self, forKey: .adoptedEditCounts)
+        contexts = try container.decodeIfPresent([WorkContextRange].self, forKey: .contexts) ?? []
+        settledShiftKeys = try container.decodeIfPresent([String: WorkdayStatusAnswer].self, forKey: .settledShiftKeys) ?? [:]
+        visits = try container.decodeIfPresent([AutomationVisit].self, forKey: .visits) ?? []
+        earlyExits = try container.decodeIfPresent([String: WorkTimeProposal].self, forKey: .earlyExits) ?? [:]
+    }
+}
+
+/// A work context over consecutive records days, both ends included.
+nonisolated struct WorkContextRange: Codable, Equatable, Identifiable, Sendable {
+    var id: UUID
+    var context: WorkDayContext
+    var firstDayKey: String
+    var lastDayKey: String
+
+    func contains(_ dayKey: String) -> Bool { dayKey >= firstDayKey && dayKey <= lastDayKey }
+
+    /// This range minus `other`: none, itself, or the parts on either side.
+    func removing(_ other: WorkContextRange) -> [WorkContextRange] {
+        guard other.firstDayKey <= lastDayKey, other.lastDayKey >= firstDayKey else { return [self] }
+        var parts: [WorkContextRange] = []
+        if firstDayKey < other.firstDayKey, let before = ExtendedScheduleEditing.dayKey(other.firstDayKey, plus: -1) {
+            parts.append(WorkContextRange(id: id, context: context, firstDayKey: firstDayKey, lastDayKey: before))
+        }
+        if lastDayKey > other.lastDayKey, let after = ExtendedScheduleEditing.dayKey(other.lastDayKey, plus: 1) {
+            parts.append(WorkContextRange(id: parts.isEmpty ? id : UUID(), context: context,
+                                          firstDayKey: after, lastDayKey: lastDayKey))
+        }
+        return parts
+    }
+}
+
+/// How the person settled a shift's status question (§3.10).
+nonisolated enum WorkdayStatusAnswer: String, Codable, Sendable {
+    /// Keep recording by the existing rules; nothing else is approved.
+    case continueRecording
+    case rest
+    case fieldwork
+    case businessTrip
+    case remote
+}
+
+/// One early or off-shift arrival and the person's answer about it (§3.9).
+nonisolated struct AutomationVisit: Codable, Equatable, Identifiable, Sendable {
+    enum Kind: Codable, Equatable, Sendable {
+        /// Before a shift: answering "started work" adopts this suggestion.
+        case early(proposalID: UUID)
+        /// No shift: answering "started work" records extra work from arrival.
+        case offShift(dayKey: String)
+    }
+
+    enum Status: String, Codable, Sendable {
+        case waiting
+        /// Confirmed; extra work runs until the person leaves.
+        case working
+        case declined
+        case closed
+    }
+
+    var id: UUID
+    var kind: Kind
+    var workplaceID: UUID?
+    var arrivalEventID: UUID
+    var arrivedAt: Date
+    var promptAt: Date
+    var status: Status = .waiting
+    var leftAt: Date?
+    /// The day's planned segments when it has a shift, kept with extra work.
+    var plannedSegments: [NativeShiftSegment] = []
 }
 
 /// Reads and writes the device-only automation file.

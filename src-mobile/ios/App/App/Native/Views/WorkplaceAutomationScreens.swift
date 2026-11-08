@@ -118,6 +118,7 @@ struct WorkplaceAutomationSettingsView: View {
     @Environment(\.openURL) private var openURL
     let runtime: AppRuntime
     @State private var editing: EditorTarget?
+    @State private var addsContext = false
     /// Set when the toggle opened the paywall, so a purchase turns it on.
     @State private var enableAfterPurchase = false
 
@@ -150,8 +151,16 @@ struct WorkplaceAutomationSettingsView: View {
             onRequestAccess: location.requestAccess,
             onOpenSystemSettings: { openURL(URL(string: UIApplication.openSettingsURLString)!) },
             onAddWorkplace: { editing = .new },
-            onOpenWorkplace: { editing = .existing($0) }
+            onOpenWorkplace: { editing = .existing($0) },
+            contexts: contextItems,
+            onAddContext: { addsContext = true },
+            onDeleteContext: { id in automation.update { $0.removeContext(id) } }
         )
+        .sheet(isPresented: $addsContext) {
+            WorkContextEditorSheet(text: runtime.text, calendar: runtime.preferences.recordsCalendar) { context, first, last in
+                automation.update { $0.setContext(context, from: first, through: last) }
+            }
+        }
         .sensoryFeedback(.selection, trigger: automation.state.settings)
         .sheet(item: $editing) { target in
             WorkplaceEditorSheet(runtime: runtime, target: target)
@@ -160,7 +169,29 @@ struct WorkplaceAutomationSettingsView: View {
             if allowed, enableAfterPurchase { setMonitoring(true) }
             enableAfterPurchase = false
         }
-        .onAppear(perform: location.refresh)
+        .onAppear {
+            location.refresh()
+            automation.surfaceUnreturnedExits()
+        }
+    }
+
+    /// Ranges that have not ended yet, soonest first.
+    private var contextItems: [AutomationContextItem] {
+        let today = RecordJSON.dayKey(.now, calendar: runtime.preferences.recordsCalendar)
+        return automation.state.contexts
+            .filter { $0.lastDayKey >= today }
+            .sorted { $0.firstDayKey < $1.firstDayKey }
+            .map { range in
+                AutomationContextItem(id: range.id, context: range.context, range: format(range))
+            }
+    }
+
+    private func format(_ range: WorkContextRange) -> String {
+        func day(_ key: String) -> String {
+            guard let parts = ExtendedScheduleResolver.parse(dayKey: key) else { return key }
+            return runtime.text.formatCivilDate(year: parts.year, month: parts.month, day: parts.day, template: "MMMdEEE")
+        }
+        return range.firstDayKey == range.lastDayKey ? day(range.firstDayKey) : day(range.firstDayKey) + " – " + day(range.lastDayKey)
     }
 
     private func setMonitoring(_ on: Bool) {
@@ -317,6 +348,7 @@ struct WorkplaceAutomationReviewView: View {
             }
         )
         .sensoryFeedback(.success, trigger: feedback)
+        .onAppear { automation.surfaceUnreturnedExits() }
         .alert(runtime.text.t("automationUIUndoConflict"), isPresented: $undoConflict) {
             Button(runtime.text.t("done"), role: .cancel) {}
         }

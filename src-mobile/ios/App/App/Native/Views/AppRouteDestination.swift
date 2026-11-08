@@ -25,6 +25,8 @@ struct AppRouteDestination: View {
                 WorkplaceAutomationSettingsView(runtime: runtime)
             case .workplaceAutomationReview:
                 WorkplaceAutomationReviewView(runtime: runtime)
+            case .workplaceAutomationStatus:
+                WorkdayStatusView(runtime: runtime)
             case .salary:
                 SalaryDesignView(shifts: runtime.shifts)
             case .notifications:

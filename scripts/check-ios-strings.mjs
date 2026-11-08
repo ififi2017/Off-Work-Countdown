@@ -46,6 +46,7 @@ export const SAME_AS_ENGLISH_ON_PURPOSE = {
   // The metre symbol is "m" in these languages.
   automationUIRadius: ["de", "es", "fr", "id", "it", "ja", "pt", "tr", "vi"],
   automationUIWorkplaceName: ["de"],
+  automationUIContextType: ["fr"],
   // Brand, product and platform names
   plusSection: "*",
   plusSettings: "*",

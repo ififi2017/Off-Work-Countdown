@@ -1,0 +1,324 @@
+import Foundation
+import Testing
+@testable import App
+
+/// Plan 021 P1: early and off-shift visits, unreturned exits, the status
+/// question, days away from the office and the three notification slots.
+@MainActor
+@Suite("Workplace automation visits and questions")
+struct WorkplaceAutomationVisitTests {
+    private static let calendar: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        return calendar
+    }()
+
+    /// Monday 9 November 2026 unless another day is given.
+    private static func at(_ hour: Int, _ minute: Int = 0, day: Int = 9) -> Date {
+        calendar.date(from: DateComponents(year: 2026, month: 11, day: day, hour: hour, minute: minute))!
+    }
+
+    private static func ms(_ date: Date) -> Double { date.timeIntervalSince1970 * 1_000 }
+
+    /// 09:00–17:00 with lunch 12:00–13:00, matching `hours()`.
+    private static func shift(day: Int = 9) -> AutomationShift {
+        let key = "2026-11-\(String(format: "%02d", day))"
+        return AutomationShift(
+            shiftKey: "\(key)#day", anchorDayKey: key,
+            plannedStart: at(9, day: day), plannedEnd: at(17, day: day),
+            segments: [
+                NativeShiftSegment(startAtMs: ms(at(9, day: day)), endAtMs: ms(at(12, day: day))),
+                NativeShiftSegment(startAtMs: ms(at(13, day: day)), endAtMs: ms(at(17, day: day))),
+            ]
+        )
+    }
+
+    private static func hours() -> ScheduleHoursConfiguration {
+        .init(startTime: "09:00", endTime: "17:00", workdays: [1, 2, 3, 4, 5],
+            schedule: .init(mode: "classic", referenceWeekStartMs: nil, referenceWeekType: nil,
+                singleWeekendWorkday: nil, rotationAnchorMs: nil, rotationWorkDays: nil, rotationRestDays: nil),
+            breakStartTime: "12:00", breakDurationMinutes: 60)
+    }
+
+    @MainActor
+    private final class Harness {
+        let suite = "WorkplaceAutomationVisits.\(UUID())"
+        let defaults: UserDefaults
+        let records = RecordCoordinator.inMemory()
+        let plus: PlusEntitlement
+        let actions: RecordsActions
+        let coordinator: WorkplaceAutomationCoordinator
+        var workplace: SavedWorkplace!
+
+        init(applies: Bool = false) {
+            defaults = UserDefaults(suiteName: suite)!
+            defaults.set("UTC", forKey: "ios.native.recordsTimeZone")
+            let preferences = PreferencesStore(defaults: defaults, records: records)
+            plus = PlusEntitlement(defaults: defaults)
+            plus.debugSetAuthorized(true)
+            actions = RecordsActions(records: records, preferences: preferences, plus: plus,
+                text: AppText(preferences: preferences), currentHours: { _ in WorkplaceAutomationVisitTests.hours() })
+            coordinator = WorkplaceAutomationCoordinator(actions: actions, loaded: .missing) { _ in }
+            coordinator.update { state in
+                state.settings.isMonitoringEnabled = true
+                state.settings.appliesDetectedTimesAutomatically = applies
+                self.workplace = try! state.addWorkplace(name: "Office", latitude: 31, longitude: 121)
+            }
+        }
+
+        deinit { UserDefaults().removePersistentDomain(forName: suite) }
+
+        @discardableResult
+        func receive(_ type: AutomationEventType, at time: Date, shifts: [AutomationShift]? = nil) async -> AutomationCommandOutcome {
+            let event = AutomationEvent(
+                id: UUID(), source: .nativeGeofence, type: type, workplaceID: workplace.id,
+                registrationGeneration: workplace.registrationGeneration,
+                observedAt: time, receivedAt: time, timestampBasis: .systemObservation
+            )
+            return await coordinator.receive(event, shifts: shifts ?? [WorkplaceAutomationVisitTests.shift()], now: time)
+        }
+
+        func day(_ key: String) -> DayOverride? { records.state.overrides.first { $0.dayKey == key } }
+
+        func prompts(now: Date, shifts: [AutomationShift]? = nil) -> [AutomationPrompt] {
+            WorkplaceAutomationNotificationPlan.prompts(
+                state: coordinator.state, shifts: shifts ?? [WorkplaceAutomationVisitTests.shift()],
+                canCollect: plus.canCollectAutomation, now: now
+            )
+        }
+    }
+
+    private func segment(_ from: Date, _ to: Date) -> NativeShiftSegment {
+        NativeShiftSegment(startAtMs: Self.ms(from), endAtMs: Self.ms(to))
+    }
+
+    // MARK: Early arrival
+
+    @Test("An early arrival asks once; started work counts from the arrival")
+    func earlyStarted() async throws {
+        let harness = Harness(applies: true)
+        #expect(await harness.receive(.enterInner, at: Self.at(8, 10)) == .recordedForReview)
+        let visit = try #require(harness.coordinator.state.openVisit)
+        #expect(visit.promptAt == Self.at(8, 40))
+        #expect(harness.prompts(now: Self.at(8, 15)).contains { $0.kind == .earlyVisit(visitID: visit.id) })
+
+        #expect(await harness.coordinator.answerVisit(visit.id, startedWork: true, now: Self.at(8, 41)) == .applied)
+        let day = try #require(harness.day("2026-11-09"))
+        #expect(day.segments.first?.startAtMs == Self.ms(Self.at(8, 10)))
+        // A second tap changes nothing.
+        #expect(await harness.coordinator.answerVisit(visit.id, startedWork: true) == .alreadyApplied)
+    }
+
+    @Test("\"Just arrived early\" keeps the arrival and writes nothing")
+    func earlyDeclined() async throws {
+        let harness = Harness(applies: true)
+        await harness.receive(.enterInner, at: Self.at(8, 10))
+        let visit = try #require(harness.coordinator.state.openVisit)
+        #expect(await harness.coordinator.answerVisit(visit.id, startedWork: false) == .applied)
+        #expect(harness.coordinator.state.pendingProposals.isEmpty)
+        #expect(harness.records.state.overrides.isEmpty)
+        #expect(!harness.prompts(now: Self.at(8, 15)).contains { $0.visitID == visit.id })
+    }
+
+    @Test("An on-time arrival asks nothing about early work")
+    func punctualNoVisit() async {
+        let harness = Harness()
+        await harness.receive(.enterInner, at: Self.at(8, 45))
+        #expect(harness.coordinator.state.visits.isEmpty)
+    }
+
+    // MARK: Off-shift visits
+
+    @Test("Extra work after the shift runs from arrival to leaving and keeps the day's plan")
+    func offShiftConfirmed() async throws {
+        let harness = Harness()
+        // After the 17:00 end there is no shift to match.
+        #expect(await harness.receive(.enterInner, at: Self.at(19)) == .recordedForReview)
+        let visit = try #require(harness.coordinator.state.openVisit)
+        guard case .offShift(let dayKey) = visit.kind else { Issue.record("expected an off-shift visit"); return }
+        #expect(dayKey == "2026-11-09")
+        #expect(harness.prompts(now: Self.at(19, 5)).contains { $0.kind == .offShiftVisit(visitID: visit.id) })
+
+        #expect(await harness.coordinator.answerVisit(visit.id, startedWork: true, now: Self.at(19, 30)) == .recordedForReview)
+        #expect(harness.records.state.overrides.isEmpty)
+        await harness.receive(.exitOuter, at: Self.at(21))
+        let day = try #require(harness.day("2026-11-09"))
+        #expect(day.segments == [segment(Self.at(9), Self.at(12)), segment(Self.at(13), Self.at(17)),
+                                 segment(Self.at(19), Self.at(21))])
+    }
+
+    @Test("Answering after leaving records the finished stretch on a rest day")
+    func offShiftAnsweredLate() async throws {
+        let harness = Harness()
+        // Saturday: no shift at all.
+        await harness.receive(.enterInner, at: Self.at(14, day: 14), shifts: [])
+        let visit = try #require(harness.coordinator.state.openVisit)
+        await harness.receive(.exitOuter, at: Self.at(16, day: 14), shifts: [])
+        #expect(harness.coordinator.state.openVisit == nil)
+        #expect(harness.prompts(now: Self.at(16, 5, day: 14), shifts: []).isEmpty)
+
+        #expect(await harness.coordinator.answerVisit(visit.id, startedWork: true, now: Self.at(18, day: 14)) == .applied)
+        #expect(harness.day("2026-11-14")?.segments == [segment(Self.at(14, day: 14), Self.at(16, day: 14))])
+    }
+
+    @Test("Saying no records nothing")
+    func offShiftDeclined() async throws {
+        let harness = Harness()
+        await harness.receive(.enterInner, at: Self.at(19))
+        let visit = try #require(harness.coordinator.state.openVisit)
+        _ = await harness.coordinator.answerVisit(visit.id, startedWork: false)
+        await harness.receive(.exitOuter, at: Self.at(21))
+        #expect(harness.records.state.overrides.isEmpty)
+    }
+
+    @Test("A day off saved as a range ignores visits")
+    func restRangeIgnoresVisit() async {
+        let harness = Harness()
+        harness.coordinator.update { $0.setContext(.rest, from: "2026-11-14", through: "2026-11-15") }
+        #expect(await harness.receive(.enterInner, at: Self.at(14, day: 14), shifts: []) == .ignored)
+        #expect(harness.coordinator.state.visits.isEmpty)
+    }
+
+    // MARK: Unreturned exits
+
+    @Test("Leaving at lunch and coming back leaves no trace to review")
+    func lunchReturn() async {
+        let harness = Harness()
+        await harness.receive(.enterInner, at: Self.at(8, 55))
+        await harness.receive(.exitOuter, at: Self.at(12, 5))
+        #expect(harness.coordinator.state.earlyExits["2026-11-09#day"] != nil)
+        await harness.receive(.enterInner, at: Self.at(12, 50))
+        #expect(harness.coordinator.state.earlyExits.isEmpty)
+        harness.coordinator.surfaceUnreturnedExits(now: Self.at(18))
+        #expect(!harness.coordinator.state.pendingProposals.contains { $0.boundary == .end })
+    }
+
+    @Test("Leaving early without returning becomes one review item after the shift")
+    func unreturnedExit() async throws {
+        let harness = Harness()
+        await harness.receive(.enterInner, at: Self.at(8, 55))
+        await harness.receive(.exitOuter, at: Self.at(15))
+        harness.coordinator.surfaceUnreturnedExits(now: Self.at(16))
+        #expect(!harness.coordinator.state.pendingProposals.contains { $0.boundary == .end })
+        // The missing-end check comes half an hour after the planned end.
+        let check = try #require(harness.prompts(now: Self.at(15, 30)).first { $0.kind == .missingEnd })
+        #expect(check.fireAt == Self.at(17, 30))
+
+        harness.coordinator.surfaceUnreturnedExits(now: Self.at(17, 1))
+        let end = try #require(harness.coordinator.state.pendingProposals.first { $0.boundary == .end })
+        #expect(end.proposedTime == Self.at(15))
+        #expect(end.reasons.contains(.leftBeforePlannedEnd))
+        #expect(!harness.prompts(now: Self.at(17, 2)).contains { $0.kind == .missingEnd })
+    }
+
+    @Test("Still inside after the plan: the check waits for the automatic window")
+    func missingEndLate() async throws {
+        let harness = Harness()
+        await harness.receive(.enterInner, at: Self.at(8, 55))
+        let check = try #require(harness.prompts(now: Self.at(10)).first { $0.kind == .missingEnd })
+        #expect(check.fireAt == Self.at(23))
+    }
+
+    // MARK: Status question
+
+    @Test("The next shift's question is planned 30 minutes after its start and goes once settled")
+    func statusQuestion() async throws {
+        let harness = Harness()
+        let tomorrow = Self.shift(day: 10)
+        let prompt = try #require(harness.prompts(now: Self.at(20), shifts: [Self.shift(), tomorrow]).first)
+        #expect(prompt.kind == .status(.statusUnconfirmed))
+        #expect(prompt.fireAt == Self.at(9, 30, day: 10))
+        #expect(prompt.route == .workplaceAutomationStatus)
+
+        #expect(await harness.coordinator.answerStatus(.continueRecording, for: tomorrow) == .applied)
+        #expect(!harness.prompts(now: Self.at(20), shifts: [tomorrow]).contains { if case .status = $0.kind { true } else { false } })
+    }
+
+    @Test("A late arrival changes the question; an on-time one cancels it")
+    func statusQuestionAfterArrival() async throws {
+        let late = Harness()
+        await late.receive(.enterInner, at: Self.at(9, 10))
+        #expect(late.prompts(now: Self.at(9, 11)).first?.kind == .status(.lateArrival))
+
+        let onTime = Harness()
+        await onTime.receive(.enterInner, at: Self.at(8, 55))
+        #expect(!onTime.prompts(now: Self.at(8, 56)).contains { if case .status = $0.kind { true } else { false } })
+    }
+
+    @Test("Taking today off marks the day; field work saves a one-day range")
+    func statusAnswers() async {
+        let rest = Harness()
+        #expect(await rest.coordinator.answerStatus(.rest, for: Self.shift()) == .applied)
+        #expect(rest.day("2026-11-09")?.kind == .notWorking)
+
+        let field = Harness()
+        #expect(await field.coordinator.answerStatus(.fieldwork, for: Self.shift()) == .applied)
+        #expect(field.coordinator.state.context(for: "2026-11-09") == .fieldwork)
+        #expect(field.coordinator.state.context(for: "2026-11-10") == .regular)
+    }
+
+    @Test("Away from the office, leaving it does not end the day")
+    func fieldworkExit() async {
+        let harness = Harness(applies: true)
+        harness.coordinator.update { $0.setContext(.fieldwork, from: "2026-11-09", through: "2026-11-09") }
+        await harness.receive(.enterInner, at: Self.at(9, 10))
+        #expect(await harness.receive(.exitOuter, at: Self.at(18)) == .ignored)
+        #expect(!harness.prompts(now: Self.at(18, 30)).contains { $0.kind == .missingEnd })
+    }
+
+    // MARK: Ranges
+
+    @Test("A newer range replaces the days it covers and keeps the rest")
+    func ranges() {
+        var state = WorkplaceAutomationState()
+        state.setContext(.businessTrip, from: "2026-11-10", through: "2026-11-20")
+        state.setContext(.remote, from: "2026-11-14", through: "2026-11-15")
+        #expect(state.context(for: "2026-11-13") == .businessTrip)
+        #expect(state.context(for: "2026-11-14") == .remote)
+        #expect(state.context(for: "2026-11-16") == .businessTrip)
+        #expect(state.contexts.count == 3)
+        state.setContext(.regular, from: "2026-11-01", through: "2026-11-30")
+        #expect(state.contexts.isEmpty)
+    }
+
+    // MARK: Plus and storage
+
+    @Test("Without Plus nothing is asked, but existing suggestions can still be adopted")
+    func plusLapse() async throws {
+        let harness = Harness()
+        await harness.receive(.exitOuter, at: Self.at(18))
+        let pending = try #require(harness.coordinator.state.pendingProposals.first)
+        harness.plus.debugSetAuthorized(false)
+        #expect(harness.prompts(now: Self.at(18, 1), shifts: [Self.shift(day: 10)]).isEmpty)
+        #expect(await harness.receive(.enterInner, at: Self.at(19)) == .ignored)
+        let results = await harness.coordinator.applyReviewed([pending.id], now: Self.at(18, 30))
+        #expect(results[pending.id] == .applied)
+        #expect(harness.day("2026-11-09")?.segments.last?.endAtMs == Self.ms(Self.at(18)))
+    }
+
+    @Test("Monitoring off reserves no slots and plans no questions")
+    func monitoringOff() {
+        let harness = Harness()
+        harness.coordinator.update { $0.settings.isMonitoringEnabled = false }
+        #expect(harness.prompts(now: Self.at(6)).isEmpty)
+        #expect(WorkplaceAutomationNotificationPlan.shiftReminderBudget(isMonitoringEnabled: false)
+            == WorkplaceAutomationNotificationPlan.shiftReminderBudget(isMonitoringEnabled: true) + 3)
+        // Focus (2), alarm refresh (1), Live Activity fallback (1), reports and
+        // automation stay within iOS's 64 pending requests.
+        #expect(WorkplaceAutomationNotificationPlan.shiftReminderBudget(isMonitoringEnabled: true)
+            + CycleReportNotificationPlan.reservedSlots + 3 + 4 <= 64)
+    }
+
+    @Test("A file from the first internal builds still opens")
+    func decodesEarlierFile() throws {
+        var state = WorkplaceAutomationState()
+        state.settings.isMonitoringEnabled = true
+        var json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as! [String: Any]
+        for key in ["contexts", "settledShiftKeys", "visits", "earlyExits"] { json.removeValue(forKey: key) }
+        let decoded = try JSONDecoder().decode(
+            WorkplaceAutomationState.self, from: JSONSerialization.data(withJSONObject: json)
+        )
+        #expect(decoded.settings.isMonitoringEnabled)
+        #expect(decoded.visits.isEmpty)
+    }
+}

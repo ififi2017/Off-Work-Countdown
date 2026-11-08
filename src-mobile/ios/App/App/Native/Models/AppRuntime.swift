@@ -116,7 +116,29 @@ final class AppRuntime {
     }()
 
     /// Plan 021: the single write path for workplace automation.
-    private(set) lazy var workplaceAutomation = WorkplaceAutomationCoordinator.live(actions: recordActions)
+    private(set) lazy var workplaceAutomation: WorkplaceAutomationCoordinator = {
+        let coordinator = WorkplaceAutomationCoordinator.live(actions: recordActions)
+        let queries = queries
+        let plus = plus
+        let shifts = shifts
+        let notifications = notifications
+        notifications.automationSource = .init(
+            isMonitoringEnabled: { [unowned coordinator] in coordinator.state.settings.isMonitoringEnabled },
+            prompts: { [unowned coordinator] now in
+                WorkplaceAutomationNotificationPlan.prompts(
+                    state: coordinator.state,
+                    shifts: queries.automationShifts(around: now),
+                    canCollect: plus.canCollectAutomation,
+                    now: now
+                )
+            },
+            text: text
+        )
+        // Questions follow the state they ask about, and turning automation
+        // on or off moves the shift reminders' budget.
+        coordinator.onChange = { Task { await notifications.reschedule(shifts: shifts) } }
+        return coordinator
+    }()
     private(set) lazy var workplaceLocation = WorkplaceLocationService()
 
     private(set) lazy var shifts = ShiftSessionStore(

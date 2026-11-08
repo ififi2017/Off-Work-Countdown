@@ -14,6 +14,8 @@
     "check:ios-rule-fixtures": "node scripts/generate-ios-schedule-rule-fixtures.mjs --check",
     "generate:android-rule-fixtures": "node scripts/generate-android-rule-fixtures.mjs",
     "check:android-rule-fixtures": "node scripts/generate-android-rule-fixtures.mjs --check",
+    "generate:workplace-automation-fixtures": "node scripts/generate-workplace-automation-fixtures.mjs",
+    "check:workplace-automation-fixtures": "node scripts/generate-workplace-automation-fixtures.mjs --check",
     "generate:android-extended-fixtures": "node scripts/generate-android-extended-fixtures.mjs",
     "check:android-extended-fixtures": "node scripts/generate-android-extended-fixtures.mjs --check",
     "generate:android-record-fixtures": "node scripts/generate-android-record-fixtures.mjs",

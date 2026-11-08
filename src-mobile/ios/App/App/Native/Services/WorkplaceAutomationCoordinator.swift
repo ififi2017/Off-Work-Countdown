@@ -24,6 +24,8 @@ final class WorkplaceAutomationCoordinator {
     @ObservationIgnored let isAvailable: Bool
     @ObservationIgnored private let actions: RecordsActions
     @ObservationIgnored private let persist: (WorkplaceAutomationState) throws -> Void
+    /// Called after every saved change; the runtime reschedules questions.
+    @ObservationIgnored var onChange: (() -> Void)?
 
     init(
         actions: RecordsActions,
@@ -73,7 +75,7 @@ final class WorkplaceAutomationCoordinator {
     func receive(
         _ event: AutomationEvent,
         shifts: [AutomationShift],
-        context: WorkDayContext = .regular,
+        context explicitContext: WorkDayContext? = nil,
         now: Date = .now
     ) async -> AutomationCommandOutcome {
         guard isAvailable else { return .temporarilyUnavailable }
@@ -85,6 +87,25 @@ final class WorkplaceAutomationCoordinator {
         // The envelope is durable before any record changes.
         guard commit(next) else { return .temporarilyUnavailable }
 
+        let leavesWork = event.type == .exitOuter && WorkplaceAutomationRules.leavesAllWorkplaces(
+            exitingWorkplace: event.workplaceID, inside: insideBefore
+        )
+        if leavesWork, event.source != .userConfirmation, let visit = state.openVisit {
+            await close(visit, leftAt: event.proposedTime, now: now)
+            // Leaving after extra work ends that stretch, not the shift that
+            // was already over before it (§3.9: the gap stays a gap).
+            if case .offShift = visit.kind { return finish(event.id, .ignored, now: now) }
+        }
+        if event.type == .enterInner {
+            // Back during a shift: an earlier exit was a break, not the end.
+            let running = shifts.filter { $0.plannedStart <= event.proposedTime && event.proposedTime < $0.plannedEnd }
+            if running.contains(where: { state.earlyExits[$0.shiftKey] != nil }) {
+                var cleared = state
+                for shift in running { cleared.clearEarlyExit(shiftKey: shift.shiftKey) }
+                _ = commit(cleared)
+            }
+        }
+
         let match: AutomationShiftMatch
         switch event.type {
         case .enterInner:
@@ -92,12 +113,31 @@ final class WorkplaceAutomationCoordinator {
         case .exitOuter:
             // A person saying they finished is not a location report: being
             // inside a saved workplace does not overrule them.
-            guard event.source == .userConfirmation || WorkplaceAutomationRules.leavesAllWorkplaces(
-                exitingWorkplace: event.workplaceID, inside: insideBefore
-            ) else { return finish(event.id, .ignored, now: now) }
+            guard event.source == .userConfirmation || leavesWork else { return finish(event.id, .ignored, now: now) }
             match = WorkplaceAutomationRules.matchExit(at: event.proposedTime, among: shifts)
         }
-        guard case .matched(let shift) = match else { return finish(event.id, .ignored, now: now) }
+        guard case .matched(let shift) = match else {
+            // An arrival with no shift may be extra work; only the person
+            // can say so (§3.9).
+            if case .noShift = match, event.type == .enterInner,
+               !shifts.contains(where: { $0.plannedStart <= event.proposedTime && event.proposedTime < $0.plannedEnd }) {
+                return startOffShiftVisit(for: event, shifts: shifts, now: now)
+            }
+            return finish(event.id, .ignored, now: now)
+        }
+        // A return during a shift that already has a start is not a new start.
+        if event.type == .enterInner, event.source != .userConfirmation,
+           event.proposedTime > shift.plannedStart,
+           state.proposals.contains(where: {
+               $0.shiftKey == shift.shiftKey && $0.boundary == .start && ($0.isAdopted || $0.status == .pendingReview)
+           }) {
+            return finish(event.id, .ignored, now: now)
+        }
+        let context = explicitContext ?? state.context(for: shift.anchorDayKey)
+        // Away from the office, leaving it does not end the day (§3.10).
+        if context != .regular, context != .rest, event.type == .exitOuter, event.source != .userConfirmation {
+            return finish(event.id, .ignored, now: now)
+        }
 
         let disposition = WorkplaceAutomationRules.disposition(
             for: event,
@@ -138,6 +178,13 @@ final class WorkplaceAutomationCoordinator {
                 // Ending early is the person's call (§3.1), never a sensor's.
                 time = event.proposedTime
             case .temporaryAbsence:
+                // Only a trace for now; it waits for a return (§3.9).
+                var traced = state
+                traced.recordEarlyExit(WorkTimeProposal(
+                    id: UUID(), shift: shift, boundary: .end, proposedTime: event.proposedTime,
+                    sourceEventIDs: [event.id], status: .pendingReview, reasons: [.leftBeforePlannedEnd], createdAt: now
+                ))
+                guard commit(traced) else { return .temporarilyUnavailable }
                 return finish(event.id, .ignored, now: now)
             case .needsReview(let reason):
                 time = event.proposedTime
@@ -158,7 +205,19 @@ final class WorkplaceAutomationCoordinator {
             createdAt: now
         )
         if !reasons.isEmpty {
-            return keepForReview(proposal, commandID: event.id, outcome: .recordedForReview, now: now)
+            let outcome = keepForReview(proposal, commandID: event.id, outcome: .recordedForReview, now: now)
+            if reasons.contains(.earlyStartNeedsConfirmation),
+               case .early(let promptAt) = WorkplaceAutomationRules.assessArrival(
+                   at: event.proposedTime, for: shift, promptDelay: state.settings.visitPromptDelay
+               ) {
+                var visiting = state
+                visiting.upsert(AutomationVisit(
+                    id: UUID(), kind: .early(proposalID: proposal.id), workplaceID: event.workplaceID,
+                    arrivalEventID: event.id, arrivedAt: event.proposedTime, promptAt: promptAt
+                ))
+                _ = commit(visiting)
+            }
+            return outcome
         }
         proposal.status = .autoApplied
         return await adopt(proposal, commandID: event.id, appliedBy: .autoApplied, batchID: nil, now: now)
@@ -262,6 +321,157 @@ final class WorkplaceAutomationCoordinator {
         return order.compactMap { key in
             guard let proposals = byShift[key], let shift = proposals.first?.shift else { return nil }
             return (shift, Self.segments(for: shift, adopting: proposals, state: state))
+        }
+    }
+
+    // MARK: Visits and status
+
+    /// The person's answer to an early or off-shift arrival question.
+    /// "Started work" counts from the detected arrival, not from the tap (§3.9).
+    func answerVisit(_ id: UUID, startedWork: Bool, now: Date = .now) async -> AutomationCommandOutcome {
+        guard isAvailable else { return .temporarilyUnavailable }
+        guard var visit = state.visit(id), visit.status == .waiting else { return .alreadyApplied }
+        guard startedWork else {
+            visit.status = .declined
+            var next = state
+            next.upsert(visit)
+            if case .early(let proposalID) = visit.kind, var proposal = next.proposal(proposalID),
+               proposal.status == .pendingReview {
+                // "Just arrived early": the arrival stays, as a dismissed reference.
+                proposal.status = .dismissed
+                proposal.resolvedAt = now
+                next.upsert(proposal)
+            }
+            return commit(next) ? .applied : .temporarilyUnavailable
+        }
+        switch visit.kind {
+        case .early(let proposalID):
+            visit.status = .closed
+            var next = state
+            next.upsert(visit)
+            guard commit(next) else { return .temporarilyUnavailable }
+            return await applyReviewed([proposalID], now: now)[proposalID] ?? .ignored
+        case .offShift:
+            if let leftAt = visit.leftAt {
+                // Answered after leaving: record the finished stretch.
+                return await recordExtraWork(visit, until: leftAt, now: now)
+            }
+            visit.status = .working
+            var next = state
+            next.upsert(visit)
+            return commit(next) ? .recordedForReview : .temporarilyUnavailable
+        }
+    }
+
+    /// Settles a shift's status question. "Keep recording" approves nothing
+    /// else; a context applies to that day only (§3.10).
+    func answerStatus(_ answer: WorkdayStatusAnswer, for shift: AutomationShift, now: Date = .now) async -> AutomationCommandOutcome {
+        guard isAvailable else { return .temporarilyUnavailable }
+        if answer == .rest {
+            guard await actions.markDayNotWorking(dayKey: shift.anchorDayKey).value else { return .temporarilyUnavailable }
+        }
+        var next = state
+        next.settleStatus(shiftKey: shift.shiftKey, answer: answer)
+        let context: WorkDayContext? = switch answer {
+        case .fieldwork: .fieldwork
+        case .businessTrip: .businessTrip
+        case .remote: .remote
+        case .rest, .continueRecording: nil
+        }
+        if let context { next.setContext(context, from: shift.anchorDayKey, through: shift.anchorDayKey) }
+        return commit(next) ? .applied : .temporarilyUnavailable
+    }
+
+    /// Turns exits nobody came back from into review items once their shift
+    /// is over, unless an end was already recorded (§3.9).
+    func surfaceUnreturnedExits(now: Date = .now) {
+        let due = state.earlyExits.values.filter { $0.shift.plannedEnd <= now }
+        guard !due.isEmpty else { return }
+        var next = state
+        for candidate in due {
+            next.clearEarlyExit(shiftKey: candidate.shiftKey)
+            let hasEnd = next.proposals.contains {
+                $0.shiftKey == candidate.shiftKey && $0.boundary == .end
+                    && ($0.isAdopted || $0.status == .pendingReview)
+            }
+            if !hasEnd { next.upsert(candidate) }
+        }
+        _ = commit(next)
+    }
+
+    private func startOffShiftVisit(
+        for event: AutomationEvent,
+        shifts: [AutomationShift],
+        now: Date
+    ) -> AutomationCommandOutcome {
+        guard event.source != .userConfirmation, actions.plus.canCollectAutomation,
+              event.source != .nativeGeofence || (state.settings.isMonitoringEnabled
+                  && event.workplaceID.flatMap { state.workplace($0)?.registrationGeneration } == event.registrationGeneration),
+              !event.isInitialState, state.openVisit == nil
+        else { return finish(event.id, .ignored, now: now) }
+        let dayKey = RecordJSON.dayKey(event.proposedTime, calendar: actions.preferences.recordsCalendar)
+        guard state.context(for: dayKey) != .rest else { return finish(event.id, .ignored, now: now) }
+        var next = state
+        next.upsert(AutomationVisit(
+            id: UUID(), kind: .offShift(dayKey: dayKey), workplaceID: event.workplaceID,
+            arrivalEventID: event.id, arrivedAt: event.proposedTime,
+            promptAt: event.proposedTime.addingTimeInterval(state.settings.visitPromptDelay.interval),
+            plannedSegments: shifts.first { $0.anchorDayKey == dayKey }?.segments ?? []
+        ))
+        guard commit(next) else { return .temporarilyUnavailable }
+        return finish(event.id, .recordedForReview, now: now)
+    }
+
+    private func close(_ visit: AutomationVisit, leftAt: Date, now: Date) async {
+        var closed = visit
+        closed.leftAt = leftAt
+        if visit.status == .working {
+            _ = await recordExtraWork(closed, until: leftAt, now: now)
+            return
+        }
+        var next = state
+        next.upsert(closed)
+        _ = commit(next)
+    }
+
+    /// Adds a confirmed extra stretch to its day, keeping what the day
+    /// already holds. Overlaps merge; gaps stay gaps (§3.9).
+    private func recordExtraWork(_ visit: AutomationVisit, until end: Date, now: Date) async -> AutomationCommandOutcome {
+        guard case .offShift(let dayKey) = visit.kind, end > visit.arrivedAt else {
+            var next = state
+            var closed = visit
+            closed.status = .closed
+            next.upsert(closed)
+            return commit(next) ? .ignored : .temporarilyUnavailable
+        }
+        let extra = NativeShiftSegment(
+            startAtMs: visit.arrivedAt.timeIntervalSince1970 * 1_000,
+            endAtMs: end.timeIntervalSince1970 * 1_000
+        )
+        let current = actions.records.state.overrides.first { $0.dayKey == dayKey }
+        let base = current?.kind == .customSegments ? current?.segments ?? [] : visit.plannedSegments
+        let result = await actions.writeAutomationSegments(
+            dayKey: dayKey,
+            segments: WorkplaceAutomationRules.union(base + [extra]),
+            expectedEditCount: state.adoptedEditCount(dayKey: dayKey),
+            // The person asked for this stretch; their own edits are kept.
+            replacingPersonEdits: true
+        ).value
+        var next = state
+        var closed = visit
+        closed.status = .closed
+        closed.leftAt = end
+        next.upsert(closed)
+        switch result {
+        case .written(_, let editCount, _), .unchanged(let editCount):
+            next.setAdoptedEditCount(editCount, dayKey: dayKey)
+            return commit(next) ? .applied : .temporarilyUnavailable
+        case .conflict, .unavailable:
+            // Keep it answerable later rather than losing the answer.
+            closed.status = .working
+            next.upsert(closed)
+            _ = commit(next)
+            return .temporarilyUnavailable
         }
     }
 
@@ -394,6 +604,7 @@ final class WorkplaceAutomationCoordinator {
         do {
             try persist(next)
             state = next
+            onChange?()
             return true
         } catch {
             return false

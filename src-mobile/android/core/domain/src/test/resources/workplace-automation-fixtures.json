@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "about": "Plan 021 workplace automation rules. Swift (WorkplaceAutomationRules) is the specification; Android A1 must produce the same results. scripts/generate-workplace-automation-fixtures.mjs compiles this file into the iOS tests. Times are on 2026-11-09 UTC; a '+1 ' prefix means the next day.",
+  "shift": {
+    "start": "09:00",
+    "end": "18:00",
+    "segments": [["09:00", "12:00"], ["13:00", "18:00"]]
+  },
+  "arrival": [
+    { "name": "early with time to ask", "at": "08:20", "delayMinutes": 30, "expect": "early", "promptAt": "08:50" },
+    { "name": "question would land on the start: on time", "at": "08:30", "delayMinutes": 30, "expect": "punctual" },
+    { "name": "question would land after the start: on time", "at": "08:50", "delayMinutes": 30, "expect": "punctual" },
+    { "name": "short delay keeps an early question", "at": "08:40", "delayMinutes": 15, "expect": "early", "promptAt": "08:55" },
+    { "name": "exactly on the start", "at": "09:00", "delayMinutes": 30, "expect": "punctual" },
+    { "name": "late", "at": "09:06", "delayMinutes": 30, "expect": "late" }
+  ],
+  "matchArrival": [
+    { "name": "inside the lead window", "at": "07:00", "expect": "matched" },
+    { "name": "before the lead window", "at": "06:59", "expect": "noShift" },
+    { "name": "inside the lag window", "at": "12:00", "expect": "matched" },
+    { "name": "after the lag window", "at": "12:01", "expect": "noShift" }
+  ],
+  "exit": [
+    { "name": "lunch is a temporary absence", "at": "12:05", "expect": "temporaryAbsence" },
+    { "name": "on the planned end", "at": "18:00", "expect": "shiftEnded", "overtimeMinutes": 0 },
+    { "name": "late finish", "at": "19:20", "expect": "shiftEnded", "overtimeMinutes": 80 },
+    { "name": "six hours over is still automatic", "at": "+1 00:00", "expect": "shiftEnded", "overtimeMinutes": 360 },
+    { "name": "beyond six hours needs review", "at": "+1 00:01", "expect": "needsReview", "reason": "beyondAutomaticWindow" }
+  ],
+  "segments": [
+    { "name": "plan 3.9 example: late start, late finish", "start": "09:06", "end": "19:20", "expect": [["09:06", "12:00"], ["13:00", "19:20"]] },
+    { "name": "confirmed early start", "start": "08:20", "end": "18:00", "expect": [["08:20", "12:00"], ["13:00", "18:00"]] },
+    { "name": "planned day", "start": "09:00", "end": "18:00", "expect": [["09:00", "12:00"], ["13:00", "18:00"]] },
+    { "name": "person ended during lunch", "start": "09:00", "end": "12:30", "expect": [["09:00", "12:00"]] },
+    { "name": "person ended early in the afternoon", "start": "09:00", "end": "15:00", "expect": [["09:00", "12:00"], ["13:00", "15:00"]] }
+  ],
+  "statusPrompt": [
+    { "name": "not due yet", "arrival": null, "now": "09:29", "expect": "none" },
+    { "name": "nothing known", "arrival": null, "now": "09:30", "expect": "statusUnconfirmed" },
+    { "name": "on time", "arrival": "08:55", "now": "09:30", "expect": "none" },
+    { "name": "late arrival", "arrival": "09:20", "now": "09:30", "expect": "lateArrival" },
+    { "name": "arrival not yet happened", "arrival": "09:40", "now": "09:30", "expect": "statusUnconfirmed" },
+    { "name": "already settled", "arrival": null, "now": "09:30", "confirmed": true, "expect": "none" },
+    { "name": "working remotely", "arrival": null, "now": "09:30", "context": "remote", "expect": "none" },
+    { "name": "full-day leave", "arrival": null, "now": "09:30", "leave": true, "expect": "none" }
+  ],
+  "leavesAllWorkplaces": [
+    { "name": "leaving the only one", "exiting": "A", "inside": ["A"], "expect": true },
+    { "name": "still inside another", "exiting": "A", "inside": ["A", "B"], "expect": false },
+    { "name": "already outside everywhere", "exiting": "A", "inside": [], "expect": true },
+    { "name": "no workplace named, still inside", "exiting": null, "inside": ["B"], "expect": false }
+  ]
+}

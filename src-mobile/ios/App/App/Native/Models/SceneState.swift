@@ -16,6 +16,7 @@ enum AppRoute: String, Hashable, Identifiable {
     case shiftAlarms
     case workplaceAutomation
     case workplaceAutomationReview
+    case workplaceAutomationStatus
     case salary
     case notifications
     case lunch

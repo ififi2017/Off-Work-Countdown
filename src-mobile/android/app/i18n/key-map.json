@@ -329,11 +329,35 @@
     "auto": {
       "resource": "string/auto"
     },
+    "automationActionJustEarly": {
+      "resource": "string/automationActionJustEarly"
+    },
+    "automationActionNotWorking": {
+      "resource": "string/automationActionNotWorking"
+    },
+    "automationActionRecordExtra": {
+      "resource": "string/automationActionRecordExtra"
+    },
+    "automationActionStartedWork": {
+      "resource": "string/automationActionStartedWork"
+    },
     "automationConfirmEndPrompt": {
       "resource": "string/automationConfirmEndPrompt"
     },
     "automationConfirmStartPrompt": {
       "resource": "string/automationConfirmStartPrompt"
+    },
+    "automationContextBusinessTrip": {
+      "resource": "string/automationContextBusinessTrip"
+    },
+    "automationContextFieldwork": {
+      "resource": "string/automationContextFieldwork"
+    },
+    "automationContextRemote": {
+      "resource": "string/automationContextRemote"
+    },
+    "automationContextRest": {
+      "resource": "string/automationContextRest"
     },
     "automationIntentConfirmEnd": {
       "resource": "string/automationIntentConfirmEnd"
@@ -359,6 +383,21 @@
     "automationIntentRecordDepartureDescription": {
       "resource": "string/automationIntentRecordDepartureDescription"
     },
+    "automationPromptEarlyVisit": {
+      "resource": "string/automationPromptEarlyVisit"
+    },
+    "automationPromptExtraVisit": {
+      "resource": "string/automationPromptExtraVisit"
+    },
+    "automationPromptLateArrival": {
+      "resource": "string/automationPromptLateArrival"
+    },
+    "automationPromptMissingEnd": {
+      "resource": "string/automationPromptMissingEnd"
+    },
+    "automationPromptStatusUnconfirmed": {
+      "resource": "string/automationPromptStatusUnconfirmed"
+    },
     "automationResultAlreadyApplied": {
       "resource": "string/automationResultAlreadyApplied"
     },
@@ -379,6 +418,30 @@
     },
     "automationResultUnavailable": {
       "resource": "string/automationResultUnavailable"
+    },
+    "automationStatusContinue": {
+      "resource": "string/automationStatusContinue"
+    },
+    "automationStatusContinueNote": {
+      "resource": "string/automationStatusContinueNote"
+    },
+    "automationStatusIntro": {
+      "resource": "string/automationStatusIntro"
+    },
+    "automationStatusNoShift": {
+      "resource": "string/automationStatusNoShift"
+    },
+    "automationStatusNoShiftNote": {
+      "resource": "string/automationStatusNoShiftNote"
+    },
+    "automationStatusRest": {
+      "resource": "string/automationStatusRest"
+    },
+    "automationStatusRestConfirm": {
+      "resource": "string/automationStatusRestConfirm"
+    },
+    "automationStatusTitle": {
+      "resource": "string/automationStatusTitle"
     },
     "automationUIAccessOff": {
       "resource": "string/automationUIAccessOff"
@@ -410,6 +473,9 @@
     "automationUIAccessWhileUsingNote": {
       "resource": "string/automationUIAccessWhileUsingNote"
     },
+    "automationUIAddContext": {
+      "resource": "string/automationUIAddContext"
+    },
     "automationUIAddWorkplace": {
       "resource": "string/automationUIAddWorkplace"
     },
@@ -436,6 +502,24 @@
     },
     "automationUIAutoApplyNote": {
       "resource": "string/automationUIAutoApplyNote"
+    },
+    "automationUIContextFrom": {
+      "resource": "string/automationUIContextFrom"
+    },
+    "automationUIContextNote": {
+      "resource": "string/automationUIContextNote"
+    },
+    "automationUIContextSection": {
+      "resource": "string/automationUIContextSection"
+    },
+    "automationUIContextTo": {
+      "resource": "string/automationUIContextTo"
+    },
+    "automationUIContextType": {
+      "resource": "string/automationUIContextType"
+    },
+    "automationUIDeleteContext": {
+      "resource": "string/automationUIDeleteContext"
     },
     "automationUIDeleteWorkplace": {
       "resource": "string/automationUIDeleteWorkplace"
