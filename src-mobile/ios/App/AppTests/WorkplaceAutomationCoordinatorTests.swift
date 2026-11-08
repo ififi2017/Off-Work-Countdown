@@ -90,6 +90,10 @@ struct WorkplaceAutomationCoordinatorTests {
         var override: DayOverride? {
             records.state.overrides.first { $0.dayKey == WorkplaceAutomationCoordinatorTests.dayKey }
         }
+
+        var provenance: WorkTimeProvenance? {
+            records.state.workTimeProvenance.first { $0.dayKey == WorkplaceAutomationCoordinatorTests.dayKey }
+        }
     }
 
     // MARK: Review by default
@@ -276,5 +280,133 @@ struct WorkplaceAutomationCoordinatorTests {
         _ = await harness.coordinator.receive(enterLab, shifts: [Self.shift], now: Self.at(17, 10))
         #expect(await harness.receive(.exitOuter, at: Self.at(17, 20)) == .ignored)
         #expect(harness.override == nil)
+    }
+
+    // MARK: Provenance (C1)
+
+    @Test("Each adopted boundary saves its minimal summary with the day, nothing about the place")
+    func provenanceWrittenWithTheDay() async throws {
+        let harness = Harness(applies: true)
+        #expect(await harness.receive(.enterInner, at: Self.at(9, 10)) == .applied)
+        #expect(await harness.receive(.exitOuter, at: Self.at(18, 30)) == .applied)
+
+        let row = try #require(harness.provenance)
+        #expect(row.boundaries.map(\.boundary) == [.start, .end])
+        let start = try #require(row.boundary(.start))
+        #expect(start.time == Self.at(9, 10))
+        #expect(start.source == .nativeGeofence)
+        #expect(start.observedAt == Self.at(9, 10))
+        #expect(start.receivedAt == Self.at(9, 10))
+        #expect(start.appliedAt == Self.at(9, 10))
+        #expect(start.appliedBy == .automatic)
+        #expect(start.batchID == nil)
+        #expect(start.rulesVersion == WorkplaceAutomation.rulesVersion)
+        #expect(start.evidenceLevel == .systemObservation)
+        #expect(start.reasons.isEmpty)
+        #expect(row.boundary(.end)?.time == Self.at(18, 30))
+        #expect(harness.records.state.sync.rows.values.contains { $0.entityType == .workTimeProvenance && $0.dirty })
+
+        let verification = WorkTimeProvenance.verification(of: .start, provenance: row, override: harness.override)
+        #expect(verification == .verified(start))
+
+        // What leaves the device names no workplace, place or coordinates.
+        let payload = try #require(RecordsSyncPayload.encode(type: .workTimeProvenance, key: Self.dayKey, from: harness.records.state))
+        let text = String(decoding: payload, as: UTF8.self)
+        #expect(!text.contains(harness.workplace.id.uuidString))
+        #expect(!text.contains("Office"))
+        #expect(!text.contains("121"))
+        #expect(!text.lowercased().contains("latitude"))
+    }
+
+    @Test("A reviewed adoption records how and in which batch, and keeps the reasons")
+    func provenanceForReviewedAdoption() async throws {
+        let harness = Harness(applies: true)
+        #expect(await harness.receive(.enterInner, at: Self.at(8)) == .recordedForReview)
+        #expect(harness.provenance == nil)
+        let pending = try #require(harness.coordinator.state.pendingProposals.first)
+        let batch = UUID()
+        _ = await harness.coordinator.applyReviewed([pending.id], batchID: batch, now: Self.at(20))
+
+        let start = try #require(harness.provenance?.boundary(.start))
+        #expect(start.time == Self.at(8))
+        #expect(start.appliedAt == Self.at(20))
+        #expect(start.appliedBy == .reviewed)
+        #expect(start.batchID == batch)
+        #expect(start.source == .nativeGeofence)
+        #expect(start.reasons == [AutomationReviewReason.earlyStartNeedsConfirmation.rawValue])
+    }
+
+    @Test("A later manual edit leaves the summary alone and verification lapses on display")
+    func manualEditKeepsProvenance() async throws {
+        let harness = Harness(applies: true)
+        _ = await harness.receive(.enterInner, at: Self.at(9, 10))
+        let before = try #require(harness.provenance)
+        #expect(harness.actions.saveCustomHours(dayKey: Self.dayKey, startMinutes: 9 * 60, endMinutes: 17 * 60).synchronousResult)
+        #expect(harness.provenance == before)
+        let start = try #require(before.boundary(.start))
+        #expect(WorkTimeProvenance.verification(of: .start, provenance: before, override: harness.override)
+            == .adjustedAfterDetection(start))
+        #expect(WorkTimeProvenance.verification(of: .end, provenance: before, override: harness.override) == .none)
+
+        // Clearing the day keeps the summary too; it simply no longer matches.
+        #expect(harness.actions.clearDayOverride(dayKey: Self.dayKey).synchronousResult)
+        #expect(harness.provenance == before)
+        #expect(WorkTimeProvenance.verification(of: .start, provenance: before, override: harness.override)
+            == .adjustedAfterDetection(start))
+    }
+
+    @Test("Undo puts the summary back with the day: erased when there was none")
+    func undoRestoresProvenance() async throws {
+        let harness = Harness(applies: true)
+        let arrival = harness.event(.enterInner, at: Self.at(9, 10))
+        _ = await harness.coordinator.receive(arrival, shifts: [Self.shift], now: Self.at(9, 10))
+        let afterStart = try #require(harness.provenance)
+        let exit = harness.event(.exitOuter, at: Self.at(18))
+        _ = await harness.coordinator.receive(exit, shifts: [Self.shift], now: Self.at(18))
+        #expect(harness.provenance?.boundaries.count == 2)
+
+        // Undoing the exit returns to the start-only summary.
+        #expect(await harness.coordinator.undo(commandID: exit.id, now: Self.at(18, 5)) == .applied)
+        #expect(harness.provenance?.boundaries == afterStart.boundaries)
+    }
+
+    @Test("Undoing the only adoption deletes the summary with a tombstone")
+    func undoErasesProvenance() async throws {
+        let harness = Harness(applies: true)
+        let arrival = harness.event(.enterInner, at: Self.at(9, 10))
+        _ = await harness.coordinator.receive(arrival, shifts: [Self.shift], now: Self.at(9, 10))
+        #expect(harness.provenance != nil)
+        #expect(await harness.coordinator.undo(commandID: arrival.id, now: Self.at(9, 20)) == .applied)
+        #expect(harness.provenance == nil)
+        #expect(harness.records.state.isErased(.workTimeProvenance, key: Self.dayKey))
+    }
+
+    @Test("Deleting the evidence leaves a tombstone and keeps the adopted times")
+    func deleteEvidence() async throws {
+        let harness = Harness(applies: true)
+        _ = await harness.receive(.enterInner, at: Self.at(9, 10))
+        let override = harness.override
+        #expect(harness.actions.deleteWorkTimeProvenance(dayKey: Self.dayKey).synchronousResult)
+        #expect(harness.provenance == nil)
+        #expect(harness.records.state.isErased(.workTimeProvenance, key: Self.dayKey))
+        #expect(harness.records.state.sync.rows.values.contains { $0.entityType == .workTimeProvenance && $0.pendingErase })
+        #expect(harness.override == override)
+        #expect(!harness.actions.deleteWorkTimeProvenance(dayKey: Self.dayKey).synchronousResult)
+
+        // A later adoption on that day records it again above the tombstone.
+        _ = await harness.receive(.exitOuter, at: Self.at(18))
+        #expect(harness.provenance?.boundary(.end)?.time == Self.at(18))
+        #expect(!harness.records.state.isErased(.workTimeProvenance, key: Self.dayKey))
+    }
+
+    @Test("A retry after the receipt was lost writes the summary once")
+    func provenanceSurvivesCrashWindow() async throws {
+        let harness = Harness(applies: true)
+        let arrival = harness.event(.enterInner, at: Self.at(9, 10))
+        harness.failingSave = harness.saves + 2
+        _ = await harness.coordinator.receive(arrival, shifts: [Self.shift], now: Self.at(9, 10))
+        let first = try #require(harness.provenance)
+        #expect(await harness.coordinator.receive(arrival, shifts: [Self.shift], now: Self.at(9, 11)) == .alreadyApplied)
+        #expect(harness.provenance == first)
     }
 }

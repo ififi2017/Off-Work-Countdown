@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 8,
+  "schemaVersion": 9,
   "exportedAtMs": 0,
   "timeZoneIdentifier": "UTC",
   "calendarIdentifier": "gregorian",
@@ -349,6 +349,43 @@
       "editedAtMs": 1787529600000,
       "editCount": 1,
       "editTieBreaker": "00000000-0000-0000-0000-000000000024"
+    }
+  ],
+  "workTimeProvenance": [
+    {
+      "dayKey": "2026-08-27",
+      "boundaries": [
+        {
+          "boundary": "start",
+          "timeMs": 1787821800000,
+          "source": "nativeGeofence",
+          "observedAtMs": 1787821800000,
+          "receivedAtMs": 1787821860000,
+          "appliedAtMs": 1787860800000,
+          "appliedBy": "reviewed",
+          "batchID": "00000000-0000-0000-0000-000000000025",
+          "rulesVersion": 1,
+          "evidenceLevel": "systemObservation",
+          "reasons": [
+            "automaticApplyOff"
+          ]
+        },
+        {
+          "boundary": "end",
+          "timeMs": 1787853600000,
+          "source": "appIntentAutomation",
+          "receivedAtMs": 1787853660000,
+          "appliedAtMs": 1787853660000,
+          "appliedBy": "automatic",
+          "rulesVersion": 1,
+          "evidenceLevel": "externalAction",
+          "reasons": []
+        }
+      ],
+      "timeZoneIdentifier": "UTC",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000026"
     }
   ]
 }

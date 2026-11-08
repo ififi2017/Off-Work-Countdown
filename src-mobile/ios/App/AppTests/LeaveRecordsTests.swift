@@ -64,7 +64,7 @@ struct LeaveRecordsTests {
             Self.leaveDay("2026-10-10", uses: []),
         ]
         let document = try Self.exportedDocument(state)
-        #expect(document.schemaVersion == 7)
+        #expect(document.schemaVersion == RecordJSON.schemaVersion)
 
         var imported = RecordState()
         let report = try RecordJSON.apply(document, to: &imported, mode: .skipErased)
@@ -139,7 +139,8 @@ struct LeaveRecordsTests {
         let names = RecordEntityType.allCases.map { RecordsSyncIdentity.recordName(type: $0, key: "key") }
         #expect(Set(names).count == names.count)
         #expect(RecordsSyncIdentity.needsFullRefetch(storedRevision: 2))
-        #expect(!RecordsSyncIdentity.needsFullRefetch(storedRevision: 3))
+        #expect(RecordsSyncIdentity.needsFullRefetch(storedRevision: 3))
+        #expect(!RecordsSyncIdentity.needsFullRefetch(storedRevision: RecordsSyncIdentity.entityTypeRevision))
 
         for type in [RecordEntityType.leaveBalance, .leaveDay] {
             let copy = SyncConflictCopy(

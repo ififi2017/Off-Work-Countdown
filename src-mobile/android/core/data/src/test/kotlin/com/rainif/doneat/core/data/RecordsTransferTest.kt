@@ -8,6 +8,7 @@ import com.rainif.doneat.core.domain.salary.SalarySettings
 import com.rainif.doneat.core.domain.salary.SalaryType
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
@@ -39,7 +40,7 @@ class RecordsTransferTest {
         RecordStore(folder.root.toPath().resolve("records.json"), { now }, { "Asia/Shanghai" }, UnconfinedTestDispatcher(testScheduler)).also { it.load() }
 
     @Test fun everyKnownVersionPreviewsAndImports() = runTest {
-        for (version in 1..7) {
+        for (version in 1..8) {
             val bytes = archive("v$version.json")
             val preview = RecordsTransfer.preview(bytes, RecordState())
             assertTrue("v$version: $preview", preview is ImportPreview.Ready)
@@ -50,8 +51,35 @@ class RecordsTransferTest {
         }
     }
 
+    /** Plan 021 C1: Android has no workplace automation but carries iOS's provenance rows through untouched. */
+    @Test fun workTimeProvenanceSurvivesImportAndExportUnchanged() = runTest {
+        val bytes = archive("v8.json")
+        // Numbers compare by value: the codec writes every instant as a Double, as elsewhere.
+        fun canonical(e: JsonElement): Any? = when (e) {
+            is JsonObject -> e.mapValues { canonical(it.value) }
+            is JsonArray -> e.map(::canonical)
+            is JsonPrimitive -> if (e.isString) e.content else e.content.toDoubleOrNull() ?: e.content
+        }
+        fun provenance(text: String) = canonical(Json.parseToJsonElement(text).jsonObject.getValue("workTimeProvenance"))
+        val source = provenance(bytes.decodeToString())
+        val records = store()
+        assertNotNull(RecordsTransfer.commit(records, bytes))
+        assertEquals(1, records.state.value.workTimeProvenance.size)
+
+        // An unrelated Android edit, then export: the rows come back exactly as iOS wrote them.
+        records.update { it.copy(recordsStartedOn = "2026-01-01") to Unit }
+        val exported = RecordsTransfer.export(records.state.value, true, now, "Asia/Shanghai")
+        assertEquals(source, provenance(exported))
+
+        // And again after a restart through the local archive file.
+        val reopened = store()
+        assertEquals(records.state.value.workTimeProvenance, reopened.state.value.workTimeProvenance)
+        val again = RecordsTransfer.export(reopened.state.value, true, now, "Asia/Shanghai")
+        assertEquals(source, provenance(again))
+    }
+
     @Test fun aNewerOrBrokenFileIsRefusedWithItsReason() {
-        assertSame(ImportPreview.UnsupportedVersion, RecordsTransfer.preview(archive("illegal-v8.json"), RecordState()))
+        assertSame(ImportPreview.UnsupportedVersion, RecordsTransfer.preview(archive("illegal-v9.json"), RecordState()))
         for (name in listOf("illegal-not-json.txt", "illegal-v0.json")) {
             assertSame(name, ImportPreview.Invalid, RecordsTransfer.preview(archive(name), RecordState()))
         }
@@ -69,7 +97,7 @@ class RecordsTransferTest {
         assertTrue(preview.added > 0)
         val records = store()
         val original = records.state.value
-        for (bytes in listOf("[]".toByteArray(), "{broken".toByteArray(), archive("illegal-v8.json"))) {
+        for (bytes in listOf("[]".toByteArray(), "{broken".toByteArray(), archive("illegal-v9.json"))) {
             assertTrue(RecordsTransfer.preview(bytes, original) !is ImportPreview.Ready)
             assertNull(RecordsTransfer.commit(records, bytes))
             assertEquals(original, records.state.value)
@@ -105,7 +133,7 @@ class RecordsTransferTest {
         val records = store()
         RecordsTransfer.commit(records, archive("v6.json"))
         val before = records.state.value
-        assertNull(RecordsTransfer.commit(records, archive("illegal-v8.json")))
+        assertNull(RecordsTransfer.commit(records, archive("illegal-v9.json")))
         assertEquals(before, records.state.value)
     }
 
@@ -149,11 +177,11 @@ class RecordsTransferTest {
                 "schemaVersion", "exportedAtMs", "timeZoneIdentifier", "calendarIdentifier", "careerPeriods",
                 "scheduleSnapshots", "calendarExceptions", "dayOverrides", "workObservations", "lifeProfile",
                 "focusTasks", "focusSessions", "focusPlanningConfiguration", "syncedPreferences", "recordsStartedOn",
-                "extendedSchedule", "rosterDays", "leaveBalances", "leaveDays",
+                "extendedSchedule", "rosterDays", "leaveBalances", "leaveDays", "workTimeProvenance",
             ) })
             assertTrue("no imported private metadata", listOf("secret-token", "secret-oauth", "secret-sync").none { it in exported })
             assertEquals(includeLife, "lifeProfile" in keys)
-            assertEquals(7, Json.parseToJsonElement(exported).jsonObject.getValue("schemaVersion").toString().toInt())
+            assertEquals(8, Json.parseToJsonElement(exported).jsonObject.getValue("schemaVersion").toString().toInt())
         }
     }
 

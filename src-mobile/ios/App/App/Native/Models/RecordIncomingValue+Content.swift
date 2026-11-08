@@ -79,6 +79,11 @@ extension RecordIncomingValue {
             value.editCount = 0
             value.editTieBreaker = WorkObservation.unsetTieBreaker
             return .leaveDay(value)
+        case .workTimeProvenance(var value):
+            value.editedAt = .distantPast
+            value.editCount = 0
+            value.editTieBreaker = WorkObservation.unsetTieBreaker
+            return .workTimeProvenance(value)
         }
     }
 }
