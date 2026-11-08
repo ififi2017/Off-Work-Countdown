@@ -30,7 +30,8 @@ enum class RecordEntityType(val raw: String) {
     EXTENDED_SCHEDULE("extendedSchedule"),
     ROSTER_DAY("rosterDay"),
     LEAVE_BALANCE("leaveBalance"),
-    LEAVE_DAY("leaveDay");
+    LEAVE_DAY("leaveDay"),
+    WORK_TIME_PROVENANCE("workTimeProvenance");
 
     companion object {
         fun fromRaw(raw: String) = entries.firstOrNull { it.raw == raw }
@@ -362,6 +363,8 @@ data class RecordState(
     val rosterDays: List<RosterDay> = emptyList(),
     val leaveBalances: List<LeaveBalance> = emptyList(),
     val leaveDays: List<LeaveDay> = emptyList(),
+    /** Plan 021 C1: kept exactly as iOS wrote it; Android has no automation. */
+    val workTimeProvenance: List<WorkTimeProvenance> = emptyList(),
     val recordsStartedOn: String? = null,
     val erased: List<ErasedID> = emptyList(),
     val importConflicts: List<ImportConflictCopy> = emptyList(),

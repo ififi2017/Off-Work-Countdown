@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * Construct anonymous RecordJSON v1–v7 (+ illegal) archives for Android T02.
+ * Construct anonymous RecordJSON v1–v8 (+ illegal) archives for Android T02.
  *
  * Shapes follow src-mobile/ios/App/AppTests/RecordSchemaCompatibilityTests.swift
  * at 9252fdfdc66aab88b4acb7493684f11991fd773d (`fullState` + `downgraded`).
  * Extra snapshot/exception rows sample the two families that fixture omitted.
  * v7 (plan 020) adds one leave balance and one leave day on top of v6.
+ * v8 (plan 021 C1) adds one workplace-automation provenance row on top of v7.
  *
  * These are constructed from source encoding/tests, not live user exports.
  * Usage:
@@ -344,6 +345,48 @@ function v7Document() {
   };
 }
 
+function v8Document() {
+  return {
+    ...v7Document(),
+    schemaVersion: 8,
+    workTimeProvenance: [
+      {
+        dayKey: "2026-08-27",
+        boundaries: [
+          {
+            boundary: "start",
+            timeMs: DAY_MS + 3 * 86_400_000 + 9 * 3_600_000 + 600_000,
+            source: "nativeGeofence",
+            observedAtMs: DAY_MS + 3 * 86_400_000 + 9 * 3_600_000 + 600_000,
+            receivedAtMs: DAY_MS + 3 * 86_400_000 + 9 * 3_600_000 + 660_000,
+            appliedAtMs: DAY_MS + 3 * 86_400_000 + 20 * 3_600_000,
+            appliedBy: "reviewed",
+            batchID: id(25),
+            rulesVersion: 1,
+            evidenceLevel: "systemObservation",
+            reasons: ["automaticApplyOff"],
+          },
+          {
+            boundary: "end",
+            timeMs: DAY_MS + 3 * 86_400_000 + 18 * 3_600_000,
+            source: "appIntentAutomation",
+            receivedAtMs: DAY_MS + 3 * 86_400_000 + 18 * 3_600_000 + 60_000,
+            appliedAtMs: DAY_MS + 3 * 86_400_000 + 18 * 3_600_000 + 60_000,
+            appliedBy: "automatic",
+            rulesVersion: 1,
+            evidenceLevel: "externalAction",
+            reasons: [],
+          },
+        ],
+        timeZoneIdentifier: "UTC",
+        editedAtMs: DAY_MS,
+        editCount: 1,
+        editTieBreaker: id(26),
+      },
+    ],
+  };
+}
+
 function downgraded(object, version) {
   const result = structuredClone(object);
   result.schemaVersion = version;
@@ -413,6 +456,9 @@ function downgraded(object, version) {
     delete result.leaveBalances;
     delete result.leaveDays;
   }
+  if (version < 8) {
+    delete result.workTimeProvenance;
+  }
   return result;
 }
 
@@ -442,7 +488,9 @@ function assertNoPurchaseKeys(value, path = "$") {
 function expectedFiles() {
   const v6 = v6Document();
   const v7 = v7Document();
+  const v8 = v8Document();
   const files = {
+    "v8.json": v8,
     "v7.json": v7,
     "v6.json": v6,
     "v5.json": downgraded(v6, 5),
@@ -451,7 +499,7 @@ function expectedFiles() {
     "v2.json": downgraded(v6, 2),
     "v1.json": downgraded(v6, 1),
     "illegal-v0.json": { ...structuredClone(v6), schemaVersion: 0 },
-    "illegal-v8.json": { ...structuredClone(v7), schemaVersion: 8 },
+    "illegal-v9.json": { ...structuredClone(v8), schemaVersion: 9 },
     "illegal-invalid-date-v6.json": (() => {
       const doc = structuredClone(v6);
       doc.dayOverrides[0].dayKey = "2026-02-30";
@@ -481,26 +529,36 @@ const ENTITY_KEYS = [
   "rosterDays",
   "leaveBalances",
   "leaveDays",
+  "workTimeProvenance",
 ];
 
 function validateExpected(files) {
   let checks = 0;
-  const v7 = files["v7.json"];
-  if (v7.schemaVersion !== 7) throw new Error("v7 schemaVersion");
+  const v8 = files["v8.json"];
+  if (v8.schemaVersion !== 8) throw new Error("v8 schemaVersion");
   checks += 1;
   for (const key of ENTITY_KEYS) {
-    const value = v7[key];
+    const value = v8[key];
     const empty = value == null || (Array.isArray(value) && value.length === 0);
-    if (empty) throw new Error(`v7 missing sample for ${key}`);
+    if (empty) throw new Error(`v8 missing sample for ${key}`);
     checks += 1;
   }
-  assertNoPurchaseKeys(v7);
+  assertNoPurchaseKeys(v8);
   checks += 1;
-  if (JSON.stringify(downgraded(v7, 6)) !== JSON.stringify(files["v6.json"])) {
+  if (JSON.stringify(downgraded(files["v7.json"], 6)) !== JSON.stringify(files["v6.json"])) {
     throw new Error("v7 downgraded to 6 must equal v6");
   }
+  if (JSON.stringify(downgraded(v8, 7)) !== JSON.stringify(files["v7.json"])) {
+    throw new Error("v8 downgraded to 7 must equal v7");
+  }
+  checks += 2;
+  // Provenance never carries where the person was.
+  const provenanceText = JSON.stringify(v8.workTimeProvenance).toLowerCase();
+  for (const word of ["latitude", "longitude", "ssid", "workplace", "region"]) {
+    if (provenanceText.includes(word)) throw new Error(`v8 provenance must not carry ${word}`);
+  }
   checks += 1;
-  for (const version of [1, 2, 3, 4, 5, 6, 7]) {
+  for (const version of [1, 2, 3, 4, 5, 6, 7, 8]) {
     const doc = files[`v${version}.json`];
     if (doc.schemaVersion !== version) {
       throw new Error(`v${version} stamped ${doc.schemaVersion}`);
@@ -520,8 +578,11 @@ function validateExpected(files) {
   if (files["v6.json"].leaveDays != null) {
     throw new Error("v6 must not carry leaveDays");
   }
-  if (files["illegal-v8.json"].schemaVersion !== 8) throw new Error("v8 stamp");
-  checks += 6;
+  if (files["v7.json"].workTimeProvenance != null) {
+    throw new Error("v7 must not carry workTimeProvenance");
+  }
+  if (files["illegal-v9.json"].schemaVersion !== 9) throw new Error("v9 stamp");
+  checks += 7;
   return checks;
 }
 
@@ -561,9 +622,9 @@ function main() {
   writeJson(join(OUT, "manifest.json"), {
     sourceCommit: SOURCE_COMMIT,
     provenance:
-      "Constructed from RecordSchemaCompatibilityTests.fullState/downgraded plus one snapshot and one calendar exception so all 14 entity families are sampled; v7 adds plan 020's leave balance and leave day. Not a live user export.",
+      "Constructed from RecordSchemaCompatibilityTests.fullState/downgraded plus one snapshot and one calendar exception so all 15 entity families are sampled; v7 adds plan 020's leave balance and leave day; v8 adds plan 021's work time provenance. Not a live user export.",
     versions: {
-      wire: 7,
+      wire: 8,
       room: "not created",
       fixture: "not created",
       syncEnvelope: "not created",

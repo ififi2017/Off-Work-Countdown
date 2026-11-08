@@ -217,7 +217,8 @@ final class WorkplaceAutomationCoordinator {
         let result = await actions.restoreAutomationOverride(
             dayKey: dayKey,
             previous: receipt.previousOverride,
-            expectedEditCount: editCount
+            expectedEditCount: editCount,
+            provenance: receipt.provenanceWrite
         ).value
         switch result {
         case .written:
@@ -307,25 +308,35 @@ final class WorkplaceAutomationCoordinator {
             return commit(next) ? .applied : .temporarilyUnavailable
         }
 
+        // The minimal summary is copied now, with the write, so it never
+        // depends on this device's event log later (§3.7).
+        let provenance = WorkTimeProvenance.Boundary(
+            adopting: adopted,
+            event: proposal.sourceEventIDs.first.flatMap { state.event($0) },
+            appliedBy: status == .manuallyApplied ? .reviewed : .automatic,
+            appliedAt: now
+        )
         // A reviewed adoption is the person's explicit choice and may replace
         // their own edit; an automatic one never does.
         let result = await actions.writeAutomationSegments(
             dayKey: shift.anchorDayKey,
             segments: segments,
             expectedEditCount: state.adoptedEditCount(dayKey: shift.anchorDayKey),
-            replacingPersonEdits: status == .manuallyApplied
+            replacingPersonEdits: status == .manuallyApplied,
+            provenance: provenance
         ).value
 
         var next = state
         switch result {
-        case .written(let previous, let editCount):
+        case .written(let previous, let editCount, let provenanceWrite):
             next.supersedePending(shiftKey: shift.shiftKey, boundary: proposal.boundary, at: now)
             next.upsert(adopted)
             next.setAdoptedEditCount(editCount, dayKey: shift.anchorDayKey)
             next.recordReceipt(.init(
                 commandID: commandID, outcome: .applied, completedAt: now, batchID: batchID,
                 dayKey: shift.anchorDayKey, shiftKey: shift.shiftKey,
-                previousOverride: previous, writtenEditCount: editCount
+                previousOverride: previous, writtenEditCount: editCount,
+                provenanceWrite: provenanceWrite
             ))
             _ = commit(next)
             return .applied
@@ -387,5 +398,44 @@ final class WorkplaceAutomationCoordinator {
         } catch {
             return false
         }
+    }
+}
+
+extension WorkTimeProvenance.Boundary {
+    /// The summary copied from an adopted suggestion and its source event.
+    /// Only these fields leave the device; the event's workplace and
+    /// registration stay behind.
+    nonisolated init(
+        adopting proposal: WorkTimeProposal,
+        event: AutomationEvent?,
+        appliedBy: WorkTimeProvenance.AppliedBy,
+        appliedAt: Date
+    ) {
+        let source: WorkTimeProvenance.Source
+        switch event?.source {
+        case .nativeGeofence: source = .nativeGeofence
+        case .appIntentAutomation: source = .appIntentAutomation
+        case .userConfirmation, nil: source = .userConfirmation
+        }
+        let evidence: WorkTimeProvenance.EvidenceLevel
+        switch (event?.source, event?.timestampBasis) {
+        case (.nativeGeofence, .systemObservation): evidence = .systemObservation
+        case (.nativeGeofence, _): evidence = .callbackReceipt
+        case (.appIntentAutomation, _): evidence = .externalAction
+        default: evidence = .personStatement
+        }
+        self.init(
+            boundary: proposal.boundary,
+            time: proposal.proposedTime,
+            source: source,
+            observedAt: event?.observedAt,
+            receivedAt: event?.receivedAt ?? proposal.createdAt,
+            appliedAt: appliedAt,
+            appliedBy: appliedBy,
+            batchID: proposal.batchID,
+            rulesVersion: proposal.rulesVersion,
+            evidenceLevel: evidence,
+            reasons: proposal.reasons.map(\.rawValue)
+        )
     }
 }
