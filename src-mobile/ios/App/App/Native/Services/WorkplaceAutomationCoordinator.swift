@@ -66,6 +66,13 @@ final class WorkplaceAutomationCoordinator {
         return commit(next)
     }
 
+    /// Deletes everything automation keeps on this device. Returns false
+    /// when the file could not be written, so nothing claims it was deleted.
+    @discardableResult
+    func eraseDeviceData() -> Bool {
+        update { $0.eraseDeviceData() }
+    }
+
     // MARK: Events
 
     /// Records one automation event and acts on it (§3.4).

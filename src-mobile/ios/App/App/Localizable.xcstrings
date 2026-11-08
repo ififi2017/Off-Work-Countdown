@@ -164055,6 +164055,244 @@
           }
         }
       }
+    },
+    "automationUIDeleteData": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حذف بيانات الأتمتة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatik-Daten löschen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Automation Data"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar datos de automatización"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer les données d’automatisation"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ऑटोमेशन डेटा हटाएँ"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus Data Otomatisasi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina i dati di automazione"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自動記録のデータを削除"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자동화 데이터 삭제"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ऑटोमेशन डेटा हटवा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar dados de automação"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить данные автоматизации"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลบข้อมูลระบบอัตโนมัติ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomasyon Verilerini Sil"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa dữ liệu tự động hóa"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除自动化数据"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除自動化資料"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除自動化資料"
+          }
+        }
+      }
+    },
+    "automationUIDeleteDataConfirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سيؤدي هذا إلى حذف أماكن عملك وحالات الوصول والمغادرة المرصودة وأوقات للمراجعة وأيام العمل خارج المكتب من هذا الـ iPhone، وإيقاف أتمتة مكان العمل. أوقات العمل التي اعتمدتها تبقى في سجلاتك."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dadurch werden deine Arbeitsorte, erkannte Ankünfte und Abgänge, Zeiten zur Prüfung und Tage außerhalb des Büros von diesem iPhone entfernt und die Arbeitsort-Automatik wird ausgeschaltet. Arbeitszeiten, die du übernommen hast, bleiben in deinen Aufzeichnungen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This removes your workplaces, detected arrivals and departures, times waiting for review and days away from the office from this iPhone, and turns Workplace Automation off. Work times you’ve adopted stay in your records."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto elimina de este iPhone tus lugares de trabajo, las llegadas y salidas detectadas, las horas por revisar y los días fuera de la oficina, y desactiva la automatización del lugar de trabajo. Las horas de trabajo que ya has adoptado se quedan en tus registros."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cela supprime de cet iPhone vos lieux de travail, les arrivées et départs détectés, les heures à vérifier et les jours hors du bureau, et désactive l’automatisation du lieu de travail. Les heures de travail que vous avez adoptées restent dans vos enregistrements."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इससे आपके कार्यस्थल, पहचाने गए आगमन और प्रस्थान, समीक्षा के लिए समय और दफ़्तर से बाहर के दिन इस iPhone से हट जाएँगे, और कार्यस्थल ऑटोमेशन बंद हो जाएगा। आपके अपनाए हुए कार्य-समय आपके रिकॉर्ड में बने रहेंगे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ini akan menghapus tempat kerja, kedatangan dan kepergian yang terdeteksi, waktu untuk ditinjau, dan hari bekerja di luar kantor dari iPhone ini, lalu mematikan Otomatisasi Tempat Kerja. Jam kerja yang sudah Anda terapkan tetap ada di catatan Anda."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa azione elimina da questo iPhone i tuoi luoghi di lavoro, gli arrivi e le partenze rilevati, gli orari da rivedere e i giorni fuori dall’ufficio, e disattiva l’automazione del luogo di lavoro. Gli orari di lavoro che hai adottato restano nei tuoi registri."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この iPhone から、勤務先、検知した到着と退出、確認待ちの時刻、オフィス以外の日を削除し、勤務先の自動記録をオフにします。反映済みの勤務時間は記録に残ります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 iPhone에서 근무지, 감지된 도착 및 출발, 확인할 시간, 다른 곳에서 근무한 날이 삭제되고 근무지 자동화가 꺼집니다. 이미 적용한 근무 시간은 기록에 그대로 남습니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यामुळे या iPhone वरून तुमची कामाची ठिकाणे, ओळखलेले आगमन आणि प्रस्थान, तपासायच्या वेळा आणि कार्यालयाबाहेरचे दिवस हटवले जातील आणि कामाच्या ठिकाणांचे ऑटोमेशन बंद होईल. तुम्ही स्वीकारलेल्या कामाच्या वेळा तुमच्या रेकॉर्डमध्ये राहतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isto elimina deste iPhone os seus locais de trabalho, as chegadas e saídas detetadas, os horários por rever e os dias de trabalho fora do escritório, e desativa a automação do local de trabalho. Os horários de trabalho que adotou continuam nos seus registos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С этого iPhone будут удалены ваши рабочие места, обнаруженные прибытия и уходы, время на проверку и дни вне офиса, а автоматизация рабочих мест будет выключена. Принятое вами рабочее время останется в ваших записях."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การดำเนินการนี้จะลบสถานที่ทำงาน การมาถึงและการออกที่ตรวจพบ เวลาที่รอตรวจสอบ และวันที่ทำงานนอกออฟฟิศออกจาก iPhone เครื่องนี้ และปิดระบบอัตโนมัติสถานที่ทำงาน เวลาทำงานที่คุณใช้แล้วจะยังอยู่ในบันทึกของคุณ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu işlem, iş yerlerinizi, algılanan varış ve ayrılışları, incelenecek saatleri ve ofis dışında çalıştığınız günleri bu iPhone’dan kaldırır ve İş Yeri Otomasyonu’nu kapatır. Kabul ettiğiniz çalışma saatleri kayıtlarınızda kalır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thao tác này xóa nơi làm việc, các lần đến và rời đi được phát hiện, giờ cần xem lại và ngày làm việc ngoài văn phòng khỏi iPhone này, đồng thời tắt Tự động hóa nơi làm việc. Giờ làm việc bạn đã áp dụng vẫn được giữ trong bản ghi của bạn."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这会从这部 iPhone 上删除你的工作地点、检测到的到达与离开、待复核的时间以及不在办公室的日子，并关闭工作地点自动化。你已采用的工时会保留在记录中。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這會從這部 iPhone 上刪除你的工作地點、偵測到的到達與離開、待複核的時間以及不在辦公室的日子，並關閉工作地點自動化。你已採用的工時會保留在記錄中。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這會從這部 iPhone 上刪除你的工作地點、偵測到的抵達與離開、待複核的時間以及不在辦公室的日子，並關閉工作地點自動化。你已採用的工時會保留在記錄中。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

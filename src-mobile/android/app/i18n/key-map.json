@@ -521,6 +521,12 @@
     "automationUIDeleteContext": {
       "resource": "string/automationUIDeleteContext"
     },
+    "automationUIDeleteData": {
+      "resource": "string/automationUIDeleteData"
+    },
+    "automationUIDeleteDataConfirm": {
+      "resource": "string/automationUIDeleteDataConfirm"
+    },
     "automationUIDeleteWorkplace": {
       "resource": "string/automationUIDeleteWorkplace"
     },

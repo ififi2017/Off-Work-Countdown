@@ -154,7 +154,9 @@ struct WorkplaceAutomationSettingsView: View {
             onOpenWorkplace: { editing = .existing($0) },
             contexts: contextItems,
             onAddContext: { addsContext = true },
-            onDeleteContext: { id in automation.update { $0.removeContext(id) } }
+            onDeleteContext: { id in automation.update { $0.removeContext(id) } },
+            hasDeviceData: automation.state.hasDeviceData,
+            onDeleteData: { automation.eraseDeviceData() }
         )
         .sheet(isPresented: $addsContext) {
             WorkContextEditorSheet(text: runtime.text, calendar: runtime.preferences.recordsCalendar) { context, first, last in

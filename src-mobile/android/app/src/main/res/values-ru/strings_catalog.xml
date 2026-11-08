@@ -124,6 +124,8 @@
     <string name="automationUIContextTo">По</string>
     <string name="automationUIContextType">Тип</string>
     <string name="automationUIDeleteContext">Удалить</string>
+    <string name="automationUIDeleteData">Удалить данные автоматизации</string>
+    <string name="automationUIDeleteDataConfirm">С этого iPhone будут удалены ваши рабочие места, обнаруженные прибытия и уходы, время на проверку и дни вне офиса, а автоматизация рабочих мест будет выключена. Принятое вами рабочее время останется в ваших записях.</string>
     <string name="automationUIDeleteWorkplace">Удалить рабочее место</string>
     <string name="automationUIDeleteWorkplaceNote">Уже принятое рабочее время останется в ваших записях.</string>
     <string name="automationUIDeselectAll">Снять выбор</string>

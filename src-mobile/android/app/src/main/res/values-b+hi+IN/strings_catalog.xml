@@ -124,6 +124,8 @@
     <string name="automationUIContextTo">तक</string>
     <string name="automationUIContextType">प्रकार</string>
     <string name="automationUIDeleteContext">हटाएँ</string>
+    <string name="automationUIDeleteData">ऑटोमेशन डेटा हटाएँ</string>
+    <string name="automationUIDeleteDataConfirm">इससे आपके कार्यस्थल, पहचाने गए आगमन और प्रस्थान, समीक्षा के लिए समय और दफ़्तर से बाहर के दिन इस iPhone से हट जाएँगे, और कार्यस्थल ऑटोमेशन बंद हो जाएगा। आपके अपनाए हुए कार्य-समय आपके रिकॉर्ड में बने रहेंगे।</string>
     <string name="automationUIDeleteWorkplace">कार्यस्थल हटाएँ</string>
     <string name="automationUIDeleteWorkplaceNote">जो काम के समय आप पहले अपना चुके हैं, वे आपके रिकॉर्ड में रहेंगे।</string>
     <string name="automationUIDeselectAll">सभी अचयनित करें</string>

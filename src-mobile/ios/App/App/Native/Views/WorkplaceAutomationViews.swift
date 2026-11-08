@@ -34,6 +34,11 @@ struct WorkplaceAutomationSettingsContent: View {
     var contexts: [AutomationContextItem] = []
     var onAddContext: () -> Void = {}
     var onDeleteContext: (UUID) -> Void = { _ in }
+    /// Whether there is device data to delete; the row is hidden otherwise.
+    var hasDeviceData = false
+    var onDeleteData: () -> Void = {}
+
+    @State private var confirmsDelete = false
 
     private var isOn: Bool { settings.isMonitoringEnabled && isPlus }
     private var isFull: Bool { workplaces.count >= WorkplaceAutomation.maximumWorkplaces }
@@ -72,6 +77,7 @@ struct WorkplaceAutomationSettingsContent: View {
                 shortcutsSection
                 footnote(text.t("automationUIPrivacy"))
                     .padding(.top, OWCDesign.sectionGap)
+                deleteSection
                     .padding(.bottom, OWCDesign.detailBottomInset)
             }
             .padding(.horizontal, OWCDesign.pageInset)
@@ -245,6 +251,27 @@ struct WorkplaceAutomationSettingsContent: View {
                    ]),
                    isLast: true) {
                 EmptyView()
+            }
+        }
+    }
+
+    // MARK: Delete
+
+    @ViewBuilder private var deleteSection: some View {
+        if hasDeviceData {
+            OWCGroupCard {
+                Button { confirmsDelete = true } label: {
+                    OWCRow(icon: "trash", title: text.t("automationUIDeleteData"), isLast: true, isDestructive: true) {
+                        EmptyView()
+                    }
+                }
+                .buttonStyle(OWCRowButtonStyle())
+            }
+            .padding(.top, 12)
+            .confirmationDialog(text.t("automationUIDeleteData"), isPresented: $confirmsDelete, titleVisibility: .visible) {
+                Button(text.t("automationUIDeleteData"), role: .destructive, action: onDeleteData)
+            } message: {
+                Text(text.t("automationUIDeleteDataConfirm"))
             }
         }
     }
@@ -710,7 +737,8 @@ private enum WorkplaceAutomationPreviewFixtures {
         WorkplaceAutomationSettingsContent(
             text: WorkplaceAutomationPreviewFixtures.text(), isPlus: true, access: .always,
             settings: WorkplaceAutomationSettings(isMonitoringEnabled: true),
-            workplaces: WorkplaceAutomationPreviewFixtures.workplaces(2), pendingCount: 4
+            workplaces: WorkplaceAutomationPreviewFixtures.workplaces(2), pendingCount: 4,
+            hasDeviceData: true
         )
     }
 }

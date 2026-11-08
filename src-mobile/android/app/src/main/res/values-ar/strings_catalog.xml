@@ -124,6 +124,8 @@
     <string name="automationUIContextTo">إلى</string>
     <string name="automationUIContextType">النوع</string>
     <string name="automationUIDeleteContext">حذف</string>
+    <string name="automationUIDeleteData">حذف بيانات الأتمتة</string>
+    <string name="automationUIDeleteDataConfirm">سيؤدي هذا إلى حذف أماكن عملك وحالات الوصول والمغادرة المرصودة وأوقات للمراجعة وأيام العمل خارج المكتب من هذا الـ iPhone، وإيقاف أتمتة مكان العمل. أوقات العمل التي اعتمدتها تبقى في سجلاتك.</string>
     <string name="automationUIDeleteWorkplace">حذف مكان العمل</string>
     <string name="automationUIDeleteWorkplaceNote">تبقى أوقات العمل التي اعتمدتها سابقًا في سجلاتك.</string>
     <string name="automationUIDeselectAll">إلغاء تحديد الكل</string>

@@ -124,6 +124,8 @@
     <string name="automationUIContextTo">Bitiş</string>
     <string name="automationUIContextType">Tür</string>
     <string name="automationUIDeleteContext">Sil</string>
+    <string name="automationUIDeleteData">Otomasyon Verilerini Sil</string>
+    <string name="automationUIDeleteDataConfirm">Bu işlem, iş yerlerinizi, algılanan varış ve ayrılışları, incelenecek saatleri ve ofis dışında çalıştığınız günleri bu iPhone’dan kaldırır ve İş Yeri Otomasyonu’nu kapatır. Kabul ettiğiniz çalışma saatleri kayıtlarınızda kalır.</string>
     <string name="automationUIDeleteWorkplace">İş Yerini Sil</string>
     <string name="automationUIDeleteWorkplaceNote">Daha önce benimsediğiniz çalışma saatleri kayıtlarınızda kalır.</string>
     <string name="automationUIDeselectAll">Tüm Seçimleri Kaldır</string>

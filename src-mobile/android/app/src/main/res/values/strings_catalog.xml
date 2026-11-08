@@ -124,6 +124,8 @@
     <string name="automationUIContextTo">To</string>
     <string name="automationUIContextType">Type</string>
     <string name="automationUIDeleteContext">Delete</string>
+    <string name="automationUIDeleteData">Delete Automation Data</string>
+    <string name="automationUIDeleteDataConfirm">This removes your workplaces, detected arrivals and departures, times waiting for review and days away from the office from this iPhone, and turns Workplace Automation off. Work times you’ve adopted stay in your records.</string>
     <string name="automationUIDeleteWorkplace">Delete Workplace</string>
     <string name="automationUIDeleteWorkplaceNote">Work times you’ve already adopted stay in your records.</string>
     <string name="automationUIDeselectAll">Deselect All</string>

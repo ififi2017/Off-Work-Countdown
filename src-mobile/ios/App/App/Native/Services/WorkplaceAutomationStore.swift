@@ -329,6 +329,26 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
 
     // MARK: Retention
 
+    /// Whether anything automation keeps on this device is worth deleting.
+    var hasDeviceData: Bool {
+        !workplaces.isEmpty || !events.isEmpty || !proposals.isEmpty || !receipts.isEmpty
+            || !contexts.isEmpty || !visits.isEmpty || !earlyExits.isEmpty
+            || !suppressedShiftKeys.isEmpty || !settledShiftKeys.isEmpty
+    }
+
+    /// "Delete Automation Data" (§3.7): removes every workplace, event,
+    /// pending time, answer and receipt this device keeps, and turns
+    /// monitoring off. Adopted work times and their provenance live in the
+    /// records and stay. The registration generation keeps counting, so a
+    /// late system event can never match a workplace saved afterwards.
+    mutating func eraseDeviceData() {
+        var erased = WorkplaceAutomationState()
+        erased.settings = settings
+        erased.settings.isMonitoringEnabled = false
+        erased.lastRegistrationGeneration = lastRegistrationGeneration
+        self = erased
+    }
+
     /// Drops what is older than the retention window. Unadopted references
     /// keep 90 days; events a kept proposal still explains are kept with it.
     mutating func prune(now: Date) {

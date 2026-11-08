@@ -124,6 +124,8 @@
     <string name="automationUIContextTo">終了</string>
     <string name="automationUIContextType">種類</string>
     <string name="automationUIDeleteContext">削除</string>
+    <string name="automationUIDeleteData">自動記録のデータを削除</string>
+    <string name="automationUIDeleteDataConfirm">この iPhone から、勤務先、検知した到着と退出、確認待ちの時刻、オフィス以外の日を削除し、勤務先の自動記録をオフにします。反映済みの勤務時間は記録に残ります。</string>
     <string name="automationUIDeleteWorkplace">勤務先を削除</string>
     <string name="automationUIDeleteWorkplaceNote">すでに反映した勤務時間は記録に残ります。</string>
     <string name="automationUIDeselectAll">すべての選択を解除</string>

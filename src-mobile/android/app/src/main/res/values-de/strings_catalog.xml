@@ -124,6 +124,8 @@
     <string name="automationUIContextTo">Bis</string>
     <string name="automationUIContextType">Art</string>
     <string name="automationUIDeleteContext">Löschen</string>
+    <string name="automationUIDeleteData">Automatik-Daten löschen</string>
+    <string name="automationUIDeleteDataConfirm">Dadurch werden deine Arbeitsorte, erkannte Ankünfte und Abgänge, Zeiten zur Prüfung und Tage außerhalb des Büros von diesem iPhone entfernt und die Arbeitsort-Automatik wird ausgeschaltet. Arbeitszeiten, die du übernommen hast, bleiben in deinen Aufzeichnungen.</string>
     <string name="automationUIDeleteWorkplace">Arbeitsort löschen</string>
     <string name="automationUIDeleteWorkplaceNote">Bereits übernommene Arbeitszeiten bleiben in deinen Aufzeichnungen.</string>
     <string name="automationUIDeselectAll">Auswahl aufheben</string>

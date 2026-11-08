@@ -124,6 +124,8 @@
     <string name="automationUIContextTo">ถึง</string>
     <string name="automationUIContextType">ประเภท</string>
     <string name="automationUIDeleteContext">ลบ</string>
+    <string name="automationUIDeleteData">ลบข้อมูลระบบอัตโนมัติ</string>
+    <string name="automationUIDeleteDataConfirm">การดำเนินการนี้จะลบสถานที่ทำงาน การมาถึงและการออกที่ตรวจพบ เวลาที่รอตรวจสอบ และวันที่ทำงานนอกออฟฟิศออกจาก iPhone เครื่องนี้ และปิดระบบอัตโนมัติสถานที่ทำงาน เวลาทำงานที่คุณใช้แล้วจะยังอยู่ในบันทึกของคุณ</string>
     <string name="automationUIDeleteWorkplace">ลบสถานที่ทำงาน</string>
     <string name="automationUIDeleteWorkplaceNote">เวลาทำงานที่คุณใช้ไปแล้วจะยังอยู่ในบันทึกของคุณ</string>
     <string name="automationUIDeselectAll">ยกเลิกการเลือกทั้งหมด</string>
