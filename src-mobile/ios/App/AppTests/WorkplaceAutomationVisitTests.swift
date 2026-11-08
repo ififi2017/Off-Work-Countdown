@@ -321,4 +321,99 @@ struct WorkplaceAutomationVisitTests {
         #expect(decoded.settings.isMonitoringEnabled)
         #expect(decoded.visits.isEmpty)
     }
+
+    // MARK: I2 follow-ups
+
+    @Test("Coming from another workplace counts the move, from the earlier end")
+    func movedBetweenWorkplaces() async throws {
+        let harness = Harness()
+        // Left the first workplace at 17:30, after the shift: an end to review.
+        await harness.receive(.exitOuter, at: Self.at(17, 30))
+        #expect(harness.coordinator.state.pendingProposals.contains { $0.boundary == .end })
+        await harness.receive(.enterInner, at: Self.at(18))
+        let visit = try #require(harness.coordinator.state.openVisit)
+        #expect(await harness.coordinator.answerVisit(
+            visit.id, startedWork: true, movedBetweenWorkplaces: true, now: Self.at(18, 30)
+        ) == .recordedForReview)
+        await harness.receive(.exitOuter, at: Self.at(20))
+        #expect(harness.day("2026-11-09")?.segments == [segment(Self.at(9), Self.at(12)), segment(Self.at(13), Self.at(17)),
+                                                         segment(Self.at(17, 30), Self.at(20))])
+    }
+
+    @Test("A move with no recent end, or one too long ago, counts from arrival")
+    func movedWithoutRecentEnd() async throws {
+        let harness = Harness()
+        await harness.receive(.exitOuter, at: Self.at(17, 30))
+        // 3 h later is more than a move.
+        await harness.receive(.enterInner, at: Self.at(20, 30))
+        let visit = try #require(harness.coordinator.state.openVisit)
+        _ = await harness.coordinator.answerVisit(visit.id, startedWork: true, movedBetweenWorkplaces: true, now: Self.at(20, 40))
+        await harness.receive(.exitOuter, at: Self.at(22))
+        #expect(harness.day("2026-11-09")?.segments.last == segment(Self.at(20, 30), Self.at(22)))
+    }
+
+    @Test("Resuming a paused shift lets later crossings act on it again")
+    func resumeAutomation() async throws {
+        let harness = Harness(applies: true)
+        let shift = Self.shift()
+        harness.coordinator.update { $0.suppress(shiftKey: shift.shiftKey, at: Self.at(8)) }
+        #expect(WorkplaceAutomationRules.resumableShifts(state: harness.coordinator.state, shifts: [shift], now: Self.at(8)) == [shift])
+        #expect(await harness.receive(.enterInner, at: Self.at(9, 5)) == .ignored)
+
+        #expect(harness.coordinator.resumeAutomation(shiftKey: shift.shiftKey))
+        #expect(WorkplaceAutomationRules.resumableShifts(state: harness.coordinator.state, shifts: [shift], now: Self.at(9, 10)).isEmpty)
+        #expect(await harness.receive(.enterInner, at: Self.at(9, 20)) == .applied)
+    }
+
+    @Test("A paused shift stops being offered once automation no longer matches it")
+    func resumeWindow() {
+        var state = WorkplaceAutomationState()
+        let shift = Self.shift()
+        state.suppress(shiftKey: shift.shiftKey, at: Self.at(8))
+        #expect(WorkplaceAutomationRules.resumableShifts(state: state, shifts: [shift], now: Self.at(22, 59)) == [shift])
+        #expect(WorkplaceAutomationRules.resumableShifts(state: state, shifts: [shift], now: Self.at(23)).isEmpty)
+    }
+
+    @Test("Arrival and departure notices say what changed and never repeat")
+    func arrivalNotices() async throws {
+        let harness = Harness(applies: true)
+        let arrival = AutomationEvent(
+            id: UUID(), source: .nativeGeofence, type: .enterInner, workplaceID: harness.workplace.id,
+            registrationGeneration: harness.workplace.registrationGeneration,
+            observedAt: Self.at(8, 45), receivedAt: Self.at(8, 45), timestampBasis: .systemObservation
+        )
+        // 08:45 plus the 30-minute wait passes 09:00: on time, not early.
+        let outcome = await harness.coordinator.receive(arrival, shifts: [Self.shift()], now: Self.at(8, 45))
+        #expect(outcome == .applied)
+        let notice = try #require(WorkplaceArrivalNotice.make(for: arrival, outcome: outcome, state: harness.coordinator.state))
+        #expect(notice.bodyKey == "automationNoticeArrivedApplied")
+        // On time: the planned start is what was adopted.
+        #expect(notice.time == Self.at(9))
+        #expect(notice.identifier.hasPrefix(WorkplaceArrivalNotice.identifierPrefix))
+        #expect(!notice.identifier.hasPrefix(WorkplaceAutomationNotificationPlan.identifierPrefix))
+
+        #expect(WorkplaceArrivalNotice.make(for: arrival, outcome: .alreadyApplied, state: harness.coordinator.state) == nil)
+        #expect(WorkplaceArrivalNotice.make(for: arrival, outcome: .ignored, state: harness.coordinator.state) == nil)
+        var departure = arrival
+        departure.type = .exitOuter
+        #expect(WorkplaceArrivalNotice.make(for: departure, outcome: .recordedForReview, state: harness.coordinator.state)?.bodyKey
+            == "automationNoticeLeftRecorded")
+        var initial = arrival
+        initial.isInitialState = true
+        #expect(WorkplaceArrivalNotice.make(for: initial, outcome: .recordedForReview, state: harness.coordinator.state) == nil)
+        var shortcut = arrival
+        shortcut.source = .appIntentAutomation
+        #expect(WorkplaceArrivalNotice.make(for: shortcut, outcome: .applied, state: harness.coordinator.state) == nil)
+
+        harness.coordinator.update { $0.settings.notifiesArrivalsAndDepartures = false }
+        #expect(WorkplaceArrivalNotice.make(for: departure, outcome: .applied, state: harness.coordinator.state) == nil)
+    }
+
+    @Test("Settings saved before the notice switch existed keep notices on")
+    func settingsDecodeDefault() throws {
+        let json = #"{"isMonitoringEnabled":true,"appliesDetectedTimesAutomatically":false,"visitPromptDelay":30}"#
+        let settings = try JSONDecoder().decode(WorkplaceAutomationSettings.self, from: Data(json.utf8))
+        #expect(settings.isMonitoringEnabled)
+        #expect(settings.notifiesArrivalsAndDepartures)
+    }
 }

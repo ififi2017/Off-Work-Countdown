@@ -62,6 +62,7 @@
     <string name="applyToToday">Bugünü de değiştir</string>
     <string name="auto">Sistem</string>
     <string name="automationActionJustEarly">Sadece Erken Geldim</string>
+    <string name="automationActionMovedHere">Başka İş Yerinden Geldim</string>
     <string name="automationActionNotWorking">Çalışmıyorum</string>
     <string name="automationActionRecordExtra">Ek Mesai Olarak Kaydet</string>
     <string name="automationActionStartedWork">Çalışmaya Başladım</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">DoneAt\'e işe vardığını bildirir. Bir yere varınca veya bir Wi-Fi ağına bağlanınca gibi kişisel bir otomasyonda kullan.</string>
     <string name="automationIntentRecordDeparture">İşten çıkışı kaydet</string>
     <string name="automationIntentRecordDepartureDescription">DoneAt\'e işten çıktığını bildirir. Bir yerden ayrılınca veya bir Odak\'ı kapatınca gibi kişisel bir otomasyonda kullan.</string>
+    <string name="automationNoticeArrivedApplied">Giriş %1$s olarak kaydedildi.</string>
+    <string name="automationNoticeArrivedRecorded">%1$s varışı not edildi. Onaylayana kadar çalışma saatlerin aynı kalır.</string>
+    <string name="automationNoticeLeftApplied">Çıkış %1$s olarak kaydedildi.</string>
+    <string name="automationNoticeLeftRecorded">%1$s ayrılışı not edildi. Onaylayana kadar çalışma saatlerin aynı kalır.</string>
     <string name="automationPromptEarlyVisit">Erken geldiniz. Çalışmaya başladınız mı?</string>
     <string name="automationPromptExtraVisit">Bu ziyaret ek mesai olarak kaydedilsin mi?</string>
     <string name="automationPromptLateArrival">Biraz geç bir varış kaydedildi. Bugün her zamanki gibi kayda devam edilsin mi?</string>
@@ -133,6 +138,11 @@
     <string name="automationUIIntro">DoneAt, iş yerlerinize vardığınızı veya ayrıldığınızı fark eder ve çalışma saatlerinizi kaydeder. Siz açana kadar kapalı kalır.</string>
     <string name="automationUILeaveRange">%1$s m’yi aşınca ayrılmış sayılır</string>
     <string name="automationUILocationFailed">Konumunuz bulunamadı. Pencere yanında veya dışarıda tekrar deneyin.</string>
+    <string name="automationUIMonitorLastEvent">Son algılanan: %1$s.</string>
+    <string name="automationUIMonitorLocationOff">Konum Servisleri kapalı. Bunları Ayarlar &gt; Gizlilik ve Güvenlik bölümünden açabilirsin.</string>
+    <string name="automationUIMonitorProblem">iOS iş yerlerini izlemeye başlayamadı. İş Yeri Otomasyonu’nu kapatıp tekrar açmayı dene.</string>
+    <string name="automationUIMonitorStarting">İş yerlerini izlemeye hazırlanılıyor. Bu biraz sürebilir.</string>
+    <string name="automationUIMonitorWatching">Varış ve ayrılışlar izleniyor.</string>
     <string name="automationUINoLocationYet">Bu iş yerini haritaya yerleştirmek için “Mevcut Konumu Kullan”a dokunun.</string>
     <string name="automationUINoteChangedByYou">Bu günü kendiniz değiştirdiniz</string>
     <string name="automationUINoteEarlyStart">Erken vardınız — onaylayınca sayılır</string>
@@ -140,7 +150,11 @@
     <string name="automationUINoteLateDetection">Geç algılandı, bu yüzden saat tam doğru olmayabilir</string>
     <string name="automationUINoteLeftEarly">Planlanan bitişten önce ayrıldınız</string>
     <string name="automationUINoteRecordsUnavailable">Kayıtlarınız güncellenemedi. Tekrar deneyin.</string>
+    <string name="automationUINotifyArrivals">Varış ve Ayrılışta Bildir</string>
+    <string name="automationUINotifyArrivalsNote">Sessiz bir bildirim neyin kaydedildiğini söyler. Algılama her iki durumda da çalışır.</string>
     <string name="automationUIPaused">Duraklatıldı</string>
+    <string name="automationUIPausedShift">%1$s için duraklatıldı</string>
+    <string name="automationUIPausedShiftNote">Bu vardiyayı değiştirdin, bu yüzden otomasyon onu olduğu gibi bırakır.</string>
     <string name="automationUIPlanned">Planlanan %1$s</string>
     <string name="automationUIPreviewIntro">Bu günlerdeki saatleriniz gösterildiği gibi değişecek. Sonradan geri alabilirsiniz.</string>
     <string name="automationUIPreviewTitle">Bu Saatler Benimsensin mi?</string>
@@ -149,6 +163,7 @@
     <string name="automationUIRangeNote">Ayrılış alanı 100 m daha geniştir; böylece sınır yakınında dolaşmak girip çıkmak olarak sayılmaz.</string>
     <string name="automationUIRecentSection">Son Benimsenenler</string>
     <string name="automationUIRecordingSection">Kayıt</string>
+    <string name="automationUIResume">Sürdür</string>
     <string name="automationUIReviewEmpty">İncelenecek Bir Şey Yok</string>
     <string name="automationUIReviewEmptyNote">Algılanan varış ve ayrılış saatleri önce burada görünür.</string>
     <string name="automationUIReviewIntro">Bu saatler henüz çalışma saatlerinizi değiştirmedi. Doğru olanları benimseyin.</string>

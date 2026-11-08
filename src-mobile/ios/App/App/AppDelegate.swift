@@ -36,7 +36,12 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
         // background; the probe's monitor must exist before launch returns.
         WorkplaceProbe.shared.resumeAfterLaunch()
 #endif
-        Task { _ = try? await AppRuntime.loadShared() }
+        Task {
+            // Plan 021 I2: a crossing can launch the app in the background;
+            // the monitor resumes with the runtime, not with a settings page.
+            guard let runtime = try? await AppRuntime.loadShared() else { return }
+            await runtime.workplaceMonitor.reconcile()
+        }
         return true
     }
 
@@ -120,14 +125,17 @@ extension OffWorkCountdownApplicationDelegate: UNUserNotificationCenterDelegate 
         // work before telling the system the action is complete.
         let action = response.actionIdentifier
         if action == WorkplaceAutomationNotificationPlan.startedWorkAction
-            || action == WorkplaceAutomationNotificationPlan.notWorkingAction,
+            || action == WorkplaceAutomationNotificationPlan.notWorkingAction
+            || action == WorkplaceAutomationNotificationPlan.movedHereAction,
            let visitID = (userInfo[WorkplaceAutomationNotificationPlan.visitIDKey] as? String).flatMap(UUID.init) {
             // Called once, on the main actor, after the answer is saved.
             nonisolated(unsafe) let completionHandler = completionHandler
             Task { @MainActor in
                 if let runtime = try? await AppRuntime.loadShared() {
                     _ = await runtime.workplaceAutomation.answerVisit(
-                        visitID, startedWork: action == WorkplaceAutomationNotificationPlan.startedWorkAction
+                        visitID,
+                        startedWork: action != WorkplaceAutomationNotificationPlan.notWorkingAction,
+                        movedBetweenWorkplaces: action == WorkplaceAutomationNotificationPlan.movedHereAction
                     )
                 }
                 completionHandler()

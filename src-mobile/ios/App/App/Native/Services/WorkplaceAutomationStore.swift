@@ -109,6 +109,9 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
     /// the review list. A return clears one; once the shift is over it
     /// becomes a review item (§3.9 missing end).
     private(set) var earlyExits: [String: WorkTimeProposal] = [:]
+    /// Monitored circles added but not yet reported. Their first report is
+    /// where the person already is, not a crossing (§3.4 initial state).
+    private(set) var awaitingBaseline: Set<String> = []
 
     var canAddWorkplace: Bool { workplaces.count < WorkplaceAutomation.maximumWorkplaces }
 
@@ -337,6 +340,22 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
     mutating func recordEarlyExit(_ candidate: WorkTimeProposal) { earlyExits[candidate.shiftKey] = candidate }
     mutating func clearEarlyExit(shiftKey: String) { earlyExits.removeValue(forKey: shiftKey) }
 
+    // MARK: Monitoring baseline
+
+    mutating func awaitBaseline(_ identifiers: some Sequence<String>) {
+        awaitingBaseline.formUnion(identifiers)
+    }
+
+    /// True once per circle: its first report after being added.
+    mutating func takeBaseline(_ identifier: String) -> Bool {
+        awaitingBaseline.remove(identifier) != nil
+    }
+
+    /// Forgets circles that are no longer watched.
+    mutating func keepBaseline(only identifiers: Set<String>) {
+        awaitingBaseline.formIntersection(identifiers)
+    }
+
     // MARK: Retention
 
     /// Drops what is older than the retention window. Unadopted references
@@ -361,7 +380,7 @@ nonisolated extension WorkplaceAutomationState {
     private enum CodingKeys: String, CodingKey {
         case version, settings, workplaces, events, proposals, receipts, insideWorkplaceIDs
         case suppressedShiftKeys, lastRegistrationGeneration, adoptedEditCounts
-        case contexts, settledShiftKeys, visits, earlyExits
+        case contexts, settledShiftKeys, visits, earlyExits, awaitingBaseline
     }
 
     /// Fields added after the first internal builds decode as empty.
@@ -382,6 +401,7 @@ nonisolated extension WorkplaceAutomationState {
         settledShiftKeys = try container.decodeIfPresent([String: WorkdayStatusAnswer].self, forKey: .settledShiftKeys) ?? [:]
         visits = try container.decodeIfPresent([AutomationVisit].self, forKey: .visits) ?? []
         earlyExits = try container.decodeIfPresent([String: WorkTimeProposal].self, forKey: .earlyExits) ?? [:]
+        awaitingBaseline = try container.decodeIfPresent(Set<String>.self, forKey: .awaitingBaseline) ?? []
     }
 }
 
@@ -446,6 +466,12 @@ nonisolated struct AutomationVisit: Codable, Equatable, Identifiable, Sendable {
     var leftAt: Date?
     /// The day's planned segments when it has a shift, kept with extra work.
     var plannedSegments: [NativeShiftSegment] = []
+    /// Set when the person said this was a move between workplaces: the
+    /// extra work counts from the earlier end instead of the arrival.
+    var countsFrom: Date? = nil
+
+    /// Where the confirmed stretch starts.
+    var workStart: Date { countsFrom ?? arrivedAt }
 }
 
 /// Reads and writes the device-only automation file.

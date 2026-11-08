@@ -57,20 +57,27 @@ nonisolated extension WorkplaceAutomationNotificationPlan {
     static let offShiftVisitCategory = "owc.automation.offShiftVisit"
     static let startedWorkAction = "owc.automation.startedWork"
     static let notWorkingAction = "owc.automation.notWorking"
+    /// Off-shift only: came here from work elsewhere, so the move counts (§3.10).
+    static let movedHereAction = "owc.automation.movedHere"
     static let visitIDKey = "automationVisitID"
 
     /// Visit questions can be answered without opening the app. Titles
     /// follow the system language, like other system surfaces.
     @MainActor static func categories(localizer: NativeLocalizer, locale: String) -> Set<UNNotificationCategory> {
-        func category(_ id: String, startedKey: String, notKey: String) -> UNNotificationCategory {
-            UNNotificationCategory(identifier: id, actions: [
+        func category(_ id: String, startedKey: String, notKey: String, movedKey: String? = nil) -> UNNotificationCategory {
+            var actions = [
                 UNNotificationAction(identifier: startedWorkAction, title: localizer.string(startedKey, locale: locale)),
-                UNNotificationAction(identifier: notWorkingAction, title: localizer.string(notKey, locale: locale)),
-            ], intentIdentifiers: [])
+            ]
+            if let movedKey {
+                actions.append(UNNotificationAction(identifier: movedHereAction, title: localizer.string(movedKey, locale: locale)))
+            }
+            actions.append(UNNotificationAction(identifier: notWorkingAction, title: localizer.string(notKey, locale: locale)))
+            return UNNotificationCategory(identifier: id, actions: actions, intentIdentifiers: [])
         }
         return [
             category(earlyVisitCategory, startedKey: "automationActionStartedWork", notKey: "automationActionJustEarly"),
-            category(offShiftVisitCategory, startedKey: "automationActionRecordExtra", notKey: "automationActionNotWorking"),
+            category(offShiftVisitCategory, startedKey: "automationActionRecordExtra", notKey: "automationActionNotWorking",
+                     movedKey: "automationActionMovedHere"),
         ]
     }
 
@@ -153,5 +160,51 @@ nonisolated extension WorkplaceAutomationNotificationPlan {
         state.proposals.contains {
             $0.shiftKey == shift.shiftKey && $0.boundary == .end && $0.status != .superseded && $0.status != .dismissed
         }
+    }
+}
+
+/// Plan 021 §3.8: the short notice after a workplace arrival or departure.
+/// It says whether hours changed or only a record was kept, never names a
+/// workplace, an address or pay, and is only a submission: iOS may still
+/// hold it back under Focus or notification settings.
+nonisolated struct WorkplaceArrivalNotice: Equatable, Sendable {
+    static let identifierPrefix = "owc.automationNotice."
+
+    var identifier: String
+    var bodyKey: String
+    var time: Date
+
+    static func bodyKey(arrived: Bool, applied: Bool) -> String {
+        switch (arrived, applied) {
+        case (true, true): "automationNoticeArrivedApplied"
+        case (false, true): "automationNoticeLeftApplied"
+        case (true, false): "automationNoticeArrivedRecorded"
+        case (false, false): "automationNoticeLeftRecorded"
+        }
+    }
+
+    /// Nothing for ignored, repeated or unavailable outcomes, or when the
+    /// person turned these notices off.
+    static func make(
+        for event: AutomationEvent,
+        outcome: AutomationCommandOutcome,
+        state: WorkplaceAutomationState
+    ) -> WorkplaceArrivalNotice? {
+        guard event.source == .nativeGeofence, state.settings.notifiesArrivalsAndDepartures,
+              !event.isInitialState else { return nil }
+        let applied: Bool
+        switch outcome {
+        case .applied: applied = true
+        case .recordedForReview, .needsReview: applied = false
+        case .alreadyApplied, .ignored, .temporarilyUnavailable: return nil
+        }
+        let key = bodyKey(arrived: event.type == .enterInner, applied: applied)
+        // An on-time arrival adopts the planned start, not the crossing.
+        let adopted = state.proposals.last { $0.sourceEventIDs.contains(event.id) }?.proposedTime
+        return WorkplaceArrivalNotice(
+            identifier: identifierPrefix + event.id.uuidString,
+            bodyKey: key,
+            time: outcome == .applied ? adopted ?? event.proposedTime : event.proposedTime
+        )
     }
 }

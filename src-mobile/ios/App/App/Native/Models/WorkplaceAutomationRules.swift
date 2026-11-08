@@ -39,6 +39,9 @@ nonisolated enum WorkplaceAutomation {
     /// Default circle sizes; P0 measures them on devices (§3.1).
     static let defaultInnerRadius: Double = 200
     static let defaultOuterRadiusMargin: Double = 100
+    /// How long a move between workplaces may take and still be counted as
+    /// work when the person says so (implementation default, §3.10).
+    static let maximumTransferGap: TimeInterval = 2 * 60 * 60
     /// Bumped whenever a decision below changes meaning. Provenance records it.
     static let rulesVersion = 1
 }
@@ -68,6 +71,25 @@ nonisolated struct WorkplaceAutomationSettings: Codable, Equatable, Sendable {
     /// `applyAutomationTimesAutomatically`. Off keeps results for review only.
     var appliesDetectedTimesAutomatically = false
     var visitPromptDelay: WorkplaceVisitPromptDelay = .thirtyMinutes
+    /// A short local notification when an arrival or departure is recorded
+    /// or applied (§3.8). Detection does not depend on it.
+    var notifiesArrivalsAndDepartures = true
+}
+
+nonisolated extension WorkplaceAutomationSettings {
+    private enum CodingKeys: String, CodingKey {
+        case isMonitoringEnabled, appliesDetectedTimesAutomatically, visitPromptDelay, notifiesArrivalsAndDepartures
+    }
+
+    /// Settings added later decode with their defaults.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        isMonitoringEnabled = try container.decode(Bool.self, forKey: .isMonitoringEnabled)
+        appliesDetectedTimesAutomatically = try container.decode(Bool.self, forKey: .appliesDetectedTimesAutomatically)
+        visitPromptDelay = try container.decode(WorkplaceVisitPromptDelay.self, forKey: .visitPromptDelay)
+        notifiesArrivalsAndDepartures = try container.decodeIfPresent(Bool.self, forKey: .notifiesArrivalsAndDepartures) ?? true
+    }
 }
 
 /// One planned shift as the schedule rules resolved it. The automation never
@@ -356,6 +378,33 @@ nonisolated enum WorkplaceAutomationRules {
             }
         }
         return mergeTouching(segments.filter { $0.endAtMs > $0.startAtMs })
+    }
+
+    /// Where work resumes when the person says an off-shift arrival was a
+    /// move between workplaces (§3.10): the latest recorded end of work
+    /// before the arrival, if it is close enough. Without one, the arrival.
+    /// A gap is only counted because the person said so; it is never guessed.
+    static func transferStart(arrivedAt: Date, state: WorkplaceAutomationState) -> Date? {
+        let ends = state.proposals
+            .filter { $0.boundary == .end && ($0.isAdopted || $0.status == .pendingReview) }
+            .map(\.proposedTime)
+            + state.visits.filter { $0.status == .closed }.compactMap(\.leftAt)
+        return ends
+            .filter { $0 <= arrivedAt && arrivedAt.timeIntervalSince($0) <= WorkplaceAutomation.maximumTransferGap }
+            .max()
+    }
+
+    /// Shifts the person paused automation for by correcting them, while a
+    /// resume can still matter: until automation stops matching their exits.
+    static func resumableShifts(
+        state: WorkplaceAutomationState,
+        shifts: [AutomationShift],
+        now: Date
+    ) -> [AutomationShift] {
+        shifts
+            .filter { state.isSuppressed($0.shiftKey)
+                && now < $0.plannedEnd.addingTimeInterval(WorkplaceAutomation.maximumAutomaticExtension) }
+            .sorted { $0.plannedStart < $1.plannedStart }
     }
 
     /// Joins overlapping or touching segments after sorting them.

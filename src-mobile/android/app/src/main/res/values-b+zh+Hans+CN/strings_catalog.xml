@@ -62,6 +62,7 @@
     <string name="applyToToday">今天也改成这样</string>
     <string name="auto">跟随系统</string>
     <string name="automationActionJustEarly">只是提前到</string>
+    <string name="automationActionMovedHere">从另一个工作地点过来</string>
     <string name="automationActionNotWorking">没有在工作</string>
     <string name="automationActionRecordExtra">记录为加班</string>
     <string name="automationActionStartedWork">已开始工作</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">告诉 DoneAt 你已到达公司。可用在个人自动化中，例如到达某地或连接某个 Wi-Fi 时。</string>
     <string name="automationIntentRecordDeparture">记录离开公司</string>
     <string name="automationIntentRecordDepartureDescription">告诉 DoneAt 你已离开公司。可用在个人自动化中，例如离开某地或关闭某个专注模式时。</string>
+    <string name="automationNoticeArrivedApplied">已记录上班时间 %1$s。</string>
+    <string name="automationNoticeArrivedRecorded">已记下 %1$s 到达。你确认之前，工时不会改变。</string>
+    <string name="automationNoticeLeftApplied">已记录下班时间 %1$s。</string>
+    <string name="automationNoticeLeftRecorded">已记下 %1$s 离开。你确认之前，工时不会改变。</string>
     <string name="automationPromptEarlyVisit">你提前到了，已经开始工作了吗？</string>
     <string name="automationPromptExtraVisit">要把这次到访记录为加班吗？</string>
     <string name="automationPromptLateArrival">已记录稍晚到达，今天照常记录吗？</string>
@@ -133,6 +138,11 @@
     <string name="automationUIIntro">DoneAt 会在你到达或离开工作地点时察觉，帮你记录上下班时间。你开启之前不会运行。</string>
     <string name="automationUILeaveRange">超过 %1$s 米才算离开</string>
     <string name="automationUILocationFailed">找不到你的位置。请到窗边或室外再试一次。</string>
+    <string name="automationUIMonitorLastEvent">上次检测：%1$s。</string>
+    <string name="automationUIMonitorLocationOff">定位服务已关闭。可在“设置”&gt;“隐私与安全性”中开启。</string>
+    <string name="automationUIMonitorProblem">iOS 暂时无法开始留意你的工作地点。可以试试关闭再重新开启工作地点自动化。</string>
+    <string name="automationUIMonitorStarting">正在准备留意你的工作地点，可能需要一点时间。</string>
+    <string name="automationUIMonitorWatching">正在留意到达和离开。</string>
     <string name="automationUINoLocationYet">点“使用当前位置”，把工作地点放到地图上。</string>
     <string name="automationUINoteChangedByYou">你已手动修改这天</string>
     <string name="automationUINoteEarlyStart">提前到达，确认后才算开始工作</string>
@@ -140,7 +150,11 @@
     <string name="automationUINoteLateDetection">检测得较晚，时间可能不准</string>
     <string name="automationUINoteLeftEarly">早于计划时间离开</string>
     <string name="automationUINoteRecordsUnavailable">记录暂时无法更新，请再试一次。</string>
+    <string name="automationUINotifyArrivals">到达和离开时通知</string>
+    <string name="automationUINotifyArrivalsNote">以静默通知告诉你记录了什么。关闭后仍会照常检测。</string>
     <string name="automationUIPaused">已暂停</string>
+    <string name="automationUIPausedShift">已暂停：%1$s</string>
+    <string name="automationUIPausedShiftNote">你修改过这个班次，所以自动化不会再改动它。</string>
     <string name="automationUIPlanned">计划 %1$s</string>
     <string name="automationUIPreviewIntro">这几天的工时会如下变更，之后仍可撤销。</string>
     <string name="automationUIPreviewTitle">采用这些时间？</string>
@@ -149,6 +163,7 @@
     <string name="automationUIRangeNote">离开范围比到达范围多 100 米，在边界附近走动不会被当成进出。</string>
     <string name="automationUIRecentSection">最近采用</string>
     <string name="automationUIRecordingSection">记录方式</string>
+    <string name="automationUIResume">恢复</string>
     <string name="automationUIReviewEmpty">没有待确认的记录</string>
     <string name="automationUIReviewEmptyNote">检测到的上下班时间会先出现在这里。</string>
     <string name="automationUIReviewIntro">这些时间还没有改动你的工时，采用正确的就好。</string>

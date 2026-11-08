@@ -136,10 +136,32 @@ final class AppRuntime {
         )
         // Questions follow the state they ask about, and turning automation
         // on or off moves the shift reminders' budget.
-        coordinator.onChange = { Task { await notifications.reschedule(shifts: shifts) } }
+        // Workplace edits and the monitoring switch also move the system's circles.
+        coordinator.onChange = { [unowned self] in
+            Task { await notifications.reschedule(shifts: shifts) }
+            Task { await self.workplaceMonitor.reconcile() }
+        }
         return coordinator
     }()
     private(set) lazy var workplaceLocation = WorkplaceLocationService()
+
+    /// Plan 021 I2: the one owner of native workplace monitoring.
+    private(set) lazy var workplaceMonitor: WorkplaceMonitor = {
+        let automation = workplaceAutomation
+        let queries = queries
+        let plus = plus
+        let notifications = notifications
+        let text = text
+        return WorkplaceMonitor(dependencies: .init(
+            automation: automation,
+            canCollect: { plus.canCollectAutomation },
+            shifts: { queries.automationShifts(around: $0) },
+            didHandle: { event, outcome in
+                guard let notice = WorkplaceArrivalNotice.make(for: event, outcome: outcome, state: automation.state) else { return }
+                await notifications.postArrivalNotice(notice, text: text, formattedTime: queries.formatRecordsTime(notice.time))
+            }
+        ))
+    }()
 
     private(set) lazy var shifts = ShiftSessionStore(
         session: session, records: records, queries: queries,
