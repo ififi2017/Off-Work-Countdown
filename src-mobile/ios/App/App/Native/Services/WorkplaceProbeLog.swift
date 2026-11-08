@@ -1,4 +1,4 @@
-#if DEBUG
+#if DEBUG || WORKPLACE_PROBE
 import Foundation
 
 // Plan 021 P0: what the DEBUG geofence probe records on a real iPhone.

@@ -9,9 +9,10 @@ import Foundation
 // adopted times live in `DayOverride.customSegments` (plan §0.3).
 
 nonisolated enum WorkplaceAutomation {
-    /// The settings entry stays in development builds until region
-    /// monitoring (I2) ships; Shortcuts actions work without it.
-#if DEBUG
+    /// The settings entry stays in development builds, and the internal
+    /// TestFlight probe build (`WORKPLACE_PROBE`), until P0 device results
+    /// approve release; Shortcuts actions work without it.
+#if DEBUG || WORKPLACE_PROBE
     static let showsSettingsEntry = true
 #else
     static let showsSettingsEntry = false
