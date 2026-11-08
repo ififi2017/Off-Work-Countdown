@@ -62,6 +62,7 @@
     <string name="applyToToday">आजही असेच बदला</string>
     <string name="auto">सिस्टीम</string>
     <string name="automationActionJustEarly">फक्त लवकर पोहोचलो</string>
+    <string name="automationActionMovedHere">दुसऱ्या कामाच्या ठिकाणाहून आलो</string>
     <string name="automationActionNotWorking">काम करत नाही</string>
     <string name="automationActionRecordExtra">अतिरिक्त काम म्हणून नोंदवा</string>
     <string name="automationActionStartedWork">काम सुरू केले</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">तुम्ही कामावर पोहोचलात हे DoneAt ला कळवते. एखाद्या ठिकाणी पोहोचल्यावर किंवा Wi-Fi शी जोडल्यावर अशा वैयक्तिक ऑटोमेशनमध्ये वापरा.</string>
     <string name="automationIntentRecordDeparture">काम सोडल्याची नोंद करा</string>
     <string name="automationIntentRecordDepartureDescription">तुम्ही कामावरून निघालात हे DoneAt ला कळवते. एखाद्या ठिकाणाहून निघाल्यावर किंवा फोकस बंद केल्यावर अशा वैयक्तिक ऑटोमेशनमध्ये वापरा.</string>
+    <string name="automationNoticeArrivedApplied">%1$s वाजता कामाची सुरुवात नोंदवली.</string>
+    <string name="automationNoticeArrivedRecorded">%1$s वाजता आगमन नोंदवले. तुम्ही पुष्टी करेपर्यंत तुमचे तास तसेच राहतील.</string>
+    <string name="automationNoticeLeftApplied">%1$s वाजता कामाचा शेवट नोंदवला.</string>
+    <string name="automationNoticeLeftRecorded">%1$s वाजता निघणे नोंदवले. तुम्ही पुष्टी करेपर्यंत तुमचे तास तसेच राहतील.</string>
     <string name="automationPromptEarlyVisit">तुम्ही लवकर पोहोचलात. तुम्ही काम सुरू केले आहे का?</string>
     <string name="automationPromptExtraVisit">ही भेट अतिरिक्त काम म्हणून नोंदवायची का?</string>
     <string name="automationPromptLateArrival">थोड्या उशिराने आगमन नोंदवले गेले आहे. आज नेहमीप्रमाणे नोंद सुरू ठेवायची का?</string>
@@ -133,6 +138,11 @@
     <string name="automationUIIntro">तुम्ही कामाच्या ठिकाणी कधी पोहोचता किंवा निघता हे DoneAt ओळखते आणि तुमच्या कामाच्या वेळा नोंदवते. तुम्ही सुरू करेपर्यंत ते बंद राहते.</string>
     <string name="automationUILeaveRange">%1$s मी च्या पलीकडे गेल्यावर निघाले असे मोजले जाते</string>
     <string name="automationUILocationFailed">तुमचे स्थान सापडले नाही. खिडकीजवळ किंवा बाहेर पुन्हा प्रयत्न करा.</string>
+    <string name="automationUIMonitorLastEvent">शेवटचे आढळले: %1$s.</string>
+    <string name="automationUIMonitorLocationOff">स्थान सेवा बंद आहेत. त्या सेटिंग्ज &gt; गोपनीयता आणि सुरक्षा येथे चालू करा.</string>
+    <string name="automationUIMonitorProblem">iOS तुमच्या कामाच्या ठिकाणांवर लक्ष ठेवणे सुरू करू शकले नाही. कामाच्या ठिकाणांचे ऑटोमेशन बंद करून पुन्हा चालू करून पहा.</string>
+    <string name="automationUIMonitorStarting">तुमच्या कामाच्या ठिकाणांवर लक्ष ठेवण्याची तयारी सुरू आहे. थोडा वेळ लागू शकतो.</string>
+    <string name="automationUIMonitorWatching">पोहोचणे आणि निघणे यावर लक्ष ठेवले जात आहे.</string>
     <string name="automationUINoLocationYet">या ठिकाणाला नकाशावर ठेवण्यासाठी “सध्याचे स्थान वापरा” वर टॅप करा.</string>
     <string name="automationUINoteChangedByYou">हा दिवस तुम्ही स्वतः बदलला आहे</string>
     <string name="automationUINoteEarlyStart">लवकर पोहोचले — तुम्ही पुष्टी केल्यावरच मोजले जाते</string>
@@ -140,7 +150,11 @@
     <string name="automationUINoteLateDetection">उशिरा ओळखले गेले, त्यामुळे वेळ थोडी वेगळी असू शकते</string>
     <string name="automationUINoteLeftEarly">नियोजित समाप्तीआधी निघाले</string>
     <string name="automationUINoteRecordsUnavailable">तुमच्या नोंदी अपडेट करता आल्या नाहीत. पुन्हा प्रयत्न करा.</string>
+    <string name="automationUINotifyArrivals">पोहोचताना आणि निघताना सूचित करा</string>
+    <string name="automationUINotifyArrivalsNote">शांत सूचना काय नोंदवले ते सांगते. शोध दोन्ही प्रकारे सुरू राहतो.</string>
     <string name="automationUIPaused">थांबवले</string>
+    <string name="automationUIPausedShift">%1$s साठी थांबवले</string>
+    <string name="automationUIPausedShiftNote">तुम्ही ही शिफ्ट बदलली आहे, म्हणून ऑटोमेशन ती आहे तशीच ठेवते.</string>
     <string name="automationUIPlanned">नियोजित %1$s</string>
     <string name="automationUIPreviewIntro">या दिवसांचे तुमचे तास दाखवल्याप्रमाणे बदलतील. नंतर तुम्ही ते पूर्ववत करू शकता.</string>
     <string name="automationUIPreviewTitle">या वेळा स्वीकारायच्या?</string>
@@ -149,6 +163,7 @@
     <string name="automationUIRangeNote">निघण्याची व्याप्ती 100 मी मोठी आहे, त्यामुळे सीमेजवळ फिरल्यास ते येणे-जाणे म्हणून मोजले जात नाही.</string>
     <string name="automationUIRecentSection">अलीकडे स्वीकारलेले</string>
     <string name="automationUIRecordingSection">नोंद</string>
+    <string name="automationUIResume">पुन्हा सुरू करा</string>
     <string name="automationUIReviewEmpty">तपासण्यासाठी काही नाही</string>
     <string name="automationUIReviewEmptyNote">ओळखलेल्या पोहोचण्याच्या आणि निघण्याच्या वेळा आधी इथे दिसतात.</string>
     <string name="automationUIReviewIntro">या वेळांनी अजून तुमचे तास बदललेले नाहीत. बरोबर असलेल्या स्वीकारा.</string>

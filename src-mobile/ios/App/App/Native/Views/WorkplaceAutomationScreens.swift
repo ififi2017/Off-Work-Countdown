@@ -154,7 +154,11 @@ struct WorkplaceAutomationSettingsView: View {
             onOpenWorkplace: { editing = .existing($0) },
             contexts: contextItems,
             onAddContext: { addsContext = true },
-            onDeleteContext: { id in automation.update { $0.removeContext(id) } }
+            onDeleteContext: { id in automation.update { $0.removeContext(id) } },
+            monitorNote: monitorNote,
+            onToggleNotify: { on in automation.update { $0.settings.notifiesArrivalsAndDepartures = on } },
+            pausedShifts: pausedShifts,
+            onResume: { automation.resumeAutomation(shiftKey: $0) }
         )
         .sheet(isPresented: $addsContext) {
             WorkContextEditorSheet(text: runtime.text, calendar: runtime.preferences.recordsCalendar) { context, first, last in
@@ -172,6 +176,50 @@ struct WorkplaceAutomationSettingsView: View {
         .onAppear {
             location.refresh()
             automation.surfaceUnreturnedExits()
+        }
+    }
+
+    /// Four separate facts (§I2): access is shown above; this says whether
+    /// the circles are registered and when a crossing last arrived.
+    private var monitorNote: AutomationMonitorNote? {
+        let status = runtime.workplaceMonitor.status
+        let text = runtime.text
+        if status.problems.contains(.locationOff) {
+            return AutomationMonitorNote(text: text.t("automationUIMonitorLocationOff"), isProblem: true)
+        }
+        if status.problems.contains(.needsPreciseLocation) {
+            return AutomationMonitorNote(text: text.t("automationUIAccessPreciseNote"), isProblem: true)
+        }
+        if status.problems.contains(.needsAlways) {
+            return AutomationMonitorNote(text: text.t("automationUIAccessWhileUsingNote"), isProblem: true)
+        }
+        if !status.problems.isEmpty {
+            return AutomationMonitorNote(text: text.t("automationUIMonitorProblem"), isProblem: true)
+        }
+        guard status.wantedCount > 0 else { return nil }
+        guard status.isRegistered else { return AutomationMonitorNote(text: text.t("automationUIMonitorStarting")) }
+        let watching = text.t("automationUIMonitorWatching")
+        guard let last = status.lastEventAt else {
+            return AutomationMonitorNote(text: watching + " " + text.t("automationUIAccessReadyNote"))
+        }
+        return AutomationMonitorNote(text: watching + " " + text.t("automationUIMonitorLastEvent", values: [
+            "time": runtime.queries.formatRecordsMonthDay(last) + " " + runtime.queries.formatRecordsTime(last),
+        ]))
+    }
+
+    private var pausedShifts: [AutomationPausedItem] {
+        let now = Date.now
+        let presenter = WorkplaceAutomationPresenter(
+            text: runtime.text, timeZone: runtime.preferences.recordsTimeZone, locale: runtime.preferences.locale
+        )
+        return WorkplaceAutomationRules.resumableShifts(
+            state: automation.state, shifts: runtime.queries.automationShifts(around: now), now: now
+        ).map { shift in
+            AutomationPausedItem(
+                id: shift.shiftKey,
+                title: presenter.dayTitle(shift.anchorDayKey) + " " + presenter.time(shift.plannedStart)
+                    + "–" + presenter.time(shift.plannedEnd)
+            )
         }
     }
 

@@ -352,6 +352,8 @@ struct OffWorkCountdownRootView: View {
         @unknown default: .inactive
         }
         runtime.services.sceneChanged(scene.id, phase: phase)
+        // Authorization or Plus may have changed while away.
+        if phase == .active { Task { await runtime.workplaceMonitor.reconcile() } }
     }
 
     private func applyQAGeometryIfRequested() {

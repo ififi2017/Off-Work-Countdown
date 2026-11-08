@@ -328,9 +328,17 @@ final class WorkplaceAutomationCoordinator {
 
     /// The person's answer to an early or off-shift arrival question.
     /// "Started work" counts from the detected arrival, not from the tap (§3.9).
-    func answerVisit(_ id: UUID, startedWork: Bool, now: Date = .now) async -> AutomationCommandOutcome {
+    func answerVisit(
+        _ id: UUID,
+        startedWork: Bool,
+        movedBetweenWorkplaces: Bool = false,
+        now: Date = .now
+    ) async -> AutomationCommandOutcome {
         guard isAvailable else { return .temporarilyUnavailable }
         guard var visit = state.visit(id), visit.status == .waiting else { return .alreadyApplied }
+        if startedWork, movedBetweenWorkplaces, case .offShift = visit.kind {
+            visit.countsFrom = WorkplaceAutomationRules.transferStart(arrivedAt: visit.arrivedAt, state: state)
+        }
         guard startedWork else {
             visit.status = .declined
             var next = state
@@ -361,6 +369,14 @@ final class WorkplaceAutomationCoordinator {
             next.upsert(visit)
             return commit(next) ? .recordedForReview : .temporarilyUnavailable
         }
+    }
+
+    /// "Resume automation" for a shift the person paused by correcting or
+    /// undoing it (§3.6). Later crossings may act on it again; nothing
+    /// earlier is replayed.
+    @discardableResult
+    func resumeAutomation(shiftKey: String) -> Bool {
+        update { $0.resumeAutomation(shiftKey: shiftKey) }
     }
 
     /// Settles a shift's status question. "Keep recording" approves nothing
@@ -437,7 +453,7 @@ final class WorkplaceAutomationCoordinator {
     /// Adds a confirmed extra stretch to its day, keeping what the day
     /// already holds. Overlaps merge; gaps stay gaps (§3.9).
     private func recordExtraWork(_ visit: AutomationVisit, until end: Date, now: Date) async -> AutomationCommandOutcome {
-        guard case .offShift(let dayKey) = visit.kind, end > visit.arrivedAt else {
+        guard case .offShift(let dayKey) = visit.kind, end > visit.workStart else {
             var next = state
             var closed = visit
             closed.status = .closed
@@ -445,7 +461,7 @@ final class WorkplaceAutomationCoordinator {
             return commit(next) ? .ignored : .temporarilyUnavailable
         }
         let extra = NativeShiftSegment(
-            startAtMs: visit.arrivedAt.timeIntervalSince1970 * 1_000,
+            startAtMs: visit.workStart.timeIntervalSince1970 * 1_000,
             endAtMs: end.timeIntervalSince1970 * 1_000
         )
         let current = actions.records.state.overrides.first { $0.dayKey == dayKey }

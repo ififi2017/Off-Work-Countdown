@@ -62,6 +62,7 @@
     <string name="applyToToday">เปลี่ยนวันนี้ด้วย</string>
     <string name="auto">ตามระบบ</string>
     <string name="automationActionJustEarly">แค่มาถึงเร็ว</string>
+    <string name="automationActionMovedHere">มาจากที่ทำงานอื่น</string>
     <string name="automationActionNotWorking">ไม่ได้ทำงาน</string>
     <string name="automationActionRecordExtra">บันทึกเป็นงานพิเศษ</string>
     <string name="automationActionStartedWork">เริ่มงานแล้ว</string>
@@ -79,6 +80,10 @@
     <string name="automationIntentRecordArrivalDescription">แจ้ง DoneAt ว่าคุณมาถึงที่ทำงานแล้ว ใช้ในระบบอัตโนมัติส่วนตัว เช่น เมื่อมาถึงสถานที่หรือเชื่อมต่อ Wi-Fi</string>
     <string name="automationIntentRecordDeparture">บันทึกการออกจากที่ทำงาน</string>
     <string name="automationIntentRecordDepartureDescription">แจ้ง DoneAt ว่าคุณออกจากที่ทำงานแล้ว ใช้ในระบบอัตโนมัติส่วนตัว เช่น เมื่อออกจากสถานที่หรือปิดโหมดโฟกัส</string>
+    <string name="automationNoticeArrivedApplied">บันทึกเวลาเข้างาน %1$s แล้ว</string>
+    <string name="automationNoticeArrivedRecorded">จดบันทึกการมาถึงเวลา %1$s แล้ว ชั่วโมงทำงานของคุณจะไม่เปลี่ยนจนกว่าคุณจะยืนยัน</string>
+    <string name="automationNoticeLeftApplied">บันทึกเวลาออกงาน %1$s แล้ว</string>
+    <string name="automationNoticeLeftRecorded">จดบันทึกการออกเวลา %1$s แล้ว ชั่วโมงทำงานของคุณจะไม่เปลี่ยนจนกว่าคุณจะยืนยัน</string>
     <string name="automationPromptEarlyVisit">คุณมาถึงเร็ว เริ่มทำงานแล้วหรือยัง</string>
     <string name="automationPromptExtraVisit">บันทึกการมาครั้งนี้เป็นงานพิเศษไหม</string>
     <string name="automationPromptLateArrival">บันทึกการมาถึงที่ช้ากว่าปกติเล็กน้อย บันทึกวันนี้ตามปกติต่อไปไหม</string>
@@ -133,6 +138,11 @@
     <string name="automationUIIntro">DoneAt จะรู้เมื่อคุณมาถึงหรือออกจากสถานที่ทำงาน และบันทึกเวลาทำงานให้ โดยจะปิดอยู่จนกว่าคุณจะเปิดใช้</string>
     <string name="automationUILeaveRange">นับว่าออกเมื่อห่างเกิน %1$s ม.</string>
     <string name="automationUILocationFailed">หาตำแหน่งของคุณไม่เจอ ลองอีกครั้งใกล้หน้าต่างหรือกลางแจ้ง</string>
+    <string name="automationUIMonitorLastEvent">ตรวจพบล่าสุด: %1$s</string>
+    <string name="automationUIMonitorLocationOff">บริการหาตำแหน่งปิดอยู่ เปิดได้ที่ การตั้งค่า &gt; ความเป็นส่วนตัวและความปลอดภัย</string>
+    <string name="automationUIMonitorProblem">iOS เริ่มดูแลที่ทำงานของคุณไม่ได้ ลองปิดแล้วเปิดระบบอัตโนมัติสถานที่ทำงานอีกครั้ง</string>
+    <string name="automationUIMonitorStarting">กำลังเตรียมดูแลที่ทำงานของคุณ อาจใช้เวลาสักครู่</string>
+    <string name="automationUIMonitorWatching">กำลังคอยดูการมาถึงและการออก</string>
     <string name="automationUINoLocationYet">แตะ “ใช้ตำแหน่งปัจจุบัน” เพื่อวางสถานที่ทำงานนี้บนแผนที่</string>
     <string name="automationUINoteChangedByYou">คุณแก้ไขวันนี้เองแล้ว</string>
     <string name="automationUINoteEarlyStart">มาถึงก่อนเวลา — จะนับเมื่อคุณยืนยัน</string>
@@ -140,7 +150,11 @@
     <string name="automationUINoteLateDetection">ตรวจพบช้า เวลาอาจคลาดเคลื่อน</string>
     <string name="automationUINoteLeftEarly">ออกก่อนเวลาเลิกงานตามแผน</string>
     <string name="automationUINoteRecordsUnavailable">อัปเดตบันทึกของคุณไม่ได้ ลองอีกครั้ง</string>
+    <string name="automationUINotifyArrivals">แจ้งเตือนเมื่อมาถึงและออก</string>
+    <string name="automationUINotifyArrivalsNote">การแจ้งเตือนแบบเงียบจะบอกว่าบันทึกอะไรไว้ การตรวจจับยังทำงานตามปกติแม้ปิดไว้</string>
     <string name="automationUIPaused">หยุดชั่วคราว</string>
+    <string name="automationUIPausedShift">หยุดชั่วคราวสำหรับ %1$s</string>
+    <string name="automationUIPausedShiftNote">คุณแก้ไขกะนี้แล้ว ระบบอัตโนมัติจึงปล่อยไว้ตามเดิม</string>
     <string name="automationUIPlanned">ตามแผน %1$s</string>
     <string name="automationUIPreviewIntro">ชั่วโมงทำงานของวันเหล่านี้จะเปลี่ยนตามที่แสดง คุณเลิกทำได้ภายหลัง</string>
     <string name="automationUIPreviewTitle">ใช้เวลาเหล่านี้ไหม</string>
@@ -149,6 +163,7 @@
     <string name="automationUIRangeNote">รัศมีการออกกว้างกว่า 100 ม. การเดินใกล้ขอบเขตจึงไม่ถูกนับว่าเข้าหรือออก</string>
     <string name="automationUIRecentSection">ใช้ล่าสุด</string>
     <string name="automationUIRecordingSection">การบันทึก</string>
+    <string name="automationUIResume">ทำต่อ</string>
     <string name="automationUIReviewEmpty">ไม่มีรายการที่ต้องตรวจสอบ</string>
     <string name="automationUIReviewEmptyNote">เวลามาถึงและออกที่ตรวจพบจะแสดงที่นี่ก่อน</string>
     <string name="automationUIReviewIntro">เวลาเหล่านี้ยังไม่ได้เปลี่ยนชั่วโมงทำงานของคุณ เลือกใช้อันที่ถูกต้องได้เลย</string>
