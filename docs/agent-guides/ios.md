@@ -11,6 +11,20 @@ rules apply.
   `AppTests/ScheduleRuleFixtures.generated.swift`;
   `AppTests/ScheduleRuleFixtureTests.swift` checks Swift parity. `npm test`
   rejects stale fixtures; resolve disagreements before regeneration.
+- Workplace automation (plan 021) rules are iOS-only Swift:
+  `WorkplaceAutomationRules.swift` is the specification. Its shared fixture is
+  `src-mobile/android/core/domain/src/test/resources/workplace-automation-fixtures.json`;
+  `npm run generate:workplace-automation-fixtures` compiles it into
+  `AppTests/WorkplaceAutomationFixtures.generated.swift` and `npm test`
+  rejects a stale copy. Records change only through
+  `WorkplaceAutomationCoordinator` → `RecordsActions`; raw events and pending
+  suggestions stay in the device-only `WorkplaceAutomationStore` file.
+  The settings entry stays DEBUG-only (`showsSettingsEntry`) until P0
+  device results approve release.
+- AppTests has no resources phase, and Xcode Cloud runs tests on a host
+  without the source tree: never read test data through `#filePath` or the
+  repository. Compile it into a generated Swift file, as both fixture
+  generators do.
 - Universal Purchase shares the Mac App Store record and bundle ID:
 
   | Target | Scheme | Bundle ID |

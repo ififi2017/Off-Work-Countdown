@@ -35,7 +35,7 @@
 | 019 | [iOS 规则与本地化回到 iOS 工程](019-ios-native-rules-and-localization.md) | 2026-09-13 | IN PROGRESS | 规则迁移 R1–R4 完成：班次解析、快照、Widget 班次、Watch 投影、区间展开、提醒、汇总与收入由 `ScheduleRules.swift`／`ReminderRules.swift`／`SummaryRules.swift` 实现，以 TS 差分 fixture 为契约，JavaScriptCore 规则包已删除；本地化迁移 L1–L2b 已完成。2026-09-19 继续验收，Watch V2 与 P8 月历重做证据见本轮验收记录 |
 | 020 | [休假规划、班次闹钟与动态周期报告](020-leave-planning-shift-alarms-cycle-reports.md) | 2026-09-27 | IN PROGRESS | 休假规划 P1–P3c 已实现：计算引擎、余额与请假记录同步、叠加到实时排班、采用与撤销、休假页、三次免费查看、介绍入口、排班日历标记与人生视图；班次闹钟已实现；iOS 周/月动画报告（R1）已实现，替换静态周期总结通知；Android 休假功能、闹钟与报告尚未开始，未指定发布版本 |
 | 023 | [小组件全家桶：iOS / Watch / macOS 与设置页小组件中心](023-widget-suite.md) | 2026-10-19 | DRAFT | 设计稿已经用户评论修订；分 W0–W6 七批，待决 D1–D7（版本拆分、免费口径、Mac 汇总、新样式形态、快速添加）；尚未实施 |
-| 021 | [工作地点自动化](021-workplace-automation.md) | 2026-10-01 | PLANNED | v0.4（2026-10-18）：3.3.0 收窄为 iOS 快捷指令＋原生地理围栏与来源同步，Android／Siri／Wi-Fi 移到之后；隐私例外已获批；通知额度、存储边界与来源实体的 P1 设计已定（§0.3） |
+| 021 | [工作地点自动化](021-workplace-automation.md) | 2026-10-01 | IN PROGRESS | 3.3.0 开发中（2026-11-08）：P1／I1／C1／U1（iOS）已合入，P0 真机实测进行中，I2 仅 DEBUG 入口。v0.4（2026-10-18）：3.3.0 收窄为 iOS 快捷指令＋原生地理围栏与来源同步，Android／Siri／Wi-Fi 移到之后；隐私例外已获批；通知额度、存储边界与来源实体的 P1 设计已定（§0.3） |
 
 ## 仍在 `docs/` 的活计划
 
