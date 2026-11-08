@@ -984,7 +984,7 @@ cd src-mobile/android
 - **提前离开未返回**：计划结束前的离开先存为隐藏候选，班次内返回即清除；计划结束后（打开设置或复核页时）转为“早于计划时间离开”的待复核项。班次进行中且已有上班记录时的再次进入视为返回，不生成新的上班建议。
 - **上班状态与范围**：新增“今天的上班状态”页（通知点按进入）：继续记录（只抑制重复询问，不批准任何时间）、今天休息（`markDayNotWorking`，已有工时先确认）、外勤／出差／居家（当日范围）。设置页新增“不在办公室的日子”：外勤／出差／居家／休息按记录时区日期范围保存在本机自动化存储；新范围覆盖重叠日、保留其余日。非普通状态下普通办公室离开不结束当天、不催问；休息范围忽略到访。
 - **Plus 历史保护**：权益失效后不再采集、不再规划询问；既有建议仍可复核采用与撤销（测试覆盖）。
-- **共用 fixture**：`src-mobile/android/core/domain/src/test/resources/workplace-automation-fixtures.json`（到达判定、到达匹配窗口、离开判定、采用段、状态询问、多地点离开），由 `WorkplaceAutomationFixtureTests` 读取；Android A1 读同一文件。
+- **共用 fixture**：`src-mobile/android/core/domain/src/test/resources/workplace-automation-fixtures.json`（到达判定、到达匹配窗口、离开判定、采用段、状态询问、多地点离开），由 `npm run generate:workplace-automation-fixtures` 编译进 `AppTests/WorkplaceAutomationFixtures.generated.swift`（AppTests 无资源阶段，Xcode Cloud 测试主机无源码树），`WorkplaceAutomationFixtureTests` 读取；`npm test` 检查两者一致；Android A1 直接读该 JSON。
 - 本机存储新增 `contexts`、`settledShiftKeys`、`visits`、`earlyExits`，旧文件缺字段时按空读取（测试覆盖）。文案新增 28 键 19 语言。
 - 测试：新增 `WorkplaceAutomationVisitTests` 18 项与 fixture 参数化测试；自动化 7 个套件 83 项通过。
 - **未做**：到达／离开／已更新的即时通知（随 I2 原生事件）；“恢复自动化”入口；到访中途的工作转场标记；通知文案与按钮的真机展示未验证；未做模拟器视觉检查。

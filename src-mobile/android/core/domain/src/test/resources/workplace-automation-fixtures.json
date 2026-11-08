@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "about": "Plan 021 workplace automation rules. Swift (WorkplaceAutomationRules) is the specification; Android A1 must produce the same results. Times are on 2026-11-09 UTC; a '+1 ' prefix means the next day.",
+  "about": "Plan 021 workplace automation rules. Swift (WorkplaceAutomationRules) is the specification; Android A1 must produce the same results. scripts/generate-workplace-automation-fixtures.mjs compiles this file into the iOS tests. Times are on 2026-11-09 UTC; a '+1 ' prefix means the next day.",
   "shift": {
     "start": "09:00",
     "end": "18:00",

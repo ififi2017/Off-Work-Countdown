@@ -3,7 +3,7 @@ import Testing
 @testable import App
 
 /// Plan 021 P1: the shared rule fixture both platforms run. Swift is the
-/// specification; Android A1 reads the same file from its test resources.
+/// specification; Android A1 reads the JSON from its test resources.
 @Suite("Workplace automation shared fixture")
 nonisolated struct WorkplaceAutomationFixtureTests {
     struct Fixture: Decodable {
@@ -28,12 +28,11 @@ nonisolated struct WorkplaceAutomationFixtureTests {
         let leavesAllWorkplaces: [Leaves]
     }
 
-    static let fixture: Fixture = {
-        let url = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("android/core/domain/src/test/resources/workplace-automation-fixtures.json")
-        return try! JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
-    }()
+    /// Compiled in from the shared JSON (see the generator), so it is
+    /// present wherever the tests run. An undecodable copy fails `version`.
+    static let fixture: Fixture? = try? JSONDecoder().decode(
+        Fixture.self, from: Data(WorkplaceAutomationFixtureData.json.utf8)
+    )
 
     /// "HH:mm" on 2026-11-09 UTC, or "+1 HH:mm" for the next day.
     private static func time(_ value: String) -> Date {
@@ -53,16 +52,16 @@ nonisolated struct WorkplaceAutomationFixtureTests {
 
     private static let shift = AutomationShift(
         shiftKey: "2026-11-09#fixture", anchorDayKey: "2026-11-09",
-        plannedStart: time(fixture.shift.start), plannedEnd: time(fixture.shift.end),
-        segments: fixture.shift.segments.map(segment)
+        plannedStart: time(fixture?.shift.start ?? "09:00"), plannedEnd: time(fixture?.shift.end ?? "18:00"),
+        segments: (fixture?.shift.segments ?? []).map(segment)
     )
 
-    @Test("The fixture is the version this build understands")
-    func version() { #expect(Self.fixture.version == 1) }
+    @Test("The fixture decodes and is the version this build understands")
+    func version() throws { #expect(try #require(Self.fixture).version == 1) }
 
-    @Test("Arrivals: early, on time or late", arguments: WorkplaceAutomationFixtureTests.fixture.arrival.map(\.name))
+    @Test("Arrivals: early, on time or late", arguments: WorkplaceAutomationFixtureTests.fixture?.arrival.map(\.name) ?? [])
     func arrival(_ name: String) throws {
-        let item = try #require(Self.fixture.arrival.first { $0.name == name })
+        let item = try #require(Self.fixture?.arrival.first { $0.name == name })
         let delay = try #require(WorkplaceVisitPromptDelay(rawValue: item.delayMinutes))
         let result = WorkplaceAutomationRules.assessArrival(at: Self.time(item.at), for: Self.shift, promptDelay: delay)
         switch item.expect {
@@ -72,16 +71,16 @@ nonisolated struct WorkplaceAutomationFixtureTests {
         }
     }
 
-    @Test("Arrivals find their shift only inside the window", arguments: WorkplaceAutomationFixtureTests.fixture.matchArrival.map(\.name))
+    @Test("Arrivals find their shift only inside the window", arguments: WorkplaceAutomationFixtureTests.fixture?.matchArrival.map(\.name) ?? [])
     func matchArrival(_ name: String) throws {
-        let item = try #require(Self.fixture.matchArrival.first { $0.name == name })
+        let item = try #require(Self.fixture?.matchArrival.first { $0.name == name })
         let result = WorkplaceAutomationRules.matchArrival(at: Self.time(item.at), among: [Self.shift])
         #expect(result == (item.expect == "matched" ? .matched(Self.shift) : .noShift))
     }
 
-    @Test("Exits: a break, the end, or review", arguments: WorkplaceAutomationFixtureTests.fixture.exit.map(\.name))
+    @Test("Exits: a break, the end, or review", arguments: WorkplaceAutomationFixtureTests.fixture?.exit.map(\.name) ?? [])
     func exit(_ name: String) throws {
-        let item = try #require(Self.fixture.exit.first { $0.name == name })
+        let item = try #require(Self.fixture?.exit.first { $0.name == name })
         let result = WorkplaceAutomationRules.assessExit(at: Self.time(item.at), for: Self.shift)
         switch item.expect {
         case "temporaryAbsence": #expect(result == .temporaryAbsence)
@@ -92,18 +91,18 @@ nonisolated struct WorkplaceAutomationFixtureTests {
         }
     }
 
-    @Test("Adopted segments keep real gaps", arguments: WorkplaceAutomationFixtureTests.fixture.segments.map(\.name))
+    @Test("Adopted segments keep real gaps", arguments: WorkplaceAutomationFixtureTests.fixture?.segments.map(\.name) ?? [])
     func segments(_ name: String) throws {
-        let item = try #require(Self.fixture.segments.first { $0.name == name })
+        let item = try #require(Self.fixture?.segments.first { $0.name == name })
         let result = WorkplaceAutomationRules.proposedSegments(
             for: Self.shift, start: Self.time(item.start), end: Self.time(item.end)
         )
         #expect(result == item.expect.map(Self.segment))
     }
 
-    @Test("The once-per-shift status question", arguments: WorkplaceAutomationFixtureTests.fixture.statusPrompt.map(\.name))
+    @Test("The once-per-shift status question", arguments: WorkplaceAutomationFixtureTests.fixture?.statusPrompt.map(\.name) ?? [])
     func statusPrompt(_ name: String) throws {
-        let item = try #require(Self.fixture.statusPrompt.first { $0.name == name })
+        let item = try #require(Self.fixture?.statusPrompt.first { $0.name == name })
         let result = WorkplaceAutomationRules.statusPrompt(
             for: Self.shift,
             knownArrival: item.arrival.map(Self.time),
@@ -120,9 +119,9 @@ nonisolated struct WorkplaceAutomationFixtureTests {
         #expect(result == expected)
     }
 
-    @Test("Leaving one workplace is not leaving work", arguments: WorkplaceAutomationFixtureTests.fixture.leavesAllWorkplaces.map(\.name))
+    @Test("Leaving one workplace is not leaving work", arguments: WorkplaceAutomationFixtureTests.fixture?.leavesAllWorkplaces.map(\.name) ?? [])
     func leavesAll(_ name: String) throws {
-        let item = try #require(Self.fixture.leavesAllWorkplaces.first { $0.name == name })
+        let item = try #require(Self.fixture?.leavesAllWorkplaces.first { $0.name == name })
         let ids = ["A": UUID(), "B": UUID()]
         let result = WorkplaceAutomationRules.leavesAllWorkplaces(
             exitingWorkplace: item.exiting.flatMap { ids[$0] },
