@@ -158,7 +158,9 @@ struct WorkplaceAutomationSettingsView: View {
             monitorNote: monitorNote,
             onToggleNotify: { on in automation.update { $0.settings.notifiesArrivalsAndDepartures = on } },
             pausedShifts: pausedShifts,
-            onResume: { automation.resumeAutomation(shiftKey: $0) }
+            onResume: { automation.resumeAutomation(shiftKey: $0) },
+            hasDeviceData: automation.state.hasDeviceData,
+            onDeleteData: { automation.eraseDeviceData() }
         )
         .sheet(isPresented: $addsContext) {
             WorkContextEditorSheet(text: runtime.text, calendar: runtime.preferences.recordsCalendar) { context, first, last in

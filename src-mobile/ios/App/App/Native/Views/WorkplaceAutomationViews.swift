@@ -54,6 +54,11 @@ struct WorkplaceAutomationSettingsContent: View {
     /// Shifts the person paused automation for by changing them.
     var pausedShifts: [AutomationPausedItem] = []
     var onResume: (String) -> Void = { _ in }
+    /// Whether there is device data to delete; the row is hidden otherwise.
+    var hasDeviceData = false
+    var onDeleteData: () -> Void = {}
+
+    @State private var confirmsDelete = false
 
     private var isOn: Bool { settings.isMonitoringEnabled && isPlus }
     private var isFull: Bool { workplaces.count >= WorkplaceAutomation.maximumWorkplaces }
@@ -93,6 +98,7 @@ struct WorkplaceAutomationSettingsContent: View {
                 shortcutsSection
                 footnote(text.t("automationUIPrivacy"))
                     .padding(.top, OWCDesign.sectionGap)
+                deleteSection
                     .padding(.bottom, OWCDesign.detailBottomInset)
             }
             .padding(.horizontal, OWCDesign.pageInset)
@@ -294,6 +300,27 @@ struct WorkplaceAutomationSettingsContent: View {
                    ]),
                    isLast: true) {
                 EmptyView()
+            }
+        }
+    }
+
+    // MARK: Delete
+
+    @ViewBuilder private var deleteSection: some View {
+        if hasDeviceData {
+            OWCGroupCard {
+                Button { confirmsDelete = true } label: {
+                    OWCRow(icon: "trash", title: text.t("automationUIDeleteData"), isLast: true, isDestructive: true) {
+                        EmptyView()
+                    }
+                }
+                .buttonStyle(OWCRowButtonStyle())
+            }
+            .padding(.top, 12)
+            .confirmationDialog(text.t("automationUIDeleteData"), isPresented: $confirmsDelete, titleVisibility: .visible) {
+                Button(text.t("automationUIDeleteData"), role: .destructive, action: onDeleteData)
+            } message: {
+                Text(text.t("automationUIDeleteDataConfirm"))
             }
         }
     }
@@ -761,7 +788,8 @@ private enum WorkplaceAutomationPreviewFixtures {
             settings: WorkplaceAutomationSettings(isMonitoringEnabled: true),
             workplaces: WorkplaceAutomationPreviewFixtures.workplaces(2), pendingCount: 4,
             monitorNote: AutomationMonitorNote(text: "正在留意到達與離開。上次偵測：上午 9:06"),
-            pausedShifts: [AutomationPausedItem(id: "2026-11-09#a", title: "11月9日 週一 9:00–18:00")]
+            pausedShifts: [AutomationPausedItem(id: "2026-11-09#a", title: "11月9日 週一 9:00–18:00")],
+            hasDeviceData: true
         )
     }
 }

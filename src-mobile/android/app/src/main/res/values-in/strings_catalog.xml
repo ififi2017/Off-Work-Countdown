@@ -129,6 +129,8 @@
     <string name="automationUIContextTo">Hingga</string>
     <string name="automationUIContextType">Jenis</string>
     <string name="automationUIDeleteContext">Hapus</string>
+    <string name="automationUIDeleteData">Hapus Data Otomatisasi</string>
+    <string name="automationUIDeleteDataConfirm">Ini akan menghapus tempat kerja, kedatangan dan kepergian yang terdeteksi, waktu untuk ditinjau, dan hari bekerja di luar kantor dari iPhone ini, lalu mematikan Otomatisasi Tempat Kerja. Jam kerja yang sudah Anda terapkan tetap ada di catatan Anda.</string>
     <string name="automationUIDeleteWorkplace">Hapus Tempat Kerja</string>
     <string name="automationUIDeleteWorkplaceNote">Waktu kerja yang sudah Anda terima tetap ada di catatan Anda.</string>
     <string name="automationUIDeselectAll">Batalkan Semua Pilihan</string>

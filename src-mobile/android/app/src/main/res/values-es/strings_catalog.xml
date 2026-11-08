@@ -129,6 +129,8 @@
     <string name="automationUIContextTo">Hasta</string>
     <string name="automationUIContextType">Tipo</string>
     <string name="automationUIDeleteContext">Eliminar</string>
+    <string name="automationUIDeleteData">Eliminar datos de automatización</string>
+    <string name="automationUIDeleteDataConfirm">Esto elimina de este iPhone tus lugares de trabajo, las llegadas y salidas detectadas, las horas por revisar y los días fuera de la oficina, y desactiva la automatización del lugar de trabajo. Las horas de trabajo que ya has adoptado se quedan en tus registros.</string>
     <string name="automationUIDeleteWorkplace">Eliminar lugar de trabajo</string>
     <string name="automationUIDeleteWorkplaceNote">Las horas de trabajo que ya adoptaste permanecen en tus registros.</string>
     <string name="automationUIDeselectAll">Deseleccionar todo</string>

@@ -129,6 +129,8 @@
     <string name="automationUIContextTo">Đến</string>
     <string name="automationUIContextType">Loại</string>
     <string name="automationUIDeleteContext">Xóa</string>
+    <string name="automationUIDeleteData">Xóa dữ liệu tự động hóa</string>
+    <string name="automationUIDeleteDataConfirm">Thao tác này xóa nơi làm việc, các lần đến và rời đi được phát hiện, giờ cần xem lại và ngày làm việc ngoài văn phòng khỏi iPhone này, đồng thời tắt Tự động hóa nơi làm việc. Giờ làm việc bạn đã áp dụng vẫn được giữ trong bản ghi của bạn.</string>
     <string name="automationUIDeleteWorkplace">Xóa nơi làm việc</string>
     <string name="automationUIDeleteWorkplaceNote">Giờ làm bạn đã chấp nhận vẫn được giữ trong các bản ghi.</string>
     <string name="automationUIDeselectAll">Bỏ chọn tất cả</string>

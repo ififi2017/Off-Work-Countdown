@@ -322,6 +322,36 @@ struct WorkplaceAutomationVisitTests {
         #expect(decoded.visits.isEmpty)
     }
 
+    @Test("Deleting automation data clears this device and keeps adopted hours")
+    func eraseDeviceData() async throws {
+        let harness = Harness(applies: true)
+        harness.coordinator.update {
+            $0.settings.visitPromptDelay = .sixtyMinutes
+            $0.setContext(.remote, from: "2026-11-12", through: "2026-11-13")
+        }
+        #expect(await harness.receive(.enterInner, at: Self.at(9, 20)) == .applied)
+        await harness.receive(.enterInner, at: Self.at(19))
+        let adopted = try #require(harness.day("2026-11-09"))
+        let generation = harness.coordinator.state.lastRegistrationGeneration
+        #expect(harness.coordinator.state.hasDeviceData)
+
+        #expect(harness.coordinator.eraseDeviceData())
+        let state = harness.coordinator.state
+        #expect(!state.hasDeviceData)
+        #expect(state.workplaces.isEmpty && state.events.isEmpty && state.proposals.isEmpty)
+        #expect(state.visits.isEmpty && state.contexts.isEmpty && state.insideWorkplaceIDs.isEmpty)
+        #expect(!state.settings.isMonitoringEnabled)
+        // Preferences survive; the generation keeps counting.
+        #expect(state.settings.visitPromptDelay == .sixtyMinutes)
+        #expect(state.lastRegistrationGeneration == generation)
+        let next = try harness.coordinator.update { try $0.addWorkplace(name: "New", latitude: 31, longitude: 121) }
+        #expect(next)
+        #expect((harness.coordinator.state.workplaces.first?.registrationGeneration ?? 0) > generation)
+        // Adopted hours are records, not automation data.
+        #expect(harness.day("2026-11-09") == adopted)
+        #expect(harness.prompts(now: Self.at(19, 5)).isEmpty)
+    }
+
     // MARK: I2 follow-ups
 
     @Test("Coming from another workplace counts the move, from the earlier end")

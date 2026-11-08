@@ -129,6 +129,8 @@
     <string name="automationUIContextTo">结束</string>
     <string name="automationUIContextType">类型</string>
     <string name="automationUIDeleteContext">删除</string>
+    <string name="automationUIDeleteData">删除自动化数据</string>
+    <string name="automationUIDeleteDataConfirm">这会从这部 iPhone 上删除你的工作地点、检测到的到达与离开、待复核的时间以及不在办公室的日子，并关闭工作地点自动化。你已采用的工时会保留在记录中。</string>
     <string name="automationUIDeleteWorkplace">删除工作地点</string>
     <string name="automationUIDeleteWorkplaceNote">已采用的上下班时间会保留在记录中。</string>
     <string name="automationUIDeselectAll">取消全选</string>

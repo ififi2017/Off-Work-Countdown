@@ -129,6 +129,8 @@
     <string name="automationUIContextTo">पर्यंत</string>
     <string name="automationUIContextType">प्रकार</string>
     <string name="automationUIDeleteContext">हटवा</string>
+    <string name="automationUIDeleteData">ऑटोमेशन डेटा हटवा</string>
+    <string name="automationUIDeleteDataConfirm">यामुळे या iPhone वरून तुमची कामाची ठिकाणे, ओळखलेले आगमन आणि प्रस्थान, तपासायच्या वेळा आणि कार्यालयाबाहेरचे दिवस हटवले जातील आणि कामाच्या ठिकाणांचे ऑटोमेशन बंद होईल. तुम्ही स्वीकारलेल्या कामाच्या वेळा तुमच्या रेकॉर्डमध्ये राहतील.</string>
     <string name="automationUIDeleteWorkplace">कामाचे ठिकाण हटवा</string>
     <string name="automationUIDeleteWorkplaceNote">तुम्ही आधीच स्वीकारलेल्या कामाच्या वेळा तुमच्या नोंदींमध्ये राहतील.</string>
     <string name="automationUIDeselectAll">सर्व निवड रद्द करा</string>
