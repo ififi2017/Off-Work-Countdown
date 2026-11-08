@@ -21,6 +21,10 @@ struct AppRouteDestination: View {
                 LeaveView(shifts: runtime.shifts, actions: runtime.recordActions)
             case .shiftAlarms:
                 ShiftAlarmSettingsView(shifts: runtime.shifts, alarms: runtime.shiftAlarms)
+            case .workplaceAutomation:
+                WorkplaceAutomationSettingsView(runtime: runtime)
+            case .workplaceAutomationReview:
+                WorkplaceAutomationReviewView(runtime: runtime)
             case .salary:
                 SalaryDesignView(shifts: runtime.shifts)
             case .notifications:

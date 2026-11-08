@@ -8,6 +8,8 @@ struct SettingsSectionCard: View {
     let shifts: ShiftSessionStore
     let recovery: RecoveryStore
     let section: SettingsSection
+    /// Absent in previews that have no runtime.
+    @Environment(WorkplaceAutomationCoordinator.self) private var automation: WorkplaceAutomationCoordinator?
     @Environment(\.openURL) private var openURL
 
     var body: some View {
@@ -24,6 +26,11 @@ struct SettingsSectionCard: View {
             // Lunch is part of the schedule page; reminders live under Reminders.
             link(.schedule, icon: "calendar.badge.clock", title: shifts.text.t("workSchedule"), value: shifts.scheduleLabel)
             link(.leave, icon: "suitcase", title: shifts.text.t("leaveTitle"), value: shifts.leaveSummaryLabel)
+            if let automation, WorkplaceAutomation.showsSettingsEntry {
+                link(.workplaceAutomation, icon: "location.circle", title: shifts.text.t("automationUITitle"),
+                     value: shifts.text.t(automation.state.settings.isMonitoringEnabled && shifts.plus.canCollectAutomation
+                                          ? "shiftAlarmsOnShort" : "disabledShort"))
+            }
             link(.salary, icon: "banknote", title: shifts.text.t("salarySettings"), value: shifts.text.salaryTypeLabel, isLast: true)
 
         case .reminders:

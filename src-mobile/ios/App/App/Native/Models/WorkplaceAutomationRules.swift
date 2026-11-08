@@ -9,6 +9,14 @@ import Foundation
 // adopted times live in `DayOverride.customSegments` (plan §0.3).
 
 nonisolated enum WorkplaceAutomation {
+    /// The settings entry stays in development builds until region
+    /// monitoring (I2) ships; Shortcuts actions work without it.
+#if DEBUG
+    static let showsSettingsEntry = true
+#else
+    static let showsSettingsEntry = false
+#endif
+
     /// Saved workplaces, disabled ones included (§3.10).
     static let maximumWorkplaces = 5
     /// The single status question after the planned start (§3.10).

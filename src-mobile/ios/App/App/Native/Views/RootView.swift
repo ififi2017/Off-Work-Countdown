@@ -82,6 +82,7 @@ struct OffWorkCountdownRootView: View {
         .environment(\.locale, runtime.preferences.locale)
         .environment(runtime.notifications)
         .environment(runtime.liveActivities)
+        .environment(runtime.workplaceAutomation)
         .modifier(RecordSaveStatus(
             records: runtime.records,
             title: runtime.text.t("recordsArchiveSaveFailedTitle"),
