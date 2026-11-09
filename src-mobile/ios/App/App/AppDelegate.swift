@@ -31,7 +31,7 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
         UNUserNotificationCenter.current().setNotificationCategories(
             WorkplaceAutomationNotificationPlan.categories(localizer: localizer, locale: locale)
         )
-#if DEBUG
+#if DEBUG || WORKPLACE_PROBE
         // Plan 021 P0: a geofence crossing can launch the app in the
         // background; the probe's monitor must exist before launch returns.
         WorkplaceProbe.shared.resumeAfterLaunch()

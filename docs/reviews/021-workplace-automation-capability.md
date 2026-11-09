@@ -25,6 +25,15 @@ DEBUG 构建：设置 → 关于，长按两次“DoneAt”字样打开调试菜
 - 文件存于 Application Support，`completeFileProtectionUntilFirstUserAuthentication`，排除系统备份；导出为 TSV，只含地点名称与半径，不含坐标。
 - 探针不写工时、不发通知、不改排班。
 
+### 内部 TestFlight 探针版
+
+也可用 `WORKPLACE_PROBE` 旗标打一个只给内部测试员的 TestFlight 建置（做法见 [releases.md](../agent-guides/releases.md) “Internal geofence probe build”）。它没有调试器、连正式 iCloud，更接近真实使用；入口是“关于”页长按“DoneAt”两次，直接打开探针页，不开放其他调试工具；同一建置也显示“设置 → 工作地点自动化”，可直接测试 I2。该建置不得提交审核或发布。
+
+| 建置号 | 上传日期 | 分发范围 | 备注 |
+| --- | --- | --- | --- |
+| 3.3.0 (1) | 2026-11-08 | 仅内部测试 | 只含探针（I2 之前） |
+| 3.3.0 (2) | 2026-11-09 | 仅内部测试 | main 之后的探针＋I2 原生监控、到离通知、删除自动化数据；设置 → 工作地点自动化可见 |
+
 ### 测试前
 
 1. 用 Xcode 安装 Debug 构建到 iPhone，然后**断开调试器**：在 Scheme 关闭 Debug executable，或安装后停止运行，再从主屏幕打开。调试器会让 App 一直留在后台，结果不可信。

@@ -131,6 +131,30 @@ or fastlane; export is deliberately manual. Agree on signing setup before
 introducing an automated export path. Keep `docs/XCODE-CLOUD.md` aligned with
 App Store Connect's workflow triggers, Release archive and distribution.
 
+### Internal geofence probe build (plan 021 P0)
+
+Only for internal TestFlight testers measuring workplace geofencing on real
+devices. `WORKPLACE_PROBE` compiles the DEBUG probe into a Release archive and
+opens it (not the debug menu) by long-pressing the About page's "DoneAt" twice.
+It also shows the Workplace Automation settings entry, so the real I2 monitor
+can be tested in the same build:
+
+```bash
+xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
+  -destination 'generic/platform=iOS' -configuration Release \
+  SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) WORKPLACE_PROBE' \
+  -archivePath build/DoneAt-probe.xcarchive archive
+```
+
+- Bump `CURRENT_PROJECT_VERSION` first, as for any upload, and record that
+  build number in `docs/reviews/021-workplace-automation-capability.md`.
+- In App Store Connect, distribute it to internal testers only. Never add it
+  to external testing or submit it for review: it ships the probe, which the
+  plan 021 privacy exception does not cover for release. The probe screen
+  shows an orange "internal build" banner as a reminder.
+- Xcode Cloud workflows and the normal archive above stay unchanged and never
+  set the flag.
+
 ## Chrome extension
 
 - `npm run package:extension` writes the upload ZIP; its version is the product

@@ -1,4 +1,4 @@
-#if DEBUG
+#if DEBUG || WORKPLACE_PROBE
 import SwiftUI
 
 /// Plan 021 P0: controls and log for `WorkplaceProbe`. Debug-only and
@@ -12,6 +12,12 @@ struct DebugWorkplaceProbeView: View {
 
     var body: some View {
         List {
+#if !DEBUG
+            Section {
+                Label(String("内部测试版：含工作地点探针，不得提交审核或发布"), systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+            }
+#endif
             Section {
                 row("状态", probe.archive.isEnabled ? "运行中" : "未开启")
                 row("定位授权", probe.authorizationLabel)
