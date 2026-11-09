@@ -1141,6 +1141,7 @@
     <string name="recordsSleepEstimated">설정으로 추정</string>
     <string name="recordsSleepFromHealth">이 기기의 건강 앱에서</string>
     <string name="recordsSourceAfterNow">지금부터는 오늘 근무표 기준</string>
+    <string name="recordsSourceAutomation">위치 기반으로 자동 기록됨</string>
     <string name="recordsSourceException">휴일 또는 대체 근무</string>
     <string name="recordsSourceNone">이 날의 근무표 없음</string>
     <string name="recordsSourceOverride">이 날을 직접 수정함</string>

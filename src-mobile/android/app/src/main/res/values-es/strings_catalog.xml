@@ -1147,6 +1147,7 @@
     <string name="recordsSleepEstimated">Estimado según tus ajustes</string>
     <string name="recordsSleepFromHealth">Desde Salud en este dispositivo</string>
     <string name="recordsSourceAfterNow">De aquí en adelante, tu horario de hoy</string>
+    <string name="recordsSourceAutomation">Registrado desde tu ubicación</string>
     <string name="recordsSourceException">Festivo o día de compensación</string>
     <string name="recordsSourceNone">No hay horario este día</string>
     <string name="recordsSourceOverride">Cambiaste este día</string>

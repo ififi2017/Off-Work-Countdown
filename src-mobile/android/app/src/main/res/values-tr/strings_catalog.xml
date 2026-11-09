@@ -1144,6 +1144,7 @@
     <string name="recordsSleepEstimated">Ayarlardan tahmin</string>
     <string name="recordsSleepFromHealth">Bu cihazdaki Sağlık’tan</string>
     <string name="recordsSourceAfterNow">Bundan sonrası bugünkü mesai</string>
+    <string name="recordsSourceAutomation">Konumundan kaydedildi</string>
     <string name="recordsSourceException">Tatil veya telafi günü</string>
     <string name="recordsSourceNone">Bu gün için mesai yok</string>
     <string name="recordsSourceOverride">Bu günü sen değiştirdin</string>

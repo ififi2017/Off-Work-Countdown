@@ -139,6 +139,35 @@ nonisolated struct WorkTimeProvenance: Codable, Equatable, Sendable {
         guard let currentMs, abs(currentMs - adoptedMs) < 1 else { return .adjustedAfterDetection(entry) }
         return .verified(entry)
     }
+
+    /// Whether a day's override still holds only what automation adopted:
+    /// each boundary with a summary is unchanged, and each one without is
+    /// still the plan's. Records then calls the day recorded automatically,
+    /// not "you changed this day" — the person never touched it.
+    static func isAutomationOnly(
+        provenance: WorkTimeProvenance?,
+        override: DayOverride?,
+        plannedSegments: [NativeShiftSegment]
+    ) -> Bool {
+        guard let provenance, !provenance.boundaries.isEmpty,
+              let override, override.kind == .customSegments, !override.segments.isEmpty
+        else { return false }
+        return [WorkTimeBoundary.start, .end].allSatisfy { kind in
+            switch verification(of: kind, provenance: provenance, override: override) {
+            case .verified: return true
+            case .adjustedAfterDetection: return false
+            case .none:
+                let current = kind == .start
+                    ? override.segments.map(\.startAtMs).min()
+                    : override.segments.map(\.endAtMs).max()
+                let planned = kind == .start
+                    ? plannedSegments.map(\.startAtMs).min()
+                    : plannedSegments.map(\.endAtMs).max()
+                guard let current, let planned else { return false }
+                return abs(current - planned) < 1
+            }
+        }
+    }
 }
 
 /// The iCloud and backup form. Instants are Unix milliseconds; enum values

@@ -1144,6 +1144,7 @@
     <string name="recordsSleepEstimated">Estimated from your settings</string>
     <string name="recordsSleepFromHealth">From Health on this device</string>
     <string name="recordsSourceAfterNow">From now on, today’s schedule</string>
+    <string name="recordsSourceAutomation">Recorded from your location</string>
     <string name="recordsSourceException">Holiday or makeup day</string>
     <string name="recordsSourceNone">No schedule for this day</string>
     <string name="recordsSourceOverride">You changed this day</string>

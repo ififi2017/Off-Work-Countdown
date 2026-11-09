@@ -898,7 +898,20 @@ final class RecordsQueries {
             hasConflict: records.state.sync.conflicts.contains {
                 Self.civilDayKey(fromExceptionKey: $0.logicalKey) == resolution.dayKey
             },
-            isFromSavedSchedule: revealed && scheduled && !recorded && !corrected
+            isFromSavedSchedule: revealed && scheduled && !recorded && !corrected,
+            isAutomationRecorded: corrected && isAutomationRecordedDay(resolution)
+        )
+    }
+
+    /// Plan 021: the day's override is still only what workplace automation
+    /// adopted, so it reads as recorded automatically, not as the person's edit.
+    private func isAutomationRecordedDay(_ resolution: DayResolution) -> Bool {
+        let state = records.state
+        guard !state.isErased(.workTimeProvenance, key: resolution.dayKey) else { return false }
+        return WorkTimeProvenance.isAutomationOnly(
+            provenance: state.workTimeProvenance.first { $0.dayKey == resolution.dayKey },
+            override: state.overrides.first { $0.dayKey == resolution.dayKey && $0.kind != .cleared },
+            plannedSegments: resolution.baseScheduleSegments
         )
     }
 
@@ -1454,11 +1467,11 @@ final class RecordsQueries {
         case .planned: return .planned
         case .rest: return .rest
         case .unrecorded: return .unrecorded
-        case .corrected: return .corrected
+        case .corrected: return cell.isAutomationRecorded ? .automation : .corrected
         case .locked: return .locked
         case .recorded:
             switch resolution.layer {
-            case .override: return .corrected
+            case .override: return cell.isAutomationRecorded ? .automation : .corrected
             case .calendarException: return .exception
             case .schedule: return isRecordedDay(resolution.dayKey) ? .recorded : .scheduled
             case .none: return .unrecorded

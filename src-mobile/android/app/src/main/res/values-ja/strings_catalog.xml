@@ -1141,6 +1141,7 @@
     <string name="recordsSleepEstimated">設定からの推定</string>
     <string name="recordsSleepFromHealth">この端末のヘルスケアから</string>
     <string name="recordsSourceAfterNow">ここから先は今日のシフト</string>
+    <string name="recordsSourceAutomation">位置情報から自動記録</string>
     <string name="recordsSourceException">休日または振替出勤</string>
     <string name="recordsSourceNone">この日のシフトはない</string>
     <string name="recordsSourceOverride">この日は自分で直した</string>

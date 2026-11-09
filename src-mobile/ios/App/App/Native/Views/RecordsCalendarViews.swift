@@ -124,7 +124,7 @@ struct RecordsDayBar: View {
                         .padding(.leading, 1.5)
                 }
             }
-            if look.cell.appearance == .corrected && !look.isLocked {
+            if look.cell.appearance == .corrected && !look.cell.isAutomationRecorded && !look.isLocked {
                 Circle().fill(OWCDesign.secondary)
                     .frame(width: 4, height: 4)
                     .padding(.leading, 3)

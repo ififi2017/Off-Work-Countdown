@@ -1144,6 +1144,7 @@
     <string name="recordsSleepEstimated">Aus den Einstellungen geschätzt</string>
     <string name="recordsSleepFromHealth">Aus Gesundheit auf diesem Gerät</string>
     <string name="recordsSourceAfterNow">Ab jetzt nach dem heutigen Plan</string>
+    <string name="recordsSourceAutomation">Über deinen Standort erfasst</string>
     <string name="recordsSourceException">Feiertag oder Arbeitstag-Tausch</string>
     <string name="recordsSourceNone">Kein Plan für diesen Tag</string>
     <string name="recordsSourceOverride">Diesen Tag hast du geändert</string>

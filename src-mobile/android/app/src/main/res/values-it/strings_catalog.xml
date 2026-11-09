@@ -1147,6 +1147,7 @@
     <string name="recordsSleepEstimated">Stimato dalle impostazioni</string>
     <string name="recordsSleepFromHealth">Da Salute su questo dispositivo</string>
     <string name="recordsSourceAfterNow">Da adesso, il turno di oggi</string>
+    <string name="recordsSourceAutomation">Registrato dalla tua posizione</string>
     <string name="recordsSourceException">Festivo o recupero</string>
     <string name="recordsSourceNone">Nessun turno per questo giorno</string>
     <string name="recordsSourceOverride">Hai modificato questo giorno</string>

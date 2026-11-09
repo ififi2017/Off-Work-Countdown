@@ -64,6 +64,8 @@ struct RecordsDayCell: Equatable, Sendable, Identifiable {
     var isProjection: Bool
     var hasConflict: Bool
     var isFromSavedSchedule: Bool = false
+    /// Plan 021: the day's override is only what workplace automation adopted.
+    var isAutomationRecorded: Bool = false
 }
 
 struct RecordsDayDetail: Equatable, Sendable {

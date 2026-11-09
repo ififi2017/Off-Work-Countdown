@@ -1150,6 +1150,7 @@
     <string name="recordsSleepEstimated">Оценка из настроек</string>
     <string name="recordsSleepFromHealth">Из «Здоровья» на этом устройстве</string>
     <string name="recordsSourceAfterNow">Дальше — сегодняшний график</string>
+    <string name="recordsSourceAutomation">Записано по вашему местоположению</string>
     <string name="recordsSourceException">Праздник или рабочая суббота</string>
     <string name="recordsSourceNone">На этот день графика нет</string>
     <string name="recordsSourceOverride">Вы изменили этот день</string>

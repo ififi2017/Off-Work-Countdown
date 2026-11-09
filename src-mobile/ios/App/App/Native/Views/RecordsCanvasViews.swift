@@ -161,7 +161,7 @@ enum RecordsDayMarks {
         return switch cell.appearance {
         case .unrecorded: "recordsUnrecorded"
         case .recorded: cell.isFromSavedSchedule ? "recordsSourceSchedule" : "recordsSourceRecorded"
-        case .corrected: "recordsSourceOverride"
+        case .corrected: cell.isAutomationRecorded ? "recordsSourceAutomation" : "recordsSourceOverride"
         case .planned: "recordsPlanned"
         case .rest: "recordsRestDay"
         case .locked: "recordsLockedDay"

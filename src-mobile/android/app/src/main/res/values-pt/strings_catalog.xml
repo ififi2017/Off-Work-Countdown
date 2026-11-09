@@ -1147,6 +1147,7 @@
     <string name="recordsSleepEstimated">Estimado pelas suas definições</string>
     <string name="recordsSleepFromHealth">Do Saúde neste aparelho</string>
     <string name="recordsSourceAfterNow">Daqui em diante, o horário de hoje</string>
+    <string name="recordsSourceAutomation">Registado a partir da tua localização</string>
     <string name="recordsSourceException">Feriado ou folga compensada</string>
     <string name="recordsSourceNone">Sem horário neste dia</string>
     <string name="recordsSourceOverride">Alteraste este dia</string>

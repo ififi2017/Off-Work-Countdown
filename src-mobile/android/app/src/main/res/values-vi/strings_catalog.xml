@@ -1141,6 +1141,7 @@
     <string name="recordsSleepEstimated">Ước từ cài đặt</string>
     <string name="recordsSleepFromHealth">Từ Sức khỏe trên máy này</string>
     <string name="recordsSourceAfterNow">Từ giờ theo ca hôm nay</string>
+    <string name="recordsSourceAutomation">Ghi lại từ vị trí của bạn</string>
     <string name="recordsSourceException">Ngày lễ hoặc làm bù</string>
     <string name="recordsSourceNone">Ngày này không có ca</string>
     <string name="recordsSourceOverride">Bạn đã sửa ngày này</string>

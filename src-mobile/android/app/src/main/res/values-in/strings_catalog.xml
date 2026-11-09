@@ -1141,6 +1141,7 @@
     <string name="recordsSleepEstimated">Perkiraan dari pengaturan</string>
     <string name="recordsSleepFromHealth">Dari Kesehatan di perangkat ini</string>
     <string name="recordsSourceAfterNow">Mulai sekarang mengikuti jadwal hari ini</string>
+    <string name="recordsSourceAutomation">Dicatat dari lokasimu</string>
     <string name="recordsSourceException">Hari libur atau masuk pengganti</string>
     <string name="recordsSourceNone">Tidak ada jadwal hari ini</string>
     <string name="recordsSourceOverride">Kamu mengubah hari ini</string>

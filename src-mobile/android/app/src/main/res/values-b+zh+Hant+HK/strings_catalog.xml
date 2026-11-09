@@ -1141,6 +1141,7 @@
     <string name="recordsSleepEstimated">依設定估算</string>
     <string name="recordsSleepFromHealth">來自此裝置的健康資料</string>
     <string name="recordsSourceAfterNow">之後按今日更表推算</string>
+    <string name="recordsSourceAutomation">依定位自動記錄</string>
     <string name="recordsSourceException">公眾假期或補班</string>
     <string name="recordsSourceNone">呢日冇更表</string>
     <string name="recordsSourceOverride">你改過呢日</string>

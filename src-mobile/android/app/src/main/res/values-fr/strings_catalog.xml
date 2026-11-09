@@ -1147,6 +1147,7 @@
     <string name="recordsSleepEstimated">Estimé d’après vos réglages</string>
     <string name="recordsSleepFromHealth">Depuis Santé sur cet appareil</string>
     <string name="recordsSourceAfterNow">À partir de maintenant, le planning du jour</string>
+    <string name="recordsSourceAutomation">Enregistré d\'après votre position</string>
     <string name="recordsSourceException">Jour férié ou rattrapage</string>
     <string name="recordsSourceNone">Pas de planning ce jour-là</string>
     <string name="recordsSourceOverride">Vous avez modifié ce jour</string>

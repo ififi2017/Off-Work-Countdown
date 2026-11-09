@@ -1141,6 +1141,7 @@
     <string name="recordsSleepEstimated">按设置估算</string>
     <string name="recordsSleepFromHealth">来自此设备的健康数据</string>
     <string name="recordsSourceAfterNow">之后按今天的排班推算</string>
+    <string name="recordsSourceAutomation">依定位自动记录</string>
     <string name="recordsSourceException">法定假日或补班</string>
     <string name="recordsSourceNone">这天没有排班</string>
     <string name="recordsSourceOverride">你改过这天</string>

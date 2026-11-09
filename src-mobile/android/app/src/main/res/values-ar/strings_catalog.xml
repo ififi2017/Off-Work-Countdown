@@ -1156,6 +1156,7 @@
     <string name="recordsSleepEstimated">مقدَّر من الإعدادات</string>
     <string name="recordsSleepFromHealth">من صحتي على هذا الجهاز</string>
     <string name="recordsSourceAfterNow">من الآن فصاعدًا حسب جدول اليوم</string>
+    <string name="recordsSourceAutomation">مسجّل من موقعك</string>
     <string name="recordsSourceException">عطلة أو يوم تعويض</string>
     <string name="recordsSourceNone">لا جدول لهذا اليوم</string>
     <string name="recordsSourceOverride">عدّلت هذا اليوم</string>

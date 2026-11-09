@@ -4137,6 +4137,9 @@
     "recordsSourceAfterNow": {
       "resource": "string/recordsSourceAfterNow"
     },
+    "recordsSourceAutomation": {
+      "resource": "string/recordsSourceAutomation"
+    },
     "recordsSourceException": {
       "resource": "string/recordsSourceException"
     },

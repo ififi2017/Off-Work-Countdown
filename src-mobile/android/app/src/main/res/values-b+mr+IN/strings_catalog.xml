@@ -1144,6 +1144,7 @@
     <string name="recordsSleepEstimated">सेटिंगवरून अंदाज</string>
     <string name="recordsSleepFromHealth">या उपकरणाच्या आरोग्यावरून</string>
     <string name="recordsSourceAfterNow">आतापासून आजच्या शिफ्टनुसार</string>
+    <string name="recordsSourceAutomation">तुमच्या लोकेशनवरून नोंदवले</string>
     <string name="recordsSourceException">सुट्टी किंवा भरपाई दिवस</string>
     <string name="recordsSourceNone">या दिवशी शिफ्ट नाही</string>
     <string name="recordsSourceOverride">तुम्ही हा दिवस बदलला</string>
