@@ -109,6 +109,7 @@ import { holidayDay, holidayOverrides, loadHolidayRegion, type HolidayRegion } f
 import { ScheduleEditor, hoursLabel } from "./ScheduleEditor";
 import { WorkdaySelector } from "./WorkdaySelector";
 import { PeriodSummary } from "./PeriodSummary";
+import { InfoHint } from "./InfoHint";
 import { DesktopStatsPage } from "./DesktopStatsPage";
 import { summarize, startOfWeek, startOfYear, dailySalaryInMonth, countScheduledWorkdaysInMonth } from "@/lib/summary";
 import {
@@ -1524,12 +1525,11 @@ export function OffWorkCountdown({
       }
     : null;
   const overtimeInfo = overtimePresentation ? {
+    // A clock reading ("4:03:54") keeps this on the summary note's line.
     elapsed: t("webOvertimeElapsed", {
-      time: t("timeLeft", {
-        hours: Math.floor(elapsedOvertimeSeconds / 3600),
-        minutes: Math.floor((elapsedOvertimeSeconds % 3600) / 60).toString().padStart(2, "0"),
-        seconds: (elapsedOvertimeSeconds % 60).toString().padStart(2, "0"),
-      }),
+      time: `${Math.floor(elapsedOvertimeSeconds / 3600)}:${Math.floor((elapsedOvertimeSeconds % 3600) / 60)
+        .toString()
+        .padStart(2, "0")}:${(elapsedOvertimeSeconds % 60).toString().padStart(2, "0")}`,
     }),
     unpaidRate:
       effectiveOvertimeMultiplier === 0
@@ -3095,10 +3095,13 @@ export function OffWorkCountdown({
               <DialogTitle className="pr-5">
                 {t(overtimeDialogAdjusts ? "adjustOvertime" : "overtimeTitle")}
               </DialogTitle>
-              <DialogDescription>{t("overtimeDescription")}</DialogDescription>
+              {/* The mode switch below already says what to pick; keep the sentence for screen readers. */}
+              <DialogDescription className="sr-only">{t("overtimeDescription")}</DialogDescription>
             </DialogHeader>
             {/* Plan 024: until a clock time or for how long, a rest first, and how it is paid. */}
-            <div className="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800" role="radiogroup" aria-label={t("overtimeEndTime")}>
+            {/* Concentric corners: outer 12px − 4px padding = inner 8px. The theme's
+                `rounded-lg` is var(--radius) = 16px, rounder than this frame. */}
+            <div className="grid grid-cols-2 gap-1 rounded-[12px] bg-gray-100 p-1 dark:bg-gray-800" role="radiogroup" aria-label={t("overtimeEndTime")}>
               {(["until", "duration"] as const).map((entry) => (
                 <button
                   key={entry}
@@ -3117,7 +3120,7 @@ export function OffWorkCountdown({
                     }
                     setOvertimeEntry(entry);
                   }}
-                  className={`min-h-9 rounded-lg px-2 text-sm transition-colors ${
+                  className={`min-h-9 rounded-[8px] px-2 text-sm transition-colors ${
                     overtimeEntry === entry
                       ? "bg-white font-medium text-gray-900 shadow-sm dark:bg-gray-600 dark:text-white"
                       : "text-gray-600 dark:text-gray-300"
@@ -3129,7 +3132,7 @@ export function OffWorkCountdown({
             </div>
             {overtimeEntry === "until" ? (
               <div className="space-y-2">
-                <Label id="overtime-end-label">{t("overtimeEndTime")}</Label>
+                <Label id="overtime-end-label" className="sr-only">{t("overtimeEndTime")}</Label>
               <div className="grid grid-cols-2 gap-2" dir="ltr">
                 <Select
                   value={overtimeEndTime.split(":")[0]}
@@ -3171,7 +3174,7 @@ export function OffWorkCountdown({
               </div>
             ) : (
               <div className="space-y-2">
-                <Label>{t("overtimeDurationLabel")}</Label>
+                <Label className="sr-only">{t("overtimeDurationLabel")}</Label>
                 <Select
                   value={String(overtimeDurationMinutes)}
                   onValueChange={(minutes) => setOvertimeDurationMinutes(Number(minutes))}
@@ -3187,9 +3190,12 @@ export function OffWorkCountdown({
                 </Select>
               </div>
             )}
-            <div className="space-y-1.5">
+            <div>
               <div className="flex items-center justify-between gap-3">
-                <Label>{t("overtimeRestRow")}</Label>
+                <span className="flex items-center gap-1">
+                  <Label>{t("overtimeRestRow")}</Label>
+                  <InfoHint text={t("overtimeRestFootnote")} />
+                </span>
                 <Select
                   value={String(overtimeRestMinutes)}
                   onValueChange={(minutes) => setOvertimeRestMinutes(Number(minutes))}
@@ -3206,7 +3212,6 @@ export function OffWorkCountdown({
                   </SelectContent>
                 </Select>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{t("overtimeRestFootnote")}</p>
             </div>
             {activeShift && overtimeCandidateEndAtMs(Date.now()) !== null && (
               <p className="text-sm font-medium tabular-nums text-gray-800 dark:text-gray-100">
@@ -3221,7 +3226,22 @@ export function OffWorkCountdown({
             )}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between gap-3">
-                <Label>{t("overtimePayRow")}</Label>
+                <span className="flex items-center gap-1">
+                  <Label>{t("overtimePayRow")}</Label>
+                  <InfoHint
+                    text={
+                      overtimePayChoiceValue === "unpaid"
+                        ? t("overtimeUnpaidSheetNote")
+                        : overtimePayChoiceMultiplier(overtimePayChoiceValue, overtimePayCustom) === 1
+                          ? t("overtimeNoMultiplier")
+                          : t("overtimeMultiplierNote", {
+                              multiplier: overtimeNumberFormats.percent.format(
+                                overtimePayChoiceMultiplier(overtimePayChoiceValue, overtimePayCustom)
+                              ),
+                            })
+                    }
+                  />
+                </span>
                 <Select value={overtimePayChoiceValue} onValueChange={setOvertimePayChoiceValue}>
                   <SelectTrigger aria-label={t("overtimePayRow")} className="h-9 w-auto min-w-28 rounded-xl bg-background">
                     <SelectValue />
@@ -3254,17 +3274,6 @@ export function OffWorkCountdown({
                 </div>
               )}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {overtimePayChoiceValue === "unpaid"
-                ? t("overtimeUnpaidSheetNote")
-                : overtimePayChoiceMultiplier(overtimePayChoiceValue, overtimePayCustom) === 1
-                  ? t("overtimeNoMultiplier")
-                  : t("overtimeMultiplierNote", {
-                      multiplier: overtimeNumberFormats.percent.format(
-                        overtimePayChoiceMultiplier(overtimePayChoiceValue, overtimePayCustom)
-                      ),
-                    })}
-            </p>
             <div className="sticky bottom-0 z-10 -mx-5 flex flex-wrap justify-end gap-2 border-t border-gray-100 bg-background px-5 pb-5 pt-3 dark:border-gray-800 [&>button]:h-auto [&>button]:min-h-10 [&>button]:max-w-full [&>button]:whitespace-normal">
               <Button variant="outline" onClick={() => setOvertimeDialogOpen(false)}>
                 {t("notNow")}

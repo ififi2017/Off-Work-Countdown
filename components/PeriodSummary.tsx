@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { Coins, Eye, EyeOff } from "lucide-react";
+import { InfoHint } from "@/components/InfoHint";
 import type { PeriodSummary as SummaryData } from "@/lib/summary";
 
 interface Row {
@@ -78,14 +79,18 @@ export function PeriodSummary({
             : "rounded-xl p-4"
       }`}
     >
-      <p className="text-xs text-gray-500 dark:text-gray-400">{note}</p>
-      {overtimeInfo && (
-        <div className="mt-1 min-w-0 space-y-0.5 text-xs tabular-nums text-gray-500 [overflow-wrap:anywhere] dark:text-gray-400">
-          <p>{overtimeInfo.elapsed}</p>
-          {/* The caller already leaves amounts out while earnings are hidden. */}
-          {overtimeInfo.unpaidRate && <p>{overtimeInfo.unpaidRate}</p>}
-        </div>
-      )}
+      {/* Overtime sits on the note's line, not under it: the window is a fixed
+          430pt tall. How the overtime is paid is a hover/focus detail. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5">
+        <p className="text-xs text-gray-500 dark:text-gray-400">{note}</p>
+        {overtimeInfo && (
+          <p className="flex min-w-0 items-center gap-1 text-xs tabular-nums text-gray-500 dark:text-gray-400">
+            <span>{overtimeInfo.elapsed}</span>
+            {/* The caller already leaves amounts out while earnings are hidden. */}
+            {overtimeInfo.unpaidRate && <InfoHint text={overtimeInfo.unpaidRate} />}
+          </p>
+        )}
+      </div>
       {currentEarnings && (
         <div className="mt-2 flex items-center justify-between gap-3 border-b border-gray-200/70 pb-2 dark:border-gray-700/70">
           <span className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
