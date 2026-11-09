@@ -168816,125 +168816,6 @@
         }
       }
     },
-    "automationPresenceStillAtWork": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "لا تزال في العمل · {{duration}} بعد وقت انتهائك"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Noch bei der Arbeit · {{duration}} nach Feierabend"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Still at work · {{duration}} past your end time"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aún en el trabajo · {{duration}} después de tu hora de salida"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toujours au travail · {{duration}} après votre heure de fin"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अभी भी काम पर · समाप्ति समय से {{duration}} ज़्यादा"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Masih di tempat kerja · {{duration}} lewat jam selesai"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ancora al lavoro · {{duration}} oltre l'orario di fine"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "まだ勤務先にいます · 終了時刻を{{duration}}超過"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "아직 회사에 있어요 · 퇴근 시간 {{duration}} 초과"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अजूनही कामावर · समाप्ती वेळेपासून {{duration}} जास्त"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ainda no trabalho · {{duration}} depois da hora de saída"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Всё ещё на работе · {{duration}} после окончания смены"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ยังอยู่ที่ทำงาน · เกินเวลาเลิกงาน {{duration}}"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hâlâ işte · bitiş saatinden {{duration}} sonra"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vẫn ở nơi làm việc · quá giờ tan ca {{duration}}"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "仍在公司 · 已超出下班时间 {{duration}}"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "仍在公司 · 已超出下班時間 {{duration}}"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "仍在公司 · 已超出下班時間 {{duration}}"
-          }
-        }
-      }
-    },
     "automationPresenceLeftAt": {
       "extractionState": "manual",
       "localizations": {
@@ -169288,6 +169169,363 @@
           "stringUnit": {
             "state": "translated",
             "value": "已在公司"
+          }
+        }
+      }
+    },
+    "automationPresenceStillAtWorkNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ما زلت في العمل. سيتم تسجيل وقت انصرافك الفعلي عند مغادرتك."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du bist noch bei der Arbeit. Dein tatsächliches Feierabendende wird beim Verlassen erfasst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Still at work. Your real clock-out is recorded when you leave."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sigues en el trabajo. Tu hora real de salida se registra cuando te vayas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous êtes encore au travail. Votre heure de départ réelle sera enregistrée à votre sortie."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आप अभी भी काम पर हैं। आपके निकलते ही आपका असली छुट्टी का समय दर्ज हो जाएगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masih di tempat kerja. Jam pulang sebenarnya dicatat saat kamu pergi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sei ancora al lavoro. L'orario di uscita reale viene registrato quando te ne vai."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まだ職場にいます。退勤時刻は、職場を出たときに記録されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 회사에 있어요. 퇴근 시각은 나갈 때 기록돼요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुम्ही अजूनही कामाच्या ठिकाणी आहात. तुम्ही निघाल्यावर तुमची खरी सुटण्याची वेळ नोंदवली जाईल."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainda estás no trabalho. A tua hora de saída real é registada quando saíres."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы ещё на работе. Фактическое время ухода запишется, когда вы выйдете."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คุณยังอยู่ที่ทำงาน เวลาเลิกงานจริงจะถูกบันทึกเมื่อคุณออกจากที่ทำงาน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hâlâ işyerindesin. Gerçek çıkış saatin, ayrıldığında kaydedilir."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn vẫn đang ở nơi làm việc. Giờ tan làm thực tế sẽ được ghi lại khi bạn rời đi."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仍在公司，离开时会记录真实下班时间。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仍在公司，離開時會記錄真實下班時間。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仍在公司，離開時會記錄真實下班時間。"
+          }
+        }
+      }
+    },
+    "automationPresenceNeedsCheck": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ما زال موقعك يظهر في العمل بعد وقت انتهاء دوامك بوقت طويل، لذا تبقى ساعاتك كما خُطط لها. راجع هذا اليوم في السجلات."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du wirst nach deinem Arbeitsende noch lange am Arbeitsort angezeigt, deshalb bleiben deine Stunden wie geplant. Prüfe diesen Tag unter Aufzeichnungen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Still showing at work hours after your end time, so your hours stay as planned. Check this day in Records."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sigues apareciendo en el trabajo horas después de tu hora de salida, así que tus horas se mantienen como estaban previstas. Revisa este día en Registros."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous apparaissez encore au travail longtemps après votre heure de fin, vos heures restent donc comme prévu. Vérifiez cette journée dans Historique."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपके समाप्ति समय के घंटों बाद भी आप कार्यस्थल पर दिख रहे हैं, इसलिए आपके घंटे तय योजना के अनुसार ही रहेंगे। रिकॉर्ड में इस दिन को जाँच लें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu masih terdeteksi di tempat kerja berjam-jam setelah jam selesai, jadi jam kerjamu tetap sesuai rencana. Periksa hari ini di Catatan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Risulti ancora al lavoro dopo ore dall'orario di fine, quindi le tue ore restano come pianificate. Controlla questo giorno in Registro."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "終了時刻を過ぎて何時間も職場にいる状態のため、勤務時間は予定どおりのままです。記録でこの日を確認してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "종료 시각이 한참 지났는데도 회사에 있는 것으로 표시돼서, 근무 시간은 계획대로 유지했어요. 기록에서 이 날을 확인해 주세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमच्या समाप्ती वेळेनंतर बराच काळ तुम्ही कामाच्या ठिकाणी दिसत आहात, म्हणून तुमचे तास ठरल्याप्रमाणेच राहतील. नोंदींमध्ये हा दिवस तपासा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuas a aparecer no trabalho muito depois da hora de saída, por isso as tuas horas mantêm-se como planeado. Confirma este dia em Registos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы всё ещё отображаетесь на работе спустя много часов после конца смены, поэтому часы остаются по плану. Проверьте этот день в Записях."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คุณยังแสดงว่าอยู่ที่ทำงานนานหลังเวลาเลิกงาน ชั่วโมงทำงานจึงคงตามแผนเดิม โปรดตรวจสอบวันนี้ในบันทึก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitiş saatinden uzun süre sonra hâlâ işyerinde görünüyorsun, bu yüzden saatlerin planlandığı gibi kalıyor. Bu günü Kayıtlar'dan kontrol et."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn vẫn hiển thị ở nơi làm việc rất lâu sau giờ kết thúc, nên giờ làm vẫn giữ như kế hoạch. Hãy kiểm tra ngày này trong Bản ghi."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下班后很久仍显示在公司，工时先按原定记录，请到记录页核对这一天。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下班後很久仍顯示在公司，工時先按原定記錄，請到記錄頁核對這一天。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下班後很久仍顯示在公司，工時先按原定記錄，請到記錄頁核對這一天。"
+          }
+        }
+      }
+    },
+    "automationNoticeLeftAppliedOvertime": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم تسجيل الانصراف عند {{time}} · {{duration}} من العمل الإضافي."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feierabend um {{time}} erfasst · {{duration}} Überstunden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock-out recorded at {{time}} · {{duration}} of overtime."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salida registrada a las {{time}} · {{duration}} de horas extra."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Départ enregistré à {{time}} · {{duration}} d'heures supplémentaires."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "छुट्टी का समय {{time}} दर्ज किया गया · {{duration}} ओवरटाइम।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jam pulang dicatat pukul {{time}} · lembur {{duration}}."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uscita registrata alle {{time}} · {{duration}} di straordinario."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退勤時刻 {{time}} を記録しました · 残業 {{duration}}。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "퇴근 시각 {{time}} 기록됨 · 초과 근무 {{duration}}."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सुटण्याची वेळ {{time}} नोंदवली · {{duration}} ओव्हरटाइम."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saída registada às {{time}} · {{duration}} de horas extra."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Время ухода записано: {{time}} · переработка {{duration}}."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกเวลาเลิกงาน {{time}} แล้ว · ทำงานล่วงเวลา {{duration}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çıkış saati {{time}} olarak kaydedildi · {{duration}} fazla mesai."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã ghi giờ tan làm lúc {{time}} · tăng ca {{duration}}."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已记录下班时间 {{time}} · 加班 {{duration}}。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記錄下班時間 {{time}} · 加班 {{duration}}。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已記錄下班時間 {{time}} · 加班 {{duration}}。"
           }
         }
       }

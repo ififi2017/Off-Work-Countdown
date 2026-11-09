@@ -435,6 +435,18 @@ struct WorkplaceAutomationVisitTests {
         shortcut.source = .appIntentAutomation
         #expect(WorkplaceArrivalNotice.make(for: shortcut, outcome: .applied, state: harness.coordinator.state) == nil)
 
+        // Leaving well after the end says how much overtime was recorded.
+        let lateExit = AutomationEvent(
+            id: UUID(), source: .nativeGeofence, type: .exitOuter, workplaceID: harness.workplace.id,
+            registrationGeneration: harness.workplace.registrationGeneration,
+            observedAt: Self.at(19, 20), receivedAt: Self.at(19, 20), timestampBasis: .systemObservation
+        )
+        let exitOutcome = await harness.coordinator.receive(lateExit, shifts: [Self.shift()], now: Self.at(19, 20))
+        #expect(exitOutcome == .applied)
+        let exitNotice = try #require(WorkplaceArrivalNotice.make(for: lateExit, outcome: exitOutcome, state: harness.coordinator.state))
+        #expect(exitNotice.bodyKey == "automationNoticeLeftAppliedOvertime")
+        #expect(exitNotice.overtime.map { abs($0 - 140 * 60) < 0.001 } == true)
+
         harness.coordinator.update { $0.settings.notifiesArrivalsAndDepartures = false }
         #expect(WorkplaceArrivalNotice.make(for: departure, outcome: .applied, state: harness.coordinator.state) == nil)
     }

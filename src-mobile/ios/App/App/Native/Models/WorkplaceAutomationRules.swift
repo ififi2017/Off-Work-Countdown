@@ -30,6 +30,11 @@ nonisolated enum WorkplaceAutomation {
     /// An exit later than this after the planned end is reviewed, never
     /// applied silently (implementation default, §3.1).
     static let maximumAutomaticExtension: TimeInterval = 6 * 60 * 60
+    /// An exit up to this long after the planned end still belongs to the
+    /// shift, for review: a long night at work must not vanish just because
+    /// it is too long to apply on its own. Later than this, or once a later
+    /// shift has started, it says nothing about the shift.
+    static let maximumReviewableExtension: TimeInterval = 18 * 60 * 60
     /// Older events are only offered for review (implementation default, §3.5).
     static let maximumAutomaticEventAge: TimeInterval = 15 * 60
     /// Unadopted references and their readable details (§3.7).
@@ -239,16 +244,19 @@ nonisolated enum WorkplaceAutomationRules {
     }
 
     /// The shift an exit at `time` can close: the one running, or the most
-    /// recent one that ended within the automatic window. An overnight
+    /// recent one that ended within the reviewable window. An overnight
     /// 22:00–06:00 exit belongs to the shift that started the evening before.
+    /// Past the automatic window `assessExit` sends it to review.
     static func matchExit(at time: Date, among shifts: [AutomationShift]) -> AutomationShiftMatch {
         let candidates = shifts.filter { shift in
             time > shift.plannedStart
-                && time <= shift.plannedEnd.addingTimeInterval(WorkplaceAutomation.maximumAutomaticExtension)
+                && time <= shift.plannedEnd.addingTimeInterval(WorkplaceAutomation.maximumReviewableExtension)
         }
         guard let latest = candidates.max(by: { $0.plannedStart < $1.plannedStart }) else {
             return .noShift
         }
+        // An exit far past one shift's end but before the next one starts
+        // belongs to the first; a later shift that started takes it.
         // A later shift that already started wins; an earlier one still
         // inside its extension window cannot be closed by the same exit.
         let running = candidates.filter { time < $0.plannedEnd }

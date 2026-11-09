@@ -83,11 +83,13 @@
     <string name="automationNoticeArrivedApplied">已記錄上班時間 %1$s。</string>
     <string name="automationNoticeArrivedRecorded">已記下 %1$s 抵達。你確認之前，工時不會改變。</string>
     <string name="automationNoticeLeftApplied">已記錄下班時間 %1$s。</string>
+    <string name="automationNoticeLeftAppliedOvertime">已記錄下班時間 %1$s · 加班 %2$s。</string>
     <string name="automationNoticeLeftRecorded">已記下 %1$s 離開。你確認之前，工時不會改變。</string>
     <string name="automationPresenceArrived">已在公司</string>
     <string name="automationPresenceArrivedAt">%1$s 已到公司</string>
     <string name="automationPresenceLeftAt">%1$s 離開公司</string>
-    <string name="automationPresenceStillAtWork">仍在公司 · 已超出下班時間 %1$s</string>
+    <string name="automationPresenceNeedsCheck">下班後很久仍顯示在公司，工時先按原定記錄，請到記錄頁核對這一天。</string>
+    <string name="automationPresenceStillAtWorkNote">仍在公司，離開時會記錄真實下班時間。</string>
     <string name="automationPresenceWorkingLate">加班中</string>
     <string name="automationPromptEarlyVisit">你提早到了，已經開始工作了嗎？</string>
     <string name="automationPromptExtraVisit">要把這次到訪記錄為加班嗎？</string>

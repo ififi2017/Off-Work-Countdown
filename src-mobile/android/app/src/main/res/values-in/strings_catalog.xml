@@ -83,11 +83,13 @@
     <string name="automationNoticeArrivedApplied">Jam masuk tercatat pukul %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Kedatangan pukul %1$s dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi.</string>
     <string name="automationNoticeLeftApplied">Jam pulang tercatat pukul %1$s.</string>
+    <string name="automationNoticeLeftAppliedOvertime">Jam pulang dicatat pukul %1$s · lembur %2$s.</string>
     <string name="automationNoticeLeftRecorded">Kepergian pukul %1$s dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi.</string>
     <string name="automationPresenceArrived">Di tempat kerja</string>
     <string name="automationPresenceArrivedAt">Di tempat kerja sejak %1$s</string>
     <string name="automationPresenceLeftAt">Meninggalkan tempat kerja pukul %1$s</string>
-    <string name="automationPresenceStillAtWork">Masih di tempat kerja · %1$s lewat jam selesai</string>
+    <string name="automationPresenceNeedsCheck">Kamu masih terdeteksi di tempat kerja berjam-jam setelah jam selesai, jadi jam kerjamu tetap sesuai rencana. Periksa hari ini di Catatan.</string>
+    <string name="automationPresenceStillAtWorkNote">Masih di tempat kerja. Jam pulang sebenarnya dicatat saat kamu pergi.</string>
     <string name="automationPresenceWorkingLate">Lembur</string>
     <string name="automationPromptEarlyVisit">Kamu datang lebih awal. Sudahkah kamu mulai bekerja?</string>
     <string name="automationPromptExtraVisit">Catat kunjungan ini sebagai kerja tambahan?</string>

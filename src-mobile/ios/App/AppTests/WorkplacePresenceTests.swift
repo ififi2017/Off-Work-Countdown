@@ -46,10 +46,19 @@ struct WorkplacePresenceTests {
         #expect(abs((presence?.overtime(at: now) ?? 0) - 83 * 60) < 0.001)
     }
 
-    @Test func aForgottenExitIsNotOvertime() {
+    @Test func theFirstFiveMinutesAfterTheEndAreStillJustTheEnd() {
+        let state = Self.state([(.enterInner, Self.start.addingTimeInterval(-600), false)])
+        #expect(Self.resolve(state, now: Self.end) == nil)
+        #expect(Self.resolve(state, now: Self.end.addingTimeInterval(4 * 60 + 59)) == nil)
+        #expect(Self.resolve(state, now: Self.end.addingTimeInterval(5 * 60)) == .stayingLate(plannedEnd: Self.end))
+    }
+
+    @Test func stillThereAfterSixHoursNeedsCheckingAndCountsNothing() {
         let state = Self.state([(.enterInner, Self.start, false)])
         let now = Self.end.addingTimeInterval(WorkplaceAutomation.maximumAutomaticExtension + 60)
-        #expect(Self.resolve(state, now: now) == nil)
+        let presence = Self.resolve(state, now: now)
+        #expect(presence == .needsCheck(plannedEnd: Self.end))
+        #expect(presence?.overtime(at: now) == 0)
     }
 
     @Test func leavingAfterTheEndCountsTheOvertime() {

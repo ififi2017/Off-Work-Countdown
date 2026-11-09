@@ -98,6 +98,17 @@ struct WorkplaceAutomationRulesTests {
         #expect(match == .matched(night))
     }
 
+    @Test("A 02:30 exit after an 18:00 end is still that shift's, for review, until the next shift starts")
+    func longNightExit() {
+        let today = Self.dayShift(9)
+        let tomorrow = Self.dayShift(10)
+        let exit = Self.at(10, 2, 30)
+        #expect(WorkplaceAutomationRules.matchExit(at: exit, among: [today, tomorrow]) == .matched(today))
+        #expect(WorkplaceAutomationRules.assessExit(at: exit, for: today) == .needsReview(.beyondAutomaticWindow))
+        // Once the next shift runs, leaving belongs to it.
+        #expect(WorkplaceAutomationRules.matchExit(at: Self.at(10, 9, 30), among: [today, tomorrow]) == .matched(tomorrow))
+    }
+
     // MARK: Early, punctual, late
 
     @Test("08:20, 08:30 and 08:50 arrivals for 09:00 with a 30 minute wait (§8.2)")

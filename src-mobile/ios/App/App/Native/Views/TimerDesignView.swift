@@ -209,7 +209,7 @@ private struct RunningTimerDesignView: View {
             return shifts.text.t("automationPresenceArrived")
         case .left(let at, _):
             return shifts.text.t("automationPresenceLeftAt", values: ["time": shifts.text.formatTime(at)])
-        case .stayingLate, nil:
+        case .stayingLate, .needsCheck, nil:
             return nil
         }
     }

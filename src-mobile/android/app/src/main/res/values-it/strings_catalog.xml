@@ -83,11 +83,13 @@
     <string name="automationNoticeArrivedApplied">Entrata registrata alle %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Arrivo alle %1$s annotato. Le tue ore restano invariate finché non confermi.</string>
     <string name="automationNoticeLeftApplied">Uscita registrata alle %1$s.</string>
+    <string name="automationNoticeLeftAppliedOvertime">Uscita registrata alle %1$s · %2$s di straordinario.</string>
     <string name="automationNoticeLeftRecorded">Partenza alle %1$s annotata. Le tue ore restano invariate finché non confermi.</string>
     <string name="automationPresenceArrived">Al lavoro</string>
     <string name="automationPresenceArrivedAt">Al lavoro dalle %1$s</string>
     <string name="automationPresenceLeftAt">Uscito dal lavoro alle %1$s</string>
-    <string name="automationPresenceStillAtWork">Ancora al lavoro · %1$s oltre l\'orario di fine</string>
+    <string name="automationPresenceNeedsCheck">Risulti ancora al lavoro dopo ore dall\'orario di fine, quindi le tue ore restano come pianificate. Controlla questo giorno in Registro.</string>
+    <string name="automationPresenceStillAtWorkNote">Sei ancora al lavoro. L\'orario di uscita reale viene registrato quando te ne vai.</string>
     <string name="automationPresenceWorkingLate">Straordinario</string>
     <string name="automationPromptEarlyVisit">Sei arrivato in anticipo. Hai già iniziato a lavorare?</string>
     <string name="automationPromptExtraVisit">Registrare questa visita come straordinario?</string>

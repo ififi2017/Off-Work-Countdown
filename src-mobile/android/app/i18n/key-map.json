@@ -404,6 +404,13 @@
         "time"
       ]
     },
+    "automationNoticeLeftAppliedOvertime": {
+      "resource": "string/automationNoticeLeftAppliedOvertime",
+      "params": [
+        "time",
+        "duration"
+      ]
+    },
     "automationNoticeLeftRecorded": {
       "resource": "string/automationNoticeLeftRecorded",
       "params": [
@@ -425,11 +432,11 @@
         "time"
       ]
     },
-    "automationPresenceStillAtWork": {
-      "resource": "string/automationPresenceStillAtWork",
-      "params": [
-        "duration"
-      ]
+    "automationPresenceNeedsCheck": {
+      "resource": "string/automationPresenceNeedsCheck"
+    },
+    "automationPresenceStillAtWorkNote": {
+      "resource": "string/automationPresenceStillAtWorkNote"
     },
     "automationPresenceWorkingLate": {
       "resource": "string/automationPresenceWorkingLate"

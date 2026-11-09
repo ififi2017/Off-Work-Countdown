@@ -83,11 +83,13 @@
     <string name="automationNoticeArrivedApplied">تم تسجيل بدء العمل عند %1$s.</string>
     <string name="automationNoticeArrivedRecorded">تم تسجيل الوصول عند %1$s. ستبقى ساعاتك كما هي إلى أن تؤكد.</string>
     <string name="automationNoticeLeftApplied">تم تسجيل انتهاء العمل عند %1$s.</string>
+    <string name="automationNoticeLeftAppliedOvertime">تم تسجيل الانصراف عند %1$s · %2$s من العمل الإضافي.</string>
     <string name="automationNoticeLeftRecorded">تم تسجيل المغادرة عند %1$s. ستبقى ساعاتك كما هي إلى أن تؤكد.</string>
     <string name="automationPresenceArrived">في العمل</string>
     <string name="automationPresenceArrivedAt">في العمل منذ %1$s</string>
     <string name="automationPresenceLeftAt">غادرت العمل في %1$s</string>
-    <string name="automationPresenceStillAtWork">لا تزال في العمل · %1$s بعد وقت انتهائك</string>
+    <string name="automationPresenceNeedsCheck">ما زال موقعك يظهر في العمل بعد وقت انتهاء دوامك بوقت طويل، لذا تبقى ساعاتك كما خُطط لها. راجع هذا اليوم في السجلات.</string>
+    <string name="automationPresenceStillAtWorkNote">ما زلت في العمل. سيتم تسجيل وقت انصرافك الفعلي عند مغادرتك.</string>
     <string name="automationPresenceWorkingLate">عمل إضافي</string>
     <string name="automationPromptEarlyVisit">وصلتَ مبكرًا. هل بدأت العمل؟</string>
     <string name="automationPromptExtraVisit">تسجيل هذه الزيارة كعمل إضافي؟</string>

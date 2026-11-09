@@ -83,11 +83,13 @@
     <string name="automationNoticeArrivedApplied">%1$s वाजता कामाची सुरुवात नोंदवली.</string>
     <string name="automationNoticeArrivedRecorded">%1$s वाजता आगमन नोंदवले. तुम्ही पुष्टी करेपर्यंत तुमचे तास तसेच राहतील.</string>
     <string name="automationNoticeLeftApplied">%1$s वाजता कामाचा शेवट नोंदवला.</string>
+    <string name="automationNoticeLeftAppliedOvertime">सुटण्याची वेळ %1$s नोंदवली · %2$s ओव्हरटाइम.</string>
     <string name="automationNoticeLeftRecorded">%1$s वाजता निघणे नोंदवले. तुम्ही पुष्टी करेपर्यंत तुमचे तास तसेच राहतील.</string>
     <string name="automationPresenceArrived">कामावर</string>
     <string name="automationPresenceArrivedAt">%1$s पासून कामावर</string>
     <string name="automationPresenceLeftAt">%1$s वाजता कामावरून निघाले</string>
-    <string name="automationPresenceStillAtWork">अजूनही कामावर · समाप्ती वेळेपासून %1$s जास्त</string>
+    <string name="automationPresenceNeedsCheck">तुमच्या समाप्ती वेळेनंतर बराच काळ तुम्ही कामाच्या ठिकाणी दिसत आहात, म्हणून तुमचे तास ठरल्याप्रमाणेच राहतील. नोंदींमध्ये हा दिवस तपासा.</string>
+    <string name="automationPresenceStillAtWorkNote">तुम्ही अजूनही कामाच्या ठिकाणी आहात. तुम्ही निघाल्यावर तुमची खरी सुटण्याची वेळ नोंदवली जाईल.</string>
     <string name="automationPresenceWorkingLate">उशिरापर्यंत काम</string>
     <string name="automationPromptEarlyVisit">तुम्ही लवकर पोहोचलात. तुम्ही काम सुरू केले आहे का?</string>
     <string name="automationPromptExtraVisit">ही भेट अतिरिक्त काम म्हणून नोंदवायची का?</string>

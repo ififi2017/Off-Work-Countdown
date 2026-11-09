@@ -487,7 +487,10 @@ final class NotificationService {
         guard status == .allowed else { return }
         let content = UNMutableNotificationContent()
         content.title = text.t("automationUITitle")
-        content.body = text.t(notice.bodyKey, values: ["time": formattedTime])
+        content.body = text.t(notice.bodyKey, values: [
+            "time": formattedTime,
+            "duration": notice.overtime.map { text.formatRelativeDuration($0 * 1_000) } ?? "",
+        ])
         content.sound = nil
         content.interruptionLevel = .passive
         content.userInfo = ["route": AppRoute.workplaceAutomationReview.rawValue]

@@ -83,11 +83,13 @@
     <string name="automationNoticeArrivedApplied">Entrada registrada a las %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Llegada a las %1$s anotada. Tus horas no cambiarán hasta que confirmes.</string>
     <string name="automationNoticeLeftApplied">Salida registrada a las %1$s.</string>
+    <string name="automationNoticeLeftAppliedOvertime">Salida registrada a las %1$s · %2$s de horas extra.</string>
     <string name="automationNoticeLeftRecorded">Salida a las %1$s anotada. Tus horas no cambiarán hasta que confirmes.</string>
     <string name="automationPresenceArrived">En el trabajo</string>
     <string name="automationPresenceArrivedAt">En el trabajo desde las %1$s</string>
     <string name="automationPresenceLeftAt">Saliste del trabajo a las %1$s</string>
-    <string name="automationPresenceStillAtWork">Aún en el trabajo · %1$s después de tu hora de salida</string>
+    <string name="automationPresenceNeedsCheck">Sigues apareciendo en el trabajo horas después de tu hora de salida, así que tus horas se mantienen como estaban previstas. Revisa este día en Registros.</string>
+    <string name="automationPresenceStillAtWorkNote">Sigues en el trabajo. Tu hora real de salida se registra cuando te vayas.</string>
     <string name="automationPresenceWorkingLate">Trabajando hasta tarde</string>
     <string name="automationPromptEarlyVisit">Has llegado temprano. ¿Ya empezaste a trabajar?</string>
     <string name="automationPromptExtraVisit">¿Registrar esta visita como horas extra?</string>

@@ -173,11 +173,13 @@ nonisolated struct WorkplaceArrivalNotice: Equatable, Sendable {
     var identifier: String
     var bodyKey: String
     var time: Date
+    /// The overtime an applied clock-out recorded, once past the grace period.
+    var overtime: TimeInterval? = nil
 
-    static func bodyKey(arrived: Bool, applied: Bool) -> String {
+    static func bodyKey(arrived: Bool, applied: Bool, withOvertime: Bool = false) -> String {
         switch (arrived, applied) {
         case (true, true): "automationNoticeArrivedApplied"
-        case (false, true): "automationNoticeLeftApplied"
+        case (false, true): withOvertime ? "automationNoticeLeftAppliedOvertime" : "automationNoticeLeftApplied"
         case (true, false): "automationNoticeArrivedRecorded"
         case (false, false): "automationNoticeLeftRecorded"
         }
@@ -198,13 +200,18 @@ nonisolated struct WorkplaceArrivalNotice: Equatable, Sendable {
         case .recordedForReview, .needsReview: applied = false
         case .alreadyApplied, .ignored, .temporarilyUnavailable: return nil
         }
-        let key = bodyKey(arrived: event.type == .enterInner, applied: applied)
         // An on-time arrival adopts the planned start, not the crossing.
-        let adopted = state.proposals.last { $0.sourceEventIDs.contains(event.id) }?.proposedTime
+        let proposal = state.proposals.last { $0.sourceEventIDs.contains(event.id) }
+        let overtime = proposal.flatMap { proposal -> TimeInterval? in
+            guard applied, proposal.boundary == .end else { return nil }
+            let past = proposal.proposedTime.timeIntervalSince(proposal.shift.plannedEnd)
+            return past >= WorkplacePresence.overtimeGrace ? past : nil
+        }
         return WorkplaceArrivalNotice(
             identifier: identifierPrefix + event.id.uuidString,
-            bodyKey: key,
-            time: outcome == .applied ? adopted ?? event.proposedTime : event.proposedTime
+            bodyKey: bodyKey(arrived: event.type == .enterInner, applied: applied, withOvertime: overtime != nil),
+            time: outcome == .applied ? proposal?.proposedTime ?? event.proposedTime : event.proposedTime,
+            overtime: overtime
         )
     }
 }
