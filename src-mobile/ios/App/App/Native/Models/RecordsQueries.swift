@@ -903,6 +903,15 @@ final class RecordsQueries {
         )
     }
 
+    /// Plan 021: every day whose override is still only what automation
+    /// adopted. Only days with a provenance summary can qualify, so this
+    /// resolves a handful of days, never the career.
+    func automationOnlyDayKeys() -> Set<String> {
+        Set(records.state.workTimeProvenance.map(\.dayKey).filter { key in
+            resolvedDay(dayKey: key).map(isAutomationRecordedDay) ?? false
+        })
+    }
+
     /// Plan 021: the day's override is still only what workplace automation
     /// adopted, so it reads as recorded automatically, not as the person's edit.
     private func isAutomationRecordedDay(_ resolution: DayResolution) -> Bool {

@@ -209,6 +209,9 @@ final class LifeSummaryModel {
         var leaveDays: [LeaveDay]
         var expansions: ScheduleExpansionTable
         var observationsByDay: [String: [WorkObservation]]
+        /// Plan 021: days whose override is only what automation adopted.
+        /// Life marks the person's changes, and these are not theirs.
+        var automationOnlyDayKeys: Set<String> = []
     }
 
     /// A life with no career to walk — retirement is not after the work start —
@@ -264,7 +267,8 @@ final class LifeSummaryModel {
                     periods: archive.periods,
                     snapshots: archive.snapshots
                 ),
-                observationsByDay: queries.observationIndex()
+                observationsByDay: queries.observationIndex(),
+                automationOnlyDayKeys: queries.automationOnlyDayKeys()
             )
         )
     }
@@ -328,6 +332,7 @@ final class LifeSummaryModel {
         ).compactMap { resolution in
             LifeScheduleDay(
                 resolution: resolution,
+                isAutomationOnly: inputs.automationOnlyDayKeys.contains(resolution.dayKey),
                 overtimeSegments: (inputs.observationsByDay[resolution.dayKey] ?? []).compactMap {
                     RecordsMetrics.declaredOvertimeSegment(
                         observation: $0,

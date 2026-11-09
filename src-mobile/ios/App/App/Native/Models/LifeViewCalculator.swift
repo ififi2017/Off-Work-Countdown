@@ -95,7 +95,9 @@ nonisolated struct LifeScheduleDay: Equatable, Sendable {
         self.isOverride = isOverride
     }
 
-    init?(resolution: DayResolution, overtimeSegments: [NativeShiftSegment] = []) {
+    /// `isAutomationOnly`: the override holds only what workplace automation
+    /// adopted, so the day does not read as the person's change.
+    init?(resolution: DayResolution, isAutomationOnly: Bool = false, overtimeSegments: [NativeShiftSegment] = []) {
         guard let periodID = resolution.periodID else { return nil }
         self.init(
             periodID: periodID,
@@ -103,7 +105,7 @@ nonisolated struct LifeScheduleDay: Equatable, Sendable {
             shiftAnchorDate: resolution.shiftAnchorDate,
             segments: resolution.segments,
             overtimeSegments: overtimeSegments,
-            isOverride: resolution.layer == .override && !resolution.segments.isEmpty
+            isOverride: resolution.layer == .override && !resolution.segments.isEmpty && !isAutomationOnly
         )
     }
 }
