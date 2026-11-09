@@ -410,6 +410,30 @@
         "time"
       ]
     },
+    "automationPresenceArrived": {
+      "resource": "string/automationPresenceArrived"
+    },
+    "automationPresenceArrivedAt": {
+      "resource": "string/automationPresenceArrivedAt",
+      "params": [
+        "time"
+      ]
+    },
+    "automationPresenceLeftAt": {
+      "resource": "string/automationPresenceLeftAt",
+      "params": [
+        "time"
+      ]
+    },
+    "automationPresenceStillAtWork": {
+      "resource": "string/automationPresenceStillAtWork",
+      "params": [
+        "duration"
+      ]
+    },
+    "automationPresenceWorkingLate": {
+      "resource": "string/automationPresenceWorkingLate"
+    },
     "automationPromptEarlyVisit": {
       "resource": "string/automationPromptEarlyVisit"
     },

@@ -84,6 +84,11 @@
     <string name="automationNoticeArrivedRecorded">Arrival at %1$s noted. Your hours stay the same until you confirm.</string>
     <string name="automationNoticeLeftApplied">Clock-out recorded at %1$s.</string>
     <string name="automationNoticeLeftRecorded">Departure at %1$s noted. Your hours stay the same until you confirm.</string>
+    <string name="automationPresenceArrived">At work</string>
+    <string name="automationPresenceArrivedAt">At work since %1$s</string>
+    <string name="automationPresenceLeftAt">Left work at %1$s</string>
+    <string name="automationPresenceStillAtWork">Still at work · %1$s past your end time</string>
+    <string name="automationPresenceWorkingLate">Working late</string>
     <string name="automationPromptEarlyVisit">You arrived early. Have you started work?</string>
     <string name="automationPromptExtraVisit">Record this visit as extra work?</string>
     <string name="automationPromptLateArrival">Recorded a slightly later arrival. Keep recording today as usual?</string>

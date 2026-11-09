@@ -84,6 +84,11 @@
     <string name="automationNoticeArrivedRecorded">Đã ghi nhận bạn đến lúc %1$s. Giờ làm giữ nguyên cho đến khi bạn xác nhận.</string>
     <string name="automationNoticeLeftApplied">Đã ghi giờ tan làm lúc %1$s.</string>
     <string name="automationNoticeLeftRecorded">Đã ghi nhận bạn rời đi lúc %1$s. Giờ làm giữ nguyên cho đến khi bạn xác nhận.</string>
+    <string name="automationPresenceArrived">Đang ở nơi làm việc</string>
+    <string name="automationPresenceArrivedAt">Có mặt ở nơi làm việc từ %1$s</string>
+    <string name="automationPresenceLeftAt">Rời nơi làm việc lúc %1$s</string>
+    <string name="automationPresenceStillAtWork">Vẫn ở nơi làm việc · quá giờ tan ca %1$s</string>
+    <string name="automationPresenceWorkingLate">Đang làm thêm giờ</string>
     <string name="automationPromptEarlyVisit">Bạn đến sớm. Bạn đã bắt đầu làm việc chưa?</string>
     <string name="automationPromptExtraVisit">Ghi lần ghé này là làm thêm giờ chứ?</string>
     <string name="automationPromptLateArrival">Đã ghi nhận bạn đến muộn hơn một chút. Tiếp tục ghi như thường lệ hôm nay chứ?</string>

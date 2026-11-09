@@ -1,7 +1,7 @@
 import Foundation
 
 /// The installed app's version, including its build when available.
-enum AppVersion {
+nonisolated enum AppVersion {
     static func display(in bundle: Bundle = .main) -> String {
         display(
             version: bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,

@@ -188,8 +188,31 @@ private struct RunningTimerDesignView: View {
     /// Where the timeline starts, i.e. how much room the content above it took.
     @State private var timelineTop: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(WorkplaceAutomationCoordinator.self) private var automation: WorkplaceAutomationCoordinator?
 
     private var beforeStart: Bool { snapshot.isBeforeStart(at: now) }
+
+    /// Plan 021: an arrival before the shift or a departure during it, as a
+    /// quiet fact above the countdown. The countdown itself never moves.
+    private var presencePill: String? {
+        guard !overtime, let automation else { return nil }
+        let presence = WorkplacePresence.resolve(
+            plannedStart: Date(timeIntervalSince1970: snapshot.startAtMs / 1_000),
+            plannedEnd: Date(timeIntervalSince1970: snapshot.plannedEndAtMs / 1_000),
+            state: automation.state,
+            now: now
+        )
+        switch presence {
+        case .arrived(let at?):
+            return shifts.text.t("automationPresenceArrivedAt", values: ["time": shifts.text.formatTime(at)])
+        case .arrived(nil):
+            return shifts.text.t("automationPresenceArrived")
+        case .left(let at, _):
+            return shifts.text.t("automationPresenceLeftAt", values: ["time": shifts.text.formatTime(at)])
+        case .stayingLate, nil:
+            return nil
+        }
+    }
     private var onBreak: Bool { snapshot.isOnBreak }
     private var overtime: Bool { snapshot.isOvertimeActive(at: now) }
 
@@ -218,6 +241,14 @@ private struct RunningTimerDesignView: View {
                                     systemImage: "clock.fill",
                                     tint: OWCDesign.orangeDeep,
                                     fill: OWCDesign.orange.opacity(0.12)
+                                )
+                                .padding(.bottom, 8)
+                            } else if let presencePill {
+                                TimerPhasePill(
+                                    title: presencePill,
+                                    systemImage: "location.fill",
+                                    tint: OWCDesign.secondary,
+                                    fill: OWCDesign.secondary.opacity(0.1)
                                 )
                                 .padding(.bottom, 8)
                             }

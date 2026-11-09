@@ -168,7 +168,8 @@ struct WorkplaceAutomationSettingsContent: View {
         OWCGroupCard {
             ForEach(workplaces) { workplace in
                 Button { onOpenWorkplace(workplace) } label: {
-                    OWCRow(icon: "building.2", title: workplace.name, subtitle: workplaceSubtitle(workplace)) {
+                    OWCRow(icon: "building.2", title: workplace.name, subtitle: workplaceSubtitle(workplace),
+                           centersVertically: true) {
                         OWCDetailAccessory(text: nil)
                     }
                 }
@@ -293,14 +294,19 @@ struct WorkplaceAutomationSettingsContent: View {
         OWCSectionHeader(title: text.t("automationUIShortcutsSection"))
             .padding(.top, OWCDesign.sectionGap)
         OWCGroupCard {
-            OWCRow(icon: "square.2.layers.3d", title: text.t("automationUIShortcutsTitle"),
-                   subtitle: text.t("automationUIShortcutsNote", values: [
-                       "arrive": text.t("automationIntentRecordArrival"),
-                       "leave": text.t("automationIntentRecordDeparture"),
-                   ]),
-                   isLast: true) {
-                EmptyView()
+            // Opens Shortcuts, where the personal automation is made; the
+            // note names the two actions to add there.
+            Link(destination: URL(string: "shortcuts://")!) {
+                OWCRow(icon: "square.2.layers.3d", title: text.t("automationUIShortcutsTitle"),
+                       subtitle: text.t("automationUIShortcutsNote", values: [
+                           "arrive": text.t("automationIntentRecordArrival"),
+                           "leave": text.t("automationIntentRecordDeparture"),
+                       ]),
+                       isLast: true, centersVertically: true) {
+                    OWCDetailAccessory(text: nil, external: true)
+                }
             }
+            .buttonStyle(OWCRowButtonStyle())
         }
     }
 

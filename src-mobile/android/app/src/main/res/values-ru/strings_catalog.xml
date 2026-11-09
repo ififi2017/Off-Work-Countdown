@@ -84,6 +84,11 @@
     <string name="automationNoticeArrivedRecorded">Прибытие в %1$s отмечено. Ваши часы не изменятся, пока вы не подтвердите.</string>
     <string name="automationNoticeLeftApplied">Уход зафиксирован в %1$s.</string>
     <string name="automationNoticeLeftRecorded">Уход в %1$s отмечен. Ваши часы не изменятся, пока вы не подтвердите.</string>
+    <string name="automationPresenceArrived">На работе</string>
+    <string name="automationPresenceArrivedAt">На работе с %1$s</string>
+    <string name="automationPresenceLeftAt">Ушли с работы в %1$s</string>
+    <string name="automationPresenceStillAtWork">Всё ещё на работе · %1$s после окончания смены</string>
+    <string name="automationPresenceWorkingLate">Сверхурочная работа</string>
     <string name="automationPromptEarlyVisit">Вы пришли раньше. Вы уже приступили к работе?</string>
     <string name="automationPromptExtraVisit">Записать этот визит как переработку?</string>
     <string name="automationPromptLateArrival">Записан немного более поздний приход. Продолжить запись сегодня как обычно?</string>

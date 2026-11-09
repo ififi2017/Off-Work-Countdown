@@ -84,6 +84,11 @@
     <string name="automationNoticeArrivedRecorded">Ankunft um %1$s vermerkt. Deine Arbeitszeiten bleiben unverändert, bis du bestätigst.</string>
     <string name="automationNoticeLeftApplied">Arbeitsende um %1$s erfasst.</string>
     <string name="automationNoticeLeftRecorded">Abreise um %1$s vermerkt. Deine Arbeitszeiten bleiben unverändert, bis du bestätigst.</string>
+    <string name="automationPresenceArrived">Bei der Arbeit</string>
+    <string name="automationPresenceArrivedAt">Seit %1$s bei der Arbeit</string>
+    <string name="automationPresenceLeftAt">Um %1$s von der Arbeit gegangen</string>
+    <string name="automationPresenceStillAtWork">Noch bei der Arbeit · %1$s nach Feierabend</string>
+    <string name="automationPresenceWorkingLate">Überstunden</string>
     <string name="automationPromptEarlyVisit">Du bist früh angekommen. Hast du schon mit der Arbeit begonnen?</string>
     <string name="automationPromptExtraVisit">Diesen Besuch als Überstunden erfassen?</string>
     <string name="automationPromptLateArrival">Etwas spätere Ankunft erfasst. Heute wie gewohnt weiter erfassen?</string>

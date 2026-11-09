@@ -474,6 +474,7 @@ struct CompletedShiftDesignView: View {
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(WorkplaceAutomationCoordinator.self) private var automation: WorkplaceAutomationCoordinator?
     @State private var celebrationBurst = 0
     @State private var celebrationHaptics: Task<Void, Never>?
     var body: some View {
@@ -529,13 +530,14 @@ struct CompletedShiftDesignView: View {
         .overlay { OWCConfettiOverlay(burst: celebrationBurst) }
         .onAppear { celebrateIfNeeded() }
         .onChange(of: celebrationToken) { celebrateIfNeeded() }
+        .onChange(of: isStayingLate) { celebrateIfNeeded() }
         .onDisappear { celebrationHaptics?.cancel() }
     }
 
     private var hero: some View {
         VStack(spacing: 0) {
             Button { celebrate() } label: {
-                Text(shifts.text.t("offWorkToday"))
+                Text(shifts.text.t(isStayingLate ? "automationPresenceWorkingLate" : "offWorkToday"))
                     .font(.largeTitle.bold())
                     .tracking(-0.85)
                     .foregroundStyle(OWCDesign.primary)
@@ -543,10 +545,19 @@ struct CompletedShiftDesignView: View {
                     .minimumScaleFactor(0.7)
             }
             .buttonStyle(.plain)
-            .accessibilityHint(shifts.text.t("replayCelebration"))
+            .disabled(isStayingLate)
+            .accessibilityHint(isStayingLate ? "" : shifts.text.t("replayCelebration"))
             .padding(.top, 34)
 
-            if let nextDate = snapshot.nextShiftStartDate {
+            if let presenceLine {
+                Text(presenceLine)
+                    .font(.body.monospacedDigit())
+                    .foregroundStyle(OWCDesign.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, OWCDesign.contentInset)
+                    .padding(.top, 12)
+            }
+            if !isStayingLate, let nextDate = snapshot.nextShiftStartDate {
                 Text(shifts.text.t("nextShiftIn", values: [
                     "time": shifts.text.formatRelativeDuration(nextDate.timeIntervalSince(now) * 1_000),
                 ]))
@@ -554,7 +565,7 @@ struct CompletedShiftDesignView: View {
                     .foregroundStyle(OWCDesign.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, OWCDesign.contentInset)
-                    .padding(.top, 12)
+                    .padding(.top, presenceLine == nil ? 12 : 4)
             }
 
         }
@@ -569,10 +580,18 @@ struct CompletedShiftDesignView: View {
         return VStack(alignment: .leading, spacing: 0) {
             OWCSectionHeader(title: shifts.text.t("todayInFull"))
             OWCGroupCard {
-                OWCRow(icon: "clock", title: shifts.text.t("worked"), isLast: lunch == nil && !showsWeek) {
-                    Text(shifts.text.formatDuration(workedDurationMs, includeSeconds: false))
+                OWCRow(icon: "clock", title: shifts.text.t("worked"),
+                       isLast: overtimeMs == nil && lunch == nil && !showsWeek) {
+                    Text(shifts.text.formatDuration(workedDurationMs + detectedExtraMs, includeSeconds: false))
                         .font(.body.monospacedDigit())
                         .foregroundStyle(OWCDesign.secondary)
+                }
+                if let overtimeMs {
+                    OWCRow(icon: "clock.badge.plus", title: shifts.text.t("overtime"), isLast: lunch == nil && !showsWeek) {
+                        Text(shifts.text.formatDuration(overtimeMs, includeSeconds: false))
+                            .font(.body.monospacedDigit())
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
                 }
                 if let lunch {
                     OWCRow(
@@ -650,6 +669,8 @@ struct CompletedShiftDesignView: View {
     }
 
     private func celebrateIfNeeded() {
+        // Still at work after the planned end: celebrate once they leave.
+        guard !isStayingLate else { return }
         shifts.noteCountdownCompleted(endAtMs: celebrationToken)
         // Early clock-off is keyed on the moment they pressed, not the planned
         // end — otherwise undoing and finishing the shift later would skip the
@@ -694,6 +715,48 @@ struct CompletedShiftDesignView: View {
     }
 
     private var endedEarly: Bool { shifts.session.isEndedEarly(snapshot) }
+
+    /// Plan 021: arrivals and departures automation saw for this shift. Not
+    /// after clocking off early: the person already said the day is done.
+    private var presence: WorkplacePresence? {
+        guard !endedEarly, let automation else { return nil }
+        return WorkplacePresence.resolve(
+            plannedStart: Date(timeIntervalSince1970: snapshot.startAtMs / 1_000),
+            plannedEnd: Date(timeIntervalSince1970: snapshot.plannedEndAtMs / 1_000),
+            state: automation.state,
+            now: now
+        )
+    }
+
+    private var isStayingLate: Bool {
+        if case .stayingLate = presence { true } else { false }
+    }
+
+    private var presenceLine: String? {
+        switch presence {
+        case .stayingLate:
+            shifts.text.t("automationPresenceStillAtWork", values: [
+                "duration": shifts.text.formatDuration(detectedOvertimeMs, includeSeconds: false),
+            ])
+        case .left(let at, _):
+            shifts.text.t("automationPresenceLeftAt", values: ["time": shifts.text.formatTime(at)])
+        case .arrived, nil:
+            nil
+        }
+    }
+
+    /// Overtime the timer itself recorded: the shift ran past its plan.
+    private var timerOvertimeMs: Double { max(0, snapshot.durationMs - snapshot.plannedDurationMs) }
+    /// Time past the planned end automation saw the person still at work.
+    private var detectedOvertimeMs: Double { (presence?.overtime(at: now) ?? 0) * 1_000 }
+    /// The part of the detected overtime the timer does not already count.
+    private var detectedExtraMs: Double { max(0, detectedOvertimeMs - timerOvertimeMs) }
+    /// Under a minute is a slow exit, not overtime.
+    private var overtimeMs: Double? {
+        let total = max(timerOvertimeMs, detectedOvertimeMs)
+        return total >= 60_000 ? total : nil
+    }
+
     private var celebrationToken: Double {
         endedEarly ? (shifts.session.earlyOffAtMs ?? snapshot.plannedEndAtMs) : snapshot.endAtMs
     }

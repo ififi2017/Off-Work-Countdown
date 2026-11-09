@@ -84,6 +84,11 @@
     <string name="automationNoticeArrivedRecorded">Arrivée à %1$s notée. Vos heures restent inchangées jusqu’à votre confirmation.</string>
     <string name="automationNoticeLeftApplied">Départ enregistré à %1$s.</string>
     <string name="automationNoticeLeftRecorded">Départ à %1$s noté. Vos heures restent inchangées jusqu’à votre confirmation.</string>
+    <string name="automationPresenceArrived">Au travail</string>
+    <string name="automationPresenceArrivedAt">Au travail depuis %1$s</string>
+    <string name="automationPresenceLeftAt">Parti du travail à %1$s</string>
+    <string name="automationPresenceStillAtWork">Toujours au travail · %1$s après votre heure de fin</string>
+    <string name="automationPresenceWorkingLate">Heures supplémentaires</string>
     <string name="automationPromptEarlyVisit">Vous êtes en avance. Avez-vous commencé à travailler ?</string>
     <string name="automationPromptExtraVisit">Enregistrer cette visite comme heures supplémentaires ?</string>
     <string name="automationPromptLateArrival">Une arrivée un peu plus tardive a été enregistrée. Continuer l’enregistrement comme d’habitude aujourd’hui ?</string>

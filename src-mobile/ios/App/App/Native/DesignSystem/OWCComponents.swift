@@ -214,13 +214,22 @@ struct OWCContentSizedScrollView<Content: View>: View {
             // back down and the page is stuck at the top.
             .scrollDisabled(
                 !isAwayFromTop
+                    && !isTitleCollapsed
                     && contentHeight <= viewport.size.height - (expandedTopInset - topInset) + 1
             )
-            .scrollBounceBehavior(.basedOnSize)
+            // `.basedOnSize` also removes the pull-down bounce from content
+            // that fits, and pulling down is the only way back to an expanded
+            // title. Keep bouncing while the title is collapsed.
+            .scrollBounceBehavior(isTitleCollapsed ? ScrollBounceBehavior.always : .basedOnSize)
             // Rotation changes the bar (landscape phones have no large title).
             .onChange(of: viewport.size.width) { expandedTopInset = topInset }
         }
         .onPreferenceChange(OWCScrollContentHeightKey.self) { contentHeight = $0 }
+    }
+
+    /// The large title has given up height: the user scrolled it into the bar.
+    private var isTitleCollapsed: Bool {
+        expandedTopInset - topInset > 1
     }
 
     private struct TopEdge: Equatable {
