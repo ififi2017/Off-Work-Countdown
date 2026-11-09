@@ -3087,7 +3087,10 @@ export function OffWorkCountdown({
         </>
       )}
         <Dialog open={overtimeDialogOpen} onOpenChange={setOvertimeDialogOpen}>
-          <DialogContent dir={isRtl ? "rtl" : "ltr"} className="w-[calc(100%-2rem)] max-w-[360px] rounded-2xl p-5">
+          {/* The Desktop window is a fixed 430×430, and plan 024 made this dialog
+              taller than it: keep the rows tight and pin the buttons to the
+              bottom of the scrolling dialog so Start/Save is always in view. */}
+          <DialogContent dir={isRtl ? "rtl" : "ltr"} className="w-[calc(100%-2rem)] max-w-[360px] max-h-[calc(100vh-1.5rem)] gap-3 rounded-2xl p-5 pb-0">
             <DialogHeader className="text-start">
               <DialogTitle className="pr-5">
                 {t(overtimeDialogAdjusts ? "adjustOvertime" : "overtimeTitle")}
@@ -3262,7 +3265,7 @@ export function OffWorkCountdown({
                       ),
                     })}
             </p>
-            <div className="flex flex-wrap justify-end gap-2 [&>button]:h-auto [&>button]:min-h-10 [&>button]:max-w-full [&>button]:whitespace-normal">
+            <div className="sticky bottom-0 z-10 -mx-5 flex flex-wrap justify-end gap-2 border-t border-gray-100 bg-background px-5 pb-5 pt-3 dark:border-gray-800 [&>button]:h-auto [&>button]:min-h-10 [&>button]:max-w-full [&>button]:whitespace-normal">
               <Button variant="outline" onClick={() => setOvertimeDialogOpen(false)}>
                 {t("notNow")}
               </Button>
