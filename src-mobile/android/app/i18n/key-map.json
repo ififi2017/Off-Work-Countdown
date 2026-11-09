@@ -404,11 +404,42 @@
         "time"
       ]
     },
+    "automationNoticeLeftAppliedOvertime": {
+      "resource": "string/automationNoticeLeftAppliedOvertime",
+      "params": [
+        "time",
+        "duration"
+      ]
+    },
     "automationNoticeLeftRecorded": {
       "resource": "string/automationNoticeLeftRecorded",
       "params": [
         "time"
       ]
+    },
+    "automationPresenceArrived": {
+      "resource": "string/automationPresenceArrived"
+    },
+    "automationPresenceArrivedAt": {
+      "resource": "string/automationPresenceArrivedAt",
+      "params": [
+        "time"
+      ]
+    },
+    "automationPresenceLeftAt": {
+      "resource": "string/automationPresenceLeftAt",
+      "params": [
+        "time"
+      ]
+    },
+    "automationPresenceNeedsCheck": {
+      "resource": "string/automationPresenceNeedsCheck"
+    },
+    "automationPresenceStillAtWorkNote": {
+      "resource": "string/automationPresenceStillAtWorkNote"
+    },
+    "automationPresenceWorkingLate": {
+      "resource": "string/automationPresenceWorkingLate"
     },
     "automationPromptEarlyVisit": {
       "resource": "string/automationPromptEarlyVisit"
@@ -4105,6 +4136,9 @@
     },
     "recordsSourceAfterNow": {
       "resource": "string/recordsSourceAfterNow"
+    },
+    "recordsSourceAutomation": {
+      "resource": "string/recordsSourceAutomation"
     },
     "recordsSourceException": {
       "resource": "string/recordsSourceException"

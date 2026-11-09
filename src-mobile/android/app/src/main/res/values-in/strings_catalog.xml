@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">Jam masuk tercatat pukul %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Kedatangan pukul %1$s dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi.</string>
     <string name="automationNoticeLeftApplied">Jam pulang tercatat pukul %1$s.</string>
+    <string name="automationNoticeLeftAppliedOvertime">Jam pulang dicatat pukul %1$s · lembur %2$s.</string>
     <string name="automationNoticeLeftRecorded">Kepergian pukul %1$s dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi.</string>
+    <string name="automationPresenceArrived">Di tempat kerja</string>
+    <string name="automationPresenceArrivedAt">Di tempat kerja sejak %1$s</string>
+    <string name="automationPresenceLeftAt">Meninggalkan tempat kerja pukul %1$s</string>
+    <string name="automationPresenceNeedsCheck">Kamu masih terdeteksi di tempat kerja berjam-jam setelah jam selesai, jadi jam kerjamu tetap sesuai rencana. Periksa hari ini di Catatan.</string>
+    <string name="automationPresenceStillAtWorkNote">Masih di tempat kerja. Jam pulang sebenarnya dicatat saat kamu pergi.</string>
+    <string name="automationPresenceWorkingLate">Lembur</string>
     <string name="automationPromptEarlyVisit">Kamu datang lebih awal. Sudahkah kamu mulai bekerja?</string>
     <string name="automationPromptExtraVisit">Catat kunjungan ini sebagai kerja tambahan?</string>
     <string name="automationPromptLateArrival">Kedatangan yang sedikit lebih lambat telah tercatat. Lanjutkan pencatatan hari ini seperti biasa?</string>
@@ -1134,6 +1141,7 @@
     <string name="recordsSleepEstimated">Perkiraan dari pengaturan</string>
     <string name="recordsSleepFromHealth">Dari Kesehatan di perangkat ini</string>
     <string name="recordsSourceAfterNow">Mulai sekarang mengikuti jadwal hari ini</string>
+    <string name="recordsSourceAutomation">Dicatat dari lokasimu</string>
     <string name="recordsSourceException">Hari libur atau masuk pengganti</string>
     <string name="recordsSourceNone">Tidak ada jadwal hari ini</string>
     <string name="recordsSourceOverride">Kamu mengubah hari ini</string>

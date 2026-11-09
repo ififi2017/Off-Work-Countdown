@@ -47,6 +47,7 @@ struct WorkTimeSourceCard: View {
                         + (summary.isHistorical ? " · " + text.t("recordsVerifyHistorical") : ""),
                     subtitle: summary.items.map(line).joined(separator: "\n"),
                     isLast: true,
+                    centersVertically: true,
                     iconTint: summary.headline == .sources ? nil : OWCDesign.accent
                 ) {
                     OWCDetailAccessory(text: nil)

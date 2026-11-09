@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">%1$sに出勤を記録しました。</string>
     <string name="automationNoticeArrivedRecorded">%1$sの到着を控えました。確認するまで勤務時間は変わりません。</string>
     <string name="automationNoticeLeftApplied">%1$sに退勤を記録しました。</string>
+    <string name="automationNoticeLeftAppliedOvertime">退勤時刻 %1$s を記録しました · 残業 %2$s。</string>
     <string name="automationNoticeLeftRecorded">%1$sの出発を控えました。確認するまで勤務時間は変わりません。</string>
+    <string name="automationPresenceArrived">勤務先にいます</string>
+    <string name="automationPresenceArrivedAt">%1$sから勤務先にいます</string>
+    <string name="automationPresenceLeftAt">%1$sに退勤</string>
+    <string name="automationPresenceNeedsCheck">終了時刻を過ぎて何時間も職場にいる状態のため、勤務時間は予定どおりのままです。記録でこの日を確認してください。</string>
+    <string name="automationPresenceStillAtWorkNote">まだ職場にいます。退勤時刻は、職場を出たときに記録されます。</string>
+    <string name="automationPresenceWorkingLate">残業中</string>
     <string name="automationPromptEarlyVisit">早めに到着しました。仕事は始めましたか？</string>
     <string name="automationPromptExtraVisit">この訪問を残業として記録しますか？</string>
     <string name="automationPromptLateArrival">少し遅い到着を記録しました。今日はいつもどおり記録を続けますか？</string>
@@ -1134,6 +1141,7 @@
     <string name="recordsSleepEstimated">設定からの推定</string>
     <string name="recordsSleepFromHealth">この端末のヘルスケアから</string>
     <string name="recordsSourceAfterNow">ここから先は今日のシフト</string>
+    <string name="recordsSourceAutomation">位置情報から自動記録</string>
     <string name="recordsSourceException">休日または振替出勤</string>
     <string name="recordsSourceNone">この日のシフトはない</string>
     <string name="recordsSourceOverride">この日は自分で直した</string>

@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">Giriş %1$s olarak kaydedildi.</string>
     <string name="automationNoticeArrivedRecorded">%1$s varışı not edildi. Onaylayana kadar çalışma saatlerin aynı kalır.</string>
     <string name="automationNoticeLeftApplied">Çıkış %1$s olarak kaydedildi.</string>
+    <string name="automationNoticeLeftAppliedOvertime">Çıkış saati %1$s olarak kaydedildi · %2$s fazla mesai.</string>
     <string name="automationNoticeLeftRecorded">%1$s ayrılışı not edildi. Onaylayana kadar çalışma saatlerin aynı kalır.</string>
+    <string name="automationPresenceArrived">İşte</string>
+    <string name="automationPresenceArrivedAt">%1$s itibarıyla işte</string>
+    <string name="automationPresenceLeftAt">İşten %1$s saatinde ayrıldınız</string>
+    <string name="automationPresenceNeedsCheck">Bitiş saatinden uzun süre sonra hâlâ işyerinde görünüyorsun, bu yüzden saatlerin planlandığı gibi kalıyor. Bu günü Kayıtlar\'dan kontrol et.</string>
+    <string name="automationPresenceStillAtWorkNote">Hâlâ işyerindesin. Gerçek çıkış saatin, ayrıldığında kaydedilir.</string>
+    <string name="automationPresenceWorkingLate">Mesai sonrası</string>
     <string name="automationPromptEarlyVisit">Erken geldiniz. Çalışmaya başladınız mı?</string>
     <string name="automationPromptExtraVisit">Bu ziyaret ek mesai olarak kaydedilsin mi?</string>
     <string name="automationPromptLateArrival">Biraz geç bir varış kaydedildi. Bugün her zamanki gibi kayda devam edilsin mi?</string>
@@ -1137,6 +1144,7 @@
     <string name="recordsSleepEstimated">Ayarlardan tahmin</string>
     <string name="recordsSleepFromHealth">Bu cihazdaki Sağlık’tan</string>
     <string name="recordsSourceAfterNow">Bundan sonrası bugünkü mesai</string>
+    <string name="recordsSourceAutomation">Konumundan kaydedildi</string>
     <string name="recordsSourceException">Tatil veya telafi günü</string>
     <string name="recordsSourceNone">Bu gün için mesai yok</string>
     <string name="recordsSourceOverride">Bu günü sen değiştirdin</string>

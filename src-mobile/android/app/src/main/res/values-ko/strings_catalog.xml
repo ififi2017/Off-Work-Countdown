@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">%1$s에 출근이 기록되었어요.</string>
     <string name="automationNoticeArrivedRecorded">%1$s 도착을 기록해 두었어요. 확인하기 전까지 근무 시간은 그대로예요.</string>
     <string name="automationNoticeLeftApplied">%1$s에 퇴근이 기록되었어요.</string>
+    <string name="automationNoticeLeftAppliedOvertime">퇴근 시각 %1$s 기록됨 · 초과 근무 %2$s.</string>
     <string name="automationNoticeLeftRecorded">%1$s 출발을 기록해 두었어요. 확인하기 전까지 근무 시간은 그대로예요.</string>
+    <string name="automationPresenceArrived">회사에 있어요</string>
+    <string name="automationPresenceArrivedAt">%1$s부터 회사에 있어요</string>
+    <string name="automationPresenceLeftAt">%1$s에 퇴근</string>
+    <string name="automationPresenceNeedsCheck">종료 시각이 한참 지났는데도 회사에 있는 것으로 표시돼서, 근무 시간은 계획대로 유지했어요. 기록에서 이 날을 확인해 주세요.</string>
+    <string name="automationPresenceStillAtWorkNote">아직 회사에 있어요. 퇴근 시각은 나갈 때 기록돼요.</string>
+    <string name="automationPresenceWorkingLate">야근 중</string>
     <string name="automationPromptEarlyVisit">일찍 도착하셨네요. 근무를 시작하셨나요?</string>
     <string name="automationPromptExtraVisit">이번 방문을 초과 근무로 기록할까요?</string>
     <string name="automationPromptLateArrival">평소보다 조금 늦게 도착한 것으로 기록됐어요. 오늘도 평소처럼 기록할까요?</string>
@@ -1134,6 +1141,7 @@
     <string name="recordsSleepEstimated">설정으로 추정</string>
     <string name="recordsSleepFromHealth">이 기기의 건강 앱에서</string>
     <string name="recordsSourceAfterNow">지금부터는 오늘 근무표 기준</string>
+    <string name="recordsSourceAutomation">위치 기반으로 자동 기록됨</string>
     <string name="recordsSourceException">휴일 또는 대체 근무</string>
     <string name="recordsSourceNone">이 날의 근무표 없음</string>
     <string name="recordsSourceOverride">이 날을 직접 수정함</string>

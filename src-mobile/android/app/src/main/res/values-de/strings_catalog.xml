@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">Arbeitsbeginn um %1$s erfasst.</string>
     <string name="automationNoticeArrivedRecorded">Ankunft um %1$s vermerkt. Deine Arbeitszeiten bleiben unverändert, bis du bestätigst.</string>
     <string name="automationNoticeLeftApplied">Arbeitsende um %1$s erfasst.</string>
+    <string name="automationNoticeLeftAppliedOvertime">Feierabend um %1$s erfasst · %2$s Überstunden.</string>
     <string name="automationNoticeLeftRecorded">Abreise um %1$s vermerkt. Deine Arbeitszeiten bleiben unverändert, bis du bestätigst.</string>
+    <string name="automationPresenceArrived">Bei der Arbeit</string>
+    <string name="automationPresenceArrivedAt">Seit %1$s bei der Arbeit</string>
+    <string name="automationPresenceLeftAt">Um %1$s von der Arbeit gegangen</string>
+    <string name="automationPresenceNeedsCheck">Du wirst nach deinem Arbeitsende noch lange am Arbeitsort angezeigt, deshalb bleiben deine Stunden wie geplant. Prüfe diesen Tag unter Aufzeichnungen.</string>
+    <string name="automationPresenceStillAtWorkNote">Du bist noch bei der Arbeit. Dein tatsächliches Feierabendende wird beim Verlassen erfasst.</string>
+    <string name="automationPresenceWorkingLate">Überstunden</string>
     <string name="automationPromptEarlyVisit">Du bist früh angekommen. Hast du schon mit der Arbeit begonnen?</string>
     <string name="automationPromptExtraVisit">Diesen Besuch als Überstunden erfassen?</string>
     <string name="automationPromptLateArrival">Etwas spätere Ankunft erfasst. Heute wie gewohnt weiter erfassen?</string>
@@ -1137,6 +1144,7 @@
     <string name="recordsSleepEstimated">Aus den Einstellungen geschätzt</string>
     <string name="recordsSleepFromHealth">Aus Gesundheit auf diesem Gerät</string>
     <string name="recordsSourceAfterNow">Ab jetzt nach dem heutigen Plan</string>
+    <string name="recordsSourceAutomation">Über deinen Standort erfasst</string>
     <string name="recordsSourceException">Feiertag oder Arbeitstag-Tausch</string>
     <string name="recordsSourceNone">Kein Plan für diesen Tag</string>
     <string name="recordsSourceOverride">Diesen Tag hast du geändert</string>

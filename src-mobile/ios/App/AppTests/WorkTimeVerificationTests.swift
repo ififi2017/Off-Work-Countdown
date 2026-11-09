@@ -147,4 +147,24 @@ nonisolated struct WorkTimeVerificationTests {
         state.upsert(proposal)
         #expect(!state.hasAdoptedDetection(dayKey: Self.dayKey, boundary: .start, at: Self.at(66)))
     }
+
+    // MARK: Records label
+
+    private static func planned(from start: Double, to end: Double) -> [NativeShiftSegment] {
+        [NativeShiftSegment(startAtMs: at(start).timeIntervalSince1970 * 1_000, endAtMs: at(end).timeIntervalSince1970 * 1_000)]
+    }
+
+    @Test("A day only automation wrote is not called the person's change")
+    func automationOnlyDay() {
+        // Planned 09:00–18:00 (60–600); automation adopted a 19:30 end (690).
+        let plan = Self.planned(from: 60, to: 600)
+        let adopted = Self.provenance([Self.entry(.end, minutes: 690)])
+        #expect(WorkTimeProvenance.isAutomationOnly(provenance: adopted, override: Self.override(from: 60, to: 690), plannedSegments: plan))
+        // The person moved the adopted end: their change.
+        #expect(!WorkTimeProvenance.isAutomationOnly(provenance: adopted, override: Self.override(from: 60, to: 700), plannedSegments: plan))
+        // The person moved the start automation never touched: their change.
+        #expect(!WorkTimeProvenance.isAutomationOnly(provenance: adopted, override: Self.override(from: 45, to: 690), plannedSegments: plan))
+        // No summary at all: an ordinary edit.
+        #expect(!WorkTimeProvenance.isAutomationOnly(provenance: nil, override: Self.override(from: 60, to: 690), plannedSegments: plan))
+    }
 }

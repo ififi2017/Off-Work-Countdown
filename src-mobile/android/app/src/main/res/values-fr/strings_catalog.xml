@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">Arrivée enregistrée à %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Arrivée à %1$s notée. Vos heures restent inchangées jusqu’à votre confirmation.</string>
     <string name="automationNoticeLeftApplied">Départ enregistré à %1$s.</string>
+    <string name="automationNoticeLeftAppliedOvertime">Départ enregistré à %1$s · %2$s d\'heures supplémentaires.</string>
     <string name="automationNoticeLeftRecorded">Départ à %1$s noté. Vos heures restent inchangées jusqu’à votre confirmation.</string>
+    <string name="automationPresenceArrived">Au travail</string>
+    <string name="automationPresenceArrivedAt">Au travail depuis %1$s</string>
+    <string name="automationPresenceLeftAt">Parti du travail à %1$s</string>
+    <string name="automationPresenceNeedsCheck">Vous apparaissez encore au travail longtemps après votre heure de fin, vos heures restent donc comme prévu. Vérifiez cette journée dans Historique.</string>
+    <string name="automationPresenceStillAtWorkNote">Vous êtes encore au travail. Votre heure de départ réelle sera enregistrée à votre sortie.</string>
+    <string name="automationPresenceWorkingLate">Heures supplémentaires</string>
     <string name="automationPromptEarlyVisit">Vous êtes en avance. Avez-vous commencé à travailler ?</string>
     <string name="automationPromptExtraVisit">Enregistrer cette visite comme heures supplémentaires ?</string>
     <string name="automationPromptLateArrival">Une arrivée un peu plus tardive a été enregistrée. Continuer l’enregistrement comme d’habitude aujourd’hui ?</string>
@@ -1140,6 +1147,7 @@
     <string name="recordsSleepEstimated">Estimé d’après vos réglages</string>
     <string name="recordsSleepFromHealth">Depuis Santé sur cet appareil</string>
     <string name="recordsSourceAfterNow">À partir de maintenant, le planning du jour</string>
+    <string name="recordsSourceAutomation">Enregistré d\'après votre position</string>
     <string name="recordsSourceException">Jour férié ou rattrapage</string>
     <string name="recordsSourceNone">Pas de planning ce jour-là</string>
     <string name="recordsSourceOverride">Vous avez modifié ce jour</string>

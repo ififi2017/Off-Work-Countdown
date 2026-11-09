@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">บันทึกเวลาเข้างาน %1$s แล้ว</string>
     <string name="automationNoticeArrivedRecorded">จดบันทึกการมาถึงเวลา %1$s แล้ว ชั่วโมงทำงานของคุณจะไม่เปลี่ยนจนกว่าคุณจะยืนยัน</string>
     <string name="automationNoticeLeftApplied">บันทึกเวลาออกงาน %1$s แล้ว</string>
+    <string name="automationNoticeLeftAppliedOvertime">บันทึกเวลาเลิกงาน %1$s แล้ว · ทำงานล่วงเวลา %2$s</string>
     <string name="automationNoticeLeftRecorded">จดบันทึกการออกเวลา %1$s แล้ว ชั่วโมงทำงานของคุณจะไม่เปลี่ยนจนกว่าคุณจะยืนยัน</string>
+    <string name="automationPresenceArrived">อยู่ที่ทำงาน</string>
+    <string name="automationPresenceArrivedAt">อยู่ที่ทำงานตั้งแต่ %1$s</string>
+    <string name="automationPresenceLeftAt">ออกจากที่ทำงานเมื่อ %1$s</string>
+    <string name="automationPresenceNeedsCheck">คุณยังแสดงว่าอยู่ที่ทำงานนานหลังเวลาเลิกงาน ชั่วโมงทำงานจึงคงตามแผนเดิม โปรดตรวจสอบวันนี้ในบันทึก</string>
+    <string name="automationPresenceStillAtWorkNote">คุณยังอยู่ที่ทำงาน เวลาเลิกงานจริงจะถูกบันทึกเมื่อคุณออกจากที่ทำงาน</string>
+    <string name="automationPresenceWorkingLate">ทำงานล่วงเวลา</string>
     <string name="automationPromptEarlyVisit">คุณมาถึงเร็ว เริ่มทำงานแล้วหรือยัง</string>
     <string name="automationPromptExtraVisit">บันทึกการมาครั้งนี้เป็นงานพิเศษไหม</string>
     <string name="automationPromptLateArrival">บันทึกการมาถึงที่ช้ากว่าปกติเล็กน้อย บันทึกวันนี้ตามปกติต่อไปไหม</string>
@@ -1134,6 +1141,7 @@
     <string name="recordsSleepEstimated">ประมาณจากตั้งค่า</string>
     <string name="recordsSleepFromHealth">จากสุขภาพบนเครื่องนี้</string>
     <string name="recordsSourceAfterNow">จากนี้ไปตามกะวันนี้</string>
+    <string name="recordsSourceAutomation">บันทึกจากตำแหน่งของคุณ</string>
     <string name="recordsSourceException">วันหยุดหรือวันชดเชย</string>
     <string name="recordsSourceNone">วันนี้ไม่มีกะ</string>
     <string name="recordsSourceOverride">คุณแก้วันนี้เอง</string>

@@ -204,7 +204,7 @@ struct WorkplaceAutomationSettingsView: View {
         guard let last = status.lastEventAt else {
             return AutomationMonitorNote(text: watching + " " + text.t("automationUIAccessReadyNote"))
         }
-        return AutomationMonitorNote(text: watching + " " + text.t("automationUIMonitorLastEvent", values: [
+        return AutomationMonitorNote(text: watching + "\n" + text.t("automationUIMonitorLastEvent", values: [
             "time": runtime.queries.formatRecordsMonthDay(last) + " " + runtime.queries.formatRecordsTime(last),
         ]))
     }

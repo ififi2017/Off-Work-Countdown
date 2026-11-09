@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">%1$s पर काम शुरू करने का समय दर्ज हुआ।</string>
     <string name="automationNoticeArrivedRecorded">%1$s पर पहुँचना नोट किया गया। आपके पुष्टि करने तक आपके घंटे वैसे ही रहेंगे।</string>
     <string name="automationNoticeLeftApplied">%1$s पर काम खत्म करने का समय दर्ज हुआ।</string>
+    <string name="automationNoticeLeftAppliedOvertime">छुट्टी का समय %1$s दर्ज किया गया · %2$s ओवरटाइम।</string>
     <string name="automationNoticeLeftRecorded">%1$s पर निकलना नोट किया गया। आपके पुष्टि करने तक आपके घंटे वैसे ही रहेंगे।</string>
+    <string name="automationPresenceArrived">काम पर</string>
+    <string name="automationPresenceArrivedAt">%1$s से काम पर</string>
+    <string name="automationPresenceLeftAt">%1$s बजे काम से निकले</string>
+    <string name="automationPresenceNeedsCheck">आपके समाप्ति समय के घंटों बाद भी आप कार्यस्थल पर दिख रहे हैं, इसलिए आपके घंटे तय योजना के अनुसार ही रहेंगे। रिकॉर्ड में इस दिन को जाँच लें।</string>
+    <string name="automationPresenceStillAtWorkNote">आप अभी भी काम पर हैं। आपके निकलते ही आपका असली छुट्टी का समय दर्ज हो जाएगा।</string>
+    <string name="automationPresenceWorkingLate">देर तक काम</string>
     <string name="automationPromptEarlyVisit">आप जल्दी पहुँच गए। क्या आपने काम शुरू कर दिया है?</string>
     <string name="automationPromptExtraVisit">इस विज़िट को अतिरिक्त काम के रूप में दर्ज करें?</string>
     <string name="automationPromptLateArrival">थोड़ा देर से पहुँचना दर्ज हुआ। क्या आज हमेशा की तरह रिकॉर्डिंग जारी रखें?</string>
@@ -1137,6 +1144,7 @@
     <string name="recordsSleepEstimated">सेटिंग से अनुमान</string>
     <string name="recordsSleepFromHealth">इस डिवाइस के स्वास्थ्य से</string>
     <string name="recordsSourceAfterNow">अब से आज की शिफ्ट के अनुसार</string>
+    <string name="recordsSourceAutomation">आपकी लोकेशन से दर्ज किया गया</string>
     <string name="recordsSourceException">छुट्टी या अतिरिक्त कार्यदिवस</string>
     <string name="recordsSourceNone">इस दिन की शिफ्ट नहीं है</string>
     <string name="recordsSourceOverride">आपने यह दिन बदला</string>

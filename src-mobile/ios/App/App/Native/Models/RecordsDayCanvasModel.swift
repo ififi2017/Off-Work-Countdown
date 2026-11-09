@@ -13,6 +13,9 @@ enum RecordsDaySource: String, Equatable, Hashable, Sendable, CaseIterable {
     case scheduled
     /// The user edited this day in Records.
     case corrected
+    /// Plan 021: workplace automation recorded this day; the person did not
+    /// change it.
+    case automation
     /// A holiday or makeup day from the calendar.
     case exception
     /// Expanded from the schedule that governed that date.
@@ -37,6 +40,7 @@ enum RecordsDaySource: String, Equatable, Hashable, Sendable, CaseIterable {
         case .recorded: "recordsSourceRecorded"
         case .scheduled: "recordsSourceSchedule"
         case .corrected: "recordsSourceOverride"
+        case .automation: "recordsSourceAutomation"
         case .exception: "recordsSourceException"
         case .scheduleEstimate: "recordsSourceSchedule"
         case .afterNow: "recordsSourceAfterNow"
@@ -54,7 +58,7 @@ enum RecordsDaySource: String, Equatable, Hashable, Sendable, CaseIterable {
     var isEstimated: Bool {
         switch self {
         case .scheduleEstimate, .afterNow, .lifeProjection, .planned, .sleepEstimate: true
-        case .recorded, .scheduled, .corrected, .exception, .unrecorded, .rest, .locked: false
+        case .recorded, .scheduled, .corrected, .automation, .exception, .unrecorded, .rest, .locked: false
         }
     }
 

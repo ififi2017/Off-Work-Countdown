@@ -155,7 +155,7 @@ struct AboutView<DebugMenu: View>: View {
     }
 
     private var version: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        AppVersion.display()
     }
 
 }

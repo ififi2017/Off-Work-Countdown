@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">Đã ghi giờ vào làm lúc %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Đã ghi nhận bạn đến lúc %1$s. Giờ làm giữ nguyên cho đến khi bạn xác nhận.</string>
     <string name="automationNoticeLeftApplied">Đã ghi giờ tan làm lúc %1$s.</string>
+    <string name="automationNoticeLeftAppliedOvertime">Đã ghi giờ tan làm lúc %1$s · tăng ca %2$s.</string>
     <string name="automationNoticeLeftRecorded">Đã ghi nhận bạn rời đi lúc %1$s. Giờ làm giữ nguyên cho đến khi bạn xác nhận.</string>
+    <string name="automationPresenceArrived">Đang ở nơi làm việc</string>
+    <string name="automationPresenceArrivedAt">Có mặt ở nơi làm việc từ %1$s</string>
+    <string name="automationPresenceLeftAt">Rời nơi làm việc lúc %1$s</string>
+    <string name="automationPresenceNeedsCheck">Bạn vẫn hiển thị ở nơi làm việc rất lâu sau giờ kết thúc, nên giờ làm vẫn giữ như kế hoạch. Hãy kiểm tra ngày này trong Bản ghi.</string>
+    <string name="automationPresenceStillAtWorkNote">Bạn vẫn đang ở nơi làm việc. Giờ tan làm thực tế sẽ được ghi lại khi bạn rời đi.</string>
+    <string name="automationPresenceWorkingLate">Đang làm thêm giờ</string>
     <string name="automationPromptEarlyVisit">Bạn đến sớm. Bạn đã bắt đầu làm việc chưa?</string>
     <string name="automationPromptExtraVisit">Ghi lần ghé này là làm thêm giờ chứ?</string>
     <string name="automationPromptLateArrival">Đã ghi nhận bạn đến muộn hơn một chút. Tiếp tục ghi như thường lệ hôm nay chứ?</string>
@@ -1134,6 +1141,7 @@
     <string name="recordsSleepEstimated">Ước từ cài đặt</string>
     <string name="recordsSleepFromHealth">Từ Sức khỏe trên máy này</string>
     <string name="recordsSourceAfterNow">Từ giờ theo ca hôm nay</string>
+    <string name="recordsSourceAutomation">Ghi lại từ vị trí của bạn</string>
     <string name="recordsSourceException">Ngày lễ hoặc làm bù</string>
     <string name="recordsSourceNone">Ngày này không có ca</string>
     <string name="recordsSourceOverride">Bạn đã sửa ngày này</string>

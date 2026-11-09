@@ -83,7 +83,14 @@
     <string name="automationNoticeArrivedApplied">Приход зафиксирован в %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Прибытие в %1$s отмечено. Ваши часы не изменятся, пока вы не подтвердите.</string>
     <string name="automationNoticeLeftApplied">Уход зафиксирован в %1$s.</string>
+    <string name="automationNoticeLeftAppliedOvertime">Время ухода записано: %1$s · переработка %2$s.</string>
     <string name="automationNoticeLeftRecorded">Уход в %1$s отмечен. Ваши часы не изменятся, пока вы не подтвердите.</string>
+    <string name="automationPresenceArrived">На работе</string>
+    <string name="automationPresenceArrivedAt">На работе с %1$s</string>
+    <string name="automationPresenceLeftAt">Ушли с работы в %1$s</string>
+    <string name="automationPresenceNeedsCheck">Вы всё ещё отображаетесь на работе спустя много часов после конца смены, поэтому часы остаются по плану. Проверьте этот день в Записях.</string>
+    <string name="automationPresenceStillAtWorkNote">Вы ещё на работе. Фактическое время ухода запишется, когда вы выйдете.</string>
+    <string name="automationPresenceWorkingLate">Сверхурочная работа</string>
     <string name="automationPromptEarlyVisit">Вы пришли раньше. Вы уже приступили к работе?</string>
     <string name="automationPromptExtraVisit">Записать этот визит как переработку?</string>
     <string name="automationPromptLateArrival">Записан немного более поздний приход. Продолжить запись сегодня как обычно?</string>
@@ -1143,6 +1150,7 @@
     <string name="recordsSleepEstimated">Оценка из настроек</string>
     <string name="recordsSleepFromHealth">Из «Здоровья» на этом устройстве</string>
     <string name="recordsSourceAfterNow">Дальше — сегодняшний график</string>
+    <string name="recordsSourceAutomation">Записано по вашему местоположению</string>
     <string name="recordsSourceException">Праздник или рабочая суббота</string>
     <string name="recordsSourceNone">На этот день графика нет</string>
     <string name="recordsSourceOverride">Вы изменили этот день</string>
