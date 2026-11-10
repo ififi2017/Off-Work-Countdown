@@ -3,10 +3,9 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   darkMode: ["class"],
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    ...(process.env.BUILD_TARGET === "desktop" || process.env.BUILD_TARGET === "mobile"
+    ...(process.env.BUILD_TARGET === "desktop"
       ? []
       : ["./features/web-tools/**/*.{ts,tsx}"]),
   ],

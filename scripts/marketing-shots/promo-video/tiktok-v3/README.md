@@ -91,4 +91,4 @@ node scripts/marketing-shots/promo-video/tiktok-v3/render.mjs --variant woodfish
 - 人物是插画，不是真人，表演靠关节动画完成。如果要换成真人实拍或生成视频素材，镜头表和时间轴可以直接当拍摄脚本用。
 - 没有口播。
 - 配乐是代码合成的，质感不如正式曲库，建议正式投放用纯音效版配平台音乐。
-- 原版（`../scene.html`、`../render.mjs`、`../audio.mjs`、`../out/`）和 `../tiktok-v2/` 都没有改动，只复用了原版的图标、滚动数字、计时页界面和礼花物理参数。
+- 原版（`../scene.html`、`../render.mjs`、`../audio.mjs`、`../out/`）没有改动，只复用了原版的图标、滚动数字、计时页界面和礼花物理参数。

@@ -14,10 +14,7 @@ interface CountdownDisplayProps {
   overtime?: boolean;
   status?: boolean;
   standby?: boolean;
-  mobile?: boolean;
   forceLtr?: boolean;
-  /** 网页版与桌面主窗：每秒换数字时用 iOS 同款逐位滚动过渡（文案格式不变）。 */
-  rolling?: boolean;
 }
 
 export function CountdownDisplay({
@@ -29,9 +26,7 @@ export function CountdownDisplay({
   overtime = false,
   status = false,
   standby = false,
-  mobile = false,
   forceLtr = false,
-  rolling = false,
 }: CountdownDisplayProps) {
   return (
     <motion.div
@@ -40,7 +35,7 @@ export function CountdownDisplay({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
-      className={compact ? "space-y-2" : dense ? "space-y-3" : mobile ? "space-y-6" : "space-y-4"}
+      className={compact ? "space-y-2" : dense ? "space-y-3" : "space-y-4"}
     >
       {title && (
         <div
@@ -50,9 +45,7 @@ export function CountdownDisplay({
               ? "1.1rem"
               : dense
                 ? "min(7vw, 1.8rem)"
-                : mobile
-                  ? "clamp(1.75rem, 8vw, 2.35rem)"
-                  : "min(7vw, 1.9rem)",
+                : "min(7vw, 1.9rem)",
             lineHeight: "1.25",
           }}
         >
@@ -63,7 +56,7 @@ export function CountdownDisplay({
         dir={forceLtr ? "ltr" : undefined}
         className={`text-center tabular-nums dark:text-white ${
           title ? "font-semibold text-gray-600 dark:text-gray-300" : "font-bold"
-        } ${compact || status || mobile ? "whitespace-nowrap tracking-tight" : ""}`}
+        } ${compact || status ? "whitespace-nowrap tracking-tight" : ""}`}
         style={{
           fontSize: title
             ? compact
@@ -75,8 +68,6 @@ export function CountdownDisplay({
             ? "1.7rem"
             : dense
               ? "min(8vw, 2.1rem)"
-              : mobile
-                ? "clamp(2.2rem, 9.5vw, 3.25rem)"
               : "min(8vw, 2.25rem)",
           lineHeight: "1.2",
           wordBreak: "keep-all",
@@ -86,7 +77,7 @@ export function CountdownDisplay({
           maxWidth: "100%",
         }}
       >
-        {rolling ? <RollingText text={timeLeft} /> : timeLeft}
+        <RollingText text={timeLeft} />
       </div>
       <ProgressBar progress={progress} compact={compact} dense={dense} overtime={overtime} standby={standby} />
     </motion.div>

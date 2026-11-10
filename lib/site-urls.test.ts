@@ -3,7 +3,6 @@ import { siteConfig } from "@/config/site";
 import { locales } from "@/i18n-config";
 import { presetLocales } from "@/lib/content-locales";
 import {
-  officialContentAlternates,
   officialHomeUrl,
   officialPageUrl,
   webAppAlternates,
@@ -30,11 +29,6 @@ describe("site URLs", () => {
       "https://doneat.app/zh-CN/privacy"
     );
     expect(officialPageUrl("ja", "faq")).toBe("https://doneat.app/en/faq");
-    expect(officialContentAlternates("about")).toEqual({
-      en: "https://doneat.app/en/about",
-      "zh-CN": "https://doneat.app/zh-CN/about",
-      "x-default": "https://doneat.app/en/about",
-    });
   });
 
   it("does not invent official URLs for hall languages without long-form pages", () => {

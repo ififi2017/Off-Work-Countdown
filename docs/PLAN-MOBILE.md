@@ -61,7 +61,7 @@ watchOS 代码不复制这些规则，只消费 iPhone 的投影。
 |---|---|---|
 | D0 | iOS 26、iPhone+iPad、全方向、通用购买与 bundle id | 🟢 已定案 |
 | P0 | 共享排班、提醒和汇总规则，生成原生规则包 | 🟢 已完成 |
-| P1 | Capacitor / Mobile Web 技术 spike | ⚪ 已完成并归档，不进入发布包 |
+| P1 | Capacitor / Mobile Web 技术 spike | ⚪ 已完成并归档，不进入发布包；Mobile Web 构建目标与代码已于 2026-11-10 删除 |
 | P2 | SwiftUI 原生 App、JavaScriptCore 规则桥、本地状态 | 🟢 已完成 |
 | P3 | 本地通知、午休/健康提醒、预约与重排 | 🟢 核心链路完成，继续随 TestFlight 回归 |
 | P4 | iPhone/iPad Widget、锁屏与灵动岛 Live Activity | 🟡 进度时间线已重构，等待新一轮实机回归 |

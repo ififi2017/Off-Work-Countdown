@@ -9,11 +9,7 @@ import { siteConfig } from '@/config/site';
 import { getTranslations } from '@/lib/server/i18n';
 import { webAppAlternates, webAppPageUrl } from '@/lib/site-urls';
 import { ThemeRouteSync } from '@/components/ThemeRouteSync';
-import {
-  IS_DESKTOP_BUILD,
-  IS_MOBILE_BUILD,
-  IS_WEB_BUILD,
-} from '@/lib/build-target';
+import { IS_DESKTOP_BUILD, IS_WEB_BUILD } from '@/lib/build-target';
 
 const geistSans = localFont({
   src: '../fonts/GeistVF.woff',
@@ -113,13 +109,7 @@ export default async function Layout({
     <html
       lang={lang}
       dir={getTextDirection(lang)}
-      className={
-        IS_DESKTOP_BUILD
-          ? "desktop-shell"
-          : IS_MOBILE_BUILD
-            ? "mobile-shell"
-            : undefined
-      }
+      className={IS_DESKTOP_BUILD ? "desktop-shell" : undefined}
       suppressHydrationWarning
     >
       <head>
@@ -136,11 +126,7 @@ export default async function Layout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased${
-          IS_DESKTOP_BUILD
-            ? " desktop-shell"
-            : IS_MOBILE_BUILD
-              ? " mobile-shell"
-              : ""
+          IS_DESKTOP_BUILD ? " desktop-shell" : ""
         }`}
       >
         <ThemeRouteSync />
