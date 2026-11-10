@@ -265,12 +265,6 @@ extension AppText {
     var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
     }
-
-    /// Planned working time for a caller-supplied preview, lunch already deducted.
-    func plannedWorkLabel(for snapshot: NativeShiftSnapshot?) -> String {
-        guard let snapshot else { return "—" }
-        return formatRelativeDuration(snapshot.plannedDurationMs)
-    }
 }
 
 extension AppText {

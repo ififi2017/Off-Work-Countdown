@@ -44,8 +44,6 @@
     <string name="leaveTrialNotice">Cuando una búsqueda encuentra un grupo de planes, se usa una consulta gratis. Si no hay resultados, no se descuenta; cambiar de plan, fecha o mes y ver detalles no consume otra.</string>
     <string name="leaveTrialsUsedUp">Ya usaste todas las búsquedas gratis de planes de vacaciones. Suscríbete a Plus para seguir generándolos.</string>
     <string name="leaveUndoConfirm">Sus días salen de tu rol de turnos y vuelven a tus días disponibles.</string>
-    <string name="lifeEstimatedPast">Las semanas pasadas usan el rol de turnos de entonces.</string>
-    <string name="lunchPauseNote">La cuenta regresiva, el progreso y las ganancias se pausan durante la comida.</string>
     <string name="lunchPauseNoteNoSalary">La cuenta regresiva y el progreso se pausan durante el descanso.</string>
     <string name="lunchStartNotification">Empieza la pausa. La cuenta regresiva está pausada.</string>
     <string name="notificationCapabilityNote">Sin permiso de notificaciones solo puede aparecer la Actividad en Vivo de la pantalla bloqueada. La cuenta regresiva sigue funcionando.</string>

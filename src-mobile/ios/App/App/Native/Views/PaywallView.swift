@@ -606,35 +606,6 @@ struct PaywallContent: View {
 
     // MARK: - Already paid
 
-    private var ownedNotice: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(text.t("plusOwnedTitle"))
-                .font(.body.weight(.medium))
-            Text(text.t("plusOwnedBody"))
-                .font(.footnote)
-                .foregroundStyle(OWCDesign.secondary)
-                .lineSpacing(2)
-                .fixedSize(horizontal: false, vertical: true)
-            if plus.hasActiveSubscription {
-                Button(text.t("plusManage")) { plus.manageSubscriptions() }
-                    .font(.body.weight(.semibold))
-                    .frame(minHeight: 44)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var subscribedFooter: some View {
-        if case .pendingAskToBuy = plus.authorization {
-            statusNote(text.t("plusWaitingApproval"))
-        }
-        if case .authorized(.inGracePeriod) = plus.authorization {
-            statusNote(text.t("plusGracePeriod"))
-        }
-        Button(text.t("plusManage")) { plus.manageSubscriptions() }
-            .buttonStyle(OWCPrimaryButtonStyle(filled: false))
-    }
-
     private func statusNote(_ text: String) -> some View {
         Text(text)
             .font(.footnote)

@@ -42,10 +42,6 @@ enum TimerVisualPhase: Hashable {
         self == .clockIn || self == .running || self == .lunch || self == .overtime
     }
 
-    var usesCommonTimerSurface: Bool {
-        self == .completed || self == .rest || self == .rulesError || self == .unscheduled
-    }
-
     /// Unscheduled idle and the rules-error banner have a primary button and
     /// no seconds-level figure. Sitting them in a 1s `TimelineView` rebuilds
     /// that button every tick and drops taps.

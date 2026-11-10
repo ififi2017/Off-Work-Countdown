@@ -33,7 +33,6 @@
     <string name="leaveEstimatedYear">%1$s follows your usual rota; this version has no bank holidays for it yet.</string>
     <string name="leaveMainlandHolidaysMissing">This version doesn’t include mainland China’s %1$s bank holidays yet, so %1$s follows your usual rota. Once they’re added, update DoneAt to include them.</string>
     <string name="leaveUndoConfirm">Its leave comes off your rota and goes back to your balances.</string>
-    <string name="lifeEstimatedPast">Past weeks use the rota from that time.</string>
     <string name="notificationPrivacyNote">Notifications contain rota and progress only—never salary.</string>
     <string name="onboardingAllSetTitle">That’s your rota</string>
     <string name="onboardingCustomScheduleNote">You can fully customise your rota later in Settings.</string>

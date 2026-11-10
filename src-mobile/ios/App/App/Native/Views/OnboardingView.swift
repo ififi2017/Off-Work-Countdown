@@ -633,23 +633,3 @@ private struct OnboardingSchedulePage: View {
 
 
 }
-
-/// The radio mark on a schedule-mode row.
-///
-/// One `Image` whose symbol changes, plus a content transition, rather than two
-/// images swapped by a conditional. The row highlight responds on touch-down;
-/// on commit, `.symbolEffect(.replace)` gives the circle-to-checkmark change the
-/// shape SF Symbols draws deliberately instead of cross-fading two glyphs in
-/// one 20 pt slot.
-struct ScheduleModeMark: View {
-    let selected: Bool
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-            .font(.title3)
-            .foregroundStyle(selected ? OWCDesign.accent : OWCDesign.tertiary)
-            .contentTransition(.symbolEffect(.replace))
-            .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selected)
-    }
-}

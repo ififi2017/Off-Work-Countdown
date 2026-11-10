@@ -11,7 +11,6 @@ struct RecordDayIndexEntry: Equatable, Sendable, Identifiable {
     var calendarException: CalendarException?
 
     var id: String { dayKey }
-    var hasWorkObservation: Bool { !observations.isEmpty }
     var hasManualOverride: Bool { dayOverride != nil }
     var hasUserCalendarException: Bool { calendarException != nil }
 }
@@ -1341,67 +1340,6 @@ final class RecordsQueries {
               )
         else { return [] }
         return [segment]
-    }
-
-    func recordsDayDetail(
-        for resolution: DayResolution,
-        previous: DayResolution? = nil,
-        now: Date = .now,
-        includesLifeProjection: Bool = false
-    ) -> RecordsDayDetail? {
-        let cell = recordsDayCell(
-            for: resolution,
-            previous: previous,
-            now: now,
-            includesLifeProjection: includesLifeProjection
-        )
-        guard cell.appearance != .locked else { return nil }
-        // The same qualified inputs the cell above it used, so the calendar and
-        // the summary under it cannot print two different days.
-        let canvas = dayCanvasModel(
-            for: resolution,
-            contributedBy: contributingShifts(
-                for: resolution,
-                previous: previous,
-                now: now,
-                includesLifeProjection: includesLifeProjection
-            ),
-            source: recordsDaySource(cell: cell, resolution: resolution),
-            now: now
-        )
-        // The same words the day canvas uses. Two mappings meant the compact
-        // summary could call a day one thing and its own page another.
-        let sourceKey = canvas.source.titleKey
-        let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
-            ? "recordsSleepFromHealth"
-            : "recordsSleepEstimated"
-        let notes = displayedObservations(on: resolution.shiftAnchorDate).map { item in
-            let time = formatRecordsTime(item.occurredAt)
-            let kind: String
-            switch item.kind {
-            case .timerSurfaceFirstSeen: kind = t("recordsObservedFirstSeen")
-            case .countdownStarted: kind = t("recordsObservedStarted")
-            case .countdownStopped: kind = t("recordsObservedStopped")
-            case .overtimeDeclared: kind = t("recordsObservedOvertime")
-            }
-            return "\(time) · \(kind)"
-        }
-        return RecordsDayDetail(
-            dayKey: resolution.dayKey,
-            date: resolution.shiftAnchorDate,
-            appearance: cell.appearance,
-            sourceKey: sourceKey,
-            regularWorkMs: canvas.allocation.workMs,
-            // Plan 024: counted hours; the canvas keeps drawing the real period.
-            overtimeMs: countedOvertimeMs(canvas.allocation.overtimeMs, on: resolution, previous: previous),
-            breakMs: canvas.allocation.breakMs,
-            sleepMs: canvas.allocation.sleepMs,
-            freeMs: canvas.allocation.freeMs,
-            sleepSourceKey: sleepKey,
-            observations: notes,
-            isPlanned: cell.appearance == .planned,
-            isProjection: cell.isProjection
-        )
     }
 
     /// The day canvas for one civil day, including the part of the night

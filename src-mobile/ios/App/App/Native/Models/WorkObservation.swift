@@ -26,10 +26,6 @@ struct RecordedWorkDay: Equatable, Sendable, Identifiable {
     var firstStart: Date? {
         observations.first { $0.kind == .countdownStarted }?.occurredAt
     }
-
-    var lastStop: Date? {
-        observations.last { $0.kind == .countdownStopped }?.occurredAt
-    }
 }
 
 /// An immutable use event. Writes never edit; a retry reuses `eventID`.

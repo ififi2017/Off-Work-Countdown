@@ -1330,22 +1330,6 @@ final class RecordCoordinator {
         }
     }
 
-    func consumeConflict(_ copy: SyncConflictCopy) async {
-        do {
-            return try await replaceAfterPendingWrites { [self] in
-                guard let copy = state.sync.conflicts.first(where: { $0.id == copy.id }) else { return }
-                var candidate = state
-                candidate.sync.conflicts.removeAll { $0.id == copy.id }
-                do {
-                    try await commitCandidate(candidate, changes: .sync)
-                } catch {
-                }
-            }
-        } catch {
-
-        }
-    }
-
     /// A user's explicit “keep the version I am seeing” choice is a new edit,
     /// not housekeeping. Re-stamping it above both candidates prevents the
     /// rejected version from winning again on the next CloudKit fetch.
