@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">DoneAt\'e işten çıktığını bildirir. Bir yerden ayrılınca veya bir Odak\'ı kapatınca gibi kişisel bir otomasyonda kullan.</string>
     <string name="automationNoticeArrivedApplied">Giriş %1$s olarak kaydedildi.</string>
     <string name="automationNoticeArrivedRecorded">%1$s varışı not edildi. Onaylayana kadar çalışma saatlerin aynı kalır.</string>
+    <string name="automationNoticeBackAtWork">Saat %1$s itibarıyla işe geri döndün. Ayrılana kadar fazla mesai saymaya devam eder.</string>
     <string name="automationNoticeLeftApplied">Çıkış %1$s olarak kaydedildi.</string>
     <string name="automationNoticeLeftAppliedOvertime">Çıkış saati %1$s olarak kaydedildi · %2$s fazla mesai.</string>
     <string name="automationNoticeLeftRecorded">%1$s ayrılışı not edildi. Onaylayana kadar çalışma saatlerin aynı kalır.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">İş yerlerini izlemeye hazırlanılıyor. Bu biraz sürebilir.</string>
     <string name="automationUIMonitorWatching">Varış ve ayrılışlar izleniyor.</string>
     <string name="automationUINoLocationYet">Bu iş yerini haritaya yerleştirmek için “Mevcut Konumu Kullan”a dokunun.</string>
+    <string name="automationUINoteArrivalUncertain">Konum erişimi başlangıç saatinden sonra onaylandı; bu yüzden yalnızca o saate kadar orada olduğun görünüyor.</string>
     <string name="automationUINoteChangedByYou">Bu günü kendiniz değiştirdiniz</string>
     <string name="automationUINoteEarlyStart">Erken vardınız — onaylayınca sayılır</string>
     <string name="automationUINoteFarFromPlan">Planlanan saatten çok farklı</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">İş yeri konumları bu aygıtta kalır; eşitlenmez veya yedeklenmez. Yalnızca benimsediğiniz çalışma saatleri kayıtlarınızla eşitlenir.</string>
     <string name="automationUIRadius">%1$s m</string>
     <string name="automationUIRangeNote">Ayrılış alanı 100 m daha geniştir; böylece sınır yakınında dolaşmak girip çıkmak olarak sayılmaz.</string>
-    <string name="automationUIRecentSection">Son Benimsenenler</string>
+    <string name="automationUIRecentSection">Son Kaydedilenler</string>
     <string name="automationUIRecordingSection">Kayıt</string>
     <string name="automationUIResume">Sürdür</string>
     <string name="automationUIReviewEmpty">İncelenecek Bir Şey Yok</string>
     <string name="automationUIReviewEmptyNote">Algılanan varış ve ayrılış saatleri önce burada görünür.</string>
     <string name="automationUIReviewIntro">Bu saatler henüz çalışma saatlerinizi değiştirmedi. Doğru olanları benimseyin.</string>
-    <string name="automationUIReviewTitle">İncelenecek Saatler</string>
+    <string name="automationUIReviewNothingPending">Kontrol etmen gereken bir şey yok. Otomatik kaydedilen son saatler aşağıda ve istediğini geri alabilirsin.</string>
+    <string name="automationUIReviewTitle">Otomatik Kayıtlar</string>
     <string name="automationUISelect">Seç</string>
     <string name="automationUISelectAll">Tümünü Seç</string>
     <string name="automationUIShortcutsNote">Kişisel bir otomasyona “%1$s” veya “%2$s” ekleyin. Konum erişimi gerekmez.</string>
@@ -989,6 +992,7 @@
     <string name="recordsArchiveQuarantineConfirm">Eski kayıtlar geri gelmez. Bozuk dosya .corrupt kopyası olarak kenara alınır ve bu cihazda yeni bir arşiv başlar.</string>
     <string name="recordsArchiveSaveFailedBody">Son değişiklik ekranda duruyor ama bu cihazdaki dosyaya ulaşmadı. Biraz sonra yeniden dene — mevcut arşiv değiştirilmedi.</string>
     <string name="recordsArchiveSaveFailedTitle">Kayıtlar kaydedilemedi</string>
+    <string name="recordsAwayCounted">Dışarıda · fazla mesaiye sayıldı</string>
     <string name="recordsBreakTime">Vardiya molaları</string>
     <string name="recordsChooseShift">Hangi vardiyayı değiştirmek istersin?</string>
     <string name="recordsClearDay">Değişikliğimi geri al</string>
@@ -1170,9 +1174,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s, sizin tarafınızdan</string>
     <string name="recordsVerifyDetected">Algılandı</string>
     <string name="recordsVerifyDetectedUnknown">Bildirilmedi</string>
+    <string name="recordsVerifyHeadlineEnd">Çıkış Saati Konumdan Kaydedildi</string>
     <string name="recordsVerifyHeadlinePartial">Kısmen Konum Doğrulandı</string>
     <string name="recordsVerifyHeadlineSources">Bu Saatler Nasıl Kaydedildi</string>
-    <string name="recordsVerifyHeadlineVerified">Konum Doğrulandı</string>
+    <string name="recordsVerifyHeadlineStart">Giriş Saati Konumdan Kaydedildi</string>
+    <string name="recordsVerifyHeadlineVerified">Saatler Konumdan Kaydedildi</string>
     <string name="recordsVerifyHistorical">Geçmiş kaynak</string>
     <string name="recordsVerifyHistoricalNote">Bu kayıt iCloud’dan veya bir yedekten geldi. Özgün algılama bu iPhone’da olmadığından burada yeniden kontrol edilmedi.</string>
     <string name="recordsVerifyMarkAdjusted">Sizin değiştirdiğiniz</string>

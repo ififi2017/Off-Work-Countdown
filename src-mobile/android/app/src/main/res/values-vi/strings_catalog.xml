@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">Báo cho DoneAt biết bạn đã rời chỗ làm. Dùng trong một mục tự động hóa cá nhân, chẳng hạn khi rời một địa điểm hoặc tắt một chế độ Tập trung.</string>
     <string name="automationNoticeArrivedApplied">Đã ghi giờ vào làm lúc %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Đã ghi nhận bạn đến lúc %1$s. Giờ làm giữ nguyên cho đến khi bạn xác nhận.</string>
+    <string name="automationNoticeBackAtWork">Đã quay lại nơi làm việc lúc %1$s. Giờ tăng ca tiếp tục được tính cho đến khi bạn rời đi.</string>
     <string name="automationNoticeLeftApplied">Đã ghi giờ tan làm lúc %1$s.</string>
     <string name="automationNoticeLeftAppliedOvertime">Đã ghi giờ tan làm lúc %1$s · tăng ca %2$s.</string>
     <string name="automationNoticeLeftRecorded">Đã ghi nhận bạn rời đi lúc %1$s. Giờ làm giữ nguyên cho đến khi bạn xác nhận.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">Đang chuẩn bị theo dõi các nơi làm việc của bạn. Có thể mất một chút thời gian.</string>
     <string name="automationUIMonitorWatching">Đang theo dõi lúc bạn đến và rời đi.</string>
     <string name="automationUINoLocationYet">Chạm vào “Dùng vị trí hiện tại” để đặt nơi làm việc này lên bản đồ.</string>
+    <string name="automationUINoteArrivalUncertain">Quyền truy cập vị trí được xác nhận sau giờ bắt đầu của bạn, nên chỉ biết là bạn đã có mặt ở đó trước thời điểm này.</string>
     <string name="automationUINoteChangedByYou">Bạn đã tự thay đổi ngày này</string>
     <string name="automationUINoteEarlyStart">Đến sớm — chỉ tính sau khi bạn xác nhận</string>
     <string name="automationUINoteFarFromPlan">Chênh lệch nhiều so với giờ dự kiến</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">Vị trí nơi làm việc chỉ lưu trên thiết bị này, không được đồng bộ hay sao lưu. Chỉ giờ làm bạn đã chấp nhận mới được đồng bộ cùng các bản ghi.</string>
     <string name="automationUIRadius">%1$s m</string>
     <string name="automationUIRangeNote">Phạm vi rời đi lớn hơn 100 m, nên đi lại gần ranh giới sẽ không bị tính là ra vào.</string>
-    <string name="automationUIRecentSection">Đã chấp nhận gần đây</string>
+    <string name="automationUIRecentSection">Ghi gần đây</string>
     <string name="automationUIRecordingSection">Ghi lại</string>
     <string name="automationUIResume">Tiếp tục</string>
     <string name="automationUIReviewEmpty">Không có gì cần xem lại</string>
     <string name="automationUIReviewEmptyNote">Giờ đến và rời đi được phát hiện sẽ hiện ở đây trước.</string>
     <string name="automationUIReviewIntro">Những giờ này chưa thay đổi giờ làm của bạn. Hãy chấp nhận những giờ đúng.</string>
-    <string name="automationUIReviewTitle">Giờ cần xem lại</string>
+    <string name="automationUIReviewNothingPending">Không có gì cần bạn kiểm tra. Các giờ được ghi tự động gần đây nằm bên dưới, và bạn có thể hoàn tác bất kỳ mục nào.</string>
+    <string name="automationUIReviewTitle">Bản ghi tự động</string>
     <string name="automationUISelect">Chọn</string>
     <string name="automationUISelectAll">Chọn tất cả</string>
     <string name="automationUIShortcutsNote">Trong một tự động hóa cá nhân, hãy thêm “%1$s” hoặc “%2$s”. Không cần quyền truy cập vị trí.</string>
@@ -987,6 +990,7 @@
     <string name="recordsArchiveQuarantineConfirm">Việc này không lấy lại bản ghi cũ. Tệp hỏng được để sang một bên thành bản .corrupt và máy này bắt đầu một kho lưu mới.</string>
     <string name="recordsArchiveSaveFailedBody">Thay đổi mới nhất vẫn trên màn hình nhưng chưa vào tệp trên máy này. Thử lại sau một lát — kho lưu hiện có không bị thay thế.</string>
     <string name="recordsArchiveSaveFailedTitle">Không lưu được nhật ký</string>
+    <string name="recordsAwayCounted">Ra ngoài · tính vào giờ tăng ca</string>
     <string name="recordsBreakTime">Nghỉ trong ca</string>
     <string name="recordsChooseShift">Bạn muốn sửa ca nào?</string>
     <string name="recordsClearDay">Bỏ thay đổi của tôi</string>
@@ -1167,9 +1171,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s, bởi bạn</string>
     <string name="recordsVerifyDetected">Đã phát hiện</string>
     <string name="recordsVerifyDetectedUnknown">Chưa được báo</string>
+    <string name="recordsVerifyHeadlineEnd">Giờ tan làm được ghi từ vị trí</string>
     <string name="recordsVerifyHeadlinePartial">Vị trí xác minh một phần</string>
     <string name="recordsVerifyHeadlineSources">Các mốc giờ này được ghi lại như thế nào</string>
-    <string name="recordsVerifyHeadlineVerified">Vị trí đã xác minh</string>
+    <string name="recordsVerifyHeadlineStart">Giờ vào làm được ghi từ vị trí</string>
+    <string name="recordsVerifyHeadlineVerified">Giờ làm được ghi từ vị trí</string>
     <string name="recordsVerifyHistorical">Nguồn trước đây</string>
     <string name="recordsVerifyHistoricalNote">Bản ghi này đến từ iCloud hoặc một bản sao lưu. Dữ liệu phát hiện gốc không có trên iPhone này nên chưa được kiểm tra lại ở đây.</string>
     <string name="recordsVerifyMarkAdjusted">Bạn đã thay đổi</string>

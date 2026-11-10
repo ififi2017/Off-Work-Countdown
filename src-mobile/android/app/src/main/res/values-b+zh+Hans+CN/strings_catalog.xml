@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">告诉 DoneAt 你已离开公司。可用在个人自动化中，例如离开某地或关闭某个专注模式时。</string>
     <string name="automationNoticeArrivedApplied">已记录上班时间 %1$s。</string>
     <string name="automationNoticeArrivedRecorded">已记下 %1$s 到达。你确认之前，工时不会改变。</string>
+    <string name="automationNoticeBackAtWork">%1$s 回到公司，加班会持续记录到你离开。</string>
     <string name="automationNoticeLeftApplied">已记录下班时间 %1$s。</string>
     <string name="automationNoticeLeftAppliedOvertime">已记录下班时间 %1$s · 加班 %2$s。</string>
     <string name="automationNoticeLeftRecorded">已记下 %1$s 离开。你确认之前，工时不会改变。</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">正在准备留意你的工作地点，可能需要一点时间。</string>
     <string name="automationUIMonitorWatching">正在留意到达和离开。</string>
     <string name="automationUINoLocationYet">点“使用当前位置”，把工作地点放到地图上。</string>
+    <string name="automationUINoteArrivalUncertain">位置权限在上班时间之后才确认，所以只能知道你在这之前已经到了。</string>
     <string name="automationUINoteChangedByYou">你已手动修改这天</string>
     <string name="automationUINoteEarlyStart">提前到达，确认后才算开始工作</string>
     <string name="automationUINoteFarFromPlan">和计划时间相差较多</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">工作地点的位置只保存在本机，不会同步或备份。只有你采用的上下班时间会随记录同步。</string>
     <string name="automationUIRadius">%1$s 米</string>
     <string name="automationUIRangeNote">离开范围比到达范围多 100 米，在边界附近走动不会被当成进出。</string>
-    <string name="automationUIRecentSection">最近采用</string>
+    <string name="automationUIRecentSection">最近自动记录</string>
     <string name="automationUIRecordingSection">记录方式</string>
     <string name="automationUIResume">恢复</string>
     <string name="automationUIReviewEmpty">没有待确认的记录</string>
     <string name="automationUIReviewEmptyNote">检测到的上下班时间会先出现在这里。</string>
     <string name="automationUIReviewIntro">这些时间还没有改动你的工时，采用正确的就好。</string>
-    <string name="automationUIReviewTitle">待确认的记录</string>
+    <string name="automationUIReviewNothingPending">目前没有需要你确认的时间。以下是最近自动记录的时间，可以随时撤销。</string>
+    <string name="automationUIReviewTitle">自动记录</string>
     <string name="automationUISelect">选择</string>
     <string name="automationUISelectAll">全选</string>
     <string name="automationUIShortcutsNote">在个人自动化中添加“%1$s”或“%2$s”，不需要位置权限。</string>
@@ -987,6 +990,7 @@
     <string name="recordsArchiveQuarantineConfirm">这不会恢复旧记录。它会把损坏文件挪到一边（文件名带 .corrupt），并在这台设备上开始一份新档案。</string>
     <string name="recordsArchiveSaveFailedBody">刚才的改动还在屏幕上，但没有写进这台设备上的文件。可以稍后再试一次——现有档案没有被替换。</string>
     <string name="recordsArchiveSaveFailedTitle">记录没有保存成功</string>
+    <string name="recordsAwayCounted">外出 · 计入加班</string>
     <string name="recordsBreakTime">班中休息</string>
     <string name="recordsChooseShift">要改哪一个班次？</string>
     <string name="recordsClearDay">清空我的修改</string>
@@ -1167,9 +1171,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s，由你</string>
     <string name="recordsVerifyDetected">检测时间</string>
     <string name="recordsVerifyDetectedUnknown">未提供</string>
+    <string name="recordsVerifyHeadlineEnd">下班时间由定位记录</string>
     <string name="recordsVerifyHeadlinePartial">部分定位认证</string>
     <string name="recordsVerifyHeadlineSources">上下班时间的来源</string>
-    <string name="recordsVerifyHeadlineVerified">定位认证</string>
+    <string name="recordsVerifyHeadlineStart">上班时间由定位记录</string>
+    <string name="recordsVerifyHeadlineVerified">上下班时间由定位记录</string>
     <string name="recordsVerifyHistorical">历史来源</string>
     <string name="recordsVerifyHistoricalNote">这条记录来自 iCloud 或备份。原始检测不在这部 iPhone 上，因此没有在本机重新核对。</string>
     <string name="recordsVerifyMarkAdjusted">你已修改</string>

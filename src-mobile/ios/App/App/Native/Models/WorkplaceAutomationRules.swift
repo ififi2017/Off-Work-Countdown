@@ -200,6 +200,10 @@ nonisolated enum AutomationReviewReason: String, Codable, Sendable {
     case beyondAutomaticWindow
     case earlyStartNeedsConfirmation
     case leftBeforePlannedEnd
+    /// Monitoring only learned the person was there after the shift began,
+    /// e.g. after location access was granted again; they arrived by then,
+    /// not necessarily then.
+    case arrivalTimeUncertain
     /// The person changed the day after automation last wrote it.
     case recordChangedByPerson
     /// Records are locked or damaged; nothing was written.
@@ -326,7 +330,8 @@ nonisolated enum WorkplaceAutomationRules {
         canCollect: Bool,
         canAutoApply: Bool,
         isManuallySuppressed: Bool,
-        context: WorkDayContext = .regular
+        context: WorkDayContext = .regular,
+        firstKnownAfterStart: Bool = false
     ) -> AutomationDisposition {
         if event.source == .nativeGeofence {
             guard settings.isMonitoringEnabled else { return .ignore(.monitoringOff) }
@@ -335,7 +340,9 @@ nonisolated enum WorkplaceAutomationRules {
             }
         }
         guard canCollect else { return .ignore(.monitoringOff) }
-        if event.isInitialState { return .ignore(.baselineOnly) }
+        if event.isInitialState {
+            return firstKnownAfterStart ? .recordForReview(.arrivalTimeUncertain) : .ignore(.baselineOnly)
+        }
         if isManuallySuppressed { return .ignore(.manualOverride) }
         if context == .rest { return .ignore(.restDayContext) }
         // A person's own confirmation is the authorization; the switch does
@@ -401,6 +408,33 @@ nonisolated enum WorkplaceAutomationRules {
         return ends
             .filter { $0 <= arrivedAt && arrivedAt.timeIntervalSince($0) <= WorkplaceAutomation.maximumTransferGap }
             .max()
+    }
+
+    /// The shift a return to work picks up again (plan 021, P0 feedback):
+    /// automation recorded its clock-out, the person left, and came back
+    /// within `maximumTransferGap`, still inside the automatic window. The
+    /// day then runs to the final exit and the time away counts as work.
+    static func returnAfterClockOut(
+        arrivedAt: Date,
+        among shifts: [AutomationShift],
+        state: WorkplaceAutomationState
+    ) -> (shift: AutomationShift, leftAt: Date)? {
+        shifts
+            .filter { shift in
+                shift.plannedEnd <= arrivedAt
+                    && arrivedAt.timeIntervalSince(shift.plannedEnd) <= WorkplaceAutomation.maximumAutomaticExtension
+                    && !state.isSuppressed(shift.shiftKey)
+            }
+            .sorted { $0.plannedStart > $1.plannedStart }
+            .lazy
+            .compactMap { shift -> (shift: AutomationShift, leftAt: Date)? in
+                guard let end = state.adoptedTime(shiftKey: shift.shiftKey, boundary: .end),
+                      end <= arrivedAt,
+                      arrivedAt.timeIntervalSince(end) <= WorkplaceAutomation.maximumTransferGap
+                else { return nil }
+                return (shift, end)
+            }
+            .first
     }
 
     /// Shifts the person paused automation for by correcting them, while a

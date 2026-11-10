@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">Memberi tahu DoneAt bahwa kamu sudah meninggalkan kantor. Gunakan dalam otomatisasi pribadi, misalnya saat meninggalkan suatu lokasi atau mematikan mode Fokus.</string>
     <string name="automationNoticeArrivedApplied">Jam masuk tercatat pukul %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Kedatangan pukul %1$s dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi.</string>
+    <string name="automationNoticeBackAtWork">Kembali ke tempat kerja pukul %1$s. Lembur terus dihitung sampai kamu pergi.</string>
     <string name="automationNoticeLeftApplied">Jam pulang tercatat pukul %1$s.</string>
     <string name="automationNoticeLeftAppliedOvertime">Jam pulang dicatat pukul %1$s · lembur %2$s.</string>
     <string name="automationNoticeLeftRecorded">Kepergian pukul %1$s dicatat. Jam kerjamu tetap sama sampai kamu mengonfirmasi.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">Menyiapkan pemantauan tempat kerjamu. Ini mungkin butuh sejenak.</string>
     <string name="automationUIMonitorWatching">Memantau kedatangan dan kepergian.</string>
     <string name="automationUINoLocationYet">Ketuk “Gunakan Lokasi Saat Ini” untuk menempatkan tempat kerja ini di peta.</string>
+    <string name="automationUINoteArrivalUncertain">Akses lokasi baru dikonfirmasi setelah jam mulai kamu, jadi ini hanya menunjukkan bahwa kamu sudah ada di sana sebelum itu.</string>
     <string name="automationUINoteChangedByYou">Anda sendiri yang mengubah hari ini</string>
     <string name="automationUINoteEarlyStart">Tiba lebih awal — dihitung setelah Anda konfirmasi</string>
     <string name="automationUINoteFarFromPlan">Jauh dari waktu yang Anda rencanakan</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">Lokasi tempat kerja tetap di perangkat ini dan tidak disinkronkan atau dicadangkan. Hanya waktu kerja yang Anda terima yang disinkronkan dengan catatan Anda.</string>
     <string name="automationUIRadius">%1$s m</string>
     <string name="automationUIRangeNote">Jangkauan kepergian 100 m lebih besar, sehingga berjalan di dekat batas tidak dihitung sebagai datang dan pergi.</string>
-    <string name="automationUIRecentSection">Baru Diterima</string>
+    <string name="automationUIRecentSection">Baru Saja Dicatat</string>
     <string name="automationUIRecordingSection">Pencatatan</string>
     <string name="automationUIResume">Lanjutkan</string>
     <string name="automationUIReviewEmpty">Tidak Ada yang Perlu Ditinjau</string>
     <string name="automationUIReviewEmptyNote">Waktu kedatangan dan kepulangan yang terdeteksi muncul di sini lebih dulu.</string>
     <string name="automationUIReviewIntro">Waktu ini belum mengubah jam kerja Anda. Terima yang sudah benar.</string>
-    <string name="automationUIReviewTitle">Waktu untuk Ditinjau</string>
+    <string name="automationUIReviewNothingPending">Tidak ada yang perlu kamu periksa. Jam yang dicatat otomatis baru-baru ini ada di bawah, dan kamu bisa membatalkan yang mana pun.</string>
+    <string name="automationUIReviewTitle">Catatan Otomatis</string>
     <string name="automationUISelect">Pilih</string>
     <string name="automationUISelectAll">Pilih Semua</string>
     <string name="automationUIShortcutsNote">Di otomatisasi pribadi, tambahkan “%1$s” atau “%2$s”. Tidak perlu akses lokasi.</string>
@@ -987,6 +990,7 @@
     <string name="recordsArchiveQuarantineConfirm">Ini tidak mengembalikan catatan lama. Berkas yang rusak disisihkan sebagai salinan .corrupt, lalu arsip baru dimulai di perangkat ini.</string>
     <string name="recordsArchiveSaveFailedBody">Perubahan terbaru masih di layar, tetapi belum masuk ke berkas di perangkat ini. Coba lagi sebentar lagi — arsip yang ada tidak diganti.</string>
     <string name="recordsArchiveSaveFailedTitle">Catatan gagal disimpan</string>
+    <string name="recordsAwayCounted">Di luar · dihitung sebagai lembur</string>
     <string name="recordsBreakTime">Istirahat saat kerja</string>
     <string name="recordsChooseShift">Shift mana yang mau diubah?</string>
     <string name="recordsClearDay">Batalkan perubahanku</string>
@@ -1167,9 +1171,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s, oleh Anda</string>
     <string name="recordsVerifyDetected">Terdeteksi</string>
     <string name="recordsVerifyDetectedUnknown">Tidak dilaporkan</string>
+    <string name="recordsVerifyHeadlineEnd">Jam Pulang Dicatat dari Lokasi</string>
     <string name="recordsVerifyHeadlinePartial">Sebagian Lokasi Terverifikasi</string>
     <string name="recordsVerifyHeadlineSources">Cara Waktu Ini Dicatat</string>
-    <string name="recordsVerifyHeadlineVerified">Lokasi Terverifikasi</string>
+    <string name="recordsVerifyHeadlineStart">Jam Masuk Dicatat dari Lokasi</string>
+    <string name="recordsVerifyHeadlineVerified">Jam Dicatat dari Lokasi</string>
     <string name="recordsVerifyHistorical">Sumber lama</string>
     <string name="recordsVerifyHistoricalNote">Catatan ini berasal dari iCloud atau cadangan. Deteksi aslinya tidak ada di iPhone ini, jadi tidak diperiksa ulang di sini.</string>
     <string name="recordsVerifyMarkAdjusted">Diubah oleh Anda</string>

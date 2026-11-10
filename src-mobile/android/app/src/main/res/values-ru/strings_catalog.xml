@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">Сообщает DoneAt, что вы ушли с работы. Используйте в личной автоматизации, например при уходе из места или выключении режима фокусирования.</string>
     <string name="automationNoticeArrivedApplied">Приход зафиксирован в %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Прибытие в %1$s отмечено. Ваши часы не изменятся, пока вы не подтвердите.</string>
+    <string name="automationNoticeBackAtWork">Вы снова на работе в %1$s. Переработка продолжит учитываться, пока вы не уйдёте.</string>
     <string name="automationNoticeLeftApplied">Уход зафиксирован в %1$s.</string>
     <string name="automationNoticeLeftAppliedOvertime">Время ухода записано: %1$s · переработка %2$s.</string>
     <string name="automationNoticeLeftRecorded">Уход в %1$s отмечен. Ваши часы не изменятся, пока вы не подтвердите.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">Готовимся следить за вашими местами работы. Это может занять немного времени.</string>
     <string name="automationUIMonitorWatching">Отслеживаем приход и уход.</string>
     <string name="automationUINoLocationYet">Нажмите «Использовать текущее местоположение», чтобы отметить рабочее место на карте.</string>
+    <string name="automationUINoteArrivalUncertain">Доступ к геопозиции подтвердился после времени начала, поэтому известно лишь, что к этому моменту вы уже были на месте.</string>
     <string name="automationUINoteChangedByYou">Вы сами изменили этот день</string>
     <string name="automationUINoteEarlyStart">Пришли раньше — засчитается после подтверждения</string>
     <string name="automationUINoteFarFromPlan">Сильно отличается от планового времени</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">Места работы хранятся только на этом устройстве и не синхронизируются и не попадают в резервные копии. С вашими записями синхронизируется только принятое рабочее время.</string>
     <string name="automationUIRadius">%1$s м</string>
     <string name="automationUIRangeNote">Радиус ухода на 100 м больше, поэтому прогулка у границы не считается выходом и входом.</string>
-    <string name="automationUIRecentSection">Недавно принятые</string>
+    <string name="automationUIRecentSection">Недавно записано</string>
     <string name="automationUIRecordingSection">Запись</string>
     <string name="automationUIResume">Возобновить</string>
     <string name="automationUIReviewEmpty">Нечего проверять</string>
     <string name="automationUIReviewEmptyNote">Найденное время прихода и ухода сначала появляется здесь.</string>
     <string name="automationUIReviewIntro">Это время пока не изменило ваши часы. Примите то, что указано верно.</string>
-    <string name="automationUIReviewTitle">Время на проверку</string>
+    <string name="automationUIReviewNothingPending">Проверять ничего не нужно. Ниже — время, записанное автоматически за последнее время; любую запись можно отменить.</string>
+    <string name="automationUIReviewTitle">Автозаписи</string>
     <string name="automationUISelect">Выбрать</string>
     <string name="automationUISelectAll">Выбрать все</string>
     <string name="automationUIShortcutsNote">В персональную автоматизацию добавьте «%1$s» или «%2$s». Доступ к геопозиции не нужен.</string>
@@ -993,6 +996,7 @@
     <string name="recordsArchiveQuarantineConfirm">Старые записи не вернутся. Повреждённый файл будет отложен как копия .corrupt, и на этом устройстве начнётся новый архив.</string>
     <string name="recordsArchiveSaveFailedBody">Последнее изменение видно на экране, но не попало в файл на этом устройстве. Попробуйте ещё раз чуть позже — текущий архив не заменён.</string>
     <string name="recordsArchiveSaveFailedTitle">Не удалось сохранить записи</string>
+    <string name="recordsAwayCounted">Отлучка · засчитано как переработка</string>
     <string name="recordsBreakTime">Перерывы на смене</string>
     <string name="recordsChooseShift">Какую смену изменить?</string>
     <string name="recordsClearDay">Отменить моё изменение</string>
@@ -1176,9 +1180,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s, вами</string>
     <string name="recordsVerifyDetected">Определено</string>
     <string name="recordsVerifyDetectedUnknown">Не сообщено</string>
+    <string name="recordsVerifyHeadlineEnd">Окончание записано по геопозиции</string>
     <string name="recordsVerifyHeadlinePartial">Местоположение подтверждено частично</string>
     <string name="recordsVerifyHeadlineSources">Как записано это время</string>
-    <string name="recordsVerifyHeadlineVerified">Местоположение подтверждено</string>
+    <string name="recordsVerifyHeadlineStart">Начало записано по геопозиции</string>
+    <string name="recordsVerifyHeadlineVerified">Время записано по геопозиции</string>
     <string name="recordsVerifyHistorical">Прежний источник</string>
     <string name="recordsVerifyHistoricalNote">Эта запись получена из iCloud или резервной копии. Исходного определения нет на этом iPhone, поэтому здесь оно не проверялось повторно.</string>
     <string name="recordsVerifyMarkAdjusted">Изменено вами</string>

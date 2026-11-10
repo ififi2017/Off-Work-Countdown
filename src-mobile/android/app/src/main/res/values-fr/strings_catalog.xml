@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">Indique à DoneAt que vous avez quitté le travail. À utiliser dans une automatisation personnelle, par exemple en quittant un lieu ou en désactivant un mode de concentration.</string>
     <string name="automationNoticeArrivedApplied">Arrivée enregistrée à %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Arrivée à %1$s notée. Vos heures restent inchangées jusqu’à votre confirmation.</string>
+    <string name="automationNoticeBackAtWork">De retour au travail à %1$s. Les heures supplémentaires continuent de compter jusqu\'à ton départ.</string>
     <string name="automationNoticeLeftApplied">Départ enregistré à %1$s.</string>
     <string name="automationNoticeLeftAppliedOvertime">Départ enregistré à %1$s · %2$s d\'heures supplémentaires.</string>
     <string name="automationNoticeLeftRecorded">Départ à %1$s noté. Vos heures restent inchangées jusqu’à votre confirmation.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">Préparation de la surveillance de vos lieux de travail. Cela peut prendre un instant.</string>
     <string name="automationUIMonitorWatching">Surveillance des arrivées et des départs.</string>
     <string name="automationUINoLocationYet">Touchez « Utiliser la position actuelle » pour placer ce lieu de travail sur la carte.</string>
+    <string name="automationUINoteArrivalUncertain">L\'accès à la localisation a été confirmé après ton heure de début : on sait seulement que tu étais déjà là à ce moment-là.</string>
     <string name="automationUINoteChangedByYou">Vous avez modifié ce jour vous-même</string>
     <string name="automationUINoteEarlyStart">Arrivée en avance : comptée après votre confirmation</string>
     <string name="automationUINoteFarFromPlan">Loin de l’heure prévue</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">Les lieux de travail restent sur cet appareil et ne sont ni synchronisés ni sauvegardés. Seules les heures de travail que vous adoptez sont synchronisées avec vos enregistrements.</string>
     <string name="automationUIRadius">%1$s m</string>
     <string name="automationUIRangeNote">La zone de départ est plus grande de 100 m, pour qu’une promenade près du bord ne compte pas comme une arrivée ou un départ.</string>
-    <string name="automationUIRecentSection">Adoptées récemment</string>
+    <string name="automationUIRecentSection">Enregistré récemment</string>
     <string name="automationUIRecordingSection">Enregistrement</string>
     <string name="automationUIResume">Reprendre</string>
     <string name="automationUIReviewEmpty">Rien à vérifier</string>
     <string name="automationUIReviewEmptyNote">Les heures d’arrivée et de départ détectées apparaissent d’abord ici.</string>
     <string name="automationUIReviewIntro">Ces heures n’ont pas encore modifié vos horaires. Adoptez celles qui sont justes.</string>
-    <string name="automationUIReviewTitle">Heures à vérifier</string>
+    <string name="automationUIReviewNothingPending">Rien à vérifier pour le moment. Les horaires enregistrés automatiquement récemment sont ci-dessous, et tu peux en annuler n\'importe lequel.</string>
+    <string name="automationUIReviewTitle">Enregistrements automatiques</string>
     <string name="automationUISelect">Sélectionner</string>
     <string name="automationUISelectAll">Tout sélectionner</string>
     <string name="automationUIShortcutsNote">Dans une automatisation personnelle, ajoutez « %1$s » ou « %2$s ». Aucun accès à la position nécessaire.</string>
@@ -991,6 +994,7 @@
     <string name="recordsArchiveQuarantineConfirm">Cela ne ramène pas les anciennes entrées. Le fichier endommagé est mis de côté en copie .corrupt, et une nouvelle archive commence sur cet appareil.</string>
     <string name="recordsArchiveSaveFailedBody">La dernière modification est à l’écran mais n’a pas atteint le fichier sur cet appareil. Réessayez dans un instant — l’archive existante n’a pas été remplacée.</string>
     <string name="recordsArchiveSaveFailedTitle">Enregistrement impossible</string>
+    <string name="recordsAwayCounted">Absent · compté en heures supplémentaires</string>
     <string name="recordsBreakTime">Pauses au travail</string>
     <string name="recordsChooseShift">Quel poste voulez-vous modifier ?</string>
     <string name="recordsClearDay">Annuler ma modification</string>
@@ -1173,9 +1177,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s, par vous</string>
     <string name="recordsVerifyDetected">Détecté</string>
     <string name="recordsVerifyDetectedUnknown">Non communiqué</string>
+    <string name="recordsVerifyHeadlineEnd">Départ enregistré par localisation</string>
     <string name="recordsVerifyHeadlinePartial">Position vérifiée en partie</string>
     <string name="recordsVerifyHeadlineSources">Comment ces heures ont été enregistrées</string>
-    <string name="recordsVerifyHeadlineVerified">Position vérifiée</string>
+    <string name="recordsVerifyHeadlineStart">Arrivée enregistrée par localisation</string>
+    <string name="recordsVerifyHeadlineVerified">Horaires enregistrés par localisation</string>
     <string name="recordsVerifyHistorical">Source historique</string>
     <string name="recordsVerifyHistoricalNote">Cet enregistrement provient d’iCloud ou d’une sauvegarde. La détection d’origine n’est pas sur cet iPhone ; elle n’a donc pas été revérifiée ici.</string>
     <string name="recordsVerifyMarkAdjusted">Modifié par vous</string>

@@ -903,6 +903,32 @@ final class RecordsQueries {
         )
     }
 
+    /// The day's work before any overtime: its resolved segments, except on a
+    /// day automation alone wrote, where the part past the plan is overtime.
+    func regularSegments(on resolution: DayResolution) -> [NativeShiftSegment] {
+        automationOvertimeSplit(resolution)?.regular ?? resolution.segments
+    }
+
+    /// Plan 021: a day only workplace automation wrote has no overtime
+    /// declaration, yet its adopted end can run past the plan. That part is
+    /// overtime, as a declaration would make it, split at the planned end.
+    /// A declaration, or any edit by the person, takes over again.
+    private func automationOvertimeSplit(
+        _ day: DayResolution
+    ) -> (regular: [NativeShiftSegment], overtime: NativeShiftSegment)? {
+        guard let plannedEnd = day.baseScheduleSegments.map(\.endAtMs).max(),
+              let end = day.segments.map(\.endAtMs).max(), end > plannedEnd,
+              let start = day.segments.map(\.startAtMs).min(),
+              latestOvertimeDeclaration(onDayKey: day.dayKey) == nil,
+              isAutomationRecordedDay(day)
+        else { return nil }
+        let regular = day.segments.compactMap { segment -> NativeShiftSegment? in
+            guard segment.startAtMs < plannedEnd else { return nil }
+            return NativeShiftSegment(startAtMs: segment.startAtMs, endAtMs: min(segment.endAtMs, plannedEnd))
+        }
+        return (regular, NativeShiftSegment(startAtMs: max(plannedEnd, start), endAtMs: end))
+    }
+
     /// Plan 021: every day whose override is still only what automation
     /// adopted. Only days with a provenance summary can qualify, so this
     /// resolves a handful of days, never the career.
@@ -1120,7 +1146,7 @@ final class RecordsQueries {
             return NativeRecordsActualForecastDay(
                 dayKey: day.dayKey,
                 actualKind: actualKind,
-                resolvedSegments: day.segments,
+                resolvedSegments: regularSegments(on: day),
                 plannedSegments: day.baseScheduleSegments,
                 overtimeSegments: actualKind == nil ? [] : overtimeSegments(on: day),
                 overtimePayMultiplier: actualKind == nil ? nil : overtimePayMultiplier(on: day),
@@ -1234,7 +1260,7 @@ final class RecordsQueries {
         var canvasShifts = shifts.map { shift in
             RecordsDayShift(
                 anchorDayKey: shift.dayKey,
-                segments: shift.segments,
+                segments: regularSegments(on: shift),
                 overtimeSegments: overtimeSegments(on: shift),
                 source: shift.dayKey == resolution.dayKey
                     ? source
@@ -1333,6 +1359,7 @@ final class RecordsQueries {
 
     func overtimeSegments(on resolution: DayResolution) -> [NativeShiftSegment] {
         let latest = latestOvertimeDeclaration(onDayKey: resolution.dayKey)
+        if latest == nil, let split = automationOvertimeSplit(resolution) { return [split.overtime] }
         guard let latest,
               let segment = RecordsMetrics.declaredOvertimeSegment(
                 observation: latest,

@@ -14,6 +14,7 @@ object Strings {
     fun androidUpdateMessage(res: Resources, version: String): String = res.getString(R.string.androidUpdateMessage, version)
     fun automationNoticeArrivedApplied(res: Resources, time: String): String = res.getString(R.string.automationNoticeArrivedApplied, time)
     fun automationNoticeArrivedRecorded(res: Resources, time: String): String = res.getString(R.string.automationNoticeArrivedRecorded, time)
+    fun automationNoticeBackAtWork(res: Resources, time: String): String = res.getString(R.string.automationNoticeBackAtWork, time)
     fun automationNoticeLeftApplied(res: Resources, time: String): String = res.getString(R.string.automationNoticeLeftApplied, time)
     fun automationNoticeLeftAppliedOvertime(res: Resources, time: String, duration: String): String = res.getString(R.string.automationNoticeLeftAppliedOvertime, time, duration)
     fun automationNoticeLeftRecorded(res: Resources, time: String): String = res.getString(R.string.automationNoticeLeftRecorded, time)

@@ -20,7 +20,13 @@ extension WorkTimeVerificationSummary {
     var titleKey: String {
         switch headline {
         case .verified: "recordsVerifyHeadlineVerified"
-        case .partial: "recordsVerifyHeadlinePartial"
+        // Name the end that location recorded rather than a vague partial label.
+        case .partial:
+            switch items.first(where: { $0.mark == .locationVerified })?.boundary {
+            case .start: "recordsVerifyHeadlineStart"
+            case .end: "recordsVerifyHeadlineEnd"
+            case nil: "recordsVerifyHeadlinePartial"
+            }
         case .sources: "recordsVerifyHeadlineSources"
         }
     }

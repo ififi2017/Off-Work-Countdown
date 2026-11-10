@@ -398,6 +398,12 @@
         "time"
       ]
     },
+    "automationNoticeBackAtWork": {
+      "resource": "string/automationNoticeBackAtWork",
+      "params": [
+        "time"
+      ]
+    },
     "automationNoticeLeftApplied": {
       "resource": "string/automationNoticeLeftApplied",
       "params": [
@@ -639,6 +645,9 @@
     "automationUINoLocationYet": {
       "resource": "string/automationUINoLocationYet"
     },
+    "automationUINoteArrivalUncertain": {
+      "resource": "string/automationUINoteArrivalUncertain"
+    },
     "automationUINoteChangedByYou": {
       "resource": "string/automationUINoteChangedByYou"
     },
@@ -716,6 +725,9 @@
     },
     "automationUIReviewIntro": {
       "resource": "string/automationUIReviewIntro"
+    },
+    "automationUIReviewNothingPending": {
+      "resource": "string/automationUIReviewNothingPending"
     },
     "automationUIReviewTitle": {
       "resource": "string/automationUIReviewTitle"
@@ -3568,6 +3580,9 @@
     "recordsArchiveSaveFailedTitle": {
       "resource": "string/recordsArchiveSaveFailedTitle"
     },
+    "recordsAwayCounted": {
+      "resource": "string/recordsAwayCounted"
+    },
     "recordsBreakTime": {
       "resource": "string/recordsBreakTime"
     },
@@ -4228,11 +4243,17 @@
     "recordsVerifyDetectedUnknown": {
       "resource": "string/recordsVerifyDetectedUnknown"
     },
+    "recordsVerifyHeadlineEnd": {
+      "resource": "string/recordsVerifyHeadlineEnd"
+    },
     "recordsVerifyHeadlinePartial": {
       "resource": "string/recordsVerifyHeadlinePartial"
     },
     "recordsVerifyHeadlineSources": {
       "resource": "string/recordsVerifyHeadlineSources"
+    },
+    "recordsVerifyHeadlineStart": {
+      "resource": "string/recordsVerifyHeadlineStart"
     },
     "recordsVerifyHeadlineVerified": {
       "resource": "string/recordsVerifyHeadlineVerified"

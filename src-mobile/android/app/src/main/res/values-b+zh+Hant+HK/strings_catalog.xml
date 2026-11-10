@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">話畀 DoneAt 知你已經離開公司。可以用喺個人自動化，例如離開某個地方或者關閉某個專注模式嗰陣。</string>
     <string name="automationNoticeArrivedApplied">已記錄返工時間 %1$s。</string>
     <string name="automationNoticeArrivedRecorded">已記下 %1$s 到達。你確認之前，工時不會改變。</string>
+    <string name="automationNoticeBackAtWork">%1$s 返到公司，加班會持續記錄到你離開。</string>
     <string name="automationNoticeLeftApplied">已記錄放工時間 %1$s。</string>
     <string name="automationNoticeLeftAppliedOvertime">已記錄下班時間 %1$s · 加班 %2$s。</string>
     <string name="automationNoticeLeftRecorded">已記下 %1$s 離開。你確認之前，工時不會改變。</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">正在準備留意你的工作地點，可能需要一點時間。</string>
     <string name="automationUIMonitorWatching">正在留意到達和離開。</string>
     <string name="automationUINoLocationYet">點一下「使用目前位置」，把工作地點放到地圖上。</string>
+    <string name="automationUINoteArrivalUncertain">位置權限在上班時間之後才確認，所以只能知道你在這之前已經到了。</string>
     <string name="automationUINoteChangedByYou">你已手動修改這天</string>
     <string name="automationUINoteEarlyStart">提早抵達，確認後才算開始工作</string>
     <string name="automationUINoteFarFromPlan">和計劃時間相差較多</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">工作地點的位置只儲存在此裝置，不會同步或備份。只有你採用的上下班時間會隨記錄同步。</string>
     <string name="automationUIRadius">%1$s 米</string>
     <string name="automationUIRangeNote">離開範圍比抵達範圍多 100 米，在邊界附近走動不會被當成進出。</string>
-    <string name="automationUIRecentSection">最近採用</string>
+    <string name="automationUIRecentSection">最近自動記錄</string>
     <string name="automationUIRecordingSection">記錄方式</string>
     <string name="automationUIResume">恢復</string>
     <string name="automationUIReviewEmpty">沒有待確認的時間</string>
     <string name="automationUIReviewEmptyNote">偵測到的上下班時間會先出現在這裡。</string>
     <string name="automationUIReviewIntro">這些時間還未改動你的工時，採用正確的就可以。</string>
-    <string name="automationUIReviewTitle">待確認的時間</string>
+    <string name="automationUIReviewNothingPending">目前沒有需要你確認的時間。以下是最近自動記錄的時間，可以隨時撤銷。</string>
+    <string name="automationUIReviewTitle">自動記錄</string>
     <string name="automationUISelect">選擇</string>
     <string name="automationUISelectAll">全選</string>
     <string name="automationUIShortcutsNote">在個人自動化中加入「%1$s」或「%2$s」，不需要位置存取權限。</string>
@@ -987,6 +990,7 @@
     <string name="recordsArchiveQuarantineConfirm">呢個唔會恢復舊紀錄。會將損壞檔挪到一邊（檔名帶 .corrupt），再喺呢部裝置開始一份新檔案。</string>
     <string name="recordsArchiveSaveFailedBody">啱先嘅改動仲喺畫面度，但未寫入呢部裝置上嘅檔案。可以遲啲再試——而家份檔案冇被取代。</string>
     <string name="recordsArchiveSaveFailedTitle">紀錄未有儲存成功</string>
+    <string name="recordsAwayCounted">外出 · 計入加班</string>
     <string name="recordsBreakTime">班中休息</string>
     <string name="recordsChooseShift">想改邊個更？</string>
     <string name="recordsClearDay">清除我嘅改動</string>
@@ -1167,9 +1171,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s，由你</string>
     <string name="recordsVerifyDetected">偵測時間</string>
     <string name="recordsVerifyDetectedUnknown">未提供</string>
+    <string name="recordsVerifyHeadlineEnd">下班時間由定位記錄</string>
     <string name="recordsVerifyHeadlinePartial">部分定位認證</string>
     <string name="recordsVerifyHeadlineSources">返放工時間的來源</string>
-    <string name="recordsVerifyHeadlineVerified">定位認證</string>
+    <string name="recordsVerifyHeadlineStart">上班時間由定位記錄</string>
+    <string name="recordsVerifyHeadlineVerified">上下班時間由定位記錄</string>
     <string name="recordsVerifyHistorical">歷史來源</string>
     <string name="recordsVerifyHistoricalNote">這項記錄來自 iCloud 或備份。原始偵測不在這部 iPhone 上，因此沒有在本機重新核對。</string>
     <string name="recordsVerifyMarkAdjusted">你已修改</string>

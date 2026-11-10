@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">Comunica a DoneAt che hai lasciato il lavoro. Usalo in un’automazione personale, ad esempio quando lasci un luogo o disattivi una modalità Full immersion.</string>
     <string name="automationNoticeArrivedApplied">Entrata registrata alle %1$s.</string>
     <string name="automationNoticeArrivedRecorded">Arrivo alle %1$s annotato. Le tue ore restano invariate finché non confermi.</string>
+    <string name="automationNoticeBackAtWork">Di nuovo al lavoro alle %1$s. Lo straordinario continua a contare finché non esci.</string>
     <string name="automationNoticeLeftApplied">Uscita registrata alle %1$s.</string>
     <string name="automationNoticeLeftAppliedOvertime">Uscita registrata alle %1$s · %2$s di straordinario.</string>
     <string name="automationNoticeLeftRecorded">Partenza alle %1$s annotata. Le tue ore restano invariate finché non confermi.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">Stiamo preparando il monitoraggio dei tuoi luoghi di lavoro. Può servire un momento.</string>
     <string name="automationUIMonitorWatching">In ascolto di arrivi e partenze.</string>
     <string name="automationUINoLocationYet">Tocca «Usa posizione attuale» per collocare questo luogo di lavoro sulla mappa.</string>
+    <string name="automationUINoteArrivalUncertain">L\'accesso alla posizione è stato confermato dopo il tuo orario di inizio, quindi indica solo che eri già lì entro quell\'ora.</string>
     <string name="automationUINoteChangedByYou">Hai modificato tu questo giorno</string>
     <string name="automationUINoteEarlyStart">Arrivo in anticipo: conta dopo la tua conferma</string>
     <string name="automationUINoteFarFromPlan">Lontano dall’orario previsto</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">I luoghi di lavoro restano su questo dispositivo e non vengono sincronizzati né inclusi nei backup. Solo gli orari di lavoro che adotti si sincronizzano con i tuoi registri.</string>
     <string name="automationUIRadius">%1$s m</string>
     <string name="automationUIRangeNote">Il raggio di uscita è più grande di 100 m, così una passeggiata vicino al bordo non conta come andare e venire.</string>
-    <string name="automationUIRecentSection">Adottati di recente</string>
+    <string name="automationUIRecentSection">Registrato di recente</string>
     <string name="automationUIRecordingSection">Registrazione</string>
     <string name="automationUIResume">Riprendi</string>
     <string name="automationUIReviewEmpty">Niente da rivedere</string>
     <string name="automationUIReviewEmptyNote">Gli orari di arrivo e uscita rilevati compaiono prima qui.</string>
     <string name="automationUIReviewIntro">Questi orari non hanno ancora modificato le tue ore. Adotta quelli giusti.</string>
-    <string name="automationUIReviewTitle">Orari da rivedere</string>
+    <string name="automationUIReviewNothingPending">Non c\'è nulla da controllare. Qui sotto trovi gli orari registrati automaticamente di recente e puoi annullarne qualsiasi.</string>
+    <string name="automationUIReviewTitle">Registrazioni automatiche</string>
     <string name="automationUISelect">Seleziona</string>
     <string name="automationUISelectAll">Seleziona tutto</string>
     <string name="automationUIShortcutsNote">In un’automazione personale, aggiungi «%1$s» o «%2$s». Non serve l’accesso alla posizione.</string>
@@ -991,6 +994,7 @@
     <string name="recordsArchiveQuarantineConfirm">Questo non riporta i record precedenti. Sposta il file danneggiato da parte come copia .corrupt e inizia un nuovo archivio su questo dispositivo.</string>
     <string name="recordsArchiveSaveFailedBody">L’ultima modifica è ancora a schermo, ma non è arrivata al file su questo dispositivo. Riprova tra un attimo: l’archivio esistente non è stato sostituito.</string>
     <string name="recordsArchiveSaveFailedTitle">Salvataggio non riuscito</string>
+    <string name="recordsAwayCounted">Fuori · conteggiato come straordinario</string>
     <string name="recordsBreakTime">Pause in turno</string>
     <string name="recordsChooseShift">Quale turno vuoi modificare?</string>
     <string name="recordsClearDay">Annulla la mia modifica</string>
@@ -1173,9 +1177,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s, da te</string>
     <string name="recordsVerifyDetected">Rilevato</string>
     <string name="recordsVerifyDetectedUnknown">Non indicato</string>
+    <string name="recordsVerifyHeadlineEnd">Uscita registrata dalla posizione</string>
     <string name="recordsVerifyHeadlinePartial">Posizione verificata in parte</string>
     <string name="recordsVerifyHeadlineSources">Come sono stati registrati questi orari</string>
-    <string name="recordsVerifyHeadlineVerified">Posizione verificata</string>
+    <string name="recordsVerifyHeadlineStart">Ingresso registrato dalla posizione</string>
+    <string name="recordsVerifyHeadlineVerified">Orari registrati dalla posizione</string>
     <string name="recordsVerifyHistorical">Fonte storica</string>
     <string name="recordsVerifyHistoricalNote">Questa voce proviene da iCloud o da un backup. Il rilevamento originale non è su questo iPhone, quindi qui non è stato ricontrollato.</string>
     <string name="recordsVerifyMarkAdjusted">Modificato da te</string>

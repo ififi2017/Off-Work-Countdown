@@ -493,7 +493,9 @@ final class NotificationService {
         ])
         content.sound = nil
         content.interruptionLevel = .passive
-        content.userInfo = ["route": AppRoute.workplaceAutomationReview.rawValue]
+        if notice.needsReview {
+            content.userInfo = ["route": AppRoute.workplaceAutomationReview.rawValue]
+        }
         try? await shiftCenter.add(UNNotificationRequest(identifier: notice.identifier, content: content, trigger: nil))
     }
 

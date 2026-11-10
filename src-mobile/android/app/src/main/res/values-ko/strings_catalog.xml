@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">DoneAt에 퇴근했다고 알려요. 특정 장소를 떠나거나 집중 모드를 끌 때 같은 개인용 자동화에서 사용하세요.</string>
     <string name="automationNoticeArrivedApplied">%1$s에 출근이 기록되었어요.</string>
     <string name="automationNoticeArrivedRecorded">%1$s 도착을 기록해 두었어요. 확인하기 전까지 근무 시간은 그대로예요.</string>
+    <string name="automationNoticeBackAtWork">%1$s에 다시 근무지에 도착했어요. 떠날 때까지 초과 근무가 계속 기록돼요.</string>
     <string name="automationNoticeLeftApplied">%1$s에 퇴근이 기록되었어요.</string>
     <string name="automationNoticeLeftAppliedOvertime">퇴근 시각 %1$s 기록됨 · 초과 근무 %2$s.</string>
     <string name="automationNoticeLeftRecorded">%1$s 출발을 기록해 두었어요. 확인하기 전까지 근무 시간은 그대로예요.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">근무지 감지를 준비하는 중이에요. 잠시 걸릴 수 있어요.</string>
     <string name="automationUIMonitorWatching">도착과 출발을 지켜보는 중이에요.</string>
     <string name="automationUINoLocationYet">“현재 위치 사용”을 탭해 지도에 근무지를 표시하세요.</string>
+    <string name="automationUINoteArrivalUncertain">위치 접근 권한이 시작 시간 이후에 확인되어, 그 시점까지는 도착해 있었다는 것만 알 수 있어요.</string>
     <string name="automationUINoteChangedByYou">직접 수정한 날이에요</string>
     <string name="automationUINoteEarlyStart">일찍 도착함 — 확인하면 반영돼요</string>
     <string name="automationUINoteFarFromPlan">예정 시간과 차이가 커요</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">근무지 위치는 이 기기에만 저장되며 동기화되거나 백업되지 않아요. 적용한 근무 시간만 기록과 함께 동기화돼요.</string>
     <string name="automationUIRadius">%1$sm</string>
     <string name="automationUIRangeNote">떠남 범위는 도착 범위보다 100m 더 넓어서, 경계 근처를 걸어도 드나든 것으로 처리되지 않아요.</string>
-    <string name="automationUIRecentSection">최근 적용</string>
+    <string name="automationUIRecentSection">최근 자동 기록</string>
     <string name="automationUIRecordingSection">기록</string>
     <string name="automationUIResume">다시 시작</string>
     <string name="automationUIReviewEmpty">확인할 항목이 없어요</string>
     <string name="automationUIReviewEmptyNote">감지된 도착 및 출발 시간이 먼저 여기에 표시돼요.</string>
     <string name="automationUIReviewIntro">이 시간들은 아직 근무 시간에 반영되지 않았어요. 맞는 시간을 적용하세요.</string>
-    <string name="automationUIReviewTitle">확인할 시간</string>
+    <string name="automationUIReviewNothingPending">확인이 필요한 항목은 없어요. 최근 자동으로 기록된 시간은 아래에 있으며, 언제든 취소할 수 있어요.</string>
+    <string name="automationUIReviewTitle">자동 기록</string>
     <string name="automationUISelect">선택</string>
     <string name="automationUISelectAll">전체 선택</string>
     <string name="automationUIShortcutsNote">개인용 자동화에 “%1$s” 또는 “%2$s”를 추가하세요. 위치 접근은 필요 없어요.</string>
@@ -987,6 +990,7 @@
     <string name="recordsArchiveQuarantineConfirm">이전 기록은 돌아오지 않습니다. 손상된 파일을 .corrupt 복사본으로 옆으로 옮기고, 이 기기에서 새 보관 파일을 시작합니다.</string>
     <string name="recordsArchiveSaveFailedBody">최근 변경은 화면에 있지만 이 기기의 파일에는 반영되지 않았습니다. 잠시 후 다시 시도해 주세요. 기존 보관 파일은 바뀌지 않았습니다.</string>
     <string name="recordsArchiveSaveFailedTitle">기록을 저장하지 못했습니다</string>
+    <string name="recordsAwayCounted">외출 · 초과 근무에 포함</string>
     <string name="recordsBreakTime">근무 중 휴식</string>
     <string name="recordsChooseShift">어느 근무를 고칠까요?</string>
     <string name="recordsClearDay">내 수정 되돌리기</string>
@@ -1167,9 +1171,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s, 직접</string>
     <string name="recordsVerifyDetected">감지됨</string>
     <string name="recordsVerifyDetectedUnknown">보고되지 않음</string>
+    <string name="recordsVerifyHeadlineEnd">퇴근 시간을 위치로 기록함</string>
     <string name="recordsVerifyHeadlinePartial">일부 위치 확인됨</string>
     <string name="recordsVerifyHeadlineSources">이 시간이 기록된 방법</string>
-    <string name="recordsVerifyHeadlineVerified">위치 확인됨</string>
+    <string name="recordsVerifyHeadlineStart">출근 시간을 위치로 기록함</string>
+    <string name="recordsVerifyHeadlineVerified">출퇴근 시간을 위치로 기록함</string>
     <string name="recordsVerifyHistorical">과거 출처</string>
     <string name="recordsVerifyHistoricalNote">이 기록은 iCloud 또는 백업에서 가져왔습니다. 원래의 감지 정보는 이 iPhone에 없어서 여기서는 다시 확인하지 않았습니다.</string>
     <string name="recordsVerifyMarkAdjusted">직접 변경함</string>

@@ -175,6 +175,11 @@ nonisolated struct WorkplaceArrivalNotice: Equatable, Sendable {
     var time: Date
     /// The overtime an applied clock-out recorded, once past the grace period.
     var overtime: TimeInterval? = nil
+    /// Opens the review list only when something there waits for the person;
+    /// a notice about a time already recorded must not read as a doubt.
+    var needsReview = false
+
+    static var backAtWorkKey: String { "automationNoticeBackAtWork" }
 
     static func bodyKey(arrived: Bool, applied: Bool, withOvertime: Bool = false) -> String {
         switch (arrived, applied) {
@@ -200,6 +205,14 @@ nonisolated struct WorkplaceArrivalNotice: Equatable, Sendable {
         case .recordedForReview, .needsReview: applied = false
         case .alreadyApplied, .ignored, .temporarilyUnavailable: return nil
         }
+        // Back after the recorded clock-out: overtime simply goes on.
+        if event.type == .enterInner, state.awayStretches.contains(where: { $0.returnEventID == event.id }) {
+            return WorkplaceArrivalNotice(
+                identifier: identifierPrefix + event.id.uuidString,
+                bodyKey: backAtWorkKey,
+                time: event.proposedTime
+            )
+        }
         // An on-time arrival adopts the planned start, not the crossing.
         let proposal = state.proposals.last { $0.sourceEventIDs.contains(event.id) }
         let overtime = proposal.flatMap { proposal -> TimeInterval? in
@@ -211,7 +224,8 @@ nonisolated struct WorkplaceArrivalNotice: Equatable, Sendable {
             identifier: identifierPrefix + event.id.uuidString,
             bodyKey: bodyKey(arrived: event.type == .enterInner, applied: applied, withOvertime: overtime != nil),
             time: outcome == .applied ? proposal?.proposedTime ?? event.proposedTime : event.proposedTime,
-            overtime: overtime
+            overtime: overtime,
+            needsReview: !applied
         )
     }
 }

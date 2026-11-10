@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">แจ้ง DoneAt ว่าคุณออกจากที่ทำงานแล้ว ใช้ในระบบอัตโนมัติส่วนตัว เช่น เมื่อออกจากสถานที่หรือปิดโหมดโฟกัส</string>
     <string name="automationNoticeArrivedApplied">บันทึกเวลาเข้างาน %1$s แล้ว</string>
     <string name="automationNoticeArrivedRecorded">จดบันทึกการมาถึงเวลา %1$s แล้ว ชั่วโมงทำงานของคุณจะไม่เปลี่ยนจนกว่าคุณจะยืนยัน</string>
+    <string name="automationNoticeBackAtWork">กลับมาที่ทำงานเวลา %1$s โอทีจะนับต่อไปจนกว่าคุณจะออก</string>
     <string name="automationNoticeLeftApplied">บันทึกเวลาออกงาน %1$s แล้ว</string>
     <string name="automationNoticeLeftAppliedOvertime">บันทึกเวลาเลิกงาน %1$s แล้ว · ทำงานล่วงเวลา %2$s</string>
     <string name="automationNoticeLeftRecorded">จดบันทึกการออกเวลา %1$s แล้ว ชั่วโมงทำงานของคุณจะไม่เปลี่ยนจนกว่าคุณจะยืนยัน</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">กำลังเตรียมดูแลที่ทำงานของคุณ อาจใช้เวลาสักครู่</string>
     <string name="automationUIMonitorWatching">กำลังคอยดูการมาถึงและการออก</string>
     <string name="automationUINoLocationYet">แตะ “ใช้ตำแหน่งปัจจุบัน” เพื่อวางสถานที่ทำงานนี้บนแผนที่</string>
+    <string name="automationUINoteArrivalUncertain">ยืนยันสิทธิ์เข้าถึงตำแหน่งหลังเวลาเริ่มงานของคุณ จึงบอกได้เพียงว่าคุณมาถึงที่ทำงานแล้วก่อนหน้านั้น</string>
     <string name="automationUINoteChangedByYou">คุณแก้ไขวันนี้เองแล้ว</string>
     <string name="automationUINoteEarlyStart">มาถึงก่อนเวลา — จะนับเมื่อคุณยืนยัน</string>
     <string name="automationUINoteFarFromPlan">ต่างจากเวลาตามแผนมาก</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">ตำแหน่งของสถานที่ทำงานอยู่ในอุปกรณ์เครื่องนี้เท่านั้น และจะไม่ซิงค์หรือสำรองข้อมูล มีเพียงเวลาทำงานที่คุณใช้เท่านั้นที่ซิงค์ไปพร้อมกับบันทึกของคุณ</string>
     <string name="automationUIRadius">%1$s ม.</string>
     <string name="automationUIRangeNote">รัศมีการออกกว้างกว่า 100 ม. การเดินใกล้ขอบเขตจึงไม่ถูกนับว่าเข้าหรือออก</string>
-    <string name="automationUIRecentSection">ใช้ล่าสุด</string>
+    <string name="automationUIRecentSection">บันทึกล่าสุด</string>
     <string name="automationUIRecordingSection">การบันทึก</string>
     <string name="automationUIResume">ทำต่อ</string>
     <string name="automationUIReviewEmpty">ไม่มีรายการที่ต้องตรวจสอบ</string>
     <string name="automationUIReviewEmptyNote">เวลามาถึงและออกที่ตรวจพบจะแสดงที่นี่ก่อน</string>
     <string name="automationUIReviewIntro">เวลาเหล่านี้ยังไม่ได้เปลี่ยนชั่วโมงทำงานของคุณ เลือกใช้อันที่ถูกต้องได้เลย</string>
-    <string name="automationUIReviewTitle">เวลาที่รอตรวจสอบ</string>
+    <string name="automationUIReviewNothingPending">ไม่มีรายการที่ต้องให้คุณตรวจสอบ เวลาที่บันทึกอัตโนมัติล่าสุดอยู่ด้านล่าง และคุณยกเลิกรายการใดก็ได้</string>
+    <string name="automationUIReviewTitle">บันทึกอัตโนมัติ</string>
     <string name="automationUISelect">เลือก</string>
     <string name="automationUISelectAll">เลือกทั้งหมด</string>
     <string name="automationUIShortcutsNote">ในระบบอัตโนมัติส่วนบุคคล ให้เพิ่ม “%1$s” หรือ “%2$s” โดยไม่ต้องเข้าถึงตำแหน่ง</string>
@@ -987,6 +990,7 @@
     <string name="recordsArchiveQuarantineConfirm">การทำเช่นนี้จะไม่ดึงบันทึกเก่ากลับมา แต่จะย้ายไฟล์ที่เสียไปข้าง ๆ เป็นสำเนา .corrupt แล้วเริ่มคลังใหม่บนอุปกรณ์นี้</string>
     <string name="recordsArchiveSaveFailedBody">การเปลี่ยนแปลงล่าสุดยังอยู่บนหน้าจอ แต่ยังไม่ถึงไฟล์บนอุปกรณ์นี้ ลองอีกครั้งในอีกสักครู่ — คลังเดิมไม่ได้ถูกแทนที่</string>
     <string name="recordsArchiveSaveFailedTitle">บันทึกไม่สำเร็จ</string>
+    <string name="recordsAwayCounted">ออกไปข้างนอก · นับเป็นโอที</string>
     <string name="recordsBreakTime">พักระหว่างกะ</string>
     <string name="recordsChooseShift">จะแก้กะไหน</string>
     <string name="recordsClearDay">ยกเลิกการแก้ของฉัน</string>
@@ -1167,9 +1171,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s โดยคุณ</string>
     <string name="recordsVerifyDetected">ตรวจพบ</string>
     <string name="recordsVerifyDetectedUnknown">ไม่มีการรายงาน</string>
+    <string name="recordsVerifyHeadlineEnd">เวลาเลิกงานบันทึกจากตำแหน่ง</string>
     <string name="recordsVerifyHeadlinePartial">ยืนยันตำแหน่งบางส่วน</string>
     <string name="recordsVerifyHeadlineSources">เวลาเหล่านี้ถูกบันทึกอย่างไร</string>
-    <string name="recordsVerifyHeadlineVerified">ยืนยันตำแหน่งแล้ว</string>
+    <string name="recordsVerifyHeadlineStart">เวลาเข้างานบันทึกจากตำแหน่ง</string>
+    <string name="recordsVerifyHeadlineVerified">เวลาเข้า-ออกงานบันทึกจากตำแหน่ง</string>
     <string name="recordsVerifyHistorical">แหล่งที่มาในอดีต</string>
     <string name="recordsVerifyHistoricalNote">รายการนี้มาจาก iCloud หรือข้อมูลสำรอง การตรวจพบดั้งเดิมไม่ได้อยู่บน iPhone เครื่องนี้ จึงไม่ได้ตรวจสอบซ้ำที่นี่</string>
     <string name="recordsVerifyMarkAdjusted">คุณแก้ไขแล้ว</string>
