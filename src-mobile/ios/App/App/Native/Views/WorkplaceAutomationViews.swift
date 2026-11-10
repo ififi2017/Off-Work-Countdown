@@ -585,7 +585,7 @@ struct AutomationReviewContent: View {
     private var list: some View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                Text(text.t("automationUIReviewIntro"))
+                Text(text.t(items.isEmpty ? "automationUIReviewNothingPending" : "automationUIReviewIntro"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .padding(.horizontal, 16)

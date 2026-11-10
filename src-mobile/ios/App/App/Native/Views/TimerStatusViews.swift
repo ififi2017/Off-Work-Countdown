@@ -563,7 +563,7 @@ struct CompletedShiftDesignView: View {
                 tint: OWCDesign.orangeDeep,
                 fill: OWCDesign.orange.opacity(0.12)
             )
-            .padding(.top, 34)
+            .padding(.top, 14)
             Text(shifts.text.formatDuration(detectedOvertimeMs))
                 .font(.system(size: countUpSize, weight: .bold).monospacedDigit())
                 .tracking(-1.4)
@@ -634,7 +634,7 @@ struct CompletedShiftDesignView: View {
                         .foregroundStyle(OWCDesign.secondary)
                 }
                 if let overtimeMs {
-                    OWCRow(icon: "clock.badge.plus", title: shifts.text.t("overtime"), isLast: lunch == nil && !showsWeek) {
+                    OWCRow(icon: "stopwatch", title: shifts.text.t("overtime"), isLast: lunch == nil && !showsWeek) {
                         Text(shifts.text.formatDuration(overtimeMs, includeSeconds: false))
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
@@ -707,7 +707,7 @@ struct CompletedShiftDesignView: View {
             .buttonStyle(OWCSecondaryButtonStyle())
         }
         .padding(.horizontal, OWCDesign.pageInset)
-        .padding(.bottom, 14)
+        .padding(.bottom, 24)
     }
 
     private func celebrate() {

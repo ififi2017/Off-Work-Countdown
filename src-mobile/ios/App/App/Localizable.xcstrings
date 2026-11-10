@@ -155494,115 +155494,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "أوقات للمراجعة"
+            "value": "السجلات التلقائية"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zeiten zur Prüfung"
+            "value": "Automatische Einträge"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Times to Review"
+            "value": "Automatic Records"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Horas por revisar"
+            "value": "Registros automáticos"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Heures à vérifier"
+            "value": "Enregistrements automatiques"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "समीक्षा के लिए समय"
+            "value": "ऑटोमैटिक रिकॉर्ड"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Waktu untuk Ditinjau"
+            "value": "Catatan Otomatis"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Orari da rivedere"
+            "value": "Registrazioni automatiche"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "確認する時刻"
+            "value": "自動記録"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "확인할 시간"
+            "value": "자동 기록"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "तपासायच्या वेळा"
+            "value": "स्वयंचलित नोंदी"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Horários por rever"
+            "value": "Registos automáticos"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Время на проверку"
+            "value": "Автозаписи"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "เวลาที่รอตรวจสอบ"
+            "value": "บันทึกอัตโนมัติ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "İncelenecek Saatler"
+            "value": "Otomatik Kayıtlar"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Giờ cần xem lại"
+            "value": "Bản ghi tự động"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "待确认的记录"
+            "value": "自动记录"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "待確認的時間"
+            "value": "自動記錄"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "待確認的記錄"
+            "value": "自動記錄"
           }
         }
       }
@@ -159183,115 +159183,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "اعتُمدت مؤخرًا"
+            "value": "المسجّل مؤخرًا"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zuletzt übernommen"
+            "value": "Zuletzt erfasst"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Recently Adopted"
+            "value": "Recently Recorded"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adoptadas recientemente"
+            "value": "Registrado recientemente"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adoptées récemment"
+            "value": "Enregistré récemment"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "हाल ही में अपनाए गए"
+            "value": "हाल ही में दर्ज"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Baru Diterima"
+            "value": "Baru Saja Dicatat"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adottati di recente"
+            "value": "Registrato di recente"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "最近反映したもの"
+            "value": "最近の自動記録"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "최근 적용"
+            "value": "최근 자동 기록"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "अलीकडे स्वीकारलेले"
+            "value": "अलीकडे नोंदवलेले"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adotados recentemente"
+            "value": "Registado recentemente"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Недавно принятые"
+            "value": "Недавно записано"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ใช้ล่าสุด"
+            "value": "บันทึกล่าสุด"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Son Benimsenenler"
+            "value": "Son Kaydedilenler"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Đã chấp nhận gần đây"
+            "value": "Ghi gần đây"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "最近采用"
+            "value": "最近自动记录"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "最近採用"
+            "value": "最近自動記錄"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "最近採用"
+            "value": "最近自動記錄"
           }
         }
       }
@@ -165847,115 +165847,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تم التحقق من الموقع"
+            "value": "الأوقات مسجّلة من الموقع"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Standort bestätigt"
+            "value": "Zeiten per Standort erfasst"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Location Verified"
+            "value": "Times Recorded from Location"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ubicación verificada"
+            "value": "Horas registradas por ubicación"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Position vérifiée"
+            "value": "Horaires enregistrés par localisation"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "स्थान सत्यापित"
+            "value": "समय लोकेशन से दर्ज हुए"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lokasi Terverifikasi"
+            "value": "Jam Dicatat dari Lokasi"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Posizione verificata"
+            "value": "Orari registrati dalla posizione"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "位置情報で確認済み"
+            "value": "出退勤は位置情報から記録"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위치 확인됨"
+            "value": "출퇴근 시간을 위치로 기록함"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "स्थान सत्यापित"
+            "value": "वेळा लोकेशनवरून नोंदवल्या"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Localização verificada"
+            "value": "Horas registadas pela localização"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Местоположение подтверждено"
+            "value": "Время записано по геопозиции"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ยืนยันตำแหน่งแล้ว"
+            "value": "เวลาเข้า-ออกงานบันทึกจากตำแหน่ง"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konum Doğrulandı"
+            "value": "Saatler Konumdan Kaydedildi"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vị trí đã xác minh"
+            "value": "Giờ làm được ghi từ vị trí"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "定位认证"
+            "value": "上下班时间由定位记录"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "定位認證"
+            "value": "上下班時間由定位記錄"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "定位認證"
+            "value": "上下班時間由定位記錄"
           }
         }
       }
@@ -169645,6 +169645,720 @@
           "stringUnit": {
             "state": "translated",
             "value": "依定位自動記錄"
+          }
+        }
+      }
+    },
+    "automationUINoteArrivalUncertain": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تأكدنا من إذن الموقع بعد وقت بدء عملك، لذا يظهر هنا فقط أنك كنت موجودًا بحلول ذلك الوقت."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Standortzugriff wurde erst nach deiner Startzeit bestätigt. Daher steht nur fest, dass du bis dahin da warst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location access was confirmed after your start time, so this only shows you were there by then."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El acceso a la ubicación se confirmó después de tu hora de inicio, así que solo indica que ya estabas allí para entonces."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'accès à la localisation a été confirmé après ton heure de début : on sait seulement que tu étais déjà là à ce moment-là."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन एक्सेस आपके शुरू होने के समय के बाद कन्फ़र्म हुआ, इसलिए इससे बस इतना पता चलता है कि आप तब तक वहाँ पहुँच चुके थे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Akses lokasi baru dikonfirmasi setelah jam mulai kamu, jadi ini hanya menunjukkan bahwa kamu sudah ada di sana sebelum itu."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'accesso alla posizione è stato confermato dopo il tuo orario di inizio, quindi indica solo che eri già lì entro quell'ora."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置情報へのアクセスが開始時刻のあとに確認されたため、それまでに到着していたことだけがわかります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치 접근 권한이 시작 시간 이후에 확인되어, 그 시점까지는 도착해 있었다는 것만 알 수 있어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन ॲक्सेस तुमच्या सुरू होण्याच्या वेळेनंतर कन्फर्म झाला, त्यामुळे यावरून फक्त एवढेच दिसते की तुम्ही तोपर्यंत तिथे पोहोचला होतात."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O acesso à localização foi confirmado depois da tua hora de início, por isso só mostra que já estavas lá até essa altura."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к геопозиции подтвердился после времени начала, поэтому известно лишь, что к этому моменту вы уже были на месте."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยืนยันสิทธิ์เข้าถึงตำแหน่งหลังเวลาเริ่มงานของคุณ จึงบอกได้เพียงว่าคุณมาถึงที่ทำงานแล้วก่อนหน้านั้น"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konum erişimi başlangıç saatinden sonra onaylandı; bu yüzden yalnızca o saate kadar orada olduğun görünüyor."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quyền truy cập vị trí được xác nhận sau giờ bắt đầu của bạn, nên chỉ biết là bạn đã có mặt ở đó trước thời điểm này."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置权限在上班时间之后才确认，所以只能知道你在这之前已经到了。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置權限在上班時間之後才確認，所以只能知道你在這之前已經到了。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置權限在上班時間之後才確認，所以只能知道你在這之前已經到了。"
+          }
+        }
+      }
+    },
+    "automationNoticeBackAtWork": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عدت إلى العمل في {{time}}. يستمر احتساب العمل الإضافي حتى تغادر."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um {{time}} wieder bei der Arbeit. Überstunden zählen weiter, bis du gehst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back at work at {{time}}. Overtime keeps counting until you leave."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De vuelta en el trabajo a las {{time}}. Las horas extra seguirán contando hasta que te vayas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De retour au travail à {{time}}. Les heures supplémentaires continuent de compter jusqu'à ton départ."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} बजे काम पर वापस। आपके निकलने तक ओवरटाइम गिना जाता रहेगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kembali ke tempat kerja pukul {{time}}. Lembur terus dihitung sampai kamu pergi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Di nuovo al lavoro alle {{time}}. Lo straordinario continua a contare finché non esci."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}に職場へ戻りました。退勤するまで残業は引き続きカウントされます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}에 다시 근무지에 도착했어요. 떠날 때까지 초과 근무가 계속 기록돼요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} वाजता कामावर परत. तुम्ही निघेपर्यंत ओव्हरटाइम मोजला जात राहील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De volta ao trabalho às {{time}}. As horas extra continuam a contar até saíres."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы снова на работе в {{time}}. Переработка продолжит учитываться, пока вы не уйдёте."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กลับมาที่ทำงานเวลา {{time}} โอทีจะนับต่อไปจนกว่าคุณจะออก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saat {{time}} itibarıyla işe geri döndün. Ayrılana kadar fazla mesai saymaya devam eder."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã quay lại nơi làm việc lúc {{time}}. Giờ tăng ca tiếp tục được tính cho đến khi bạn rời đi."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 回到公司，加班会持续记录到你离开。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 返到公司，加班會持續記錄到你離開。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 回到公司，加班會持續記錄到你離開。"
+          }
+        }
+      }
+    },
+    "recordsAwayCounted": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خارج المكان · محتسب كعمل إضافي"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unterwegs · als Überstunden gezählt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Away · counted as overtime"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuera · cuenta como horas extra"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Absent · compté en heures supplémentaires"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बाहर · ओवरटाइम में गिना गया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Di luar · dihitung sebagai lembur"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuori · conteggiato come straordinario"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外出 · 残業に含む"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "외출 · 초과 근무에 포함"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बाहेर · ओव्हरटाइममध्ये मोजले"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ausente · conta como horas extra"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отлучка · засчитано как переработка"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออกไปข้างนอก · นับเป็นโอที"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dışarıda · fazla mesaiye sayıldı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ra ngoài · tính vào giờ tăng ca"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外出 · 计入加班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外出 · 計入加班"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外出 · 計入加班"
+          }
+        }
+      }
+    },
+    "recordsVerifyHeadlineStart": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وقت البدء مسجّل من الموقع"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginn per Standort erfasst"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock-In Recorded from Location"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada registrada por ubicación"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivée enregistrée par localisation"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शुरुआत का समय लोकेशन से दर्ज हुआ"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jam Masuk Dicatat dari Lokasi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ingresso registrato dalla posizione"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "出勤は位置情報から記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출근 시간을 위치로 기록함"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सुरू होण्याची वेळ लोकेशनवरून नोंदवली"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada registada pela localização"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начало записано по геопозиции"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เวลาเข้างานบันทึกจากตำแหน่ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giriş Saati Konumdan Kaydedildi"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ vào làm được ghi từ vị trí"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上班时间由定位记录"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上班時間由定位記錄"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上班時間由定位記錄"
+          }
+        }
+      }
+    },
+    "recordsVerifyHeadlineEnd": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وقت الانتهاء مسجّل من الموقع"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feierabend per Standort erfasst"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock-Out Recorded from Location"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salida registrada por ubicación"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Départ enregistré par localisation"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "समाप्ति का समय लोकेशन से दर्ज हुआ"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jam Pulang Dicatat dari Lokasi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uscita registrata dalla posizione"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退勤は位置情報から記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "퇴근 시간을 위치로 기록함"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संपण्याची वेळ लोकेशनवरून नोंदवली"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saída registada pela localização"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окончание записано по геопозиции"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เวลาเลิกงานบันทึกจากตำแหน่ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çıkış Saati Konumdan Kaydedildi"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ tan làm được ghi từ vị trí"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下班时间由定位记录"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下班時間由定位記錄"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下班時間由定位記錄"
+          }
+        }
+      }
+    },
+    "automationUIReviewNothingPending": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا شيء يحتاج إلى مراجعتك. الأوقات التي سجّلها التشغيل التلقائي مؤخرًا أدناه، ويمكنك التراجع عن أي منها."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nichts muss von dir geprüft werden. Unten siehst du die zuletzt automatisch erfassten Zeiten, die du jederzeit rückgängig machen kannst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing needs your check. Times automation recorded recently are below, and you can undo any of them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay nada que revisar. Abajo están las horas que se registraron automáticamente hace poco, y puedes deshacer cualquiera."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rien à vérifier pour le moment. Les horaires enregistrés automatiquement récemment sont ci-dessous, et tu peux en annuler n'importe lequel."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपको कुछ भी जाँचने की ज़रूरत नहीं है। हाल ही में ऑटोमैटिकली दर्ज हुए समय नीचे हैं, और आप किसी को भी वापस ले सकते हैं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak ada yang perlu kamu periksa. Jam yang dicatat otomatis baru-baru ini ada di bawah, dan kamu bisa membatalkan yang mana pun."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non c'è nulla da controllare. Qui sotto trovi gli orari registrati automaticamente di recente e puoi annullarne qualsiasi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認が必要なものはありません。最近自動で記録された時刻は以下のとおりで、いつでも取り消せます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인이 필요한 항목은 없어요. 최근 자동으로 기록된 시간은 아래에 있으며, 언제든 취소할 수 있어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुम्हाला काहीही तपासण्याची गरज नाही. अलीकडे आपोआप नोंदवलेल्या वेळा खाली आहेत, आणि तुम्ही त्यातील कोणतीही रद्द करू शकता."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não há nada para confirmares. Abaixo estão as horas registadas automaticamente há pouco e podes anular qualquer uma."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверять ничего не нужно. Ниже — время, записанное автоматически за последнее время; любую запись можно отменить."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่มีรายการที่ต้องให้คุณตรวจสอบ เวลาที่บันทึกอัตโนมัติล่าสุดอยู่ด้านล่าง และคุณยกเลิกรายการใดก็ได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontrol etmen gereken bir şey yok. Otomatik kaydedilen son saatler aşağıda ve istediğini geri alabilirsin."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không có gì cần bạn kiểm tra. Các giờ được ghi tự động gần đây nằm bên dưới, và bạn có thể hoàn tác bất kỳ mục nào."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前没有需要你确认的时间。以下是最近自动记录的时间，可以随时撤销。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前沒有需要你確認的時間。以下是最近自動記錄的時間，可以隨時撤銷。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前沒有需要你確認的時間。以下是最近自動記錄的時間，可以隨時撤銷。"
           }
         }
       }

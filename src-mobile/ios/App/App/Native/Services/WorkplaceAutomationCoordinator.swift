@@ -124,6 +124,21 @@ final class WorkplaceAutomationCoordinator {
             match = WorkplaceAutomationRules.matchExit(at: event.proposedTime, among: shifts)
         }
         guard case .matched(let shift) = match else {
+            // Back after automation recorded the clock-out: overtime goes on
+            // to the final exit, with the time away kept for the timeline.
+            if case .noShift = match, event.type == .enterInner, !event.isInitialState,
+               event.source == .nativeGeofence || event.source == .appIntentAutomation,
+               let back = WorkplaceAutomationRules.returnAfterClockOut(
+                   arrivedAt: event.proposedTime, among: shifts, state: state
+               ) {
+                var resumed = state
+                resumed.recordAway(AutomationAwayStretch(
+                    shiftKey: back.shift.shiftKey, dayKey: back.shift.anchorDayKey,
+                    leftAt: back.leftAt, returnedAt: event.proposedTime, returnEventID: event.id
+                ))
+                guard commit(resumed) else { return .temporarilyUnavailable }
+                return finish(event.id, .recordedForReview, now: now)
+            }
             // An arrival with no shift may be extra work; only the person
             // can say so (§3.9).
             if case .noShift = match, event.type == .enterInner,
@@ -154,7 +169,8 @@ final class WorkplaceAutomationCoordinator {
             canCollect: actions.plus.canCollectAutomation,
             canAutoApply: actions.plus.canAutoApplyAutomation,
             isManuallySuppressed: state.isSuppressed(shift.shiftKey),
-            context: context
+            context: context,
+            firstKnownAfterStart: event.type == .enterInner && event.proposedTime > shift.plannedStart
         )
         if case .ignore = disposition { return finish(event.id, .ignored, now: now) }
 

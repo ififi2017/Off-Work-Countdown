@@ -81,6 +81,7 @@ struct WorkplaceAutomationPresenter {
             (.leftBeforePlannedEnd, "automationUINoteLeftEarly"),
             (.staleEvent, "automationUINoteLateDetection"),
             (.unknownObservationTime, "automationUINoteLateDetection"),
+            (.arrivalTimeUncertain, "automationUINoteArrivalUncertain"),
             (.beyondAutomaticWindow, "automationUINoteFarFromPlan"),
         ]
         return priority.first { reasons.contains($0.0) }?.1

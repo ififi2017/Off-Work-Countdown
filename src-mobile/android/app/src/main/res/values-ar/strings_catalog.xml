@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">يُعلم DoneAt بأنك غادرت العمل. استخدمه في أتمتة شخصية، مثل مغادرة مكان ما أو إيقاف وضع تركيز.</string>
     <string name="automationNoticeArrivedApplied">تم تسجيل بدء العمل عند %1$s.</string>
     <string name="automationNoticeArrivedRecorded">تم تسجيل الوصول عند %1$s. ستبقى ساعاتك كما هي إلى أن تؤكد.</string>
+    <string name="automationNoticeBackAtWork">عدت إلى العمل في %1$s. يستمر احتساب العمل الإضافي حتى تغادر.</string>
     <string name="automationNoticeLeftApplied">تم تسجيل انتهاء العمل عند %1$s.</string>
     <string name="automationNoticeLeftAppliedOvertime">تم تسجيل الانصراف عند %1$s · %2$s من العمل الإضافي.</string>
     <string name="automationNoticeLeftRecorded">تم تسجيل المغادرة عند %1$s. ستبقى ساعاتك كما هي إلى أن تؤكد.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">نستعد لمراقبة أماكن عملك. قد يستغرق ذلك لحظة.</string>
     <string name="automationUIMonitorWatching">نراقب الوصول والمغادرة.</string>
     <string name="automationUINoLocationYet">اضغط على «استخدام الموقع الحالي» لوضع مكان العمل هذا على الخريطة.</string>
+    <string name="automationUINoteArrivalUncertain">تأكدنا من إذن الموقع بعد وقت بدء عملك، لذا يظهر هنا فقط أنك كنت موجودًا بحلول ذلك الوقت.</string>
     <string name="automationUINoteChangedByYou">لقد غيّرت هذا اليوم بنفسك</string>
     <string name="automationUINoteEarlyStart">وصلت مبكرًا — يُحتسب بعد تأكيدك</string>
     <string name="automationUINoteFarFromPlan">بعيد عن وقتك المخطط</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">تبقى مواقع أماكن العمل على هذا الجهاز ولا تتم مزامنتها أو نسخها احتياطيًا. تتم مزامنة أوقات العمل التي تعتمدها فقط مع سجلاتك.</string>
     <string name="automationUIRadius">%1$s م</string>
     <string name="automationUIRangeNote">نطاق المغادرة أكبر بمقدار 100 م، حتى لا يُحتسب التجوّل قرب الحدّ على أنه ذهاب وإياب.</string>
-    <string name="automationUIRecentSection">اعتُمدت مؤخرًا</string>
+    <string name="automationUIRecentSection">المسجّل مؤخرًا</string>
     <string name="automationUIRecordingSection">التسجيل</string>
     <string name="automationUIResume">استئناف</string>
     <string name="automationUIReviewEmpty">لا شيء للمراجعة</string>
     <string name="automationUIReviewEmptyNote">تظهر هنا أولًا أوقات الوصول والمغادرة المكتشفة.</string>
     <string name="automationUIReviewIntro">لم تغيّر هذه الأوقات ساعاتك بعد. اعتمد الأوقات الصحيحة.</string>
-    <string name="automationUIReviewTitle">أوقات للمراجعة</string>
+    <string name="automationUIReviewNothingPending">لا شيء يحتاج إلى مراجعتك. الأوقات التي سجّلها التشغيل التلقائي مؤخرًا أدناه، ويمكنك التراجع عن أي منها.</string>
+    <string name="automationUIReviewTitle">السجلات التلقائية</string>
     <string name="automationUISelect">تحديد</string>
     <string name="automationUISelectAll">تحديد الكل</string>
     <string name="automationUIShortcutsNote">في أتمتة شخصية، أضف «%1$s» أو «%2$s». لا حاجة إلى الوصول إلى الموقع.</string>
@@ -997,6 +1000,7 @@
     <string name="recordsArchiveQuarantineConfirm">هذا لا يعيد السجلات القديمة. يُنحّى الملف التالف كنسخة .corrupt ويبدأ أرشيف جديد على هذا الجهاز.</string>
     <string name="recordsArchiveSaveFailedBody">آخر تعديل ما زال على الشاشة لكنه لم يصل إلى الملف على هذا الجهاز. جرّب مرة أخرى بعد قليل — لم يُستبدل الأرشيف الحالي.</string>
     <string name="recordsArchiveSaveFailedTitle">تعذّر حفظ السجلات</string>
+    <string name="recordsAwayCounted">خارج المكان · محتسب كعمل إضافي</string>
     <string name="recordsBreakTime">استراحات أثناء الدوام</string>
     <string name="recordsChooseShift">أي وردية تريد تعديلها؟</string>
     <string name="recordsClearDay">التراجع عن تعديلي</string>
@@ -1182,9 +1186,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s، بواسطتك</string>
     <string name="recordsVerifyDetected">تم الاكتشاف</string>
     <string name="recordsVerifyDetectedUnknown">غير مُبلَّغ</string>
+    <string name="recordsVerifyHeadlineEnd">وقت الانتهاء مسجّل من الموقع</string>
     <string name="recordsVerifyHeadlinePartial">تم التحقق من الموقع جزئيًا</string>
     <string name="recordsVerifyHeadlineSources">كيف سُجّلت هذه الأوقات</string>
-    <string name="recordsVerifyHeadlineVerified">تم التحقق من الموقع</string>
+    <string name="recordsVerifyHeadlineStart">وقت البدء مسجّل من الموقع</string>
+    <string name="recordsVerifyHeadlineVerified">الأوقات مسجّلة من الموقع</string>
     <string name="recordsVerifyHistorical">مصدر سابق</string>
     <string name="recordsVerifyHistoricalNote">جاء هذا السجل من iCloud أو من نسخة احتياطية. الاكتشاف الأصلي غير موجود على هذا الـ iPhone، لذا لم يُعاد التحقق منه هنا.</string>
     <string name="recordsVerifyMarkAdjusted">غيّرته أنت</string>

@@ -92,6 +92,62 @@ struct WorkplaceAutomationVisitTests {
         NativeShiftSegment(startAtMs: Self.ms(from), endAtMs: Self.ms(to))
     }
 
+    // MARK: Back after the clock-out (P0 day 2)
+
+    @Test("Back within two hours of the recorded clock-out: the day runs to the final exit")
+    func returnAfterClockOut() async throws {
+        let harness = Harness(applies: true)
+        #expect(await harness.receive(.enterInner, at: Self.at(8, 55)) == .applied)
+        #expect(await harness.receive(.exitOuter, at: Self.at(17, 15)) == .applied)
+        let back = AutomationEvent(
+            id: UUID(), source: .nativeGeofence, type: .enterInner, workplaceID: harness.workplace.id,
+            registrationGeneration: harness.workplace.registrationGeneration,
+            observedAt: Self.at(18, 30), receivedAt: Self.at(18, 30), timestampBasis: .systemObservation
+        )
+        let outcome = await harness.coordinator.receive(back, shifts: [Self.shift()], now: Self.at(18, 30))
+        #expect(outcome == .recordedForReview)
+        // Not an off-shift visit to ask about: overtime simply goes on.
+        #expect(harness.coordinator.state.openVisit == nil)
+        #expect(harness.coordinator.state.awayStretches(dayKey: "2026-11-09").map(\.leftAt) == [Self.at(17, 15)])
+        #expect(WorkplaceArrivalNotice.make(for: back, outcome: outcome, state: harness.coordinator.state)?.bodyKey
+            == WorkplaceArrivalNotice.backAtWorkKey)
+
+        #expect(await harness.receive(.exitOuter, at: Self.at(20, 30)) == .applied)
+        let day = try #require(harness.day("2026-11-09"))
+        #expect(day.segments.map(\.endAtMs).max() == Self.ms(Self.at(20, 30)))
+    }
+
+    @Test("Back more than two hours later is a new visit to ask about, not overtime")
+    func lateReturnIsAVisit() async {
+        let harness = Harness(applies: true)
+        _ = await harness.receive(.enterInner, at: Self.at(8, 55))
+        _ = await harness.receive(.exitOuter, at: Self.at(17, 15))
+        #expect(await harness.receive(.enterInner, at: Self.at(19, 30)) == .recordedForReview)
+        #expect(harness.coordinator.state.awayStretches(dayKey: "2026-11-09").isEmpty)
+        #expect(harness.coordinator.state.openVisit != nil)
+    }
+
+    @Test("Only learning you are there after the start asks you to check, instead of being dropped")
+    func firstKnownAfterStart() async throws {
+        let harness = Harness(applies: true)
+        func initial(at time: Date) -> AutomationEvent {
+            AutomationEvent(
+                id: UUID(), source: .nativeGeofence, type: .enterInner, workplaceID: harness.workplace.id,
+                registrationGeneration: harness.workplace.registrationGeneration,
+                observedAt: time, receivedAt: time, timestampBasis: .systemObservation, isInitialState: true
+            )
+        }
+        // Already there before the start: just where the person is.
+        #expect(await harness.coordinator.receive(initial(at: Self.at(8, 40)), shifts: [Self.shift()], now: Self.at(8, 40))
+            == .ignored)
+        let late = initial(at: Self.at(10, 32))
+        #expect(await harness.coordinator.receive(late, shifts: [Self.shift()], now: Self.at(10, 32)) == .recordedForReview)
+        let pending = try #require(harness.coordinator.state.pendingProposals.first)
+        #expect(pending.boundary == .start)
+        #expect(pending.reasons.contains(.arrivalTimeUncertain))
+        #expect(harness.records.state.overrides.isEmpty)
+    }
+
     // MARK: Early arrival
 
     @Test("An early arrival asks once; started work counts from the arrival")

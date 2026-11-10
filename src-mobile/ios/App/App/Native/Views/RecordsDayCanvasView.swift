@@ -232,7 +232,7 @@ struct RecordsDayCanvasView: View {
                 Text(text.t("recordsDaySegments"))
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(OWCDesign.secondary)
-                ForEach(model.intervals) { interval in
+                ForEach(displayedIntervals(model)) { interval in
                     RecordsDayIntervalRow(
                         queries: queries,
                         text: text,
@@ -243,6 +243,47 @@ struct RecordsDayCanvasView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
+        }
+    }
+
+    /// Plan 021: overtime with a time away inside it, from this device's
+    /// automation. The away part keeps counting as overtime (the day runs to
+    /// the final exit); it only gets its own row so the day reads in order.
+    private static var awayCountedSourceKey: String { "recordsAwayCounted" }
+
+    private func displayedIntervals(_ model: RecordsDayCanvasModel) -> [RecordsDayInterval] {
+        guard let automation else { return model.intervals }
+        let away = automation.state.awayStretches(dayKey: model.dayKey).map {
+            ($0.leftAt.timeIntervalSince1970 * 1_000, $0.returnedAt.timeIntervalSince1970 * 1_000)
+        }
+        guard !away.isEmpty else { return model.intervals }
+        return model.intervals.flatMap { interval -> [RecordsDayInterval] in
+            guard interval.kind == .overtime else { return [interval] }
+            var pieces: [RecordsDayInterval] = []
+            var cursor = interval.startAtMs
+            for (left, back) in away where left < interval.endAtMs && back > cursor {
+                let from = max(left, cursor), to = min(back, interval.endAtMs)
+                guard to > from else { continue }
+                if from > cursor {
+                    var before = interval
+                    before.startAtMs = cursor
+                    before.endAtMs = from
+                    pieces.append(before)
+                }
+                var gone = interval
+                gone.startAtMs = from
+                gone.endAtMs = to
+                gone.source = .recorded
+                gone.sourceKey = Self.awayCountedSourceKey
+                pieces.append(gone)
+                cursor = to
+            }
+            if cursor < interval.endAtMs {
+                var after = interval
+                after.startAtMs = cursor
+                pieces.append(after)
+            }
+            return pieces
         }
     }
 

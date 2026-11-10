@@ -112,6 +112,10 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
     /// Monitored circles added but not yet reported. Their first report is
     /// where the person already is, not a crossing (§3.4 initial state).
     private(set) var awaitingBaseline: Set<String> = []
+    /// Times away during overtime: left after the clock-out was recorded and
+    /// came back within `maximumTransferGap`. Device-only, for the timeline;
+    /// the time counts as work because the day runs to the final exit.
+    private(set) var awayStretches: [AutomationAwayStretch] = []
 
     var canAddWorkplace: Bool { workplaces.count < WorkplaceAutomation.maximumWorkplaces }
 
@@ -333,6 +337,15 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
     }
 
     /// The visit still open at a workplace, if any: unanswered or working.
+    mutating func recordAway(_ stretch: AutomationAwayStretch) {
+        awayStretches.removeAll { $0.returnEventID == stretch.returnEventID }
+        awayStretches.append(stretch)
+    }
+
+    func awayStretches(dayKey: String) -> [AutomationAwayStretch] {
+        awayStretches.filter { $0.dayKey == dayKey }.sorted { $0.leftAt < $1.leftAt }
+    }
+
     var openVisit: AutomationVisit? {
         visits.last { $0.leftAt == nil && ($0.status == .waiting || $0.status == .working) }
     }
@@ -362,7 +375,7 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
     var hasDeviceData: Bool {
         !workplaces.isEmpty || !events.isEmpty || !proposals.isEmpty || !receipts.isEmpty
             || !contexts.isEmpty || !visits.isEmpty || !earlyExits.isEmpty
-            || !suppressedShiftKeys.isEmpty || !settledShiftKeys.isEmpty
+            || !suppressedShiftKeys.isEmpty || !settledShiftKeys.isEmpty || !awayStretches.isEmpty
     }
 
     /// "Delete Automation Data" (§3.7): removes every workplace, event,
@@ -390,6 +403,7 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         receipts.removeAll { $0.completedAt < cutoff }
         suppressedShiftKeys = suppressedShiftKeys.filter { $0.value >= cutoff }
         visits.removeAll { $0.arrivedAt < cutoff }
+        awayStretches.removeAll { $0.leftAt < cutoff }
         let cutoffKey = RecordJSON.dayKey(cutoff, calendar: Calendar(identifier: .gregorian))
         contexts.removeAll { $0.lastDayKey < cutoffKey }
         settledShiftKeys = settledShiftKeys.filter { String($0.key.prefix(10)) >= cutoffKey }
@@ -400,7 +414,7 @@ nonisolated extension WorkplaceAutomationState {
     private enum CodingKeys: String, CodingKey {
         case version, settings, workplaces, events, proposals, receipts, insideWorkplaceIDs
         case suppressedShiftKeys, lastRegistrationGeneration, adoptedEditCounts
-        case contexts, settledShiftKeys, visits, earlyExits, awaitingBaseline
+        case contexts, settledShiftKeys, visits, earlyExits, awaitingBaseline, awayStretches
     }
 
     /// Fields added after the first internal builds decode as empty.
@@ -422,7 +436,18 @@ nonisolated extension WorkplaceAutomationState {
         visits = try container.decodeIfPresent([AutomationVisit].self, forKey: .visits) ?? []
         earlyExits = try container.decodeIfPresent([String: WorkTimeProposal].self, forKey: .earlyExits) ?? [:]
         awaitingBaseline = try container.decodeIfPresent(Set<String>.self, forKey: .awaitingBaseline) ?? []
+        awayStretches = try container.decodeIfPresent([AutomationAwayStretch].self, forKey: .awayStretches) ?? []
     }
+}
+
+/// Plan 021: a break away from work after the recorded clock-out, ended by
+/// coming back. It never shortens the day; it only labels the timeline.
+nonisolated struct AutomationAwayStretch: Codable, Equatable, Sendable {
+    var shiftKey: String
+    var dayKey: String
+    var leftAt: Date
+    var returnedAt: Date
+    var returnEventID: UUID
 }
 
 /// A work context over consecutive records days, both ends included.

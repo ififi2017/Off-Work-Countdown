@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">Teilt DoneAt mit, dass du die Arbeit verlassen hast. Nutze es in einer persönlichen Automation, etwa beim Verlassen eines Orts oder beim Ausschalten eines Fokus.</string>
     <string name="automationNoticeArrivedApplied">Arbeitsbeginn um %1$s erfasst.</string>
     <string name="automationNoticeArrivedRecorded">Ankunft um %1$s vermerkt. Deine Arbeitszeiten bleiben unverändert, bis du bestätigst.</string>
+    <string name="automationNoticeBackAtWork">Um %1$s wieder bei der Arbeit. Überstunden zählen weiter, bis du gehst.</string>
     <string name="automationNoticeLeftApplied">Arbeitsende um %1$s erfasst.</string>
     <string name="automationNoticeLeftAppliedOvertime">Feierabend um %1$s erfasst · %2$s Überstunden.</string>
     <string name="automationNoticeLeftRecorded">Abreise um %1$s vermerkt. Deine Arbeitszeiten bleiben unverändert, bis du bestätigst.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">Die Überwachung deiner Arbeitsorte wird vorbereitet. Das kann einen Moment dauern.</string>
     <string name="automationUIMonitorWatching">Ankunft und Abgang werden beobachtet.</string>
     <string name="automationUINoLocationYet">Tippe auf „Aktuellen Standort verwenden“, um diesen Arbeitsort auf der Karte zu platzieren.</string>
+    <string name="automationUINoteArrivalUncertain">Der Standortzugriff wurde erst nach deiner Startzeit bestätigt. Daher steht nur fest, dass du bis dahin da warst.</string>
     <string name="automationUINoteChangedByYou">Du hast diesen Tag selbst geändert</string>
     <string name="automationUINoteEarlyStart">Früh angekommen – zählt nach deiner Bestätigung</string>
     <string name="automationUINoteFarFromPlan">Weit von deiner geplanten Zeit entfernt</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">Arbeitsorte bleiben auf diesem Gerät und werden weder synchronisiert noch gesichert. Nur die Arbeitszeiten, die du übernimmst, werden mit deinen Aufzeichnungen synchronisiert.</string>
     <string name="automationUIRadius">%1$s m</string>
     <string name="automationUIRangeNote">Der Abgangsradius ist 100 m größer, damit ein Spaziergang am Rand nicht als Kommen und Gehen zählt.</string>
-    <string name="automationUIRecentSection">Zuletzt übernommen</string>
+    <string name="automationUIRecentSection">Zuletzt erfasst</string>
     <string name="automationUIRecordingSection">Erfassung</string>
     <string name="automationUIResume">Fortsetzen</string>
     <string name="automationUIReviewEmpty">Nichts zu prüfen</string>
     <string name="automationUIReviewEmptyNote">Erkannte Ankunfts- und Abgangszeiten erscheinen zuerst hier.</string>
     <string name="automationUIReviewIntro">Diese Zeiten haben deine Stunden noch nicht geändert. Übernimm die, die stimmen.</string>
-    <string name="automationUIReviewTitle">Zeiten zur Prüfung</string>
+    <string name="automationUIReviewNothingPending">Nichts muss von dir geprüft werden. Unten siehst du die zuletzt automatisch erfassten Zeiten, die du jederzeit rückgängig machen kannst.</string>
+    <string name="automationUIReviewTitle">Automatische Einträge</string>
     <string name="automationUISelect">Auswählen</string>
     <string name="automationUISelectAll">Alle auswählen</string>
     <string name="automationUIShortcutsNote">Füge in einer persönlichen Automation „%1$s“ oder „%2$s“ hinzu. Kein Standortzugriff nötig.</string>
@@ -989,6 +992,7 @@
     <string name="recordsArchiveQuarantineConfirm">Die alten Einträge kommen damit nicht zurück. Die beschädigte Datei wird als .corrupt-Kopie beiseitegelegt, und auf diesem Gerät startet ein neues Archiv.</string>
     <string name="recordsArchiveSaveFailedBody">Die letzte Änderung ist noch auf dem Bildschirm, hat die Datei auf diesem Gerät aber nicht erreicht. Versuch es gleich noch einmal — das vorhandene Archiv wurde nicht ersetzt.</string>
     <string name="recordsArchiveSaveFailedTitle">Einträge konnten nicht gespeichert werden</string>
+    <string name="recordsAwayCounted">Unterwegs · als Überstunden gezählt</string>
     <string name="recordsBreakTime">Pausen bei der Arbeit</string>
     <string name="recordsChooseShift">Welche Schicht möchtest du ändern?</string>
     <string name="recordsClearDay">Meine Änderung zurücknehmen</string>
@@ -1170,9 +1174,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s, von dir</string>
     <string name="recordsVerifyDetected">Erkannt</string>
     <string name="recordsVerifyDetectedUnknown">Nicht gemeldet</string>
+    <string name="recordsVerifyHeadlineEnd">Feierabend per Standort erfasst</string>
     <string name="recordsVerifyHeadlinePartial">Teilweise standortbestätigt</string>
     <string name="recordsVerifyHeadlineSources">So wurden die Zeiten erfasst</string>
-    <string name="recordsVerifyHeadlineVerified">Standort bestätigt</string>
+    <string name="recordsVerifyHeadlineStart">Beginn per Standort erfasst</string>
+    <string name="recordsVerifyHeadlineVerified">Zeiten per Standort erfasst</string>
     <string name="recordsVerifyHistorical">Frühere Quelle</string>
     <string name="recordsVerifyHistoricalNote">Dieser Eintrag stammt aus iCloud oder einem Backup. Die ursprüngliche Erkennung ist nicht auf diesem iPhone, deshalb wurde sie hier nicht erneut geprüft.</string>
     <string name="recordsVerifyMarkAdjusted">Von dir geändert</string>

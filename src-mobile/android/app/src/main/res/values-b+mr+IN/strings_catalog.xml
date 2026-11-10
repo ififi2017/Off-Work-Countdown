@@ -82,6 +82,7 @@
     <string name="automationIntentRecordDepartureDescription">तुम्ही कामावरून निघालात हे DoneAt ला कळवते. एखाद्या ठिकाणाहून निघाल्यावर किंवा फोकस बंद केल्यावर अशा वैयक्तिक ऑटोमेशनमध्ये वापरा.</string>
     <string name="automationNoticeArrivedApplied">%1$s वाजता कामाची सुरुवात नोंदवली.</string>
     <string name="automationNoticeArrivedRecorded">%1$s वाजता आगमन नोंदवले. तुम्ही पुष्टी करेपर्यंत तुमचे तास तसेच राहतील.</string>
+    <string name="automationNoticeBackAtWork">%1$s वाजता कामावर परत. तुम्ही निघेपर्यंत ओव्हरटाइम मोजला जात राहील.</string>
     <string name="automationNoticeLeftApplied">%1$s वाजता कामाचा शेवट नोंदवला.</string>
     <string name="automationNoticeLeftAppliedOvertime">सुटण्याची वेळ %1$s नोंदवली · %2$s ओव्हरटाइम.</string>
     <string name="automationNoticeLeftRecorded">%1$s वाजता निघणे नोंदवले. तुम्ही पुष्टी करेपर्यंत तुमचे तास तसेच राहतील.</string>
@@ -153,6 +154,7 @@
     <string name="automationUIMonitorStarting">तुमच्या कामाच्या ठिकाणांवर लक्ष ठेवण्याची तयारी सुरू आहे. थोडा वेळ लागू शकतो.</string>
     <string name="automationUIMonitorWatching">पोहोचणे आणि निघणे यावर लक्ष ठेवले जात आहे.</string>
     <string name="automationUINoLocationYet">या ठिकाणाला नकाशावर ठेवण्यासाठी “सध्याचे स्थान वापरा” वर टॅप करा.</string>
+    <string name="automationUINoteArrivalUncertain">लोकेशन ॲक्सेस तुमच्या सुरू होण्याच्या वेळेनंतर कन्फर्म झाला, त्यामुळे यावरून फक्त एवढेच दिसते की तुम्ही तोपर्यंत तिथे पोहोचला होतात.</string>
     <string name="automationUINoteChangedByYou">हा दिवस तुम्ही स्वतः बदलला आहे</string>
     <string name="automationUINoteEarlyStart">लवकर पोहोचले — तुम्ही पुष्टी केल्यावरच मोजले जाते</string>
     <string name="automationUINoteFarFromPlan">नियोजित वेळेपासून खूप वेगळी</string>
@@ -170,13 +172,14 @@
     <string name="automationUIPrivacy">कामाच्या ठिकाणांची स्थाने या डिव्हाइसवरच राहतात; ती सिंक किंवा बॅकअप केली जात नाहीत. फक्त तुम्ही स्वीकारलेल्या कामाच्या वेळा तुमच्या नोंदींसोबत सिंक होतात.</string>
     <string name="automationUIRadius">%1$s मी</string>
     <string name="automationUIRangeNote">निघण्याची व्याप्ती 100 मी मोठी आहे, त्यामुळे सीमेजवळ फिरल्यास ते येणे-जाणे म्हणून मोजले जात नाही.</string>
-    <string name="automationUIRecentSection">अलीकडे स्वीकारलेले</string>
+    <string name="automationUIRecentSection">अलीकडे नोंदवलेले</string>
     <string name="automationUIRecordingSection">नोंद</string>
     <string name="automationUIResume">पुन्हा सुरू करा</string>
     <string name="automationUIReviewEmpty">तपासण्यासाठी काही नाही</string>
     <string name="automationUIReviewEmptyNote">ओळखलेल्या पोहोचण्याच्या आणि निघण्याच्या वेळा आधी इथे दिसतात.</string>
     <string name="automationUIReviewIntro">या वेळांनी अजून तुमचे तास बदललेले नाहीत. बरोबर असलेल्या स्वीकारा.</string>
-    <string name="automationUIReviewTitle">तपासायच्या वेळा</string>
+    <string name="automationUIReviewNothingPending">तुम्हाला काहीही तपासण्याची गरज नाही. अलीकडे आपोआप नोंदवलेल्या वेळा खाली आहेत, आणि तुम्ही त्यातील कोणतीही रद्द करू शकता.</string>
+    <string name="automationUIReviewTitle">स्वयंचलित नोंदी</string>
     <string name="automationUISelect">निवडा</string>
     <string name="automationUISelectAll">सर्व निवडा</string>
     <string name="automationUIShortcutsNote">वैयक्तिक ऑटोमेशनमध्ये “%1$s” किंवा “%2$s” जोडा. स्थान प्रवेशाची गरज नाही.</string>
@@ -989,6 +992,7 @@
     <string name="recordsArchiveQuarantineConfirm">जुन्या नोंदी परत येणार नाहीत. खराब फाइल .corrupt प्रत म्हणून बाजूला ठेवली जाईल, आणि या उपकरणावर नवीन संग्रह सुरू होईल.</string>
     <string name="recordsArchiveSaveFailedBody">नवीन बदल पडद्यावर आहे, पण या उपकरणाच्या फाइलपर्यंत पोहोचला नाही. थोड्या वेळाने पुन्हा प्रयत्न करा — सध्याचा संग्रह बदललेला नाही.</string>
     <string name="recordsArchiveSaveFailedTitle">नोंदी जतन झाल्या नाहीत</string>
+    <string name="recordsAwayCounted">बाहेर · ओव्हरटाइममध्ये मोजले</string>
     <string name="recordsBreakTime">शिफ्टमधील विश्रांती</string>
     <string name="recordsChooseShift">कोणती शिफ्ट बदलायची?</string>
     <string name="recordsClearDay">माझा बदल काढा</string>
@@ -1170,9 +1174,11 @@
     <string name="recordsVerifyAdoptedByYou">%1$s, तुमच्याकडून</string>
     <string name="recordsVerifyDetected">आढळले</string>
     <string name="recordsVerifyDetectedUnknown">कळवले नाही</string>
+    <string name="recordsVerifyHeadlineEnd">संपण्याची वेळ लोकेशनवरून नोंदवली</string>
     <string name="recordsVerifyHeadlinePartial">अंशतः स्थान सत्यापित</string>
     <string name="recordsVerifyHeadlineSources">या वेळा कशा नोंदवल्या गेल्या</string>
-    <string name="recordsVerifyHeadlineVerified">स्थान सत्यापित</string>
+    <string name="recordsVerifyHeadlineStart">सुरू होण्याची वेळ लोकेशनवरून नोंदवली</string>
+    <string name="recordsVerifyHeadlineVerified">वेळा लोकेशनवरून नोंदवल्या</string>
     <string name="recordsVerifyHistorical">जुना स्रोत</string>
     <string name="recordsVerifyHistoricalNote">ही नोंद iCloud किंवा बॅकअपमधून आली आहे. मूळ शोध या iPhone वर नाही, म्हणून इथे तो पुन्हा तपासला गेला नाही.</string>
     <string name="recordsVerifyMarkAdjusted">तुम्ही बदलले</string>
