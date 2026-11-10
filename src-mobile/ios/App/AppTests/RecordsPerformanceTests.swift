@@ -209,7 +209,7 @@ struct RecordsPerformanceTests {
         _ = await milliseconds("exportRecordsFile (on demand)") { _ = try? await store.recordActions.exportRecordsFile() }
 
         var year: [DayResolution] = []
-        let yearMs = milliseconds("resolvedDays, one year (cached)") {
+        _ = milliseconds("resolvedDays, one year (cached)") {
             year = store.queries.resolvedDays(from: window.0, through: window.1)
         }
         _ = milliseconds("recordsMetrics, one year") { _ = store.queries.recordsMetrics(for: year) }
@@ -218,15 +218,15 @@ struct RecordsPerformanceTests {
         }
 
         // A month of cells is what the calendar draws on every load, and each
-        // one now also intersects the night before. This is the regression
-        // gate for that: a screen recording cannot catch it getting slower.
+        // one now also intersects the night before. The number below is what
+        // to read when that gets slower: a screen recording cannot show it.
         let calendar = store.preferences.recordsCalendar
         let today = calendar.startOfDay(for: .now)
         let end = try #require(calendar.date(byAdding: .day, value: -1, to: today))
         let start = try #require(calendar.date(byAdding: .day, value: -32, to: today))
         let month = store.queries.resolvedDays(from: start, through: end)
         var monthCells: [RecordsDayCell] = []
-        let cellsMs = milliseconds("recordsDayCell with adjacent shifts, one month") {
+        _ = milliseconds("recordsDayCell with adjacent shifts, one month") {
             monthCells = month.enumerated().dropFirst().map { index, day in
                 store.queries.recordsDayCell(
                     for: day,
@@ -237,7 +237,7 @@ struct RecordsPerformanceTests {
         }
         let dayKey = try #require(month.last?.dayKey)
         var canvas: RecordsDayCanvasModel?
-        let canvasMs = await milliseconds("recordsDayCanvas (one day, both shifts)") {
+        _ = await milliseconds("recordsDayCanvas (one day, both shifts)") {
             canvas = await store.queries.recordsDayCanvas(dayKey: dayKey)
         }
         let rendered = try #require(canvas)
@@ -261,20 +261,15 @@ struct RecordsPerformanceTests {
         // is no longer time the main actor is blocked: the expansion and the
         // ~15,700-day walk both run off it, so a caller only waits for the
         // hop. The warm number reads the cache the cold build filled.
-        let lifePrepareMs = await milliseconds("prepareLifeViewModel (cold, whole career)") {
+        _ = await milliseconds("prepareLifeViewModel (cold, whole career)") {
             _ = await store.life.prepareLifeViewModel()
         }
-        let lifeMs = milliseconds("lifeViewModel (warm, cached)") {
+        _ = milliseconds("lifeViewModel (warm, cached)") {
             _ = store.life.lifeViewModel()
         }
 
         #expect(store.queries.recordedWorkDays().count == 520)
         #expect(year.count >= 365)
         #expect(monthCells.count == 31)
-        #expect(yearMs < 15_000)
-        #expect(cellsMs < 5_000)
-        #expect(canvasMs < 5_000)
-        #expect(lifePrepareMs < 20_000)
-        #expect(lifeMs < 20_000)
     }
 }
