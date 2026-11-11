@@ -314,8 +314,24 @@ struct WorkplaceAutomationCoordinatorTests {
         let text = String(decoding: payload, as: UTF8.self)
         #expect(!text.contains(harness.workplace.id.uuidString))
         #expect(!text.contains("Office"))
-        #expect(!text.contains("121"))
-        #expect(!text.lowercased().contains("latitude"))
+        // Compare parsed values, not substrings: the payload also carries the
+        // real edit time in milliseconds and a random tie-breaker UUID, either
+        // of which can contain "121" by chance.
+        var keys: [String] = []
+        var numbers: [Double] = []
+        func collect(_ value: Any) {
+            switch value {
+            case let object as [String: Any]:
+                keys += object.keys
+                object.values.forEach(collect)
+            case let array as [Any]: array.forEach(collect)
+            case let number as NSNumber: numbers.append(number.doubleValue)
+            default: break
+            }
+        }
+        collect(try JSONSerialization.jsonObject(with: payload))
+        #expect(!keys.contains { ["lat", "lon", "coordinate", "workplace"].contains(where: $0.lowercased().contains) })
+        #expect(!numbers.contains { $0 == 31 || $0 == 121 })
     }
 
     @Test("A reviewed adoption records how and in which batch, and keeps the reasons")
