@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// What's new in this release. 3.2.3 is the widget suite, shown as the real
-/// widgets with the user's own schedule. A lifetime gift is left on the timer
-/// rather than offered here, so this page stays about the update.
+/// What's new in this release. 3.3.0 is workplace automation: one workday
+/// shown as it now records itself, then why it is cheap on battery and
+/// private, and the free Shortcuts path. Free users see all of it; the
+/// update gift is left wrapped on the timer for after this page.
 struct WhatsNewView: View {
     let shifts: ShiftSessionStore
     let onDismiss: () -> Void
-    let onShowWidgets: () -> Void
-    @State private var widgets: WidgetGalleryData?
+    let onSetUpAutomation: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var text: AppText { shifts.text }
@@ -15,40 +15,13 @@ struct WhatsNewView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(verbatim: "DoneAt \(ReleaseNotes.current)")
-                            .font(.subheadline.weight(.semibold)).foregroundStyle(OWCDesign.accent)
-                        Text(text.t("whatsNewWidgetsTitle"))
-                            .font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
-                    }
-                    WidgetSuiteShowcase(data: widgets)
-                    VStack(alignment: .leading, spacing: 20) {
-                        feature("square.grid.2x2", text.t("whatsNewHomeTitle"), "whatsNewHomeBody")
-                        feature("lock", text.t("whatsNewLockTitle"), "whatsNewLockBody")
-                        feature("applewatch", "Apple Watch", "whatsNewWatchBody")
-                    }
-                }
-                .padding(24)
-                .frame(maxWidth: 560)
-                .frame(maxWidth: .infinity)
-            }
-            .scrollBounceBehavior(.basedOnSize)
-            .background(OWCDesign.page)
-            // Kept in reach however long the page runs.
-            .safeAreaInset(edge: .bottom) {
-                VStack(spacing: 4) {
-                    Button(text.t("whatsNewHowToAdd"), action: onShowWidgets)
-                        .font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44)
-                    Button(text.t("whatsNewContinue"), action: onDismiss)
-                        .buttonStyle(OWCPrimaryButtonStyle())
-                }
-                .padding(.horizontal, 24).padding(.top, 8).padding(.bottom, 12)
-                .frame(maxWidth: 560)
-                .frame(maxWidth: .infinity)
-                .background(.bar)
-            }
+            WhatsNewAutomationContent(
+                text: text,
+                isPlus: plus.isAuthorized,
+                hasGift: plus.hasWrappedLifetimeOffer,
+                onDismiss: onDismiss,
+                onSetUp: onSetUpAutomation
+            )
         }
         .tint(OWCDesign.accent)
         .interactiveDismissDisabled()
@@ -58,17 +31,90 @@ struct WhatsNewView: View {
             plus.inviteUpdateGift()
             if !plus.isAuthorized, plus.products.isEmpty { await plus.loadProducts() }
         }
-        .task { widgets = await WidgetGalleryData.load(shifts: shifts) }
+    }
+}
+
+/// The page itself, without the store, so Canvas can show every variant.
+struct WhatsNewAutomationContent: View {
+    let text: AppText
+    let isPlus: Bool
+    let hasGift: Bool
+    var heroFrozenAt: Double? = nil
+    var onDismiss: () -> Void = {}
+    var onSetUp: () -> Void = {}
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(verbatim: "DoneAt 3.3.0")
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(OWCDesign.accent)
+                    Text(text.t("whatsNewAutomationTitle"))
+                        .font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
+                    Text(text.t("whatsNewAutomationSubtitle"))
+                        .font(.body).foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                WhatsNewAutomationHero(text: text, frozenAt: heroFrozenAt)
+                VStack(alignment: .leading, spacing: 20) {
+                    feature("location.fill", "whatsNewAutoRecordTitle", "whatsNewAutoRecordBody")
+                    feature("stopwatch", "whatsNewOvertimeTitle", "whatsNewOvertimeBody")
+                    feature("leaf", "whatsNewBatteryTitle", "whatsNewBatteryBody")
+                    feature("square.2.layers.3d", "whatsNewShortcutsTitle", "whatsNewShortcutsBody", badge: text.t("automationUIShortcutsFree"))
+                    feature("lock", "whatsNewPrivacyTitle", "whatsNewPrivacyBody")
+                }
+                if !isPlus {
+                    Text(text.t("whatsNewAutomationPlusNote"))
+                        .font(.footnote).foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if hasGift {
+                    Label(text.t("whatsNewGiftNote"), systemImage: "gift")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(OWCDesign.accent)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(24)
+            .frame(maxWidth: 560)
+            .frame(maxWidth: .infinity)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .background(OWCDesign.page)
+        // Kept in reach however long the page runs.
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 4) {
+                Button(text.t("whatsNewContinue"), action: onDismiss)
+                    .font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44)
+                Button(text.t("whatsNewSetUpAutomation"), action: onSetUp)
+                    .buttonStyle(OWCPrimaryButtonStyle())
+            }
+            .padding(.horizontal, 24).padding(.top, 8).padding(.bottom, 12)
+            .frame(maxWidth: 560)
+            .frame(maxWidth: .infinity)
+            .background(.bar)
+        }
+        .tint(OWCDesign.accent)
     }
 
-    private func feature(_ symbol: String, _ title: String, _ bodyKey: String) -> some View {
+    private func feature(_ symbol: String, _ titleKey: String, _ bodyKey: String, badge: String? = nil) -> some View {
         HStack(alignment: .top, spacing: 14) {
             if !dynamicTypeSize.isAccessibilitySize {
                 Image(systemName: symbol).font(.title3).foregroundStyle(OWCDesign.accent)
                     .frame(width: 26).accessibilityHidden(true)
             }
             VStack(alignment: .leading, spacing: 5) {
-                Text(verbatim: title).font(.headline)
+                HStack(spacing: 6) {
+                    Text(text.t(titleKey)).font(.headline)
+                    if let badge {
+                        Text(badge)
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(OWCDesign.accent)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(OWCDesign.accent.opacity(0.12), in: Capsule())
+                    }
+                }
                 Text(text.t(bodyKey)).font(.subheadline).foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -77,45 +123,21 @@ struct WhatsNewView: View {
     }
 }
 
-/// Three free widgets as a Home Screen would hold them: the countdown across
-/// the top, the ring and this week beneath, scaled to the page's width.
-private struct WidgetSuiteShowcase: View {
-    let data: WidgetGalleryData?
+@MainActor private func whatsNewPreviewText(_ language: String = "zh-TW") -> AppText {
+    let defaults = UserDefaults(suiteName: "WhatsNewPreview.\(language)")!
+    defaults.set(language, forKey: "ios.native.languageOverride")
+    return AppText(preferences: PreferencesStore(defaults: defaults, records: .inMemory()))
+}
 
-    private static let gap: CGFloat = 12
-    private static let medium = WidgetGalleryFrame<EmptyView>.size(.systemMedium)
-    private static let small = WidgetGalleryFrame<EmptyView>.size(.systemSmall)
-    private static let contentHeight = medium.height + gap + small.height
+#Preview("3.3.0 · free, animated") {
+    WhatsNewAutomationContent(text: whatsNewPreviewText(), isPlus: false, hasGift: true)
+}
 
-    var body: some View {
-        GeometryReader { geometry in
-            let scale = min(1, (geometry.size.width - 24) / Self.medium.width)
-            Group {
-                if let data {
-                    VStack(spacing: Self.gap) {
-                        WidgetGalleryFrame(family: .systemMedium) {
-                            OffWorkCountdownWidgetView(entry: data.countdown.base, familyOverride: .systemMedium)
-                        }
-                        HStack(spacing: Self.medium.width - 2 * Self.small.width) {
-                            WidgetGalleryFrame(family: .systemSmall) {
-                                CountdownRingView(familyOverride: .systemSmall, model: CountdownStyleModel(entry: data.countdown))
-                            }
-                            WidgetGalleryFrame(family: .systemSmall) {
-                                WeekProgressView(familyOverride: .systemSmall, entry: CalendarWidgetEntry(date: data.now, payload: data.calendar))
-                            }
-                        }
-                    }
-                    .scaleEffect(scale)
-                    .transition(.opacity)
-                } else {
-                    ProgressView()
-                }
-            }
-            .frame(width: geometry.size.width, height: geometry.size.height)
-        }
-        .aspectRatio((Self.medium.width + 24) / (Self.contentHeight + 24), contentMode: .fit)
-        .background(WidgetGalleryColors.stage, in: RoundedRectangle(cornerRadius: OWCDesign.cardRadius, style: .continuous))
-        .animation(.smooth(duration: 0.3), value: data == nil)
-        .accessibilityHidden(true)
-    }
+#Preview("3.3.0 · arrival frame") {
+    WhatsNewAutomationContent(text: whatsNewPreviewText(), isPlus: true, hasGift: false, heroFrozenAt: 2.6)
+}
+
+#Preview("3.3.0 · clock-out frame, English") {
+    WhatsNewAutomationContent(text: whatsNewPreviewText("en"), isPlus: false, hasGift: true, heroFrozenAt: 6.6)
+        .preferredColorScheme(.dark)
 }

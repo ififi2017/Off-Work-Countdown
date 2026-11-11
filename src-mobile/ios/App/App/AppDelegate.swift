@@ -41,6 +41,13 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
             // the monitor resumes with the runtime, not with a settings page.
             guard let runtime = try? await AppRuntime.loadShared() else { return }
             await runtime.workplaceMonitor.reconcile()
+            // Woken in the background after an update the person has not
+            // opened yet: one notice that something new is waiting.
+            if application.applicationState == .background {
+                await runtime.notifications.postReleaseNoticeIfNeeded(
+                    preferences: runtime.preferences, text: runtime.text
+                )
+            }
         }
         return true
     }

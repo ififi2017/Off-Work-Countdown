@@ -179,10 +179,10 @@ struct OffWorkCountdownRootView: View {
             WhatsNewView(
                 shifts: runtime.shifts,
                 onDismiss: { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) },
-                onShowWidgets: {
+                onSetUpAutomation: {
                     scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus)
                     scene.selectedTab = .settings
-                    scene.settingsPath = [.widgets]
+                    scene.settingsPath = [.workplaceAutomation]
                 }
             )
                 .presentationBackground(.clear)

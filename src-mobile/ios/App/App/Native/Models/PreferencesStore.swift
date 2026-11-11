@@ -17,6 +17,17 @@ final class PreferencesStore {
         ReleaseNotes.shouldPresent(onboardingComplete: onboardingComplete, seenRelease: seenRelease)
     }
 
+    var shouldPostReleaseNotice: Bool {
+        ReleaseNotes.shouldPostNotice(
+            onboardingComplete: onboardingComplete, seenRelease: seenRelease,
+            noticeSent: defaults.string(forKey: ReleaseNotes.noticeSentKey)
+        )
+    }
+
+    func markReleaseNoticeSent() {
+        defaults.set(ReleaseNotes.current, forKey: ReleaseNotes.noticeSentKey)
+    }
+
     func markReleaseNotesSeen() {
         seenRelease = ReleaseNotes.current
         defaults.set(ReleaseNotes.current, forKey: ReleaseNotes.seenKey)

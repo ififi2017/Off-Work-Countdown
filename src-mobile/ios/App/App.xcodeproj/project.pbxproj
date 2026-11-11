@@ -9,18 +9,18 @@
 /* Begin PBXBuildFile section */
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
-		C40000010000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C50000010000000000000001 /* Localizable.xcstrings */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		710000041234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
 		710000061234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
 		710000071234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */; };
-		7A0000021234567890ABCDEF /* CountdownStyleWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */; };
-		7A0000031234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */; };
-		7A0000041234567890ABCDEF /* CountdownStyleWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */; };
 		710000081234567890ABCDEF /* OffWorkWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000071234567890ABCDEF /* OffWorkWidgets.swift */; };
 		710000091234567890ABCDEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		7100000A1234567890ABCDEF /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
 		7100000B1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7A0000021234567890ABCDEF /* CountdownStyleWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */; };
+		7A0000031234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */; };
+		7A0000041234567890ABCDEF /* CountdownStyleWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */; };
+		7A0000111234567890ABCDEF /* DoneAtWatchSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */; };
 		B31900010000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B31900020000000000000002 /* PrivacyInfo.xcprivacy */; };
 		B32000010000000000000001 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000020000000000000002 /* WatchSnapshot.swift */; };
 		B32000030000000000000003 /* WatchShiftEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000040000000000000004 /* WatchShiftEvaluation.swift */; };
@@ -28,12 +28,12 @@
 		B32000080000000000000008 /* WatchPairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000070000000000000007 /* WatchPairing.swift */; };
 		B320000A000000000000000A /* WatchDisplayProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000090000000000000009 /* WatchDisplayProjection.swift */; };
 		C30000010000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* InfoPlist.strings */; };
+		C40000010000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C50000010000000000000001 /* Localizable.xcstrings */; };
 		D11000000000000000000001 /* DoneAtWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12000000000000000000001 /* DoneAtWatchApp.swift */; };
 		D11000000000000000000002 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000020000000000000002 /* WatchSnapshot.swift */; };
 		D11000000000000000000003 /* WatchSnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000060000000000000006 /* WatchSnapshotCache.swift */; };
 		D11000000000000000000004 /* WatchShiftEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000040000000000000004 /* WatchShiftEvaluation.swift */; };
 		D11000000000000000000005 /* DoneAtWatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12000000000000000000003 /* DoneAtWatchWidgets.swift */; };
-		7A0000111234567890ABCDEF /* DoneAtWatchSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */; };
 		D11000000000000000000006 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000020000000000000002 /* WatchSnapshot.swift */; };
 		D11000000000000000000007 /* WatchSnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000060000000000000006 /* WatchSnapshotCache.swift */; };
 		D11000000000000000000008 /* WatchShiftEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000040000000000000004 /* WatchShiftEvaluation.swift */; };
@@ -53,29 +53,29 @@
 		D11000000000000000000016 /* WatchLocalizations.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1200000000000000000000A /* WatchLocalizations.generated.swift */; };
 		D110000000000000000000F1 /* WatchDisplayProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D120000000000000000000F1 /* WatchDisplayProjectionTests.swift */; };
 		D110000000000000000000F2 /* WatchSnapshotReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D120000000000000000000F2 /* WatchSnapshotReceiverTests.swift */; };
-		E21900000000000000000401 /* WatchIndependentScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000400 /* WatchIndependentScheduleTests.swift */; };
-		F1C00000000000000000A002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
-		F1C00000000000000000B002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
 		E21900000000000000000101 /* ShiftRuleCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000001 /* ShiftRuleCore.swift */; };
-		E21900000000000000000201 /* ShiftRuleCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000001 /* ShiftRuleCore.swift */; };
-		E21900000000000000000301 /* ShiftRuleCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000001 /* ShiftRuleCore.swift */; };
 		E21900000000000000000102 /* ScheduleRuleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000002 /* ScheduleRuleInput.swift */; };
-		E21900000000000000000202 /* ScheduleRuleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000002 /* ScheduleRuleInput.swift */; };
-		E21900000000000000000302 /* ScheduleRuleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000002 /* ScheduleRuleInput.swift */; };
 		E21900000000000000000103 /* ExtendedSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000003 /* ExtendedSchedule.swift */; };
-		E21900000000000000000203 /* ExtendedSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000003 /* ExtendedSchedule.swift */; };
-		E21900000000000000000303 /* ExtendedSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000003 /* ExtendedSchedule.swift */; };
 		E21900000000000000000104 /* ExtendedScheduleRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000004 /* ExtendedScheduleRules.swift */; };
-		E21900000000000000000204 /* ExtendedScheduleRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000004 /* ExtendedScheduleRules.swift */; };
-		E21900000000000000000304 /* ExtendedScheduleRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000004 /* ExtendedScheduleRules.swift */; };
 		E21900000000000000000105 /* WatchScheduleV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000005 /* WatchScheduleV2.swift */; };
+		E21900000000000000000201 /* ShiftRuleCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000001 /* ShiftRuleCore.swift */; };
+		E21900000000000000000202 /* ScheduleRuleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000002 /* ScheduleRuleInput.swift */; };
+		E21900000000000000000203 /* ExtendedSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000003 /* ExtendedSchedule.swift */; };
+		E21900000000000000000204 /* ExtendedScheduleRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000004 /* ExtendedScheduleRules.swift */; };
 		E21900000000000000000205 /* WatchScheduleV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000005 /* WatchScheduleV2.swift */; };
+		E21900000000000000000301 /* ShiftRuleCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000001 /* ShiftRuleCore.swift */; };
+		E21900000000000000000302 /* ScheduleRuleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000002 /* ScheduleRuleInput.swift */; };
+		E21900000000000000000303 /* ExtendedSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000003 /* ExtendedSchedule.swift */; };
+		E21900000000000000000304 /* ExtendedScheduleRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000004 /* ExtendedScheduleRules.swift */; };
 		E21900000000000000000305 /* WatchScheduleV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000005 /* WatchScheduleV2.swift */; };
+		E21900000000000000000401 /* WatchIndependentScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000400 /* WatchIndependentScheduleTests.swift */; };
 		E22000000000000000000101 /* HolidayCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000001 /* HolidayCalendar.swift */; };
 		E22000000000000000000102 /* HolidayTemplates.json in Resources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000002 /* HolidayTemplates.json */; };
 		E22000000000000000000103 /* HolidayTemplateAttributions.json in Resources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000003 /* HolidayTemplateAttributions.json */; };
 		E22000000000000000000201 /* HolidayCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000001 /* HolidayCalendar.swift */; };
 		E22000000000000000000301 /* HolidayCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000001 /* HolidayCalendar.swift */; };
+		F1C00000000000000000A002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
+		F1C00000000000000000B002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -156,17 +156,17 @@
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		C50000010000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		720000041234567890ABCDEF /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		720000051234567890ABCDEF /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WidgetSnapshot.swift; path = "../../../src-tauri/macos-widget/Sources/WidgetSnapshotContract/WidgetSnapshot.swift"; sourceTree = SOURCE_ROOT; };
-		7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CountdownStyleWidgets.swift; path = "../../../src-tauri/macos-widget/Sources/OffWorkCountdownWidgetUI/CountdownStyleWidgets.swift"; sourceTree = SOURCE_ROOT; };
 		720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OffWorkCountdownWidget.swift; path = "../../../src-tauri/macos-widget/Sources/OffWorkCountdownWidgetUI/OffWorkCountdownWidget.swift"; sourceTree = SOURCE_ROOT; };
 		720000071234567890ABCDEF /* OffWorkWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkWidgets.swift; sourceTree = "<group>"; };
 		720000081234567890ABCDEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		720000091234567890ABCDEF /* Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widget.entitlements; sourceTree = "<group>"; };
 		7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OffWorkCountdownWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A0000011234567890ABCDEF /* CountdownStyleWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CountdownStyleWidgets.swift; path = "../../../src-tauri/macos-widget/Sources/OffWorkCountdownWidgetUI/CountdownStyleWidgets.swift"; sourceTree = SOURCE_ROOT; };
+		7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchSuite.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2DFBCE33045632B0085459E /* DoneAt.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = DoneAt.storekit; sourceTree = "<group>"; };
 		A2DFBCE4304567860085459E /* DoneAtConnect.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = DoneAtConnect.storekit; sourceTree = "<group>"; };
@@ -184,7 +184,6 @@
 		C10000060000000000000006 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000070000000000000007 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000080000000000000008 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		C10000140000000000000014 /* es-MX */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-MX"; path = "es-MX.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		C10000090000000000000009 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C100000A000000000000000A /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C100000B000000000000000B /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -196,10 +195,11 @@
 		C10000110000000000000011 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000120000000000000012 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000130000000000000013 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C10000140000000000000014 /* es-MX */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-MX"; path = "es-MX.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C50000010000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		D12000000000000000000001 /* DoneAtWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchApp.swift; sourceTree = "<group>"; };
 		D12000000000000000000002 /* WatchApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WatchApp.entitlements; sourceTree = "<group>"; };
 		D12000000000000000000003 /* DoneAtWatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchWidgets.swift; sourceTree = "<group>"; };
-		7A0000101234567890ABCDEF /* DoneAtWatchSuite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneAtWatchSuite.swift; sourceTree = "<group>"; };
 		D12000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D12000000000000000000005 /* WatchWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WatchWidgets.entitlements; sourceTree = "<group>"; };
 		D12000000000000000000006 /* WatchAppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAppSmokeTests.swift; sourceTree = "<group>"; };
@@ -211,20 +211,20 @@
 		D1200000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D120000000000000000000F1 /* WatchDisplayProjectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDisplayProjectionTests.swift; sourceTree = "<group>"; };
 		D120000000000000000000F2 /* WatchSnapshotReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSnapshotReceiverTests.swift; sourceTree = "<group>"; };
-		E21900000000000000000400 /* WatchIndependentScheduleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WatchIndependentScheduleTests.swift; path = ../App/AppTests/WatchIndependentScheduleTests.swift; sourceTree = "<group>"; };
 		D12100000000000000000001 /* DoneAt Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DoneAt Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D12100000000000000000002 /* DoneAt Watch Widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DoneAt Watch Widgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D12100000000000000000003 /* WatchAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WatchAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
-		F1C00000000000000000A001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = ../../../assets/brand/AppIcon.icon; sourceTree = SOURCE_ROOT; };
 		E21900000000000000000001 /* ShiftRuleCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftRuleCore.swift; path = ../Shared/ShiftRuleCore.swift; sourceTree = SOURCE_ROOT; };
 		E21900000000000000000002 /* ScheduleRuleInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScheduleRuleInput.swift; path = ../Shared/ScheduleRuleInput.swift; sourceTree = SOURCE_ROOT; };
 		E21900000000000000000003 /* ExtendedSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtendedSchedule.swift; path = ../Shared/ExtendedSchedule.swift; sourceTree = SOURCE_ROOT; };
 		E21900000000000000000004 /* ExtendedScheduleRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtendedScheduleRules.swift; path = ../Shared/ExtendedScheduleRules.swift; sourceTree = SOURCE_ROOT; };
 		E21900000000000000000005 /* WatchScheduleV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WatchScheduleV2.swift; path = ../Shared/WatchScheduleV2.swift; sourceTree = SOURCE_ROOT; };
+		E21900000000000000000400 /* WatchIndependentScheduleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WatchIndependentScheduleTests.swift; path = ../App/AppTests/WatchIndependentScheduleTests.swift; sourceTree = "<group>"; };
 		E22000000000000000000001 /* HolidayCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HolidayCalendar.swift; path = ../Shared/HolidayCalendar.swift; sourceTree = SOURCE_ROOT; };
 		E22000000000000000000002 /* HolidayTemplates.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = HolidayTemplates.json; path = ../Shared/Resources/HolidayTemplates.json; sourceTree = SOURCE_ROOT; };
 		E22000000000000000000003 /* HolidayTemplateAttributions.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = HolidayTemplateAttributions.json; path = ../Shared/Resources/HolidayTemplateAttributions.json; sourceTree = SOURCE_ROOT; };
+		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
+		F1C00000000000000000A001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = ../../../assets/brand/AppIcon.icon; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */

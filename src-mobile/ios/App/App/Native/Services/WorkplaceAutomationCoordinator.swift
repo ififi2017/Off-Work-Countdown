@@ -166,8 +166,8 @@ final class WorkplaceAutomationCoordinator {
             now: now,
             currentGeneration: event.workplaceID.flatMap { state.workplace($0)?.registrationGeneration },
             settings: state.settings,
-            canCollect: actions.plus.canCollectAutomation,
-            canAutoApply: actions.plus.canAutoApplyAutomation,
+            canCollect: actions.plus.canCollectAutomation(from: event.source),
+            canAutoApply: actions.plus.canAutoApplyAutomation(from: event.source),
             isManuallySuppressed: state.isSuppressed(shift.shiftKey),
             context: context,
             firstKnownAfterStart: event.type == .enterInner && event.proposedTime > shift.plannedStart
@@ -443,7 +443,7 @@ final class WorkplaceAutomationCoordinator {
         shifts: [AutomationShift],
         now: Date
     ) -> AutomationCommandOutcome {
-        guard event.source != .userConfirmation, actions.plus.canCollectAutomation,
+        guard event.source != .userConfirmation, actions.plus.canCollectAutomation(from: event.source),
               event.source != .nativeGeofence || (state.settings.isMonitoringEnabled
                   && event.workplaceID.flatMap { state.workplace($0)?.registrationGeneration } == event.registrationGeneration),
               !event.isInitialState, state.openVisit == nil
