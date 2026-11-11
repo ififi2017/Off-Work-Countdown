@@ -34,7 +34,7 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
 #if DEBUG || WORKPLACE_PROBE
         // Plan 021 P0: a geofence crossing can launch the app in the
         // background; the probe's monitor must exist before launch returns.
-        WorkplaceProbe.shared.resumeAfterLaunch()
+        WorkplaceProbe.shared.resumeAfterLaunch(forLocation: launchOptions?[.location] != nil)
 #endif
         Task {
             // Plan 021 I2: a crossing can launch the app in the background;

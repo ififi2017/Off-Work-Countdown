@@ -7,7 +7,9 @@ import UIKit
 /// It registers inner and outer circles with `CLMonitor`, holds an
 /// always-authorization `CLServiceSession`, resumes both at every launch
 /// (including a background launch the system makes for a crossing) and logs
-/// what arrives. It never touches records, shifts or notifications.
+/// what arrives. The same circles also go to the older `CLLocationManager`
+/// region API, to see which one still delivers after the app is swiped
+/// away. It never touches records, shifts or notifications.
 @MainActor
 @Observable
 final class WorkplaceProbe {
@@ -28,6 +30,7 @@ final class WorkplaceProbe {
     @ObservationIgnored private var sessionTask: Task<Void, Never>?
     @ObservationIgnored private var lastSessionFlags: [String]?
     @ObservationIgnored private var foregroundObserver: NSObjectProtocol?
+    @ObservationIgnored private var legacyDelegate: LegacyRegionDelegate?
 
     init(url: URL = WorkplaceProbeStorage.defaultURL) {
         self.url = url
@@ -40,19 +43,25 @@ final class WorkplaceProbe {
     /// Called from `didFinishLaunching`, before it returns, so a launch the
     /// system makes for a crossing delivers its event to a live monitor.
     /// The launch entry's app state tells a background launch from a tap.
-    func resumeAfterLaunch() {
+    func resumeAfterLaunch(forLocation: Bool) {
         guard archive.isEnabled else { return }
-        log(.launch)
+        log(.launch, detail: forLocation ? "location launch" : nil)
+        // The delegate must be set before launch returns, or the region
+        // event that caused the launch has nowhere to go.
+        attachLegacyDelegate()
         observeForeground()
         startSession()
+        reconcileLegacyRegions()
         Task { await reconcileMonitor() }
     }
 
     func enable() async {
         archive.isEnabled = true
         log(.note, detail: "probe enabled")
+        attachLegacyDelegate()
         observeForeground()
         startSession()
+        reconcileLegacyRegions()
         await reconcileMonitor()
     }
 
@@ -63,6 +72,7 @@ final class WorkplaceProbe {
                 await monitor.remove(place.outerIdentifier)
             }
         }
+        stopLegacyRegions()
         eventTask?.cancel()
         sessionTask?.cancel()
         session?.invalidate()
@@ -127,6 +137,7 @@ final class WorkplaceProbe {
                 await monitor.remove(place.outerIdentifier)
             }
         }
+        stopLegacyRegions()
         archive.places.removeAll()
         log(.note, detail: "removed all places")
     }
@@ -194,6 +205,7 @@ final class WorkplaceProbe {
 
     private func register(_ place: WorkplaceProbePlace) async {
         guard archive.isEnabled else { save(); return }
+        registerLegacy(place)
         let monitor = await ensureMonitor()
         let center = CLLocationCoordinate2D(latitude: place.latitude, longitude: place.longitude)
         await monitor.add(
@@ -242,6 +254,66 @@ final class WorkplaceProbe {
         guard flags != lastSessionFlags else { return }
         lastSessionFlags = flags
         log(.sessionDiagnostic, flags: flags.isEmpty ? ["ok"] : flags)
+    }
+
+    // MARK: Legacy region API
+
+    private func attachLegacyDelegate() {
+        guard legacyDelegate == nil else { return }
+        let delegate = LegacyRegionDelegate(probe: self)
+        legacyDelegate = delegate
+        manager.delegate = delegate
+    }
+
+    private func legacyRegions(for place: WorkplaceProbePlace) -> [CLCircularRegion] {
+        let center = CLLocationCoordinate2D(latitude: place.latitude, longitude: place.longitude)
+        return [
+            CLCircularRegion(center: center, radius: place.innerRadius, identifier: place.legacyInnerIdentifier),
+            CLCircularRegion(center: center, radius: place.outerRadius, identifier: place.legacyOuterIdentifier),
+        ]
+    }
+
+    private func registerLegacy(_ place: WorkplaceProbePlace) {
+        attachLegacyDelegate()
+        for region in legacyRegions(for: place) {
+            region.notifyOnEntry = true
+            region.notifyOnExit = true
+            manager.startMonitoring(for: region)
+        }
+    }
+
+    /// Keeps the system's regions in line with the saved places, then asks
+    /// for each one's current state: a read the app gets even if crossing
+    /// events are being held back.
+    private func reconcileLegacyRegions() {
+        let wanted = Set(archive.places.flatMap { [$0.legacyInnerIdentifier, $0.legacyOuterIdentifier] })
+        let registered = manager.monitoredRegions.filter { $0.identifier.hasPrefix("legacy.") }
+        for region in registered where !wanted.contains(region.identifier) {
+            manager.stopMonitoring(for: region)
+        }
+        let kept = Set(registered.map(\.identifier)).intersection(wanted)
+        for place in archive.places
+        where !kept.contains(place.legacyInnerIdentifier) || !kept.contains(place.legacyOuterIdentifier) {
+            registerLegacy(place)
+        }
+        log(.note, detail: "legacy regions ready: \(kept.count) kept, \(wanted.count) wanted")
+        for region in manager.monitoredRegions where wanted.contains(region.identifier) {
+            manager.requestState(for: region)
+        }
+    }
+
+    private func stopLegacyRegions() {
+        for region in manager.monitoredRegions where region.identifier.hasPrefix("legacy.") {
+            manager.stopMonitoring(for: region)
+        }
+    }
+
+    fileprivate func legacy(_ identifier: String, state: String, detail: String) {
+        log(.legacyRegion, identifier: identifier, state: state, detail: detail)
+    }
+
+    fileprivate func legacyFailure(_ identifier: String?, error: any Error) {
+        log(.error, identifier: identifier, detail: "legacy: \(error.localizedDescription)")
     }
 
     /// One location good enough to save a place: ≤ 100 m accuracy, 30 s at most.
@@ -348,6 +420,42 @@ final class WorkplaceProbe {
         case .background: "background"
         @unknown default: "other"
         }
+    }
+}
+
+/// Receives the `CLLocationManager` region callbacks on the main thread,
+/// where the manager was created, and passes them to the probe.
+private final class LegacyRegionDelegate: NSObject, CLLocationManagerDelegate {
+    private weak var probe: WorkplaceProbe?
+
+    init(probe: WorkplaceProbe) {
+        self.probe = probe
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        let identifier = region.identifier
+        MainActor.assumeIsolated { probe?.legacy(identifier, state: "satisfied", detail: "enter") }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        let identifier = region.identifier
+        MainActor.assumeIsolated { probe?.legacy(identifier, state: "unsatisfied", detail: "exit") }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
+        let identifier = region.identifier
+        let label = switch state {
+        case .inside: "satisfied"
+        case .outside: "unsatisfied"
+        default: "unknown"
+        }
+        MainActor.assumeIsolated { probe?.legacy(identifier, state: label, detail: "state") }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: any Error) {
+        let identifier = region?.identifier
+        nonisolated(unsafe) let error = error
+        MainActor.assumeIsolated { probe?.legacyFailure(identifier, error: error) }
     }
 }
 #endif

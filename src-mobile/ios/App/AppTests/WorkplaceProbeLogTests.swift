@@ -65,6 +65,21 @@ struct WorkplaceProbeLogTests {
         #expect(!text.contains(Self.office.id.uuidString))
     }
 
+    @Test("Legacy region entries are labelled apart from CLMonitor ones")
+    func legacyExport() {
+        var archive = WorkplaceProbeArchive()
+        archive.places = [Self.office]
+        var entry = Self.entry(0, kind: .legacyRegion)
+        entry.identifier = Self.office.legacyOuterIdentifier
+        entry.state = "satisfied"
+        entry.detail = "enter"
+        archive.append(entry)
+        let text = archive.exportText(timeZone: TimeZone(identifier: "UTC")!)
+        #expect(text.contains("legacyRegion\tPlace 1/legacy-outer\tsatisfied"))
+        #expect(text.contains("\tenter"))
+        #expect(!text.contains(Self.office.id.uuidString))
+    }
+
     @Test("The probe file round-trips and is excluded from backup")
     func storage() throws {
         let directory = FileManager.default.temporaryDirectory
