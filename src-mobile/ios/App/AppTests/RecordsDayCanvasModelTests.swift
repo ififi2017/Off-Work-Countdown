@@ -269,6 +269,74 @@ struct RecordsDayCanvasModelTests {
         #expect(today.workIntervals[1].source == .afterNow)
     }
 
+    @Test("Own time crossing the now line is read as one row, while the band keeps both parts")
+    func ownTimeAcrossNowIsListedOnce() throws {
+        let day = utcDay(2026, 8, 24)
+        let now = day.addingTimeInterval(21 * 3_600 + 23 * 60 + 10)
+        let shift = RecordsDayShift(
+            anchorDayKey: "2026-08-24",
+            segments: [segment(day, plus: 9, to: 20 + 26.0 / 60)],
+            source: .recorded
+        )
+        let canvas = model(dayStart: day, shifts: [shift], isToday: true, now: now)
+        let base = day.timeIntervalSince1970 * 1_000
+        let leftWork = base + (20 * 60 + 26) * 60_000
+        let nowMs = base + (21 * 60 + 23) * 60_000
+
+        // The band still paints the recorded part and the hatched rest.
+        let painted = canvas.intervals.filter { $0.kind == .free && $0.endAtMs > leftWork }
+        try #require(painted.count == 2)
+        #expect(painted[0].endAtMs == nowMs)
+        #expect(painted[1].source == .afterNow)
+
+        // The account lists one evening, 20:26–24:00, named by what happened.
+        let listed = canvas.listedIntervals.filter { $0.kind == .free && $0.endAtMs > leftWork }
+        try #require(listed.count == 1)
+        #expect(listed[0].startAtMs == leftWork)
+        #expect(listed[0].endAtMs == base + 24 * hour)
+        #expect(listed[0].source == .recorded)
+        #expect(listed[0].sourceKey == RecordsDaySource.recorded.titleKey)
+        #expect(listed[0].id == painted[0].id)
+        #expect(Set(canvas.listedIntervals.map(\.id)).count == canvas.listedIntervals.count)
+
+        // Totals are the band's, untouched.
+        let listedFree = canvas.listedIntervals.filter { $0.kind == .free }.reduce(0) { $0 + $1.durationMs }
+        #expect(listedFree == canvas.allocation.freeMs)
+    }
+
+    @Test("Work crossing the now line stays two rows: a fact, then the schedule's estimate")
+    func workAcrossNowStaysSplitInTheList() throws {
+        let day = utcDay(2026, 8, 24)
+        let now = day.addingTimeInterval(14 * 3_600 + 32 * 60)
+        let shift = RecordsDayShift(
+            anchorDayKey: "2026-08-24",
+            segments: [segment(day, plus: 9, to: 12), segment(day, plus: 13, to: 18)],
+            source: .recorded
+        )
+        let canvas = model(dayStart: day, shifts: [shift], isToday: true, now: now)
+        let work = canvas.listedIntervals.filter { $0.kind == .work }
+
+        try #require(work.count == 3)
+        #expect(work[1].source == .recorded)
+        #expect(work[2].source == .afterNow)
+        // The evening is wholly after now, so it is one estimated row as before.
+        let evening = canvas.listedIntervals.filter { $0.kind == .free && $0.startAtMs >= now.timeIntervalSince1970 * 1_000 }
+        #expect(evening.allSatisfy { $0.source == .afterNow })
+        #expect(canvas.listedIntervals.count == canvas.intervals.count)
+    }
+
+    @Test("A day that is not today lists exactly what it draws")
+    func pastDayListsItsIntervals() {
+        let day = utcDay(2026, 8, 24)
+        let shift = RecordsDayShift(
+            anchorDayKey: "2026-08-24",
+            segments: [segment(day, plus: 9, to: 18)],
+            source: .recorded
+        )
+        let canvas = model(dayStart: day, shifts: [shift])
+        #expect(canvas.listedIntervals == canvas.intervals)
+    }
+
     @Test("A locked day carries no interval, duration, anchor or source of its own")
     func lockedDayCarriesNothingReal() {
         let day = utcDay(2026, 8, 24)
