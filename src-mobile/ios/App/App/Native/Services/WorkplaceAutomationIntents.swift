@@ -78,7 +78,7 @@ enum WorkplaceAutomationIntentRunner {
         }
         // Checked again on every run: discovering an action does not unlock
         // it, and no purchase sheet opens in the background (§3.14).
-        guard runtime.plus.canCollectAutomation else {
+        guard runtime.plus.canCollectAutomation(from: source) else {
             return runtime.text.t("automationResultNeedsPlus")
         }
         // Shortcuts runs the action when its trigger fires, so the run time
@@ -121,5 +121,37 @@ enum WorkplaceAutomationIntentRunner {
 
     private static func fallbackText(_ key: String) -> String {
         NativeLocalizer().string(key, locale: NativeLocalizer.systemLanguage())
+    }
+}
+
+/// Lists DoneAt's work actions in the Shortcuts app (Library → Apps → DoneAt)
+/// and behind `ShortcutsLink`, ready to drop into a personal automation.
+/// Phrases are localized in `AppShortcuts.xcstrings`.
+struct DoneAtAppShortcuts: AppShortcutsProvider {
+    static var appShortcuts: [AppShortcut] {
+        AppShortcut(
+            intent: RecordWorkplaceArrivalIntent(),
+            phrases: ["Record arrival in \(.applicationName)", "\(.applicationName) arrived at work"],
+            shortTitle: "automationIntentRecordArrival",
+            systemImageName: "figure.walk.arrival"
+        )
+        AppShortcut(
+            intent: RecordWorkplaceDepartureIntent(),
+            phrases: ["Record departure in \(.applicationName)", "\(.applicationName) left work"],
+            shortTitle: "automationIntentRecordDeparture",
+            systemImageName: "figure.walk.departure"
+        )
+        AppShortcut(
+            intent: ConfirmWorkStartedIntent(),
+            phrases: ["Start work in \(.applicationName)"],
+            shortTitle: "automationIntentConfirmStart",
+            systemImageName: "play.circle"
+        )
+        AppShortcut(
+            intent: ConfirmWorkFinishedIntent(),
+            phrases: ["Finish work in \(.applicationName)"],
+            shortTitle: "automationIntentConfirmEnd",
+            systemImageName: "stop.circle"
+        )
     }
 }

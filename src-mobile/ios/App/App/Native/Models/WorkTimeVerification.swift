@@ -50,6 +50,7 @@ nonisolated struct WorkTimeVerificationSummary: Equatable, Sendable {
         AutomationReviewReason.unknownObservationTime.rawValue,
         AutomationReviewReason.staleEvent.rawValue,
         AutomationReviewReason.beyondAutomaticWindow.rawValue,
+        AutomationReviewReason.arrivalTimeUncertain.rawValue,
     ]
 
     /// Only the verified headline is shown as "historical": the other marks

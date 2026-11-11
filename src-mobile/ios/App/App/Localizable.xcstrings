@@ -142023,839 +142023,6 @@
         }
       }
     },
-    "whatsNewWidgetsTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أدوات جديدة"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neue Widgets"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New widgets"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Widgets nuevos"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nouveaux widgets"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "नए विजेट"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Widget baru"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nuovi widget"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "新しいウィジェット"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "새로운 위젯"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "नवीन विजेट"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Novos widgets"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Новые виджеты"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "วิดเจ็ตใหม่"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yeni widget’lar"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tiện ích mới"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "全新小组件"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "全新小工具"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "全新小工具"
-          }
-        }
-      }
-    },
-    "whatsNewHomeTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "الشاشة الرئيسية"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Home-Bildschirm"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Home Screen"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pantalla de inicio"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Écran d’accueil"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "होम स्क्रीन"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Layar Utama"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schermata Home"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ホーム画面"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "홈 화면"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "होम स्क्रीन"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tela de Início"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Экран «Домой»"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "หน้าจอโฮม"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ana Ekran"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Màn hình chính"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "主屏幕"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "主畫面"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "主畫面"
-          }
-        }
-      }
-    },
-    "whatsNewHomeBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أنماط جديدة للعد التنازلي، إلى جانب هذا الأسبوع والورديات وعطلة الأسبوع والعطلة القادمة."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neue Countdown-Stile, dazu diese Woche, deine Schichten, das Wochenende und der nächste Feiertag."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New countdown styles, plus this week, your shifts, the weekend and your next holiday."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nuevos estilos de cuenta atrás y, además, la semana, tus turnos, el fin de semana y el próximo festivo."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "De nouveaux styles de compte à rebours, et aussi la semaine, vos horaires, le week-end et le prochain jour férié."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "काउंटडाउन की नई स्टाइल, साथ में इस सप्ताह, आपकी शिफ़्ट, वीकेंड और अगली छुट्टी।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gaya hitung mundur baru, plus pekan ini, shift-mu, akhir pekan, dan libur berikutnya."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nuovi stili per il conto alla rovescia, più la settimana, i turni, il weekend e la prossima festività."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "カウントダウンの新しいスタイルに加えて、今週の進み具合、シフト、週末、次の祝日も。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "새로운 카운트다운 스타일과 함께 이번 주, 근무표, 주말, 다음 공휴일도 볼 수 있어요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "काउंटडाउनच्या नव्या स्टाइल, सोबत हा आठवडा, तुमच्या शिफ्ट, वीकेंड आणि पुढची सुट्टी."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Novos estilos de contagem regressiva, além da semana, da sua escala, do fim de semana e do próximo feriado."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Новые стили обратного отсчёта, а ещё неделя, смены, выходные и ближайший праздник."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "สไตล์นับถอยหลังใหม่ พร้อมสัปดาห์นี้ กะงาน สุดสัปดาห์ และวันหยุดถัดไป"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yeni geri sayım stilleri; ayrıca bu hafta, vardiyaların, hafta sonu ve sıradaki tatil."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kiểu đếm ngược mới, cùng tuần này, ca làm, cuối tuần và ngày lễ tới."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "倒计时新样式，还有本周进度、排班、周末和下个假期。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "倒數新款式，仲有本週進度、排班、週末同下個假期。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "倒數新樣式，還有本週進度、排班、週末和下個假期。"
-          }
-        }
-      }
-    },
-    "whatsNewLockTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "شاشة القفل ومركز التحكم"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sperrbildschirm und Kontrollzentrum"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lock Screen and Control Center"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pantalla bloqueada y centro de control"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Écran verrouillé et Centre de contrôle"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "लॉक स्क्रीन और कंट्रोल सेंटर"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Layar Kunci dan Pusat Kontrol"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schermata di blocco e Centro di Controllo"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ロック画面とコントロールセンター"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "잠금 화면과 제어 센터"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "लॉक स्क्रीन आणि कंट्रोल सेंटर"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tela Bloqueada e Central de Controle"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Экран блокировки и Пункт управления"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "หน้าจอล็อกและศูนย์ควบคุม"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kilit Ekranı ve Denetim Merkezi"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Màn hình khóa và Trung tâm điều khiển"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "锁定屏幕与控制中心"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "鎖定畫面同控制中心"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "鎖定畫面與控制中心"
-          }
-        }
-      }
-    },
-    "whatsNewLockBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أضئ الشاشة لترى كم تبقّى، وابدأ ورديتك بلمسة واحدة."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bildschirm an, Restzeit im Blick – und deine Schicht startest du mit einem Tippen."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wake your screen to see what’s left, and start your shift with one tap."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enciende la pantalla y verás cuánto falta; empieza tu turno con un toque."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Allumez l’écran pour voir le temps restant, et commencez votre journée en un geste."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "स्क्रीन जगाते ही दिखे कि कितना समय बचा है, और एक टैप में शिफ़्ट शुरू करें।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nyalakan layar untuk melihat sisa waktu, dan mulai shift dengan sekali ketuk."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Accendi lo schermo e vedi quanto manca; inizia il turno con un tocco."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "画面をつければ残り時間がわかり、ワンタップで出勤を始められます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "화면을 켜면 남은 시간이 보이고, 탭 한 번으로 근무를 시작할 수 있어요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "स्क्रीन सुरू करताच किती वेळ उरला ते दिसते, आणि एका टॅपमध्ये शिफ्ट सुरू करा."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acenda a tela para ver quanto falta e comece o turno com um toque."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Включите экран — и сразу видно, сколько осталось; смена начинается одним касанием."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เปิดหน้าจอก็รู้ว่าเหลืออีกนานแค่ไหน และเริ่มกะได้ในแตะเดียว"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ekranı aç, kalan süreyi gör; vardiyanı tek dokunuşla başlat."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bật màn hình là biết còn bao lâu; bắt đầu ca chỉ với một chạm."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "屏幕一亮就知道还剩多久，一键开始上班。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "一開螢幕就知仲有幾耐，一按就開工。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "螢幕一亮就知道還剩多久，一鍵開始上班。"
-          }
-        }
-      }
-    },
-    "whatsNewWatchBody": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أصبح مضمّن العد التنازلي مقسّمًا عند استراحة الغداء، مع مضمّنات جديدة للأسبوع والورديات والعطلات."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die Countdown-Komplikation ist an der Mittagspause geteilt, dazu neue für Woche, Schichten und Feiertage."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The countdown complication splits at lunch, with new ones for your week, shifts and holidays."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La complicación de cuenta atrás se divide en la pausa de la comida, y llegan otras para la semana, los turnos y los festivos."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La complication du compte à rebours est coupée à la pause déjeuner, et d’autres arrivent pour la semaine, les horaires et les jours fériés."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "काउंटडाउन कॉम्प्लिकेशन लंच ब्रेक पर बँटा दिखता है, और सप्ताह, शिफ़्ट व छुट्टियों के नए कॉम्प्लिकेशन भी हैं।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Komplikasi hitung mundur kini terbagi saat istirahat makan siang, ditambah yang baru untuk pekan, shift, dan hari libur."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La complicazione del conto alla rovescia è divisa alla pausa pranzo, e se ne aggiungono altre per settimana, turni e festività."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "カウントダウンのコンプリケーションが昼休みで区切られ、今週・シフト・祝日のコンプリケーションも加わりました。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "카운트다운 컴플리케이션이 점심시간을 기준으로 나뉘고, 이번 주·근무·공휴일 컴플리케이션도 추가됐어요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "काउंटडाउन कॉम्प्लिकेशन जेवणाच्या सुट्टीला विभागलेले दिसते, आणि आठवडा, शिफ्ट व सुट्ट्यांसाठी नवे कॉम्प्लिकेशनही आहेत."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A complicação da contagem regressiva é dividida no almoço, e chegam outras para a semana, a escala e os feriados."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Усложнение с обратным отсчётом делится на обеденном перерыве, а новые показывают неделю, смены и праздники."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "คอมพลิเคชันนับถอยหลังแบ่งช่วงตามพักกลางวัน และมีคอมพลิเคชันใหม่สำหรับสัปดาห์ กะงาน และวันหยุด"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Geri sayım komplikasyonu öğle arasında bölünüyor; hafta, vardiyalar ve tatiller için yenileri de geldi."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Complication đếm ngược được chia theo giờ nghỉ trưa, thêm các complication mới cho tuần, ca làm và ngày lễ."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "倒计时复杂功能按午休分段，还新增了本周、班次和假期复杂功能。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "倒數複雜功能按午膳分段，仲新增咗本週、班次同假期複雜功能。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "倒數複雜功能依午休分段，還新增了本週、班次和假期複雜功能。"
-          }
-        }
-      }
-    },
-    "whatsNewHowToAdd": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تعرّف على طريقة إضافتها"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "So fügst du sie hinzu"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "See how to add them"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ver cómo añadirlos"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Voir comment les ajouter"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "इन्हें जोड़ने का तरीका देखें"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lihat cara menambahkannya"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scopri come aggiungerli"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "追加のしかたを見る"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "추가하는 방법 보기"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ते कसे जोडायचे ते पाहा"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ver como adicionar"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Как их добавить"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ดูวิธีเพิ่ม"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nasıl eklenir?"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xem cách thêm"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "看看怎么添加"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "睇吓點樣加入"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "看看怎麼加入"
-          }
-        }
-      }
-    },
     "plusGiftOpen": {
       "extractionState": "manual",
       "localizations": {
@@ -152263,115 +151430,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "أوقات للمراجعة"
+            "value": "السجلات التلقائية"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zeiten zur Prüfung"
+            "value": "Automatische Einträge"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Times to Review"
+            "value": "Automatic Records"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Horas por revisar"
+            "value": "Registros automáticos"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Heures à vérifier"
+            "value": "Enregistrements automatiques"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "समीक्षा के लिए समय"
+            "value": "ऑटोमैटिक रिकॉर्ड"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Waktu untuk Ditinjau"
+            "value": "Catatan Otomatis"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Orari da rivedere"
+            "value": "Registrazioni automatiche"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "確認する時刻"
+            "value": "自動記録"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "확인할 시간"
+            "value": "자동 기록"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "तपासायच्या वेळा"
+            "value": "स्वयंचलित नोंदी"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Horários por rever"
+            "value": "Registos automáticos"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Время на проверку"
+            "value": "Автозаписи"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "เวลาที่รอตรวจสอบ"
+            "value": "บันทึกอัตโนมัติ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "İncelenecek Saatler"
+            "value": "Otomatik Kayıtlar"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Giờ cần xem lại"
+            "value": "Bản ghi tự động"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "待确认的记录"
+            "value": "自动记录"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "待確認的時間"
+            "value": "自動記錄"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "待確認的記錄"
+            "value": "自動記錄"
           }
         }
       }
@@ -152610,125 +151777,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "用捷徑記錄"
-          }
-        }
-      }
-    },
-    "automationUIShortcutsNote": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "في أتمتة شخصية، أضف «{{arrive}}» أو «{{leave}}». لا حاجة إلى الوصول إلى الموقع."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Füge in einer persönlichen Automation „{{arrive}}“ oder „{{leave}}“ hinzu. Kein Standortzugriff nötig."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "In a personal automation, add “{{arrive}}” or “{{leave}}”. No location access needed."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "En una automatización personal, añade «{{arrive}}» o «{{leave}}». No necesita acceso a la ubicación."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dans une automatisation personnelle, ajoutez « {{arrive}} » ou « {{leave}} ». Aucun accès à la position nécessaire."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "किसी पर्सनल ऑटोमेशन में “{{arrive}}” या “{{leave}}” जोड़ें। स्थान एक्सेस की ज़रूरत नहीं।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Di otomatisasi pribadi, tambahkan “{{arrive}}” atau “{{leave}}”. Tidak perlu akses lokasi."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "In un’automazione personale, aggiungi «{{arrive}}» o «{{leave}}». Non serve l’accesso alla posizione."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "パーソナルオートメーションに「{{arrive}}」または「{{leave}}」を追加してください。位置情報へのアクセスは不要です。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "개인용 자동화에 “{{arrive}}” 또는 “{{leave}}”를 추가하세요. 위치 접근은 필요 없어요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "वैयक्तिक ऑटोमेशनमध्ये “{{arrive}}” किंवा “{{leave}}” जोडा. स्थान प्रवेशाची गरज नाही."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Numa automação pessoal, adicione «{{arrive}}» ou «{{leave}}». Não é preciso acesso à localização."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "В персональную автоматизацию добавьте «{{arrive}}» или «{{leave}}». Доступ к геопозиции не нужен."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ในระบบอัตโนมัติส่วนบุคคล ให้เพิ่ม “{{arrive}}” หรือ “{{leave}}” โดยไม่ต้องเข้าถึงตำแหน่ง"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kişisel bir otomasyona “{{arrive}}” veya “{{leave}}” ekleyin. Konum erişimi gerekmez."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trong một tự động hóa cá nhân, hãy thêm “{{arrive}}” hoặc “{{leave}}”. Không cần quyền truy cập vị trí."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在个人自动化中添加“{{arrive}}”或“{{leave}}”，不需要位置权限。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在個人自動化中加入「{{arrive}}」或「{{leave}}」，不需要位置存取權限。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在個人自動化中加入「{{arrive}}」或「{{leave}}」，不需要位置權限。"
           }
         }
       }
@@ -155952,115 +155000,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "اعتُمدت مؤخرًا"
+            "value": "المسجّل مؤخرًا"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zuletzt übernommen"
+            "value": "Zuletzt erfasst"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Recently Adopted"
+            "value": "Recently Recorded"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adoptadas recientemente"
+            "value": "Registrado recientemente"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adoptées récemment"
+            "value": "Enregistré récemment"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "हाल ही में अपनाए गए"
+            "value": "हाल ही में दर्ज"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Baru Diterima"
+            "value": "Baru Saja Dicatat"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adottati di recente"
+            "value": "Registrato di recente"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "最近反映したもの"
+            "value": "最近の自動記録"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "최근 적용"
+            "value": "최근 자동 기록"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "अलीकडे स्वीकारलेले"
+            "value": "अलीकडे नोंदवलेले"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adotados recentemente"
+            "value": "Registado recentemente"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Недавно принятые"
+            "value": "Недавно записано"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ใช้ล่าสุด"
+            "value": "บันทึกล่าสุด"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Son Benimsenenler"
+            "value": "Son Kaydedilenler"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Đã chấp nhận gần đây"
+            "value": "Ghi gần đây"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "最近采用"
+            "value": "最近自动记录"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "最近採用"
+            "value": "最近自動記錄"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "最近採用"
+            "value": "最近自動記錄"
           }
         }
       }
@@ -162616,115 +161664,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تم التحقق من الموقع"
+            "value": "الأوقات مسجّلة من الموقع"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Standort bestätigt"
+            "value": "Zeiten per Standort erfasst"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Location Verified"
+            "value": "Times Recorded from Location"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ubicación verificada"
+            "value": "Horas registradas por ubicación"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Position vérifiée"
+            "value": "Horaires enregistrés par localisation"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "स्थान सत्यापित"
+            "value": "समय लोकेशन से दर्ज हुए"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lokasi Terverifikasi"
+            "value": "Jam Dicatat dari Lokasi"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Posizione verificata"
+            "value": "Orari registrati dalla posizione"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "位置情報で確認済み"
+            "value": "出退勤は位置情報から記録"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위치 확인됨"
+            "value": "출퇴근 시간을 위치로 기록함"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "स्थान सत्यापित"
+            "value": "वेळा लोकेशनवरून नोंदवल्या"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Localização verificada"
+            "value": "Horas registadas pela localização"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Местоположение подтверждено"
+            "value": "Время записано по геопозиции"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ยืนยันตำแหน่งแล้ว"
+            "value": "เวลาเข้า-ออกงานบันทึกจากตำแหน่ง"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konum Doğrulandı"
+            "value": "Saatler Konumdan Kaydedildi"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vị trí đã xác minh"
+            "value": "Giờ làm được ghi từ vị trí"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "定位认证"
+            "value": "上下班时间由定位记录"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "定位認證"
+            "value": "上下班時間由定位記錄"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "定位認證"
+            "value": "上下班時間由定位記錄"
           }
         }
       }
@@ -166414,6 +165462,4647 @@
           "stringUnit": {
             "state": "translated",
             "value": "依定位自動記錄"
+          }
+        }
+      }
+    },
+    "automationUINoteArrivalUncertain": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تأكدنا من إذن الموقع بعد وقت بدء عملك، لذا يظهر هنا فقط أنك كنت موجودًا بحلول ذلك الوقت."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Standortzugriff wurde erst nach deiner Startzeit bestätigt. Daher steht nur fest, dass du bis dahin da warst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location access was confirmed after your start time, so this only shows you were there by then."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El acceso a la ubicación se confirmó después de tu hora de inicio, así que solo indica que ya estabas allí para entonces."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'accès à la localisation a été confirmé après ton heure de début : on sait seulement que tu étais déjà là à ce moment-là."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन एक्सेस आपके शुरू होने के समय के बाद कन्फ़र्म हुआ, इसलिए इससे बस इतना पता चलता है कि आप तब तक वहाँ पहुँच चुके थे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Akses lokasi baru dikonfirmasi setelah jam mulai kamu, jadi ini hanya menunjukkan bahwa kamu sudah ada di sana sebelum itu."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'accesso alla posizione è stato confermato dopo il tuo orario di inizio, quindi indica solo che eri già lì entro quell'ora."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置情報へのアクセスが開始時刻のあとに確認されたため、それまでに到着していたことだけがわかります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치 접근 권한이 시작 시간 이후에 확인되어, 그 시점까지는 도착해 있었다는 것만 알 수 있어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन ॲक्सेस तुमच्या सुरू होण्याच्या वेळेनंतर कन्फर्म झाला, त्यामुळे यावरून फक्त एवढेच दिसते की तुम्ही तोपर्यंत तिथे पोहोचला होतात."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O acesso à localização foi confirmado depois da tua hora de início, por isso só mostra que já estavas lá até essa altura."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к геопозиции подтвердился после времени начала, поэтому известно лишь, что к этому моменту вы уже были на месте."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยืนยันสิทธิ์เข้าถึงตำแหน่งหลังเวลาเริ่มงานของคุณ จึงบอกได้เพียงว่าคุณมาถึงที่ทำงานแล้วก่อนหน้านั้น"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konum erişimi başlangıç saatinden sonra onaylandı; bu yüzden yalnızca o saate kadar orada olduğun görünüyor."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quyền truy cập vị trí được xác nhận sau giờ bắt đầu của bạn, nên chỉ biết là bạn đã có mặt ở đó trước thời điểm này."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置权限在上班时间之后才确认，所以只能知道你在这之前已经到了。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置權限在上班時間之後才確認，所以只能知道你在這之前已經到了。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置權限在上班時間之後才確認，所以只能知道你在這之前已經到了。"
+          }
+        }
+      }
+    },
+    "automationNoticeBackAtWork": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عدت إلى العمل في {{time}}. يستمر احتساب العمل الإضافي حتى تغادر."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um {{time}} wieder bei der Arbeit. Überstunden zählen weiter, bis du gehst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back at work at {{time}}. Overtime keeps counting until you leave."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De vuelta en el trabajo a las {{time}}. Las horas extra seguirán contando hasta que te vayas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De retour au travail à {{time}}. Les heures supplémentaires continuent de compter jusqu'à ton départ."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} बजे काम पर वापस। आपके निकलने तक ओवरटाइम गिना जाता रहेगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kembali ke tempat kerja pukul {{time}}. Lembur terus dihitung sampai kamu pergi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Di nuovo al lavoro alle {{time}}. Lo straordinario continua a contare finché non esci."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}に職場へ戻りました。退勤するまで残業は引き続きカウントされます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}에 다시 근무지에 도착했어요. 떠날 때까지 초과 근무가 계속 기록돼요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} वाजता कामावर परत. तुम्ही निघेपर्यंत ओव्हरटाइम मोजला जात राहील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De volta ao trabalho às {{time}}. As horas extra continuam a contar até saíres."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы снова на работе в {{time}}. Переработка продолжит учитываться, пока вы не уйдёте."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กลับมาที่ทำงานเวลา {{time}} โอทีจะนับต่อไปจนกว่าคุณจะออก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saat {{time}} itibarıyla işe geri döndün. Ayrılana kadar fazla mesai saymaya devam eder."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã quay lại nơi làm việc lúc {{time}}. Giờ tăng ca tiếp tục được tính cho đến khi bạn rời đi."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 回到公司，加班会持续记录到你离开。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 返到公司，加班會持續記錄到你離開。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 回到公司，加班會持續記錄到你離開。"
+          }
+        }
+      }
+    },
+    "recordsAwayCounted": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خارج المكان · محتسب كعمل إضافي"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unterwegs · als Überstunden gezählt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Away · counted as overtime"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuera · cuenta como horas extra"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Absent · compté en heures supplémentaires"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बाहर · ओवरटाइम में गिना गया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Di luar · dihitung sebagai lembur"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuori · conteggiato come straordinario"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外出 · 残業に含む"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "외출 · 초과 근무에 포함"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बाहेर · ओव्हरटाइममध्ये मोजले"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ausente · conta como horas extra"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отлучка · засчитано как переработка"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออกไปข้างนอก · นับเป็นโอที"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dışarıda · fazla mesaiye sayıldı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ra ngoài · tính vào giờ tăng ca"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外出 · 计入加班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外出 · 計入加班"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外出 · 計入加班"
+          }
+        }
+      }
+    },
+    "recordsVerifyHeadlineStart": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وقت البدء مسجّل من الموقع"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginn per Standort erfasst"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock-In Recorded from Location"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada registrada por ubicación"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivée enregistrée par localisation"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शुरुआत का समय लोकेशन से दर्ज हुआ"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jam Masuk Dicatat dari Lokasi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ingresso registrato dalla posizione"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "出勤は位置情報から記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출근 시간을 위치로 기록함"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सुरू होण्याची वेळ लोकेशनवरून नोंदवली"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada registada pela localização"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начало записано по геопозиции"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เวลาเข้างานบันทึกจากตำแหน่ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giriş Saati Konumdan Kaydedildi"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ vào làm được ghi từ vị trí"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上班时间由定位记录"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上班時間由定位記錄"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上班時間由定位記錄"
+          }
+        }
+      }
+    },
+    "recordsVerifyHeadlineEnd": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وقت الانتهاء مسجّل من الموقع"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feierabend per Standort erfasst"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock-Out Recorded from Location"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salida registrada por ubicación"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Départ enregistré par localisation"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "समाप्ति का समय लोकेशन से दर्ज हुआ"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jam Pulang Dicatat dari Lokasi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uscita registrata dalla posizione"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退勤は位置情報から記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "퇴근 시간을 위치로 기록함"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संपण्याची वेळ लोकेशनवरून नोंदवली"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saída registada pela localização"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окончание записано по геопозиции"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เวลาเลิกงานบันทึกจากตำแหน่ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çıkış Saati Konumdan Kaydedildi"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ tan làm được ghi từ vị trí"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下班时间由定位记录"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下班時間由定位記錄"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下班時間由定位記錄"
+          }
+        }
+      }
+    },
+    "automationUIReviewNothingPending": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا شيء يحتاج إلى مراجعتك. الأوقات التي سجّلها التشغيل التلقائي مؤخرًا أدناه، ويمكنك التراجع عن أي منها."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nichts muss von dir geprüft werden. Unten siehst du die zuletzt automatisch erfassten Zeiten, die du jederzeit rückgängig machen kannst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing needs your check. Times automation recorded recently are below, and you can undo any of them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay nada que revisar. Abajo están las horas que se registraron automáticamente hace poco, y puedes deshacer cualquiera."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rien à vérifier pour le moment. Les horaires enregistrés automatiquement récemment sont ci-dessous, et tu peux en annuler n'importe lequel."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपको कुछ भी जाँचने की ज़रूरत नहीं है। हाल ही में ऑटोमैटिकली दर्ज हुए समय नीचे हैं, और आप किसी को भी वापस ले सकते हैं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak ada yang perlu kamu periksa. Jam yang dicatat otomatis baru-baru ini ada di bawah, dan kamu bisa membatalkan yang mana pun."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non c'è nulla da controllare. Qui sotto trovi gli orari registrati automaticamente di recente e puoi annullarne qualsiasi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認が必要なものはありません。最近自動で記録された時刻は以下のとおりで、いつでも取り消せます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인이 필요한 항목은 없어요. 최근 자동으로 기록된 시간은 아래에 있으며, 언제든 취소할 수 있어요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुम्हाला काहीही तपासण्याची गरज नाही. अलीकडे आपोआप नोंदवलेल्या वेळा खाली आहेत, आणि तुम्ही त्यातील कोणतीही रद्द करू शकता."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não há nada para confirmares. Abaixo estão as horas registadas automaticamente há pouco e podes anular qualquer uma."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверять ничего не нужно. Ниже — время, записанное автоматически за последнее время; любую запись можно отменить."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่มีรายการที่ต้องให้คุณตรวจสอบ เวลาที่บันทึกอัตโนมัติล่าสุดอยู่ด้านล่าง และคุณยกเลิกรายการใดก็ได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontrol etmen gereken bir şey yok. Otomatik kaydedilen son saatler aşağıda ve istediğini geri alabilirsin."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không có gì cần bạn kiểm tra. Các giờ được ghi tự động gần đây nằm bên dưới, và bạn có thể hoàn tác bất kỳ mục nào."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前没有需要你确认的时间。以下是最近自动记录的时间，可以随时撤销。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前沒有需要你確認的時間。以下是最近自動記錄的時間，可以隨時撤銷。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前沒有需要你確認的時間。以下是最近自動記錄的時間，可以隨時撤銷。"
+          }
+        }
+      }
+    },
+    "automationUIShortcutsFree": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "免費"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "免费"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "免費"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gratis"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gratis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gratuit"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gratis"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grátis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Бесплатно"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ücretsiz"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gratis"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miễn phí"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ฟรี"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無料"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "무료"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مجاني"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मुफ़्त"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मोफत"
+          }
+        }
+      }
+    },
+    "automationUIShortcutsFreeNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No location access needed. Shortcuts runs the trigger; DoneAt records the time."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不需要定位權限。由「捷徑」觸發，DoneAt 負責記下時間。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无需定位权限。由“快捷指令”触发，DoneAt 负责记下时间。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不需要定位權限。由「捷徑」觸發，DoneAt 負責記低時間。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Standortzugriff nötig. Kurzbefehle löst aus, DoneAt hält die Zeit fest."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No necesita acceso a la ubicación. Atajos lo activa y DoneAt registra la hora."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun accès à la position requis. Raccourcis déclenche l’action, DoneAt enregistre l’heure."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non serve l’accesso alla posizione. Comandi rapidi avvia l’azione e DoneAt registra l’orario."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não é preciso acesso à localização. Os Atalhos ativam a ação e o DoneAt regista a hora."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к геопозиции не нужен. Команды запускают действие, а DoneAt записывает время."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konum erişimi gerekmez. Kısayollar tetikler, DoneAt zamanı kaydeder."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak perlu akses lokasi. Pintasan menjalankan pemicunya, DoneAt mencatat waktunya."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không cần quyền truy cập vị trí. Phím tắt kích hoạt, DoneAt ghi lại giờ."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่ต้องใช้สิทธิ์เข้าถึงตำแหน่ง คำสั่งลัดเป็นตัวเริ่มต้น แล้ว DoneAt จะบันทึกเวลาให้"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置情報へのアクセスは不要です。ショートカットが実行のきっかけとなり、DoneAtが時刻を記録します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치 접근 권한이 필요 없어요. 단축어가 실행하고, DoneAt이 시간을 기록해요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا حاجة إلى الوصول إلى الموقع. تشغّل الاختصارات الإجراء ويسجّل DoneAt الوقت."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन एक्सेस की ज़रूरत नहीं। शॉर्टकट्स ट्रिगर चलाता है, और DoneAt समय दर्ज करता है।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन अ‍ॅक्सेस लागत नाही. शॉर्टकट्स ट्रिगर चालवते आणि DoneAt वेळ नोंदवते."
+          }
+        }
+      }
+    },
+    "automationGuideTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Up Arrive & Leave Automations"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定上下班自動化"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置上下班自动化"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定上下班自動化"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automationen für Ankunft und Abfahrt einrichten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configura las automatizaciones de llegada y salida"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurer les automatisations d’arrivée et de départ"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imposta le automazioni di arrivo e partenza"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar automações de chegada e saída"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройка автоматизаций прибытия и ухода"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varış ve Ayrılma Otomasyonlarını Ayarla"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siapkan Otomatisasi Tiba & Pergi"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thiết lập tự động hóa khi đến và rời nơi làm"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งค่าระบบอัตโนมัติเมื่อมาถึงและออกจากที่ทำงาน"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到着・出発のオートメーションを設定"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도착·출발 자동화 설정하기"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعداد أتمتة الوصول والمغادرة"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पहुँचने और निकलने के ऑटोमेशन सेट करें"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पोहोचणे आणि निघणे ऑटोमेशन सेट करा"
+          }
+        }
+      }
+    },
+    "automationGuideIntro": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcuts can run a DoneAt action when you arrive at or leave work. It takes about a minute."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「捷徑」可以在你到達或離開公司時執行 DoneAt 的動作，設定大約一分鐘。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“快捷指令”可以在你到达或离开公司时运行 DoneAt 的操作，设置大约一分钟。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「捷徑」可以喺你到達或離開公司時執行 DoneAt 嘅動作，設定大約一分鐘。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kurzbefehle kann eine DoneAt-Aktion ausführen, sobald du bei der Arbeit ankommst oder sie verlässt. Das dauert etwa eine Minute."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atajos puede ejecutar una acción de DoneAt cuando llegas al trabajo o te vas. Lleva alrededor de un minuto."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raccourcis peut lancer une action DoneAt quand vous arrivez au travail ou en partez. Cela prend environ une minute."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comandi rapidi può eseguire un’azione di DoneAt quando arrivi al lavoro o te ne vai. Ci vuole circa un minuto."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os Atalhos podem executar uma ação do DoneAt quando chega ao trabalho ou sai. Demora cerca de um minuto."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приложение «Команды» может запускать действие DoneAt, когда вы приходите на работу или уходите. Это займёт около минуты."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kısayollar, işe vardığında veya işten ayrıldığında bir DoneAt eylemi çalıştırabilir. Yaklaşık bir dakika sürer."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pintasan dapat menjalankan aksi DoneAt saat kamu tiba di tempat kerja atau pergi. Hanya sekitar satu menit."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phím tắt có thể chạy một hành động của DoneAt khi bạn đến hoặc rời nơi làm. Chỉ mất khoảng một phút."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คำสั่งลัดสามารถเรียกใช้การทำงานของ DoneAt เมื่อคุณมาถึงหรือออกจากที่ทำงาน ใช้เวลาราวหนึ่งนาที"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ショートカットなら、職場に着いたときや出たときにDoneAtのアクションを実行できます。設定はおよそ1分です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단축어에서 직장에 도착하거나 떠날 때 DoneAt 동작을 실행할 수 있어요. 1분 정도면 충분해요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يمكن لتطبيق الاختصارات تشغيل إجراء من DoneAt عند وصولك إلى العمل أو مغادرتك له. يستغرق الأمر دقيقة تقريبًا."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आप काम पर पहुँचें या वहाँ से निकलें, शॉर्टकट्स DoneAt का एक्शन चला सकता है। इसमें लगभग एक मिनट लगता है।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुम्ही कामावर पोहोचल्यावर किंवा तिथून निघाल्यावर शॉर्टकट्स DoneAt ची कृती चालवू शकते. यासाठी सुमारे एक मिनिट लागते."
+          }
+        }
+      }
+    },
+    "automationGuideStepOpen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Shortcuts, tap Automation, then tap + and choose Arrive."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開「捷徑」，點「自動化」，再點「＋」並選擇「抵達」。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开“快捷指令”，点“自动化”，再点“＋”并选择“到达”。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開「捷徑」，㩒「自動化」，再㩒「＋」並選擇「抵達」。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne Kurzbefehle, tippe auf „Automation“, dann auf „+“ und wähle „Ankommen“."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre Atajos, toca Automatización, luego + y elige Llegar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrez Raccourcis, touchez Automatisation, puis + et choisissez Arriver."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Comandi rapidi, tocca Automazione, poi + e scegli Arrivo."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abra os Atalhos, toque em Automação, depois em + e escolha Chegar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте «Команды», нажмите «Автоматизация», затем + и выберите «Прибытие»."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kısayollar’ı aç, Otomasyon’a dokun, sonra + simgesine dokunup Varış’ı seç."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buka Pintasan, ketuk Otomatisasi, lalu ketuk + dan pilih Tiba."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở Phím tắt, chạm vào Tự động hóa, rồi chạm + và chọn Đến."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดคำสั่งลัด แตะ “ระบบอัตโนมัติ” แล้วแตะ + และเลือก “มาถึง”"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ショートカットを開き、「オートメーション」をタップして、＋をタップし、「到着」を選びます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단축어를 열고 자동화를 탭한 다음, +를 탭하고 도착을 선택하세요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "افتح الاختصارات، ثم اضغط على الأتمتة، ثم اضغط على + واختر الوصول."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शॉर्टकट्स खोलें, ऑटोमेशन पर टैप करें, फिर + पर टैप करें और पहुँचना चुनें।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शॉर्टकट्स उघडा, ऑटोमेशन वर टॅप करा, मग + वर टॅप करून आगमन निवडा."
+          }
+        }
+      }
+    },
+    "automationGuideStepPlace": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose your workplace as the location, then select Run Immediately."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置選擇你的公司，再選「立即執行」。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置选择你的公司，再选“立即运行”。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置選擇你嘅公司，再選「立即執行」。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle deinen Arbeitsort als Standort und dann „Sofort ausführen“."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige tu lugar de trabajo como ubicación y selecciona Ejecutar inmediatamente."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez votre lieu de travail comme position, puis sélectionnez Exécuter immédiatement."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli il tuo posto di lavoro come posizione, poi seleziona Esegui immediatamente."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha o seu local de trabalho como localização e selecione Executar imediatamente."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите своё место работы и нажмите «Выполнять сразу»."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konum olarak iş yerini seç, ardından Hemen Çalıştır’ı seç."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilih tempat kerjamu sebagai lokasi, lalu pilih Jalankan Segera."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn nơi làm việc của bạn làm vị trí, rồi chọn Chạy ngay."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลือกที่ทำงานของคุณเป็นตำแหน่ง แล้วเลือก “เรียกใช้ทันที”"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "場所に職場を選び、「即時実行」を選択します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치로 직장을 선택한 다음 즉시 실행을 선택하세요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختر مكان عملك كموقع، ثم اختر التشغيل الفوري."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन के रूप में अपना कार्यस्थल चुनें, फिर तुरंत चलाएँ चुनें।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन म्हणून तुमचे कामाचे ठिकाण निवडा, मग त्वरित चालवा निवडा."
+          }
+        }
+      }
+    },
+    "automationGuideStepArrive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add the DoneAt action “{{action}}”, then tap Done."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加入 DoneAt 的「{{action}}」動作，然後點「完成」。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加 DoneAt 的“{{action}}”操作，然后点“完成”。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加入 DoneAt 嘅「{{action}}」動作，然後㩒「完成」。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Füge die DoneAt-Aktion „{{action}}“ hinzu und tippe auf „Fertig“."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade la acción de DoneAt «{{action}}» y toca Aceptar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajoutez l’action DoneAt « {{action}} », puis touchez OK."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi l’azione di DoneAt “{{action}}”, poi tocca Fine."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicione a ação do DoneAt “{{action}}” e toque em Concluído."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавьте действие DoneAt «{{action}}» и нажмите «Готово»."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt’ın “{{action}}” eylemini ekle, ardından Bitti’ye dokun."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tambahkan aksi DoneAt “{{action}}”, lalu ketuk Selesai."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thêm hành động “{{action}}” của DoneAt, rồi chạm Xong."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เพิ่มการทำงาน “{{action}}” ของ DoneAt แล้วแตะ “เสร็จสิ้น”"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAtのアクション「{{action}}」を追加して、「完了」をタップします。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 동작 “{{action}}”을(를) 추가한 다음 완료를 탭하세요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أضف إجراء DoneAt «{{action}}»، ثم اضغط على تم."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt का एक्शन “{{action}}” जोड़ें, फिर पूर्ण पर टैप करें।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt ची “{{action}}” कृती जोडा, मग पूर्ण वर टॅप करा."
+          }
+        }
+      }
+    },
+    "automationGuideStepLeave": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat with Leave and “{{action}}”, so your clock-out is recorded too."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再用「離開」建立一個，加入「{{action}}」，下班時間也會記下。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再用“离开”创建一个，添加“{{action}}”，下班时间也会记下。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再用「離開」建立一個，加入「{{action}}」，放工時間都會記低。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wiederhole das mit „Verlassen“ und „{{action}}“, damit auch dein Feierabend festgehalten wird."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repite con Salir y «{{action}}», para que también se registre tu hora de salida."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recommencez avec Partir et « {{action}} » pour que votre heure de départ soit aussi enregistrée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripeti con Partenza e “{{action}}”, così viene registrata anche l’uscita."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repita com Sair e “{{action}}”, para que a sua saída também fique registada."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторите с «Уход» и «{{action}}», чтобы записывалось и время ухода."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayrılma ve “{{action}}” ile bunu tekrarla; böylece çıkış saatin de kaydedilir."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ulangi dengan Pergi dan “{{action}}”, agar jam pulangmu juga tercatat."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lặp lại với Rời đi và “{{action}}” để giờ tan làm cũng được ghi lại."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทำซ้ำด้วย “ออกจาก” และ “{{action}}” เพื่อให้เวลาเลิกงานถูกบันทึกด้วย"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「出発」と「{{action}}」でもう1つ作成すると、退勤時刻も記録されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "떠날 때와 “{{action}}”으로 하나 더 만들면 퇴근 시간도 기록돼요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كرّر الخطوات مع المغادرة و«{{action}}» ليُسجَّل وقت انصرافك أيضًا."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "छोड़ना और “{{action}}” के साथ यही दोहराएँ, ताकि आपका क्लॉक-आउट भी दर्ज हो।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "निघणे आणि “{{action}}” सह हेच पुन्हा करा, म्हणजे तुमची क्लॉक-आउट वेळही नोंदवली जाईल."
+          }
+        }
+      }
+    },
+    "automationGuideTipsSection": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good to Know"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小提示"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小提示"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小提示"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gut zu wissen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conviene saber"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bon à savoir"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Da sapere"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bom saber"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Полезно знать"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bilmekte Fayda Var"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perlu Diketahui"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nên biết"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ควรรู้"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ヒント"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알아두세요"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "من المفيد معرفته"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जानने लायक बातें"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जाणून घ्या"
+          }
+        }
+      }
+    },
+    "automationGuideTipBattery": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS checks the location itself, so DoneAt doesn't run in the background and barely uses battery."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置由 iOS 自己判斷，DoneAt 不必在背景執行，幾乎不耗電。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置由 iOS 自己判断，DoneAt 无需在后台运行，几乎不耗电。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置由 iOS 自己判斷，DoneAt 唔使喺背景執行，幾乎唔耗電。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS prüft den Standort selbst. DoneAt läuft daher nicht im Hintergrund und verbraucht kaum Akku."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS comprueba la ubicación por sí mismo, así que DoneAt no se ejecuta en segundo plano y casi no gasta batería."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS vérifie la position lui-même : DoneAt ne tourne pas en arrière-plan et consomme très peu de batterie."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS controlla la posizione da solo, quindi DoneAt non resta attivo in background e consuma pochissima batteria."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O iOS verifica a localização por si, por isso o DoneAt não corre em segundo plano e quase não gasta bateria."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS сам определяет местоположение, поэтому DoneAt не работает в фоне и почти не расходует заряд."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konumu iOS kendisi kontrol ettiğinden DoneAt arka planda çalışmaz ve pili neredeyse hiç tüketmez."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS memeriksa lokasi sendiri, jadi DoneAt tidak berjalan di latar belakang dan nyaris tidak memakai baterai."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS tự kiểm tra vị trí, nên DoneAt không chạy nền và gần như không tốn pin."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS ตรวจสอบตำแหน่งเอง DoneAt จึงไม่ต้องทำงานเบื้องหลัง และแทบไม่ใช้แบตเตอรี่"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置情報の判定はiOSが行うため、DoneAtはバックグラウンドで動作せず、バッテリーもほとんど使いません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치는 iOS가 직접 확인하므로 DoneAt이 백그라운드에서 실행되지 않고 배터리도 거의 쓰지 않아요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يتحقق iOS من الموقع بنفسه، لذا لا يعمل DoneAt في الخلفية ولا يستهلك البطارية تقريبًا."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS लोकेशन खुद जाँचता है, इसलिए DoneAt बैकग्राउंड में नहीं चलता और बैटरी लगभग नहीं खर्च होती।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन iOS स्वतः तपासते, म्हणून DoneAt बॅकग्राउंडमध्ये चालत नाही आणि बॅटरी जवळजवळ वापरत नाही."
+          }
+        }
+      }
+    },
+    "automationGuideTipWiFi": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Office moves around? Use “When joining Wi-Fi” with your work network instead."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "公司位置不固定？也可以改用「連接 Wi-Fi 時」並選公司網路。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "公司位置不固定？也可以改用“连接到 Wi-Fi 时”并选公司网络。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "公司位置唔固定？都可以改用「連接 Wi-Fi 時」並選公司網絡。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wechselnder Arbeitsplatz? Nutze stattdessen „Beim Verbinden mit WLAN“ und wähle dein Firmennetzwerk."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Cambias de oficina? Usa «Al unirse a Wi-Fi» con tu red del trabajo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre bureau change de place ? Utilisez plutôt « Lors de la connexion au Wi-Fi » avec votre réseau professionnel."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’ufficio cambia? Usa “Quando ti connetti al Wi-Fi” con la rete di lavoro."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O escritório muda de sítio? Use “Ao ligar ao Wi-Fi” com a sua rede de trabalho."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Офис переезжает? Используйте «При подключении к Wi-Fi» и выберите рабочую сеть."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ofisin sık yer mi değiştiriyor? Bunun yerine iş ağınla “Wi-Fi’ye katılırken” seçeneğini kullan."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kantor sering pindah? Gunakan “Saat Bergabung dengan Wi-Fi” dengan jaringan kantormu."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nơi làm hay thay đổi? Hãy dùng “Khi tham gia Wi-Fi” với mạng ở chỗ làm."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ที่ทำงานย้ายบ่อย? ลองใช้ “เมื่อเชื่อมต่อ Wi-Fi” กับเครือข่ายที่ทำงานแทน"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "職場が決まっていない場合は、「Wi-Fiに接続時」を選んで職場のネットワークを指定することもできます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무지가 자주 바뀌나요? 대신 “Wi-Fi에 연결할 때”를 선택하고 직장 네트워크를 지정하세요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هل يتغير مكان عملك؟ استخدم «عند الاتصال بشبكة Wi-Fi» مع شبكة العمل بدلًا من ذلك."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ऑफ़िस की जगह बदलती रहती है? इसके बजाय अपने ऑफ़िस नेटवर्क के साथ “Wi-Fi से जुड़ते समय” इस्तेमाल करें।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ऑफिस बदलत राहते? त्याऐवजी तुमच्या ऑफिस नेटवर्कसह “Wi-Fi ला जोडताना” वापरा."
+          }
+        }
+      }
+    },
+    "automationGuideTipNotify": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off Notify When Run if you'd rather not see a banner each time."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如果不想每次都看到通知，可以關閉「執行時通知」。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如果不想每次都看到通知，可以关闭“运行时通知”。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如果唔想每次都見到通知，可以關閉「執行時通知」。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schalte „Bei Ausführung benachrichtigen“ aus, wenn du nicht jedes Mal ein Banner sehen möchtest."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactiva «Notificar al ejecutar» si prefieres no ver un aviso cada vez."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Désactivez Notifier à l’exécution si vous ne voulez pas de bannière à chaque fois."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disattiva Notifica all’esecuzione se non vuoi vedere un banner ogni volta."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desative Notificar ao executar se preferir não ver um aviso de cada vez."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выключите «Уведомлять при запуске», если не хотите видеть баннер каждый раз."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her seferinde bildirim görmek istemiyorsan Çalıştırıldığında Bildir’i kapat."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matikan Beri Tahu Saat Dijalankan jika kamu tidak ingin melihat banner setiap kali."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tắt Thông báo khi chạy nếu bạn không muốn thấy banner mỗi lần."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปิด “แจ้งเตือนเมื่อเรียกใช้” หากไม่อยากเห็นแบนเนอร์ทุกครั้ง"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知が毎回表示されるのが気になる場合は、「実行時に通知」をオフにしてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "매번 배너가 뜨는 게 싫다면 실행 시 알림을 끄세요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أوقف «إشعار عند التشغيل» إن كنت لا تريد رؤية إشعار في كل مرة."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हर बार बैनर नहीं देखना चाहते? चलाने पर सूचित करें बंद कर दें।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रत्येक वेळी बॅनर नको असल्यास चालवताना सूचित करा बंद करा."
+          }
+        }
+      }
+    },
+    "whatsNewAutomationTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock In and Out, Automatically"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上下班，自動記好"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上下班，自动记好"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上下班，自動記好"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein- und Ausstempeln, automatisch"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada y salida, automáticas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pointage automatique"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrata e uscita, in automatico"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada e saída, automáticas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приход и уход — автоматически"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giriş ve Çıkış, Kendiliğinden"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk dan Pulang, Otomatis"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vào ca, tan ca, tự động"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เข้างาน เลิกงาน บันทึกเอง"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "出退勤を、自動で記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출퇴근, 자동으로"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحضور والانصراف تلقائيًا"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्लॉक-इन और आउट, अपने आप"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्लॉक-इन आणि आउट, आपोआप"
+          }
+        }
+      }
+    },
+    "whatsNewAutomationSubtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrive at work, head home — DoneAt records the real times without you opening the app."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到公司、離開公司，DoneAt 自動記下真實時間，不用打開 App。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到公司、离开公司，DoneAt 自动记下真实时间，不用打开 App。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到公司、離開公司，DoneAt 自動記低真實時間，唔使打開 App。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du kommst an, du gehst – DoneAt hält die echten Zeiten fest, ohne dass du die App öffnest."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llegas al trabajo, te vas a casa: DoneAt registra las horas reales sin que abras la app."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous arrivez au travail, vous rentrez : DoneAt enregistre les vraies heures sans que vous ouvriez l’app."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivi al lavoro, torni a casa: DoneAt registra gli orari reali senza che tu apra l’app."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chega ao trabalho, volta para casa: o DoneAt regista as horas reais sem abrir a app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пришли на работу, ушли домой — DoneAt записывает реальное время, и открывать приложение не нужно."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İşe var, eve dön; DoneAt gerçek saatleri sen uygulamayı açmadan kaydeder."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiba di kantor, pulang ke rumah — DoneAt mencatat waktu sebenarnya tanpa perlu membuka app."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đến nơi làm, về nhà — DoneAt ghi lại giờ thật mà bạn không cần mở app."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ถึงที่ทำงาน แล้วกลับบ้าน DoneAt บันทึกเวลาจริงให้ โดยไม่ต้องเปิดแอป"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "職場に着いて、帰る。アプリを開かなくても、DoneAtが実際の時刻を記録します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "직장에 도착하고, 집으로 향하면 앱을 열지 않아도 DoneAt이 실제 시간을 기록해요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تصل إلى العمل ثم تعود إلى البيت، ويسجّل DoneAt الأوقات الحقيقية دون أن تفتح التطبيق."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम पर पहुँचें, घर निकलें — ऐप खोले बिना DoneAt असली समय दर्ज कर लेता है।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कामावर पोहोचा, घरी निघा — अ‍ॅप न उघडता DoneAt खऱ्या वेळा नोंदवते."
+          }
+        }
+      }
+    },
+    "whatsNewAutomationHeroLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animation: arriving at work records the clock-in; leaving records the clock-out and overtime."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "動畫：到公司時自動記下上班，離開時記下下班和加班。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "动画：到公司时自动记下上班，离开时记下下班和加班。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "動畫：到公司時自動記低上班，離開時記低放工同加班。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animation: Bei der Ankunft wird der Arbeitsbeginn festgehalten, beim Gehen der Feierabend und die Überstunden."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animación: al llegar al trabajo se registra la entrada; al salir, la salida y las horas extra."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animation : en arrivant au travail, l’arrivée est enregistrée ; en partant, le départ et les heures supplémentaires le sont."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animazione: arrivando al lavoro si registra l’entrata; andando via, l’uscita e lo straordinario."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animação: ao chegar ao trabalho, a entrada fica registada; ao sair, ficam registadas a saída e as horas extra."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Анимация: когда вы приходите на работу, записывается начало дня; когда уходите — конец дня и переработка."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animasyon: işe varınca giriş kaydedilir; ayrılınca çıkış ve fazla mesai kaydedilir."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animasi: tiba di tempat kerja mencatat jam masuk; pergi mencatat jam pulang dan lembur."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoạt ảnh: đến nơi làm thì ghi giờ vào; rời đi thì ghi giờ ra và giờ tăng ca."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ภาพเคลื่อนไหว: เมื่อถึงที่ทำงานจะบันทึกเวลาเข้างาน เมื่อออกจะบันทึกเวลาเลิกงานและโอที"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アニメーション：職場に着くと出勤が記録され、職場を出ると退勤と残業が記録されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "애니메이션: 직장에 도착하면 출근이 기록되고, 떠나면 퇴근과 야근이 기록돼요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "رسم متحرك: عند الوصول إلى العمل يُسجَّل الحضور، وعند المغادرة يُسجَّل الانصراف والعمل الإضافي."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एनिमेशन: काम पर पहुँचने पर क्लॉक-इन दर्ज होता है; निकलने पर क्लॉक-आउट और ओवरटाइम दर्ज होते हैं।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अ‍ॅनिमेशन: कामावर पोहोचल्यावर क्लॉक-इन नोंदवले जाते; निघताना क्लॉक-आउट आणि ओव्हरटाइम नोंदवला जातो."
+          }
+        }
+      }
+    },
+    "whatsNewAutomationArriveBanner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrived at {{time}} · clock-in recorded"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 到公司 · 已記錄上班"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 到公司 · 已记录上班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 到公司 · 已記錄上班"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angekommen um {{time}} · Arbeitsbeginn erfasst"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llegada a las {{time}} · entrada registrada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivée à {{time}} · arrivée enregistrée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivo alle {{time}} · entrata registrata"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chegada às {{time}} · entrada registada"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Прибытие в {{time}} · начало дня записано"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saat {{time}} varış · giriş kaydedildi"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiba pukul {{time}} · jam masuk tercatat"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đến lúc {{time}} · đã ghi giờ vào"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ถึงเวลา {{time}} · บันทึกเวลาเข้างานแล้ว"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}に到着 · 出勤を記録しました"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}에 도착 · 출근 기록됨"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وصلت في {{time}} · سُجّل الحضور"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} पर पहुँचे · क्लॉक-इन दर्ज हुआ"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} वाजता पोहोचलात · क्लॉक-इन नोंदवले"
+          }
+        }
+      }
+    },
+    "whatsNewAutomationLeaveBanner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left at {{time}} · {{duration}} of overtime recorded"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 下班 · 已記錄加班 {{duration}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 下班 · 已记录加班 {{duration}}"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 放工 · 已記錄加班 {{duration}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gegangen um {{time}} · {{duration}} Überstunden erfasst"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salida a las {{time}} · {{duration}} de horas extra registradas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Départ à {{time}} · {{duration}} d’heures supplémentaires enregistrées"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uscita alle {{time}} · {{duration}} di straordinario registrate"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saída às {{time}} · {{duration}} de horas extra registadas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уход в {{time}} · записана переработка: {{duration}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saat {{time}} ayrılış · {{duration}} fazla mesai kaydedildi"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pergi pukul {{time}} · lembur {{duration}} tercatat"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rời đi lúc {{time}} · đã ghi {{duration}} tăng ca"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออกเวลา {{time}} · บันทึกโอที {{duration}} แล้ว"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}に退勤 · 残業{{duration}}を記録しました"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}에 퇴근 · 야근 {{duration}} 기록됨"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غادرت في {{time}} · سُجّل عمل إضافي {{duration}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} पर निकले · {{duration}} ओवरटाइम दर्ज हुआ"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} वाजता निघालात · {{duration}} ओव्हरटाइम नोंदवला"
+          }
+        }
+      }
+    },
+    "whatsNewAutomationLowPower": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Low power"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低耗電"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低耗电"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低耗電"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spart Strom"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bajo consumo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Économe"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basso consumo"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixo consumo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экономия заряда"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düşük güç"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hemat daya"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiết kiệm pin"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ประหยัดพลังงาน"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "省電力"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저전력"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "توفير الطاقة"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कम बिजली"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कमी वीज"
+          }
+        }
+      }
+    },
+    "whatsNewAutoRecordTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records Itself"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自動記錄上下班"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动记录上下班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自動記錄上下班"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erfasst sich selbst"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se registra solo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il s’enregistre tout seul"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si registra da solo"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regista-se sozinho"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записывается само"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kendiliğinden Kaydeder"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mencatat Sendiri"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tự ghi lại"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกเอง"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自動で記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스스로 기록해요"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يسجّل بنفسه"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अपने आप दर्ज होता है"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपोआप नोंदवते"
+          }
+        }
+      }
+    },
+    "whatsNewAutoRecordBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your clock-in and clock-out come from when you actually arrive and leave. Up to 5 workplaces."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上下班時間取自你實際到達和離開的時刻，最多 5 個工作地點。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上下班时间取自你实际到达和离开的时刻，最多 5 个工作地点。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上下班時間取自你實際到達同離開嘅時刻，最多 5 個工作地點。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Arbeitsbeginn und -ende ergeben sich daraus, wann du wirklich ankommst und gehst. Bis zu 5 Arbeitsorte."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu entrada y tu salida salen de cuándo llegas y te vas de verdad. Hasta 5 lugares de trabajo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vos heures d’arrivée et de départ viennent du moment où vous arrivez et partez vraiment. Jusqu’à 5 lieux de travail."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrata e uscita derivano da quando arrivi e te ne vai davvero. Fino a 5 luoghi di lavoro."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A sua entrada e saída vêm de quando chega e sai realmente. Até 5 locais de trabalho."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начало и конец рабочего дня берутся из момента, когда вы реально пришли и ушли. До 5 мест работы."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giriş ve çıkış saatlerin, gerçekte ne zaman vardığın ve ayrıldığın anlardan gelir. En fazla 5 iş yeri."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jam masuk dan pulangmu berasal dari saat kamu benar-benar tiba dan pergi. Hingga 5 tempat kerja."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ vào và giờ ra lấy từ lúc bạn thực sự đến và rời đi. Tối đa 5 nơi làm việc."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เวลาเข้างานและเลิกงานมาจากตอนที่คุณมาถึงและออกจริง ๆ ได้สูงสุด 5 ที่ทำงาน"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "出勤と退勤の時刻は、実際に到着して出発した時刻から記録されます。職場は最大5か所まで。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출퇴근 시간은 실제로 도착하고 떠난 시각을 따라요. 직장은 최대 5곳까지 등록할 수 있어요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُحدَّد وقت حضورك وانصرافك بحسب وقت وصولك ومغادرتك فعليًا. حتى 5 أماكن عمل."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपका क्लॉक-इन और क्लॉक-आउट इससे तय होता है कि आप असल में कब पहुँचे और कब निकले। 5 कार्यस्थल तक।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमचे क्लॉक-इन आणि क्लॉक-आउट तुम्ही प्रत्यक्षात कधी पोहोचलात आणि कधी निघालात यावरून ठरते. 5 पर्यंत कामाची ठिकाणे."
+          }
+        }
+      }
+    },
+    "whatsNewOvertimeTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overtime, Counted for You"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班自動算"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班自动算"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加班自動計"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überstunden, für dich gezählt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas extra, contadas por ti"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heures sup, comptées pour vous"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Straordinari, calcolati per te"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horas extra, contadas por si"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переработка считается сама"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fazla Mesai Senin İçin Hesaplanır"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lembur, Dihitung untukmu"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tăng ca, tự tính giúp bạn"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โอที คิดให้เอง"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "残業も自動で計算"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "야근도 알아서 계산"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "العمل الإضافي يُحتسب عنك"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओवरटाइम, आपके लिए गिना हुआ"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओव्हरटाइम, तुमच्यासाठी मोजलेला"
+          }
+        }
+      }
+    },
+    "whatsNewOvertimeBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stay late, or step out for dinner and come back — overtime counts until you leave, listed on its own in Records."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "晚走，或出去吃飯再回來，加班都會算到你離開為止，並在記錄裡單獨列出。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "晚走，或出去吃饭再回来，加班都会算到你离开为止，并在记录里单独列出。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遲啲走，或者出去食飯再返嚟，加班都會計到你離開為止，並喺記錄入面單獨列出。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du bleibst länger oder gehst zwischendurch essen und kommst zurück – Überstunden zählen bis zu deinem Gehen und stehen separat in den Aufzeichnungen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si te quedas hasta tarde o sales a cenar y vuelves, las horas extra cuentan hasta que te vas y aparecen aparte en Registros."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous restez tard, ou sortez dîner puis revenez : les heures supplémentaires comptent jusqu’à votre départ et sont listées à part dans Historique."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se resti fino a tardi, o esci a cena e torni, lo straordinario conta fino a quando te ne vai ed è elencato a parte in Registri."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fique até tarde, ou saia para jantar e volte: as horas extra contam até sair e surgem separadas nos Registos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Задержались или вышли поужинать и вернулись — переработка считается до вашего ухода и отдельно показана в записях."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geç kalırsan ya da yemeğe çıkıp dönersen fazla mesai ayrılana kadar sayılır ve Kayıtlar’da ayrıca listelenir."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulang larut, atau keluar makan malam lalu kembali — lembur dihitung sampai kamu pergi, dan tercantum terpisah di Catatan."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ở lại muộn, hoặc ra ngoài ăn tối rồi quay lại — giờ tăng ca được tính đến khi bạn rời đi và liệt kê riêng trong Bản ghi."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อยู่ดึก หรือออกไปกินข้าวแล้วกลับมา โอทีจะนับจนถึงตอนที่คุณออก และแสดงแยกไว้ในบันทึก"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遅くまで残った日も、夕食に出て戻った日も、退勤するまでが残業として計算され、記録に別枠で表示されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "늦게까지 남거나 저녁을 먹고 돌아와도 야근은 퇴근할 때까지 계산되고, 기록에 따로 표시돼요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بقيت متأخرًا أو خرجت لتناول العشاء وعدت؟ يُحتسب العمل الإضافي حتى مغادرتك، ويظهر منفصلًا في السجلات."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "देर तक रुकें, या डिनर के लिए बाहर जाकर लौटें — ओवरटाइम आपके निकलने तक गिना जाता है और रिकॉर्ड्स में अलग से दिखता है।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "उशिरापर्यंत थांबा, किंवा जेवायला बाहेर जाऊन परत या — ओव्हरटाइम तुम्ही निघेपर्यंत मोजला जातो आणि रेकॉर्ड्समध्ये वेगळा दिसतो."
+          }
+        }
+      }
+    },
+    "whatsNewBatteryTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Barely Touches Your Battery"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "幾乎不耗電"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "几乎不耗电"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "幾乎唔耗電"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schont deinen Akku"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casi no gasta batería"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presque aucun impact sur la batterie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quasi non tocca la batteria"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quase não gasta bateria"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Почти не расходует заряд"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilini Neredeyse Hiç Yormaz"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nyaris Tak Menyentuh Baterai"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gần như không tốn pin"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แทบไม่กินแบตเตอรี่"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バッテリーにやさしい"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "배터리를 거의 쓰지 않아요"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بالكاد يستهلك البطارية"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बैटरी पर मुश्किल से असर"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बॅटरीवर जवळजवळ परिणाम नाही"
+          }
+        }
+      }
+    },
+    "whatsNewBatteryBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Built on iOS's own geofencing. DoneAt never tracks your route or keeps GPS running."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 iOS 內建的地理圍欄，不追蹤路線，也不會一直開著 GPS。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 iOS 内置的地理围栏，不追踪路线，也不会一直开着 GPS。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 iOS 內置嘅地理圍欄，唔追蹤路線，亦唔會一直開住 GPS。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basiert auf dem Geofencing von iOS. DoneAt verfolgt nie deine Route und lässt kein GPS laufen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se basa en la geovalla de iOS. DoneAt nunca rastrea tu ruta ni mantiene el GPS activo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basé sur la géorepérage d’iOS. DoneAt ne suit jamais votre trajet et ne garde pas le GPS actif."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si basa sul geofencing di iOS. DoneAt non traccia mai il tuo percorso né tiene il GPS sempre attivo."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baseado na geovedação do iOS. O DoneAt nunca segue o seu trajeto nem mantém o GPS ligado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Основано на геозонах iOS. DoneAt не отслеживает ваш маршрут и не держит GPS включённым."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS’in kendi coğrafi sınır özelliği üzerine kurulu. DoneAt rotanı asla izlemez ve GPS’i açık tutmaz."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dibangun di atas geofencing bawaan iOS. DoneAt tidak pernah melacak rutemu atau menyalakan GPS terus-menerus."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xây dựng trên geofencing sẵn có của iOS. DoneAt không bao giờ theo dõi lộ trình hay bật GPS liên tục."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้ geofencing ในตัวของ iOS DoneAt ไม่เคยติดตามเส้นทางของคุณ และไม่เปิด GPS ค้างไว้"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS標準のジオフェンスを利用しています。DoneAtが移動経路を追跡したり、GPSを常時オンにしたりすることはありません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS 자체 지오펜싱을 기반으로 해요. DoneAt은 이동 경로를 추적하거나 GPS를 계속 켜 두지 않아요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مبني على السياج الجغرافي المدمج في iOS. لا يتتبّع DoneAt مسارك ولا يُبقي GPS قيد التشغيل."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS की अपनी जियोफ़ेंसिंग पर बना है। DoneAt कभी आपका रास्ता ट्रैक नहीं करता और GPS चालू नहीं रखता।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS च्या स्वतःच्या जिओफेन्सिंगवर आधारित. DoneAt कधीही तुमचा मार्ग ट्रॅक करत नाही किंवा GPS चालू ठेवत नाही."
+          }
+        }
+      }
+    },
+    "whatsNewShortcutsTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcuts Works Too"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "也能用快捷指令"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "也能用快捷指令"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "都可以用捷徑"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bleibt auf deinem iPhone"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "También con Atajos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reste sur votre iPhone"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resta sul tuo iPhone"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fica no seu iPhone"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Остаётся на вашем iPhone"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPhone’unda Kalır"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tetap di iPhone-mu"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chỉ ở trên iPhone của bạn"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อยู่ใน iPhone ของคุณ"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "データはiPhoneの中に"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내 iPhone에만 보관돼요"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يبقى على iPhone الخاص بك"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपके iPhone पर ही रहता है"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमच्या iPhone वरच राहते"
+          }
+        }
+      }
+    },
+    "whatsNewShortcutsBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rather not share location? Add DoneAt's actions to an Arrive or Leave automation in Shortcuts."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不想開定位？在「捷徑」的抵達／離開自動化裡加入 DoneAt 的動作就行。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不想开定位？在“快捷指令”的到达／离开自动化里添加 DoneAt 的操作就行。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "唔想開定位？喺「捷徑」嘅抵達／離開自動化入面加入 DoneAt 嘅動作就得。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arbeitsorte und Besuche bleiben auf diesem Gerät. Nur die Zeiten, die du behältst, landen bei aktiver Synchronisierung in deiner privaten iCloud."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Prefieres no compartir la ubicación? Añade las acciones de DoneAt a una automatización Llegar o Salir en Atajos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les lieux de travail et les passages restent sur cet appareil. Seules les heures que vous gardez rejoignent votre iCloud privé, si la synchronisation est activée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I luoghi di lavoro e le visite restano su questo dispositivo. Solo gli orari che conservi vanno nel tuo iCloud privato, se la sincronizzazione è attiva."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os locais de trabalho e as visitas ficam neste dispositivo. Só as horas que guardar vão para o seu iCloud privado, se a sincronização estiver ativa."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Места работы и посещения остаются на этом устройстве. Только сохранённое вами время попадает в ваш личный iCloud, если включена синхронизация."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İş yeri konumları ve ziyaretler bu cihazda kalır. Senkronizasyon açıksa yalnızca tuttuğun saatler özel iCloud’unla birleşir."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lokasi tempat kerja dan kunjungan tetap di perangkat ini. Hanya waktu yang kamu simpan yang masuk ke iCloud pribadimu, jika sinkronisasi aktif."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vị trí nơi làm và các lần ghé chỉ nằm trên thiết bị này. Chỉ những giờ bạn giữ lại mới vào iCloud riêng tư của bạn, nếu bật đồng bộ."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตำแหน่งที่ทำงานและการเข้าออกจะอยู่ในเครื่องนี้เท่านั้น เฉพาะเวลาที่คุณเก็บไว้เท่านั้นที่จะไปอยู่ใน iCloud ส่วนตัวของคุณ หากเปิดการซิงค์"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "職場の場所や訪問履歴はこのデバイスにだけ保存されます。同期をオンにしている場合のみ、残すことにした勤務時刻がプライベートなiCloudに保存されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "직장 위치와 방문 기록은 이 기기에만 남아요. 동기화를 켠 경우에만, 직접 남긴 출퇴근 시간이 비공개 iCloud에 저장돼요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تبقى مواقع العمل والزيارات على هذا الجهاز. وتُحفظ في iCloud الخاص بك الأوقات التي تحتفظ بها فقط، إذا كانت المزامنة مفعّلة."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कार्यस्थल की लोकेशन और विज़िट इसी डिवाइस पर रहते हैं। सिंक चालू होने पर ही, आपके रखे हुए समय आपके निजी iCloud में जाते हैं।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कामाची ठिकाणे आणि भेटी या डिव्हाइसवरच राहतात. सिंक चालू असल्यास, फक्त तुम्ही ठेवलेल्या वेळा तुमच्या खासगी iCloud मध्ये जातात."
+          }
+        }
+      }
+    },
+    "whatsNewPrivacyTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stays on Your iPhone"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "資料留在你的 iPhone"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "数据留在你的 iPhone"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "資料留喺你嘅 iPhone"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auch mit Kurzbefehlen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se queda en tu iPhone"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raccourcis aussi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funziona anche con Comandi rapidi"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Também com Atalhos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Работает и с «Командами»"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kısayollar da Çalışır"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pintasan Juga Bisa"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dùng Phím tắt cũng được"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้คำสั่งลัดก็ได้"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ショートカットでも使えます"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단축어로도 가능해요"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يمكنك أيضًا استخدام الاختصارات"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शॉर्टकट्स से भी चलता है"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शॉर्टकट्सनेही चालते"
+          }
+        }
+      }
+    },
+    "whatsNewPrivacyBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Workplace locations and visits stay on this device. Only the times you keep join your private iCloud, if sync is on."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作地點和到離紀錄只留在這台裝置。只有你保留的上下班時間，會在開啟同步時存進你的私人 iCloud。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作地点和到离记录只留在这台设备。只有你保留的上下班时间，会在开启同步时存入你的私人 iCloud。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作地點同到離記錄只留喺呢部裝置。只有你保留嘅上下班時間，會喺開啟同步時存入你嘅私人 iCloud。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lieber keinen Standort teilen? Füge die Aktionen von DoneAt in Kurzbefehle zu einer Automation für „Ankommen“ oder „Verlassen“ hinzu."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las ubicaciones de trabajo y las visitas se quedan en este dispositivo. Solo las horas que conservas pasan a tu iCloud privado, si la sincronización está activada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous préférez ne pas partager votre position ? Ajoutez les actions de DoneAt à une automatisation Arriver ou Partir dans Raccourcis."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preferisci non condividere la posizione? Aggiungi le azioni di DoneAt a un’automazione Arrivo o Partenza in Comandi rapidi."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prefere não partilhar a localização? Adicione as ações do DoneAt a uma automação Chegar ou Sair nos Atalhos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не хотите делиться геопозицией? Добавьте действия DoneAt в автоматизацию «Прибытие» или «Уход» в «Командах»."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konum paylaşmak istemiyor musun? DoneAt eylemlerini Kısayollar’daki Varış veya Ayrılma otomasyonuna ekle."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak mau membagikan lokasi? Tambahkan aksi DoneAt ke otomatisasi Tiba atau Pergi di Pintasan."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không muốn chia sẻ vị trí? Hãy thêm các hành động của DoneAt vào tự động hóa Đến hoặc Rời đi trong Phím tắt."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่อยากแชร์ตำแหน่ง? เพิ่มการทำงานของ DoneAt ในระบบอัตโนมัติ “มาถึง” หรือ “ออกจาก” ในคำสั่งลัดได้เลย"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置情報を共有したくない場合は、ショートカットの「到着」または「出発」オートメーションにDoneAtのアクションを追加してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치를 공유하고 싶지 않나요? 단축어의 도착 또는 떠날 때 자동화에 DoneAt 동작을 추가해 보세요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تفضّل ألا تشارك موقعك؟ أضف إجراءات DoneAt إلى أتمتة الوصول أو المغادرة في الاختصارات."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन साझा नहीं करना चाहते? शॉर्टकट्स में पहुँचना या छोड़ना ऑटोमेशन में DoneAt के एक्शन जोड़ें।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन शेअर करायचे नाही? शॉर्टकट्समध्ये आगमन किंवा निघणे ऑटोमेशनमध्ये DoneAt च्या कृती जोडा."
+          }
+        }
+      }
+    },
+    "whatsNewAutomationPlusNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location automation is part of DoneAt Plus. Recording with Shortcuts is free for everyone."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定位自動化屬於 DoneAt Plus；用快捷指令記錄所有人都能免費使用。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定位自动化属于 DoneAt Plus；用快捷指令记录所有人都能免费使用。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定位自動化屬於 DoneAt Plus；用捷徑記錄所有人都可以免費使用。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Standort-Automation gehört zu DoneAt Plus. Das Erfassen mit Kurzbefehlen ist für alle kostenlos."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La automatización por ubicación forma parte de DoneAt Plus. Registrar con Atajos es gratis para todos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’automatisation par position fait partie de DoneAt Plus. L’enregistrement avec Raccourcis est gratuit pour tout le monde."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’automazione con la posizione fa parte di DoneAt Plus. Registrare con Comandi rapidi è gratis per tutti."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A automação por localização faz parte do DoneAt Plus. Registar com os Atalhos é grátis para todos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автоматизация по геопозиции входит в DoneAt Plus. Запись через «Команды» бесплатна для всех."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konum otomasyonu DoneAt Plus’ın bir parçasıdır. Kısayollar ile kayıt herkes için ücretsizdir."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomatisasi lokasi adalah bagian dari DoneAt Plus. Mencatat dengan Pintasan gratis untuk semua orang."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tự động hóa theo vị trí nằm trong DoneAt Plus. Ghi bằng Phím tắt miễn phí cho mọi người."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ระบบอัตโนมัติด้วยตำแหน่งเป็นส่วนหนึ่งของ DoneAt Plus ส่วนการบันทึกด้วยคำสั่งลัดใช้ได้ฟรีสำหรับทุกคน"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置情報オートメーションはDoneAt Plusの機能です。ショートカットでの記録は、どなたでも無料でご利用いただけます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치 자동화는 DoneAt Plus에 포함돼요. 단축어로 기록하는 기능은 누구나 무료예요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أتمتة الموقع جزء من DoneAt Plus. أما التسجيل عبر الاختصارات فهو مجاني للجميع."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन ऑटोमेशन DoneAt Plus का हिस्सा है। शॉर्टकट्स से रिकॉर्ड करना सभी के लिए मुफ़्त है।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लोकेशन ऑटोमेशन DoneAt Plus चा भाग आहे. शॉर्टकट्सने नोंदवणे सर्वांसाठी मोफत आहे."
+          }
+        }
+      }
+    },
+    "whatsNewGiftNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An update gift is waiting on the timer: a lifetime price for a limited time."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "計時頁有一份更新禮物：限時的終身版優惠價。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "计时页有一份更新礼物：限时的终身版优惠价。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "計時頁有一份更新禮物：限時嘅終身版優惠價。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf dem Timer wartet ein Update-Geschenk: ein Lifetime-Preis für begrenzte Zeit."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te espera un regalo de actualización en el temporizador: un precio de por vida por tiempo limitado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un cadeau de mise à jour vous attend sur le minuteur : un prix à vie, pour une durée limitée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sul timer ti aspetta un regalo di aggiornamento: un prezzo a vita per un periodo limitato."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Está um presente de atualização à sua espera no temporizador: um preço vitalício por tempo limitado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На таймере вас ждёт подарок к обновлению: пожизненная цена на ограниченное время."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zamanlayıcıda seni bir güncelleme hediyesi bekliyor: sınırlı süreyle ömür boyu fiyat."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hadiah pembaruan menunggu di timer: harga seumur hidup untuk waktu terbatas."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Một món quà cập nhật đang chờ bạn ở trang hẹn giờ: giá trọn đời trong thời gian có hạn."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "มีของขวัญอัปเดตรอคุณอยู่ที่หน้าจับเวลา: ราคาตลอดชีพในช่วงเวลาจำกัด"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タイマー画面にアップデート記念のプレゼントがあります。期間限定の買い切り特別価格です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "타이머 화면에 업데이트 선물이 기다리고 있어요. 한정 기간 평생 이용 특가예요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هدية التحديث بانتظارك في المؤقّت: سعر مدى الحياة لفترة محدودة."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "टाइमर पर एक अपडेट उपहार आपका इंतज़ार कर रहा है: सीमित समय के लिए लाइफ़टाइम कीमत।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "टायमरवर एक अपडेट भेट तुमची वाट पाहत आहे: मर्यादित काळासाठी आजीवन किंमत."
+          }
+        }
+      }
+    },
+    "whatsNewSetUpAutomation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Up Automation"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定上下班自動化"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置上下班自动化"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定上下班自動化"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automation einrichten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar automatización"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurer l’automatisation"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imposta l’automazione"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar automação"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настроить автоматизацию"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomasyonu Ayarla"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siapkan Otomatisasi"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thiết lập tự động hóa"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งค่าระบบอัตโนมัติ"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オートメーションを設定"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자동화 설정하기"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعداد الأتمتة"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ऑटोमेशन सेट करें"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ऑटोमेशन सेट करा"
+          }
+        }
+      }
+    },
+    "releaseNotice330Title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New in DoneAt: Automatic Clock-In"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 新功能：上下班自動記錄"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 新功能：上下班自动记录"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 新功能：上下班自動記錄"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neu in DoneAt: automatisches Ein- und Ausstempeln"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novedad en DoneAt: registro automático de entrada y salida"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau dans DoneAt : pointage automatique"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novità di DoneAt: entrata e uscita automatiche"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novo no DoneAt: registo automático de entrada e saída"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Новое в DoneAt: автоматическая запись прихода и ухода"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt’ta Yeni: Otomatik Giriş-Çıkış"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baru di DoneAt: Absen Masuk Otomatis"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mới trong DoneAt: tự động chấm công"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใหม่ใน DoneAt: บันทึกเข้า-ออกงานอัตโนมัติ"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAtの新機能：出退勤の自動記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt 새 기능: 출퇴근 자동 기록"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جديد في DoneAt: تسجيل الحضور تلقائيًا"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt में नया: ऑटोमैटिक क्लॉक-इन"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DoneAt मध्ये नवीन: ऑटोमॅटिक क्लॉक-इन"
+          }
+        }
+      }
+    },
+    "releaseNotice330Body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrive and leave work and your real times are recorded, with barely any battery. Tap to see how."
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到公司、離開公司自動記下真實時間，幾乎不耗電。點一下看看。"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到公司、离开公司自动记下真实时间，几乎不耗电。点一下看看。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到公司、離開公司自動記低真實時間，幾乎唔耗電。㩒一下睇睇。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komm an, geh – deine echten Zeiten werden erfasst, bei kaum Akkuverbrauch. Tippe, um zu sehen, wie."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llega y vete del trabajo, y tus horas reales quedan registradas con muy poca batería. Toca para ver cómo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivez, repartez : vos vraies heures sont enregistrées, avec très peu de batterie. Touchez pour voir comment."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivi e te ne vai dal lavoro e gli orari reali vengono registrati, con pochissima batteria. Tocca per scoprire come."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chegue e saia do trabalho e as horas reais ficam registadas, com quase nenhuma bateria. Toque para ver como."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приходите и уходите с работы — реальное время запишется почти без расхода заряда. Нажмите, чтобы узнать, как."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İşe var, işten ayrıl; gerçek saatlerin neredeyse hiç pil harcamadan kaydedilir. Nasıl olduğunu görmek için dokun."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiba dan pergi dari kantor, waktu sebenarnya tercatat dengan baterai nyaris tak terpakai. Ketuk untuk lihat caranya."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đến và rời nơi làm, giờ thật của bạn được ghi lại mà gần như không tốn pin. Chạm để xem cách làm."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ถึงที่ทำงานและออกจากที่ทำงาน เวลาจริงของคุณจะถูกบันทึกโดยแทบไม่กินแบตเตอรี่ แตะเพื่อดูวิธี"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "職場への到着と出発の実際の時刻を、バッテリーをほとんど使わずに記録します。タップして詳しく見る。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "직장에 도착하고 떠나면 실제 시간이 기록돼요. 배터리는 거의 쓰지 않아요. 탭해서 알아보세요."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عند وصولك إلى العمل ومغادرتك له تُسجَّل أوقاتك الحقيقية بالكاد تستهلك البطارية. اضغط لتعرف كيف."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काम पर पहुँचें और निकलें, आपके असली समय दर्ज हो जाते हैं, बैटरी लगभग खर्च किए बिना। देखने के लिए टैप करें।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कामावर पोहोचा आणि निघा, तुमच्या खऱ्या वेळा नोंदवल्या जातात, बॅटरी जवळजवळ न वापरता. कसे ते पाहण्यासाठी टॅप करा."
           }
         }
       }

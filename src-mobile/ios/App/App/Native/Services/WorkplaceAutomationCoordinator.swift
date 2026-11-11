@@ -124,6 +124,21 @@ final class WorkplaceAutomationCoordinator {
             match = WorkplaceAutomationRules.matchExit(at: event.proposedTime, among: shifts)
         }
         guard case .matched(let shift) = match else {
+            // Back after automation recorded the clock-out: overtime goes on
+            // to the final exit, with the time away kept for the timeline.
+            if case .noShift = match, event.type == .enterInner, !event.isInitialState,
+               event.source == .nativeGeofence || event.source == .appIntentAutomation,
+               let back = WorkplaceAutomationRules.returnAfterClockOut(
+                   arrivedAt: event.proposedTime, among: shifts, state: state
+               ) {
+                var resumed = state
+                resumed.recordAway(AutomationAwayStretch(
+                    shiftKey: back.shift.shiftKey, dayKey: back.shift.anchorDayKey,
+                    leftAt: back.leftAt, returnedAt: event.proposedTime, returnEventID: event.id
+                ))
+                guard commit(resumed) else { return .temporarilyUnavailable }
+                return finish(event.id, .recordedForReview, now: now)
+            }
             // An arrival with no shift may be extra work; only the person
             // can say so (§3.9).
             if case .noShift = match, event.type == .enterInner,
@@ -151,10 +166,11 @@ final class WorkplaceAutomationCoordinator {
             now: now,
             currentGeneration: event.workplaceID.flatMap { state.workplace($0)?.registrationGeneration },
             settings: state.settings,
-            canCollect: actions.plus.canCollectAutomation,
-            canAutoApply: actions.plus.canAutoApplyAutomation,
+            canCollect: actions.plus.canCollectAutomation(from: event.source),
+            canAutoApply: actions.plus.canAutoApplyAutomation(from: event.source),
             isManuallySuppressed: state.isSuppressed(shift.shiftKey),
-            context: context
+            context: context,
+            firstKnownAfterStart: event.type == .enterInner && event.proposedTime > shift.plannedStart
         )
         if case .ignore = disposition { return finish(event.id, .ignored, now: now) }
 
@@ -427,7 +443,7 @@ final class WorkplaceAutomationCoordinator {
         shifts: [AutomationShift],
         now: Date
     ) -> AutomationCommandOutcome {
-        guard event.source != .userConfirmation, actions.plus.canCollectAutomation,
+        guard event.source != .userConfirmation, actions.plus.canCollectAutomation(from: event.source),
               event.source != .nativeGeofence || (state.settings.isMonitoringEnabled
                   && event.workplaceID.flatMap { state.workplace($0)?.registrationGeneration } == event.registrationGeneration),
               !event.isInitialState, state.openVisit == nil

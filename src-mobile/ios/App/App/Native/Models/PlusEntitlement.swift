@@ -330,9 +330,9 @@ final class PlusEntitlement {
     func inviteUpdateGift(at now: Date = .now) {
         guard canOfferLifetime else { return }
         if let lifetimeOffer {
-            if lifetimeOffer.source == .update323 || lifetimeOffer.isActive(at: now) { return }
+            if lifetimeOffer.source == .currentUpdateGift || lifetimeOffer.isActive(at: now) { return }
         }
-        lifetimeOffer = LifetimeOffer(source: .update323, latestObservedAt: max(now, lifetimeOffer?.latestObservedAt ?? now))
+        lifetimeOffer = LifetimeOffer(source: .currentUpdateGift, latestObservedAt: max(now, lifetimeOffer?.latestObservedAt ?? now))
         persistLifetimeOffer()
     }
 
@@ -504,6 +504,17 @@ final class PlusEntitlement {
 
     /// Detected times may change records without a tap only while Plus is on.
     var canAutoApplyAutomation: Bool { canCollectAutomation }
+
+    /// Shortcuts reports and confirmations need no location and are free
+    /// (owner decision 2026-11-11): the person builds the automation in
+    /// Shortcuts themselves. Location detection stays Plus.
+    func canCollectAutomation(from source: AutomationEventSource) -> Bool {
+        source == .nativeGeofence ? canCollectAutomation : true
+    }
+
+    func canAutoApplyAutomation(from source: AutomationEventSource) -> Bool {
+        source == .nativeGeofence ? canAutoApplyAutomation : true
+    }
 
     /// Reviewing, adopting, correcting or undoing what automation already
     /// produced stays open after Plus ends, so nothing becomes uncorrectable.

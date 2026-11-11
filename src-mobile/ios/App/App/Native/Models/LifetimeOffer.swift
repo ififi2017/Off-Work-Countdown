@@ -7,6 +7,14 @@ struct LifetimeOffer: Codable, Equatable, Sendable {
         case onboarding, update321
         /// The 3.2.3 gift: wrapped on the timer until opened, then a week.
         case update323
+        /// The 3.3.0 gift, the same way.
+        case update330
+
+        /// An update gift: wrapped on the timer, then kept for a week.
+        var isUpdateGift: Bool { self == .update323 || self == .update330 }
+
+        /// The gift this release wraps.
+        static let currentUpdateGift: Source = .update330
     }
     let source: Source
     var claimedAt: Date?
@@ -17,7 +25,7 @@ struct LifetimeOffer: Codable, Equatable, Sendable {
     var duration: TimeInterval {
         switch source {
         case .onboarding, .update321: 24 * 60 * 60
-        case .update323: 7 * 24 * 60 * 60
+        case .update323, .update330: 7 * 24 * 60 * 60
         }
     }
 

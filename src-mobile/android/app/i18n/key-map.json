@@ -362,6 +362,42 @@
     "automationContextRest": {
       "resource": "string/automationContextRest"
     },
+    "automationGuideIntro": {
+      "resource": "string/automationGuideIntro"
+    },
+    "automationGuideStepArrive": {
+      "resource": "string/automationGuideStepArrive",
+      "params": [
+        "action"
+      ]
+    },
+    "automationGuideStepLeave": {
+      "resource": "string/automationGuideStepLeave",
+      "params": [
+        "action"
+      ]
+    },
+    "automationGuideStepOpen": {
+      "resource": "string/automationGuideStepOpen"
+    },
+    "automationGuideStepPlace": {
+      "resource": "string/automationGuideStepPlace"
+    },
+    "automationGuideTipBattery": {
+      "resource": "string/automationGuideTipBattery"
+    },
+    "automationGuideTipNotify": {
+      "resource": "string/automationGuideTipNotify"
+    },
+    "automationGuideTipWiFi": {
+      "resource": "string/automationGuideTipWiFi"
+    },
+    "automationGuideTipsSection": {
+      "resource": "string/automationGuideTipsSection"
+    },
+    "automationGuideTitle": {
+      "resource": "string/automationGuideTitle"
+    },
     "automationIntentConfirmEnd": {
       "resource": "string/automationIntentConfirmEnd"
     },
@@ -394,6 +430,12 @@
     },
     "automationNoticeArrivedRecorded": {
       "resource": "string/automationNoticeArrivedRecorded",
+      "params": [
+        "time"
+      ]
+    },
+    "automationNoticeBackAtWork": {
+      "resource": "string/automationNoticeBackAtWork",
       "params": [
         "time"
       ]
@@ -639,6 +681,9 @@
     "automationUINoLocationYet": {
       "resource": "string/automationUINoLocationYet"
     },
+    "automationUINoteArrivalUncertain": {
+      "resource": "string/automationUINoteArrivalUncertain"
+    },
     "automationUINoteChangedByYou": {
       "resource": "string/automationUINoteChangedByYou"
     },
@@ -717,6 +762,9 @@
     "automationUIReviewIntro": {
       "resource": "string/automationUIReviewIntro"
     },
+    "automationUIReviewNothingPending": {
+      "resource": "string/automationUIReviewNothingPending"
+    },
     "automationUIReviewTitle": {
       "resource": "string/automationUIReviewTitle"
     },
@@ -726,12 +774,11 @@
     "automationUISelectAll": {
       "resource": "string/automationUISelectAll"
     },
-    "automationUIShortcutsNote": {
-      "resource": "string/automationUIShortcutsNote",
-      "params": [
-        "arrive",
-        "leave"
-      ]
+    "automationUIShortcutsFree": {
+      "resource": "string/automationUIShortcutsFree"
+    },
+    "automationUIShortcutsFreeNote": {
+      "resource": "string/automationUIShortcutsFreeNote"
     },
     "automationUIShortcutsSection": {
       "resource": "string/automationUIShortcutsSection"
@@ -3493,6 +3540,9 @@
     "recordsArchiveSaveFailedTitle": {
       "resource": "string/recordsArchiveSaveFailedTitle"
     },
+    "recordsAwayCounted": {
+      "resource": "string/recordsAwayCounted"
+    },
     "recordsBreakTime": {
       "resource": "string/recordsBreakTime"
     },
@@ -4153,11 +4203,17 @@
     "recordsVerifyDetectedUnknown": {
       "resource": "string/recordsVerifyDetectedUnknown"
     },
+    "recordsVerifyHeadlineEnd": {
+      "resource": "string/recordsVerifyHeadlineEnd"
+    },
     "recordsVerifyHeadlinePartial": {
       "resource": "string/recordsVerifyHeadlinePartial"
     },
     "recordsVerifyHeadlineSources": {
       "resource": "string/recordsVerifyHeadlineSources"
+    },
+    "recordsVerifyHeadlineStart": {
+      "resource": "string/recordsVerifyHeadlineStart"
     },
     "recordsVerifyHeadlineVerified": {
       "resource": "string/recordsVerifyHeadlineVerified"
@@ -4236,6 +4292,12 @@
     "release322WelcomeBody": {
       "resource": "string/release322WelcomeBody",
       "androidOnly": true
+    },
+    "releaseNotice330Body": {
+      "resource": "string/releaseNotice330Body"
+    },
+    "releaseNotice330Title": {
+      "resource": "string/releaseNotice330Title"
     },
     "remindersMayBeLate": {
       "resource": "string/remindersMayBeLate",
@@ -5083,33 +5145,88 @@
         "end"
       ]
     },
+    "whatsNewAutoRecordBody": {
+      "resource": "string/whatsNewAutoRecordBody"
+    },
+    "whatsNewAutoRecordTitle": {
+      "resource": "string/whatsNewAutoRecordTitle"
+    },
+    "whatsNewAutomationArriveBanner": {
+      "resource": "string/whatsNewAutomationArriveBanner",
+      "params": [
+        "time"
+      ]
+    },
+    "whatsNewAutomationHeroLabel": {
+      "resource": "string/whatsNewAutomationHeroLabel"
+    },
+    "whatsNewAutomationLeaveBanner": {
+      "resource": "string/whatsNewAutomationLeaveBanner",
+      "params": [
+        "time",
+        "duration"
+      ]
+    },
+    "whatsNewAutomationLowPower": {
+      "resource": "string/whatsNewAutomationLowPower"
+    },
+    "whatsNewAutomationPlusNote": {
+      "resource": "string/whatsNewAutomationPlusNote"
+    },
+    "whatsNewAutomationSubtitle": {
+      "resource": "string/whatsNewAutomationSubtitle"
+    },
+    "whatsNewAutomationTitle": {
+      "resource": "string/whatsNewAutomationTitle"
+    },
+    "whatsNewBatteryBody": {
+      "resource": "string/whatsNewBatteryBody"
+    },
+    "whatsNewBatteryTitle": {
+      "resource": "string/whatsNewBatteryTitle"
+    },
     "whatsNewContinue": {
       "resource": "string/whatsNewContinue"
     },
+    "whatsNewGiftNote": {
+      "resource": "string/whatsNewGiftNote"
+    },
     "whatsNewHomeBody": {
-      "resource": "string/whatsNewHomeBody"
+      "resource": "string/whatsNewHomeBody",
+      "androidOnly": true
     },
     "whatsNewHomeTitle": {
-      "resource": "string/whatsNewHomeTitle"
+      "resource": "string/whatsNewHomeTitle",
+      "androidOnly": true
     },
-    "whatsNewHowToAdd": {
-      "resource": "string/whatsNewHowToAdd"
+    "whatsNewOvertimeBody": {
+      "resource": "string/whatsNewOvertimeBody"
     },
-    "whatsNewLockBody": {
-      "resource": "string/whatsNewLockBody"
+    "whatsNewOvertimeTitle": {
+      "resource": "string/whatsNewOvertimeTitle"
     },
-    "whatsNewLockTitle": {
-      "resource": "string/whatsNewLockTitle"
+    "whatsNewPrivacyBody": {
+      "resource": "string/whatsNewPrivacyBody"
+    },
+    "whatsNewPrivacyTitle": {
+      "resource": "string/whatsNewPrivacyTitle"
+    },
+    "whatsNewSetUpAutomation": {
+      "resource": "string/whatsNewSetUpAutomation"
+    },
+    "whatsNewShortcutsBody": {
+      "resource": "string/whatsNewShortcutsBody"
+    },
+    "whatsNewShortcutsTitle": {
+      "resource": "string/whatsNewShortcutsTitle"
     },
     "whatsNewTitle": {
       "resource": "string/whatsNewTitle",
       "androidOnly": true
     },
-    "whatsNewWatchBody": {
-      "resource": "string/whatsNewWatchBody"
-    },
     "whatsNewWidgetsTitle": {
-      "resource": "string/whatsNewWidgetsTitle"
+      "resource": "string/whatsNewWidgetsTitle",
+      "androidOnly": true
     },
     "widgetDescription": {
       "resource": "string/widgetDescription",

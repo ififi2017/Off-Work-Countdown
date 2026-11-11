@@ -494,6 +494,22 @@ final class NotificationService {
         await center.removePending(Array(existing.subtracting(desired)))
     }
 
+    /// "See what's new" after an update, for someone who has not opened the
+    /// app since. Only a background launch of the new version can send it
+    /// (an iCloud change, a workplace crossing): nothing runs before that.
+    func postReleaseNoticeIfNeeded(preferences: PreferencesStore, text: AppText) async {
+        guard preferences.shouldPostReleaseNotice else { return }
+        await refresh()
+        guard status == .allowed else { return }
+        preferences.markReleaseNoticeSent()
+        let content = UNMutableNotificationContent()
+        content.title = text.t("releaseNotice330Title")
+        content.body = text.t("releaseNotice330Body")
+        try? await shiftCenter.add(UNNotificationRequest(
+            identifier: "owc.release." + ReleaseNotes.current, content: content, trigger: nil
+        ))
+    }
+
     /// Submits an arrival or departure notice right away (§3.8). It sits
     /// outside the `owc.automation.` prefix, so planning the questions
     /// never removes it, and it never counts against the scheduled budget.
@@ -507,7 +523,9 @@ final class NotificationService {
         ])
         content.sound = nil
         content.interruptionLevel = .passive
-        content.userInfo = ["route": AppRoute.workplaceAutomationReview.rawValue]
+        if notice.needsReview {
+            content.userInfo = ["route": AppRoute.workplaceAutomationReview.rawValue]
+        }
         try? await shiftCenter.add(UNNotificationRequest(identifier: notice.identifier, content: content, trigger: nil))
     }
 

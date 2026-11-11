@@ -627,7 +627,7 @@ struct PaywallContent: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             if selected == .lifetime, plus.hasActiveLifetimeOffer, let offer = plus.lifetimeOffer {
-                Text(text.t(offer.source == .update323 ? "plusOfferTermsWeek" : "plusOfferTerms"))
+                Text(text.t(offer.source.isUpdateGift ? "plusOfferTermsWeek" : "plusOfferTerms"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)

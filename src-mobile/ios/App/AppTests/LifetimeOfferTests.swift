@@ -107,9 +107,9 @@ struct LifetimeOfferTests {
         // The QA preview starts an unopened first-run invitation.
         #expect(plus.lifetimeOffer?.source == .onboarding)
         plus.inviteUpdateGift()
-        #expect(plus.lifetimeOffer?.source == .update323)
+        #expect(plus.lifetimeOffer?.source == .currentUpdateGift)
         #expect(plus.hasWrappedLifetimeOffer)
-        #expect(plus.revealLifetimeOffer(from: .update323))
+        #expect(plus.revealLifetimeOffer(from: .currentUpdateGift))
         let deadline = try #require(plus.lifetimeOffer?.expiresAt)
         // Opening it again, or a later invitation, never restarts the week.
         let reloaded = PlusEntitlement(defaults: defaults)
