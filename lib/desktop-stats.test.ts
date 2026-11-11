@@ -10,7 +10,6 @@ import {
   normalizeDesktopStats,
   recordAttendanceDay,
   setWoodfishDay,
-  shiftMonthKey,
   summarizeMonth,
   workedMsForDay,
 } from "./desktop-stats";
@@ -110,8 +109,6 @@ describe("desktop stats", () => {
       { date: "2026-07-02", plannedMs: 1, overtimeMs: 0 }
     );
 
-    expect(shiftMonthKey("2026-09", -1)).toBe("2026-08");
-    expect(shiftMonthKey("2026-01", -1)).toBe("2025-12");
     expect(clampMonthKey("2026-10", stats, today)).toBe("2026-09");
     expect(neighboringMonthKey("2026-09", -1, stats, today)).toBe("2026-07");
     expect(canShiftMonth("2026-09", 1, stats, today)).toBe(false);

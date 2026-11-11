@@ -70,7 +70,6 @@ enum OWCDesign {
     static let rootControlInset: CGFloat = pageInset - 5
     static let rootHeaderHeight: CGFloat = 44
     static let rootHeaderTopInset: CGFloat = 0
-    static let heroGap: CGFloat = 26
     static let sectionGap: CGFloat = 22
     static let detailBottomInset: CGFloat = 24
 }

@@ -11,13 +11,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { desktopLanguageStorageKey } from "@/i18n-config";
-import { mobileSelectedTabStorageKey } from "@/lib/mobile-navigation";
 
 interface LanguageSelectorProps {
   currentLang: string;
   languageMap: Record<string, string>;
   compact?: boolean;
-  mobile?: boolean;
   /** 网页版标题栏：宽度随语言名伸缩，「繁體中文（台灣）」也不折行；随根字号缩放。 */
   fit?: boolean;
 }
@@ -26,7 +24,6 @@ export function LanguageSelector({
   currentLang,
   languageMap,
   compact = false,
-  mobile = false,
   fit = false,
 }: LanguageSelectorProps) {
   const router = useRouter();
@@ -51,22 +48,6 @@ export function LanguageSelector({
       // The route change still works if storage is unavailable.
     }
 
-    // Mobile exports locale pages as sibling files (en.html, zh-CN.html, ...)
-    // so the Capacitor package has no Web-style /<locale> route to push to.
-    // A full local navigation also lets the new document update <html lang/dir>
-    // before first paint, which matters when switching to or from Arabic.
-    if (mobile) {
-      try {
-        // Language lives inside Settings; keep the user on that tab across the
-        // required full-document locale navigation.
-        sessionStorage.setItem(mobileSelectedTabStorageKey, "settings");
-      } catch {
-        // Losing the tab position is harmless if session storage is unavailable.
-      }
-      window.location.assign(new URL(`${lng}.html`, window.location.href).href);
-      return;
-    }
-
     const currentPath = window.location.pathname.split("/").slice(2).join("/");
     const newPath = `/${lng}${currentPath ? `/${currentPath}` : ""}`;
     // A Web share/preset is still the same shift after changing language.
@@ -83,9 +64,7 @@ export function LanguageSelector({
       >
         <SelectTrigger
           className={`${
-            mobile
-              ? "h-11 w-[132px] rounded-xl border-input bg-background px-3 text-sm shadow-sm [&>span]:truncate"
-              : fit
+            fit
                 ? "h-9 w-auto max-w-[12rem] gap-1.5 whitespace-nowrap rounded-xl border-input bg-background px-3 text-xs shadow-sm"
                 : compact
                 ? "h-9 w-[92px] rounded-xl border-input bg-background px-2.5 text-xs shadow-sm"

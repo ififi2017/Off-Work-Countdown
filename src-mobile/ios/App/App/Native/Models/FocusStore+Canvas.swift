@@ -37,20 +37,6 @@ extension FocusStore {
     /// costs two rule-bundle round trips.
     var focusDayCanvasIsLocked: Bool { !plus.isAuthorized }
 
-    /// The next placeable block without assembling task rows or overflow.
-    func nextEmptyFocusBlock(at date: Date = .now) -> FocusWorkBlock? {
-        guard plus.isAuthorized, let shift = focusCanvasShift(at: date)?.snapshot else { return nil }
-        let dayKey = RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
-        let assignments = focusPlanning.plans[dayKey]?.assignments ?? []
-        let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
-        return FocusPlanner.workBlocks(segments: shift.segments, settings: focusTimerSettings)
-            .first { block in
-                block.kind == .task
-                    && Int64(block.end.timeIntervalSince1970 * 1_000) > nowMs
-                    && !assignments.contains { $0.blockStartAtMs == block.startAtMs }
-            }
-    }
-
     func focusDayCanvas(at date: Date = .now) -> FocusDayCanvasModel {
         let settings = focusTimerSettings.normalized
         var model = FocusDayCanvasModel.empty

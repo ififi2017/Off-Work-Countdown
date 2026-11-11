@@ -17,7 +17,6 @@ interface PeriodSummaryProps {
   rows: Row[];
   hideEarnings: boolean;
   compact?: boolean;
-  mobile?: boolean;
   /** Web-only overtime context; the paid earnings estimate remains unchanged. */
   overtimeInfo?: {
     elapsed: string;
@@ -38,7 +37,6 @@ export function PeriodSummary({
   rows,
   hideEarnings,
   compact = false,
-  mobile = false,
   currentEarnings,
   overtimeInfo,
 }: PeriodSummaryProps) {
@@ -74,9 +72,7 @@ export function PeriodSummary({
       className={`bg-white/50 backdrop-blur-sm dark:bg-black/20 ${
         compact
           ? "rounded-xl p-3"
-          : mobile
-            ? "rounded-[1.4rem] border border-white/60 p-4 shadow-sm dark:border-white/10"
-            : "rounded-xl p-4"
+          : "rounded-xl p-4"
       }`}
     >
       {/* Overtime sits on the note's line, not under it: the window is a fixed
@@ -104,9 +100,7 @@ export function PeriodSummary({
             <button
               type="button"
               onClick={currentEarnings.onToggle}
-              className={`inline-flex items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white ${
-                mobile ? "h-11 w-11" : "h-7 w-7"
-              }`}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
               aria-pressed={hideEarnings}
               aria-label={
                 hideEarnings
@@ -120,9 +114,9 @@ export function PeriodSummary({
               }
             >
               {hideEarnings ? (
-                <Eye className={mobile ? "h-4 w-4" : "h-3.5 w-3.5"} />
+                <Eye className="h-3.5 w-3.5" />
               ) : (
-                <EyeOff className={mobile ? "h-4 w-4" : "h-3.5 w-3.5"} />
+                <EyeOff className="h-3.5 w-3.5" />
               )}
             </button>
           </span>

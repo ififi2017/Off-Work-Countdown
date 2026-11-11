@@ -45,8 +45,6 @@ struct RecordsAllRecordsView: View {
     let queries: RecordsQueries
     let preferences: PreferencesStore
     let text: AppText
-    var focusedYear: Int?
-
     private var presentation: RecordsAllRecordsPresentation {
         RecordsAllRecordsPresentation(
             entries: queries.recordDayIndex(),

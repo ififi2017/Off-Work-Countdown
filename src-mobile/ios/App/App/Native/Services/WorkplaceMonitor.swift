@@ -1,5 +1,6 @@
 import CoreLocation
 import Observation
+import UIKit
 
 /// Plan 021 §I2: the one app-level owner of native workplace monitoring.
 ///
@@ -19,7 +20,16 @@ final class WorkplaceMonitor {
         var shifts: @MainActor (Date) -> [AutomationShift]
         /// Called with each crossing's outcome, for the arrival notice.
         var didHandle: @MainActor (AutomationEvent, AutomationCommandOutcome) async -> Void
+        /// iOS woke the app for a crossing but is holding the event until the
+        /// app is opened (it was swiped away): ask the person to open it.
+        var didHoldCrossing: @MainActor () async -> Void = {}
+        /// The held events are flowing again; the ask is no longer needed.
+        var didReleaseHold: @MainActor () async -> Void = {}
     }
+
+    /// Set by the app delegate before launch returns: this process was
+    /// started for a location event.
+    static var launchedForLocation = false
 
     private(set) var status = WorkplaceMonitorStatus()
 
@@ -32,6 +42,11 @@ final class WorkplaceMonitor {
     @ObservationIgnored private var reconcileAgain = false
     @ObservationIgnored private var sessionProblems: Set<WorkplaceMonitorStatus.Problem> = []
     @ObservationIgnored private var monitorProblems: Set<WorkplaceMonitorStatus.Problem> = []
+    @ObservationIgnored private var lastDiagnosticHeld: Bool?
+    @ObservationIgnored private var heldNotedThisProcess = false
+    /// When held events started flowing again; events received shortly
+    /// after take the held wake time.
+    @ObservationIgnored private var releasedAt: Date?
 
     init(dependencies: Dependencies) {
         self.dependencies = dependencies
@@ -171,12 +186,23 @@ final class WorkplaceMonitor {
             automation.update { _ = $0.takeBaseline(event.identifier) }
             isInitial = true
         }
-        guard let automationEvent = WorkplaceMonitorPlan.event(
+        guard var automationEvent = WorkplaceMonitorPlan.event(
             identifier: event.identifier, state: state, observedAt: event.date,
             receivedAt: now, isInitialState: isInitial
         ) else {
             refreshStatus(registered: status.registeredCount)
             return
+        }
+        // Held while the app was swiped away: the system dates the event
+        // when it finally delivers it, but it woke the app at the crossing.
+        if !isInitial, let releasedAt,
+           now.timeIntervalSince(releasedAt) <= WorkplaceAutomation.heldReleaseWindow {
+            var wake: Date?
+            automation.update { wake = $0.takeHeldWake(receivedAt: now) }
+            if let wake {
+                automationEvent.observedAt = wake
+                automationEvent.timestampBasis = .heldWake
+            }
         }
         let outcome = await automation.receive(automationEvent, shifts: dependencies.shifts(now), now: now)
         refreshStatus(registered: status.registeredCount)
@@ -184,6 +210,7 @@ final class WorkplaceMonitor {
     }
 
     private func handle(_ diagnostic: CLServiceSession.Diagnostic) {
+        noteHold(diagnostic.insufficientlyInUse)
         let next = WorkplaceMonitorStatus.problems(
             authorizationDenied: diagnostic.authorizationDenied,
             deniedGlobally: diagnostic.authorizationDeniedGlobally,
@@ -198,6 +225,34 @@ final class WorkplaceMonitor {
         guard next != sessionProblems else { return }
         sessionProblems = next
         refreshStatus(registered: status.registeredCount)
+    }
+
+    /// Tracks iOS holding events back. A location launch that is not let in
+    /// marks a held wake; the first time events are let in again, in this
+    /// process or a later foreground one, opens the release window.
+    private func noteHold(_ held: Bool) {
+        let previous = lastDiagnosticHeld
+        lastDiagnosticHeld = held
+        let now = Date.now
+        if held {
+            guard Self.launchedForLocation, !heldNotedThisProcess,
+                  UIApplication.shared.applicationState == .background else { return }
+            heldNotedThisProcess = true
+            var starts = false
+            automation.update { starts = $0.noteHeldWake(at: now) }
+            if starts { Task { await dependencies.didHoldCrossing() } }
+            return
+        }
+        guard previous != false, !automation.state.heldWakes.isEmpty else { return }
+        releasedAt = now
+        Task {
+            await dependencies.didReleaseHold()
+            try? await Task.sleep(for: .seconds(WorkplaceAutomation.heldReleaseWindow))
+            // Whatever the release did not use was no crossing we can place.
+            guard releasedAt == now else { return }
+            releasedAt = nil
+            automation.update { $0.clearHeldWakes() }
+        }
     }
 
     private func refreshStatus(registered: Int) {

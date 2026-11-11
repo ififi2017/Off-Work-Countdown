@@ -121,39 +121,6 @@ final class FocusStore {
     }
   }
 
-  func focusScheduleSlots(at date: Date = .now) -> [FocusScheduleSlot] {
-    var slots: [FocusScheduleSlot] = []
-    if let current = snapshot(at: date) {
-      for segment in current.segments where segment.endAtMs > date.timeIntervalSince1970 * 1_000 {
-        slots.append(
-          FocusScheduleSlot(
-            start: Date(
-              timeIntervalSince1970: max(segment.startAtMs, date.timeIntervalSince1970 * 1_000)
-                / 1_000),
-            end: Date(timeIntervalSince1970: segment.endAtMs / 1_000),
-            shiftAnchor: recordsCalendar.startOfDay(for: current.startDate),
-            isCurrentShift: true
-          )
-        )
-      }
-    }
-    if let nextStart = snapshot(at: date)?.nextShiftStartDate {
-      if let upcoming = snapshot(at: nextStart.addingTimeInterval(60)) {
-        for segment in upcoming.segments {
-          slots.append(
-            FocusScheduleSlot(
-              start: Date(timeIntervalSince1970: segment.startAtMs / 1_000),
-              end: Date(timeIntervalSince1970: segment.endAtMs / 1_000),
-              shiftAnchor: recordsCalendar.startOfDay(for: upcoming.startDate),
-              isCurrentShift: false
-            )
-          )
-        }
-      }
-    }
-    return slots
-  }
-
   func focusWorkBlocks(at date: Date = .now) -> [FocusWorkBlock] {
     guard let current = snapshot(at: date) else { return [] }
     return FocusPlanner.workBlocks(
@@ -1131,23 +1098,6 @@ final class FocusStore {
     }
   }
 
-  @discardableResult
-  func applyFavoriteFocusTask(_ task: FocusTask, at date: Date = .now) -> RecordCommand<FocusTask?>
-  {
-    let taskID = task.id
-    return records.submitCommand { [self] in
-      guard plus.isAuthorized,
-        let task = records.state.focusTasks.first(where: { $0.id == taskID && $0.deletedAt == nil })
-      else { return nil }
-      return addFocusTaskAuthorized(
-        title: task.title,
-        pomodoros: task.estimatedPomodoros,
-        plannedFor: date,
-        icon: task.icon
-      ).synchronousResult
-    }
-  }
-
   func detachFocusTemplate(at date: Date = .now) -> RecordCommand<Void> {
     records.submitCommand { [self] in
       guard let shift = focusCanvasShift(at: date)?.snapshot else { return }
@@ -1738,10 +1688,6 @@ final class FocusStore {
         $0.id != session.id && $0.kind == .focus && $0.endReason == .completed
       } + 1
     return rounds % focusTimerSettings.normalized.longBreakEvery == 0 ? .longBreak : .shortBreak
-  }
-
-  func canStartFocusBreak(kind: FocusSessionKind, at date: Date = .now) -> Bool {
-    activeFocusSession() == nil && plannedFocusBreakEnd(kind: kind, at: date) != nil
   }
 
   @discardableResult

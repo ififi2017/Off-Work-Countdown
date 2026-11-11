@@ -102,11 +102,6 @@ final class LifeSummaryModel {
         }
     }
 
-    /// Whether the life grid may print years on screen.
-    var hidesLifeAges: Bool {
-        records.state.lifeProfile?.hidesExactAges ?? false
-    }
-
     // Publish only from the background refresh flow. The internal cache stays
     // observation-ignored because legacy synchronous getters also populate it.
     private(set) var cachedLifeViewModel: LifeViewModel?

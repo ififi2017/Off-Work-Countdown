@@ -68,22 +68,6 @@ struct RecordsDayCell: Equatable, Sendable, Identifiable {
     var isAutomationRecorded: Bool = false
 }
 
-struct RecordsDayDetail: Equatable, Sendable {
-    var dayKey: String
-    var date: Date
-    var appearance: RecordsDayAppearance
-    var sourceKey: String
-    var regularWorkMs: Int64
-    var overtimeMs: Int64
-    var breakMs: Int64
-    var sleepMs: Int64
-    var freeMs: Int64
-    var sleepSourceKey: String
-    var observations: [String]
-    var isPlanned: Bool
-    var isProjection: Bool
-}
-
 /// Recorded hours, their civil-day coverage, and a separate salary basis. Locked summaries
 /// never carry these values into a view.
 struct RecordsHeadlineSummary: Equatable, Sendable {
@@ -146,7 +130,6 @@ struct RecordsYearMonthBar: Equatable, Sendable, Identifiable {
     var hasLockedDays: Bool
 
     var totalMs: Int64 { workMs + overtimeMs }
-    var hasRecords: Bool { workdays > 0 }
     /// The full length a row draws, recorded work plus any projection sitting
     /// after it.
     var drawnMs: Int64 { totalMs + projectedMs }

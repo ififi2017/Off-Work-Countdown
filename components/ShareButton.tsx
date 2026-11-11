@@ -22,7 +22,6 @@ interface ShareButtonProps {
   /** 随分享链接一起带出的班次，接收者打开即可看到同一个倒计时。 */
   shift: Shift;
   desktop?: boolean;
-  mobile?: boolean;
 }
 
 export function ShareButton({
@@ -31,7 +30,6 @@ export function ShareButton({
   isOff,
   shift,
   desktop = false,
-  mobile = false,
 }: ShareButtonProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -44,9 +42,7 @@ export function ShareButton({
         className={
           desktop
             ? "h-9 rounded-lg px-4 shadow-sm"
-            : mobile
-              ? "h-12 flex-1 rounded-2xl bg-white/80 px-3 shadow-sm backdrop-blur-xl dark:bg-gray-900/80"
-              : undefined
+            : undefined
         }
         onClick={() => {
           track("share_open");

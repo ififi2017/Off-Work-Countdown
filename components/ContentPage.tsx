@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Globe } from "lucide-react";
 import type { ReactNode } from "react";
 import { siteConfig } from "@/config/site";
-import { longFormLocales, type LongFormLocale } from "@/lib/content-locales";
+import type { LongFormLocale } from "@/lib/content-locales";
 import { webAppPageUrl } from "@/lib/site-urls";
 import { languageNames } from "@/i18n-config";
 

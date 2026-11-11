@@ -267,10 +267,6 @@ final class SceneState {
         clockOffConfirmationID(at: date, using: shifts) != nil
     }
 
-    func isCancelManualTimingConfirmationArmed(at date: Date, using shifts: ShiftSessionStore) -> Bool {
-        cancelManualTimingConfirmationID(at: date, using: shifts) != nil
-    }
-
     func clockInConfirmationID(at date: Date, using shifts: ShiftSessionStore) -> UUID? {
         confirmationID(for: .clockIn, at: date, using: shifts)
     }
@@ -693,15 +689,6 @@ final class SceneState {
         guard actions.canMutateRecordedDay(dayKey) else { return }
         if dayEditor?.dayKey != dayKey {
             dayEditor = RecordDayEditDraft(dayKey: dayKey, queries: queries)
-        }
-    }
-
-    func beginAddFocus(using focus: FocusStore) {
-        if focus.plus.isAuthorized {
-            presentAddFocus = true
-        } else {
-            pendingPlusAction = .presentAddFocus
-            paywallSheet = .focus
         }
     }
 

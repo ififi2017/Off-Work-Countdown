@@ -9,6 +9,12 @@ import Foundation
 // adopted times live in `DayOverride.customSegments` (plan §0.3).
 
 nonisolated enum WorkplaceAutomation {
+    /// A wake whose event iOS held back stands in for the crossing time for
+    /// at most this long.
+    static let maximumHeldWakeAge: TimeInterval = 12 * 60 * 60
+    /// Held events arrive within moments of the app coming back into use.
+    static let heldReleaseWindow: TimeInterval = 120
+
     /// Saved workplaces, disabled ones included (§3.10).
     static let maximumWorkplaces = 5
     /// The single status question after the planned start (§3.10).
@@ -118,6 +124,9 @@ nonisolated enum AutomationTimestampBasis: String, Codable, Sendable {
     case systemObservation
     /// Only the time the app received the callback is known.
     case callbackReceipt
+    /// iOS held the event while the app was swiped away; the time is when
+    /// the system woke the app for it.
+    case heldWake
     case userAction
 }
 

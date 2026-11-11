@@ -41,28 +41,6 @@ extension View {
     }
 }
 
-/// Shared circular Liquid Glass geometry for compact toolbar controls.
-/// The glass remains visually compact while the outer frame preserves the
-/// platform's 44-point minimum hit target.
-struct OWCGlassCircleLabel<Content: View>: View {
-    var visualSize: CGFloat = 34
-    @ViewBuilder let content: Content
-
-    init(visualSize: CGFloat = 34, @ViewBuilder content: () -> Content) {
-        self.visualSize = visualSize
-        self.content = content()
-    }
-
-    var body: some View {
-        content
-            .frame(width: visualSize, height: visualSize)
-            .glassEffect(.regular.interactive(), in: Circle())
-            .contentShape(Circle())
-            .frame(width: 44, height: 44)
-            .contentShape(Rectangle())
-    }
-}
-
 extension View {
     /// Native Liquid Glass for controls hosted by the app's custom iPad chrome.
     /// The frame belongs to each action so adjacent buttons keep separate hit areas.

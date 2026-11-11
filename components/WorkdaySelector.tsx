@@ -16,7 +16,6 @@ interface WorkdaySelectorProps {
   value: number[];
   onChange: (days: number[]) => void;
   compact?: boolean;
-  mobile?: boolean;
   /** Shown at the end of the label row. */
   accessory?: ReactNode;
   /** A short note right after the label, such as today's holiday. */
@@ -29,7 +28,6 @@ export function WorkdaySelector({
   value,
   onChange,
   compact = false,
-  mobile = false,
   accessory,
   labelNote,
 }: WorkdaySelectorProps) {
@@ -63,11 +61,11 @@ export function WorkdaySelector({
 
   return (
     // 标签行带右侧入口时略高，按钮与它多留一点距离。
-    <div className={compact ? (accessory ? "space-y-2" : "space-y-1.5") : mobile ? "space-y-2.5" : "space-y-2"}>
+    <div className={compact ? (accessory ? "space-y-2" : "space-y-1.5") : "space-y-2"}>
       <div className="flex items-center justify-between gap-3">
         <span className="flex min-w-0 items-center gap-1.5">
           <Label
-            className={`shrink-0 ${compact || mobile ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}`}
+            className={`shrink-0 ${compact ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}`}
           >
             {label}
           </Label>
@@ -91,9 +89,7 @@ export function WorkdaySelector({
               className={`min-w-0 flex-1 truncate border px-1 text-xs transition-colors ${
                 compact
                   ? "rounded-md py-1"
-                  : mobile
-                    ? "h-11 rounded-xl py-1.5 font-medium"
-                    : "rounded-md py-1.5"
+                  : "rounded-md py-1.5"
               } ${
                 on
                   ? "border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900"
