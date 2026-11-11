@@ -252,12 +252,12 @@ struct RecordsDayCanvasView: View {
     private static var awayCountedSourceKey: String { "recordsAwayCounted" }
 
     private func displayedIntervals(_ model: RecordsDayCanvasModel) -> [RecordsDayInterval] {
-        guard let automation else { return model.intervals }
+        guard let automation else { return model.listedIntervals }
         let away = automation.state.awayStretches(dayKey: model.dayKey).map {
             ($0.leftAt.timeIntervalSince1970 * 1_000, $0.returnedAt.timeIntervalSince1970 * 1_000)
         }
-        guard !away.isEmpty else { return model.intervals }
-        return model.intervals.flatMap { interval -> [RecordsDayInterval] in
+        guard !away.isEmpty else { return model.listedIntervals }
+        return model.listedIntervals.flatMap { interval -> [RecordsDayInterval] in
             guard interval.kind == .overtime else { return [interval] }
             var pieces: [RecordsDayInterval] = []
             var cursor = interval.startAtMs
@@ -393,10 +393,21 @@ struct RecordsDayBand: View {
     let text: AppText
     let model: RecordsDayCanvasModel
     @State private var selectedIntervalID: String?
+    /// What can be selected, captioned and read aloud. The strip paints the
+    /// finer `model.intervals`, so own time crossing now is one selection
+    /// drawn over its recorded and hatched parts.
+    private var rows: [RecordsDayInterval] { model.listedIntervals }
     private var selectedInterval: RecordsDayInterval? {
-        model.intervals.first { $0.id == selectedIntervalID }
-            ?? model.intervals.first { $0.kind == .work }
-            ?? model.intervals.first
+        rows.first { $0.id == selectedIntervalID }
+            ?? rows.first { $0.kind == .work }
+            ?? rows.first
+    }
+
+    private func isSelected(_ piece: RecordsDayInterval) -> Bool {
+        guard let selectedInterval else { return false }
+        return selectedInterval.kind == piece.kind
+            && selectedInterval.startAtMs <= piece.startAtMs
+            && piece.endAtMs <= selectedInterval.endAtMs
     }
     @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -405,7 +416,7 @@ struct RecordsDayBand: View {
         VStack(alignment: .leading, spacing: 4) {
             // Reserve the tallest description so changing intervals never moves the strip.
             ZStack(alignment: .leading) {
-                ForEach(model.intervals) { interval in
+                ForEach(rows) { interval in
                     VStack(alignment: .leading, spacing: 4) {
                         Text(verbatim: "\(text.t(interval.kind.titleKey)) · \(range(of: interval))")
                             .fontWeight(.medium)
@@ -452,7 +463,7 @@ struct RecordsDayBand: View {
                             .clipShape(shape)
                             .frame(width: width(of: interval, total: total, in: proxy.size.width), height: barHeight)
                             .overlay {
-                                if selectedInterval?.id == interval.id {
+                                if isSelected(interval) {
                                     shape.strokeBorder(OWCDesign.primary, lineWidth: 2)
                                 }
                             }
@@ -494,7 +505,7 @@ struct RecordsDayBand: View {
         // words, never a list of pixels or sampling buckets.
         .accessibilityRepresentation {
             VStack {
-                ForEach(model.intervals) { interval in
+                ForEach(rows) { interval in
                     Button(RecordsDayIntervalRow.spokenLabel(interval, queries: queries, text: text)) {
                         selectedIntervalID = interval.id
                     }
@@ -510,9 +521,9 @@ struct RecordsDayBand: View {
         guard width > 0, total > 0 else { return }
         let lower = model.dayStart.timeIntervalSince1970 * 1_000
         let moment = lower + Double(min(width, max(0, x)) / width) * total
-        selectedIntervalID = (model.intervals.first {
+        selectedIntervalID = (rows.first {
             $0.startAtMs <= moment && moment < $0.endAtMs
-        } ?? model.intervals.last)?.id
+        } ?? rows.last)?.id
     }
 
     private func range(of interval: RecordsDayInterval) -> String {

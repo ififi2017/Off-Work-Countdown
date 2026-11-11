@@ -151,6 +151,32 @@ struct RecordsDayCanvasModel: Equatable, Sendable {
         intervals.filter { $0.kind == .work || $0.kind == .overtime }
     }
 
+    /// The day as rows to read: `intervals`, except that own time crossing the
+    /// now line is one stretch again. Work, overtime and breaks stay split —
+    /// the part before now is a fact and the rest is the schedule's estimate —
+    /// but "left work → now" then "now → midnight" is one evening told twice.
+    /// The band still paints `intervals`, so the hatching after now and the
+    /// totals are unchanged. The joined row keeps the leading part's `id` and
+    /// source: what has actually happened so far.
+    var listedIntervals: [RecordsDayInterval] {
+        guard let nowAtMs else { return intervals }
+        var rows: [RecordsDayInterval] = []
+        for interval in intervals {
+            if interval.kind == .free,
+               interval.source == .afterNow,
+               interval.startAtMs == nowAtMs,
+               let last = rows.last,
+               last.kind == .free,
+               last.source != .afterNow,
+               last.endAtMs == nowAtMs {
+                rows[rows.count - 1].endAtMs = interval.endAtMs
+            } else {
+                rows.append(interval)
+            }
+        }
+        return rows
+    }
+
     /// A locked day carries no real interval, duration, source or anchor. The
     /// view tree and the accessibility tree get the same nothing.
     static func locked(dayKey: String, dayStart: Date, dayEnd: Date) -> RecordsDayCanvasModel {
