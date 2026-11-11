@@ -1022,6 +1022,12 @@ cd src-mobile/android
 - 文案新增 2 键 19 语言；测试新增 1 项。
 - 解决 R1 材料草稿（#379）的 B4；隐私页删除说明可按此定稿。
 
+### 2026-11-11 · Release 开放自动化入口与 3.3.0 新功能页
+
+- 分支 `claude/ios-330-release-automation`。产品负责人决定 Release 显示设置页「上下班自动化」入口与 3.3.0 What's New（删除 `WorkplaceAutomation.showsSettingsEntry`，`ReleaseNotes.current` 固定为 3.3.0）；探针仍只在 DEBUG 与 `WORKPLACE_PROBE` 内测包。
+- 「捷徑」设置指引按 Apple 各语言《快捷指令使用手册》修正 14 处界面用语（de、es、fr、pt、ko、ru、tr、id、th、hi-IN）。手册未列出「立即运行」「运行时通知」等 iOS 26 新标签，mr-IN 无官方手册，fr「离开」触发器与 zh-CN「无线局域网」未改，均需真机核对。
+- **上架前仍需**（CLAUDE.md 隐私边界）：App Store 隐私标签加入位置（精确位置，仅用于 App 功能、不关联身份、不追踪）与官方隐私页更新，再提交审核。
+
 后续记录格式沿用 019：`日期 · 批次`，列出实现范围、实际通过的测试及数量、失败项、未验证项、证据路径、关联 PR；不能只写“已完成自动上下班”。
 
 ## 10. 参考资料

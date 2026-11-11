@@ -26,7 +26,7 @@ struct SettingsSectionCard: View {
             // Lunch is part of the schedule page; reminders live under Reminders.
             link(.schedule, icon: "calendar.badge.clock", title: shifts.text.t("workSchedule"), value: shifts.scheduleLabel)
             link(.leave, icon: "suitcase", title: shifts.text.t("leaveTitle"), value: shifts.leaveSummaryLabel)
-            if let automation, WorkplaceAutomation.showsSettingsEntry {
+            if let automation {
                 link(.workplaceAutomation, icon: "location.circle", title: shifts.text.t("automationUITitle"),
                      value: shifts.text.t(automation.state.settings.isMonitoringEnabled && shifts.plus.canCollectAutomation
                                           ? "shiftAlarmsOnShort" : "disabledShort"))
