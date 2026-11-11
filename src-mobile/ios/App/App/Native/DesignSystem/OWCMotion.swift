@@ -50,7 +50,6 @@ enum OWCMotion {
     /// control rather than following it.
     static let recordsScaleChange = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.20)
     static let paywallPresentation = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.32)
-    static let dragReturn = Animation.spring(duration: 0.38, bounce: 0.12)
     /// A clock winding down: the native coast curve also determines when each
     /// 45-degree haptic tick happens, so soundless clicks follow the hands.
     static let brandCelebrationCurve = UnitCurve.easeOut

@@ -398,6 +398,12 @@
     "automationGuideTitle": {
       "resource": "string/automationGuideTitle"
     },
+    "automationHeldReminderBody": {
+      "resource": "string/automationHeldReminderBody"
+    },
+    "automationHeldReminderTitle": {
+      "resource": "string/automationHeldReminderTitle"
+    },
     "automationIntentConfirmEnd": {
       "resource": "string/automationIntentConfirmEnd"
     },
@@ -2453,9 +2459,6 @@
     "lifeDetailedIncomeHelp": {
       "resource": "string/lifeDetailedIncomeHelp"
     },
-    "lifeEditProfile": {
-      "resource": "string/lifeEditProfile"
-    },
     "lifeEmploymentCurrent": {
       "resource": "string/lifeEmploymentCurrent"
     },
@@ -2470,15 +2473,6 @@
     },
     "lifeEmploymentValidation": {
       "resource": "string/lifeEmploymentValidation"
-    },
-    "lifeEmptyBody": {
-      "resource": "string/lifeEmptyBody"
-    },
-    "lifeEmptyTitle": {
-      "resource": "string/lifeEmptyTitle"
-    },
-    "lifeEstimatedPast": {
-      "resource": "string/lifeEstimatedPast"
     },
     "lifeFutureIncomeDecline": {
       "resource": "string/lifeFutureIncomeDecline"
@@ -2508,11 +2502,9 @@
     "lifeIncomeDeclineStartAge": {
       "resource": "string/lifeIncomeDeclineStartAge"
     },
-    "lifeIncomeFuture": {
-      "resource": "string/lifeIncomeFuture"
-    },
     "lifeIncomeHistory": {
-      "resource": "string/lifeIncomeHistory"
+      "resource": "string/lifeIncomeHistory",
+      "androidOnly": true
     },
     "lifeIncomeMethod": {
       "resource": "string/lifeIncomeMethod"
@@ -2530,35 +2522,14 @@
     "lifeIncomeTitle": {
       "resource": "string/lifeIncomeTitle"
     },
-    "lifeIncomeTotal": {
-      "resource": "string/lifeIncomeTotal"
-    },
     "lifeIncomeUntilRetirement": {
       "resource": "string/lifeIncomeUntilRetirement",
       "params": [
         "amount"
       ]
     },
-    "lifeLegendChildhood": {
-      "resource": "string/lifeLegendChildhood"
-    },
-    "lifeLegendEstimated": {
-      "resource": "string/lifeLegendEstimated"
-    },
-    "lifeLegendOverride": {
-      "resource": "string/lifeLegendOverride"
-    },
     "lifeLegendProjected": {
       "resource": "string/lifeLegendProjected"
-    },
-    "lifeLegendRetirement": {
-      "resource": "string/lifeLegendRetirement"
-    },
-    "lifeLegendStudy": {
-      "resource": "string/lifeLegendStudy"
-    },
-    "lifeOutsideZone": {
-      "resource": "string/lifeOutsideZone"
     },
     "lifeOwnBody": {
       "resource": "string/lifeOwnBody",
@@ -2566,9 +2537,6 @@
         "work",
         "sleep"
       ]
-    },
-    "lifeOwnShare": {
-      "resource": "string/lifeOwnShare"
     },
     "lifeOwnYears": {
       "resource": "string/lifeOwnYears",
@@ -2589,9 +2557,6 @@
     "lifeProgressTitle": {
       "resource": "string/lifeProgressTitle"
     },
-    "lifeProjectedFuture": {
-      "resource": "string/lifeProjectedFuture"
-    },
     "lifeRemoveEmployment": {
       "resource": "string/lifeRemoveEmployment"
     },
@@ -2603,13 +2568,6 @@
     },
     "lifeRoughIncomeHelp": {
       "resource": "string/lifeRoughIncomeHelp"
-    },
-    "lifeRowPosition": {
-      "resource": "string/lifeRowPosition",
-      "params": [
-        "count",
-        "total"
-      ]
     },
     "lifeSalaryCadence": {
       "resource": "string/lifeSalaryCadence"
@@ -2625,9 +2583,6 @@
     },
     "lifeSetRetirement": {
       "resource": "string/lifeSetRetirement"
-    },
-    "lifeSetUp": {
-      "resource": "string/lifeSetUp"
     },
     "lifeSetupOfferAction": {
       "resource": "string/lifeSetupOfferAction"
@@ -2671,20 +2626,8 @@
     "lifeSuggestedYear": {
       "resource": "string/lifeSuggestedYear"
     },
-    "lifeTitle": {
-      "resource": "string/lifeTitle"
-    },
     "lifeUnset": {
       "resource": "string/lifeUnset"
-    },
-    "lifeWeeksUnit": {
-      "resource": "string/lifeWeeksUnit",
-      "params": [
-        "count"
-      ]
-    },
-    "lifeWeeksWorked": {
-      "resource": "string/lifeWeeksWorked"
     },
     "lifeWhereTimeGoes": {
       "resource": "string/lifeWhereTimeGoes"
@@ -2701,9 +2644,6 @@
     "lifeWorkPeriodBasis": {
       "resource": "string/lifeWorkPeriodBasis",
       "androidOnly": true
-    },
-    "lifeWorkShare": {
-      "resource": "string/lifeWorkShare"
     },
     "lifeWorkStarted": {
       "resource": "string/lifeWorkStarted"
@@ -2730,9 +2670,6 @@
     },
     "lifeYearPast": {
       "resource": "string/lifeYearPast"
-    },
-    "lifeYouChanged": {
-      "resource": "string/lifeYouChanged"
     },
     "light": {
       "resource": "string/light"
@@ -2775,9 +2712,6 @@
     },
     "lunchInProgress": {
       "resource": "string/lunchInProgress"
-    },
-    "lunchPauseNote": {
-      "resource": "string/lunchPauseNote"
     },
     "lunchPauseNoteNoSalary": {
       "resource": "string/lunchPauseNoteNoSalary"
@@ -3355,9 +3289,6 @@
     },
     "plusGiftTitle": {
       "resource": "string/plusGiftTitle"
-    },
-    "plusGracePeriod": {
-      "resource": "string/plusGracePeriod"
     },
     "plusIllustration": {
       "resource": "string/plusIllustration"
@@ -5004,9 +4935,6 @@
     "shiftAlarmsUpcoming": {
       "resource": "string/shiftAlarmsUpcoming"
     },
-    "shiftEnded": {
-      "resource": "string/shiftEnded"
-    },
     "shiftReminders": {
       "resource": "string/shiftReminders"
     },
@@ -5124,12 +5052,6 @@
     "theme": {
       "resource": "string/theme"
     },
-    "timeAgo": {
-      "resource": "string/timeAgo",
-      "params": [
-        "time"
-      ]
-    },
     "timeLeftCaption": {
       "resource": "string/timeLeftCaption"
     },
@@ -5153,9 +5075,6 @@
     },
     "tomorrow": {
       "resource": "string/tomorrow"
-    },
-    "totalWorkTime": {
-      "resource": "string/totalWorkTime"
     },
     "undoClockInEarly": {
       "resource": "string/undoClockInEarly"

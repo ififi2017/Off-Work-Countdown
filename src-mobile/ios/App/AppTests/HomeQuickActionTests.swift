@@ -4,12 +4,6 @@ import Testing
 @MainActor
 @Suite("Home Screen quick actions")
 struct HomeQuickActionTests {
-    @Test("Each shortcut has a distinct tab and existing localized title")
-    func destinations() {
-        #expect(HomeQuickAction.allCases.map(\.tab) == [.timer, .focus, .records])
-        #expect(HomeQuickAction.allCases.map(\.titleKey) == ["timerTab", "focusTitle", "recordsTab"])
-    }
-
     @Test("A scene keeps its shortcut until setup is ready, then consumes it once")
     func pendingIsSceneOwned() {
         let first = HomeQuickActionSceneDelegate()

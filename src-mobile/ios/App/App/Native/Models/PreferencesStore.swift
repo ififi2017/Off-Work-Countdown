@@ -654,18 +654,6 @@ final class PreferencesStore {
     }
 
     @discardableResult
-    func anchorAlternatingWeekToToday(at date: Date = .now) -> RecordCommand<Bool> {
-        applyPreferences { [self] in
-            $0.alternatingReferenceWeekStartMs = Self.startOfWeek(containing: date, timeZone: recordsTimeZone).timeIntervalSince1970 * 1_000
-        }
-    }
-
-    @discardableResult
-    func anchorRotationToToday(at date: Date = .now) -> RecordCommand<Bool> {
-        applyPreferences { [self] in $0.rotationAnchorMs = recordsCalendar.startOfDay(for: date).timeIntervalSince1970 * 1_000 }
-    }
-
-    @discardableResult
     func setRotationCycleDay(_ day: Int, at date: Date = .now) -> RecordCommand<Bool> {
         applyPreferences { [self] value in
             let length = max(2, value.rotationWorkDays + value.rotationRestDays)

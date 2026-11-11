@@ -3628,6 +3628,28 @@
       "id": "Pembaruan di Google Play",
       "tr": "Google Play üzerinden güncelleme"
     },
+    "lifeIncomeHistory": {
+      "comment": "Records conflict center: label for the employment periods (career income history) field. Moved here when iOS stopped using it.",
+      "en": "Income before today",
+      "zh-CN": "截至今天的收入",
+      "zh-HK": "今日之前嘅收入",
+      "zh-TW": "今天之前的收入",
+      "ja": "今日までの収入",
+      "ko": "오늘 이전 소득",
+      "de": "Einkommen vor heute",
+      "es": "Ingresos antes de hoy",
+      "fr": "Revenus avant aujourd'hui",
+      "it": "Reddito prima di oggi",
+      "pt": "Renda antes de hoje",
+      "ru": "Доход до сегодняшнего дня",
+      "ar": "الدخل قبل اليوم",
+      "hi-IN": "आज से पहले की आय",
+      "mr-IN": "आजच्या आधीचे उत्पन्न",
+      "th": "รายได้ก่อนวันนี้",
+      "vi": "Thu nhập trước ngày hôm nay",
+      "id": "Pendapatan sebelum hari ini",
+      "tr": "Bugünden önceki gelir"
+    },
     "whatsNewWidgetsTitle": {
       "comment": "Android What’s New (widgets); moved here when iOS 3.3.0 replaced its page.",
       "ar": "أدوات جديدة",

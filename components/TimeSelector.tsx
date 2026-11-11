@@ -13,7 +13,6 @@ interface TimeSelectorProps {
   value: string;
   onChange: (hour: string, minute: string) => void;
   compact?: boolean;
-  mobile?: boolean;
   hourLabel?: string;
   minuteLabel?: string;
   menuSide?: "top" | "bottom" | "auto";
@@ -25,7 +24,6 @@ export function TimeSelector({
   value,
   onChange,
   compact = false,
-  mobile = false,
   hourLabel = "Select hour",
   minuteLabel = "Select minute",
   menuSide = "bottom",
@@ -155,7 +153,7 @@ export function TimeSelector({
               items={items}
               value={type === "hour" ? hourInput : minuteInput}
               ariaLabel={type === "hour" ? hourLabel : minuteLabel}
-              visibleRows={compact || mobile ? 5 : 7}
+              visibleRows={compact ? 5 : 7}
               onChange={(item) =>
                 commitTime(
                   type === "hour" ? item : hourInput,
@@ -178,7 +176,7 @@ export function TimeSelector({
 
   return (
     <div
-      className={compact ? "space-y-1.5" : mobile ? "space-y-2.5" : "space-y-2"}
+      className={compact ? "space-y-1.5" : "space-y-2"}
       ref={containerRef}
       onKeyDown={(event) => {
         if (event.key === "Escape" && openMenu) {
@@ -190,7 +188,7 @@ export function TimeSelector({
       <Label
         htmlFor={`${id}Hour`}
         className={
-          compact || mobile
+          compact
             ? "text-xs font-medium text-muted-foreground"
             : "dark:text-gray-200"
         }
@@ -214,9 +212,7 @@ export function TimeSelector({
               className={`flex w-full items-center justify-between border border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
                 compact
                   ? "h-9 rounded-lg px-3 py-1.5 pe-8 text-sm"
-                  : mobile
-                    ? "h-12 rounded-xl px-3 py-2 pe-10 text-base font-semibold tabular-nums"
-                    : "h-10 rounded-lg px-3 py-2 pe-8 text-sm"
+                  : "h-10 rounded-lg px-3 py-2 pe-8 text-sm"
               }`}
               value={hourInput}
               onChange={(e) => handleHourInput(e.target.value)}
@@ -226,7 +222,7 @@ export function TimeSelector({
             />
             <button
               type="button"
-              className={`absolute end-0 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground ${mobile ? "h-12 w-10" : "h-8 w-8"}`}
+              className="absolute end-0 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground h-8 w-8"
               onClick={() => openOptions("hour", true)}
               aria-label={`${label} · ${hourLabel}`}
               aria-expanded={openMenu === "hour"}
@@ -251,9 +247,7 @@ export function TimeSelector({
               className={`flex w-full items-center justify-between border border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
                 compact
                   ? "h-9 rounded-lg px-3 py-1.5 pe-8 text-sm"
-                  : mobile
-                    ? "h-12 rounded-xl px-3 py-2 pe-10 text-base font-semibold tabular-nums"
-                    : "h-10 rounded-lg px-3 py-2 pe-8 text-sm"
+                  : "h-10 rounded-lg px-3 py-2 pe-8 text-sm"
               }`}
               value={minuteInput}
               onChange={(e) => handleMinuteInput(e.target.value)}
@@ -263,7 +257,7 @@ export function TimeSelector({
             />
             <button
               type="button"
-              className={`absolute end-0 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground ${mobile ? "h-12 w-10" : "h-8 w-8"}`}
+              className="absolute end-0 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground h-8 w-8"
               onClick={() => openOptions("minute", true)}
               aria-label={`${label} · ${minuteLabel}`}
               aria-expanded={openMenu === "minute"}

@@ -1,10 +1,5 @@
 import Foundation
 
-enum SyncOutboxAction: String, Codable, Sendable {
-    case save
-    case erasePair
-}
-
 nonisolated struct SyncAdapterRow: Equatable, Codable, Sendable {
     var entityType: RecordEntityType
     var logicalKey: String
@@ -50,8 +45,6 @@ nonisolated struct SyncConflictCopy: Equatable, Codable, Sendable {
     var localEditedAtMs: Double? = nil
     var incomingEditedAtMs: Double? = nil
     var currentWinner: Winner = .unknown
-
-    var effectiveIncomingPayload: Data { incomingPayload ?? payload }
 
     /// The payload that is not currently applied. Older archives retained only
     /// `payload`, which is therefore presented as a neutral “other version”.

@@ -1,51 +1,5 @@
 import SwiftUI
 
-/// The shift headline, and the only place it can be edited.
-///
-/// The rows that used to repeat these two times below the headline are gone —
-/// the headline *is* the editor now. The one line underneath is the planned
-/// working time, which is the single value on this screen the user can't read
-/// off anything else.
-struct ShiftHeroCard: View {
-    @Environment(SceneState.self) private var scene
-    let shifts: ShiftSessionStore
-    let onEdit: (SetupTimeField) -> Void
-
-    var body: some View {
-        VStack(spacing: 14) {
-            HStack(alignment: .timeChipCenter, spacing: 4) {
-                ShiftHeroTimeButton(
-                    title: shifts.text.t("startTime"),
-                    time: shifts.session.timeString(scene.displayedStartMinutes(using: shifts.preferences))
-                ) { onEdit(.start) }
-
-                Text(verbatim: "—")
-                    .font(.title3)
-                    .foregroundStyle(OWCDesign.tertiary)
-                    .alignmentGuide(.timeChipCenter) { $0[VerticalAlignment.center] }
-                    .accessibilityHidden(true)
-
-                ShiftHeroTimeButton(
-                    title: shifts.text.t("endTime"),
-                    time: shifts.session.timeString(scene.displayedEndMinutes(using: shifts.preferences))
-                ) { onEdit(.end) }
-            }
-            .environment(\.layoutDirection, .leftToRight)
-
-            Label {
-                Text(verbatim: "\(shifts.text.t("totalWorkTime")) · \(shifts.text.plannedWorkLabel(for: scene.setupSnapshot(using: shifts)))")
-            } icon: {
-                Image(systemName: "hourglass")
-            }
-            .font(.subheadline)
-            .foregroundStyle(OWCDesign.secondary)
-            .lineLimit(1)
-            .minimumScaleFactor(0.72)
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
-
 extension VerticalAlignment {
     /// Lines the range dash up with the middle of the time chips rather than the
     /// middle of the whole button, which includes the role caption underneath
