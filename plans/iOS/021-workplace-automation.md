@@ -509,7 +509,9 @@ iOS 可预排中性询问并在得到执行机会时取消，不能承诺该分�
 
 ### 3.14 Plus、历史处理与系统入口权益
 
-原生检测、自动化事件采集、自动应用和新自动化提醒归已有 Plus（月／年／终身）；不新增商品、不修改现有手工计时或 Watch 免费范围。拒绝定位、Siri 不可用或未订阅时，手工功能仍可正常使用。
+原生检测、自动化事件采集、自动应用和新自动化提醒归已有 Plus（月／年／终身）；不新增商品、不修改现有手工计时或 Watch 免费范围。
+
+**2026-11-11 产品负责人决定**：快捷指令路径（`appIntentAutomation` 报告与 `userConfirmation` 确认）对所有人免费，含其自动应用；定位原生检测与其提醒仍属 Plus。App Shortcuts（`DoneAtAppShortcuts`）把四个动作列入「捷径」App 资料库，设置页提供 `ShortcutsLink` 与抵达／离开自动化设置指引。拒绝定位、Siri 不可用或未订阅时，手工功能仍可正常使用。
 
 实现必须分别检查 `canCollectAutomation`、`canAutoApplyAutomation`、`canReviewExistingAutomation`、`canCorrectExistingRecord`，名称可调整。新增自动采集／自动应用要求有效 Plus；试用是否有效遵循现有权益服务，不在本计划自创试用。
 

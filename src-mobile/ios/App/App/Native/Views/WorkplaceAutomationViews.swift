@@ -1,4 +1,5 @@
 import MapKit
+import AppIntents
 import SwiftUI
 
 // Plan 021 U1 (design stage): Settings → Workplace automation, the
@@ -294,20 +295,36 @@ struct WorkplaceAutomationSettingsContent: View {
         OWCSectionHeader(title: text.t("automationUIShortcutsSection"))
             .padding(.top, OWCDesign.sectionGap)
         OWCGroupCard {
-            // Opens Shortcuts, where the personal automation is made; the
-            // note names the two actions to add there.
-            Link(destination: URL(string: "shortcuts://")!) {
-                OWCRow(icon: "square.2.layers.3d", title: text.t("automationUIShortcutsTitle"),
-                       subtitle: text.t("automationUIShortcutsNote", values: [
-                           "arrive": text.t("automationIntentRecordArrival"),
-                           "leave": text.t("automationIntentRecordDeparture"),
-                       ]),
-                       isLast: true, centersVertically: true) {
-                    OWCDetailAccessory(text: nil, external: true)
+            // Free for everyone: iOS runs the trigger, DoneAt needs no location.
+            OWCRow(icon: "square.2.layers.3d", title: text.t("automationUIShortcutsTitle"),
+                   subtitle: text.t("automationUIShortcutsFreeNote"), centersVertically: true) {
+                Text(text.t("automationUIShortcutsFree"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(OWCDesign.accent)
+            }
+            NavigationLink {
+                ShortcutsAutomationGuideView(text: text)
+            } label: {
+                OWCRow(icon: "list.number", title: text.t("automationGuideTitle"), isLast: isOn) {
+                    OWCDetailAccessory(text: nil)
                 }
             }
             .buttonStyle(OWCRowButtonStyle())
+            // With location on, this switch already sits under Recording.
+            if !isOn {
+                OWCRow(title: text.t("automationUIAutoApply"), subtitle: text.t("automationUIAutoApplyNote"),
+                       isLast: true, centersVertically: true) {
+                    Toggle(text.t("automationUIAutoApply"),
+                           isOn: Binding(get: { settings.appliesDetectedTimesAutomatically }, set: onToggleAutoApply))
+                        .labelsHidden()
+                }
+            }
         }
+        // Apple's own button: opens DoneAt's actions in the Shortcuts app.
+        ShortcutsLink()
+            .shortcutsLinkStyle(.automatic)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 12)
     }
 
     // MARK: Delete

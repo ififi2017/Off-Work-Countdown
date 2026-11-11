@@ -28,7 +28,7 @@ struct GiftOfferPaywall: View {
                                     .font(.title2.bold())
                                     .fixedSize(horizontal: false, vertical: true)
                                     .accessibilityAddTraits(.isHeader)
-                                Text(text.t(plus.lifetimeOffer?.source == .update323 ? "plusGiftSubtitle" : "plusOfferWelcome"))
+                                Text(text.t(plus.lifetimeOffer?.source.isUpdateGift == true ? "plusGiftSubtitle" : "plusOfferWelcome"))
                                     .font(.subheadline)
                                     .foregroundStyle(OWCDesign.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -255,7 +255,7 @@ struct GiftOfferOverlay: View {
         }
         guard !reduceMotion else {
             backdrop = true
-            if unwraps, !plus.revealLifetimeOffer(from: plus.lifetimeOffer?.source ?? .update323) {
+            if unwraps, !plus.revealLifetimeOffer(from: plus.lifetimeOffer?.source ?? .currentUpdateGift) {
                 finish()
                 return
             }
@@ -268,7 +268,7 @@ struct GiftOfferOverlay: View {
     }
 
     private func unwrap(in geometry: GeometryProxy) async {
-        let source = plus.lifetimeOffer?.source ?? .update323
+        let source = plus.lifetimeOffer?.source ?? .currentUpdateGift
         withAnimation(OWCMotion.giftArrive) {
             giftCenter = CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.4)
             giftSize = Self.openGiftSize
