@@ -149,6 +149,7 @@ struct WorkplaceAutomationSettingsView: View {
             onToggleMonitoring: setMonitoring,
             onToggleAutoApply: { on in automation.update { $0.settings.appliesDetectedTimesAutomatically = on } },
             onPromptDelay: { delay in automation.update { $0.settings.visitPromptDelay = delay } },
+            onEarlyArrivalPolicy: { policy in automation.update { $0.settings.earlyArrivalPolicy = policy } },
             onRequestAccess: location.requestAccess,
             onOpenSystemSettings: { openURL(URL(string: UIApplication.openSettingsURLString)!) },
             onAddWorkplace: { editing = .new },

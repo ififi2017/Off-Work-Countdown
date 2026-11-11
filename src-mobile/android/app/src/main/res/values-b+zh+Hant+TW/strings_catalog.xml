@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">提早抵達後多久詢問</string>
     <string name="automationUIAskAfterNote">非上班時段抵達時也用這個時間。</string>
     <string name="automationUIAutoApply">自動套用偵測到的時間</string>
-    <string name="automationUIAutoApplyNote">關閉時，時間會先等你確認。開啟後，平常的上下班時間會直接更新工時；提早上班仍會先問你。</string>
+    <string name="automationUIAutoApplyNote">關閉時，時間會先等你確認。開啟後，上下班時間會直接更新工時。</string>
     <string name="automationUIContextFrom">開始</string>
     <string name="automationUIContextNote">這些日子不會因為你沒到辦公室而詢問，離開辦公室也不會結束當天。</string>
     <string name="automationUIContextSection">不在辦公室的日子</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">取消全選</string>
     <string name="automationUIDismissOne">略過</string>
     <string name="automationUIDismissSelected">略過</string>
+    <string name="automationUIEarlyArrival">提早到公司</string>
+    <string name="automationUIEarlyArrivalAsk">先問我</string>
+    <string name="automationUIEarlyArrivalFromArrival">從到達起算</string>
+    <string name="automationUIEarlyArrivalNote">實際到達時間都會記下，這裡決定從何時開始算工時。</string>
+    <string name="automationUIEarlyArrivalSchedule">照排班時間</string>
     <string name="automationUIEndAt">下班 %1$s</string>
     <string name="automationUIIntro">DoneAt 會在你抵達或離開工作地點時察覺，幫你記錄上下班時間。你開啟之前不會運作。</string>
     <string name="automationUILeaveRange">超過 %1$s 公尺才算離開</string>
@@ -1159,6 +1164,7 @@
     <string name="recordsVerifyAdopted">採用</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s，自動</string>
     <string name="recordsVerifyAdoptedByYou">%1$s，由你</string>
+    <string name="recordsVerifyArrivedAt">%1$s 到公司</string>
     <string name="recordsVerifyDetected">偵測時間</string>
     <string name="recordsVerifyDetectedUnknown">未提供</string>
     <string name="recordsVerifyHeadlineEnd">下班時間由定位記錄</string>

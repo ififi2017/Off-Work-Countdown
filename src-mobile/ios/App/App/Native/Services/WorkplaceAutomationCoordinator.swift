@@ -182,17 +182,14 @@ final class WorkplaceAutomationCoordinator {
         switch event.type {
         case .enterInner:
             boundary = .start
-            switch WorkplaceAutomationRules.assessArrival(
-                at: event.proposedTime, for: shift, promptDelay: state.settings.visitPromptDelay
-            ) {
-            case .early:
-                // Only the person can turn an early arrival into early work.
-                time = event.proposedTime
-                if event.source != .userConfirmation { reasons.append(.earlyStartNeedsConfirmation) }
-            case .punctual:
-                time = shift.plannedStart
-            case .late:
-                time = event.proposedTime
+            let start = WorkplaceAutomationRules.arrivalStart(
+                at: event.proposedTime, for: shift,
+                promptDelay: state.settings.visitPromptDelay, policy: state.settings.earlyArrivalPolicy
+            )
+            time = start.time
+            // Under "ask me", only the person turns an early arrival into work.
+            if start.needsConfirmation, event.source != .userConfirmation {
+                reasons.append(.earlyStartNeedsConfirmation)
             }
         case .exitOuter:
             boundary = .end

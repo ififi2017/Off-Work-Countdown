@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">Preguntar tras llegar temprano</string>
     <string name="automationUIAskAfterNote">También se usa cuando llegas fuera de tu turno.</string>
     <string name="automationUIAutoApply">Aplicar automáticamente las horas detectadas</string>
-    <string name="automationUIAutoApplyNote">Si está desactivado, las horas esperan tu confirmación. Si está activado, las llegadas y salidas habituales actualizan tus horas directamente; los inicios anticipados siempre te lo preguntan.</string>
+    <string name="automationUIAutoApplyNote">Si está desactivado, las horas esperan tu confirmación. Si está activado, las llegadas y salidas actualizan tus horas directamente.</string>
     <string name="automationUIContextFrom">Desde</string>
     <string name="automationUIContextNote">En estos días, DoneAt no te preguntará por qué no estás en la oficina, y salir de ella no terminará tu jornada.</string>
     <string name="automationUIContextSection">Fuera de la oficina</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">Deseleccionar todo</string>
     <string name="automationUIDismissOne">Descartar</string>
     <string name="automationUIDismissSelected">Descartar</string>
+    <string name="automationUIEarlyArrival">Llegada temprana</string>
+    <string name="automationUIEarlyArrivalAsk">Preguntarme</string>
+    <string name="automationUIEarlyArrivalFromArrival">Contar desde la llegada</string>
+    <string name="automationUIEarlyArrivalNote">Tu hora de llegada siempre se guarda. Aquí eliges desde cuándo cuenta el trabajo.</string>
+    <string name="automationUIEarlyArrivalSchedule">Empezar a la hora del turno</string>
     <string name="automationUIEndAt">Fin a las %1$s</string>
     <string name="automationUIIntro">DoneAt detecta cuándo llegas a tus lugares de trabajo o los dejas, y registra tus horas. Permanece desactivado hasta que lo actives.</string>
     <string name="automationUILeaveRange">La salida cuenta a más de %1$s m</string>
@@ -1165,6 +1170,7 @@
     <string name="recordsVerifyAdopted">Adoptado</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, automáticamente</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, por ti</string>
+    <string name="recordsVerifyArrivedAt">Llegada %1$s</string>
     <string name="recordsVerifyDetected">Detectado</string>
     <string name="recordsVerifyDetectedUnknown">No indicado</string>
     <string name="recordsVerifyHeadlineEnd">Salida registrada por ubicación</string>

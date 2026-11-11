@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">Nach früher Ankunft fragen</string>
     <string name="automationUIAskAfterNote">Gilt auch, wenn du außerhalb deiner Schicht ankommst.</string>
     <string name="automationUIAutoApply">Erkannte Zeiten automatisch übernehmen</string>
-    <string name="automationUIAutoApplyNote">Ist die Option aus, warten Zeiten auf deine Bestätigung. Ist sie an, aktualisieren übliche Ankünfte und Abgänge deine Stunden direkt; frühe Starts fragen weiterhin nach.</string>
+    <string name="automationUIAutoApplyNote">Ist die Option aus, warten Zeiten auf deine Bestätigung. Ist sie an, aktualisieren Ankünfte und Abgänge deine Stunden direkt.</string>
     <string name="automationUIContextFrom">Von</string>
     <string name="automationUIContextNote">An diesen Tagen fragt DoneAt nicht nach, warum du nicht im Büro bist, und das Verlassen des Büros beendet deinen Tag nicht.</string>
     <string name="automationUIContextSection">Außerhalb des Büros</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">Auswahl aufheben</string>
     <string name="automationUIDismissOne">Verwerfen</string>
     <string name="automationUIDismissSelected">Verwerfen</string>
+    <string name="automationUIEarlyArrival">Frühe Ankunft</string>
+    <string name="automationUIEarlyArrivalAsk">Mich fragen</string>
+    <string name="automationUIEarlyArrivalFromArrival">Ab Ankunft zählen</string>
+    <string name="automationUIEarlyArrivalNote">Deine Ankunftszeit wird immer gespeichert. Hier legst du fest, ab wann die Arbeit zählt.</string>
+    <string name="automationUIEarlyArrivalSchedule">Zur Schichtzeit starten</string>
     <string name="automationUIEndAt">Ende %1$s</string>
     <string name="automationUIIntro">DoneAt erkennt, wenn du deine Arbeitsorte erreichst oder verlässt, und erfasst deine Arbeitszeiten. Bleibt aus, bis du sie einschaltest.</string>
     <string name="automationUILeaveRange">Abgang ab %1$s m Entfernung</string>
@@ -1162,6 +1167,7 @@
     <string name="recordsVerifyAdopted">Übernommen</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, automatisch</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, von dir</string>
+    <string name="recordsVerifyArrivedAt">Angekommen %1$s</string>
     <string name="recordsVerifyDetected">Erkannt</string>
     <string name="recordsVerifyDetectedUnknown">Nicht gemeldet</string>
     <string name="recordsVerifyHeadlineEnd">Feierabend per Standort erfasst</string>

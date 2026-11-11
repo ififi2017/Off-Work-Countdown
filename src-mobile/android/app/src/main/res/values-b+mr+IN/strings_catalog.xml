@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">लवकर पोहोचल्यानंतर विचारा</string>
     <string name="automationUIAskAfterNote">तुमच्या शिफ्टच्या बाहेर पोहोचल्यावरही हे वापरले जाते.</string>
     <string name="automationUIAutoApply">ओळखलेल्या वेळा आपोआप लागू करा</string>
-    <string name="automationUIAutoApplyNote">बंद असताना वेळा तुमच्या पुष्टीची वाट पाहतात. सुरू असताना नेहमीचे पोहोचणे आणि निघणे थेट तुमच्या तासांत अपडेट होते; लवकर सुरुवात झाल्यास आधी तुम्हाला विचारले जाते.</string>
+    <string name="automationUIAutoApplyNote">बंद असताना वेळा तुमच्या पुष्टीची वाट पाहतात. सुरू असताना पोहोचणे आणि निघणे थेट तुमच्या तासांत अपडेट होते.</string>
     <string name="automationUIContextFrom">पासून</string>
     <string name="automationUIContextNote">या दिवसांत तुम्ही कार्यालयात का नाही हे DoneAt विचारणार नाही, आणि कार्यालयातून निघाल्यावर तुमचा दिवस संपणार नाही.</string>
     <string name="automationUIContextSection">कार्यालयाबाहेरचे काम</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">सर्व निवड रद्द करा</string>
     <string name="automationUIDismissOne">नाकारा</string>
     <string name="automationUIDismissSelected">नाकारा</string>
+    <string name="automationUIEarlyArrival">लवकर पोहोचणे</string>
+    <string name="automationUIEarlyArrivalAsk">मला विचारा</string>
+    <string name="automationUIEarlyArrivalFromArrival">पोहोचल्यापासून मोजा</string>
+    <string name="automationUIEarlyArrivalNote">तुमची पोहोचण्याची वेळ नेहमी जतन केली जाते. कामाची मोजणी कधीपासून सुरू होईल हे येथे ठरवा.</string>
+    <string name="automationUIEarlyArrivalSchedule">शिफ्टच्या वेळी सुरू करा</string>
     <string name="automationUIEndAt">समाप्ती %1$s</string>
     <string name="automationUIIntro">तुम्ही कामाच्या ठिकाणी कधी पोहोचता किंवा निघता हे DoneAt ओळखते आणि तुमच्या कामाच्या वेळा नोंदवते. तुम्ही सुरू करेपर्यंत ते बंद राहते.</string>
     <string name="automationUILeaveRange">%1$s मी च्या पलीकडे गेल्यावर निघाले असे मोजले जाते</string>
@@ -1162,6 +1167,7 @@
     <string name="recordsVerifyAdopted">स्वीकारले</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, आपोआप</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, तुमच्याकडून</string>
+    <string name="recordsVerifyArrivedAt">%1$s ला पोहोचले</string>
     <string name="recordsVerifyDetected">आढळले</string>
     <string name="recordsVerifyDetectedUnknown">कळवले नाही</string>
     <string name="recordsVerifyHeadlineEnd">संपण्याची वेळ लोकेशनवरून नोंदवली</string>

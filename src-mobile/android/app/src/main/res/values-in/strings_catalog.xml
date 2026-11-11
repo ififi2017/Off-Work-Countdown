@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">Tanya Setelah Tiba Lebih Awal</string>
     <string name="automationUIAskAfterNote">Juga dipakai saat Anda tiba di luar jam kerja.</string>
     <string name="automationUIAutoApply">Terapkan Waktu Terdeteksi Otomatis</string>
-    <string name="automationUIAutoApplyNote">Saat nonaktif, waktu menunggu konfirmasi Anda. Saat aktif, kedatangan dan kepulangan yang biasa langsung memperbarui jam kerja; mulai lebih awal tetap ditanyakan lebih dulu.</string>
+    <string name="automationUIAutoApplyNote">Saat nonaktif, waktu menunggu konfirmasi Anda. Saat aktif, kedatangan dan kepulangan langsung memperbarui jam kerja.</string>
     <string name="automationUIContextFrom">Dari</string>
     <string name="automationUIContextNote">Pada hari-hari ini, DoneAt tidak akan menanyakan mengapa kamu tidak di kantor, dan meninggalkan kantor tidak akan mengakhiri harimu.</string>
     <string name="automationUIContextSection">Bekerja di Luar Kantor</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">Batalkan Semua Pilihan</string>
     <string name="automationUIDismissOne">Abaikan</string>
     <string name="automationUIDismissSelected">Abaikan</string>
+    <string name="automationUIEarlyArrival">Tiba Lebih Awal</string>
+    <string name="automationUIEarlyArrivalAsk">Tanya Saya</string>
+    <string name="automationUIEarlyArrivalFromArrival">Hitung dari Kedatangan</string>
+    <string name="automationUIEarlyArrivalNote">Waktu kedatangan Anda selalu disimpan. Ini menentukan kapan jam kerja mulai dihitung.</string>
+    <string name="automationUIEarlyArrivalSchedule">Mulai pada Jam Shift</string>
     <string name="automationUIEndAt">Selesai %1$s</string>
     <string name="automationUIIntro">DoneAt mendeteksi saat Anda tiba di atau meninggalkan tempat kerja dan mencatat jam kerja Anda. Tetap nonaktif sampai Anda mengaktifkannya.</string>
     <string name="automationUILeaveRange">Dianggap pergi jika lebih dari %1$s m</string>
@@ -1159,6 +1164,7 @@
     <string name="recordsVerifyAdopted">Diterima</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, otomatis</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, oleh Anda</string>
+    <string name="recordsVerifyArrivedAt">Tiba %1$s</string>
     <string name="recordsVerifyDetected">Terdeteksi</string>
     <string name="recordsVerifyDetectedUnknown">Tidak dilaporkan</string>
     <string name="recordsVerifyHeadlineEnd">Jam Pulang Dicatat dari Lokasi</string>

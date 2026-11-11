@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">जल्दी पहुँचने पर पूछें</string>
     <string name="automationUIAskAfterNote">शिफ़्ट के बाहर पहुँचने पर भी यही लागू होता है।</string>
     <string name="automationUIAutoApply">पता लगाए गए समय अपने आप लागू करें</string>
-    <string name="automationUIAutoApplyNote">बंद होने पर समय आपकी पुष्टि का इंतज़ार करते हैं। चालू होने पर सामान्य आगमन और प्रस्थान सीधे आपके घंटे अपडेट करते हैं; जल्दी शुरुआत पर पहले भी पूछा जाता है।</string>
+    <string name="automationUIAutoApplyNote">बंद होने पर समय आपकी पुष्टि का इंतज़ार करते हैं। चालू होने पर आगमन और प्रस्थान सीधे आपके घंटे अपडेट करते हैं।</string>
     <string name="automationUIContextFrom">से</string>
     <string name="automationUIContextNote">इन दिनों DoneAt यह नहीं पूछेगा कि आप दफ़्तर में क्यों नहीं हैं, और दफ़्तर छोड़ने से आपका दिन समाप्त नहीं होगा।</string>
     <string name="automationUIContextSection">दफ़्तर से बाहर के दिन</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">सभी अचयनित करें</string>
     <string name="automationUIDismissOne">अनदेखा करें</string>
     <string name="automationUIDismissSelected">अनदेखा करें</string>
+    <string name="automationUIEarlyArrival">जल्दी पहुँचना</string>
+    <string name="automationUIEarlyArrivalAsk">मुझसे पूछें</string>
+    <string name="automationUIEarlyArrivalFromArrival">पहुँचने से गिनें</string>
+    <string name="automationUIEarlyArrivalNote">आपके पहुँचने का समय हमेशा सहेजा जाता है। यहाँ तय करें कि काम की गिनती कब से शुरू हो।</string>
+    <string name="automationUIEarlyArrivalSchedule">शिफ़्ट के समय से शुरू</string>
     <string name="automationUIEndAt">%1$s पर समाप्त</string>
     <string name="automationUIIntro">DoneAt पता लगाता है कि आप अपने कार्यस्थलों पर कब पहुँचते या वहाँ से निकलते हैं, और आपके काम के समय दर्ज करता है। यह तब तक बंद रहता है जब तक आप इसे चालू नहीं करते।</string>
     <string name="automationUILeaveRange">%1$s मी से आगे जाने पर निकलना माना जाएगा</string>
@@ -1162,6 +1167,7 @@
     <string name="recordsVerifyAdopted">अपनाया गया</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, अपने-आप</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, आपके द्वारा</string>
+    <string name="recordsVerifyArrivedAt">%1$s पर पहुँचे</string>
     <string name="recordsVerifyDetected">पता चला</string>
     <string name="recordsVerifyDetectedUnknown">रिपोर्ट नहीं हुआ</string>
     <string name="recordsVerifyHeadlineEnd">समाप्ति का समय लोकेशन से दर्ज हुआ</string>

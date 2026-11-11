@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">Demander après une arrivée en avance</string>
     <string name="automationUIAskAfterNote">Aussi utilisé quand vous arrivez en dehors de votre service.</string>
     <string name="automationUIAutoApply">Appliquer automatiquement les heures détectées</string>
-    <string name="automationUIAutoApplyNote">Désactivé, les heures attendent votre confirmation. Activé, les arrivées et départs habituels mettent directement à jour vos heures ; les débuts en avance demandent toujours votre avis.</string>
+    <string name="automationUIAutoApplyNote">Désactivé, les heures attendent votre confirmation. Activé, les arrivées et départs mettent directement à jour vos heures.</string>
     <string name="automationUIContextFrom">Du</string>
     <string name="automationUIContextNote">Ces jours-là, DoneAt ne vous demandera pas pourquoi vous n’êtes pas au bureau, et le quitter ne mettra pas fin à votre journée.</string>
     <string name="automationUIContextSection">Hors du bureau</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">Tout désélectionner</string>
     <string name="automationUIDismissOne">Ignorer</string>
     <string name="automationUIDismissSelected">Ignorer</string>
+    <string name="automationUIEarlyArrival">Arrivée en avance</string>
+    <string name="automationUIEarlyArrivalAsk">Me demander</string>
+    <string name="automationUIEarlyArrivalFromArrival">Compter dès l’arrivée</string>
+    <string name="automationUIEarlyArrivalNote">Votre heure d’arrivée est toujours conservée. Ceci définit quand le travail commence à compter.</string>
+    <string name="automationUIEarlyArrivalSchedule">Commencer à l’heure du service</string>
     <string name="automationUIEndAt">Fin à %1$s</string>
     <string name="automationUIIntro">DoneAt détecte quand vous arrivez à vos lieux de travail ou les quittez, et enregistre vos heures. Désactivé tant que vous ne l’activez pas.</string>
     <string name="automationUILeaveRange">Départ au-delà de %1$s m</string>
@@ -1165,6 +1170,7 @@
     <string name="recordsVerifyAdopted">Adopté</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, automatiquement</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, par vous</string>
+    <string name="recordsVerifyArrivedAt">Arrivé à %1$s</string>
     <string name="recordsVerifyDetected">Détecté</string>
     <string name="recordsVerifyDetectedUnknown">Non communiqué</string>
     <string name="recordsVerifyHeadlineEnd">Départ enregistré par localisation</string>

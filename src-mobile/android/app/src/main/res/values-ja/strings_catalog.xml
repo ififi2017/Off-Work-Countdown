@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">早く到着したときに確認</string>
     <string name="automationUIAskAfterNote">シフト外に到着したときにも使われます。</string>
     <string name="automationUIAutoApply">検知した時刻を自動で反映</string>
-    <string name="automationUIAutoApplyNote">オフの場合、時刻はあなたの確認を待ちます。オンの場合、通常の到着と退出は勤務時間にそのまま反映されます。早い出勤は引き続き確認します。</string>
+    <string name="automationUIAutoApplyNote">オフの場合、時刻はあなたの確認を待ちます。オンの場合、到着と退出は勤務時間にそのまま反映されます。</string>
     <string name="automationUIContextFrom">開始</string>
     <string name="automationUIContextNote">これらの日は、オフィスにいない理由を確認せず、オフィスを離れても一日は終了しません。</string>
     <string name="automationUIContextSection">オフィス以外の日</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">すべての選択を解除</string>
     <string name="automationUIDismissOne">無視</string>
     <string name="automationUIDismissSelected">無視</string>
+    <string name="automationUIEarlyArrival">早く到着したとき</string>
+    <string name="automationUIEarlyArrivalAsk">確認する</string>
+    <string name="automationUIEarlyArrivalFromArrival">到着時刻から数える</string>
+    <string name="automationUIEarlyArrivalNote">到着時刻は常に記録されます。ここでは、勤務時間をいつから数えるかを選べます。</string>
+    <string name="automationUIEarlyArrivalSchedule">シフト開始時刻から</string>
     <string name="automationUIEndAt">%1$sに終了</string>
     <string name="automationUIIntro">勤務先への到着と退出をDoneAtが検知して、勤務時間を記録します。オンにするまでは使われません。</string>
     <string name="automationUILeaveRange">%1$s m以上離れると退出とみなす</string>
@@ -1159,6 +1164,7 @@
     <string name="recordsVerifyAdopted">反映</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s、自動</string>
     <string name="recordsVerifyAdoptedByYou">%1$s、あなたによる</string>
+    <string name="recordsVerifyArrivedAt">%1$sに到着</string>
     <string name="recordsVerifyDetected">検知</string>
     <string name="recordsVerifyDetectedUnknown">未報告</string>
     <string name="recordsVerifyHeadlineEnd">退勤は位置情報から記録</string>

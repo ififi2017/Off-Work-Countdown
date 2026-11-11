@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">Hỏi sau khi đến sớm</string>
     <string name="automationUIAskAfterNote">Cũng được dùng khi bạn đến ngoài ca làm.</string>
     <string name="automationUIAutoApply">Tự động áp dụng giờ đã phát hiện</string>
-    <string name="automationUIAutoApplyNote">Khi tắt, giờ sẽ chờ bạn xác nhận. Khi bật, giờ đến và rời đi thông thường sẽ cập nhật trực tiếp giờ làm của bạn; nếu bắt đầu sớm, ứng dụng vẫn hỏi bạn trước.</string>
+    <string name="automationUIAutoApplyNote">Khi tắt, giờ sẽ chờ bạn xác nhận. Khi bật, giờ đến và rời đi sẽ cập nhật trực tiếp giờ làm của bạn.</string>
     <string name="automationUIContextFrom">Từ</string>
     <string name="automationUIContextNote">Vào những ngày này, DoneAt sẽ không hỏi vì sao bạn không ở văn phòng, và việc rời văn phòng sẽ không kết thúc ngày của bạn.</string>
     <string name="automationUIContextSection">Làm việc ngoài văn phòng</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">Bỏ chọn tất cả</string>
     <string name="automationUIDismissOne">Bỏ qua</string>
     <string name="automationUIDismissSelected">Bỏ qua</string>
+    <string name="automationUIEarlyArrival">Đến sớm</string>
+    <string name="automationUIEarlyArrivalAsk">Hỏi tôi</string>
+    <string name="automationUIEarlyArrivalFromArrival">Tính từ lúc đến</string>
+    <string name="automationUIEarlyArrivalNote">Giờ bạn đến luôn được lưu lại. Mục này quyết định giờ làm bắt đầu được tính từ lúc nào.</string>
+    <string name="automationUIEarlyArrivalSchedule">Bắt đầu theo giờ ca</string>
     <string name="automationUIEndAt">Kết thúc %1$s</string>
     <string name="automationUIIntro">DoneAt nhận biết khi bạn đến hoặc rời nơi làm việc và ghi lại giờ làm của bạn. Tính năng này tắt cho đến khi bạn bật.</string>
     <string name="automationUILeaveRange">Tính là rời đi khi xa hơn %1$s m</string>
@@ -1159,6 +1164,7 @@
     <string name="recordsVerifyAdopted">Đã chấp nhận</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, tự động</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, bởi bạn</string>
+    <string name="recordsVerifyArrivedAt">Đến lúc %1$s</string>
     <string name="recordsVerifyDetected">Đã phát hiện</string>
     <string name="recordsVerifyDetectedUnknown">Chưa được báo</string>
     <string name="recordsVerifyHeadlineEnd">Giờ tan làm được ghi từ vị trí</string>

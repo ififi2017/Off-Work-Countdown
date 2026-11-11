@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">Chiedi dopo un arrivo in anticipo</string>
     <string name="automationUIAskAfterNote">Vale anche quando arrivi fuori dal tuo turno.</string>
     <string name="automationUIAutoApply">Applica automaticamente gli orari rilevati</string>
-    <string name="automationUIAutoApplyNote">Se è disattivato, gli orari attendono la tua conferma. Se è attivo, i soliti arrivi e uscite aggiornano direttamente le tue ore; gli inizi anticipati te lo chiedono comunque.</string>
+    <string name="automationUIAutoApplyNote">Se è disattivato, gli orari attendono la tua conferma. Se è attivo, arrivi e uscite aggiornano direttamente le tue ore.</string>
     <string name="automationUIContextFrom">Dal</string>
     <string name="automationUIContextNote">In questi giorni DoneAt non ti chiederà perché non sei in ufficio, e uscirne non terminerà la tua giornata.</string>
     <string name="automationUIContextSection">Fuori dall’ufficio</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">Deseleziona tutto</string>
     <string name="automationUIDismissOne">Ignora</string>
     <string name="automationUIDismissSelected">Ignora</string>
+    <string name="automationUIEarlyArrival">Arrivo in anticipo</string>
+    <string name="automationUIEarlyArrivalAsk">Chiedimi</string>
+    <string name="automationUIEarlyArrivalFromArrival">Conta dall’arrivo</string>
+    <string name="automationUIEarlyArrivalNote">L’orario di arrivo viene sempre salvato. Qui scegli da quando iniziano a contare le ore di lavoro.</string>
+    <string name="automationUIEarlyArrivalSchedule">Inizia all’orario del turno</string>
     <string name="automationUIEndAt">Fine alle %1$s</string>
     <string name="automationUIIntro">DoneAt rileva quando arrivi nei tuoi luoghi di lavoro o li lasci e registra i tuoi orari. Resta disattivata finché non la attivi.</string>
     <string name="automationUILeaveRange">L’uscita conta oltre %1$s m</string>
@@ -1165,6 +1170,7 @@
     <string name="recordsVerifyAdopted">Adottato</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, automaticamente</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, da te</string>
+    <string name="recordsVerifyArrivedAt">Arrivo %1$s</string>
     <string name="recordsVerifyDetected">Rilevato</string>
     <string name="recordsVerifyDetectedUnknown">Non indicato</string>
     <string name="recordsVerifyHeadlineEnd">Uscita registrata dalla posizione</string>

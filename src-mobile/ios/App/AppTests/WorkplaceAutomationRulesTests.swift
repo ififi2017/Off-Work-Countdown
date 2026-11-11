@@ -142,6 +142,40 @@ struct WorkplaceAutomationRulesTests {
         )
     }
 
+    @Test("The early-arrival setting decides where work starts; late arrivals always count from arrival")
+    func arrivalStartPolicy() {
+        let shift = Self.dayShift()
+        func start(_ minute: Int, hour: Int = 8, _ policy: WorkplaceEarlyArrivalPolicy) -> (Date, Bool) {
+            let result = WorkplaceAutomationRules.arrivalStart(
+                at: Self.at(9, hour, minute), for: shift, promptDelay: .fifteenMinutes, policy: policy
+            )
+            return (result.time, result.needsConfirmation)
+        }
+        // Ask me: early waits for the person; inside the delay it is the plan.
+        #expect(start(20, .ask) == (Self.at(9, 8, 20), true))
+        #expect(start(50, .ask) == (Self.at(9, 9, 0), false))
+        // Count from arrival: early or not, never asks.
+        #expect(start(20, .fromArrival) == (Self.at(9, 8, 20), false))
+        #expect(start(50, .fromArrival) == (Self.at(9, 8, 50), false))
+        // Shift time: the plan, never asks.
+        #expect(start(20, .schedule) == (Self.at(9, 9, 0), false))
+        for policy in WorkplaceEarlyArrivalPolicy.allCases {
+            #expect(start(10, hour: 9, policy) == (Self.at(9, 9, 10), false))
+        }
+    }
+
+    @Test("Settings saved before the early-arrival choice decode as ask me")
+    func earlyArrivalPolicyDecodes() throws {
+        var object = try #require(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(WorkplaceAutomationSettings())) as? [String: Any]
+        )
+        object.removeValue(forKey: "earlyArrivalPolicy")
+        let decoded = try JSONDecoder().decode(
+            WorkplaceAutomationSettings.self, from: JSONSerialization.data(withJSONObject: object)
+        )
+        #expect(decoded.earlyArrivalPolicy == .ask)
+    }
+
     // MARK: Exits
 
     @Test("Leaving before the planned end, lunch included, is only a temporary absence")

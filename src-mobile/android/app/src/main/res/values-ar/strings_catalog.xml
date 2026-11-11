@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">السؤال بعد الوصول مبكرًا</string>
     <string name="automationUIAskAfterNote">يُستخدم أيضًا عند وصولك خارج مناوبتك.</string>
     <string name="automationUIAutoApply">تطبيق الأوقات المكتشفة تلقائيًا</string>
-    <string name="automationUIAutoApplyNote">عند إيقافه، تنتظر الأوقات تأكيدك. وعند تشغيله، تحدّث عمليات الوصول والمغادرة المعتادة ساعاتك مباشرةً، أما البدايات المبكرة فتسألك أولًا.</string>
+    <string name="automationUIAutoApplyNote">عند إيقافه، تنتظر الأوقات تأكيدك. وعند تشغيله، تحدّث عمليات الوصول والمغادرة ساعاتك مباشرةً.</string>
     <string name="automationUIContextFrom">من</string>
     <string name="automationUIContextNote">في هذه الأيام، لن يسألك DoneAt عن سبب وجودك خارج المكتب، ولن تنهي مغادرته يومك.</string>
     <string name="automationUIContextSection">العمل خارج المكتب</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">إلغاء تحديد الكل</string>
     <string name="automationUIDismissOne">تجاهل</string>
     <string name="automationUIDismissSelected">تجاهل</string>
+    <string name="automationUIEarlyArrival">الوصول مبكرًا</string>
+    <string name="automationUIEarlyArrivalAsk">اسألني</string>
+    <string name="automationUIEarlyArrivalFromArrival">الاحتساب من الوصول</string>
+    <string name="automationUIEarlyArrivalNote">يُسجَّل وقت وصولك دائمًا. وهنا تحدّد متى يبدأ احتساب العمل.</string>
+    <string name="automationUIEarlyArrivalSchedule">البدء في وقت المناوبة</string>
     <string name="automationUIEndAt">انتهى %1$s</string>
     <string name="automationUIIntro">يكتشف DoneAt وصولك إلى أماكن عملك أو مغادرتها ويسجّل أوقات عملك. يبقى متوقفًا حتى تشغّله.</string>
     <string name="automationUILeaveRange">تُحتسب المغادرة بعد %1$s م</string>
@@ -1174,6 +1179,7 @@
     <string name="recordsVerifyAdopted">تم الاعتماد</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s، تلقائيًا</string>
     <string name="recordsVerifyAdoptedByYou">%1$s، بواسطتك</string>
+    <string name="recordsVerifyArrivedAt">الوصول %1$s</string>
     <string name="recordsVerifyDetected">تم الاكتشاف</string>
     <string name="recordsVerifyDetectedUnknown">غير مُبلَّغ</string>
     <string name="recordsVerifyHeadlineEnd">وقت الانتهاء مسجّل من الموقع</string>

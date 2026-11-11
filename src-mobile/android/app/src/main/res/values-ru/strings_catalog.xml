@@ -142,7 +142,7 @@
     <string name="automationUIAskAfter">Спросить после раннего прихода</string>
     <string name="automationUIAskAfterNote">Также используется, если вы пришли вне смены.</string>
     <string name="automationUIAutoApply">Применять найденное время автоматически</string>
-    <string name="automationUIAutoApplyNote">Если выключено, время ждёт вашего подтверждения. Если включено, обычные приходы и уходы сразу обновляют ваши часы, а о раннем начале вас спросят заранее.</string>
+    <string name="automationUIAutoApplyNote">Если выключено, время ждёт вашего подтверждения. Если включено, приходы и уходы сразу обновляют ваши часы.</string>
     <string name="automationUIContextFrom">С</string>
     <string name="automationUIContextNote">В эти дни DoneAt не будет спрашивать, почему вы не в офисе, а уход из офиса не завершит ваш день.</string>
     <string name="automationUIContextSection">Работа вне офиса</string>
@@ -156,6 +156,11 @@
     <string name="automationUIDeselectAll">Снять выбор</string>
     <string name="automationUIDismissOne">Пропустить</string>
     <string name="automationUIDismissSelected">Пропустить</string>
+    <string name="automationUIEarlyArrival">Ранний приход</string>
+    <string name="automationUIEarlyArrivalAsk">Спросить меня</string>
+    <string name="automationUIEarlyArrivalFromArrival">Считать с прихода</string>
+    <string name="automationUIEarlyArrivalNote">Время вашего прихода сохраняется всегда. Здесь вы выбираете, с какого момента считать рабочее время.</string>
+    <string name="automationUIEarlyArrivalSchedule">Начать со времени смены</string>
     <string name="automationUIEndAt">Конец в %1$s</string>
     <string name="automationUIIntro">DoneAt замечает, когда вы приходите на работу или уходите, и записывает рабочее время. Пока вы не включите функцию, она отключена.</string>
     <string name="automationUILeaveRange">Уход засчитывается за пределами %1$s м</string>
@@ -1168,6 +1173,7 @@
     <string name="recordsVerifyAdopted">Принято</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, автоматически</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, вами</string>
+    <string name="recordsVerifyArrivedAt">Приход %1$s</string>
     <string name="recordsVerifyDetected">Определено</string>
     <string name="recordsVerifyDetectedUnknown">Не сообщено</string>
     <string name="recordsVerifyHeadlineEnd">Окончание записано по геопозиции</string>
