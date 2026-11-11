@@ -11,15 +11,6 @@ export function monthKeyFromDateKey(dateKey: string): string {
   return dateKey.slice(0, 7);
 }
 
-export function shiftMonthKey(monthKey: string, delta: number): string {
-  const [yearText, monthText] = monthKey.split("-");
-  const year = Number(yearText);
-  const month = Number(monthText);
-  if (!Number.isInteger(year) || !Number.isInteger(month)) return monthKey;
-  const next = new Date(year, month - 1 + delta, 1);
-  return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
-}
-
 export interface DesktopDayStats {
   attended: boolean;
   plannedMs: number;

@@ -50,16 +50,6 @@ export const DESKTOP_STATS_KEY = "stats";
 /** 改名说明只对「更新前就已经有快照」的桌面用户弹一次。 */
 export const DESKTOP_BRAND_RENAME_NOTICE_KEY = "brandRenameNoticeSeen";
 
-export function shouldOfferBrandRenameNotice({
-  noticeSeen,
-  hadExistingCountdown,
-}: {
-  noticeSeen: boolean;
-  hadExistingCountdown: boolean;
-}): boolean {
-  return hadExistingCountdown && !noticeSeen;
-}
-
 // 这三个形状的唯一定义在 lib/reminders.ts —— 提醒文案最终是给那个纯函数消费的，
 // 各自声明一份迟早会漂。这里只保留桌面端惯用的名字。
 export type DesktopNotificationMode = ReminderNotificationMode;
@@ -673,12 +663,6 @@ export async function getMiniWindowSettings(): Promise<MiniWindowSettings> {
 export async function setMiniAlwaysOnTop(alwaysOnTop: boolean): Promise<void> {
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("set_mini_always_on_top", { alwaysOnTop });
-}
-
-export async function toggleDesktopMiniTimer(): Promise<void> {
-  if (!IS_DESKTOP_BUILD) return;
-  const { invoke } = await import("@tauri-apps/api/core");
-  await invoke("toggle_mini_timer");
 }
 
 export async function toggleDesktopFloatingTimer(): Promise<void> {

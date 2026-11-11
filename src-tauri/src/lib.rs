@@ -1456,11 +1456,6 @@ fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), Str
 }
 
 #[tauri::command]
-fn toggle_mini_timer(app: AppHandle) {
-    toggle_mini_window(&app);
-}
-
-#[tauri::command]
 fn toggle_floating_timer(app: AppHandle) {
     toggle_floating_window(&app);
 }
@@ -2161,7 +2156,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_mini_window_settings,
             set_mini_always_on_top,
-            toggle_mini_timer,
             toggle_floating_timer,
             hide_mini_timer,
             show_main_window,

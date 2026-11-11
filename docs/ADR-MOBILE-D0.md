@@ -18,6 +18,10 @@ P1 已完成技术验证且不上传 build。生产基线锁定为：
   成品。iOS 必须有独立竖屏信息架构、触摸密度、导航和系统表面；
 - Widget、Live Activity、通知和 App Group 投影全部不含薪资。
 
+> 2026-11-10 更新：上面「Mobile 静态产物只保留作 Web 回归」已不成立。`BUILD_TARGET=mobile`
+> 静态导出、`components/mobile`、`lib/mobile` 及 `build:mobile` / `check:build:mobile` 已删除：
+> 它不在任何 CI 或发布流程里，原生工程的校验早已独立为 `npm run check:ios`。
+
 历史 P1 中 Capacitor 8.4.2 的 SwiftPM 生成器在 iOS 26 目标下会保留 `swift-tools-version: 5.9`，却写出
 PackageDescription 6.2 才提供的 `.v26`。`npm run sync:mobile:ios` 因此在每次同步后把它
 等价改写为 `.iOS("26.0")`；该字符串 API 从 PackageDescription 5.0 起可用。

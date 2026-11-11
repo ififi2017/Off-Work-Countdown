@@ -57,11 +57,6 @@ nonisolated struct LifeViewModel: Codable, Equatable, Sendable {
     var workedWeeks: Int {
         cells.count(where: { $0.kind.isWork && $0.kind.isPast })
     }
-
-    /// Working weeks still to come before retirement.
-    var remainingWeeks: Int {
-        cells.count(where: { $0.kind == .workProjected })
-    }
 }
 
 /// One career-period day after the schedule rules and the complete

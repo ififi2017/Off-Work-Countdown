@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.CountDownLatch
 
 class ArchiveInterruptionTest {
+    private companion object { const val IMPORTED_TASKS = 500 }
+
     @get:Rule val folder = TemporaryFolder()
     private val now = 1_790_000_000_000.0
     private fun seed(): RecordState = RecordJson.apply(
@@ -24,10 +26,13 @@ class ArchiveInterruptionTest {
         RecordState(), RecordJson.ImportMode.SKIP_ERASED,
     ).first
 
-    @Test fun killingALargeImportBeforeAndAfterReplacementLeavesOneCompleteArchive() = runBlocking {
+    // The child is killed at a hooked point inside the commit, so the import's
+    // size does not decide where it dies; a few hundred rows keep it a real
+    // multi-row import without spending seconds encoding and decoding.
+    @Test fun killingAnImportBeforeAndAfterReplacementLeavesOneCompleteArchive() = runBlocking {
         val original = seed()
         val task = original.focusTasks.single()
-        val incoming = original.copy(focusTasks = (1..10_000).map {
+        val incoming = original.copy(focusTasks = (1..IMPORTED_TASKS).map {
             task.copy(id = UUID.nameUUIDFromBytes("import-$it".toByteArray()).toString())
         })
         val backup = folder.root.toPath().resolve("import.json")
@@ -59,11 +64,11 @@ class ArchiveInterruptionTest {
                 assertArrayEquals(before, Files.readAllBytes(file))
                 assertEquals(original, reopened.state.value)
             } else {
-                assertEquals(10_001, reopened.state.value.focusTasks.size)
+                assertEquals(IMPORTED_TASKS + 1, reopened.state.value.focusTasks.size)
                 assertEquals(original.periods, reopened.state.value.periods)
                 assertEquals(original.observations, reopened.state.value.observations)
                 assertNotNull(RecordsTransfer.commit(reopened, Files.readAllBytes(backup)))
-                assertEquals("retry does not duplicate imported rows", 10_001, reopened.state.value.focusTasks.size)
+                assertEquals("retry does not duplicate imported rows", IMPORTED_TASKS + 1, reopened.state.value.focusTasks.size)
             }
         }
     }
