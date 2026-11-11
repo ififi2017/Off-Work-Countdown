@@ -17,6 +17,10 @@ nonisolated struct WorkplaceProbePlace: Codable, Equatable, Identifiable, Sendab
 
     var innerIdentifier: String { "probe.\(id.uuidString).inner" }
     var outerIdentifier: String { "probe.\(id.uuidString).outer" }
+    /// The same circles registered with the older `CLLocationManager` region
+    /// API, to compare delivery after the app is swiped away.
+    var legacyInnerIdentifier: String { "legacy.\(id.uuidString).inner" }
+    var legacyOuterIdentifier: String { "legacy.\(id.uuidString).outer" }
 }
 
 nonisolated struct WorkplaceProbeEntry: Codable, Equatable, Identifiable, Sendable {
@@ -24,6 +28,8 @@ nonisolated struct WorkplaceProbeEntry: Codable, Equatable, Identifiable, Sendab
         /// Process start; `appState` tells whether the system launched it in the background.
         case launch
         case event
+        /// Enter, exit or a requested state from the `CLLocationManager` region API.
+        case legacyRegion
         case monitorDiagnostic
         case sessionDiagnostic
         case note
@@ -123,6 +129,8 @@ nonisolated struct WorkplaceProbeArchive: Codable, Equatable, Sendable {
         for place in places {
             if identifier == place.innerIdentifier { return "\(place.name)/inner" }
             if identifier == place.outerIdentifier { return "\(place.name)/outer" }
+            if identifier == place.legacyInnerIdentifier { return "\(place.name)/legacy-inner" }
+            if identifier == place.legacyOuterIdentifier { return "\(place.name)/legacy-outer" }
         }
         return identifier
     }

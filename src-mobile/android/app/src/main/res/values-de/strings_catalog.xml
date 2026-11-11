@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">Wechselnder Arbeitsplatz? Nutze stattdessen „Beim Verbinden mit WLAN“ und wähle dein Firmennetzwerk.</string>
     <string name="automationGuideTipsSection">Gut zu wissen</string>
     <string name="automationGuideTitle">Automationen für Ankunft und Abfahrt einrichten</string>
+    <string name="automationHeldReminderBody">Öffne DoneAt, um diese Ankunft oder diesen Abgang zu erfassen.</string>
+    <string name="automationHeldReminderTitle">Gerade an deinem Arbeitsort vorbeigekommen?</string>
     <string name="automationIntentConfirmEnd">Arbeitsende bestätigen</string>
     <string name="automationIntentConfirmEndDescription">Erfasst nach deiner Bestätigung, dass du jetzt Feierabend hast.</string>
     <string name="automationIntentConfirmStart">Arbeitsbeginn bestätigen</string>

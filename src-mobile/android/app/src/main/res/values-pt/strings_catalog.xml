@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">O escritório muda de sítio? Use “Ao ligar ao Wi-Fi” com a sua rede de trabalho.</string>
     <string name="automationGuideTipsSection">Bom saber</string>
     <string name="automationGuideTitle">Configurar automações de chegada e saída</string>
+    <string name="automationHeldReminderBody">Abra o DoneAt para registar esta chegada ou saída.</string>
+    <string name="automationHeldReminderTitle">Acabou de passar pelo seu local de trabalho?</string>
     <string name="automationIntentConfirmEnd">Confirmar fim do trabalho</string>
     <string name="automationIntentConfirmEndDescription">Regista que terminou o trabalho agora, depois de confirmar.</string>
     <string name="automationIntentConfirmStart">Confirmar início do trabalho</string>

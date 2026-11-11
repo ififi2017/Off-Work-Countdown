@@ -398,6 +398,12 @@
     "automationGuideTitle": {
       "resource": "string/automationGuideTitle"
     },
+    "automationHeldReminderBody": {
+      "resource": "string/automationHeldReminderBody"
+    },
+    "automationHeldReminderTitle": {
+      "resource": "string/automationHeldReminderTitle"
+    },
     "automationIntentConfirmEnd": {
       "resource": "string/automationIntentConfirmEnd"
     },

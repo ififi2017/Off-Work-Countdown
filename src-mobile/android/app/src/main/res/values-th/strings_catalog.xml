@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">ที่ทำงานย้ายบ่อย? ลองใช้ “เมื่อเชื่อมต่อ Wi-Fi” กับเครือข่ายที่ทำงานแทน</string>
     <string name="automationGuideTipsSection">ควรรู้</string>
     <string name="automationGuideTitle">ตั้งค่าระบบอัตโนมัติเมื่อมาถึงและออกจากที่ทำงาน</string>
+    <string name="automationHeldReminderBody">เปิด DoneAt เพื่อบันทึกการมาถึงหรือการออกครั้งนี้</string>
+    <string name="automationHeldReminderTitle">เพิ่งผ่านที่ทำงานหรือเปล่า?</string>
     <string name="automationIntentConfirmEnd">ยืนยันว่าเลิกงานแล้ว</string>
     <string name="automationIntentConfirmEndDescription">บันทึกว่าคุณเลิกงานตอนนี้ หลังจากคุณยืนยัน</string>
     <string name="automationIntentConfirmStart">ยืนยันว่าเริ่มงานแล้ว</string>

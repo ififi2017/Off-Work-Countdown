@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">職場が決まっていない場合は、「Wi-Fiに接続時」を選んで職場のネットワークを指定することもできます。</string>
     <string name="automationGuideTipsSection">ヒント</string>
     <string name="automationGuideTitle">到着・出発のオートメーションを設定</string>
+    <string name="automationHeldReminderBody">DoneAt を開くと、この出社または退社の時刻を記録できます。</string>
+    <string name="automationHeldReminderTitle">いま勤務先の近くを通りましたか？</string>
     <string name="automationIntentConfirmEnd">勤務終了を確認</string>
     <string name="automationIntentConfirmEndDescription">確認後、いま勤務を終えたことを記録します。</string>
     <string name="automationIntentConfirmStart">勤務開始を確認</string>

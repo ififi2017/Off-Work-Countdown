@@ -529,6 +529,27 @@ final class NotificationService {
         try? await shiftCenter.add(UNNotificationRequest(identifier: notice.identifier, content: content, trigger: nil))
     }
 
+    static let heldCrossingIdentifier = "owc.automation.held"
+
+    /// iOS woke DoneAt for a workplace crossing but holds the event until
+    /// the app is opened (it was swiped away). Opening it records the time.
+    func postHeldCrossingReminder(text: AppText) async {
+        await refresh()
+        guard status == .allowed else { return }
+        let content = UNMutableNotificationContent()
+        content.title = text.t("automationHeldReminderTitle")
+        content.body = text.t("automationHeldReminderBody")
+        content.sound = nil
+        content.interruptionLevel = .active
+        try? await shiftCenter.add(UNNotificationRequest(
+            identifier: Self.heldCrossingIdentifier, content: content, trigger: nil
+        ))
+    }
+
+    func removeHeldCrossingReminder() async {
+        await shiftCenter.removeDelivered([Self.heldCrossingIdentifier])
+    }
+
     /// Clears after any in-flight add has completed, so stopping cannot leave
     /// behind a notification that arrives after the clear's initial read.
     func clearShiftNotifications() async {

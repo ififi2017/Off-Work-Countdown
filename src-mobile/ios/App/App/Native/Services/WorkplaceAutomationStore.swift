@@ -116,6 +116,10 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
     /// came back within `maximumTransferGap`. Device-only, for the timeline;
     /// the time counts as work because the day runs to the final exit.
     private(set) var awayStretches: [AutomationAwayStretch] = []
+    /// Times iOS woke the app for a crossing but held the event back (the
+    /// app had been swiped away). Device-only; the next released event
+    /// takes the latest one as its crossing time.
+    private(set) var heldWakes: [Date] = []
 
     var canAddWorkplace: Bool { workplaces.count < WorkplaceAutomation.maximumWorkplaces }
 
@@ -369,6 +373,33 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         awaitingBaseline.formIntersection(identifiers)
     }
 
+    // MARK: Held crossings
+
+    /// Records a wake whose event iOS held back. True when it starts a new
+    /// held stretch, which is when the person is asked to open the app.
+    mutating func noteHeldWake(at date: Date) -> Bool {
+        heldWakes.removeAll { date.timeIntervalSince($0) > WorkplaceAutomation.maximumHeldWakeAge }
+        let starts = heldWakes.isEmpty
+        heldWakes.append(date)
+        heldWakes = Array(heldWakes.suffix(8))
+        return starts
+    }
+
+    /// The crossing time for an event released after a hold: the latest
+    /// held wake no later than its receipt and not too old. Used wakes and
+    /// earlier ones are spent, so the next event cannot reuse them.
+    mutating func takeHeldWake(receivedAt: Date) -> Date? {
+        guard let wake = heldWakes.filter({
+            $0 <= receivedAt && receivedAt.timeIntervalSince($0) <= WorkplaceAutomation.maximumHeldWakeAge
+        }).max() else { return nil }
+        heldWakes.removeAll { $0 <= wake }
+        return wake
+    }
+
+    mutating func clearHeldWakes() {
+        heldWakes.removeAll()
+    }
+
     // MARK: Retention
 
     /// Whether anything automation keeps on this device is worth deleting.
@@ -376,6 +407,7 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         !workplaces.isEmpty || !events.isEmpty || !proposals.isEmpty || !receipts.isEmpty
             || !contexts.isEmpty || !visits.isEmpty || !earlyExits.isEmpty
             || !suppressedShiftKeys.isEmpty || !settledShiftKeys.isEmpty || !awayStretches.isEmpty
+            || !heldWakes.isEmpty
     }
 
     /// "Delete Automation Data" (§3.7): removes every workplace, event,
@@ -404,6 +436,7 @@ nonisolated struct WorkplaceAutomationState: Codable, Equatable, Sendable {
         suppressedShiftKeys = suppressedShiftKeys.filter { $0.value >= cutoff }
         visits.removeAll { $0.arrivedAt < cutoff }
         awayStretches.removeAll { $0.leftAt < cutoff }
+        heldWakes.removeAll { now.timeIntervalSince($0) > WorkplaceAutomation.maximumHeldWakeAge }
         let cutoffKey = RecordJSON.dayKey(cutoff, calendar: Calendar(identifier: .gregorian))
         contexts.removeAll { $0.lastDayKey < cutoffKey }
         settledShiftKeys = settledShiftKeys.filter { String($0.key.prefix(10)) >= cutoffKey }
@@ -414,7 +447,7 @@ nonisolated extension WorkplaceAutomationState {
     private enum CodingKeys: String, CodingKey {
         case version, settings, workplaces, events, proposals, receipts, insideWorkplaceIDs
         case suppressedShiftKeys, lastRegistrationGeneration, adoptedEditCounts
-        case contexts, settledShiftKeys, visits, earlyExits, awaitingBaseline, awayStretches
+        case contexts, settledShiftKeys, visits, earlyExits, awaitingBaseline, awayStretches, heldWakes
     }
 
     /// Fields added after the first internal builds decode as empty.
@@ -437,6 +470,7 @@ nonisolated extension WorkplaceAutomationState {
         earlyExits = try container.decodeIfPresent([String: WorkTimeProposal].self, forKey: .earlyExits) ?? [:]
         awaitingBaseline = try container.decodeIfPresent(Set<String>.self, forKey: .awaitingBaseline) ?? []
         awayStretches = try container.decodeIfPresent([AutomationAwayStretch].self, forKey: .awayStretches) ?? []
+        heldWakes = try container.decodeIfPresent([Date].self, forKey: .heldWakes) ?? []
     }
 }
 
