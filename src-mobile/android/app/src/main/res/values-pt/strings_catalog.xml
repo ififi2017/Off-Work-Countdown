@@ -140,7 +140,7 @@
     <string name="automationUIAskAfter">Perguntar após chegada antecipada</string>
     <string name="automationUIAskAfterNote">Também é usado quando chega fora do seu turno.</string>
     <string name="automationUIAutoApply">Aplicar automaticamente os horários detetados</string>
-    <string name="automationUIAutoApplyNote">Se desativado, os horários aguardam a sua confirmação. Se ativado, as chegadas e saídas habituais atualizam diretamente o seu horário; as entradas antecipadas continuam a perguntar primeiro.</string>
+    <string name="automationUIAutoApplyNote">Se desativado, os horários aguardam a sua confirmação. Se ativado, as chegadas e saídas atualizam diretamente o seu horário.</string>
     <string name="automationUIContextFrom">De</string>
     <string name="automationUIContextNote">Nestes dias, o DoneAt não pergunta porque não está no escritório e sair do escritório não termina o seu dia.</string>
     <string name="automationUIContextSection">Trabalho fora do escritório</string>
@@ -154,6 +154,11 @@
     <string name="automationUIDeselectAll">Desselecionar tudo</string>
     <string name="automationUIDismissOne">Ignorar</string>
     <string name="automationUIDismissSelected">Ignorar</string>
+    <string name="automationUIEarlyArrival">Chegada antecipada</string>
+    <string name="automationUIEarlyArrivalAsk">Perguntar-me</string>
+    <string name="automationUIEarlyArrivalFromArrival">Contar desde a chegada</string>
+    <string name="automationUIEarlyArrivalNote">A sua hora de chegada fica sempre registada. Aqui define quando o trabalho começa a contar.</string>
+    <string name="automationUIEarlyArrivalSchedule">Começar à hora do turno</string>
     <string name="automationUIEndAt">Saída às %1$s</string>
     <string name="automationUIIntro">O DoneAt repara quando chega ao local de trabalho ou sai dele e regista os seus horários. Fica desativado até o ativar.</string>
     <string name="automationUILeaveRange">Sair conta a partir de %1$s m</string>
@@ -1186,6 +1191,7 @@
     <string name="recordsVerifyAdopted">Adotado</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, automaticamente</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, por si</string>
+    <string name="recordsVerifyArrivedAt">Chegada %1$s</string>
     <string name="recordsVerifyDetected">Detetado</string>
     <string name="recordsVerifyDetectedUnknown">Não indicado</string>
     <string name="recordsVerifyHeadlineEnd">Saída registada pela localização</string>

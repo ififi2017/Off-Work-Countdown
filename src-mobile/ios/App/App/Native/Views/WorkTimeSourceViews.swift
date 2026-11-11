@@ -64,7 +64,14 @@ struct WorkTimeSourceCard: View {
     }
 
     private func line(_ item: WorkTimeVerificationSummary.Item) -> String {
-        "\(text.t(item.boundary.labelKey)) \(formatTime(item.entry.time)) · \(text.t(item.mark.labelKey))"
+        let adopted = formatTime(item.entry.time)
+        var line = "\(text.t(item.boundary.labelKey)) \(adopted) · \(text.t(item.mark.labelKey))"
+        // Work may count from the shift start; when the person got there
+        // stays a fact on the day (§3.9).
+        if item.boundary == .start, let observed = item.entry.observedAt.map(formatTime), observed != adopted {
+            line += " · " + text.t("recordsVerifyArrivedAt", values: ["time": observed])
+        }
+        return line
     }
 }
 

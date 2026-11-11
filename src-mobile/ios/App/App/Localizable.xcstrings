@@ -154304,115 +154304,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "عند إيقافه، تنتظر الأوقات تأكيدك. وعند تشغيله، تحدّث عمليات الوصول والمغادرة المعتادة ساعاتك مباشرةً، أما البدايات المبكرة فتسألك أولًا."
+            "value": "عند إيقافه، تنتظر الأوقات تأكيدك. وعند تشغيله، تحدّث عمليات الوصول والمغادرة ساعاتك مباشرةً."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ist die Option aus, warten Zeiten auf deine Bestätigung. Ist sie an, aktualisieren übliche Ankünfte und Abgänge deine Stunden direkt; frühe Starts fragen weiterhin nach."
+            "value": "Ist die Option aus, warten Zeiten auf deine Bestätigung. Ist sie an, aktualisieren Ankünfte und Abgänge deine Stunden direkt."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When off, times wait for you to confirm. When on, usual arrivals and departures update your hours directly; early starts still ask you first."
+            "value": "When off, times wait for you to confirm. When on, arrivals and departures update your hours directly."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Si está desactivado, las horas esperan tu confirmación. Si está activado, las llegadas y salidas habituales actualizan tus horas directamente; los inicios anticipados siempre te lo preguntan."
+            "value": "Si está desactivado, las horas esperan tu confirmación. Si está activado, las llegadas y salidas actualizan tus horas directamente."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Désactivé, les heures attendent votre confirmation. Activé, les arrivées et départs habituels mettent directement à jour vos heures ; les débuts en avance demandent toujours votre avis."
+            "value": "Désactivé, les heures attendent votre confirmation. Activé, les arrivées et départs mettent directement à jour vos heures."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "बंद होने पर समय आपकी पुष्टि का इंतज़ार करते हैं। चालू होने पर सामान्य आगमन और प्रस्थान सीधे आपके घंटे अपडेट करते हैं; जल्दी शुरुआत पर पहले भी पूछा जाता है।"
+            "value": "बंद होने पर समय आपकी पुष्टि का इंतज़ार करते हैं। चालू होने पर आगमन और प्रस्थान सीधे आपके घंटे अपडेट करते हैं।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saat nonaktif, waktu menunggu konfirmasi Anda. Saat aktif, kedatangan dan kepulangan yang biasa langsung memperbarui jam kerja; mulai lebih awal tetap ditanyakan lebih dulu."
+            "value": "Saat nonaktif, waktu menunggu konfirmasi Anda. Saat aktif, kedatangan dan kepulangan langsung memperbarui jam kerja."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Se è disattivato, gli orari attendono la tua conferma. Se è attivo, i soliti arrivi e uscite aggiornano direttamente le tue ore; gli inizi anticipati te lo chiedono comunque."
+            "value": "Se è disattivato, gli orari attendono la tua conferma. Se è attivo, arrivi e uscite aggiornano direttamente le tue ore."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "オフの場合、時刻はあなたの確認を待ちます。オンの場合、通常の到着と退出は勤務時間にそのまま反映されます。早い出勤は引き続き確認します。"
+            "value": "オフの場合、時刻はあなたの確認を待ちます。オンの場合、到着と退出は勤務時間にそのまま反映されます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "꺼져 있으면 시간이 확인을 기다려요. 켜면 평소 출퇴근 시간은 근무 시간에 바로 반영되고, 일찍 출근한 경우에는 먼저 물어봐요."
+            "value": "꺼져 있으면 시간이 확인을 기다려요. 켜면 출퇴근 시간이 근무 시간에 바로 반영돼요."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "बंद असताना वेळा तुमच्या पुष्टीची वाट पाहतात. सुरू असताना नेहमीचे पोहोचणे आणि निघणे थेट तुमच्या तासांत अपडेट होते; लवकर सुरुवात झाल्यास आधी तुम्हाला विचारले जाते."
+            "value": "बंद असताना वेळा तुमच्या पुष्टीची वाट पाहतात. सुरू असताना पोहोचणे आणि निघणे थेट तुमच्या तासांत अपडेट होते."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Se desativado, os horários aguardam a sua confirmação. Se ativado, as chegadas e saídas habituais atualizam diretamente o seu horário; as entradas antecipadas continuam a perguntar primeiro."
+            "value": "Se desativado, os horários aguardam a sua confirmação. Se ativado, as chegadas e saídas atualizam diretamente o seu horário."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Если выключено, время ждёт вашего подтверждения. Если включено, обычные приходы и уходы сразу обновляют ваши часы, а о раннем начале вас спросят заранее."
+            "value": "Если выключено, время ждёт вашего подтверждения. Если включено, приходы и уходы сразу обновляют ваши часы."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "เมื่อปิดอยู่ เวลาจะรอให้คุณยืนยันก่อน เมื่อเปิดอยู่ การมาถึงและออกตามปกติจะอัปเดตชั่วโมงทำงานของคุณทันที ส่วนการเริ่มงานก่อนเวลายังคงถามคุณก่อน"
+            "value": "เมื่อปิดอยู่ เวลาจะรอให้คุณยืนยันก่อน เมื่อเปิดอยู่ การมาถึงและการออกจะอัปเดตชั่วโมงทำงานของคุณทันที"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kapalıyken saatler onayınızı bekler. Açıkken olağan varış ve ayrılışlar çalışma saatlerinizi doğrudan günceller; erken başlangıçlarda yine önce size sorulur."
+            "value": "Kapalıyken saatler onayınızı bekler. Açıkken varış ve ayrılışlar çalışma saatlerinizi doğrudan günceller."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Khi tắt, giờ sẽ chờ bạn xác nhận. Khi bật, giờ đến và rời đi thông thường sẽ cập nhật trực tiếp giờ làm của bạn; nếu bắt đầu sớm, ứng dụng vẫn hỏi bạn trước."
+            "value": "Khi tắt, giờ sẽ chờ bạn xác nhận. Khi bật, giờ đến và rời đi sẽ cập nhật trực tiếp giờ làm của bạn."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "关闭时，时间会先等你确认。开启后，平常的上下班时间会直接更新工时；提前上班仍会先问你。"
+            "value": "关闭时，时间会先等你确认。开启后，上下班时间会直接更新工时。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "關閉時，時間會先等你確認。開啟後，平常的上下班時間會直接更新工時；提早上班仍會先問你。"
+            "value": "關閉時，時間會先等你確認。開啟後，上下班時間會直接更新工時。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "關閉時，時間會先等你確認。開啟後，平常的上下班時間會直接更新工時；提早上班仍會先問你。"
+            "value": "關閉時，時間會先等你確認。開啟後，上下班時間會直接更新工時。"
           }
         }
       }
@@ -173334,6 +173334,720 @@
           "stringUnit": {
             "state": "translated",
             "value": "कामावर पोहोचा आणि निघा, तुमच्या खऱ्या वेळा नोंदवल्या जातात, बॅटरी जवळजवळ न वापरता. कसे ते पाहण्यासाठी टॅप करा."
+          }
+        }
+      }
+    },
+    "automationUIEarlyArrival": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوصول مبكرًا"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frühe Ankunft"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arriving Early"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llegada temprana"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivée en avance"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जल्दी पहुँचना"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiba Lebih Awal"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivo in anticipo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "早く到着したとき"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일찍 도착했을 때"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लवकर पोहोचणे"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chegada antecipada"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ранний приход"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "มาถึงก่อนเวลา"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erken Varış"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đến sớm"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提前到公司"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提早到公司"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提早到公司"
+          }
+        }
+      }
+    },
+    "automationUIEarlyArrivalNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُسجَّل وقت وصولك دائمًا. وهنا تحدّد متى يبدأ احتساب العمل."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Ankunftszeit wird immer gespeichert. Hier legst du fest, ab wann die Arbeit zählt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your arrival time is always kept. This sets when work starts counting."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu hora de llegada siempre se guarda. Aquí eliges desde cuándo cuenta el trabajo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre heure d’arrivée est toujours conservée. Ceci définit quand le travail commence à compter."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपके पहुँचने का समय हमेशा सहेजा जाता है। यहाँ तय करें कि काम की गिनती कब से शुरू हो।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waktu kedatangan Anda selalu disimpan. Ini menentukan kapan jam kerja mulai dihitung."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’orario di arrivo viene sempre salvato. Qui scegli da quando iniziano a contare le ore di lavoro."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到着時刻は常に記録されます。ここでは、勤務時間をいつから数えるかを選べます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도착 시간은 항상 기록돼요. 여기서는 근무 시간을 언제부터 셀지 정해요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुमची पोहोचण्याची वेळ नेहमी जतन केली जाते. कामाची मोजणी कधीपासून सुरू होईल हे येथे ठरवा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A sua hora de chegada fica sempre registada. Aqui define quando o trabalho começa a contar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Время вашего прихода сохраняется всегда. Здесь вы выбираете, с какого момента считать рабочее время."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เวลาที่คุณมาถึงจะถูกบันทึกไว้เสมอ ตรงนี้ใช้กำหนดว่าจะเริ่มนับเวลาทำงานเมื่อใด"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varış saatiniz her zaman kaydedilir. Burada çalışmanın ne zaman sayılmaya başlayacağını seçersiniz."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ bạn đến luôn được lưu lại. Mục này quyết định giờ làm bắt đầu được tính từ lúc nào."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "实际到达时间都会记下，这里决定从何时开始算工时。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "實際抵達時間都會記低，這裡決定從何時開始計工時。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "實際到達時間都會記下，這裡決定從何時開始算工時。"
+          }
+        }
+      }
+    },
+    "automationUIEarlyArrivalAsk": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اسألني"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mich fragen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask Me"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preguntarme"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Me demander"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मुझसे पूछें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanya Saya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiedimi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認する"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "먼저 물어보기"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मला विचारा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perguntar-me"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Спросить меня"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ถามฉัน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bana Sor"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hỏi tôi"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "先问我"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "先問我"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "先問我"
+          }
+        }
+      }
+    },
+    "automationUIEarlyArrivalFromArrival": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الاحتساب من الوصول"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ab Ankunft zählen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Count from Arrival"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contar desde la llegada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compter dès l’arrivée"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पहुँचने से गिनें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hitung dari Kedatangan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conta dall’arrivo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到着時刻から数える"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도착 시점부터 계산"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पोहोचल्यापासून मोजा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contar desde a chegada"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Считать с прихода"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "นับตั้งแต่มาถึง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varıştan İtibaren Say"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tính từ lúc đến"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从到达起算"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由抵達起計"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從到達起算"
+          }
+        }
+      }
+    },
+    "automationUIEarlyArrivalSchedule": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "البدء في وقت المناوبة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zur Schichtzeit starten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start at Shift Time"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empezar a la hora del turno"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Commencer à l’heure du service"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ़्ट के समय से शुरू"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mulai pada Jam Shift"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inizia all’orario del turno"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シフト開始時刻から"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무 시작 시간부터"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ्टच्या वेळी सुरू करा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Começar à hora do turno"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начать со времени смены"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เริ่มตามเวลากะ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vardiya Saatinde Başla"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bắt đầu theo giờ ca"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按排班时间"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按排班時間"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "照排班時間"
+          }
+        }
+      }
+    },
+    "recordsVerifyArrivedAt": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوصول {{time}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angekommen {{time}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrived {{time}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llegada {{time}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivé à {{time}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} पर पहुँचे"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiba {{time}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrivo {{time}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}}に到着"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 도착"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} ला पोहोचले"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chegada {{time}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приход {{time}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "มาถึง {{time}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varış {{time}}"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đến lúc {{time}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 到公司"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 到公司"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{time}} 到公司"
           }
         }
       }

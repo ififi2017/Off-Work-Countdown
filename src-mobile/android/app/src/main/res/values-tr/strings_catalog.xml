@@ -140,7 +140,7 @@
     <string name="automationUIAskAfter">Erken Vardıktan Sonra Sor</string>
     <string name="automationUIAskAfterNote">Vardiyanız dışında vardığınızda da kullanılır.</string>
     <string name="automationUIAutoApply">Algılanan Saatleri Otomatik Uygula</string>
-    <string name="automationUIAutoApplyNote">Kapalıyken saatler onayınızı bekler. Açıkken olağan varış ve ayrılışlar çalışma saatlerinizi doğrudan günceller; erken başlangıçlarda yine önce size sorulur.</string>
+    <string name="automationUIAutoApplyNote">Kapalıyken saatler onayınızı bekler. Açıkken varış ve ayrılışlar çalışma saatlerinizi doğrudan günceller.</string>
     <string name="automationUIContextFrom">Başlangıç</string>
     <string name="automationUIContextNote">Bu günlerde DoneAt neden ofiste olmadığını sormaz ve ofisten ayrılmak gününüzü bitirmez.</string>
     <string name="automationUIContextSection">Ofis Dışında Çalışma</string>
@@ -154,6 +154,11 @@
     <string name="automationUIDeselectAll">Tüm Seçimleri Kaldır</string>
     <string name="automationUIDismissOne">Yoksay</string>
     <string name="automationUIDismissSelected">Yoksay</string>
+    <string name="automationUIEarlyArrival">Erken Varış</string>
+    <string name="automationUIEarlyArrivalAsk">Bana Sor</string>
+    <string name="automationUIEarlyArrivalFromArrival">Varıştan İtibaren Say</string>
+    <string name="automationUIEarlyArrivalNote">Varış saatiniz her zaman kaydedilir. Burada çalışmanın ne zaman sayılmaya başlayacağını seçersiniz.</string>
+    <string name="automationUIEarlyArrivalSchedule">Vardiya Saatinde Başla</string>
     <string name="automationUIEndAt">Bitiş %1$s</string>
     <string name="automationUIIntro">DoneAt, iş yerlerinize vardığınızı veya ayrıldığınızı fark eder ve çalışma saatlerinizi kaydeder. Siz açana kadar kapalı kalır.</string>
     <string name="automationUILeaveRange">%1$s m’yi aşınca ayrılmış sayılır</string>
@@ -1183,6 +1188,7 @@
     <string name="recordsVerifyAdopted">Benimsendi</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, otomatik</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, sizin tarafınızdan</string>
+    <string name="recordsVerifyArrivedAt">Varış %1$s</string>
     <string name="recordsVerifyDetected">Algılandı</string>
     <string name="recordsVerifyDetectedUnknown">Bildirilmedi</string>
     <string name="recordsVerifyHeadlineEnd">Çıkış Saati Konumdan Kaydedildi</string>

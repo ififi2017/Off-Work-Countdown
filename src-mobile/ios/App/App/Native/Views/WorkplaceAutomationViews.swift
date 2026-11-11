@@ -41,6 +41,7 @@ struct WorkplaceAutomationSettingsContent: View {
     var onToggleMonitoring: (Bool) -> Void = { _ in }
     var onToggleAutoApply: (Bool) -> Void = { _ in }
     var onPromptDelay: (WorkplaceVisitPromptDelay) -> Void = { _ in }
+    var onEarlyArrivalPolicy: (WorkplaceEarlyArrivalPolicy) -> Void = { _ in }
     var onRequestAccess: () -> Void = {}
     var onOpenSystemSettings: () -> Void = {}
     var onAddWorkplace: () -> Void = {}
@@ -209,6 +210,17 @@ struct WorkplaceAutomationSettingsContent: View {
                 Toggle(text.t("automationUINotifyArrivals"),
                        isOn: Binding(get: { settings.notifiesArrivalsAndDepartures }, set: onToggleNotify))
                     .labelsHidden()
+            }
+            OWCRow(title: text.t("automationUIEarlyArrival"), subtitle: text.t("automationUIEarlyArrivalNote"),
+                   centersVertically: true) {
+                Picker(text.t("automationUIEarlyArrival"),
+                       selection: Binding(get: { settings.earlyArrivalPolicy }, set: onEarlyArrivalPolicy)) {
+                    ForEach(WorkplaceEarlyArrivalPolicy.allCases, id: \.self) { policy in
+                        Text(text.t(policy.labelKey)).tag(policy)
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
             }
             OWCRow(title: text.t("automationUIAskAfter"), subtitle: text.t("automationUIAskAfterNote"),
                    isLast: true, centersVertically: true) {
@@ -893,3 +905,13 @@ private enum WorkplaceAutomationPreviewFixtures {
     )
 }
 #endif
+
+extension WorkplaceEarlyArrivalPolicy {
+    var labelKey: String {
+        switch self {
+        case .ask: "automationUIEarlyArrivalAsk"
+        case .fromArrival: "automationUIEarlyArrivalFromArrival"
+        case .schedule: "automationUIEarlyArrivalSchedule"
+        }
+    }
+}

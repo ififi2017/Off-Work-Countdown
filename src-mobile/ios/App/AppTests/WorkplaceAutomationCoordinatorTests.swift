@@ -173,6 +173,33 @@ struct WorkplaceAutomationCoordinatorTests {
         #expect(harness.override?.editCount == 1)
     }
 
+    @Test("Counting from arrival applies an early or punctual arrival from when it happened")
+    func earlyArrivalFromArrival() async {
+        let harness = Harness(applies: true)
+        harness.coordinator.update { $0.settings.earlyArrivalPolicy = .fromArrival }
+        #expect(await harness.receive(.enterInner, at: Self.at(8)) == .applied)
+        #expect(harness.override?.segments.first == Self.segment(Self.at(8), Self.at(12)))
+        #expect(harness.coordinator.state.pendingProposals.isEmpty)
+        #expect(harness.coordinator.state.openVisit == nil)
+
+        // Within the prompt delay too: the ten minutes before nine count.
+        let punctual = Harness(applies: true)
+        punctual.coordinator.update { $0.settings.earlyArrivalPolicy = .fromArrival }
+        #expect(await punctual.receive(.enterInner, at: Self.at(8, 50)) == .applied)
+        #expect(punctual.override?.segments.first == Self.segment(Self.at(8, 50), Self.at(12)))
+    }
+
+    @Test("Shift time keeps the planned start and asks nothing, but the arrival is kept")
+    func earlyArrivalAtShiftTime() async {
+        let harness = Harness(applies: true)
+        harness.coordinator.update { $0.settings.earlyArrivalPolicy = .schedule }
+        #expect(await harness.receive(.enterInner, at: Self.at(8)) == .applied)
+        #expect(harness.override == nil)
+        #expect(harness.coordinator.state.pendingProposals.isEmpty)
+        #expect(harness.coordinator.state.openVisit == nil)
+        #expect(harness.coordinator.state.events.contains { $0.type == .enterInner && $0.proposedTime == Self.at(8) })
+    }
+
     // MARK: Manual priority
 
     @Test("A person's edit wins: a later exit is kept for review and the shift is held")

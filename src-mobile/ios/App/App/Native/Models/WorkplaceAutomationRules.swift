@@ -61,6 +61,17 @@ nonisolated enum WorkplaceVisitPromptDelay: Int, Codable, CaseIterable, Sendable
     var interval: TimeInterval { TimeInterval(rawValue * 60) }
 }
 
+/// When an arrival before the shift starts counting as work (§3.9, owner
+/// decision 2026-11-11). The arrival itself is always kept either way.
+nonisolated enum WorkplaceEarlyArrivalPolicy: String, Codable, CaseIterable, Sendable {
+    /// Record now; ask once the prompt delay has passed before the shift.
+    case ask
+    /// Work starts at the detected arrival, early or not.
+    case fromArrival
+    /// Work starts at the planned start; arriving early is only kept.
+    case schedule
+}
+
 /// The day's working arrangement. There is deliberately no home address (§3.10).
 nonisolated enum WorkDayContext: String, Codable, CaseIterable, Sendable {
     case regular
@@ -80,11 +91,13 @@ nonisolated struct WorkplaceAutomationSettings: Codable, Equatable, Sendable {
     /// A short local notification when an arrival or departure is recorded
     /// or applied (§3.8). Detection does not depend on it.
     var notifiesArrivalsAndDepartures = true
+    var earlyArrivalPolicy: WorkplaceEarlyArrivalPolicy = .ask
 }
 
 nonisolated extension WorkplaceAutomationSettings {
     private enum CodingKeys: String, CodingKey {
         case isMonitoringEnabled, appliesDetectedTimesAutomatically, visitPromptDelay, notifiesArrivalsAndDepartures
+        case earlyArrivalPolicy
     }
 
     /// Settings added later decode with their defaults.
@@ -95,6 +108,7 @@ nonisolated extension WorkplaceAutomationSettings {
         appliesDetectedTimesAutomatically = try container.decode(Bool.self, forKey: .appliesDetectedTimesAutomatically)
         visitPromptDelay = try container.decode(WorkplaceVisitPromptDelay.self, forKey: .visitPromptDelay)
         notifiesArrivalsAndDepartures = try container.decodeIfPresent(Bool.self, forKey: .notifiesArrivalsAndDepartures) ?? true
+        earlyArrivalPolicy = try container.decodeIfPresent(WorkplaceEarlyArrivalPolicy.self, forKey: .earlyArrivalPolicy) ?? .ask
     }
 }
 
@@ -233,7 +247,7 @@ nonisolated enum AutomationDisposition: Equatable, Sendable {
 
 nonisolated enum WorkplaceAutomationRules {
     /// The one shift an arrival at `time` belongs to. The window only finds
-    /// the shift; it never makes an early arrival count as work (§3.1).
+    /// the shift; whether an early arrival counts is `arrivalStart`'s call.
     static func matchArrival(at time: Date, among shifts: [AutomationShift]) -> AutomationShiftMatch {
         let candidates = shifts.filter { shift in
             time >= shift.plannedStart.addingTimeInterval(-WorkplaceAutomation.arrivalLeadWindow)
@@ -276,6 +290,30 @@ nonisolated enum WorkplaceAutomationRules {
         if arrival > shift.plannedStart { return .late }
         let promptAt = arrival.addingTimeInterval(promptDelay.interval)
         return promptAt < shift.plannedStart ? .early(promptAt: promptAt) : .punctual
+    }
+
+    /// Where work starts for an arrival, and whether only the person can say
+    /// so. Under `.ask` an early arrival is recorded at the arrival and waits
+    /// for confirmation; arriving within the prompt delay counts from the
+    /// planned start. The other policies never ask (§3.9).
+    static func arrivalStart(
+        at arrival: Date,
+        for shift: AutomationShift,
+        promptDelay: WorkplaceVisitPromptDelay,
+        policy: WorkplaceEarlyArrivalPolicy
+    ) -> (time: Date, needsConfirmation: Bool) {
+        if arrival > shift.plannedStart { return (arrival, false) }
+        switch policy {
+        case .fromArrival:
+            return (arrival, false)
+        case .schedule:
+            return (shift.plannedStart, false)
+        case .ask:
+            switch assessArrival(at: arrival, for: shift, promptDelay: promptDelay) {
+            case .early: return (arrival, true)
+            case .punctual, .late: return (shift.plannedStart, false)
+            }
+        }
     }
 
     /// Late arrival keeps the planned end; it never shifts the day (§3.2).

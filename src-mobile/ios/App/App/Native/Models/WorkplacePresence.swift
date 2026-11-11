@@ -4,8 +4,9 @@ import Foundation
 /// automation saw. A display fact only; it never adopts a time or changes the
 /// countdown, which keeps following the schedule and the person's own edits.
 nonisolated enum WorkplacePresence: Equatable, Sendable {
-    /// At work before the shift starts. `at` is nil when monitoring started
-    /// with the person already there, so no arrival was actually seen.
+    /// At work, before or during the shift. `at` is the day's first seen
+    /// arrival, kept whatever time work counts from; nil when monitoring
+    /// started with the person already there, so no arrival was seen.
     case arrived(at: Date?)
     /// Still at work more than `overtimeGrace` after the planned end.
     case stayingLate(plannedEnd: Date)
@@ -48,13 +49,22 @@ nonisolated enum WorkplacePresence: Equatable, Sendable {
         guard let latest else { return nil }
         switch latest.type {
         case .enterInner:
+            // The first arrival, not a return from lunch: it is when the
+            // person got to work, whether or not work counts from it.
+            let firstArrival = state.events
+                .filter { $0.type == .enterInner && !$0.isInitialState
+                    && $0.proposedTime >= windowStart && $0.proposedTime <= now }
+                .map(\.proposedTime)
+                .min()
             if now < plannedStart {
-                return .arrived(at: latest.isInitialState ? nil : latest.proposedTime)
+                return .arrived(at: latest.isInitialState ? nil : firstArrival)
             }
             let pastEnd = now.timeIntervalSince(plannedEnd)
             if pastEnd > WorkplaceAutomation.maximumAutomaticExtension { return .needsCheck(plannedEnd: plannedEnd) }
             if pastEnd >= overtimeGrace { return .stayingLate(plannedEnd: plannedEnd) }
-            return nil
+            // Until the end the arrival is the day's fact; after it, the
+            // day ends as usual.
+            return now < plannedEnd ? firstArrival.map { .arrived(at: $0) } : nil
         case .exitOuter:
             // Leaving before the shift says nothing about the shift.
             guard !latest.isInitialState, latest.proposedTime >= plannedStart else { return nil }

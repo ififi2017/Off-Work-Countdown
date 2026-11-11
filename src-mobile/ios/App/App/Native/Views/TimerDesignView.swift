@@ -192,7 +192,7 @@ private struct RunningTimerDesignView: View {
 
     private var beforeStart: Bool { snapshot.isBeforeStart(at: now) }
 
-    /// Plan 021: an arrival before the shift or a departure during it, as a
+    /// Plan 021: the day's arrival or a departure during the shift, as a
     /// quiet fact above the countdown. The countdown itself never moves.
     private var presencePill: String? {
         guard !overtime, let automation else { return nil }

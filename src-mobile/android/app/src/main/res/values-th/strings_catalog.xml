@@ -140,7 +140,7 @@
     <string name="automationUIAskAfter">ถามหลังมาถึงก่อนเวลา</string>
     <string name="automationUIAskAfterNote">ใช้กับกรณีที่คุณมาถึงนอกกะด้วย</string>
     <string name="automationUIAutoApply">ใช้เวลาที่ตรวจพบโดยอัตโนมัติ</string>
-    <string name="automationUIAutoApplyNote">เมื่อปิดอยู่ เวลาจะรอให้คุณยืนยันก่อน เมื่อเปิดอยู่ การมาถึงและออกตามปกติจะอัปเดตชั่วโมงทำงานของคุณทันที ส่วนการเริ่มงานก่อนเวลายังคงถามคุณก่อน</string>
+    <string name="automationUIAutoApplyNote">เมื่อปิดอยู่ เวลาจะรอให้คุณยืนยันก่อน เมื่อเปิดอยู่ การมาถึงและการออกจะอัปเดตชั่วโมงทำงานของคุณทันที</string>
     <string name="automationUIContextFrom">ตั้งแต่</string>
     <string name="automationUIContextNote">ในวันเหล่านี้ DoneAt จะไม่ถามว่าทำไมคุณไม่ได้อยู่ที่ออฟฟิศ และการออกจากออฟฟิศจะไม่ทำให้วันของคุณสิ้นสุด</string>
     <string name="automationUIContextSection">ทำงานนอกออฟฟิศ</string>
@@ -154,6 +154,11 @@
     <string name="automationUIDeselectAll">ยกเลิกการเลือกทั้งหมด</string>
     <string name="automationUIDismissOne">ข้าม</string>
     <string name="automationUIDismissSelected">ข้าม</string>
+    <string name="automationUIEarlyArrival">มาถึงก่อนเวลา</string>
+    <string name="automationUIEarlyArrivalAsk">ถามฉัน</string>
+    <string name="automationUIEarlyArrivalFromArrival">นับตั้งแต่มาถึง</string>
+    <string name="automationUIEarlyArrivalNote">เวลาที่คุณมาถึงจะถูกบันทึกไว้เสมอ ตรงนี้ใช้กำหนดว่าจะเริ่มนับเวลาทำงานเมื่อใด</string>
+    <string name="automationUIEarlyArrivalSchedule">เริ่มตามเวลากะ</string>
     <string name="automationUIEndAt">เสร็จ %1$s</string>
     <string name="automationUIIntro">DoneAt จะรู้เมื่อคุณมาถึงหรือออกจากสถานที่ทำงาน และบันทึกเวลาทำงานให้ โดยจะปิดอยู่จนกว่าคุณจะเปิดใช้</string>
     <string name="automationUILeaveRange">นับว่าออกเมื่อห่างเกิน %1$s ม.</string>
@@ -1180,6 +1185,7 @@
     <string name="recordsVerifyAdopted">ใช้แล้ว</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s อัตโนมัติ</string>
     <string name="recordsVerifyAdoptedByYou">%1$s โดยคุณ</string>
+    <string name="recordsVerifyArrivedAt">มาถึง %1$s</string>
     <string name="recordsVerifyDetected">ตรวจพบ</string>
     <string name="recordsVerifyDetectedUnknown">ไม่มีการรายงาน</string>
     <string name="recordsVerifyHeadlineEnd">เวลาเลิกงานบันทึกจากตำแหน่ง</string>

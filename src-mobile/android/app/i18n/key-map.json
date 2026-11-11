@@ -642,6 +642,21 @@
     "automationUIDismissSelected": {
       "resource": "string/automationUIDismissSelected"
     },
+    "automationUIEarlyArrival": {
+      "resource": "string/automationUIEarlyArrival"
+    },
+    "automationUIEarlyArrivalAsk": {
+      "resource": "string/automationUIEarlyArrivalAsk"
+    },
+    "automationUIEarlyArrivalFromArrival": {
+      "resource": "string/automationUIEarlyArrivalFromArrival"
+    },
+    "automationUIEarlyArrivalNote": {
+      "resource": "string/automationUIEarlyArrivalNote"
+    },
+    "automationUIEarlyArrivalSchedule": {
+      "resource": "string/automationUIEarlyArrivalSchedule"
+    },
     "automationUIEndAt": {
       "resource": "string/automationUIEndAt",
       "params": [
@@ -4268,6 +4283,12 @@
     },
     "recordsVerifyAdoptedByYou": {
       "resource": "string/recordsVerifyAdoptedByYou",
+      "params": [
+        "time"
+      ]
+    },
+    "recordsVerifyArrivedAt": {
+      "resource": "string/recordsVerifyArrivedAt",
       "params": [
         "time"
       ]

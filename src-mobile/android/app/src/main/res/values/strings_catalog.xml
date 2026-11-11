@@ -140,7 +140,7 @@
     <string name="automationUIAskAfter">Ask After Arriving Early</string>
     <string name="automationUIAskAfterNote">Also used when you arrive outside your shift.</string>
     <string name="automationUIAutoApply">Apply Detected Times Automatically</string>
-    <string name="automationUIAutoApplyNote">When off, times wait for you to confirm. When on, usual arrivals and departures update your hours directly; early starts still ask you first.</string>
+    <string name="automationUIAutoApplyNote">When off, times wait for you to confirm. When on, arrivals and departures update your hours directly.</string>
     <string name="automationUIContextFrom">From</string>
     <string name="automationUIContextNote">On these days, DoneAt won’t ask why you’re not at the office, and leaving it won’t end your day.</string>
     <string name="automationUIContextSection">Working Elsewhere</string>
@@ -154,6 +154,11 @@
     <string name="automationUIDeselectAll">Deselect All</string>
     <string name="automationUIDismissOne">Dismiss</string>
     <string name="automationUIDismissSelected">Dismiss</string>
+    <string name="automationUIEarlyArrival">Arriving Early</string>
+    <string name="automationUIEarlyArrivalAsk">Ask Me</string>
+    <string name="automationUIEarlyArrivalFromArrival">Count from Arrival</string>
+    <string name="automationUIEarlyArrivalNote">Your arrival time is always kept. This sets when work starts counting.</string>
+    <string name="automationUIEarlyArrivalSchedule">Start at Shift Time</string>
     <string name="automationUIEndAt">Finished %1$s</string>
     <string name="automationUIIntro">DoneAt notices when you arrive at or leave your workplaces and records your work times. It stays off until you turn it on.</string>
     <string name="automationUILeaveRange">Leaving counts beyond %1$s m</string>
@@ -1183,6 +1188,7 @@
     <string name="recordsVerifyAdopted">Adopted</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, automatically</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, by you</string>
+    <string name="recordsVerifyArrivedAt">Arrived %1$s</string>
     <string name="recordsVerifyDetected">Detected</string>
     <string name="recordsVerifyDetectedUnknown">Not reported</string>
     <string name="recordsVerifyHeadlineEnd">Clock-Out Recorded from Location</string>

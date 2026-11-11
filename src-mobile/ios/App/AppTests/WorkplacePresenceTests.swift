@@ -29,7 +29,22 @@ struct WorkplacePresenceTests {
         let arrival = Self.start.addingTimeInterval(-20 * 60)
         let state = Self.state([(.enterInner, arrival, false)])
         #expect(Self.resolve(state, now: Self.start.addingTimeInterval(-5 * 60)) == .arrived(at: arrival))
-        // Once the shift runs, being there is the normal case: nothing to say.
+        // The arrival stays a fact through the shift, whatever work counts from.
+        #expect(Self.resolve(state, now: Self.start.addingTimeInterval(3_600)) == .arrived(at: arrival))
+    }
+
+    @Test func returningFromLunchKeepsTheFirstArrival() {
+        let arrival = Self.start.addingTimeInterval(-10 * 60)
+        let state = Self.state([
+            (.enterInner, arrival, false),
+            (.exitOuter, Self.start.addingTimeInterval(3 * 3_600), false),
+            (.enterInner, Self.start.addingTimeInterval(4 * 3_600), false),
+        ])
+        #expect(Self.resolve(state, now: Self.start.addingTimeInterval(5 * 3_600)) == .arrived(at: arrival))
+    }
+
+    @Test func alreadyThereWhenMonitoringStartedSaysNothingDuringTheShift() {
+        let state = Self.state([(.enterInner, Self.start.addingTimeInterval(-600), true)])
         #expect(Self.resolve(state, now: Self.start.addingTimeInterval(3_600)) == nil)
     }
 

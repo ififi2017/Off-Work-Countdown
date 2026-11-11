@@ -172,6 +172,7 @@ object Strings {
     fun recordsVerifyAdjustedNote(res: Resources, time: String): String = res.getString(R.string.recordsVerifyAdjustedNote, time)
     fun recordsVerifyAdoptedAutomatically(res: Resources, time: String): String = res.getString(R.string.recordsVerifyAdoptedAutomatically, time)
     fun recordsVerifyAdoptedByYou(res: Resources, time: String): String = res.getString(R.string.recordsVerifyAdoptedByYou, time)
+    fun recordsVerifyArrivedAt(res: Resources, time: String): String = res.getString(R.string.recordsVerifyArrivedAt, time)
     fun recordsWorkdayCount(res: Resources, count: String): String = res.getString(R.string.recordsWorkdayCount, count)
     fun recordsWorkdaysRecorded(res: Resources, count: String): String = res.getString(R.string.recordsWorkdaysRecorded, count)
     fun recordsYearLabel(res: Resources, year: String): String = res.getString(R.string.recordsYearLabel, year)

@@ -140,7 +140,7 @@
     <string name="automationUIAskAfter">일찍 도착한 뒤 물어보는 시점</string>
     <string name="automationUIAskAfterNote">근무 시간 밖에 도착했을 때도 이 시간을 사용해요.</string>
     <string name="automationUIAutoApply">감지된 시간 자동 적용</string>
-    <string name="automationUIAutoApplyNote">꺼져 있으면 시간이 확인을 기다려요. 켜면 평소 출퇴근 시간은 근무 시간에 바로 반영되고, 일찍 출근한 경우에는 먼저 물어봐요.</string>
+    <string name="automationUIAutoApplyNote">꺼져 있으면 시간이 확인을 기다려요. 켜면 출퇴근 시간이 근무 시간에 바로 반영돼요.</string>
     <string name="automationUIContextFrom">시작</string>
     <string name="automationUIContextNote">이 기간에는 사무실에 없어도 DoneAt이 이유를 묻지 않고, 사무실을 나가도 하루가 끝나지 않아요.</string>
     <string name="automationUIContextSection">다른 곳에서 근무</string>
@@ -154,6 +154,11 @@
     <string name="automationUIDeselectAll">전체 선택 해제</string>
     <string name="automationUIDismissOne">무시</string>
     <string name="automationUIDismissSelected">무시</string>
+    <string name="automationUIEarlyArrival">일찍 도착했을 때</string>
+    <string name="automationUIEarlyArrivalAsk">먼저 물어보기</string>
+    <string name="automationUIEarlyArrivalFromArrival">도착 시점부터 계산</string>
+    <string name="automationUIEarlyArrivalNote">도착 시간은 항상 기록돼요. 여기서는 근무 시간을 언제부터 셀지 정해요.</string>
+    <string name="automationUIEarlyArrivalSchedule">근무 시작 시간부터</string>
     <string name="automationUIEndAt">퇴근 %1$s</string>
     <string name="automationUIIntro">DoneAt이 근무지에 도착하거나 떠나는 것을 알아채고 근무 시간을 기록해 줘요. 직접 켜기 전에는 꺼져 있어요.</string>
     <string name="automationUILeaveRange">%1$sm 밖으로 나가면 떠난 것으로 봐요</string>
@@ -1180,6 +1185,7 @@
     <string name="recordsVerifyAdopted">적용됨</string>
     <string name="recordsVerifyAdoptedAutomatically">%1$s, 자동</string>
     <string name="recordsVerifyAdoptedByYou">%1$s, 직접</string>
+    <string name="recordsVerifyArrivedAt">%1$s 도착</string>
     <string name="recordsVerifyDetected">감지됨</string>
     <string name="recordsVerifyDetectedUnknown">보고되지 않음</string>
     <string name="recordsVerifyHeadlineEnd">퇴근 시간을 위치로 기록함</string>
