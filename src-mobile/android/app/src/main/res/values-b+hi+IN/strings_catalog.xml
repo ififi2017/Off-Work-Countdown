@@ -74,8 +74,8 @@
     <string name="automationContextRest">छुट्टी का दिन</string>
     <string name="automationGuideIntro">आप काम पर पहुँचें या वहाँ से निकलें, शॉर्टकट्स DoneAt का एक्शन चला सकता है। इसमें लगभग एक मिनट लगता है।</string>
     <string name="automationGuideStepArrive">DoneAt का एक्शन “%1$s” जोड़ें, फिर पूर्ण पर टैप करें।</string>
-    <string name="automationGuideStepLeave">छोड़ना और “%1$s” के साथ यही दोहराएँ, ताकि आपका क्लॉक-आउट भी दर्ज हो।</string>
-    <string name="automationGuideStepOpen">शॉर्टकट्स खोलें, ऑटोमेशन पर टैप करें, फिर + पर टैप करें और पहुँचना चुनें।</string>
+    <string name="automationGuideStepLeave">निकलें और “%1$s” के साथ यही दोहराएँ, ताकि आपका क्लॉक-आउट भी दर्ज हो।</string>
+    <string name="automationGuideStepOpen">शॉर्टकट्स खोलें, ऑटोमेशन पर टैप करें, फिर + पर टैप करें और पहुँचें चुनें।</string>
     <string name="automationGuideStepPlace">लोकेशन के रूप में अपना कार्यस्थल चुनें, फिर तुरंत चलाएँ चुनें।</string>
     <string name="automationGuideTipBattery">iOS लोकेशन खुद जाँचता है, इसलिए DoneAt बैकग्राउंड में नहीं चलता और बैटरी लगभग नहीं खर्च होती।</string>
     <string name="automationGuideTipNotify">हर बार बैनर नहीं देखना चाहते? चलाने पर सूचित करें बंद कर दें।</string>

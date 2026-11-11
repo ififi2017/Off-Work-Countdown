@@ -166490,7 +166490,7 @@
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Siapkan Otomatisasi Tiba & Pergi"
+            "value": "Siapkan Automasi Tiba & Pergi"
           }
         },
         "vi": {
@@ -166502,7 +166502,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ตั้งค่าระบบอัตโนมัติเมื่อมาถึงและออกจากที่ทำงาน"
+            "value": "ตั้งค่าการทำงานอัตโนมัติเมื่อมาถึงและออกจากที่ทำงาน"
           }
         },
         "ja": {
@@ -166686,7 +166686,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Öffne Kurzbefehle, tippe auf „Automation“, dann auf „+“ und wähle „Ankommen“."
+            "value": "Öffne Kurzbefehle, tippe auf „Automation“, dann auf „+“ und wähle „Ankunft“."
           }
         },
         "es": {
@@ -166698,7 +166698,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ouvrez Raccourcis, touchez Automatisation, puis + et choisissez Arriver."
+            "value": "Ouvrez Raccourcis, touchez Automatisation, puis + et choisissez Arrivée."
           }
         },
         "it": {
@@ -166722,13 +166722,13 @@
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kısayollar’ı aç, Otomasyon’a dokun, sonra + simgesine dokunup Varış’ı seç."
+            "value": "Kısayollar’ı aç, Otomasyon’a dokun, sonra + simgesine dokunup Vardığımda’yı seç."
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Buka Pintasan, ketuk Otomatisasi, lalu ketuk + dan pilih Tiba."
+            "value": "Buka Pintasan, ketuk Automasi, lalu ketuk + dan pilih Tiba."
           }
         },
         "vi": {
@@ -166740,7 +166740,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "เปิดคำสั่งลัด แตะ “ระบบอัตโนมัติ” แล้วแตะ + และเลือก “มาถึง”"
+            "value": "เปิดคำสั่งลัด แตะ “การทำงานอัตโนมัติ” แล้วแตะ + และเลือก “ถึง”"
           }
         },
         "ja": {
@@ -166752,7 +166752,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "단축어를 열고 자동화를 탭한 다음, +를 탭하고 도착을 선택하세요."
+            "value": "단축어를 열고 자동화를 탭한 다음, +를 탭하고 도착할 때를 선택하세요."
           }
         },
         "ar": {
@@ -166764,7 +166764,7 @@
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "शॉर्टकट्स खोलें, ऑटोमेशन पर टैप करें, फिर + पर टैप करें और पहुँचना चुनें।"
+            "value": "शॉर्टकट्स खोलें, ऑटोमेशन पर टैप करें, फिर + पर टैप करें और पहुँचें चुनें।"
           }
         },
         "mr-IN": {
@@ -166930,7 +166930,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Añade la acción de DoneAt «{{action}}» y toca Aceptar."
+            "value": "Añade la acción de DoneAt «{{action}}» y toca OK."
           }
         },
         "fr": {
@@ -166948,7 +166948,7 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adicione a ação do DoneAt “{{action}}” e toque em Concluído."
+            "value": "Adicione a ação do DoneAt “{{action}}” e toque em OK."
           }
         },
         "ru": {
@@ -167073,13 +167073,13 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Повторите с «Уход» и «{{action}}», чтобы записывалось и время ухода."
+            "value": "Повторите с «Убытие» и «{{action}}», чтобы записывалось и время ухода."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ayrılma ve “{{action}}” ile bunu tekrarla; böylece çıkış saatin de kaydedilir."
+            "value": "Ayrıldığımda ve “{{action}}” ile bunu tekrarla; böylece çıkış saatin de kaydedilir."
           }
         },
         "id": {
@@ -167121,7 +167121,7 @@
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "छोड़ना और “{{action}}” के साथ यही दोहराएँ, ताकि आपका क्लॉक-आउट भी दर्ज हो।"
+            "value": "निकलें और “{{action}}” के साथ यही दोहराएँ, ताकि आपका क्लॉक-आउट भी दर्ज हो।"
           }
         },
         "mr-IN": {

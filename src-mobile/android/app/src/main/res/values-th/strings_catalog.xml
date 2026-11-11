@@ -75,13 +75,13 @@
     <string name="automationGuideIntro">คำสั่งลัดสามารถเรียกใช้การทำงานของ DoneAt เมื่อคุณมาถึงหรือออกจากที่ทำงาน ใช้เวลาราวหนึ่งนาที</string>
     <string name="automationGuideStepArrive">เพิ่มการทำงาน “%1$s” ของ DoneAt แล้วแตะ “เสร็จสิ้น”</string>
     <string name="automationGuideStepLeave">ทำซ้ำด้วย “ออกจาก” และ “%1$s” เพื่อให้เวลาเลิกงานถูกบันทึกด้วย</string>
-    <string name="automationGuideStepOpen">เปิดคำสั่งลัด แตะ “ระบบอัตโนมัติ” แล้วแตะ + และเลือก “มาถึง”</string>
+    <string name="automationGuideStepOpen">เปิดคำสั่งลัด แตะ “การทำงานอัตโนมัติ” แล้วแตะ + และเลือก “ถึง”</string>
     <string name="automationGuideStepPlace">เลือกที่ทำงานของคุณเป็นตำแหน่ง แล้วเลือก “เรียกใช้ทันที”</string>
     <string name="automationGuideTipBattery">iOS ตรวจสอบตำแหน่งเอง DoneAt จึงไม่ต้องทำงานเบื้องหลัง และแทบไม่ใช้แบตเตอรี่</string>
     <string name="automationGuideTipNotify">ปิด “แจ้งเตือนเมื่อเรียกใช้” หากไม่อยากเห็นแบนเนอร์ทุกครั้ง</string>
     <string name="automationGuideTipWiFi">ที่ทำงานย้ายบ่อย? ลองใช้ “เมื่อเชื่อมต่อ Wi-Fi” กับเครือข่ายที่ทำงานแทน</string>
     <string name="automationGuideTipsSection">ควรรู้</string>
-    <string name="automationGuideTitle">ตั้งค่าระบบอัตโนมัติเมื่อมาถึงและออกจากที่ทำงาน</string>
+    <string name="automationGuideTitle">ตั้งค่าการทำงานอัตโนมัติเมื่อมาถึงและออกจากที่ทำงาน</string>
     <string name="automationHeldReminderBody">เปิด DoneAt เพื่อบันทึกการมาถึงหรือการออกครั้งนี้</string>
     <string name="automationHeldReminderTitle">เพิ่งผ่านที่ทำงานหรือเปล่า?</string>
     <string name="automationIntentConfirmEnd">ยืนยันว่าเลิกงานแล้ว</string>

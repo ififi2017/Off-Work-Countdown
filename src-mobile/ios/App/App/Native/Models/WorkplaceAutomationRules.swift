@@ -9,15 +9,6 @@ import Foundation
 // adopted times live in `DayOverride.customSegments` (plan §0.3).
 
 nonisolated enum WorkplaceAutomation {
-    /// The settings entry stays in development builds, and the internal
-    /// TestFlight probe build (`WORKPLACE_PROBE`), until P0 device results
-    /// approve release; Shortcuts actions work without it.
-#if DEBUG || WORKPLACE_PROBE
-    static let showsSettingsEntry = true
-#else
-    static let showsSettingsEntry = false
-#endif
-
     /// A wake whose event iOS held back stands in for the crossing time for
     /// at most this long.
     static let maximumHeldWakeAge: TimeInterval = 12 * 60 * 60

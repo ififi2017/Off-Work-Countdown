@@ -75,7 +75,7 @@
     <string name="automationGuideIntro">Raccourcis peut lancer une action DoneAt quand vous arrivez au travail ou en partez. Cela prend environ une minute.</string>
     <string name="automationGuideStepArrive">Ajoutez l’action DoneAt « %1$s », puis touchez OK.</string>
     <string name="automationGuideStepLeave">Recommencez avec Partir et « %1$s » pour que votre heure de départ soit aussi enregistrée.</string>
-    <string name="automationGuideStepOpen">Ouvrez Raccourcis, touchez Automatisation, puis + et choisissez Arriver.</string>
+    <string name="automationGuideStepOpen">Ouvrez Raccourcis, touchez Automatisation, puis + et choisissez Arrivée.</string>
     <string name="automationGuideStepPlace">Choisissez votre lieu de travail comme position, puis sélectionnez Exécuter immédiatement.</string>
     <string name="automationGuideTipBattery">iOS vérifie la position lui-même : DoneAt ne tourne pas en arrière-plan et consomme très peu de batterie.</string>
     <string name="automationGuideTipNotify">Désactivez Notifier à l’exécution si vous ne voulez pas de bannière à chaque fois.</string>

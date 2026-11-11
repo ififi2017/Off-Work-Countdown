@@ -73,7 +73,7 @@
     <string name="automationContextRemote">Trabajo remoto</string>
     <string name="automationContextRest">Día libre</string>
     <string name="automationGuideIntro">Atajos puede ejecutar una acción de DoneAt cuando llegas al trabajo o te vas. Lleva alrededor de un minuto.</string>
-    <string name="automationGuideStepArrive">Añade la acción de DoneAt «%1$s» y toca Aceptar.</string>
+    <string name="automationGuideStepArrive">Añade la acción de DoneAt «%1$s» y toca OK.</string>
     <string name="automationGuideStepLeave">Repite con Salir y «%1$s», para que también se registre tu hora de salida.</string>
     <string name="automationGuideStepOpen">Abre Atajos, toca Automatización, luego + y elige Llegar.</string>
     <string name="automationGuideStepPlace">Elige tu lugar de trabajo como ubicación y selecciona Ejecutar inmediatamente.</string>
