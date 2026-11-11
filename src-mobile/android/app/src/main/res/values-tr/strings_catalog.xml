@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">Ofisin sık yer mi değiştiriyor? Bunun yerine iş ağınla “Wi-Fi’ye katılırken” seçeneğini kullan.</string>
     <string name="automationGuideTipsSection">Bilmekte Fayda Var</string>
     <string name="automationGuideTitle">Varış ve Ayrılma Otomasyonlarını Ayarla</string>
+    <string name="automationHeldReminderBody">Bu varış veya ayrılışı kaydetmek için DoneAt’i açın.</string>
+    <string name="automationHeldReminderTitle">İş yerinizin yanından mı geçtiniz?</string>
     <string name="automationIntentConfirmEnd">İşi bitirdiğini onayla</string>
     <string name="automationIntentConfirmEndDescription">Onayladıktan sonra şu an işi bitirdiğini kaydeder.</string>
     <string name="automationIntentConfirmStart">İşe başladığını onayla</string>

@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">Nơi làm hay thay đổi? Hãy dùng “Khi tham gia Wi-Fi” với mạng ở chỗ làm.</string>
     <string name="automationGuideTipsSection">Nên biết</string>
     <string name="automationGuideTitle">Thiết lập tự động hóa khi đến và rời nơi làm</string>
+    <string name="automationHeldReminderBody">Mở DoneAt để ghi lại lần đến hoặc rời đi này.</string>
+    <string name="automationHeldReminderTitle">Bạn vừa đi qua nơi làm việc?</string>
     <string name="automationIntentConfirmEnd">Xác nhận đã tan làm</string>
     <string name="automationIntentConfirmEndDescription">Ghi lại rằng bạn tan làm lúc này, sau khi bạn xác nhận.</string>
     <string name="automationIntentConfirmStart">Xác nhận đã bắt đầu làm</string>

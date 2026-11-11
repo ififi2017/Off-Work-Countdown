@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">公司位置不固定？也可以改用“连接到 Wi-Fi 时”并选公司网络。</string>
     <string name="automationGuideTipsSection">小提示</string>
     <string name="automationGuideTitle">设置上下班自动化</string>
+    <string name="automationHeldReminderBody">打开 DoneAt，就能记下这次的上下班时间。</string>
+    <string name="automationHeldReminderTitle">刚刚经过公司？</string>
     <string name="automationIntentConfirmEnd">确认已下班</string>
     <string name="automationIntentConfirmEndDescription">确认后，记录你现在下班。</string>
     <string name="automationIntentConfirmStart">确认已开始上班</string>

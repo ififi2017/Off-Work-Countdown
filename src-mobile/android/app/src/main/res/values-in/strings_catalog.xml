@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">Kantor sering pindah? Gunakan “Saat Bergabung dengan Wi-Fi” dengan jaringan kantormu.</string>
     <string name="automationGuideTipsSection">Perlu Diketahui</string>
     <string name="automationGuideTitle">Siapkan Otomatisasi Tiba &amp; Pergi</string>
+    <string name="automationHeldReminderBody">Buka DoneAt untuk mencatat kedatangan atau kepulangan ini.</string>
+    <string name="automationHeldReminderTitle">Baru saja melewati tempat kerjamu?</string>
     <string name="automationIntentConfirmEnd">Konfirmasi selesai kerja</string>
     <string name="automationIntentConfirmEndDescription">Mencatat bahwa kamu selesai bekerja sekarang, setelah kamu konfirmasi.</string>
     <string name="automationIntentConfirmStart">Konfirmasi mulai kerja</string>

@@ -159,7 +159,9 @@ final class AppRuntime {
             didHandle: { event, outcome in
                 guard let notice = WorkplaceArrivalNotice.make(for: event, outcome: outcome, state: automation.state) else { return }
                 await notifications.postArrivalNotice(notice, text: text, formattedTime: queries.formatRecordsTime(notice.time))
-            }
+            },
+            didHoldCrossing: { await notifications.postHeldCrossingReminder(text: text) },
+            didReleaseHold: { await notifications.removeHeldCrossingReminder() }
         ))
     }()
 

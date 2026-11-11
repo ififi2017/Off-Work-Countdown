@@ -36,6 +36,7 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
         // background; the probe's monitor must exist before launch returns.
         WorkplaceProbe.shared.resumeAfterLaunch(forLocation: launchOptions?[.location] != nil)
 #endif
+        WorkplaceMonitor.launchedForLocation = launchOptions?[.location] != nil
         Task {
             // Plan 021 I2: a crossing can launch the app in the background;
             // the monitor resumes with the runtime, not with a settings page.

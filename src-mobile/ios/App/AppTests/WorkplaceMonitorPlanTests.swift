@@ -139,6 +139,48 @@ nonisolated struct WorkplaceMonitorPlanTests {
         #expect(state.awaitingBaseline.isEmpty)
     }
 
+    @Test("A held stretch asks once, and the release takes the latest wake")
+    func heldWakes() {
+        var state = WorkplaceAutomationState()
+        let first = Self.now
+        let second = Self.now.addingTimeInterval(87 * 60)
+        let starts = state.noteHeldWake(at: first)
+        let startsAgain = state.noteHeldWake(at: second)
+        #expect(starts)
+        #expect(!startsAgain)
+        let released = second.addingTimeInterval(7 * 60)
+        let taken = state.takeHeldWake(receivedAt: released)
+        // Spent, with everything before it: the next event keeps its own time.
+        let takenAgain = state.takeHeldWake(receivedAt: released)
+        #expect(taken == second)
+        #expect(takenAgain == nil)
+        #expect(state.heldWakes.isEmpty)
+    }
+
+    @Test("A held wake older than twelve hours places nothing")
+    func staleHeldWake() {
+        var state = WorkplaceAutomationState()
+        _ = state.noteHeldWake(at: Self.now)
+        let later = Self.now.addingTimeInterval(13 * 60 * 60)
+        let taken = state.takeHeldWake(receivedAt: later)
+        #expect(taken == nil)
+        // A new stretch starts once the old wake has aged out.
+        let starts = state.noteHeldWake(at: later)
+        #expect(starts)
+    }
+
+    @Test("Files written before held wakes decode with none")
+    func heldWakesDecodeEmpty() throws {
+        var state = WorkplaceAutomationState()
+        _ = state.noteHeldWake(at: Self.now)
+        var object = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as? [String: Any])
+        object.removeValue(forKey: "heldWakes")
+        let decoded = try JSONDecoder().decode(
+            WorkplaceAutomationState.self, from: JSONSerialization.data(withJSONObject: object)
+        )
+        #expect(decoded.heldWakes.isEmpty)
+    }
+
     @Test("An edited region's late event is stale for the coordinator")
     @MainActor
     func staleGeneration() throws {

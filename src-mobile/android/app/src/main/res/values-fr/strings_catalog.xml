@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">Votre bureau change de place ? Utilisez plutôt « Lors de la connexion au Wi-Fi » avec votre réseau professionnel.</string>
     <string name="automationGuideTipsSection">Bon à savoir</string>
     <string name="automationGuideTitle">Configurer les automatisations d’arrivée et de départ</string>
+    <string name="automationHeldReminderBody">Ouvrez DoneAt pour enregistrer cette arrivée ou ce départ.</string>
+    <string name="automationHeldReminderTitle">Vous venez de passer près de votre lieu de travail ?</string>
     <string name="automationIntentConfirmEnd">Confirmer la fin du travail</string>
     <string name="automationIntentConfirmEndDescription">Enregistre que vous terminez votre travail maintenant, après votre confirmation.</string>
     <string name="automationIntentConfirmStart">Confirmer le début du travail</string>

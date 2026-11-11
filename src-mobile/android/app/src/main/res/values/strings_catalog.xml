@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">Office moves around? Use “When joining Wi-Fi” with your work network instead.</string>
     <string name="automationGuideTipsSection">Good to Know</string>
     <string name="automationGuideTitle">Set Up Arrive &amp; Leave Automations</string>
+    <string name="automationHeldReminderBody">Open DoneAt to record this arrival or departure.</string>
+    <string name="automationHeldReminderTitle">Just passed your workplace?</string>
     <string name="automationIntentConfirmEnd">Confirm Work Finished</string>
     <string name="automationIntentConfirmEndDescription">Records that you finished work now, after you confirm.</string>
     <string name="automationIntentConfirmStart">Confirm Work Started</string>

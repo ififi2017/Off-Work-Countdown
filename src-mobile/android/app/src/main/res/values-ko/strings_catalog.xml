@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">근무지가 자주 바뀌나요? 대신 “Wi-Fi에 연결할 때”를 선택하고 직장 네트워크를 지정하세요.</string>
     <string name="automationGuideTipsSection">알아두세요</string>
     <string name="automationGuideTitle">도착·출발 자동화 설정하기</string>
+    <string name="automationHeldReminderBody">DoneAt을 열면 이번 출근 또는 퇴근 시간을 기록할 수 있어요.</string>
+    <string name="automationHeldReminderTitle">방금 근무지를 지나셨나요?</string>
     <string name="automationIntentConfirmEnd">근무 종료 확인</string>
     <string name="automationIntentConfirmEndDescription">확인하면 지금 근무를 마쳤다고 기록해요.</string>
     <string name="automationIntentConfirmStart">근무 시작 확인</string>

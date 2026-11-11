@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">ऑफिस बदलत राहते? त्याऐवजी तुमच्या ऑफिस नेटवर्कसह “Wi-Fi ला जोडताना” वापरा.</string>
     <string name="automationGuideTipsSection">जाणून घ्या</string>
     <string name="automationGuideTitle">पोहोचणे आणि निघणे ऑटोमेशन सेट करा</string>
+    <string name="automationHeldReminderBody">ही पोहोचण्याची किंवा निघण्याची वेळ नोंदवण्यासाठी DoneAt उघडा.</string>
+    <string name="automationHeldReminderTitle">आत्ताच तुमच्या कामाच्या ठिकाणाजवळून गेलात?</string>
     <string name="automationIntentConfirmEnd">काम संपल्याची पुष्टी करा</string>
     <string name="automationIntentConfirmEndDescription">तुमच्या पुष्टीनंतर, तुम्ही आत्ता काम संपवल्याची नोंद करते.</string>
     <string name="automationIntentConfirmStart">काम सुरू झाल्याची पुष्टी करा</string>

@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">Офис переезжает? Используйте «При подключении к Wi-Fi» и выберите рабочую сеть.</string>
     <string name="automationGuideTipsSection">Полезно знать</string>
     <string name="automationGuideTitle">Настройка автоматизаций прибытия и ухода</string>
+    <string name="automationHeldReminderBody">Откройте DoneAt, чтобы записать этот приход или уход.</string>
+    <string name="automationHeldReminderTitle">Только что были рядом с работой?</string>
     <string name="automationIntentConfirmEnd">Подтвердить окончание работы</string>
     <string name="automationIntentConfirmEndDescription">После подтверждения отмечает, что вы закончили работу сейчас.</string>
     <string name="automationIntentConfirmStart">Подтвердить начало работы</string>

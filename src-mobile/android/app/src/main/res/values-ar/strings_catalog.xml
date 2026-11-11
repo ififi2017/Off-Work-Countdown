@@ -82,6 +82,8 @@
     <string name="automationGuideTipWiFi">هل يتغير مكان عملك؟ استخدم «عند الاتصال بشبكة Wi-Fi» مع شبكة العمل بدلًا من ذلك.</string>
     <string name="automationGuideTipsSection">من المفيد معرفته</string>
     <string name="automationGuideTitle">إعداد أتمتة الوصول والمغادرة</string>
+    <string name="automationHeldReminderBody">افتح DoneAt لتسجيل وقت هذا الوصول أو المغادرة.</string>
+    <string name="automationHeldReminderTitle">هل مررت للتو بمكان عملك؟</string>
     <string name="automationIntentConfirmEnd">تأكيد انتهاء العمل</string>
     <string name="automationIntentConfirmEndDescription">يسجّل أنك أنهيت العمل الآن بعد تأكيدك.</string>
     <string name="automationIntentConfirmStart">تأكيد بدء العمل</string>
