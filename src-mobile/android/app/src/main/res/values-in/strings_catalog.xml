@@ -75,13 +75,13 @@
     <string name="automationGuideIntro">Pintasan dapat menjalankan aksi DoneAt saat kamu tiba di tempat kerja atau pergi. Hanya sekitar satu menit.</string>
     <string name="automationGuideStepArrive">Tambahkan aksi DoneAt “%1$s”, lalu ketuk Selesai.</string>
     <string name="automationGuideStepLeave">Ulangi dengan Pergi dan “%1$s”, agar jam pulangmu juga tercatat.</string>
-    <string name="automationGuideStepOpen">Buka Pintasan, ketuk Otomatisasi, lalu ketuk + dan pilih Tiba.</string>
+    <string name="automationGuideStepOpen">Buka Pintasan, ketuk Automasi, lalu ketuk + dan pilih Tiba.</string>
     <string name="automationGuideStepPlace">Pilih tempat kerjamu sebagai lokasi, lalu pilih Jalankan Segera.</string>
     <string name="automationGuideTipBattery">iOS memeriksa lokasi sendiri, jadi DoneAt tidak berjalan di latar belakang dan nyaris tidak memakai baterai.</string>
     <string name="automationGuideTipNotify">Matikan Beri Tahu Saat Dijalankan jika kamu tidak ingin melihat banner setiap kali.</string>
     <string name="automationGuideTipWiFi">Kantor sering pindah? Gunakan “Saat Bergabung dengan Wi-Fi” dengan jaringan kantormu.</string>
     <string name="automationGuideTipsSection">Perlu Diketahui</string>
-    <string name="automationGuideTitle">Siapkan Otomatisasi Tiba &amp; Pergi</string>
+    <string name="automationGuideTitle">Siapkan Automasi Tiba &amp; Pergi</string>
     <string name="automationIntentConfirmEnd">Konfirmasi selesai kerja</string>
     <string name="automationIntentConfirmEndDescription">Mencatat bahwa kamu selesai bekerja sekarang, setelah kamu konfirmasi.</string>
     <string name="automationIntentConfirmStart">Konfirmasi mulai kerja</string>

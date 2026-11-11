@@ -74,8 +74,8 @@
     <string name="automationContextRest">İzin Günü</string>
     <string name="automationGuideIntro">Kısayollar, işe vardığında veya işten ayrıldığında bir DoneAt eylemi çalıştırabilir. Yaklaşık bir dakika sürer.</string>
     <string name="automationGuideStepArrive">DoneAt’ın “%1$s” eylemini ekle, ardından Bitti’ye dokun.</string>
-    <string name="automationGuideStepLeave">Ayrılma ve “%1$s” ile bunu tekrarla; böylece çıkış saatin de kaydedilir.</string>
-    <string name="automationGuideStepOpen">Kısayollar’ı aç, Otomasyon’a dokun, sonra + simgesine dokunup Varış’ı seç.</string>
+    <string name="automationGuideStepLeave">Ayrıldığımda ve “%1$s” ile bunu tekrarla; böylece çıkış saatin de kaydedilir.</string>
+    <string name="automationGuideStepOpen">Kısayollar’ı aç, Otomasyon’a dokun, sonra + simgesine dokunup Vardığımda’yı seç.</string>
     <string name="automationGuideStepPlace">Konum olarak iş yerini seç, ardından Hemen Çalıştır’ı seç.</string>
     <string name="automationGuideTipBattery">Konumu iOS kendisi kontrol ettiğinden DoneAt arka planda çalışmaz ve pili neredeyse hiç tüketmez.</string>
     <string name="automationGuideTipNotify">Her seferinde bildirim görmek istemiyorsan Çalıştırıldığında Bildir’i kapat.</string>

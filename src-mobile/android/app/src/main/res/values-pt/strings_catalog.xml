@@ -73,7 +73,7 @@
     <string name="automationContextRemote">Trabalho remoto</string>
     <string name="automationContextRest">Dia de folga</string>
     <string name="automationGuideIntro">Os Atalhos podem executar uma ação do DoneAt quando chega ao trabalho ou sai. Demora cerca de um minuto.</string>
-    <string name="automationGuideStepArrive">Adicione a ação do DoneAt “%1$s” e toque em Concluído.</string>
+    <string name="automationGuideStepArrive">Adicione a ação do DoneAt “%1$s” e toque em OK.</string>
     <string name="automationGuideStepLeave">Repita com Sair e “%1$s”, para que a sua saída também fique registada.</string>
     <string name="automationGuideStepOpen">Abra os Atalhos, toque em Automação, depois em + e escolha Chegar.</string>
     <string name="automationGuideStepPlace">Escolha o seu local de trabalho como localização e selecione Executar imediatamente.</string>

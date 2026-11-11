@@ -75,7 +75,7 @@
     <string name="automationGuideIntro">Kurzbefehle kann eine DoneAt-Aktion ausführen, sobald du bei der Arbeit ankommst oder sie verlässt. Das dauert etwa eine Minute.</string>
     <string name="automationGuideStepArrive">Füge die DoneAt-Aktion „%1$s“ hinzu und tippe auf „Fertig“.</string>
     <string name="automationGuideStepLeave">Wiederhole das mit „Verlassen“ und „%1$s“, damit auch dein Feierabend festgehalten wird.</string>
-    <string name="automationGuideStepOpen">Öffne Kurzbefehle, tippe auf „Automation“, dann auf „+“ und wähle „Ankommen“.</string>
+    <string name="automationGuideStepOpen">Öffne Kurzbefehle, tippe auf „Automation“, dann auf „+“ und wähle „Ankunft“.</string>
     <string name="automationGuideStepPlace">Wähle deinen Arbeitsort als Standort und dann „Sofort ausführen“.</string>
     <string name="automationGuideTipBattery">iOS prüft den Standort selbst. DoneAt läuft daher nicht im Hintergrund und verbraucht kaum Akku.</string>
     <string name="automationGuideTipNotify">Schalte „Bei Ausführung benachrichtigen“ aus, wenn du nicht jedes Mal ein Banner sehen möchtest.</string>

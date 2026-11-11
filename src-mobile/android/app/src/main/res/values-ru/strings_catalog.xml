@@ -74,7 +74,7 @@
     <string name="automationContextRest">Выходной</string>
     <string name="automationGuideIntro">Приложение «Команды» может запускать действие DoneAt, когда вы приходите на работу или уходите. Это займёт около минуты.</string>
     <string name="automationGuideStepArrive">Добавьте действие DoneAt «%1$s» и нажмите «Готово».</string>
-    <string name="automationGuideStepLeave">Повторите с «Уход» и «%1$s», чтобы записывалось и время ухода.</string>
+    <string name="automationGuideStepLeave">Повторите с «Убытие» и «%1$s», чтобы записывалось и время ухода.</string>
     <string name="automationGuideStepOpen">Откройте «Команды», нажмите «Автоматизация», затем + и выберите «Прибытие».</string>
     <string name="automationGuideStepPlace">Выберите своё место работы и нажмите «Выполнять сразу».</string>
     <string name="automationGuideTipBattery">iOS сам определяет местоположение, поэтому DoneAt не работает в фоне и почти не расходует заряд.</string>
