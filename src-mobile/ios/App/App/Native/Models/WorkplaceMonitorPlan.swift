@@ -62,6 +62,17 @@ nonisolated enum WorkplaceMonitorPlan {
         return (id, generation, ring)
     }
 
+    /// The same circle registered with the region-monitoring API: `L` plus
+    /// the condition identifier, so neither API's set touches the other's.
+    static func regionIdentifier(for identifier: String) -> String { "L" + identifier }
+
+    /// The condition identifier a region stands for, if it is one of ours.
+    static func conditionIdentifier(forRegion identifier: String) -> String? {
+        guard identifier.hasPrefix("L") else { return nil }
+        let core = String(identifier.dropFirst())
+        return parse(core) == nil ? nil : core
+    }
+
     /// Whether anything should be watched at all. Off means no session and
     /// no circles: nothing keeps location access busy for nothing.
     static func isActive(state: WorkplaceAutomationState, canCollect: Bool) -> Bool {
@@ -174,5 +185,42 @@ nonisolated struct WorkplaceMonitorStatus: Equatable, Sendable {
         if conditionUnsupported { result.insert(.unsupported) }
         if persistenceUnavailable { result.insert(.storageUnavailable) }
         return result
+    }
+}
+
+/// Plan 021 §I2: each circle is watched by `CLMonitor` and by the region API.
+/// Both usually report the same crossing within milliseconds; while the app
+/// is swiped away, `CLMonitor` may hold its report until the app is opened.
+/// The ledger lets the first report of each edge through, preferring
+/// `CLMonitor` (it carries the observation time), and drops the other.
+nonisolated struct WorkplaceCrossingLedger: Codable, Equatable, Sendable {
+    enum Source: String, Codable, Sendable { case monitor, region }
+    struct Edge: Codable, Equatable, Sendable {
+        var satisfied: Bool
+        var source: Source
+    }
+
+    private(set) var edges: [String: Edge] = [:]
+
+    /// A `CLMonitor` report. Dropped only when the region API already
+    /// delivered this same edge; its own repeats pass as before.
+    mutating func monitorReports(_ identifier: String, state: WorkplaceConditionState, isInitialState: Bool) -> Bool {
+        guard state != .unknown else { return true }
+        let satisfied = state == .satisfied
+        let previous = edges[identifier]
+        edges[identifier] = Edge(satisfied: satisfied, source: .monitor)
+        return isInitialState || !(previous?.source == .region && previous?.satisfied == satisfied)
+    }
+
+    /// A region API report, checked after `CLMonitor` had a moment to report
+    /// the same crossing. Dropped when the circle is already in this state.
+    mutating func regionReports(_ identifier: String, satisfied: Bool) -> Bool {
+        guard edges[identifier]?.satisfied != satisfied else { return false }
+        edges[identifier] = Edge(satisfied: satisfied, source: .region)
+        return true
+    }
+
+    mutating func keep(only identifiers: Set<String>) {
+        edges = edges.filter { identifiers.contains($0.key) }
     }
 }
