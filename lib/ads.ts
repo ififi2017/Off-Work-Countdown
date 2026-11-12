@@ -7,12 +7,13 @@ export const ADSENSE_CLIENT_ID = "ca-pub-9912554861143289";
 export const ADSENSE_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`;
 
 /**
- * Ads belong on content pages (`/{lang}/{preset|tool|salary|...}`), never on
- * the timer itself (`/{lang}`) or the floating mini timer (`/{lang}/mini`).
+ * Every browser page under `/{lang}` may show ads, the timer included: the
+ * ad-free experience is the installed apps. The floating mini timer
+ * (`/{lang}/mini`, Desktop only) never does, and `/` only redirects.
  */
 export function isAdEligiblePath(pathname: string): boolean {
   const segments = pathname.split("/").filter(Boolean);
-  return segments.length >= 2 && segments[1] !== "mini";
+  return segments.length >= 1 && segments[1] !== "mini";
 }
 
 export interface AdContext {

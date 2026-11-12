@@ -19,8 +19,7 @@ function isInstalledApp(): boolean {
 
 /**
  * Loads AdSense once, after hydration, so an installed PWA is detected before
- * any ad request is made. Client navigation keeps the script (it cannot be
- * unloaded); exclude the timer URLs in the console's auto-ads page settings.
+ * any ad request is made. Client navigation keeps the script loaded.
  */
 export function AdSenseLoader() {
   const pathname = usePathname();

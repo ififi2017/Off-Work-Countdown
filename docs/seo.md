@@ -43,7 +43,7 @@ Web App 标题是「功能词 — DoneAt」：用户搜的是「下班倒數計�
 
 ## 广告（AdSense）
 
-仅 Web 构建的内容页加载（`lib/ads.ts` + `components/AdSenseLoader.tsx`）：计时主页、`/mini`、已安装的 PWA（standalone 等 display-mode、iOS `navigator.standalone`、TWA）、桌面端、扩展、预览域名和 localhost 都不加载。自动广告的位置在 AdSense 后台控制，欧盟/英国/瑞士的同意弹窗用后台「隐私和消息」里 Google 的同意消息，代码里没有 CMP。脚本在 hydration 后由客户端注入，站内跳转到计时页时无法卸载，所以要在后台自动广告的「排除网页」里按网址排除 `off.rainif.com/*` 的计时页（19 种语言的 `/{lang}`）。
+Web 构建在浏览器标签页里加载（`lib/ads.ts` + `components/AdSenseLoader.tsx`），计时主页 `/{lang}` 也包括在内：想要无广告就用客户端（PWA、桌面、扩展、iOS、Android 都不加载）。`/{lang}/mini`、根路径 `/`（只做跳转）、预览域名和 localhost 不加载。已安装 PWA 的判断：standalone / fullscreen / minimal-ui / window-controls-overlay 的 display-mode、iOS `navigator.standalone`、`android-app://` 来源。自动广告的位置和密度在 AdSense 后台控制；欧盟/英国/瑞士的同意弹窗用后台「隐私和消息」里 Google 的同意消息，代码里没有 CMP。
 
 ## llms.txt
 

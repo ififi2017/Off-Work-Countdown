@@ -139,7 +139,7 @@ export default async function Layout({
           <>
             <Analytics />
             <SpeedInsights />
-            {/* 仅浏览器网页的内容页;PWA、桌面、扩展与原生端不加载,见 lib/ads.ts */}
+            {/* 仅浏览器标签页（含计时页）;PWA、桌面、扩展与原生端不加载,见 lib/ads.ts */}
             <AdSenseLoader />
           </>
         )}

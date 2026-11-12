@@ -9,13 +9,13 @@ const base = {
 };
 
 describe("isAdEligiblePath", () => {
-  it("allows content pages", () => {
-    for (const p of ["/en/996", "/en/work-hours-calculator", "/zh-CN/salary/cn/monthly-to-daily", "/en/tools"]) {
+  it("allows the timer and content pages", () => {
+    for (const p of ["/en", "/zh-CN", "/en/", "/en/996", "/en/work-hours-calculator", "/zh-CN/salary/cn/monthly-to-daily", "/en/tools"]) {
       expect(isAdEligiblePath(p)).toBe(true);
     }
   });
-  it("keeps the timer and mini timer clean", () => {
-    for (const p of ["/", "/en", "/en/", "/zh-CN", "/en/mini"]) {
+  it("skips the redirecting root and the mini timer", () => {
+    for (const p of ["/", "/en/mini", "/zh-CN/mini"]) {
       expect(isAdEligiblePath(p)).toBe(false);
     }
   });
@@ -32,8 +32,9 @@ describe("shouldLoadAds", () => {
     expect(shouldLoadAds({ ...base, hostname: "owc-git-x.vercel.app" })).toBe(false);
     expect(shouldLoadAds({ ...base, hostname: "localhost" })).toBe(false);
   });
-  it("never loads on the timer", () => {
-    expect(shouldLoadAds({ ...base, pathname: "/en" })).toBe(false);
+  it("loads on the timer in a browser tab but not in the installed app", () => {
+    expect(shouldLoadAds({ ...base, pathname: "/en" })).toBe(true);
+    expect(shouldLoadAds({ ...base, pathname: "/en", installedApp: true })).toBe(false);
   });
 });
 
