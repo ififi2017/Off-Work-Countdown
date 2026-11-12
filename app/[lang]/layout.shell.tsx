@@ -9,6 +9,7 @@ import { siteConfig } from '@/config/site';
 import { getTranslations } from '@/lib/server/i18n';
 import { webAppAlternates, webAppPageUrl } from '@/lib/site-urls';
 import { ThemeRouteSync } from '@/components/ThemeRouteSync';
+import { AdSenseLoader } from '@/components/AdSenseLoader';
 import { IS_DESKTOP_BUILD, IS_WEB_BUILD } from '@/lib/build-target';
 
 const geistSans = localFont({
@@ -138,6 +139,8 @@ export default async function Layout({
           <>
             <Analytics />
             <SpeedInsights />
+            {/* 仅浏览器网页的内容页;PWA、桌面、扩展与原生端不加载,见 lib/ads.ts */}
+            <AdSenseLoader />
           </>
         )}
       </body>

@@ -41,6 +41,10 @@ Web App 标题是「功能词 — DoneAt」：用户搜的是「下班倒數計�
 
 `/{lang}/work-hours-calculator`，19 种语言，仅 Web 构建（`page.web.tsx`），在 sitemap 里互为 alternate。它和倒计时是两个工具：回答「几点下班」「做了几个小时」，结果可以一键带进倒计时（`?s=…&from=calculator`，计为 `calculator_start`）。页内有一张 DoneAt App 推荐卡片，点击计为 `calculator_app_open`，链到官网对应语言门厅并带 `utm_campaign=work-hours-calculator`。
 
+## 广告（AdSense）
+
+仅 Web 构建的内容页加载（`lib/ads.ts` + `components/AdSenseLoader.tsx`）：计时主页、`/mini`、已安装的 PWA（standalone 等 display-mode、iOS `navigator.standalone`、TWA）、桌面端、扩展、预览域名和 localhost 都不加载。自动广告的位置在 AdSense 后台控制，欧盟/英国/瑞士的同意弹窗用后台「隐私和消息」里 Google 的同意消息，代码里没有 CMP。脚本在 hydration 后由客户端注入，站内跳转到计时页时无法卸载，所以要在后台自动广告的「排除网页」里按网址排除 `off.rainif.com/*` 的计时页（19 种语言的 `/{lang}`）。
+
 ## llms.txt
 
 `/llms.txt`（`app/llms.txt/route.ts`）是给 AI 搜索 / 问答引擎的 Markdown 地图，按 llmstxt.org 格式：摘要、关键事实、工具与预设页链接。预设页和工资工具页直接取自 `lib/presets.ts` 与 `features/web-tools/catalog/pages.ts`，新页面自动出现；关键事实是手写的，改功能时同步核对（尤其「网页不能排班」）。官网 `https://doneat.app/llms.txt` 与本文件互相链接。
