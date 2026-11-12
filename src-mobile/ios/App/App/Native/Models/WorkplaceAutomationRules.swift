@@ -141,6 +141,9 @@ nonisolated enum AutomationTimestampBasis: String, Codable, Sendable {
     /// iOS held the event while the app was swiped away; the time is when
     /// the system woke the app for it.
     case heldWake
+    /// Only the region-monitoring API reported it, live; that API gives no
+    /// observation time, so the callback time stands in.
+    case regionCallback
     case userAction
 }
 

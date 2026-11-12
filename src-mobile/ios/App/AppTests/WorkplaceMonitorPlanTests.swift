@@ -211,4 +211,58 @@ nonisolated struct WorkplaceMonitorPlanTests {
         #expect(!WorkplaceMonitorStatus().isRegistered)
         #expect(WorkplaceMonitorStatus(registeredCount: 2, wantedCount: 2).isRegistered)
     }
+
+    @Test("A region stands for its condition; others are not ours")
+    func regionIdentifiers() {
+        let identifier = WorkplaceMonitorPlan.identifier(workplaceID: UUID(), generation: 2, ring: .inner)
+        let region = WorkplaceMonitorPlan.regionIdentifier(for: identifier)
+        #expect(region.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber) })
+        #expect(WorkplaceMonitorPlan.conditionIdentifier(forRegion: region) == identifier)
+        #expect(WorkplaceMonitorPlan.conditionIdentifier(forRegion: identifier) == nil)
+        #expect(WorkplaceMonitorPlan.conditionIdentifier(forRegion: "legacy.inner") == nil)
+        #expect(WorkplaceMonitorPlan.conditionIdentifier(forRegion: "LStranger") == nil)
+    }
+
+    @Test("Both APIs reporting one crossing deliver it once, CLMonitor first")
+    func ledgerBothReport() {
+        var ledger = WorkplaceCrossingLedger()
+        let r1 = ledger.monitorReports("A", state: .satisfied, isInitialState: false)
+        #expect(r1)
+        let r2 = ledger.regionReports("A", satisfied: true)
+        #expect(!r2)
+        // CLMonitor's own repeat still passes, as before.
+        let r3 = ledger.monitorReports("A", state: .satisfied, isInitialState: false)
+        #expect(r3)
+    }
+
+    @Test("A held CLMonitor report after the region's is dropped")
+    func ledgerHeldMonitor() {
+        var ledger = WorkplaceCrossingLedger()
+        let r4 = ledger.monitorReports("A", state: .unsatisfied, isInitialState: true)
+        #expect(r4)
+        let r5 = ledger.regionReports("A", satisfied: true)
+        #expect(r5)
+        let r6 = ledger.monitorReports("A", state: .satisfied, isInitialState: false)
+        #expect(!r6)
+        // The next real edge goes through from either side.
+        let r7 = ledger.regionReports("A", satisfied: false)
+        #expect(r7)
+        let r8 = ledger.monitorReports("A", state: .satisfied, isInitialState: false)
+        #expect(r8)
+    }
+
+    @Test("Unknown never counts; a baseline always passes; removed circles are forgotten")
+    func ledgerEdges() {
+        var ledger = WorkplaceCrossingLedger()
+        let r9 = ledger.regionReports("A", satisfied: true)
+        #expect(r9)
+        let r10 = ledger.monitorReports("A", state: .unknown, isInitialState: false)
+        #expect(r10)
+        let r11 = ledger.monitorReports("A", state: .satisfied, isInitialState: true)
+        #expect(r11)
+        ledger.keep(only: ["B"])
+        #expect(ledger.edges.isEmpty)
+        let r12 = ledger.regionReports("A", satisfied: true)
+        #expect(r12)
+    }
 }

@@ -47,10 +47,16 @@ final class WorkplaceMonitor {
     /// When held events started flowing again; events received shortly
     /// after take the held wake time.
     @ObservationIgnored private var releasedAt: Date?
+    /// One report per crossing from the two APIs watching each circle.
+    @ObservationIgnored private var ledger: WorkplaceCrossingLedger
 
     init(dependencies: Dependencies) {
         self.dependencies = dependencies
+        ledger = Self.loadLedger()
         refreshStatus(registered: 0)
+        WorkplaceRegions.shared.onCrossing = { [weak self] crossing in
+            Task { await self?.handle(crossing) }
+        }
     }
 
     private var automation: WorkplaceAutomationCoordinator { dependencies.automation }
@@ -98,6 +104,8 @@ final class WorkplaceMonitor {
                 identifier: condition.identifier
             )
         }
+        WorkplaceRegions.shared.reconcile(wanted: wanted)
+        updateLedger { $0.keep(only: Set(wanted.map(\.identifier))) }
         refreshStatus(registered: Set(await monitor.identifiers).intersection(wanted.map(\.identifier)).count)
     }
 
@@ -112,8 +120,10 @@ final class WorkplaceMonitor {
         if monitor != nil || defaults.bool(forKey: Self.mayHoldConditionsKey) {
             let monitor = await ensureMonitor()
             for identifier in await monitor.identifiers { await monitor.remove(identifier) }
+            WorkplaceRegions.shared.stopAll()
             defaults.set(false, forKey: Self.mayHoldConditionsKey)
         }
+        if !ledger.edges.isEmpty { updateLedger { $0.keep(only: []) } }
         eventTask?.cancel()
         sessionTask?.cancel()
         session?.invalidate()
@@ -186,7 +196,10 @@ final class WorkplaceMonitor {
             automation.update { _ = $0.takeBaseline(event.identifier) }
             isInitial = true
         }
-        guard var automationEvent = WorkplaceMonitorPlan.event(
+        // The region API may already have delivered this crossing.
+        var delivers = true
+        updateLedger { delivers = $0.monitorReports(event.identifier, state: state, isInitialState: isInitial) }
+        guard delivers, var automationEvent = WorkplaceMonitorPlan.event(
             identifier: event.identifier, state: state, observedAt: event.date,
             receivedAt: now, isInitialState: isInitial
         ) else {
@@ -207,6 +220,45 @@ final class WorkplaceMonitor {
         let outcome = await automation.receive(automationEvent, shifts: dependencies.shifts(now), now: now)
         refreshStatus(registered: status.registeredCount)
         await dependencies.didHandle(automationEvent, outcome)
+    }
+
+    /// How long a region callback waits for `CLMonitor` to report the same
+    /// crossing; in device tests the two came within milliseconds.
+    private static let regionGrace: Duration = .seconds(3)
+
+    /// A region API crossing: used only when `CLMonitor` has not reported it.
+    private func handle(_ crossing: WorkplaceRegions.Crossing) async {
+        try? await Task.sleep(for: Self.regionGrace)
+        // A circle added moments ago has no baseline yet; this is not a crossing.
+        guard !automation.state.awaitingBaseline.contains(crossing.identifier) else { return }
+        var delivers = false
+        updateLedger { delivers = $0.regionReports(crossing.identifier, satisfied: crossing.satisfied) }
+        guard delivers, var event = WorkplaceMonitorPlan.event(
+            identifier: crossing.identifier, state: crossing.satisfied ? .satisfied : .unsatisfied,
+            observedAt: nil, receivedAt: crossing.receivedAt, isInitialState: false
+        ) else { return }
+        event.observedAt = crossing.receivedAt
+        event.timestampBasis = .regionCallback
+        let now = Date.now
+        let outcome = await automation.receive(event, shifts: dependencies.shifts(now), now: now)
+        refreshStatus(registered: status.registeredCount)
+        await dependencies.didHandle(event, outcome)
+    }
+
+    private static let ledgerKey = "owc.workplaceMonitor.crossingLedger"
+
+    private static func loadLedger() -> WorkplaceCrossingLedger {
+        guard let data = UserDefaults.standard.data(forKey: ledgerKey),
+              let ledger = try? JSONDecoder().decode(WorkplaceCrossingLedger.self, from: data)
+        else { return WorkplaceCrossingLedger() }
+        return ledger
+    }
+
+    private func updateLedger(_ change: (inout WorkplaceCrossingLedger) -> Void) {
+        let before = ledger
+        change(&ledger)
+        guard ledger != before, let data = try? JSONEncoder().encode(ledger) else { return }
+        UserDefaults.standard.set(data, forKey: Self.ledgerKey)
     }
 
     private func handle(_ diagnostic: CLServiceSession.Diagnostic) {
