@@ -53,7 +53,7 @@ export function HeroScrollButton({
         initial={false}
         animate={{ opacity: scrolled ? 0 : 1 }}
         transition={SWAP}
-        className="group absolute inset-x-0 bottom-4 mx-auto inline-flex w-fit flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[0.8125rem] font-medium text-gray-500 transition-colors hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:text-gray-400 dark:hover:text-gray-100"
+        className="group absolute inset-x-0 bottom-[calc(1rem+var(--ad-anchor-h,0px))] mx-auto inline-flex w-fit flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[0.8125rem] font-medium text-gray-500 transition-colors hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:text-gray-400 dark:hover:text-gray-100"
       >
         {moreLabel}
         <motion.span
@@ -70,7 +70,7 @@ export function HeroScrollButton({
         </motion.span>
       </motion.button>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center">
+      <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1.25rem+var(--ad-anchor-h,0px))] z-40 flex justify-center">
         <AnimatePresence initial={false}>
           {scrolled && (
             <motion.button
