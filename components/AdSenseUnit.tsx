@@ -2,7 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ADSENSE_CLIENT_ID, ADSENSE_INLINE_SLOT } from "@/lib/ads";
+import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { AD_CLOSED_EVENT, ADSENSE_CLIENT_ID, ADSENSE_INLINE_SLOT } from "@/lib/ads";
 import { adsAllowedHere } from "@/components/AdSenseLoader";
 import {
   DESKTOP_INVITE_CLOSED,
@@ -31,7 +33,8 @@ type RailSize = { width: number; height: number };
  *   what the reader is looking at and a blocked script leaves no gap.
  * - `rail`: a fixed 160×600 or 300×600 unit beside the first-screen card on
  *   wide screens. It scrolls with the page; it is not sticky, because AdSense
- *   forbids mirrored sticky units on both sides of the content.
+ *   forbids mirrored sticky units on both sides of the content. A close
+ *   button above it removes it for the current page view.
  */
 export function AdSenseUnit({
   className = "",
@@ -46,6 +49,8 @@ export function AdSenseUnit({
   const pathname = usePathname();
   const [enabled, setEnabled] = useState(false);
   const [railSize, setRailSize] = useState<RailSize | null>(null);
+  const [closed, setClosed] = useState(false);
+  const { t } = useTranslation();
   const ins = useRef<HTMLModElement>(null);
 
   useEffect(() => {
@@ -78,7 +83,7 @@ export function AdSenseUnit({
     }
   }, [enabled]);
 
-  if (!enabled) return null;
+  if (!enabled || closed) return null;
 
   if (variant === "rail" && railSize) {
     return (
@@ -88,6 +93,22 @@ export function AdSenseUnit({
         className={`[&:has(ins[data-ad-status=unfilled])]:hidden ${className}`}
         style={railSize}
       >
+        {/* AdSense lets visitors close a unit "by clicking a box". The button
+            sits above the ad with a gap, never over it or its AdChoices icon,
+            so it cannot cause accidental ad clicks. Closing removes the unit
+            for this page view only; the next visit shows it again. */}
+        <button
+          type="button"
+          onClick={() => {
+            setClosed(true);
+            window.dispatchEvent(new Event(AD_CLOSED_EVENT));
+          }}
+          aria-label={t("close")}
+          title={t("close")}
+          className="absolute -top-8 end-0 grid h-6 w-6 place-items-center rounded-full text-gray-400 transition-colors hover:bg-black/5 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:text-gray-500 dark:hover:bg-white/10 dark:hover:text-gray-200"
+        >
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
         <ins
           ref={ins}
           className="adsbygoogle"

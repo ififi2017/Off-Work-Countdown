@@ -119,6 +119,8 @@
   "desktopInviteTitle": "Geri sayımınız hep elinizin altında",
   "desktopInviteDescription": "Tarayıcı sekmesini açık tutmanıza gerek yok. Masaüstü uygulaması arka planda sessizce saymaya devam eder, kalan süreyi sistem tepsisinde gösterir ve mola ya da işten çıkma zamanı geldiğinde size haber verir.",
   "desktopInviteButton": "Ücretsiz indir",
+  "adFreeInviteTitle": "Reklamsız mı tercih edersiniz?",
+  "adFreeInviteDescription": "DoneAt uygulamasını deneyin: reklamsız ve ücretsiz. Sekmeyi kapatsanız da saymaya devam eder, çıkış saati gelince size haber verir.",
   "getApp": "Uygulamayı al",
   "getAppPlatforms": "Windows · Mac · iPhone · iPad · Android",
   "getAppNoteDesktop": "Bilgisayarda kalan süre menü çubuğunda ya da sistem tepsisinde durur; sekmeyi açık tutman gerekmez.",
