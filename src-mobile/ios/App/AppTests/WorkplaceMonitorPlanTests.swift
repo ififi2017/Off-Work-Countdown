@@ -265,4 +265,19 @@ nonisolated struct WorkplaceMonitorPlanTests {
         let r12 = ledger.regionReports("A", satisfied: true)
         #expect(r12)
     }
+
+    @Test("A state read is a crossing only when it disagrees with a known edge")
+    func ledgerStateRead() {
+        var ledger = WorkplaceCrossingLedger()
+        // Nothing known yet: remembered, not a crossing.
+        let first = ledger.regionStateRead("A", satisfied: false)
+        #expect(!first)
+        let same = ledger.regionStateRead("A", satisfied: false)
+        #expect(!same)
+        let crossed = ledger.regionStateRead("A", satisfied: true)
+        #expect(crossed)
+        // CLMonitor's later report of that edge is the same crossing.
+        let monitor = ledger.monitorReports("A", state: .satisfied, isInitialState: false)
+        #expect(!monitor)
+    }
 }

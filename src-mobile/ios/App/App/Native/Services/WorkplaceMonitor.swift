@@ -27,10 +27,6 @@ final class WorkplaceMonitor {
         var didReleaseHold: @MainActor () async -> Void = {}
     }
 
-    /// Set by the app delegate before launch returns: this process was
-    /// started for a location event.
-    static var launchedForLocation = false
-
     private(set) var status = WorkplaceMonitorStatus()
 
     @ObservationIgnored private let dependencies: Dependencies
@@ -44,6 +40,13 @@ final class WorkplaceMonitor {
     @ObservationIgnored private var monitorProblems: Set<WorkplaceMonitorStatus.Problem> = []
     @ObservationIgnored private var lastDiagnosticHeld: Bool?
     @ObservationIgnored private var heldNotedThisProcess = false
+    /// This process, in the background, heard from the region API about a
+    /// crossing: the sign it was woken for one. Launch options do not say so
+    /// (device tests 2026-11-12/13: region launches carried no location key).
+    @ObservationIgnored private var wokeForCrossing = false
+    /// The region API recorded a crossing in this process, so there is
+    /// nothing left to ask the person to open the app for.
+    @ObservationIgnored private var regionRecordedThisProcess = false
     /// When held events started flowing again; events received shortly
     /// after take the held wake time.
     @ObservationIgnored private var releasedAt: Date?
@@ -105,6 +108,9 @@ final class WorkplaceMonitor {
             )
         }
         WorkplaceRegions.shared.reconcile(wanted: wanted)
+        // In a background launch, ask where the person is: a crossing iOS
+        // woke the app for shows up even if its callback is held.
+        if UIApplication.shared.applicationState == .background { WorkplaceRegions.shared.requestStates() }
         updateLedger { $0.keep(only: Set(wanted.map(\.identifier))) }
         refreshStatus(registered: Set(await monitor.identifiers).intersection(wanted.map(\.identifier)).count)
     }
@@ -228,11 +234,24 @@ final class WorkplaceMonitor {
 
     /// A region API crossing: used only when `CLMonitor` has not reported it.
     private func handle(_ crossing: WorkplaceRegions.Crossing) async {
+        // A crossing callback, or a state read that disagrees with the last
+        // known edge, in the background: the app was woken for a crossing.
+        // An agreeing read (any background launch asks) says nothing.
+        let isNews = !crossing.isStateRead
+            || ledger.edges[crossing.identifier].map { $0.satisfied != crossing.satisfied } ?? false
+        if isNews, UIApplication.shared.applicationState == .background {
+            noteWokeForCrossing()
+        }
         try? await Task.sleep(for: Self.regionGrace)
         // A circle added moments ago has no baseline yet; this is not a crossing.
         guard !automation.state.awaitingBaseline.contains(crossing.identifier) else { return }
         var delivers = false
-        updateLedger { delivers = $0.regionReports(crossing.identifier, satisfied: crossing.satisfied) }
+        updateLedger {
+            delivers = crossing.isStateRead
+                ? $0.regionStateRead(crossing.identifier, satisfied: crossing.satisfied)
+                : $0.regionReports(crossing.identifier, satisfied: crossing.satisfied)
+        }
+        if delivers { regionRecordedThisProcess = true }
         guard delivers, var event = WorkplaceMonitorPlan.event(
             identifier: crossing.identifier, state: crossing.satisfied ? .satisfied : .unsatisfied,
             observedAt: nil, receivedAt: crossing.receivedAt, isInitialState: false
@@ -279,22 +298,24 @@ final class WorkplaceMonitor {
         refreshStatus(registered: status.registeredCount)
     }
 
-    /// Tracks iOS holding events back. A location launch that is not let in
+    private func noteWokeForCrossing() {
+        guard !wokeForCrossing else { return }
+        wokeForCrossing = true
+        // The session may already have said events are held.
+        if lastDiagnosticHeld == true { noteHeldWake() }
+    }
+
+    /// Tracks iOS holding events back. A crossing wake that is not let in
     /// marks a held wake; the first time events are let in again, in this
     /// process or a later foreground one, opens the release window.
     private func noteHold(_ held: Bool) {
         let previous = lastDiagnosticHeld
         lastDiagnosticHeld = held
-        let now = Date.now
         if held {
-            guard Self.launchedForLocation, !heldNotedThisProcess,
-                  UIApplication.shared.applicationState == .background else { return }
-            heldNotedThisProcess = true
-            var starts = false
-            automation.update { starts = $0.noteHeldWake(at: now) }
-            if starts { Task { await dependencies.didHoldCrossing() } }
+            if wokeForCrossing { noteHeldWake() }
             return
         }
+        let now = Date.now
         guard previous != false, !automation.state.heldWakes.isEmpty else { return }
         releasedAt = now
         Task {
@@ -304,6 +325,22 @@ final class WorkplaceMonitor {
             guard releasedAt == now else { return }
             releasedAt = nil
             automation.update { $0.clearHeldWakes() }
+        }
+    }
+
+    /// Woken for a crossing while `CLMonitor` is held back. The wake time
+    /// stands in for its held report; the person is asked to open the app
+    /// only if the region API could not record the crossing itself.
+    private func noteHeldWake() {
+        guard !heldNotedThisProcess, UIApplication.shared.applicationState == .background else { return }
+        heldNotedThisProcess = true
+        let now = Date.now
+        Task {
+            try? await Task.sleep(for: Self.regionGrace + .seconds(1))
+            guard !regionRecordedThisProcess else { return }
+            var starts = false
+            automation.update { starts = $0.noteHeldWake(at: now) }
+            if starts { await dependencies.didHoldCrossing() }
         }
     }
 
