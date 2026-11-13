@@ -119,6 +119,8 @@
   "desktopInviteTitle": "Keep your countdown close",
   "desktopInviteDescription": "No need to keep a browser tab open. The desktop app counts quietly in the background, keeps the time remaining in your tray, and lets you know when it’s time for a break—or time to go home.",
   "desktopInviteButton": "Download for free",
+  "adFreeInviteTitle": "Rather skip the ads?",
+  "adFreeInviteDescription": "Try the DoneAt app: no ads, free to download. It keeps counting after you close the tab and reminds you when it’s time to go home.",
   "getApp": "Get the app",
   "getAppPlatforms": "Windows · Mac · iPhone · iPad · Android",
   "getAppNoteDesktop": "On a computer, the time left lives in your menu bar or tray—no tab to keep open.",

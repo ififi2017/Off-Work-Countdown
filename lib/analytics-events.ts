@@ -29,6 +29,10 @@ export const trackedEvents = [
   "desktop_invite_open",
   /** 用户主动关闭客户端下载邀请。 */
   "desktop_invite_dismiss",
+  /** 关掉一个广告后，展示了「客户端没有广告」的邀请。 */
+  "ad_free_invite_view",
+  /** 从无广告邀请进入客户端下载页。 */
+  "ad_free_invite_open",
 ] as const;
 
 export type TrackedEvent = (typeof trackedEvents)[number];

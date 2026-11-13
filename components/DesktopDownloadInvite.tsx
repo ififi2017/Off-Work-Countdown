@@ -60,7 +60,7 @@ export function DesktopDownloadInvite() {
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 24, opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
-          className="fixed inset-x-3 bottom-3 z-50 sm:left-auto sm:right-5 sm:w-[410px]"
+          className="fixed inset-x-3 bottom-[calc(0.75rem+var(--ad-anchor-h,0px))] z-50 sm:left-auto sm:right-5 sm:w-[410px]"
         >
           <div className="overflow-hidden rounded-2xl border border-gray-200/90 bg-white/95 p-4 shadow-2xl shadow-black/15 backdrop-blur-xl dark:border-gray-700 dark:bg-gray-900/95">
             <div className="flex items-start gap-3">

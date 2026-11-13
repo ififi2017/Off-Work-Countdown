@@ -1,5 +1,6 @@
 import { OffWorkCountdown } from '@/components/off-work-countdown';
 import { DesktopDownloadInvite } from '@/components/DesktopDownloadInvite';
+import { AdFreeInvite } from '@/components/AdFreeInvite';
 import { I18nProvider } from '@/components/I18nProvider';
 import { getTranslations } from '@/lib/server/i18n';
 import { buildWebAppJsonLd } from '@/lib/server/metadata';
@@ -32,6 +33,7 @@ export default async function Home({ params }: Props) {
         <OffWorkCountdown lang={lang} />
       </div>
       {IS_WEB_BUILD && <DesktopDownloadInvite />}
+      {IS_WEB_BUILD && <AdFreeInvite />}
     </I18nProvider>
   );
 }

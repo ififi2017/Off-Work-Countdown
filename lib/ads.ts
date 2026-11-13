@@ -33,3 +33,6 @@ export function shouldLoadAds(ctx: AdContext): boolean {
     isAdEligiblePath(ctx.pathname)
   );
 }
+
+/** Fired on window when a visitor closes an ad unit; AdFreeInvite answers it. */
+export const AD_CLOSED_EVENT = "owc:ad-closed";
