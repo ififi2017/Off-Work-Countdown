@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { siteConfig } from "@/config/site";
-import { ADSENSE_SRC, shouldLoadAds } from "@/lib/ads";
+import { AD_CLOSED_EVENT, ADSENSE_SRC, shouldLoadAds } from "@/lib/ads";
 
 const SCRIPT_ID = "adsense-loader";
 /** Height of Google's bottom anchor ad while it is on screen, for fixed UI to sit above. */
@@ -41,7 +41,14 @@ export function adsAllowedHere(pathname: string): boolean {
 function trackAnchorHeight(): () => void {
   const root = document.documentElement;
   let anchor: HTMLElement | null = null;
+  let announcedClose = false;
   const update = () => {
+    // The visitor closed the bar with Google's own handle (we may not add a
+    // close button to Google's ad): offer the ad-free apps, as for side rails.
+    if (!announcedClose && anchor?.getAttribute("data-anchor-status") === "dismissed") {
+      announcedClose = true;
+      window.dispatchEvent(new Event(AD_CLOSED_EVENT));
+    }
     let h = 0;
     if (anchor?.isConnected && getComputedStyle(anchor).display !== "none") {
       const top = anchor.getBoundingClientRect().top;
