@@ -43,7 +43,7 @@ Web App 标题是「功能词 — DoneAt」：用户搜的是「下班倒數計�
 
 ## 广告（AdSense）
 
-Web 构建在浏览器标签页里加载（`lib/ads.ts` + `components/AdSenseLoader.tsx`），计时主页 `/{lang}` 也包括在内：想要无广告就用客户端（PWA、桌面、扩展、iOS、Android 都不加载）。`/{lang}/mini`、根路径 `/`（只做跳转）、预览域名和 localhost 不加载。已安装 PWA 的判断：standalone / fullscreen / minimal-ui / window-controls-overlay 的 display-mode、iOS `navigator.standalone`、`android-app://` 来源。页内固定广告位 `AdSenseUnit`（广告单元 off-timer-inline，`ADSENSE_INLINE_SLOT`）：计时页首屏以下一个、设置态的 App 展示与下载区之间一个；预设页（`ContentPage`）、工时计算器和工资工具（`ToolPageFrame`）正文末尾各一个。首屏不放，卡片不被挤动；不预留高度，Google 返回 unfilled 时整块收起，被拦截时也不留空白。锚定广告会给 body 加约 456px 底部留白，已在后台关闭，不要再打开。自动广告的其余位置和密度在 AdSense 后台控制；欧盟/英国/瑞士的同意弹窗用后台「隐私和消息」里 Google 的同意消息，代码里没有 CMP。
+Web 构建在浏览器标签页里加载（`lib/ads.ts` + `components/AdSenseLoader.tsx`），计时主页 `/{lang}` 也包括在内：想要无广告就用客户端（PWA、桌面、扩展、iOS、Android 都不加载）。`/{lang}/mini`、根路径 `/`（只做跳转）、预览域名和 localhost 不加载。已安装 PWA 的判断：standalone / fullscreen / minimal-ui / window-controls-overlay 的 display-mode、iOS `navigator.standalone`、`android-app://` 来源。页内固定广告位 `AdSenseUnit`（广告单元 off-timer-inline，`ADSENSE_INLINE_SLOT`）：计时页首屏以下一个、设置态的 App 展示与下载区之间一个；预设页（`ContentPage`）、工时计算器和工资工具（`ToolPageFrame`）正文末尾各一个。宽屏（≥1024×720）首屏卡片左右各一个竖幅 `variant="rail"`（≥1280 宽为 300×600，否则 160×600），跟着页面滚动、不吸附：AdSense 不允许内容两侧对称的吸附广告，手动吸附广告整个视口也只能有一个。卡片本身和窄屏首屏不放，卡片不被挤动；不预留高度，Google 返回 unfilled 时整块收起，被拦截时也不留空白。锚定广告会给 body 加约 456px 底部留白，已在后台关闭，不要再打开。自动广告的其余位置和密度在 AdSense 后台控制；欧盟/英国/瑞士的同意弹窗用后台「隐私和消息」里 Google 的同意消息，代码里没有 CMP。
 
 ## llms.txt
 

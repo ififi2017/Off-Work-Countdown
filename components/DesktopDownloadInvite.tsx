@@ -9,18 +9,23 @@ import { officialDownloadUrlFromWeb } from "@/lib/site-urls";
 import { track } from "@/lib/track";
 
 const DISMISS_KEY = "desktop-download-invite-v1-dismissed";
+/** Fired when the invite closes, so the right-hand ad rail it covers can load. */
+export const DESKTOP_INVITE_CLOSED = "owc:desktop-invite-closed";
+
+/** Whether this visitor will see the invite (Mac/Windows, not yet dismissed). */
+export function desktopInviteWillShow(): boolean {
+  if (localStorage.getItem(DISMISS_KEY)) return false;
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isTouchMac = /macintosh/.test(userAgent) && navigator.maxTouchPoints > 1;
+  return /windows nt|macintosh/.test(userAgent) && !isTouchMac;
+}
 
 export function DesktopDownloadInvite() {
   const { t, i18n } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem(DISMISS_KEY)) return;
-
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isTouchMac = /macintosh/.test(userAgent) && navigator.maxTouchPoints > 1;
-    const isSupportedDesktop = /windows nt|macintosh/.test(userAgent) && !isTouchMac;
-    if (!isSupportedDesktop) return;
+    if (!desktopInviteWillShow()) return;
 
     const timer = window.setTimeout(() => {
       setVisible(true);
@@ -33,12 +38,14 @@ export function DesktopDownloadInvite() {
     localStorage.setItem(DISMISS_KEY, "true");
     setVisible(false);
     track("desktop_invite_dismiss");
+    window.dispatchEvent(new Event(DESKTOP_INVITE_CLOSED));
   };
 
   const openDownloads = () => {
     localStorage.setItem(DISMISS_KEY, "true");
     setVisible(false);
     track("desktop_invite_open");
+    window.dispatchEvent(new Event(DESKTOP_INVITE_CLOSED));
   };
 
   const downloadHref = officialDownloadUrlFromWeb(i18n.language);
