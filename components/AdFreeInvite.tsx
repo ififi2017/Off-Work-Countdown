@@ -11,7 +11,8 @@ import { officialDownloadUrlFromWeb } from "@/lib/site-urls";
 import { track } from "@/lib/track";
 
 /**
- * After a visitor closes an ad, a small card offers the ad-free apps. Once per
+ * After a visitor closes an ad (a side rail's close button, or Google's handle
+ * on the phone anchor bar), a small card offers the ad-free apps. Once per
  * page view, and not while the desktop download invite is still on screen
  * (it already points at the apps and sits in the same corner).
  */
