@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Globe } from "lucide-react";
 import type { ReactNode } from "react";
+import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { siteConfig } from "@/config/site";
 import type { LongFormLocale } from "@/lib/content-locales";
 import { webAppPageUrl } from "@/lib/site-urls";
@@ -154,6 +155,7 @@ export function ContentPage({
         </p>
 
         <div className="mt-10">{children}</div>
+        <AdSenseUnit className="mt-12" />
       </div>
     </div>
   );

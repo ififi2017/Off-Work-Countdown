@@ -8,13 +8,23 @@ import { ADSENSE_SRC, shouldLoadAds } from "@/lib/ads";
 const SCRIPT_ID = "adsense-loader";
 
 /** True for an installed PWA (any platform) or a Play-installed web wrapper. */
-function isInstalledApp(): boolean {
+export function isInstalledApp(): boolean {
   const modes = ["standalone", "fullscreen", "minimal-ui", "window-controls-overlay"];
   return (
     modes.some((mode) => window.matchMedia(`(display-mode: ${mode})`).matches) ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true ||
     document.referrer.startsWith("android-app://")
   );
+}
+
+/** The single client-side gate shared by the loader and every ad unit. */
+export function adsAllowedHere(pathname: string): boolean {
+  return shouldLoadAds({
+    pathname,
+    hostname: window.location.hostname,
+    productionHostname: new URL(siteConfig.webAppUrl).hostname,
+    installedApp: isInstalledApp(),
+  });
 }
 
 /**
@@ -26,13 +36,7 @@ export function AdSenseLoader() {
 
   useEffect(() => {
     if (document.getElementById(SCRIPT_ID)) return;
-    const load = shouldLoadAds({
-      pathname,
-      hostname: window.location.hostname,
-      productionHostname: new URL(siteConfig.webAppUrl).hostname,
-      installedApp: isInstalledApp(),
-    });
-    if (!load) return;
+    if (!adsAllowedHere(pathname)) return;
     const script = document.createElement("script");
     script.id = SCRIPT_ID;
     script.async = true;
