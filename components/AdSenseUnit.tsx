@@ -4,25 +4,67 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ADSENSE_CLIENT_ID, ADSENSE_INLINE_SLOT } from "@/lib/ads";
 import { adsAllowedHere } from "@/components/AdSenseLoader";
+import {
+  DESKTOP_INVITE_CLOSED,
+  desktopInviteWillShow,
+} from "@/components/DesktopDownloadInvite";
 
 type AdsQueue = unknown[];
 
 /**
- * One responsive in-page ad. Renders nothing on the server, in an installed
- * PWA, on Desktop or off the production host (same gate as AdSenseLoader), so
- * the app shell never gets an empty box. No height is reserved: every placement
- * sits below the first screen or after the main content, so a late ad does not
- * move what the reader is looking at, and a blocked script leaves no gap. The
- * wrapper collapses entirely if Google returns no ad.
+ * Wide, tall windows where a skyscraper fits beside the 448 px timer card
+ * without touching it or the window edge. Below this the rails are not
+ * rendered at all (never requested hidden, which AdSense rejects).
  */
-export function AdSenseUnit({ className = "" }: { className?: string }) {
+export const AD_RAIL_MEDIA = "(min-width: 1024px) and (min-height: 720px)";
+const AD_RAIL_WIDE_MEDIA = "(min-width: 1280px)";
+
+type RailSize = { width: number; height: number };
+
+/**
+ * One in-page ad. Renders nothing on the server, in an installed PWA, on
+ * Desktop or off the production host (same gate as AdSenseLoader), so the app
+ * shell never gets an empty box. The wrapper collapses if Google returns no ad.
+ *
+ * - `inline` (default): responsive, no reserved height. Placements sit below
+ *   the first screen or after the main content, so a late ad does not move
+ *   what the reader is looking at and a blocked script leaves no gap.
+ * - `rail`: a fixed 160×600 or 300×600 unit beside the first-screen card on
+ *   wide screens. It scrolls with the page; it is not sticky, because AdSense
+ *   forbids mirrored sticky units on both sides of the content.
+ */
+export function AdSenseUnit({
+  className = "",
+  variant = "inline",
+  avoidDesktopInvite = false,
+}: {
+  className?: string;
+  variant?: "inline" | "rail";
+  /** The bottom-right desktop invite would cover this rail: load after it closes. */
+  avoidDesktopInvite?: boolean;
+}) {
   const pathname = usePathname();
   const [enabled, setEnabled] = useState(false);
+  const [railSize, setRailSize] = useState<RailSize | null>(null);
   const ins = useRef<HTMLModElement>(null);
 
   useEffect(() => {
-    setEnabled(adsAllowedHere(pathname));
-  }, [pathname]);
+    if (!adsAllowedHere(pathname)) return setEnabled(false);
+    if (variant === "rail") {
+      // Size is chosen once at load: AdSense cannot resize a filled unit.
+      if (!window.matchMedia(AD_RAIL_MEDIA).matches) return setEnabled(false);
+      const wide = window.matchMedia(AD_RAIL_WIDE_MEDIA).matches;
+      setRailSize({ width: wide ? 300 : 160, height: 600 });
+    }
+    // Ads must never sit under page UI, and hiding a loaded ad is not allowed
+    // either, so a covered rail is requested only once the invite has closed.
+    if (avoidDesktopInvite && desktopInviteWillShow()) {
+      const show = () => setEnabled(true);
+      window.addEventListener(DESKTOP_INVITE_CLOSED, show, { once: true });
+      return () => window.removeEventListener(DESKTOP_INVITE_CLOSED, show);
+    }
+    setEnabled(true);
+  }, [pathname, variant, avoidDesktopInvite]);
 
   useEffect(() => {
     const el = ins.current;
@@ -37,6 +79,25 @@ export function AdSenseUnit({ className = "" }: { className?: string }) {
   }, [enabled]);
 
   if (!enabled) return null;
+
+  if (variant === "rail" && railSize) {
+    return (
+      <div
+        // Keep Google's own auto side rails from overlapping this unit.
+        {...{ "google-side-rail-overlap": "false" }}
+        className={`[&:has(ins[data-ad-status=unfilled])]:hidden ${className}`}
+        style={railSize}
+      >
+        <ins
+          ref={ins}
+          className="adsbygoogle"
+          style={{ display: "inline-block", ...railSize }}
+          data-ad-client={ADSENSE_CLIENT_ID}
+          data-ad-slot={ADSENSE_INLINE_SLOT}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
