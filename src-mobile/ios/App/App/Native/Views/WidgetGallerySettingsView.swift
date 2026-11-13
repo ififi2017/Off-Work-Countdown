@@ -77,7 +77,7 @@ struct WidgetGallerySettingsView: View {
                         watchSection
                     }
                 } else {
-                    ProgressView().frame(maxWidth: .infinity, minHeight: 200)
+                    placeholderSection
                 }
             }
             .frame(maxWidth: 720)
@@ -125,6 +125,29 @@ struct WidgetGallerySettingsView: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
             .padding(.horizontal, 16)
+        }
+        .padding(.horizontal, OWCDesign.pageInset)
+    }
+
+    /// While the previews are drawn: the first section's own shape, with an
+    /// empty widget plate where the first preview will appear, so nothing
+    /// jumps when it does.
+    private var placeholderSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            OWCSectionHeader(title: text.t("widgetGallerySectionCountdown"))
+            OWCGroupCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(text.t("widgetGalleryClassicName")).font(.headline).foregroundStyle(OWCDesign.primary)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(WidgetGalleryColors.widget)
+                        .frame(width: 170, height: 170)
+                        .padding(.vertical, 18)
+                        .frame(maxWidth: .infinity)
+                        .background(WidgetGalleryColors.stage, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .accessibilityHidden(true)
+                }
+                .padding(16)
+            }
         }
         .padding(.horizontal, OWCDesign.pageInset)
     }
