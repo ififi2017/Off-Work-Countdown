@@ -16,6 +16,7 @@ import { getPresetCopy } from "@/lib/server/presets";
 import { webAppAlternates, webAppPageUrl } from "@/lib/site-urls";
 import { WORK_HOURS_CALCULATOR_SLUG } from "@/lib/work-hours";
 import { getDirectoryPage } from "@/features/web-tools/catalog/pages";
+import { AdSenseUnit } from "@/components/AdSenseUnit";
 
 // 工时计算器：独立于倒计时的 Web 小工具（仅 Web 构建；`.web.tsx` 不进桌面导出）。
 // 界面文案短，19 种语言都有；预设页也支持 19 种语言，可以互链。
@@ -189,6 +190,8 @@ export default async function WorkHoursCalculatorPage({
             </ul>
           </section>
         )}
+
+        <AdSenseUnit className="mt-10" />
       </div>
     </div>
   );

@@ -108,6 +108,7 @@ import { ScheduleEditor, hoursLabel } from "./ScheduleEditor";
 import { WorkdaySelector } from "./WorkdaySelector";
 import { PeriodSummary } from "./PeriodSummary";
 import { InfoHint } from "./InfoHint";
+import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { DesktopStatsPage } from "./DesktopStatsPage";
 import { summarize, startOfWeek, startOfYear, dailySalaryInMonth, countScheduledWorkdaysInMonth } from "@/lib/summary";
 import {
@@ -4325,6 +4326,10 @@ export function OffWorkCountdown({
       )}
       </section>
 
+      {/* 首屏以下的第一个广告位：设置态在说明之上，运行态紧跟卡片。只在浏览器
+          标签页里出现；PWA、桌面端与预览域名不渲染（AdSenseUnit 内部判断）。 */}
+      {isWebPage && <AdSenseUnit className="mx-auto mb-12 max-w-2xl" />}
+
       {/* 首屏以下：说明、下载与页脚。与此前同样只在设置态渲染（服务端首屏就是
           设置态），所以这些文字都在初始 HTML 里，搜索引擎读得到；运行态整页
           只剩卡片。PWA 独立窗口里卡片占满全屏，不渲染这一段。 */}
@@ -4372,6 +4377,8 @@ export function OffWorkCountdown({
           </section>
 
           <NativeShowcase lang={lang} />
+
+          <AdSenseUnit className="mx-auto mt-16 max-w-2xl" />
 
           {/* 下载与长文都归官网。 */}
           <section className="mt-16 flex flex-col gap-6 rounded-[1.75rem] border border-black/[0.06] bg-white/70 p-6 dark:border-white/[0.07] dark:bg-white/[0.03] sm:flex-row sm:items-center sm:justify-between sm:p-8">

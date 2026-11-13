@@ -62,8 +62,8 @@ release gates. No rule, plan or script may depend on locally installed skills.
   servers. Shipping requires the App Store label and official privacy page.
 - Share URLs encode only start/end times. Analytics are anonymous aggregate
   event counters: no cookies, identifiers, IP/User-Agent storage or histories.
-- The approved 2026-11-12 exception permits Google AdSense auto ads on the
-  Web build in a browser tab, timer included (`lib/ads.ts`, `AdSenseLoader`):
+- The approved 2026-11-12 exception permits Google AdSense (auto ads plus the
+  `AdSenseUnit` slot) on the Web build in a browser tab, timer included:
   never `/mini`, an installed PWA, Desktop, the extension or native apps.
   Google's own consent message covers the EEA/UK/CH; hours and salary are never
   passed to ads. Changing this needs the doneat.app privacy/FAQ/About copy.

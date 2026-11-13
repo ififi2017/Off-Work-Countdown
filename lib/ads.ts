@@ -4,6 +4,8 @@
 // app. Auto ads are configured in the AdSense console; the EEA/UK/CH consent
 // message is Google's own (Privacy & messaging), served by the same script.
 export const ADSENSE_CLIENT_ID = "ca-pub-9912554861143289";
+/** Responsive display unit "off-timer-inline", shared by every in-page placement. */
+export const ADSENSE_INLINE_SLOT = "6578416327";
 export const ADSENSE_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`;
 
 /**

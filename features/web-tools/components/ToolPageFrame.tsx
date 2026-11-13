@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
+import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { officialPageUrl } from "@/lib/site-urls";
 import type { ToolPage } from "../catalog/pages";
 import { getDirectoryPage } from "../catalog/pages";
@@ -20,6 +21,7 @@ export function ToolPageFrame({ page, children }: { page: ToolPage; children: Re
       {page.kind === "salary" && <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{zh ? "中国大陆 · 简体中文 · 税前换算" : "United States · English · Gross pay"}</p>}
       <h1 className="max-w-3xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{page.title}</h1>
       {children}
+      <AdSenseUnit className="mt-12" />
     </main>
     <footer className="border-t border-gray-200 dark:border-gray-800"><div className="mx-auto flex max-w-4xl flex-wrap gap-x-6 gap-y-3 px-5 py-6 text-xs text-gray-500 sm:px-8 dark:text-gray-400"><span>© fi_niaR Studio</span><a href={officialPageUrl(page.lang, "privacy")} className="hover:underline">{zh ? "隐私" : "Privacy"}</a><a href={`mailto:${siteConfig.supportEmail}`} className="hover:underline">{zh ? "联系我们" : "Contact"}</a></div></footer>
   </div>;
