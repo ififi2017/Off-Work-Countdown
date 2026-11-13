@@ -4324,6 +4324,15 @@ export function OffWorkCountdown({
           backLabel={t("backToTimer")}
         />
       )}
+      {/* 宽屏首屏左右各一个竖幅广告，打开页面不用滚动就能看到。跟着页面滚走、
+          不吸附：AdSense 禁止内容两侧对称的吸附广告。窄屏或矮窗口不渲染。
+          右侧那个会被右下角的桌面版下载邀请盖住，等邀请关掉再加载。 */}
+      {isWebPage && (
+        <>
+          <AdSenseUnit variant="rail" className="absolute right-[calc(100%+3rem)] top-1/2 -translate-y-1/2" />
+          <AdSenseUnit variant="rail" avoidDesktopInvite className="absolute left-[calc(100%+3rem)] top-1/2 -translate-y-1/2" />
+        </>
+      )}
       </section>
 
       {/* 首屏以下的第一个广告位：设置态在说明之上，运行态紧跟卡片。只在浏览器
