@@ -220,6 +220,19 @@ nonisolated struct WorkplaceCrossingLedger: Codable, Equatable, Sendable {
         return true
     }
 
+    /// The state iOS reports when asked. True only when it disagrees with a
+    /// known edge: the circle was crossed and nothing has reported it. With
+    /// no edge known yet it is only remembered.
+    mutating func regionStateRead(_ identifier: String, satisfied: Bool) -> Bool {
+        guard let known = edges[identifier] else {
+            edges[identifier] = Edge(satisfied: satisfied, source: .region)
+            return false
+        }
+        guard known.satisfied != satisfied else { return false }
+        edges[identifier] = Edge(satisfied: satisfied, source: .region)
+        return true
+    }
+
     mutating func keep(only identifiers: Set<String>) {
         edges = edges.filter { identifiers.contains($0.key) }
     }

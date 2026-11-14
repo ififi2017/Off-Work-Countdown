@@ -36,7 +36,6 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
         // background; the probe's monitor must exist before launch returns.
         WorkplaceProbe.shared.resumeAfterLaunch(forLocation: launchOptions?[.location] != nil)
 #endif
-        WorkplaceMonitor.launchedForLocation = launchOptions?[.location] != nil
         // Before launch returns: the crossing a region launch was made for
         // is delivered to this delegate and waits for the monitor.
         WorkplaceRegions.shared.attach()

@@ -16,7 +16,8 @@ import CoreLocation
 final class WorkplaceRegions: NSObject {
     static let shared = WorkplaceRegions()
 
-    typealias Crossing = (identifier: String, satisfied: Bool, receivedAt: Date)
+    /// A crossing, or (`isStateRead`) the current state iOS reports when asked.
+    typealias Crossing = (identifier: String, satisfied: Bool, receivedAt: Date, isStateRead: Bool)
 
     private let manager = CLLocationManager()
     private var waiting: [Crossing] = []
@@ -66,13 +67,20 @@ final class WorkplaceRegions: NSObject {
         }
     }
 
+    /// Asks iOS where the person is for each of our regions. The answers
+    /// arrive as state reads; one that disagrees with the last known edge is
+    /// a crossing nothing has reported yet.
+    func requestStates() {
+        for region in registered.values { manager.requestState(for: region) }
+    }
+
     func stopAll() {
         for region in registered.values { manager.stopMonitoring(for: region) }
     }
 
-    fileprivate func report(_ regionIdentifier: String, satisfied: Bool) {
+    fileprivate func report(_ regionIdentifier: String, satisfied: Bool, isStateRead: Bool = false) {
         guard let identifier = WorkplaceMonitorPlan.conditionIdentifier(forRegion: regionIdentifier) else { return }
-        let crossing = (identifier: identifier, satisfied: satisfied, receivedAt: Date.now)
+        let crossing = (identifier: identifier, satisfied: satisfied, receivedAt: Date.now, isStateRead: isStateRead)
         if let onCrossing { onCrossing(crossing) } else { waiting.append(crossing) }
     }
 }
@@ -86,5 +94,12 @@ extension WorkplaceRegions: CLLocationManagerDelegate {
     nonisolated func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         let identifier = region.identifier
         MainActor.assumeIsolated { report(identifier, satisfied: false) }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
+        guard state != .unknown else { return }
+        let identifier = region.identifier
+        let satisfied = state == .inside
+        MainActor.assumeIsolated { report(identifier, satisfied: satisfied, isStateRead: true) }
     }
 }
