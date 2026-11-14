@@ -431,7 +431,6 @@ struct PaywallContent: View {
                 planPlaceholder(minHeight: 62)
             }
         }
-        .overlay { ProgressView() }
         .accessibilityElement(children: .ignore)
     }
 
