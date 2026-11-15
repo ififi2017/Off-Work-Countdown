@@ -21,8 +21,8 @@ dependencies {
 }
 
 tasks.test {
-    // The holiday dataset is shared with iOS rather than copied.
-    val holidays = rootProject.file("../ios/Shared/Resources/HolidayTemplates.json")
+    // The holiday dataset is shared with iOS and Desktop rather than copied.
+    val holidays = rootProject.file("../../data/holidays/HolidayTemplates.json")
     inputs.file(holidays)
     systemProperty("owc.holidayTemplates", holidays.absolutePath)
 }

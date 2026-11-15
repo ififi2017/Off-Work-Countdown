@@ -4,10 +4,10 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
-const dataBytes = await readFile(new URL("src-mobile/ios/Shared/Resources/HolidayTemplates.json", root));
+const dataBytes = await readFile(new URL("data/holidays/HolidayTemplates.json", root));
 const data = JSON.parse(dataBytes);
 const lock = JSON.parse(await readFile(new URL("scripts/holiday-template-sources.json", root), "utf8"));
-const attributions = JSON.parse(await readFile(new URL("src-mobile/ios/Shared/Resources/HolidayTemplateAttributions.json", root), "utf8"));
+const attributions = JSON.parse(await readFile(new URL("data/holidays/HolidayTemplateAttributions.json", root), "utf8"));
 const licenseFiles = [
   ["THIRD_PARTY_LICENSES/vacanza-holidays.txt", lock.vacanzaHolidays.licenseSha256],
   ["THIRD_PARTY_LICENSES/holiday-cn.txt", lock.holidayCn.licenseSha256],

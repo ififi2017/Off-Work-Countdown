@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 import { desktopHolidayFiles, staleDesktopHolidayFiles } from "./generate-desktop-holidays.mjs";
 
-const dataset = () => JSON.parse(readFileSync("src-mobile/ios/Shared/Resources/HolidayTemplates.json", "utf8"));
+const dataset = () => JSON.parse(readFileSync("data/holidays/HolidayTemplates.json", "utf8"));
 const chinaYear = (data, year) => data.regions.CN.days.filter(([date]) => Math.trunc(date / 10000) === year)
   .map(([date, work, name]) => [date, work, data.names[name]["zh-CN"]]);
 
@@ -14,7 +14,7 @@ it("ships the pinned, complete holiday dataset and licenses without network gene
 });
 
 it("shows Brazilian holidays in Portuguese when the source uses a regional locale", () => {
-  const dataset = JSON.parse(readFileSync("src-mobile/ios/Shared/Resources/HolidayTemplates.json", "utf8"));
+  const dataset = JSON.parse(readFileSync("data/holidays/HolidayTemplates.json", "utf8"));
   const independenceDay = dataset.regions.BR.days.find(([date]) => date === 20260907);
   expect(independenceDay[1]).toBe(0);
   expect(dataset.names[independenceDay[2]].pt).toBe("Independência do Brasil");

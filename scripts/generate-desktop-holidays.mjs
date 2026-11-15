@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// Splits the iOS holiday dataset into one file per region for Web/Desktop, so
+// Splits the shared holiday dataset (data/holidays) into one file per region for Web/Desktop, so
 // the desktop schedule page loads only the calendar the user picked (CN is
-// ~18 KB instead of the whole 2.7 MB set). The iOS file stays the source;
+// ~18 KB instead of the whole 2.7 MB set). data/holidays stays the source;
 // `--check` (run by npm test) fails when public/holidays is out of date.
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const source = join(root, "src-mobile/ios/Shared/Resources/HolidayTemplates.json");
-const attributionsSource = join(root, "src-mobile/ios/Shared/Resources/HolidayTemplateAttributions.json");
+const source = join(root, "data/holidays/HolidayTemplates.json");
+const attributionsSource = join(root, "data/holidays/HolidayTemplateAttributions.json");
 const outDir = join(root, "public/holidays");
 
 export function desktopHolidayFiles() {
@@ -59,7 +59,7 @@ if (!isMain) {
     console.error(`public/holidays is out of date (${stale.slice(0, 5).join(", ")}…). Run npm run generate:desktop-holidays.`);
     process.exit(1);
   }
-  console.log(`public/holidays matches the iOS holiday dataset (${files.size} files).`);
+  console.log(`public/holidays matches the shared holiday dataset (${files.size} files).`);
 } else {
   mkdirSync(outDir, { recursive: true });
   const stale = staleDesktopHolidayFiles(files);

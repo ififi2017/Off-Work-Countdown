@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCK_PATH = ROOT / "scripts/holiday-template-sources.json"
-OUTPUT_PATH = ROOT / "src-mobile/ios/Shared/Resources/HolidayTemplates.json"
+OUTPUT_PATH = ROOT / "data/holidays/HolidayTemplates.json"
 YEARS = range(2020, 2036)
 CN_YEARS = range(2007, 2028)
 LANGUAGES = {
