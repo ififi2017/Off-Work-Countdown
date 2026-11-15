@@ -221,8 +221,8 @@
 		E21900000000000000000005 /* WatchScheduleV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WatchScheduleV2.swift; path = ../Shared/WatchScheduleV2.swift; sourceTree = SOURCE_ROOT; };
 		E21900000000000000000400 /* WatchIndependentScheduleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WatchIndependentScheduleTests.swift; path = ../App/AppTests/WatchIndependentScheduleTests.swift; sourceTree = "<group>"; };
 		E22000000000000000000001 /* HolidayCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HolidayCalendar.swift; path = ../Shared/HolidayCalendar.swift; sourceTree = SOURCE_ROOT; };
-		E22000000000000000000002 /* HolidayTemplates.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = HolidayTemplates.json; path = ../Shared/Resources/HolidayTemplates.json; sourceTree = SOURCE_ROOT; };
-		E22000000000000000000003 /* HolidayTemplateAttributions.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = HolidayTemplateAttributions.json; path = ../Shared/Resources/HolidayTemplateAttributions.json; sourceTree = SOURCE_ROOT; };
+		E22000000000000000000002 /* HolidayTemplates.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = HolidayTemplates.json; path = ../../../data/holidays/HolidayTemplates.json; sourceTree = SOURCE_ROOT; };
+		E22000000000000000000003 /* HolidayTemplateAttributions.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = HolidayTemplateAttributions.json; path = ../../../data/holidays/HolidayTemplateAttributions.json; sourceTree = SOURCE_ROOT; };
 		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
 		F1C00000000000000000A001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = ../../../assets/brand/AppIcon.icon; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */

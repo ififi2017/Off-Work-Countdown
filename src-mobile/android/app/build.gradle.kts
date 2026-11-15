@@ -121,7 +121,7 @@ android {
             getByName("debug").res.directories.add("src/cnDebug/res")
         }
         if (cnChannel) getByName("debug").manifest.srcFile("src/cnDebug/AndroidManifest.xml")
-        getByName("main").assets.directories.add("../../ios/Shared/Resources")
+        getByName("main").assets.directories.add("../../../data/holidays")
     }
 }
 

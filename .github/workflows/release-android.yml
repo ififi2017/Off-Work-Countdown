@@ -16,7 +16,7 @@ on:
       - 'src-mobile/android/**'
       - '!src-mobile/android/**/src/test/**'
       - '!src-mobile/android/**/*.md'
-      - 'src-mobile/ios/Shared/Resources/**'
+      - 'data/holidays/**'
   workflow_dispatch:
     inputs:
       upload:

@@ -6,6 +6,7 @@ on:
     paths:
       - 'src-mobile/android/**'
       - 'src-mobile/ios/Shared/**'
+      - 'data/holidays/**'
       - 'docs/android/synthetic-archives/**'
       - 'src-mobile/ios/App/App/Localizable.xcstrings'
       - 'scripts/generate-android-strings*'
@@ -37,7 +38,7 @@ jobs:
           fi
           # 与上面 push 的 paths 保持一致。
           if git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD | grep -qE \
-            '^(src-mobile/android/|src-mobile/ios/Shared/|docs/android/synthetic-archives/|src-mobile/ios/App/App/Localizable\.xcstrings$|scripts/generate-android-|lib/|src-mobile/ios/App/App/Native/(Models|Widgets)/|scripts/android-.*-fixtures/|scripts/check-android-record-roundtrip\.mjs$|\.github/workflows/android\.yml$)'; then
+            '^(src-mobile/android/|src-mobile/ios/Shared/|data/holidays/|docs/android/synthetic-archives/|src-mobile/ios/App/App/Localizable\.xcstrings$|scripts/generate-android-|lib/|src-mobile/ios/App/App/Native/(Models|Widgets)/|scripts/android-.*-fixtures/|scripts/check-android-record-roundtrip\.mjs$|\.github/workflows/android\.yml$)'; then
             echo "android=true" >> "$GITHUB_OUTPUT"
           else
             echo "android=false" >> "$GITHUB_OUTPUT"

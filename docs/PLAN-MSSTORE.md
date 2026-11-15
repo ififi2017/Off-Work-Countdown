@@ -22,7 +22,7 @@ Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动�
 排班页是设置里的子页（与「活动」同一条横移轨道），也可从主界面工作日一行右侧的排班名称进入；
 主窗口仍是 430 × 430，不另开窗口。改动即时生效，与其他桌面设置一致；切换排班时保留离开的那种
 （循环与之后的手动日期），切回来原样恢复，因此不需要确认框。Web 仍只有固定星期。
-节假日安排与 iOS 共用 `src-mobile/ios/Shared/Resources/HolidayTemplates.json`：
+节假日安排与 iOS 共用 `data/holidays/HolidayTemplates.json`：
 `npm run generate:desktop-holidays` 按地区拆成 `public/holidays/<地区>.json`（中国约 18 KB），
 `index.json` 附上游 MIT 署名，`npm test` 检查是否与 iOS 数据一致。设置只存地区代码，放假与调休在
 计算时叠加，不写进计划；固定星期开启节假日后主界面表单不变。数据覆盖不到的年份按日常排班计算并提示。

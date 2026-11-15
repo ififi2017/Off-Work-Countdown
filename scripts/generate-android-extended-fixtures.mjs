@@ -34,7 +34,7 @@ const compileOnly = [
   `${sharedDir}/WatchSnapshot.swift`,
   `${sharedDir}/WatchSnapshotCache.swift`,
 ];
-const holidayData = `${sharedDir}/Resources/HolidayTemplates.json`;
+const holidayData = "data/holidays/HolidayTemplates.json";
 
 export const androidExtendedFixturePath = resolve(
   "src-mobile/android/core/domain/src/test/resources/extended-schedule-fixtures.json"
