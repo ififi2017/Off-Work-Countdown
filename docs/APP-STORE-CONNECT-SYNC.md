@@ -1,6 +1,6 @@
 # App Store Connect 元数据同步
 
-`scripts/app-store-connect-sync.mjs` 把一个 iOS 新版本的商店文案和截图从本地 JSON
+`scripts/app-store-connect-sync.mjs` 把一个 macOS（或经原生端仓库调用时的 iOS）新版本的商店文案和截图从本地 JSON
 同步到 App Store Connect。默认行为是只读的差异预览；只有 `--apply` 会写远端，而且脚本
 不会选择构建、不会提交审核，也不会发布版本。
 
@@ -192,15 +192,7 @@ iOS App 内支持 19 个语言 locale。App Store Connect 对繁体中文只提�
 
 ## 订阅与内购本地化
 
-`scripts/app-store-connect-iap-sync.mjs` 同步订阅组 `plus`、月 / 年订和终身买断的显示名、描述、审核备注和审核截图。商品本身、价格和试用仍在 App Store Connect 里创建；这个脚本只补齐元数据。默认只读预览，`--apply` 才写入。
-
-```bash
-npm run asc:iap:check
-npm run asc:iap:plan
-npm run asc:iap:sync -- --yes
-```
-
-配置在 `app-store-connect/iap.json`。locale 集合与商店商品页相同（17 个；不含 `mr-IN`）。审核截图是 `app-store-connect/iap/review-paywall.png`，三件商品共用。已有截图不一致时加 `--replace-screenshot`。
+订阅组 `plus` 与终身买断属于原生 App，它们的 IAP 配置和 `asc:iap:*` 脚本从 4.0 起随原生端放在独立仓库里。本仓库的 `asc:*` 只同步商品页文案与媒体；iOS 版本的配置也在那边调用同一个脚本。
 
 ## 送审必须人工完成
 

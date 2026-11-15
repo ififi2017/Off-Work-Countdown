@@ -7,13 +7,9 @@ release CI, store listings/media or release download counts.
 
 - Run `npm run check:version` before any packaging. Product versions match in
   `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`,
-  `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json`, the macOS widget project
-  `src-mobile/ios/App/App.xcodeproj` (`MARKETING_VERSION`, all shipping targets),
-  and Android `app/build.gradle.kts` (`versionName`). Android `versionCode`
-  increases for Play uploads independently of the product version.
-- iOS `CURRENT_PROJECT_VERSION` is independent of product version; increment
-  it for every TestFlight/App Store upload. Reuse under the same
-  `MARKETING_VERSION` is rejected.
+  `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json`, the MSIX manifest and
+  the macOS widget project. iOS and Android (4.0 and later) are versioned and
+  released from the private native repository.
 - Web deploys on pushes to `main` through CI/connected deployment. Prefer PRs.
   `npm run deploy:web` is the owner's convenience for validating and pushing
   already-committed local `main`.
@@ -40,29 +36,11 @@ release CI, store listings/media or release download counts.
 - GitHub macOS builds intentionally use ad-hoc signing; the project does not
   buy Developer ID certificates. Installation docs must accurately explain
   Gatekeeper and Windows SmartScreen. Mac App Store signing differs below.
-- Android ships through Google Play like iOS through Xcode Cloud: every PR
-  runs the `Android tests` check (`.github/workflows/android.yml`, skipped
-  as passing when nothing Android-related changed), and a merge to `main`
-  that touches `src-mobile/android/` (outside tests/docs) or the shared
-  resources runs `.github/workflows/release-android.yml`, which tests again,
-  uploads to `alpha` and commits it for review (`status: completed`).
-  Manual `workflow_dispatch` runs remain for dry runs and re-sends: it builds a signed AAB with the upload key
-  from Secrets (`ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_STORE_PASSWORD`,
-  `ANDROID_UPLOAD_KEY_ALIAS`, `ANDROID_UPLOAD_KEY_PASSWORD`) and the Play billing
-  IDs from repository Variables (`DONEAT_PLUS_*`, `DONEAT_PLAY_BILLING_PUBLIC_KEY`).
-  By default it only stores the AAB and R8 mapping as an artifact; with
-  `upload` it sends them to the chosen track (default `alpha`, closed testing)
-  as a draft through the `PLAY_SERVICE_ACCOUNT_JSON` service account.
-  `versionCode` defaults to 100 + run number. The upload keystore itself stays
-  outside the repository. Play "What's new" (en-US) comes from
-  `scripts/android-release-notes.mjs`: user-facing (`feat`/`fix`/`perf`) PRs
-  scoped `android`, or touching `src-mobile/android/` without another platform
-  scope, merged since the last `android-v<version>-<code>` tag, which each
-  successful upload pushes. `notes_since` overrides the start.
-- iOS ships only through App Store Connect, without a GitHub channel/tag
-  workflow. Universal Purchase shares one record and bundle ID
-  (`com.rainif.offworkcountdown.macappstore`) with the Mac App Store app;
-  iOS submission releases that shared product, not an independent one.
+- iOS, Watch and Android (4.0 and later) are built, versioned and released
+  from the private native repository. The iOS app shares one App Store record
+  and bundle ID (`com.rainif.offworkcountdown.macappstore`, Universal
+  Purchase) with the Mac App Store build from this repository, so App-level
+  listing fields are shared between them.
 
 ## Mac App Store signing
 
@@ -115,46 +93,6 @@ codesign -d --entitlements - --xml DoneAt.app \
 `embed-macos-profile.mjs` and `pack-macappstore.sh` reject iOS-style `group.*`
 locally. Profile/App Group/upload history: `docs/PLAN-MSSTORE.md` 9.11–9.12.
 
-## iOS upload
-
-Use an archive, not `build`, after bumping the build number:
-
-```bash
-npm run check:version
-xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
-  -destination 'generic/platform=iOS' -configuration Release \
-  -archivePath build/OffWorkCountdown.xcarchive archive
-```
-
-Distribute through Xcode Organizer. The repository has no `ExportOptions.plist`
-or fastlane; export is deliberately manual. Agree on signing setup before
-introducing an automated export path. Keep `docs/XCODE-CLOUD.md` aligned with
-App Store Connect's workflow triggers, Release archive and distribution.
-
-### Internal geofence probe build (plan 021 P0)
-
-Only for internal TestFlight testers measuring workplace geofencing on real
-devices. `WORKPLACE_PROBE` compiles the DEBUG probe into a Release archive and
-opens it (not the debug menu) by long-pressing the About page's "DoneAt" twice.
-It also shows the Workplace Automation settings entry, so the real I2 monitor
-can be tested in the same build:
-
-```bash
-xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
-  -destination 'generic/platform=iOS' -configuration Release \
-  SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) WORKPLACE_PROBE' \
-  -archivePath build/DoneAt-probe.xcarchive archive
-```
-
-- Bump `CURRENT_PROJECT_VERSION` first, as for any upload, and record that
-  build number in `docs/reviews/021-workplace-automation-capability.md`.
-- In App Store Connect, distribute it to internal testers only. Never add it
-  to external testing or submit it for review: it ships the probe, which the
-  plan 021 privacy exception does not cover for release. The probe screen
-  shows an orange "internal build" banner as a reminder.
-- Xcode Cloud workflows and the normal archive above stay unchanged and never
-  set the flag.
-
 ## Chrome extension
 
 - `npm run package:extension` writes the upload ZIP; its version is the product
@@ -168,26 +106,13 @@ xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
 
 ## Store media and metadata
 
-- Generate via `scripts/marketing-shots/`, sync with `npm run asc:sync`;
-  see `docs/APP-STORE-CONNECT-SYNC.md`. The approved 2026-09-08 screenshot
-  decision requires all 17 App Store locales, six iPhone + six iPad each
-  (204 PNGs); see `docs/reviews/2026-09-08-ios-marketing-shots.md`.
-  App Previews remain `en-US`, `zh-Hans`, `zh-Hant`; other locales inherit
-  English video. The 19 UI locales differ: `zh-HK`/`zh-TW` share one Traditional
-  Chinese store listing; `mr-IN` has no store locale.
-- 1320×2868 iPhone screenshots use `APP_IPHONE_67`, never nonexistent
-  `APP_IPHONE_69`. After replacement, delete leftover sets on unused display
-  types such as `APP_IPHONE_65`; Connect may prefer those stale sets.
-- App Info (name, subtitle, privacy URLs) is shared with Mac and locked while
-  either platform is in review. `asc:sync` skips it then; version-level media
-  still applies to an editable iOS version.
-- Compose official Apple frames like site DeviceHero: frame PNG defines the
-  box, capture sits in the hole, frame overlays it. Never punch bezels or
-  redraw Dynamic Island. App Previews use `IPHONE_67`, 886×1920 portrait,
-  with an audio track (silent stereo is acceptable).
-- Google Play listing text and images sync with `npm run play:listing:plan`
-  (read-only) and `play:listing:sync`; see `docs/PLAY-STORE-LISTING-SYNC.md`.
-  It never touches tracks, releases or builds.
+- Generate desktop media via `scripts/marketing-shots/` (`shots:macos`,
+  `shots:windows`, `shots:chrome-web-store`). The App Store Connect sync
+  (`npm run asc:sync`, see `docs/APP-STORE-CONNECT-SYNC.md`) stays here
+  because the Mac App Store listing belongs to the desktop app; the private
+  native repository runs the same script for iOS listings.
+- App Info (name, subtitle, privacy URLs) is shared by iOS and Mac and locked
+  while either platform is in review. `asc:sync` skips it then.
 
 ## Source and license notices
 
@@ -195,8 +120,10 @@ Before distributing MPL-based builds, follow [SOURCE.md](../../SOURCE.md):
 retain the immutable covered source, record each platform/version/build to
 source-commit mapping, and verify that recipients can obtain it through the
 existing About/GitHub entry. Existing MIT binaries keep their original terms.
-Store-only iOS/macOS builds also need a public source commit/tag in their
-release record; a moving main link alone is not the version record.
+Store-only macOS builds also need a public source commit/tag in their release
+record; a moving main link alone is not the version record. iOS, Watch and
+Android source up to 3.3.0 stays public at tag `ios-v3.3.0`; 4.0 and later
+native builds are not built from this repository.
 
 Web/Desktop and extension builds generate `licenses/source.txt` with the
 commit and source archive URL, plus MPL, historical MIT and scope notices.

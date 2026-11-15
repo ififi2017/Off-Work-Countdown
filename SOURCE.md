@@ -9,9 +9,15 @@ For an official binary, use the source commit linked from its release/build
 record, not an assumption that today's main matches the installed app.
 GitHub releases include source archives:
 https://github.com/ififi2017/Off-Work-Countdown/releases
-Android release tags include the version code; desktop tags include the app
-version. iOS/Mac App Store builds must be identified by platform, version
-and build number because their marketing version may be shared.
+Desktop tags include the app version. Mac App Store builds must be identified
+by platform, version and build number because their marketing version may be
+shared with iOS.
+
+iOS, Watch and Android source through 3.3.0 (including `android-v*` releases
+up to that version) is at tag `ios-v3.3.0`. From 4.0 those apps are built
+from a separate, non-public repository; the MPL-covered files they include
+from this repository are available at the public commit named in their
+release record.
 
 If you cannot locate your build's source, email hello@doneat.app with its
 platform, version, build number and download channel. No purchase receipt,
@@ -23,8 +29,8 @@ Source access is not conditional on buying Plus or creating an account.
 Before distributing a new MPL-based build, retain its complete covered
 source at a public immutable commit/tag and record the platform, version,
 build number and source URL in the release record (including store-only
-builds). The app's existing About/GitHub links lead to this repository and
-these source instructions. Do not publish a build whose source cannot be
+builds). The apps' About/GitHub links lead to this repository and these
+source instructions. Do not publish a build whose source cannot be
 obtained. Keep source for distributed versions available after main changes.
 
 Web/Desktop and extension builds generate a source notice containing the

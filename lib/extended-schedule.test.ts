@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildShiftTimeline, expandScheduleRange, findNextShiftTimeline, getShiftStartAtMs } from "./countdown";
 import { civilDayNumber, isValidShiftType, resolveScheduleDay, type ExtendedSchedulePlan, type ShiftType } from "./extended-schedule";
@@ -27,48 +26,31 @@ import {
 } from "./schedule-settings";
 import { summarize } from "./summary";
 
-// Reuse the committed answers of the real Swift implementation: the new TS
-// port must match iOS and the Kotlin fixture consumer before it reaches PC.
-const fixtures = JSON.parse(readFileSync("src-mobile/android/core/domain/src/test/resources/extended-schedule-fixtures.json", "utf8")).data as {
-  plans: { name: string; recipe: ExtendedSchedulePlan & { kind: string } }[];
-  days: { plan: string; days: [string, boolean, [string, string, string | null, number] | null, string | null, string][] }[];
-  timelines: { plan: string; zone: string; expected: [number, [number, number][], number][] }[];
-  expansions: { plan: string; zone: string; base: string; from: number; through: number; expected: [string, number, boolean, [number, number][]][] }[];
-  shiftTypeValidity: { type: ShiftType; expected: boolean }[];
-  dayKeys: { dayKey: string; expected: number | null }[];
+// A weekly roster (Day, Day, Night, Night, Rest, Rest, Early from Monday
+// 2026-03-02) with Saturday 2026-03-07 hand-set to Day. The full Swift parity
+// cases live with the native apps in the private repository.
+const weeklyRule: ExtendedSchedulePlan = {
+  clearedFromDayKey: null,
+  handSetDays: { "2026-03-07": "00000000-0000-4000-8000-000000000001" },
+  holidayOverrides: null,
+  holidayRegionIdentifier: null,
+  rule: {
+    anchorDayKey: "2026-03-02",
+    days: [
+      "00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000001",
+      "00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000002",
+      "00000000-0000-4000-8000-000000000004", "00000000-0000-4000-8000-000000000004",
+      "00000000-0000-4000-8000-000000000003",
+    ],
+    preset: "weekly",
+  },
+  shiftTypes: [
+    { annualDateRange: null, breakDurationMinutes: 60, breakEnabled: true, breakStartMinutes: 720, colorHex: "#FF8800", endMinutes: 1080, id: "00000000-0000-4000-8000-000000000001", isArchived: false, kind: "work", name: "Day", startMinutes: 540 },
+    { annualDateRange: null, breakDurationMinutes: 30, breakEnabled: true, breakStartMinutes: 120, colorHex: "#FF8800", endMinutes: 360, id: "00000000-0000-4000-8000-000000000002", isArchived: false, kind: "work", name: "Night", startMinutes: 1320 },
+    { annualDateRange: null, breakDurationMinutes: 0, breakEnabled: false, breakStartMinutes: 0, colorHex: "#FF8800", endMinutes: 840, id: "00000000-0000-4000-8000-000000000003", isArchived: false, kind: "work", name: "Early", startMinutes: 360 },
+    { annualDateRange: null, breakDurationMinutes: 0, breakEnabled: false, breakStartMinutes: 0, colorHex: "#FF8800", endMinutes: 0, id: "00000000-0000-4000-8000-000000000004", isArchived: false, kind: "rest", name: "Rest", startMinutes: 0 },
+  ],
 };
-const plans = new Map(fixtures.plans.filter(p => p.recipe.kind === "direct" && (!p.recipe.holidayRegionIdentifier || p.recipe.holidayOverrides)).map(p => [p.name, p.recipe]));
-
-describe("iOS roster parity", () => {
-  for (const fixture of fixtures.days.filter(f => plans.has(f.plan))) {
-    it(`resolves ${fixture.plan} like Swift`, () => {
-      const plan = plans.get(fixture.plan)!;
-      for (const [key, work, hours, id, source] of fixture.days) {
-        const actual = resolveScheduleDay(plan, key);
-        expect([actual.isWorkday, actual.hours && [actual.hours.startTime, actual.hours.endTime, actual.hours.breakStartTime, actual.hours.breakDurationMinutes], actual.shiftTypeID, actual.source], key).toEqual([work, hours, id, source]);
-      }
-    });
-  }
-  for (const fixture of fixtures.timelines.filter(f => plans.has(f.plan))) {
-    it(`keeps per-day overnight shifts and breaks in ${fixture.plan} / ${fixture.zone}`, () => {
-      for (const [now, segments, end] of fixture.expected) {
-        const actual = buildShiftTimeline("09:00", "17:00", new Date(now), { extendedSchedule: plans.get(fixture.plan), breakStartTime: "12:00", breakDurationMinutes: 60 }, fixture.zone);
-        expect([actual.segments.map(s => [s.startAtMs, s.endAtMs]), actual.plannedEndAtMs], String(now)).toEqual([segments, end]);
-      }
-    });
-  }
-  for (const fixture of fixtures.expansions.filter(f => plans.has(f.plan))) {
-    it(`expands ${fixture.plan} / ${fixture.zone} / ${fixture.base} like Swift`, () => {
-      const manual = fixture.base === "manual";
-      const actual = expandScheduleRange({ startTime: manual ? "08:00" : "09:00", endTime: manual ? "16:00" : "17:00", workdays: manual ? [] : [1, 2, 3, 4, 5], schedule: { mode: manual ? "off" : "classic", extendedSchedule: plans.get(fixture.plan) }, breakStartTime: manual ? null : "12:00", breakDurationMinutes: manual ? 0 : 60, fromMs: fixture.from, throughMs: fixture.through, timeZone: fixture.zone });
-      expect(actual.map(d => [d.dayKey, d.shiftAnchorStartAtMs, d.isWorkday, d.segments.map(s => [s.startAtMs, s.endAtMs])])).toEqual(fixture.expected);
-    });
-  }
-  it("validates native shift types and civil dates", () => {
-    for (const f of fixtures.shiftTypeValidity) expect(isValidShiftType(f.type), f.type.name).toBe(f.expected);
-    for (const f of fixtures.dayKeys) expect(civilDayNumber(f.dayKey), f.dayKey).toBe(f.expected);
-  });
-});
 
 describe("schedule settings and timer consumers", () => {
   const fixed = { startTime: "09:00", endTime: "18:00", workdays: [1, 2, 3, 4, 5], breakStartTime: "12:00", breakDurationMinutes: 60 };
@@ -207,13 +189,13 @@ describe("schedule settings and timer consumers", () => {
     expect(shiftTypeInUse(edited, work.id, today)).toBe(true);
   });
   it("finds a roster shift on a fixed-weekday rest day and uses its own break", () => {
-    const plan = plans.get("weekly-rule")!;
+    const plan = weeklyRule;
     const next = findNextShiftTimeline({ startTime: "09:00", endTime: "17:00", workdays: [], schedule: { mode: "classic", extendedSchedule: plan }, afterMs: Date.parse("2026-03-06T12:00:00+08:00"), timeZone: "Asia/Shanghai" });
     expect(getShiftStartAtMs(next!)).toBe(Date.parse("2026-03-07T09:00:00+08:00"));
     expect(next!.segments).toHaveLength(2);
   });
   it("sums each roster day's effective hours rather than multiplying today's hours", () => {
-    const plan = plans.get("weekly-rule")!;
+    const plan = weeklyRule;
     const summary = summarize({ periodStart: new Date("2026-03-02T00:00:00+08:00"), asOf: new Date("2026-03-06T18:00:00+08:00"), workdays: [], schedule: { mode: "classic", extendedSchedule: plan }, currentShiftStart: new Date("2026-03-06T09:00:00+08:00"), currentShiftEnd: new Date("2026-03-06T17:00:00+08:00"), plannedDailyHours: 7, todayProgress: 100, dailySalary: 100, timeZone: "Asia/Shanghai" });
     expect(summary.days).toBe(4);
     expect(summary.hours).toBe(31);

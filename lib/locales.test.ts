@@ -163,7 +163,7 @@ describe("UI locale resources", () => {
     // 语种必须真的换词，不能照抄复数。
     //
     // 唯一用过它的 recordsMonthWorkdays 只在 iOS 上出现，019 L2b 起随 iOS
-    // 文案迁到 Localizable.xcstrings，由 scripts/check-ios-strings.mjs 按同样
+    // 文案迁到 Localizable.xcstrings，由原生端仓库的 check-ios-strings 按同样
     // 的规则检查。这里暂时没有 `_one` 键，哨兵留给 Web 以后的复数。
     const INFLECTS_FOR_ONE = [
       "en",
