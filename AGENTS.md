@@ -127,19 +127,23 @@ release gates. No rule, plan or script may depend on locally installed skills.
 
 ## UI and copy
 
+- Native iOS/iPadOS/watchOS UI from DoneAt 4.0 (widgets and Live Activities
+  included) follows the "Fill" visual language in the private native
+  repository's `docs/agent-guides/native-rules.md`, approved by the owner on
+  2026-11-15. For those platforms it overrides the restraint rules below and
+  the former `OWCDesign` 22 pt card / 14 pt control conventions. Web, Desktop,
+  the extension and the macOS Mini Timer keep the rules below.
 - Default to restrained, platform-native UI; emphasis must earn its place.
   Size/space by surface, density, conventions, usage frequency and hierarchy,
   not universal numbers or importance alone. Keep settings, toggles, tools,
   legends, info, expand/collapse and source labels out of the visual centre.
-- Use ordinary icon metaphors: SF Symbols on iOS/macOS, existing `lucide-react`
+- Use ordinary icon metaphors: SF Symbols on macOS, existing `lucide-react`
   on Web/Desktop, or standard symbols. Custom marks retain familiar silhouette,
   proportions and meaning. Prefer position, grouping, subtle colour, dividers,
   state feedback, hover/tooltips over oversized elements, heavy blocks, radii,
   borders, shadows, decorative gradients or marketing layouts.
 - Compare new UI with its whole screen; reduce excess weight/size or lost
-  density before hand-off. Preserve settled conventions: shared orange accent,
-  iOS `OWCDesign` 22 pt cards / 14 pt controls. Extend `OWCMotion` for curves and
-  durations rather than inlining numbers; the app already adopts Liquid Glass.
+  density before hand-off. Preserve the shared orange accent.
 - Desktop is a compact, non-resizable 420–450 px tool: the Web title block
   (brand, localized function line below, each one truncated line), fixed
   footer, settings subpage. Main window and Windows Mini Timer share Web's
