@@ -6,9 +6,22 @@ Except for the identified artwork and third-party exceptions below, the
 project's software source, tests, build/configuration files, translations and
 accompanying project documentation in this revision are offered under the
 [Mozilla Public License 2.0](LICENSE) (SPDX: `MPL-2.0`). This includes Web,
-Chrome extension, Tauri/Desktop, iOS/iPadOS/Watch, Android and
-`services/billing-api`. Commercial use and independent store distribution
-are allowed under the applicable licenses.
+Chrome extension and Tauri/Desktop. Commercial use and independent store
+distribution are allowed under the applicable licenses.
+
+## Native apps
+
+The iOS/iPadOS/Watch and Android apps and `services/billing-api` were part of
+this repository through DoneAt 3.3.0. That source stays available under MPL
+at tag [`ios-v3.3.0`](https://github.com/ififi2017/Off-Work-Countdown/tree/ios-v3.3.0)
+and in this repository's history; earlier grants are unchanged. From 4.0 the
+native apps and the billing service are developed in a separate repository
+and are not offered under MPL.
+
+The 4.0 and later native apps still build in MPL-covered files from this
+repository, such as the widget UI in `src-tauri/macos-widget`, locale files
+and holiday data. Those files remain MPL-covered, and their source is the
+public commit of this repository named in each native release record.
 
 This Source Code Form is subject to the terms of the Mozilla Public License,
 v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain
@@ -49,12 +62,9 @@ authority do not transfer contributors' copyright.
 - [TRADEMARKS.md](TRADEMARKS.md) explains official identity and independent
   forks. It does not restrict commercial use of the covered source.
 - Third-party files retain their own terms, even when inside otherwise
-  MPL-covered directories. See `THIRD_PARTY_LICENSES/`, `app/fonts/LICENSE.txt`,
-  `scripts/marketing-shots/ios/fonts/` and the Apple Design Resources license
-  in `scripts/marketing-shots/ios/frames/`.
-- Android Backdrop and Shapes retain Apache-2.0, including required notices
-  for adapted example code; see `src-mobile/android/app/src/main/assets/licenses/`.
-  Dependency licenses and notices are not replaced by the top-level license.
+  MPL-covered directories. See `THIRD_PARTY_LICENSES/` and
+  `app/fonts/LICENSE.txt`. Dependency licenses and notices are not replaced by
+  the top-level license.
 
 ## Source availability and distribution
 

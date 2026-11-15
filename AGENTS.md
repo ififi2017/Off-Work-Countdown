@@ -4,10 +4,17 @@
 
 One product: Web (Next.js 15 App Router, React 19, TypeScript,
 Tailwind, Serwist); Desktop (the exported React frontend in Tauri v2 with
-Rust/AppKit); iOS (native SwiftUI + WidgetKit in `src-mobile/ios`). iOS has no
-WebView, Next.js pages or Capacitor; `cap`, `CapApp-SPM` and
-`capacitor.config` references are stale. Web/Desktop share a React tree;
-iOS shares business behaviour and translations, never markup.
+Rust/AppKit); native iOS, Watch and Android apps. Web/Desktop share a React
+tree. From 4.0 the native apps live in a private repository that pins this
+one as a submodule; their 3.x source stays here at tag `ios-v3.3.0`. Never add
+native app source back here.
+
+The native apps consume, read-only, from this repository: the rules in `lib/`
+(`countdown`, `reminders`, `summary`, `watch-projection`, `extended-schedule`),
+widget keys in `public/locales`, the widget UI in `src-tauri/macos-widget`,
+`assets/brand/AppIcon.icon` and `data/holidays/`. Changing behaviour or
+removing/renaming anything there also needs a matching native change after the
+submodule moves; say so in the PR.
 
 Chrome extension (`src-extension`) is a Manifest V3 toolbar popup. Its React
 entry reuses PC components and `lib/` rules, bundled by esbuild rather than
@@ -23,9 +30,7 @@ release gates. No rule, plan or script may depend on locally installed skills.
 
 | Task | Required instructions |
 |---|---|
-| Change, build or test iOS; change rules/locales consumed by iOS | [iOS](docs/agent-guides/ios.md) |
 | Desktop channels, signing, packaging, versions, release CI, store listings/media or release download counts | [Releases](docs/agent-guides/releases.md) |
-| Plan, change, build or test Android (`src-mobile/android`, `docs/android`, `plans/Android`) | [Android](docs/agent-guides/android.md) |
 | Select, use or install a repository skill | [Skills](docs/agent-guides/skills.md) |
 
 ## Privacy and product boundaries
@@ -82,39 +87,12 @@ release gates. No rule, plan or script may depend on locally installed skills.
   is hidden, compares trigger times and sums/compares absolute segments.
   Never derive schedules, milestones, lunch boundaries or micro-breaks there.
   It may switch only to a supplied `nextShift`; discard one crossed entirely
-  during sleep without backfilled notifications. iOS schedules the same
-  reminder list up front rather than polling every second.
+  during sleep without backfilled notifications.
 - A running shift is `segments + plannedEndAtMs + overtimeEndAtMs`.
   Remaining time, progress, earnings, lunch gaps and micro-breaks use effective
   segments, never `end - now` or a standalone start/end range. Overtime extends
   the original hourly rate linearly: progress may use extended duration;
   salary uses elapsed effective time / planned effective duration.
-- iOS implements shared rules in `src-mobile/ios/App/App/Native/Models/`:
-  `ScheduleRules.swift` owns current/next shifts, snapshots, rest days, Widget
-  shifts, Watch projection, range expansion, break validation, the reminder
-  list (via `ReminderRules.swift`) and whether schedule edits ask about today.
-  `SummaryRules.swift` owns period summaries, Records income/forecast, monthly
-  salary equivalent and lifetime income. Shared behaviour changes must update
-  `lib/` and the matching Swift implementation together, with regenerated
-  fixtures and the checks below. Decide which side is correct before
-  regenerating; never regenerate merely to hide a Swift failure.
-- iOS-only rules are written/tested in Swift. `ExtendedScheduleRules.swift`
-  resolves civil days to the existing start/end/break/workday tuple and passes
-  it to `CivilZone`; no second scheduling algorithm, and plan-free inputs keep
-  the existing path. Snapshots store shift types/rules in `extendedContent`,
-  never hand-set days, which stay live. Read `ScheduleSnapshot.configurationData`
-  through `RecordCoordinator.expandableHours(for:)` to overlay the live roster.
-  Frozen historical assignments also overlay fixed snapshots; legacy rows
-  without frozen hours retain their pre-extended-schedule boundary. Direct
-  decoding silently loses these overlays.
-- Watch V2 compiles the same salary-free Swift scheduling core from
-  `src-mobile/ios/Shared/` into iPhone, Watch App and Watch widgets. Cached
-  configuration resolves later shifts offline; do not implement another
-  recurrence algorithm or impose a rolling snapshot expiry. Transport never
-  includes salary, career income or the record archive. Watch App and all
-  complications are free; entitlement fields exist only for V1 cache reading.
-- No JavaScriptCore runtime rules bundle: do not restore `CountdownRules.js`
-  (`check:ios` rejects it).
 - `BUILD_TARGET` separates Web and Desktop. Web builds retain middleware and
   Route Handlers; Desktop statically exports to `out/` without Web-only APIs. Keep standard
   `route.ts` filenames for Vercel tracing; exclude Desktop APIs in build config.
@@ -137,9 +115,8 @@ release gates. No rule, plan or script may depend on locally installed skills.
   state feedback, hover/tooltips over oversized elements, heavy blocks, radii,
   borders, shadows, decorative gradients or marketing layouts.
 - Compare new UI with its whole screen; reduce excess weight/size or lost
-  density before hand-off. Preserve settled conventions: shared orange accent,
-  iOS `OWCDesign` 22 pt cards / 14 pt controls. Extend `OWCMotion` for curves and
-  durations rather than inlining numbers; the app already adopts Liquid Glass.
+  density before hand-off. Preserve settled conventions: the shared orange
+  accent.
 - Desktop is a compact, non-resizable 420–450 px tool: the Web title block
   (brand, localized function line below, each one truncated line), fixed
   footer, settings subpage. Main window and Windows Mini Timer share Web's
@@ -173,25 +150,11 @@ release gates. No rule, plan or script may depend on locally installed skills.
 
 ## Localization
 
-- All user-facing app keys need translations in all 19 locales wherever stored,
-  preserving English placeholders. iOS edits
-  `src-mobile/ios/App/App/Localizable.xcstrings` directly; it is not generated.
-  `scripts/generate-watch-localizations.mjs` generates the Watch table from it,
-  and `npm run generate:android-strings` the Android resources (with Android-only
-  copy from `src-mobile/android/app/i18n/android-strings.json`); `npm test`
-  fails until a catalog edit is regenerated.
-  Web/Desktop use `public/locales/*`, containing their keys plus all widget
-  keys. Shared keys deliberately live in both homes, not a shared runtime.
-- `WidgetCopy` (shared with Mac) reads `translation.json` from the widget
-  extension bundle. Copy `public/locales` into that extension only, not the App.
-- `npm run check:ios-strings` (also in `npm test` and Xcode Cloud) requires every
-  referenced Swift key, no unused catalog keys, all widget keys in
-  `public/locales`, and matching shared wording unless `INTENTIONAL_DIVERGENCE`
-  permits otherwise. iOS-only English requires `SAME_AS_ENGLISH_ON_PURPOSE`.
-  Use recognized key shapes: `t("…")`, `.string("…")`, `strings("…")`,
-  `localize("…")`; `…Key` property/function returns or constants; `…Key:`
-  arguments or same-file helper `…Key` parameters; key-labelled tuples; or
-  `focusIcon<Case>`. Other shapes are reported as unused.
+- All user-facing app keys need translations in all 19 locales, preserving
+  English placeholders. Web/Desktop use `public/locales/*`, which also holds
+  every widget key the macOS and native widgets read (`WidgetCopy` reads
+  `translation.json` from the widget extension bundle). Do not drop or rename a
+  widget key without the matching native change.
 - Long-form pages only support English/Simplified Chinese through
   `lib/content-locales.ts`; do not create unreviewed 19-locale copies. Chinese
   UI variants link to Simplified Chinese content; others to English.
@@ -216,13 +179,12 @@ release gates. No rule, plan or script may depend on locally installed skills.
 - Do not commit `.next`, `out`, `src-tauri/target`, service-worker output,
   installers, local environment files, updater private keys, passwords or
   signing certificates. Only the updater public key belongs in the repository.
-- Keep `docs/PLAN-MSSTORE.md` and `docs/PLAN-MOBILE.md` aligned with material
+- Keep `docs/PLAN-MSSTORE.md` aligned with material
   architecture/milestones; remove stale TODOs when verified.
 - Stop `next dev` before a build: it shares `.next` with `next build`.
-- In the user's local macOS environment, prefer Xcode MCP when available
-  for Apple-platform development, builds, tests and debugging. The same
-  validation gates and explicit-request requirement for simulator visual
-  testing apply; use documented CLI commands when MCP is unavailable or unsuitable.
+- In the user's local macOS environment, prefer Xcode MCP when available for
+  the macOS widget and other Apple-platform builds; use documented CLI commands
+  when MCP is unavailable or unsuitable.
 
 Setup: `npm install`. Common checks: `npm run lint`, `npm test`,
 `npm run check:version`. Complete the applicable gates before code hand-off:
@@ -232,25 +194,12 @@ Setup: `npm install`. Common checks: `npm run lint`, `npm test`,
 | Any code | Checks proportional to scope |
 | Shared rendering, routes, locales or build config | Lint, unit tests, Web build + `check:build:web`, Desktop export + `check:build:desktop` |
 | Desktop Rust | Also `cargo fmt --check`, `cargo test`, release build; keep macOS/Windows PR CI (`fmt`, `clippy -- -D warnings`, tests) green |
-| Anything in `lib/`, `public/locales` or `src-mobile/` | Also local headless iOS simulator build |
-| Anything in `src-mobile/ios` | Also `npm run check:ios` |
-| Anything in `src-mobile/android` | Also the Android guide's Gradle checks |
-| Shared rules, including `lib/countdown.ts`, `lib/reminders.ts`, `lib/summary.ts` | Update matching Swift and Kotlin (`src-mobile/android/core/domain`), `npm run generate:ios-rule-fixtures` and `generate:android-rule-fixtures`, `npm test`, simulator build and passing `ScheduleRuleFixtureTests` |
-| UI | Real visual inspection on affected OS; iOS exception below |
+| Shared rules (`lib/`), widget keys, `src-tauri/macos-widget`, brand icon or `data/holidays` | Also note the native impact in the PR; the native repository verifies it when its submodule moves |
+| UI | Real visual inspection on affected OS |
 | Any packaging | `npm run check:version`; release guide |
-
-**iOS simulator visual testing requires an explicit user request.** Implementing
-or fixing iOS UI is not that request. Do not proactively boot/open a simulator,
-launch for inspection or capture screenshots (including `qa:ios-shots`).
-Headless builds and automated XCTest/Swift Testing, including required simulator
-startup, may proceed without asking. Do not extend them into manual/visual QA.
-Without a visual-testing request, complete applicable automated checks, state
-that visual inspection was not performed, and hand off; do not block or ask
-solely to satisfy visual QA.
 
 | Target | Development | Build and validation |
 |---|---|---|
 | Web | `npm run dev` (localhost:3000) | `npm run build`, `npm run check:build:web` |
 | Desktop | `npm run tauri:dev` | `npm run build:desktop`, `npm run check:build:desktop`, `npm run tauri:build` (GitHub bundle) |
 | Rust | | `cargo test --manifest-path src-tauri/Cargo.toml` |
-| iOS | Open `src-mobile/ios/App/App.xcodeproj`; no generation/sync prerequisite except changed fixtures | See iOS guide for headless build and test-runner pitfalls |

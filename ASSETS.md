@@ -11,10 +11,10 @@ their own rights. No ownership of Apple/Microsoft/Google artwork is asserted.
 | Open Day logo and app icon, including layers/Icon Composer | `assets/brand/` artwork files (SVG/PNG and `AppIcon.icon/` design data) |
 | Web/PWA app icons | `app/icon.png`, `app/apple-icon.png`, `app/favicon.ico`, `public/icon-192x192.png`, `public/icon-512x512.png`, `public/icon-maskable-512x512.png` |
 | Desktop/tray and extension icons | image files in `src-tauri/icons/` and `src-extension/icons/` |
-| iOS brand images | image files in `src-mobile/ios/App/App/Assets.xcassets/BrandIcon.imageset/` and `BrandMark.imageset/` |
-| Android launcher/launch artwork | `src-mobile/android/app/src/main/res/drawable/ic_launcher_*.xml`, `drawable/launch_brand.xml`, `mipmap-anydpi/ic_launcher*.xml` under the same `res/` directory |
+| iOS brand images (native source through tag `ios-v3.3.0`) | image files in `src-mobile/ios/App/App/Assets.xcassets/BrandIcon.imageset/` and `BrandMark.imageset/` |
+| Android launcher/launch artwork (native source through tag `ios-v3.3.0`) | `src-mobile/android/app/src/main/res/drawable/ic_launcher_*.xml`, `drawable/launch_brand.xml`, `mipmap-anydpi/ic_launcher*.xml` under the same `res/` directory |
 | Screenshots, recordings and social/marketing artwork | image/video files in `readme_image/`, `public/showcase/`, and `scripts/marketing-shots/` (third-party exceptions below) |
-| Embedded representations of the same Open Day logo | logo drawing data in `scripts/marketing-shots/brand.mjs`, `src-mobile/ios/App/App/Native/Views/OWCBrandMark.swift`, `CelebratingBrandMark.swift`, and `src-mobile/android/core/designsystem/src/main/kotlin/com/rainif/doneat/core/designsystem/DoneAtBrandMark.kt` |
+| Embedded representations of the same Open Day logo | logo drawing data in `scripts/marketing-shots/brand.mjs` and, through tag `ios-v3.3.0`, `src-mobile/ios/App/App/Native/Views/OWCBrandMark.swift`, `CelebratingBrandMark.swift`, and `src-mobile/android/core/designsystem/src/main/kotlin/com/rainif/doneat/core/designsystem/DoneAtBrandMark.kt` |
 
 The rendering, animation, interaction and generation **code** remains MPL;
 the depicted logo is covered by this artwork notice and TRADEMARKS.md.
@@ -41,8 +41,9 @@ own analysis; this is not a retroactive claim against compliant MIT users.
 
 ## Third-party material
 
-Apple frames remain subject to
-`scripts/marketing-shots/ios/frames/Apple Design Resources License.rtf`.
+Apple device frames used in revisions through tag `ios-v3.3.0` remain
+subject to `scripts/marketing-shots/ios/frames/Apple Design Resources License.rtf`
+in those revisions.
 Geist and marketing fonts retain their bundled OFL/other font licenses.
 Official store badges, platform symbols and other third-party material are
 not DoneAt-owned artwork; retain their original terms and provenance.

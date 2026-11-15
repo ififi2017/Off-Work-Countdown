@@ -2,19 +2,16 @@ import { describe, expect, it } from "vitest";
 import { affectsWeb } from "./vercel-ignore-build.mjs";
 
 describe("affectsWeb", () => {
-  it("skips native, docs and store-only changes", () => {
+  it("skips desktop, extension, docs and store-only changes", () => {
     for (const file of [
-      "src-mobile/ios/App/App/Native/Models/ScheduleRules.swift",
-      "src-mobile/android/app/build.gradle.kts",
       "src-tauri/src/lib.rs",
+      "docs/agent-guides/releases.md",
+      "plans/Web/001-seo-search-growth.md",
+      ".github/workflows/release-desktop.yml",
       "src-extension/manifest.json",
       "app-store-connect/metadata/en-US/description.txt",
-      "docs/agent-guides/ios.md",
-      "plans/iOS/015-sync.md",
-      ".github/workflows/android.yml",
       "README_CN.md",
       "scripts/marketing-shots/promo-video/audio.mjs",
-      "scripts/android-release-notes.mjs",
     ]) {
       expect(affectsWeb(file), file).toBe(false);
     }

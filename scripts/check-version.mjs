@@ -1,5 +1,4 @@
 import { readFileSync } from "node:fs";
-import { xcodeProductVersionErrors } from "./xcode-product-versions.mjs";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const packageLock = JSON.parse(readFileSync("package-lock.json", "utf8"));
@@ -19,8 +18,6 @@ const versions = {
   cargo: cargoVersion,
 };
 const expected = versions.package;
-const androidBuild = readFileSync("src-mobile/android/app/build.gradle.kts", "utf8");
-versions.android = androidBuild.match(/versionName\s*=\s*"([^"]+)"/)?.[1];
 const mismatches = Object.entries(versions).filter(
   ([, version]) => version !== expected
 );
@@ -69,38 +66,6 @@ if (
   process.exit(1);
 }
 
-// The native SwiftUI project uses Universal Purchase. Every shipping
-// target shares the product version with Web, Desktop and the Widget so local
-// archives cannot drift from the existing App Store record.
-const mobileProject = readFileSync(
-  "src-mobile/ios/App/App.xcodeproj/project.pbxproj",
-  "utf8"
-);
-const mobileVersions = [
-  ...mobileProject.matchAll(/MARKETING_VERSION\s*=\s*([^;]+);/g),
-].map((match) => match[1].trim());
-
-if (
-  mobileVersions.length === 0 ||
-  mobileVersions.some((version) => version !== expected)
-) {
-  console.error(
-    `iOS MARKETING_VERSION values (${mobileVersions.join(", ") || "not found"}) must all be ${expected}.`
-  );
-  process.exit(1);
-}
-
-const configurationErrors = xcodeProductVersionErrors(mobileProject, expected, [
-  "com.rainif.offworkcountdown.macappstore",
-  "com.rainif.offworkcountdown.macappstore.widget",
-  "com.rainif.offworkcountdown.macappstore.watchkitapp",
-  "com.rainif.offworkcountdown.macappstore.watchkitapp.widgets",
-]);
-if (configurationErrors.length) {
-  console.error(configurationErrors.join("\n"));
-  process.exit(1);
-}
-
 const tag = process.env.GITHUB_REF_NAME;
 if (tag?.startsWith("desktop-v") && tag.slice("desktop-v".length) !== expected) {
   console.error(`Release tag ${tag} does not match product version ${expected}.`);
@@ -108,5 +73,5 @@ if (tag?.startsWith("desktop-v") && tag.slice("desktop-v".length) !== expected) 
 }
 
 console.log(
-  `Web, desktop, Widget, iOS and Android versions are aligned at ${expected} (MSIX ${expectedAppxVersion}).`
+  `Web, desktop and Widget versions are aligned at ${expected} (MSIX ${expectedAppxVersion}). iOS and Android versions live in the native repository.`
 );

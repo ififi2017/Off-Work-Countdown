@@ -13,7 +13,7 @@ prepareLicenseNotices();
 
 // 两个构建目标：
 //   web     —— 部署到 Vercel，保留 middleware、动态路由与重定向
-//   desktop —— 静态导出，供 Tauri 打包（见 plans/iOS/003-tauri-desktop.md 决策 1）
+//   desktop —— 静态导出，供 Tauri 打包（见 plans/Product/003-tauri-desktop.md 决策 1）
 //
 // Web Route Handlers 保持 Next 官方约定的 `route.ts` 文件名。桌面目标不把
 // 普通 `.ts` 识别为路由，因此 API、manifest、robots 与 sitemap 不会进入静态

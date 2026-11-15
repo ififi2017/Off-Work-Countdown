@@ -2,8 +2,8 @@
 // Vercel "Ignored Build Step" (vercel.json `ignoreCommand`).
 // Exit 0 skips the deployment; exit 1 builds it.
 //
-// Skips only when every changed file is outside the Web build: native iOS /
-// Android / Desktop / extension work, docs, plans, store metadata and tooling
+// Skips only when every changed file is outside the Web build: Desktop /
+// extension work, docs, plans, store metadata and tooling
 // scripts. Anything unknown, and any doubt about the diff itself, builds.
 // `tsconfig.json` includes every `**/*.ts(x)`, so `next build` type-checks
 // TypeScript in those directories too; such files always build, as do the
@@ -15,7 +15,6 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 const NON_WEB_PREFIXES = [
-  'src-mobile/',
   'src-tauri/',
   'src-extension/',
   'app-store-connect/',

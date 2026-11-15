@@ -38,11 +38,11 @@ from one end of the ring to the other. Keep every layer a closed, filled shape;
 the full composition and the UI mark may still use strokes.
 
 `AppIcon.icon` is the finished Icon Composer document and the app icon for
-iPhone, iPad and Apple Watch. The Xcode project references it here directly;
-there is no copy under `src-mobile`. Do not replace that reference with a
-symlink — `actool` cannot read an `.icon` through one and aborts the build.
-Save changes in place and rebuild; `npm run check:ios` verifies the document
-and both target references.
+iPhone, iPad and Apple Watch. The native apps' Xcode project (in a separate
+repository that pins this one as a submodule) references it here directly;
+there is no copy elsewhere. Do not move or rename it without the matching
+native change: `actool` cannot read an `.icon` through a symlink, so that
+project points at this path.
 
 The macOS desktop app (GitHub and Mac App Store channels) uses the same
 document. `scripts/generate-macos-icon.mjs` compiles it into

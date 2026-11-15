@@ -173,7 +173,6 @@ counts—no salary, schedule, cookies, IP addresses or device identifiers.
 - i18next
 - Tauri 2 and Rust
 - AppKit for the native macOS mini timer
-- SwiftUI for the native iOS app
 
 ## Getting Started
 
@@ -336,8 +335,8 @@ should use the [desktop app](https://doneat.app/en/download).
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-`plans/iOS/005-product-3.0.md` records the current roadmap along with the reasoning behind
-the decisions — including the things that were considered and deliberately not
+`plans/Web/` records the Web roadmap along with the reasoning behind the
+decisions — including the things that were considered and deliberately not
 built.
 
 ### Adding Language Support
@@ -362,7 +361,10 @@ adding a new locale.
 DoneAt's source code is available under [MPL-2.0](LICENSE), unless otherwise
 noted. Commercial forks are allowed; distribution carries the applicable
 source-availability and notice obligations. See [LICENSING.md](LICENSING.md)
-and [source for releases](SOURCE.md).
+and [source for releases](SOURCE.md). From 4.0 the iOS, Watch and Android
+apps are developed in a separate repository and are not open source; their
+3.x source stays here at tag
+[`ios-v3.3.0`](https://github.com/ififi2017/Off-Work-Countdown/tree/ios-v3.3.0).
 
 Previously granted MIT rights remain in effect; the original notice is in
 [LICENSES/MIT-legacy.txt](LICENSES/MIT-legacy.txt). DoneAt branding and designated
