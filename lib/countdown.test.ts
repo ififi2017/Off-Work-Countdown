@@ -11,6 +11,7 @@ import {
   getShiftElapsedMs,
   getShiftRemainingMs,
   getActiveBreakEndAtMs,
+  endActiveBreakEarly,
   isValidShiftTimeline,
   extendShiftWithOvertime,
   findNextShiftTimeline,
@@ -245,6 +246,38 @@ describe("segmented shift timeline", () => {
     expect(calculateTimelinePayRatio(extended, at(21), 2)).toBe((8 + 2 * 2.5) / 8);
   });
 
+  it("ends lunch early: the next stretch starts now and the planned end stays", () => {
+    const base = buildShiftTimeline("09:00", "18:00", day(10), {
+      breakStartTime: "12:00",
+      breakDurationMinutes: 60,
+    });
+    const early = endActiveBreakEarly(base, at(12, 30));
+    expect(early.plannedEndAtMs).toBe(base.plannedEndAtMs);
+    expect(early.segments).toEqual([
+      base.segments[0],
+      { startAtMs: at(12, 30), endAtMs: at(18) },
+    ]);
+    expect(isValidShiftTimeline(early)).toBe(true);
+    expect(getShiftDurationMs(early)).toBe(8.5 * hour);
+    expect(getActiveBreakEndAtMs(early, at(12, 30))).toBe(null);
+    // A fixed wage still reaches the whole day at the usual end.
+    expect(calculateTimelinePayRatio(early, at(18))).toBe(1);
+    expect(calculateTimelineProgress(early, at(18))).toBe(100);
+    // Outside a break nothing changes.
+    expect(endActiveBreakEarly(base, at(11))).toBe(base);
+    expect(endActiveBreakEarly(base, at(13))).toBe(base);
+  });
+
+  it("ending a break at its first instant joins the two stretches", () => {
+    const base = buildShiftTimeline("09:00", "18:00", day(10), {
+      breakStartTime: "12:00",
+      breakDurationMinutes: 60,
+    });
+    const early = endActiveBreakEarly(base, at(12));
+    expect(early.segments).toEqual([{ startAtMs: at(9), endAtMs: at(18) }]);
+    expect(getShiftDurationMs(early)).toBe(9 * hour);
+  });
+
   it("stretches the last segment when the overtime start is not after the planned end", () => {
     const base = buildShiftTimeline("09:00", "18:00", day(10), {
       breakStartTime: "12:00",
@@ -357,6 +390,12 @@ describe("segmented shift timeline", () => {
 describe("scheduled-month divisor", () => {
   it("replaces the fixed days only when it is at least one", () => {
     expect(getDailySalary("22000", "monthly", 22, 0, 20)).toBe(1100);
+    // Hourly: the rate times the day's planned effective hours, no bonus.
+    expect(getDailySalary("300", "hourly", 22, 2, null, 8 * 3_600_000)).toBe(2400);
+    expect(getDailySalary("300", "hourly", 22, 0, null, 7.5 * 3_600_000)).toBe(2250);
+    expect(getDailySalary("300", "hourly")).toBe(null);
+    expect(getDailySalary("300", "hourly", 22, 0, null, 0)).toBe(null);
+    expect(getMonthlySalaryEquivalent("300", "hourly", 22, 0, null, 8 * 3_600_000)).toBe(52800);
     expect(getDailySalary("22000", "monthly", 22, 0, 0)).toBe(1000);
     expect(getDailySalary("22000", "monthly", 0, 0, 20)).toBe(1100);
     expect(getDailySalary("500", "daily", 22, 0, 20)).toBe(500);
