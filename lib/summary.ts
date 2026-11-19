@@ -13,6 +13,7 @@ import {
   startOfCivilDayMs,
   type DailySalaryBasis,
   type WorkScheduleConfig,
+  type SalaryType,
 } from "./countdown";
 import { resolveScheduleDay } from "./extended-schedule";
 
@@ -333,10 +334,15 @@ export function summarizeRecordsActualAndForecast(params: {
   /** Every civil date in the visible period, including rest and absent days. */
   periodDayKeys?: string[];
   dailySalary: number | null;
+  /**
+   * An hourly wage: each day pays this for every effective hour, so a day's
+   * rate follows its own planned hours and `dailySalary` is not used.
+   */
+  hourlyRate?: number | null;
   asOfMs: number;
   salaryRules?: {
     salaryAmount: string;
-    salaryType: "monthly" | "daily";
+    salaryType: SalaryType;
     monthlyWorkingDays?: number;
     workdays: number[];
     schedule?: WorkScheduleConfig | null;
@@ -360,14 +366,24 @@ export function summarizeRecordsActualAndForecast(params: {
       )
     : null;
   const usesFixedMonthlyPay = params.salaryRules?.salaryType === "monthly";
+  const hourlyRate = typeof params.hourlyRate === "number" && Number.isFinite(params.hourlyRate) && params.hourlyRate >= 0
+    ? params.hourlyRate
+    : null;
+  const usesHourlyPay = params.salaryRules?.salaryType === "hourly" || params.hourlyRate != null;
   let hasSalary = usesFixedMonthlyPay
     ? fixedMonthlyPay !== null
-    : params.dailySalary !== null;
+    : usesHourlyPay ? hourlyRate !== null : params.dailySalary !== null;
   for (const day of params.days) {
     if (day.resolvedSegments.length === 0 && day.overtimeSegments.length === 0) continue;
-    const rate = params.dailySalary;
-    if (!usesFixedMonthlyPay && rate === null) hasSalary = false;
     const plannedMs = mergedSegmentDuration(day.plannedSegments);
+    // Hourly: the day is worth its own planned hours at the rate; a day with
+    // no plan is paid by the hours it holds.
+    const rate = usesHourlyPay
+      ? hourlyRate === null
+        ? null
+        : hourlyRate * (plannedMs > 0 ? plannedMs : mergedSegmentDuration(day.resolvedSegments)) / 3_600_000
+      : params.dailySalary;
+    if (!usesFixedMonthlyPay && rate === null) hasSalary = false;
     const isActual = day.actualKind === "corrected" || day.actualKind === "observed" || day.actualKind === "scheduled";
     if (isActual) {
       const regularSegments = day.actualKind !== "observed"
@@ -681,7 +697,7 @@ export function countScheduledWorkdaysInMonth(params: {
 /** The salary fields the month-basis rules read. */
 export interface MonthBasisSalary {
   amount: string;
-  type: "monthly" | "daily";
+  type: SalaryType;
   monthlyWorkingDays: number;
   annualBonusMonths: number;
   basis?: DailySalaryBasis | null;
@@ -784,6 +800,13 @@ export function summarize(params: {
   todayPayRatio?: number;
   /** 记录时区。缺省时退回运行环境本地时区，iOS 必须传入。 */
   timeZone?: string;
+  /**
+   * An hourly wage. Earnings become the rate times the hours counted: every
+   * completed day's planned effective hours, then today's pay ratio of its
+   * planned hours (`todayPlannedHours`, else `plannedDailyHours`).
+   */
+  hourlyRate?: number | null;
+  todayPlannedHours?: number;
 }): PeriodSummary {
   const {
     periodStart,
@@ -799,6 +822,8 @@ export function summarize(params: {
     todayEffectiveHours,
     todayPayRatio,
     timeZone,
+    hourlyRate,
+    todayPlannedHours,
   } = params;
 
   const startOfDay = (date: Date) => {
@@ -878,6 +903,13 @@ export function summarize(params: {
     if (todayDaily === null) missing = true;
     else total += Math.max(0, earningsFraction) * todayDaily;
     earnings = !missing && Number.isFinite(total) ? total : null;
+  }
+
+  if (hourlyRate !== undefined) {
+    const rate = typeof hourlyRate === "number" && Number.isFinite(hourlyRate) && hourlyRate >= 0 ? hourlyRate : null;
+    const paidHours = completedHours + earningsFraction * (todayPlannedHours ?? plannedDailyHours);
+    const total = rate === null ? null : rate * paidHours;
+    earnings = total !== null && Number.isFinite(total) ? total : null;
   }
 
   return { days, hours, earnings };

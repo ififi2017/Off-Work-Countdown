@@ -338,6 +338,47 @@ describe("records actual and forecast", () => {
     expect(result.total).toEqual({ days: 3, hours: 24, earnings: 2400 });
   });
 
+  it("pays an hourly wage by each day's own planned hours", () => {
+    const hour = 3_600_000;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: null,
+      hourlyRate: 100,
+      asOfMs: 42 * hour,
+      days: [0, 24, 48].map(offset => ({
+        actualKind: offset < 48 ? "scheduled" as const : null,
+        resolvedSegments: [
+          { startAtMs: (offset + 9) * hour, endAtMs: (offset + 12) * hour },
+          { startAtMs: (offset + 13) * hour, endAtMs: (offset + (offset === 0 ? 15 : 17)) * hour },
+        ],
+        plannedSegments: [
+          { startAtMs: (offset + 9) * hour, endAtMs: (offset + 12) * hour },
+          { startAtMs: (offset + 13) * hour, endAtMs: (offset + (offset === 0 ? 15 : 17)) * hour },
+        ],
+        overtimeSegments: [], observations: [], isActiveAnchor: false,
+      })),
+    });
+    // Day one is 5 hours, day two 7, day three (forecast) 7.
+    expect(result.actual).toEqual({ days: 2, hours: 12, earnings: 1200 });
+    expect(result.forecast).toEqual({ days: 1, hours: 7, earnings: 700 });
+  });
+
+  it("has no hourly earnings without a rate", () => {
+    const hour = 3_600_000;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      hourlyRate: null,
+      salaryRules: undefined,
+      asOfMs: 36 * hour,
+      days: [{
+        actualKind: "scheduled" as const,
+        resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+        plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+        overtimeSegments: [], observations: [], isActiveAnchor: false,
+      }],
+    });
+    expect(result.actual.earnings).toBe(800);
+  });
+
   it("keeps recorded work separate and never forecasts the same day twice", () => {
     const hour = 3_600_000;
     const result = summarizeRecordsActualAndForecast({
