@@ -369,7 +369,9 @@ export function summarizeRecordsActualAndForecast(params: {
   const hourlyRate = typeof params.hourlyRate === "number" && Number.isFinite(params.hourlyRate) && params.hourlyRate >= 0
     ? params.hourlyRate
     : null;
-  const usesHourlyPay = params.salaryRules?.salaryType === "hourly" || params.hourlyRate != null;
+  // A rate present means hourly pay; an hourly setting without one has no
+  // earnings, as with any missing salary.
+  const usesHourlyPay = params.hourlyRate != null || params.salaryRules?.salaryType === "hourly";
   let hasSalary = usesFixedMonthlyPay
     ? fixedMonthlyPay !== null
     : usesHourlyPay ? hourlyRate !== null : params.dailySalary !== null;
@@ -905,8 +907,8 @@ export function summarize(params: {
     earnings = !missing && Number.isFinite(total) ? total : null;
   }
 
-  if (hourlyRate !== undefined) {
-    const rate = typeof hourlyRate === "number" && Number.isFinite(hourlyRate) && hourlyRate >= 0 ? hourlyRate : null;
+  if (hourlyRate != null) {
+    const rate = Number.isFinite(hourlyRate) && hourlyRate >= 0 ? hourlyRate : null;
     const paidHours = completedHours + earningsFraction * (todayPlannedHours ?? plannedDailyHours);
     const total = rate === null ? null : rate * paidHours;
     earnings = total !== null && Number.isFinite(total) ? total : null;

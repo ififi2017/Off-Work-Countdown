@@ -629,6 +629,25 @@ describe("summarize", () => {
     expect(s.earnings).toBeCloseTo(2500);
   });
 
+  it("pays an hourly wage for the hours counted", () => {
+    const s = summarize({
+      ...base,
+      periodStart: at(2026, 6, 29),
+      asOf: at(2026, 7, 1, 13),
+      currentShiftStart: at(2026, 7, 1, 9),
+      currentShiftEnd: at(2026, 7, 1, 18),
+      todayProgress: 50,
+      dailySalary: null,
+      hourlyRate: 100,
+      todayPlannedHours: 8,
+    });
+    // Two completed 9-hour days, then half of today's 8 planned hours.
+    expect(s.earnings).toBeCloseTo(2200);
+    expect(summarize({ ...base, periodStart: at(2026, 6, 29), asOf: at(2026, 7, 1, 13),
+      currentShiftStart: at(2026, 7, 1, 9), currentShiftEnd: at(2026, 7, 1, 18), todayProgress: 50,
+      dailySalary: null, hourlyRate: Number.NaN }).earnings).toBe(null);
+  });
+
   it("ignores today when it is not a workday", () => {
     const s = summarize({
       ...base,
