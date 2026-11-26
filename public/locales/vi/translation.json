@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "Đến giờ tan ca {{time}}",
   "widgetFillPlanned": "Dự kiến {{hours}}",
   "widgetFillOvertimeFrom": "Tăng ca · dự kiến tan ca {{time}}",
-  "widgetFillRestLeft": "còn {{time}}"
+  "widgetFillRestLeft": "còn {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt tìm cách xin nghỉ có lợi nhất dựa trên ngày lễ.",
+  "widgetSuiteHolidayStreak": "Nghỉ liền {{count}} ngày",
+  "widgetSuiteDaysToGo": "Còn {{count}} ngày",
+  "widgetSuiteNoScheduleTitle": "Chưa đặt giờ làm",
+  "widgetSuiteNoScheduleDetail": "Khi đã đặt, ca làm mỗi ngày sẽ hiện ở đây.",
+  "widgetSuiteFullDays": "Ngày đầy"
 }

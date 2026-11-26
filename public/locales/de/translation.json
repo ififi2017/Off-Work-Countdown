@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "Bis Feierabend um {{time}}",
   "widgetFillPlanned": "Geplant {{hours}}",
   "widgetFillOvertimeFrom": "Überstunden · geplant bis {{time}}",
-  "widgetFillRestLeft": "noch {{time}}"
+  "widgetFillRestLeft": "noch {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt findet anhand der Feiertage die Urlaubstage, die dir am meisten freie Zeit bringen.",
+  "widgetSuiteHolidayStreak": "{{count}} freie Tage am Stück",
+  "widgetSuiteDaysToGo": "Noch {{count}} Tage",
+  "widgetSuiteNoScheduleTitle": "Noch keine Arbeitszeiten",
+  "widgetSuiteNoScheduleDetail": "Sobald sie eingerichtet sind, steht hier jeden Tag deine Schicht.",
+  "widgetSuiteFullDays": "Volle Tage"
 }

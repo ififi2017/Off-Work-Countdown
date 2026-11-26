@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "Jusqu’à la fin à {{time}}",
   "widgetFillPlanned": "Prévu {{hours}}",
   "widgetFillOvertimeFrom": "Heures sup. · fin prévue à {{time}}",
-  "widgetFillRestLeft": "dans {{time}}"
+  "widgetFillRestLeft": "dans {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt trouve les congés qui transforment les jours fériés en plus longues pauses.",
+  "widgetSuiteHolidayStreak": "{{count}} jours de repos d’affilée",
+  "widgetSuiteDaysToGo": "Encore {{count}} jours",
+  "widgetSuiteNoScheduleTitle": "Pas encore d’horaires",
+  "widgetSuiteNoScheduleDetail": "Une fois vos horaires réglés, chaque journée s’affiche ici.",
+  "widgetSuiteFullDays": "Jours pleins"
 }

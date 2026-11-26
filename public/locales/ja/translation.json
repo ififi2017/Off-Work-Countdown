@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "{{time}} 退勤まで",
   "widgetFillPlanned": "予定 {{hours}}",
   "widgetFillOvertimeFrom": "残業中 · 本来は {{time}} 退勤",
-  "widgetFillRestLeft": "あと {{time}}"
+  "widgetFillRestLeft": "あと {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAtが祝日に合わせて、いちばんお得な休暇の取り方を見つけます。",
+  "widgetSuiteHolidayStreak": "{{count}}連休",
+  "widgetSuiteDaysToGo": "あと{{count}}日",
+  "widgetSuiteNoScheduleTitle": "勤務時間がまだ未設定です",
+  "widgetSuiteNoScheduleDetail": "設定すると、毎日のシフトがここに表示されます。",
+  "widgetSuiteFullDays": "満タンの日"
 }

@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "Até a saída às {{time}}",
   "widgetFillPlanned": "Previsto {{hours}}",
   "widgetFillOvertimeFrom": "Hora extra · saída prevista {{time}}",
-  "widgetFillRestLeft": "em {{time}}"
+  "widgetFillRestLeft": "em {{time}}",
+  "widgetSuiteLeavePromiseDetail": "O DoneAt encontra os dias de folga que transformam feriados nas pausas mais longas.",
+  "widgetSuiteHolidayStreak": "{{count}} dias de folga seguidos",
+  "widgetSuiteDaysToGo": "Faltam {{count}} dias",
+  "widgetSuiteNoScheduleTitle": "Nenhum horário ainda",
+  "widgetSuiteNoScheduleDetail": "Depois de definido, o turno de cada dia aparece aqui.",
+  "widgetSuiteFullDays": "Dias cheios"
 }

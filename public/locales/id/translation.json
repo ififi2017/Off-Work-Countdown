@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "Sampai pulang pukul {{time}}",
   "widgetFillPlanned": "Rencana {{hours}}",
   "widgetFillOvertimeFrom": "Lembur · rencana pulang {{time}}",
-  "widgetFillRestLeft": "{{time}} lagi"
+  "widgetFillRestLeft": "{{time}} lagi",
+  "widgetSuiteLeavePromiseDetail": "DoneAt mencarikan cuti yang paling menguntungkan berdasarkan hari libur.",
+  "widgetSuiteHolidayStreak": "{{count}} hari libur berturut-turut",
+  "widgetSuiteDaysToGo": "{{count}} hari lagi",
+  "widgetSuiteNoScheduleTitle": "Jam kerja belum diatur",
+  "widgetSuiteNoScheduleDetail": "Setelah diatur, shift tiap hari muncul di sini.",
+  "widgetSuiteFullDays": "Hari penuh"
 }

@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "Fino alla fine alle {{time}}",
   "widgetFillPlanned": "Previsto {{hours}}",
   "widgetFillOvertimeFrom": "Straordinario · fine prevista {{time}}",
-  "widgetFillRestLeft": "tra {{time}}"
+  "widgetFillRestLeft": "tra {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt trova i giorni di ferie che trasformano le festività nelle pause più lunghe.",
+  "widgetSuiteHolidayStreak": "{{count}} giorni liberi di fila",
+  "widgetSuiteDaysToGo": "Ancora {{count}} giorni",
+  "widgetSuiteNoScheduleTitle": "Nessun orario ancora",
+  "widgetSuiteNoScheduleDetail": "Una volta impostato, qui vedrai il turno di ogni giorno.",
+  "widgetSuiteFullDays": "Giorni pieni"
 }

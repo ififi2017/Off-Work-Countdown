@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "حتى نهاية الدوام {{time}}",
   "widgetFillPlanned": "المخطط {{hours}}",
   "widgetFillOvertimeFrom": "عمل إضافي · الانتهاء المخطط {{time}}",
-  "widgetFillRestLeft": "بعد {{time}}"
+  "widgetFillRestLeft": "بعد {{time}}",
+  "widgetSuiteLeavePromiseDetail": "يجد DoneAt الإجازة التي تحوّل العطل إلى أطول راحة.",
+  "widgetSuiteHolidayStreak": "أيام راحة متتالية: {{count}}",
+  "widgetSuiteDaysToGo": "الأيام المتبقية: {{count}}",
+  "widgetSuiteNoScheduleTitle": "لم تُحدَّد ساعات العمل بعد",
+  "widgetSuiteNoScheduleDetail": "بعد ضبطها، ستظهر هنا وردية كل يوم.",
+  "widgetSuiteFullDays": "أيام ممتلئة"
 }

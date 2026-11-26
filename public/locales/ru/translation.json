@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "До конца в {{time}}",
   "widgetFillPlanned": "План {{hours}}",
   "widgetFillOvertimeFrom": "Переработка · по плану до {{time}}",
-  "widgetFillRestLeft": "через {{time}}"
+  "widgetFillRestLeft": "через {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt подберёт отпуск так, чтобы праздники дали самый долгий отдых.",
+  "widgetSuiteHolidayStreak": "Выходных подряд: {{count}}",
+  "widgetSuiteDaysToGo": "Осталось дней: {{count}}",
+  "widgetSuiteNoScheduleTitle": "Рабочие часы ещё не заданы",
+  "widgetSuiteNoScheduleDetail": "Когда укажешь их, здесь будет смена на каждый день.",
+  "widgetSuiteFullDays": "Полные дни"
 }

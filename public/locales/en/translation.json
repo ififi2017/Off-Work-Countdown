@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "Until clock-off at {{time}}",
   "widgetFillPlanned": "Planned {{hours}}",
   "widgetFillOvertimeFrom": "Overtime · planned off at {{time}}",
-  "widgetFillRestLeft": "in {{time}}"
+  "widgetFillRestLeft": "in {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt finds the leave that turns holidays into the longest breaks.",
+  "widgetSuiteHolidayStreak": "{{count}} days off in a row",
+  "widgetSuiteDaysToGo": "{{count}} days to go",
+  "widgetSuiteNoScheduleTitle": "No work hours yet",
+  "widgetSuiteNoScheduleDetail": "Once they’re set, each day’s shift shows up here.",
+  "widgetSuiteFullDays": "Full days"
 }

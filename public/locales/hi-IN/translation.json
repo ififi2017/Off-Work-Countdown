@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "{{time}} की छुट्टी तक",
   "widgetFillPlanned": "तय {{hours}}",
   "widgetFillOvertimeFrom": "ओवरटाइम · तय छुट्टी {{time}}",
-  "widgetFillRestLeft": "{{time}} बाकी"
+  "widgetFillRestLeft": "{{time}} बाकी",
+  "widgetSuiteLeavePromiseDetail": "DoneAt छुट्टियों के हिसाब से सबसे फ़ायदेमंद अवकाश ढूँढता है।",
+  "widgetSuiteHolidayStreak": "लगातार {{count}} दिन की छुट्टी",
+  "widgetSuiteDaysToGo": "{{count}} दिन बाकी",
+  "widgetSuiteNoScheduleTitle": "काम के घंटे अभी सेट नहीं हैं",
+  "widgetSuiteNoScheduleDetail": "सेट करने के बाद, हर दिन की शिफ़्ट यहाँ दिखेगी।",
+  "widgetSuiteFullDays": "भरे दिन"
 }
