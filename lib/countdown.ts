@@ -529,6 +529,34 @@ export function getActiveBreakEndAtMs(
   return null;
 }
 
+/**
+ * Ends the break `nowMs` falls in: the next stretch of work starts now. The
+ * planned end does not move, so the rest of the break becomes working time —
+ * progress and a monthly or daily wage reach 100% at the same end as before,
+ * and an hourly wage pays the extra minutes. Outside a break the shift comes
+ * back unchanged.
+ */
+export function endActiveBreakEarly(
+  shift: ShiftTimeline,
+  nowMs: number
+): ShiftTimeline {
+  if (!isValidShiftTimeline(shift) || !Number.isFinite(nowMs)) return shift;
+  for (let index = 0; index < shift.segments.length - 1; index += 1) {
+    const gapStart = shift.segments[index].endAtMs;
+    const next = shift.segments[index + 1];
+    if (next.startAtMs > gapStart && nowMs >= gapStart && nowMs < next.startAtMs) {
+      const segments = shift.segments.slice();
+      segments[index + 1] = { ...next, startAtMs: nowMs };
+      // A break ended the moment it began leaves nothing between the two.
+      if (nowMs === gapStart) {
+        segments.splice(index, 2, { startAtMs: shift.segments[index].startAtMs, endAtMs: next.endAtMs });
+      }
+      return { ...shift, segments };
+    }
+  }
+  return shift;
+}
+
 export function getShiftRemainingMs(
   shift: ShiftTimeline,
   nowMs: number
@@ -707,6 +735,15 @@ export function isWorkday(shiftStart: Date, workdays: number[]): boolean {
 export const DEFAULT_MONTHLY_WORKING_DAYS = 21.75;
 
 /**
+ * How pay is set. `hourly` pays the amount for each effective hour (lunch and
+ * other breaks excluded), so a day is worth the rate times that day's planned
+ * effective hours and the annual bonus does not apply.
+ */
+export type SalaryType = "monthly" | "daily" | "hourly";
+
+const MS_PER_HOUR = 60 * 60 * 1000;
+
+/**
  * How a monthly salary becomes daily pay. `fixed` divides by the configured
  * monthly working days; `scheduledMonth` divides each civil month by its own
  * scheduled workday count. Daily salaries ignore it.
@@ -737,17 +774,33 @@ export function resolveMonthlyDivisor(
 /**
  * `scheduledMonthDays` replaces `monthlyWorkingDays` as the divisor when it is
  * at least 1 (see `resolveMonthlyDivisor`); omitted, nothing changes.
+ *
+ * An `hourly` amount needs `plannedEffectiveMs`, the planned effective
+ * duration of the day being paid (`getPlannedShiftDurationMs`); without a
+ * positive one there is no daily figure.
  */
 export function getDailySalary(
   amount: string,
-  type: "monthly" | "daily",
+  type: SalaryType,
   monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS,
   annualBonusMonths: number = 0,
-  scheduledMonthDays?: number | null
+  scheduledMonthDays?: number | null,
+  plannedEffectiveMs?: number | null
 ): number | null {
   if (!amount.trim()) return null;
   const parsed = Number(amount);
   if (!Number.isFinite(parsed) || parsed < 0) return null;
+  if (type === "hourly") {
+    if (
+      typeof plannedEffectiveMs !== "number" ||
+      !Number.isFinite(plannedEffectiveMs) ||
+      plannedEffectiveMs <= 0
+    ) {
+      return null;
+    }
+    const daily = parsed * (plannedEffectiveMs / MS_PER_HOUR);
+    return Number.isFinite(daily) ? daily : null;
+  }
   if (!Number.isFinite(annualBonusMonths) || annualBonusMonths < 0) {
     return null;
   }
@@ -779,10 +832,11 @@ export function getDailySalary(
  */
 export function getMonthlySalaryEquivalent(
   amount: string,
-  type: "monthly" | "daily",
+  type: SalaryType,
   monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS,
   annualBonusMonths: number = 0,
-  basis?: DailySalaryBasis | null
+  basis?: DailySalaryBasis | null,
+  plannedEffectiveMs?: number | null
 ): number | null {
   if (basis === "scheduledMonth" && type === "monthly") {
     return getDailySalary(amount, "monthly", 1, annualBonusMonths);
@@ -792,7 +846,7 @@ export function getMonthlySalaryEquivalent(
     monthlyWorkingDays <= 0 ||
     monthlyWorkingDays > 31
   ) return null;
-  const daily = getDailySalary(amount, type, monthlyWorkingDays, annualBonusMonths);
+  const daily = getDailySalary(amount, type, monthlyWorkingDays, annualBonusMonths, null, plannedEffectiveMs);
   if (daily === null) return null;
   const monthly = daily * monthlyWorkingDays;
   return Number.isFinite(monthly) ? monthly : null;
