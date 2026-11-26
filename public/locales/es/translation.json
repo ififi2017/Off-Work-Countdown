@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "Hasta la salida a las {{time}}",
   "widgetFillPlanned": "Previsto {{hours}}",
   "widgetFillOvertimeFrom": "Horas extra · salida prevista {{time}}",
-  "widgetFillRestLeft": "faltan {{time}}"
+  "widgetFillRestLeft": "faltan {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt encuentra los días a pedir que convierten los festivos en los descansos más largos.",
+  "widgetSuiteHolidayStreak": "{{count}} días libres seguidos",
+  "widgetSuiteDaysToGo": "Faltan {{count}} días",
+  "widgetSuiteNoScheduleTitle": "Aún no hay horario",
+  "widgetSuiteNoScheduleDetail": "Cuando lo configures, aquí verás el turno de cada día.",
+  "widgetSuiteFullDays": "Días llenos"
 }

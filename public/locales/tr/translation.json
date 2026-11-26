@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "{{time}} çıkışına kadar",
   "widgetFillPlanned": "Planlanan {{hours}}",
   "widgetFillOvertimeFrom": "Fazla mesai · planlanan çıkış {{time}}",
-  "widgetFillRestLeft": "{{time}} kaldı"
+  "widgetFillRestLeft": "{{time}} kaldı",
+  "widgetSuiteLeavePromiseDetail": "DoneAt, tatillere göre en kârlı izin planını bulur.",
+  "widgetSuiteHolidayStreak": "Art arda {{count}} gün tatil",
+  "widgetSuiteDaysToGo": "{{count}} gün kaldı",
+  "widgetSuiteNoScheduleTitle": "Henüz çalışma saati yok",
+  "widgetSuiteNoScheduleDetail": "Ayarladığında her günün vardiyası burada görünür.",
+  "widgetSuiteFullDays": "Dolu günler"
 }

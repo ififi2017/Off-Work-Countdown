@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "ถึงเวลาเลิกงาน {{time}}",
   "widgetFillPlanned": "ตามแผน {{hours}}",
   "widgetFillOvertimeFrom": "ทำโอที · เดิมเลิก {{time}}",
-  "widgetFillRestLeft": "อีก {{time}}"
+  "widgetFillRestLeft": "อีก {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt ช่วยหาวิธีลาที่คุ้มที่สุดตามวันหยุด",
+  "widgetSuiteHolidayStreak": "หยุดยาว {{count}} วัน",
+  "widgetSuiteDaysToGo": "อีก {{count}} วัน",
+  "widgetSuiteNoScheduleTitle": "ยังไม่ได้ตั้งเวลาทำงาน",
+  "widgetSuiteNoScheduleDetail": "เมื่อตั้งแล้ว กะของแต่ละวันจะแสดงที่นี่",
+  "widgetSuiteFullDays": "วันเต็ม"
 }

@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "距離 {{time}} 放工",
   "widgetFillPlanned": "計劃 {{hours}}",
   "widgetFillOvertimeFrom": "OT 中 · 原定 {{time}} 放工",
-  "widgetFillRestLeft": "仲有 {{time}}"
+  "widgetFillRestLeft": "仲有 {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt 會按假期幫你搵出最抵嘅請假方案。",
+  "widgetSuiteHolidayStreak": "連放 {{count}} 日",
+  "widgetSuiteDaysToGo": "仲有 {{count}} 日",
+  "widgetSuiteNoScheduleTitle": "仲未設定返工時間",
+  "widgetSuiteNoScheduleDetail": "設定後，呢度會顯示每日要返嘅班。",
+  "widgetSuiteFullDays": "滿格"
 }

@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "{{time}} च्या सुटीपर्यंत",
   "widgetFillPlanned": "नियोजित {{hours}}",
   "widgetFillOvertimeFrom": "ओव्हरटाइम · नियोजित सुटी {{time}}",
-  "widgetFillRestLeft": "{{time}} बाकी"
+  "widgetFillRestLeft": "{{time}} बाकी",
+  "widgetSuiteLeavePromiseDetail": "DoneAt सुट्ट्यांनुसार सर्वात फायदेशीर रजा शोधते.",
+  "widgetSuiteHolidayStreak": "सलग {{count}} दिवस सुट्टी",
+  "widgetSuiteDaysToGo": "{{count}} दिवस बाकी",
+  "widgetSuiteNoScheduleTitle": "कामाचे तास अजून सेट केलेले नाहीत",
+  "widgetSuiteNoScheduleDetail": "सेट केल्यावर, दररोजची शिफ्ट इथे दिसेल.",
+  "widgetSuiteFullDays": "भरलेले दिवस"
 }

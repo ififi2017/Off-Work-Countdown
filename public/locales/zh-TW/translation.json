@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "距離 {{time}} 下班",
   "widgetFillPlanned": "計畫 {{hours}}",
   "widgetFillOvertimeFrom": "加班中 · 原定 {{time}} 下班",
-  "widgetFillRestLeft": "還有 {{time}}"
+  "widgetFillRestLeft": "還有 {{time}}",
+  "widgetSuiteLeavePromiseDetail": "DoneAt 會按假日幫你找出最划算的請假方案。",
+  "widgetSuiteHolidayStreak": "連休 {{count}} 天",
+  "widgetSuiteDaysToGo": "還剩 {{count}} 天",
+  "widgetSuiteNoScheduleTitle": "還沒設定上班時間",
+  "widgetSuiteNoScheduleDetail": "設定後，這裡會顯示每天要上的班。",
+  "widgetSuiteFullDays": "滿格"
 }

@@ -501,5 +501,11 @@
   "widgetFillUntilOffAt": "{{time}} 퇴근까지",
   "widgetFillPlanned": "예정 {{hours}}",
   "widgetFillOvertimeFrom": "초과근무 중 · 원래 {{time}} 퇴근",
-  "widgetFillRestLeft": "{{time}} 남음"
+  "widgetFillRestLeft": "{{time}} 남음",
+  "widgetSuiteLeavePromiseDetail": "DoneAt이 공휴일에 맞춰 가장 알찬 휴가 계획을 찾아드려요.",
+  "widgetSuiteHolidayStreak": "{{count}}일 연휴",
+  "widgetSuiteDaysToGo": "{{count}}일 남음",
+  "widgetSuiteNoScheduleTitle": "아직 근무 시간이 없어요",
+  "widgetSuiteNoScheduleDetail": "설정하면 매일의 근무가 여기에 표시돼요.",
+  "widgetSuiteFullDays": "가득 찬 날"
 }
