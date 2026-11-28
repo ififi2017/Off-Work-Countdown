@@ -923,7 +923,12 @@ describe("Records monthly salary accrues per scheduled workday", () => {
       };
     }).filter(value => value !== null);
   }
-  const run = (days: ReturnType<typeof monthDays>, rules = monthlyRules, asOfMs = Date.UTC(2025, 0, 1)) =>
+  type RecordsForecastInput = Parameters<typeof summarizeRecordsActualAndForecast>[0];
+  const run = (
+    days: RecordsForecastInput["days"],
+    rules: RecordsForecastInput["salaryRules"] = monthlyRules,
+    asOfMs = Date.UTC(2025, 0, 1),
+  ) =>
     summarizeRecordsActualAndForecast({ days, dailySalary: 10000 / 22, asOfMs, salaryRules: rules });
 
   it.each([2, 4, 7, 9])("pays the full salary over a month's scheduled workdays (month %i)", month => {
@@ -1012,7 +1017,7 @@ describe("Records monthly salary accrues per scheduled workday", () => {
       const segments = on ? [{ startAtMs: start, endAtMs: start + 8 * hour }] : [];
       return { dayKey: key, resolvedSegments: segments, plannedSegments: segments, overtimeSegments: [], observations: [], isActiveAnchor: false };
     });
-    const result = run(days as ReturnType<typeof monthDays>, { ...monthlyRules, schedule: rotation });
+    const result = run(days, { ...monthlyRules, schedule: rotation });
     expect(workdaysInMonth).toBe(16);
     expect(result.total.earnings).toBeCloseTo(10000, 8);
   });
