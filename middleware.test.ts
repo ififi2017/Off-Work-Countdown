@@ -19,7 +19,7 @@ describe("locale middleware invocation boundary", () => {
     }
   );
 
-  it.each(["/api/e", "/_next/static/a.js", "/_next/image?url=x", "/static/a", "/licenses/LICENSE", "/showcase/demo.MP4", "/fonts/GeistVF.woff", "/icon-maskable-512x512.png", "/manifest.json?lang=de", "/locales/en/translation.json"])(
+  it.each(["/api/e", "/_next/static/a.js", "/_next/image?url=x", "/static/a", "/licenses/LICENSE", "/showcase/demo.MP4", "/fonts/GeistVF.woff", "/icon-maskable-512x512.png", "/manifest.json?lang=de", "/locales/en/translation.json", "/ads.txt", "/sitemap-0.xml"])(
     "does not invoke middleware for resource %s", (path) => {
       expect(matches(`https://off.rainif.com${path}`)).toBe(false);
     }

@@ -97,6 +97,11 @@ export async function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
 
+// 带扩展名的路径（/ads.txt、/sitemap-0.xml、/apple-touch-icon.png）不走语言
+// middleware，会落到 [lang]。未知语言若按需渲染，页面里的 Intl.NumberFormat
+// 会抛 RangeError，整站回 500。19 种界面语言都在上面的静态参数里。
+export const dynamicParams = false;
+
 export default async function Layout({
   children,
   params,
