@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 const target = process.argv[2];
 const webRouteManifests = [
+  ".next/server/app/ads.txt/route_client-reference-manifest.js",
   ".next/server/app/robots.txt/route_client-reference-manifest.js",
   ".next/server/app/manifest.json/route_client-reference-manifest.js",
   ".next/server/app/api/e/route_client-reference-manifest.js",
