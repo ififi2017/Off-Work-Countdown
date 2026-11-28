@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { zonedWeekStartMs, zonedYearStartMs } from "./countdown";
 import {
   completedWorkdayIncome,
+  completedSummaryEndMs,
   completedWorkdayIncomeByMonth,
   countScheduledWorkdays,
   countScheduledWorkdaysInMonth,
@@ -16,6 +17,7 @@ import {
   summarize,
   summarizeRecordsActualAndForecast,
 } from "./summary";
+import type { WorkScheduleConfig } from "./countdown";
 
 // 2026-07-03 是周五，2026-07-04 周六，2026-07-05 周日
 const at = (y: number, m: number, d: number, h = 0) =>
@@ -165,7 +167,7 @@ describe("lifetime gross income", () => {
         { startsOn: "2026-01-01", endsOn: null, salaryAmount: 0, salaryCadence: "yearly" },
       ],
     });
-    expect(result).toEqual({ historicalGross: 0, projectedGross: 0, totalGross: 0 });
+    expect(result).toEqual({ historicalGross: 0, projectedGross: 0, totalGross: 0, isValid: true });
   });
 
   it("keeps the lifetime total stable when today splits a short calendar month", () => {
@@ -213,7 +215,24 @@ describe("lifetime gross income", () => {
         { startsOn: "2024-01-01", endsOn: "2026-01-01", salaryAmount: 80_000, salaryCadence: "yearly" },
       ],
     });
-    expect(result).toEqual({ historicalGross: 0, projectedGross: 0, totalGross: 0 });
+    expect(result).toEqual({ historicalGross: 0, projectedGross: 0, totalGross: 0, isValid: false });
+  });
+
+  it("cuts stored periods at the current salary instead of overlapping into zero", () => {
+    // An open period, one ending next year and one starting next year all
+    // reach past today, where the current salary takes over.
+    const result = projectLifetimeGrossIncome({
+      asOf: "2026-01-01",
+      retirementOn: "2028-01-01",
+      periods: [
+        { startsOn: "2024-01-01", endsOn: null, salaryAmount: 60_000, salaryCadence: "yearly" },
+        { startsOn: "2027-01-01", endsOn: "2027-06-01", salaryAmount: 90_000, salaryCadence: "yearly" },
+      ],
+      currentSalary: { salaryAmount: 10_000, salaryCadence: "monthly" },
+    });
+    expect(result.isValid).toBe(true);
+    expect(result.historicalGross).toBe(60_000 * 2);
+    expect(result.projectedGross).toBe(10_000 * 24);
   });
 
   it("keeps older profiles at the current salary when no decline is saved", () => {
@@ -563,23 +582,27 @@ describe("records actual and forecast", () => {
     expect(result.total.hours).toBe(12);
   });
 
-  it("does not carry an old unmatched start into the month being viewed", () => {
+  it("closes a run nobody stopped at the planned end instead of dropping the day", () => {
     const hour = 3_600_000;
     const monthLater = 35 * 24 * hour;
-    const result = summarizeRecordsActualAndForecast({
+    const run = (isActiveAnchor: boolean, asOfMs: number) => summarizeRecordsActualAndForecast({
       dailySalary: 800,
-      asOfMs: monthLater,
+      asOfMs,
       days: [{
         actualKind: "observed",
         resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
         plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
         overtimeSegments: [],
         observations: [{ kind: "started", occurredAtMs: 9 * hour }],
-        isActiveAnchor: false,
+        isActiveAnchor,
       }],
     });
-    expect(result.actual).toEqual({ days: 0, hours: 0, earnings: 0 });
+    // A month later it neither runs to today nor earns nothing: it ends with the shift.
+    expect(run(false, monthLater).actual).toEqual({ days: 1, hours: 8, earnings: 800 });
+    // The day that owns the running shift still runs to now.
+    expect(run(true, 12 * hour).actual).toEqual({ days: 1, hours: 3, earnings: 300 });
   });
+
 });
 
 describe("summarize", () => {
@@ -777,6 +800,48 @@ describe("summarize", () => {
     expect(s.earnings).toBe(3250); // 两个日薪 + 今日按 1.25 日薪
   });
 
+  it("keeps Monday's overtime on Tuesday when the host supplies recorded earlier days", () => {
+    const tuesday = {
+      ...base,
+      dailySalary: 1000,
+      periodStart: at(2026, 6, 29), // Monday
+      asOf: at(2026, 6, 30, 13),
+      currentShiftStart: at(2026, 6, 30, 9),
+      currentShiftEnd: at(2026, 6, 30, 17),
+      plannedDailyHours: 8,
+      todayProgress: 50,
+      todayEffectiveHours: 8,
+      todayPayRatio: 0.5,
+    };
+    // Estimated, Monday is one plain day.
+    expect(summarize(tuesday).earnings).toBe(1500);
+    // Monday ran to 10 h on an 8 h plan: its 1.25 of the daily pay stays 1.25.
+    const recorded = { days: 1, hours: 10, earnings: 1250 };
+    const result = summarize({ ...tuesday, completed: recorded });
+    expect(result.earnings).toBe(1750);
+    expect(result.hours).toBe(14);
+    expect(result.days).toBe(1.5);
+    expect(completedSummaryEndMs(tuesday)).toBe(at(2026, 6, 30).getTime());
+  });
+
+  it("adds only today's live share to recorded days, whatever the pay basis", () => {
+    const live = {
+      ...base,
+      periodStart: at(2026, 6, 29),
+      asOf: at(2026, 6, 30, 13),
+      currentShiftStart: at(2026, 6, 30, 9),
+      currentShiftEnd: at(2026, 6, 30, 17),
+      plannedDailyHours: 8,
+      todayProgress: 50,
+      todayEffectiveHours: 8,
+      todayPayRatio: 0.5,
+      completed: { days: 1, hours: 10, earnings: 1250 },
+    };
+    expect(summarize({ ...live, hourlyRate: 100, todayPlannedHours: 8 }).earnings).toBe(1250 + 400);
+    expect(summarize({ ...live, dailySalary: null }).earnings).toBeNull();
+    expect(summarize({ ...live, completed: { days: 1, hours: 10, earnings: null } }).earnings).toBeNull();
+  });
+
   it("counts later workdays after a completed shift snapshot becomes stale", () => {
     const s = summarize({
       ...base,
@@ -839,91 +904,129 @@ describe("summarize", () => {
   });
 });
 
-describe("Records calendar-month salary", () => {
+describe("Records monthly salary accrues per scheduled workday", () => {
+  const hour = 3_600_000;
   const monthlyRules = {
     salaryAmount: "10000", salaryType: "monthly" as const,
     workdays: MON_TO_FRI, annualBonusMonths: 0, timeZoneIdentifier: "UTC",
   };
-  function monthDays(year: number, month: number) {
+  function monthDays(year: number, month: number, kind: "scheduled" | null = null, throughDay = 31) {
     return Array.from({ length: new Date(Date.UTC(year, month, 0)).getUTCDate() }, (_, index) => {
       const start = Date.UTC(year, month - 1, index + 1, 9);
       if (!MON_TO_FRI.includes(new Date(start).getUTCDay())) return null;
-      const segments = [{ startAtMs: start, endAtMs: start + 8 * 3_600_000 }];
+      const segments = [{ startAtMs: start, endAtMs: start + 8 * hour }];
       return {
         dayKey: new Date(start).toISOString().slice(0, 10),
+        actualKind: index + 1 <= throughDay ? kind : null,
         resolvedSegments: segments, plannedSegments: segments,
         overtimeSegments: [], observations: [], isActiveAnchor: false,
       };
     }).filter(value => value !== null);
   }
-  function monthDayKeys(year: number, month: number) {
-    return Array.from(
-      { length: new Date(Date.UTC(year, month, 0)).getUTCDate() },
-      (_, index) => `${year}-${String(month).padStart(2, "0")}-${String(index + 1).padStart(2, "0")}`,
-    );
-  }
-  it.each([2, 4, 7, 9])("pays 10000 for a full month independent of attendance and average daily pay", month => {
-    const result = summarizeRecordsActualAndForecast({
-      days: monthDays(2026, month).slice(0, 1),
-      periodDayKeys: monthDayKeys(2026, month), dailySalary: 10000 / 22,
-      asOfMs: Date.UTC(2026, 0, 1), salaryRules: monthlyRules,
-    });
+  const run = (days: ReturnType<typeof monthDays>, rules = monthlyRules, asOfMs = Date.UTC(2025, 0, 1)) =>
+    summarizeRecordsActualAndForecast({ days, dailySalary: 10000 / 22, asOfMs, salaryRules: rules });
+
+  it.each([2, 4, 7, 9])("pays the full salary over a month's scheduled workdays (month %i)", month => {
+    // 20, 22, 23 and 22 workdays: the divisor follows the month, never 22.
+    const result = run(monthDays(2026, month));
     expect(result.forecast.earnings).toBeCloseTo(10000, 8);
   });
-  it("keeps the existing annual-bonus smoothing in fixed monthly income", () => {
+
+  it("pays nothing for rest days and ignores a calendar-day split", () => {
+    // Saturday and Sunday are absent from `days`; the period lists them anyway.
     const result = summarizeRecordsActualAndForecast({
-      days: [], periodDayKeys: monthDayKeys(2026, 2), dailySalary: 10000 / 22,
-      asOfMs: Date.UTC(2026, 0, 1),
-      salaryRules: { ...monthlyRules, annualBonusMonths: 2 },
+      days: monthDays(2026, 9).slice(0, 5),
+      periodDayKeys: Array.from({ length: 30 }, (_, i) => `2026-09-${String(i + 1).padStart(2, "0")}`),
+      dailySalary: 10000 / 22, asOfMs: Date.UTC(2025, 0, 1), salaryRules: monthlyRules,
     });
+    expect(result.total.earnings).toBeCloseTo(5 * 10000 / 22, 8);
+  });
+
+  it("keeps the annual-bonus smoothing", () => {
+    const result = run(monthDays(2026, 2), { ...monthlyRules, annualBonusMonths: 2 });
     expect(result.total.earnings).toBeCloseTo(10000 * 14 / 12, 8);
   });
-  it("splits elapsed monthly pay on the records time-zone date", () => {
-    const result = summarizeRecordsActualAndForecast({
-      days: [], periodDayKeys: monthDayKeys(2026, 9), dailySalary: 10000 / 22,
-      asOfMs: Date.parse("2026-09-05T00:00:00Z"),
-      salaryRules: { ...monthlyRules, timeZoneIdentifier: "America/Los_Angeles" },
-    });
-    expect(result.actual.earnings).toBeCloseTo(10000 * 4 / 30, 8);
-    expect(result.forecast.earnings).toBeCloseTo(10000 * 26 / 30, 8);
-  });
-  it("splits monthly pay by elapsed calendar dates while keeping worked hours real", () => {
-    const days = monthDays(2026, 9);
-    const shortened = {
+
+  it("splits actual and forecast by the day, and pays a part day by worked over planned", () => {
+    const days = monthDays(2026, 9, "scheduled", 4);
+    // Sep 1 was a 7 h correction of its 8 h plan.
+    const corrected = {
       ...days[0],
       actualKind: "corrected" as const,
       resolvedSegments: [{
         startAtMs: days[0].resolvedSegments[0].startAtMs,
-        endAtMs: days[0].resolvedSegments[0].startAtMs + 7 * 3_600_000,
+        endAtMs: days[0].resolvedSegments[0].startAtMs + 7 * hour,
       }],
     };
-    const result = summarizeRecordsActualAndForecast({
-      days: [shortened, ...days.slice(1)],
-      periodDayKeys: monthDayKeys(2026, 9),
-      dailySalary: 10000 / 22, asOfMs: Date.UTC(2026, 8, 5), salaryRules: monthlyRules,
-    });
-    expect(result.actual.hours).toBe(7);
-    expect(result.actual.earnings).toBeCloseTo(10000 * 5 / 30, 8);
-    expect(result.forecast.earnings).toBeCloseTo(10000 * 25 / 30, 8);
-    expect(result.total.earnings).toBeCloseTo(10000, 8);
+    const result = run([corrected, ...days.slice(1)], monthlyRules, Date.UTC(2026, 8, 5));
+    const daily = 10000 / 22;
+    expect(result.actual.hours).toBe(7 + 3 * 8);
+    expect(result.actual.earnings).toBeCloseTo(daily * (7 / 8 + 3), 8);
+    expect(result.forecast.earnings).toBeCloseTo(daily * 18, 8);
   });
-  it("allocates a cross-month week by calendar days so adjacent periods add up", () => {
+
+  it("splits adjacent months at their own scheduled workday counts", () => {
     const feb = monthDays(2026, 2), mar = monthDays(2026, 3);
-    const result = summarizeRecordsActualAndForecast({
-      days: [...feb.slice(-2), ...mar.slice(0, 3)], dailySalary: 10000 / 22,
-      periodDayKeys: ["2026-02-27", "2026-02-28", "2026-03-01", "2026-03-02", "2026-03-03"],
-      asOfMs: Date.UTC(2026, 0, 1), salaryRules: monthlyRules,
-    });
-    expect(result.total.earnings).toBeCloseTo(10000 * (2 / 28 + 3 / 31), 8);
+    const result = run([...feb.slice(-2), ...mar.slice(0, 3)]);
+    expect(result.total.earnings).toBeCloseTo(10000 * (2 / 20 + 3 / 22), 8);
   });
+
   it("pays twelve full monthly salaries over a full year", () => {
-    const result = summarizeRecordsActualAndForecast({
-      days: Array.from({ length: 12 }, (_, index) => monthDays(2026, index + 1)).flat(),
-      periodDayKeys: Array.from({ length: 12 }, (_, index) => monthDayKeys(2026, index + 1)).flat(),
-      dailySalary: 10000 / 22, asOfMs: Date.UTC(2025, 0, 1), salaryRules: monthlyRules,
-    });
+    const result = run(Array.from({ length: 12 }, (_, index) => monthDays(2026, index + 1)).flat());
     expect(result.total.earnings).toBeCloseTo(120000, 7);
   });
+
+  it("pays only the days inside the employment span", () => {
+    // Employed in September only; the months around it have no days to pay.
+    const result = run([...monthDays(2026, 9)]);
+    expect(result.total.earnings).toBeCloseTo(10000, 8);
+    expect(run([]).total.earnings).toBe(0);
+  });
+
+  it("keeps the configured working days as an explicit fixed override", () => {
+    const result = run(monthDays(2026, 2).slice(0, 4), {
+      ...monthlyRules, monthlyWorkingDays: 20, dailySalaryBasis: "fixed",
+    });
+    expect(result.total.earnings).toBeCloseTo(4 * 500, 8);
+  });
+
+  it("falls back to the fixed divisor in manual mode", () => {
+    const result = run(monthDays(2026, 2).slice(0, 2), {
+      ...monthlyRules, monthlyWorkingDays: 20, schedule: { mode: "off" },
+    });
+    expect(result.total.earnings).toBeCloseTo(2 * 500, 8);
+  });
+
+  it("pays a rotation schedule a full month, not 16 of 22 days of it", () => {
+    // Two on, two off: 16 workdays in this 30-day month.
+    const rotation: WorkScheduleConfig = {
+      mode: "rotation", rotationAnchorMs: Date.UTC(2026, 8, 1), rotationWorkDays: 2, rotationRestDays: 2,
+    };
+    const workdaysInMonth = countScheduledWorkdaysInMonth({
+      anchorMs: Date.UTC(2026, 8, 15), workdays: MON_TO_FRI, schedule: rotation, timeZone: "UTC",
+    });
+    const days = Array.from({ length: 30 }, (_, index) => {
+      const key = `2026-09-${String(index + 1).padStart(2, "0")}`;
+      const start = Date.parse(`${key}T09:00:00Z`);
+      const on = index % 4 < 2;
+      const segments = on ? [{ startAtMs: start, endAtMs: start + 8 * hour }] : [];
+      return { dayKey: key, resolvedSegments: segments, plannedSegments: segments, overtimeSegments: [], observations: [], isActiveAnchor: false };
+    });
+    const result = run(days as ReturnType<typeof monthDays>, { ...monthlyRules, schedule: rotation });
+    expect(workdaysInMonth).toBe(16);
+    expect(result.total.earnings).toBeCloseTo(10000, 8);
+  });
+
+  it("pays overtime linearly on a monthly salary, like the timer", () => {
+    const day = monthDays(2026, 9, "scheduled", 30)[0];
+    const start = day.plannedSegments[0].startAtMs;
+    const result = run([{
+      ...day,
+      overtimeSegments: [{ startAtMs: start + 8 * hour, endAtMs: start + 10 * hour }],
+    }], monthlyRules, Date.UTC(2026, 9, 1));
+    expect(result.actual.earnings).toBeCloseTo((10000 / 22) * 1.25, 8);
+  });
+
   it("keeps daily wages proportional to attended days", () => {
     const days = monthDays(2026, 2);
     const result = summarizeRecordsActualAndForecast({
@@ -931,6 +1034,54 @@ describe("Records calendar-month salary", () => {
       salaryRules: { ...monthlyRules, salaryType: "daily", salaryAmount: "500" },
     });
     expect(result.total.earnings).toBe(days.length * 500);
+  });
+});
+
+describe("forecast pays what the day holds (defect 6)", () => {
+  const hour = 3_600_000;
+  const planned = [{ startAtMs: 9 * hour, endAtMs: 17 * hour }];
+  const forecast = (resolved: typeof planned, extra = {}) => summarizeRecordsActualAndForecast({
+    dailySalary: 800, asOfMs: 0,
+    days: [{
+      resolvedSegments: resolved, plannedSegments: planned,
+      overtimeSegments: [], observations: [], isActiveAnchor: false, ...extra,
+    }],
+  });
+
+  it("pays half a day for half a day of leave or a shortened override", () => {
+    expect(forecast([{ startAtMs: 9 * hour, endAtMs: 13 * hour }]).forecast.earnings).toBe(400);
+    expect(forecast(planned).forecast.earnings).toBe(800);
+  });
+
+  it("pays an hourly wage by the hours held", () => {
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: null, hourlyRate: 100, asOfMs: 0,
+      days: [{
+        resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 13 * hour }], plannedSegments: planned,
+        overtimeSegments: [], observations: [], isActiveAnchor: false,
+      }],
+    });
+    expect(result.forecast.earnings).toBe(400);
+  });
+
+  it("pays rest-day overtime at the hourly rate the usual day implies", () => {
+    const overtime = [{ startAtMs: 9 * hour, endAtMs: 13 * hour }];
+    const day = {
+      actualKind: "scheduled" as const, resolvedSegments: [], plannedSegments: [],
+      overtimeSegments: overtime, observations: [], isActiveAnchor: false,
+    };
+    const run = (extra: object) => summarizeRecordsActualAndForecast({
+      dailySalary: 800, asOfMs: 24 * hour, days: [day], ...extra,
+    });
+    // 800 over an 8 h usual day is 100 an hour: four hours earn 400, not 800.
+    expect(run({ normalPlannedMs: 8 * hour }).actual.earnings).toBe(400);
+    expect(run({ normalPlannedMs: 8 * hour }).actualOvertimeHours).toBe(4);
+    // Without a usual day there is no rate to infer; the day pays whole.
+    expect(run({}).actual.earnings).toBe(800);
+    const hourly = summarizeRecordsActualAndForecast({
+      dailySalary: null, hourlyRate: 100, asOfMs: 24 * hour, days: [day], normalPlannedMs: 8 * hour,
+    });
+    expect(hourly.actual.earnings).toBe(400);
   });
 });
 
