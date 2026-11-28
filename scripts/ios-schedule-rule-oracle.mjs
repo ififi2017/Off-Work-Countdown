@@ -77,6 +77,8 @@ const ORACLE_BODY = `
       breakDurationMinutes: input.breakDurationMinutes || 0,
       overtimeEndAtMs: input.overtimeEndAtMs || null,
       overtimeStartAtMs: input.overtimeStartAtMs || null,
+      // The live window follows per-day assignments, as the next-shift search does.
+      extendedSchedule: (input.schedule && input.schedule.extendedSchedule) || null,
     };
   }
 
@@ -266,6 +268,9 @@ const ORACLE_BODY = `
       workdays: input.workdays,
       schedule: input.schedule || null,
       afterMs: Math.max(input.nowMs, countdown.getShiftEndAtMs(shift)),
+      // The previous shift's end can itself be the next shift's start; "after
+      // now" stays exclusive so a shift starting this instant is not "next".
+      inclusive: countdown.getShiftEndAtMs(shift) >= input.nowMs,
       options: {
         breakStartTime: input.breakStartTime || null,
         breakDurationMinutes: input.breakDurationMinutes || 0,
@@ -364,6 +369,7 @@ const ORACLE_BODY = `
       );
       const shifts = [];
       let afterMs = Math.max(input.nowMs, countdown.getShiftEndAtMs(current));
+      let inclusive = countdown.getShiftEndAtMs(current) >= input.nowMs;
 
       while (shifts.length < maximumCount) {
         const shift = countdown.findNextShiftTimeline({
@@ -372,6 +378,7 @@ const ORACLE_BODY = `
           workdays: input.workdays,
           schedule: input.schedule || null,
           afterMs,
+          inclusive,
           options: {
             breakStartTime: input.breakStartTime || null,
             breakDurationMinutes: input.breakDurationMinutes || 0,
@@ -397,6 +404,8 @@ const ORACLE_BODY = `
         if (startAtMs >= throughMs) break;
         if (endAtMs <= afterMs) break;
         afterMs = endAtMs;
+        // A shift may start exactly where this one ends.
+        inclusive = true;
       }
       return JSON.stringify(shifts);
     },
