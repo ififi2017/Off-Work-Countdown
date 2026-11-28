@@ -388,16 +388,27 @@ export function findEndedShiftOnEndCalendarDay(params: {
   return null;
 }
 
+/**
+ * The first scheduled shift that starts after `afterMs`.
+ *
+ * `inclusive` also accepts a shift starting exactly at `afterMs`. Pass it when
+ * `afterMs` is the END of the previous shift (a three-shift rotation's
+ * 16:00–00:00 then 00:00–08:00, or daily 24-hour shifts, start the next one
+ * at that very instant). Leave it off for "after now": a shift that starts
+ * exactly now is the current shift, never the next.
+ */
 export function findNextShiftTimeline(params: {
   startTime: string;
   endTime: string;
   workdays: number[];
   afterMs: number;
+  inclusive?: boolean;
   schedule?: WorkScheduleConfig | null;
   options?: Omit<ShiftBuildOptions, "overtimeEndAtMs">;
   timeZone?: string | null;
 }): ShiftTimeline | null {
   const { startTime, endTime, workdays, afterMs, schedule, options = {}, timeZone } = params;
+  const inclusive = params.inclusive === true;
   if (timeZone?.trim() || schedule?.extendedSchedule) {
     return findNextShiftTimelineInZone(params, timeZone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone);
   }
@@ -409,7 +420,7 @@ export function findNextShiftTimeline(params: {
   for (let offset = 0; offset <= 366; offset += 1) {
     const day = addCalendarDays(cursor, offset);
     const start = atTime(day, startTime);
-    if (!isScheduledWorkday(start, workdays, schedule) || start.getTime() <= afterMs) {
+    if (!isScheduledWorkday(start, workdays, schedule) || (inclusive ? start.getTime() < afterMs : start.getTime() <= afterMs)) {
       continue;
     }
     let end = atTime(day, endTime);
@@ -1358,12 +1369,14 @@ function findNextShiftTimelineInZone(
     endTime: string;
     workdays: number[];
     afterMs: number;
+    inclusive?: boolean;
     schedule?: WorkScheduleConfig | null;
     options?: Omit<ShiftBuildOptions, "overtimeEndAtMs">;
   },
   timeZone: string
 ): ShiftTimeline | null {
   const { startTime, endTime, workdays, afterMs, schedule, options = {} } = params;
+  const inclusive = params.inclusive === true;
   if (!schedule?.extendedSchedule && schedule?.mode === "off") return null;
   if (!schedule?.extendedSchedule && (schedule?.mode ?? "classic") === "classic" && workdays.length === 0) {
     return null;
@@ -1380,7 +1393,7 @@ function findNextShiftTimelineInZone(
     );
     if (
       !isScheduledWorkdayInZone(start.getTime(), workdays, schedule, timeZone) ||
-      start.getTime() <= afterMs
+      (inclusive ? start.getTime() < afterMs || end.getTime() <= start.getTime() : start.getTime() <= afterMs)
     ) {
       continue;
     }
@@ -1599,11 +1612,12 @@ function extendedShiftBounds(startTime: string, endTime: string, nowMs: number, 
   let start = instant(today, current.start);
   let end = instant(today, current.end);
   if (end <= start) {
+    // An overnight day: the window runs from today's start to tomorrow's end.
+    // Last night's overnight shift, if there was one, was already returned by
+    // the `overnight` check above; falling back to yesterday's clocks here
+    // would build a window out of a day shift's start and an unrelated end.
     if (current.end.hour * 60 + current.end.minute > current.start.hour * 60 + current.start.minute) end = start;
-    else if (nowMs < end) {
-      start = instant(yesterday, previous.start);
-      end = instant(today, previous.end);
-    } else end = instant(addZonedCivilDays(today.year, today.month, today.day, 1), current.end);
+    else end = instant(addZonedCivilDays(today.year, today.month, today.day, 1), current.end);
   }
   return { start: new Date(start), end: new Date(end) };
 }

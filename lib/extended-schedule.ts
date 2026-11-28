@@ -122,6 +122,36 @@ export function resolveScheduleDay(plan: ExtendedSchedulePlan, key: string): Sch
   return result;
 }
 
+/**
+ * The work type a make-up workday (a holiday calendar turning a rest day into
+ * work) takes. The user's own rule decides: the type it assigns on that same
+ * weekday (only meaningful when the cycle is whole weeks), else the type it
+ * assigns most often (ties go to the one the rule reaches first), else the
+ * first non-archived work type, as before.
+ */
+function makeupWorkType(plan: ExtendedSchedulePlan, day: number): ShiftType | undefined {
+  const rule = plan.rule;
+  const anchor = rule && civilDayNumber(rule.anchorDayKey);
+  if (rule && rule.days.length && anchor != null) {
+    const eligible = (id: string) => plan.shiftTypes.find(t => t.id === id && t.kind === "work" && !t.isArchived && isValidShiftType(t));
+    const count = rule.days.length;
+    const mostAssigned = (step: number, from: number): ShiftType | undefined => {
+      const tally = new Map<string, number>();
+      for (let position = from; position < count; position += step) {
+        if (eligible(rule.days[position])) tally.set(rule.days[position], (tally.get(rule.days[position]) ?? 0) + 1);
+      }
+      let best: string | undefined;
+      for (const [id, n] of tally) if (best === undefined || n > tally.get(best)!) best = id;
+      return best === undefined ? undefined : eligible(best);
+    };
+    const position = ((day - anchor) % count + count) % count;
+    const sameWeekday = count % 7 === 0 ? mostAssigned(7, position % 7) : undefined;
+    const found = sameWeekday ?? mostAssigned(1, 0);
+    if (found) return found;
+  }
+  return plan.shiftTypes.find(t => t.kind === "work" && !t.isArchived);
+}
+
 function resolveDay(plan: ExtendedSchedulePlan, key: string): ScheduleDay {
   const day = civilDayNumber(key);
   if (day === null) return unassigned;
@@ -166,7 +196,7 @@ function resolveDay(plan: ExtendedSchedulePlan, key: string): ScheduleDay {
   const holiday = plan.holidayRegionIdentifier && plan.holidayOverrides?.[key.replaceAll("-", "")];
   if (typeof holiday !== "boolean") return result;
   if (holiday && result.isWorkday) return { ...result, source: "holiday" };
-  const holidayType = plan.shiftTypes.find(t => t.kind === (holiday ? "work" : "rest") && !t.isArchived);
+  const holidayType = holiday ? makeupWorkType(plan, day) : plan.shiftTypes.find(t => t.kind === "rest" && !t.isArchived);
   if (!holidayType) return holiday ? result : { ...unassigned, source: "holiday" };
   return holiday ? annual(type(holidayType.id, "holiday")) : type(holidayType.id, "holiday");
 }
