@@ -4,6 +4,7 @@ import {
   civilDateKey,
   civilDateAtMs,
   civilMonthStartMs,
+  DEFAULT_MONTHLY_WORKING_DAYS,
   getDailySalary,
   getPlannedShiftDurationMs,
   getMonthlySalaryEquivalent,
@@ -64,6 +65,12 @@ export interface LifetimeIncomeSummary {
   /** Income from asOf to retirement at the salary covering that interval. */
   projectedGross: number;
   totalGross: number;
+  /**
+   * False when the supplied intervals contradict each other (two stored
+   * periods overlap). The amounts are then zero and a surface should hide the
+   * figure instead of printing a total of 0.
+   */
+  isValid: boolean;
 }
 
 export interface RecordsSummarySegment {
@@ -204,7 +211,7 @@ export function projectLifetimeGrossIncome(params: {
   const asOf = civilDay(params.asOf);
   const retirement = civilDay(params.retirementOn);
   if (asOf === null || retirement === null) {
-    return { historicalGross: 0, projectedGross: 0, totalGross: 0 };
+    return { historicalGross: 0, projectedGross: 0, totalGross: 0, isValid: false };
   }
 
   const periods = [...params.periods];
@@ -222,21 +229,26 @@ export function projectLifetimeGrossIncome(params: {
     end: CivilDay;
     isCurrentSalary: boolean;
   }> = [];
+  // The current salary owns everything from its own start. A stored period
+  // that runs past that point (an open one, or one that ends or starts later)
+  // is cut there, so the two can never overlap and zero the whole figure.
+  const currentStart = params.currentSalary
+    ? civilDay(params.currentSalary.startsOn ?? params.asOf)
+    : null;
   for (const [index, period] of periods.entries()) {
+    const isCurrentSalary = params.currentSalary != null && index === periods.length - 1;
     const start = civilDay(period.startsOn);
     const explicitEnd = period.endsOn ? civilDay(period.endsOn) : retirement;
     if (
       start === null || explicitEnd === null ||
       !Number.isFinite(period.salaryAmount) || period.salaryAmount <= 0
     ) continue;
-    const end = explicitEnd.dayNumber <= retirement.dayNumber ? explicitEnd : retirement;
+    let end = explicitEnd.dayNumber <= retirement.dayNumber ? explicitEnd : retirement;
+    if (!isCurrentSalary && currentStart !== null && end.dayNumber > currentStart.dayNumber) {
+      end = currentStart;
+    }
     if (end.dayNumber <= start.dayNumber) continue;
-    validPeriods.push({
-      period,
-      start,
-      end,
-      isCurrentSalary: params.currentSalary != null && index === periods.length - 1,
-    });
+    validPeriods.push({ period, start, end, isCurrentSalary });
   }
   validPeriods.sort((left, right) => left.start.dayNumber - right.start.dayNumber);
 
@@ -245,7 +257,7 @@ export function projectLifetimeGrossIncome(params: {
   if (validPeriods.some((value, index) =>
     index > 0 && value.start.dayNumber < validPeriods[index - 1].end.dayNumber
   )) {
-    return { historicalGross: 0, projectedGross: 0, totalGross: 0 };
+    return { historicalGross: 0, projectedGross: 0, totalGross: 0, isValid: false };
   }
 
   let historicalGross = 0;
@@ -287,6 +299,7 @@ export function projectLifetimeGrossIncome(params: {
     historicalGross,
     projectedGross,
     totalGross: historicalGross + projectedGross,
+    isValid: true,
   };
 }
 
@@ -340,6 +353,12 @@ export function summarizeRecordsActualAndForecast(params: {
    */
   hourlyRate?: number | null;
   asOfMs: number;
+  /**
+   * The user's usual planned effective day, in ms. A day the plan leaves free
+   * (rest-day overtime) has no planned length of its own; it is paid at the
+   * hourly rate this day implies (daily rate / these hours), linearly.
+   */
+  normalPlannedMs?: number | null;
   salaryRules?: {
     salaryAmount: string;
     salaryType: SalaryType;
@@ -348,6 +367,12 @@ export function summarizeRecordsActualAndForecast(params: {
     schedule?: WorkScheduleConfig | null;
     timeZoneIdentifier?: string | null;
     annualBonusMonths: number;
+    /**
+     * A monthly salary accrues per scheduled workday: each civil month is
+     * divided by its own scheduled workdays. Omitted means `scheduledMonth`;
+     * `fixed` divides by `monthlyWorkingDays` instead (an explicit override).
+     */
+    dailySalaryBasis?: DailySalaryBasis | null;
   };
 }): RecordsActualForecastSummary {
   let actualDays = 0;
@@ -358,40 +383,82 @@ export function summarizeRecordsActualAndForecast(params: {
   let forecastMs = 0;
   let forecastPay = 0;
 
-  const fixedMonthlyPay = params.salaryRules?.salaryType === "monthly"
-    ? allocateFixedMonthlyPay(
-        params.periodDayKeys ?? params.days.flatMap(day => day.dayKey ? [day.dayKey] : []),
-        params.asOfMs,
-        params.salaryRules,
-      )
+  const rules = params.salaryRules;
+  const usesMonthlyPay = rules?.salaryType === "monthly";
+  const monthlySalary: MonthBasisSalary | null = usesMonthlyPay && rules
+    ? {
+        amount: rules.salaryAmount,
+        type: "monthly",
+        monthlyWorkingDays: rules.monthlyWorkingDays ?? DEFAULT_MONTHLY_WORKING_DAYS,
+        annualBonusMonths: rules.annualBonusMonths,
+        basis: rules.dailySalaryBasis ?? "scheduledMonth",
+      }
     : null;
-  const usesFixedMonthlyPay = params.salaryRules?.salaryType === "monthly";
+  // A monthly salary accrues per scheduled workday, each day at its own
+  // month's daily pay (monthly / that month's scheduled workdays).
+  const monthlyDailyByMonth = new Map<number, number | null>();
+  const monthlyDailyFor = (day: RecordsActualForecastDay): number | null => {
+    if (!monthlySalary || !rules) return null;
+    const zone = rules.timeZoneIdentifier?.trim() || undefined;
+    const firstStart = [day.resolvedSegments, day.plannedSegments, day.overtimeSegments]
+      .flat().map(segment => segment.startAtMs).filter(Number.isFinite).sort((a, b) => a - b)[0];
+    const anchorMs = day.dayKey
+      ? civilDateAtMs(day.dayKey, zone, "12:00")
+      : firstStart;
+    if (anchorMs === undefined || !Number.isFinite(anchorMs)) return null;
+    const monthKey = civilMonthStartMs(anchorMs, zone, 0);
+    if (!monthlyDailyByMonth.has(monthKey)) {
+      monthlyDailyByMonth.set(monthKey, dailySalaryInMonth({
+        salary: monthlySalary,
+        anchorMs,
+        workdays: rules.workdays,
+        schedule: rules.schedule,
+        timeZone: zone,
+      }));
+    }
+    return monthlyDailyByMonth.get(monthKey) ?? null;
+  };
   const hourlyRate = typeof params.hourlyRate === "number" && Number.isFinite(params.hourlyRate) && params.hourlyRate >= 0
     ? params.hourlyRate
     : null;
   // A rate present means hourly pay; an hourly setting without one has no
   // earnings, as with any missing salary.
-  const usesHourlyPay = params.hourlyRate != null || params.salaryRules?.salaryType === "hourly";
-  let hasSalary = usesFixedMonthlyPay
-    ? fixedMonthlyPay !== null
+  const usesHourlyPay = params.hourlyRate != null || rules?.salaryType === "hourly";
+  const normalPlannedMs = typeof params.normalPlannedMs === "number"
+    && Number.isFinite(params.normalPlannedMs) && params.normalPlannedMs > 0
+    ? params.normalPlannedMs
+    : 0;
+  let hasSalary = usesMonthlyPay
+    ? monthlySalary !== null && getDailySalary(
+        monthlySalary.amount, "monthly", monthlySalary.monthlyWorkingDays, monthlySalary.annualBonusMonths,
+      ) !== null
     : usesHourlyPay ? hourlyRate !== null : params.dailySalary !== null;
   for (const day of params.days) {
     if (day.resolvedSegments.length === 0 && day.overtimeSegments.length === 0) continue;
     const plannedMs = mergedSegmentDuration(day.plannedSegments);
+    // What a full day pays is measured against the planned day; a day the plan
+    // left free uses the user's usual planned day instead, so overtime on it
+    // pays the hourly rate that day implies rather than a whole daily rate.
+    const payBasisMs = plannedMs > 0 ? plannedMs : normalPlannedMs;
     // Hourly: the day is worth its own planned hours at the rate; a day with
-    // no plan is paid by the hours it holds.
+    // no plan uses the usual planned day, else the hours it holds.
     const rate = usesHourlyPay
       ? hourlyRate === null
         ? null
-        : hourlyRate * (plannedMs > 0 ? plannedMs : mergedSegmentDuration(day.resolvedSegments)) / 3_600_000
-      : params.dailySalary;
-    if (!usesFixedMonthlyPay && rate === null) hasSalary = false;
+        : hourlyRate * (payBasisMs > 0 ? payBasisMs : mergedSegmentDuration(day.resolvedSegments)) / 3_600_000
+      : usesMonthlyPay ? monthlyDailyFor(day) : params.dailySalary;
+    if (rate === null) hasSalary = false;
     const isActual = day.actualKind === "corrected" || day.actualKind === "observed" || day.actualKind === "scheduled";
     if (isActual) {
       const regularSegments = day.actualKind !== "observed"
         ? day.resolvedSegments
         : intersectSegments(
-            observedWorkSegments(day.observations, params.asOfMs, day.isActiveAnchor),
+            observedWorkSegments(
+              day.observations,
+              params.asOfMs,
+              day.isActiveAnchor,
+              plannedEndAtMs(day),
+            ),
             day.resolvedSegments,
           );
       const elapsedRegular = regularSegments.map(segment => ({
@@ -420,10 +487,8 @@ export function summarizeRecordsActualAndForecast(params: {
       if (workedMs > 0) {
         actualDays += 1;
         actualMs += workedMs;
-        if (!usesFixedMonthlyPay) {
-          const paidMs = weightedOvertimeMs(workedMs, regularMs, multiplier);
-          actualPay += (rate ?? 0) * (plannedMs > 0 ? paidMs / plannedMs : 1);
-        }
+        const paidMs = weightedOvertimeMs(workedMs, regularMs, multiplier);
+        actualPay += (rate ?? 0) * (payBasisMs > 0 ? paidMs / payBasisMs : 1);
       }
       if (day.isActiveAnchor || day.actualKind === "scheduled") {
         const futureAllMs = mergedSegmentDuration(
@@ -444,10 +509,8 @@ export function summarizeRecordsActualAndForecast(params: {
         if (futureMs > 0) {
           if (workedMs <= 0) forecastDays += 1;
           forecastMs += futureMs;
-          if (!usesFixedMonthlyPay) {
-            const paidFutureMs = weightedOvertimeMs(futureMs, futureRegularMs, multiplier);
-            forecastPay += (rate ?? 0) * (plannedMs > 0 ? paidFutureMs / plannedMs : (workedMs <= 0 ? 1 : 0));
-          }
+          const paidFutureMs = weightedOvertimeMs(futureMs, futureRegularMs, multiplier);
+          forecastPay += (rate ?? 0) * (payBasisMs > 0 ? paidFutureMs / payBasisMs : (workedMs <= 0 ? 1 : 0));
         }
       }
       continue;
@@ -456,12 +519,8 @@ export function summarizeRecordsActualAndForecast(params: {
     if (forecastWorkMs <= 0) continue;
     forecastDays += 1;
     forecastMs += forecastWorkMs;
-    if (!usesFixedMonthlyPay) forecastPay += rate ?? 0;
-  }
-
-  if (fixedMonthlyPay) {
-    actualPay = fixedMonthlyPay.actual;
-    forecastPay = fixedMonthlyPay.forecast;
+    // Half a day of leave or a shortened override is half a day of pay.
+    forecastPay += (rate ?? 0) * (payBasisMs > 0 ? forecastWorkMs / payBasisMs : 1);
   }
 
   const actualEarnings = hasSalary && Number.isFinite(actualPay) ? actualPay : null;
@@ -486,56 +545,6 @@ export function summarizeRecordsActualAndForecast(params: {
       earnings: totalEarnings !== null && Number.isFinite(totalEarnings) ? totalEarnings : null,
     },
   };
-}
-
-function allocateFixedMonthlyPay(
-  dayKeys: string[],
-  asOfMs: number,
-  rules: NonNullable<Parameters<typeof summarizeRecordsActualAndForecast>[0]["salaryRules"]>,
-): { actual: number; forecast: number } | null {
-  const monthlySalary = getMonthlySalaryEquivalent(
-    rules.salaryAmount,
-    "monthly",
-    rules.monthlyWorkingDays,
-    rules.annualBonusMonths,
-  );
-  const asOf = civilDayAt(asOfMs, rules.timeZoneIdentifier);
-  if (monthlySalary === null || asOf === null) return null;
-  let actual = 0;
-  let forecast = 0;
-  for (const key of new Set(dayKeys)) {
-    const day = civilDay(key);
-    if (day === null) continue;
-    const daysInMonth = new Date(Date.UTC(day.year, day.month, 0)).getUTCDate();
-    if (day.dayNumber <= asOf.dayNumber) actual += monthlySalary / daysInMonth;
-    else forecast += monthlySalary / daysInMonth;
-  }
-  return { actual, forecast };
-}
-
-function civilDayAt(ms: number, timeZone?: string | null): CivilDay | null {
-  if (!Number.isFinite(ms)) return null;
-  const date = new Date(ms);
-  if (!timeZone?.trim()) {
-    return civilDay([
-      date.getFullYear(),
-      String(date.getMonth() + 1).padStart(2, "0"),
-      String(date.getDate()).padStart(2, "0"),
-    ].join("-"));
-  }
-  try {
-    const parts = new Intl.DateTimeFormat("en-US-u-ca-gregory-nu-latn", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(date);
-    const value = (type: "year" | "month" | "day") =>
-      parts.find(part => part.type === type)?.value;
-    return civilDay(`${value("year")}-${value("month")}-${value("day")}`);
-  } catch {
-    return null;
-  }
 }
 
 function mergedSegmentDuration(segments: RecordsSummarySegment[]): number {
@@ -576,10 +585,23 @@ function intersectSegments(
   }));
 }
 
+/** The shift's planned end: where a run nobody stopped is closed on a past day. */
+function plannedEndAtMs(day: RecordsActualForecastDay): number | null {
+  const segments = day.plannedSegments.length > 0 ? day.plannedSegments : day.resolvedSegments;
+  const ends = segments.map(segment => segment.endAtMs).filter(Number.isFinite);
+  return ends.length > 0 ? Math.max(...ends) : null;
+}
+
+/**
+ * Started/stopped pairs as intervals. An unmatched start runs to `asOfMs` on
+ * the day that owns the running shift; on any other day nobody stopped it, so
+ * it closes at the shift's planned end instead of losing the day's pay.
+ */
 function observedWorkSegments(
   observations: RecordsSummaryObservation[],
   asOfMs: number,
   closesOpenObservation: boolean,
+  plannedEndMs: number | null = null,
 ): RecordsSummarySegment[] {
   const sorted = observations
     .filter(value => Number.isFinite(value.occurredAtMs))
@@ -596,13 +618,11 @@ function observedWorkSegments(
       startedAt = null;
     }
   }
-  if (
-    startedAt !== null &&
-    closesOpenObservation &&
-    Number.isFinite(asOfMs) &&
-    asOfMs > startedAt
-  ) {
-    result.push({ startAtMs: startedAt, endAtMs: asOfMs });
+  if (startedAt !== null) {
+    const closeAt = closesOpenObservation ? asOfMs : plannedEndMs;
+    if (closeAt !== null && Number.isFinite(closeAt) && closeAt > startedAt) {
+      result.push({ startAtMs: startedAt, endAtMs: closeAt });
+    }
   }
   return result;
 }
@@ -770,6 +790,35 @@ export function completedWorkdayIncomeByMonth(params: {
 }
 
 /**
+ * Where the earlier days end and today's live shift begins: the civil midnight
+ * of the running shift's start day when that shift still covers the as-of day,
+ * else the as-of day itself. `summarize` estimates, or a host with records
+ * supplies (`completed`), the days from `periodStart` up to this instant.
+ */
+export function completedSummaryEndMs(params: {
+  periodStart: Date;
+  asOf: Date;
+  currentShiftStart: Date;
+  currentShiftEnd: Date;
+  timeZone?: string;
+}): number {
+  const { timeZone } = params;
+  const startOfDay = (date: Date) => {
+    if (timeZone) return startOfCivilDayMs(date.getTime(), timeZone);
+    const next = new Date(date);
+    next.setHours(0, 0, 0, 0);
+    return next.getTime();
+  };
+  const shiftDayMs = startOfDay(params.currentShiftStart);
+  const shiftEndDayMs = startOfDay(params.currentShiftEnd);
+  const periodDayMs = startOfDay(params.periodStart);
+  const asOfDayMs = startOfDay(params.asOf);
+  return shiftDayMs >= periodDayMs && shiftDayMs <= asOfDayMs && shiftEndDayMs >= asOfDayMs
+    ? shiftDayMs
+    : asOfDayMs;
+}
+
+/**
  * 汇总从 periodStart 到此刻的工作量。
  *
  * 当前班次单独计算：只有它的开班日是工作日、且落在当前周期时才计入，
@@ -809,6 +858,15 @@ export function summarize(params: {
    */
   hourlyRate?: number | null;
   todayPlannedHours?: number;
+  /**
+   * A host that keeps per-day records (iOS) supplies the totals it already
+   * shows for the civil days from `periodStart` up to, not including, the
+   * running shift's day (`completedSummaryEndMs`). They replace the schedule
+   * estimate for those days, so a past day keeps its recorded overtime, leave
+   * and edits instead of being re-priced at today's plan. Only today's live
+   * share is added here. Omitted, every earlier day is estimated.
+   */
+  completed?: PeriodSummary | null;
 }): PeriodSummary {
   const {
     periodStart,
@@ -826,6 +884,7 @@ export function summarize(params: {
     timeZone,
     hourlyRate,
     todayPlannedHours,
+    completed: recordedCompleted,
   } = params;
 
   const startOfDay = (date: Date) => {
@@ -843,13 +902,10 @@ export function summarize(params: {
   // 截断后续工作日。
   const currentShiftCoversAsOfDay =
     shiftDayMs >= periodDayMs && shiftDayMs <= asOfDayMs && shiftEndDayMs >= asOfDayMs;
-  const completed = countScheduledWorkdays(
-    new Date(periodDayMs),
-    new Date(currentShiftCoversAsOfDay ? shiftDayMs : asOfDayMs),
-    workdays,
-    schedule,
-    timeZone
-  );
+  const endMs = currentShiftCoversAsOfDay ? shiftDayMs : asOfDayMs;
+  const completed = recordedCompleted
+    ? recordedCompleted.days
+    : countScheduledWorkdays(new Date(periodDayMs), new Date(endMs), workdays, schedule, timeZone);
   // One call for both zones. `isScheduledWorkday` routes to the zoned helper
   // itself, and unlike that helper it keeps manual (`off`) mode counting — the
   // split here made an iOS week disagree with the same week on the Web.
@@ -861,11 +917,10 @@ export function summarize(params: {
     : 0;
 
   const days = completed + todayFraction;
-  let completedHours = completed * plannedDailyHours;
-  if (schedule?.extendedSchedule) {
+  let completedHours = recordedCompleted ? recordedCompleted.hours : completed * plannedDailyHours;
+  if (!recordedCompleted && schedule?.extendedSchedule) {
     completedHours = 0;
-    const end = currentShiftCoversAsOfDay ? shiftDayMs : asOfDayMs;
-    for (let cursor = periodDayMs; cursor < end; cursor = addCivilDaysMs(cursor, 1, timeZone)) {
+    for (let cursor = periodDayMs; cursor < endMs; cursor = addCivilDaysMs(cursor, 1, timeZone)) {
       const day = resolveScheduleDay(schedule.extendedSchedule, civilDateKey(cursor, timeZone));
       if (!day.isWorkday || !day.hours) continue;
       const noon = new Date(civilDateAtMs(civilDateKey(cursor, timeZone), timeZone, "12:00"));
@@ -882,9 +937,30 @@ export function summarize(params: {
     ? Math.max(0, todayPayRatio ?? todayFraction)
     : 0;
 
-  let earnings = earningsForRatio(dailySalary, completed + earningsFraction);
-  if (salary && usesScheduledMonthBasis(salary)) {
-    const endMs = currentShiftCoversAsOfDay ? shiftDayMs : asOfDayMs;
+  // Today's live share of pay, at the daily pay of today's own month.
+  let todayEarnings: number | null;
+  if (hourlyRate != null) {
+    const rate = Number.isFinite(hourlyRate) && hourlyRate >= 0 ? hourlyRate : null;
+    todayEarnings = rate === null
+      ? null
+      : rate * earningsFraction * (todayPlannedHours ?? plannedDailyHours);
+  } else if (salary && usesScheduledMonthBasis(salary)) {
+    const todayDaily = dailySalaryInMonth({ salary, anchorMs: endMs, workdays, schedule, timeZone });
+    todayEarnings = earningsForRatio(todayDaily, earningsFraction);
+  } else {
+    todayEarnings = earningsForRatio(dailySalary, earningsFraction);
+  }
+
+  let earnings: number | null;
+  if (recordedCompleted) {
+    earnings = recordedCompleted.earnings === null || todayEarnings === null
+      ? null
+      : recordedCompleted.earnings + todayEarnings;
+  } else if (hourlyRate != null) {
+    const rate = Number.isFinite(hourlyRate) && hourlyRate >= 0 ? hourlyRate : null;
+    const total = rate === null ? null : rate * (completedHours + earningsFraction * (todayPlannedHours ?? plannedDailyHours));
+    earnings = total !== null && Number.isFinite(total) ? total : null;
+  } else if (salary && usesScheduledMonthBasis(salary)) {
     let total = 0;
     let missing = false;
     for (let cursor = periodDayMs; cursor < endMs; ) {
@@ -901,17 +977,11 @@ export function summarize(params: {
       else total += count * daily;
       cursor = monthEnd;
     }
-    const todayDaily = dailySalaryInMonth({ salary, anchorMs: endMs, workdays, schedule, timeZone });
-    if (todayDaily === null) missing = true;
-    else total += Math.max(0, earningsFraction) * todayDaily;
+    if (todayEarnings === null) missing = true;
+    else total += todayEarnings;
     earnings = !missing && Number.isFinite(total) ? total : null;
-  }
-
-  if (hourlyRate != null) {
-    const rate = Number.isFinite(hourlyRate) && hourlyRate >= 0 ? hourlyRate : null;
-    const paidHours = completedHours + earningsFraction * (todayPlannedHours ?? plannedDailyHours);
-    const total = rate === null ? null : rate * paidHours;
-    earnings = total !== null && Number.isFinite(total) ? total : null;
+  } else {
+    earnings = earningsForRatio(dailySalary, completed + earningsFraction);
   }
 
   return { days, hours, earnings };
